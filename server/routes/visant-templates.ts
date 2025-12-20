@@ -1,0 +1,292 @@
+import express from 'express';
+import { prisma } from '../db/prisma.js';
+
+const router = express.Router();
+
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Vsn567349';
+
+const validateAdminPassword = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const headerPassword = req.header('x-admin-password');
+  const queryPassword = typeof req.query.password === 'string' ? req.query.password : undefined;
+  const providedPassword = headerPassword || queryPassword;
+
+  if (!providedPassword || providedPassword !== ADMIN_PASSWORD) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  next();
+};
+
+// GET /api/admin/visant-templates - Listar todos os templates
+router.get('/', validateAdminPassword, async (_req, res) => {
+  try {
+    const templates = await prisma.visantTemplate.findMany({
+      orderBy: [
+        { isDefault: 'desc' },
+        { isActive: 'desc' },
+        { createdAt: 'desc' },
+      ],
+    });
+
+    res.json({
+      templates: templates.map(t => ({
+        ...t,
+        _id: t.id,
+      })),
+    });
+  } catch (error: any) {
+    console.error('Error fetching visant templates:', error);
+    res.status(500).json({
+      error: 'Failed to fetch templates',
+      message: error.message || 'An error occurred',
+    });
+  }
+});
+
+// GET /api/visant-templates/active - Obter template ativo (público)
+router.get('/active', async (_req, res) => {
+  try {
+    const activeTemplate = await prisma.visantTemplate.findFirst({
+      where: { isActive: true },
+    });
+
+    if (!activeTemplate) {
+      return res.status(404).json({ error: 'No active template found' });
+    }
+
+    res.json({
+      template: {
+        ...activeTemplate,
+        _id: activeTemplate.id,
+      },
+    });
+  } catch (error: any) {
+    console.error('Error fetching active template:', error);
+    res.status(500).json({
+      error: 'Failed to fetch active template',
+      message: error.message || 'An error occurred',
+    });
+  }
+});
+
+// POST /api/admin/visant-templates - Criar novo template
+router.post('/', validateAdminPassword, async (req, res) => {
+  try {
+    const { name, layout, isDefault = false } = req.body;
+
+    if (!name || !layout) {
+      return res.status(400).json({ error: 'Name and layout are required' });
+    }
+
+    // Validate layout structure
+    if (!layout.pages || typeof layout.pages !== 'object') {
+      return res.status(400).json({ error: 'Invalid layout structure' });
+    }
+
+    // If this is set as default, unset other defaults
+    if (isDefault) {
+      await prisma.visantTemplate.updateMany({
+        where: { isDefault: true },
+        data: { isDefault: false },
+      });
+    }
+
+    const template = await prisma.visantTemplate.create({
+      data: {
+        name,
+        layout: layout as any,
+        isDefault,
+        isActive: false,
+      },
+    });
+
+    res.json({
+      template: {
+        ...template,
+        _id: template.id,
+      },
+    });
+  } catch (error: any) {
+    console.error('Error creating visant template:', error);
+    res.status(500).json({
+      error: 'Failed to create template',
+      message: error.message || 'An error occurred',
+    });
+  }
+});
+
+// PUT /api/admin/visant-templates/:id - Atualizar template
+router.put('/:id', validateAdminPassword, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, layout, isDefault } = req.body;
+
+    const existingTemplate = await prisma.visantTemplate.findUnique({
+      where: { id },
+    });
+
+    if (!existingTemplate) {
+      return res.status(404).json({ error: 'Template not found' });
+    }
+
+    // Prevent editing default template's isDefault flag
+    if (existingTemplate.isDefault && isDefault === false) {
+      return res.status(400).json({ error: 'Cannot unset default template' });
+    }
+
+    // If setting as default, unset other defaults
+    if (isDefault && !existingTemplate.isDefault) {
+      await prisma.visantTemplate.updateMany({
+        where: { isDefault: true },
+        data: { isDefault: false },
+      });
+    }
+
+    const updateData: any = {
+      updatedAt: new Date(),
+    };
+
+    if (name !== undefined) updateData.name = name;
+    if (layout !== undefined) {
+      // Validate layout structure
+      if (!layout.pages || typeof layout.pages !== 'object') {
+        return res.status(400).json({ error: 'Invalid layout structure' });
+      }
+      updateData.layout = layout;
+    }
+    if (isDefault !== undefined) updateData.isDefault = isDefault;
+
+    const template = await prisma.visantTemplate.update({
+      where: { id },
+      data: updateData,
+    });
+
+    res.json({
+      template: {
+        ...template,
+        _id: template.id,
+      },
+    });
+  } catch (error: any) {
+    console.error('Error updating visant template:', error);
+    res.status(500).json({
+      error: 'Failed to update template',
+      message: error.message || 'An error occurred',
+    });
+  }
+});
+
+// DELETE /api/admin/visant-templates/:id - Deletar template
+router.delete('/:id', validateAdminPassword, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const existingTemplate = await prisma.visantTemplate.findUnique({
+      where: { id },
+    });
+
+    if (!existingTemplate) {
+      return res.status(404).json({ error: 'Template not found' });
+    }
+
+    // Prevent deleting default template
+    if (existingTemplate.isDefault) {
+      return res.status(400).json({ error: 'Cannot delete default template' });
+    }
+
+    // If deleting active template, deactivate it first
+    if (existingTemplate.isActive) {
+      await prisma.visantTemplate.updateMany({
+        where: { isActive: true },
+        data: { isActive: false },
+      });
+    }
+
+    await prisma.visantTemplate.delete({
+      where: { id },
+    });
+
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error('Error deleting visant template:', error);
+    res.status(500).json({
+      error: 'Failed to delete template',
+      message: error.message || 'An error occurred',
+    });
+  }
+});
+
+// POST /api/admin/visant-templates/:id/activate - Ativar template
+router.post('/:id/activate', validateAdminPassword, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const template = await prisma.visantTemplate.findUnique({
+      where: { id },
+    });
+
+    if (!template) {
+      return res.status(404).json({ error: 'Template not found' });
+    }
+
+    // Deactivate all other templates
+    await prisma.visantTemplate.updateMany({
+      where: { isActive: true },
+      data: { isActive: false },
+    });
+
+    // Activate this template
+    const activatedTemplate = await prisma.visantTemplate.update({
+      where: { id },
+      data: { isActive: true },
+    });
+
+    res.json({
+      template: {
+        ...activatedTemplate,
+        _id: activatedTemplate.id,
+      },
+    });
+  } catch (error: any) {
+    console.error('Error activating visant template:', error);
+    res.status(500).json({
+      error: 'Failed to activate template',
+      message: error.message || 'An error occurred',
+    });
+  }
+});
+
+export default router;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

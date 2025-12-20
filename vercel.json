@@ -1,0 +1,37 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "functions": {
+    "api/index.ts": {
+      "maxDuration": 60,
+      "memory": 1024
+    },
+    "api/payments/webhook.ts": {
+      "maxDuration": 30,
+      "memory": 1024
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/payments/webhook",
+      "destination": "/api/payments/webhook"
+    },
+    {
+      "source": "/api/resend/webhook",
+      "destination": "/api/resend/webhook"
+    },
+    {
+      "source": "/api/liveblocks/webhook",
+      "destination": "/api/liveblocks/webhook"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

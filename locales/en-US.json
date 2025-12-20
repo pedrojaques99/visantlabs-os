@@ -1,0 +1,2690 @@
+{
+  "branding": {
+    "loadingProject": "Loading project...",
+    "seoTitle": "Branding Machine with AI",
+    "seoDescription": "Create complete branding strategies with artificial intelligence. Generate professional visual identities step by step.",
+    "seoKeywords": "branding machine, AI branding, visual identity, brand strategy, brand design",
+    "myBrandings": {
+      "seoTitle": "My Brandings",
+      "seoDescription": "Manage your branding projects."
+    }
+  },
+  "apps": {
+    "title": "Apps",
+    "subtitle": "Choose an app to get started",
+    "seoTitle": "Creative Apps",
+    "seoDescription": "Choose from our creative tools: Mockup Machine, Branding Machine, Budget Machine and Canvas Editor.",
+    "seoKeywords": "apps, applications, creative tools, mockup, branding, budget, canvas",
+    "mockupMachine": {
+      "name": "Mockup Machine",
+      "description": "Generate professional mockups with AI"
+    },
+    "brandingMachine": {
+      "name": "Branding Machine",
+      "description": "Create complete branding strategies"
+    },
+    "budgetMachine": {
+      "name": "Budget Machine",
+      "description": "Create and manage professional budgets"
+    },
+    "canvas": {
+      "name": "Canvas",
+      "description": "Visual flow-based image editor"
+    },
+    "home": "Home"
+  },
+  "common": {
+    "loading": "Loading...",
+    "verifyingAuth": "Verifying authentication...",
+    "cancel": "Cancel",
+    "back": "Back",
+    "close": "Close",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "ADD",
+    "submit": "Submit",
+    "processing": "Processing...",
+    "error": "Error",
+    "success": "Success",
+    "confirm": "Confirm",
+    "noImage": "No Image",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "yesterday": "Yesterday",
+    "uploadVideo": "Upload video",
+    "fullscreenPreview": "Fullscreen preview",
+    "shaderResult": "Shader result",
+    "authenticationRequired": "Authentication required",
+    "uploadFailed": "Upload failed",
+    "home": "Home",
+    "community": "Community",
+    "presets": "Presets",
+    "unsupportedFileType": "Unsupported file type. Please use JPG, PNG, WEBP, GIF, MP4, WEBM, OGG, MOV, or AVI.",
+    "unsupportedImageType": "Unsupported image type. Please use JPG, PNG, WEBP, or GIF.",
+    "unsupportedVideoType": "Unsupported video type. Please use MP4, WEBM, OGG, MOV, or AVI.",
+    "failedToUploadImage": "Failed to upload image",
+    "failedToUploadVideo": "Failed to upload video",
+    "unknownError": "Unknown error",
+    "decreaseColumns": "Decrease columns",
+    "increaseColumns": "Increase columns",
+    "imageTooLarge": "Image too large. Maximum size is {maxSize}MB.",
+    "videoTooLarge": "Video too large. Maximum size is {maxSize}MB.",
+    "imageUploadedSuccess": "Image uploaded successfully!",
+    "videoUploadedSuccess": "Video uploaded successfully!",
+    "uploadingVideo": "Uploading video to R2...",
+    "zoomOut": "Zoom Out (-)",
+    "zoomIn": "Zoom In (+)",
+    "rotate": "Rotate (R)",
+    "download": "Download",
+    "closeEsc": "Close (Esc)",
+    "resetView": "Reset view (0)",
+    "reset": "Reset",
+    "close": "Close",
+    "profile": "Profile",
+    "cover": "Cover",
+    "user": "User",
+    "reference": "Reference",
+    "viewFullscreen": "View fullscreen",
+    "downloadImage": "Download image",
+    "downloadVideo": "Download video",
+    "pleaseSelectVideoFile": "Please select a video file",
+    "videoFileSizeExceeds": "Video file size exceeds limit (50MB). Please use a smaller video.",
+    "failedToProcessVideo": "Failed to process uploaded video",
+    "failedToUploadPicture": "Failed to upload picture",
+    "checkoutCanceled": "Checkout was canceled",
+    "failedToSaveImage": "Failed to save image",
+    "profileUpdatedSuccess": "Profile updated successfully",
+    "failedToReloadProfile": "Failed to reload profile",
+    "dismissMessage": "Dismiss message"
+  },
+  "header": {
+    "pricing": "Pricing",
+    "join": "Join",
+    "register": "Register",
+    "createNewMockup": "Create Mockup",
+    "communityMockups": "Community Mockups"
+  },
+  "welcome": {
+    "title": "MOCKUP MACHINE®",
+    "version": "v1.0",
+    "uploadImage": "UPLOAD IMAGE",
+    "blankMockup": "BLANK MOCKUP",
+    "newBlankMockup": "",
+    "exploreMockups": "explore mockups",
+    "by": "by",
+    "brand": "visant labs®",
+    "pasteTip": "Tip: You can press ctrl+v to paste images"
+  },
+  "upload": {
+    "clickToUpload": "Click to upload, drag & drop, or paste",
+    "supportedFormats": "PNG, JPG, WEBP",
+    "dropImageHere": "Drop your image here",
+    "releaseToUpload": "Release to upload",
+    "processingImage": "Processing image...",
+    "pleaseWait": "Please wait",
+    "startBlankMockup": "Start with a Blank Mockup",
+    "blankMockupDescription": "Generate a scene without an input design.",
+    "unsupportedFileType": "Unsupported file type. Please upload a PNG, JPG, WEBP, or GIF.",
+    "imageTooLarge": "Image is too large ({size} MB). Maximum size is {max} MB. Please compress or use a smaller image.",
+    "couldNotProcess": "Could not process the file. Please try another image."
+  },
+  "tutorial": {
+    "createNewMockup": "Start by creating a new mockup",
+    "uploadImage": "Upload your design or logo",
+    "surpriseMe": "Click 'Surprise Me' for instant inspiration, or customize with categories and tags",
+    "categoriesHint": "You can also configure by selecting categories and tags",
+    "skip": "Skip",
+    "next": "Next",
+    "gotIt": "Got it!",
+    "title": "How to Use Mockup Machine®",
+    "subtitle": "Quick user journey guide",
+    "step1": {
+      "title": "1. Start your project",
+      "description": "Upload an image of your design. You can drag & drop or paste an image directly."
+    },
+    "step2": {
+      "title": "2. Choose your model",
+      "description": "Select between Mockup Machine® HD (fast, 1 credit) or Mockup Machine® 4K (high quality, 3-10 credits)."
+    },
+    "step3": {
+      "title": "3. Define design type",
+      "description": "Choose if it's a standalone logo or a full layout / design. This helps us better understand your project."
+    },
+    "step4": {
+      "title": "4. Describe your brand's personality",
+      "description": "Describe your brand's personality (e.g., minimalist, modern, luxury). Or add a custom style."
+    },
+    "step5": {
+      "title": "5. Choose the Mockup category",
+      "description": "Select where your design will be applied (e.g., business card, packaging, t-shirt). AI can also suggest categories based on your design."
+    },
+    "step6": {
+      "title": "6. Refine with advanced options (optional)",
+      "description": "Customize color palette, location, camera angle, lighting, and visual effects. Add negative and additional prompts for more control."
+    },
+    "step7": {
+      "title": "7. Configure output",
+      "description": "Set the number of images, aspect ratio (auto for HD), and options like contextual text or human interaction."
+    },
+    "step8": {
+      "title": "8. Generate prompt",
+      "description": "Click 'GENERATE PROMPT' to let AI create an optimized description of your mockup, or write your own prompt."
+    },
+    "step9": {
+      "title": "9. Generate results",
+      "description": "Review the generated prompt, adjust if needed, and click 'GENERATE OUTPUTS' to create your professional mockups."
+    },
+    "tip": "💡 Tip: Use 'Me Surpreenda!' to get instant inspiration!",
+    "quickStart": "Quick Start",
+    "fullGuide": "Full Guide",
+    "newStep1": {
+      "description": "Send your logo or layout art"
+    },
+    "newStep2": {
+      "description": "Select the brand category"
+    },
+    "newStep3": {
+      "description": "Create your perfect mockup, configuring lighting, environment, colors and visual aspects to achieve accurate results."
+    },
+    "newStep4": {
+      "description": "Press the button to like the best results and download to not lose the generations."
+    },
+    "videoStep": {
+      "description": "Watch the tutorial video to get started with Mockup Machine®"
+    },
+    "close": "Close",
+    "tutorialVideo": "Tutorial video",
+    "step": "Step",
+    "createMockup": "Create Mockup"
+  },
+  "mockup": {
+    "input": "INPUT_",
+    "referenceImagesLabel": "// Reference Images ({count}/3)",
+    "loadingImage": "Loading image...",
+    "referenceImageAlt": "Reference image",
+    "uploadedDesignAlt": "Uploaded design",
+    "clickToChange": "Click to change",
+    "clickToChangeReference": "Click to change reference",
+    "referenceOnly": "Reference only",
+    "clickToUploadReference": "Click to upload reference",
+    "removeImage": "Remove image",
+    "addReferenceImage": "Add reference image ({count}/3)",
+    "imageFormatTip": "Tip: Generated images use the same size and aspect ratio as the uploaded image. Try uploading an image with your desired format.",
+    "maxReferenceImages": "Maximum 3 reference images reached",
+    "referenceImages": "Reference Images",
+    "addImage": "Add Image",
+    "addMore": "Add More",
+    "designType": "1. DESIGN_TYPE_",
+    "designTypeComment": "// Is this a standalone logo or a full layout?",
+    "itsALogo": "It's a Logo",
+    "itsALayout": "It's a Layout",
+    "blankMockup": "Blank Mockup",
+    "modelSelection": "0. MODEL_SELECTION_",
+    "modelSelectionDescription": "// Choose your AI model for generation.",
+    "selectModel": "Select model",
+    "models": {
+      "gemini-2.5-flash-image": {
+        "emoji": "⛏️",
+        "name": "Mockup Machine® HD",
+        "version": "HD",
+        "features": [
+          "Fast generation",
+          "1 credit per image",
+          "Auto aspect ratio"
+        ]
+      },
+      "gemini-3-pro-image-preview": {
+        "emoji": "⛏️",
+        "name": "Mockup Machine® 4K",
+        "version": "4K",
+        "features": [
+          "4K resolution",
+          "Advanced tools",
+          "Higher quality"
+        ],
+        "credits": "3-10 credits"
+      }
+    },
+    "surpriseMe": "Surprise Me!",
+    "surpriseMeTooltip": "Randomly select branding, categories, and styles for quick inspiration!",
+    "autoGenerate": "Auto generate",
+    "autoGenerateTooltip": "Skip prompt generation and directly generate outputs (default 2 outputs)",
+    "newAngles": "New Angles",
+    "newEnvironments": "New Environments",
+    "regenerating": "Regenerating...",
+    "branding": "2. BRANDING_",
+    "brandingComment": "// Select tags that describe your brand's style (max 3).",
+    "orAddCustomStyle": "Or add a custom style...",
+    "customTagLabel": "Custom",
+    "customStylePlaceholder": "Enter style...",
+    "categories": "3. CATEGORIES_",
+    "categoriesComment": "// Choose one category to apply your design.",
+    "aiSuggested": "// AI Suggested:",
+    "allCategories": "// ALL_CATEGORIES",
+    "orAddCustomCategory": "Or add a custom category...",
+    "customCategoryLabel": "Custom",
+    "customCategoryPlaceholder": "Enter category...",
+    "categoryGroups": {
+      "stationery": "stationery",
+      "packaging": "packaging",
+      "apparel": "apparel",
+      "devices": "devices",
+      "signage": "signage",
+      "drinkware": "drinkware",
+      "art": "art",
+      "other": "other"
+    },
+    "refine": "4. REFINE_",
+    "advancedOptions": "ADVANCED_OPTIONS_",
+    "colorPalette": "// COLOR PALETTE (HEX CODES)",
+    "location": "// LOCATION",
+    "cameraAngle": "// CAMERA_ANGLE",
+    "lightingMood": "// LIGHTING_MOOD",
+    "visualEffects": "// VISUAL_EFFECTS",
+    "negativePrompt": "// NEGATIVE PROMPT (AVOID...)",
+    "negativePromptPlaceholder": "e.g., text, people, watermarks, blurry",
+    "additionalPrompt": "// ADDITIONAL PROMPT (MUST HAVE...)",
+    "additionalPromptPlaceholder": "e.g., on a wooden table, soft shadows",
+    "outputConfig": "5. OUTPUT_CONFIG_",
+    "numberOfImages": "// NUMBER OF IMAGES",
+    "resolution4kOnly": "// RESOLUTION (Mockup Machine® 4K Only)",
+    "generateContextualText": "Generate contextual text",
+    "includeHumanInteraction": "Include human interaction",
+    "aspectRatio": "// ASPECT RATIO",
+    "aspectRatioTitle": "ASPECT_RATIO_",
+    "autoAspectRatioTitle": "AUTO_ASPECT_RATIO_",
+    "autoAspectRatioDescription": "// Aspect ratio is automatically determined by input image.",
+    "aspectRatioAutoTooltip": "Auto-determined for Mockup Machine® HD",
+    "aspectRatioValue": "Aspect ratio {ratio}",
+    "otherAspectRatio": "OTHER",
+    "prompt": "// PROMPT_",
+    "suggest": "SUGGEST",
+    "suggestTooltip": "Suggest prompt variations",
+    "regenerate": "REGENERATE",
+    "regenerateTooltip": "Regenerate outputs using current prompt",
+    "simplify": "SIMPLIFY",
+    "simplifyTooltip": "Simplify to a basic prompt",
+    "generateSmartPrompt": "GENERATE SMART PROMPT",
+    "generateSmartPromptTooltip": "Generate a smart prompt",
+    "download": "Download",
+    "redrawTooltip": "Re-draw (Generate a new variation)",
+    "reimagineTooltip": "Re-imagine with AI",
+    "insufficientCredits": "Insufficient credits to generate",
+    "aiSuggestions": "// AI Suggestions:",
+    "promptPlaceholder": "Describe the mockup you want to create...",
+    "generatingPrompt": "GENERATING PROMPT...",
+    "generatingOutputs": "GENERATING OUTPUTS...",
+    "generatingPromptShort": "PROMPT...",
+    "generatingOutputsShort": "GENERATING",
+    "outputsShort": "OUTPUTS",
+    "promptShort": "PROMPT",
+    "promptStatusMessages": [
+      "understanding your design",
+      "searching for the best visual solutions",
+      "thinking as a senior graphic designer"
+    ],
+    "skeletonStatusMessages": [
+      "rendering concepts...",
+      "designing compositions...",
+      "searching visual balance...",
+      "polishing details...",
+      "almost there..."
+    ],
+    "generatePrompt": "GENERATE PROMPT",
+    "generateOutputs": "GENERATE OUTPUTS",
+    "generatePromptShortcut": "Press Ctrl/Cmd + Enter to generate a prompt",
+    "generateOutputsShortcut": "Press Ctrl/Cmd + Enter to generate outputs",
+    "creditUnitSingular": "credit",
+    "creditUnitPlural": "credits",
+    "clearAll": "CLEAR ALL",
+    "creditsWillBeUsed": "{count} credit{plural} will be used",
+    "creditsRequired": "Credits Required",
+    "startOver": "Start Over",
+    "showSidebar": "Show sidebar",
+    "closeSidebar": "Close sidebar"
+  },
+  "pricing": {
+    "title": "PRICING",
+    "subtitle": "Choose the plan that works for you",
+    "free": "FREE",
+    "premium": "PREMIUM",
+    "popular": "POPULAR",
+    "perMonth": "/month",
+    "currentPlan": "CURRENT PLAN",
+    "subscribe": "SUBSCRIBE",
+    "freePlanFeatures": {
+      "feature1": "3 mockup generations per month",
+      "feature2": "Basic features",
+      "feature3": "No credit card required"
+    },
+    "premiumPlanFeatures": {
+      "feature1": "{credits} mockup generations per month",
+      "feature2": "Unlimited prompts",
+      "feature3": "All premium features",
+      "feature4": "Cancel anytime"
+    },
+    "allPlansInclude": "All plans include access to our mockup generation tools",
+    "creditsPerInterval": "{credits} credits per {interval}",
+    "loading": "Loading...",
+    "tabs": {
+      "subscriptions": "Subscriptions",
+      "credits": "Credits"
+    },
+    "creditsSubtitle": "Purchase credit packages without a subscription",
+    "creditsLabel": "Credits",
+    "buyCredits": "Buy",
+    "creditsNote": "Credits never expire and can be used at any time",
+    "oneTimePayment": "One-time payment"
+  },
+  "subscription": {
+    "upgradeToPremium": "UPGRADE TO PREMIUM",
+    "upgradeTo": "UPGRADE TO {tier}",
+    "creditsPerInterval": "{credits} credits per {interval}",
+    "mockupGenerationsPerInterval": "{credits} mockup generations per {interval}",
+    "tierFeatures": "{tier} tier features",
+    "cancelAnytime": "Cancel anytime",
+    "subscribeNow": "Subscribe Now",
+    "subscribe": "Subscribe",
+    "freeGenerationsRemaining": "Free generations remaining: {remaining} / 3",
+    "subscribeForUnlimited": "Subscribe for unlimited generations",
+    "upgrade": "Upgrade",
+    "allFreeGenerationsUsed": "All free generations used ({used} / 3)",
+    "subscribeToContinue": "Subscribe to continue generating mockups",
+    "paymentCanceled": "Payment canceled",
+    "failedToLoad": "Failed to load subscription information",
+    "loadingPlanInfo": "Loading plan information...",
+    "checkoutCanceled": "Checkout was canceled",
+    "subscriptionActivated": "Subscription activated! Welcome to Premium! 🎉",
+    "orBuyCredits": "Or buy credits instead",
+    "orSubscribe": "Or subscribe to premium"
+  },
+  "subscriptionStatus": {
+    "free": "Free",
+    "premium": "Premium",
+    "pro": "Pro",
+    "manage": "Manage",
+    "manageSubscription": "Manage subscription",
+    "credits": "{remaining}/{total} credits",
+    "renews": "Renews {date}",
+    "resets": "Resets {date}",
+    "failedToOpen": "Failed to open subscription management. Please try again."
+  },
+  "credits": {
+    "title": "CREDITS",
+    "loading": "Loading...",
+    "available": "Available",
+    "used": "Used",
+    "monthlyUsage": "Monthly Usage",
+    "manualCredits": "Manual Credits",
+    "freeGenerationsUsed": "Free Generations Used",
+    "renews": "Renews {date}",
+    "resets": "Resets {date}",
+    "buyCredits": "Buy",
+    "notificationUsed": "{count} credit{plural} used",
+    "notificationUsedAdmin": "No credits deducted (administrator)",
+    "notificationRemaining": "{remaining} credit{plural} remaining"
+  },
+  "creditsPackages": {
+    "title": "BUY CREDITS",
+    "subtitle": "Choose a credit package that works for you",
+    "credits": "Credits",
+    "buy": "Buy",
+    "note": "Credits never expire and can be used at any time",
+    "purchaseSuccess": "Credits added successfully!"
+  },
+  "thankYou": {
+    "title": "Thank You for Subscribing!",
+    "subtitle": "Your subscription has been successfully activated",
+    "subscriptionActive": "Premium Subscription Active",
+    "whatsNext": "What you can do now:",
+    "benefit1": "{credits} mockup generations per month",
+    "benefit2": "Unlimited prompts for your creations",
+    "benefit3": "Access to all premium features",
+    "creditsAvailable": "Credits available",
+    "getStarted": "Start Creating",
+    "support": "Need help? Contact us."
+  },
+  "creditRechargeSuccess": {
+    "title": "Credits Added Successfully!",
+    "subtitle": "Your credits have been added to your account",
+    "creditsPurchased": "Credits purchased",
+    "totalCredits": "Total credits available",
+    "getStarted": "Start Creating",
+    "support": "Need help? Contact us.",
+    "verifying": "Verifying credits...",
+    "loading": "Loading..."
+  },
+  "auth": {
+    "signIn": "SIGN IN",
+    "signUp": "SIGN UP",
+    "signInWithEmail": "Sign in with Email",
+    "email": "Email",
+    "emailPlaceholder": "your@email.com",
+    "password": "Password",
+    "passwordPlaceholder": "••••••",
+    "name": "Name (optional)",
+    "namePlaceholder": "Your name",
+    "minimumCharacters": "Minimum 6 characters",
+    "signingIn": "Signing In...",
+    "creatingAccount": "Creating Account...",
+    "alreadyHaveAccount": "Already have an account? Sign in",
+    "dontHaveAccount": "Don't have an account? Sign up",
+    "logout": "Logout",
+    "authenticationFailed": "Authentication failed. Please try again.",
+    "authError": "Authentication error. Please sign in again.",
+    "signInRequired": "Please sign in to generate mockups.",
+    "backendNotRunning": "Backend não está rodando! Por favor, inicie o servidor com: npm run dev:server ou npm run dev:all",
+    "forgotPassword": "Forgot Password",
+    "resetPassword": "Reset Password",
+    "sendResetLink": "Send Reset Link",
+    "resetEmailSent": "Password reset email sent!",
+    "resetEmailSentMessage": "If an account with that email exists, a password reset link has been sent.",
+    "checkEmailInstructions": "Check your inbox and follow the instructions to reset your password.",
+    "forgotPasswordInstructions": "Enter your email and we'll send you a link to reset your password.",
+    "backToLogin": "Back to Login",
+    "sending": "Sending...",
+    "enterNewPassword": "Enter your new password below",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm Password",
+    "confirmPasswordPlaceholder": "Confirm new password",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "passwordMinLength": "Password must be at least 6 characters",
+    "passwordResetSuccess": "Password reset successfully!",
+    "redirectingToLogin": "Redirecting to login...",
+    "invalidResetLink": "Invalid Reset Link",
+    "invalidResetLinkMessage": "This password reset link is invalid or has expired. Please request a new password reset.",
+    "invalidOrExpiredToken": "Invalid or expired token. Please request a new password reset.",
+    "resetting": "Resetting...",
+    "backToHome": "Back to Home",
+    "signInWithGoogle": "Google",
+    "signingInWithGoogle": "Connecting...",
+    "accountCreatedSuccess": "Account created successfully!",
+    "signedInSuccess": "Signed in successfully!",
+    "failedToConnectGoogle": "Failed to connect with Google. Please try again.",
+    "or": "or",
+    "profile": "Profile",
+    "userMenu": "User menu",
+    "availableCredits": "Available credits: {count}. Click to view details.",
+    "creditsAvailable": "{count} credits available",
+    "completeCaptcha": "Please complete the CAPTCHA verification.",
+    "tooManyAttempts": "Too many attempts. Please try again later.",
+    "community": "Community",
+    "configuration": "Configuration",
+    "bySigningUp": "By signing up, you agree to our",
+    "termsOfService": "Terms of Service",
+    "and": "and",
+    "privacyPolicy": "Privacy Policy"
+  },
+  "configuration": {
+    "title": "Configuration",
+    "geminiApiKey": "Gemini API Key",
+    "apiKeyPlaceholder": "Enter your Gemini API key",
+    "save": "Save",
+    "delete": "Delete Key",
+    "deleteConfirm": "Are you sure you want to delete your API key?",
+    "saved": "API key saved successfully",
+    "deleted": "API key deleted successfully",
+    "error": "Failed to save API key",
+    "getApiKey": "Get your API key from Google AI Studio",
+    "policyLink": "Read security policy",
+    "warning": "Your API key is encrypted and stored securely. Only you can access it.",
+    "info": "Using your own API key allows you to use your own quota and credits from Google."
+  },
+  "errors": {
+    "completeSteps": "Please complete all steps before generating.",
+    "subscriptionRequired": "Subscription required. Please upgrade to continue generating mockups.",
+    "authenticationRequired": "Please sign in to generate mockups.",
+    "authenticationError": "Authentication error. Please sign in again.",
+    "generationError": "An error occurred during generation. Please try again or adjust your prompt.",
+    "promptGenerationTimeout": "Prompt generation timed out. Please try again.",
+    "promptGenerationFailed": "Prompt generation failed. Please try again.",
+    "rateLimit": "The AI is very popular right now! Please wait about 10 minutes and try again. This helps us ensure fair access for everyone. 🤖",
+    "aiBusy": "The AI is a bit busy. We've switched to a simpler prompt that you can edit manually, or try regenerating.",
+    "couldNotGenerateSuggestions": "The AI couldn't generate suggestions right now. Please choose from the list below.",
+    "couldNotBrainstorm": "The AI couldn't brainstorm new ideas. Please try again in a moment.",
+    "needCredits": "You need {needed} credit{plural} but only have {remaining} remaining. Credits will renew on {date}.",
+    "needGenerations": "You need {needed} generation{plural} but only have {remaining} remaining. Please subscribe to continue.",
+    "nextBillingCycle": "your next billing cycle",
+    "unableToProcessImage": "Unable to process the uploaded image. Please try a different image or check if the file is corrupted.",
+    "invalidImageFormat": "Invalid image format. Please upload a valid PNG, JPG, or WEBP image.",
+    "failedToStartCheckout": "Failed to start checkout. Please try again.",
+    "paymentLinkNotConfigured": "Payment link not configured for this currency",
+    "storageLimitExceeded": "Storage limit exceeded. You are using {used} of {limit}. This file ({fileSize}) would exceed your limit.",
+    "storageLimitExceededMB": "Storage limit exceeded. You are using {used} MB of {limit} MB. This file ({fileSize} MB) would exceed your limit.",
+    "storageLimitExceededGB": "Storage limit exceeded. You are using {used} MB of {limit} GB. This file ({fileSize} MB) would exceed your limit.",
+    "storageLimitExceededDescription": "Please delete some files or upgrade your plan to continue uploading."
+  },
+  "tags": {
+    "businessCard": "Business Card",
+    "letterhead": "Letterhead",
+    "bookCover": "Book Cover",
+    "magazineCover": "Magazine Cover",
+    "poster": "Poster",
+    "flyer": "Flyer",
+    "boxPackaging": "Box Packaging",
+    "bagPackaging": "Bag Packaging",
+    "pouchPackaging": "Pouch Packaging",
+    "bottleLabel": "Bottle Label",
+    "canLabel": "Can Label",
+    "tshirt": "T-shirt",
+    "hoodie": "Hoodie",
+    "cap": "Cap",
+    "hat": "Hat",
+    "toteBag": "Tote Bag",
+    "phoneScreen": "Phone Screen",
+    "laptopScreen": "Laptop Screen",
+    "websiteUI": "Website UI",
+    "billboard": "Billboard",
+    "billCanvas": "BillCanvas",
+    "signage": "Signage",
+    "mug": "Mug",
+    "cup": "Cup",
+    "wallArt": "Wall Art",
+    "framedArt": "Framed Art",
+    "thickCardPaper": "Thick card paper",
+    "leatherLogoEngrave": "Leather logo engrave",
+    "signageOnWall": "Signage on concrete/wooden wall",
+    "floatingBusinessCard": "Floating business card",
+    "deviceScreen": "Device screen",
+    "branding": {
+      "agriculture": "Agriculture",
+      "casual": "Casual",
+      "corporate": "Corporate",
+      "creative": "Creative",
+      "cryptoWeb3": "Crypto/Web3",
+      "ecofriendly": "Eco-friendly",
+      "energetic": "Energetic",
+      "exclusive": "Exclusive",
+      "fashion": "Fashion",
+      "feminine": "Feminine",
+      "food": "Food",
+      "friendly": "Friendly",
+      "handmade": "Handmade",
+      "healthWellness": "Health & Wellness",
+      "industrial": "Industrial",
+      "kidsBaby": "Kids & Baby",
+      "luxury": "Luxury",
+      "minimalist": "Minimalist",
+      "modern": "Modern",
+      "playful": "Playful",
+      "sport": "Sport",
+      "tech": "Tech",
+      "travelHospitality": "Travel & Hospitality",
+      "vintage": "Vintage",
+      "elegant": "Elegant"
+    },
+    "location": {
+      "tokyo": "Tokyo",
+      "newYork": "New York",
+      "brazil": "Brazil",
+      "paris": "Paris",
+      "london": "London",
+      "nordic": "Nordic",
+      "californiaCoast": "California Coast",
+      "minimalistStudio": "Minimalist Studio",
+      "natureLandscape": "Nature landscape",
+      "urbanCity": "Urban City",
+      "workspace": "Workspace",
+      "grassLawn": "Grass/Lawn",
+      "concrete": "Concrete",
+      "woodenSlatWall": "Wooden Slat Wall",
+      "woodenTable": "Wooden Table",
+      "glassEnvironment": "Glass Environment",
+      "modernOffice": "Modern Office"
+    },
+    "angle": {
+      "eyeLevel": "Eye-Level",
+      "highAngle": "High Angle",
+      "lowAngle": "Low Angle",
+      "topDownFlatLay": "Top-Down (Flat Lay)",
+      "dutchAngle": "Dutch Angle",
+      "wormsEyeView": "Worm's-Eye View"
+    },
+    "lighting": {
+      "studioLighting": "Studio Lighting",
+      "goldenHour": "Golden Hour",
+      "blueHour": "Blue Hour",
+      "overcast": "Overcast",
+      "directSunlight": "Direct Sunlight",
+      "nightScene": "Night Scene",
+      "cinematic": "Cinematic",
+      "shadowOverlay": "Shadow overlay"
+    },
+    "effect": {
+      "bokeh": "Bokeh",
+      "motionBlur": "Motion Blur",
+      "vintageFilm": "Vintage Film",
+      "monochrome": "Monochrome",
+      "longExposure": "Long Exposure",
+      "lensFlare": "Lens Flare",
+      "highContrast": "High Contrast",
+      "fisheyeLens": "Fish-eye lens",
+      "halftone": "Halftone"
+    }
+  },
+  "messages": {
+    "surpriseSelectionGenerated": "Surprise selection generated! 🎲",
+    "newAngleGenerated": "New angle generated! 📷",
+    "newEnvironmentGenerated": "New environment generated! 🌍",
+    "promptGeneratedSuccessfully": "Prompt generated successfully!",
+    "rateLimit": "The AI is very popular right now! Please wait about 10 minutes and try again. This helps us ensure fair access for everyone. 🤖",
+    "aiBusy": "The AI is a bit busy. We've switched to a simpler prompt that you can edit manually, or try regenerating.",
+    "aiCouldntGenerateSuggestions": "The AI couldn't generate suggestions right now. Please choose from the list below.",
+    "aiCouldntBrainstorm": "The AI couldn't brainstorm new ideas. Please try again in a moment.",
+    "completeSteps": "Please complete all steps before generating.",
+    "subscriptionRequired": "Subscription required. Please upgrade to continue generating mockups.",
+    "authenticationRequired": "Please sign in to generate mockups.",
+    "authenticationError": "Authentication error. Please sign in again.",
+    "generationError": "An error occurred during generation. Please try again or adjust your prompt.",
+    "promptGenerationTimeout": "Prompt generation timed out. Please try again.",
+    "promptGenerationFailed": "Prompt generation failed. Please try again.",
+    "switchedToHD": "Switched to Mockup Machine® HD. Resolution control disabled.",
+    "switchedTo4K": "Switched to Mockup Machine® 4K. Resolution control enabled.",
+    "modelChanged": "Model changed. You may need to regenerate the prompt.",
+    "tagsChanged": "Tags were changed. Please regenerate the prompt to match your current selections.",
+    "modelRequiresCredits": "Mockup Machine® 4K requires at least {minCredits} credits. You have {remaining}.",
+    "selectModelBeforeGenerating": "Please select a model before generating.",
+    "failedToProcessReferenceImage": "Failed to process reference image.",
+    "failedToSaveMockup": "Failed to save mockup.",
+    "needCredits": "You need {creditsNeeded} credit{plural} to generate. Please buy credits to continue.",
+    "needCreditsButHave": "You need {creditsNeeded} credit{plural} but only have {remaining} remaining{pluralRemaining}. Please buy credits to continue.",
+    "needCreditsSubscription": "You need {creditsNeeded} credit{plural} but only have {remaining} remaining{pluralRemaining}. Credits will renew on {resetDate}.",
+    "savedOutputs": "Saved {count} output{plural} to your collection!",
+    "failedToSaveOutputs": "Failed to save some outputs. Please try again.",
+    "outputRemoved": "Output removed from display",
+    "mockupReimagined": "Mockup reimagined successfully!",
+    "yourNextBillingCycle": "your next billing cycle",
+    "tryAgainIn10Minutes": "Try again in about 10 minutes. This helps ensure fair access for everyone.",
+    "modelOverloaded": "The AI model is currently overloaded.",
+    "modelOverloadedSuggestion": "This is a temporary issue. Your credits have not been deducted. Please try again in a few minutes.",
+    "serviceUnavailable": "The AI service is temporarily unavailable.",
+    "serviceUnavailableSuggestion": "The service is experiencing high load. Your credits have not been deducted. Please try again in a few minutes.",
+    "requestTimeout": "Request timed out.",
+    "requestTimeoutSuggestion": "The AI service is taking longer than expected. This may be due to high load. Your credits have not been deducted. Please try again.",
+    "unableToProcessImage": "Unable to process the uploaded image.",
+    "unableToProcessImageSuggestion": "Please try a different image format (PNG, JPG, or WEBP) or check if the file is corrupted.",
+    "invalidImageFormat": "Invalid image format.",
+    "invalidImageFormatSuggestion": "Please upload a valid PNG, JPG, or WEBP image. Maximum file size is 10MB.",
+    "networkError": "Network error occurred.",
+    "networkErrorSuggestion": "Please check your internet connection and try again.",
+    "unsavedOutputsTitle": "Unsaved Outputs",
+    "unsavedOutputsMessage": "You have {count} unsaved output{plural}. If you discard, you will lose them permanently. Are you sure?",
+    "resetAnyway": "Discard",
+    "saveAll": "Save All",
+    "leave": "Cancel",
+    "dontCare": "I don't care",
+    "unsavedOutputRemoveMessage": "This output is not saved. If you remove it, you will lose it permanently. Are you sure?"
+  },
+  "privacy": {
+    "title": "Privacy Policy — Visant Labs Mockup Machine",
+    "lastUpdated": "Last updated: {date}",
+    "backToHome": "Back to Home",
+    "overview": "Visant Labs is committed to protecting your privacy. This Policy explains how we collect, use, and protect your information when using the <strong>Mockup Machine</strong>, our AI-powered image generation and editing platform.",
+    "sections": {
+      "informationWeCollect": {
+        "title": "1. INFORMATION WE COLLECT",
+        "accountInfo": {
+          "title": "1.1 Account Information",
+          "items": [
+            "Name",
+            "Email address",
+            "User ID",
+            "Profile picture (when provided)",
+            "Authentication data via providers (Google/Apple/Email)"
+          ]
+        },
+        "paymentInfo": {
+          "title": "1.2 Payment Information",
+          "items": [
+            "Subscription data (active plan, renewals, history)",
+            "Billing identifiers via third-party providers (Pagar.me, PagSeguro, Stripe, or others)",
+            "We never store complete card data."
+          ]
+        },
+        "usageData": {
+          "title": "1.3 Usage Data",
+          "items": [
+            "Number of images generated",
+            "Prompts submitted by users",
+            "Platform usage time",
+            "Error logs for maintenance"
+          ]
+        },
+        "technicalData": {
+          "title": "1.4 Technical Data",
+          "items": [
+            "IP address",
+            "Device type",
+            "Browser",
+            "Language preferences"
+          ]
+        },
+        "googleAuth": {
+          "title": "1.5 Google Authentication Data",
+          "permissionsIntro": "When you choose to sign in with Google, we request the following permissions (OAuth 2.0 scopes):",
+          "permissions": [
+            "email — Access to your Google account email address",
+            "profile — Access to your basic profile information"
+          ],
+          "dataIntro": "The specific data we collect from your Google account includes:",
+          "dataItems": [
+            "Email address — Used as your primary account identifier",
+            "Full name — Used to personalize your profile",
+            "Profile picture — Used as your account avatar (optional)",
+            "Google User ID (sub) — Used for authentication and account linking"
+          ],
+          "important": "Important: We do not access your Google contacts, calendar, drive files, or any other Google services beyond the basic profile information listed above."
+        },
+        "apiKeys": {
+          "title": "1.6 API Keys",
+          "intro": "If you choose to use your own Gemini API key with our service, we collect and store:",
+          "items": [
+            "Your encrypted Gemini API key — Stored securely using AES-256-GCM encryption",
+            "API key metadata — Associated with your account for usage tracking"
+          ],
+          "important": "Important: Providing your own API key is completely optional. If you choose to provide one, it will be encrypted immediately upon saving and never stored in plaintext."
+        }
+      },
+      "howWeUseData": {
+        "title": "2. HOW WE USE YOUR DATA",
+        "intro": "We use your data to:",
+        "items": [
+          "Operate and improve the Mockup Machine",
+          "Process subscriptions and payments",
+          "Monitor plan usage limits",
+          "Personalize your experience",
+          "Prevent abusive or fraudulent use",
+          "Comply with legal obligations"
+        ],
+        "googleAuth": {
+          "title": "2.1 Use of Google Authentication Data",
+          "intro": "We use the data collected from your Google account exclusively for:",
+          "items": [
+            "Creating and managing your Mockup Machine account",
+            "Authenticating your identity when you sign in",
+            "Linking your Google account to your existing account (if applicable)",
+            "Pre-filling your profile information (name and profile picture)",
+            "Preventing duplicate accounts and fraudulent activity"
+          ],
+          "note": "We do not use your Google data for advertising, marketing, or any purpose other than account management and authentication. Your Google credentials are never stored by us; we only store the profile information provided by Google's OAuth service."
+        },
+        "aiTraining": {
+          "title": "2.2 Use for AI Training",
+          "note": "Prompts and generated images <strong>are not used</strong> to train Visant Labs' internal models, unless you provide explicit consent."
+        },
+        "apiKeys": {
+          "title": "2.3 Use of API Keys",
+          "intro": "If you provide your own Gemini API key, we use it exclusively for:",
+          "items": [
+            "Processing your AI image generation requests",
+            "Using your Google Cloud quota and credits instead of our system's default key",
+            "Prioritizing your key over the default key for your account's requests"
+          ],
+          "important": "Important: We never use your API key for any purpose other than processing your requests. All API calls made with your key are billed to your Google Cloud account, not ours. We never share your API keys with third parties or use them for any other purpose."
+        }
+      },
+      "dataSharing": {
+        "title": "3. DATA SHARING",
+        "intro": "We may share information with:",
+        "serviceProviders": {
+          "title": "3.1 Service Providers",
+          "items": [
+            "Third-party AI image generation APIs",
+            "Payment providers",
+            "Hosting and storage services",
+            "Authentication services (MongoDBAuth)",
+            "Analytics services (Google Analytics) — for website usage statistics only"
+          ],
+          "note": "We share only the minimum necessary for service operation. Analytics data shared with Google Analytics is anonymized and does not include personally identifiable information."
+        },
+        "googleData": {
+          "title": "3.2 Google Data Sharing",
+          "intro": "We do not share your Google account data with any third parties. The data we collect from Google (email, name, profile picture, and Google User ID) is:",
+          "items": [
+            "Stored securely in our own database",
+            "Used exclusively for authentication and account management",
+            "Not sold, rented, or shared with advertisers or marketing partners",
+            "Not used for any purpose beyond what is necessary to operate the Mockup Machine service"
+          ],
+          "exception": "The only exception is when required by law enforcement or court order (see section 3.3)."
+        },
+        "legalObligations": {
+          "title": "3.3 Legal Obligations",
+          "note": "We may disclose information (including Google authentication data) if required by law or court order."
+        },
+        "apiKeySharing": {
+          "title": "3.4 API Key Sharing",
+          "intro": "We do not share your API keys with any third parties. Your API keys are:",
+          "items": [
+            "Stored securely in our encrypted database",
+            "Used exclusively for processing your requests",
+            "Never sold, rented, or shared with advertisers, marketing partners, or service providers",
+            "Never exposed in API responses, logs, or any other output",
+            "Only decrypted in memory when needed for API calls, then immediately discarded"
+          ],
+          "exception": "The only exception is when required by law enforcement or court order (see section 3.3)."
+        }
+      },
+      "storageAndSecurity": {
+        "title": "4. STORAGE AND SECURITY",
+        "intro": "All data, including Google authentication data, is protected using industry-standard security measures:",
+        "items": [
+          "Your data is stored on secure servers with encryption at rest and in transit.",
+          "We use MongoDB, DigitalOcean, and Vercel as our primary infrastructure.",
+          "We apply reinforced authentication, RLS, and security best practices.",
+          "OAuth tokens are handled securely and never stored in plain text.",
+          "All database connections use encrypted channels (TLS/SSL)."
+        ],
+        "googleAuth": {
+          "title": "4.1 Google Authentication Security",
+          "items": [
+            "We use OAuth 2.0, the industry-standard authentication protocol.",
+            "Google access tokens are never stored in our database.",
+            "We only store the Google User ID (sub) and profile information provided by Google after successful authentication.",
+            "Your Google password is never accessible to us and remains secure with Google.",
+            "You can revoke our access to your Google account at any time through your Google account settings."
+          ]
+        },
+        "apiKeySecurity": {
+          "title": "4.2 API Key Security",
+          "intro": "We implement military-grade security measures to protect your API keys:",
+          "items": [
+            "Encryption: We use AES-256-GCM encryption, a military-grade encryption standard, to encrypt your API keys before storage",
+            "Master Key: Encryption keys are stored securely in environment variables, never in code or version control",
+            "No Plaintext Storage: Your API key is never stored in plaintext in our database, logs, or anywhere else",
+            "In-Memory Decryption: API keys are only decrypted in memory when needed for API calls, then immediately discarded",
+            "User Isolation: Each user can only access their own encrypted API key",
+            "Authentication Required: Only authenticated users can save or access their own API keys",
+            "No Exposure: We never return decrypted API keys in API responses — we only confirm successful operations",
+            "Audit Trail: API key operations (save/delete) are logged for security auditing"
+          ],
+          "responsibilities": "Your Responsibilities: Keep your API key secure, never share it with others, and consider rotating it periodically. Monitor your Google Cloud Console for unexpected usage or charges. Configure API key restrictions in Google AI Studio to limit where it can be used."
+        }
+      },
+      "yourRights": {
+        "title": "5. YOUR RIGHTS",
+        "intro": "You can:",
+        "items": [
+          "Access your data",
+          "Correct information",
+          "Request account deletion",
+          "Export your data",
+          "Revoke consents"
+        ],
+        "contact": "To exercise your rights, contact Visant Labs support."
+      },
+      "cookiesAndTracking": {
+        "title": "6. COOKIES AND TRACKING TECHNOLOGIES",
+        "intro": "We use cookies for:",
+        "items": [
+          "Authentication",
+          "Interface preferences",
+          "Internal metrics"
+        ],
+        "googleAnalytics": {
+          "title": "6.1 Google Analytics",
+          "intro": "We use Google Analytics to understand how visitors interact with our website. Google Analytics collects:",
+          "collected": [
+            "Page views and navigation patterns",
+            "Scroll depth and user interactions",
+            "Outbound clicks",
+            "Device and browser information",
+            "General geographic location (country/city level)"
+          ],
+          "howItWorks": "Google Analytics uses cookies and similar technologies. The data collected is processed by Google according to their Privacy Policy. You can:",
+          "options": [
+            "Opt out of Google Analytics by installing the Google Analytics Opt-out Browser Add-on",
+            "Manage cookie preferences through your browser settings",
+            "Use browser extensions that block tracking"
+          ],
+          "note": "We do not send personally identifiable information (PII) to Google Analytics. We have configured Google Analytics to respect user privacy and comply with data protection regulations."
+        },
+        "noAdvertising": "We do not use advertising cookies or tracking pixels for marketing purposes."
+      },
+      "dataRetention": {
+        "title": "7. DATA RETENTION AND DELETION",
+        "general": {
+          "title": "7.1 General Data Retention",
+          "items": [
+            "Account data is retained while your subscription is active.",
+            "Logs and metrics may be retained for up to 12 months.",
+            "Data may be anonymized for internal analysis."
+          ]
+        },
+        "googleAuth": {
+          "title": "7.2 Google Authentication Data Retention",
+          "intro": "Google authentication data (email, name, profile picture, Google User ID) is retained:",
+          "items": [
+            "While your Mockup Machine account is active",
+            "For up to 90 days after account deletion (for security and fraud prevention purposes)",
+            "As required by law or legal obligations"
+          ]
+        },
+        "apiKeys": {
+          "title": "7.3 API Key Data Retention",
+          "intro": "Your encrypted API keys are retained:",
+          "items": [
+            "While your Mockup Machine account is active and you choose to use your own API key",
+            "Until you explicitly delete your API key from our system",
+            "Permanently removed immediately upon deletion — no retention period"
+          ]
+        },
+        "requestingDeletion": {
+          "title": "7.4 Requesting Data Deletion",
+          "intro": "You have the right to request deletion of your data, including Google authentication data and API keys:",
+          "items": [
+            "You can delete your API key directly through the Mockup Machine settings at any time",
+            "You can delete your account directly through the Mockup Machine settings",
+            "Contact us at contato@visant.co to request immediate deletion",
+            "Upon API key deletion, your encrypted key is permanently removed from our systems immediately",
+            "Upon account deletion, your Google User ID and associated profile data will be permanently removed from our systems",
+            "To revoke Google OAuth access, visit your Google Account settings at myaccount.google.com/permissions"
+          ],
+          "note": "Note: Some data may be retained for up to 90 days after deletion for security, fraud prevention, or legal compliance purposes, but will not be used for any other purpose during this period. API keys are an exception and are deleted immediately with no retention period."
+        }
+      },
+      "changesToPolicy": {
+        "title": "8. CHANGES TO THIS POLICY",
+        "note": "We may update this policy periodically. Substantial changes will be communicated via email or within the application."
+      },
+      "contact": {
+        "title": "9. CONTACT",
+        "company": "Visant Labs ®",
+        "support": "Support email: contato@visant.co"
+      },
+      "agreement": "By using the Mockup Machine, you agree to this Privacy Policy."
+    }
+  },
+  "terms": {
+    "title": "Terms of Service — Visant Labs Mockup Machine",
+    "lastUpdated": "Last updated: {date}",
+    "overview": "Welcome to <strong>Mockup Machine</strong>, an AI-powered image generation and editing platform operated by Visant Labs. By accessing or using our service, you agree to be bound by these Terms of Service.",
+    "sections": {
+      "acceptance": {
+        "title": "1. Acceptance of Terms",
+        "content": "By creating an account, accessing, or using the Mockup Machine, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service and our Privacy Policy. If you do not agree to these terms, you may not use our service."
+      },
+      "description": {
+        "title": "2. Description of Service",
+        "intro": "Mockup Machine is a platform that allows users to:",
+        "items": [
+          "Generate photorealistic mockups using AI technology",
+          "Upload and apply designs to various mockup templates",
+          "Customize mockups with branding, location, lighting, and other parameters",
+          "Export generated images for personal or commercial use"
+        ]
+      },
+      "userAccounts": {
+        "title": "3. User Accounts",
+        "accountCreation": {
+          "title": "3.1 Account Creation",
+          "intro": "To use certain features of the service, you must create an account. You agree to:",
+          "items": [
+            "Provide accurate, current, and complete information",
+            "Maintain and update your account information",
+            "Maintain the security of your account credentials",
+            "Accept responsibility for all activities under your account"
+          ]
+        },
+        "accountTermination": {
+          "title": "3.2 Account Termination",
+          "content": "We reserve the right to suspend or terminate your account at any time for violation of these terms, fraudulent activity, or any other reason we deem necessary to protect our service and users."
+        }
+      },
+      "subscription": {
+        "title": "4. Subscription and Payment",
+        "freeTier": {
+          "title": "4.1 Free Tier",
+          "content": "We offer a limited free tier with a restricted number of image generations. Free tier limitations may change at any time."
+        },
+        "paidSubscriptions": {
+          "title": "4.2 Paid Subscriptions",
+          "items": [
+            "Subscriptions are billed on a recurring basis (monthly or annually)",
+            "All fees are non-refundable except as required by law",
+            "Prices may change with 30 days' notice to existing subscribers",
+            "You may cancel your subscription at any time",
+            "Cancellation takes effect at the end of the current billing period"
+          ]
+        },
+        "paymentProcessing": {
+          "title": "4.3 Payment Processing",
+          "content": "Payments are processed through third-party providers (Stripe, Pagar.me, PagSeguro, or others). You agree to their terms and conditions. We do not store complete payment card information."
+        }
+      },
+      "acceptableUse": {
+        "title": "5. Acceptable Use",
+        "intro": "You agree not to:",
+        "items": [
+          "Use the service for any illegal purpose or in violation of any laws",
+          "Generate content that is defamatory, harmful, abusive, or violates others' rights",
+          "Upload content that infringes on intellectual property rights",
+          "Attempt to reverse engineer, decompile, or extract the source code",
+          "Use automated systems (bots, scrapers) to access the service",
+          "Share your account credentials with others",
+          "Interfere with or disrupt the service or servers",
+          "Generate content that promotes hate speech, violence, or illegal activities"
+        ]
+      },
+      "intellectualProperty": {
+        "title": "6. Intellectual Property",
+        "yourContent": {
+          "title": "6.1 Your Content",
+          "intro": "You retain ownership of designs and content you upload. By using the service, you grant us a license to:",
+          "items": [
+            "Process and store your content to provide the service",
+            "Generate mockups based on your content",
+            "Use your content for service improvement (with your explicit consent)"
+          ]
+        },
+        "generatedImages": {
+          "title": "6.2 Generated Images",
+          "intro": "You own the mockup images generated through the service. You may use them for:",
+          "items": [
+            "Personal projects",
+            "Commercial projects",
+            "Client work",
+            "Marketing and promotional materials"
+          ],
+          "restriction": "However, you may not resell the mockup images as standalone products or use them to train competing AI models."
+        },
+        "ourService": {
+          "title": "6.3 Our Service",
+          "content": "The Mockup Machine platform, including its design, functionality, and underlying technology, is owned by Visant Labs and protected by intellectual property laws."
+        }
+      },
+      "serviceAvailability": {
+        "title": "7. Service Availability",
+        "intro": "We strive to maintain high availability but do not guarantee:",
+        "items": [
+          "Uninterrupted or error-free service",
+          "Specific response times or generation speeds",
+          "Availability of all features at all times"
+        ],
+        "maintenance": "We may perform maintenance, updates, or modifications that temporarily affect service availability. We will provide reasonable notice when possible."
+      },
+      "rateLimits": {
+        "title": "8. Rate Limits and Usage",
+        "intro": "To ensure fair access and service quality:",
+        "items": [
+          "We implement rate limits based on your subscription tier",
+          "Free tier users have limited generations per period",
+          "Excessive usage may result in temporary restrictions",
+          "We reserve the right to modify limits with notice"
+        ]
+      },
+      "disclaimers": {
+        "title": "9. Disclaimers and Limitations",
+        "asIs": {
+          "title": "9.1 Service \"As Is\"",
+          "content": "The service is provided \"as is\" and \"as available\" without warranties of any kind, either express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, or non-infringement."
+        },
+        "aiGenerated": {
+          "title": "9.2 AI-Generated Content",
+          "content": "AI-generated content may contain errors, inaccuracies, or unexpected results. We do not guarantee the accuracy, quality, or suitability of generated images for any specific purpose."
+        },
+        "limitation": {
+          "title": "9.3 Limitation of Liability",
+          "content": "To the maximum extent permitted by law, Visant Labs shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits or revenues, whether incurred directly or indirectly, or any loss of data, use, goodwill, or other intangible losses."
+        }
+      },
+      "indemnification": {
+        "title": "10. Indemnification",
+        "content": "You agree to indemnify and hold harmless Visant Labs, its officers, directors, employees, and agents from any claims, damages, losses, liabilities, and expenses (including legal fees) arising out of or relating to your use of the service, violation of these terms, or infringement of any rights of another."
+      },
+      "modifications": {
+        "title": "11. Modifications to Terms",
+        "content": "We reserve the right to modify these Terms of Service at any time. Material changes will be communicated via email or within the application. Continued use of the service after changes constitutes acceptance of the modified terms."
+      },
+      "termination": {
+        "title": "12. Termination",
+        "intro": "Either party may terminate this agreement:",
+        "items": [
+          "You may cancel your account at any time",
+          "We may suspend or terminate accounts that violate these terms",
+          "Upon termination, your right to use the service immediately ceases",
+          "We may delete your account data in accordance with our Privacy Policy"
+        ]
+      },
+      "governingLaw": {
+        "title": "13. Governing Law",
+        "content": "These Terms of Service shall be governed by and construed in accordance with applicable laws. Any disputes arising from these terms or your use of the service shall be resolved through appropriate legal channels."
+      },
+      "contact": {
+        "title": "14. Contact",
+        "company": "Visant Labs ®",
+        "support": "Support email: suporte@visantlabs.com"
+      },
+      "agreement": "By using the Mockup Machine, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service."
+    }
+  },
+  "refund": {
+    "title": "Refund Policy — Visant Labs Mockup Machine",
+    "lastUpdated": "Last updated: {date}",
+    "overview": "This Refund Policy is in compliance with the <strong>Consumer Defense Code (CDC - Law No. 8.078/1990)</strong> and establishes the procedures for requesting refunds for subscriptions and credits purchased on the <strong>Mockup Machine</strong> platform, operated by Visant Labs.",
+    "sections": {
+      "rightOfWithdrawal": {
+        "title": "1. Right of Withdrawal",
+        "content": "According to <strong>Article 49 of the Consumer Defense Code</strong>, you have the right to withdraw from the purchase of a subscription or credits within <strong>7 (seven) calendar days</strong> counted from the date of purchase confirmation, <strong>without the need for justification</strong>.",
+        "applicable": "This right applies to both monthly/annual subscriptions and individual credits purchased on our platform."
+      },
+      "procedure": {
+        "title": "2. Procedure for Refund Request",
+        "howToRequest": {
+          "title": "2.1 How to Request",
+          "intro": "To exercise your right of withdrawal and request a refund, you must:",
+          "items": [
+            "Send an email to contato@visant.co within the 7 calendar day period",
+            "Inform the transaction number or purchase identification",
+            "Indicate the reason for the request (not mandatory, but helps us improve our services)",
+            "Provide bank account or payment account details for refund, when applicable"
+          ]
+        },
+        "processing": {
+          "title": "2.2 Processing",
+          "content": "After receiving your request, we will analyze your request and respond within <strong>2 (two) business days</strong>. The refund will be processed according to the payment method used in the original purchase."
+        }
+      },
+      "subscriptionRefund": {
+        "title": "3. Subscription Refund",
+        "partial": {
+          "title": "3.1 Partial Refund",
+          "intro": "For monthly or annual subscriptions canceled within the 7-day period:",
+          "items": [
+            "The refund will be calculated proportionally to the unused period",
+            "Credits used during the period will not be refunded",
+            "The refund will be credited according to the original payment method"
+          ]
+        },
+        "full": {
+          "title": "3.2 Full Refund",
+          "content": "If no credits were used since the purchase, you will be entitled to a <strong>full refund</strong> of the subscription."
+        }
+      },
+      "creditRefund": {
+        "title": "4. Credit Refund",
+        "unused": {
+          "title": "4.1 Unused Credits",
+          "content": "Credits purchased and not used can be fully refunded within the 7-day withdrawal period."
+        },
+        "partiallyUsed": {
+          "title": "4.2 Partially Used Credits",
+          "content": "If you used part of the purchased credits, the refund will be calculated only on the <strong>value of unused credits</strong>."
+        }
+      },
+      "processingTimes": {
+        "title": "5. Processing Times for Refund",
+        "intro": "After approval of the request, processing times vary according to the payment method:",
+        "items": [
+          "Credit Card: The chargeback will appear on the next or subsequent invoice, depending on the card issuer (average time: 5 to 15 business days)",
+          "PIX: Refund processed within 1 (one) business day",
+          "Bank Slip: Refund processed via bank transfer within 5 (five) business days after confirmation",
+          "Debit Card: Refund processed within 3 (three) business days"
+        ]
+      },
+      "specialCases": {
+        "title": "6. Special Cases",
+        "technicalIssues": {
+          "title": "6.1 Technical Issues",
+          "content": "If technical problems occur that prevent adequate use of the services, and these problems persist for more than 48 hours, you may request a refund even after the 7-day period, provided the problem was reported immediately."
+        },
+        "purchaseError": {
+          "title": "6.2 Purchase Error",
+          "content": "In case of purchase error (incorrect amount, wrong product, duplication), the refund will be processed immediately, regardless of the 7-day period."
+        }
+      },
+      "exceptions": {
+        "title": "7. Exceptions",
+        "intro": "The right of withdrawal <strong>does not apply</strong> in the following cases:",
+        "items": [
+          "Credits or subscriptions purchased as gifts/promotions",
+          "Products or services personalized or customized specifically for you",
+          "When the service was fully provided and consumed by the customer"
+        ]
+      },
+      "cancellation": {
+        "title": "8. Subscription Cancellation",
+        "content": "You can cancel your subscription at any time through your account settings. The cancellation will take effect at the end of the current paid period, and you will continue to have access to services until that date.",
+        "refundNote": "If cancellation occurs within the 7-day withdrawal period, the refund rules described in this policy apply."
+      },
+      "contact": {
+        "title": "9. Contact and Support",
+        "intro": "To request a refund, ask questions, or report problems, contact us:",
+        "email": "E-mail: contato@visant.co",
+        "responseTime": "Response Time: Up to 2 (two) business days"
+      },
+      "changes": {
+        "title": "10. Changes to this Policy",
+        "content": "We reserve the right to update this Refund Policy periodically. Significant changes will be communicated by email or through a notice on our platform. The updated version will always be available on this page with the last update date."
+      },
+      "legalNote": "Legal Note: This policy is in compliance with the Brazilian Consumer Defense Code (Law No. 8.078/1990) and does not limit the rights guaranteed by law. If you have questions about your rights as a consumer, we recommend consulting the PROCON in your region or a lawyer specialized in Consumer Law."
+    }
+  },
+  "usage": {
+    "title": "Usage Policy — Visant Labs Mockup Machine",
+    "lastUpdated": "Last updated: {date}",
+    "overview": "This Usage Policy discloses the AI technology and services used by <strong>Mockup Machine</strong> to provide image generation capabilities. By using our service, you acknowledge that you understand and agree to these technical details.",
+    "sections": {
+      "aiTechnology": {
+        "title": "1. AI Technology Disclosure",
+        "intro": "Mockup Machine utilizes Google's Gemini AI models for image generation. The service provides two distinct quality tiers, each powered by different Google Gemini models:",
+        "hd": {
+          "name": "Mockup Machine® HD",
+          "model": "Powered by Google Gemini 2.5 Flash",
+          "features": [
+            "Optimized for fast generation",
+            "1 credit per image",
+            "Automatic aspect ratio detection",
+            "Lower resolution output suitable for most use cases"
+          ]
+        },
+        "4k": {
+          "name": "Mockup Machine® 4K",
+          "model": "Powered by Google Gemini 3 Pro Preview",
+          "features": [
+            "High-resolution output up to 4K",
+            "3-10 credits per image (varies by resolution)",
+            "Manual aspect ratio control",
+            "Advanced image quality and detail",
+            "Support for multiple reference images"
+          ]
+        }
+      },
+      "serviceProvider": {
+        "title": "2. Service Provider",
+        "intro": "The AI image generation capabilities are provided through:",
+        "items": [
+          "Google Cloud AI / Google AI — Provider of Gemini AI models",
+          "API access to Google Gemini 2.5 Flash for HD generation",
+          "API access to Google Gemini 3 Pro Preview for 4K generation",
+          "All image generation requests are processed by Google's servers"
+        ],
+        "note": "Mockup Machine acts as an intermediary service that interfaces with Google's AI models to provide you with image generation capabilities. Your use of Mockup Machine is also subject to Google's Terms of Service and Privacy Policy for their AI services."
+      },
+      "capabilities": {
+        "title": "3. Model Capabilities and Limitations",
+        "resolution": {
+          "title": "3.1 Resolution and Quality",
+          "items": [
+            "Mockup Machine® HD: Fixed resolution optimized for speed and efficiency",
+            "Mockup Machine® 4K: Configurable resolution options (1K, 2K, 4K)",
+            "Higher resolutions consume more credits and may take longer to generate",
+            "Actual output quality depends on input parameters and model capabilities"
+          ]
+        },
+        "processingTimes": {
+          "title": "3.2 Processing Times",
+          "items": [
+            "HD generation typically completes in seconds",
+            "4K generation may take significantly longer, especially at higher resolutions",
+            "Processing times are dependent on Google's API availability and load",
+            "No guaranteed response times — service availability is subject to third-party API status"
+          ]
+        },
+        "features": {
+          "title": "3.3 Feature Differences",
+          "items": [
+            "HD model supports automatic aspect ratio based on input image",
+            "4K model supports manual aspect ratio selection and multiple reference images",
+            "Both models support the same prompt customization options",
+            "Advanced features may only be available on the 4K model"
+          ]
+        }
+      },
+      "dataUsage": {
+        "title": "4. Data Usage and Privacy",
+        "intro": "When you generate images using Mockup Machine:",
+        "items": [
+          "Your uploaded images and prompts are sent to Google's Gemini API for processing",
+          "Image data is transmitted securely to Google Cloud infrastructure",
+          "Google may use this data in accordance with their Privacy Policy and Terms of Service",
+          "Generated images are returned to Mockup Machine and stored according to our Privacy Policy",
+          "We do not control how Google uses or stores data sent through their API"
+        ],
+        "note": "For details on data handling, please review both our Privacy Policy and Google's AI Services Privacy Policy."
+      },
+      "rateLimits": {
+        "title": "5. Rate Limits and Quotas",
+        "intro": "Image generation is subject to rate limits imposed by:",
+        "items": [
+          "Mockup Machine rate limits: Based on your subscription tier and credit balance",
+          "Google API rate limits: Imposed by Google Cloud on API usage",
+          "Exceeding rate limits may result in temporary service unavailability",
+          "Rate limits may vary based on current API load and Google's policies",
+          "We reserve the right to implement additional rate limiting to ensure fair access"
+        ]
+      },
+      "technicalSpecs": {
+        "title": "6. Technical Specifications",
+        "creditCosts": {
+          "title": "6.1 Credit Costs",
+          "items": [
+            "Mockup Machine® HD: 1 credit per image",
+            "Mockup Machine® 4K: 3-10 credits per image (varies by selected resolution)",
+            "Credit costs are set by Mockup Machine and may change with notice",
+            "Credits are consumed upon successful generation, not upon request"
+          ]
+        },
+        "inputRequirements": {
+          "title": "6.2 Input Requirements",
+          "items": [
+            "Supported image formats: PNG, JPG, WEBP",
+            "Maximum file size: 10MB per image",
+            "Prompt length limitations may apply",
+            "4K model supports up to 3 reference images simultaneously"
+          ]
+        },
+        "outputFormats": {
+          "title": "6.3 Output Formats",
+          "items": [
+            "Generated images are provided in PNG format",
+            "Output resolution varies by selected model and settings",
+            "Actual dimensions may vary slightly from requested aspect ratios"
+          ]
+        }
+      },
+      "userResponsibilities": {
+        "title": "7. User Responsibilities",
+        "intro": "When using Mockup Machine's AI-powered features, you agree to:",
+        "items": [
+          "Use generated content in compliance with applicable laws and regulations",
+          "Respect intellectual property rights of others",
+          "Not use the service to generate harmful, illegal, or inappropriate content",
+          "Understand that AI-generated content may contain errors or unexpected results",
+          "Review generated images before using them in commercial projects",
+          "Comply with Google's Acceptable Use Policy for their AI services"
+        ]
+      },
+      "serviceAvailability": {
+        "title": "8. Service Availability",
+        "intro": "Mockup Machine's availability depends on:",
+        "items": [
+          "Google Cloud API availability and operational status",
+          "Network connectivity between our servers and Google's infrastructure",
+          "Google's API rate limits and quotas",
+          "Our own infrastructure status"
+        ],
+        "note": "We cannot guarantee uninterrupted service, as it is partially dependent on third-party infrastructure. Service outages, maintenance, or API changes by Google may temporarily affect availability. We will make reasonable efforts to communicate any known issues."
+      },
+      "modelChanges": {
+        "title": "9. Model Changes and Updates",
+        "intro": "Google may update, modify, or deprecate their Gemini models at any time. Mockup Machine reserves the right to:",
+        "items": [
+          "Update which Google models are used for each tier",
+          "Migrate to newer model versions as they become available",
+          "Adjust pricing and credit costs if Google's pricing changes",
+          "Modify features or capabilities based on model updates",
+          "Provide reasonable notice of significant changes when possible"
+        ]
+      },
+      "contentPolicies": {
+        "title": "10. Content Policies",
+        "intro": "Both Mockup Machine and Google have content policies that restrict:",
+        "items": [
+          "Generation of illegal content",
+          "Generation of harmful or abusive content",
+          "Generation of content that violates intellectual property rights",
+          "Attempts to circumvent safety filters or content policies"
+        ],
+        "note": "Requests that violate these policies will be rejected. Repeated violations may result in account suspension or termination."
+      },
+      "disclaimers": {
+        "title": "11. Disclaimers",
+        "intro": "Please understand that:",
+        "items": [
+          "AI-generated content may contain errors, inaccuracies, or unexpected results",
+          "We do not guarantee that generated images will meet your specific requirements",
+          "Model capabilities and limitations are determined by Google, not Mockup Machine",
+          "Service quality and availability depend on third-party infrastructure",
+          "Google may modify, deprecate, or change their models without notice"
+        ]
+      },
+      "contact": {
+        "title": "12. Contact",
+        "company": "Visant Labs ®",
+        "support": "For questions about this Usage Policy or technical details: contato@visant.co"
+      },
+      "agreement": "By using Mockup Machine, you acknowledge that you have read and understand this Usage Policy, including the disclosure that the service uses Google Gemini AI models for image generation."
+    }
+  },
+  "profile": {
+    "title": "PROFILE",
+    "subtitle": "Manage your account settings",
+    "name": "Name",
+    "email": "Email",
+    "pictureUrl": "Profile Picture URL",
+    "subscription": "Subscription",
+    "subscriptionDescription": "Manage your subscription, billing, and payment methods",
+    "manageSubscription": "Manage",
+    "updateSuccess": "Profile updated successfully",
+    "updateError": "Failed to update profile",
+    "loadError": "Failed to load profile data",
+    "notAuthenticated": "Please sign in to view your profile",
+    "noChanges": "No changes to save",
+    "portalError": "Failed to open subscription management. Please try again.",
+    "totalCreditsUsed": "Total credits used",
+    "viewAllTransactions": "Transactions",
+    "edit": "Edit profile",
+    "viewOutputs": "View outputs",
+    "myMockups": "My Mockups",
+    "myBrandings": "My Brandings",
+    "myBudgets": "My Budgets",
+    "myProjects": "My Projects",
+    "noSubscriptionData": "Subscription data not available yet.",
+    "completeProfile": "Complete your profile details",
+    "editTitle": "Edit Profile",
+    "editSubtitle": "Keep your personal details up to date",
+    "editHint": "Changes will reflect instantly across the platform.",
+    "uploadPicture": "Upload picture",
+    "currentEmail": "Signed in as",
+    "backToProfile": "Back to profile overview",
+    "seoTitle": "Profile",
+    "seoDescription": "Manage your profile, subscription and usage history at Visant Labs®.",
+    "breadcrumb": "Profile",
+    "selectImageFile": "Please select an image file",
+    "imageSizeLimit": "Image size must be less than 5MB",
+    "pictureUploadSuccess": "Profile picture uploaded successfully!",
+    "pictureUploadError": "Failed to upload picture",
+    "fileReadError": "Failed to read file",
+    "linkingGoogle": "Linking...",
+    "google": "Google",
+    "googleLinked": "Google Linked",
+    "googleLinkSuccess": "Google account linked successfully!",
+    "googleLinkError": "Failed to link Google account",
+    "googleAlreadyLinked": "This Google account is already linked to another account",
+    "googleEmailMismatch": "Google account email does not match your account email",
+    "invalidLinkRequest": "Invalid link request. Please try again.",
+    "viewPublicProfile": "View Public Profile",
+    "node": "node",
+    "nodes": "nodes",
+    "edge": "edge",
+    "edges": "edges",
+    "authenticationRequired": "Authentication required",
+    "uploadFailed": "Upload failed"
+  },
+  "usageHistory": {
+    "title": "Usage History",
+    "all": "All",
+    "brandingMachine": "Branding Machine",
+    "mockupMachine": "Mockup Machine",
+    "canvas": "Canvas",
+    "date": "Date",
+    "feature": "Feature",
+    "credits": "Credits",
+    "model": "Model",
+    "details": "Details",
+    "step": "Step",
+    "noRecords": "No usage records found",
+    "loadError": "Failed to load usage history",
+    "showing": "Showing",
+    "of": "of",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "referral": {
+    "title": "REFER",
+    "description": "Share your referral link and earn bonus credits when friends join.",
+    "yourLink": "Your referral link",
+    "copy": "Copy",
+    "generating": "Generating referral link...",
+    "friendsReferred": "Friends referred",
+    "totalEarned": "Total credits earned",
+    "noCode": "Referral code not available",
+    "linkCopied": "Referral link copied to clipCanvas!",
+    "copyFailed": "Failed to copy link",
+    "generatingCode": "Generating referral link..."
+  },
+  "transactions": {
+    "title": "Transactions",
+    "subtitle": "Credit & subscription history",
+    "empty": "No transactions found yet.",
+    "loadError": "Failed to load transactions",
+    "credits": "{count} credits",
+    "type": {
+      "purchase": "Credit purchase",
+      "subscription": "Subscription"
+    },
+    "status": {
+      "completed": "Completed",
+      "pending": "Pending",
+      "failed": "Failed",
+      "paid": "Paid",
+      "requires_payment_method": "Requires payment method",
+      "canceled": "Canceled",
+      "past_due": "Past due",
+      "unpaid": "Unpaid"
+    }
+  },
+  "support": {
+    "button": "Support",
+    "title": "Support / Report Bug",
+    "contactType": "Contact Type",
+    "customerService": "Customer Service",
+    "reportBug": "Report Bug",
+    "name": "Name",
+    "email": "Email",
+    "subject": "Subject",
+    "message": "Message",
+    "send": "Send",
+    "sending": "Sending...",
+    "success": "Message sent successfully!",
+    "error": "Error sending message",
+    "optional": "Optional",
+    "namePlaceholder": "Your name",
+    "emailPlaceholder": "your@email.com",
+    "subjectPlaceholder": "Brief description",
+    "messagePlaceholder": "Describe your issue or question...",
+    "subjectRequired": "Subject is required",
+    "messageRequired": "Message is required",
+    "invalidEmail": "Invalid email format",
+    "notProvided": "Not provided"
+  },
+  "branding": {
+    "title": "Branding Machine",
+    "subtitle": "Complete branding analysis in 10 steps",
+    "describeYourBrand": "Describe Your Brand",
+    "describeYourBrandDescription": "Enter a detailed description of your brand, product, or business idea. We'll analyze it step by step to create a comprehensive branding strategy.",
+    "promptPlaceholder": "Example: A sustainable fashion brand targeting eco-conscious millennials, focusing on minimalist designs and ethical production...",
+    "startAnalysis": "Start Branding Analysis",
+    "starting": "Starting...",
+    "steps": {
+      "mercadoNicho": "Market & Niche",
+      "publicoAlvo": "Target Audience",
+      "posicionamento": "Positioning",
+      "insights": "Insights",
+      "marketResearch": "Market Research",
+      "competitors": "Competitors",
+      "references": "References",
+      "swotAnalysis": "SWOT Analysis",
+      "colorPalettes": "Color Palettes",
+      "visualElements": "Visual Elements",
+      "persona": "Persona",
+      "mockupIdeas": "Mockup Ideas",
+      "moodCanvas": "MoodCanvas",
+      "archetypes": "Archetypes"
+    },
+    "step": "Step",
+    "generating": "Generating",
+    "noContentAvailable": "No content available",
+    "approveContinue": "Approve & Continue",
+    "regenerate": "Regenerate",
+    "previous": "Previous",
+    "backToPreviousStep": "Back to Previous Step",
+    "finalMoodCanvas": "Final MoodCanvas",
+    "edit": "Edit",
+    "cancelEdit": "Cancel Edit",
+    "saveProject": "Save Project",
+    "save": "Save",
+    "saving": "Saving...",
+    "copy": "Copy text",
+    "copied": "Copied!",
+    "copyFailed": "Failed to copy",
+    "copyEmpty": "No content to copy",
+    "collapse": "Collapse",
+    "expand": "Expand",
+    "dragToReorder": "Drag to reorder",
+    "resize": "Resize",
+    "editProjectName": "Edit project name",
+    "projectNamePlaceholder": "Project name",
+    "generatePDF": "Generate PDF",
+    "marketResearch": "Market Research",
+    "competitors": "Competitors",
+    "colorPalettes": "Color Palettes",
+    "swotAnalysis": "SWOT Analysis",
+    "targetPersona": "Target Persona",
+    "demographics": "Demographics",
+    "desires": "Desires",
+    "whatPersonaDesires": "What does the persona really desire?",
+    "pains": "Pains and frustrations",
+    "painPoints": "Pain Points",
+    "visualElements": "Visual Elements",
+    "mockupIdeas": "Mockup Ideas",
+    "moodCanvasSummary": "MoodCanvas Summary",
+    "summary": "Summary",
+    "visualDirection": "Visual Direction",
+    "keyElements": "Key Elements",
+    "strengths": "Strengths",
+    "weaknesses": "Weaknesses",
+    "opportunities": "Opportunities",
+    "threats": "Threats",
+    "success": {
+      "projectSaved": "Branding project saved successfully!"
+    },
+    "creditsRequired": "Credits required",
+    "creditsPerStep": "{count} credit{plural} per step",
+    "sectionNotGenerated": "This section hasn't been generated yet",
+    "requires": "Requires",
+    "generate": "Generate",
+    "generateAll": "Generate All",
+    "generatingAllSections": "Generating {count} sections...",
+    "generatingStep": "Generating {step}...",
+    "generatingDependency": "Generating required dependency: {step}",
+    "allSectionsGenerated": "All sections have already been generated",
+    "allSectionsGeneratedSuccess": "All sections generated successfully!",
+    "dependencyModalTitle": "Generate Required Dependencies",
+    "dependencyModalMessage": "Missing: {dependencies}",
+    "generateDependencies": "Generate Dependencies",
+    "cancel": "Cancel",
+    "errors": {
+      "enterBrandDescription": "Please enter a brand description",
+      "signInRequired": "Please sign in to use the Branding Machine",
+      "insufficientCredits": "Insufficient credits. Please purchase credits to continue.",
+      "failedToCheckCredits": "Failed to check credits",
+      "failedToGenerateStep": "Failed to generate step",
+      "failedToSaveProject": "Failed to save project",
+      "signInToSave": "Please sign in to save projects",
+      "missingDependencies": "Missing required dependencies: {steps}",
+      "failedToGenerateDependency": "Failed to generate required dependency: {step}",
+      "failedToLoadProject": "Failed to load project",
+      "trackingFailedButContentGenerated": "Your content was generated successfully! There was a minor issue updating your credits, but your work is safe."
+    },
+    "projectLoaded": "Project loaded successfully",
+    "myBrandings": {
+      "title": "My Branding Projects",
+      "noProjects": "No projects yet",
+      "createNew": "Create New",
+      "view": "View",
+      "emptyTitle": "NO PROJECTS YET",
+      "emptyDescription": "Create your first branding project to see it here.",
+      "createFirst": "Create Your First Project",
+      "confirmDelete": "Are you sure you want to delete this project? This action cannot be undone.",
+      "confirmDeleteTitle": "Delete Project",
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "deleted": "Project deleted successfully",
+      "errors": {
+        "failedToLoad": "Failed to load branding projects",
+        "failedToDelete": "Failed to delete project"
+      }
+    }
+  },
+  "budget": {
+    "title": "Budget Machine",
+    "selectTemplate": "Select Template",
+    "clientName": "Client Name",
+    "projectName": "Project Name",
+    "projectDescription": "Project Description",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "deliverables": "Deliverables",
+    "deliverableName": "Deliverable Name",
+    "deliverableDescription": "Brief Description",
+    "quantity": "Quantity",
+    "unitValue": "Unit Value",
+    "addDeliverable": "Add Deliverable",
+    "removeDeliverable": "Remove",
+    "total": "Total",
+    "subtotal": "Subtotal",
+    "observations": "Observations",
+    "links": "Useful Links & Contact",
+    "website": "Website",
+    "instagram": "Instagram",
+    "whatsapp": "WhatsApp",
+    "faq": "Frequently Asked Questions",
+    "question": "Question",
+    "answer": "Answer",
+    "addFAQ": "Add FAQ",
+    "removeFAQ": "Remove",
+    "brandCustomization": "Brand Customization",
+    "brandName": "Brand Name",
+    "brandLogo": "Brand Logo",
+    "brandColors": "Brand Colors",
+    "brandBackgroundColor": "Background Color",
+    "brandAccentColor": "Accent Color",
+    "addColor": "Add Color",
+    "uploadLogo": "Upload Logo",
+    "uploadingLogo": "Uploading logo...",
+    "logoUploaded": "Logo uploaded successfully",
+    "logoUploadError": "Failed to upload logo",
+    "preview": "Preview",
+    "save": "Save Budget",
+    "saving": "Saving...",
+    "generatePDF": "Generate PDF",
+    "share": "Share",
+    "copyLink": "Copy Link",
+    "linkCopied": "Link copied to clipCanvas!",
+    "downloadPDF": "Download PDF",
+    "edit": "Edit",
+    "delete": "Delete",
+    "duplicate": "Duplicate",
+    "createNew": "Create New Budget",
+    "myBudgets": "My Budgets",
+    "noBudgets": "No budgets yet",
+    "emptyTitle": "NO BUDGETS YET",
+    "emptyDescription": "Create your first budget to see it here.",
+    "createFirst": "Create Your First Budget",
+    "view": "View",
+    "confirmDelete": "Are you sure you want to delete this budget? This action cannot be undone.",
+    "confirmDeleteTitle": "Delete Budget",
+    "deleted": "Budget deleted successfully",
+    "saved": "Budget saved successfully",
+    "defaultTemplates": "Default Templates",
+    "myPdfTemplates": "My PDF Templates",
+    "noPresets": "No PDF templates saved yet",
+    "presetDeleted": "Template deleted successfully",
+    "presetLoaded": "Template loaded successfully",
+    "confirmDeletePreset": "Are you sure you want to delete this template? This action cannot be undone.",
+    "confirmDeletePresetTitle": "Delete Template",
+    "errors": {
+      "failedToLoad": "Failed to load budgets",
+      "failedToSave": "Failed to save budget",
+      "failedToDelete": "Failed to delete budget",
+      "failedToShare": "Failed to generate share link",
+      "invalidDates": "End date must be after start date",
+      "requiredFields": "Please fill in all required fields",
+      "failedToLoadPresets": "Failed to load templates",
+      "failedToDeletePreset": "Failed to delete template",
+      "failedToLoadPreset": "Failed to load template",
+      "failedToLoadShared": "Failed to load shared budget",
+      "failedToLoadBudget": "Failed to load budget",
+      "failedToGeneratePDF": "Failed to generate PDF",
+      "failedToCopyLink": "Failed to copy link"
+    },
+    "shared": {
+      "title": "Shared Budget",
+      "budgetNotFound": "Budget Not Found",
+      "budgetNotFoundDescription": "The budget you are looking for does not exist.",
+      "generatingPDF": "Generating PDF...",
+      "pdfGeneratedSuccess": "PDF generated successfully",
+      "linkCopied": "Link copied to clipboard!",
+      "templateNotSupported": "Template not supported for shared view",
+      "seoTitle": "Budget: {name}",
+      "seoDescription": "Shared budget from Visant Labs®",
+      "seoTitleDefault": "Shared Budget"
+    },
+    "timeline": "Project Timeline",
+    "addMilestone": "Add Milestone",
+    "day": "Day",
+    "milestoneTitle": "Title",
+    "milestoneDescription": "Description",
+    "removeMilestone": "Remove milestone",
+    "noMilestones": "No milestones added yet",
+    "paymentInfo": "Payment Information",
+    "totalHours": "Total Hours",
+    "hourlyRate": "Hourly Rate (R$)",
+    "pixKey": "PIX Key",
+    "cashDiscountPercent": "Cash Discount (%)",
+    "paymentMethods": "Payment Methods",
+    "addPaymentMethod": "Add Method",
+    "noPaymentMethods": "No payment methods added",
+    "methodType": "Type",
+    "methodLabel": "Label",
+    "methodDescription": "Description",
+    "installments": "Installments",
+    "removePaymentMethod": "Remove method",
+    "signatures": "Signatures",
+    "addSignature": "Add Signature",
+    "signatureName": "Name",
+    "signatureRole": "Role",
+    "removeSignature": "Remove signature",
+    "noSignatures": "No signatures added yet",
+    "giftOptions": "Gift Options",
+    "addGiftOption": "Add Gift",
+    "giftTitle": "Title",
+    "giftDescription": "Description",
+    "giftImageUrl": "Image URL (optional)",
+    "removeGiftOption": "Remove gift",
+    "noGiftOptions": "No gift options added yet",
+    "projectDetailSections": "Project Description Sections",
+    "addSection": "Add Section",
+    "sectionTitle": "Section Title",
+    "paragraphs": "Paragraphs",
+    "addParagraph": "Paragraph",
+    "removeSection": "Remove section",
+    "noSections": "No sections added yet",
+    "infoBoxes": "Information Boxes",
+    "addInfoBox": "Add Box",
+    "infoBoxTitle": "Title",
+    "infoBoxContent": "Content",
+    "removeInfoBox": "Remove box",
+    "noInfoBoxes": "No information boxes added yet",
+    "year": "Budget Year",
+    "myBudgets": {
+      "seoTitle": "My Budgets",
+      "seoDescription": "Manage your professional budgets."
+    },
+    "finalCTAText": "Final CTA Text",
+    "placeholders": {
+      "milestoneTitle": "Milestone title",
+      "milestoneDescription": "Milestone description",
+      "signatureName": "Signatory name",
+      "signatureRole": "Role/Position",
+      "giftTitle": "Gift title",
+      "giftDescription": "Gift description",
+      "giftImageUrl": "https://...",
+      "sectionTitle": "Title",
+      "paragraph": "Paragraph...",
+      "infoBoxTitle": "Box title",
+      "infoBoxContent": "Box content...",
+      "finalCTAText": "LET'S BUILD SOMETHING GREAT TOGETHER?",
+      "clientName": "Enter client name",
+      "projectName": "Enter project name",
+      "projectDescription": "Describe the project...",
+      "deliverableName": "e.g., Website Design",
+      "deliverableDescription": "Brief description...",
+      "observations": "Additional notes...",
+      "website": "https://example.com",
+      "instagram": "@username",
+      "whatsapp": "+1234567890",
+      "question": "Enter question...",
+      "answer": "Enter answer...",
+      "brandName": "Your Brand Name",
+      "color": "#000000",
+      "brandBackgroundColor": "#000000",
+      "brandAccentColor": "#52ddeb"
+    }
+  },
+  "pix": {
+    "title": "Pay with PIX",
+    "credits": "credits",
+    "creating": "Creating PIX payment...",
+    "code": "PIX Code",
+    "copy": "Copy code",
+    "expiresIn": "Expires in",
+    "paid": "✓ Payment confirmed!",
+    "waiting": "Waiting for payment...",
+    "expired": "Payment expired",
+    "instructions": "How to pay:",
+    "step1": "Open your bank app",
+    "step2": "Scan the QR Code or copy the PIX code",
+    "step3": "Confirm the payment in the app",
+    "step4": "Wait for automatic confirmation",
+    "openCheckout": "Open Stripe checkout",
+    "payWithPix": "Pay with PIX",
+    "taxId": "CPF or CNPJ *",
+    "taxIdRequired": "Required to process PIX payment",
+    "continue": "Continue",
+    "invalidTaxId": "CPF must have 11 digits or CNPJ must have 14 digits",
+    "paymentError": "Unable to create PIX payment. Please try again later or use another payment method.",
+    "generatingQrCode": "Generating QR Code...",
+    "openPaymentLink": "Open payment link",
+    "showQrCode": "Show QR Code",
+    "qrCode": "PIX QR Code",
+    "checking": "Checking data...",
+    "copied": "Copied!",
+    "taxIdPlaceholder": "Enter your CPF or CNPJ"
+  },
+  "canvas": {
+    "title": "Canvas",
+    "loadingProject": "Loading project...",
+    "nodeDuplicated": "{count} node{plural} duplicated",
+    "nodeDeleted": "Node deleted",
+    "nodeDuplicatedSingular": "Node duplicated",
+    "sourceNodeNotFound": "Source node not found or invalid type",
+    "failedToLoadImage": "Failed to load image",
+    "noImageDataAvailable": "No image data available",
+    "failedToGenerateMockup": "Failed to generate mockup for {presetId}",
+    "creatingMockups": "Creating {count} mockup{plural}...",
+    "invalidMockupDataFormat": "Invalid mockup data format",
+    "invalidMockupData": "Invalid mockup data",
+    "mockupMissingImageData": "Mockup missing image data",
+    "mockupImportedToCanvas": "Mockup imported to Canvas!",
+    "failedToDeleteMockup": "Failed to delete mockup",
+    "noImageAvailableToExport": "No image available to export",
+    "addedToFavorites": "Added to favorites",
+    "removedFromFavorites": "Removed from favorites",
+    "failedToUpdateLikeStatus": "Failed to update like status",
+    "imageDownloaded": "Image downloaded!",
+    "failedToDownloadImage": "Failed to download image",
+    "nodeNotFound": "Node not found",
+    "noImageAvailableToDownload": "No image available to download",
+    "failedToProcessImage": "Failed to process image",
+    "imageDownloadStarted": "Image download started",
+    "imageCopiedToClipCanvas": "Image copied to clipCanvas!",
+    "failedToCopyImage": "Failed to copy image to clipCanvas",
+    "noImageAvailableToDescribe": "No image available to describe",
+    "failedToLoadImageForAnalysis": "Failed to load image for analysis",
+    "imageDescriptionGenerated": "Image description generated!",
+    "failedToGenerateDescription": "Failed to generate description",
+    "nodeOversizedWarning": "Image too large to save. Reduce resolution or number of images on canvas.",
+    "projectTooLargeOnce": "Your project is still too large ({size}MB) even after optimization. Please reduce the number of images or elements on canvas.",
+    "projectTooLargeNoR2": "Your project is too large ({size}MB) to save. Configure R2 storage for large projects.",
+    "openedExistingPromptNode": "Opened existing Prompt Node",
+    "createdAndConnectedPromptNode": "Created and connected Prompt Node",
+    "pleaseSaveImageFirst": "Please save the image first",
+    "savedToFavorites": "Saved to favorites!",
+    "failedToSaveToFavorites": "Failed to save to favorites",
+    "projectLoadedSuccessfully": "Project loaded successfully",
+    "failedToLoadProject": "Failed to load project",
+    "saveCanvasProject": "Save Canvas Project?",
+    "unsavedCanvasProject": "You have an unsaved Canvas project. Would you like to save it as a new project?",
+    "saveProject": "Save Project",
+    "discard": "Discard",
+    "untitled": "Untitled",
+    "nodeSelected": "{count} node{plural} selected",
+    "share": "Share",
+    "settings": "Settings",
+    "projectNameUpdated": "Project name updated successfully",
+    "projects": "Projects",
+    "noProjectsYet": "No projects yet",
+    "projectsCount": "{count} {count, plural, =1 {project} other {projects}}",
+    "newProject": "New Project",
+    "createFirstProject": "Create your first canvas project to start working with nodes.",
+    "createFirstProjectButton": "Create Your First Project",
+    "clickToEdit": "Click to edit",
+    "open": "Open",
+    "deleteProject": "Delete Project",
+    "deleteProjectMessage": "Are you sure you want to delete this project? This action cannot be undone.",
+    "delete": "Delete",
+    "projectDeletedSuccessfully": "Project deleted successfully",
+    "failedToDeleteProject": "Failed to delete project",
+    "failedToLoadProjects": "Failed to load canvas projects",
+    "invalidProjectId": "Invalid project ID",
+    "failedToCreateProject": "Failed to create new project",
+    "failedToUpdateProjectName": "Failed to update project name",
+    "seoTitle": "Canvas Editor",
+    "seoDescription": "Visual flow-based editor for creating designs. Collaborate in real-time and create professional visual projects.",
+    "seoKeywords": "canvas editor, visual editor, design editor, collaboration, visual flow editor",
+    "showGrid": "Show Grid",
+    "showGridDescription": "Display background grid",
+    "showMinimap": "Show Minimap",
+    "showMinimapDescription": "Display minimap navigation",
+    "showControls": "Show Controls",
+    "showControlsDescription": "Display zoom controls",
+    "backgroundColor": "Background Color",
+    "backgroundColorDescription": "Change canvas background color",
+    "gridColor": "Grid Color",
+    "gridColorDescription": "Change grid dots color",
+    "selectColor": "Select color",
+    "imageDropped": "Image dropped!",
+    "storageQuotaExceeded": "Storage quota exceeded. Please clear some data and try again.",
+    "nodeBeingMovedBy": "Node is being moved by {userName}",
+    "nodeBeingMovedByAnother": "Node is being moved by another user",
+    "shaderEffect": "Shader Effect",
+    "imageTooLargeWithName": "Image \"{fileName}\" is too large. Maximum size is 10MB.",
+    "failedToProcessImageWithName": "Failed to process image \"{fileName}\": {errorMessage}",
+    "outputImagePrompt": "Output image",
+    "droppedImagePrompt": "Dropped image",
+    "dropHere": "Drop Here",
+    "dropHint": "Release to add images or nodes to canvas",
+    "processingFiles": "Processing Files...",
+    "processingProgress": "Processing {current} of {total} images...",
+    "invalidNodeType": "Invalid node type: {nodeType}",
+    "imageTooLargeDetailed": "Image \"{fileName}\" ({size}) exceeds the {limit} limit."
+  },
+  "canvasNodes": {
+    "promptNode": {
+      "title": "Prompt Node",
+      "referenceImages": "Reference Images",
+      "logoFromBrandCore": "Logo (from BrandCore) - Primary Focus",
+      "identityFromBrandCore": "Identity (from BrandCore) - Context/Colors/Vibe",
+      "textDirectionFromBrandCore": "Text Direction (from BrandCore)",
+      "pdfReference": "PDF Reference (optional)",
+      "pdfReferencePlaceholder": "e.g., Page 3, Color section, Typography guidelines",
+      "promptPlaceholder": "Describe the image you want to generate...",
+      "model": "Model",
+      "modelHD": "HD",
+      "model4K": "4K",
+      "aspectRatio": "Aspect Ratio",
+      "resolution": "Resolution",
+      "textInput": "Text",
+      "imageInput": "Image",
+      "output": "Output",
+      "connectedToTextNode": "Connected to Text Node (real-time sync)",
+      "generating": "Generating...",
+      "generateImage": "Generate Image",
+      "credits": "credits",
+      "suggestions": "Suggestions",
+      "aiSuggestions": "AI Suggestions",
+      "suggestPrompts": "Get prompt suggestions"
+    },
+    "videoNode": {
+      "title": "Video Generator",
+      "referenceImage": "Reference Image",
+      "promptPlaceholder": "Describe the video you want to generate...",
+      "model": "Model",
+      "generating": "Generating...",
+      "generate": "Generate Video",
+      "result": "Generated Video",
+      "enterPrompt": "Enter a prompt to generate video",
+      "generateVideo": "Generate video"
+    },
+    "videoInputNode": {
+      "title": "Video Input",
+      "uploadVideo": "Upload Video",
+      "uploadedVideo": "Uploaded Video"
+    },
+    "strategyNode": {
+      "title": "Strategy Node",
+      "chooseOption": "Choose an option",
+      "brandDescription": "Brand Description",
+      "brandDescriptionPlaceholder": "Enter brand description...",
+      "generateSections": "Generate Sections",
+      "generateAllSections": "Generate all sections",
+      "sectionDeleted": "{section} deleted",
+      "generatingSection": "Generating {section}...",
+      "cancelGeneration": "Cancel generation",
+      "deleteSection": "Delete {section}",
+      "openInNewTab": "Open in new tab",
+      "downloadPDF": "Download PDF",
+      "save": "Save",
+      "sections": {
+        "marketResearch": "Market Research",
+        "persona": "Persona",
+        "archetypes": "Archetypes",
+        "competitors": "Competitors",
+        "references": "References",
+        "swot": "SWOT",
+        "colorPalettes": "Color Palettes",
+        "visualElements": "Visual Elements",
+        "mockupIdeas": "Mockup Ideas"
+      },
+      "pleaseEnterBrandDescription": "Please enter a brand description",
+      "strategySavedSuccessfully": "Strategy saved successfully",
+      "pleaseSaveProjectFirst": "Please save the project first",
+      "cancel": "Cancel",
+      "analyzing": "Analyzing...",
+      "pleaseWaitForSection": "Please wait for the current section to finish generating",
+      "failedToGenerateSection": "Failed to generate {section}",
+      "failedToGenerateAllSections": "Failed to generate all sections",
+      "section": "Section",
+      "generating": "Generating...",
+      "generateAll": "Generate All",
+      "generatedSections": "Generated Sections",
+      "collapseAll": "Collapse All",
+      "expandAll": "Expand All",
+      "selectExistingProject": "Select Existing Project",
+      "createNewProject": "Create New Project"
+    },
+    "brandCore": {
+      "title": "Brand Core",
+      "promptCopied": "Prompt copied to clipCanvas!",
+      "uploadHandlerNotReady": "Upload handler not ready. Please try again.",
+      "pleaseSelectImageFile": "Please select an image file",
+      "fileSizeExceedsLimit": "File size exceeds 10MB limit",
+      "logoUploadedSuccessfully": "Logo uploaded successfully!",
+      "pdfUploadedSuccessfully": "PDF uploaded successfully!",
+      "pleaseUploadLogoFirst": "Please upload a logo first",
+      "pleaseUploadPdfOrPngFirst": "Please upload a PDF or PNG identity guide first",
+      "invalidIdentityType": "Invalid identity type",
+      "failedToLoadLogoImage": "Failed to load logo image",
+      "failedToLoadIdentityFile": "Failed to load identity file",
+      "removeLogo": "Remove logo",
+      "removeIdentityGuide": "Remove identity guide",
+      "cancelAnalysis": "Cancel analysis",
+      "logo": "Logo",
+      "identityGuide": "Identity Guide",
+      "uploadLogo": "Upload Logo",
+      "orConnectLogoOrImageNode": "Or connect a Logo Node or Image Node",
+      "pdfConnected": "PDF Connected",
+      "pdfUploadedR2": "PDF uploaded (R2)",
+      "uploaded": "uploaded",
+      "strategy": "Strategy",
+      "output": "Output"
+    },
+    "imageNode": {
+      "noImage": "No image",
+      "uploadImage": "Upload an image",
+      "uploadImageTitle": "Upload Image",
+      "copyDescription": "Copy description",
+      "clearDescription": "Clear description",
+      "imageDescriptionPlaceholder": "Image description will appear here...",
+      "viewFullScreen": "View Full Screen",
+      "downloadImage": "Download Image",
+      "edit": "Edit",
+      "delete": "Delete",
+      "brandKit": "Brand Kit",
+      "deleteMockup": "Delete Mockup",
+      "deleteMockupMessage": "Are you sure you want to delete this mockup? This action cannot be undone.",
+      "deleteButton": "Delete",
+      "cancelButton": "Cancel",
+      "fileSizeExceedsLimitMessage": "File size exceeds 10MB limit. Please choose a smaller image.",
+      "pleaseUseImageFromR2": "Please use an image from R2 storage",
+      "imageSavedSuccessfully": "Image saved successfully!",
+      "failedToUpdateLikeStatus": "Failed to update like status. Please try again.",
+      "descriptionCopied": "Description copied to clipCanvas!",
+      "descriptionCleared": "Description cleared",
+      "analyzingImage": "Analyzing image...",
+      "describeImageWithAI": "Describe image with AI",
+      "addToFavorites": "Add to favorites",
+      "removeFromFavorites": "Remove from favorites",
+      "description": "Description"
+    },
+    "outputNode": {
+      "noOutput": "No output",
+      "connectNodeToSeeResult": "Connect a node to see result",
+      "viewFullScreen": "View Full Screen",
+      "downloadImage": "Download Image",
+      "pleaseUseImageFromR2": "Please use an image from R2 storage",
+      "failedToUpdateLikeStatus": "Failed to update like status",
+      "imageSavedToFavorites": "Image saved to favorites!",
+      "imageDescriptionGenerated": "Image description generated!",
+      "analyzingImage": "Analyzing image...",
+      "describeImageWithAI": "Describe image with AI",
+      "removeFromFavorites": "Remove from favorites",
+      "saveToCollection": "Save to collection"
+    },
+    "mockupNode": {
+      "title": "Mockup Preset",
+      "logoRequired": "Logo is required. Connect BrandCore Logo or Image node.",
+      "logoFromBrandCore": "Logo (from BrandCore) - Primary Focus",
+      "inputImage": "Input Image",
+      "colorPlaceholder": "#52ddeb",
+      "addAnotherMockupNode": "Add another mockup node",
+      "missingInput": "Missing Input",
+      "missingInputConnectLogo": "• Connect BrandCore Logo (required, primary focus)",
+      "missingInputIdentityOptional": "• Identity is optional (context/colors/vibe)",
+      "missingInputOrImage": "• Or connect an Image node",
+      "selectPreset": "Select preset",
+      "imageInput": "Image",
+      "output": "Output",
+      "editPrompt": "Edit Prompt",
+      "advancedControls": "Advanced Controls",
+      "generateMockup": "Generate Mockup",
+      "generating": "Generating...",
+      "requires": "Requires: Logo from BrandCore (Identity optional for context)",
+      "colorPalette": "Color Palette",
+      "add": "Add",
+      "includeHumanInteraction": "Include Human Interaction",
+      "customPromptOverride": "Custom prompt will override base preset. Colors and human settings will be added if not present.",
+      "editPromptHint": "Edit the prompt above. Colors and human interaction will be added automatically if enabled.",
+      "textDirectionFromBrandCore": "Text Direction (from BrandCore)",
+      "strategyDataFromBrandCore": "Strategy Data (from BrandCore)",
+      "available": "Available",
+      "identityFromBrandCore": "Identity (from BrandCore) - Context/Colors/Vibe",
+      "mockupAltText": "Mockup",
+      "enterCustomPrompt": "Enter custom prompt...",
+      "colorSingular": "color",
+      "colorsPlural": "colors",
+      "humanText": "human",
+      "connectBrandCoreHint": "Connect BrandCore Logo (required) or Image node to enable generation. Identity is optional for color/vibe context.",
+      "pdfLabel": "(PDF)",
+      "imageLabel": "(Image)",
+      "mockupResult": "Mockup result"
+    },
+    "mergeNode": {
+      "title": "Merge Images",
+      "inputImages": "Input Images",
+      "promptPlaceholder": "Describe how to combine the images..."
+    },
+    "upscaleNode": {
+      "title": "Upscale",
+      "inputImage": "Input Image",
+      "pleaseUseImageFromR2": "Please use an image from R2 storage",
+      "imageSavedSuccessfully": "Image saved successfully!"
+    },
+    "angleNode": {
+      "inputImage": "Input Image"
+    },
+    "shaderNode": {
+      "inputImage": "Input Image",
+      "connectImage": "Connect an image or video",
+      "uploadImageOrVideo": "Upload Image or Video"
+    },
+    "textNode": {
+      "title": "Text Node",
+      "placeholder": "Enter text here..."
+    },
+    "brandNode": {
+      "title": "Brand Node",
+      "pleaseSelectImageFile": "Please select an image file",
+      "fileSizeExceedsLimit": "File size exceeds 10MB limit",
+      "logoUploadedSuccessfully": "Logo uploaded successfully!",
+      "pleaseUploadLogoFirst": "Please upload a logo first",
+      "pleaseUploadPdfOrPngFirst": "Please upload a PDF or PNG identity guide first",
+      "removeLogo": "Remove logo",
+      "removeIdentityGuide": "Remove identity guide",
+      "logo": "Logo",
+      "identity": "Identity",
+      "output": "Output"
+    },
+    "logoNode": {
+      "title": "Logo Node",
+      "pleaseSelectImageFile": "Please select an image file",
+      "fileSizeExceedsLimit": "File size exceeds 10MB limit",
+      "logoUploadedSuccessfully": "Logo uploaded successfully!",
+      "removeLogo": "Remove logo",
+      "failedToProcessLogo": "Failed to process logo image",
+      "logoAltText": "Logo",
+      "uploadLogo": "Upload Logo"
+    },
+    "pdfNode": {
+      "title": "PDF Node",
+      "pleaseSelectPdfFile": "Please select a PDF file",
+      "pdfUploadedSuccessfully": "PDF uploaded successfully!"
+    },
+    "brandingProjectSelectModal": {
+      "failedToLoadProjects": "Failed to load projects",
+      "searchProjectsPlaceholder": "Search projects..."
+    },
+    "editNode": {
+      "title": "Mockup Machine",
+      "defaultPrompt": "Apply the requested changes to this image while maintaining its overall composition and quality.",
+      "editedResult": "Edited result"
+    },
+    "editNodeControls": {
+      "editHandlerNotAvailable": "Edit handler not available. Please try refreshing the page."
+    },
+    "nodeContextMenu": {
+      "title": "Node Actions",
+      "duplicate": "Duplicate",
+      "delete": "Delete"
+    },
+    "shared": {
+      "imageDownloaded": "Image downloaded!"
+    },
+    "textureNode": {
+      "title": "Texture Preset",
+      "selectTexture": "Select texture",
+      "inputImage": "Input Image",
+      "connectImageNode": "Connect an image node",
+      "generateTexture": "Generate Texture",
+      "generating": "Generating...",
+      "result": "Texture result"
+    },
+    "ambienceNode": {
+      "title": "Ambience Preset",
+      "selectAmbience": "Select ambience",
+      "inputImage": "Input Image",
+      "connectImageNode": "Connect an image node",
+      "generateAmbience": "Generate Ambience",
+      "generating": "Generating...",
+      "result": "Ambience result"
+    },
+    "luminanceNode": {
+      "title": "Luminance Preset",
+      "selectLuminance": "Select luminance",
+      "inputImage": "Input Image",
+      "connectImageNode": "Connect an image node",
+      "generateLuminance": "Generate Luminance",
+      "generating": "Generating...",
+      "result": "Luminance result"
+    },
+    "chatNode": {
+      "title": "Chat Node",
+      "clearHistory": "Clear history",
+      "messages": "Messages",
+      "nextCreditIn": "Next credit in",
+      "message": "message",
+      "messagesPlural": "messages",
+      "connectedContext": "Connected Context",
+      "images": "Images",
+      "textContext": "Text Context",
+      "strategyData": "Strategy Data",
+      "section": "section",
+      "sections": "sections",
+      "chars": "chars",
+      "startConversationWithContext": "Start a conversation about the connected context.",
+      "chatWillUseImagesAndTexts": "The chat will use images and texts as reference.",
+      "startConversationWithAI": "Start a conversation with the AI.",
+      "connectImagesOrTexts": "Connect images or texts to add context to conversations.",
+      "thinking": "Thinking...",
+      "askAboutContext": "Ask about the context...",
+      "typeYourMessage": "Type your message...",
+      "chatWillUse": "The chat will use",
+      "image": "image",
+      "imagesPlural": "images",
+      "and": "and",
+      "connectedContextAsReference": "connected context as reference"
+    }
+  },
+  "shaderControls": {
+    "title": "Shader Controls",
+    "collapse": "Collapse shader controls",
+    "expand": "Expand shader controls",
+    "shaderType": "Shader Type",
+    "halftoneVariant": "Halftone Variant",
+    "shaderTypes": {
+      "halftone": "Halftone",
+      "vhs": "VHS",
+      "ascii": "ASCII",
+      "matrixDither": "Matrix Dither",
+      "dither": "Dither",
+      "duotone": "Duotone"
+    },
+    "halftoneVariants": {
+      "ellipse": "Ellipse",
+      "square": "Square",
+      "lines": "Lines"
+    },
+    "labels": {
+      "dotSize": "Dot Size",
+      "angle": "Angle",
+      "contrast": "Contrast",
+      "spacing": "Spacing",
+      "animation": "Animation",
+      "tapeWave": "Tape Wave",
+      "tapeCrease": "Tape Crease",
+      "switchingNoise": "Switching Noise",
+      "bloom": "Bloom",
+      "acBeat": "AC Beat",
+      "characterSet": "Character Set",
+      "characterSize": "Character Size",
+      "brightness": "Brightness",
+      "colored": "Colored",
+      "invert": "Invert",
+      "matrixSize": "Matrix Size",
+      "bias": "Bias",
+      "ditherSize": "Dither Size",
+      "offset": "Offset",
+      "bitDepth": "Bit Depth",
+      "palette": "Palette",
+      "shadowColor": "Shadow Color",
+      "highlightColor": "Highlight Color",
+      "intensity": "Intensity"
+    },
+    "characterSets": {
+      "blocks": "Blocks (█▓▒░)",
+      "dots": "Dots (●◉○)",
+      "lines": "Lines (║│┃)",
+      "classic": "Classic (@#%*)",
+      "matrix": "Matrix (01)",
+      "braille": "Braille (⣿⣶⣤)"
+    },
+    "matrixSizes": {
+      "coarse": "2x2 (Coarse)",
+      "medium": "4x4 (Medium)",
+      "fine": "8x8 (Fine)"
+    },
+    "palettes": {
+      "monochrome": "Monochrome",
+      "gameboy": "Gameboy",
+      "crtAmber": "CRT Amber",
+      "crtGreen": "CRT Green",
+      "sepia": "Sepia"
+    },
+    "buttons": {
+      "pause": "Pause",
+      "play": "Play",
+      "on": "On",
+      "off": "Off"
+    },
+    "tooltips": {
+      "stopAnimation": "Stop animation",
+      "startAnimation": "Start subtle animation"
+    }
+  },
+  "canvasToolbar": {
+    "title": "Tools",
+    "addPromptEditNode": "Add Prompt Edit Node",
+    "addMockupPresetNode": "Add Mockup Preset Node",
+    "addCameraAngleNode": "Add Camera Angle Node",
+    "addBrandKit": "Add Brand Kit",
+    "addNode": "Add Node",
+    "addPromptNode": "Add Prompt Node",
+    "addShaderNode": "Add Shader Node",
+    "addLogoNode": "Add Logo Node",
+    "addPdfNode": "Add PDF Node",
+    "addStrategyNode": "Add Strategy Node",
+    "addBrandCore": "Add Brand Core",
+    "addChatNode": "Add Chat Node",
+    "expandToolbar": "Expand toolbar",
+    "collapseToolbar": "Collapse toolbar",
+    "labels": {
+      "prompt": "Prompt",
+      "mockup": "Mockup",
+      "shader": "Shader",
+      "edit": "Edit",
+      "angle": "Angle",
+      "brandKit": "Brand Kit",
+      "logo": "Logo",
+      "pdf": "PDF",
+      "strategy": "Strategy",
+      "brandCore": "Brand Core",
+      "chat": "Chat"
+    },
+    "categories": {
+      "core": "Core",
+      "composition": "Composition",
+      "branding": "Branding"
+    }
+  },
+  "shareModal": {
+    "userEmailPlaceholder": "User email",
+    "usersWhoCanEdit": "Users who can Edit",
+    "usersWhoCanView": "Users who can View",
+    "add": "Add",
+    "generateShareLink": "Generate Share Link",
+    "linkCopied": "Link copied!",
+    "shareProject": "Share Project",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "errorRemovingShare": "Error removing share",
+    "errorCopyingLink": "Error copying link",
+    "shareLink": "Share Link",
+    "permissionsUpdated": "Permissions updated!",
+    "errorUpdatingPermissions": "Error updating permissions",
+    "confirmRemoveShare": "Are you sure you want to remove the share?",
+    "shareRemoved": "Share removed!"
+  },
+  "about": {
+    "title": "VISANT",
+    "tagline": "Experimentation Laboratory",
+    "seo": {
+      "title": "About Visant Labs®",
+      "description": "Independent Brazilian agency. Experimentation laboratory creating personalized solutions for graphic designers and entrepreneurs.",
+      "keywords": "visant labs, about, agency, design, Brazil, creative tools"
+    },
+    "headerImage": {
+      "url": "/og-image.png",
+      "alt": "Visant Labs"
+    },
+    "description": {
+      "title": "About Visant",
+      "text": "Independent Brazilian agency. Experimentation laboratory creating personalized solutions for graphic designers and entrepreneurs."
+    },
+    "founders": {
+      "title": "Created by",
+      "pedroJaques": "Pedro Jaques",
+      "pedroXavier": "Pedro Xavier"
+    },
+    "openSource": {
+      "title": "Open Source",
+      "description": "This project is open source and available on GitHub.",
+      "viewOnGitHub": "View on GitHub"
+    },
+    "links": {
+      "title": "Links",
+      "portfolio": "Agency Portfolio",
+      "alphaTests": "Alpha Tests"
+    }
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "Oops! The page you're looking for doesn't exist or has been moved.",
+    "goHome": "Go to home page",
+    "goBack": "Go back",
+    "helpfulLinks": "Helpful links:",
+    "mockupMachine": "Mockup Machine",
+    "brandingMachine": "Branding Machine",
+    "pricing": "Pricing"
+  },
+  "waitlist": {
+    "title": "Closed Alpha // VSN Labs®",
+    "seoTitle": "Waitlist",
+    "seoDescription": "Join the waitlist to get early access to Visant Labs® premium tools.",
+    "seoKeywords": "waitlist, early access, premium access",
+    "subtitle": "Be among the first to access our premium tools. Get notified when we open access.",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "your.email@example.com",
+    "joinWaitlist": "Join Waitlist",
+    "joining": "Joining...",
+    "addedToWaitlist": "✓ You've been added to the waitlist!",
+    "addAnotherEmail": "Add another email",
+    "or": "or",
+    "joinWhatsAppGroup": "Join WhatsApp Group",
+    "tryMockupMachineNow": "Try Mockup Machine Now",
+    "errors": {
+      "invalidEmail": "Please enter a valid email address",
+      "failedToJoin": "Failed to join waitlist. Please try again."
+    },
+    "success": {
+      "addedToWaitlist": "Thank you! You've been added to the waitlist."
+    }
+  },
+  "myOutputs": {
+    "seoTitle": "Saved",
+    "seoDescription": "View and manage your generated outputs."
+  },
+  "mockupsPage": {
+    "loadingMockups": "Loading mockups...",
+    "retry": "Retry",
+    "cannotConnectServer": "Cannot connect to server. Please check your connection and try again.",
+    "noMockupsYet": "NO MOCKUPS YET",
+    "noMatchesFound": "NO MATCHES FOUND",
+    "generateBlankMockups": "Generate blank mockups to see them here.",
+    "tryAdjustingSearch": "Try adjusting your search or filter.",
+    "search": "Search",
+    "searchPlaceholder": "Search..."
+  },
+  "errorBoundary": {
+    "retrying": "Retrying...",
+    "chunkErrorTitle": "Page Load Error",
+    "unexpectedErrorTitle": "Unexpected Error",
+    "chunkErrorDescription": "Could not load required files",
+    "unexpectedErrorDescription": "Something went wrong",
+    "chunkErrorMessage": "A problem occurred while loading the page files. This is usually caused by network or cache issues.",
+    "chunkErrorHint": "Try reloading the page or clearing your browser cache.",
+    "stackTrace": "Stack Trace",
+    "layoutError": "This error suggests a component is trying to use layout context outside of the Layout component. Please refresh the page or contact support if the issue persists.",
+    "reloadPage": "Reload Page",
+    "goHome": "Go Home",
+    "tryAgain": "Try Again",
+    "unexpectedError": "An unexpected error occurred"
+  },
+  "confirmationModal": {
+    "defaultTitle": "Confirm Action",
+    "defaultConfirm": "Continue",
+    "defaultCancel": "Cancel"
+  },
+  "router": {
+    "routeError": "Route Error",
+    "routeErrorDescription": "An error occurred while loading this route.",
+    "goHome": "Go Home"
+  },
+  "community": {
+    "profileTitle": "{name} - Community Profile",
+    "viewProfile": "View {name}'s mockups and presets",
+    "instagram": "Instagram",
+    "youtube": "YouTube",
+    "twitter": "X (Twitter)",
+    "website": "Website"
+  },
+  "adminPresets": {
+    "edit": "Edit",
+    "delete": "Delete",
+    "removeImage": "Remove image",
+    "reference": "Reference",
+    "failedToUploadImage": "Failed to upload image",
+    "failedToSavePreset": "Failed to save preset",
+    "failedToDeletePreset": "Failed to delete preset",
+    "failedToSendBatch": "Failed to send batch",
+    "failedToImportPresets": "Failed to import default presets",
+    "failedToCreatePreset": "Failed to create preset",
+    "validJson": "Valid JSON! {count} preset(s) found.",
+    "importedSuccess": "Imported {count} preset(s) successfully!",
+    "validationError": "Validation error."
+  },
+  "admin": {
+    "title": "Admin",
+    "description": "Administrative panel",
+    "accessDenied": "Access denied. You must be an administrator.",
+    "failedToLoadData": "Failed to load data.",
+    "noName": "No name",
+    "monthly": "Monthly",
+    "used": "Used",
+    "remaining": "Remaining",
+    "manual": "Manual",
+    "made": "Made",
+    "code": "Code",
+    "referredBy": "Referred by",
+    "directOrigin": "Direct origin",
+    "unknown": "Unknown"
+  },
+  "communityPresets": {
+    "title": "Community Presets",
+    "subtitle": "Discover and share presets created by the community",
+    "myPresets": "My Presets",
+    "allPresets": "All Presets",
+    "viewAll": "All",
+    "viewMy": "My Presets",
+    "myPresetsSubtitle": "Manage and edit your community presets",
+    "createNew": "Create New",
+    "createPreset": "Create Preset",
+    "editPreset": "Edit Preset",
+    "presetType": "Preset Type",
+    "presetId": "Preset ID",
+    "presetIdRequired": "Preset ID (required)",
+    "presetIdPlaceholder": "e.g., my-custom-preset",
+    "presetIdDisabled": "ID cannot be changed after creation",
+    "nameRequired": "Name (required)",
+    "descriptionRequired": "Description (required)",
+    "promptRequired": "Prompt (required)",
+    "referenceImage": "Reference Image",
+    "referenceImageManual": "Reference Image URL (manual)",
+    "referenceImageUrlPlaceholder": "https://...",
+    "uploadingImage": "Uploading image...",
+    "setIdBeforeUpload": "Set Preset ID before uploading image",
+    "uploadNewImage": "Upload new image",
+    "removeImage": "Remove image",
+    "aspectRatioRequired": "Aspect Ratio (required)",
+    "modelOptional": "Model (optional)",
+    "noModel": "No model",
+    "tabs": {
+      "mockup": "Mockup",
+      "angle": "Angle",
+      "texture": "Texture",
+      "ambience": "Ambience",
+      "luminance": "Luminance"
+    },
+    "tags": {
+      "label": "Tags (optional)",
+      "placeholder": "Type a tag and press Enter",
+      "add": "Add"
+    },
+    "referenceImageAlt": "Reference",
+    "sidebarTitle": "My Presets",
+    "presetLabel": "preset",
+    "presetsLabel": "presets",
+    "actions": {
+      "refresh": "Refresh",
+      "edit": "Edit",
+      "delete": "Delete",
+      "save": "Save",
+      "cancel": "Cancel",
+      "like": "Like",
+      "unlike": "Unlike"
+    },
+    "table": {
+      "noPresets": "No presets yet"
+    },
+    "messages": {
+      "presetCreated": "Preset created successfully!",
+      "presetUpdated": "Preset updated successfully!",
+      "presetDeleted": "Preset deleted successfully!",
+      "presetDeleteConfirm": "Are you sure you want to delete this preset? This action cannot be undone.",
+      "imageUploaded": "Image uploaded successfully!"
+    },
+    "errors": {
+      "mustBeAuthenticated": "You must be authenticated to view presets",
+      "mustBeAuthenticatedToCreate": "You must be authenticated to create presets",
+      "failedToLoad": "Failed to load presets",
+      "failedToCreate": "Failed to create preset",
+      "failedToUpdate": "Failed to update preset",
+      "failedToDelete": "Failed to delete preset",
+      "failedToUploadImage": "Failed to upload image",
+      "invalidImage": "Invalid image format",
+      "missingFields": "Please fill in all required fields",
+      "failedToToggleLike": "Failed to update like status"
+    },
+    "openInCanvas": "Open in Canvas",
+    "optional": "optional",
+    "descriptionOptional": "Description (optional)",
+    "descriptionPlaceholder": "Brief description of this preset",
+    "aspectRatioOptional": "Aspect Ratio (optional)",
+    "aspectRatioPlaceholder": "Select aspect ratio",
+    "autoGeneratedId": "ID",
+    "typeCannotBeChanged": "Type cannot be changed after creation",
+    "describeWhatToGenerate": "Describe what you want to generate",
+    "enterPresetNameFirst": "Please enter a preset name first",
+    "pressEnterToAddTags": "Press Enter or click Add to create tags"
+  },
+  "storage": {
+    "title": "Storage",
+    "used": "Used",
+    "remaining": "Remaining",
+    "of": "of",
+    "unavailable": "Storage information not available"
+  }
+}

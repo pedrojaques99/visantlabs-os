@@ -1,0 +1,828 @@
+import { GoogleGenAI, Modality, Type } from "@google/genai";
+import type { UploadedImage, AspectRatio, DesignType, GeminiModel, Resolution } from '../types';
+
+// Lazy initialization to avoid breaking app startup if API key is not configured
+let ai: GoogleGenAI | null = null;
+let currentApiKey: string | null = null;
+let withRetryCallCount = 0;
+
+const getAI = (apiKey?: string): GoogleGenAI => {
+  // If a specific API key is provided, use it (for user's own API key)
+  if (apiKey && apiKey.trim().length > 0) {
+    // Return a new instance with the provided key
+    return new GoogleGenAI({ apiKey: apiKey.trim() });
+  }
+
+  // Helper to safely get env vars in both Node.js and Vite environments
+  const getEnvVar = (key: string): string | undefined => {
+    // Try process.env (Node.js/Server)
+    if (typeof process !== 'undefined' && process.env && process.env[key]) {
+      return process.env[key];
+    }
+    // Try import.meta.env (Vite/Client)
+    try {
+      // @ts-ignore - import.meta.env is Vite specific
+      if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env[key]) {
+        // @ts-ignore
+        return import.meta.env[key];
+      }
+    } catch (e) {
+      // Ignore errors accessing import.meta
+    }
+    return undefined;
+  };
+
+  const storedKey = getEnvVar('VITE_GEMINI_API_KEY') || getEnvVar('VITE_API_KEY') || getEnvVar('GEMINI_API_KEY') || '';
+  const currentKey = storedKey.trim();
+
+  // Otherwise use cached instance or create from environment
+  if (!ai || currentApiKey !== currentKey) {
+
+    // Debug apenas no navegador (sem expor partes da chave)
+    if (typeof window !== 'undefined') {
+      const hasKey = currentKey && currentKey !== 'undefined' && currentKey.length > 0;
+      if (hasKey) {
+        // Verificar se é um placeholder
+        const isPlaceholder = currentKey.toLowerCase().includes('placeholder') ||
+          currentKey.toLowerCase().includes('example') ||
+          currentKey.toLowerCase().includes('your-');
+
+        if (isPlaceholder) {
+          console.error('❌ API Key é um PLACEHOLDER!');
+          console.error('⚠️  Você precisa substituir por uma chave real do Google Gemini');
+          console.error('   Acesse: https://aistudio.google.com/app/apikey');
+        }
+        // SECURITY: Don't log any part of the API key
+      } else {
+        console.warn('⚠️  GEMINI_API_KEY não encontrada. Funcionalidades de IA estarão desabilitadas.');
+        console.warn('   Configure GEMINI_API_KEY no .env para habilitar geração de imagens com IA.');
+      }
+    }
+
+    if (!currentKey || currentKey === 'undefined' || currentKey.length === 0) {
+      throw new Error(
+        "GEMINI_API_KEY não encontrada. " +
+        "Configure GEMINI_API_KEY no arquivo .env para usar funcionalidades de IA. " +
+        "Veja docs/SETUP_LLM.md para mais informações."
+      );
+    }
+
+    currentApiKey = currentKey;
+    ai = new GoogleGenAI({ apiKey: currentKey });
+  }
+  return ai;
+};
+
+export class RateLimitError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'RateLimitError';
+  }
+}
+
+export class ModelOverloadedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ModelOverloadedError';
+  }
+}
+
+interface RetryOptions {
+  maxRetries?: number;
+  timeout?: number;
+  onRetry?: (attempt: number, maxRetries: number, delay: number) => void;
+  model?: GeminiModel | string;
+}
+
+const DEFAULT_TIMEOUTS = {
+  'gemini-3-pro-image-preview': 300000, // 5 minutes for Gemini 3 Pro
+  'gemini-2.5-flash-image': 120000, // 2 minutes for other models
+  'gemini-2.5-flash': 120000, // 2 minutes for text models
+};
+
+const DEFAULT_RETRIES = {
+  'gemini-3-pro-image-preview': 10, // More retries for Gemini 3 Pro
+  'gemini-2.5-flash-image': 5, // Fewer retries for other models
+  'gemini-2.5-flash': 5, // Fewer retries for text models
+};
+
+const withRetry = async <T>(
+  apiCall: () => Promise<T>,
+  options: RetryOptions = {}
+): Promise<T> => {
+  const {
+    maxRetries,
+    timeout,
+    onRetry,
+    model = 'gemini-2.5-flash-image'
+  } = options;
+
+  const effectiveMaxRetries = maxRetries ?? DEFAULT_RETRIES[model] ?? 5;
+  const effectiveTimeout = timeout ?? DEFAULT_TIMEOUTS[model] ?? 120000;
+
+  let attempt = 0;
+  const startTime = Date.now();
+
+  withRetryCallCount++;
+  const currentRetryCallCount = withRetryCallCount;
+
+  const createTimeoutPromise = (): Promise<never> => {
+    return new Promise((_, reject) => {
+      setTimeout(() => {
+        reject(new Error(`Request timeout after ${effectiveTimeout}ms`));
+      }, effectiveTimeout);
+    });
+  };
+
+  while (attempt < effectiveMaxRetries) {
+    try {
+      // Race between API call and timeout
+      const result = await Promise.race([
+        apiCall(),
+        createTimeoutPromise()
+      ]);
+      return result;
+    } catch (error: any) {
+      // Check if timeout occurred
+      if (error?.message?.includes('timeout')) {
+        throw new Error(`Request timed out after ${Math.round((Date.now() - startTime) / 1000)}s. The model may be experiencing high load. Please try again later.`);
+      }
+
+      // Check for rate limit errors (429) - don't retry these
+      const statusCode = error?.status ||
+        error?.statusCode ||
+        error?.response?.status ||
+        error?.response?.statusCode ||
+        error?.code;
+
+      const errorMessage = error?.message || error?.toString() || '';
+      const errorDetails = error?.error?.message || '';
+      const errorResponse = error?.response?.data || error?.response || {};
+      const errorString = JSON.stringify(errorResponse).toLowerCase();
+
+      // Check for 429 in multiple places
+      const isRateLimit = statusCode === 429 ||
+        errorMessage.includes('429') ||
+        errorMessage.toLowerCase().includes('too many requests') ||
+        errorDetails.includes('429') ||
+        errorDetails.toLowerCase().includes('too many requests') ||
+        errorString.includes('429') ||
+        errorString.includes('too many requests');
+
+      if (isRateLimit) {
+        throw new RateLimitError("Rate limit exceeded. Please wait before making more requests.");
+      }
+
+      // Check for 503 (Service Unavailable) or "model overloaded" errors
+      const is503 = statusCode === 503 ||
+        errorMessage.includes('503') ||
+        errorMessage.toLowerCase().includes('service unavailable') ||
+        errorMessage.toLowerCase().includes('model is overloaded') ||
+        errorDetails.toLowerCase().includes('model is overloaded') ||
+        errorString.includes('503') ||
+        errorString.includes('model is overloaded');
+
+      if (is503) {
+        attempt++;
+
+
+        if (attempt >= effectiveMaxRetries) {
+          // After all retries failed, throw ModelOverloadedError with helpful message
+          throw new ModelOverloadedError(
+            `The model is currently overloaded and unable to process your request after ${effectiveMaxRetries} attempts. ` +
+            `This is a temporary issue with the AI service. Please try again in a few minutes. ` +
+            `Your credits have not been deducted.`
+          );
+        }
+
+        // Exponential backoff with jitter: max 120s, min based on attempt
+        const baseDelay = Math.min(Math.pow(2, attempt) * 1000, 120000); // Cap at 120s
+        const jitter = Math.random() * 0.3 * baseDelay; // Add up to 30% jitter
+        const delay = Math.floor(baseDelay + jitter);
+
+        const timeElapsed = Math.round((Date.now() - startTime) / 1000);
+        console.warn(
+          `API call failed with 503 (Model overloaded), retrying... ` +
+          `(Attempt ${attempt}/${effectiveMaxRetries}, waited ${timeElapsed}s so far, next retry in ${Math.round(delay / 1000)}s)`
+        );
+
+        // Notify callback if provided (for UI feedback)
+        if (onRetry) {
+          onRetry(attempt, effectiveMaxRetries, delay);
+        }
+
+        await new Promise(res => setTimeout(res, delay));
+        continue;
+      }
+
+      // For all other errors, throw immediately
+      throw error;
+    }
+  }
+  throw new Error("API call failed after multiple retries.");
+};
+
+
+export const generateMockup = async (
+  promptText: string,
+  baseImage?: UploadedImage,
+  model: GeminiModel = 'gemini-2.5-flash-image',
+  resolution?: Resolution,
+  aspectRatio?: AspectRatio,
+  referenceImages?: UploadedImage[],
+  onRetry?: (attempt: number, maxRetries: number, delay: number) => void,
+  apiKey?: string
+): Promise<string> => {
+  return withRetry(async () => {
+    const parts: any[] = [];
+
+    // Add main base image if provided
+    if (baseImage) {
+      // Validate base64 is not empty
+      if (!baseImage.base64 || baseImage.base64.trim().length === 0) {
+        throw new Error('Base image data is empty');
+      }
+      // Validate mimeType
+      if (!baseImage.mimeType || baseImage.mimeType.trim().length === 0) {
+        throw new Error('Base image MIME type is missing');
+      }
+      parts.push({
+        inlineData: {
+          data: baseImage.base64,
+          mimeType: baseImage.mimeType,
+        },
+      });
+    }
+
+    // Add reference images
+    // Flash model: up to 1 reference image (total 2 images)
+    // Pro model: up to 3 reference images (total 4 images)
+    if (referenceImages && referenceImages.length > 0) {
+      const maxReferenceImages = model === 'gemini-3-pro-image-preview' ? 3 : 1;
+      const imagesToAdd = referenceImages.slice(0, maxReferenceImages);
+
+      imagesToAdd.forEach((img) => {
+        parts.push({
+          inlineData: {
+            data: img.base64,
+            mimeType: img.mimeType,
+          },
+        });
+      });
+    }
+
+    // Validate prompt is not empty
+    if (!promptText || promptText.trim().length === 0) {
+      throw new Error('Prompt text is required');
+    }
+
+    parts.push({ text: promptText });
+
+    const config: any = {
+      responseModalities: [Modality.IMAGE],
+    };
+
+    // Configure resolution for Gemini 3 Pro
+    if (model === 'gemini-3-pro-image-preview' && resolution) {
+      // Map resolution to output dimensions
+      // According to docs: 1K=1210px, 2K=1210px, 4K=2000px max dimension
+      let maxDimension = 1210; // 1K and 2K default
+      if (resolution === '4K') {
+        maxDimension = 2000;
+      }
+
+      // If aspectRatio is provided, calculate dimensions
+      if (aspectRatio) {
+        const [widthRatio, heightRatio] = aspectRatio.split(':').map(Number);
+        const ratio = widthRatio / heightRatio;
+
+        let width: number, height: number;
+        if (ratio >= 1) {
+          // Landscape or square
+          width = maxDimension;
+          height = Math.round(maxDimension / ratio);
+        } else {
+          // Portrait
+          height = maxDimension;
+          width = Math.round(maxDimension * ratio);
+        }
+
+        config.outputImageDimensions = {
+          width,
+          height,
+        };
+      } else {
+        // Default to square if no aspect ratio
+        config.outputImageDimensions = {
+          width: maxDimension,
+          height: maxDimension,
+        };
+      }
+    }
+
+    const response = await getAI(apiKey).models.generateContent({
+      model: model,
+      contents: {
+        parts: parts,
+      },
+      config: config,
+    });
+
+    for (const part of response.candidates?.[0]?.content?.parts || []) {
+      if (part.inlineData) {
+        return part.inlineData.data;
+      }
+    }
+
+    throw new Error("No image was generated in the response.");
+  }, {
+    model,
+    onRetry
+  });
+};
+
+
+export const suggestCategories = async (
+  baseImage: UploadedImage,
+  brandingTags: string[],
+  apiKey?: string
+): Promise<string[]> => {
+  return withRetry(async () => {
+    const prompt = `Analyze the provided image and the branding style: ${brandingTags.join(', ')}. 
+    Based on this, suggest a list of 5 to 10 highly relevant professional mockup categories where this design would look best.
+    Return ONLY a comma-separated list of suggested categories (e.g., T-Shirt, Mug, Poster, Business Card). Do not include any other text or explanation.`;
+
+    const response = await getAI(apiKey).models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: {
+        parts: [
+          {
+            inlineData: {
+              data: baseImage.base64,
+              mimeType: baseImage.mimeType,
+            },
+          },
+          {
+            text: prompt,
+          },
+        ],
+      },
+    });
+
+    const suggestionsText = response.text.trim();
+    if (!suggestionsText) {
+      return [];
+    }
+
+    // Clean up response: remove potential markdown/quotes and split
+    return suggestionsText
+      .replace(/['"`]/g, '')
+      .split(',')
+      .map(tag => tag.trim())
+      .filter(tag => tag.length > 0);
+  }, {
+    model: 'gemini-2.5-flash'
+  });
+};
+
+interface SmartPromptParams {
+  baseImage: UploadedImage | null;
+  designType: DesignType;
+  brandingTags: string[];
+  categoryTags: string[];
+  locationTags: string[];
+  angleTags: string[];
+  lightingTags: string[];
+  effectTags: string[];
+  selectedColors: string[];
+  aspectRatio: AspectRatio;
+  generateText: boolean;
+  withHuman: boolean;
+  negativePrompt: string;
+  additionalPrompt: string;
+}
+
+interface SmartPromptResult {
+  prompt: string;
+  inputTokens?: number;
+  outputTokens?: number;
+}
+
+export const generateSmartPrompt = async (params: SmartPromptParams, apiKey?: string): Promise<SmartPromptResult> => {
+  return withRetry(async () => {
+    const isBlankMockup = params.designType === 'blank';
+
+    const designTypeDescription = isBlankMockup
+      ? 'A blank mockup (no design provided)'
+      : `A standalone ${params.designType}`;
+
+    const designTypeHandlingInstruction = isBlankMockup
+      ? `3.  **Handle Design Type:** The user selected 'blank mockup'. The prompt should describe a clean, empty mockup ready for a design, with a white or neutral surface.`
+      : `3.  **Handle Design Type:** If the type is 'logo', the prompt should focus on placing the logo onto the mockup surface. If the type is 'layout', the prompt should describe applying the entire graphic to the mockup surface (e.g., as a full book cover or poster design).`;
+
+    const textGenerationInstruction = isBlankMockup
+      ? `9.  **Text Generation:** The user wants a blank mockup. Explicitly state "Absolutely no text, letters, or words should be generated in the image."`
+      : `9.  **Text Generation:** If "Generate Placeholder Text" is Yes, include a phrase like "with plausible placeholder text for realism". If No, state "The design should be the sole focus, with absolutely no additional text, words, or letters generated anywhere in the image. Avoid text or letters.".`;
+
+    const humanInteractionInstruction = params.withHuman
+      ? (isBlankMockup
+        ? `10. **Human Interaction:** The user wants to include a human person in the scene. The scene should include a human person appearing in or interacting with the mockup in a natural, contextual way. The person should be shown in a way that makes sense for the mockup type and setting.`
+        : `10. **Human Interaction:** The user wants to include a human person in the scene. The scene should include a human person appearing in or interacting with the mockup product in a natural, contextual way. The person should be shown using, holding, or interacting with the product in a way that makes sense for the mockup type.`)
+      : '';
+
+    const designIntegrityStepNumber = params.withHuman ? 11 : 10;
+    const isLogo = params.designType === 'logo';
+    const safeAreaInstruction = isLogo
+      ? `\n${designIntegrityStepNumber + 1}. **Safe Area (CRITICAL):** The prompt must instruct the image generator to leave a comfortable 'safe area' or 'breathing room' around the uploaded design, stating that the design must not touch or be clipped by the edges of the mockup surface.`
+      : '';
+    const designIntegrityInstructions = isBlankMockup
+      ? `${designIntegrityStepNumber}. **No Graphics:** The prompt must instruct the model to generate a completely blank mockup with no logos, text, or other graphic elements.`
+      : `${designIntegrityStepNumber}. **Preserve the Design Integrity (CRITICAL):** The final prompt MUST include a clear instruction to use the uploaded design *exactly as provided*, forbidding any alteration, modification, or re-drawing. Use a sentence like: "It is crucial that the provided design is placed on the mockup surfaces exactly as it is, without any modification or re-drawing of the original design."${safeAreaInstruction}`;
+
+    // Special handling for Minimalist Studio location
+    const locationInstruction = params.locationTags.includes('Minimalist Studio')
+      ? `5.  **Minimalist Studio Setting (SPECIAL):** If "Minimalist Studio" is selected as the location, describe it as "a professional photography studio with infinite white wall background, studio lighting, clean and minimalist aesthetic". Include a plant in the setting.`
+      : `5.  **Incorporate Additional Details:** If the user provides "Additional Details (MUST HAVE)", integrate these keywords and concepts naturally into the core description of the scene. These are high-priority requirements.`;
+
+    const promptToGemini = `You are an expert AI prompt engineer. Your task is to convert user selections into a concise and effective prompt for an AI image generator to create a photorealistic product mockup.
+
+**USER'S INPUT:**
+-   **Design Type:** ${designTypeDescription}
+-   **Branding Style:** ${params.brandingTags.join(', ') || 'Not specified'}
+-   **Mockup Subject(s):** ${params.categoryTags.join(', ')}
+-   **Color Palette:** ${params.selectedColors.join(', ') || 'Not specified'}
+-   **Setting/Location:** ${params.locationTags.join(', ') || 'Not specified'}
+-   **Camera Angle:** ${params.angleTags.join(', ') || 'Not specified'}
+-   **Lighting Style:** ${params.lightingTags.join(', ') || 'Not specified'}
+-   **Visual Effects:** ${params.effectTags.join(', ') || 'Not specified'}
+-   **Generate Placeholder Text:** ${isBlankMockup ? 'No (Blank Mockup)' : (params.generateText ? 'Yes' : 'No')}
+-   **Include Human Interaction:** ${params.withHuman ? 'Yes' : 'No'}
+-   **Additional Details (MUST HAVE):** ${params.additionalPrompt || 'Not specified'}
+-   **Aspect Ratio:** ${params.aspectRatio}
+-   **Negative Prompt (AVOID):** ${params.negativePrompt || 'Not specified'}
+
+
+**INSTRUCTIONS:**
+Based ${isBlankMockup ? '' : 'on the user\'s input and the provided design image, '}write an improved prompt.
+1.  **Be Concise & Objective:** Combine the user's selections into a clear, direct, and effective prompt. Prioritize clarity and efficiency over descriptive prose.
+2.  **Aspect Ratio is Paramount (CRITICAL):** Start the entire prompt with the aspect ratio description. This is the most important rule.
+    - For '16:9', start with: "A photorealistic, super-detailed widescreen cinematic shot of..."
+    - For '4:3', start with: "A photorealistic, super-detailed standard photo of..."
+    - For '1:1', start with: "A photorealistic, super-detailed square composition of..."
+${designTypeHandlingInstruction}
+4.  **Focus on Realism:** After the aspect ratio prefix, describe the scene. Emphasize photorealistic details: "authentic materials", "subtle surface details", "natural reflections", "professional product photography", "sharp focus".
+${locationInstruction}
+6.  **Color Palette:** If the user specifies a color palette, integrate it into the prompt. For example: "The scene's color palette should be dominated by or feature accents of: ${params.selectedColors.join(', ')}." This should influence background, lighting, and environmental elements, not the uploaded design itself.
+7.  **Structure:** The output must be a single, direct paragraph.
+8.  **Strictly Adhere:** Only use concepts derived from the user's selections. Do not introduce new, unrelated elements.
+${textGenerationInstruction}
+${humanInteractionInstruction}
+${designIntegrityInstructions}
+${isBlankMockup ? (designIntegrityStepNumber + 1) : (designIntegrityStepNumber + 2)}. **Negative Prompt:** If the user has provided a negative prompt, end your response with a new sentence: "AVOID THE FOLLOWING: ${params.negativePrompt}."
+
+**Your output must be ONLY the generated prompt text.**`;
+
+    const parts = [];
+    if (!isBlankMockup && params.baseImage) {
+      parts.push({
+        inlineData: {
+          data: params.baseImage.base64,
+          mimeType: params.baseImage.mimeType,
+        },
+      });
+    }
+    parts.push({ text: promptToGemini });
+
+    const response = await getAI(apiKey).models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: { parts },
+    });
+
+    // Extract usage metadata if available
+    const usageMetadata = (response as any).usageMetadata;
+    const inputTokens = usageMetadata?.promptTokenCount;
+    const outputTokens = usageMetadata?.candidatesTokenCount;
+
+    const prompt = response.text.trim();
+
+    // Return object with prompt and tokens for tracking
+    return {
+      prompt,
+      inputTokens,
+      outputTokens,
+    };
+  }, {
+    model: 'gemini-2.5-flash'
+  });
+};
+
+export const generateMergePrompt = async (images: UploadedImage[]): Promise<string> => {
+  return withRetry(async () => {
+    if (images.length < 2) {
+      throw new Error('At least 2 images are required to generate a merge prompt');
+    }
+
+    const promptToGemini = `You are an expert AI prompt engineer. Your task is to analyze the provided images and generate a clear, effective prompt for merging/combining them into a single cohesive image.
+
+**INSTRUCTIONS:**
+1. Analyze each image provided (there are ${images.length} images total).
+2. Identify the key subjects, elements, colors, styles, and themes in each image.
+3. Generate a concise, descriptive prompt that explains how to combine these images into one cohesive composition.
+4. The prompt should describe:
+   - What elements from each image should be included
+   - How they should be arranged or combined
+   - The overall style, mood, or atmosphere of the merged result
+   - Any important details about the composition
+5. Keep the prompt clear, direct, and focused on the visual combination.
+6. Write in a way that would guide an AI image generator to create the merged result.
+
+**Your output must be ONLY the generated prompt text, without any additional explanation or formatting.**`;
+
+    const parts: any[] = [];
+
+    // Add all images
+    images.forEach((img) => {
+      parts.push({
+        inlineData: {
+          data: img.base64,
+          mimeType: img.mimeType,
+        },
+      });
+    });
+
+    parts.push({ text: promptToGemini });
+
+    const response = await getAI().models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: { parts },
+    });
+
+    return response.text.trim();
+  }, {
+    model: 'gemini-2.5-flash'
+  });
+};
+
+export const improvePrompt = async (basePrompt: string, apiKey?: string): Promise<string> => {
+  return withRetry(async () => {
+    if (!basePrompt || basePrompt.trim().length === 0) {
+      throw new Error('O prompt não pode estar vazio');
+    }
+
+    const promptToGemini = `Melhore este prompt de texto de forma objetiva e concisa. Enriqueça apenas onde necessário, sem redundância ou decoração desnecessária. Mantenha o tom e estilo original.
+
+Original: "${basePrompt}"
+
+Regras:
+- Adicione apenas detalhes essenciais que clarifiquem ou melhorem o significado
+- Remova redundância e palavras desnecessárias
+- Mantenha a voz e intenção originais
+- Seja direto e preciso
+- Sem linguagem decorativa ou firula
+
+Retorne APENAS o texto melhorado, sem explicações.`;
+
+    const response = await getAI(apiKey).models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: promptToGemini,
+    });
+
+    const improvedPrompt = response.text.trim();
+    if (!improvedPrompt) {
+      throw new Error('Nenhum prompt melhorado foi gerado na resposta.');
+    }
+
+    return improvedPrompt;
+  }, {
+    model: 'gemini-2.5-flash'
+  });
+};
+
+export const suggestPromptVariations = async (basePrompt: string, apiKey?: string): Promise<string[]> => {
+  return withRetry(async () => {
+    const promptToGemini = `Você é um engenheiro de prompts especializado. Sua tarefa é criar três variações diversas, criativas e eficazes de um prompt para gerador de imagens IA.
+
+    **Prompt Base:**
+    "${basePrompt}"
+
+    **Instruções:**
+    1. Analise o assunto principal e a intenção do prompt base.
+    2. Gere três variações distintas. Cada uma deve explorar uma direção criativa diferente (ex: mudar o humor, cenário, ângulo da câmera, estilo, ou adicionar detalhes evocativos específicos).
+    3. Mantenha o assunto principal intacto.
+    4. As variações devem ser concisas e prontas para uso direto como prompts.
+    5. Retorne as variações como um objeto JSON com uma única chave "suggestions" que é um array de strings. Exemplo: {"suggestions": ["variação 1", "variação 2", "variação 3"]}.
+
+    Sua saída deve ser APENAS o objeto JSON.`;
+
+    const response = await getAI(apiKey).models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: promptToGemini,
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            suggestions: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.STRING,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const jsonString = response.text.trim();
+    if (!jsonString) return [];
+
+    try {
+      const result = JSON.parse(jsonString);
+      return result.suggestions || [];
+    } catch (e) {
+      console.error("Failed to parse prompt suggestions JSON:", e);
+      return [];
+    }
+  }, {
+    model: 'gemini-2.5-flash'
+  });
+};
+
+export const changeObjectInMockup = async (
+  baseImage: UploadedImage,
+  newObject: string,
+  model: GeminiModel = 'gemini-2.5-flash-image',
+  resolution?: Resolution,
+  onRetry?: (attempt: number, maxRetries: number, delay: number) => void,
+  apiKey?: string
+): Promise<string> => {
+  return withRetry(async () => {
+    const prompt = `Keep the same background, environment, lighting, and camera angle, but replace the main object in the image with ${newObject}. The new object should be placed in the same position and orientation as the original object, maintaining the same perspective and composition. The environment, background, and all other elements should remain exactly the same.`;
+
+    const parts: any[] = [
+      {
+        inlineData: {
+          data: baseImage.base64,
+          mimeType: baseImage.mimeType,
+        },
+      },
+      { text: prompt },
+    ];
+
+    const config: any = {
+      responseModalities: [Modality.IMAGE],
+    };
+
+    // Configure resolution for Gemini 3 Pro
+    if (model === 'gemini-3-pro-image-preview' && resolution) {
+      const maxDimension = resolution === '4K' ? 2000 : 1210;
+      config.outputImageDimensions = {
+        width: maxDimension,
+        height: maxDimension,
+      };
+    }
+
+    const response = await getAI().models.generateContent({
+      model: model,
+      contents: {
+        parts: parts,
+      },
+      config: config,
+    });
+
+    for (const part of response.candidates?.[0]?.content?.parts || []) {
+      if (part.inlineData) {
+        return part.inlineData.data;
+      }
+    }
+
+    throw new Error("No image was generated in the response.");
+  }, {
+    model,
+    onRetry
+  });
+};
+
+export const applyThemeToMockup = async (
+  baseImage: UploadedImage,
+  themes: string[],
+  model: GeminiModel = 'gemini-2.5-flash-image',
+  resolution?: Resolution,
+  onRetry?: (attempt: number, maxRetries: number, delay: number) => void,
+  apiKey?: string
+): Promise<string> => {
+  return withRetry(async () => {
+    const themesText = themes.join(', ');
+    const prompt = `Apply ${themesText} theme to the scene while keeping the same composition, camera angle, and main object. Transform the background, lighting, colors, and environmental elements to reflect the ${themesText} theme, but maintain the exact same perspective, object placement, and overall structure of the original image.`;
+
+    const parts: any[] = [
+      {
+        inlineData: {
+          data: baseImage.base64,
+          mimeType: baseImage.mimeType,
+        },
+      },
+      { text: prompt },
+    ];
+
+    const config: any = {
+      responseModalities: [Modality.IMAGE],
+    };
+
+    // Configure resolution for Gemini 3 Pro
+    if (model === 'gemini-3-pro-image-preview' && resolution) {
+      const maxDimension = resolution === '4K' ? 2000 : 1210;
+      config.outputImageDimensions = {
+        width: maxDimension,
+        height: maxDimension,
+      };
+    }
+
+    const response = await getAI().models.generateContent({
+      model: model,
+      contents: {
+        parts: parts,
+      },
+      config: config,
+    });
+
+    for (const part of response.candidates?.[0]?.content?.parts || []) {
+      if (part.inlineData) {
+        return part.inlineData.data;
+      }
+    }
+
+    throw new Error("No image was generated in the response.");
+  }, {
+    model,
+    onRetry
+  });
+};
+
+export const describeImage = async (
+  image: UploadedImage | string,
+  apiKey?: string
+): Promise<string> => {
+  return withRetry(async () => {
+    // Normalize image input
+    let imageBase64: string;
+    let mimeType: string;
+
+    if (typeof image === 'string') {
+      // If it's a base64 string, try to extract mimeType from data URL or default to png
+      if (image.startsWith('data:')) {
+        const match = image.match(/data:([^;]+);base64,(.+)/);
+        if (match) {
+          mimeType = match[1];
+          imageBase64 = match[2];
+        } else {
+          imageBase64 = image;
+          mimeType = 'image/png';
+        }
+      } else {
+        imageBase64 = image;
+        mimeType = 'image/png';
+      }
+    } else {
+      imageBase64 = image.base64;
+      mimeType = image.mimeType;
+    }
+
+    const prompt = `Analyze this image and provide a clear, objective visual description suitable for use in AI image generation prompts. 
+
+Focus on:
+- Composition and layout
+- Main subjects and objects
+- Colors and color palette
+- Style and aesthetic
+- Lighting conditions
+- Key visual elements and details
+- Overall mood or atmosphere
+
+Be concise, objective, and descriptive. The description should be ready to use as a prompt for generating similar images.`;
+
+    const parts: any[] = [
+      {
+        inlineData: {
+          data: imageBase64,
+          mimeType: mimeType,
+        },
+      },
+      { text: prompt },
+    ];
+
+    const response = await getAI(apiKey).models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: { parts },
+    });
+
+    const description = response.text.trim();
+    if (!description) {
+      throw new Error('No description was generated in the response.');
+    }
+
+    return description;
+  }, {
+    model: 'gemini-2.5-flash'
+  });
+};

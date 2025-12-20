@@ -1,0 +1,3231 @@
+import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import { useNavigate, useBlocker, useLocation } from 'react-router-dom';
+import { Menu, Pickaxe } from 'lucide-react';
+import { ImageUploader } from '../components/ui/ImageUploader';
+import { MockupDisplay } from '../components/mockupmachine/MockupDisplay';
+import { FullScreenViewer } from '../components/FullScreenViewer';
+import { WelcomeScreen } from './WelcomeScreen';
+import { SidebarOrchestrator } from '../components/SidebarOrchestrator';
+import { GenerateButton } from '../components/ui/GenerateButton';
+import { ConfirmationModal } from '../components/ConfirmationModal';
+import { aiApi } from '../services/aiApi';
+import { RateLimitError, ModelOverloadedError } from '../services/geminiService';
+import { getCreditsRequired } from '../utils/creditCalculator';
+import { subscriptionService } from '../services/subscriptionService';
+import { authService } from '../services/authService';
+import { mockupApi } from '../services/mockupApi';
+import { useLayout } from '../hooks/useLayout';
+import type { UploadedImage, AspectRatio, DesignType, GeminiModel, Resolution } from '../types';
+import { toast } from 'sonner';
+import { useTranslation } from '../hooks/useTranslation';
+import { SEO } from '../components/SEO';
+import { SoftwareApplicationSchema, WebSiteSchema } from '../components/StructuredData';
+import { compressImage, getBase64ImageSize, needsCompression } from '../utils/imageCompression';
+import { saveMockupState, loadMockupState, clearMockupState } from '../utils/mockupStatePersistence';
+import { getAllAnglePresetsAsync } from '../services/anglePresetsService';
+import { getAllTexturePresetsAsync } from '../services/texturePresetsService';
+import { getAllAmbiencePresetsAsync } from '../services/ambiencePresetsService';
+import { getAllLuminancePresetsAsync } from '../services/luminancePresetsService';
+import type { AnglePreset } from '../types/anglePresets';
+import type { TexturePreset } from '../types/texturePresets';
+import type { AmbiencePreset } from '../types/ambiencePresets';
+import type { LuminancePreset } from '../types/luminancePresets';
+
+const MOCKUP_COUNT = 2;
+
+import { isLocalDevelopment } from '../utils/env';
+import {
+  AVAILABLE_TAGS,
+  AVAILABLE_BRANDING_TAGS,
+  AVAILABLE_LOCATION_TAGS,
+  AVAILABLE_ANGLE_TAGS,
+  AVAILABLE_LIGHTING_TAGS,
+  AVAILABLE_EFFECT_TAGS,
+  GENERIC_MOCKUP_TAGS,
+  GENERIC_BRANDING_TAGS
+} from '../utils/mockupConstants';
+import {
+  getBackgroundDescription,
+  getLightingDescription,
+  getEffectDescription,
+  getBackgroundsForBranding,
+  filterPresetsByBranding,
+  selectRandomBackground
+} from '../utils/promptHelpers';
+
+
+
+
+
+export const MockupMachinePage: React.FC = () => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { subscriptionStatus, isAuthenticated, isCheckingAuth, onSubscriptionModalOpen, onCreditPackagesModalOpen, setSubscriptionStatus, registerUnsavedOutputsHandler, registerResetHandler } = useLayout();
+
+  const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(null);
+  const [referenceImage, setReferenceImage] = useState<UploadedImage | null>(null);
+  const [referenceImages, setReferenceImages] = useState<UploadedImage[]>([]);
+  const [isImagelessMode, setIsImagelessMode] = useState(false);
+  const [selectedModel, setSelectedModel] = useState<GeminiModel | null>(null);
+  const [resolution, setResolution] = useState<Resolution>('1K');
+  const [designType, setDesignType] = useState<DesignType | null>(null);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedBrandingTags, setSelectedBrandingTags] = useState<string[]>([]);
+  const [mockupCount, setMockupCount] = useState<number>(MOCKUP_COUNT);
+  const [mockups, setMockups] = useState<(string | null)[]>(Array(MOCKUP_COUNT).fill(null));
+  const [isLoading, setIsLoading] = useState<boolean[]>(Array(MOCKUP_COUNT).fill(false));
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isGeneratingPrompt, setIsGeneratingPrompt] = useState(false);
+  const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
+  const [generateText, setGenerateText] = useState<boolean>(false);
+  const [withHuman, setWithHuman] = useState<boolean>(false);
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
+  const [promptPreview, setPromptPreview] = useState<string>('');
+  const [negativePrompt, setNegativePrompt] = useState<string>('');
+  const [additionalPrompt, setAdditionalPrompt] = useState<string>('');
+  const [fullScreenImageIndex, setFullScreenImageIndex] = useState<number | null>(null);
+  const [hasGenerated, setHasGenerated] = useState<boolean>(false);
+  const [isSmartPromptActive, setIsSmartPromptActive] = useState<boolean>(true);
+  const [isPromptManuallyEdited, setIsPromptManuallyEdited] = useState<boolean>(false);
+  const [isPromptReady, setIsPromptReady] = useState<boolean>(false);
+  const promptWasReadyBeforeEditRef = useRef<boolean>(false);
+
+  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
+  const [isAllCategoriesOpen, setIsAllCategoriesOpen] = useState<boolean>(false);
+  const [selectedLocationTags, setSelectedLocationTags] = useState<string[]>([]);
+  const [selectedAngleTags, setSelectedAngleTags] = useState<string[]>([]);
+  const [selectedLightingTags, setSelectedLightingTags] = useState<string[]>([]);
+  const [selectedEffectTags, setSelectedEffectTags] = useState<string[]>([]);
+  const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [colorInput, setColorInput] = useState('');
+  const [isValidColor, setIsValidColor] = useState(false);
+  const [isSuggestingPrompts, setIsSuggestingPrompts] = useState(false);
+  const [promptSuggestions, setPromptSuggestions] = useState<string[]>([]);
+  const [customBrandingInput, setCustomBrandingInput] = useState('');
+  const [customCategoryInput, setCustomCategoryInput] = useState('');
+  const [customLocationInput, setCustomLocationInput] = useState('');
+  const [customAngleInput, setCustomAngleInput] = useState('');
+  const [customLightingInput, setCustomLightingInput] = useState('');
+  const [customEffectInput, setCustomEffectInput] = useState('');
+  const [showWelcome, setShowWelcome] = useState(true);
+  const [shouldAutoGenerate, setShouldAutoGenerate] = useState(false);
+  const [autoGenerateSource, setAutoGenerateSource] = useState<'surprise' | 'angles' | 'environments' | null>(null);
+  const [isAutoGenerateMode, setIsAutoGenerateMode] = useState(false);
+  const [savedIndices, setSavedIndices] = useState<Set<number>>(new Set());
+  const [mockupLikedStatus, setMockupLikedStatus] = useState<Map<number, boolean>>(new Map()); // Map index -> isLiked
+  const [savedMockupIds, setSavedMockupIds] = useState<Map<number, string>>(new Map()); // Map index -> mockup ID
+  const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
+  const [unsavedDialogConfig, setUnsavedDialogConfig] = useState<{
+    onConfirm: () => void;
+    onSaveAll?: () => Promise<void>;
+    message: string;
+    showSaveAll?: boolean;
+  } | null>(null);
+
+  // Check if there are unsaved images for navigation blocker
+  const hasUnsavedImages = mockups.some((mockup, index) =>
+    mockup !== null && !savedIndices.has(index)
+  );
+
+  // Block navigation if there are unsaved images
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      hasUnsavedImages && currentLocation.pathname !== nextLocation.pathname
+  );
+
+  const [sidebarWidth, setSidebarWidth] = useState(715); // 30% maior que 550
+  const sidebarRef = useRef<HTMLElement>(null);
+  const [isSidebarVisibleMobile, setIsSidebarVisibleMobile] = useState(true);
+  const analysisTimeoutRef = useRef<number | null>(null);
+  const prevBrandingTagsLength = useRef(0);
+  const autoGenerateTimeoutRef = useRef<number | null>(null);
+  const isAutoGeneratingRef = useRef(false);
+  const generateOutputsButtonRef = useRef<HTMLButtonElement>(null);
+  const hasRestoredStateRef = useRef(false);
+  const generatedSmartPromptRef = useRef<string | null>(null);
+
+  // Restore state from localStorage on mount (prioritize edit-mockup if exists)
+  useEffect(() => {
+    // Only restore once on mount
+    if (hasRestoredStateRef.current) return;
+    hasRestoredStateRef.current = true;
+
+    try {
+      // First check for edit-mockup (has priority)
+      const editMockupData = localStorage.getItem('edit-mockup');
+      if (editMockupData) {
+        try {
+          const editData = JSON.parse(editMockupData);
+          // Handle edit-mockup (existing logic would go here if needed)
+          // For now, just remove it to avoid conflicts
+          localStorage.removeItem('edit-mockup');
+        } catch (error) {
+          // Invalid edit-mockup data, remove it
+          localStorage.removeItem('edit-mockup');
+        }
+        // Don't restore persisted state if edit-mockup exists
+        return;
+      }
+
+      // Try to restore persisted state
+      const persistedState = loadMockupState();
+      if (persistedState) {
+        // Restore all state
+        setMockups(persistedState.mockups);
+        setUploadedImage(persistedState.uploadedImage);
+        setReferenceImage(persistedState.referenceImage);
+        setReferenceImages(persistedState.referenceImages);
+        setDesignType(persistedState.designType);
+        setSelectedTags(persistedState.selectedTags);
+        setSelectedBrandingTags(persistedState.selectedBrandingTags);
+        setSelectedLocationTags(persistedState.selectedLocationTags);
+        setSelectedAngleTags(persistedState.selectedAngleTags);
+        setSelectedLightingTags(persistedState.selectedLightingTags);
+        setSelectedEffectTags(persistedState.selectedEffectTags);
+        setSelectedColors(persistedState.selectedColors);
+        setPromptPreview(persistedState.promptPreview);
+        setAspectRatio(persistedState.aspectRatio);
+        setSelectedModel(persistedState.selectedModel);
+        setResolution(persistedState.resolution);
+        setHasGenerated(persistedState.hasGenerated);
+        setMockupCount(persistedState.mockupCount);
+        setGenerateText(persistedState.generateText);
+        setWithHuman(persistedState.withHuman);
+        setNegativePrompt(persistedState.negativePrompt);
+        setAdditionalPrompt(persistedState.additionalPrompt);
+
+        // Hide welcome screen and show mockups
+        setShowWelcome(false);
+
+        // Adjust loading array to match mockups length
+        setIsLoading(Array(persistedState.mockups.length).fill(false));
+
+        // Clear persisted state after restoring (to avoid stale data)
+        clearMockupState();
+      }
+    } catch (error) {
+      // Silently fail - don't break UX if restoration fails
+      if (isLocalDevelopment()) {
+        console.warn('Failed to restore mockup state:', error);
+      }
+    }
+  }, []); // Only run once on mount
+
+  const handleModelChange = useCallback((model: GeminiModel) => {
+    const previousModel = selectedModel;
+
+    // If switching to 2.5 Flash, reset resolution (not applicable)
+    if (model === 'gemini-2.5-flash-image' && previousModel === 'gemini-3-pro-image-preview') {
+      setResolution('1K');
+      toast.info(t('messages.switchedToHD'), { duration: 3000 });
+    } else if (model === 'gemini-3-pro-image-preview' && previousModel === 'gemini-2.5-flash-image') {
+      // Switching to 3 Pro - validate credits if needed
+      if (subscriptionStatus) {
+        const minCredits = 3; // Minimum credits for 3 Pro
+        const totalCredits = subscriptionStatus.totalCredits || 0;
+        const remaining = subscriptionStatus.hasActiveSubscription
+          ? totalCredits
+          : Math.min(subscriptionStatus.freeGenerationsRemaining || 0, totalCredits);
+
+        if (remaining < minCredits) {
+          toast.warning(t('messages.modelRequiresCredits', { minCredits, remaining }), { duration: 4000 });
+          onCreditPackagesModalOpen();
+          return; // Don't switch if insufficient credits
+        }
+      }
+      toast.success(t('messages.switchedTo4K'), { duration: 3000 });
+    }
+
+    setSelectedModel(model);
+
+    // Reset prompt ready status when model changes (may need regeneration)
+    if (promptPreview.trim()) {
+      setIsPromptReady(false);
+      toast.info(t('messages.modelChanged'), { duration: 3000 });
+    }
+  }, [selectedModel, subscriptionStatus, promptPreview, onCreditPackagesModalOpen]);
+
+  // Note: mockupCount changes should NOT affect already generated images
+  // It only affects the number of images for the next generation
+
+
+  // Reset showWelcome when navigating to home route
+  // Only reset if we're actually in imageless mode (not when starting a blank mockup)
+  // Also don't reset if we just uploaded an image (check by ensuring no mockups generated yet)
+  useEffect(() => {
+    // Don't reset to welcome if we have an uploaded image (even if no mockups generated yet)
+    // This prevents the welcome screen from reappearing after image upload
+    // Also don't reset if we have generated mockups (hasGenerated is true or mockups array has non-null values)
+    const hasAnyMockups = mockups.some(m => m !== null);
+    if (location.pathname === '/' &&
+      !uploadedImage &&
+      !referenceImage &&
+      mockups.every(m => m === null) &&
+      !isImagelessMode &&
+      designType !== 'blank' &&
+      !hasGenerated &&
+      !hasAnyMockups) {
+      setShowWelcome(true);
+    } else if (hasGenerated || hasAnyMockups) {
+      // Explicitly keep welcome screen hidden if we have generated mockups
+      setShowWelcome(false);
+    }
+  }, [location.pathname, uploadedImage, referenceImage, mockups, isImagelessMode, designType, hasGenerated]);
+
+  // Save state to localStorage when mockups are generated (with debounce)
+  useEffect(() => {
+    // Only save if there are generated mockups
+    const hasAnyMockups = mockups.some(m => m !== null);
+    if (!hasAnyMockups || !hasGenerated) return;
+
+    const timeoutId = setTimeout(async () => {
+      try {
+        await saveMockupState({
+          mockups,
+          uploadedImage,
+          referenceImage,
+          referenceImages,
+          designType,
+          selectedTags,
+          selectedBrandingTags,
+          selectedLocationTags,
+          selectedAngleTags,
+          selectedLightingTags,
+          selectedEffectTags,
+          selectedColors,
+          promptPreview,
+          aspectRatio,
+          selectedModel,
+          resolution,
+          hasGenerated,
+          mockupCount,
+          generateText,
+          withHuman,
+          negativePrompt,
+          additionalPrompt,
+        });
+      } catch (error) {
+        // Silently fail - don't break UX if localStorage fails
+        if (isLocalDevelopment()) {
+          console.warn('Failed to save mockup state:', error);
+        }
+      }
+    }, 500); // Debounce 500ms
+
+    return () => clearTimeout(timeoutId);
+  }, [
+    mockups,
+    uploadedImage,
+    referenceImage,
+    referenceImages,
+    designType,
+    selectedTags,
+    selectedBrandingTags,
+    selectedLocationTags,
+    selectedAngleTags,
+    selectedLightingTags,
+    selectedEffectTags,
+    selectedColors,
+    promptPreview,
+    aspectRatio,
+    selectedModel,
+    resolution,
+    hasGenerated,
+    mockupCount,
+    generateText,
+    withHuman,
+    negativePrompt,
+    additionalPrompt,
+  ]);
+
+  const buildPrompt = useCallback(() => {
+    const baseQuality = "A photorealistic, super-detailed";
+    let aspectInstruction = '';
+    switch (aspectRatio) {
+      case '16:9': aspectInstruction = `widescreen cinematic shot`; break;
+      case '4:3': aspectInstruction = `standard photo`; break;
+      case '1:1': aspectInstruction = `square composition`; break;
+      default: aspectInstruction = `image with an aspect ratio of ${aspectRatio}`; break;
+    }
+    let basePrompt = '';
+
+    // Special handling for Letterhead - elegant A4 paper on minimalist clipboard, contract-style document
+    const isLetterhead = selectedTags.includes('Letterhead');
+
+    if (designType === 'blank') {
+      if (isLetterhead) {
+        basePrompt = `${baseQuality} ${aspectInstruction} of an elegant A4 paper letterhead mockup placed on a minimalist clipboard or document holder. The scene should feature a clean, professional contract-style document aesthetic with the paper elegantly displayed. The clipboard should be minimalist and modern, creating a sophisticated business document presentation. The scene should be clean, minimalist, and ready for a design to be placed on the letterhead. Emphasize authentic paper texture, subtle shadows, and professional product photography lighting with sharp focus. There should be absolutely no text, logos, or any other graphic elements on the mockup surfaces.`;
+      } else {
+        basePrompt = `${baseQuality} ${aspectInstruction} of a blank white ${selectedTags.join(' and ')} mockup. The scene should be clean, minimalist, and ready for a design to be placed on it. Emphasize authentic materials, subtle surface details, and professional product photography lighting with sharp focus. There should be absolutely no text, logos, or any other graphic elements on the mockup surfaces.`;
+      }
+    } else {
+      const designTerm = designType === 'logo' ? 'logo' : 'design';
+      if (isLetterhead) {
+        basePrompt = `${baseQuality} ${aspectInstruction} of an elegant A4 paper letterhead mockup placed on a minimalist clipboard or document holder featuring the provided ${designTerm}. The scene should feature a clean, professional contract-style document aesthetic with the paper elegantly displayed. The clipboard should be minimalist and modern, creating a sophisticated business document presentation. Emphasize authentic paper texture, subtle shadows, and professional product photography lighting with sharp focus.`;
+      } else {
+        basePrompt = `${baseQuality} ${aspectInstruction} of a ${selectedTags.join(' and ')} mockup featuring the provided ${designTerm}. Emphasize authentic materials, subtle surface details, and professional product photography lighting with sharp focus.`;
+      }
+    }
+
+    if (selectedBrandingTags.length > 0) basePrompt += ` The brand's style is: ${selectedBrandingTags.join(', ')}.`;
+    if (selectedLocationTags.length > 0) {
+      // Special handling for Minimalist Studio
+      if (selectedLocationTags.includes('Minimalist Studio')) {
+        basePrompt += ` The scene should be set in a professional photography studio with infinite white wall background, studio lighting, clean and minimalist aesthetic.`;
+        basePrompt += ` The scene should include a plant in the setting.`;
+      } else if (selectedLocationTags.includes('Light Box')) {
+        basePrompt += ` The scene should be set in a professional lightbox photography environment with seamless white or neutral background, even diffused lighting, completely neutral and minimal aesthetic. This is a professional product photography setup with no decorative elements, plants, or distractions - purely focused on showcasing the product with clean, professional lighting.`;
+      } else {
+        basePrompt += ` The scene should be set in or evoke the aesthetic of: ${selectedLocationTags.join(', ')}.`;
+      }
+    }
+    if (selectedAngleTags.length > 0) basePrompt += ` The camera angle should be: ${selectedAngleTags.join(', ')}.`;
+    if (selectedLightingTags.length > 0) basePrompt += ` The lighting should be: ${selectedLightingTags.join(', ')}.`;
+    if (selectedEffectTags.length > 0) basePrompt += ` Apply a visual effect of: ${selectedEffectTags.join(', ')}.`;
+    if (selectedColors.length > 0) basePrompt += ` The scene's color palette should be dominated by or feature accents of: ${selectedColors.join(', ')}.`;
+
+    // Add instruction about reference images if present
+    if (referenceImages.length > 0) {
+      basePrompt += ` IMPORTANT: The provided reference image${referenceImages.length > 1 ? 's' : ''} ${referenceImages.length > 1 ? 'are' : 'is'} included as style and composition guidance. Study ${referenceImages.length > 1 ? 'these images' : 'this image'} carefully and create a mockup that matches the aesthetic, mood, composition style, lighting approach, color palette, and overall visual feeling of ${referenceImages.length > 1 ? 'these reference mockups' : 'this reference mockup'}. Use ${referenceImages.length > 1 ? 'them' : 'it'} as inspiration for creating a similar visual quality and atmosphere.`;
+    }
+
+    if (designType !== 'blank') {
+      if (designType === 'logo') {
+        if (generateText) basePrompt += " If appropriate for the mockup type, generate plausible placeholder text to make the scene more realistic.";
+        else basePrompt += " No additional text, words, or letters should be generated. The design is the sole graphic element.";
+      }
+
+      basePrompt += " Place the design exactly as provided, without modification, cropping, or re-drawing.";
+    }
+
+    if (designType === 'logo') {
+      basePrompt += " When placing the design, ensure a comfortable safe area or 'breathing room' around it. The design must never touch or be clipped by the edges of the mockup surface (e.g., the edges of a business card or a book cover).";
+      basePrompt += " CRITICAL: Analyze the provided logo image and ensure proper contrast between the logo and the mockup substrate. If the logo is light/white (transparent PNG), it must NEVER be placed on a light/white substrate - use dark or colored substrates instead. If the logo is dark, it must NEVER be placed on a dark substrate - use light or colored substrates instead. Always ensure the logo is clearly visible and has sufficient contrast with the background.";
+    }
+
+    if (withHuman) {
+      const humanAction = Math.random() < 0.5 ? 'looking at' : 'interacting with';
+      if (designType === 'blank') {
+        basePrompt += ` The scene should include a human person naturally ${humanAction} the mockup.`;
+      } else {
+        basePrompt += ` The scene should include a human person naturally ${humanAction} the mockup product. Ensure the moment feels contextual for the product type.`;
+      }
+    }
+
+    if (additionalPrompt.trim()) {
+      basePrompt += ` The scene must also include the following details: ${additionalPrompt.trim()}.`;
+    }
+    if (negativePrompt.trim()) {
+      basePrompt += ` AVOID THE FOLLOWING: ${negativePrompt.trim()}.`;
+    }
+
+    return basePrompt;
+  }, [designType, selectedTags, aspectRatio, selectedBrandingTags, selectedLocationTags, selectedAngleTags, selectedLightingTags, selectedEffectTags, selectedColors, generateText, withHuman, negativePrompt, additionalPrompt, referenceImages]);
+
+  const handleGenerateSmartPrompt = useCallback(async () => {
+    if (isGeneratingPrompt) {
+      if (isLocalDevelopment()) {
+        console.warn('Prompt generation already in progress, skipping duplicate call');
+      }
+      return;
+    }
+
+    // Allow prompt generation if: has reference images OR (has design type AND (blank mode OR has uploaded image))
+    const hasRefImagesForSmartPrompt = referenceImages.length > 0;
+    const hasValidDesignSetup = designType && (designType === 'blank' || uploadedImage);
+    if (!hasRefImagesForSmartPrompt && !hasValidDesignSetup) return;
+
+    setIsGeneratingPrompt(true);
+    setPromptSuggestions([]);
+    try {
+      const smartPromptResult = await aiApi.generateSmartPrompt({
+        baseImage: uploadedImage,
+        designType: designType,
+        brandingTags: selectedBrandingTags,
+        categoryTags: selectedTags,
+        locationTags: selectedLocationTags,
+        angleTags: selectedAngleTags,
+        lightingTags: selectedLightingTags,
+        effectTags: selectedEffectTags,
+        selectedColors: selectedColors,
+        aspectRatio: aspectRatio,
+        generateText: generateText,
+        withHuman: withHuman,
+        negativePrompt: negativePrompt,
+        additionalPrompt: additionalPrompt,
+      });
+
+      // Handle both old string format and new object format
+      const smartPrompt = typeof smartPromptResult === 'string'
+        ? smartPromptResult
+        : smartPromptResult.prompt;
+
+      // Always track prompt generation usage (even if tokens are not available, use 0)
+      try {
+        const inputTokens = typeof smartPromptResult === 'object' ? (smartPromptResult.inputTokens ?? 0) : 0;
+        const outputTokens = typeof smartPromptResult === 'object' ? (smartPromptResult.outputTokens ?? 0) : 0;
+
+        const token = authService.getToken();
+        await fetch('/api/mockups/track-prompt-generation', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+          body: JSON.stringify({
+            inputTokens,
+            outputTokens,
+            feature: 'mockupmachine',
+          }),
+        });
+      } catch (trackError) {
+        if (isLocalDevelopment()) {
+          console.error('Failed to track prompt generation:', trackError);
+        }
+        // Don't fail the prompt generation if tracking fails
+      }
+
+      // Add reference images instruction if present
+      let finalPrompt = smartPrompt;
+      if (referenceImages.length > 0) {
+        finalPrompt += ` IMPORTANT: The provided reference image${referenceImages.length > 1 ? 's' : ''} ${referenceImages.length > 1 ? 'are' : 'is'} included as style and composition guidance. Study ${referenceImages.length > 1 ? 'these images' : 'this image'} carefully and create a mockup that matches the aesthetic, mood, composition style, lighting approach, color palette, and overall visual feeling of ${referenceImages.length > 1 ? 'these reference mockups' : 'this reference mockup'}. Use ${referenceImages.length > 1 ? 'them' : 'it'} as inspiration for creating a similar visual quality and atmosphere.`;
+      }
+
+      setPromptPreview(finalPrompt);
+      generatedSmartPromptRef.current = finalPrompt; // Store for use in auto-generate
+      setIsSmartPromptActive(true);
+      setIsPromptManuallyEdited(false);
+      setIsPromptReady(true);
+      // Track that prompt is ready so manual edits can still allow direct generation
+      promptWasReadyBeforeEditRef.current = true;
+
+      toast.success(t('messages.promptGeneratedSuccessfully'), { duration: 4000 });
+
+      // Scroll to generate outputs button after toast appears
+      setTimeout(() => {
+        if (generateOutputsButtonRef.current && sidebarRef.current) {
+          const buttonRect = generateOutputsButtonRef.current.getBoundingClientRect();
+          const sidebarRect = sidebarRef.current.getBoundingClientRect();
+          const relativeTop = buttonRect.top - sidebarRect.top + sidebarRef.current.scrollTop;
+
+          sidebarRef.current.scrollTo({
+            top: relativeTop - 20,
+            behavior: 'smooth'
+          });
+        } else {
+          generateOutputsButtonRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 800);
+    } catch (err) {
+      if (err instanceof RateLimitError) {
+        toast.error(t('messages.rateLimit'), { duration: 5000 });
+      } else {
+        if (isLocalDevelopment()) {
+          console.error("Error generating smart prompt:", err);
+        }
+        toast.error(t('messages.aiBusy'), { duration: 5000 });
+      }
+      setPromptPreview(buildPrompt());
+    } finally {
+      setIsGeneratingPrompt(false);
+    }
+  }, [uploadedImage, designType, selectedTags, selectedBrandingTags, selectedLocationTags, selectedAngleTags, selectedLightingTags, selectedEffectTags, selectedColors, aspectRatio, generateText, withHuman, negativePrompt, additionalPrompt, buildPrompt, t, isGeneratingPrompt, referenceImages]);
+
+  useEffect(() => {
+    // Tags changed - reset prompt ready state and track that it was reset
+    setIsPromptReady(false);
+    promptWasReadyBeforeEditRef.current = false;
+  }, [
+    JSON.stringify(selectedTags),
+    JSON.stringify(selectedBrandingTags),
+    designType,
+    uploadedImage?.base64 ? 'hasImage' : 'noImage',
+    JSON.stringify(selectedLocationTags),
+    JSON.stringify(selectedAngleTags),
+    JSON.stringify(selectedLightingTags),
+    JSON.stringify(selectedEffectTags),
+    JSON.stringify(selectedColors),
+    aspectRatio,
+    generateText,
+    withHuman
+  ]);
+
+
+  const resetControls = useCallback(() => {
+    setDesignType(null);
+    setSelectedModel(null);
+    setResolution('1K');
+    setMockups(Array(mockupCount).fill(null));
+    setSelectedTags([]);
+    setSelectedBrandingTags([]);
+    setSelectedLocationTags([]);
+    setSelectedAngleTags([]);
+    setSelectedLightingTags([]);
+    setSelectedEffectTags([]);
+    setSelectedColors([]);
+    setColorInput('');
+    setIsValidColor(false);
+    setIsAdvancedOpen(false);
+    setIsAllCategoriesOpen(false);
+    setSuggestedTags([]);
+    setHasGenerated(false);
+    setNegativePrompt('');
+    setAdditionalPrompt('');
+    setGenerateText(false);
+    setWithHuman(false);
+    setIsSmartPromptActive(true);
+    setPromptSuggestions([]);
+    setPromptPreview('');
+    setIsPromptManuallyEdited(false);
+    setIsPromptReady(false);
+    setMockups(Array(mockupCount).fill(null));
+    setIsLoading(Array(mockupCount).fill(false));
+    setReferenceImage(null);
+    setReferenceImages([]);
+    setSavedIndices(new Set());
+    setSavedMockupIds(new Map());
+    setMockupLikedStatus(new Map());
+    setUploadedImage(null);
+    setIsImagelessMode(false);
+    // Clear localStorage when resetting
+    clearMockupState();
+  }, [mockupCount]);
+
+  const handleImageUpload = useCallback(async (image: UploadedImage) => {
+    // Check authentication using context state first
+    if (isAuthenticated === false) {
+      toast.error(t('messages.authenticationRequired'), { duration: 5000 });
+      return;
+    }
+
+    // If still checking auth, verify with cache
+    if (isAuthenticated === null || isCheckingAuth) {
+      try {
+        const user = await authService.verifyToken(); // Use verifyToken with cache
+        if (!user) {
+          toast.error(t('messages.authenticationRequired'), { duration: 5000 });
+          return;
+        }
+      } catch (error) {
+        toast.error(t('messages.authenticationError'), { duration: 5000 });
+        return;
+      }
+    }
+
+    // isAuthenticated === true, safe to proceed
+
+    // Se estiver no modo blank mockup, a imagem é apenas referência visual
+    if (designType === 'blank') {
+      setReferenceImage(image);
+      // Não reseta o estado, apenas atualiza a referência visual
+      return;
+    }
+
+    // Para outros modos, a imagem é usada na geração
+    // Reset controls primeiro (ele vai resetar uploadedImage, mas vamos setar depois)
+    setReferenceImage(null);
+    setReferenceImages([]);
+    setIsImagelessMode(false);
+    resetControls();
+    // Agora seta uploadedImage DEPOIS do reset para que não seja sobrescrito
+    setUploadedImage(image);
+    setSelectedModel(null);
+    setResolution('1K');
+    // Por último, esconde welcome screen para garantir que fique false
+    setShowWelcome(false);
+  }, [designType, resetControls, isAuthenticated, isCheckingAuth]);
+
+  const handleStartOver = () => {
+    setUploadedImage(null);
+    setReferenceImage(null);
+    setReferenceImages([]);
+    setIsImagelessMode(false);
+    resetControls();
+    setShowWelcome(true);
+    // Clear persisted state from localStorage
+    clearMockupState();
+  };
+
+  const handleDesignTypeChange = (type: DesignType) => {
+    // Se mudar de blank para outro tipo, limpar referenceImage
+    if (designType === 'blank' && type !== 'blank') {
+      setReferenceImage(null);
+      setReferenceImages([]);
+    }
+    setDesignType(type);
+  };
+
+  const handleProceedWithoutImage = useCallback(async () => {
+    // Check authentication from context
+    if (isAuthenticated !== true) {
+      toast.error(t('messages.authenticationRequired'), { duration: 5000 });
+      return;
+    }
+    // Hide welcome screen first
+    setShowWelcome(false);
+    // Set blank mockup mode
+    setIsImagelessMode(true);
+    setDesignType('blank');
+    // Reset necessary controls without resetting designType
+    setSelectedModel(null);
+    setResolution('1K');
+    setMockups(Array(mockupCount).fill(null));
+    setIsLoading(Array(mockupCount).fill(false));
+    setSelectedTags([]);
+    setSelectedBrandingTags([]);
+    setSelectedLocationTags([]);
+    setSelectedAngleTags([]);
+    setSelectedLightingTags([]);
+    setSelectedEffectTags([]);
+    setSelectedColors([]);
+    setColorInput('');
+    setIsValidColor(false);
+    setIsAdvancedOpen(false);
+    setIsAllCategoriesOpen(false);
+    setSuggestedTags([]);
+    setHasGenerated(false);
+    setNegativePrompt('');
+    setAdditionalPrompt('');
+    setGenerateText(false);
+    setWithHuman(false);
+    setIsSmartPromptActive(true);
+    setPromptSuggestions([]);
+    setPromptPreview('');
+    setIsPromptManuallyEdited(false);
+    setIsPromptReady(false);
+    setReferenceImage(null);
+    setReferenceImages([]);
+    setSavedIndices(new Set());
+    setSavedMockupIds(new Map());
+    setMockupLikedStatus(new Map());
+    setUploadedImage(null);
+  }, [isAuthenticated, mockupCount]);
+
+  const scrollToSection = (sectionId: string) => {
+    setTimeout(() => {
+      const section = document.getElementById(sectionId);
+      const sidebar = document.getElementById('sidebar');
+      if (section && sidebar) {
+        const sidebarRect = sidebar.getBoundingClientRect();
+        const elementRect = section.getBoundingClientRect();
+        const relativeTop = elementRect.top - sidebarRect.top + sidebar.scrollTop;
+
+        sidebar.scrollTo({
+          top: relativeTop - 20,
+          behavior: 'smooth'
+        });
+      }
+    }, 150);
+  };
+
+  const handleTagToggle = (tag: string) => {
+    const wasEmpty = selectedTags.length === 0;
+    setSelectedTags(prev => prev.includes(tag) ? [] : [tag]);
+
+    if (wasEmpty && !selectedTags.includes(tag)) {
+      setTimeout(() => {
+        const refineSection = document.getElementById('refine-section');
+        const sidebar = document.getElementById('sidebar');
+        if (refineSection && sidebar) {
+          const sidebarRect = sidebar.getBoundingClientRect();
+          const elementRect = refineSection.getBoundingClientRect();
+          const relativeTop = elementRect.top - sidebarRect.top + sidebar.scrollTop;
+
+          sidebar.scrollTo({
+            top: relativeTop - 20,
+            behavior: 'smooth'
+          });
+        }
+      }, 150);
+    }
+  };
+
+  const handleBrandingTagToggle = (tag: string) => {
+    const wasEmpty = selectedBrandingTags.length === 0;
+    const isAdding = !selectedBrandingTags.includes(tag);
+
+    setSelectedBrandingTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
+
+    if (wasEmpty && isAdding) {
+      setTimeout(() => {
+        const categoriesSection = document.getElementById('categories-section');
+        const sidebar = document.getElementById('sidebar');
+        if (categoriesSection && sidebar) {
+          const sidebarRect = sidebar.getBoundingClientRect();
+          const elementRect = categoriesSection.getBoundingClientRect();
+          const relativeTop = elementRect.top - sidebarRect.top + sidebar.scrollTop;
+
+          sidebar.scrollTo({
+            top: relativeTop - 20,
+            behavior: 'smooth'
+          });
+        }
+      }, 150);
+    }
+  };
+
+  const handleLocationTagToggle = (tag: string) => setSelectedLocationTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [tag]);
+  const handleAngleTagToggle = (tag: string) => setSelectedAngleTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [tag]);
+  const handleLightingTagToggle = (tag: string) => setSelectedLightingTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [tag]);
+  const handleEffectTagToggle = (tag: string) => setSelectedEffectTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [tag]);
+
+  const handleColorInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newColor = e.target.value.trim();
+    setColorInput(newColor);
+    setIsValidColor(/^#([0-9A-F]{3}){1,2}$/i.test(newColor));
+  };
+
+  const handleAddColor = () => {
+    const sanitizedColor = colorInput.trim().toUpperCase();
+    if (isValidColor && !selectedColors.includes(sanitizedColor) && selectedColors.length < 5) {
+      setSelectedColors([...selectedColors, sanitizedColor]);
+      setColorInput('');
+      setIsValidColor(false);
+    }
+  };
+
+  const handleRemoveColor = (colorToRemove: string) => {
+    setSelectedColors(selectedColors.filter(color => color !== colorToRemove));
+  };
+
+  const handleAddCustomTag = (
+    inputValue: string,
+    selected: string[],
+    setter: React.Dispatch<React.SetStateAction<string[]>>,
+    inputSetter: React.Dispatch<React.SetStateAction<string>>,
+    limit: number
+  ) => {
+    const newTag = inputValue.trim();
+    if (newTag && selected.length < limit && !selected.map(t => t.toLowerCase()).includes(newTag.toLowerCase())) {
+      setter(prev => [...prev, newTag]);
+      inputSetter('');
+    }
+  };
+
+  const handleAddCustomBrandingTag = () => {
+    const wasEmpty = selectedBrandingTags.length === 0;
+    handleAddCustomTag(customBrandingInput, selectedBrandingTags, setSelectedBrandingTags, setCustomBrandingInput, 3);
+
+    if (wasEmpty) {
+      setTimeout(() => {
+        const categoriesSection = document.getElementById('categories-section');
+        const sidebar = document.getElementById('sidebar');
+        if (categoriesSection && sidebar) {
+          const sidebarRect = sidebar.getBoundingClientRect();
+          const elementRect = categoriesSection.getBoundingClientRect();
+          const relativeTop = elementRect.top - sidebarRect.top + sidebar.scrollTop;
+
+          sidebar.scrollTo({
+            top: relativeTop - 20,
+            behavior: 'smooth'
+          });
+        }
+      }, 150);
+    }
+  };
+
+  const handleAddCustomCategoryTag = () => {
+    const newTag = customCategoryInput.trim();
+    if (newTag) {
+      const wasEmpty = selectedTags.length === 0;
+      setSelectedTags([newTag]);
+      setCustomCategoryInput('');
+
+      if (wasEmpty) {
+        setTimeout(() => {
+          const refineSection = document.getElementById('refine-section');
+          const sidebar = document.getElementById('sidebar');
+          if (refineSection && sidebar) {
+            const sidebarRect = sidebar.getBoundingClientRect();
+            const elementRect = refineSection.getBoundingClientRect();
+            const relativeTop = elementRect.top - sidebarRect.top + sidebar.scrollTop;
+
+            sidebar.scrollTo({
+              top: relativeTop - 20,
+              behavior: 'smooth'
+            });
+          }
+        }, 150);
+      }
+    }
+  };
+
+  const handleAddCustomLocationTag = () => {
+    const newTag = customLocationInput.trim();
+    if (newTag) {
+      setSelectedLocationTags([newTag]);
+      setCustomLocationInput('');
+    }
+  };
+
+  const handleAddCustomAngleTag = () => {
+    const newTag = customAngleInput.trim();
+    if (newTag) {
+      setSelectedAngleTags([newTag]);
+      setCustomAngleInput('');
+    }
+  };
+
+  const handleAddCustomLightingTag = () => {
+    const newTag = customLightingInput.trim();
+    if (newTag) {
+      setSelectedLightingTags([newTag]);
+      setCustomLightingInput('');
+    }
+  };
+
+  const handleAddCustomEffectTag = () => {
+    const newTag = customEffectInput.trim();
+    if (newTag) {
+      setSelectedEffectTags([newTag]);
+      setCustomEffectInput('');
+    }
+  };
+
+  const handleRandomizeCategories = useCallback(() => {
+    const shuffled = [...AVAILABLE_TAGS].sort(() => 0.5 - Math.random());
+    const wasEmpty = selectedTags.length === 0;
+    setSelectedTags([shuffled[0]]);
+
+    if (wasEmpty) {
+      setTimeout(() => {
+        const refineSection = document.getElementById('refine-section');
+        const sidebar = document.getElementById('sidebar');
+        if (refineSection && sidebar) {
+          const sidebarRect = sidebar.getBoundingClientRect();
+          const elementRect = refineSection.getBoundingClientRect();
+          const relativeTop = elementRect.top - sidebarRect.top + sidebar.scrollTop;
+
+          sidebar.scrollTo({
+            top: relativeTop - 20,
+            behavior: 'smooth'
+          });
+        }
+      }, 150);
+    }
+  }, [selectedTags.length]);
+
+  const handleNewAngles = useCallback(() => {
+    if (selectedTags.length === 0) {
+      const shuffledCategories = [...AVAILABLE_TAGS].sort(() => 0.5 - Math.random());
+      setSelectedTags([shuffledCategories[0]]);
+    }
+
+    const currentAngle = selectedAngleTags[0];
+    const availableAngles = currentAngle
+      ? AVAILABLE_ANGLE_TAGS.filter(angle => angle !== currentAngle)
+      : AVAILABLE_ANGLE_TAGS;
+
+    if (availableAngles.length === 0) {
+      const shuffled = [...AVAILABLE_ANGLE_TAGS].sort(() => 0.5 - Math.random());
+      setSelectedAngleTags([shuffled[0]]);
+    } else {
+      const shuffled = [...availableAngles].sort(() => 0.5 - Math.random());
+      setSelectedAngleTags([shuffled[0]]);
+    }
+
+    setTimeout(() => {
+      setShouldAutoGenerate(true);
+      setAutoGenerateSource('angles');
+    }, 300);
+  }, [selectedTags.length, selectedAngleTags]);
+
+  const handleNewEnvironments = useCallback(() => {
+    if (selectedTags.length === 0) {
+      const shuffledCategories = [...AVAILABLE_TAGS].sort(() => 0.5 - Math.random());
+      setSelectedTags([shuffledCategories[0]]);
+    }
+
+    const currentEnv = selectedLocationTags[0];
+    const availableEnvs = currentEnv
+      ? AVAILABLE_LOCATION_TAGS.filter(env => env !== currentEnv)
+      : AVAILABLE_LOCATION_TAGS;
+
+    if (availableEnvs.length === 0) {
+      const shuffled = [...AVAILABLE_LOCATION_TAGS].sort(() => 0.5 - Math.random());
+      setSelectedLocationTags([shuffled[0]]);
+    } else {
+      const shuffled = [...availableEnvs].sort(() => 0.5 - Math.random());
+      setSelectedLocationTags([shuffled[0]]);
+    }
+
+    setTimeout(() => {
+      setShouldAutoGenerate(true);
+      setAutoGenerateSource('environments');
+    }, 300);
+  }, [selectedTags.length, selectedLocationTags]);
+
+  const handleAnalyze = useCallback(async () => {
+    if (!uploadedImage || selectedBrandingTags.length === 0 || designType === 'blank') {
+      return;
+    }
+
+    setIsAnalyzing(true);
+
+    try {
+      const suggestions = await aiApi.suggestCategories(uploadedImage, selectedBrandingTags);
+      setSuggestedTags(suggestions);
+    } catch (err) {
+      if (err instanceof RateLimitError) {
+        toast.error(t('messages.rateLimit'), { duration: 5000 });
+      } else {
+        if (isLocalDevelopment()) {
+          console.error("Error getting suggestions:", err);
+        }
+        toast.error(t('messages.aiCouldntGenerateSuggestions'), { duration: 5000 });
+      }
+      setSuggestedTags([]);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  }, [uploadedImage, selectedBrandingTags, designType]);
+
+  useEffect(() => {
+    if (prevBrandingTagsLength.current === 0 && selectedBrandingTags.length === 1) {
+      setIsAllCategoriesOpen(true);
+    }
+    prevBrandingTagsLength.current = selectedBrandingTags.length;
+  }, [selectedBrandingTags]);
+
+  useEffect(() => {
+    if (analysisTimeoutRef.current) {
+      clearTimeout(analysisTimeoutRef.current);
+    }
+    if (uploadedImage && selectedBrandingTags.length > 0) {
+      analysisTimeoutRef.current = window.setTimeout(() => {
+        handleAnalyze();
+      }, 750);
+    }
+    return () => {
+      if (analysisTimeoutRef.current) {
+        clearTimeout(analysisTimeoutRef.current);
+      }
+    };
+  }, [selectedBrandingTags, uploadedImage, handleAnalyze]);
+
+
+  // Check for unsaved images and warn before leaving
+  useEffect(() => {
+    const hasUnsavedImages = mockups.some((mockup, index) =>
+      mockup !== null && !savedIndices.has(index)
+    );
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedImages) {
+        e.preventDefault();
+        // Modern browsers ignore custom messages, but we still need to set returnValue
+        e.returnValue = '';
+        return '';
+      }
+    };
+
+    if (hasUnsavedImages) {
+      window.addEventListener('beforeunload', handleBeforeUnload);
+    }
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [mockups, savedIndices]);
+
+  // Auto-collapse sections when reference images are uploaded
+  useEffect(() => {
+    const hasReferenceImage = referenceImage !== null || referenceImages.length > 0;
+    const shouldCollapseSections = hasReferenceImage && uploadedImage !== null && designType !== 'blank';
+
+    if (shouldCollapseSections) {
+      // Collapse categories and advanced options
+      setIsAllCategoriesOpen(false);
+      setIsAdvancedOpen(false);
+
+      // Auto-scroll to prompt section after a short delay
+      setTimeout(() => {
+        const promptSection = document.getElementById('prompt-section');
+        const sidebar = sidebarRef.current;
+        if (promptSection && sidebar) {
+          const sidebarRect = sidebar.getBoundingClientRect();
+          const elementRect = promptSection.getBoundingClientRect();
+          const relativeTop = elementRect.top - sidebarRect.top + sidebar.scrollTop;
+
+          sidebar.scrollTo({
+            top: relativeTop - 20,
+            behavior: 'smooth'
+          });
+        }
+      }, 300);
+    }
+  }, [referenceImage, referenceImages, uploadedImage, designType]);
+
+
+  const handlePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    setPromptPreview(newValue);
+    if (isSmartPromptActive) {
+      setIsSmartPromptActive(false);
+    }
+    setIsPromptManuallyEdited(true);
+    // If prompt is manually edited and was ready before (tags haven't changed), keep it ready
+    // This allows direct generation after manual editing if tags haven't changed
+    if (newValue.trim().length > 0 && promptWasReadyBeforeEditRef.current) {
+      setIsPromptReady(true);
+    }
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setPromptPreview(suggestion);
+    if (isSmartPromptActive) setIsSmartPromptActive(false);
+    setIsPromptManuallyEdited(false);
+  };
+
+  const handleSimplify = () => {
+    setPromptPreview(buildPrompt());
+    setIsSmartPromptActive(false);
+    setIsPromptManuallyEdited(false);
+    setPromptSuggestions([]);
+  };
+
+  const handleSuggestPrompts = async () => {
+    if (!promptPreview.trim()) return;
+    setIsSuggestingPrompts(true);
+    setPromptSuggestions([]);
+    try {
+      const suggestions = await aiApi.suggestPromptVariations(promptPreview);
+      setPromptSuggestions(suggestions);
+    } catch (err) {
+      if (err instanceof RateLimitError) {
+        toast.error(t('messages.rateLimit'), { duration: 5000 });
+      } else {
+        if (isLocalDevelopment()) {
+          console.error("Error suggesting prompts:", err);
+        }
+        toast.error(t('messages.aiCouldntBrainstorm'), { duration: 5000 });
+      }
+    } finally {
+      setIsSuggestingPrompts(false);
+    }
+  };
+
+  // Helper function to compress images before sending
+  const compressImageIfNeeded = useCallback(async (image: UploadedImage | null | undefined): Promise<UploadedImage | undefined> => {
+    if (!image || !image.base64) return undefined;
+
+    try {
+      // Check if compression is needed (larger than 1.5MB)
+      const maxSizeBytes = 1.5 * 1024 * 1024; // 1.5MB
+      if (needsCompression(image.base64, maxSizeBytes)) {
+        if (isLocalDevelopment()) {
+          console.log('[MockupMachinePage] Compressing image before sending...', {
+            originalSize: (getBase64ImageSize(image.base64) / 1024 / 1024).toFixed(2) + 'MB'
+          });
+        }
+
+        const compressedBase64 = await compressImage(image.base64, {
+          maxWidth: 2048,
+          maxHeight: 2048,
+          maxSizeBytes: maxSizeBytes,
+          quality: 0.85,
+          mimeType: image.mimeType
+        });
+
+        // Extract base64 data and mime type from compressed result
+        const base64Data = compressedBase64.includes(',')
+          ? compressedBase64.split(',')[1]
+          : compressedBase64;
+        const mimeType = compressedBase64.startsWith('data:')
+          ? compressedBase64.match(/data:([^;]+);/)?.[1] || image.mimeType
+          : image.mimeType;
+
+        const compressedSize = (getBase64ImageSize(compressedBase64) / 1024 / 1024).toFixed(2);
+        if (isLocalDevelopment()) {
+          console.log('[MockupMachinePage] Image compressed successfully', {
+            compressedSize: compressedSize + 'MB'
+          });
+        }
+
+        return {
+          base64: base64Data,
+          mimeType: mimeType
+        };
+      }
+
+      return image;
+    } catch (error) {
+      if (isLocalDevelopment()) {
+        console.error('[MockupMachinePage] Failed to compress image, using original:', error);
+      }
+      return image;
+    }
+  }, []);
+
+  // Helper function to check if user has enough credits
+  const hasEnoughCredits = useCallback((creditsNeeded: number): boolean => {
+    // In local development, always allow operations
+    if (isLocalDevelopment()) {
+      return true;
+    }
+
+    // If no subscription status available, consider as no credits
+    if (!subscriptionStatus) {
+      return false;
+    }
+
+    // Check if user has enough credits
+    const totalCredits = subscriptionStatus.totalCredits || 0;
+
+    // Block if user has 0 credits available
+    if (totalCredits === 0) {
+      return false;
+    }
+
+    return totalCredits >= creditsNeeded;
+  }, [subscriptionStatus]);
+
+  const validateAuthAndSubscription = useCallback(async (
+    creditsNeeded?: number,
+    model?: GeminiModel | null,
+    resolution?: Resolution
+  ): Promise<boolean> => {
+    let actualCreditsNeeded = creditsNeeded;
+    if (actualCreditsNeeded === undefined && model) {
+      const creditsPerImage = getCreditsRequired(model, resolution);
+      actualCreditsNeeded = mockupCount * creditsPerImage;
+    } else if (actualCreditsNeeded === undefined) {
+      actualCreditsNeeded = 1;
+    }
+    if (!isLocalDevelopment()) {
+      // Check authentication from context
+      if (isAuthenticated !== true) {
+        toast.error(t('messages.authenticationRequired'), { duration: 5000 });
+        return false;
+      }
+    }
+
+    if (!isLocalDevelopment()) {
+      // Only check if user has enough credits available
+      // Don't block based on subscription status - allow users without subscription to try
+      if (subscriptionStatus) {
+        // totalCredits already includes both earned credits (purchased) and monthly credits remaining
+        // So we should use it directly for both subscribed and free users
+        const totalCredits = subscriptionStatus.totalCredits || 0;
+        const remaining = totalCredits;
+
+        // Only show error if user has no credits available
+        if (remaining < actualCreditsNeeded) {
+          const resetDate = subscriptionStatus.creditsResetDate ? new Date(subscriptionStatus.creditsResetDate).toLocaleDateString() : t('messages.yourNextBillingCycle');
+          const message = subscriptionStatus.hasActiveSubscription
+            ? t('messages.needCreditsSubscription', {
+              creditsNeeded: actualCreditsNeeded,
+              plural: actualCreditsNeeded > 1 ? 's' : '',
+              remaining,
+              pluralRemaining: remaining > 1 ? 's' : '',
+              resetDate
+            })
+            : t('messages.needCreditsButHave', {
+              creditsNeeded: actualCreditsNeeded,
+              plural: actualCreditsNeeded > 1 ? 's' : '',
+              remaining,
+              pluralRemaining: remaining > 1 ? 's' : ''
+            });
+
+          toast.error(message, { duration: 5000 });
+          // Open credit packages modal first (default for users without credits)
+          onCreditPackagesModalOpen();
+          return false;
+        }
+      } else {
+        // If no subscription status available, assume user has no credits
+        toast.error(t('messages.needCredits', { creditsNeeded: actualCreditsNeeded, plural: actualCreditsNeeded > 1 ? 's' : '' }), { duration: 5000 });
+        // Open credit packages modal first (default for users without credits)
+        onCreditPackagesModalOpen();
+        return false;
+      }
+    }
+
+    return true;
+  }, [subscriptionStatus, mockupCount, onSubscriptionModalOpen, isAuthenticated]);
+
+  const executeImageEditOperation = useCallback(async (params: {
+    base64Image: string;
+    prompt: string;
+    onSuccess: (result: string) => void;
+    setIsLoading: (loading: boolean) => void;
+    promptLength?: number;
+  }): Promise<void> => {
+    const { base64Image, prompt, onSuccess, setIsLoading, promptLength = 0 } = params;
+
+    const modelToUse = selectedModel || 'gemini-2.5-flash-image';
+    const resolutionToUse = modelToUse === 'gemini-3-pro-image-preview' ? resolution : undefined;
+
+    const canProceed = await validateAuthAndSubscription(undefined, modelToUse, resolutionToUse);
+    if (!canProceed) return;
+
+    setIsLoading(true);
+
+    try {
+      const referenceImage: UploadedImage = {
+        base64: base64Image,
+        mimeType: 'image/png'
+      };
+
+      // Compress reference image if needed to prevent payload too large errors
+      const compressedReferenceImage = await compressImageIfNeeded(referenceImage);
+      if (!compressedReferenceImage) {
+        throw new Error(t('messages.failedToProcessReferenceImage'));
+      }
+
+      // Compress reference images if available
+      let compressedReferenceImages: UploadedImage[] | undefined;
+      if (referenceImages.length > 0) {
+        const compressionPromises = referenceImages.map(img => compressImageIfNeeded(img));
+        const compressed = await Promise.all(compressionPromises);
+        compressedReferenceImages = compressed.filter((img): img is UploadedImage => img !== undefined);
+      }
+
+      // Use reference images if available (Pro: up to 3, HD: up to 1)
+      const referenceImagesToUse = compressedReferenceImages && compressedReferenceImages.length > 0
+        ? compressedReferenceImages
+        : undefined;
+
+      // CRITICAL: Use backend endpoint which validates and deducts credits BEFORE generation
+      const result = await mockupApi.generate({
+        promptText: prompt,
+        baseImage: {
+          base64: compressedReferenceImage.base64,
+          mimeType: compressedReferenceImage.mimeType
+        },
+        model: modelToUse,
+        resolution: resolutionToUse,
+        aspectRatio: aspectRatio,
+        referenceImages: referenceImagesToUse?.map(img => ({
+          base64: img.base64,
+          mimeType: img.mimeType
+        })),
+        imagesCount: 1
+      });
+
+      onSuccess(result.imageBase64);
+
+      // Show credit deduction notification
+      if (result.isAdmin) {
+        toast.info(t('credits.notificationUsedAdmin'));
+      } else if (result.creditsDeducted > 0) {
+        const plural = result.creditsDeducted > 1 ? 's' : '';
+        const remainingPlural = result.creditsRemaining > 1 ? 's' : '';
+        toast.success(
+          `${t('credits.notificationUsed', { count: result.creditsDeducted, plural })}. ${t('credits.notificationRemaining', { remaining: result.creditsRemaining, plural: remainingPlural })}`
+        );
+      }
+
+      // Credits were already deducted by backend before generation
+      // Update subscription status to reflect new credits
+      try {
+        const updatedStatus = await subscriptionService.getSubscriptionStatus();
+        setSubscriptionStatus(updatedStatus);
+      } catch (statusError: any) {
+        if (isLocalDevelopment()) {
+          console.error('Failed to refresh subscription status:', statusError);
+        }
+        // Non-critical - credits were already deducted, just status refresh failed
+      }
+    } catch (err) {
+      if (isLocalDevelopment()) {
+        console.error('Error in image edit operation:', err);
+      }
+      const errorInfo = getErrorMessage(err);
+      toast.error(errorInfo.message, {
+        description: errorInfo.suggestion,
+        duration: 7000,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [validateAuthAndSubscription, selectedModel, resolution, aspectRatio, onSubscriptionModalOpen, setSubscriptionStatus, compressImageIfNeeded]);
+
+  const runGeneration = useCallback(async (indexToUpdate?: number, promptOverride?: string, appendMode: boolean = false) => {
+    // Prevent multiple simultaneous calls to runGeneration
+    // Check if any generation is currently in progress
+    if (isLoading.some(Boolean)) {
+      if (isLocalDevelopment()) {
+        console.warn('[runGeneration] Generation already in progress, ignoring duplicate call');
+      }
+      return;
+    }
+
+    if (!selectedModel) {
+      toast.error(t('messages.selectModelBeforeGenerating'), { duration: 5000 });
+      return;
+    }
+
+    const modelToUse = selectedModel || 'gemini-2.5-flash-image';
+    const resolutionToUse = modelToUse === 'gemini-3-pro-image-preview' ? resolution : undefined;
+
+    const canProceed = await validateAuthAndSubscription(undefined, modelToUse, resolutionToUse);
+    if (!canProceed) return;
+
+    const promptToUse = promptOverride || promptPreview;
+    // Allow generation if: has reference images OR (has design type AND (blank mode OR has uploaded image)) AND has prompt
+    const hasReferenceImages = referenceImages.length > 0;
+    const hasValidSetup = hasReferenceImages || (designType && (designType === 'blank' || uploadedImage));
+    if (!hasValidSetup || !promptToUse.trim()) {
+      toast.error(t('messages.completeSteps'), { duration: 5000 });
+      return;
+    }
+
+    if (!hasGenerated) setHasGenerated(true);
+
+    const generateAndSet = async (index: number) => {
+      let imageGenerated = false;
+
+      try {
+        // Note: Credit validation and deduction now happens in backend endpoint
+        // No need to validate here - backend will return error if insufficient credits
+
+        // No modo blank, não passa imagem (apenas referência visual)
+        const baseImageForGeneration = designType === 'blank' ? undefined : (uploadedImage || undefined);
+
+        // Compress base image if needed to prevent payload too large errors
+        const compressedBaseImage = await compressImageIfNeeded(baseImageForGeneration);
+
+        // Compress reference images if needed
+        let compressedReferenceImages: UploadedImage[] | undefined;
+        if (referenceImages.length > 0) {
+          const compressionPromises = referenceImages.map(img => compressImageIfNeeded(img));
+          const compressed = await Promise.all(compressionPromises);
+          compressedReferenceImages = compressed.filter((img): img is UploadedImage => img !== undefined);
+        }
+
+        // Use reference images if available (Pro: up to 3, HD: up to 1)
+        const referenceImagesToUse = compressedReferenceImages && compressedReferenceImages.length > 0
+          ? compressedReferenceImages
+          : undefined;
+
+        // CRITICAL: Use backend endpoint which validates and deducts credits BEFORE generation
+        // This prevents abuse and ensures credits are always deducted atomically
+        // Pass slot index as uniqueId to allow parallel batch requests with same parameters
+        const result = await mockupApi.generate({
+          promptText: promptToUse,
+          baseImage: compressedBaseImage ? {
+            base64: compressedBaseImage.base64,
+            mimeType: compressedBaseImage.mimeType
+          } : undefined,
+          model: modelToUse,
+          resolution: resolutionToUse,
+          aspectRatio: aspectRatio,
+          referenceImages: referenceImagesToUse?.map(img => ({
+            base64: img.base64,
+            mimeType: img.mimeType
+          })),
+          imagesCount: 1,
+          feature: 'mockupmachine',
+          uniqueId: index // Use slot index to differentiate parallel batch requests
+        });
+
+        // Image successfully generated - set it in state
+        imageGenerated = true;
+        setMockups(prev => { const newMockups = [...prev]; newMockups[index] = result.imageBase64; return newMockups; });
+
+        // Show credit deduction notification
+        if (result.isAdmin) {
+          toast.info(t('credits.notificationUsedAdmin'));
+        } else if (result.creditsDeducted > 0) {
+          const plural = result.creditsDeducted > 1 ? 's' : '';
+          const remainingPlural = result.creditsRemaining > 1 ? 's' : '';
+          toast.success(
+            `${t('credits.notificationUsed', { count: result.creditsDeducted, plural })}. ${t('credits.notificationRemaining', { remaining: result.creditsRemaining, plural: remainingPlural })}`
+          );
+        }
+
+        // Credits were already deducted by backend before generation
+        // Update subscription status to reflect new credits
+        try {
+          const updatedStatus = await subscriptionService.getSubscriptionStatus();
+          setSubscriptionStatus(updatedStatus);
+        } catch (statusError: any) {
+          if (isLocalDevelopment()) {
+            console.error('Failed to refresh subscription status:', statusError);
+          }
+          // Non-critical - credits were already deducted, just status refresh failed
+        }
+      } catch (err) {
+        if (isLocalDevelopment()) {
+          console.error(`Error generating mockup for slot ${index}:`, err);
+        }
+        const errorInfo = getErrorMessage(err);
+
+        // Only show error if image wasn't generated
+        if (!imageGenerated) {
+          toast.error(errorInfo.message, {
+            description: errorInfo.suggestion,
+            duration: 7000,
+          });
+          setMockups(prev => { const newMockups = [...prev]; newMockups[index] = null; return newMockups; });
+        }
+      } finally {
+        setIsLoading(prev => { const newLoading = [...prev]; newLoading[index] = false; return newLoading; });
+      }
+    };
+
+    if (indexToUpdate !== undefined) {
+      setIsLoading(prev => { const newLoading = [...prev]; newLoading[indexToUpdate] = true; return newLoading; });
+      await generateAndSet(indexToUpdate);
+    } else {
+      if (appendMode) {
+        // Append mode: add new slots at the end without replacing existing ones
+        // Get current length before adding new slots
+        const currentLength = mockups.length;
+        const newStartIndex = currentLength;
+
+        setMockups(prev => {
+          const newMockups = [...prev];
+          // Add new slots for the generation (based on mockupCount)
+          for (let i = 0; i < mockupCount; i++) {
+            newMockups.push(null);
+          }
+          return newMockups;
+        });
+
+        setIsLoading(prev => {
+          const newLoading = [...prev];
+          // Add loading state for new slots
+          for (let i = 0; i < mockupCount; i++) {
+            newLoading.push(true);
+          }
+          return newLoading;
+        });
+
+        setPromptSuggestions([]);
+
+        // Generate all new mockups in parallel
+        const promises = Array.from({ length: mockupCount }, (_, i) =>
+          generateAndSet(newStartIndex + i)
+        );
+        await Promise.allSettled(promises);
+
+        // Refresh subscription status after all generations complete
+        // Note: Usage tracking is handled in generateAndSet for each image
+        // In local development, credits aren't deducted so no need to refresh
+        const isLocal = isLocalDevelopment();
+        if (!isLocal) {
+          try {
+            const updatedStatus = await subscriptionService.getSubscriptionStatus();
+            setSubscriptionStatus(updatedStatus);
+          } catch (statusError: any) {
+            if (isLocalDevelopment()) {
+              console.error('Failed to refresh subscription status after append generation:', statusError);
+            }
+          }
+        }
+      } else {
+        // Normal mode: adjust arrays to match mockupCount when generating new images
+        setMockups(prev => {
+          const newMockups = [...prev];
+          // Only expand if needed, never shrink to preserve existing images
+          while (newMockups.length < mockupCount) {
+            newMockups.push(null);
+          }
+          // Reset only the slots that will be generated (up to mockupCount)
+          for (let i = 0; i < mockupCount; i++) {
+            newMockups[i] = null;
+          }
+          return newMockups;
+        });
+
+        setIsLoading(prev => {
+          const newLoading = [...prev];
+          // Only expand if needed
+          while (newLoading.length < mockupCount) {
+            newLoading.push(false);
+          }
+          // Set loading for slots that will be generated
+          for (let i = 0; i < mockupCount; i++) {
+            newLoading[i] = true;
+          }
+          return newLoading;
+        });
+
+        setPromptSuggestions([]);
+
+        // Track which images were successfully generated for batch tracking
+        const successfulIndices: number[] = [];
+        const promises = Array.from({ length: mockupCount }, (_, i) =>
+          generateAndSet(i)
+            .then(() => {
+              // Only count as successful if image was actually generated
+              // generateAndSet always tracks usage for each successfully generated image
+              if (mockups[i] !== null) {
+                successfulIndices.push(i);
+              }
+            })
+            .catch(() => { })
+        );
+        await Promise.allSettled(promises);
+
+        // Count successful generations
+        const successfulCount = successfulIndices.length;
+
+        // Note: Usage tracking is automatically handled in generateAndSet for each image
+        // Each successfully generated mockup will have a corresponding usage_record
+        // This ensures accurate tracking and credits are only deducted for successful generations
+
+        // Refresh subscription status after all generations complete
+        // Note: Usage tracking is handled in generateAndSet for each image
+        // In local development, credits aren't deducted so no need to refresh
+        const isLocal = isLocalDevelopment();
+        if (successfulCount > 0 && !isLocal) {
+          try {
+            const updatedStatus = await subscriptionService.getSubscriptionStatus();
+            setSubscriptionStatus(updatedStatus);
+          } catch (statusError: any) {
+            if (isLocalDevelopment()) {
+              console.error('Failed to refresh subscription status after batch generation:', statusError);
+            }
+          }
+        }
+      }
+    }
+  }, [uploadedImage, selectedTags, selectedBrandingTags, promptPreview, hasGenerated, designType, mockupCount, subscriptionStatus, aspectRatio, selectedModel, resolution, validateAuthAndSubscription, onSubscriptionModalOpen, setSubscriptionStatus, mockups, referenceImages, compressImageIfNeeded]);
+
+  const handleSurpriseMe = useCallback(async (autoGenerate: boolean = false) => {
+    // Ensure model is selected (default to gemini-2.5-flash-image if not set)
+    const modelToUse = selectedModel || 'gemini-2.5-flash-image';
+    if (!selectedModel) {
+      setSelectedModel('gemini-2.5-flash-image');
+    }
+
+    // Ensure designType is set (default to 'blank' if not set, since Surprise Me works without image)
+    const designTypeToUse = designType || 'blank';
+    if (!designType) {
+      setDesignType('blank');
+    }
+
+    // Keep existing branding tags - don't change them
+    // Use current branding tags from state
+    const brandingTagsToUse = selectedBrandingTags.length > 0 ? selectedBrandingTags : [];
+
+    const shuffledCategories = [...GENERIC_MOCKUP_TAGS].sort(() => 0.5 - Math.random());
+    const selectedCategory = shuffledCategories[0];
+    setSelectedTags([selectedCategory]);
+
+    // Seleciona background baseado no branding escolhido (excluindo "Nature landscape" do Surprise Me)
+    // Inclui "Light Box" e "Minimalist Studio" como opções preferenciais para Surprise Me
+    const suitableBackgrounds = getBackgroundsForBranding(brandingTagsToUse);
+    const filteredBackgrounds = suitableBackgrounds.filter(bg => bg !== 'Nature landscape');
+
+    // Add Light Box and Minimalist Studio as preferred options if not already included
+    const preferredBackgrounds = ['Light Box', 'Minimalist Studio'];
+    const backgroundsToUse = filteredBackgrounds.length > 0
+      ? [...new Set([...preferredBackgrounds, ...filteredBackgrounds])]
+      : [...new Set([...preferredBackgrounds, ...suitableBackgrounds])];
+
+    const selectedBackground = backgroundsToUse[Math.floor(Math.random() * backgroundsToUse.length)];
+    setSelectedLocationTags([selectedBackground]);
+
+    // Buscar presets de forma assíncrona
+    let selectedPresets: {
+      angle?: AnglePreset;
+      texture?: TexturePreset;
+      ambience?: AmbiencePreset;
+      luminance?: LuminancePreset;
+    } = {};
+
+    try {
+      // Buscar todos os presets em paralelo
+      const [allAnglePresets, allTexturePresets, allAmbiencePresets, allLuminancePresets] = await Promise.all([
+        getAllAnglePresetsAsync().catch(() => [] as AnglePreset[]),
+        getAllTexturePresetsAsync().catch(() => [] as TexturePreset[]),
+        getAllAmbiencePresetsAsync().catch(() => [] as AmbiencePreset[]),
+        getAllLuminancePresetsAsync().catch(() => [] as LuminancePreset[]),
+      ]);
+
+      // Filtrar presets baseados no branding
+      const filteredAnglePresets = filterPresetsByBranding(allAnglePresets, brandingTagsToUse);
+      const filteredTexturePresets = filterPresetsByBranding(allTexturePresets, brandingTagsToUse);
+      const filteredAmbiencePresets = filterPresetsByBranding(allAmbiencePresets, brandingTagsToUse);
+      const filteredLuminancePresets = filterPresetsByBranding(allLuminancePresets, brandingTagsToUse);
+
+      // Selecionar presets aleatoriamente com probabilidades
+      if (filteredAnglePresets.length > 0 && Math.random() < 0.4) {
+        selectedPresets.angle = filteredAnglePresets[Math.floor(Math.random() * filteredAnglePresets.length)];
+      }
+
+      if (filteredTexturePresets.length > 0 && Math.random() < 0.3) {
+        selectedPresets.texture = filteredTexturePresets[Math.floor(Math.random() * filteredTexturePresets.length)];
+      }
+
+      if (filteredAmbiencePresets.length > 0 && Math.random() < 0.5) {
+        selectedPresets.ambience = filteredAmbiencePresets[Math.floor(Math.random() * filteredAmbiencePresets.length)];
+      }
+
+      if (filteredLuminancePresets.length > 0 && Math.random() < 0.5) {
+        selectedPresets.luminance = filteredLuminancePresets[Math.floor(Math.random() * filteredLuminancePresets.length)];
+      }
+    } catch (error) {
+      console.warn('Failed to load presets, using fallback logic:', error);
+    }
+
+    // Fallback para lógica antiga se não houver presets selecionados
+    const randomAngle = selectedPresets.angle ? null : (Math.random() < 0.4 ? AVAILABLE_ANGLE_TAGS[Math.floor(Math.random() * AVAILABLE_ANGLE_TAGS.length)] : null);
+    const randomLighting = selectedPresets.luminance ? null : (Math.random() < 0.5 ? AVAILABLE_LIGHTING_TAGS[Math.floor(Math.random() * AVAILABLE_LIGHTING_TAGS.length)] : null);
+    const randomEffect = Math.random() < 0.3 ? AVAILABLE_EFFECT_TAGS[Math.floor(Math.random() * AVAILABLE_EFFECT_TAGS.length)] : null;
+
+    setSelectedAngleTags(randomAngle ? [randomAngle] : []);
+    setSelectedLightingTags(randomLighting ? [randomLighting] : []);
+    setSelectedEffectTags(randomEffect ? [randomEffect] : []);
+    setSelectedColors([]);
+
+    setIsAllCategoriesOpen(true);
+    setIsAdvancedOpen(true);
+
+    // Alternar o checkbox "generate human" de forma aleatória
+    const randomWithHuman = Math.random() < 0.5;
+    setWithHuman(randomWithHuman);
+
+    if (autoGenerate) {
+      // Auto-generate mode: skip prompt generation and directly generate outputs
+      if (selectedCategory) {
+        // Build prompt manually using the values we're setting (don't rely on state updates)
+
+        const baseQuality = "A photorealistic, super-detailed";
+        let aspectInstruction = '';
+        switch (aspectRatio) {
+          case '16:9': aspectInstruction = `widescreen cinematic shot`; break;
+          case '4:3': aspectInstruction = `standard photo`; break;
+          case '1:1': aspectInstruction = `square composition`; break;
+          default: aspectInstruction = `image with an aspect ratio of ${aspectRatio}`; break;
+        }
+
+        const designTerm = designTypeToUse === 'logo' ? 'logo' : 'design';
+        const isBlank = designTypeToUse === 'blank';
+        const isLetterhead = selectedCategory === 'Letterhead';
+
+        let generatedPrompt = '';
+        if (isBlank) {
+          if (isLetterhead) {
+            generatedPrompt = `${baseQuality} ${aspectInstruction} of an elegant A4 paper letterhead mockup placed on a minimalist clipboard or document holder. The scene should feature a clean, professional contract-style document aesthetic with the paper elegantly displayed. The clipboard should be minimalist and modern, creating a sophisticated business document presentation. The scene should be clean, minimalist, and ready for a design to be placed on the letterhead. Emphasize authentic paper texture, subtle shadows, and professional product photography lighting with sharp focus. There should be absolutely no text, logos, or any other graphic elements on the mockup surfaces.`;
+          } else {
+            generatedPrompt = `${baseQuality} ${aspectInstruction} of a blank white ${selectedCategory} mockup. The scene should be clean, minimalist, and ready for a design to be placed on it. Emphasize authentic materials, subtle surface details, and professional product photography lighting with sharp focus. There should be absolutely no text, logos, or any other graphic elements on the mockup surfaces.`;
+          }
+        } else {
+          if (isLetterhead) {
+            generatedPrompt = `${baseQuality} ${aspectInstruction} of an elegant A4 paper letterhead mockup placed on a minimalist clipboard or document holder featuring the provided ${designTerm}. The scene should feature a clean, professional contract-style document aesthetic with the paper elegantly displayed. The clipboard should be minimalist and modern, creating a sophisticated business document presentation. Emphasize authentic paper texture, subtle shadows, and professional product photography lighting with sharp focus.`;
+          } else {
+            generatedPrompt = `${baseQuality} ${aspectInstruction} of a ${selectedCategory} mockup featuring the provided ${designTerm}. Emphasize authentic materials, subtle surface details, and professional product photography lighting with sharp focus.`;
+          }
+        }
+
+        if (brandingTagsToUse.length > 0) {
+          generatedPrompt += ` The brand's style is: ${brandingTagsToUse.join(', ')}.`;
+        }
+
+        // Usa ambience preset se selecionado, senão usa background description
+        if (selectedPresets.ambience) {
+          generatedPrompt += ` ${selectedPresets.ambience.prompt}`;
+        } else {
+          // Cria descrição do ambiente baseado no background selecionado
+          const backgroundDescription = getBackgroundDescription(selectedBackground);
+          generatedPrompt += ` ${backgroundDescription}`;
+        }
+
+        // Usa luminance preset se selecionado, senão usa lighting description
+        if (selectedPresets.luminance) {
+          generatedPrompt += ` ${selectedPresets.luminance.prompt}`;
+        } else if (randomLighting) {
+          // Adiciona detalhes de iluminação se selecionado (fallback)
+          const lightingDescription = getLightingDescription(randomLighting);
+          generatedPrompt += ` ${lightingDescription}`;
+        }
+
+        // Adiciona texture preset se selecionado
+        if (selectedPresets.texture) {
+          generatedPrompt += ` ${selectedPresets.texture.prompt}`;
+        }
+
+        // Adiciona angle preset se selecionado
+        if (selectedPresets.angle) {
+          generatedPrompt += ` ${selectedPresets.angle.prompt}`;
+        }
+
+        // Adiciona efeitos se selecionado
+        if (randomEffect) {
+          const effectDescription = getEffectDescription(randomEffect);
+          generatedPrompt += ` ${effectDescription}`;
+        }
+
+        // Adiciona planta ocasionalmente (70% das vezes) para mais variedade
+        if (Math.random() < 0.7) {
+          generatedPrompt += ` The scene should include a plant in the setting.`;
+        }
+
+        if (!isBlank) {
+          if (designTypeToUse === 'logo') {
+            if (generateText) {
+              generatedPrompt += " If appropriate for the mockup type, generate plausible placeholder text to make the scene more realistic.";
+            } else {
+              generatedPrompt += " No additional text, words, or letters should be generated. The design is the sole graphic element.";
+            }
+          }
+          generatedPrompt += " Place the design exactly as provided, without modification, cropping, or re-drawing.";
+        }
+
+        if (designTypeToUse === 'logo') {
+          generatedPrompt += " When placing the design, ensure a comfortable safe area or 'breathing room' around it. The design must never touch or be clipped by the edges of the mockup surface (e.g., the edges of a business card or a book cover).";
+          generatedPrompt += " CRITICAL: Analyze the provided logo image and ensure proper contrast between the logo and the mockup substrate. If the logo is light/white (transparent PNG), it must NEVER be placed on a light/white substrate - use dark or colored substrates instead. If the logo is dark, it must NEVER be placed on a dark substrate - use light or colored substrates instead. Always ensure the logo is clearly visible and has sufficient contrast with the background.";
+        }
+
+        if (randomWithHuman) {
+          const humanAction = Math.random() < 0.5 ? 'looking at' : 'interacting with';
+          if (isBlank) {
+            generatedPrompt += ` The scene should include a human person naturally ${humanAction} the mockup.`;
+          } else {
+            generatedPrompt += ` The scene should include a human person naturally ${humanAction} the mockup product. Ensure the moment feels contextual for the product type.`;
+          }
+        }
+
+        if (additionalPrompt.trim()) {
+          generatedPrompt += ` The scene must also include the following details: ${additionalPrompt.trim()}.`;
+        }
+        if (negativePrompt.trim()) {
+          generatedPrompt += ` AVOID THE FOLLOWING: ${negativePrompt.trim()}.`;
+        }
+
+        // Step 1: Wait for state updates to propagate (tags selection) - 420ms delay (reduced by 30%)
+        setTimeout(async () => {
+          // Mark as auto-generate mode to hide the generating prompt overlay
+          setIsAutoGenerateMode(true);
+
+          // Step 2: Delay before generating prompt to allow state to settle - 560ms (reduced by 30%)
+          await new Promise(resolve => setTimeout(resolve, 560));
+
+          // Step 3: Generate smart prompt
+          try {
+            await handleGenerateSmartPrompt();
+            // Wait for prompt generation to complete (smart prompt typically takes 2-5s)
+            // Give it extra time to ensure prompt is fully generated and set - 1750ms (reduced by 30%)
+            await new Promise(resolve => setTimeout(resolve, 1750));
+          } catch (error) {
+            // If smart prompt fails, use the manually built prompt
+            if (isLocalDevelopment()) {
+              console.warn('Smart prompt generation failed, using manual prompt:', error);
+            }
+            setPromptPreview(generatedPrompt);
+            setIsSmartPromptActive(false);
+            setIsPromptReady(true);
+            // Wait a bit even if using manual prompt - 560ms (reduced by 30%)
+            await new Promise(resolve => setTimeout(resolve, 560));
+          }
+
+          // Step 4: Final delay before generating images (allows user to see the prompt) - 700ms (reduced by 30%)
+          await new Promise(resolve => setTimeout(resolve, 700));
+
+          // Check if there are already generated outputs to append instead of replacing
+          const hasExistingOutputs = mockups.some(m => m !== null);
+
+          // Step 5: Generate outputs (append if there are existing outputs)
+          // Use the smart prompt if it was generated, otherwise use the manual prompt
+          const finalPrompt = generatedSmartPromptRef.current || generatedPrompt;
+          setPromptPreview(finalPrompt);
+          setIsPromptReady(true);
+          generatedSmartPromptRef.current = null; // Reset for next time
+
+          await runGeneration(undefined, finalPrompt, hasExistingOutputs);
+          setIsPromptReady(false);
+          // Hide sidebar on mobile after generation
+          setIsSidebarVisibleMobile(false);
+
+          // Reset auto-generate mode flag after generation completes
+          setIsAutoGenerateMode(false);
+        }, 420);
+      }
+    } else {
+      // Normal mode: generate prompt first, then user clicks to generate outputs
+      if (selectedCategory) {
+        setTimeout(() => {
+          setShouldAutoGenerate(true);
+          setAutoGenerateSource('surprise');
+        }, 300);
+      }
+
+      // Scroll to generate outputs button after state changes are applied
+      setTimeout(() => {
+        if (generateOutputsButtonRef.current && sidebarRef.current) {
+          const buttonRect = generateOutputsButtonRef.current.getBoundingClientRect();
+          const sidebarRect = sidebarRef.current.getBoundingClientRect();
+          const relativeTop = buttonRect.top - sidebarRect.top + sidebarRef.current.scrollTop;
+
+          sidebarRef.current.scrollTo({
+            top: relativeTop - 20,
+            behavior: 'smooth'
+          });
+        } else {
+          generateOutputsButtonRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 600);
+    }
+  }, [aspectRatio, designType, selectedModel, selectedBrandingTags, generateText, withHuman, additionalPrompt, negativePrompt, runGeneration, mockups]);
+
+  const handleSaveAllUnsaved = useCallback(async () => {
+    if (!isAuthenticated) {
+      toast.error(t('messages.authenticationRequired'), { duration: 5000 });
+      return;
+    }
+
+    const unsavedIndices = mockups
+      .map((mockup, index) => (mockup !== null && !savedIndices.has(index) ? index : null))
+      .filter((index): index is number => index !== null);
+
+    if (unsavedIndices.length === 0) {
+      return;
+    }
+
+    try {
+      // Save all unsaved images
+      const savePromises = unsavedIndices.map(async (index) => {
+        const imageBase64 = mockups[index];
+        if (imageBase64) {
+          const isLiked = mockupLikedStatus.get(index) ?? false;
+
+          const savedMockup = await mockupApi.save({
+            imageBase64: imageBase64,
+            prompt: promptPreview,
+            designType: designType || 'blank',
+            tags: selectedTags,
+            brandingTags: selectedBrandingTags,
+            aspectRatio: aspectRatio,
+            isLiked: isLiked,
+          });
+
+          // Update liked status from saved mockup
+          if (savedMockup._id) {
+            setMockupLikedStatus(prev => new Map(prev).set(index, savedMockup.isLiked ?? isLiked));
+          }
+
+          return { index, mockupId: savedMockup._id };
+        }
+        return null;
+      });
+
+      const results = await Promise.all(savePromises);
+
+      // Mark all as saved and store mockup IDs
+      setSavedIndices(prev => new Set([...prev, ...unsavedIndices]));
+      setSavedMockupIds(prev => {
+        const newMap = new Map(prev);
+        results.forEach(result => {
+          if (result && result.mockupId) {
+            newMap.set(result.index, result.mockupId);
+          }
+        });
+        return newMap;
+      });
+
+      toast.success(t('messages.savedOutputs', { count: unsavedIndices.length, plural: unsavedIndices.length > 1 ? 's' : '' }), { duration: 3000 });
+    } catch (error: any) {
+      if (isLocalDevelopment()) {
+        console.error('Failed to save all mockups:', error);
+      }
+      toast.error(t('messages.failedToSaveOutputs'), { duration: 5000 });
+      throw error;
+    }
+  }, [isAuthenticated, mockups, savedIndices, mockupLikedStatus, promptPreview, designType, selectedTags, selectedBrandingTags, aspectRatio]);
+
+  // Register handlers with Layout context for Header to use
+  useEffect(() => {
+    if (registerUnsavedOutputsHandler) {
+      registerUnsavedOutputsHandler(() => {
+        const hasUnsaved = mockups.some((mockup, index) =>
+          mockup !== null && !savedIndices.has(index)
+        );
+        if (hasUnsaved) {
+          const unsavedCount = mockups.filter((m, i) => m !== null && !savedIndices.has(i)).length;
+          return {
+            hasUnsaved: true,
+            count: unsavedCount,
+            onSaveAll: handleSaveAllUnsaved
+          };
+        }
+        return null;
+      });
+    }
+  }, [registerUnsavedOutputsHandler, mockups, savedIndices, handleSaveAllUnsaved]);
+
+  useEffect(() => {
+    if (registerResetHandler) {
+      registerResetHandler(() => {
+        resetControls();
+      });
+    }
+  }, [registerResetHandler, resetControls]);
+
+  const handleGenerateClick = useCallback(async () => {
+    // Check authentication using context state first
+    if (isAuthenticated === false) {
+      toast.error(t('messages.authenticationRequired'), { duration: 5000 });
+      return;
+    }
+
+    // If still checking auth, verify with cache
+    if (isAuthenticated === null || isCheckingAuth) {
+      try {
+        const user = await authService.verifyToken(); // Use verifyToken with cache
+        if (!user) {
+          toast.error(t('messages.authenticationRequired'), { duration: 5000 });
+          return;
+        }
+      } catch (error) {
+        toast.error(t('messages.authenticationError'), { duration: 5000 });
+        return;
+      }
+    }
+
+    // isAuthenticated === true, safe to proceed
+
+    // Check if prompt is ready (was generated and tags haven't changed)
+    // OR if prompt exists and was manually edited (user wants to use their custom prompt)
+    const hasPrompt = promptPreview.trim().length > 0;
+
+    // Check if we have valid setup (reference images or design type selected)
+    const hasReferenceImagesForPrompt = referenceImages.length > 0;
+    const hasValidSetupForPrompt = hasReferenceImagesForPrompt || designType;
+
+    if (!isPromptReady && !hasPrompt) {
+      // No prompt exists and not ready - generate smart prompt if conditions are met
+      if (hasValidSetupForPrompt) {
+        await handleGenerateSmartPrompt();
+      } else {
+        toast.error(t('messages.completeSteps'), { duration: 5000 });
+      }
+    } else if (!isPromptReady && hasPrompt) {
+      // Prompt exists but tags changed (isPromptReady is false due to useEffect)
+      // Force user to regenerate prompt to ensure it matches current tags
+      if (hasValidSetupForPrompt) {
+        toast.info(t('messages.tagsChanged'), { duration: 4000 });
+        await handleGenerateSmartPrompt();
+      } else {
+        toast.error(t('messages.completeSteps'), { duration: 5000 });
+      }
+    } else {
+      // Prompt is ready (isPromptReady is true) - generate outputs directly
+      // This means tags haven't changed since last prompt generation
+      // If there are already generated outputs, append new ones instead of replacing
+      const hasExistingOutputs = mockups.some(m => m !== null);
+
+      // Scroll to top to show MockupDisplay
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Also scroll the main content area if it exists
+        const mainElement = document.querySelector('main');
+        if (mainElement) {
+          mainElement.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }, 100);
+
+      await runGeneration(undefined, undefined, hasExistingOutputs);
+      setIsPromptReady(false);
+      // Hide sidebar on mobile after generation
+      setIsSidebarVisibleMobile(false);
+    }
+  }, [promptPreview, selectedTags, designType, referenceImages, handleGenerateSmartPrompt, runGeneration, mockups, savedIndices, handleSaveAllUnsaved, isAuthenticated, isCheckingAuth]);
+
+  const handleGenerateSuggestion = useCallback(async (suggestion: string) => {
+    // Check authentication using context state first
+    if (isAuthenticated === false) {
+      toast.error(t('messages.authenticationRequired'), { duration: 5000 });
+      return;
+    }
+
+    // If still checking auth, verify with cache
+    if (isAuthenticated === null || isCheckingAuth) {
+      try {
+        const user = await authService.verifyToken(); // Use verifyToken with cache
+        if (!user) {
+          toast.error(t('messages.authenticationRequired'), { duration: 5000 });
+          return;
+        }
+      } catch (error) {
+        toast.error(t('messages.authenticationError'), { duration: 5000 });
+        return;
+      }
+    }
+
+    // isAuthenticated === true, safe to proceed
+
+    if (!selectedModel) {
+      toast.error(t('messages.selectModelBeforeGenerating'), { duration: 5000 });
+      return;
+    }
+
+    // Allow generation if: has reference images OR (has design type AND (blank mode OR has uploaded image)) AND has suggestion
+    const hasRefImages = referenceImages.length > 0;
+    const hasValidSetupForSuggestion = hasRefImages || (designType && (designType === 'blank' || uploadedImage));
+    if (!hasValidSetupForSuggestion || !suggestion.trim()) {
+      toast.error(t('messages.completeSteps'), { duration: 5000 });
+      return;
+    }
+
+    // Generate using the suggestion prompt in append mode (adds to existing mockups)
+    await runGeneration(undefined, suggestion, true);
+  }, [selectedModel, designType, uploadedImage, referenceImages, selectedTags, runGeneration, isAuthenticated, isCheckingAuth]);
+
+  const handleSaveMockup = useCallback(async (index: number, imageBase64: string) => {
+    if (!isAuthenticated) {
+      toast.error(t('messages.authenticationRequired'), { duration: 5000 });
+      return;
+    }
+
+    try {
+      const isLiked = mockupLikedStatus.get(index) ?? false;
+
+      const savedMockup = await mockupApi.save({
+        imageBase64: imageBase64,
+        prompt: promptPreview,
+        designType: designType || 'blank',
+        tags: selectedTags,
+        brandingTags: selectedBrandingTags,
+        aspectRatio: aspectRatio,
+        isLiked: isLiked,
+      });
+
+      // Mark as saved and store the mockup ID
+      setSavedIndices(prev => new Set([...prev, index]));
+      if (savedMockup._id) {
+        setSavedMockupIds(prev => new Map(prev).set(index, savedMockup._id));
+        // Update liked status from saved mockup
+        setMockupLikedStatus(prev => new Map(prev).set(index, savedMockup.isLiked ?? isLiked));
+      }
+    } catch (error: any) {
+      if (isLocalDevelopment()) {
+        console.error('[Save] Failed to save mockup:', {
+          index,
+          message: error?.message,
+          status: error?.status,
+          details: error?.details,
+          error: error,
+        });
+      }
+
+      // Show user-friendly error message
+      const errorMessage = error?.details || error?.message || t('messages.failedToSaveMockup');
+      toast.error(errorMessage, { duration: 5000 });
+      throw error; // Re-throw to let component handle it
+    }
+  }, [isAuthenticated, mockupLikedStatus, promptPreview, designType, selectedTags, selectedBrandingTags, aspectRatio]);
+
+  const handleRedrawClick = (index: number) => runGeneration(index);
+  const handleOpenFullScreen = (index: number) => setFullScreenImageIndex(index);
+  const handleCloseFullScreen = () => setFullScreenImageIndex(null);
+
+  // Handler for syncing like state directly (used when hook updates state)
+  const handleLikeStateChange = useCallback((index: number) => (newIsLiked: boolean) => {
+    // Direct state update (no toggle) - used by hook after it updates backend
+    setMockupLikedStatus(prev => new Map(prev).set(index, newIsLiked));
+  }, []);
+
+  // Fallback handler for when hook is not used (items without mockupId)
+  const handleToggleLike = useCallback(async (index: number) => {
+    if (!isAuthenticated) {
+      toast.error(t('messages.authenticationRequired'), { duration: 5000 });
+      return;
+    }
+
+    const mockupId = savedMockupIds.get(index);
+    const currentIsLiked = mockupLikedStatus.get(index) ?? false;
+    const newLikedState = !currentIsLiked;
+
+    // Update local state immediately for responsive UI
+    setMockupLikedStatus(prev => new Map(prev).set(index, newLikedState));
+
+    // Check if mockupId is valid
+    const isValidObjectId = mockupId && /^[0-9a-fA-F]{24}$/.test(mockupId);
+
+    // If mockup is not saved yet, save it with the new like status (same as Save All)
+    if (!mockupId || !isValidObjectId) {
+      const imageBase64 = mockups[index];
+      if (!imageBase64) {
+        if (isLocalDevelopment()) {
+          console.error('[Like] No image to save for index:', index);
+        }
+        // Revert local state if no image
+        setMockupLikedStatus(prev => new Map(prev).set(index, currentIsLiked));
+        return;
+      }
+
+      try {
+        // Save mockup with new like status (same pattern as Save All)
+        const savedMockup = await mockupApi.save({
+          imageBase64: imageBase64,
+          prompt: promptPreview,
+          designType: designType || 'blank',
+          tags: selectedTags,
+          brandingTags: selectedBrandingTags,
+          aspectRatio: aspectRatio,
+          isLiked: newLikedState,
+        });
+
+        // Mark as saved and store the mockup ID
+        setSavedIndices(prev => new Set([...prev, index]));
+        if (savedMockup._id) {
+          setSavedMockupIds(prev => new Map(prev).set(index, savedMockup._id));
+          // Update liked status from saved mockup
+          setMockupLikedStatus(prev => new Map(prev).set(index, savedMockup.isLiked ?? newLikedState));
+        }
+
+        toast.success(newLikedState ? t('canvas.addedToFavorites') : t('canvas.removedFromFavorites'), { duration: 2000 });
+      } catch (error: any) {
+        if (isLocalDevelopment()) {
+          console.error('[Like] Failed to save mockup with like status:', {
+            index,
+            isLiked: newLikedState,
+            error: error?.message || error,
+          });
+        }
+        // Revert local state on error
+        setMockupLikedStatus(prev => new Map(prev).set(index, currentIsLiked));
+        toast.error(t('canvasNodes.outputNode.failedToUpdateLikeStatus'), { duration: 3000 });
+      }
+      return;
+    }
+
+    // If mockup is already saved, update the like status
+    try {
+      await mockupApi.update(mockupId, { isLiked: newLikedState });
+      toast.success(newLikedState ? t('canvas.addedToFavorites') : t('canvas.removedFromFavorites'), { duration: 2000 });
+    } catch (error: any) {
+      if (isLocalDevelopment()) {
+        console.error('[Like] Failed to update like status:', {
+          mockupId,
+          isLiked: newLikedState,
+          error: error?.message || error,
+        });
+      }
+      // Revert local state on error
+      setMockupLikedStatus(prev => new Map(prev).set(index, currentIsLiked));
+      toast.error(t('canvasNodes.outputNode.failedToUpdateLikeStatus'), { duration: 3000 });
+    }
+  }, [isAuthenticated, savedMockupIds, mockupLikedStatus, mockups, promptPreview, designType, selectedTags, selectedBrandingTags, aspectRatio, t]);
+
+  const handleRemoveMockup = useCallback((index: number) => {
+    const mockup = mockups[index];
+    if (!mockup) return;
+
+    const isSaved = savedIndices.has(index);
+
+    // Helper function to remove the mockup and adjust all related indices
+    const removeMockupAndAdjustIndices = () => {
+      setMockups(prev => prev.filter((_, i) => i !== index));
+      setIsLoading(prev => prev.filter((_, i) => i !== index));
+
+      // Adjust fullScreenImageIndex: close modal if viewing deleted mockup, adjust index if viewing later mockup
+      if (fullScreenImageIndex !== null) {
+        if (fullScreenImageIndex === index) {
+          // Close modal if viewing the deleted mockup
+          setFullScreenImageIndex(null);
+        } else if (fullScreenImageIndex > index) {
+          // Adjust index if viewing a mockup after the deleted one
+          setFullScreenImageIndex(fullScreenImageIndex - 1);
+        }
+      }
+
+      // Adjust savedIndices: remove the deleted index and shift down indices greater than it
+      setSavedIndices(prev => {
+        const newSet = new Set<number>();
+        prev.forEach(savedIndex => {
+          if (savedIndex < index) {
+            newSet.add(savedIndex);
+          } else if (savedIndex > index) {
+            newSet.add(savedIndex - 1);
+          }
+          // Skip the deleted index
+        });
+        return newSet;
+      });
+
+      // Adjust savedMockupIds: same logic as savedIndices
+      setSavedMockupIds(prev => {
+        const newMap = new Map<number, string>();
+        prev.forEach((mockupId, savedIndex) => {
+          if (savedIndex < index) {
+            newMap.set(savedIndex, mockupId);
+          } else if (savedIndex > index) {
+            newMap.set(savedIndex - 1, mockupId);
+          }
+          // Skip the deleted index
+        });
+        return newMap;
+      });
+
+      // Adjust mockupLikedStatus: same logic
+      setMockupLikedStatus(prev => {
+        const newMap = new Map<number, boolean>();
+        prev.forEach((isLiked, savedIndex) => {
+          if (savedIndex < index) {
+            newMap.set(savedIndex, isLiked);
+          } else if (savedIndex > index) {
+            newMap.set(savedIndex - 1, isLiked);
+          }
+          // Skip the deleted index
+        });
+        return newMap;
+      });
+    };
+
+    if (!isSaved) {
+      // Show confirmation dialog for unsaved outputs
+      setUnsavedDialogConfig({
+        onConfirm: removeMockupAndAdjustIndices,
+        message: t('messages.unsavedOutputRemoveMessage'),
+        showSaveAll: false
+      });
+      setShowUnsavedDialog(true);
+    } else {
+      // For saved outputs, remove from display
+      removeMockupAndAdjustIndices();
+      toast.success(t('messages.outputRemoved'), { duration: 2000 });
+    }
+  }, [mockups, savedIndices, fullScreenImageIndex, t]);
+  const handleRedrawFromModal = (index: number) => { handleRedrawClick(index); handleCloseFullScreen(); };
+  const handleZoomInFromModal = (index: number) => { handleCloseFullScreen(); handleZoomInFromOutput(index); };
+  const handleZoomOutFromModal = (index: number) => { handleCloseFullScreen(); handleZoomOutFromOutput(index); };
+  const handleNewAngleFromModal = (index: number, angle: string) => { handleCloseFullScreen(); handleNewAngleFromOutput(index, angle); };
+  const handleNewBackgroundFromModal = (index: number) => { handleCloseFullScreen(); handleNewBackgroundFromOutput(index); };
+  const handleNewBackgroundFromModalWithPreset = (index: number, background: string) => {
+    handleCloseFullScreen();
+    handleNewBackgroundFromOutputWithPreset(index, background);
+  };
+  const handleNewLightingFromModalWithPreset = (index: number, lighting: string) => {
+    handleCloseFullScreen();
+    handleNewLightingFromOutputWithPreset(index, lighting);
+  };
+
+  const handleNewAngleFromOutput = useCallback(async (index: number, angle: string) => {
+    const outputImage = mockups[index];
+    if (!outputImage || isLoading[index] || isGeneratingPrompt) return;
+
+    // Close fullscreen modal immediately
+    handleCloseFullScreen();
+
+    // Ensure we stay on MockupMachinePage (not WelcomeScreen)
+    setShowWelcome(false);
+    if (!hasGenerated) {
+      setHasGenerated(true);
+    }
+
+    // Open sidebar on mobile if it's closed
+    if (!isSidebarVisibleMobile) {
+      setIsSidebarVisibleMobile(true);
+    }
+
+    // Calculate new index before appending
+    const newIndex = mockups.length;
+
+    // Append new slot
+    setMockups(prev => [...prev, null]);
+    setIsLoading(prev => [...prev, true]);
+
+    const anglePrompt = `${buildPrompt()} The camera angle should be changed to: ${angle}. Keep the same product, design, and overall composition, but change only the camera perspective. It is critical that all design elements in the image, including any text, logos, graphics, and branding elements, are preserved exactly as they appear in the original image. Do not modify, re-draw, alter, or recreate any text, logos, or design elements. They must remain identical to the original image.`;
+
+    await executeImageEditOperation({
+      base64Image: outputImage,
+      prompt: anglePrompt,
+      onSuccess: (result) => {
+        setMockups(prev => {
+          const newMockups = [...prev];
+          // Find the first null slot (should be at newIndex)
+          const targetIndex = newIndex < prev.length ? newIndex : prev.length;
+          newMockups[targetIndex] = result;
+          return newMockups;
+        });
+        // Collapse sidebar after generation completes
+        setIsSidebarVisibleMobile(false);
+      },
+      setIsLoading: (loading) => {
+        setIsLoading(prev => {
+          const newLoading = [...prev];
+          const targetIndex = newIndex < newLoading.length ? newIndex : newLoading.length;
+          newLoading[targetIndex] = loading;
+          return newLoading;
+        });
+        // Collapse sidebar when loading finishes (even if error)
+        if (!loading) {
+          setIsSidebarVisibleMobile(false);
+        }
+      },
+      promptLength: anglePrompt.length
+    });
+  }, [mockups, isLoading, isGeneratingPrompt, buildPrompt, executeImageEditOperation, handleCloseFullScreen, isSidebarVisibleMobile, hasGenerated]);
+
+  const handleNewBackgroundFromOutput = useCallback(async (index: number) => {
+    const outputImage = mockups[index];
+    if (!outputImage || isLoading[index] || isGeneratingPrompt) return;
+
+    // Close fullscreen modal immediately
+    handleCloseFullScreen();
+
+    // Ensure we stay on MockupMachinePage (not WelcomeScreen)
+    setShowWelcome(false);
+    if (!hasGenerated) {
+      setHasGenerated(true);
+    }
+
+    // Open sidebar on mobile if it's closed
+    if (!isSidebarVisibleMobile) {
+      setIsSidebarVisibleMobile(true);
+    }
+
+    // Calculate new index before appending
+    const newIndex = mockups.length;
+
+    // Append new slot
+    setMockups(prev => [...prev, null]);
+    setIsLoading(prev => [...prev, true]);
+
+    const currentEnv = selectedLocationTags[0];
+    const availableEnvs = currentEnv
+      ? AVAILABLE_LOCATION_TAGS.filter(env => env !== currentEnv)
+      : AVAILABLE_LOCATION_TAGS;
+
+    const newEnv = availableEnvs.length > 0
+      ? availableEnvs[Math.floor(Math.random() * availableEnvs.length)]
+      : AVAILABLE_LOCATION_TAGS[Math.floor(Math.random() * AVAILABLE_LOCATION_TAGS.length)];
+
+    const backgroundPrompt = `${buildPrompt()} The scene should be changed to a different environment: ${newEnv}. Keep the same product, design, and camera angle, but change only the background, setting, and environmental context. It is critical that all design elements in the image, including any text, logos, graphics, and branding elements, are preserved exactly as they appear in the original image. Do not modify, re-draw, alter, or recreate any text, logos, or design elements. They must remain identical to the original image.`;
+
+    await executeImageEditOperation({
+      base64Image: outputImage,
+      prompt: backgroundPrompt,
+      onSuccess: (result) => {
+        setMockups(prev => {
+          const newMockups = [...prev];
+          newMockups[newIndex] = result;
+          return newMockups;
+        });
+        // Collapse sidebar after generation completes
+        setIsSidebarVisibleMobile(false);
+      },
+      setIsLoading: (loading) => {
+        setIsLoading(prev => {
+          const newLoading = [...prev];
+          newLoading[newIndex] = loading;
+          return newLoading;
+        });
+        // Collapse sidebar when loading finishes (even if error)
+        if (!loading) {
+          setIsSidebarVisibleMobile(false);
+        }
+      },
+      promptLength: backgroundPrompt.length
+    });
+  }, [mockups, isLoading, isGeneratingPrompt, buildPrompt, selectedLocationTags, executeImageEditOperation, handleCloseFullScreen, isSidebarVisibleMobile, hasGenerated]);
+
+  const handleNewBackgroundFromOutputWithPreset = useCallback(async (index: number, background: string) => {
+    const outputImage = mockups[index];
+    if (!outputImage || isLoading[index] || isGeneratingPrompt) return;
+
+    // Close fullscreen modal immediately
+    handleCloseFullScreen();
+
+    // Ensure we stay on MockupMachinePage (not WelcomeScreen)
+    setShowWelcome(false);
+    if (!hasGenerated) {
+      setHasGenerated(true);
+    }
+
+    // Open sidebar on mobile if it's closed
+    if (!isSidebarVisibleMobile) {
+      setIsSidebarVisibleMobile(true);
+    }
+
+    // Calculate new index before appending
+    const newIndex = mockups.length;
+
+    // Append new slot
+    setMockups(prev => [...prev, null]);
+    setIsLoading(prev => [...prev, true]);
+
+    // Use the selected background preset
+    const newEnv = background;
+
+    // Special handling for Minimalist Studio and Light Box (same as in buildPrompt)
+    let backgroundPrompt = '';
+    if (newEnv === 'Minimalist Studio') {
+      backgroundPrompt = `${buildPrompt()} The scene should be changed to a professional photography studio with infinite white wall background, studio lighting, clean and minimalist aesthetic. The scene should include a plant in the setting. Keep the same product, design, and camera angle, but change only the background, setting, and environmental context. It is critical that all design elements in the image, including any text, logos, graphics, and branding elements, are preserved exactly as they appear in the original image. Do not modify, re-draw, alter, or recreate any text, logos, or design elements. They must remain identical to the original image.`;
+    } else if (newEnv === 'Light Box') {
+      backgroundPrompt = `${buildPrompt()} The scene should be changed to a professional lightbox photography environment with seamless white or neutral background, even diffused lighting, completely neutral and minimal aesthetic. This is a professional product photography setup with no decorative elements, plants, or distractions - purely focused on showcasing the product with clean, professional lighting. Keep the same product, design, and camera angle, but change only the background, setting, and environmental context. It is critical that all design elements in the image, including any text, logos, graphics, and branding elements, are preserved exactly as they appear in the original image. Do not modify, re-draw, alter, or recreate any text, logos, or design elements. They must remain identical to the original image.`;
+    } else {
+      backgroundPrompt = `${buildPrompt()} The scene should be changed to a different environment: ${newEnv}. Keep the same product, design, and camera angle, but change only the background, setting, and environmental context. It is critical that all design elements in the image, including any text, logos, graphics, and branding elements, are preserved exactly as they appear in the original image. Do not modify, re-draw, alter, or recreate any text, logos, or design elements. They must remain identical to the original image.`;
+    }
+
+    await executeImageEditOperation({
+      base64Image: outputImage,
+      prompt: backgroundPrompt,
+      onSuccess: (result) => {
+        setMockups(prev => {
+          const newMockups = [...prev];
+          newMockups[newIndex] = result;
+          return newMockups;
+        });
+        // Collapse sidebar after generation completes
+        setIsSidebarVisibleMobile(false);
+      },
+      setIsLoading: (loading) => {
+        setIsLoading(prev => {
+          const newLoading = [...prev];
+          newLoading[newIndex] = loading;
+          return newLoading;
+        });
+        // Collapse sidebar when loading finishes (even if error)
+        if (!loading) {
+          setIsSidebarVisibleMobile(false);
+        }
+      },
+      promptLength: backgroundPrompt.length
+    });
+  }, [mockups, isLoading, isGeneratingPrompt, buildPrompt, executeImageEditOperation, handleCloseFullScreen, isSidebarVisibleMobile, hasGenerated]);
+
+  const handleNewLightingFromOutputWithPreset = useCallback(async (index: number, lighting: string) => {
+    const outputImage = mockups[index];
+    if (!outputImage || isLoading[index] || isGeneratingPrompt) return;
+
+    // Close fullscreen modal immediately
+    handleCloseFullScreen();
+
+    // Ensure we stay on MockupMachinePage (not WelcomeScreen)
+    setShowWelcome(false);
+    if (!hasGenerated) {
+      setHasGenerated(true);
+    }
+
+    // Open sidebar on mobile if it's closed
+    if (!isSidebarVisibleMobile) {
+      setIsSidebarVisibleMobile(true);
+    }
+
+    // Calculate new index before appending
+    const newIndex = mockups.length;
+
+    // Append new slot
+    setMockups(prev => [...prev, null]);
+    setIsLoading(prev => [...prev, true]);
+
+    // Use the selected lighting preset
+    const newLighting = lighting;
+
+    const lightingPrompt = `${buildPrompt()} The lighting should be changed to: ${newLighting}. Keep the same product, design, camera angle, and overall composition, but change only the lighting conditions and atmosphere. It is critical that all design elements in the image, including any text, logos, graphics, and branding elements, are preserved exactly as they appear in the original image. Do not modify, re-draw, alter, or recreate any text, logos, or design elements. They must remain identical to the original image.`;
+
+    await executeImageEditOperation({
+      base64Image: outputImage,
+      prompt: lightingPrompt,
+      onSuccess: (result) => {
+        setMockups(prev => {
+          const newMockups = [...prev];
+          newMockups[newIndex] = result;
+          return newMockups;
+        });
+        // Collapse sidebar after generation completes
+        setIsSidebarVisibleMobile(false);
+      },
+      setIsLoading: (loading) => {
+        setIsLoading(prev => {
+          const newLoading = [...prev];
+          newLoading[newIndex] = loading;
+          return newLoading;
+        });
+        // Collapse sidebar when loading finishes (even if error)
+        if (!loading) {
+          setIsSidebarVisibleMobile(false);
+        }
+      },
+      promptLength: lightingPrompt.length
+    });
+  }, [mockups, isLoading, isGeneratingPrompt, buildPrompt, executeImageEditOperation, handleCloseFullScreen, isSidebarVisibleMobile, hasGenerated]);
+
+  const handleZoomInFromOutput = useCallback(async (index: number) => {
+    const outputImage = mockups[index];
+    if (!outputImage || isLoading[index] || isGeneratingPrompt) return;
+
+    // Close fullscreen modal immediately
+    handleCloseFullScreen();
+
+    // Ensure we stay on MockupMachinePage (not WelcomeScreen)
+    setShowWelcome(false);
+    if (!hasGenerated) {
+      setHasGenerated(true);
+    }
+
+    // Open sidebar on mobile if it's closed
+    if (!isSidebarVisibleMobile) {
+      setIsSidebarVisibleMobile(true);
+    }
+
+    // Calculate new index before appending
+    const newIndex = mockups.length;
+
+    // Append new slot
+    setMockups(prev => [...prev, null]);
+    setIsLoading(prev => [...prev, true]);
+
+    const zoomInPrompt = `${buildPrompt()} Apply a zoom in effect. Move the camera closer to the subject/product while maintaining the same angle, lighting, and overall composition style. Keep the same product and design, but show more detail and a tighter framing. It is critical that all design elements in the image, including any text, logos, graphics, and branding elements, are preserved exactly as they appear in the original image. Do not modify, re-draw, alter, or recreate any text, logos, or design elements. They must remain identical to the original image.`;
+
+    await executeImageEditOperation({
+      base64Image: outputImage,
+      prompt: zoomInPrompt,
+      onSuccess: (result) => {
+        setMockups(prev => {
+          const newMockups = [...prev];
+          newMockups[newIndex] = result;
+          return newMockups;
+        });
+        // Collapse sidebar after generation completes
+        setIsSidebarVisibleMobile(false);
+      },
+      setIsLoading: (loading) => {
+        setIsLoading(prev => {
+          const newLoading = [...prev];
+          newLoading[newIndex] = loading;
+          return newLoading;
+        });
+        // Collapse sidebar when loading finishes (even if error)
+        if (!loading) {
+          setIsSidebarVisibleMobile(false);
+        }
+      },
+      promptLength: zoomInPrompt.length
+    });
+  }, [mockups, isLoading, isGeneratingPrompt, buildPrompt, executeImageEditOperation, handleCloseFullScreen, isSidebarVisibleMobile, hasGenerated]);
+
+  const handleZoomOutFromOutput = useCallback(async (index: number) => {
+    const outputImage = mockups[index];
+    if (!outputImage || isLoading[index] || isGeneratingPrompt) return;
+
+    // Close fullscreen modal immediately
+    handleCloseFullScreen();
+
+    // Ensure we stay on MockupMachinePage (not WelcomeScreen)
+    setShowWelcome(false);
+    if (!hasGenerated) {
+      setHasGenerated(true);
+    }
+
+    // Open sidebar on mobile if it's closed
+    if (!isSidebarVisibleMobile) {
+      setIsSidebarVisibleMobile(true);
+    }
+
+    // Calculate new index before appending
+    const newIndex = mockups.length;
+
+    // Append new slot
+    setMockups(prev => [...prev, null]);
+    setIsLoading(prev => [...prev, true]);
+
+    const zoomOutPrompt = `${buildPrompt()} Apply a zoom out effect. Move the camera further away from the subject/product while maintaining the same angle, lighting, and overall composition style. Keep the same product and design, but show more of the surrounding environment and a wider framing. It is critical that all design elements in the image, including any text, logos, graphics, and branding elements, are preserved exactly as they appear in the original image. Do not modify, re-draw, alter, or recreate any text, logos, or design elements. They must remain identical to the original image.`;
+
+    await executeImageEditOperation({
+      base64Image: outputImage,
+      prompt: zoomOutPrompt,
+      onSuccess: (result) => {
+        setMockups(prev => {
+          const newMockups = [...prev];
+          newMockups[newIndex] = result;
+          return newMockups;
+        });
+        // Collapse sidebar after generation completes
+        setIsSidebarVisibleMobile(false);
+      },
+      setIsLoading: (loading) => {
+        setIsLoading(prev => {
+          const newLoading = [...prev];
+          newLoading[newIndex] = loading;
+          return newLoading;
+        });
+        // Collapse sidebar when loading finishes (even if error)
+        if (!loading) {
+          setIsSidebarVisibleMobile(false);
+        }
+      },
+      promptLength: zoomOutPrompt.length
+    });
+  }, [mockups, isLoading, isGeneratingPrompt, buildPrompt, executeImageEditOperation, handleCloseFullScreen, isSidebarVisibleMobile, hasGenerated]);
+
+  const handleReImagineFromOutput = useCallback(async (index: number, reimaginePrompt: string) => {
+    const outputImage = mockups[index];
+    if (!outputImage || isLoading[index] || isGeneratingPrompt) return;
+
+    // Close fullscreen modal immediately
+    handleCloseFullScreen();
+
+    // Ensure we stay on MockupMachinePage (not WelcomeScreen)
+    setShowWelcome(false);
+    if (!hasGenerated) {
+      setHasGenerated(true);
+    }
+
+    // Open sidebar on mobile if it's closed
+    if (!isSidebarVisibleMobile) {
+      setIsSidebarVisibleMobile(true);
+    }
+
+    // Calculate new index before appending
+    const newIndex = mockups.length;
+
+    // Append new slot
+    setMockups(prev => [...prev, null]);
+    setIsLoading(prev => [...prev, true]);
+
+    // Intelligent prompt that combines the original context with user's requested changes
+    const intelligentPrompt = `You are helping a user refine and reimagine their mockup design. 
+
+CURRENT CONTEXT:
+- Original prompt: "${promptPreview}"
+- Design type: ${designType || 'mockup'}
+- Product categories: ${selectedTags.join(', ')}
+- Brand style: ${selectedBrandingTags.join(', ')}
+${selectedLocationTags.length > 0 ? `- Environment: ${selectedLocationTags.join(', ')}` : ''}
+${selectedAngleTags.length > 0 ? `- Camera angle: ${selectedAngleTags.join(', ')}` : ''}
+${selectedLightingTags.length > 0 ? `- Lighting: ${selectedLightingTags.join(', ')}` : ''}
+${selectedEffectTags.length > 0 ? `- Visual effects: ${selectedEffectTags.join(', ')}` : ''}
+
+USER'S REQUESTED CHANGES:
+"${reimaginePrompt}"
+
+INSTRUCTIONS:
+1. Analyze the current image provided
+2. Understand what the user wants to change based on their request
+3. Apply ONLY the changes they requested while maintaining everything else they didn't mention
+4. Keep the overall composition, quality, and photorealistic style
+5. Preserve the core product/mockup unless specifically asked to change it
+6. If the user mentions new elements (colors, objects, atmosphere), integrate them naturally
+7. If the user asks to change the style or mood, adjust lighting, colors, and atmosphere accordingly
+8. Maintain professional product photography quality
+
+Generate the new mockup image with the requested changes applied.`;
+
+    await executeImageEditOperation({
+      base64Image: outputImage,
+      prompt: intelligentPrompt,
+      onSuccess: (result) => {
+        setMockups(prev => {
+          const newMockups = [...prev];
+          const targetIndex = newIndex < prev.length ? newIndex : prev.length;
+          newMockups[targetIndex] = result;
+          return newMockups;
+        });
+        toast.success(t('messages.mockupReimagined'), { duration: 3000 });
+        // Collapse sidebar after generation completes
+        setIsSidebarVisibleMobile(false);
+      },
+      setIsLoading: (loading) => {
+        setIsLoading(prev => {
+          const newLoading = [...prev];
+          const targetIndex = newIndex < newLoading.length ? newIndex : newLoading.length;
+          newLoading[targetIndex] = loading;
+          return newLoading;
+        });
+        // Collapse sidebar when loading finishes (even if error)
+        if (!loading) {
+          setIsSidebarVisibleMobile(false);
+        }
+      },
+      promptLength: intelligentPrompt.length
+    });
+  }, [mockups, isLoading, isGeneratingPrompt, promptPreview, designType, selectedTags, selectedBrandingTags, selectedLocationTags, selectedAngleTags, selectedLightingTags, selectedEffectTags, executeImageEditOperation, handleCloseFullScreen, isSidebarVisibleMobile, hasGenerated]);
+
+  const designTypeSelected = !!designType;
+  const brandingComplete = selectedBrandingTags.length > 0;
+  const categoriesComplete = selectedTags.length > 0;
+  const isGenerating = isLoading.some(Boolean);
+
+  useEffect(() => {
+    if (autoGenerateTimeoutRef.current) {
+      clearTimeout(autoGenerateTimeoutRef.current);
+      autoGenerateTimeoutRef.current = null;
+    }
+
+    // Allow auto-generate if: has reference images OR design type is selected
+    const hasRefImagesForAuto = referenceImages.length > 0;
+    const canAutoGenerate = hasRefImagesForAuto || designType;
+
+    if (shouldAutoGenerate && !isGeneratingPrompt && !promptPreview.trim() && !isAutoGeneratingRef.current) {
+      if (canAutoGenerate) {
+        isAutoGeneratingRef.current = true;
+        handleGenerateSmartPrompt().finally(() => {
+          isAutoGeneratingRef.current = false;
+        });
+        setShouldAutoGenerate(false);
+        setAutoGenerateSource(null);
+      } else {
+        setShouldAutoGenerate(false);
+        setAutoGenerateSource(null);
+      }
+    }
+
+    return () => {
+      if (autoGenerateTimeoutRef.current) {
+        clearTimeout(autoGenerateTimeoutRef.current);
+        autoGenerateTimeoutRef.current = null;
+      }
+    };
+  }, [shouldAutoGenerate, isGeneratingPrompt, promptPreview, handleGenerateSmartPrompt, selectedTags.length, designType, referenceImages.length]);
+
+  const displayBrandingTags = [...new Set([...AVAILABLE_BRANDING_TAGS, ...selectedBrandingTags])];
+  const displaySuggestedTags = [...new Set([...suggestedTags, ...selectedTags])];
+  const displayAvailableCategoryTags = [...new Set([...AVAILABLE_TAGS, ...selectedTags])];
+
+  // Calculate credits needed for main generation
+  const creditsNeededForGeneration = useMemo(() => {
+    if (!selectedModel) return 0;
+    const modelToUse = selectedModel || 'gemini-2.5-flash-image';
+    const resolutionToUse = modelToUse === 'gemini-3-pro-image-preview' ? resolution : undefined;
+    const creditsPerImage = getCreditsRequired(modelToUse, resolutionToUse);
+    return mockupCount * creditsPerImage;
+  }, [selectedModel, resolution, mockupCount]);
+
+  // Calculate credits needed for edit operations (single image)
+  const creditsNeededForEdit = useMemo(() => {
+    if (!selectedModel) return 1; // Default to 1 credit if no model selected
+    const modelToUse = selectedModel || 'gemini-2.5-flash-image';
+    const resolutionToUse = modelToUse === 'gemini-3-pro-image-preview' ? resolution : undefined;
+    return getCreditsRequired(modelToUse, resolutionToUse);
+  }, [selectedModel, resolution]);
+
+  // Check if user has any credits available
+  const hasAnyCredits = useMemo(() => {
+    if (isLocalDevelopment()) return true;
+    if (!subscriptionStatus) return false;
+    const totalCredits = subscriptionStatus.totalCredits || 0;
+    return totalCredits > 0;
+  }, [subscriptionStatus]);
+
+  // Disable button for: auth checking, not authenticated, currently generating, insufficient credits, or 0 credits
+  const isGenerateDisabled = isCheckingAuth ||
+    isAuthenticated !== true ||
+    isGenerating ||
+    isGeneratingPrompt ||
+    isSuggestingPrompts ||
+    !hasAnyCredits ||
+    (creditsNeededForGeneration > 0 && !hasEnoughCredits(creditsNeededForGeneration));
+
+  // Disable edit operations if user doesn't have enough credits for a single edit operation or has 0 credits
+  const isEditOperationDisabled = !isLocalDevelopment() &&
+    (isAuthenticated !== true || !hasAnyCredits || !hasEnoughCredits(creditsNeededForEdit));
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+        return;
+      }
+
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        if (!isGenerateDisabled) {
+          handleGenerateClick();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isGenerateDisabled, handleGenerateClick]);
+
+  const getErrorMessage = useCallback((err: any): { message: string; suggestion?: string } => {
+    if (err instanceof RateLimitError) {
+      return {
+        message: t('messages.rateLimit'),
+        suggestion: t('messages.tryAgainIn10Minutes'),
+      };
+    }
+
+    if (err instanceof ModelOverloadedError) {
+      return {
+        message: err.message || t('messages.modelOverloaded'),
+        suggestion: t('messages.modelOverloadedSuggestion'),
+      };
+    }
+
+    try {
+      const errorStr = err?.message || err?.toString() || '';
+      const status = err?.status;
+
+      // Check for payload too large errors (413)
+      if (status === 413 || errorStr.includes('413') || errorStr.includes('Payload Too Large') || errorStr.includes('Request Entity Too Large') || errorStr.includes('FUNCTION_PAYLOAD_TOO_LARGE')) {
+        return {
+          message: 'Arquivo muito grande para processar',
+          suggestion: 'O tamanho do arquivo excede o limite permitido. Tente reduzir a resolução da imagem, usar um formato mais compacto (como JPEG) ou remover imagens de referência desnecessárias. As imagens são comprimidas automaticamente, mas algumas podem ainda ser muito grandes.',
+        };
+      }
+
+      // Check for model overloaded messages
+      if (errorStr.includes('model is overloaded') || errorStr.includes('model overloaded') || errorStr.includes('overloaded')) {
+        return {
+          message: t('messages.modelOverloaded'),
+          suggestion: t('messages.modelOverloadedSuggestion'),
+        };
+      }
+
+      if (errorStr.includes('503') || errorStr.includes('Service Unavailable')) {
+        return {
+          message: t('messages.serviceUnavailable'),
+          suggestion: t('messages.serviceUnavailableSuggestion'),
+        };
+      }
+
+      if (errorStr.includes('timeout')) {
+        return {
+          message: t('messages.requestTimeout'),
+          suggestion: t('messages.requestTimeoutSuggestion'),
+        };
+      }
+
+      if (errorStr.includes('Unable to process input image')) {
+        return {
+          message: t('messages.unableToProcessImage'),
+          suggestion: t('messages.unableToProcessImageSuggestion'),
+        };
+      }
+
+      if (errorStr.includes('INVALID_ARGUMENT')) {
+        return {
+          message: t('messages.invalidImageFormat'),
+          suggestion: t('messages.invalidImageFormatSuggestion'),
+        };
+      }
+
+      if (errorStr.includes('429') || errorStr.includes('rate limit')) {
+        return {
+          message: t('messages.rateLimit'),
+          suggestion: t('messages.tryAgainIn10Minutes'),
+        };
+      }
+
+      if (errorStr.includes('network') || errorStr.includes('fetch')) {
+        return {
+          message: t('messages.networkError'),
+          suggestion: t('messages.networkErrorSuggestion'),
+        };
+      }
+
+      if (errorStr.includes('{"error"')) {
+        const jsonMatch = errorStr.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const errorObj = JSON.parse(jsonMatch[0]);
+          if (errorObj?.error?.message) {
+            const apiMessage = errorObj.error.message;
+            if (apiMessage.includes('Unable to process input image')) {
+              return {
+                message: t('messages.unableToProcessImage'),
+                suggestion: t('messages.unableToProcessImageSuggestion'),
+              };
+            }
+            if (apiMessage.includes('Payload Too Large') || apiMessage.includes('413')) {
+              return {
+                message: 'Arquivo muito grande para processar',
+                suggestion: 'O tamanho do arquivo excede o limite permitido. Tente reduzir a resolução da imagem, usar um formato mais compacto (como JPEG) ou remover imagens de referência desnecessárias. As imagens são comprimidas automaticamente, mas algumas podem ainda ser muito grandes.',
+              };
+            }
+            return { message: apiMessage };
+          }
+        }
+      }
+
+      if (err?.error?.message) {
+        const apiMessage = err.error.message;
+        if (apiMessage.includes('Unable to process input image')) {
+          return {
+            message: t('messages.unableToProcessImage'),
+            suggestion: t('messages.unableToProcessImageSuggestion'),
+          };
+        }
+        if (apiMessage.includes('Payload Too Large') || apiMessage.includes('413')) {
+          return {
+            message: 'Arquivo muito grande para processar',
+            suggestion: 'O tamanho do arquivo excede o limite permitido. Tente reduzir a resolução da imagem, usar um formato mais compacto (como JPEG) ou remover imagens de referência desnecessárias. As imagens são comprimidas automaticamente, mas algumas podem ainda ser muito grandes.',
+          };
+        }
+        return { message: apiMessage };
+      }
+    } catch (parseError) {
+    }
+
+    return {
+      message: t('messages.generationError'),
+      suggestion: t('messages.generationErrorSuggestion'),
+    };
+  }, [t]);
+
+  return (
+    <>
+      <SEO
+        title={t('mockup.seoTitle')}
+        description={t('mockup.seoDescription')}
+        keywords={t('mockup.seoKeywords')}
+      />
+      <SoftwareApplicationSchema
+        name="Mockup Machine"
+        description="Gere mockups profissionais com inteligência artificial. Ferramenta integrada de geração rápida de mockups e assets para designers."
+        applicationCategory="DesignApplication"
+      />
+      <WebSiteSchema />
+
+      {showWelcome ? (
+        <WelcomeScreen
+          onImageUpload={handleImageUpload}
+          onBlankMockup={handleProceedWithoutImage}
+        />
+      ) : (
+        <div className="pt-12 md:pt-14">
+          {!uploadedImage && !isImagelessMode && designType !== 'blank' ? (
+            <div className="flex items-center justify-center min-h-[calc(100vh-2.5rem)] md:min-h-[calc(100vh-3.5rem)] py-4 md:py-8">
+              <ImageUploader onImageUpload={handleImageUpload} onProceedWithoutImage={handleProceedWithoutImage} />
+            </div>
+          ) : (
+            <div className={`flex flex-col lg:flex-row h-[calc(100vh-2.5rem-120px)] md:h-[calc(100vh-5rem)] ${!hasGenerated ? 'justify-center py-4 md:py-8' : ''} ${hasGenerated ? 'relative' : ''}`}>
+              <div className={`${hasGenerated && !isSidebarVisibleMobile ? 'hidden lg:flex' : hasGenerated ? 'flex' : ''} ${hasGenerated ? 'h-full' : ''}`}>
+                <SidebarOrchestrator
+                  hasGenerated={hasGenerated}
+                  sidebarWidth={sidebarWidth}
+                  sidebarRef={sidebarRef}
+                  onSidebarWidthChange={setSidebarWidth}
+                  onCloseMobile={() => setIsSidebarVisibleMobile(false)}
+                  subscriptionStatus={subscriptionStatus}
+                  uploadedImage={uploadedImage}
+                  referenceImage={referenceImage}
+                  referenceImages={referenceImages}
+                  designType={designType}
+                  isImagelessMode={isImagelessMode}
+                  onImageUpload={handleImageUpload}
+                  onReferenceImagesChange={setReferenceImages}
+                  onStartOver={handleStartOver}
+                  onDesignTypeChange={handleDesignTypeChange}
+                  onScrollToSection={scrollToSection}
+                  selectedModel={selectedModel}
+                  resolution={resolution}
+                  onModelChange={handleModelChange}
+                  onResolutionChange={setResolution}
+                  aspectRatio={aspectRatio}
+                  onAspectRatioChange={setAspectRatio}
+                  onSurpriseMe={handleSurpriseMe}
+                  isGenerating={isGenerating}
+                  isGeneratingPrompt={isGeneratingPrompt}
+                  displayBrandingTags={displayBrandingTags}
+                  selectedBrandingTags={selectedBrandingTags}
+                  onBrandingTagToggle={handleBrandingTagToggle}
+                  customBrandingInput={customBrandingInput}
+                  onCustomBrandingInputChange={setCustomBrandingInput}
+                  onAddCustomBrandingTag={handleAddCustomBrandingTag}
+                  brandingComplete={brandingComplete}
+                  suggestedTags={suggestedTags}
+                  displayAvailableCategoryTags={displayAvailableCategoryTags}
+                  displaySuggestedTags={displaySuggestedTags}
+                  selectedTags={selectedTags}
+                  onTagToggle={handleTagToggle}
+                  isAnalyzing={isAnalyzing}
+                  isAllCategoriesOpen={isAllCategoriesOpen}
+                  onToggleAllCategories={() => setIsAllCategoriesOpen(!isAllCategoriesOpen)}
+                  customCategoryInput={customCategoryInput}
+                  onCustomCategoryInputChange={setCustomCategoryInput}
+                  onAddCustomCategoryTag={handleAddCustomCategoryTag}
+                  onRandomizeCategories={handleRandomizeCategories}
+                  categoriesComplete={categoriesComplete}
+                  isAdvancedOpen={isAdvancedOpen}
+                  onToggleAdvanced={() => {
+                    const newState = !isAdvancedOpen;
+                    setIsAdvancedOpen(newState);
+
+                    // Scroll to location section when opening advanced options
+                    if (newState) {
+                      setTimeout(() => {
+                        const locationSection = document.getElementById('location-section');
+                        if (locationSection && sidebarRef.current) {
+                          const elementRect = locationSection.getBoundingClientRect();
+                          const sidebarRect = sidebarRef.current.getBoundingClientRect();
+                          const relativeTop = elementRect.top - sidebarRect.top + sidebarRef.current.scrollTop;
+
+                          sidebarRef.current.scrollTo({
+                            top: relativeTop - 20,
+                            behavior: 'smooth'
+                          });
+                        } else if (locationSection) {
+                          locationSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                      }, 200);
+                    }
+                  }}
+                  selectedLocationTags={selectedLocationTags}
+                  selectedAngleTags={selectedAngleTags}
+                  selectedLightingTags={selectedLightingTags}
+                  selectedEffectTags={selectedEffectTags}
+                  selectedColors={selectedColors}
+                  colorInput={colorInput}
+                  isValidColor={isValidColor}
+                  negativePrompt={negativePrompt}
+                  additionalPrompt={additionalPrompt}
+                  onLocationTagToggle={handleLocationTagToggle}
+                  onAngleTagToggle={handleAngleTagToggle}
+                  onLightingTagToggle={handleLightingTagToggle}
+                  onEffectTagToggle={handleEffectTagToggle}
+                  onColorInputChange={handleColorInputChange}
+                  onAddColor={handleAddColor}
+                  onRemoveColor={handleRemoveColor}
+                  onNegativePromptChange={(e) => setNegativePrompt(e.target.value)}
+                  onAdditionalPromptChange={(e) => setAdditionalPrompt(e.target.value)}
+                  availableLocationTags={AVAILABLE_LOCATION_TAGS}
+                  availableAngleTags={AVAILABLE_ANGLE_TAGS}
+                  availableLightingTags={AVAILABLE_LIGHTING_TAGS}
+                  availableEffectTags={AVAILABLE_EFFECT_TAGS}
+                  customLocationInput={customLocationInput}
+                  customAngleInput={customAngleInput}
+                  customLightingInput={customLightingInput}
+                  customEffectInput={customEffectInput}
+                  onCustomLocationInputChange={setCustomLocationInput}
+                  onCustomAngleInputChange={setCustomAngleInput}
+                  onCustomLightingInputChange={setCustomLightingInput}
+                  onCustomEffectInputChange={setCustomEffectInput}
+                  onAddCustomLocationTag={handleAddCustomLocationTag}
+                  onAddCustomAngleTag={handleAddCustomAngleTag}
+                  onAddCustomLightingTag={handleAddCustomLightingTag}
+                  onAddCustomEffectTag={handleAddCustomEffectTag}
+                  mockupCount={mockupCount}
+                  onMockupCountChange={setMockupCount}
+                  generateText={generateText}
+                  onGenerateTextChange={setGenerateText}
+                  withHuman={withHuman}
+                  onWithHumanChange={setWithHuman}
+                  promptPreview={promptPreview}
+                  onPromptChange={handlePromptChange}
+                  promptSuggestions={promptSuggestions}
+                  isSuggestingPrompts={isSuggestingPrompts}
+                  mockups={mockups}
+                  onSuggestPrompts={handleSuggestPrompts}
+                  onGenerateSmartPrompt={handleGenerateSmartPrompt}
+                  onSimplify={handleSimplify}
+                  onRegenerate={() => runGeneration()}
+                  onSuggestionClick={handleSuggestionClick}
+                  isSmartPromptActive={isSmartPromptActive}
+                  setIsSmartPromptActive={setIsSmartPromptActive}
+                  setIsPromptManuallyEdited={setIsPromptManuallyEdited}
+                  onGenerateClick={handleGenerateClick}
+                  isGenerateDisabled={isGenerateDisabled}
+                  isPromptReady={isPromptReady}
+                  generateOutputsButtonRef={generateOutputsButtonRef}
+                  isAuthenticated={isAuthenticated}
+                  authenticationRequiredMessage={t('messages.authenticationRequired')}
+                  onResetControls={resetControls}
+                  onGenerateSuggestion={handleGenerateSuggestion}
+                  onBlankMockup={handleProceedWithoutImage}
+                />
+              </div>
+              {hasGenerated && (
+                <>
+                  <main className={`flex-1 p-2 md:p-4 lg:p-8 overflow-y-auto min-w-0 h-full ${!isSidebarVisibleMobile ? 'w-full' : ''}`}>
+                    <MockupDisplay
+                      mockups={mockups}
+                      isLoading={isLoading}
+                      onRedraw={handleRedrawClick}
+                      onView={handleOpenFullScreen}
+                      onNewAngle={(index, angle) => handleNewAngleFromOutput(index, angle)}
+                      onNewBackground={handleNewBackgroundFromOutput}
+                      onReImagine={handleReImagineFromOutput}
+                      onSave={handleSaveMockup}
+                      savedIndices={savedIndices}
+                      savedMockupIds={savedMockupIds}
+                      onToggleLike={handleToggleLike}
+                      likedIndices={mockupLikedStatus}
+                      onRemove={handleRemoveMockup}
+                      prompt={promptPreview}
+                      designType={designType || undefined}
+                      tags={selectedTags}
+                      brandingTags={selectedBrandingTags}
+                      aspectRatio={aspectRatio as '16:9' | '4:3' | '1:1'}
+                      editButtonsDisabled={isEditOperationDisabled}
+                      creditsPerOperation={creditsNeededForEdit}
+                    />
+                  </main>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {fullScreenImageIndex !== null && (
+        <FullScreenViewer
+          base64Image={mockups[fullScreenImageIndex]}
+          isLoading={isLoading[fullScreenImageIndex]}
+          onClose={handleCloseFullScreen}
+          onZoomIn={() => handleZoomInFromModal(fullScreenImageIndex)}
+          onZoomOut={() => handleZoomOutFromModal(fullScreenImageIndex)}
+          onNewAngle={(angle) => handleNewAngleFromModal(fullScreenImageIndex, angle)}
+          onNewBackground={(background) => handleNewBackgroundFromModalWithPreset(fullScreenImageIndex, background)}
+          onNewLighting={(lighting) => handleNewLightingFromModalWithPreset(fullScreenImageIndex, lighting)}
+          onReImagine={(reimaginePrompt) => handleReImagineFromOutput(fullScreenImageIndex, reimaginePrompt)}
+          availableAngles={AVAILABLE_ANGLE_TAGS}
+          availableBackgrounds={AVAILABLE_LOCATION_TAGS}
+          availableLightings={AVAILABLE_LIGHTING_TAGS}
+          onOpenInEditor={(imageBase64: string) => {
+            navigate(`/editor?image=${encodeURIComponent(imageBase64)}`);
+          }}
+          isAuthenticated={isAuthenticated === true}
+          mockupId={savedMockupIds.get(fullScreenImageIndex)}
+          onToggleLike={() => handleToggleLike(fullScreenImageIndex)}
+          onLikeStateChange={(newIsLiked) => {
+            // Sync state when hook updates it
+            setMockupLikedStatus(prev => new Map(prev).set(fullScreenImageIndex, newIsLiked));
+          }}
+          isLiked={mockupLikedStatus.get(fullScreenImageIndex) ?? false}
+          editButtonsDisabled={isEditOperationDisabled}
+          creditsPerOperation={creditsNeededForEdit}
+        />
+      )}
+
+      {hasGenerated && (
+        <GenerateButton
+          onClick={handleGenerateClick}
+          disabled={isGenerateDisabled || (isPromptReady && isGenerating)}
+          isGeneratingPrompt={isGeneratingPrompt}
+          isGenerating={isGenerating}
+          isPromptReady={isPromptReady}
+          variant="floating"
+          creditsRequired={selectedModel && isPromptReady ? mockupCount * getCreditsRequired(selectedModel, resolution) : undefined}
+        />
+      )}
+
+      {/* Floating sidebar toggle button for mobile */}
+      {hasGenerated && !isSidebarVisibleMobile && (
+        <div className="fixed bottom-4 left-4 md:hidden z-50 flex flex-col items-center gap-1">
+          <button
+            onClick={() => setIsSidebarVisibleMobile(true)}
+            className="flex items-center justify-center w-10 h-10 bg-brand-cyan/90 hover:bg-brand-cyan text-black rounded-md shadow-2xl shadow-brand-cyan/20 transition-all duration-300 active:scale-95 focus:outline-none focus:ring-2 focus:ring-brand-cyan/50 focus:ring-offset-2 focus:ring-offset-background"
+            aria-label={t('mockup.showSidebar')}
+            title={t('mockup.showSidebar')}
+          >
+            <Pickaxe size={16} />
+          </button>
+        </div>
+      )}
+
+      {showUnsavedDialog && unsavedDialogConfig && (
+        <ConfirmationModal
+          isOpen={showUnsavedDialog}
+          onClose={() => {
+            setShowUnsavedDialog(false);
+            setUnsavedDialogConfig(null);
+            // Reset blocker if it was blocked
+            if (blocker.state === 'blocked') {
+              blocker.reset();
+            }
+          }}
+          onConfirm={unsavedDialogConfig.onConfirm}
+          onSaveAll={unsavedDialogConfig.onSaveAll}
+          title={t('messages.unsavedOutputsTitle')}
+          message={unsavedDialogConfig.message}
+          confirmText={t('messages.dontCare')}
+          cancelText={t('common.cancel')}
+          variant="warning"
+          showSaveAll={unsavedDialogConfig.showSaveAll}
+        />
+      )}
+    </>
+  );
+};
+

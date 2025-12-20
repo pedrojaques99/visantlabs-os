@@ -1,0 +1,34 @@
+# robots.txt
+# https://www.robotstxt.org/robotstxt.html
+#
+# IMPORTANT: Update YOUR_DOMAIN.COM below before deploying to production!
+
+User-agent: *
+Allow: /
+Allow: /pricing
+Allow: /about
+Allow: /apps
+Allow: /mockups
+Allow: /branding-machine
+Allow: /budget-machine
+Allow: /waitlist
+
+# Disallow private/user pages
+Disallow: /profile
+Disallow: /my-outputs
+Disallow: /my-brandings
+Disallow: /my-budgets
+Disallow: /canvas/
+Disallow: /canvas/:id
+Disallow: /budget/shared/
+Disallow: /admin
+Disallow: /admin/
+Disallow: /editor
+Disallow: /editor/
+Disallow: /thank-you
+Disallow: /recharge-success
+Disallow: /forgot-password
+
+# Allow sitemap
+# Replace YOUR_DOMAIN.COM with your actual domain
+Sitemap: https://YOUR_DOMAIN.COM/sitemap.xml

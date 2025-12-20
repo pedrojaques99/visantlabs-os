@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  IMPORTANT: Update this file before deploying to production!
+  Replace YOUR_DOMAIN.COM with your actual domain.
+  
+  You can also generate this dynamically using a build script.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <!-- Homepage -->
+  <url>
+    <loc>https://YOUR_DOMAIN.COM/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://YOUR_DOMAIN.COM/?locale=pt-BR"/>
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://YOUR_DOMAIN.COM/?locale=en-US"/>
+  </url>
+  
+  <!-- Pricing -->
+  <url>
+    <loc>https://YOUR_DOMAIN.COM/pricing</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://YOUR_DOMAIN.COM/pricing?locale=pt-BR"/>
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://YOUR_DOMAIN.COM/pricing?locale=en-US"/>
+  </url>
+  
+  <!-- About -->
+  <url>
+    <loc>https://YOUR_DOMAIN.COM/about</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://YOUR_DOMAIN.COM/about?locale=pt-BR"/>
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://YOUR_DOMAIN.COM/about?locale=en-US"/>
+  </url>
+  
+  <!-- Apps -->
+  <url>
+    <loc>https://YOUR_DOMAIN.COM/apps</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://YOUR_DOMAIN.COM/apps?locale=pt-BR"/>
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://YOUR_DOMAIN.COM/apps?locale=en-US"/>
+  </url>
+  
+  <!-- Community Mockups -->
+  <url>
+    <loc>https://YOUR_DOMAIN.COM/mockups</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://YOUR_DOMAIN.COM/mockups?locale=pt-BR"/>
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://YOUR_DOMAIN.COM/mockups?locale=en-US"/>
+  </url>
+  
+  <!-- Canvas -->
+  <url>
+    <loc>https://YOUR_DOMAIN.COM/canvas</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://YOUR_DOMAIN.COM/canvas?locale=pt-BR"/>
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://YOUR_DOMAIN.COM/canvas?locale=en-US"/>
+  </url>
+  
+  <!-- Saved -->
+  <url>
+    <loc>https://YOUR_DOMAIN.COM/my-outputs</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://YOUR_DOMAIN.COM/my-outputs?locale=pt-BR"/>
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://YOUR_DOMAIN.COM/my-outputs?locale=en-US"/>
+  </url>
+  
+  <!-- Branding Machine -->
+  <url>
+    <loc>https://YOUR_DOMAIN.COM/branding-machine</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://YOUR_DOMAIN.COM/branding-machine?locale=pt-BR"/>
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://YOUR_DOMAIN.COM/branding-machine?locale=en-US"/>
+  </url>
+  
+  <!-- Budget Machine -->
+  <url>
+    <loc>https://YOUR_DOMAIN.COM/budget-machine</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://YOUR_DOMAIN.COM/budget-machine?locale=pt-BR"/>
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://YOUR_DOMAIN.COM/budget-machine?locale=en-US"/>
+  </url>
+  
+  <!-- Waitlist -->
+  <url>
+    <loc>https://YOUR_DOMAIN.COM/waitlist</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://YOUR_DOMAIN.COM/waitlist?locale=pt-BR"/>
+    <xhtml:link rel="alternate" hreflang="en-US" href="https://YOUR_DOMAIN.COM/waitlist?locale=en-US"/>
+  </url>
+</urlset>

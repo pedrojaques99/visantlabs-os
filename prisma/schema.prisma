@@ -1,0 +1,270 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("MONGODB_URI")
+}
+
+model User {
+  id                   String    @id @default(auto()) @map("_id") @db.ObjectId
+  email                String    @unique
+  name                 String?
+  picture              String?
+  username             String?   @unique // Optional unique username for profile URLs
+  bio                  String?   // User bio/description
+  coverImageUrl        String?   // Header cover image URL (stored in R2)
+  instagram            String?   // Instagram profile URL
+  youtube              String?   // YouTube channel URL
+  x                    String?   // X/Twitter profile URL
+  website              String?   // Personal website URL
+  password             String?
+  passwordResetToken   String?
+  passwordResetExpires DateTime?
+  googleId             String?   // Google OAuth ID (sub from Google token)
+  subscriptionStatus   String    @default("free")
+  subscriptionTier     String    @default("free")
+  freeGenerationsUsed  Int       @default(0)
+  monthlyCredits       Int       @default(20)
+  creditsUsed          Int       @default(0)
+  creditsResetDate      DateTime?
+  totalCreditsEarned   Int       @default(0)
+  stripeCustomerId     String?
+  abacateCustomerId    String?
+  taxId                String?   // CPF/CNPJ para pagamentos PIX
+  stripeSubscriptionId String?
+  subscriptionEndDate  DateTime?
+  referralCode         String?   @unique
+  referredBy           String?   @db.ObjectId
+  referralCount        Int       @default(0)
+  isAdmin              Boolean   @default(false)
+  userCategory         String?   // Category for special access (e.g., 'tester')
+  encryptedGeminiApiKey String?  // Encrypted Gemini API key for user's own quota
+  storageLimitBytes    Int?      // Custom storage limit in bytes (optional, overrides tier-based limit)
+  storageUsedBytes     Int       @default(0) // Current storage used in bytes (calculated from uploads/deletes)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  mockups          Mockup[]
+  transactions     Transaction[]
+  brandingProjects BrandingProject[]
+  budgetProjects   BudgetProject[]
+  canvasProjects   CanvasProject[]
+  customPdfPresets CustomPdfPreset[]
+
+  // Indexes for better query performance
+  // Note: @unique on email and username already creates indexes
+  @@index([stripeCustomerId])
+  @@index([referredBy])
+  @@map("users")
+}
+
+model Mockup {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String   @db.ObjectId
+  imageBase64  String? // Made optional for backward compatibility
+  imageUrl     String? // New field for R2 storage URLs
+  prompt       String
+  designType   String   @default("blank")
+  tags         String[]
+  brandingTags String[]
+  aspectRatio  String   @default("16:9")
+  isLiked      Boolean? // User's like status for this mockup
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  // Indexes for better query performance
+  @@index([userId])
+  @@index([createdAt])
+  @@map("mockups")
+}
+
+model Transaction {
+  id                    String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId                String   @db.ObjectId
+  type                  String   @default("purchase") // purchase | subscription
+  status                String   @default("pending") // completed | pending | failed
+  credits               Int?
+  amount                Int      @default(0) // stored in minor units
+  currency              String   @default("USD")
+  description           String?
+  stripeSessionId       String?
+  stripePaymentIntentId String?
+  stripeCustomerId      String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([stripeSessionId])
+  @@index([stripePaymentIntentId])
+  @@map("transactions")
+}
+
+model BrandingProject {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  name      String? // Nome do projeto
+  prompt    String
+  data      Json // Armazena todo o BrandingData
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("branding_projects")
+}
+
+model BrandingExample {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  prompt    String
+  step      Int      // Número do step (1-13)
+  output    Json     // Dados gerados para este step
+  rating    Int      @default(1) // 1 = thumbs up (só salvamos os positivos)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([step])
+  @@index([rating])
+  @@index([createdAt])
+  @@map("branding_examples")
+}
+
+model MockupExample {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  prompt       String
+  imageUrl     String?  // URL da imagem no R2
+  designType   String   @default("blank")
+  tags         String[]
+  brandingTags String[]
+  aspectRatio  String   @default("16:9")
+  rating       Int      @default(1) // 1 = thumbs up (só salvamos os positivos)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([designType])
+  @@index([rating])
+  @@index([createdAt])
+  @@map("mockup_examples")
+}
+
+model BudgetProject {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String    @db.ObjectId
+  template          String    // Tipo do template escolhido
+  name              String?   // Nome do projeto
+  clientName        String
+  projectDescription String
+  startDate         String
+  endDate           String
+  deliverables      Json      // Array JSON com nome, descrição, quantidade, valor
+  observations      String?
+  links             Json      // JSON: site, instagram, whatsapp
+  faq               Json      // Array JSON: pergunta/resposta
+  brandColors       String[]  // Array de cores hex
+  brandName         String
+  brandLogo         String?   // base64 ou URL R2
+  brandBackgroundColor String? // Cor de fundo da marca
+  brandAccentColor  String?   // Cor de destaque da marca
+  shareId           String?   @unique // ID único para compartilhamento
+  data              Json      // JSON completo para backup/flexibilidade
+  // Campos para layout empresarial
+  timeline          Json?     // Array de TimelineMilestone
+  paymentInfo       Json?     // PaymentInfo object
+  signatures        Json?     // Array de Signature
+  giftOptions       Json?     // Array de GiftOption
+  customContent     Json?     // CustomContent object
+  finalCTAText      String?
+  year              String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("budget_projects")
+}
+
+model CanvasProject {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String   @db.ObjectId
+  name            String   @default("Untitled")
+  nodes           Json     // Array de nodes do React Flow
+  edges           Json     // Array de edges do React Flow
+  shareId         String?  @unique // ID único para compartilhamento
+  isCollaborative Boolean  @default(false) // Se o projeto está em modo colaborativo
+  canEdit         String[] @default([]) // IDs de usuários que podem editar
+  canView         String[] @default([]) // IDs de usuários que podem visualizar
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("canvas_projects")
+}
+
+model CustomPdfPreset {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  name      String   // Nome do preset
+  pdfUrl    String   // URL do PDF no R2
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("custom_pdf_presets")
+}
+
+model VisantTemplate {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String   // Nome do template (ex: "Default", "Custom 2025")
+  isActive  Boolean  @default(false) // Apenas um template pode estar ativo
+  isDefault Boolean  @default(false) // Template padrão (não pode ser deletado)
+  layout    Json     // Estrutura completa do layout editado
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?  // ID do admin que criou (opcional)
+
+  @@index([isActive])
+  @@index([isDefault])
+  @@index([createdAt])
+  @@map("visant_templates")
+}
+
+model Waitlist {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdAt])
+  @@map("waitlist")
+}
+
+model SignupAttempt {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  ipAddress String
+  email     String?
+  success   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([ipAddress, createdAt])
+  @@index([email])
+  @@index([createdAt])
+  @@map("signup_attempts")
+}
