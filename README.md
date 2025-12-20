@@ -1,4 +1,4 @@
-# VSN Mockup Machine
+# Visant Labs®
 
 <div align="center">
   <h3>AI-powered canvas-based design tool</h3>
