@@ -1,7 +1,7 @@
-# VSN Mockup Machine
+# Visant Labs® | Tools for Designers
 
 <div align="center">
-  <h3>AI-powered canvas-based design tool</h3>
+  <h3>AI-powered canvas-based and other design tools</h3>
   <p>Create mockups, manage branding, and design with AI assistance</p>
 </div>
 
@@ -13,6 +13,8 @@
 - **Budget Management**: Plan and track design budgets
 - **Real-time Collaboration**: Work together on canvas projects (optional)
 - **Multiple Export Formats**: Export as images, PDFs, and more
+- **Mockup Machine**: Generate instant mockups for your design projects   
+- **Strategy Machine**: Generate strategie content and insights for your branding projects   
 
 ## Quick Start
 
@@ -20,13 +22,14 @@
 
 - Node.js 18+ 
 - MongoDB (local or [MongoDB Atlas](https://www.mongodb.com/cloud/atlas))
+- Google Gemini API Key
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/visantlabs/vsn-mockup-machine.git
-   cd vsn-mockup-machine
+   git clone https://github.com/visantlabs/visantlabs-os.git
+   cd visantlabs-os
    ```
 
 2. **Install dependencies**
@@ -43,6 +46,7 @@
    - `MONGODB_URI` - MongoDB connection string
    - `JWT_SECRET` - Secret for JWT tokens (generate with `npm run generate-jwt-secret`)
    - `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` - For authentication
+   - `GOOGLE_GEMINI_API_KEY` - For AI image generation
 
 4. **Run the application**
    ```bash
@@ -84,6 +88,8 @@ The core canvas functionality works without any paid services. However, you can 
 - **Required for**: Real-time canvas collaboration
 - **Setup**: See [docs/SETUP_LIVEBLOCKS.md](docs/SETUP_LIVEBLOCKS.md)
 - **Without it**: Canvas works in individual mode
+
+
 
 ## Forking & Customization
 
@@ -196,6 +202,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Support
 
 For issues and questions, please open an issue on GitHub.
+
+## Support
+
+Created by Pedro Jaques & Visant Company [https://www.visant.co]
 
 ---
 
