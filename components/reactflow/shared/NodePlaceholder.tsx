@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Pickaxe, UploadCloud, Upload, Maximize2 } from 'lucide-react';
+import { UploadCloud, Upload, Maximize2 } from 'lucide-react';
 import { GlitchLoader } from '../../ui/GlitchLoader';
+import { GlitchPickaxe } from '../../ui/GlitchPickaxe';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { getTranslations } from '../../../utils/localeUtils';
 
@@ -50,15 +51,13 @@ export const NodePlaceholder: React.FC<NodePlaceholderProps> = ({
       {isLoading ? (
         <div className="flex flex-col items-center justify-center gap-3 w-full">
           {/* Linha 1: Picareta */}
-          <div className="inline-flex items-center justify-center rounded-md bg-black/30 px-3 py-2 border border-white/5">
-            <Pickaxe size={20} className="text-[#52ddeb] pickaxe-swing pickaxe-shine" />
-          </div>
-          
+          <GlitchPickaxe />
+
           {/* Linha 2: Glitch */}
           <div className="h-4 flex items-center justify-center">
             <GlitchLoader size={14} color="#52ddeb" />
           </div>
-          
+
           {/* Linha 3: Labels */}
           <div className="h-4 text-xs font-mono text-zinc-500 overflow-hidden text-center">
             <span
@@ -68,7 +67,7 @@ export const NodePlaceholder: React.FC<NodePlaceholderProps> = ({
               {statusMessages[messageIndex]}
             </span>
           </div>
-          
+
           {/* Linha 4: Timer (subtle) */}
           {elapsedTime > 0 && (
             <div className="h-3 flex items-center justify-center">
