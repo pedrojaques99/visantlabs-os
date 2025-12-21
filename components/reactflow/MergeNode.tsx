@@ -13,6 +13,8 @@ import { NodeHeader } from './shared/node-header';
 import { NodeButton } from './shared/node-button';
 import { useTranslation } from '../../hooks/useTranslation';
 import { getCreditsRequired } from '../../utils/creditCalculator';
+import { isSafeUrl } from '../../utils/imageUtils';
+import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
 
 export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
@@ -20,7 +22,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
   const [prompt, setPrompt] = useState(data.prompt || '');
   const [model, setModel] = useState<GeminiModel>(data.model || 'gemini-2.5-flash-image');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  
+
   const isLoading = data.isLoading || false;
   const isGeneratingPrompt = data.isGeneratingPrompt || false;
   const hasResult = !!(data.resultImageUrl || data.resultImageBase64);
@@ -97,12 +99,19 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
     await data.onGenerate(id, connectedImagesFromData, prompt, model);
   };
 
+  // Debounced update for data changes
+  const debouncedUpdateData = useDebouncedCallback((updates: Partial<MergeNodeData>) => {
+    if (data.onUpdateData) {
+      data.onUpdateData(id, updates);
+    }
+  }, 500);
+
   // Handle resize from NodeResizer
   const handleResize = useCallback((width: number, height: number) => {
     if (data.onResize && typeof data.onResize === 'function') {
       data.onResize(id, width, height);
     }
-    
+
     setNodes((nds) => {
       return nds.map((n) => {
         if (n.id === id && n.type === 'merge') {
@@ -213,9 +222,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
           const newPrompt = e.target.value;
           setPrompt(newPrompt);
           adjustTextareaHeight();
-          if (data.onUpdateData) {
-            data.onUpdateData(id, { prompt: newPrompt });
-          }
+          debouncedUpdateData({ prompt: newPrompt });
         }}
         onMouseDown={(e) => {
           e.stopPropagation();
@@ -279,7 +286,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
       {hasResult && (data.resultImageUrl || data.resultImageBase64) && (
         <div className="mt-3 pt-3 border-t border-zinc-700/30">
           <img
-            src={data.resultImageUrl || `data:image/png;base64,${data.resultImageBase64}`}
+            src={(data.resultImageUrl && isSafeUrl(data.resultImageUrl)) ? data.resultImageUrl : (data.resultImageBase64 ? `data:image/png;base64,${data.resultImageBase64}` : '')}
             alt="Merged result"
             className="w-full h-auto rounded"
           />
@@ -302,18 +309,18 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
   // This ensures thumbnails are shown/removed when edges are connected/disconnected
   const prevImages = prevProps.data.connectedImages || [];
   const nextImages = nextProps.data.connectedImages || [];
-  
+
   // Compare arrays - re-render if length or content changed
   if (prevImages.length !== nextImages.length) {
     return false; // Re-render
   }
-  
+
   for (let i = 0; i < prevImages.length; i++) {
     if (prevImages[i] !== nextImages[i]) {
       return false; // Re-render
     }
   }
-  
+
   // Otherwise, check other important props
   return (
     prevProps.id === nextProps.id &&

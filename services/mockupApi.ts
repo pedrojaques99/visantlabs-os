@@ -75,11 +75,11 @@ export const mockupApi = {
         'Content-Type': 'application/json',
       },
     });
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       let errorMessage = `Failed to fetch mockups: ${response.status} ${response.statusText}`;
-      
+
       try {
         const errorData = JSON.parse(errorText);
         errorMessage = errorData.error || errorData.message || errorMessage;
@@ -88,12 +88,12 @@ export const mockupApi = {
           errorMessage = errorText;
         }
       }
-      
+
       const error = new Error(errorMessage);
       (error as any).status = response.status;
       throw error;
     }
-    
+
     const data = await response.json();
     return Array.isArray(data) ? data : [];
   },
@@ -103,11 +103,11 @@ export const mockupApi = {
       const response = await fetch(`${API_BASE_URL}/mockups`, {
         headers: getAuthHeaders(),
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         let errorMessage = `Failed to fetch mockups: ${response.status} ${response.statusText}`;
-        
+
         try {
           const errorData = JSON.parse(errorText);
           errorMessage = errorData.error || errorData.message || errorMessage;
@@ -117,19 +117,19 @@ export const mockupApi = {
             errorMessage = errorText;
           }
         }
-        
+
         const error = new Error(errorMessage);
         (error as any).status = response.status;
         throw error;
       }
-      
+
       const data = await response.json();
       return Array.isArray(data) ? data : [];
     } catch (error: any) {
       // Handle network errors, timeouts, and connection failures gracefully
-      if (error?.message?.includes('Failed to fetch') || 
-          error?.message?.includes('NetworkError') ||
-          error?.name === 'TypeError') {
+      if (error?.message?.includes('Failed to fetch') ||
+        error?.message?.includes('NetworkError') ||
+        error?.name === 'TypeError') {
         console.error('Network error fetching mockups:', error);
         // Return empty array to allow UI to load gracefully
         return [];
@@ -153,12 +153,12 @@ export const mockupApi = {
         headers: getAuthHeaders(),
         body: JSON.stringify(mockup),
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         let errorMessage = `Failed to save mockup: ${response.status} ${response.statusText}`;
         let errorDetails: string | undefined;
-        
+
         try {
           const errorData = JSON.parse(errorText);
           errorMessage = errorData.error || errorData.message || errorMessage;
@@ -168,7 +168,7 @@ export const mockupApi = {
             errorMessage = errorText || errorMessage;
           }
         }
-        
+
         console.error('Save mockup failed:', {
           status: response.status,
           statusText: response.statusText,
@@ -176,19 +176,19 @@ export const mockupApi = {
           details: errorDetails,
           responseText: errorText,
         });
-        
+
         const error = new Error(errorMessage);
         (error as any).status = response.status;
         (error as any).details = errorDetails;
         throw error;
       }
-      
+
       return response.json();
     } catch (error: any) {
       // Handle network errors
-      if (error?.message?.includes('Failed to fetch') || 
-          error?.message?.includes('NetworkError') ||
-          error?.name === 'TypeError') {
+      if (error?.message?.includes('Failed to fetch') ||
+        error?.message?.includes('NetworkError') ||
+        error?.name === 'TypeError') {
         console.error('Network error saving mockup:', error);
         throw new Error('Network error: Unable to connect to server. Please check your connection and try again.');
       }
@@ -224,13 +224,13 @@ export const mockupApi = {
     imagesCount?: number;
     feature?: 'mockupmachine' | 'canvas';
     uniqueId?: string | number; // Optional unique identifier for parallel batch requests (e.g., slot index)
-  }): Promise<{ imageBase64: string; creditsDeducted: number; creditsRemaining: number; isAdmin: boolean }> {
+  }): Promise<{ imageBase64?: string; imageUrl?: string; creditsDeducted: number; creditsRemaining: number; isAdmin: boolean }> {
     // Generate unique request ID for tracking
     const requestId = `req-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    
+
     generateCallCount++;
     const currentCallCount = generateCallCount;
-    
+
     console.log('[CREDIT] [mockupApi.generate] Starting request', {
       requestId,
       model: params.model,
@@ -247,7 +247,7 @@ export const mockupApi = {
     // uniqueId allows parallel batch requests to have distinct keys
     const requestKey = createRequestKey(params, params.uniqueId);
     const now = Date.now();
-    
+
     // Check for existing in-flight request
     const existingRequest = inFlightRequests.get(requestKey);
     if (existingRequest) {
@@ -259,7 +259,7 @@ export const mockupApi = {
       });
       return existingRequest;
     }
-    
+
     // Check for very recent duplicate (within 100ms) - prevents race conditions from rapid clicks
     const lastRequestTime = recentRequestTimestamps.get(requestKey);
     if (lastRequestTime && (now - lastRequestTime) < 100) {
@@ -277,10 +277,10 @@ export const mockupApi = {
         return retryExistingRequest;
       }
     }
-    
+
     // Record this request timestamp
     recentRequestTimestamps.set(requestKey, now);
-    
+
     // Clean up old timestamps (older than 1 second) to prevent memory leak
     if (recentRequestTimestamps.size > 100) {
       for (const [key, timestamp] of recentRequestTimestamps.entries()) {
@@ -289,12 +289,12 @@ export const mockupApi = {
         }
       }
     }
-    
+
     console.log('[CREDIT] [mockupApi.generate] No duplicate found on client, proceeding with HTTP request', {
       requestId,
       requestKey: requestKey.substring(0, 100),
     });
-    
+
 
     // Create the request promise
     const requestPromise = (async () => {
@@ -303,7 +303,7 @@ export const mockupApi = {
           ...getAuthHeaders(),
           'x-request-id': requestId, // Add request ID to headers for backend tracking
         };
-        
+
         const response = await fetch(`${API_BASE_URL}/mockups/generate`, {
           method: 'POST',
           headers,
@@ -314,7 +314,7 @@ export const mockupApi = {
           const errorText = await response.text();
           let errorMessage = `Failed to generate mockup: ${response.status} ${response.statusText}`;
           let errorData: any = null;
-          
+
           try {
             errorData = JSON.parse(errorText);
             // Extract error message from multiple possible fields
@@ -324,12 +324,12 @@ export const mockupApi = {
               errorMessage = errorText;
             }
           }
-          
+
           // Handle 413 Payload Too Large errors specifically
           if (response.status === 413 || errorMessage.includes('413') || errorMessage.includes('Payload Too Large') || errorMessage.includes('Request Entity Too Large') || errorMessage.includes('FUNCTION_PAYLOAD_TOO_LARGE')) {
             errorMessage = 'Arquivo muito grande para processar. O tamanho do arquivo excede o limite permitido. Tente reduzir a resolução da imagem, usar um formato mais compacto (como JPEG) ou remover imagens de referência desnecessárias.';
           }
-          
+
           console.error('[CREDIT] [mockupApi.generate] ❌ Request failed', {
             requestId,
             status: response.status,
@@ -338,38 +338,38 @@ export const mockupApi = {
             errorData,
             errorText: errorText.substring(0, 500), // Limit log size
           });
-          
+
           // Check for rate limit errors (429 status or rate limit message in any field)
           const errorMessageLower = errorMessage.toLowerCase();
           const errorDataMessageLower = errorData?.message?.toLowerCase() || '';
           const errorDataErrorLower = errorData?.error?.toLowerCase() || '';
           const errorTextLower = errorText.toLowerCase();
-          
-          const isRateLimit = response.status === 429 || 
-                             errorMessageLower.includes('rate limit exceeded') ||
-                             errorMessageLower.includes('rate limit') ||
-                             errorDataMessageLower.includes('rate limit exceeded') ||
-                             errorDataMessageLower.includes('rate limit') ||
-                             errorDataErrorLower.includes('rate limit exceeded') ||
-                             errorDataErrorLower.includes('rate limit') ||
-                             errorTextLower.includes('rate limit exceeded') ||
-                             errorTextLower.includes('rate limit');
-          
+
+          const isRateLimit = response.status === 429 ||
+            errorMessageLower.includes('rate limit exceeded') ||
+            errorMessageLower.includes('rate limit') ||
+            errorDataMessageLower.includes('rate limit exceeded') ||
+            errorDataMessageLower.includes('rate limit') ||
+            errorDataErrorLower.includes('rate limit exceeded') ||
+            errorDataErrorLower.includes('rate limit') ||
+            errorTextLower.includes('rate limit exceeded') ||
+            errorTextLower.includes('rate limit');
+
           if (isRateLimit) {
             // Use the most descriptive error message available
             const rateLimitMessage = errorData?.message || errorMessage || 'Rate limit exceeded. Please wait before making more requests.';
             throw new RateLimitError(rateLimitMessage);
           }
-          
+
           const error = new Error(errorMessage);
           (error as any).status = response.status;
           (error as any).errorData = errorData; // Attach full error data
-          
+
           // Handle specific error types
           if (response.status === 403 || errorMessage.includes('Insufficient credits') || errorMessage.includes('Subscription required')) {
             (error as any).requiresSubscription = true;
           }
-          
+
           throw error;
         }
 
@@ -377,6 +377,7 @@ export const mockupApi = {
         console.log('[CREDIT] [mockupApi.generate] ✅ Request successful', {
           requestId,
           hasImageBase64: !!result.imageBase64,
+          hasImageUrl: !!result.imageUrl,
           imageBase64Length: result.imageBase64?.length || 0,
           creditsDeducted: result.creditsDeducted,
           creditsRemaining: result.creditsRemaining,

@@ -886,6 +886,23 @@ router.post('/generate', authenticate, checkSubscription, async (req: Subscripti
       userApiKey // User's API key if available
     );
 
+    // Try to upload to R2 if configured to avoid large payloads
+    let imageUrl: string | undefined;
+
+    try {
+      const r2Service = await import('../../services/r2Service.js');
+      if (r2Service.isR2Configured()) {
+        console.log(`${logPrefix} [R2] Uploading generated image to R2...`);
+        // Use a new ID for the file name, or reuse requestId if unique enough
+        const fileId = new ObjectId().toString();
+        imageUrl = await uploadImageToR2(imageBase64, req.userId!, fileId);
+        console.log(`${logPrefix} [R2] Upload success: ${imageUrl}`);
+      }
+    } catch (r2Error: any) {
+      // Log but continue with base64 only
+      console.warn(`${logPrefix} [R2] Optional upload failed, falling back to base64 response:`, r2Error.message);
+    }
+
     // Generation successful - create usage record for audit/logging
     // Credits were already deducted before generation
     // Use retry mechanism to ensure usage record is created for audit trail
@@ -915,6 +932,7 @@ router.post('/generate', authenticate, checkSubscription, async (req: Subscripti
         isLocalDevelopment: false, // Always false for backend-generated requests
         requestId, // Track request ID for duplicate detection
         createdAt: new Date(),
+        imageUrl: imageUrl // Track R2 URL in usage record if available
       };
 
       let lastError: any = null;
@@ -939,7 +957,8 @@ router.post('/generate', authenticate, checkSubscription, async (req: Subscripti
             creditsPerImage,
             creditsDeducted: actualCreditsDeducted,
             creditsDeductedBeforeGeneration: !isAdmin,
-            timestamp: recordToInsert.timestamp,
+            hasImageUrl: !!imageUrl,
+            timestamp: recordToInsert.createdAt, // corrected property name
           });
           return; // Success - exit retry loop
         } catch (error: any) {
@@ -1028,8 +1047,10 @@ router.post('/generate', authenticate, checkSubscription, async (req: Subscripti
     }
 
     // Return generated image
+    // Prefer imageUrl if available to save bandwidth
     res.json({
-      imageBase64,
+      imageBase64: imageUrl ? undefined : imageBase64, // Send undefined if imageUrl is present to save bandwidth
+      imageUrl, // Include the R2 URL
       creditsDeducted: actualCreditsDeducted,
       creditsRemaining: totalCreditsRemaining,
       isAdmin,

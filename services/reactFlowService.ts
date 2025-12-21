@@ -35,18 +35,18 @@ const urlToBase64 = async (url: string): Promise<string> => {
       try {
         const proxyUrl = `${API_BASE_URL}/images/proxy?url=${encodeURIComponent(url)}`;
         const response = await fetch(proxyUrl);
-        
+
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(errorData.error || `Proxy failed: ${response.status} ${response.statusText}`);
         }
-        
+
         const data = await response.json();
-        
+
         if (!data.base64) {
           throw new Error('Proxy returned empty base64 data');
         }
-        
+
         return data.base64;
       } catch (error) {
         console.error('Error using proxy for R2 URL:', {
@@ -57,26 +57,26 @@ const urlToBase64 = async (url: string): Promise<string> => {
         throw error;
       }
     }
-    
+
     // Direct fetch for non-R2 URLs (they may have CORS configured)
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
     }
-    
+
     // Check if response is actually an image
     const contentType = response.headers.get('content-type');
     if (!contentType || !contentType.startsWith('image/')) {
       throw new Error(`URL does not point to an image. Content-Type: ${contentType || 'unknown'}`);
     }
-    
+
     const blob = await response.blob();
-    
+
     // Validate blob is not empty
     if (blob.size === 0) {
       throw new Error('Image file is empty');
     }
-    
+
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -119,7 +119,7 @@ export const normalizeImageToBase64 = async (image: string, base64Fallback?: str
   if (!image || typeof image !== 'string') {
     throw new Error('Invalid image: must be a non-empty string');
   }
-  
+
   // If it's already base64 (with or without data URL prefix), extract the base64 part
   if (image.startsWith('data:')) {
     const base64Part = image.split(',')[1];
@@ -128,7 +128,7 @@ export const normalizeImageToBase64 = async (image: string, base64Fallback?: str
     }
     return base64Part;
   }
-  
+
   // If base64 fallback is provided and image is a URL, use fallback instead of fetching
   if (base64Fallback && (image.startsWith('http://') || image.startsWith('https://'))) {
     // Validate fallback is base64
@@ -143,17 +143,17 @@ export const normalizeImageToBase64 = async (image: string, base64Fallback?: str
     }
     // If fallback is invalid, continue to fetch from URL
   }
-  
+
   // If it's a URL, convert to base64
   if (image.startsWith('http://') || image.startsWith('https://')) {
     return await urlToBase64(image);
   }
-  
+
   // Assume it's already base64 without prefix
   if (image.length > 0 && !image.includes(' ')) {
     return image;
   }
-  
+
   throw new Error('Invalid image format: must be base64 string or URL');
 };
 
@@ -164,7 +164,7 @@ export const detectMimeType = (image: string): string => {
   if (!image || typeof image !== 'string') {
     return 'image/png'; // Default fallback
   }
-  
+
   // If it's a data URL, extract MIME type
   if (image.startsWith('data:')) {
     const mimeMatch = image.match(/data:([^;]+)/);
@@ -172,7 +172,7 @@ export const detectMimeType = (image: string): string => {
       return mimeMatch[1];
     }
   }
-  
+
   // Default to PNG for base64, or try to detect from URL
   if (image.startsWith('http')) {
     const urlLower = image.toLowerCase();
@@ -181,7 +181,7 @@ export const detectMimeType = (image: string): string => {
     if (urlLower.includes('.webp')) return 'image/webp';
     if (urlLower.includes('.gif')) return 'image/gif';
   }
-  
+
   // Default to PNG
   return 'image/png';
 };
@@ -212,16 +212,16 @@ export const combineImages = async (
       if (!image || image.trim() === '') {
         throw new Error('Invalid image: empty or null');
       }
-      
+
       try {
         const base64 = await normalizeImageToBase64(image);
         const mimeType = detectMimeType(image);
-        
+
         // Validate base64 is not empty
         if (!base64 || base64.trim() === '') {
           throw new Error('Invalid image: base64 conversion resulted in empty string');
         }
-        
+
         return {
           base64,
           mimeType,
@@ -254,17 +254,17 @@ export const combineImages = async (
       },
       model,
       resolution,
-      referenceImages: additionalReferences.length > 0 
+      referenceImages: additionalReferences.length > 0
         ? additionalReferences.map(img => ({
-            base64: img.base64,
-            mimeType: img.mimeType
-          }))
+          base64: img.base64,
+          mimeType: img.mimeType
+        }))
         : undefined,
       imagesCount: 1,
       feature: 'canvas' // Combine operations are part of canvas workflow
     });
 
-    return result.imageBase64;
+    return result.imageBase64 || result.imageUrl || '';
   } catch (error: any) {
     console.error('Error combining images:', error);
     throw new Error(error?.message || 'Failed to combine images');
@@ -285,11 +285,11 @@ export const editImage = async (
   if (!imageBase64 || imageBase64.trim() === '') {
     throw new Error('Invalid image: empty or null');
   }
-  
+
   try {
     const base64 = await normalizeImageToBase64(imageBase64);
     const mimeType = detectMimeType(imageBase64);
-    
+
     if (!base64 || base64.trim() === '') {
       throw new Error('Invalid image: base64 conversion resulted in empty string');
     }
@@ -310,7 +310,7 @@ export const editImage = async (
         feature: 'canvas' // Edit operations are part of canvas workflow
       });
 
-      return result.imageBase64;
+      return result.imageBase64 || result.imageUrl || '';
     } catch (error: any) {
       console.error('Error editing image:', error);
       throw new Error(error?.message || 'Failed to edit image');
@@ -332,15 +332,15 @@ export const upscaleImage = async (
   if (!imageBase64 || imageBase64.trim() === '') {
     throw new Error('Invalid image: empty or null');
   }
-  
+
   try {
     const base64 = await normalizeImageToBase64(imageBase64);
     const mimeType = detectMimeType(imageBase64);
-    
+
     if (!base64 || base64.trim() === '') {
       throw new Error('Invalid image: base64 conversion resulted in empty string');
     }
-    
+
     const baseImage: UploadedImage = {
       base64,
       mimeType,
@@ -364,7 +364,7 @@ export const upscaleImage = async (
         feature: 'canvas' // Upscale operations are part of canvas workflow
       });
 
-      return result.imageBase64;
+      return result.imageBase64 || result.imageUrl || '';
     } catch (error: any) {
       console.error('Error upscaling image:', error);
       throw new Error(error?.message || 'Failed to upscale image');
