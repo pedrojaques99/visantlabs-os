@@ -203,7 +203,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For issues and questions, please open an issue on GitHub.
 
-## Support
+## Authors
 
 Created by Pedro Jaques & Visant Company [https://www.visant.co]
 
