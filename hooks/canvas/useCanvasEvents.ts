@@ -25,11 +25,11 @@ export const useCanvasEvents = (
 ) => {
   const connectionStartRef = useRef<{ nodeId: string; x: number; y: number } | null>(null);
   const connectionCreatedRef = useRef<boolean>(false);
-  
+
   // Helper function to determine handle type based on node type and handle ID
   const getHandleType = (nodeType: string | undefined, handleId: string | null | undefined, isSource: boolean): string | null => {
     if (!nodeType || !handleId) return null;
-    
+
     // Source handles (outputs)
     if (isSource) {
       if (nodeType === 'image' || nodeType === 'output' || nodeType === 'logo') {
@@ -43,7 +43,7 @@ export const useCanvasEvents = (
       }
       return 'generic';
     }
-    
+
     // Target handles (inputs)
     if (handleId === 'text-input') {
       return 'text';
@@ -54,7 +54,7 @@ export const useCanvasEvents = (
     if (handleId?.startsWith('input-') || handleId === 'logo-input' || handleId === 'identity-input') {
       return 'image';
     }
-    
+
     // Default based on node type for generic handles
     if (nodeType === 'image' || nodeType === 'output' || nodeType === 'logo') {
       return 'image';
@@ -62,55 +62,55 @@ export const useCanvasEvents = (
     if (nodeType === 'text') {
       return 'text';
     }
-    
+
     return 'generic';
   };
-  
+
   // Handle edge connections
   const onConnect = useCallback((params: Connection) => {
     // Mark that a connection was created
     connectionCreatedRef.current = true;
-    
+
     // Validate connection params
     if (!params.source || !params.target) {
       console.warn('Invalid connection params:', params);
       return;
     }
-    
+
     // Get source and target nodes
     const sourceNode = nodes.find(n => n.id === params.source);
     const targetNode = nodes.find(n => n.id === params.target);
-    
+
     // Validate handle type compatibility
     if (sourceNode && targetNode) {
       const sourceHandle = params.sourceHandle === null || params.sourceHandle === 'null' ? undefined : params.sourceHandle;
       const targetHandle = params.targetHandle === null || params.targetHandle === 'null' ? undefined : params.targetHandle;
-      
+
       const sourceHandleType = getHandleType(sourceNode.type, sourceHandle, true);
       const targetHandleType = getHandleType(targetNode.type, targetHandle, false);
-      
+
       // Determine handle types even when handles are not specified (fallback to node type)
-      const effectiveSourceType = sourceHandleType || 
+      const effectiveSourceType = sourceHandleType ||
         (sourceNode.type === 'image' || sourceNode.type === 'output' || sourceNode.type === 'logo' ? 'image' :
-         sourceNode.type === 'text' ? 'text' : null);
+          sourceNode.type === 'text' ? 'text' : null);
       const effectiveTargetType = targetHandleType ||
         (targetHandle === 'text-input' ? 'text' :
-         targetHandle?.startsWith('input-') || targetHandle === 'logo-input' || targetHandle === 'identity-input' ? 'image' :
-         targetNode.type === 'image' || targetNode.type === 'output' || targetNode.type === 'logo' ? 'image' :
-         targetNode.type === 'text' ? 'text' : null);
-      
+          targetHandle?.startsWith('input-') || targetHandle === 'logo-input' || targetHandle === 'identity-input' ? 'image' :
+            targetNode.type === 'image' || targetNode.type === 'output' || targetNode.type === 'logo' ? 'image' :
+              targetNode.type === 'text' ? 'text' : null);
+
       // Explicitly prevent image handles from connecting to text handles
       if (effectiveSourceType === 'image' && effectiveTargetType === 'text') {
         toast.error('Não é possível conectar um handle de imagem a um handle de texto', { duration: 3000 });
         return;
       }
-      
+
       // Block text → image connections (for consistency)
       if (effectiveSourceType === 'text' && effectiveTargetType === 'image') {
         toast.error('Não é possível conectar um handle de texto a um handle de imagem', { duration: 3000 });
         return;
       }
-      
+
       // If both handles have types, they must match (except generic which accepts all)
       if (sourceHandleType && targetHandleType) {
         if (sourceHandleType !== 'generic' && targetHandleType !== 'generic') {
@@ -124,12 +124,12 @@ export const useCanvasEvents = (
         }
       }
     }
-    
+
     // Prevent connecting two flow nodes of the same type
     if (sourceNode && targetNode) {
       const sourceType = sourceNode.type;
       const targetType = targetNode.type;
-      
+
       if (
         sourceType &&
         targetType &&
@@ -140,11 +140,11 @@ export const useCanvasEvents = (
         return;
       }
     }
-    
+
     // For BrandNode, validate connections
     if (targetNode?.type === 'brand') {
       const targetHandle = params.targetHandle;
-      
+
       // Validate logo-input handle
       if (targetHandle === 'logo-input') {
         if (sourceNode && !['image', 'logo', 'output'].includes(sourceNode.type || '')) {
@@ -152,7 +152,7 @@ export const useCanvasEvents = (
           return;
         }
       }
-      
+
       // Validate identity-input handle
       if (targetHandle === 'identity-input') {
         if (sourceNode && !['pdf', 'image', 'output'].includes(sourceNode.type || '')) {
@@ -161,16 +161,16 @@ export const useCanvasEvents = (
         }
       }
     }
-    
+
     // For PromptNode, detect which handle to use based on existing connections
     let targetHandle = params.targetHandle;
-    
+
     if (targetNode?.type === 'prompt') {
       // Clean targetHandle first
       if (targetHandle === null || targetHandle === 'null' || targetHandle === '') {
         targetHandle = undefined;
       }
-      
+
       // If connecting a TextNode, use text-input handle
       if (sourceNode?.type === 'text') {
         targetHandle = 'text-input';
@@ -179,12 +179,12 @@ export const useCanvasEvents = (
         const promptData = targetNode.data as any;
         const model = promptData?.model || 'gemini-2.5-flash-image';
         const maxHandles = model === 'gemini-3-pro-image-preview' ? 4 : 2;
-        
+
         // If targetHandle is not explicitly set, assign based on existing connections
         if (!targetHandle) {
           const existingEdges = edges.filter(e => e.target === params.target && e.targetHandle !== 'text-input');
           const availableHandles = ['input-1', 'input-2', 'input-3', 'input-4'].slice(0, maxHandles);
-          
+
           // Find first available handle
           for (const handle of availableHandles) {
             const hasHandle = existingEdges.some(e => e.targetHandle === handle);
@@ -193,7 +193,7 @@ export const useCanvasEvents = (
               break;
             }
           }
-          
+
           // If all handles are taken, replace the one that's not from the same source
           if (!targetHandle) {
             const existingFromSameSource = existingEdges.find(e => e.source === params.source);
@@ -228,32 +228,32 @@ export const useCanvasEvents = (
         }
       }
     }
-    
+
     // Clean sourceHandle and targetHandle: ensure they are undefined or valid strings, not null or "null"
     const cleanedParams: Connection = {
       ...params,
-      sourceHandle: params.sourceHandle === null || params.sourceHandle === 'null' || params.sourceHandle === '' 
-        ? undefined 
+      sourceHandle: params.sourceHandle === null || params.sourceHandle === 'null' || params.sourceHandle === ''
+        ? undefined
         : params.sourceHandle,
-      targetHandle: targetHandle === null || targetHandle === 'null' || targetHandle === '' 
-        ? undefined 
+      targetHandle: targetHandle === null || targetHandle === 'null' || targetHandle === ''
+        ? undefined
         : targetHandle,
     };
-    
+
     addToHistory(nodes, edges);
-    
+
     setEdges((eds) => {
       const newEdges = addEdge(cleanedParams, eds);
       // Clean edges immediately after addEdge to prevent null handle warnings
       const cleanedEdges = cleanEdges(newEdges);
-      
+
       // If connecting ImageNode or OutputNode to EditNode, automatically set the image as uploadedImage
       const sourceNode = nodes.find(n => n.id === cleanedParams.source);
       const targetNode = nodes.find(n => n.id === cleanedParams.target);
-      
+
       if ((sourceNode?.type === 'image' || sourceNode?.type === 'output') && targetNode?.type === 'edit') {
         let imageBase64: string | undefined = undefined;
-        
+
         if (sourceNode.type === 'image') {
           const imageData = sourceNode.data as ImageNodeData;
           imageBase64 = imageData.mockup?.imageBase64;
@@ -266,23 +266,23 @@ export const useCanvasEvents = (
               : outputData.resultImageBase64;
           }
         }
-        
+
         if (imageBase64) {
           const uploadedImage: UploadedImage = {
             base64: imageBase64,
             mimeType: 'image/png',
           };
-          
+
           setNodes((nds: Node<FlowNodeData>[]) =>
             nds.map((n: Node<FlowNodeData>) =>
               n.id === cleanedParams.target && n.type === 'edit'
                 ? {
-                    ...n,
-                    data: {
-                      ...(n.data as EditNodeData),
-                      uploadedImage: uploadedImage,
-                    } as EditNodeData,
-                  } as Node<FlowNodeData>
+                  ...n,
+                  data: {
+                    ...(n.data as EditNodeData),
+                    uploadedImage: uploadedImage,
+                  } as EditNodeData,
+                } as Node<FlowNodeData>
                 : n
             )
           );
@@ -293,18 +293,18 @@ export const useCanvasEvents = (
       if (sourceNode?.type === 'text' && targetNode?.type === 'prompt' && cleanedParams.targetHandle === 'text-input') {
         const textData = sourceNode.data as TextNodeData;
         const promptData = targetNode.data as PromptNodeData;
-        
+
         if (textData.text && textData.text !== promptData.prompt) {
           setNodes((nds: Node<FlowNodeData>[]) =>
             nds.map((n: Node<FlowNodeData>) =>
               n.id === cleanedParams.target && n.type === 'prompt'
                 ? {
-                    ...n,
-                    data: {
-                      ...(n.data as PromptNodeData),
-                      prompt: textData.text,
-                    } as PromptNodeData,
-                  } as Node<FlowNodeData>
+                  ...n,
+                  data: {
+                    ...(n.data as PromptNodeData),
+                    prompt: textData.text,
+                  } as PromptNodeData,
+                } as Node<FlowNodeData>
                 : n
             )
           );
@@ -392,7 +392,7 @@ export const useCanvasEvents = (
           const strategyData = sourceNode.data as any;
           const existingStrategies = brandCoreData.connectedStrategies || [];
           const strategyExists = existingStrategies.some((s: any) => s.nodeId === sourceNode.id);
-          
+
           if (!strategyExists && strategyData.strategyData) {
             updates.connectedStrategies = [
               ...existingStrategies,
@@ -411,12 +411,12 @@ export const useCanvasEvents = (
             nds.map((n: Node<FlowNodeData>) =>
               n.id === cleanedParams.target && n.type === 'brandCore'
                 ? {
-                    ...n,
-                    data: {
-                      ...brandCoreData,
-                      ...updates,
-                    },
-                  } as Node<FlowNodeData>
+                  ...n,
+                  data: {
+                    ...brandCoreData,
+                    ...updates,
+                  },
+                } as Node<FlowNodeData>
                 : n
             )
           );
@@ -455,12 +455,12 @@ export const useCanvasEvents = (
             nds.map((n: Node<FlowNodeData>) =>
               n.id === cleanedParams.target && n.type === 'colorExtractor'
                 ? {
-                    ...n,
-                    data: {
-                      ...colorExtractorData,
-                      connectedImage: imageBase64,
-                    },
-                  } as Node<FlowNodeData>
+                  ...n,
+                  data: {
+                    ...colorExtractorData,
+                    connectedImage: imageBase64,
+                  },
+                } as Node<FlowNodeData>
                 : n
             )
           );
@@ -470,7 +470,7 @@ export const useCanvasEvents = (
       // Handle connections FROM BrandCore (smart output handle)
       if (sourceNode?.type === 'brandCore' && cleanedParams.sourceHandle === 'prompt-output') {
         const brandCoreData = sourceNode.data as any;
-        
+
         // Detect target node type and pass appropriate data
         if (targetNode?.type === 'prompt') {
           // For Prompt Nodes: pass images (logo, identity), text direction, and brandIdentity
@@ -478,18 +478,18 @@ export const useCanvasEvents = (
             nds.map((n: Node<FlowNodeData>) =>
               n.id === cleanedParams.target && n.type === 'prompt'
                 ? {
-                    ...n,
-                    data: {
-                      ...(n.data as any),
-                      // Pass logo and identity images from BrandCore
-                      connectedLogo: brandCoreData.connectedLogo || brandCoreData.uploadedLogo,
-                      connectedIdentity: brandCoreData.connectedPdf || brandCoreData.connectedImage || brandCoreData.uploadedIdentityUrl || brandCoreData.uploadedIdentity,
-                      // Pass text direction from visual prompts (compositionPrompt or stylePrompt)
-                      connectedTextDirection: brandCoreData.visualPrompts?.compositionPrompt || brandCoreData.visualPrompts?.stylePrompt,
-                      // Also pass brandIdentity for backward compatibility
-                      connectedBrandIdentity: brandCoreData.brandIdentity,
-                    },
-                  } as Node<FlowNodeData>
+                  ...n,
+                  data: {
+                    ...(n.data as any),
+                    // Pass logo and identity images from BrandCore
+                    connectedLogo: brandCoreData.connectedLogo || brandCoreData.uploadedLogo,
+                    connectedIdentity: brandCoreData.connectedPdf || brandCoreData.connectedImage || brandCoreData.uploadedIdentityUrl || brandCoreData.uploadedIdentity,
+                    // Pass text direction from visual prompts (compositionPrompt or stylePrompt)
+                    connectedTextDirection: brandCoreData.visualPrompts?.compositionPrompt || brandCoreData.visualPrompts?.stylePrompt,
+                    // Also pass brandIdentity for backward compatibility
+                    connectedBrandIdentity: brandCoreData.brandIdentity,
+                  },
+                } as Node<FlowNodeData>
                 : n
             )
           );
@@ -500,13 +500,13 @@ export const useCanvasEvents = (
               nds.map((n: Node<FlowNodeData>) =>
                 n.id === cleanedParams.target && n.type === 'strategy'
                   ? {
-                      ...n,
-                      data: {
-                        ...(n.data as any),
-                        // Pass consolidated strategic data to strategy node
-                        connectedStrategicData: brandCoreData.strategicPrompts.consolidated,
-                      },
-                    } as Node<FlowNodeData>
+                    ...n,
+                    data: {
+                      ...(n.data as any),
+                      // Pass consolidated strategic data to strategy node
+                      connectedStrategicData: brandCoreData.strategicPrompts.consolidated,
+                    },
+                  } as Node<FlowNodeData>
                   : n
               )
             );
@@ -517,18 +517,18 @@ export const useCanvasEvents = (
             nds.map((n: Node<FlowNodeData>) =>
               n.id === cleanedParams.target && n.type === 'mockup'
                 ? {
-                    ...n,
-                    data: {
-                      ...(n.data as any),
-                      // Pass logo and identity images from BrandCore
-                      connectedLogo: brandCoreData.connectedLogo || brandCoreData.uploadedLogo,
-                      connectedIdentity: brandCoreData.connectedPdf || brandCoreData.connectedImage || brandCoreData.uploadedIdentityUrl || brandCoreData.uploadedIdentity,
-                      // Pass text direction from visual prompts
-                      connectedTextDirection: brandCoreData.visualPrompts?.mockupPrompt,
-                      // Pass strategy data if available
-                      connectedStrategyData: brandCoreData.strategicPrompts?.consolidated,
-                    },
-                  } as Node<FlowNodeData>
+                  ...n,
+                  data: {
+                    ...(n.data as any),
+                    // Pass logo and identity images from BrandCore
+                    connectedLogo: brandCoreData.connectedLogo || brandCoreData.uploadedLogo,
+                    connectedIdentity: brandCoreData.connectedPdf || brandCoreData.connectedImage || brandCoreData.uploadedIdentityUrl || brandCoreData.uploadedIdentity,
+                    // Pass text direction from visual prompts
+                    connectedTextDirection: brandCoreData.visualPrompts?.mockupPrompt,
+                    // Pass strategy data if available
+                    connectedStrategyData: brandCoreData.strategicPrompts?.consolidated,
+                  },
+                } as Node<FlowNodeData>
                 : n
             )
           );
@@ -539,12 +539,12 @@ export const useCanvasEvents = (
               nds.map((n: Node<FlowNodeData>) =>
                 n.id === cleanedParams.target && n.type === 'chat'
                   ? {
-                      ...n,
-                      data: {
-                        ...(n.data as any),
-                        connectedStrategyData: brandCoreData.strategicPrompts.consolidated,
-                      },
-                    } as Node<FlowNodeData>
+                    ...n,
+                    data: {
+                      ...(n.data as any),
+                      connectedStrategyData: brandCoreData.strategicPrompts.consolidated,
+                    },
+                  } as Node<FlowNodeData>
                   : n
               )
             );
@@ -552,7 +552,7 @@ export const useCanvasEvents = (
         }
         // For other node types, we can extend this logic as needed
       }
-      
+
       setTimeout(() => {
         addToHistory(nodes, cleanedEdges);
       }, 0);
@@ -572,7 +572,7 @@ export const useCanvasEvents = (
     event.preventDefault();
     const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
     if (!pane) return;
-    
+
     const rect = pane.getBoundingClientRect();
     setContextMenu({
       x: event.clientX - rect.left,
@@ -584,7 +584,7 @@ export const useCanvasEvents = (
   const onNodeContextMenu = useCallback((event: React.MouseEvent, node: Node<FlowNodeData>) => {
     event.preventDefault();
     event.stopPropagation();
-    
+
     // Show image context menu for any node that has media (image or video)
     const hasMedia = getMediaFromNodeForCopy(node) !== null;
     if (hasMedia) {
@@ -608,23 +608,23 @@ export const useCanvasEvents = (
   const onEdgeClick = useCallback((event: React.MouseEvent, edge: Edge) => {
     event.preventDefault();
     event.stopPropagation();
-    
+
     // If Ctrl is pressed, remove the edge directly
     if (event.ctrlKey || event.metaKey) {
       addToHistory(nodes, edges);
-      
+
       const newEdges = edges.filter(e => e.id !== edge.id);
       setEdges(newEdges);
-      
+
       setTimeout(() => {
         addToHistory(nodes, newEdges);
       }, 0);
-      
+
       setEdgeContextMenu(null);
       toast.success('Connection removed', { duration: 2000 });
       return;
     }
-    
+
     // Otherwise, show context menu (for left click)
     // Use clientX/clientY directly for position: fixed
     setEdgeContextMenu({
@@ -638,7 +638,7 @@ export const useCanvasEvents = (
   const onEdgeContextMenu = useCallback((event: React.MouseEvent, edge: Edge) => {
     event.preventDefault();
     event.stopPropagation();
-    
+
     // Use clientX/clientY directly for position: fixed
     setEdgeContextMenu({
       x: event.clientX,
@@ -650,14 +650,14 @@ export const useCanvasEvents = (
   // Handle remove edge
   const handleRemoveEdge = useCallback((edgeId: string) => {
     addToHistory(nodes, edges);
-    
+
     const newEdges = edges.filter(e => e.id !== edgeId);
     setEdges(newEdges);
-    
+
     setTimeout(() => {
       addToHistory(nodes, newEdges);
     }, 0);
-    
+
     setEdgeContextMenu(null);
     toast.success('Connection removed', { duration: 2000 });
   }, [nodes, edges, setEdges, addToHistory, setEdgeContextMenu]);
@@ -696,7 +696,7 @@ export const useCanvasEvents = (
     if (!pane) return null;
 
     const paneRect = pane.getBoundingClientRect();
-    
+
     // Convert drop position to flow coordinates
     const flowPosition = reactFlowInstance.screenToFlowPosition({
       x: dropPosition.x - paneRect.left,
@@ -712,7 +712,7 @@ export const useCanvasEvents = (
       const handleRect = handle.getBoundingClientRect();
       const handleCenterX = handleRect.left + handleRect.width / 2;
       const handleCenterY = handleRect.top + handleRect.height / 2;
-      
+
       // Convert handle position to flow coordinates
       const handleFlowPos = reactFlowInstance.screenToFlowPosition({
         x: handleCenterX - paneRect.left,
@@ -726,9 +726,9 @@ export const useCanvasEvents = (
 
       if (distance < minDistance) {
         // ReactFlow uses 'data-handleid' or 'id' attribute for handle identification
-        const handleId = handle.getAttribute('data-handleid') || 
-                        handle.getAttribute('id') || 
-                        undefined;
+        const handleId = handle.getAttribute('data-handleid') ||
+          handle.getAttribute('id') ||
+          undefined;
         minDistance = distance;
         nearestHandle = { handleId, distance };
       }
@@ -741,7 +741,7 @@ export const useCanvasEvents = (
   const onConnectEnd = useCallback((event: MouseEvent | TouchEvent) => {
     const connectionStart = connectionStartRef.current;
     const wasConnectionCreated = connectionCreatedRef.current;
-    
+
     // Reset refs
     connectionStartRef.current = null;
     connectionCreatedRef.current = false;
@@ -765,10 +765,10 @@ export const useCanvasEvents = (
 
     // Check if dropped directly on a target handle (ReactFlow handles this automatically)
     const targetHandle = document.elementFromPoint(clientX, clientY)?.closest('.react-flow__handle-target');
-    
+
     // Check if dropped on a node (anywhere in the node area)
     const targetNodeElement = document.elementFromPoint(clientX, clientY)?.closest('.react-flow__node');
-    
+
     if (targetNodeElement && !targetHandle) {
       // Dropped on a node but not directly on handle - find nearest handle
       const targetNodeId = targetNodeElement.getAttribute('data-id');
@@ -790,7 +790,7 @@ export const useCanvasEvents = (
               sourceHandle: undefined,
               targetHandle: nearestHandle.handleId,
             };
-            
+
             // Use the existing onConnect logic
             onConnect(connection);
             return;
@@ -799,8 +799,8 @@ export const useCanvasEvents = (
       }
     }
 
-    // If connection was started from an ImageNode and dropped on empty canvas
-    if (sourceNode.type === 'image' && !targetNodeElement) {
+    // If connection was started from an ImageNode or OutputNode and dropped on empty canvas
+    if ((sourceNode.type === 'image' || sourceNode.type === 'output') && !targetNodeElement) {
       // Dropped on empty canvas - open context menu with source node info
       setContextMenu({
         x: clientX - rect.left,

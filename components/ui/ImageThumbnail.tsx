@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { X, Image as ImageIcon } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { isSafeUrl } from '../../utils/imageUtils';
 
 interface ImageThumbnailProps {
   base64: string; // Can be URL or base64 string
@@ -22,9 +23,13 @@ export const ImageThumbnail: React.FC<ImageThumbnailProps> = ({
   if (!base64 || typeof base64 !== 'string') {
     return null;
   }
-  const imageUrl = base64.startsWith('http://') || base64.startsWith('https://') || base64.startsWith('data:')
-    ? base64
-    : `data:image/png;base64,${base64}`;
+  const imageUrl = useMemo(() => {
+    if (base64.startsWith('http://') || base64.startsWith('https://') || base64.startsWith('data:')) {
+      return isSafeUrl(base64) ? base64 : '';
+    }
+    const dataUrl = `data:image/png;base64,${base64}`;
+    return isSafeUrl(dataUrl) ? dataUrl : '';
+  }, [base64]);
 
   return (
     <div
@@ -48,7 +53,7 @@ export const ImageThumbnail: React.FC<ImageThumbnailProps> = ({
           loading="lazy"
         />
       )}
-      
+
       {/* Bullet indicator */}
       <div className="absolute top-1 left-1 w-5 h-5 bg-[#52ddeb] border border-black rounded-md flex items-center justify-center z-10">
         <span className="text-[10px] font-mono font-bold text-black">{index + 1}</span>

@@ -4,6 +4,7 @@ import { GlitchLoader } from './GlitchLoader';
 import type { UploadedImage, DesignType, GeminiModel } from '../../types';
 import { useTranslation } from '../../hooks/useTranslation';
 import { formatImageTo16_9 } from '../../utils/fileUtils';
+import { isSafeUrl } from '../../utils/imageUtils';
 
 interface InputSectionProps {
   uploadedImage: UploadedImage | null;
@@ -79,7 +80,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
     } finally {
       setIsLoadingImage(false);
     }
-    
+
     e.target.value = '';
   };
 
@@ -93,7 +94,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
       <h2 className={`font-semibold font-mono uppercase tracking-widest mb-3 transition-all duration-300 ${hasImage ? 'text-[10px] text-zinc-600 mb-1' : 'text-sm text-zinc-400'}`}>
         {t('mockup.input')}
       </h2>
-      
+
       <div className={`${hasImage && supportsReferences ? 'flex gap-2' : (hasImage ? 'w-1/4 opacity-80' : 'w-1/4')} mx-auto transition-all duration-300`}>
         <div className={`relative aspect-[4/3] bg-black/20 rounded-md p-2 border border-zinc-700/50 ${supportsReferences && hasImage ? 'flex-1' : ''}`}>
           {isLoadingImage ? (
@@ -103,10 +104,10 @@ export const InputSection: React.FC<InputSectionProps> = ({
             </div>
           ) : displayImage ? (
             <label htmlFor="image-upload-blank" className="w-full h-full cursor-pointer group relative">
-              <img 
-                src={`data:${displayImage.mimeType};base64,${displayImage.base64}`} 
-                alt={isReferenceOnly ? t('mockup.referenceImageAlt') : t('mockup.uploadedDesignAlt')} 
-                className={`w-full h-full object-contain rounded-md group-hover:opacity-80 transition-opacity ${isReferenceOnly ? 'opacity-70' : ''}`} 
+              <img
+                src={isSafeUrl(`data:${displayImage.mimeType};base64,${displayImage.base64}`) ? `data:${displayImage.mimeType};base64,${displayImage.base64}` : ''}
+                alt={isReferenceOnly ? t('mockup.referenceImageAlt') : t('mockup.uploadedDesignAlt')}
+                className={`w-full h-full object-contain rounded-md group-hover:opacity-80 transition-opacity ${isReferenceOnly ? 'opacity-70' : ''}`}
               />
               <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-md">
                 <p className="text-xs font-mono text-white">{isReferenceOnly ? t('mockup.clickToChangeReference') : t('mockup.clickToChange')}</p>
@@ -145,7 +146,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
                     reader.onerror = () => reject(new Error('Failed to read file'));
                     reader.readAsDataURL(file);
                   });
-                  
+
                   const formatted = await formatImageTo16_9(result, file.type);
                   onImageUpload(formatted);
                 } catch (error) {
@@ -166,11 +167,11 @@ export const InputSection: React.FC<InputSectionProps> = ({
             className="hidden"
           />
         </div>
-        
+
         {supportsReferences && hasImage && referenceImages.map((img, index) => (
           <div key={index} className="relative aspect-[4/3] bg-black/20 rounded-md p-2 border border-zinc-700/50 flex-1 group">
-            <img 
-              src={`data:${img.mimeType};base64,${img.base64}`} 
+            <img
+              src={isSafeUrl(`data:${img.mimeType};base64,${img.base64}`) ? `data:${img.mimeType};base64,${img.base64}` : ''}
               alt={`${t('mockup.referenceImageAlt')} ${index + 1}`}
               className="w-full h-full object-contain rounded-md"
             />
@@ -183,7 +184,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
             </button>
           </div>
         ))}
-        
+
         {supportsReferences && hasImage && canAddMoreReferences && (
           <>
             {isLoadingImage ? (
@@ -191,7 +192,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
                 <GlitchLoader size={16} color="#52ddeb" />
               </div>
             ) : (
-              <label 
+              <label
                 htmlFor="multiple-image-upload"
                 className={`aspect-[4/3] flex items-center justify-center bg-zinc-800/50 text-zinc-400 rounded-md border border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300 hover:bg-zinc-800/70 transition-all duration-200 cursor-pointer ${isImagelessMode ? 'flex-[0.3]' : 'flex-1'}`}
               >
@@ -210,7 +211,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
           </>
         )}
       </div>
-      
+
       {supportsReferences && referenceImages.length >= maxReferences && (
         <div className="mb-3 p-2 bg-zinc-800/30 rounded-md border border-zinc-700/50">
           <p className="text-xs font-mono text-zinc-500 text-center">

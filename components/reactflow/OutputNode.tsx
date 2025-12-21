@@ -3,6 +3,7 @@ import { type NodeProps, useNodes, useEdges, useReactFlow, NodeResizer } from '@
 import { Maximize2, Heart, Loader2, Download, FileText, Edit, Trash2, Palette } from 'lucide-react';
 import type { OutputNodeData, FlowNodeData } from '../../types/reactFlow';
 import { cn } from '../../lib/utils';
+import { isSafeUrl } from '../../utils/imageUtils';
 import { mockupApi } from '../../services/mockupApi';
 import { aiApi } from '../../services/aiApi';
 import { normalizeImageToBase64 } from '../../services/reactFlowService';
@@ -88,6 +89,26 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     }
   }, [isLoading]);
 
+  // Lock node deletion while generating
+  useEffect(() => {
+    setNodes((nds) =>
+      nds.map((node) => {
+        if (node.id === id) {
+          const shouldBeDeletable = !isLoading;
+          const isDeletable = node.deletable ?? true;
+
+          if (isDeletable !== shouldBeDeletable) {
+            return {
+              ...node,
+              deletable: shouldBeDeletable,
+            };
+          }
+        }
+        return node;
+      })
+    );
+  }, [isLoading, id, setNodes]);
+
   // Use centralized like hook
   const { toggleLike: handleToggleLike } = useMockupLike({
     mockupId: savedMockupId || undefined,
@@ -167,7 +188,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         sourceImageUrl = uploadedVideoUrl;
       } else if (uploadedVideo) {
         // uploadedVideo might be a data URL or base64
-        if (uploadedVideo.startsWith('data:')) {
+        if (typeof uploadedVideo === 'string' && uploadedVideo.startsWith('data:')) {
           sourceImageUrl = uploadedVideo;
         } else {
           sourceImageUrl = `data:video/mp4;base64,${uploadedVideo}`;
@@ -196,7 +217,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     if (hasVideo) {
       // Check if resultVideoBase64 is already a data URL (starts with "data:")
       const videoBase64Url = resultVideoBase64
-        ? (resultVideoBase64.startsWith('data:')
+        ? (typeof resultVideoBase64 === 'string' && resultVideoBase64.startsWith('data:')
           ? resultVideoBase64
           : `data:video/mp4;base64,${resultVideoBase64}`)
         : null;
@@ -212,7 +233,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       }
     } else {
       const newImageUrl = sourceImageUrl || resultImageUrl || (resultImageBase64 ? `data:image/png;base64,${resultImageBase64}` : null);
-      // Only update if the value actually changed
+
       if (newImageUrl !== previousImageUrlRef.current) {
         previousImageUrlRef.current = newImageUrl;
         setImageUrl(newImageUrl);
@@ -226,7 +247,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     if (!imageUrl || isSaving) return;
 
     // Only save if imageUrl is from R2 (not a data URL)
-    if (imageUrl.startsWith('data:')) {
+    if (typeof imageUrl === 'string' && imageUrl.startsWith('data:')) {
       toast.error(t('canvasNodes.outputNode.pleaseUseImageFromR2'), { duration: 3000 });
       return;
     }
@@ -286,7 +307,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     const outputData = nodeData as any;
     const base64Fallback = outputData.resultImageBase64;
 
-    if (imageUrl.startsWith('data:')) {
+    if (imageUrl && typeof imageUrl === 'string' && imageUrl.startsWith('data:')) {
       // Already a data URL, use directly
       imageInput = imageUrl;
     } else if (base64Fallback && typeof base64Fallback === 'string') {
@@ -387,7 +408,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     }
   }, [imageUrl, isDescribing, nodeData, id]);
 
-  const handleResize = useCallback((_: any, params: { width: number; height: number }) => {
+  const handleResize = useCallback((_: any, params: { width: number; height: number; x: number; y: number }) => {
     const { width, height } = params;
     setNodes((nds) => {
       return nds.map((n) => {
@@ -466,7 +487,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         ) : imageUrl ? (
           <div className="relative flex items-center justify-center group/image" style={{ width: '100%', height: '100%' }}>
             <img
-              src={imageUrl}
+              src={imageUrl && (isSafeUrl(imageUrl) || imageUrl.startsWith('http') || imageUrl.startsWith('blob:') || imageUrl.startsWith('data:')) ? imageUrl : ''}
               alt="Output"
               className={cn(
                 'object-contain rounded-md node-image',

@@ -118,11 +118,25 @@ export const updateOutputNodeWithResult = (
     const updatedNodes = nds.map((n: Node<FlowNodeData>) => {
       if (n.id === nodeId && n.type === 'output') {
         const outputData = n.data as OutputNodeData;
+        const safeResult = typeof result === 'string' ? result : '';
+
+        // Improved URL detection:
+        // 1. Check for standard protocols (http/https)
+        // 2. Check for relative paths (/)
+        // 3. Check for specific R2/storage patterns if needed
+        const isUrl = safeResult.startsWith('http://') ||
+          safeResult.startsWith('https://') ||
+          safeResult.startsWith('/') ||
+          safeResult.startsWith('./');
+
+
+
         return {
           ...n,
           data: {
             ...outputData,
-            resultImageBase64: result,
+            resultImageUrl: isUrl ? safeResult : undefined,
+            resultImageBase64: isUrl ? undefined : safeResult,
             isLoading: false,
           } as OutputNodeData,
         } as Node<FlowNodeData>;
