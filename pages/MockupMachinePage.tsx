@@ -1421,9 +1421,10 @@ export const MockupMachinePage: React.FC = () => {
           uniqueId: index // Use slot index to differentiate parallel batch requests
         });
 
-        // Image successfully generated - set it in state
+        // Image successfully generated - set it in state (prefer URL from R2 if available)
         imageGenerated = true;
-        setMockups(prev => { const newMockups = [...prev]; newMockups[index] = result.imageBase64; return newMockups; });
+        const finalImage = result.imageUrl || result.imageBase64;
+        setMockups(prev => { const newMockups = [...prev]; newMockups[index] = finalImage; return newMockups; });
 
         // Show credit deduction notification
         if (result.isAdmin) {

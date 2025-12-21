@@ -59,11 +59,11 @@ interface FullScreenViewerProps {
   isLiked?: boolean;
 }
 
-export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({ 
+export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
   base64Image,
   imageUrl: propImageUrl,
-  isLoading, 
-  onClose, 
+  isLoading,
+  onClose,
   mockup,
   mockupId,
   onDelete,
@@ -116,14 +116,14 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
   };
 
   // Get image URL from mockup, prop, or base64
-  const finalImageUrl = mockup 
+  const finalImageUrl = mockup
     ? getImageUrl(mockup)
-    : propImageUrl 
-    ? propImageUrl
-    : base64Image 
-    ? `data:image/png;base64,${base64Image}`
-    : '';
-    
+    : propImageUrl
+      ? propImageUrl
+      : base64Image
+        ? (base64Image.startsWith('http') || base64Image.startsWith('data:') ? base64Image : `data:image/png;base64,${base64Image}`)
+        : '';
+
   const hasImage = !!finalImageUrl;
 
   const handleOpenInEditor = async () => {
@@ -157,18 +157,18 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
             const API_BASE_URL = getApiBaseUrl();
             const proxyUrl = `${API_BASE_URL}/images/proxy?url=${encodeURIComponent(finalImageUrl)}`;
             const response = await fetch(proxyUrl);
-            
+
             if (!response.ok) {
               const errorData = await response.json().catch(() => ({}));
               throw new Error(errorData.error || `Proxy failed: ${response.status} ${response.statusText}`);
             }
-            
+
             const data = await response.json();
-            
+
             if (!data.base64) {
               throw new Error('Proxy returned empty base64 data');
             }
-            
+
             // Use the base64 directly from proxy response
             onOpenInEditor(data.base64);
             onClose();
@@ -217,9 +217,9 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
   const formatDate = (dateString?: string) => {
     if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
@@ -246,16 +246,16 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
   }, [onClose, hasPrevious, hasNext, onNavigatePrevious, onNavigateNext]);
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
       onClick={onClose}
     >
-      <div 
+      <div
         className="relative max-w-[95vw] w-full max-h-[95vh] bg-[#1A1A1A] border border-zinc-800/50 rounded-md shadow-2xl p-6 flex flex-col gap-4"
         onClick={(e) => e.stopPropagation()}
       >
-        <button 
-          onClick={onClose} 
+        <button
+          onClick={onClose}
           className="absolute top-2 right-2 p-1.5 rounded-md text-zinc-400/40 hover:text-zinc-300/80 hover:bg-black/20 transition-all z-20"
           title="Close (Esc)"
         >
@@ -290,7 +290,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
 
         <div className="flex-grow flex gap-4 min-h-0 relative">
           {/* Image Container */}
-          <div 
+          <div
             className="flex-1 relative bg-black/20 rounded-md flex items-center justify-center overflow-hidden p-4 transition-all duration-300"
           >
             {isLoading && (
@@ -304,9 +304,9 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
               </div>
             )}
             {hasImage && !isLoading && (
-              <img 
-                src={finalImageUrl} 
-                alt="Full-size mockup" 
+              <img
+                src={finalImageUrl}
+                alt="Full-size mockup"
                 className="max-w-full max-h-full w-auto h-auto object-contain rounded-md"
               />
             )}
@@ -318,11 +318,10 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                   e.stopPropagation();
                   handleToggleLike();
                 }}
-                className={`absolute top-4 right-4 p-2 rounded-md transition-all z-30 backdrop-blur-sm ${
-                  localIsLiked
-                    ? 'bg-[#52ddeb]/20 text-[#52ddeb] hover:bg-[#52ddeb]/30'
-                    : 'bg-black/40 text-zinc-400 hover:bg-black/60 hover:text-zinc-200'
-                }`}
+                className={`absolute top-4 right-4 p-2 rounded-md transition-all z-30 backdrop-blur-sm ${localIsLiked
+                  ? 'bg-[#52ddeb]/20 text-[#52ddeb] hover:bg-[#52ddeb]/30'
+                  : 'bg-black/40 text-zinc-400 hover:bg-black/60 hover:text-zinc-200'
+                  }`}
                 title={localIsLiked ? t('canvasNodes.outputNode.removeFromFavorites') : t('canvasNodes.outputNode.saveToCollection')}
                 aria-label={localIsLiked ? 'Unlike' : 'Like'}
               >
@@ -331,7 +330,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
             )}
           </div>
         </div>
-        
+
         {/* Edit Buttons Panel (only shown when props are provided from MockupMachinePage) */}
         {!isLoading && hasImage && showEditButtons && (
           <div className="flex-shrink-0 flex flex-wrap items-center gap-2 p-3 bg-black/20 rounded-md border border-white/5">
@@ -390,11 +389,10 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                   onZoomIn();
                 }}
                 disabled={editButtonsDisabled || isLoading}
-                className={`flex items-center gap-2 px-3 py-1.5 bg-black/10 backdrop-blur-sm text-zinc-400 border border-white/5 hover:border-white/8 hover:bg-white/3 hover:text-zinc-300 rounded-md transition-all duration-200 ${
-                  editButtonsDisabled || isLoading
-                    ? 'opacity-50 cursor-not-allowed'
-                    : ''
-                }`}
+                className={`flex items-center gap-2 px-3 py-1.5 bg-black/10 backdrop-blur-sm text-zinc-400 border border-white/5 hover:border-white/8 hover:bg-white/3 hover:text-zinc-300 rounded-md transition-all duration-200 ${editButtonsDisabled || isLoading
+                  ? 'opacity-50 cursor-not-allowed'
+                  : ''
+                  }`}
                 title="Zoom In (Move camera closer)"
               >
                 <ZoomIn size={14} />
@@ -413,11 +411,10 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                   onZoomOut();
                 }}
                 disabled={editButtonsDisabled || isLoading}
-                className={`flex items-center gap-2 px-3 py-1.5 bg-black/10 backdrop-blur-sm text-zinc-400 border border-white/5 hover:border-white/8 hover:bg-white/3 hover:text-zinc-300 rounded-md transition-all duration-200 ${
-                  editButtonsDisabled || isLoading
-                    ? 'opacity-50 cursor-not-allowed'
-                    : ''
-                }`}
+                className={`flex items-center gap-2 px-3 py-1.5 bg-black/10 backdrop-blur-sm text-zinc-400 border border-white/5 hover:border-white/8 hover:bg-white/3 hover:text-zinc-300 rounded-md transition-all duration-200 ${editButtonsDisabled || isLoading
+                  ? 'opacity-50 cursor-not-allowed'
+                  : ''
+                  }`}
                 title="Zoom Out (Move camera further)"
               >
                 <ZoomOut size={14} />
@@ -436,11 +433,10 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                   setShowReImaginePanel(true);
                 }}
                 disabled={editButtonsDisabled || isLoading}
-                className={`flex items-center gap-2 px-3 py-1.5 bg-black/10 backdrop-blur-sm text-[#52ddeb] border border-[#52ddeb]/20 hover:border-[#52ddeb]/40 hover:bg-[#52ddeb]/10 rounded-md transition-all duration-200 ${
-                  editButtonsDisabled || isLoading
-                    ? 'opacity-50 cursor-not-allowed'
-                    : ''
-                }`}
+                className={`flex items-center gap-2 px-3 py-1.5 bg-black/10 backdrop-blur-sm text-[#52ddeb] border border-[#52ddeb]/20 hover:border-[#52ddeb]/40 hover:bg-[#52ddeb]/10 rounded-md transition-all duration-200 ${editButtonsDisabled || isLoading
+                  ? 'opacity-50 cursor-not-allowed'
+                  : ''
+                  }`}
                 title="Re-imagine with AI"
               >
                 <Pencil size={14} />
@@ -461,9 +457,8 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
             <button
               onClick={handleOpenInEditor}
               disabled={isConvertingImage}
-              className={`flex flex-nowrap items-center gap-2 px-3 py-1.5 bg-black/10 backdrop-blur-sm text-zinc-400 border border-white/5 hover:border-white/8 hover:bg-white/3 hover:text-zinc-300 rounded-md transition-all duration-200 ${
-                isConvertingImage ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
+              className={`flex flex-nowrap items-center gap-2 px-3 py-1.5 bg-black/10 backdrop-blur-sm text-zinc-400 border border-white/5 hover:border-white/8 hover:bg-white/3 hover:text-zinc-300 rounded-md transition-all duration-200 ${isConvertingImage ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
               title="Open in Editor"
             >
               {isConvertingImage ? (
@@ -480,7 +475,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
             </button>
           </div>
         )}
-        
+
         {/* Mockup Information */}
         {mockup && !isLoading && (
           <div className="flex-shrink-0 space-y-3 border-t border-zinc-800/50 pt-4">
@@ -493,7 +488,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                   {mockup.aspectRatio}
                 </span>
               </div>
-              
+
               {mockup.prompt && (
                 <div>
                   <button

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { Download, RefreshCw, ImageIcon, Palette, Loader2, Camera, MapPin, Heart, X, Pickaxe, Pencil } from 'lucide-react';
 import { mockupApi } from '../../services/mockupApi';
 import { toast } from 'sonner';
@@ -85,8 +85,8 @@ const MockupCard: React.FC<{
   });
 
   // Determine which handler to use: hook (preferred) or callback (fallback)
-  const handleToggleLike = mockupId && onLikeStateChange 
-    ? handleToggleLikeHook 
+  const handleToggleLike = mockupId && onLikeStateChange
+    ? handleToggleLikeHook
     : onToggleLike;
 
   const PANEL_CLOSE_DELAY = 300; // milliseconds
@@ -158,11 +158,15 @@ const MockupCard: React.FC<{
     }
   };
 
-  const imageUrl = base64Image ? `data:image/png;base64,${base64Image}` : '';
+  const imageUrl = useMemo(() => {
+    if (!base64Image) return '';
+    if (base64Image.startsWith('http') || base64Image.startsWith('data:')) return base64Image;
+    return `data:image/png;base64,${base64Image}`;
+  }, [base64Image]);
   const canInteract = !isLoading && base64Image;
   const showSkeleton = isLoading && !base64Image;
   const showEmptyState = !isLoading && !base64Image;
-  
+
   const aspectRatioClasses: Record<AspectRatio, string> = {
     '16:9': 'aspect-[16/9]',
     '4:3': 'aspect-[4/3]',
@@ -187,15 +191,15 @@ const MockupCard: React.FC<{
       )}
 
       {showEmptyState && (
-         <div className="w-full h-full flex items-center justify-center text-zinc-700">
-           <ImageIcon size={40} strokeWidth={1} />
-         </div>
+        <div className="w-full h-full flex items-center justify-center text-zinc-700">
+          <ImageIcon size={40} strokeWidth={1} />
+        </div>
       )}
 
       {base64Image && (
-        <img 
-          src={imageUrl} 
-          alt="Generated mockup" 
+        <img
+          src={imageUrl}
+          alt="Generated mockup"
           loading="lazy"
           className={`w-full h-full object-contain cursor-pointer ${isRedrawing ? 'filter blur-sm scale-105' : ''}`}
           onClick={(e) => {
@@ -206,11 +210,11 @@ const MockupCard: React.FC<{
           }}
         />
       )}
-      
+
       {isRedrawing && (
-         <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-            <Loader2 size={32} className="animate-spin text-white/80" />
-         </div>
+        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+          <Loader2 size={32} className="animate-spin text-white/80" />
+        </div>
       )}
 
       {isLoading && !isRedrawing && !!base64Image && (
@@ -224,11 +228,10 @@ const MockupCard: React.FC<{
       {canInteract && handleToggleLike && (
         <button
           onClick={(e) => { e.stopPropagation(); handleToggleLike(); }}
-          className={`absolute top-3 right-3 p-2 rounded-md transition-all z-30 backdrop-blur-sm ${
-            localIsLiked
-              ? 'bg-[#52ddeb]/20 text-[#52ddeb] hover:bg-[#52ddeb]/30'
-              : 'bg-black/40 text-zinc-400 hover:bg-black/60 hover:text-zinc-200'
-          }`}
+          className={`absolute top-3 right-3 p-2 rounded-md transition-all z-30 backdrop-blur-sm ${localIsLiked
+            ? 'bg-[#52ddeb]/20 text-[#52ddeb] hover:bg-[#52ddeb]/30'
+            : 'bg-black/40 text-zinc-400 hover:bg-black/60 hover:text-zinc-200'
+            }`}
           title={localIsLiked ? t('canvasNodes.outputNode.removeFromFavorites') : t('canvasNodes.outputNode.saveToCollection')}
           aria-label={localIsLiked ? 'Unlike' : 'Like'}
         >
@@ -251,62 +254,59 @@ const MockupCard: React.FC<{
       {/* Action Panel */}
       {canInteract && (
         <div
-          className={`absolute top-2 left-1/2 -translate-x-1/2 w-fit bg-black/30 backdrop-blur-sm border border-white/5 rounded-md shadow-sm z-20 transition-all duration-200 ease-out ${
-            isPanelOpen || isPanelPinned ? 'translate-y-0 opacity-100 scale-100' : '-translate-y-1 opacity-0 scale-95 pointer-events-none'
-          }`}
+          className={`absolute top-2 left-1/2 -translate-x-1/2 w-fit bg-black/30 backdrop-blur-sm border border-white/5 rounded-md shadow-sm z-20 transition-all duration-200 ease-out ${isPanelOpen || isPanelPinned ? 'translate-y-0 opacity-100 scale-100' : '-translate-y-1 opacity-0 scale-95 pointer-events-none'
+            }`}
           onClick={handlePanelClick}
           onMouseEnter={handlePanelMouseEnter}
           onMouseLeave={handlePanelMouseLeave}
         >
           <div className="px-1.5 py-0.5 flex items-center justify-center gap-1">
             <Tooltip content={t('mockup.download') || "Download"} position="top">
-            <a
-              href={imageUrl}
-              download={`mockup-${Date.now()}.png`}
-              className="p-2 rounded text-zinc-400 hover:text-white hover:bg-white/5 transition-colors duration-150 flex items-center justify-center"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Download size={16} />
-            </a>
+              <a
+                href={imageUrl}
+                download={`mockup-${Date.now()}.png`}
+                className="p-2 rounded text-zinc-400 hover:text-white hover:bg-white/5 transition-colors duration-150 flex items-center justify-center"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Download size={16} />
+              </a>
             </Tooltip>
             <Tooltip content={editButtonsDisabled ? (t('mockup.insufficientCredits') || "Insufficient credits to generate") : (t('mockup.redrawTooltip') || "Re-draw (Generate a new variation)")} position="top">
-            <button
-              onClick={(e) => { e.stopPropagation(); onRedraw(); }}
-              disabled={editButtonsDisabled || isRedrawing}
-              className={`p-2 rounded transition-colors duration-150 focus:outline-none focus:ring-1 focus:ring-white/20 flex items-center gap-1 ${
-                editButtonsDisabled || isRedrawing
+              <button
+                onClick={(e) => { e.stopPropagation(); onRedraw(); }}
+                disabled={editButtonsDisabled || isRedrawing}
+                className={`p-2 rounded transition-colors duration-150 focus:outline-none focus:ring-1 focus:ring-white/20 flex items-center gap-1 ${editButtonsDisabled || isRedrawing
                   ? 'text-zinc-600 cursor-not-allowed opacity-50'
                   : 'text-zinc-400 hover:text-white hover:bg-white/5'
-              }`}
-              aria-label="Re-draw mockup"
-            >
-              <RefreshCw size={16} aria-hidden="true" />
-              {creditsPerOperation !== undefined && creditsPerOperation > 0 && (
-                <span className="text-[10px] font-mono text-[#52ddeb] leading-none font-semibold">
-                  {creditsPerOperation}
-                </span>
-              )}
-            </button>
-            </Tooltip>
-            {onReImagine && (
-              <Tooltip content={editButtonsDisabled ? (t('mockup.insufficientCredits') || "Insufficient credits to generate") : (t('mockup.reimagineTooltip') || "Re-imagine with AI")} position="top">
-              <button
-                onClick={(e) => { e.stopPropagation(); setShowReImaginePanel(true); }}
-                disabled={editButtonsDisabled || isRedrawing}
-                className={`p-2 rounded transition-colors duration-150 focus:outline-none focus:ring-1 focus:ring-[#52ddeb]/50 flex items-center gap-1 ${
-                  editButtonsDisabled || isRedrawing
-                    ? 'text-zinc-600 cursor-not-allowed opacity-50'
-                    : 'text-[#52ddeb] hover:text-white hover:bg-[#52ddeb]/20'
-                }`}
-                aria-label="Re-imagine mockup"
+                  }`}
+                aria-label="Re-draw mockup"
               >
-                <Pencil size={16} aria-hidden="true" />
+                <RefreshCw size={16} aria-hidden="true" />
                 {creditsPerOperation !== undefined && creditsPerOperation > 0 && (
                   <span className="text-[10px] font-mono text-[#52ddeb] leading-none font-semibold">
                     {creditsPerOperation}
                   </span>
                 )}
               </button>
+            </Tooltip>
+            {onReImagine && (
+              <Tooltip content={editButtonsDisabled ? (t('mockup.insufficientCredits') || "Insufficient credits to generate") : (t('mockup.reimagineTooltip') || "Re-imagine with AI")} position="top">
+                <button
+                  onClick={(e) => { e.stopPropagation(); setShowReImaginePanel(true); }}
+                  disabled={editButtonsDisabled || isRedrawing}
+                  className={`p-2 rounded transition-colors duration-150 focus:outline-none focus:ring-1 focus:ring-[#52ddeb]/50 flex items-center gap-1 ${editButtonsDisabled || isRedrawing
+                    ? 'text-zinc-600 cursor-not-allowed opacity-50'
+                    : 'text-[#52ddeb] hover:text-white hover:bg-[#52ddeb]/20'
+                    }`}
+                  aria-label="Re-imagine mockup"
+                >
+                  <Pencil size={16} aria-hidden="true" />
+                  {creditsPerOperation !== undefined && creditsPerOperation > 0 && (
+                    <span className="text-[10px] font-mono text-[#52ddeb] leading-none font-semibold">
+                      {creditsPerOperation}
+                    </span>
+                  )}
+                </button>
               </Tooltip>
             )}
           </div>
@@ -343,25 +343,25 @@ export const MockupDisplay: React.FC<MockupDisplayProps> = ({ mockups, isLoading
   const hasContent = mockups.some(m => m !== null) || isLoading.some(Boolean);
   const isSingleImage = mockups.length === 1;
   const imageCount = mockups.length;
-  
+
   // Smart grid classes based on number of images
   // Mobile and tablet: 1 column max, Desktop: multiple columns
   const getGridClasses = () => {
     if (isSingleImage) return "w-full max-w-6xl mx-auto px-2 sm:px-4 md:px-6";
-    
+
     if (imageCount === 2) {
       return "grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6";
     }
-    
+
     if (imageCount === 3) {
       return "grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6";
     }
-    
+
     // 4 images - 2x2 grid
     return "grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6";
   };
-  
-  if(!hasContent) {
+
+  if (!hasContent) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center text-zinc-600">
         <Palette size={64} strokeWidth={1} />
@@ -377,7 +377,7 @@ export const MockupDisplay: React.FC<MockupDisplayProps> = ({ mockups, isLoading
         {Array.from({ length: mockups.length }).map((_, index) => {
           const mockupId = savedMockupIds?.get(index);
           const isLiked = getIsLiked(index);
-          
+
           return (
             <MockupCard
               key={index}
