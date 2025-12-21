@@ -74,27 +74,27 @@ export const MockupsPage: React.FC = () => {
     if (!Array.isArray(mockups) || mockups.length === 0) {
       return [];
     }
-    
+
     try {
       return mockups.filter(mockup => {
         if (!mockup || typeof mockup !== 'object') {
           return false;
         }
-        
+
         const prompt = (mockup.prompt || '').toLowerCase();
         const tags = Array.isArray(mockup.tags) ? mockup.tags.map(t => String(t).toLowerCase()) : [];
         const brandingTags = Array.isArray(mockup.brandingTags) ? mockup.brandingTags.map(t => String(t).toLowerCase()) : [];
         const searchLower = searchQuery.toLowerCase();
-        
-        const matchesSearch = searchQuery === '' || 
+
+        const matchesSearch = searchQuery === '' ||
           prompt.includes(searchLower) ||
           tags.some(tag => tag.includes(searchLower)) ||
           brandingTags.some(tag => tag.includes(searchLower));
-        
-        const matchesTag = filterTag === null || 
-          tags.includes(filterTag.toLowerCase()) || 
+
+        const matchesTag = filterTag === null ||
+          tags.includes(filterTag.toLowerCase()) ||
           brandingTags.includes(filterTag.toLowerCase());
-        
+
         return matchesSearch && matchesTag;
       });
     } catch {
@@ -220,34 +220,34 @@ export const MockupsPage: React.FC = () => {
     setError(null);
     try {
       const data = await mockupApi.getAllPublic();
-      
+
       // Validate and normalize data
       if (!Array.isArray(data)) {
         setMockups([]);
         return;
       }
-      
+
       // Filter out invalid mockups and ensure all required fields exist
       // Prioritize imageUrl (R2) over imageBase64
       // Only show blank mockups on public page
       const validMockups = data
         .filter(mockup => {
           if (!mockup || typeof mockup !== 'object') return false;
-          
+
           // Only show blank mockups
           const isBlank = mockup.designType === 'blank';
           if (!isBlank) return false;
-          
-          // Check if mockup has a valid imageUrl (R2) or imageBase64
-          const hasImageUrl = mockup.imageUrl && 
-            typeof mockup.imageUrl === 'string' && 
+
+          // Check if mockup has a valid imageUrl (R2/SafeURL) or imageBase64
+          const hasImageUrl = mockup.imageUrl &&
+            typeof mockup.imageUrl === 'string' &&
             mockup.imageUrl.length > 0 &&
-            (mockup.imageUrl.startsWith('http://') || mockup.imageUrl.startsWith('https://'));
-          
-          const hasImageBase64 = mockup.imageBase64 && 
-            typeof mockup.imageBase64 === 'string' && 
+            (mockup.imageUrl.startsWith('http') || mockup.imageUrl.startsWith('/') || mockup.imageUrl.startsWith('./'));
+
+          const hasImageBase64 = mockup.imageBase64 &&
+            typeof mockup.imageBase64 === 'string' &&
             mockup.imageBase64.length > 0;
-          
+
           return hasImageUrl || hasImageBase64;
         })
         .map(mockup => ({
@@ -261,14 +261,14 @@ export const MockupsPage: React.FC = () => {
           createdAt: mockup.createdAt || new Date().toISOString(),
           updatedAt: mockup.updatedAt || new Date().toISOString(),
         }));
-      
+
       // Sort by date (most recent first)
       const sorted = validMockups.sort((a, b) => {
         const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
         const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
         return dateB - dateA;
       });
-      
+
       setMockups(sorted);
     } catch (err: any) {
       setMockups([]);
@@ -310,7 +310,7 @@ export const MockupsPage: React.FC = () => {
         <div className="fixed inset-0 z-0 pointer-events-none">
           <GridDotsBackground />
         </div>
-        
+
         {/* Error Banner */}
         {showErrorBanner && (
           <div className="fixed top-16 left-1/2 transform -translate-x-1/2 z-50 max-w-md w-full mx-4">
@@ -447,7 +447,7 @@ export const MockupsPage: React.FC = () => {
                 {mockups.length === 0 ? t('mockupsPage.noMockupsYet') : t('mockupsPage.noMatchesFound')}
               </h2>
               <p className="text-sm text-zinc-600 font-mono max-w-md">
-                {mockups.length === 0 
+                {mockups.length === 0
                   ? t('mockupsPage.generateBlankMockups')
                   : t('mockupsPage.tryAdjustingSearch')}
               </p>
@@ -464,7 +464,7 @@ export const MockupsPage: React.FC = () => {
                     className="group relative bg-black/30 backdrop-blur-sm border border-zinc-800/60 rounded-md overflow-hidden hover:border-[#52ddeb]/50 transition-all duration-300"
                   >
                     {/* Image */}
-                    <div 
+                    <div
                       className="aspect-square relative overflow-hidden bg-zinc-900/50 cursor-pointer"
                       onClick={() => handleView(mockup)}
                     >
@@ -500,7 +500,7 @@ export const MockupsPage: React.FC = () => {
               try {
                 const newLikedState = !selectedMockup.isLiked;
                 await mockupApi.update(selectedMockup._id, { isLiked: newLikedState });
-                setMockups(prev => prev.map(m => 
+                setMockups(prev => prev.map(m =>
                   m._id === selectedMockup._id ? { ...m, isLiked: newLikedState } : m
                 ));
                 setSelectedMockup(prev => prev ? { ...prev, isLiked: newLikedState } : null);
@@ -511,7 +511,7 @@ export const MockupsPage: React.FC = () => {
             onLikeStateChange={(newIsLiked) => {
               // Sync state when hook updates it
               if (selectedMockup._id) {
-                setMockups(prev => prev.map(m => 
+                setMockups(prev => prev.map(m =>
                   m._id === selectedMockup._id ? { ...m, isLiked: newIsLiked } : m
                 ));
                 setSelectedMockup(prev => prev ? { ...prev, isLiked: newIsLiked } : null);

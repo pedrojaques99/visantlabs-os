@@ -22,6 +22,7 @@ import waitlistRoutes from '../server/routes/waitlist.js';
 import communityRoutes from '../server/routes/community.js';
 import usersRoutes from '../server/routes/users.js';
 import storageRoutes from '../server/routes/storage.js';
+import aiRoutes from '../server/routes/ai.js';
 import { errorHandler } from '../server/middleware/errorHandler.js';
 
 // Load environment variables
@@ -40,7 +41,7 @@ app.use(cors({
 // Middleware to normalize routes - remove /api prefix if present (BEFORE body parsing)
 app.use((req, res, next) => {
   const originalUrl = req.url;
-  
+
   // Remove /api prefix if present (Vercel routes /api/* to this handler)
   // Note: req.path is read-only, so we only modify req.url
   if (req.url) {
@@ -50,16 +51,16 @@ app.use((req, res, next) => {
       req.url = req.url.replace(/^\/api/, '') || '/';
     }
   }
-  
+
   // Also update req.originalUrl if needed
   if (req.originalUrl && req.originalUrl.startsWith('/api/')) {
     req.originalUrl = req.originalUrl.replace(/^\/api/, '');
   }
-  
+
   if (originalUrl !== req.url && isDev) {
     console.log(`[Route Normalization] ${req.method} ${originalUrl} -> ${req.url}`);
   }
-  
+
   next();
 });
 
@@ -131,6 +132,8 @@ app.use('/users', usersRoutes);
 if (isDev) console.log('✅ Users routes registered at /users');
 app.use('/storage', storageRoutes);
 if (isDev) console.log('✅ Storage routes registered at /storage');
+app.use('/ai', aiRoutes);
+if (isDev) console.log('✅ AI routes registered at /ai');
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'Server is running' });
@@ -164,13 +167,13 @@ export default async (req: any, res: any) => {
       console.log(`[Vercel Handler] Incoming request: ${req.method} ${incomingUrl}`);
       console.log(`[Vercel Handler] req.url: ${req.url}, req.path: ${req.path}, req.originalUrl: ${req.originalUrl}`);
     }
-    
+
     // IMPORTANT: For Stripe webhooks, DO NOT process through Express
     // The dedicated handler at api/payments/webhook.ts should handle it directly
     // Check if this is a webhook request
     const url = req.url || req.path || '';
     const isWebhookRequest = url.includes('/payments/webhook');
-    
+
     if (isWebhookRequest && req.method === 'POST') {
       // This should not happen - the dedicated handler should catch it first
       // But if it does, we need to preserve the raw body
@@ -180,7 +183,7 @@ export default async (req: any, res: any) => {
         console.log('   Body type:', typeof req.body);
         console.log('   Body is Buffer:', Buffer.isBuffer(req.body));
       }
-      
+
       // If body is already parsed, we can't recover the raw body
       // Return error to indicate the issue
       if (req.body && typeof req.body === 'object' && !Buffer.isBuffer(req.body)) {
@@ -190,7 +193,7 @@ export default async (req: any, res: any) => {
           hint: 'The webhook should be handled by api/payments/webhook.ts directly, not through api/index.ts'
         });
       }
-      
+
       // If we somehow get here with raw body, try to pass it through
       // But ideally this should not happen
       if (isDev) console.warn('⚠️ Webhook request in api/index.ts - attempting to preserve raw body');
@@ -201,7 +204,7 @@ export default async (req: any, res: any) => {
   } catch (error: any) {
     console.error('Handler error:', error);
     if (!res.headersSent) {
-      res.status(500).json({ 
+      res.status(500).json({
         error: 'Internal server error',
         message: error.message || 'A server error has occurred'
       });
