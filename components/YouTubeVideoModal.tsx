@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
+import { isSafeUrl } from '../utils/imageUtils';
 
 interface YouTubeVideoModalProps {
   isOpen: boolean;
@@ -40,15 +41,13 @@ export const YouTubeVideoModal: React.FC<YouTubeVideoModalProps> = ({
       onClick={onClose}
     >
       <div
-        className={`relative w-full max-w-4xl mx-4 ${
-          theme === 'dark' ? 'bg-[#1A1A1A]' : 'bg-white'
-        } border border-zinc-800/50 rounded-md shadow-xl overflow-hidden`}
+        className={`relative w-full max-w-4xl mx-4 ${theme === 'dark' ? 'bg-[#1A1A1A]' : 'bg-white'
+          } border border-zinc-800/50 rounded-md shadow-xl overflow-hidden`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-4 border-b border-zinc-800/50">
-          <h2 className={`text-lg font-semibold font-mono ${
-            theme === 'dark' ? 'text-zinc-200' : 'text-zinc-800'
-          } uppercase`}>
+          <h2 className={`text-lg font-semibold font-mono ${theme === 'dark' ? 'text-zinc-200' : 'text-zinc-800'
+            } uppercase`}>
             Tutorial Video
           </h2>
           <button
@@ -62,7 +61,7 @@ export const YouTubeVideoModal: React.FC<YouTubeVideoModalProps> = ({
         <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
           <iframe
             className="absolute top-0 left-0 w-full h-full"
-            src={`https://www.youtube.com/embed/${videoId}`}
+            src={isSafeUrl(`https://www.youtube.com/embed/${videoId}`) ? `https://www.youtube.com/embed/${videoId}` : ''}
             title="YouTube video player"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
