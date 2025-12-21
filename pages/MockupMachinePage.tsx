@@ -1675,6 +1675,11 @@ export const MockupMachinePage: React.FC = () => {
     setSelectedEffectTags(randomEffect ? [randomEffect] : []);
     setSelectedColors([]);
 
+    // Reset prompt and manual edit state so auto-generation can proceed
+    setPromptPreview('');
+    setIsPromptReady(false);
+    setIsPromptManuallyEdited(false);
+
     setIsAllCategoriesOpen(true);
     setIsAdvancedOpen(true);
 
@@ -1683,169 +1688,11 @@ export const MockupMachinePage: React.FC = () => {
     setWithHuman(randomWithHuman);
 
     if (autoGenerate) {
-      // Auto-generate mode: skip prompt generation and directly generate outputs
-      if (selectedCategory) {
-        // Build prompt manually using the values we're setting (don't rely on state updates)
-
-        const baseQuality = "A photorealistic, super-detailed";
-        let aspectInstruction = '';
-        switch (aspectRatio) {
-          case '16:9': aspectInstruction = `widescreen cinematic shot`; break;
-          case '4:3': aspectInstruction = `standard photo`; break;
-          case '1:1': aspectInstruction = `square composition`; break;
-          default: aspectInstruction = `image with an aspect ratio of ${aspectRatio}`; break;
-        }
-
-        const designTerm = designTypeToUse === 'logo' ? 'logo' : 'design';
-        const isBlank = designTypeToUse === 'blank';
-        const isLetterhead = selectedCategory === 'Letterhead';
-
-        let generatedPrompt = '';
-        if (isBlank) {
-          if (isLetterhead) {
-            generatedPrompt = `${baseQuality} ${aspectInstruction} of an elegant A4 paper letterhead mockup placed on a minimalist clipboard or document holder. The scene should feature a clean, professional contract-style document aesthetic with the paper elegantly displayed. The clipboard should be minimalist and modern, creating a sophisticated business document presentation. The scene should be clean, minimalist, and ready for a design to be placed on the letterhead. Emphasize authentic paper texture, subtle shadows, and professional product photography lighting with sharp focus. There should be absolutely no text, logos, or any other graphic elements on the mockup surfaces.`;
-          } else {
-            generatedPrompt = `${baseQuality} ${aspectInstruction} of a blank white ${selectedCategory} mockup. The scene should be clean, minimalist, and ready for a design to be placed on it. Emphasize authentic materials, subtle surface details, and professional product photography lighting with sharp focus. There should be absolutely no text, logos, or any other graphic elements on the mockup surfaces.`;
-          }
-        } else {
-          if (isLetterhead) {
-            generatedPrompt = `${baseQuality} ${aspectInstruction} of an elegant A4 paper letterhead mockup placed on a minimalist clipboard or document holder featuring the provided ${designTerm}. The scene should feature a clean, professional contract-style document aesthetic with the paper elegantly displayed. The clipboard should be minimalist and modern, creating a sophisticated business document presentation. Emphasize authentic paper texture, subtle shadows, and professional product photography lighting with sharp focus.`;
-          } else {
-            generatedPrompt = `${baseQuality} ${aspectInstruction} of a ${selectedCategory} mockup featuring the provided ${designTerm}. Emphasize authentic materials, subtle surface details, and professional product photography lighting with sharp focus.`;
-          }
-        }
-
-        if (brandingTagsToUse.length > 0) {
-          generatedPrompt += ` The brand's style is: ${brandingTagsToUse.join(', ')}.`;
-        }
-
-        // Usa ambience preset se selecionado, senão usa background description
-        if (selectedPresets.ambience) {
-          generatedPrompt += ` ${selectedPresets.ambience.prompt}`;
-        } else {
-          // Cria descrição do ambiente baseado no background selecionado
-          const backgroundDescription = getBackgroundDescription(selectedBackground);
-          generatedPrompt += ` ${backgroundDescription}`;
-        }
-
-        // Usa luminance preset se selecionado, senão usa lighting description
-        if (selectedPresets.luminance) {
-          generatedPrompt += ` ${selectedPresets.luminance.prompt}`;
-        } else if (randomLighting) {
-          // Adiciona detalhes de iluminação se selecionado (fallback)
-          const lightingDescription = getLightingDescription(randomLighting);
-          generatedPrompt += ` ${lightingDescription}`;
-        }
-
-        // Adiciona texture preset se selecionado
-        if (selectedPresets.texture) {
-          generatedPrompt += ` ${selectedPresets.texture.prompt}`;
-        }
-
-        // Adiciona angle preset se selecionado
-        if (selectedPresets.angle) {
-          generatedPrompt += ` ${selectedPresets.angle.prompt}`;
-        }
-
-        // Adiciona efeitos se selecionado
-        if (randomEffect) {
-          const effectDescription = getEffectDescription(randomEffect);
-          generatedPrompt += ` ${effectDescription}`;
-        }
-
-        // Adiciona planta ocasionalmente (70% das vezes) para mais variedade
-        if (Math.random() < 0.7) {
-          generatedPrompt += ` The scene should include a plant in the setting.`;
-        }
-
-        if (!isBlank) {
-          if (designTypeToUse === 'logo') {
-            if (generateText) {
-              generatedPrompt += " If appropriate for the mockup type, generate plausible placeholder text to make the scene more realistic.";
-            } else {
-              generatedPrompt += " No additional text, words, or letters should be generated. The design is the sole graphic element.";
-            }
-          }
-          generatedPrompt += " Place the design exactly as provided, without modification, cropping, or re-drawing.";
-        }
-
-        if (designTypeToUse === 'logo') {
-          generatedPrompt += " When placing the design, ensure a comfortable safe area or 'breathing room' around it. The design must never touch or be clipped by the edges of the mockup surface (e.g., the edges of a business card or a book cover).";
-          generatedPrompt += " CRITICAL: Analyze the provided logo image and ensure proper contrast between the logo and the mockup substrate. If the logo is light/white (transparent PNG), it must NEVER be placed on a light/white substrate - use dark or colored substrates instead. If the logo is dark, it must NEVER be placed on a dark substrate - use light or colored substrates instead. Always ensure the logo is clearly visible and has sufficient contrast with the background.";
-        }
-
-        if (randomWithHuman) {
-          const humanAction = Math.random() < 0.5 ? 'looking at' : 'interacting with';
-          if (isBlank) {
-            generatedPrompt += ` The scene should include a human person naturally ${humanAction} the mockup.`;
-          } else {
-            generatedPrompt += ` The scene should include a human person naturally ${humanAction} the mockup product. Ensure the moment feels contextual for the product type.`;
-          }
-        }
-
-        if (additionalPrompt.trim()) {
-          generatedPrompt += ` The scene must also include the following details: ${additionalPrompt.trim()}.`;
-        }
-        if (negativePrompt.trim()) {
-          generatedPrompt += ` AVOID THE FOLLOWING: ${negativePrompt.trim()}.`;
-        }
-
-        // Step 1: Wait for state updates to propagate (tags selection) - 420ms delay (reduced by 30%)
-        setTimeout(async () => {
-          // Mark as auto-generate mode to hide the generating prompt overlay
-          setIsAutoGenerateMode(true);
-
-          // Step 2: Delay before generating prompt to allow state to settle - 560ms (reduced by 30%)
-          await new Promise(resolve => setTimeout(resolve, 560));
-
-          // Step 3: Generate smart prompt
-          try {
-            await handleGenerateSmartPrompt();
-            // Wait for prompt generation to complete (smart prompt typically takes 2-5s)
-            // Give it extra time to ensure prompt is fully generated and set - 1750ms (reduced by 30%)
-            await new Promise(resolve => setTimeout(resolve, 1750));
-          } catch (error) {
-            // If smart prompt fails, use the manually built prompt
-            if (isLocalDevelopment()) {
-              console.warn('Smart prompt generation failed, using manual prompt:', error);
-            }
-            setPromptPreview(generatedPrompt);
-            setIsSmartPromptActive(false);
-            setIsPromptReady(true);
-            // Wait a bit even if using manual prompt - 560ms (reduced by 30%)
-            await new Promise(resolve => setTimeout(resolve, 560));
-          }
-
-          // Step 4: Final delay before generating images (allows user to see the prompt) - 700ms (reduced by 30%)
-          await new Promise(resolve => setTimeout(resolve, 700));
-
-          // Check if there are already generated outputs to append instead of replacing
-          const hasExistingOutputs = mockups.some(m => m !== null);
-
-          // Step 5: Generate outputs (append if there are existing outputs)
-          // Use the smart prompt if it was generated, otherwise use the manual prompt
-          const finalPrompt = generatedSmartPromptRef.current || generatedPrompt;
-          setPromptPreview(finalPrompt);
-          setIsPromptReady(true);
-          generatedSmartPromptRef.current = null; // Reset for next time
-
-          await runGeneration(undefined, finalPrompt, hasExistingOutputs);
-          setIsPromptReady(false);
-          // Hide sidebar on mobile after generation
-          setIsSidebarVisibleMobile(false);
-
-          // Reset auto-generate mode flag after generation completes
-          setIsAutoGenerateMode(false);
-        }, 420);
-      }
-    } else {
-      // Normal mode: generate prompt first, then user clicks to generate outputs
-      if (selectedCategory) {
-        setTimeout(() => {
-          setShouldAutoGenerate(true);
-          setAutoGenerateSource('surprise');
-        }, 300);
-      }
+      // Auto-generate mode: Set tags -> Auto Generate Prompt -> Auto Generate Output
+      setTimeout(() => {
+        setShouldAutoGenerate(true);
+        setAutoGenerateSource('surprise');
+      }, 420); // Delay to allow state updates to settle
 
       // Scroll to generate outputs button after state changes are applied
       setTimeout(() => {
@@ -1862,6 +1709,26 @@ export const MockupMachinePage: React.FC = () => {
           generateOutputsButtonRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       }, 600);
+    } else {
+      // Manual mode: Set tags -> Wait for user review
+      // We set source to 'surprise' so that WHEN they click generate, it proceeds to image generation automatically
+      setTimeout(() => {
+        setAutoGenerateSource('surprise');
+
+        // Scroll to the categories section so user can review the surprised tags
+        const categoriesSection = document.getElementById('categories-section');
+        const sidebar = document.getElementById('sidebar');
+        if (categoriesSection && sidebar) {
+          const sidebarRect = sidebar.getBoundingClientRect();
+          const elementRect = categoriesSection.getBoundingClientRect();
+          const relativeTop = elementRect.top - sidebarRect.top + sidebar.scrollTop;
+
+          sidebar.scrollTo({
+            top: relativeTop - 20,
+            behavior: 'smooth'
+          });
+        }
+      }, 420);
     }
   }, [aspectRatio, designType, selectedModel, selectedBrandingTags, generateText, withHuman, additionalPrompt, negativePrompt, runGeneration, mockups]);
 
@@ -2753,7 +2620,10 @@ Generate the new mockup image with the requested changes applied.`;
           isAutoGeneratingRef.current = false;
         });
         setShouldAutoGenerate(false);
-        setAutoGenerateSource(null);
+        // Only clear source if it's NOT 'surprise' - surprise needs to persist to trigger image generation
+        if (autoGenerateSource !== 'surprise') {
+          setAutoGenerateSource(null);
+        }
       } else {
         setShouldAutoGenerate(false);
         setAutoGenerateSource(null);
@@ -2766,7 +2636,22 @@ Generate the new mockup image with the requested changes applied.`;
         autoGenerateTimeoutRef.current = null;
       }
     };
-  }, [shouldAutoGenerate, isGeneratingPrompt, promptPreview, handleGenerateSmartPrompt, selectedTags.length, designType, referenceImages.length]);
+  }, [shouldAutoGenerate, isGeneratingPrompt, promptPreview, handleGenerateSmartPrompt, selectedTags.length, designType, referenceImages.length, autoGenerateSource]);
+
+  // Effect to handle final image generation for Surprise Me flow
+  useEffect(() => {
+    // Only trigger if:
+    // 1. Source is 'surprise'
+    // 2. Prompt is ready (generated)
+    // 3. Not currently generating images
+    if (autoGenerateSource === 'surprise' && isPromptReady && !isGenerating && !isGeneratingPrompt) {
+      // Clear source first to prevent potential loops (although dependence on isPromptReady helps)
+      setAutoGenerateSource(null);
+
+      // Trigger generation
+      runGeneration();
+    }
+  }, [autoGenerateSource, isPromptReady, isGenerating, isGeneratingPrompt, runGeneration]);
 
   const displayBrandingTags = [...new Set([...AVAILABLE_BRANDING_TAGS, ...selectedBrandingTags])];
   const displaySuggestedTags = [...new Set([...suggestedTags, ...selectedTags])];

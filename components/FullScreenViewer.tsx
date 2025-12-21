@@ -124,7 +124,20 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
         ? (base64Image.startsWith('http') || base64Image.startsWith('data:') ? base64Image : `data:image/png;base64,${base64Image}`)
         : '';
 
-  const hasImage = !!finalImageUrl;
+  // Sanitize the URL to prevent XSS
+  const isSafeUrl = (url: string) => {
+    if (!url) return false;
+    const lowerUrl = url.toLowerCase();
+    return lowerUrl.startsWith('http://') ||
+      lowerUrl.startsWith('https://') ||
+      lowerUrl.startsWith('data:') ||
+      lowerUrl.startsWith('blob:') ||
+      lowerUrl.startsWith('/');
+  };
+
+  const safeImageUrl = isSafeUrl(finalImageUrl) ? finalImageUrl : '';
+
+  const hasImage = !!safeImageUrl;
 
   const handleOpenInEditor = async () => {
     if (!onOpenInEditor) return;
@@ -137,12 +150,12 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
     }
 
     // If we have a URL-based image, convert it to base64
-    if (finalImageUrl) {
+    if (safeImageUrl) {
       setIsConvertingImage(true);
       try {
         // If it's already a data URL, extract the base64 part
-        if (finalImageUrl.startsWith('data:image')) {
-          const base64Match = finalImageUrl.match(/data:image\/[^;]+;base64,(.+)/);
+        if (safeImageUrl.startsWith('data:image')) {
+          const base64Match = safeImageUrl.match(/data:image\/[^;]+;base64,(.+)/);
           if (base64Match && base64Match[1]) {
             onOpenInEditor(base64Match[1]);
             onClose();
@@ -152,10 +165,10 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
         }
 
         // Use proxy endpoint for R2 URLs to bypass CORS
-        if (isR2Url(finalImageUrl)) {
+        if (isR2Url(safeImageUrl)) {
           try {
             const API_BASE_URL = getApiBaseUrl();
-            const proxyUrl = `${API_BASE_URL}/images/proxy?url=${encodeURIComponent(finalImageUrl)}`;
+            const proxyUrl = `${API_BASE_URL}/images/proxy?url=${encodeURIComponent(safeImageUrl)}`;
             const response = await fetch(proxyUrl);
 
             if (!response.ok) {
@@ -176,7 +189,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
             return;
           } catch (error) {
             console.error('Error using proxy for R2 URL:', {
-              url: finalImageUrl,
+              url: safeImageUrl,
               error: error instanceof Error ? error.message : String(error),
             });
             throw error;
@@ -184,7 +197,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
         }
 
         // Direct fetch for non-R2 URLs (they may have CORS configured)
-        const response = await fetch(finalImageUrl);
+        const response = await fetch(safeImageUrl);
         if (!response.ok) {
           throw new Error('Failed to fetch image');
         }
@@ -305,7 +318,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
             )}
             {hasImage && !isLoading && (
               <img
-                src={finalImageUrl}
+                src={safeImageUrl}
                 alt="Full-size mockup"
                 className="max-w-full max-h-full w-auto h-auto object-contain rounded-md"
               />
