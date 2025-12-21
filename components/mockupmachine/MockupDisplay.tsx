@@ -266,7 +266,32 @@ const MockupCard: React.FC<{
                 href={imageUrl}
                 download={`mockup-${Date.now()}.png`}
                 className="p-2 rounded text-zinc-400 hover:text-white hover:bg-white/5 transition-colors duration-150 flex items-center justify-center"
-                onClick={(e) => e.stopPropagation()}
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+
+                  try {
+                    // Force download by fetching blob
+                    const response = await fetch(imageUrl);
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `mockup-${Date.now()}.png`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+                  } catch (error) {
+                    console.error('Download failed:', error);
+                    // Fallback to simpler download if fetch fails
+                    const link = document.createElement('a');
+                    link.href = imageUrl;
+                    link.download = `mockup-${Date.now()}.png`;
+                    link.target = '_blank';
+                    link.click();
+                  }
+                }}
               >
                 <Download size={16} />
               </a>
