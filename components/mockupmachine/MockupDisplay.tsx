@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { Download, RefreshCw, ImageIcon, Palette, Loader2, Camera, MapPin, Heart, X, Pickaxe, Pencil } from 'lucide-react';
+import { Download, RefreshCw, ImageIcon, Palette, Loader2, Camera, MapPin, Heart, X, Pencil } from 'lucide-react';
 import { mockupApi } from '../../services/mockupApi';
 import { toast } from 'sonner';
 import { SkeletonLoader } from '../ui/SkeletonLoader';
@@ -8,6 +8,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { ReImaginePanel } from '../ReImaginePanel';
 import { useMockupLike } from '../../hooks/useMockupLike';
 import { isSafeUrl } from '../../utils/imageUtils';
+import { GlitchPickaxe } from '../ui/GlitchPickaxe';
 
 type AspectRatio = '16:9' | '4:3' | '1:1';
 
@@ -187,9 +188,7 @@ const MockupCard: React.FC<{
         <div className="absolute inset-0">
           <SkeletonLoader width="100%" height="100%" className="h-full w-full" variant="rectangular" />
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="inline-flex items-center justify-center rounded-md bg-black/30 px-3 py-2 border border-white/5">
-              <Pickaxe size={20} className="text-[#52ddeb] pickaxe-swing" />
-            </div>
+            <GlitchPickaxe />
           </div>
         </div>
       )}
