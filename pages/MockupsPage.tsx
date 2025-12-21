@@ -7,7 +7,7 @@ import { FullScreenViewer } from '../components/FullScreenViewer';
 import { AuthModal } from '../components/AuthModal';
 import { useLayout } from '../hooks/useLayout';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
-import { getImageUrl } from '../utils/imageUtils';
+import { getImageUrl, isSafeUrl } from '../utils/imageUtils';
 import { translateTag } from '../utils/localeUtils';
 import { CollapsibleSidebar } from '../components/mockupmachine/CollapsibleSidebar';
 import { SEO } from '../components/SEO';
@@ -239,10 +239,7 @@ export const MockupsPage: React.FC = () => {
           if (!isBlank) return false;
 
           // Check if mockup has a valid imageUrl (R2/SafeURL) or imageBase64
-          const hasImageUrl = mockup.imageUrl &&
-            typeof mockup.imageUrl === 'string' &&
-            mockup.imageUrl.length > 0 &&
-            (mockup.imageUrl.startsWith('http') || mockup.imageUrl.startsWith('/') || mockup.imageUrl.startsWith('./'));
+          const hasImageUrl = mockup.imageUrl && isSafeUrl(mockup.imageUrl);
 
           const hasImageBase64 = mockup.imageBase64 &&
             typeof mockup.imageBase64 === 'string' &&

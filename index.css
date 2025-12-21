@@ -690,7 +690,7 @@
 }
 
 .pickaxe-swing {
-  animation: pickaxeSwing 1.4s ease-in-out infinite;
+  animation: pickaxeSwing 0.9s ease-in-out infinite;
   transform-origin: 60% 80%;
 }
 
