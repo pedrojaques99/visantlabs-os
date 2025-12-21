@@ -74,27 +74,27 @@ export const MyOutputsPage: React.FC = () => {
     if (!Array.isArray(mockups) || mockups.length === 0) {
       return [];
     }
-    
+
     try {
       return mockups.filter(mockup => {
         if (!mockup || typeof mockup !== 'object') {
           return false;
         }
-        
+
         const prompt = (mockup.prompt || '').toLowerCase();
         const tags = Array.isArray(mockup.tags) ? mockup.tags.map(t => String(t).toLowerCase()) : [];
         const brandingTags = Array.isArray(mockup.brandingTags) ? mockup.brandingTags.map(t => String(t).toLowerCase()) : [];
         const searchLower = searchQuery.toLowerCase();
-        
-        const matchesSearch = searchQuery === '' || 
+
+        const matchesSearch = searchQuery === '' ||
           prompt.includes(searchLower) ||
           tags.some(tag => tag.includes(searchLower)) ||
           brandingTags.some(tag => tag.includes(searchLower));
-        
-        const matchesTag = filterTag === null || 
-          tags.includes(filterTag.toLowerCase()) || 
+
+        const matchesTag = filterTag === null ||
+          tags.includes(filterTag.toLowerCase()) ||
           brandingTags.includes(filterTag.toLowerCase());
-        
+
         return matchesSearch && matchesTag;
       });
     } catch {
@@ -158,10 +158,10 @@ export const MyOutputsPage: React.FC = () => {
 
     // For non-canvas images or when liking, just update like status
     // Update local state immediately for responsive UI
-    setMockups(prev => prev.map(m => 
+    setMockups(prev => prev.map(m =>
       m._id === mockup._id ? { ...m, isLiked } : m
     ));
-    
+
     // Update selected mockup if it's the one being liked
     if (selectedMockup?._id === mockup._id) {
       setSelectedMockup(prev => prev ? { ...prev, isLiked } : null);
@@ -180,7 +180,7 @@ export const MyOutputsPage: React.FC = () => {
         error: error?.message || error,
       });
       // Revert local state on error
-      setMockups(prev => prev.map(m => 
+      setMockups(prev => prev.map(m =>
         m._id === mockup._id ? { ...m, isLiked: !isLiked } : m
       ));
       if (selectedMockup?._id === mockup._id) {
@@ -206,19 +206,19 @@ export const MyOutputsPage: React.FC = () => {
     setError(null);
     try {
       const data = await mockupApi.getAll();
-      
+
       if (!Array.isArray(data)) {
         setMockups([]);
         return;
       }
-      
+
       const validMockups = data
-        .filter(mockup => 
-          mockup && 
-          typeof mockup === 'object' && 
+        .filter(mockup =>
+          mockup &&
+          typeof mockup === 'object' &&
           (mockup.imageBase64 || mockup.imageUrl) &&
           ((mockup.imageBase64 && typeof mockup.imageBase64 === 'string' && mockup.imageBase64.length > 0) ||
-           (mockup.imageUrl && typeof mockup.imageUrl === 'string' && mockup.imageUrl.length > 0))
+            (mockup.imageUrl && typeof mockup.imageUrl === 'string' && mockup.imageUrl.length > 0))
         )
         .map(mockup => ({
           ...mockup,
@@ -232,13 +232,13 @@ export const MyOutputsPage: React.FC = () => {
           createdAt: mockup.createdAt || new Date().toISOString(),
           updatedAt: mockup.updatedAt || new Date().toISOString(),
         }));
-      
+
       const sorted = validMockups.sort((a, b) => {
         const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
         const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
         return dateB - dateA;
       });
-      
+
       setMockups(sorted);
     } catch (err: any) {
       setMockups([]);
@@ -445,7 +445,7 @@ export const MyOutputsPage: React.FC = () => {
                 {mockups.length === 0 ? 'NO OUTPUTS YET' : 'NO MATCHES FOUND'}
               </h2>
               <p className="text-sm text-zinc-600 font-mono mb-4">
-                {mockups.length === 0 
+                {mockups.length === 0
                   ? 'Generate mockups to see them here.'
                   : 'Try adjusting your search or filter.'}
               </p>
@@ -462,7 +462,7 @@ export const MyOutputsPage: React.FC = () => {
                     className="group relative bg-black/30 backdrop-blur-sm border border-zinc-800/60 rounded-md overflow-hidden hover:border-[#52ddeb]/50 transition-all duration-300"
                   >
                     {/* Image */}
-                    <div 
+                    <div
                       className="aspect-square relative overflow-hidden bg-zinc-900/50 cursor-pointer"
                       onClick={() => handleView(mockup)}
                     >
@@ -515,7 +515,7 @@ export const MyOutputsPage: React.FC = () => {
             onLikeStateChange={(newIsLiked) => {
               // Sync state when hook updates it
               if (selectedMockup._id) {
-                setMockups(prev => prev.map(m => 
+                setMockups(prev => prev.map(m =>
                   m._id === selectedMockup._id ? { ...m, isLiked: newIsLiked } : m
                 ));
                 setSelectedMockup(prev => prev ? { ...prev, isLiked: newIsLiked } : null);
