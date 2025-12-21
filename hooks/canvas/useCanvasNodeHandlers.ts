@@ -51,13 +51,13 @@ import { useAmbienceNodeHandlers } from './handlers/useAmbienceNodeHandlers';
 import { useLuminanceNodeHandlers } from './handlers/useLuminanceNodeHandlers';
 import { useMergeNodeHandlers } from './handlers/useMergeNodeHandlers';
 import { useCanvasNodeSync } from './useCanvasNodeSync';
-import { 
-  createOutputNodeWithSkeleton as createOutputNodeWithSkeletonUtil, 
-  normalizeImagesToUploadedImages, 
-  validateBase64Image, 
-  updateOutputNodeWithResult as updateOutputNodeWithResultUtil, 
-  updateOutputNodeWithR2Url as updateOutputNodeWithR2UrlUtil, 
-  cleanupFailedNode as cleanupFailedNodeUtil 
+import {
+  createOutputNodeWithSkeleton as createOutputNodeWithSkeletonUtil,
+  normalizeImagesToUploadedImages,
+  validateBase64Image,
+  updateOutputNodeWithResult as updateOutputNodeWithResultUtil,
+  updateOutputNodeWithR2Url as updateOutputNodeWithR2UrlUtil,
+  cleanupFailedNode as cleanupFailedNodeUtil
 } from './utils/nodeGenerationUtils';
 import { uploadImageToR2Auto as uploadImageToR2AutoUtil } from './utils/r2UploadUtils';
 
@@ -77,20 +77,20 @@ export const useCanvasNodeHandlers = (
   saveImmediately?: () => Promise<void>
 ) => {
   // ========== CONFIGURAÇÃO INICIAL - Refs e Estado ==========
-  
+
   // Create handlersRef early to avoid circular dependency
   const handlersRef = useRef<any>({});
-  
+
   // Separate refs for handlers used in node creation to avoid circular dependency
   const handleUploadImageRef = useRef<((nodeId: string, imageBase64: string) => Promise<void>) | null>(null);
-  
+
   // Ref to prevent infinite loops in useEffect
   const isUpdatingNodesRef = useRef(false);
-  
+
   // Refs to store current nodes and edges to avoid stale closure issues
   const nodesRef = useRef<Node<FlowNodeData>[]>(nodes);
   const edgesRef = useRef<Edge[]>(edges);
-  
+
   // Update refs whenever nodes or edges change
   useEffect(() => {
     nodesRef.current = nodes;
@@ -217,7 +217,7 @@ export const useCanvasNodeHandlers = (
   // Handle edit node apply
   const handleEditApply = useCallback(async (nodeId: string, imageBase64: string, config: EditNodeData) => {
     console.log('handleEditApply called', { nodeId, imageBase64: imageBase64 ? 'provided' : 'empty', hasConfig: !!config });
-    
+
     const node = nodesRef.current.find(n => n.id === nodeId);
     if (!node || node.type !== 'edit') {
       console.warn('handleEditApply: Node not found or wrong type', { nodeId, foundNode: !!node });
@@ -237,7 +237,7 @@ export const useCanvasNodeHandlers = (
       toast.error('No image connected');
       return;
     }
-    
+
     console.log('handleEditApply: Proceeding with edit', { nodeId, inputImageSize: inputImage.length });
 
     const model = config.model || 'gemini-2.5-flash-image';
@@ -297,11 +297,11 @@ export const useCanvasNodeHandlers = (
     }
 
     const upscaleData = node.data as UpscaleNodeData;
-    
+
     // Read connected image directly from nodeData to ensure we have the latest value
     // This prevents synchronization issues
     const connectedImage = (upscaleData as any).connectedImage as string | undefined;
-    
+
     console.log('[handleUpscale] Received request:', {
       nodeId,
       resolution,
@@ -311,7 +311,7 @@ export const useCanvasNodeHandlers = (
 
     // Try to get image from nodeData first, then fallback to edge connection
     let inputImage: string | null = null;
-    
+
     if (connectedImage) {
       inputImage = connectedImage;
       console.log('[handleUpscale] Using connectedImage from nodeData');
@@ -363,7 +363,7 @@ export const useCanvasNodeHandlers = (
       }, 'upscale');
 
       uploadImageToR2Auto(result, nodeId, (imageUrl) => {
-        updateNodeData<UpscaleNodeData>(nodeId, { 
+        updateNodeData<UpscaleNodeData>(nodeId, {
           resultImageUrl: imageUrl,
           resultImageBase64: undefined, // Remove base64 after R2 upload to save memory
         }, 'upscale');
@@ -449,10 +449,10 @@ export const useCanvasNodeHandlers = (
       }
     }
 
-      toast.success('Image uploaded!', { 
-        id: `upload-image-${nodeId}`,
-        duration: 2000 
-      });
+    toast.success('Image uploaded!', {
+      id: `upload-image-${nodeId}`,
+      duration: 2000
+    });
   }, [setNodes, canvasId]);
 
   // ========== EDIT NODE DATA UPDATE HANDLERS ==========
@@ -501,15 +501,15 @@ export const useCanvasNodeHandlers = (
       });
 
       // Handle both old string format and new object format
-      const smartPrompt = typeof smartPromptResult === 'string' 
-        ? smartPromptResult 
+      const smartPrompt = typeof smartPromptResult === 'string'
+        ? smartPromptResult
         : smartPromptResult.prompt;
-      
+
       // Always track prompt generation usage (even if tokens are not available, use 0)
       try {
         const inputTokens = typeof smartPromptResult === 'object' ? (smartPromptResult.inputTokens ?? 0) : 0;
         const outputTokens = typeof smartPromptResult === 'object' ? (smartPromptResult.outputTokens ?? 0) : 0;
-        
+
         const token = authService.getToken();
         await fetch('/api/mockups/track-prompt-generation', {
           method: 'POST',
@@ -585,7 +585,7 @@ export const useCanvasNodeHandlers = (
     }
 
     const mockupData = node.data as MockupNodeData;
-    
+
     // Read connected image directly from nodeData as fallback if imageInput is not provided
     // This ensures we always have the latest value from nodeData
     const connectedImageFromData = mockupData.connectedImage;
@@ -611,10 +611,10 @@ export const useCanvasNodeHandlers = (
     // Check if presetId is a custom mockup (blank mockup from database)
     const userMockups = (mockupData as any).userMockups as Mockup[] | undefined;
     const customMockup = userMockups?.find(m => m._id === presetId);
-    
+
     let preset: any;
     let isCustomMockup = false;
-    
+
     if (customMockup) {
       // This is a custom mockup, create a preset-like object from the mockup data
       isCustomMockup = true;
@@ -657,12 +657,12 @@ export const useCanvasNodeHandlers = (
       nds.map((n: Node<FlowNodeData>) =>
         n.id === nodeId
           ? {
-              ...n,
-              data: {
-                ...(n.data as MockupNodeData),
-                isLoading: true,
-              } as MockupNodeData,
-            } as Node<FlowNodeData>
+            ...n,
+            data: {
+              ...(n.data as MockupNodeData),
+              isLoading: true,
+            } as MockupNodeData,
+          } as Node<FlowNodeData>
           : n
       )
     );
@@ -671,20 +671,20 @@ export const useCanvasNodeHandlers = (
     // Get Logo and Identity from BrandCore connection
     const connectedLogo = mockupData.connectedLogo;
     const connectedIdentity = mockupData.connectedIdentity;
-    
+
     // Convert Logo (baseImage) to base64 if needed
     let logoBase64: string | null = null;
     let baseImage: UploadedImage | undefined;
-    
+
     if (connectedLogo) {
       try {
         console.log('[handleMockupGenerate] Normalizing Logo (baseImage) to base64...');
         logoBase64 = await normalizeImageToBase64(connectedLogo);
-        
+
         if (!validateBase64Image(logoBase64)) {
           throw new Error('Invalid logo base64 format after conversion');
         }
-        
+
         const logoMimeType = detectMimeType(connectedLogo);
         baseImage = {
           base64: logoBase64,
@@ -696,17 +696,17 @@ export const useCanvasNodeHandlers = (
         toast.error('Failed to process logo image. Using fallback.');
       }
     }
-    
+
     // If no logo, use imageInput as fallback (legacy or direct input)
     if (!baseImage && imageToUse) {
       try {
         console.log('[handleMockupGenerate] Using imageInput as baseImage (fallback)...');
         const fallbackBase64 = await normalizeImageToBase64(imageToUse);
-        
+
         if (!validateBase64Image(fallbackBase64)) {
           throw new Error('Invalid base64 format after conversion');
         }
-        
+
         const fallbackMimeType = detectMimeType(imageInput);
         baseImage = {
           base64: fallbackBase64,
@@ -719,7 +719,7 @@ export const useCanvasNodeHandlers = (
         return;
       }
     }
-    
+
     if (!baseImage) {
       toast.error('Connect a logo or image to generate mockup');
       updateNodeLoadingState<MockupNodeData>(nodeId, false, 'mockup');
@@ -728,12 +728,12 @@ export const useCanvasNodeHandlers = (
 
     // Convert Identity (referenceImage for colors/vibe context) to base64 if available
     let referenceImages: UploadedImage[] | undefined;
-    
+
     if (connectedIdentity) {
       try {
         console.log('[handleMockupGenerate] Normalizing Identity (referenceImage) to base64...');
         const identityBase64 = await normalizeImageToBase64(connectedIdentity);
-        
+
         if (validateBase64Image(identityBase64)) {
           const identityMimeType = detectMimeType(connectedIdentity);
           referenceImages = [{
@@ -747,11 +747,11 @@ export const useCanvasNodeHandlers = (
         // Continue without identity, it's not critical
       }
     }
-    
+
     // Add preset/custom mockup reference image if available (after identity)
     if (preset.referenceImageUrl && preset.referenceImageUrl.trim() !== '') {
       let presetReferenceImage: UploadedImage | null = null;
-      
+
       if (isCustomMockup && customMockup) {
         // For custom mockups, load the image directly from the mockup
         try {
@@ -774,7 +774,7 @@ export const useCanvasNodeHandlers = (
         // For regular presets, use the existing loadReferenceImage function
         presetReferenceImage = await loadReferenceImage(preset);
       }
-      
+
       if (presetReferenceImage) {
         if (!referenceImages) {
           referenceImages = [];
@@ -785,7 +785,7 @@ export const useCanvasNodeHandlers = (
 
     // Check for connected BrandNode and get brand identity
     const brandIdentity = getConnectedBrandIdentity(nodeId, nodesRef.current, edgesRef.current);
-    
+
     // Merge brand colors with manually selected colors (brand colors take priority)
     let finalColors = [...(selectedColors || [])];
     if (brandIdentity) {
@@ -810,7 +810,7 @@ export const useCanvasNodeHandlers = (
     if (customPrompt && customPrompt.trim()) {
       // Use custom prompt as base, but still add colors/human/brand if not already included
       enhancedPrompt = customPrompt.trim();
-      
+
       // Add brand identity information if available
       if (brandIdentity) {
         if (!enhancedPrompt.toLowerCase().includes('brand') && !enhancedPrompt.toLowerCase().includes('identity')) {
@@ -826,7 +826,7 @@ export const useCanvasNodeHandlers = (
           }
         }
       }
-      
+
       if (finalColors.length > 0 && !enhancedPrompt.toLowerCase().includes('color')) {
         enhancedPrompt += ` The scene's color palette should be dominated by or feature accents of: ${finalColors.join(', ')}.`;
       }
@@ -837,7 +837,7 @@ export const useCanvasNodeHandlers = (
     } else {
       // Build from preset prompt
       enhancedPrompt = preset.prompt;
-      
+
       // Add brand identity information if available
       if (brandIdentity) {
         const brandInfo: string[] = [];
@@ -854,7 +854,7 @@ export const useCanvasNodeHandlers = (
           enhancedPrompt += ` Brand identity: ${brandInfo.join(', ')}.`;
         }
       }
-      
+
       if (finalColors.length > 0) {
         enhancedPrompt += ` The scene's color palette should be dominated by or feature accents of: ${finalColors.join(', ')}.`;
       }
@@ -881,7 +881,7 @@ export const useCanvasNodeHandlers = (
 
       const isBaseImageLogo = !!mockupData.connectedLogo;
       const hasIdentityAsReference = !!mockupData.connectedIdentity && !!referenceImages && referenceImages.length > 0;
-      
+
       console.log('[handleMockupGenerate] Calling generateMockup with hierarchy:', {
         prompt: enhancedPrompt.substring(0, 100) + (enhancedPrompt.length > 100 ? '...' : ''),
         hasBaseImage: !!baseImage,
@@ -912,20 +912,37 @@ export const useCanvasNodeHandlers = (
         feature: 'canvas'
       });
 
-      console.log('[handleMockupGenerate] Mockup generated successfully, updating OutputNode');
+      const resultImage = result.imageUrl || result.imageBase64 || '';
 
+      console.log('[handleMockupGenerate] Mockup generated successfully, updating OutputNode', {
+        hasImageUrl: !!result.imageUrl,
+        hasImageBase64: !!result.imageBase64,
+        resultImageLength: resultImage.length
+      });
+
+      // Update source node with result so manually connected nodes work
+      updateNodeData<MockupNodeData>(nodeId, {
+        isLoading: false, // Ensure loading is false
+        resultImageUrl: result.imageUrl,
+        resultImageBase64: result.imageUrl ? undefined : result.imageBase64,
+      } as any, 'mockup');
+
+      // Also update loading state explicitly to be safe
       updateNodeLoadingState<MockupNodeData>(nodeId, false, 'mockup');
 
       if (newOutputNodeId) {
         updateOutputNodeWithResult(
           newOutputNodeId,
-          result.imageBase64,
+          resultImage,
           () => addToHistory(nodesRef.current, edgesRef.current)
         );
 
-        await uploadImageToR2Auto(result.imageBase64, newOutputNodeId, (imageUrl) => {
-          updateOutputNodeWithR2Url(newOutputNodeId!, imageUrl);
-        });
+        // Only upload to R2 if we don't already have a URL
+        if (!result.imageUrl && result.imageBase64) {
+          await uploadImageToR2Auto(result.imageBase64, newOutputNodeId, (imageUrl) => {
+            updateOutputNodeWithR2Url(newOutputNodeId!, imageUrl);
+          });
+        }
       }
 
       // Credits were already deducted by backend before generation
@@ -1098,7 +1115,7 @@ export const useCanvasNodeHandlers = (
     if (canvasId) {
       try {
         let videoUrl: string;
-        
+
         if (videoFile) {
           // Use direct upload (bypasses Vercel's 4.5MB limit, preserves quality)
           videoUrl = await canvasApi.uploadVideoToR2Direct(videoFile, canvasId, nodeId);
@@ -1106,7 +1123,7 @@ export const useCanvasNodeHandlers = (
           // Fallback to base64 upload (subject to 4.5MB limit)
           videoUrl = await canvasApi.uploadVideoToR2(videoBase64, canvasId, nodeId);
         }
-        
+
         // Update node with R2 URL
         setNodes((nds: Node<FlowNodeData>[]) => {
           return nds.map((n: Node<FlowNodeData>) => {
@@ -1131,9 +1148,9 @@ export const useCanvasNodeHandlers = (
       }
     }
 
-    toast.success('Video uploaded!', { 
+    toast.success('Video uploaded!', {
       id: `upload-video-${nodeId}`,
-      duration: 2000 
+      duration: 2000
     });
   }, [setNodes, canvasId]);
 
@@ -1273,9 +1290,9 @@ export const useCanvasNodeHandlers = (
 
     try {
       const suggestions = await aiApi.suggestPromptVariations(prompt);
-      updateNodeData<PromptNodeData>(nodeId, { 
+      updateNodeData<PromptNodeData>(nodeId, {
         promptSuggestions: suggestions,
-        isSuggestingPrompts: false 
+        isSuggestingPrompts: false
       }, 'prompt');
     } catch (err: any) {
       console.error('Error suggesting prompts:', err);
@@ -1340,10 +1357,10 @@ export const useCanvasNodeHandlers = (
       if (connectedImages && connectedImages.length > 0) {
         console.log('[handlePromptGenerate] Normalizing images to UploadedImage format...');
         const uploadedImages = await normalizeImagesToUploadedImages(connectedImages);
-        
+
         // Define limits based on model
         const maxImages = selectedModel === 'gemini-3-pro-image-preview' ? 4 : 2;
-        
+
         // Validate image count
         if (uploadedImages.length > maxImages) {
           updateNodeLoadingState<PromptNodeData>(nodeId, false, 'prompt');
@@ -1353,7 +1370,7 @@ export const useCanvasNodeHandlers = (
           );
           return;
         }
-        
+
         console.log('[handlePromptGenerate] Normalized images:', {
           count: uploadedImages.length,
           maxAllowed: maxImages,
@@ -1368,17 +1385,17 @@ export const useCanvasNodeHandlers = (
         if (uploadedImages.length > 0) {
           // HIERARCHY: Logo (priority 1) as baseImage, Identity (priority 2) as first referenceImage
           baseImage = uploadedImages[0];
-          
+
           // Process reference images based on model
           if (uploadedImages.length > 1) {
             const maxReferenceImages = selectedModel === 'gemini-3-pro-image-preview' ? 3 : 1;
             referenceImages = uploadedImages.slice(1, 1 + maxReferenceImages);
           }
-          
+
           const promptData = nodesRef.current.find(n => n.id === nodeId)?.data as PromptNodeData;
           const isLogoFirst = promptData?.connectedLogo && connectedImages?.[0] === promptData.connectedLogo;
           const isIdentitySecond = promptData?.connectedIdentity && connectedImages?.[1] === promptData.connectedIdentity;
-          
+
           console.log('[handlePromptGenerate] Processing images with hierarchy:', {
             model: selectedModel,
             hasBaseImage: !!baseImage,
@@ -1396,26 +1413,26 @@ export const useCanvasNodeHandlers = (
       const brandIdentity = getConnectedBrandIdentity(nodeId, nodesRef.current, edgesRef.current);
       const promptData = nodesRef.current.find(n => n.id === nodeId)?.data as PromptNodeData;
       const pdfPageReference = promptData?.pdfPageReference;
-      
+
       let enhancedPrompt = prompt;
       const promptLower = prompt.toLowerCase();
-      
+
       if (brandIdentity) {
         const brandInfo: string[] = [];
         const brandContext: string[] = [];
-        
+
         // Intelligent analysis: check if user mentions specific elements
-        const mentionsColor = promptLower.includes('color') || promptLower.includes('cor') || 
-                             promptLower.includes('palette') || promptLower.includes('paleta');
-        const mentionsTypography = promptLower.includes('font') || promptLower.includes('fonte') || 
-                                  promptLower.includes('typography') || promptLower.includes('tipografia') ||
-                                  promptLower.includes('text') || promptLower.includes('texto');
+        const mentionsColor = promptLower.includes('color') || promptLower.includes('cor') ||
+          promptLower.includes('palette') || promptLower.includes('paleta');
+        const mentionsTypography = promptLower.includes('font') || promptLower.includes('fonte') ||
+          promptLower.includes('typography') || promptLower.includes('tipografia') ||
+          promptLower.includes('text') || promptLower.includes('texto');
         const mentionsStyle = promptLower.includes('style') || promptLower.includes('estilo') ||
-                             promptLower.includes('composition') || promptLower.includes('composição');
+          promptLower.includes('composition') || promptLower.includes('composição');
         const mentionsPersonality = promptLower.includes('tone') || promptLower.includes('tom') ||
-                                   promptLower.includes('feeling') || promptLower.includes('sentimento') ||
-                                   promptLower.includes('mood') || promptLower.includes('humor');
-        
+          promptLower.includes('feeling') || promptLower.includes('sentimento') ||
+          promptLower.includes('mood') || promptLower.includes('humor');
+
         // Add colors (always include, but emphasize if mentioned)
         const allBrandColors = [
           ...brandIdentity.colors.primary,
@@ -1429,7 +1446,7 @@ export const useCanvasNodeHandlers = (
             brandInfo.push(`Color palette: ${allBrandColors.join(', ')}`);
           }
         }
-        
+
         // Add typography (include if mentioned or if not explicitly excluded)
         if (brandIdentity.typography?.primary) {
           if (mentionsTypography) {
@@ -1438,7 +1455,7 @@ export const useCanvasNodeHandlers = (
             brandInfo.push(`Typography: ${brandIdentity.typography.primary}`);
           }
         }
-        
+
         // Add personality (include if mentioned)
         if (mentionsPersonality) {
           if (brandIdentity.personality?.tone) {
@@ -1455,7 +1472,7 @@ export const useCanvasNodeHandlers = (
             brandInfo.push(`Brand feeling: ${brandIdentity.personality.feeling}`);
           }
         }
-        
+
         // Add composition style (include if mentioned)
         if (brandIdentity.composition?.style) {
           if (mentionsStyle) {
@@ -1464,15 +1481,15 @@ export const useCanvasNodeHandlers = (
             brandInfo.push(`Composition style: ${brandIdentity.composition.style}`);
           }
         }
-        
+
         // Add visual elements if mentioned
-        if (promptLower.includes('element') || promptLower.includes('elemento') || 
-            promptLower.includes('pattern') || promptLower.includes('padrão')) {
+        if (promptLower.includes('element') || promptLower.includes('elemento') ||
+          promptLower.includes('pattern') || promptLower.includes('padrão')) {
           if (brandIdentity.visualElements.length > 0) {
             brandInfo.push(`Visual elements: ${brandIdentity.visualElements.slice(0, 5).join(', ')}`);
           }
         }
-        
+
         // Build enhanced prompt
         if (brandInfo.length > 0 || brandContext.length > 0) {
           let brandSection = '';
@@ -1484,7 +1501,7 @@ export const useCanvasNodeHandlers = (
           }
           enhancedPrompt = `${prompt}\n\n${brandSection}`;
         }
-        
+
         // Add PDF page reference if specified
         if (pdfPageReference && pdfPageReference.trim()) {
           enhancedPrompt += `\n\nRefer to "${pdfPageReference.trim()}" from the brand identity guide PDF for additional guidelines and specifications.`;
@@ -1529,12 +1546,21 @@ export const useCanvasNodeHandlers = (
         feature: 'canvas'
       });
 
+      const resultImage = result.imageUrl || result.imageBase64 || '';
+
+      // Update source node with result so manually connected nodes work
+      updateNodeData<PromptNodeData>(nodeId, {
+        isLoading: false, // Ensure loading is false
+        resultImageUrl: result.imageUrl,
+        resultImageBase64: result.imageUrl ? undefined : result.imageBase64,
+      } as any, 'prompt');
+
       updateNodeLoadingState<PromptNodeData>(nodeId, false, 'prompt');
 
       if (newOutputNodeId) {
         updateOutputNodeWithResult(
           newOutputNodeId,
-          result.imageBase64,
+          resultImage,
           () => addToHistory(nodesRef.current, edgesRef.current)
         );
 
@@ -1563,10 +1589,10 @@ export const useCanvasNodeHandlers = (
         requiresSubscription: error?.requiresSubscription,
         stack: error?.stack,
       });
-      
+
       cleanupFailedNode(newOutputNodeId);
       updateNodeLoadingState<PromptNodeData>(nodeId, false, 'prompt');
-      
+
       // Show more detailed error message if available
       const errorMessage = error?.errorData?.message || error?.errorData?.error || error?.message || 'Failed to generate image';
       toast.error(errorMessage, { duration: 5000 });
@@ -1594,7 +1620,7 @@ export const useCanvasNodeHandlers = (
   // Handle BrandNode analyze
   // ========== COLOR EXTRACTOR NODE HANDLERS ==========
   // Handlers para gerenciar operações do Color Extractor Node
-  
+
   const handleColorExtractorUpload = useCallback((nodeId: string, imageBase64: string) => {
     updateNodeData<ColorExtractorNodeData>(nodeId, { imageBase64 }, 'colorExtractor');
   }, [updateNodeData]);
@@ -1610,7 +1636,7 @@ export const useCanvasNodeHandlers = (
 
     try {
       const result = await extractColors(imageBase64);
-      
+
       updateNodeData<ColorExtractorNodeData>(nodeId, {
         extractedColors: result.colors,
         isExtracting: false,
@@ -1682,7 +1708,7 @@ export const useCanvasNodeHandlers = (
     } catch (error: any) {
       console.error('Error extracting brand identity:', error);
       toast.error(error?.message || 'Failed to extract brand identity. Please try again.', { duration: 5000 });
-      
+
       // Clear analyzing state on error
       updateNodeData<BrandNodeData>(nodeId, { isAnalyzing: false }, 'brand');
     }
@@ -1732,25 +1758,25 @@ export const useCanvasNodeHandlers = (
       handleUpscaleBicubicNodeDataUpdate,
     };
     handleUploadImageRef.current = handleUploadImage;
-  }, [handleMergeGenerate, 
-    handleMergeGeneratePrompt, 
-    handleEditApply, 
-    handleUpscale, 
-    handleMockupGenerate, 
-    handleMockupNodeDataUpdate, 
-    handlePromptGenerate, 
+  }, [handleMergeGenerate,
+    handleMergeGeneratePrompt,
+    handleEditApply,
+    handleUpscale,
+    handleMockupGenerate,
+    handleMockupNodeDataUpdate,
+    handlePromptGenerate,
     handlePromptSuggestPrompts,
     handlePromptNodeDataUpdate,
     handleVideoNodeGenerate,
     handleVideoNodeDataUpdate,
-    handleUploadImage, 
-    handleEditNodeDataUpdate, 
-    handleEditNodeGenerateSmartPrompt, 
-    handleEditNodeSuggestPrompts, 
-    handleUpscaleNodeDataUpdate, 
-    handleBrandNodeDataUpdate, 
-    handleBrandLogoUpload, 
-    handleBrandPdfUpload, 
+    handleUploadImage,
+    handleEditNodeDataUpdate,
+    handleEditNodeGenerateSmartPrompt,
+    handleEditNodeSuggestPrompts,
+    handleUpscaleNodeDataUpdate,
+    handleBrandNodeDataUpdate,
+    handleBrandLogoUpload,
+    handleBrandPdfUpload,
     handleBrandAnalyze,
     handleColorExtractorExtract,
     handleColorExtractorUpload,
@@ -1861,7 +1887,7 @@ export const useCanvasNodeHandlers = (
       if (saveImmediately) {
         setTimeout(() => saveImmediately(), 100);
       }
-      
+
       toast.success('Brand identity analyzed successfully', { duration: 2000 });
     } catch (error: any) {
       console.error('Error analyzing brand identity:', error);
@@ -1889,7 +1915,7 @@ export const useCanvasNodeHandlers = (
 
     try {
       const { generateVisualPrompt, consolidateStrategies, extractVisualStrategyText } = await import('../../services/brandPromptService');
-      
+
       // Extrair apenas dados visuais das estratégias (sem filosofia/conceitos)
       let visualStrategyText: string | undefined;
       if (brandCoreData.connectedStrategies && brandCoreData.connectedStrategies.length > 0) {
@@ -1954,7 +1980,7 @@ export const useCanvasNodeHandlers = (
     try {
       const pdfUrl = await canvasApi.uploadPdfToR2(pdfBase64, canvasId, nodeId);
       // Atualizar o Node com a URL do R2 (não armazenar base64)
-      updateNodeData<BrandCoreData>(nodeId, { 
+      updateNodeData<BrandCoreData>(nodeId, {
         uploadedIdentityUrl: pdfUrl,
         uploadedIdentity: undefined, // Limpar base64
         uploadedIdentityType: 'pdf'

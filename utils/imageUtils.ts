@@ -27,6 +27,11 @@ export function isSafeUrl(url: string): boolean {
 
   // Allow absolute URLs with safe protocols
   if (lowerUrl.startsWith('http://') || lowerUrl.startsWith('https://')) {
+    // R2 public bucket URLs often start with pub-
+    if (lowerUrl.includes('pub-')) {
+      return true;
+    }
+
     try {
       const parsed = new URL(url);
       return ['http:', 'https:'].includes(parsed.protocol);

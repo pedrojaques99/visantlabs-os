@@ -35,22 +35,69 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
   isLiked,
 }) => {
   // Improved download handler - ensures proper download behavior
-  const handleDownload = () => {
+  const handleDownload = async () => {
     try {
-      onDownload();
+      if (imageUrl) {
+        try {
+          const response = await fetch(imageUrl);
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+
+          // Determine extension from content-type or url
+          let extension = '.png';
+          const contentType = response.headers.get('content-type');
+          if (contentType) {
+            if (contentType.includes('video/mp4')) extension = '.mp4';
+            else if (contentType.includes('image/jpeg')) extension = '.jpg';
+            else if (contentType.includes('image/webp')) extension = '.webp';
+            else if (contentType.includes('image/gif')) extension = '.gif';
+            else if (contentType.includes('image/png')) extension = '.png';
+          } else {
+            // Fallback to URL extension
+            const urlExt = imageUrl.split('.').pop()?.split('?')[0];
+            if (urlExt && ['mp4', 'jpg', 'jpeg', 'png', 'webp', 'gif'].includes(urlExt.toLowerCase())) {
+              extension = `.${urlExt}`;
+            }
+          }
+
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `image-${Date.now()}${extension}`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+        } catch (fetchError) {
+          console.error('Fetch download failed, falling back to direct link:', fetchError);
+          // Fallback: try to download directly if fetch fails
+          const link = document.createElement('a');
+          link.href = imageUrl;
+
+          // Attempt to guess extension for fallback
+          let extension = '.png';
+          const urlExt = imageUrl.split('.').pop()?.split('?')[0];
+          if (urlExt && ['mp4', 'jpg', 'jpeg', 'png', 'webp', 'gif'].includes(urlExt.toLowerCase())) {
+            extension = `.${urlExt}`;
+          }
+
+          link.download = `image-${Date.now()}${extension}`;
+          // link.target = '_blank'; // Removed to avoid opening in new tab if possible
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+      }
+
+      // Execute the provided onDownload callback if it exists, for any additional side effects
+      // We wrap it in a try-catch to ensure it doesn't break the flow if it fails
+      try {
+        if (onDownload) onDownload();
+      } catch (e) {
+        console.error('onDownload callback error:', e);
+      }
+
     } catch (error) {
       console.error('Download error:', error);
-      // Fallback: try to download directly if handler fails
-      if (imageUrl) {
-        const link = document.createElement('a');
-        link.href = imageUrl;
-        link.download = `image-${Date.now()}.png`;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
     }
     onClose();
   };
@@ -86,7 +133,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
           <X size={12} />
         </button>
       </div>
-      
+
       <button
         onClick={() => {
           onLike();
@@ -97,7 +144,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
         <Heart size={14} className={isLiked ? "fill-current text-[#52ddeb]" : ""} />
         {isLiked ? 'Unlike' : 'Like'}
       </button>
-      
+
       <button
         onClick={handleDownload}
         className="w-full px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-[#52ddeb] transition-colors flex items-center gap-2 font-mono cursor-pointer"
@@ -105,7 +152,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
         <Download size={14} />
         Download
       </button>
-      
+
       {onExport && (
         <button
           onClick={() => {
@@ -118,7 +165,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
           Export
         </button>
       )}
-      
+
       <button
         onClick={handleFullscreen}
         className="w-full px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-[#52ddeb] transition-colors flex items-center gap-2 font-mono cursor-pointer"
@@ -126,7 +173,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
         <Maximize2 size={14} />
         Fullscreen
       </button>
-      
+
       {imageUrl && (
         <button
           onClick={() => {
@@ -139,7 +186,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
           Open in New Tab
         </button>
       )}
-      
+
       <button
         onClick={() => {
           onCopy();
@@ -150,7 +197,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
         <Copy size={14} />
         Copy
       </button>
-      
+
       {onDescribe && (
         <button
           onClick={() => {
@@ -163,7 +210,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
           Describe Image
         </button>
       )}
-      
+
       <div className="px-2 py-1.5 border-t border-zinc-700/30 mt-1">
         <button
           onClick={() => {

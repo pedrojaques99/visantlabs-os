@@ -9,6 +9,7 @@ import { NodeActionBar } from './shared/NodeActionBar';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useMockupLike } from '../../hooks/useMockupLike';
 import { fileToBase64 } from '../../utils/fileUtils';
+import { isSafeUrl } from '../../utils/imageUtils';
 import { mockupApi } from '../../services/mockupApi';
 import { aiApi } from '../../services/aiApi';
 import { normalizeImageToBase64 } from '../../services/reactFlowService';
@@ -555,7 +556,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
           ) : resultImageUrl ? (
             <div className="relative w-full h-full bg-black/20 rounded-md overflow-hidden border border-zinc-700/50 flex items-center justify-center flex-1 min-h-0">
               <img
-                src={resultImageUrl}
+                src={isSafeUrl(resultImageUrl) ? resultImageUrl : ''}
                 alt="Upscaled result"
                 className="w-full h-full object-contain rounded"
                 style={{
