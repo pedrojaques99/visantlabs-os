@@ -18,6 +18,7 @@ import { AspectRatioSelector } from './shared/AspectRatioSelector';
 import { ResolutionSelector } from './shared/ResolutionSelector';
 import { useTranslation } from '../../hooks/useTranslation';
 import { getCreditsRequired } from '../../utils/creditCalculator';
+import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -34,27 +35,27 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   const [connectedImage4, setConnectedImage4] = useState<string | undefined>(nodeData.connectedImage4);
   const [pdfPageReference, setPdfPageReference] = useState<string>(nodeData.pdfPageReference || '');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  
+
   // BrandCore connection data
   const connectedLogo = nodeData.connectedLogo;
   const connectedIdentity = nodeData.connectedIdentity;
   const connectedTextDirection = nodeData.connectedTextDirection;
   const hasBrandCoreConnection = !!(connectedLogo || connectedIdentity || connectedTextDirection);
-  
+
   // TextNode connection - sync in real-time
   const connectedText = nodeData.connectedText;
   const hasTextNodeConnection = connectedText !== undefined;
-  
+
   const isLoading = nodeData.isLoading || false;
   const isSuggestingPrompts = nodeData.isSuggestingPrompts || false;
   const promptSuggestions = nodeData.promptSuggestions || [];
   const isProModel = model === 'gemini-3-pro-image-preview';
   const finalResolution = isProModel ? resolution : undefined;
   const creditsRequired = getCreditsRequired(model, finalResolution);
-  
+
   // Determine number of handles based on model
   const maxHandles = model === 'gemini-3-pro-image-preview' ? 4 : 2;
-  
+
   // Get all connected images up to max handles
   // BrandCore images are displayed separately, so only include legacy connected images here
   const brandCoreImages = [connectedLogo, connectedIdentity].filter(Boolean);
@@ -64,10 +65,10 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     connectedImage3,
     connectedImage4,
   ].filter(img => img && !brandCoreImages.includes(img)).slice(0, maxHandles);
-  
+
   // Only legacy images in the main display (BrandCore images shown separately)
   const allConnectedImages = legacyImages;
-  
+
   const hasConnectedImages = allConnectedImages.some(img => !!img) || hasBrandCoreConnection;
 
   // Sync prompt and model with data
@@ -127,11 +128,15 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     // No local state needed, but we can trigger re-render if needed
   }, [nodeData.connectedLogo, nodeData.connectedIdentity, nodeData.connectedTextDirection]);
 
+  const debouncedUpdateData = useDebouncedCallback((updates: Partial<PromptNodeData>) => {
+    if (nodeData.onUpdateData) {
+      nodeData.onUpdateData(id, updates);
+    }
+  }, 500);
+
   const handlePromptChange = (value: string) => {
     setPrompt(value);
-    if (nodeData.onUpdateData) {
-      nodeData.onUpdateData(id, { prompt: value });
-    }
+    debouncedUpdateData({ prompt: value });
   };
 
   const handleGenerate = async () => {
@@ -145,7 +150,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       if (model !== nodeData.model) updates.model = model;
       if (isProModel && aspectRatio !== nodeData.aspectRatio) updates.aspectRatio = aspectRatio;
       if (isProModel && resolution !== nodeData.resolution) updates.resolution = resolution;
-      
+
       if (Object.keys(updates).length > 0) {
         nodeData.onUpdateData(id, updates);
       }
@@ -155,17 +160,17 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     // Then legacy connected images
     const connectedImages: string[] = [];
     const maxImages = model === 'gemini-3-pro-image-preview' ? 4 : 2;
-    
+
     // Add Logo first (primary focus)
     if (nodeData.connectedLogo) {
       connectedImages.push(nodeData.connectedLogo);
     }
-    
+
     // Add Identity second (context/colors/vibe)
     if (nodeData.connectedIdentity) {
       connectedImages.push(nodeData.connectedIdentity);
     }
-    
+
     // Add legacy connected images (avoid duplicates)
     const brandCoreImages = [nodeData.connectedLogo, nodeData.connectedIdentity].filter(Boolean);
     if (nodeData.connectedImage1 && !brandCoreImages.includes(nodeData.connectedImage1)) {
@@ -182,12 +187,12 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         connectedImages.push(nodeData.connectedImage4);
       }
     }
-    
+
     // Limit to max images for the model
     const limitedImages = connectedImages.slice(0, maxImages);
 
     // Combine text direction with prompt if available
-    const finalPrompt = nodeData.connectedTextDirection 
+    const finalPrompt = nodeData.connectedTextDirection
       ? (prompt ? `${nodeData.connectedTextDirection}\n\n${prompt}` : nodeData.connectedTextDirection)
       : prompt;
 
@@ -212,15 +217,15 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   const handleImageClick = (index: number) => {
     const imageReference = `{image ${String(index + 1).padStart(2, '0')}}`;
     const textarea = textareaRef.current;
-    
+
     if (textarea) {
       const start = textarea.selectionStart;
       const end = textarea.selectionEnd;
       const newPrompt = prompt.slice(0, start) + imageReference + prompt.slice(end);
-      
+
       setPrompt(newPrompt);
       handlePromptChange(newPrompt);
-      
+
       // Set cursor position after inserted text
       setTimeout(() => {
         const newCursorPos = start + imageReference.length;
@@ -242,15 +247,15 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       2: 'input-3',
       3: 'input-4',
     };
-    
+
     const targetHandle = handleMap[index];
     if (!targetHandle) return;
-    
+
     // Remove the edge if onRemoveEdge is available
     if (nodeData.onRemoveEdge) {
       nodeData.onRemoveEdge(id, targetHandle);
     }
-    
+
     // Clear the connected image data
     if (nodeData.onUpdateData) {
       const updates: Partial<PromptNodeData> = {};
@@ -264,15 +269,15 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
 
   const handleInsertElement = (text: string) => {
     const textarea = textareaRef.current;
-    
+
     if (textarea) {
       const start = textarea.selectionStart;
       const end = textarea.selectionEnd;
       const newPrompt = prompt.slice(0, start) + ' ' + text + ' ' + prompt.slice(end);
-      
+
       setPrompt(newPrompt.trim());
       handlePromptChange(newPrompt.trim());
-      
+
       // Set cursor position after inserted text
       setTimeout(() => {
         const newCursorPos = start + text.length + 2;
@@ -289,9 +294,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
 
   const handlePdfPageReferenceChange = (value: string) => {
     setPdfPageReference(value);
-    if (nodeData.onUpdateData) {
-      nodeData.onUpdateData(id, { pdfPageReference: value || undefined });
-    }
+    debouncedUpdateData({ pdfPageReference: value || undefined });
   };
 
   // Handle resize from NodeResizer
@@ -299,7 +302,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     if (nodeData.onResize && typeof nodeData.onResize === 'function') {
       nodeData.onResize(id, width, height);
     }
-    
+
     setNodes((nds) => {
       return nds.map((n) => {
         if (n.id === id && n.type === 'prompt') {
@@ -441,7 +444,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
             brandIdentity={nodeData.connectedBrandIdentity}
             onInsertElement={handleInsertElement}
           />
-          
+
           {/* PDF Page Reference Input */}
           <div className="mb-3">
             <NodeLabel className="text-[10px] mb-1.5">
@@ -507,7 +510,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
             </button>
           )}
         </div>
-        
+
         {/* Prompt Suggestions */}
         {promptSuggestions.length > 0 && (
           <div className="mt-2 space-y-1.5 animate-fade-in">
@@ -555,12 +558,12 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               const previousModel = model;
               const isSwitchingToPro = newModel === 'gemini-3-pro-image-preview';
               const isSwitchingToFlash = newModel === 'gemini-2.5-flash-image';
-              
+
               setModel(newModel);
-              
+
               if (nodeData.onUpdateData) {
                 const updates: Partial<PromptNodeData> = { model: newModel };
-                
+
                 // If switching to Pro, set default resolution and aspectRatio if not set
                 if (isSwitchingToPro) {
                   if (!nodeData.resolution) {
@@ -572,18 +575,18 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
                     setAspectRatio('16:9');
                   }
                 }
-                
+
                 // If switching from Pro to Flash, clear resolution and aspectRatio
                 if (isSwitchingToFlash) {
                   updates.resolution = undefined;
                   updates.aspectRatio = undefined;
                 }
-                
+
                 // If switching from 4K to HD, clear images 3 and 4
                 if (previousModel === 'gemini-3-pro-image-preview' && newModel === 'gemini-2.5-flash-image') {
                   updates.connectedImage3 = undefined;
                   updates.connectedImage4 = undefined;
-                  
+
                   // Remove edges for input-3 and input-4
                   if (nodeData.onRemoveEdge) {
                     if (connectedImage3) {
@@ -593,11 +596,11 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
                       nodeData.onRemoveEdge(id, 'input-4');
                     }
                   }
-                  
+
                   setConnectedImage3(undefined);
                   setConnectedImage4(undefined);
                 }
-                
+
                 nodeData.onUpdateData(id, updates);
               }
             }}
@@ -706,7 +709,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   // Custom comparison - re-render if connected images change
   const prevData = prevProps.data as PromptNodeData;
   const nextData = nextProps.data as PromptNodeData;
-  
+
   // Normalize undefined/null values for proper comparison
   const prevImage1 = prevData.connectedImage1 ?? undefined;
   const nextImage1 = nextData.connectedImage1 ?? undefined;
@@ -716,7 +719,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   const nextImage3 = nextData.connectedImage3 ?? undefined;
   const prevImage4 = prevData.connectedImage4 ?? undefined;
   const nextImage4 = nextData.connectedImage4 ?? undefined;
-  
+
   // Normalize BrandCore connection data for comparison
   const prevLogo = prevData.connectedLogo ?? undefined;
   const nextLogo = nextData.connectedLogo ?? undefined;
@@ -724,32 +727,32 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   const nextIdentity = nextData.connectedIdentity ?? undefined;
   const prevTextDirection = prevData.connectedTextDirection ?? undefined;
   const nextTextDirection = nextData.connectedTextDirection ?? undefined;
-  
+
   // Always re-render if connected images change (including to/from undefined)
   // This ensures thumbnails are removed when edges are disconnected
-  if (prevImage1 !== nextImage1 || 
-      prevImage2 !== nextImage2 || 
-      prevImage3 !== nextImage3 || 
-      prevImage4 !== nextImage4 ||
-      prevLogo !== nextLogo ||
-      prevIdentity !== nextIdentity ||
-      prevTextDirection !== nextTextDirection) {
+  if (prevImage1 !== nextImage1 ||
+    prevImage2 !== nextImage2 ||
+    prevImage3 !== nextImage3 ||
+    prevImage4 !== nextImage4 ||
+    prevLogo !== nextLogo ||
+    prevIdentity !== nextIdentity ||
+    prevTextDirection !== nextTextDirection) {
     return false; // Re-render
   }
-  
+
   // Re-render if other important props change
   if (prevData.isLoading !== nextData.isLoading ||
-      prevData.prompt !== nextData.prompt ||
-      prevData.model !== nextData.model ||
-      prevData.aspectRatio !== nextData.aspectRatio ||
-      prevData.resolution !== nextData.resolution ||
-      prevData.isSuggestingPrompts !== nextData.isSuggestingPrompts ||
-      prevData.promptSuggestions !== nextData.promptSuggestions ||
-      prevProps.selected !== nextProps.selected ||
-      prevProps.dragging !== nextProps.dragging) {
+    prevData.prompt !== nextData.prompt ||
+    prevData.model !== nextData.model ||
+    prevData.aspectRatio !== nextData.aspectRatio ||
+    prevData.resolution !== nextData.resolution ||
+    prevData.isSuggestingPrompts !== nextData.isSuggestingPrompts ||
+    prevData.promptSuggestions !== nextData.promptSuggestions ||
+    prevProps.selected !== nextProps.selected ||
+    prevProps.dragging !== nextProps.dragging) {
     return false; // Re-render
   }
-  
+
   // Don't re-render if nothing important changed
   return true; // Skip re-render
 });

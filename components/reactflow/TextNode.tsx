@@ -7,6 +7,7 @@ import { NodeContainer } from './shared/NodeContainer';
 import { NodeHeader } from './shared/node-header';
 import { useTranslation } from '../../hooks/useTranslation';
 import { aiApi } from '../../services/aiApi';
+import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
 import { cn } from '../../lib/utils';
 import { toast } from 'sonner';
 
@@ -37,11 +38,16 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
     }
   }, [text]);
 
+  // Debounced update for data changes
+  const debouncedUpdateData = useDebouncedCallback((updates: Partial<TextNodeData>) => {
+    if (nodeData.onUpdateData) {
+      nodeData.onUpdateData(id, updates);
+    }
+  }, 500);
+
   const handleTextChange = (value: string) => {
     setText(value);
-    if (nodeData.onUpdateData) {
-      nodeData.onUpdateData(id, { text: value });
-    }
+    debouncedUpdateData({ text: value });
   };
 
   const handleImprovePrompt = async () => {
@@ -70,7 +76,7 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
     if (nodeData.onResize && typeof nodeData.onResize === 'function') {
       nodeData.onResize(id, width, height);
     }
-    
+
     setNodes((nds) => {
       return nds.map((n) => {
         if (n.id === id && n.type === 'text') {
@@ -173,13 +179,13 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
   // Custom comparison - re-render if text changes
   const prevData = prevProps.data as TextNodeData;
   const nextData = nextProps.data as TextNodeData;
-  
+
   if (prevData.text !== nextData.text ||
-      prevProps.selected !== nextProps.selected ||
-      prevProps.dragging !== nextProps.dragging) {
+    prevProps.selected !== nextProps.selected ||
+    prevProps.dragging !== nextProps.dragging) {
     return false; // Re-render
   }
-  
+
   return true; // Skip re-render
 });
 

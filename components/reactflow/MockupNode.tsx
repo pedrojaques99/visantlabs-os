@@ -7,7 +7,7 @@ import type { Mockup } from '../../services/mockupApi';
 import { cn } from '../../lib/utils';
 import { getAllPresets, getPreset, getAllPresetsAsync, clearPresetsCache } from '../../services/mockupPresetsService';
 import { MockupPresetModal } from '../MockupPresetModal';
-import { getImageUrl } from '../../utils/imageUtils';
+import { getImageUrl, isSafeUrl } from '../../utils/imageUtils';
 import { ConnectedImagesDisplay } from '../ui/ConnectedImagesDisplay';
 import { NodeHandles } from './shared/NodeHandles';
 import { LabeledHandle } from './shared/LabeledHandle';
@@ -46,7 +46,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
   // Load presets async on mount to ensure MongoDB presets (with referenceImageUrl) are available
   const [loadedPresets, setLoadedPresets] = useState<MockupPreset[]>([]);
   const [isLoadingPresets, setIsLoadingPresets] = useState(true);
-  
+
   useEffect(() => {
     const loadPresets = async () => {
       setIsLoadingPresets(true);
@@ -61,7 +61,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
         setIsLoadingPresets(false);
       }
     };
-    
+
     loadPresets();
   }, []);
 
@@ -100,10 +100,10 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
   // Load reference image URL when preset changes
   useEffect(() => {
     // Check if it's a preset or a mockup
-    const preset = typeof selectedPresetId === 'string' && !selectedPresetId.startsWith('mockup-') 
+    const preset = typeof selectedPresetId === 'string' && !selectedPresetId.startsWith('mockup-')
       ? currentPresets.find(p => p.id === selectedPresetId) || null
       : null;
-    
+
     if (preset?.referenceImageUrl && preset.referenceImageUrl.trim() !== '') {
       setReferenceImageUrl(preset.referenceImageUrl);
     } else {
@@ -227,7 +227,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
     }
 
     // Combine text direction from BrandCore with custom prompt
-    const finalPrompt = connectedTextDirection 
+    const finalPrompt = connectedTextDirection
       ? (customPrompt ? `${connectedTextDirection}\n\n${customPrompt}` : connectedTextDirection)
       : customPrompt;
 
@@ -254,7 +254,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
     if (data.onResize && typeof data.onResize === 'function') {
       data.onResize(id, width, height);
     }
-    
+
     setNodes((nds) => {
       return nds.map((n) => {
         if (n.id === id && n.type === 'mockup') {
@@ -278,7 +278,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
       dragging={dragging}
       warning={data.oversizedWarning}
       className="p-5"
-      style={{ 
+      style={{
         height: 'auto'
       }}
       onContextMenu={(e) => {
@@ -337,7 +337,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
           {selectedPreset?.referenceImageUrl ? (
             <div className="w-10 h-10 bg-zinc-900/30 border border-zinc-700/30 rounded overflow-hidden flex-shrink-0">
               <img
-                src={selectedPreset.referenceImageUrl}
+                src={isSafeUrl(selectedPreset.referenceImageUrl) ? selectedPreset.referenceImageUrl : ''}
                 alt={selectedPreset.name}
                 className="w-full h-full object-cover"
                 onError={(e) => {
@@ -477,8 +477,8 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
               <span className="text-[10px] text-[#52ddeb]">(custom)</span>
             )}
           </div>
-          <ChevronRight 
-            size={12} 
+          <ChevronRight
+            size={12}
             className={cn(
               'transition-transform duration-200',
               isPromptOpen && 'rotate-90'
@@ -502,7 +502,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
             rows={1}
           />
           <p className="text-[10px] font-mono text-zinc-500 mt-1">
-            {customPrompt && customPrompt.trim() 
+            {customPrompt && customPrompt.trim()
               ? t('canvasNodes.mockupNode.customPromptOverride')
               : t('canvasNodes.mockupNode.editPromptHint')}
           </p>
@@ -534,8 +534,8 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
               </span>
             )}
           </div>
-          <ChevronRight 
-            size={12} 
+          <ChevronRight
+            size={12}
             className={cn(
               'transition-transform duration-200',
               isColorSectionOpen && 'rotate-90'
@@ -554,12 +554,12 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                     type="text"
                     value={colorInput}
                     onChange={handleColorInputChange}
-                    onKeyDown={(e) => { 
-                      if (e.key === 'Enter') { 
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
                         e.stopPropagation();
-                        e.preventDefault(); 
-                        handleAddColor(); 
-                      } 
+                        e.preventDefault();
+                        handleAddColor();
+                      }
                     }}
                     onMouseDown={(e) => e.stopPropagation()}
                     className="w-full p-1.5 rounded-md border focus:outline-none focus:border-[#52ddeb]/50 focus:ring-0 text-xs font-mono transition-colors duration-200 pl-7 bg-zinc-900/50 border-zinc-700/50 text-zinc-400"
@@ -574,7 +574,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                     ></span>
                   )}
                 </div>
-                <button 
+                <button
                   onClick={(e) => {
                     e.stopPropagation();
                     handleAddColor();
@@ -599,7 +599,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                         style={{ backgroundColor: color }}
                       ></span>
                       <span className="font-mono text-[10px]">{color}</span>
-                      <button 
+                      <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleRemoveColor(color);
@@ -617,7 +617,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
 
             {/* Human Interaction Checkbox */}
             <div>
-              <div 
+              <div
                 className={cn(
                   "flex items-center p-1.5 rounded-md cursor-pointer border bg-zinc-900/50 border-zinc-700/50 hover:bg-zinc-800/50 transition-colors",
                   "node-interactive"
@@ -674,7 +674,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
           </>
         )}
       </button>
-      
+
       {/* Requirements hint when button is disabled */}
       {!hasConnectedImage && !isLoading && (
         <div className="mt-1.5 p-1.5 rounded border border-zinc-600/30 bg-zinc-800/20">
@@ -688,7 +688,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
       {hasResult && (data.resultImageUrl || data.resultImageBase64) && (
         <div className="mt-2 pt-2 border-t border-zinc-700/30">
           <img
-            src={data.resultImageUrl || `data:image/png;base64,${data.resultImageBase64}`}
+            src={(data.resultImageUrl && isSafeUrl(data.resultImageUrl)) ? data.resultImageUrl : (data.resultImageBase64 ? `data:image/png;base64,${data.resultImageBase64}` : '')}
             alt={t('canvasNodes.mockupNode.mockupResult')}
             className="w-full h-auto rounded"
           />
@@ -748,17 +748,17 @@ export const MockupNode = memo(MockupNodeComponent, (prevProps, nextProps) => {
   const nextConnectedIdentity = nextProps.data.connectedIdentity ?? undefined;
   const prevTextDirection = prevProps.data.connectedTextDirection ?? undefined;
   const nextTextDirection = nextProps.data.connectedTextDirection ?? undefined;
-  
+
   const connectedImageChanged = prevConnectedImage !== nextConnectedImage;
   const connectedLogoChanged = prevConnectedLogo !== nextConnectedLogo;
   const connectedIdentityChanged = prevConnectedIdentity !== nextConnectedIdentity;
   const textDirectionChanged = prevTextDirection !== nextTextDirection;
-  
+
   // If any connected data changed, force re-render
   if (connectedImageChanged || connectedLogoChanged || connectedIdentityChanged || textDirectionChanged) {
     return false; // Re-render
   }
-  
+
   // Otherwise, check other props
   return (
     prevProps.id === nextProps.id &&
