@@ -13,8 +13,8 @@
 - **Budget Management**: Plan and track design budgets
 - **Real-time Collaboration**: Work together on canvas projects (optional)
 - **Multiple Export Formats**: Export as images, PDFs, and more
-- **Mockup Machine**: Generate instant mockups for your design projects   
-- **Strategy Machine**: Generate strategie content and insights for your branding projects   
+- **Mockup Machine**: Generate instant mockups for your design projects
+- **Strategy Machine**: Generate strategy content and insights for your branding projects
 
 ## Quick Start
 
