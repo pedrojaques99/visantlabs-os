@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import { useNavigate, useBlocker, useLocation } from 'react-router-dom';
 import { Menu, Pickaxe } from 'lucide-react';
 import { ImageUploader } from '../components/ui/ImageUploader';
+import { normalizeImageToBase64, detectMimeType } from '../services/reactFlowService';
 import { MockupDisplay } from '../components/mockupmachine/MockupDisplay';
 import { FullScreenViewer } from '../components/FullScreenViewer';
 import { WelcomeScreen } from './WelcomeScreen';
@@ -1263,9 +1264,13 @@ export const MockupMachinePage: React.FC = () => {
     setIsLoading(true);
 
     try {
+      // Normalize image to base64 (handles URLs correctly)
+      const normalizedBase64 = await normalizeImageToBase64(base64Image);
+      const mimeType = detectMimeType(base64Image);
+
       const referenceImage: UploadedImage = {
-        base64: base64Image,
-        mimeType: 'image/png'
+        base64: normalizedBase64,
+        mimeType: mimeType
       };
 
       // Compress reference image if needed to prevent payload too large errors

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { X, FileText, ChevronDown, ChevronUp, Edit, Pickaxe, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, MapPin, RefreshCw, Pencil, Heart } from 'lucide-react';
 import type { Mockup } from '../services/mockupApi';
-import { getImageUrl } from '../utils/imageUtils';
+import { getImageUrl, isSafeUrl } from '../utils/imageUtils';
 import { translateTag } from '../utils/localeUtils';
 import { SkeletonLoader } from './ui/SkeletonLoader';
 import { AngleSelector } from './mockupmachine/AngleSelector';
@@ -125,16 +125,6 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
         : '';
 
   // Sanitize the URL to prevent XSS
-  const isSafeUrl = (url: string) => {
-    if (!url) return false;
-    const lowerUrl = url.toLowerCase();
-    return lowerUrl.startsWith('http://') ||
-      lowerUrl.startsWith('https://') ||
-      lowerUrl.startsWith('data:') ||
-      lowerUrl.startsWith('blob:') ||
-      lowerUrl.startsWith('/');
-  };
-
   const safeImageUrl = isSafeUrl(finalImageUrl) ? finalImageUrl : '';
 
   const hasImage = !!safeImageUrl;

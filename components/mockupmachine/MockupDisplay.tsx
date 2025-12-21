@@ -7,6 +7,7 @@ import { Tooltip } from '../ui/Tooltip';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ReImaginePanel } from '../ReImaginePanel';
 import { useMockupLike } from '../../hooks/useMockupLike';
+import { isSafeUrl } from '../../utils/imageUtils';
 
 type AspectRatio = '16:9' | '4:3' | '1:1';
 
@@ -160,8 +161,11 @@ const MockupCard: React.FC<{
 
   const imageUrl = useMemo(() => {
     if (!base64Image) return '';
-    if (base64Image.startsWith('http') || base64Image.startsWith('data:')) return base64Image;
-    return `data:image/png;base64,${base64Image}`;
+    if (base64Image.startsWith('http') || base64Image.startsWith('data:')) {
+      return isSafeUrl(base64Image) ? base64Image : '';
+    }
+    const dataUrl = `data:image/png;base64,${base64Image}`;
+    return isSafeUrl(dataUrl) ? dataUrl : '';
   }, [base64Image]);
   const canInteract = !isLoading && base64Image;
   const showSkeleton = isLoading && !base64Image;
