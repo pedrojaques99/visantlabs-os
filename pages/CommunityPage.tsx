@@ -83,7 +83,12 @@ export const CommunityPage: React.FC = () => {
         // Store latest mockups
         // Sort by date (newest first) and take top 5
         const sortedMockups = (publicMockups || [])
-          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .filter((mockup: any) => mockup?._id && (mockup.imageUrl || mockup.imageBase64))
+          .sort((a: any, b: any) => {
+            const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return dateB - dateA;
+          })
           .slice(0, 5);
         setCommunityMockups(sortedMockups);
 
