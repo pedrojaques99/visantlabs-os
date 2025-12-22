@@ -60,12 +60,13 @@ export const CreditRechargeSuccessPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isVerifyingCredits, setIsVerifyingCredits] = useState(true);
   const [creditsPurchased, setCreditsPurchased] = useState<number | null>(null);
+  const [previousCredits, setPreviousCredits] = useState<number | null>(null);
 
   useEffect(() => {
     // Get credits from URL query parameter
     const urlParams = new URLSearchParams(window.location.search);
     const creditsParam = urlParams.get('credits');
-    
+
     let purchasedCredits: number | null = null;
     if (creditsParam) {
       const credits = parseInt(creditsParam, 10);
@@ -88,24 +89,25 @@ export const CreditRechargeSuccessPage: React.FC = () => {
         try {
           const status = await subscriptionService.getSubscriptionStatus();
           const startingCredits = status.totalCreditsEarned ?? 0;
+          setPreviousCredits(startingCredits); // Store initial credits
           setSubscriptionStatus(status);
           setIsLoading(false);
-          
+
           // Start polling to verify credits were added
           if (purchasedCredits) {
             setIsVerifyingCredits(true);
-            
+
             let pollCount = 0;
             const maxPolls = 10; // 10 polls * 1 second = 10 seconds total
             const pollInterval = 1000; // 1 second
-            
+
             pollCreditsInterval = setInterval(async () => {
               pollCount++;
-              
+
               try {
                 const status = await subscriptionService.getSubscriptionStatus();
                 const currentCredits = status.totalCreditsEarned ?? 0;
-                
+
                 // If credits increased, payment was successful
                 if (currentCredits > startingCredits) {
                   console.log('✅ Credits updated successfully:', {
@@ -118,7 +120,7 @@ export const CreditRechargeSuccessPage: React.FC = () => {
                   setIsVerifyingCredits(false);
                   return;
                 }
-                
+
                 // If we've polled max times, stop polling
                 if (pollCount >= maxPolls) {
                   console.log('⏱️ Credit update polling timeout - webhook may still be processing');
@@ -171,7 +173,7 @@ export const CreditRechargeSuccessPage: React.FC = () => {
 
   const totalCredits = subscriptionStatus?.totalCredits ?? 0;
   const creditsConfirmed = !isVerifyingCredits && subscriptionStatus !== null;
-  
+
   // Animated values - only animate when credits are confirmed
   const animatedCreditsPurchased = useCountAnimation(creditsConfirmed && creditsPurchased ? creditsPurchased : 0, 1000);
   const animatedTotalCredits = useCountAnimation(creditsConfirmed ? totalCredits : 0, 1200);
@@ -189,15 +191,15 @@ export const CreditRechargeSuccessPage: React.FC = () => {
               <CheckCircle size={80} className="text-[#52ddeb] relative" />
             </div>
           </div>
-          
+
           <h1 className="text-4xl md:text-5xl font-bold font-mono text-zinc-200 mb-4 uppercase">
             {t('creditRechargeSuccess.title')}
           </h1>
-          
+
           <p className="text-zinc-400 font-mono text-base md:text-lg mb-2">
             {t('creditRechargeSuccess.subtitle')}
           </p>
-          
+
           {isCheckingAuth || isLoading ? (
             <div className="flex items-center justify-center gap-2 mt-4">
               <Loader2 size={20} className="animate-spin text-[#52ddeb]" />
@@ -214,7 +216,7 @@ export const CreditRechargeSuccessPage: React.FC = () => {
 
         {creditsConfirmed && (
           <div className="bg-black/95 backdrop-blur-xl border border-zinc-800/50 rounded-md p-6 mb-8">
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center gap-3 mb-6">
               <Pickaxe size={24} className="text-[#52ddeb]" />
               <h2 className="text-xl font-semibold font-mono text-zinc-200">
                 {t('creditRechargeSuccess.creditsPurchased')}
@@ -234,12 +236,32 @@ export const CreditRechargeSuccessPage: React.FC = () => {
               </div>
             )}
 
-            <div className="pt-6 border-t border-zinc-800/50">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-zinc-400 font-mono text-sm">
+            <div className="space-y-3 pt-6 border-t border-zinc-800/50">
+              {/* Previous Credits */}
+              {previousCredits !== null && (
+                <div className="flex items-center justify-between p-3 bg-zinc-900/50 rounded-md">
+                  <span className="text-zinc-400 font-mono text-sm">
+                    {t('creditRechargeSuccess.previousCredits')}
+                  </span>
+                  <span className="text-zinc-300 font-mono font-semibold text-lg">
+                    {previousCredits} {t('creditsPackages.credits')}
+                  </span>
+                </div>
+              )}
+
+              {/* Arrow indicator */}
+              {previousCredits !== null && (
+                <div className="flex justify-center">
+                  <ArrowRight size={20} className="text-[#52ddeb]/50 rotate-90" />
+                </div>
+              )}
+
+              {/* Total Credits */}
+              <div className="flex items-center justify-between p-3 bg-[#52ddeb]/5 border border-[#52ddeb]/20 rounded-md">
+                <span className="text-zinc-300 font-mono text-sm font-semibold">
                   {t('creditRechargeSuccess.totalCredits')}
                 </span>
-                <span className="text-[#52ddeb] font-mono font-semibold text-lg">
+                <span className="text-[#52ddeb] font-mono font-bold text-xl">
                   {animatedTotalCredits} {t('creditsPackages.credits')}
                 </span>
               </div>
