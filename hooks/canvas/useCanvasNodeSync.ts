@@ -26,7 +26,7 @@ export const useCanvasNodeSync = ({
 
   useEffect(() => {
     if (isUpdatingNodesRef.current) return;
-    
+
     setNodes((nds: Node<FlowNodeData>[]) => {
       let hasChanges = false;
       const updatedNodes = nds.map((n: Node<FlowNodeData>) => {
@@ -36,10 +36,10 @@ export const useCanvasNodeSync = ({
           const connectedEdge = edges.find(e => e.target === n.id);
           const sourceNode = connectedEdge ? nds.find(n => n.id === connectedEdge.source) : null;
           const hasConnectedImage = sourceNode?.type === 'image' || sourceNode?.type === 'output';
-          
+
           if (hasConnectedImage && connectedEdge && sourceNode) {
             const imageBase64 = getImageBase64FromNode(sourceNode);
-            
+
             if (imageBase64 && (!editData.uploadedImage || editData.uploadedImage.base64 !== imageBase64)) {
               hasChanges = true;
               return {
@@ -55,19 +55,19 @@ export const useCanvasNodeSync = ({
             }
           }
         }
-        
+
         // Sync MockupNode
         if (n.type === 'mockup') {
           const mockupData = n.data as MockupNodeData;
           const updates: Partial<MockupNodeData> = {};
           let nodeHasChanges = false;
-          
-          const brandCoreEdge = edges.find(e => 
-            e.target === n.id && 
-            e.source && 
+
+          const brandCoreEdge = edges.find(e =>
+            e.target === n.id &&
+            e.source &&
             nds.find(src => src.id === e.source)?.type === 'brandCore'
           );
-          
+
           if (!brandCoreEdge) {
             if (mockupData.connectedLogo) {
               updates.connectedLogo = undefined;
@@ -81,18 +81,18 @@ export const useCanvasNodeSync = ({
               updates.connectedTextDirection = undefined;
               nodeHasChanges = true;
             }
-            
-            const imageEdge = edges.find(e => 
-              e.target === n.id && 
-              e.source && 
-              (nds.find(src => src.id === e.source)?.type === 'image' || 
-               nds.find(src => src.id === e.source)?.type === 'output')
+
+            const imageEdge = edges.find(e =>
+              e.target === n.id &&
+              e.source &&
+              (nds.find(src => src.id === e.source)?.type === 'image' ||
+                nds.find(src => src.id === e.source)?.type === 'output')
             );
-            
+
             if (imageEdge) {
               const sourceNode = nds.find(src => src.id === imageEdge.source);
               const imageUrl = sourceNode ? getImageUrlFromNode(sourceNode) : undefined;
-              
+
               if (imageUrl && imageUrl.length > 0 && mockupData.connectedImage !== imageUrl) {
                 updates.connectedImage = imageUrl;
                 nodeHasChanges = true;
@@ -102,7 +102,7 @@ export const useCanvasNodeSync = ({
               nodeHasChanges = true;
             }
           }
-          
+
           if (nodeHasChanges && Object.keys(updates).length > 0) {
             hasChanges = true;
             return {
@@ -114,19 +114,19 @@ export const useCanvasNodeSync = ({
             } as Node<FlowNodeData>;
           }
         }
-        
+
         // Sync PromptNode
         if (n.type === 'prompt') {
           const promptData = n.data as PromptNodeData;
           const updates: Partial<PromptNodeData> = {};
           let nodeHasChanges = false;
-          
-          const brandCoreEdge = edges.find(e => 
-            e.target === n.id && 
-            e.source && 
+
+          const brandCoreEdge = edges.find(e =>
+            e.target === n.id &&
+            e.source &&
             nds.find(src => src.id === e.source)?.type === 'brandCore'
           );
-          
+
           if (!brandCoreEdge) {
             if (promptData.connectedLogo) {
               updates.connectedLogo = undefined;
@@ -143,13 +143,13 @@ export const useCanvasNodeSync = ({
           }
 
           // Sync text from connected TextNode
-          const textEdge = edges.find(e => 
-            e.target === n.id && 
+          const textEdge = edges.find(e =>
+            e.target === n.id &&
             e.targetHandle === 'text-input' &&
             e.source &&
             nds.find(src => src.id === e.source)?.type === 'text'
           );
-          
+
           if (textEdge) {
             const textNode = nds.find(src => src.id === textEdge.source);
             if (textNode?.type === 'text') {
@@ -174,7 +174,7 @@ export const useCanvasNodeSync = ({
               nodeHasChanges = true;
             }
           }
-          
+
           if (nodeHasChanges && Object.keys(updates).length > 0) {
             hasChanges = true;
             return {
@@ -186,17 +186,17 @@ export const useCanvasNodeSync = ({
             } as Node<FlowNodeData>;
           }
         }
-        
+
         // Sync AngleNode
         if (n.type === 'angle') {
           const angleData = n.data as AngleNodeData;
           const connectedEdge = edges.find(e => e.target === n.id);
           const sourceNode = connectedEdge ? nds.find(n => n.id === connectedEdge.source) : null;
           const hasConnectedImage = sourceNode?.type === 'image' || sourceNode?.type === 'output';
-          
+
           if (hasConnectedImage && connectedEdge && sourceNode) {
             const imageUrl = getImageUrlFromNode(sourceNode);
-            
+
             if (imageUrl && imageUrl.length > 0 && angleData.connectedImage !== imageUrl) {
               hasChanges = true;
               return {
@@ -225,10 +225,10 @@ export const useCanvasNodeSync = ({
           const connectedEdge = edges.find(e => e.target === n.id && e.targetHandle === 'input-image');
           const sourceNode = connectedEdge ? nds.find(n => n.id === connectedEdge.source) : null;
           const hasConnectedImage = sourceNode?.type === 'image' || sourceNode?.type === 'output';
-          
+
           if (hasConnectedImage && connectedEdge && sourceNode) {
             const imageUrl = getImageUrlFromNode(sourceNode);
-            
+
             if (imageUrl && imageUrl.length > 0 && videoData.connectedImage !== imageUrl) {
               hasChanges = true;
               return {
@@ -256,9 +256,9 @@ export const useCanvasNodeSync = ({
           const shaderData = n.data as ShaderNodeData;
           const connectedEdge = edges.find(e => e.target === n.id);
           const sourceNode = connectedEdge ? nds.find(n => n.id === connectedEdge.source) : null;
-          
+
           let newConnectedImage: string | undefined = undefined;
-          
+
           if (sourceNode) {
             // Check for image from ImageNode or OutputNode
             if (sourceNode.type === 'image' || sourceNode.type === 'output') {
@@ -290,7 +290,7 @@ export const useCanvasNodeSync = ({
               newConnectedImage = outputData.resultVideoUrl || outputData.resultVideoBase64;
             }
           }
-          
+
           if (shaderData.connectedImage !== newConnectedImage) {
             hasChanges = true;
             return {
@@ -308,9 +308,9 @@ export const useCanvasNodeSync = ({
           const upscaleBicubicData = n.data as UpscaleBicubicNodeData;
           const connectedEdge = edges.find(e => e.target === n.id);
           const sourceNode = connectedEdge ? nds.find(n => n.id === connectedEdge.source) : null;
-          
+
           let newConnectedImage: string | undefined = undefined;
-          
+
           if (sourceNode) {
             // Check for image from ImageNode or OutputNode
             if (sourceNode.type === 'image' || sourceNode.type === 'output') {
@@ -335,7 +335,7 @@ export const useCanvasNodeSync = ({
               newConnectedImage = outputData.resultVideoUrl || outputData.resultVideoBase64;
             }
           }
-          
+
           if (upscaleBicubicData.connectedImage !== newConnectedImage) {
             hasChanges = true;
             return {
@@ -484,13 +484,13 @@ export const useCanvasNodeSync = ({
           const updates: Partial<ColorExtractorNodeData> = {};
           let nodeHasChanges = false;
 
-          const imageEdge = edges.find(e => 
-            e.target === n.id && 
+          const imageEdge = edges.find(e =>
+            e.target === n.id &&
             e.targetHandle === 'image-input' &&
-            e.source && 
-            (nds.find(src => src.id === e.source)?.type === 'image' || 
-             nds.find(src => src.id === e.source)?.type === 'output' ||
-             nds.find(src => src.id === e.source)?.type === 'logo')
+            e.source &&
+            (nds.find(src => src.id === e.source)?.type === 'image' ||
+              nds.find(src => src.id === e.source)?.type === 'output' ||
+              nds.find(src => src.id === e.source)?.type === 'logo')
           );
 
           if (imageEdge) {
@@ -595,7 +595,7 @@ export const useCanvasNodeSync = ({
           imageHandles.forEach((handleId, index) => {
             const imageEdge = connectedEdges.find(e => e.targetHandle === handleId);
             const fieldName = `connectedImage${index + 1}` as 'connectedImage1' | 'connectedImage2' | 'connectedImage3' | 'connectedImage4';
-            
+
             if (imageEdge) {
               const sourceNode = nds.find(src => src.id === imageEdge.source);
               let imageBase64: string | undefined = undefined;
@@ -644,19 +644,19 @@ export const useCanvasNodeSync = ({
             } as Node<FlowNodeData>;
           }
         }
-        
+
         return n;
       });
-      
+
       if (!hasChanges) {
         return nds;
       }
-      
+
       isUpdatingNodesRef.current = true;
       setTimeout(() => {
         isUpdatingNodesRef.current = false;
       }, 0);
-      
+
       return updatedNodes;
     });
   }, [edges, setNodes]);

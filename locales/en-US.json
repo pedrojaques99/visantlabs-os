@@ -96,7 +96,44 @@
     "failedToSaveImage": "Failed to save image",
     "profileUpdatedSuccess": "Profile updated successfully",
     "failedToReloadProfile": "Failed to reload profile",
-    "dismissMessage": "Dismiss message"
+    "dismissMessage": "Dismiss message",
+    "tabs": {
+      "overview": "Dashboard",
+      "history": "History",
+      "configuration": "Configuration"
+    },
+    "loadError": "Failed to load profile",
+    "notAuthenticated": "Please sign in to view your profile",
+    "selectImageFile": "Please select an image file",
+    "imageSizeLimit": "Image too large. Limit is 5MB",
+    "pictureUploadError": "Failed to upload profile picture",
+    "pictureUploadSuccess": "Profile picture updated successfully",
+    "breadcrumb": "Profile",
+    "subtitle": "Manage your account and subscription"
+  },
+  "communityPresets": {
+    "title": "Community Presets"
+  },
+  "usageHistory": {
+    "title": "Usage History",
+    "subtitle": "Visualize your usage history and credit consumption",
+    "noRecords": "No usage records found",
+    "totalRecords": "Total Records",
+    "totalCreditsUsed": "Credits Used",
+    "mockupMachine": "Mockup Machine",
+    "canvas": "Canvas",
+    "brandingMachine": "Branding Machine",
+    "all": "All",
+    "details": "History Details",
+    "date": "Date",
+    "feature": "Feature",
+    "credits": "Credits",
+    "model": "Model",
+    "showing": "Showing",
+    "of": "of",
+    "previous": "Previous",
+    "next": "Next",
+    "loadError": "Failed to load usage history"
   },
   "header": {
     "pricing": "Pricing",
@@ -408,6 +445,7 @@
     "credits": "{remaining}/{total} credits",
     "renews": "Renews {date}",
     "resets": "Resets {date}",
+    "portalError": "Failed to open subscription portal",
     "failedToOpen": "Failed to open subscription management. Please try again."
   },
   "credits": {
@@ -454,6 +492,42 @@
     "support": "Need help? Contact us.",
     "verifying": "Verifying credits...",
     "loading": "Loading..."
+  },
+  "profile": {
+    "title": "Profile",
+    "subtitle": "Manage your account and subscription",
+    "name": "Your name",
+    "uploadPicture": "Click to upload picture",
+    "edit": "Edit profile",
+    "viewPublicProfile": "View Public Profile",
+    "myMockups": "My Mockups",
+    "totalCreditsUsed": "USED",
+    "viewAllTransactions": "Transactions",
+    "manageSubscription": "Manage",
+    "noSubscriptionData": "Subscription data unavailable.",
+    "breadcrumb": "Profile",
+    "loadError": "Failed to load profile",
+    "notAuthenticated": "Please sign in to view your profile",
+    "selectImageFile": "Please select an image file",
+    "imageSizeLimit": "Image too large. Limit is 5MB",
+    "pictureUploadError": "Failed to upload profile picture",
+    "pictureUploadSuccess": "Profile picture updated successfully",
+    "tabs": {
+      "overview": "Dashboard",
+      "history": "History",
+      "configuration": "Configuration"
+    }
+  },
+  "referral": {
+    "title": "REFERRAL",
+    "description": "Share your link and earn bonus credits when friends join.",
+    "yourLink": "YOUR REFERRAL LINK",
+    "friendsReferred": "FRIENDS REFERRED",
+    "totalEarned": "TOTAL CREDITS EARNED",
+    "generating": "Generating code...",
+    "noCode": "Referral code not available",
+    "linkCopied": "Referral link copied!",
+    "copyFailed": "Failed to copy link"
   },
   "auth": {
     "signIn": "SIGN IN",
@@ -518,18 +592,25 @@
   },
   "configuration": {
     "title": "Configuration",
+    "subtitle": "Manage your API keys and external connections",
     "geminiApiKey": "Gemini API Key",
     "apiKeyPlaceholder": "Enter your Gemini API key",
-    "save": "Save",
-    "delete": "Delete Key",
-    "deleteConfirm": "Are you sure you want to delete your API key?",
+    "save": "Save Changes",
+    "delete": "Remove Key",
+    "deleteConfirmTitle": "Delete API Key",
+    "deleteConfirmMessage": "Are you sure you want to delete your API key? You'll need to enter it again to use your own quota.",
     "saved": "API key saved successfully",
-    "deleted": "API key deleted successfully",
+    "deleted": "API key removed successfully",
     "error": "Failed to save API key",
-    "getApiKey": "Get your API key from Google AI Studio",
-    "policyLink": "Read security policy",
+    "saveError": "Failed to save API key",
+    "deleteError": "Failed to remove API key",
+    "emptyError": "API key cannot be empty",
+    "getApiKey": "Get key",
+    "policyLink": "Security & Privacy Policy",
     "warning": "Your API key is encrypted and stored securely. Only you can access it.",
-    "info": "Using your own API key allows you to use your own quota and credits from Google."
+    "privateKey": "Your key is kept private",
+    "info": "Using your own API key allows you to use your own quota and credits from Google.",
+    "updateHint": "To update, just paste your new key above."
   },
   "errors": {
     "completeSteps": "Please complete all steps before generating.",
@@ -2686,5 +2767,44 @@
     "remaining": "Remaining",
     "of": "of",
     "unavailable": "Storage information not available"
+  },
+  "profile": {
+    "seoTitle": "Profile",
+    "seoDescription": "Manage your profile and settings",
+    "authenticationRequired": "Authentication required",
+    "title": "Profile",
+    "subtitle": "Manage your account and subscription",
+    "name": "Your name",
+    "uploadPicture": "Click to upload picture",
+    "edit": "Edit profile",
+    "viewPublicProfile": "View Public Profile",
+    "myMockups": "My Mockups",
+    "totalCreditsUsed": "USED",
+    "viewAllTransactions": "Transactions",
+    "manageSubscription": "Manage",
+    "noSubscriptionData": "Subscription data unavailable.",
+    "breadcrumb": "Profile",
+    "loadError": "Failed to load profile",
+    "notAuthenticated": "Please sign in to view your profile",
+    "selectImageFile": "Please select an image file",
+    "imageSizeLimit": "Image too large. Limit is 5MB",
+    "pictureUploadError": "Failed to upload profile picture",
+    "pictureUploadSuccess": "Profile picture updated successfully",
+    "tabs": {
+      "overview": "Dashboard",
+      "history": "History",
+      "configuration": "Configuration"
+    }
+  },
+  "referral": {
+    "title": "REFERRAL",
+    "description": "Share your link and earn bonus credits when friends join.",
+    "yourLink": "YOUR REFERRAL LINK",
+    "friendsReferred": "FRIENDS REFERRED",
+    "totalEarned": "TOTAL CREDITS EARNED",
+    "generating": "Generating code...",
+    "noCode": "Referral code not available",
+    "linkCopied": "Referral link copied!",
+    "copyFailed": "Failed to copy link"
   }
 }

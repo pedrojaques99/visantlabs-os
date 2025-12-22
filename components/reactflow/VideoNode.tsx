@@ -1,220 +1,395 @@
-import React, { useState, useEffect, memo, useRef } from 'react';
-import { Handle, Position, type NodeProps } from '@xyflow/react';
-import { Loader2, Video, Image as ImageIcon, X } from 'lucide-react';
-import type { VideoNodeData } from '../../types/reactFlow';
+import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
+import { type NodeProps, useReactFlow, NodeResizer, Position } from '@xyflow/react';
+import { Loader2, Clapperboard, Video as VideoIcon, Image as ImageIcon, Settings, ChevronRight } from 'lucide-react';
+import type { VideoNodeData, GenerateVideoParams } from '../../types/reactFlow';
+import { VeoModel, GenerationMode, Resolution, AspectRatio } from '../../types';
 import { cn } from '../../lib/utils';
-import { PromptInput } from '../PromptInput';
-import { GlitchLoader } from '../ui/GlitchLoader';
 import { NodeContainer } from './shared/NodeContainer';
-import { NodeLabel } from './shared/node-label';
 import { NodeHeader } from './shared/node-header';
+import { NodeLabel } from './shared/node-label';
 import { Select } from '../ui/select';
+import { LabeledHandle } from './shared/LabeledHandle';
+import { PromptInput } from '../PromptInput';
+import { AspectRatioSelector } from './shared/AspectRatioSelector';
+import { ResolutionSelector } from './shared/ResolutionSelector';
 import { useTranslation } from '../../hooks/useTranslation';
-import { getImageUrl } from '../../utils/imageUtils';
-import { getVideoCreditsRequired } from '../../utils/creditCalculator';
+import { Switch } from '../ui/switch';
+import { ConnectedImagesDisplay } from '../ui/ConnectedImagesDisplay';
+import { GlitchLoader } from '../ui/GlitchLoader';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const VideoNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
+const VideoNodeComponent: React.FC<NodeProps<VideoNodeData>> = ({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
-  const nodeData = data as VideoNodeData;
-  const [prompt, setPrompt] = useState(nodeData.prompt || '');
-  const [model, setModel] = useState<string>(nodeData.model || 'veo-3.1-generate-preview');
-  const [connectedImage, setConnectedImage] = useState<string | undefined>(nodeData.connectedImage);
+  const { setNodes } = useReactFlow();
+
+  // State initialization
+  const [prompt, setPrompt] = useState(data.prompt || '');
+  const [negativePrompt, setNegativePrompt] = useState(data.negativePrompt || '');
+  const [model, setModel] = useState<string>(data.model || VeoModel.VEO_3_1);
+  const [mode, setMode] = useState<GenerationMode>(data.mode || GenerationMode.TEXT_TO_VIDEO);
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>(data.aspectRatio || '16:9');
+  const [resolution, setResolution] = useState<Resolution>(data.resolution || '1080p');
+  const [duration, setDuration] = useState<string>(data.duration || '5s');
+  const [isLooping, setIsLooping] = useState<boolean>(data.isLooping || false);
+  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  
-  const isLoading = nodeData.isLoading || false;
-  const hasConnectedImage = !!connectedImage;
-  const creditsRequired = getVideoCreditsRequired();
-  
 
-  // Sync prompt and model with data
+  // Sync with data
   useEffect(() => {
-    if (nodeData.prompt !== undefined) {
-      setPrompt(nodeData.prompt);
+    if (data.prompt !== prompt) setPrompt(data.prompt || '');
+    if (data.negativePrompt !== negativePrompt) setNegativePrompt(data.negativePrompt || '');
+    if (data.model && data.model !== model) setModel(data.model);
+    if (data.mode && data.mode !== mode) setMode(data.mode);
+    if (data.aspectRatio && data.aspectRatio !== aspectRatio) setAspectRatio(data.aspectRatio);
+    if (data.resolution && data.resolution !== resolution) setResolution(data.resolution);
+    if (data.duration && data.duration !== duration) setDuration(data.duration);
+    if (data.isLooping !== undefined && data.isLooping !== isLooping) setIsLooping(data.isLooping);
+
+    // Sync connected text if no manual prompt
+    if (data.connectedText && !data.prompt) {
+      setPrompt(data.connectedText);
     }
-  }, [nodeData.prompt]);
+  }, [data]);
 
-  useEffect(() => {
-    if (nodeData.model) {
-      setModel(nodeData.model);
-    }
-  }, [nodeData.model]);
-
-  useEffect(() => {
-    setConnectedImage(nodeData.connectedImage);
-  }, [nodeData.connectedImage]);
-
-  const handlePromptChange = (value: string) => {
-    setPrompt(value);
-    if (nodeData.onUpdateData) {
-      nodeData.onUpdateData(id, { prompt: value });
+  const updateData = (updates: Partial<VideoNodeData>) => {
+    if (data.onUpdateData) {
+      data.onUpdateData(id, updates);
     }
   };
 
   const handleGenerate = async () => {
-    if (!nodeData.onGenerate || !prompt.trim()) {
-      return;
-    }
+    if (!data.onGenerate) return;
 
-    // Update model in node data if changed
-    if (nodeData.onUpdateData && model !== nodeData.model) {
-      nodeData.onUpdateData(id, { model });
-    }
+    // Check required inputs based on mode
+    let missingInput = false;
+    if (mode === GenerationMode.FRAMES_TO_VIDEO && !data.connectedImage1) missingInput = true;
+    if (mode === GenerationMode.EXTEND_VIDEO && !data.connectedVideo) missingInput = true;
+    if (missingInput) return; // Add visual feedback/toast here ideally
 
-    await nodeData.onGenerate(id, prompt.trim(), connectedImage, model);
+    const params: GenerateVideoParams = {
+      nodeId: id,
+      prompt,
+      negativePrompt,
+      model,
+      mode,
+      aspectRatio,
+      resolution,
+      duration,
+      isLooping,
+      // Connected inputs are handled in the hook
+    };
+
+    await data.onGenerate(params);
   };
 
-  const handleImageRemove = () => {
-    if (nodeData.onUpdateData) {
-      nodeData.onUpdateData(id, { connectedImage: undefined });
+  // Resize handler
+  const handleResize = useCallback((width: number, height: number) => {
+    if (data.onResize && typeof data.onResize === 'function') data.onResize(id, width, height);
+    setNodes((nds) => nds.map((n) => {
+      if (n.id === id && n.type === 'video') {
+        return { ...n, style: { ...n.style, width, height } };
+      }
+      return n;
+    }));
+  }, [id, data, setNodes]);
+
+  // Derived states
+  const isLoading = data.isLoading || false;
+  const creditsRequired = 15; // Hardcoded for now as per current logic
+
+  const getInputLabel = (index: number) => {
+    if (mode === GenerationMode.FRAMES_TO_VIDEO) {
+      if (index === 1) return t('Start Frame');
+      if (index === 2) return t('End Frame');
     }
-    setConnectedImage(undefined);
+    if (mode === GenerationMode.EXTEND_VIDEO) {
+      if (index === 1) return t('Input Video');
+    }
+    if (mode === GenerationMode.REFERENCES) {
+      return `${t('Reference')} ${index}`;
+    }
+    return `${t('Input')} ${index}`;
   };
 
-  const getImageDisplayUrl = (image: string): string => {
-    if (image.startsWith('data:') || image.startsWith('http')) {
-      return image;
-    }
-    return getImageUrl({ id: image } as any);
-  };
+  // Connected Images Visualization
+  const connectedImages = [
+    data.connectedImage1,
+    data.connectedImage2,
+    data.connectedImage3,
+    data.connectedImage4
+  ].filter(Boolean) as string[];
+
+  // Determine handles based on mode
+  const showSecondHandle = mode === GenerationMode.FRAMES_TO_VIDEO || mode === GenerationMode.REFERENCES;
+  const showHandles3and4 = mode === GenerationMode.REFERENCES;
 
   return (
     <NodeContainer
       selected={selected}
       dragging={dragging}
-      className="p-5 min-w-[320px]"
-      onContextMenu={(e) => {
-        // Allow ReactFlow to handle the context menu event
-      }}
+      className="p-0 min-w-[320px] max-w-[400px]"
     >
-      {/* Input Handle for Image */}
-      <Handle
-        type="target"
-        position={Position.Left}
-        id="input-image"
-        className="w-2 h-2 bg-[#52ddeb] border-2 border-black node-handle handle-top-50"
-      />
-
-      {/* Header */}
-      <NodeHeader icon={Video} title={t('canvasNodes.videoNode.title') || 'Video Generator'} />
-
-      {/* Connected Image Display */}
-      {hasConnectedImage && (
-        <div className="mb-4">
-          <NodeLabel>
-            {t('canvasNodes.videoNode.referenceImage') || 'Reference Image'}
-          </NodeLabel>
-          <div className="relative group">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleImageRemove();
-              }}
-              onMouseDown={(e) => e.stopPropagation()}
-              className="absolute top-0 right-0 w-5 h-5 bg-red-500/80 hover:bg-red-500 border border-black rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
-            >
-              <X size={10} className="text-white" strokeWidth={3} />
-            </button>
-            <img
-              src={getImageDisplayUrl(connectedImage)}
-              alt={t('common.reference')}
-              className="w-full h-32 object-cover rounded border border-[#52ddeb]/30"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-              }}
-            />
-          </div>
-        </div>
+      {selected && !dragging && (
+        <NodeResizer
+          color="#52ddeb"
+          isVisible={selected}
+          minWidth={320}
+          minHeight={300}
+          onResize={(_, { width, height }) => handleResize(width, height)}
+        />
       )}
 
-      {/* Prompt Input */}
-      <div className="mb-4">
-        <PromptInput
-          value={prompt}
-          onChange={handlePromptChange}
-          onSubmit={handleGenerate}
-          placeholder={t('canvasNodes.videoNode.promptPlaceholder') || 'Describe the video you want to generate...'}
-          disabled={isLoading}
-          className="w-full"
-          textareaRef={textareaRef}
-        />
-      </div>
-
-      {/* Model Selector */}
-      <Select
-        value={model}
-        onChange={(value) => {
-          const newModel = value as string;
-          setModel(newModel);
-          if (nodeData.onUpdateData) {
-            nodeData.onUpdateData(id, { model: newModel });
-          }
-        }}
-        variant="node"
-        disabled={isLoading}
-        onMouseDown={(e) => {
-          e.stopPropagation();
-        }}
-        className="mb-4"
-        options={[
-          { value: 'veo-3.1-generate-preview', label: 'Veo 3.1' }
-        ]}
+      {/* Handles */}
+      <LabeledHandle type="target" position={Position.Left} id="text-input" label={t('Prompt')} handleType="text" style={{ top: '60px' }} />
+      <LabeledHandle
+        type="target"
+        position={Position.Left}
+        id="input-1"
+        label={getInputLabel(1)}
+        handleType={mode === GenerationMode.EXTEND_VIDEO ? 'video' : 'image'}
+        style={{ top: '100px' }}
       />
 
-      {/* Generate Video Button */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          handleGenerate();
-        }}
-        onMouseDown={(e) => {
-          e.stopPropagation();
-        }}
-        disabled={isLoading || !prompt.trim()}
-        className={cn(
-          'w-full px-3 py-2 bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 border border-[#52ddeb]/30 rounded text-xs font-mono text-[#52ddeb] transition-colors flex items-center justify-center gap-3 node-interactive',
-          (isLoading || !prompt.trim()) ? 'opacity-50 node-button-disabled' : 'node-button-enabled'
+      {showSecondHandle && (
+        <LabeledHandle type="target" position={Position.Left} id="input-2" label={getInputLabel(2)} handleType="image" style={{ top: '140px' }} />
+      )}
+      {showHandles3and4 && (
+        <>
+          <LabeledHandle type="target" position={Position.Left} id="input-3" label={getInputLabel(3)} handleType="image" style={{ top: '180px' }} />
+          <LabeledHandle type="target" position={Position.Left} id="input-4" label={getInputLabel(4)} handleType="image" style={{ top: '220px' }} />
+        </>
+      )}
+
+      {/* Header */}
+      <div className="p-4 border-b border-zinc-800">
+        <NodeHeader icon={Clapperboard} title="Veo Video" className="mb-0" />
+      </div>
+
+      <div className="p-4 space-y-4">
+        {/* Mode Selector */}
+        <div>
+          <NodeLabel>{t('Generation Mode')}</NodeLabel>
+          <Select
+            value={mode}
+            onChange={(v) => {
+              const newMode = v as GenerationMode;
+              setMode(newMode);
+              updateData({ mode: newMode });
+            }}
+            options={[
+              { value: GenerationMode.TEXT_TO_VIDEO, label: t('Text to Video') },
+              { value: GenerationMode.FRAMES_TO_VIDEO, label: t('Frames to Video') },
+              { value: GenerationMode.EXTEND_VIDEO, label: t('Extend Video') },
+              { value: GenerationMode.REFERENCES, label: t('References') },
+            ]}
+            variant="node"
+            disabled={isLoading}
+          />
+        </div>
+
+        {/* Prompt Input */}
+        <div>
+          <NodeLabel>{t('Prompt')}</NodeLabel>
+          {data.connectedText && (
+            <div className="mb-1.5 text-[10px] font-mono text-[#52ddeb]/70 flex items-center gap-1">
+              <span>•</span>
+              <span>{t('Connected to TextNode')}</span>
+            </div>
+          )}
+          <PromptInput
+            value={prompt}
+            onChange={(v) => {
+              setPrompt(v);
+              updateData({ prompt: v });
+            }}
+            onSubmit={handleGenerate}
+            placeholder={t('Describe your video...')}
+            disabled={isLoading}
+            textareaRef={textareaRef}
+            className="min-h-[80px]"
+          />
+        </div>
+
+        {/* Connected Inputs Display */}
+        {connectedImages.length > 0 && (
+          <ConnectedImagesDisplay
+            images={connectedImages}
+            label={t('Connected Inputs')}
+            showLabel
+          />
         )}
-        title={isLoading ? t('canvasNodes.videoNode.generating') : !prompt.trim() ? t('canvasNodes.videoNode.enterPrompt') : t('canvasNodes.videoNode.generateVideo')}
-      >
-        {isLoading ? (
-          <>
-            <GlitchLoader size={14} className="mr-1" color="#52ddeb" />
-            {t('canvasNodes.videoNode.generating') || 'Generating...'}
-          </>
-        ) : (
-          <>
-            <Video size={14} />
-            <span>{t('canvasNodes.videoNode.generate') || 'Generate Video'}</span>
-            <span className="text-[#52ddeb]/70">({creditsRequired} credits)</span>
-          </>
+
+        {data.connectedVideo && (
+          <div className="bg-zinc-900/50 border border-zinc-800 rounded p-2 flex items-center gap-2">
+            <VideoIcon size={14} className="text-[#52ddeb]" />
+            <span className="text-xs text-zinc-400">{t('Video Input Connected')}</span>
+          </div>
         )}
-      </button>
+
+        {/* Advanced Settings */}
+        <div className="border border-zinc-800 rounded-md overflow-hidden bg-zinc-900/30">
+          <button
+            onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
+            className="flex items-center gap-2 text-xs font-mono text-zinc-400 hover:text-zinc-200 transition-colors w-full p-2 hover:bg-zinc-800/50"
+          >
+            <Settings size={12} />
+            <span>{t('Advanced Settings')}</span>
+            <ChevronRight size={12} className={cn("transition-transform ml-auto", isAdvancedOpen && "rotate-90")} />
+          </button>
+
+          {isAdvancedOpen && (
+            <div className="p-3 space-y-3 border-t border-zinc-800 bg-zinc-900/50">
+              <div>
+                <NodeLabel>{t('Model')}</NodeLabel>
+                <Select
+                  value={model}
+                  onChange={(v) => { setModel(v); updateData({ model: v }); }}
+                  options={[
+                    { value: VeoModel.VEO_3_1, label: 'Veo 3.1' },
+                    { value: VeoModel.VEO_3_1_FAST, label: 'Veo 3.1 Fast' },
+                  ]}
+                  variant="node"
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <NodeLabel>{t('Aspect Ratio')}</NodeLabel>
+                  <AspectRatioSelector
+                    value={aspectRatio}
+                    onChange={(r) => { setAspectRatio(r); updateData({ aspectRatio: r }); }}
+                    disabled={isLoading}
+                    compact
+                  />
+                </div>
+                <div>
+                  <NodeLabel>{t('Resolution')}</NodeLabel>
+                  <ResolutionSelector
+                    value={resolution}
+                    onChange={(r) => { setResolution(r); updateData({ resolution: r }); }}
+                    model={model as any}
+                    disabled={isLoading}
+                    compact
+                  />
+                </div>
+              </div>
+
+              <div>
+                <NodeLabel>{t('Duration')}</NodeLabel>
+                <Select
+                  value={duration}
+                  onChange={(v) => { setDuration(v); updateData({ duration: v }); }}
+                  options={[
+                    { value: '5s', label: '5 Seconds' },
+                    { value: '10s', label: '10 Seconds' },
+                  ]}
+                  variant="node"
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div className="flex items-center justify-between py-1">
+                <NodeLabel className="mb-0">{t('Loop Video')}</NodeLabel>
+                <Switch
+                  checked={isLooping}
+                  onCheckedChange={(c) => { setIsLooping(c); updateData({ isLooping: c }); }}
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div>
+                <NodeLabel>{t('Negative Prompt')}</NodeLabel>
+                <input
+                  className="w-full bg-zinc-900 border border-zinc-700 rounded p-2 text-xs font-mono text-zinc-300 focus:border-[#52ddeb] outline-none placeholder:text-zinc-600"
+                  placeholder={t('What to avoid...')}
+                  value={negativePrompt}
+                  onChange={(e) => { setNegativePrompt(e.target.value); updateData({ negativePrompt: e.target.value }); }}
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Generate Button */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleGenerate();
+          }}
+          disabled={isLoading || (!prompt && !data.connectedText && !data.connectedImage1)} // Basic validation
+          className={cn(
+            'w-full px-3 py-2.5 bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 border border-[#52ddeb]/30 rounded text-xs font-mono text-[#52ddeb] transition-colors flex items-center justify-center gap-2 group',
+            (isLoading || (!prompt && !data.connectedText && !data.connectedImage1)) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+          )}
+        >
+          {isLoading ? (
+            <>
+              <GlitchLoader size={16} color="#52ddeb" />
+              <span>{t('Generating...')}</span>
+            </>
+          ) : (
+            <>
+              <VideoIcon size={16} className="group-hover:scale-110 transition-transform" />
+              <span>{t('Generate Video')}</span>
+              <span className="text-[#52ddeb]/50 ml-1">({creditsRequired})</span>
+            </>
+          )}
+        </button>
+
+        {/* Result Preview */}
+        {(data.resultVideoUrl || data.resultVideoBase64) && !isLoading && (
+          <div className="mt-4 rounded-lg overflow-hidden border border-zinc-700 bg-black relative group shadow-lg">
+            <video
+              src={data.resultVideoUrl || (data.resultVideoBase64 ? `data:video/mp4;base64,${data.resultVideoBase64}` : undefined)}
+              className="w-full h-auto max-h-[200px] object-contain"
+              controls
+              loop={isLooping}
+            />
+          </div>
+        )}
+      </div>
 
       {/* Output Handle */}
-      <Handle
+      <LabeledHandle
         type="source"
         position={Position.Right}
-        className="w-2 h-2 bg-[#52ddeb] border-2 border-black node-handle"
+        label={t('Video')}
+        handleType="video"
+        style={{ top: '50%' }}
       />
     </NodeContainer>
   );
-}, (prevProps, nextProps) => {
-  // Custom comparison - re-render if important data changes
+};
+
+export const VideoNode = memo(VideoNodeComponent, (prevProps, nextProps) => {
+  // Custom equality check for performance
   const prevData = prevProps.data as VideoNodeData;
   const nextData = nextProps.data as VideoNodeData;
-  
-  if (prevData.isLoading !== nextData.isLoading ||
-      prevData.prompt !== nextData.prompt ||
-      prevData.model !== nextData.model ||
-      prevData.connectedImage !== nextData.connectedImage ||
-      prevProps.selected !== nextProps.selected ||
-      prevProps.dragging !== nextProps.dragging) {
+
+  // Re-render only on relevant prop changes
+  if (
+    prevData.isLoading !== nextData.isLoading ||
+    prevData.prompt !== nextData.prompt ||
+    prevData.negativePrompt !== nextData.negativePrompt ||
+    prevData.model !== nextData.model ||
+    prevData.mode !== nextData.mode ||
+    prevData.aspectRatio !== nextData.aspectRatio ||
+    prevData.resolution !== nextData.resolution ||
+    prevData.isLooping !== nextData.isLooping ||
+    prevData.duration !== nextData.duration ||
+    prevData.connectedText !== nextData.connectedText ||
+    prevData.connectedImage1 !== nextData.connectedImage1 ||
+    prevData.connectedImage2 !== nextData.connectedImage2 ||
+    prevData.connectedImage3 !== nextData.connectedImage3 ||
+    prevData.connectedImage4 !== nextData.connectedImage4 ||
+    prevData.connectedVideo !== nextData.connectedVideo ||
+    prevData.resultVideoUrl !== nextData.resultVideoUrl ||
+    prevData.resultVideoBase64 !== nextData.resultVideoBase64 ||
+    prevProps.selected !== nextProps.selected
+  ) {
     return false; // Re-render
   }
-  
   return true; // Skip re-render
 });
-

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, Grid3x3, Maximize2, ZoomIn, Palette } from 'lucide-react';
+import { X, Grid3x3, Maximize2, ZoomIn, Palette, MousePointer2 } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 
 interface CanvasSettingsModalProps {
@@ -15,6 +15,8 @@ interface CanvasSettingsModalProps {
   onShowMinimapChange?: (show: boolean) => void;
   showControls?: boolean;
   onShowControlsChange?: (show: boolean) => void;
+  cursorColor?: string;
+  onCursorColorChange?: (color: string) => void;
 }
 
 export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
@@ -30,10 +32,13 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
   onShowMinimapChange,
   showControls = true,
   onShowControlsChange,
+  cursorColor = '#FFFFFF',
+  onCursorColorChange,
 }) => {
   const { t } = useTranslation();
   const [bgColor, setBgColor] = useState(backgroundColor);
   const [gridCol, setGridCol] = useState(gridColor);
+  const [curColor, setCurColor] = useState(cursorColor);
 
   useEffect(() => {
     setBgColor(backgroundColor);
@@ -42,6 +47,10 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
   useEffect(() => {
     setGridCol(gridColor);
   }, [gridColor]);
+
+  useEffect(() => {
+    setCurColor(cursorColor);
+  }, [cursorColor]);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -61,11 +70,11 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-black/50 backdrop-blur-sm overflow-y-auto"
       onClick={onClose}
     >
-      <div 
+      <div
         className="bg-[#1A1A1A] border border-zinc-800/50 rounded-md p-4 w-full max-w-2xl mx-4 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
@@ -93,14 +102,12 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
             </div>
             <button
               onClick={() => onShowGridChange?.(!showGrid)}
-              className={`relative w-10 h-5 rounded-md transition-colors cursor-pointer flex-shrink-0 ${
-                showGrid ? 'bg-[#52ddeb]' : 'bg-zinc-700'
-              }`}
+              className={`relative w-10 h-5 rounded-md transition-colors cursor-pointer flex-shrink-0 ${showGrid ? 'bg-[#52ddeb]' : 'bg-zinc-700'
+                }`}
             >
               <span
-                className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-md transition-transform ${
-                  showGrid ? 'translate-x-5' : 'translate-x-0'
-                }`}
+                className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-md transition-transform ${showGrid ? 'translate-x-5' : 'translate-x-0'
+                  }`}
               />
             </button>
           </div>
@@ -115,14 +122,12 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
             </div>
             <button
               onClick={() => onShowMinimapChange?.(!showMinimap)}
-              className={`relative w-10 h-5 rounded-md transition-colors cursor-pointer flex-shrink-0 ${
-                showMinimap ? 'bg-[#52ddeb]' : 'bg-zinc-700'
-              }`}
+              className={`relative w-10 h-5 rounded-md transition-colors cursor-pointer flex-shrink-0 ${showMinimap ? 'bg-[#52ddeb]' : 'bg-zinc-700'
+                }`}
             >
               <span
-                className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-md transition-transform ${
-                  showMinimap ? 'translate-x-5' : 'translate-x-0'
-                }`}
+                className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-md transition-transform ${showMinimap ? 'translate-x-5' : 'translate-x-0'
+                  }`}
               />
             </button>
           </div>
@@ -137,14 +142,12 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
             </div>
             <button
               onClick={() => onShowControlsChange?.(!showControls)}
-              className={`relative w-10 h-5 rounded-md transition-colors cursor-pointer flex-shrink-0 ${
-                showControls ? 'bg-[#52ddeb]' : 'bg-zinc-700'
-              }`}
+              className={`relative w-10 h-5 rounded-md transition-colors cursor-pointer flex-shrink-0 ${showControls ? 'bg-[#52ddeb]' : 'bg-zinc-700'
+                }`}
             >
               <span
-                className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-md transition-transform ${
-                  showControls ? 'translate-x-5' : 'translate-x-0'
-                }`}
+                className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-md transition-transform ${showControls ? 'translate-x-5' : 'translate-x-0'
+                  }`}
               />
             </button>
           </div>
@@ -224,6 +227,40 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
                 }}
                 className="flex-1 px-2 py-1.5 bg-black/40 border border-zinc-700/50 rounded text-xs text-zinc-300 font-mono focus:outline-none focus:border-[#52ddeb]/50"
                 placeholder="rgba(255, 255, 255, 0.1)"
+              />
+            </div>
+          </div>
+
+          {/* Cursor Color Settings */}
+          <div className="p-2 bg-black/40 border border-zinc-800/50 rounded-md">
+            <div className="flex items-center gap-2 mb-2">
+              <MousePointer2 size={16} className="text-zinc-400 flex-shrink-0" />
+              <label className="text-xs font-mono text-zinc-300">
+                {t('canvas.cursorColor') || 'Cursor Color'}
+              </label>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={curColor}
+                onChange={(e) => {
+                  const newColor = e.target.value;
+                  setCurColor(newColor);
+                  onCursorColorChange?.(newColor);
+                }}
+                className="w-10 h-10 rounded border border-zinc-700/50 cursor-pointer bg-transparent flex-shrink-0"
+                title={t('canvas.selectColor') || 'Select color'}
+              />
+              <input
+                type="text"
+                value={curColor}
+                onChange={(e) => {
+                  const newColor = e.target.value;
+                  setCurColor(newColor);
+                  onCursorColorChange?.(newColor);
+                }}
+                className="flex-1 px-2 py-1.5 bg-black/40 border border-zinc-700/50 rounded text-xs text-zinc-300 font-mono focus:outline-none focus:border-[#52ddeb]/50"
+                placeholder="#FFFFFF"
               />
             </div>
           </div>

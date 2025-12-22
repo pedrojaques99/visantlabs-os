@@ -47,7 +47,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
   const isGenerating = nodeData.isGenerating || false;
   const isDescribing = nodeData.isDescribing || false;
   const description = nodeData.description || localDescription;
-  const handleDownload = useNodeDownload(imageUrl, 'generated-image');
+  const { handleDownload, isDownloading } = useNodeDownload(imageUrl, 'generated-image');
 
   // Use centralized like hook
   const { toggleLike: handleToggleLike } = useMockupLike({
@@ -649,11 +649,21 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
           {isGenerated && (
             <button
               onClick={handleDownload}
-              className="p-1 bg-black/40 hover:bg-black/60 text-zinc-400 hover:text-zinc-200 rounded transition-colors backdrop-blur-sm border border-zinc-700/30 hover:border-zinc-600/50"
-              title={t('canvasNodes.imageNode.downloadImage')}
+              disabled={isDownloading}
+              className={cn(
+                "p-1 rounded transition-colors backdrop-blur-sm border",
+                isDownloading
+                  ? "bg-zinc-700/20 text-zinc-500 cursor-not-allowed border-zinc-700/20"
+                  : "bg-black/40 hover:bg-black/60 text-zinc-400 hover:text-zinc-200 border border-zinc-700/30 hover:border-zinc-600/50"
+              )}
+              title={isDownloading ? t('canvasNodes.shared.downloading') : t('canvasNodes.imageNode.downloadImage')}
               onMouseDown={(e) => e.stopPropagation()}
             >
-              <Download size={12} strokeWidth={2} />
+              {isDownloading ? (
+                <Loader2 size={12} strokeWidth={2} className="animate-spin" />
+              ) : (
+                <Download size={12} strokeWidth={2} />
+              )}
             </button>
           )}
           {(data as ImageNodeData).onDelete && (
