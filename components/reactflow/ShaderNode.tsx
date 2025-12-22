@@ -23,8 +23,8 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
   const hasResult = !!(data.resultImageUrl || data.resultImageBase64 || data.resultVideoUrl || data.resultVideoBase64);
   const hasVideoResult = !!(data.resultVideoUrl || data.resultVideoBase64);
   const hasConnectedImage = !!data.connectedImage;
-  const isVideoInput = data.connectedImage ? 
-    (data.connectedImage.startsWith('data:video/') || /\.(mp4|webm|ogg|mov|avi|mkv)$/i.test(data.connectedImage) || data.connectedImage.includes('video')) : 
+  const isVideoInput = data.connectedImage ?
+    (data.connectedImage.startsWith('data:video/') || /\.(mp4|webm|ogg|mov|avi|mkv)$/i.test(data.connectedImage) || data.connectedImage.includes('video')) :
     false;
   const previousConnectedImageRef = useRef<string | undefined>(undefined);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -63,37 +63,37 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
     duotoneContrast?: number;
     duotoneBrightness?: number;
   } | undefined>(undefined);
-  
+
   // Shader type with default
   const shaderType = data.shaderType ?? 'halftone';
   const halftoneVariant = data.halftoneVariant ?? 'ellipse';
   const borderSize = 0; // Always 0, no borders
-  
+
   // Halftone shader settings with defaults
   const dotSize = data.dotSize ?? 5.0;
   const angle = data.angle ?? 0.0;
   const contrast = data.contrast ?? 1.0;
   const spacing = data.spacing ?? 2.0;
   const halftoneThreshold = data.halftoneThreshold ?? 1.0;
-  
+
   // VHS shader settings with defaults
   const tapeWaveIntensity = data.tapeWaveIntensity ?? 1.0;
   const tapeCreaseIntensity = data.tapeCreaseIntensity ?? 1.0;
   const switchingNoiseIntensity = data.switchingNoiseIntensity ?? 1.0;
   const bloomIntensity = data.bloomIntensity ?? 1.0;
   const acBeatIntensity = data.acBeatIntensity ?? 1.0;
-  
+
   // Matrix Dither shader settings with defaults
   const matrixSize = data.matrixSize ?? 4.0;
   const bias = data.bias ?? 0.0;
-  
+
   // Dither shader settings with defaults
   const ditherSize = data.ditherSize ?? 4.0;
   const ditherContrast = data.ditherContrast ?? 1.5;
   const offset = data.offset ?? 0.0;
   const bitDepth = data.bitDepth ?? 4.0;
   const palette = data.palette ?? 0.0;
-  
+
   // ASCII shader settings with defaults
   const asciiCharSize = data.asciiCharSize ?? 8.0;
   const asciiContrast = data.asciiContrast ?? 1.0;
@@ -101,19 +101,19 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
   const asciiCharSet = data.asciiCharSet ?? 3.0;
   const asciiColored = data.asciiColored ?? 0.0;
   const asciiInvert = data.asciiInvert ?? 0.0;
-  
+
   // Duotone shader settings with defaults
   const duotoneShadowColor = data.duotoneShadowColor ?? [0.1, 0.0, 0.2] as [number, number, number];
   const duotoneHighlightColor = data.duotoneHighlightColor ?? [0.3, 0.9, 0.9] as [number, number, number];
   const duotoneIntensity = data.duotoneIntensity ?? 1.0;
   const duotoneContrast = data.duotoneContrast ?? 1.0;
   const duotoneBrightness = data.duotoneBrightness ?? 0.0;
-  
+
   // Prioritize base64 for immediate display (real-time preview)
   // Only use URL if base64 is not available
   const resultImageUrl = (data.resultImageBase64 ? `data:image/png;base64,${data.resultImageBase64}` : null) || data.resultImageUrl || null;
   const resultVideoUrl = data.resultVideoUrl || (data.resultVideoBase64 ? (data.resultVideoBase64.startsWith('data:') ? data.resultVideoBase64 : `data:video/webm;base64,${data.resultVideoBase64}`) : null);
-  const handleDownload = useNodeDownload(hasVideoResult ? resultVideoUrl : resultImageUrl, 'shader-result');
+  const { handleDownload } = useNodeDownload(hasVideoResult ? resultVideoUrl : resultImageUrl, 'shader-result');
 
   // Build shader settings object for real-time rendering
   const shaderSettings: ShaderSettings = {
@@ -167,17 +167,17 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
     const isVideo = file.type.startsWith('video/');
     const supportedImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
     const supportedVideoTypes = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime', 'video/x-msvideo'];
-    
+
     if (!isImage && !isVideo) {
       toast.error(t('common.unsupportedFileType'));
       return;
     }
-    
+
     if (isImage && !supportedImageTypes.includes(file.type)) {
       toast.error(t('common.unsupportedImageType'));
       return;
     }
-    
+
     if (isVideo && !supportedVideoTypes.includes(file.type)) {
       toast.error(t('common.unsupportedVideoType'));
       return;
@@ -187,7 +187,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
     const maxImageSize = 10 * 1024 * 1024;
     const maxVideoSize = 50 * 1024 * 1024;
     const maxSize = isImage ? maxImageSize : maxVideoSize;
-    
+
     if (file.size > maxSize) {
       const maxSizeMB = isImage ? 10 : 50;
       toast.error(isImage ? t('common.imageTooLarge', { maxSize: maxSizeMB }) : t('common.videoTooLarge', { maxSize: maxSizeMB }));
@@ -199,17 +199,17 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
         // For videos: upload directly to R2 and store only the URL
         toast.info(t('common.uploadingVideo'), { duration: 2000 });
         const videoUrl = await canvasApi.uploadVideoToR2Direct(file, canvasId, id);
-        
+
         // Update node with R2 URL only (no base64)
         if (data.onUpdateData) {
           data.onUpdateData(id, { connectedImage: videoUrl });
         }
-        
+
         toast.success(t('common.videoUploadedSuccess'), { duration: 2000 });
       } else {
         // For images: use base64 (can be converted to R2 later if needed)
         let dataUrl: string;
-        
+
         if (isVideo) {
           // Fallback: if no canvasId, use base64
           const videoData = await videoToBase64(file);
@@ -218,19 +218,19 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
           const imageData = await fileToBase64(file);
           dataUrl = `data:${imageData.mimeType};base64,${imageData.base64}`;
         }
-        
+
         // Update node with uploaded file
         if (data.onUpdateData) {
           data.onUpdateData(id, { connectedImage: dataUrl });
         }
-        
+
         toast.success(isImage ? t('common.imageUploadedSuccess') : t('common.videoUploadedSuccess'));
       }
     } catch (error) {
       console.error(`Error uploading ${isImage ? 'image' : 'video'}:`, error);
       toast.error(isImage ? t('common.failedToUploadImage') : t('common.failedToUploadVideo'));
     }
-    
+
     // Reset input to allow uploading the same file again
     e.target.value = '';
   }, [data, id]);
@@ -277,7 +277,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
     const isInitialMount = previousSettings === undefined && previousConnectedImage === undefined;
 
     // Check if settings changed
-    const settingsChanged = !previousSettings || 
+    const settingsChanged = !previousSettings ||
       previousSettings.shaderType !== currentSettings.shaderType ||
       previousSettings.halftoneVariant !== currentSettings.halftoneVariant ||
       (shaderType === 'halftone' && (
@@ -358,12 +358,12 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
       previousSettingsRef.current = currentSettings;
     }
   }, [
-    data.connectedImage, 
-    data.onApply, 
-    id, 
+    data.connectedImage,
+    data.onApply,
+    id,
     isLoading,
     hasResult,
-    shaderType, 
+    shaderType,
     halftoneVariant,
     dotSize,
     angle,
@@ -436,7 +436,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
         loadingStartTimeRef.current = Date.now();
         setElapsedTime(0);
       }
-      
+
       // Update timer every second
       const interval = setInterval(() => {
         if (loadingStartTimeRef.current !== null) {
@@ -444,7 +444,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
           setElapsedTime(elapsed);
         }
       }, 1000);
-      
+
       return () => {
         clearInterval(interval);
       };
@@ -554,7 +554,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
               />
             </div>
           ) : (
-            <div 
+            <div
               className="mt-2 pt-2 border-t border-zinc-700/30 relative group flex-1 min-h-0 flex flex-col"
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
@@ -576,7 +576,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
 
       {/* Result Preview with Action Icons */}
       {hasResult && (hasVideoResult ? resultVideoUrl : resultImageUrl) && (
-        <div 
+        <div
           className="mt-2 pt-2 border-t border-zinc-700/30 relative group flex-1 min-h-0 flex flex-col"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
@@ -606,7 +606,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
               />
             </div>
           )}
-          
+
           {/* Floating Processing Indicator - subtle icon button */}
           {isLoading && (
             <div className="absolute top-3 left-3 z-20">
@@ -615,7 +615,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
               </div>
             </div>
           )}
-          
+
           {/* Action Icons - appears on hover or when selected */}
           <div className={cn(
             "absolute top-3 right-3 flex gap-1.5 transition-all backdrop-blur-sm z-10",
@@ -919,7 +919,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
                       formatValue: (value: number) => value.toFixed(2),
                     },
                   ];
-                  
+
                   data.onViewFullscreen(
                     resultImageUrl,
                     data.resultImageBase64,
@@ -953,12 +953,12 @@ export const ShaderNode = memo(ShaderNodeComponent, (prevProps, nextProps) => {
   const prevConnectedImage = prevProps.data.connectedImage ?? undefined;
   const nextConnectedImage = nextProps.data.connectedImage ?? undefined;
   const connectedImageChanged = prevConnectedImage !== nextConnectedImage;
-  
+
   const prevShaderType = prevProps.data.shaderType ?? 'halftone';
   const nextShaderType = nextProps.data.shaderType ?? 'halftone';
   const prevHalftoneVariant = prevProps.data.halftoneVariant ?? 'ellipse';
   const nextHalftoneVariant = nextProps.data.halftoneVariant ?? 'ellipse';
-  
+
   const prevSettings = {
     shaderType: prevShaderType,
     halftoneVariant: prevShaderType === 'halftone' ? prevHalftoneVariant : undefined,
@@ -1019,8 +1019,8 @@ export const ShaderNode = memo(ShaderNodeComponent, (prevProps, nextProps) => {
     duotoneContrast: nextShaderType === 'duotone' ? (nextProps.data.duotoneContrast ?? 1.0) : undefined,
     duotoneBrightness: nextShaderType === 'duotone' ? (nextProps.data.duotoneBrightness ?? 0.0) : undefined,
   };
-  
-  const settingsChanged = 
+
+  const settingsChanged =
     prevSettings.shaderType !== nextSettings.shaderType ||
     prevSettings.halftoneVariant !== nextSettings.halftoneVariant ||
     (nextShaderType === 'halftone' && (
@@ -1059,11 +1059,11 @@ export const ShaderNode = memo(ShaderNodeComponent, (prevProps, nextProps) => {
       prevSettings.duotoneContrast !== nextSettings.duotoneContrast ||
       prevSettings.duotoneBrightness !== nextSettings.duotoneBrightness
     ));
-  
+
   if (connectedImageChanged || settingsChanged) {
     return false;
   }
-  
+
   return (
     prevProps.id === nextProps.id &&
     prevProps.selected === nextProps.selected &&

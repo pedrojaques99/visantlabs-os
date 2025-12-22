@@ -41,7 +41,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   const previousImageUrlRef = useRef<string | null>(null);
   const previousVideoUrlRef = useRef<string | null>(null);
   const loadingStartTimeRef = useRef<number | null>(null);
-  const handleDownload = useNodeDownload(imageUrl || videoUrl, 'output-media');
+  const { handleDownload, isDownloading } = useNodeDownload(imageUrl || videoUrl, 'output-media');
 
   // Extract values from nodeData to avoid object recreation issues in dependencies
   const resultImageUrl = nodeData.resultImageUrl;
@@ -89,7 +89,8 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     }
   }, [isLoading]);
 
-  // Lock node deletion while generating
+  // Lock node deletion while generating (TEMPORARILY REMOVED)
+  /*
   useEffect(() => {
     setNodes((nds) =>
       nds.map((node) => {
@@ -108,6 +109,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       })
     );
   }, [isLoading, id, setNodes]);
+  */
 
   // Use centralized like hook
   const { toggleLike: handleToggleLike } = useMockupLike({
@@ -596,11 +598,21 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           )}
           <button
             onClick={handleDownload}
-            className="p-1 bg-black/40 hover:bg-black/60 text-zinc-400 hover:text-zinc-200 rounded transition-colors backdrop-blur-sm border border-zinc-700/30 hover:border-zinc-600/50"
-            title={t('canvasNodes.imageNode.downloadImage')}
+            disabled={isDownloading}
+            className={cn(
+              "p-1 rounded transition-colors backdrop-blur-sm border",
+              isDownloading
+                ? "bg-zinc-700/20 text-zinc-500 cursor-not-allowed border-zinc-700/20"
+                : "bg-black/40 hover:bg-black/60 text-zinc-400 hover:text-zinc-200 border border-zinc-700/30 hover:border-zinc-600/50"
+            )}
+            title={isDownloading ? t('canvasNodes.shared.downloading') : t('canvasNodes.imageNode.downloadImage')}
             onMouseDown={(e) => e.stopPropagation()}
           >
-            <Download size={12} strokeWidth={2} />
+            {isDownloading ? (
+              <Loader2 size={12} strokeWidth={2} className="animate-spin" />
+            ) : (
+              <Download size={12} strokeWidth={2} />
+            )}
           </button>
           {nodeData.onDelete && savedMockupId && (
             <button

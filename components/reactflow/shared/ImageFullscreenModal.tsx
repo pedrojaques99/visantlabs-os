@@ -39,7 +39,7 @@ export const ImageFullscreenModal: React.FC<ImageFullscreenModalProps> = ({
   const imageRef = useRef<HTMLImageElement>(null);
 
   const finalImageUrl = imageUrl || (imageBase64 ? `data:image/png;base64,${imageBase64}` : null);
-  const handleDownload = useNodeDownload(finalImageUrl, 'image');
+  const { handleDownload } = useNodeDownload(finalImageUrl, 'image');
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -69,7 +69,7 @@ export const ImageFullscreenModal: React.FC<ImageFullscreenModalProps> = ({
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
       if (!containerRef.current?.contains(e.target as Node)) return;
-      
+
       e.preventDefault();
       const delta = e.deltaY > 0 ? -0.1 : 0.1;
       setZoom((prev) => Math.max(0.1, Math.min(5, prev + delta)));

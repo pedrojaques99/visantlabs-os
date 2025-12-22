@@ -48,6 +48,7 @@ interface CanvasFlowProps {
   onDropImage?: (image: UploadedImage, position: { x: number; y: number }) => void;
   onDropNode?: (nodeType: string, position: { x: number; y: number }) => void;
   reactFlowInstance?: ReactFlowInstance | null;
+  cursorColor?: string;
 }
 
 export const CanvasFlow: React.FC<CanvasFlowProps> = ({
@@ -75,6 +76,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
   onDropImage,
   onDropNode,
   reactFlowInstance,
+  cursorColor = '#FFFFFF',
 }) => {
   const { t } = useTranslation();
   const [isDragging, setIsDragging] = useState(false);
@@ -84,6 +86,55 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
   const [processingProgress, setProcessingProgress] = useState({ current: 0, total: 0, fileName: '' });
   const reactFlowInstanceRef = useRef<ReactFlowInstance | null>(null);
   const [zoom, setZoom] = useState(1);
+
+  // Panning logic:
+  // - Space pressed: Enable panning with Left Click (0) and Middle Click (1)
+  // - Always: Enable panning with Middle (1)
+  // - Right Click (2) is reserved for Context Menu ONLY
+  // Panning logic:
+  // - Space pressed: Enable panning with Left Click (0) and Middle Click (1)
+  // - Always: Enable panning with Middle (1)
+  // - Right Click (2) is reserved for Context Menu ONLY
+  const [spacePressed, setSpacePressed] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space' && !e.repeat) {
+        // Only set if not focusing an input (optional but good practice)
+        const target = e.target as HTMLElement;
+        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable) {
+          setSpacePressed(true);
+        }
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        setSpacePressed(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
+
+  const panOnDrag = useMemo(() => {
+    if (spacePressed) return [0, 1];
+    return [1];
+  }, [spacePressed]);
+
+  // When space is pressed, we want left click to pan, so we disable selection
+  // When space is NOT pressed, left click should select
+  const selectionOnDrag = !spacePressed;
+  // Also disable panOnScroll when space is not pressed if we want to be strict, but usually panOnScroll is distinct.
+  // The user asked for "pan only with space pressed OR with right/middle mouse click".
+  // This usually refers to DRAG panning. Scroll wheel panning is often acceptable/separate, but standard behavior usually leaves it enabled.
+  // We will stick to drag behaviors as requested.
 
   const handleNodeDragStart = () => {
     setIsDragging(true);
@@ -504,6 +555,19 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
         .react-flow__background line {
           stroke: ${gridColor} !important;
         }
+        
+        /* Cursor logic */
+        /* If space is NOT pressed, force default cursor on pane (overriding grab from panOnScroll) */
+        /* If space IS pressed, we let React Flow handle it (grabbing) or force grab */
+        .react-flow__pane {
+          cursor: ${spacePressed
+          ? 'grab'
+          : `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="${encodeURIComponent(cursorColor)}" stroke="%23000" stroke-width="1.5" d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.87a.5.5 0 0 0 .35-.85L6.35 2.85a.5.5 0 0 0-.85.35Z"></path></svg>') 0 0, auto`
+        } !important;
+        }
+        .react-flow__pane:active {
+           cursor: ${spacePressed ? 'grabbing' : 'default'} !important;
+        }
       `}</style>
       <ReactFlow
         nodes={nodes}
@@ -537,6 +601,12 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
         minZoom={0.01}
         maxZoom={100}
         style={{ backgroundColor: backgroundColor }}
+        // Interactive props
+        panOnDrag={panOnDrag}
+        selectionOnDrag={selectionOnDrag}
+        panOnScroll={true}
+        zoomOnScroll={true}
+        zoomOnDoubleClick={false}
       >
         {showGrid && <Background gap={16} />}
         {showControls && <Controls />}
@@ -545,7 +615,10 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
             nodeColor="#52ddeb"
             maskColor="rgba(0, 0, 0, 0.8)"
             style={{ backgroundColor: 'rgba(0, 0, 0, 0.8)' }}
-            className={isDragging ? 'react-flow__minimap-visible' : ''}
+            className={cn(
+              "transition-opacity duration-300",
+              isDragging ? '!opacity-100' : '!opacity-40 hover:!opacity-100'
+            )}
           />
         )}
       </ReactFlow>

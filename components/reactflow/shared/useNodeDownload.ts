@@ -1,13 +1,16 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { useTranslation } from '../../../hooks/useTranslation';
 
 export const useNodeDownload = (imageUrl: string | null | undefined, filenamePrefix: string = 'image') => {
   const { t } = useTranslation();
+  const [isDownloading, setIsDownloading] = useState(false);
+
   const handleDownload = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!imageUrl) return;
 
+    setIsDownloading(true);
     try {
       const response = await fetch(imageUrl);
       const blob = await response.blob();
@@ -57,8 +60,10 @@ export const useNodeDownload = (imageUrl: string | null | undefined, filenamePre
       document.body.removeChild(link);
       // Still show success as we tried our best
       toast.success(t('canvasNodes.shared.imageDownloaded'), { duration: 2000 });
+    } finally {
+      setIsDownloading(false);
     }
   }, [imageUrl, filenamePrefix, t]);
 
-  return handleDownload;
+  return { handleDownload, isDownloading };
 };

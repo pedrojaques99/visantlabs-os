@@ -27,8 +27,12 @@ interface CanvasHeaderProps {
   onShowGridChange?: (show: boolean) => void;
   showMinimap?: boolean;
   onShowMinimapChange?: (show: boolean) => void;
+  showMinimap?: boolean;
+  onShowMinimapChange?: (show: boolean) => void;
   showControls?: boolean;
   onShowControlsChange?: (show: boolean) => void;
+  cursorColor?: string;
+  onCursorColorChange?: (color: string) => void;
 }
 
 export const CanvasHeader: React.FC<CanvasHeaderProps> = ({
@@ -48,6 +52,8 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({
   onShowMinimapChange,
   showControls = true,
   onShowControlsChange,
+  cursorColor,
+  onCursorColorChange,
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -144,11 +150,10 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({
           {onShareClick && (
             <button
               onClick={onShareClick}
-              className={`p-1.5 border rounded-md transition-all flex items-center justify-center ${
-                isCollaborative
-                  ? 'bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 text-[#52ddeb] border-[#52ddeb]/30 hover:border-[#52ddeb]/50'
-                  : 'bg-zinc-800/50 hover:bg-zinc-700/50 text-zinc-300 border-zinc-700/50 hover:border-zinc-600'
-              }`}
+              className={`p-1.5 border rounded-md transition-all flex items-center justify-center ${isCollaborative
+                ? 'bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 text-[#52ddeb] border-[#52ddeb]/30 hover:border-[#52ddeb]/50'
+                : 'bg-zinc-800/50 hover:bg-zinc-700/50 text-zinc-300 border-zinc-700/50 hover:border-zinc-600'
+                }`}
               title={t('canvas.share')}
             >
               <Share2 size={14} />
@@ -164,7 +169,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({
           </button>
         </div>
       </div>
-      
+
       {showSettingsModal && (
         <CanvasSettingsModal
           isOpen={showSettingsModal}
@@ -179,6 +184,8 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({
           onShowMinimapChange={onShowMinimapChange}
           showControls={showControls}
           onShowControlsChange={onShowControlsChange}
+          cursorColor={cursorColor}
+          onCursorColorChange={onCursorColorChange}
         />
       )}
     </div>

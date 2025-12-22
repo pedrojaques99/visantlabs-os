@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { Users, Plus, Edit2, Trash2, X, Save, Image as ImageIcon, Camera, Layers, MapPin, Sun, ArrowLeft, Heart, Maximize2, ExternalLink, RefreshCcw } from 'lucide-react';
+import { Users, Plus, Edit2, Trash2, X, Save, Image as ImageIcon, Camera, Layers, MapPin, Sun, ArrowLeft, Heart, Maximize2, ExternalLink, RefreshCcw, Copy } from 'lucide-react';
+
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 
 import {
@@ -404,6 +405,63 @@ export const CommunityPresetsPage: React.FC = () => {
     }
   }, [t, viewMode, handleFetchMyPresets, handleFetchAllPresets]);
 
+  const handleDuplicate = useCallback(async (preset: CommunityPreset) => {
+    const token = authService.getToken();
+    if (!token) {
+      toast.error(t('communityPresets.errors.mustBeAuthenticated'));
+      return;
+    }
+
+    if (!confirm(t('communityPresets.actions.duplicateConfirm') || "Are you sure you want to duplicate this preset?")) {
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const body: any = {
+        presetType: preset.presetType,
+        id: '', // Create new ID
+        name: `${preset.name} (Copy)`,
+        description: preset.description,
+        prompt: preset.prompt,
+        aspectRatio: preset.aspectRatio,
+        tags: preset.tags,
+        model: preset.model,
+      };
+
+      if (preset.presetType === 'mockup' && preset.referenceImageUrl) {
+        body.referenceImageUrl = preset.referenceImageUrl;
+      }
+
+      const response = await fetch(COMMUNITY_API, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || t('communityPresets.errors.failedToCreate'));
+      }
+
+      // If viewing my presets, refresh list
+      if (viewMode === 'my') {
+        await handleFetchMyPresets();
+      }
+
+      toast.success(t('communityPresets.messages.presetDuplicated') || "Preset duplicated successfully");
+    } catch (error: any) {
+      console.error('Duplicate error:', error);
+      toast.error(error.message || "Failed to duplicate preset");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [t, viewMode, handleFetchMyPresets]);
+
   const handleToggleLike = useCallback(async (presetId: string) => {
     const token = authService.getToken();
     if (!token) {
@@ -745,6 +803,7 @@ export const CommunityPresetsPage: React.FC = () => {
                       onClick={() => setSelectedPreset(preset)}
                       onEdit={viewMode === 'my' ? () => handleEdit(preset) : undefined}
                       onDelete={viewMode === 'my' ? () => handleDelete(preset.id) : undefined}
+                      onDuplicate={isAuthenticated ? () => handleDuplicate(preset) : undefined}
                       onToggleLike={isAuthenticated ? () => handleToggleLike(preset.id) : undefined}
                       isAuthenticated={isAuthenticated}
                       canEdit={viewMode === 'my'}
@@ -828,11 +887,12 @@ const PresetCard: React.FC<{
   onClick?: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
+  onDuplicate?: () => void;
   onToggleLike?: () => void;
   isAuthenticated: boolean;
   canEdit: boolean;
   t: (key: string) => string;
-}> = ({ preset, onClick, onEdit, onDelete, onToggleLike, isAuthenticated, canEdit, t }) => {
+}> = ({ preset, onClick, onEdit, onDelete, onDuplicate, onToggleLike, isAuthenticated, canEdit, t }) => {
   const hasImage = preset.presetType === 'mockup' && preset.referenceImageUrl;
   const presetIcon = getPresetIcon(preset.presetType);
   const isLiked = preset.isLikedByUser || false;
@@ -872,30 +932,44 @@ const PresetCard: React.FC<{
               {preset.description}
             </p>
           </div>
-          {canEdit && onEdit && onDelete && (
-            <div className="flex gap-1 flex-shrink-0">
+          <div className="flex gap-1 flex-shrink-0">
+            {isAuthenticated && onDuplicate && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  onEdit?.();
+                  onDuplicate();
                 }}
                 className="p-1.5 text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-300 rounded transition-colors opacity-0 group-hover:opacity-100"
-                title={t('communityPresets.actions.edit')}
+                title={t('communityPresets.actions.duplicate') || "Duplicate"}
               >
-                <Edit2 className="h-4 w-4" />
+                <Copy className="h-4 w-4" />
               </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete?.();
-                }}
-                className="p-1.5 text-zinc-500 hover:bg-red-500/10 hover:text-red-400 rounded transition-colors opacity-0 group-hover:opacity-100"
-                title={t('communityPresets.actions.delete')}
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
-          )}
+            )}
+            {canEdit && onEdit && onDelete && (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit?.();
+                  }}
+                  className="p-1.5 text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-300 rounded transition-colors opacity-0 group-hover:opacity-100"
+                  title={t('communityPresets.actions.edit')}
+                >
+                  <Edit2 className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete?.();
+                  }}
+                  className="p-1.5 text-zinc-500 hover:bg-red-500/10 hover:text-red-400 rounded transition-colors opacity-0 group-hover:opacity-100"
+                  title={t('communityPresets.actions.delete')}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
@@ -942,7 +1016,7 @@ const PresetCard: React.FC<{
           </div>
         )}
       </div>
-    </div>
+    </div >
   );
 };
 
