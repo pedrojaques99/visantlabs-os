@@ -241,7 +241,7 @@ export const CreditRechargeSuccessPage: React.FC = () => {
               {previousCredits !== null && (
                 <div className="flex items-center justify-between p-3 bg-zinc-900/50 rounded-md">
                   <span className="text-zinc-400 font-mono text-sm">
-                    Créditos anteriores
+                    {t('creditRechargeSuccess.previousCredits')}
                   </span>
                   <span className="text-zinc-300 font-mono font-semibold text-lg">
                     {previousCredits} {t('creditsPackages.credits')}
