@@ -27,12 +27,18 @@ export const ConnectedImagesDisplay: React.FC<ConnectedImagesDisplayProps> = ({
 }) => {
   // Filter out undefined, null, and empty strings
   const validImages = images.filter(
-    (img): img is string => 
-      img !== undefined && 
-      img !== null && 
-      typeof img === 'string' && 
+    (img): img is string =>
+      img !== undefined &&
+      img !== null &&
+      typeof img === 'string' &&
       img.trim().length > 0
   );
+
+  console.log('[ConnectedImagesDisplay] Received images:', {
+    rawImages: images,
+    validImages,
+    label
+  });
 
   if (validImages.length === 0) {
     return null;

@@ -1238,8 +1238,15 @@ export const useCanvasNodeHandlers = (
       } else if (params.mode === 'extend_video') {
         inputVideo = await processMediaInput(params.inputVideo, videoData.connectedVideo);
       } else {
-        // generic/image_to_video
+        // TEXT_TO_VIDEO or implicit IMAGE_TO_VIDEO
+        // If an image is connected to input-1, it serves as the startFrame (Image-to-Video)
         startFrame = await processMediaInput(params.startFrame, videoData.connectedImage1);
+
+        console.log('[handleVideoNodeGenerate] Processing standard generation:', {
+          mode: params.mode,
+          hasStartFrame: !!startFrame,
+          startFrameSource: params.startFrame ? 'direct' : (videoData.connectedImage1 ? 'connected' : 'none')
+        });
       }
 
       // Handle Connected Text (Prompt)

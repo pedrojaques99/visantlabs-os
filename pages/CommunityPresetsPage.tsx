@@ -22,6 +22,7 @@ import { AuthModal } from '../components/AuthModal';
 import { Select } from '../components/ui/select';
 import { getAllCommunityPresets, clearCommunityPresetsCache } from '../services/communityPresetsService';
 import { CommunityPresetModal } from '../components/CommunityPresetModal';
+import { ConfirmationModal } from '../components/ConfirmationModal';
 
 // Constants
 const COMMUNITY_API = '/api/community/presets';
@@ -87,6 +88,13 @@ const getInitialFormData = (presetType: PresetType): PresetFormData => ({
   tags: [],
 });
 
+const generateSlug = (name: string) => {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)+/g, '') + '-' + Math.random().toString(36).substring(2, 7);
+};
+
 export const CommunityPresetsPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -124,6 +132,8 @@ export const CommunityPresetsPage: React.FC = () => {
   });
   const [allPresets, setAllPresets] = useState<CommunityPreset[]>([]);
   const [selectedPreset, setSelectedPreset] = useState<CommunityPreset | null>(null);
+  const [duplicateModalOpen, setDuplicateModalOpen] = useState(false);
+  const [presetToDuplicate, setPresetToDuplicate] = useState<CommunityPreset | null>(null);
 
   // Computed values
   const isAuthenticated = isUserAuthenticated === true;
@@ -405,33 +415,39 @@ export const CommunityPresetsPage: React.FC = () => {
     }
   }, [t, viewMode, handleFetchMyPresets, handleFetchAllPresets]);
 
-  const handleDuplicate = useCallback(async (preset: CommunityPreset) => {
+  const handleDuplicateClick = useCallback((preset: CommunityPreset) => {
+    setPresetToDuplicate(preset);
+    setDuplicateModalOpen(true);
+  }, []);
+
+  const handleConfirmDuplicate = useCallback(async () => {
+    if (!presetToDuplicate) return;
+
     const token = authService.getToken();
     if (!token) {
       toast.error(t('communityPresets.errors.mustBeAuthenticated'));
       return;
     }
 
-    if (!confirm(t('communityPresets.actions.duplicateConfirm') || "Are you sure you want to duplicate this preset?")) {
-      return;
-    }
-
     setIsLoading(true);
 
     try {
+      // Generate a new unique ID based on the name + random suffix
+      const newId = generateSlug(presetToDuplicate.name + '-copy');
+
       const body: any = {
-        presetType: preset.presetType,
-        id: '', // Create new ID
-        name: `${preset.name} (Copy)`,
-        description: preset.description,
-        prompt: preset.prompt,
-        aspectRatio: preset.aspectRatio,
-        tags: preset.tags,
-        model: preset.model,
+        presetType: presetToDuplicate.presetType,
+        id: newId,
+        name: `${presetToDuplicate.name} (Copy)`,
+        description: presetToDuplicate.description,
+        prompt: presetToDuplicate.prompt,
+        aspectRatio: presetToDuplicate.aspectRatio,
+        tags: presetToDuplicate.tags,
+        model: presetToDuplicate.model,
       };
 
-      if (preset.presetType === 'mockup' && preset.referenceImageUrl) {
-        body.referenceImageUrl = preset.referenceImageUrl;
+      if (presetToDuplicate.presetType === 'mockup' && presetToDuplicate.referenceImageUrl) {
+        body.referenceImageUrl = presetToDuplicate.referenceImageUrl;
       }
 
       const response = await fetch(COMMUNITY_API, {
@@ -454,13 +470,15 @@ export const CommunityPresetsPage: React.FC = () => {
       }
 
       toast.success(t('communityPresets.messages.presetDuplicated') || "Preset duplicated successfully");
+      setDuplicateModalOpen(false);
+      setPresetToDuplicate(null);
     } catch (error: any) {
       console.error('Duplicate error:', error);
       toast.error(error.message || "Failed to duplicate preset");
     } finally {
       setIsLoading(false);
     }
-  }, [t, viewMode, handleFetchMyPresets]);
+  }, [presetToDuplicate, t, viewMode, handleFetchMyPresets]);
 
   const handleToggleLike = useCallback(async (presetId: string) => {
     const token = authService.getToken();
@@ -609,6 +627,8 @@ export const CommunityPresetsPage: React.FC = () => {
   }, [presets, allPresets, activeTab, filterTag, viewMode]);
 
   const isEditing = editingPreset !== null || isCreating;
+
+
 
   return (
     <div className="min-h-screen bg-[#121212] text-zinc-300 pt-12 md:pt-14 relative">
@@ -803,7 +823,7 @@ export const CommunityPresetsPage: React.FC = () => {
                       onClick={() => setSelectedPreset(preset)}
                       onEdit={viewMode === 'my' ? () => handleEdit(preset) : undefined}
                       onDelete={viewMode === 'my' ? () => handleDelete(preset.id) : undefined}
-                      onDuplicate={isAuthenticated ? () => handleDuplicate(preset) : undefined}
+                      onDuplicate={isAuthenticated ? () => handleDuplicateClick(preset) : undefined}
                       onToggleLike={isAuthenticated ? () => handleToggleLike(preset.id) : undefined}
                       isAuthenticated={isAuthenticated}
                       canEdit={viewMode === 'my'}
@@ -838,6 +858,20 @@ export const CommunityPresetsPage: React.FC = () => {
             defaultIsSignUp={true}
           />
         )}
+
+        <ConfirmationModal
+          isOpen={duplicateModalOpen}
+          onClose={() => {
+            setDuplicateModalOpen(false);
+            setPresetToDuplicate(null);
+          }}
+          onConfirm={handleConfirmDuplicate}
+          title={t('communityPresets.actions.duplicateConfirm') || "Duplicate Preset"}
+          message={t('communityPresets.actions.duplicateMessage') || "Are you sure you want to duplicate this preset? It will be added to your personal collection."}
+          confirmText={t('communityPresets.actions.duplicateButton') || "Duplicate"}
+          cancelText={t('communityPresets.actions.cancel') || "Cancel"}
+          variant="info"
+        />
 
         {/* Preset Detail Modal */}
         {selectedPreset && (
