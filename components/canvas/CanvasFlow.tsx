@@ -91,10 +91,6 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
   // - Space pressed: Enable panning with Left Click (0) and Middle Click (1)
   // - Always: Enable panning with Middle (1)
   // - Right Click (2) is reserved for Context Menu ONLY
-  // Panning logic:
-  // - Space pressed: Enable panning with Left Click (0) and Middle Click (1)
-  // - Always: Enable panning with Middle (1)
-  // - Right Click (2) is reserved for Context Menu ONLY
   const [spacePressed, setSpacePressed] = useState(false);
 
   useEffect(() => {

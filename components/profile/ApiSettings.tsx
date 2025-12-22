@@ -50,9 +50,10 @@ export const ApiSettings: React.FC = () => {
             toast.success(t('configuration.saved') || 'Chave da API salva com sucesso');
             setApiKey('');
             setHasKey(true);
-        } catch (error: any) {
+        } catch (error) {
             console.error('Failed to save API key:', error);
-            toast.error(error.message || t('configuration.error') || 'Falha ao salvar chave da API');
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            toast.error(errorMessage || t('configuration.error') || 'Falha ao salvar chave da API');
         } finally {
             setIsLoading(false);
         }
@@ -66,9 +67,10 @@ export const ApiSettings: React.FC = () => {
             setHasKey(false);
             setApiKey('');
             setShowDeleteConfirm(false);
-        } catch (error: any) {
+        } catch (error) {
             console.error('Failed to delete API key:', error);
-            toast.error(error.message || 'Falha ao remover a chave da API');
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            toast.error(errorMessage || 'Falha ao remover a chave da API');
         } finally {
             setIsLoading(false);
         }

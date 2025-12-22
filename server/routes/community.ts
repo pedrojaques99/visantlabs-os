@@ -2,6 +2,7 @@ import express from 'express';
 import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { ObjectId } from 'mongodb';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
+import { uploadImageRateLimiter } from '../middleware/rateLimit.js';
 
 const router = express.Router();
 
@@ -379,7 +380,7 @@ router.post('/presets/:id/like', authenticate, async (req: AuthRequest, res) => 
 });
 
 // Upload generic preset reference image to R2 (for new presets or updates)
-router.post('/upload-image', authenticate, async (req: AuthRequest, res) => {
+router.post('/upload-image', authenticate, uploadImageRateLimiter, async (req: AuthRequest, res) => {
   try {
     const { base64Image, id } = req.body;
 
