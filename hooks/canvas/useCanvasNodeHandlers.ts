@@ -12,7 +12,7 @@ import { useCallback, useRef, useEffect } from 'react';
 
 // ========== IMPORTS - Tipos ReactFlow ==========
 import type { Node, Edge } from '@xyflow/react';
-import type { FlowNodeData, ImageNodeData, MergeNodeData, EditNodeData, UpscaleNodeData, MockupNodeData, PromptNodeData, OutputNodeData, BrandNodeData, AngleNodeData, LogoNodeData, PDFNodeData, StrategyNodeData, BrandCoreData, VideoNodeData, VideoInputNodeData, TextureNodeData, AmbienceNodeData, LuminanceNodeData, ShaderNodeData, ColorExtractorNodeData, TextNodeData, ChatNodeData } from '../../types/reactFlow';
+import type { FlowNodeData, ImageNodeData, MergeNodeData, EditNodeData, UpscaleNodeData, MockupNodeData, PromptNodeData, OutputNodeData, BrandNodeData, AngleNodeData, LogoNodeData, PDFNodeData, StrategyNodeData, BrandCoreData, VideoNodeData, VideoInputNodeData, TextureNodeData, AmbienceNodeData, LuminanceNodeData, ShaderNodeData, ColorExtractorNodeData, TextNodeData, ChatNodeData, GenerateVideoParams } from '../../types/reactFlow';
 import type { ReactFlowInstance } from '../../types/reactflow-instance';
 
 // ========== IMPORTS - Tipos Customizados ==========
@@ -1155,7 +1155,8 @@ export const useCanvasNodeHandlers = (
   }, [setNodes, canvasId]);
 
   // Handle video node generate
-  const handleVideoNodeGenerate = useCallback(async (nodeId: string, prompt: string, imageBase64?: string, model?: string) => {
+  const handleVideoNodeGenerate = useCallback(async (params: GenerateVideoParams) => {
+    const { nodeId } = params;
     const node = nodesRef.current.find(n => n.id === nodeId);
     if (!node || node.type !== 'video') {
       console.warn('handleVideoNodeGenerate: Node not found or wrong type', { nodeId, foundNode: !!node });
@@ -1163,16 +1164,16 @@ export const useCanvasNodeHandlers = (
     }
 
     const videoData = node.data as VideoNodeData;
-    // Normalize model name - map old 'veo-3' to new 'veo-3.1-generate-preview'
-    let selectedModel = model || videoData.model || 'veo-3.1-generate-preview';
-    if (selectedModel === 'veo-3') {
-      selectedModel = 'veo-3.1-generate-preview';
-      console.warn('Model "veo-3" is deprecated, using "veo-3.1-generate-preview" instead');
-    }
 
     // Validate credits before generation (15 credits per video)
     const hasCredits = await validateVideoCredits();
     if (!hasCredits) {
+      return;
+    }
+
+    // Check if already loading to prevent duplicate requests (409 Conflict)
+    if (videoData.isLoading) {
+      console.warn('handleVideoNodeGenerate: Algorithm is already running', { nodeId });
       return;
     }
 
@@ -1190,40 +1191,99 @@ export const useCanvasNodeHandlers = (
     }
 
     try {
-      let imageMimeType: string | undefined;
-      let processedImageBase64: string | undefined;
+      // Helper to process media input (File, base64, or URL)
+      const processMediaInput = async (input?: { file?: File; base64?: string; url?: string } | null, connectedInput?: string) => {
+        if (input?.file) {
+          const base64 = await videoToBase64(input.file); // Reuse videoToBase64 or similar for images too if generic
+          // actually for images usage `normalizeImageToBase64` might be safer or `file` to base64
+          // Assuming the UI sends base64 for images mostly or we convert it here.
+          // For now, let's assume input.base64 is populated by UI or we use input.url
+          return input.base64;
+        }
+        if (input?.base64) return input.base64;
+        if (input?.url) return input.url;
+        if (connectedInput) return connectedInput;
+        return undefined;
+      };
 
-      // Process image if provided
-      if (imageBase64) {
-        try {
-          processedImageBase64 = await normalizeImageToBase64(imageBase64);
-          imageMimeType = detectMimeType(imageBase64) || 'image/png';
-        } catch (error: any) {
-          console.warn('Failed to process image for video generation:', error);
-          // Continue without image if processing fails
+      // Helper to upload to R2 if needed (for large files) - currently simplified to passing to API
+      // In a full implementation, we might upload large files to R2 first and pass URL
+
+      // Resolve inputs (UI inputs override connected handles for now, or we can merge logic)
+
+      // Determine Start/End frames based on mode and inputs
+      let startFrame: string | undefined = undefined;
+      let endFrame: string | undefined = undefined;
+      let referenceImages: string[] | undefined = undefined;
+      let inputVideo: string | undefined = undefined;
+
+      // Handle Connected Inputs Mapping
+      if (params.mode === 'frames_to_video') {
+        startFrame = await processMediaInput(params.startFrame, videoData.connectedImage1);
+        endFrame = await processMediaInput(params.endFrame, videoData.connectedImage2);
+      } else if (params.mode === 'references') { // or 'text_to_video' with refs
+        // Collect all connected images
+        const refs: string[] = [];
+        if (params.referenceImages) {
+          params.referenceImages.forEach(img => {
+            if (img.base64) refs.push(img.base64);
+            else if (img.url) refs.push(img.url);
+          });
+        }
+        if (videoData.connectedImage1) refs.push(videoData.connectedImage1);
+        if (videoData.connectedImage2) refs.push(videoData.connectedImage2);
+        if (videoData.connectedImage3) refs.push(videoData.connectedImage3);
+        if (videoData.connectedImage4) refs.push(videoData.connectedImage4);
+        if (refs.length > 0) referenceImages = refs;
+      } else if (params.mode === 'extend_video') {
+        inputVideo = await processMediaInput(params.inputVideo, videoData.connectedVideo);
+      } else {
+        // TEXT_TO_VIDEO or implicit IMAGE_TO_VIDEO
+        // If an image is connected to input-1, it serves as the startFrame (Image-to-Video)
+        startFrame = await processMediaInput(params.startFrame, videoData.connectedImage1);
+
+        console.log('[handleVideoNodeGenerate] Processing standard generation:', {
+          mode: params.mode,
+          hasStartFrame: !!startFrame,
+          startFrameSource: params.startFrame ? 'direct' : (videoData.connectedImage1 ? 'connected' : 'none')
+        });
+
+        // CRITICAL: Ensure the startFrame is ALSO passed as a reference image
+        // This forces the model to "analyze" and "follow" the image even in Text-to-Video mode
+        if (startFrame) {
+          if (!referenceImages) referenceImages = [];
+          // Avoid duplicates if it's already there
+          if (!referenceImages.includes(startFrame)) {
+            referenceImages.push(startFrame);
+            console.log('[handleVideoNodeGenerate] Auto-added startFrame to referenceImages to ensure analysis');
+          }
         }
       }
 
+      // Handle Connected Text (Prompt)
+      let finalPrompt = params.prompt;
+      if (videoData.connectedText) {
+        finalPrompt = finalPrompt ? `${videoData.connectedText} ${finalPrompt}` : videoData.connectedText;
+      }
+
       console.log('[handleVideoNodeGenerate] Calling videoApi.generate with:', {
-        prompt: prompt.substring(0, 100) + (prompt.length > 100 ? '...' : ''),
-        hasImage: !!processedImageBase64,
-        model: selectedModel,
+        prompt: finalPrompt.substring(0, 100) + (finalPrompt.length > 100 ? '...' : ''),
+        mode: params.mode,
+        model: params.model,
         canvasId: canvasId || 'not provided',
         nodeId,
       });
 
-      // Use backend endpoint which validates and deducts credits BEFORE generation
-      // Backend will upload video directly to R2 if canvasId is provided
       const result = await videoApi.generate({
-        prompt,
-        imageBase64: processedImageBase64,
-        imageMimeType,
-        model: selectedModel,
+        ...params,
+        prompt: finalPrompt,
+        startFrame,
+        endFrame,
+        referenceImages,
+        inputVideo,
         canvasId: canvasId,
         nodeId: nodeId,
       });
-
-      updateNodeLoadingState<VideoNodeData>(nodeId, false, 'video');
 
       // Extract R2 URL or base64 fallback from response
       const videoUrl = result.videoUrl;
@@ -1253,20 +1313,35 @@ export const useCanvasNodeHandlers = (
             }
             return n;
           });
-          setTimeout(() => {
-            addToHistory(updatedNodes, edgesRef.current);
-          }, 0);
           return updatedNodes;
         });
+
+        // Trigger history update
+        addToHistory(nodesRef.current, edgesRef.current);
       }
 
-      toast.success(`Video generated successfully! (${result.creditsDeducted} credit${result.creditsDeducted > 1 ? 's' : ''} used, ${result.creditsRemaining} remaining)`, { duration: 4000 });
+      toast.success('Video generated successfully!', { duration: 3000 });
     } catch (error: any) {
+      console.error('Error in handleVideoNodeGenerate:', error);
+
+      // Cleanup failed node
       cleanupFailedNode(newOutputNodeId);
+
+      // Show appropriate error message
+      let errorMessage = 'Failed to generate video';
+      if (error?.status === 409) {
+        errorMessage = 'Video generation already in progress. Please wait.';
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+
+      toast.error(errorMessage, { duration: 5000 });
+    } finally {
+      // Always reset loading state
       updateNodeLoadingState<VideoNodeData>(nodeId, false, 'video');
-      toast.error(error?.message || 'Failed to generate video', { duration: 5000 });
     }
   }, [setNodes, setEdges, addToHistory, updateNodeLoadingState, createOutputNodeWithSkeletonForGenerated, cleanupFailedNode, canvasId]);
+
 
   // ========== PROMPT NODE HANDLERS ==========
   // Handlers para gerenciar operações de geração de imagens a partir de prompts
@@ -1323,6 +1398,13 @@ export const useCanvasNodeHandlers = (
 
     const hasCredits = await validateCredits(selectedModel, resolution);
     if (!hasCredits) return;
+
+    // Clear previous result from PromptNode to prevent new OutputNodes from showing old images
+    // This ensures a clean slate for each new generation
+    updateNodeData<PromptNodeData>(nodeId, {
+      resultImageUrl: undefined,
+      resultImageBase64: undefined,
+    }, 'prompt');
 
     updateNodeLoadingState<PromptNodeData>(nodeId, true, 'prompt');
 
@@ -1625,7 +1707,7 @@ export const useCanvasNodeHandlers = (
     updateNodeData<ColorExtractorNodeData>(nodeId, { imageBase64 }, 'colorExtractor');
   }, [updateNodeData]);
 
-  const handleColorExtractorExtract = useCallback(async (nodeId: string, imageBase64: string) => {
+  const handleColorExtractorExtract = useCallback(async (nodeId: string, imageBase64: string, shouldRandomize: boolean = false) => {
     const node = nodesRef.current.find(n => n.id === nodeId);
     if (!node || node.type !== 'colorExtractor') {
       console.warn('handleColorExtractorExtract: Node not found or wrong type', { nodeId, foundNode: !!node });
@@ -1635,7 +1717,7 @@ export const useCanvasNodeHandlers = (
     updateNodeData<ColorExtractorNodeData>(nodeId, { isExtracting: true }, 'colorExtractor');
 
     try {
-      const result = await extractColors(imageBase64);
+      const result = await extractColors(imageBase64, 'image/png', 10, shouldRandomize);
 
       updateNodeData<ColorExtractorNodeData>(nodeId, {
         extractedColors: result.colors,
@@ -1651,6 +1733,49 @@ export const useCanvasNodeHandlers = (
       console.error('Error extracting colors:', error);
       toast.error(error?.message || 'Failed to extract colors', { duration: 5000 });
       updateNodeData<ColorExtractorNodeData>(nodeId, { isExtracting: false }, 'colorExtractor');
+    }
+  }, [nodesRef, updateNodeData, saveImmediately]);
+
+  const handleColorExtractorRegenerateOne = useCallback(async (nodeId: string, imageBase64: string, index: number) => {
+    const node = nodesRef.current.find(n => n.id === nodeId);
+    if (!node || node.type !== 'colorExtractor') return;
+
+    const currentColors = (node.data as ColorExtractorNodeData).extractedColors || [];
+
+    // Optimistic UI update could be done here if needed, but we'll wait for result
+    // We don't want to set full 'isExtracting' because that might lock the whole node UI, 
+    // but we can if we want to show global loading. For "subtle", maybe just let it pop in?
+    // Let's not set global isExtracting to avoid flashing the big button loader.
+
+    try {
+      // We request MORE colors (e.g. 30) with randomization to find a good candidate
+      const result = await extractColors(imageBase64, 'image/png', 30, true);
+
+      // Filter out colors that are already in the CURRENT palette (excluding the one we are replacing)
+      const otherColors = currentColors.filter((_, i) => i !== index);
+
+      // Find the first extracted color that is NOT in otherColors AND is effectively different from the current one
+      // We check for exact string match first.
+      const newColor = result.colors.find(c => !otherColors.includes(c) && c !== currentColors[index]);
+
+      if (newColor) {
+        const newColors = [...currentColors];
+        newColors[index] = newColor;
+
+        updateNodeData<ColorExtractorNodeData>(nodeId, {
+          extractedColors: newColors
+        }, 'colorExtractor');
+
+        if (saveImmediately) {
+          setTimeout(() => saveImmediately(), 100);
+        }
+      } else {
+        console.warn('No new distinct color found for single regeneration');
+        toast('No new distinct color found', { duration: 2000 });
+      }
+
+    } catch (error) {
+      console.error('Error regenerating single color:', error);
     }
   }, [nodesRef, updateNodeData, saveImmediately]);
 
@@ -2050,6 +2175,7 @@ export const useCanvasNodeHandlers = (
     handleBrandPdfUpload,
     handleBrandAnalyze,
     handleColorExtractorExtract,
+    handleColorExtractorRegenerateOne,
     handleColorExtractorUpload,
     handleColorExtractorNodeDataUpdate,
     handleAngleGenerate,

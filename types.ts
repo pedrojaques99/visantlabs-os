@@ -6,9 +6,29 @@ export interface UploadedImage {
   file?: File; // Optional File object for direct upload to R2
 }
 
-export type GeminiModel = 'gemini-2.5-flash-image' | 'gemini-2.5-flash' | 'gemini-3-pro-image-preview';
+// Duplicate removed
+export type GeminiModel =
+  | 'gemini-2.5-flash-image'
+  | 'gemini-2.5-flash'
+  | 'gemini-3-pro-image-preview'
+  | 'veo-3.1-generate-preview'
+  | 'veo-3.1-fast-generate-preview';
 
-export type Resolution = '1K' | '2K' | '4K';
+export enum VeoModel {
+  VEO_3_1 = 'veo-3.1-generate-preview',
+  VEO_3_1_FAST = 'veo-3.1-fast-generate-preview',
+}
+
+export enum GenerationMode {
+  TEXT_TO_VIDEO = 'text_to_video',
+  IMAGE_TO_VIDEO = 'image_to_video', // For backward compatibility/generic image input
+  FRAMES_TO_VIDEO = 'frames_to_video', // Start/End frames
+  EXTEND_VIDEO = 'extend_video',
+  // Reference mode is usually just text-to-video with reference images, but we can treat it as a UI mode
+  REFERENCES = 'references',
+}
+
+export type Resolution = '1K' | '2K' | '4K' | '720p' | '1080p';
 
 export type AspectRatio = '9:16' | '21:9' | '2:3' | '3:2' | '3:4' | '4:3' | '4:5' | '5:4' | '16:9' | '1:1';
 

@@ -1,6 +1,20 @@
 import type { MockupPreset, MockupPresetType } from '../types/mockupPresets';
 import type { UploadedImage } from '../types';
 import { MOCKUP_PRESETS } from '../types/mockupPresets';
+import { TEXTURE_PRESETS } from '../types/texturePresets';
+import { ANGLE_PRESETS } from '../types/anglePresets';
+import { AMBIENCE_PRESETS } from '../types/ambiencePresets';
+import { LUMINANCE_PRESETS } from '../types/luminancePresets';
+import { getAllCommunityPresets } from './communityPresetsService';
+
+// Combine all static presets
+const ALL_STATIC_PRESETS: MockupPreset[] = [
+  ...MOCKUP_PRESETS,
+  ...TEXTURE_PRESETS.map(p => ({ ...p, referenceImageUrl: '', id: p.id as string })),
+  ...ANGLE_PRESETS.map(p => ({ ...p, referenceImageUrl: '', id: p.id as string })),
+  ...AMBIENCE_PRESETS.map(p => ({ ...p, referenceImageUrl: '', id: p.id as string })),
+  ...LUMINANCE_PRESETS.map(p => ({ ...p, referenceImageUrl: '', id: p.id as string })),
+];
 
 // Cache for MongoDB presets
 let cachedPresets: MockupPreset[] | null = null;
@@ -9,7 +23,7 @@ let isLoadingPresets = false;
 /**
  * Load presets from MongoDB API and merge with TypeScript defaults
  * MongoDB presets take priority over defaults with same ID
- * Also includes community presets
+ * Also includes community presets (via communityPresetsService)
  */
 async function loadPresetsFromMongoDB(): Promise<MockupPreset[]> {
   if (isLoadingPresets) {
@@ -17,7 +31,7 @@ async function loadPresetsFromMongoDB(): Promise<MockupPreset[]> {
     while (isLoadingPresets) {
       await new Promise(resolve => setTimeout(resolve, 100));
     }
-    return cachedPresets || MOCKUP_PRESETS;
+    return cachedPresets || ALL_STATIC_PRESETS;
   }
 
   if (cachedPresets) {
@@ -26,10 +40,10 @@ async function loadPresetsFromMongoDB(): Promise<MockupPreset[]> {
 
   isLoadingPresets = true;
   try {
-    // Load admin presets
+    // 1. Load admin presets
     const adminResponse = await fetch('/api/admin/presets/public');
     let adminPresets: MockupPreset[] = [];
-    
+
     if (adminResponse.ok) {
       const adminData = await adminResponse.json();
       if (adminData.mockupPresets && Array.isArray(adminData.mockupPresets) && adminData.mockupPresets.length > 0) {
@@ -41,64 +55,55 @@ async function loadPresetsFromMongoDB(): Promise<MockupPreset[]> {
       }
     }
 
-    // Load community presets
+    // 2. Load community presets using the dedicated service
     let communityPresets: MockupPreset[] = [];
     try {
-      const communityResponse = await fetch('/api/community/presets/public');
-      if (communityResponse.ok) {
-        const communityData = await communityResponse.json();
-        console.log('[mockupPresetsService] Community presets response:', {
-          hasMockup: !!communityData.mockup,
-          mockupCount: communityData.mockup?.length || 0,
-          mockupIds: communityData.mockup?.map((p: any) => p.id) || [],
-        });
-        if (communityData.mockup && Array.isArray(communityData.mockup) && communityData.mockup.length > 0) {
-          // Normalize community presets to ensure referenceImageUrl is always a string
-          communityPresets = communityData.mockup.map((p: any) => ({
+      const allCommunityData = await getAllCommunityPresets();
+
+      // Flatten grouped presets into a single array
+      Object.entries(allCommunityData).forEach(([type, list]) => {
+        if (Array.isArray(list) && list.length > 0) {
+          const typedPresets = list.map((p: any) => ({
             ...p,
             referenceImageUrl: p.referenceImageUrl || '',
+            // Ensure we preserve the type info if needed by the modal/node later
+            presetType: type
           }));
-          console.log('[mockupPresetsService] Normalized community presets:', communityPresets.map(p => ({ id: p.id, name: p.name })));
+          communityPresets = [...communityPresets, ...typedPresets];
         }
-      } else {
-        console.warn('[mockupPresetsService] Community presets API returned non-ok status:', communityResponse.status, communityResponse.statusText);
-      }
+      });
+
+      console.log(`[mockupPresetsService] Flattened ${communityPresets.length} community presets from service.`);
     } catch (communityError) {
-      console.error('[mockupPresetsService] Failed to load community presets, continuing without them:', communityError);
+      console.error('[mockupPresetsService] Failed to load community presets via service:', communityError);
     }
-    
-    // Merge all presets: admin presets take priority, then community, then defaults
-    // Create maps for quick lookup
-    const defaultPresetsMap = new Map(MOCKUP_PRESETS.map(p => [p.id, p]));
+
+    // 3. Merge all presets: admin presets take priority, then community, then defaults
     const adminPresetsMap = new Map(adminPresets.map((p: MockupPreset) => [p.id, p]));
     const communityPresetsMap = new Map(communityPresets.map((p: MockupPreset) => [p.id, p]));
-    
+
     // Start with admin presets (highest priority)
     const merged: MockupPreset[] = [...adminPresets];
-    
+
     // Add community presets that don't conflict with admin presets
     communityPresets.forEach(communityPreset => {
       if (!adminPresetsMap.has(communityPreset.id)) {
         merged.push(communityPreset);
       }
     });
-    
-    // Add default presets that don't exist in admin or community
-    MOCKUP_PRESETS.forEach(defaultPreset => {
-      if (!adminPresetsMap.has(defaultPreset.id) && !communityPresetsMap.has(defaultPreset.id)) {
-        merged.push(defaultPreset);
+
+    // Add static/default presets that don't exist in admin or community
+    ALL_STATIC_PRESETS.forEach(staticPreset => {
+      if (!adminPresetsMap.has(staticPreset.id) && !communityPresetsMap.has(staticPreset.id)) {
+        merged.push(staticPreset);
       }
     });
-    
+
     cachedPresets = merged;
-    // Log presets with referenceImageUrl for debugging
-    const presetsWithRefImage = merged.filter(p => p.referenceImageUrl && p.referenceImageUrl.trim() !== '');
-    console.log(`[mockupPresetsService] Loaded ${merged.length} presets (${adminPresets.length} admin, ${communityPresets.length} community, ${MOCKUP_PRESETS.length} defaults)`);
-    if (presetsWithRefImage.length > 0) {
-      console.log(`[mockupPresetsService] Presets with referenceImageUrl: ${presetsWithRefImage.length}`, 
-        presetsWithRefImage.map(p => ({ id: p.id, refImageUrl: p.referenceImageUrl.substring(0, 50) }))
-      );
-    }
+
+    // Debug logging
+    console.log(`[mockupPresetsService] FINAL LOAD: ${merged.length} total presets. (Admin: ${adminPresets.length}, Community: ${communityPresets.length}, Static: ${ALL_STATIC_PRESETS.length})`);
+
     return cachedPresets;
   } catch (error) {
     console.warn('Failed to load presets from MongoDB, using TypeScript fallback:', error);
@@ -107,8 +112,8 @@ async function loadPresetsFromMongoDB(): Promise<MockupPreset[]> {
   }
 
   // If MongoDB failed or returned empty, use defaults
-  cachedPresets = MOCKUP_PRESETS;
-  return MOCKUP_PRESETS;
+  cachedPresets = ALL_STATIC_PRESETS;
+  return ALL_STATIC_PRESETS;
 }
 
 /**
@@ -139,7 +144,6 @@ export function clearPresetsCache(): void {
  */
 export function updatePresetsCache(presets: MockupPreset[]): void {
   // Invalidate cache to force a full reload that includes community presets
-  // This ensures community presets are always included
   cachedPresets = null;
 }
 
@@ -147,7 +151,7 @@ export function updatePresetsCache(presets: MockupPreset[]): void {
  * Get a specific preset by ID (synchronous, uses cache)
  */
 export function getPreset(presetId: MockupPresetType | string): MockupPreset | undefined {
-  const presets = cachedPresets || MOCKUP_PRESETS;
+  const presets = cachedPresets || ALL_STATIC_PRESETS;
   return presets.find(preset => preset.id === presetId);
 }
 
@@ -155,29 +159,43 @@ export function getPreset(presetId: MockupPresetType | string): MockupPreset | u
  * Get all available presets (synchronous, uses cache)
  */
 export function getAllPresets(): MockupPreset[] {
-  return cachedPresets || MOCKUP_PRESETS;
+  return cachedPresets || ALL_STATIC_PRESETS;
 }
 
 /**
  * Get a specific preset by ID (async, loads from MongoDB)
  * If not found in cache, clears cache and tries again to ensure community presets are loaded
+ * Also explicitly checks ALL_STATIC_PRESETS as a fallback
  */
 export async function getPresetAsync(presetId: MockupPresetType | string): Promise<MockupPreset | undefined> {
   let presets = await loadPresetsFromMongoDB();
   let found = presets.find(preset => preset.id === presetId);
-  
-  // If not found, clear cache and try again (in case community presets weren't loaded)
+
+  // If not found in loaded presets, check if it's in the static list (just in case merge failed)
   if (!found) {
-    console.warn(`[mockupPresetsService] Preset ${presetId} not found in cache, clearing cache and retrying...`);
+    found = ALL_STATIC_PRESETS.find(p => p.id === presetId);
+    if (found) {
+      console.warn(`[mockupPresetsService] Preset ${presetId} found in static fallback but was missing from cached presets.`);
+    }
+  }
+
+  // If still not found, clear cache and try again (deep re-fetch)
+  if (!found) {
+    console.warn(`[mockupPresetsService] Preset ${presetId} not found in cache or static, clearing cache and retrying...`);
     cachedPresets = null;
     presets = await loadPresetsFromMongoDB();
     found = presets.find(preset => preset.id === presetId);
+
+    // Double check static fallback again
+    if (!found) {
+      found = ALL_STATIC_PRESETS.find(p => p.id === presetId);
+    }
   }
-  
+
   if (!found) {
-    console.error(`[mockupPresetsService] Preset not found after retry: ${presetId}. Available preset IDs:`, presets.map(p => p.id).slice(0, 20));
+    console.error(`[mockupPresetsService] Preset not found after retry: ${presetId}.`);
   } else {
-    console.log(`[mockupPresetsService] Found preset: ${presetId}`, { name: found.name, hasRefImage: !!found.referenceImageUrl });
+    console.log(`[mockupPresetsService] Found preset: ${presetId}`, { name: found.name });
   }
   return found;
 }
@@ -194,7 +212,8 @@ export async function getAllPresetsAsync(): Promise<MockupPreset[]> {
  */
 export async function loadReferenceImage(preset: MockupPreset): Promise<UploadedImage | null> {
   if (!preset.referenceImageUrl || preset.referenceImageUrl.trim() === '') {
-    console.warn(`No reference image URL for preset ${preset.id}`);
+    // Some presets (like static textures) don't have reference images, which is fine
+    // console.warn(`No reference image URL for preset ${preset.id}`);
     return null;
   }
 
@@ -209,7 +228,7 @@ export async function loadReferenceImage(preset: MockupPreset): Promise<Uploaded
     // Convert to blob then to base64
     const blob = await response.blob();
     const reader = new FileReader();
-    
+
     return new Promise((resolve, reject) => {
       reader.onloadend = () => {
         const base64 = (reader.result as string).split(',')[1];
@@ -226,12 +245,3 @@ export async function loadReferenceImage(preset: MockupPreset): Promise<Uploaded
     return null;
   }
 }
-
-
-
-
-
-
-
-
-

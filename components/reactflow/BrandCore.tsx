@@ -21,7 +21,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
   const { t } = useTranslation();
   const nodeData = data as BrandCoreData;
-  
+
   const logoInputRef = useRef<HTMLInputElement>(null);
   const identityInputRef = useRef<HTMLInputElement>(null);
 
@@ -30,7 +30,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
   const connectedImage = nodeData.connectedImage;
   const connectedStrategies = nodeData.connectedStrategies || [];
   const brandIdentity = nodeData.brandIdentity;
-  
+
   const [isExpandedVisual, setIsExpandedVisual] = useState(false);
   const [isExpandedStrategic, setIsExpandedStrategic] = useState(false);
   const [isExpandedBrandIdentity, setIsExpandedBrandIdentity] = useState(!!brandIdentity);
@@ -39,13 +39,13 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
   const strategicPrompts = nodeData.strategicPrompts;
   const isAnalyzing = nodeData.isAnalyzing || false;
   const isGeneratingPrompts = nodeData.isGeneratingPrompts || false;
-  
+
   // Support for direct upload (when not connected via handles)
   const uploadedLogo = nodeData.uploadedLogo;
   const uploadedIdentity = nodeData.uploadedIdentity;
   const uploadedIdentityUrl = nodeData.uploadedIdentityUrl; // URL do R2 para PDF
   const uploadedIdentityType = nodeData.uploadedIdentityType;
-  
+
   // Use connected values first, fallback to uploaded values
   const logoBase64 = connectedLogo || uploadedLogo;
   // Para identity: priorizar connected, depois uploadedIdentityUrl (R2), depois uploadedIdentity (base64)
@@ -198,10 +198,10 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
     }
 
     try {
-      console.log('[BrandCore] Processing identity file upload', { 
-        nodeId: id, 
-        fileName: file.name, 
-        fileType, 
+      console.log('[BrandCore] Processing identity file upload', {
+        nodeId: id,
+        fileName: file.name,
+        fileType,
         fileSize: file.size,
         hasOnUploadPdfToR2: !!nodeData.onUploadPdfToR2,
         hasOnUpdateData: !!nodeData.onUpdateData
@@ -218,7 +218,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
           }
           return;
         }
-        
+
         toast.loading('Uploading PDF to cloud storage...', { id: 'pdf-upload' });
         const pdfUrl = await nodeData.onUploadPdfToR2(id, base64);
         console.log('[BrandCore] PDF uploaded successfully to R2', { nodeId: id, pdfUrl });
@@ -228,7 +228,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
         if (fileType === 'pdf' && !nodeData.onUploadPdfToR2) {
           console.warn('[BrandCore] PDF upload requested but onUploadPdfToR2 handler not available, falling back to base64', { nodeId: id });
         }
-        nodeData.onUpdateData(id, { 
+        nodeData.onUpdateData(id, {
           uploadedIdentity: base64,
           uploadedIdentityType: fileType
         });
@@ -252,7 +252,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
   const handleRemoveIdentity = () => {
     if (nodeData.onUpdateData) {
-      nodeData.onUpdateData(id, { 
+      nodeData.onUpdateData(id, {
         uploadedIdentity: undefined,
         uploadedIdentityUrl: undefined,
         uploadedIdentityType: undefined
@@ -279,55 +279,8 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
       return;
     }
 
-    // Convert URLs to base64 if necessary for analysis
-    let logoForAnalysis = logoBase64;
-    let identityForAnalysis = identityBase64;
-    
-    // If logo is a URL, convert to base64
-    if (logoBase64.startsWith('http://') || logoBase64.startsWith('https://')) {
-      try {
-        logoForAnalysis = await normalizeImageToBase64(logoBase64);
-      } catch (error: any) {
-        toast.error(t('canvasNodes.brandCore.failedToLoadLogoImage'), { duration: 3000 });
-        console.error('Failed to convert logo URL to base64:', error);
-        return;
-      }
-    }
-    
-    // If identity is a URL (PDF ou PNG), converter para base64
-    if (identityBase64.startsWith('http://') || identityBase64.startsWith('https://')) {
-      try {
-        if (identityType === 'pdf') {
-          // Para PDF, usar proxy para evitar CORS
-          const getApiBaseUrl = () => {
-            const viteApiUrl = (import.meta as any).env?.VITE_API_URL;
-            if (viteApiUrl) return viteApiUrl;
-            return '/api';
-          };
-          const API_BASE_URL = getApiBaseUrl();
-          const proxyUrl = `${API_BASE_URL}/images/proxy?url=${encodeURIComponent(identityBase64)}`;
-          const response = await fetch(proxyUrl);
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error || `Proxy failed: ${response.status}`);
-          }
-          const data = await response.json();
-          if (!data.base64) {
-            throw new Error('Proxy returned empty base64 data');
-          }
-          identityForAnalysis = data.base64;
-        } else {
-          // Para PNG, usar normalizeImageToBase64 (que já usa proxy para R2)
-          identityForAnalysis = await normalizeImageToBase64(identityBase64);
-        }
-      } catch (error: any) {
-        toast.error(t('canvasNodes.brandCore.failedToLoadIdentityFile'), { duration: 3000 });
-        console.error('Failed to convert identity URL to base64:', error);
-        return;
-      }
-    }
-
-    await nodeData.onAnalyze(id, logoForAnalysis, identityForAnalysis, identityType);
+    // Pass image references directly to handler - conversion handled by service layer
+    await nodeData.onAnalyze(id, logoBase64, identityBase64, identityType);
   }, [nodeData, id, logoBase64, identityBase64, identityType]);
 
   const hasLogo = !!logoBase64;
@@ -387,8 +340,8 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
           {/* Logo Input */}
           <div className={cn(
             "px-2 py-2 rounded border transition-colors",
-            hasLogo 
-              ? "bg-green-500/10 border-green-500/30" 
+            hasLogo
+              ? "bg-green-500/10 border-green-500/30"
               : "bg-zinc-900/30 border-zinc-700/20"
           )}>
             <div className="flex items-center gap-3 mb-2">
@@ -440,8 +393,8 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
           {/* Identity Input (PDF or Image) */}
           <div className={cn(
             "px-2 py-2 rounded border transition-colors",
-            hasIdentity 
-              ? "bg-green-500/10 border-green-500/30" 
+            hasIdentity
+              ? "bg-green-500/10 border-green-500/30"
               : "bg-zinc-900/30 border-zinc-700/20"
           )}>
             <div className="flex items-center gap-3 mb-2">
@@ -515,8 +468,8 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
           {/* Strategy Input */}
           <div className={cn(
             "px-2 py-2 rounded border transition-colors",
-            hasStrategies 
-              ? "bg-green-500/10 border-green-500/30" 
+            hasStrategies
+              ? "bg-green-500/10 border-green-500/30"
               : "bg-zinc-900/30 border-zinc-700/20"
           )}>
             <div className="flex items-center gap-3 mb-2">
@@ -591,7 +544,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
             <span>Brand Identity</span>
             {isExpandedBrandIdentity ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </button>
-          
+
           {isExpandedBrandIdentity && (
             <div className="space-y-3 text-xs">
               {/* Logo Details */}
@@ -821,7 +774,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
             <span>Visual Prompts</span>
             {isExpandedVisual ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </button>
-          
+
           {isExpandedVisual && (
             <div className="space-y-3">
               {visualPrompts.mockupPrompt && (
@@ -844,7 +797,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                   </div>
                 </div>
               )}
-              
+
               {visualPrompts.compositionPrompt && (
                 <div>
                   <div className="flex items-center justify-between mb-1">
@@ -865,7 +818,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                   </div>
                 </div>
               )}
-              
+
               {visualPrompts.stylePrompt && (
                 <div>
                   <div className="flex items-center justify-between mb-1">
@@ -901,7 +854,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
             <span>Strategic Prompts (Consolidated)</span>
             {isExpandedStrategic ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </div>
-          
+
           {isExpandedStrategic && (
             <div className="space-y-3 text-xs">
               <div className="flex items-center justify-between mb-1">

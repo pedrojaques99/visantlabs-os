@@ -211,7 +211,8 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
           </button>
         )}
         {/* Explore Mockups button */}
-        <button
+        {/* Explore Mockups button - hidden */}
+        {/* <button
           onClick={() => {
             window.history.pushState({}, '', '/mockups');
             const popStateEvent = new PopStateEvent('popstate', { state: {} });
@@ -223,7 +224,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
         >
           <Search size={12} className="md:w-3.5 md:h-3.5" />
           <span className="hidden sm:inline">{t('welcome.exploreMockups')}</span>
-        </button>
+        </button> */}
         {/* Community button */}
         <button
           onClick={() => {

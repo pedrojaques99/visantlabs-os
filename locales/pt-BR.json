@@ -96,7 +96,44 @@
     "failedToSaveImage": "Falha ao salvar imagem",
     "profileUpdatedSuccess": "Perfil atualizado com sucesso",
     "failedToReloadProfile": "Falha ao recarregar perfil",
-    "dismissMessage": "Fechar mensagem"
+    "dismissMessage": "Fechar mensagem",
+    "tabs": {
+      "overview": "Dashboard",
+      "history": "Histórico",
+      "configuration": "Configurações"
+    },
+    "loadError": "Falha ao carregar perfil",
+    "notAuthenticated": "Por favor, entre para ver seu perfil",
+    "selectImageFile": "Por favor, selecione um arquivo de imagem",
+    "imageSizeLimit": "Imagem muito grande. Limite é 5MB",
+    "pictureUploadError": "Falha ao enviar foto de perfil",
+    "pictureUploadSuccess": "Foto de perfil atualizada com sucesso",
+    "breadcrumb": "Perfil",
+    "subtitle": "Gerencie sua conta e assinatura"
+  },
+  "communityPresets": {
+    "title": "Presets da Comunidade"
+  },
+  "usageHistory": {
+    "title": "Histórico de Uso",
+    "subtitle": "Visualize seu histórico de uso e consumo de créditos",
+    "noRecords": "Nenhum registro encontrado",
+    "totalRecords": "Total de Usos",
+    "totalCreditsUsed": "Créditos Gastos",
+    "mockupMachine": "Mockup Machine",
+    "canvas": "Canvas",
+    "brandingMachine": "Branding Machine",
+    "all": "Todos",
+    "details": "Detalhes do Histórico",
+    "date": "Data",
+    "feature": "Recurso",
+    "credits": "Créditos",
+    "model": "Modelo",
+    "showing": "Exibindo",
+    "of": "de",
+    "previous": "Anterior",
+    "next": "Próximo",
+    "loadError": "Falha ao carregar histórico"
   },
   "header": {
     "pricing": "Preços",
@@ -409,8 +446,10 @@
     "manage": "Gerenciar",
     "manageSubscription": "Gerenciar assinatura",
     "credits": "{remaining}/{total} créditos",
+    "active": "Ativo",
     "renews": "Renova em {date}",
     "resets": "Reseta em {date}",
+    "portalError": "Falha ao abrir portal de assinatura",
     "failedToOpen": "Falha ao abrir gerenciamento de assinatura. Por favor, tente novamente."
   },
   "credits": {
@@ -426,7 +465,10 @@
     "buyCredits": "Comprar",
     "notificationUsed": "{count} crédito{plural} usado{plural}",
     "notificationUsedAdmin": "Nenhum crédito deduzido (administrador)",
-    "notificationRemaining": "{remaining} crédito{plural} restante{plural}"
+    "notificationUsedAdmin": "Nenhum crédito deduzido (administrador)",
+    "notificationRemaining": "{remaining} crédito{plural} restante{plural}",
+    "storage": "Armazenamento",
+    "active": "Ativo"
   },
   "creditsPackages": {
     "title": "COMPRAR CRÉDITOS",
@@ -457,6 +499,44 @@
     "support": "Precisa de ajuda? Entre em contato conosco.",
     "verifying": "Verificando créditos...",
     "loading": "Carregando..."
+  },
+  "profile": {
+    "title": "Perfil",
+    "seoTitle": "Seu Perfil",
+    "seoDescription": "Gerencie as configurações do seu perfil",
+    "subtitle": "Gerencie sua conta e assinatura",
+    "name": "Seu nome",
+    "uploadPicture": "Clique para enviar foto",
+    "edit": "Editar perfil",
+    "viewPublicProfile": "Ver Perfil Público",
+    "myMockups": "Meus Mockups",
+    "totalCreditsUsed": "USADOS",
+    "viewAllTransactions": "Transações",
+    "manageSubscription": "Gerenciar",
+    "noSubscriptionData": "Dados de assinatura indisponíveis.",
+    "breadcrumb": "Perfil",
+    "loadError": "Falha ao carregar perfil",
+    "notAuthenticated": "Por favor, entre para ver seu perfil",
+    "selectImageFile": "Por favor, selecione um arquivo de imagem",
+    "imageSizeLimit": "Imagem muito grande. Limite é 5MB",
+    "pictureUploadError": "Falha ao enviar foto de perfil",
+    "pictureUploadSuccess": "Foto de perfil atualizada com sucesso",
+    "tabs": {
+      "overview": "Dashboard",
+      "history": "Histórico",
+      "configuration": "Configurações"
+    }
+  },
+  "referral": {
+    "title": "INDICAÇÃO",
+    "description": "Compartilhe seu link e ganhe créditos bônus quando amigos entrarem.",
+    "yourLink": "SEU LINK DE INDICAÇÃO",
+    "friendsReferred": "AMIGOS INDICADOS",
+    "totalEarned": "TOTAL DE CRÉDITOS GANHOS",
+    "generating": "Gerando código...",
+    "noCode": "Código de indicação não disponível",
+    "linkCopied": "Link de indicação copiado!",
+    "copyFailed": "Falha ao copiar link"
   },
   "auth": {
     "signIn": "ENTRAR",
@@ -505,6 +585,7 @@
     "accountCreatedSuccess": "Conta criada com sucesso!",
     "signedInSuccess": "Login realizado com sucesso!",
     "failedToConnectGoogle": "Falha ao conectar com Google. Por favor, tente novamente.",
+    "failedToConnectGoogle": "Falha ao conectar com Google. Por favor, tente novamente.",
     "or": "ou",
     "profile": "Perfil",
     "userMenu": "Menu do usuário",
@@ -521,18 +602,27 @@
   },
   "configuration": {
     "title": "Configuração",
+    "subtitle": "Gerencie suas chaves de API e conexões externas",
     "geminiApiKey": "Chave da API Gemini",
-    "apiKeyPlaceholder": "Digite sua chave da API Gemini",
-    "save": "Salvar",
-    "delete": "Excluir Chave",
-    "deleteConfirm": "Tem certeza de que deseja excluir sua chave da API?",
+    "apiKeyPlaceholder": "Insira sua chave da API Gemini",
+    "save": "Salvar Alterações",
+    "delete": "Remover Chave",
+    "deleteConfirmTitle": "Excluir Chave da API",
+    "deleteConfirmTitle": "Excluir Chave da API",
+    "deleteConfirmMessage": "Tem certeza de que deseja excluir sua chave de API? Você precisará inseri-la novamente para usar sua própria cota.",
+    "menuTitle": "Chaves de API",
     "saved": "Chave da API salva com sucesso",
-    "deleted": "Chave da API excluída com sucesso",
+    "deleted": "Chave da API removida com sucesso",
     "error": "Falha ao salvar chave da API",
-    "getApiKey": "Obtenha sua chave da API do Google AI Studio",
-    "policyLink": "Ler política de segurança",
-    "warning": "Sua chave da API é criptografada e armazenada com segurança. Apenas você pode acessá-la.",
-    "info": "Usar sua própria chave da API permite usar sua própria cota e créditos do Google."
+    "saveError": "Falha ao salvar chave da API",
+    "deleteError": "Falha ao remover a chave da API",
+    "emptyError": "A chave da API não pode estar vazia",
+    "getApiKey": "Obter chave",
+    "policyLink": "Política de Privacidade e Segurança",
+    "warning": "Sua chave é criptografada e armazenada com segurança. Apenas você pode acessá-la.",
+    "privateKey": "Sua chave é mantida privada",
+    "info": "Usar sua própria chave de API permite que você utilize sua própria cota e créditos do Google.",
+    "updateHint": "Para atualizar, basta colar sua nova chave acima."
   },
   "errors": {
     "completeSteps": "Por favor, complete todos os passos antes de gerar.",
@@ -2682,5 +2772,44 @@
     "remaining": "Restante",
     "of": "de",
     "unavailable": "Informações de armazenamento não disponíveis"
+  },
+  "profile": {
+    "seoTitle": "Perfil",
+    "seoDescription": "Gerencie seu perfil e configurações",
+    "authenticationRequired": "Autenticação necessária",
+    "title": "Perfil",
+    "subtitle": "Gerencie sua conta e assinatura",
+    "name": "Seu nome",
+    "uploadPicture": "Clique para enviar foto",
+    "edit": "Editar perfil",
+    "viewPublicProfile": "Ver Perfil Público",
+    "myMockups": "Meus Mockups",
+    "totalCreditsUsed": "USADOS",
+    "viewAllTransactions": "Transações",
+    "manageSubscription": "Gerenciar",
+    "noSubscriptionData": "Dados de assinatura indisponíveis.",
+    "breadcrumb": "Perfil",
+    "loadError": "Falha ao carregar perfil",
+    "notAuthenticated": "Por favor, entre para ver seu perfil",
+    "selectImageFile": "Por favor, selecione um arquivo de imagem",
+    "imageSizeLimit": "Imagem muito grande. Limite é 5MB",
+    "pictureUploadError": "Falha ao enviar foto de perfil",
+    "pictureUploadSuccess": "Foto de perfil atualizada com sucesso",
+    "tabs": {
+      "overview": "Dashboard",
+      "history": "Histórico",
+      "configuration": "Configurações"
+    }
+  },
+  "referral": {
+    "title": "INDICAÇÃO",
+    "description": "Compartilhe seu link e ganhe créditos bônus quando amigos entrarem.",
+    "yourLink": "SEU LINK DE INDICAÇÃO",
+    "friendsReferred": "AMIGOS INDICADOS",
+    "totalEarned": "TOTAL DE CRÉDITOS GANHOS",
+    "generating": "Gerando código...",
+    "noCode": "Código de indicação não disponível",
+    "linkCopied": "Link de indicação copiado!",
+    "copyFailed": "Falha ao copiar link"
   }
 }

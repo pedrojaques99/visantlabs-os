@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { Users, Plus, Edit2, Trash2, X, Save, Image as ImageIcon, Camera, Layers, MapPin, Sun, ArrowLeft, Heart, Maximize2, ExternalLink, RefreshCcw } from 'lucide-react';
+import { Users, Plus, Edit2, Trash2, X, Save, Image as ImageIcon, Camera, Layers, MapPin, Sun, ArrowLeft, Heart, Maximize2, ExternalLink, RefreshCcw, Copy } from 'lucide-react';
+
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 
 import {
@@ -21,6 +22,7 @@ import { AuthModal } from '../components/AuthModal';
 import { Select } from '../components/ui/select';
 import { getAllCommunityPresets, clearCommunityPresetsCache } from '../services/communityPresetsService';
 import { CommunityPresetModal } from '../components/CommunityPresetModal';
+import { ConfirmationModal } from '../components/ConfirmationModal';
 
 // Constants
 const COMMUNITY_API = '/api/community/presets';
@@ -86,6 +88,13 @@ const getInitialFormData = (presetType: PresetType): PresetFormData => ({
   tags: [],
 });
 
+const generateSlug = (name: string) => {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)+/g, '') + '-' + Math.random().toString(36).substring(2, 7);
+};
+
 export const CommunityPresetsPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -123,6 +132,8 @@ export const CommunityPresetsPage: React.FC = () => {
   });
   const [allPresets, setAllPresets] = useState<CommunityPreset[]>([]);
   const [selectedPreset, setSelectedPreset] = useState<CommunityPreset | null>(null);
+  const [duplicateModalOpen, setDuplicateModalOpen] = useState(false);
+  const [presetToDuplicate, setPresetToDuplicate] = useState<CommunityPreset | null>(null);
 
   // Computed values
   const isAuthenticated = isUserAuthenticated === true;
@@ -404,6 +415,71 @@ export const CommunityPresetsPage: React.FC = () => {
     }
   }, [t, viewMode, handleFetchMyPresets, handleFetchAllPresets]);
 
+  const handleDuplicateClick = useCallback((preset: CommunityPreset) => {
+    setPresetToDuplicate(preset);
+    setDuplicateModalOpen(true);
+  }, []);
+
+  const handleConfirmDuplicate = useCallback(async () => {
+    if (!presetToDuplicate) return;
+
+    const token = authService.getToken();
+    if (!token) {
+      toast.error(t('communityPresets.errors.mustBeAuthenticated'));
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Generate a new unique ID based on the name + random suffix
+      const newId = generateSlug(presetToDuplicate.name + '-copy');
+
+      const body: any = {
+        presetType: presetToDuplicate.presetType,
+        id: newId,
+        name: `${presetToDuplicate.name} (Copy)`,
+        description: presetToDuplicate.description,
+        prompt: presetToDuplicate.prompt,
+        aspectRatio: presetToDuplicate.aspectRatio,
+        tags: presetToDuplicate.tags,
+        model: presetToDuplicate.model,
+      };
+
+      if (presetToDuplicate.presetType === 'mockup' && presetToDuplicate.referenceImageUrl) {
+        body.referenceImageUrl = presetToDuplicate.referenceImageUrl;
+      }
+
+      const response = await fetch(COMMUNITY_API, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || t('communityPresets.errors.failedToCreate'));
+      }
+
+      // If viewing my presets, refresh list
+      if (viewMode === 'my') {
+        await handleFetchMyPresets();
+      }
+
+      toast.success(t('communityPresets.messages.presetDuplicated') || "Preset duplicated successfully");
+      setDuplicateModalOpen(false);
+      setPresetToDuplicate(null);
+    } catch (error: any) {
+      console.error('Duplicate error:', error);
+      toast.error(error.message || "Failed to duplicate preset");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [presetToDuplicate, t, viewMode, handleFetchMyPresets]);
+
   const handleToggleLike = useCallback(async (presetId: string) => {
     const token = authService.getToken();
     if (!token) {
@@ -551,6 +627,8 @@ export const CommunityPresetsPage: React.FC = () => {
   }, [presets, allPresets, activeTab, filterTag, viewMode]);
 
   const isEditing = editingPreset !== null || isCreating;
+
+
 
   return (
     <div className="min-h-screen bg-[#121212] text-zinc-300 pt-12 md:pt-14 relative">
@@ -745,6 +823,7 @@ export const CommunityPresetsPage: React.FC = () => {
                       onClick={() => setSelectedPreset(preset)}
                       onEdit={viewMode === 'my' ? () => handleEdit(preset) : undefined}
                       onDelete={viewMode === 'my' ? () => handleDelete(preset.id) : undefined}
+                      onDuplicate={isAuthenticated ? () => handleDuplicateClick(preset) : undefined}
                       onToggleLike={isAuthenticated ? () => handleToggleLike(preset.id) : undefined}
                       isAuthenticated={isAuthenticated}
                       canEdit={viewMode === 'my'}
@@ -779,6 +858,20 @@ export const CommunityPresetsPage: React.FC = () => {
             defaultIsSignUp={true}
           />
         )}
+
+        <ConfirmationModal
+          isOpen={duplicateModalOpen}
+          onClose={() => {
+            setDuplicateModalOpen(false);
+            setPresetToDuplicate(null);
+          }}
+          onConfirm={handleConfirmDuplicate}
+          title={t('communityPresets.actions.duplicateConfirm') || "Duplicate Preset"}
+          message={t('communityPresets.actions.duplicateMessage') || "Are you sure you want to duplicate this preset? It will be added to your personal collection."}
+          confirmText={t('communityPresets.actions.duplicateButton') || "Duplicate"}
+          cancelText={t('communityPresets.actions.cancel') || "Cancel"}
+          variant="info"
+        />
 
         {/* Preset Detail Modal */}
         {selectedPreset && (
@@ -828,11 +921,12 @@ const PresetCard: React.FC<{
   onClick?: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
+  onDuplicate?: () => void;
   onToggleLike?: () => void;
   isAuthenticated: boolean;
   canEdit: boolean;
   t: (key: string) => string;
-}> = ({ preset, onClick, onEdit, onDelete, onToggleLike, isAuthenticated, canEdit, t }) => {
+}> = ({ preset, onClick, onEdit, onDelete, onDuplicate, onToggleLike, isAuthenticated, canEdit, t }) => {
   const hasImage = preset.presetType === 'mockup' && preset.referenceImageUrl;
   const presetIcon = getPresetIcon(preset.presetType);
   const isLiked = preset.isLikedByUser || false;
@@ -872,30 +966,44 @@ const PresetCard: React.FC<{
               {preset.description}
             </p>
           </div>
-          {canEdit && onEdit && onDelete && (
-            <div className="flex gap-1 flex-shrink-0">
+          <div className="flex gap-1 flex-shrink-0">
+            {isAuthenticated && onDuplicate && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  onEdit?.();
+                  onDuplicate();
                 }}
                 className="p-1.5 text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-300 rounded transition-colors opacity-0 group-hover:opacity-100"
-                title={t('communityPresets.actions.edit')}
+                title={t('communityPresets.actions.duplicate') || "Duplicate"}
               >
-                <Edit2 className="h-4 w-4" />
+                <Copy className="h-4 w-4" />
               </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete?.();
-                }}
-                className="p-1.5 text-zinc-500 hover:bg-red-500/10 hover:text-red-400 rounded transition-colors opacity-0 group-hover:opacity-100"
-                title={t('communityPresets.actions.delete')}
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
-          )}
+            )}
+            {canEdit && onEdit && onDelete && (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit?.();
+                  }}
+                  className="p-1.5 text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-300 rounded transition-colors opacity-0 group-hover:opacity-100"
+                  title={t('communityPresets.actions.edit')}
+                >
+                  <Edit2 className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete?.();
+                  }}
+                  className="p-1.5 text-zinc-500 hover:bg-red-500/10 hover:text-red-400 rounded transition-colors opacity-0 group-hover:opacity-100"
+                  title={t('communityPresets.actions.delete')}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
@@ -942,7 +1050,7 @@ const PresetCard: React.FC<{
           </div>
         )}
       </div>
-    </div>
+    </div >
   );
 };
 

@@ -1,6 +1,8 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { ShieldCheck, RefreshCw, Users, Settings, ChevronUp, ChevronDown, Search, TrendingUp, TrendingDown, User, Image, CreditCard, HardDrive, UserPlus, Link2, Database } from 'lucide-react';
+import { ShieldCheck, RefreshCw, Users, Settings, ChevronUp, ChevronDown, Search, TrendingUp, TrendingDown, User, Image, CreditCard, HardDrive, UserPlus, Link2, Database, DollarSign, Palette, Type } from 'lucide-react';
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell } from "recharts"
+
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { BreadcrumbWithBack, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '../components/ui/BreadcrumbWithBack';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
@@ -10,6 +12,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs'
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
+import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "../components/ui/chart"
 import { useLayout } from '../hooks/useLayout';
 import { useTranslation } from '../hooks/useTranslation';
 import { authService } from '../services/authService';
@@ -79,6 +82,18 @@ interface AdminResponse {
 
 const ADMIN_API = '/api/admin/users';
 
+// Pricing constants based on Gemini pricing
+// Flash: $0.039 per image
+// Pro Standard (< 4K): $0.134 per image
+// Pro High Res (>= 4K): $0.24 per image
+const PRICING: Record<string, number | { standard: number; highRes: number }> = {
+  'gemini-2.5-flash-image': 0.039,
+  'gemini-3-pro-image-preview': {
+    standard: 0.134,
+    highRes: 0.24,
+  },
+};
+
 // Helper function to format bytes
 function formatBytes(bytes: number): string {
   if (bytes === 0) return '0 B';
@@ -144,13 +159,13 @@ export const AdminPage: React.FC = () => {
   useEffect(() => {
     const checkAdminStatus = async () => {
       if (isCheckingAuth) return;
-      
+
       if (isUserAuthenticated === true) {
         try {
           const user = await authService.verifyToken();
           const userIsAdmin = user?.isAdmin || false;
           setIsAdmin(userIsAdmin);
-          
+
           // Load data if user is admin
           if (userIsAdmin) {
             handleFetch();
@@ -189,6 +204,99 @@ export const AdminPage: React.FC = () => {
     );
   }, [data]);
 
+  const totalEstimatedCost = useMemo(() => {
+    if (!data?.generationStats?.imagesByModel) return 0;
+
+    let cost = 0;
+    const stats = data.generationStats.imagesByModel;
+
+    // Calculate Gemini 2.5 Flash cost
+    if (stats['gemini-2.5-flash-image']) {
+      cost += stats['gemini-2.5-flash-image'].total * (PRICING['gemini-2.5-flash-image'] as number);
+    }
+
+    // Calculate Gemini 3 Pro cost
+    if (stats['gemini-3-pro-image-preview']) {
+      const proPreco = PRICING['gemini-3-pro-image-preview'] as { standard: number; highRes: number };
+      const resolutions = stats['gemini-3-pro-image-preview'].byResolution;
+
+      Object.entries(resolutions).forEach(([res, count]) => {
+        // Simple check for 4K (assuming "4096" in resolution string means high res)
+        // Adjust logic if resolution string format differs
+        if (res.includes('4096') || res.includes('4k')) {
+          cost += count * proPreco.highRes;
+        } else {
+          cost += count * proPreco.standard;
+        }
+      });
+    }
+
+    return cost;
+  }, [data]);
+
+  // --- CHART DATA PREPARATION ---
+
+  // User Growth Data
+  const userGrowthData = useMemo(() => {
+    if (!data?.users) return [];
+
+    const usersByDate = data.users.reduce((acc, user) => {
+      const date = new Date(user.createdAt).toLocaleDateString('en-CA'); // YYYY-MM-DD
+      acc[date] = (acc[date] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Sort by date and calculate cumulative
+    const sortedDates = Object.keys(usersByDate).sort();
+    let cumulative = 0;
+
+    return sortedDates.map(date => {
+      cumulative += usersByDate[date];
+      return {
+        date,
+        users: cumulative,
+        newUsers: usersByDate[date]
+      };
+    });
+  }, [data]);
+
+  // Model Usage Data (Bar Chart)
+  const modelUsageData = useMemo(() => {
+    if (!data?.generationStats) return [];
+
+    const imageStats = Object.entries(data.generationStats.imagesByModel).map(([model, stats]) => ({
+      model: model.replace('gemini-', '').replace('-image', '').replace('-preview', ''), // Simplify name
+      count: stats.total,
+      type: 'Imagem',
+      fill: "hsl(var(--chart-1))"
+    }));
+
+    const videoStats = data.generationStats.videos ? Object.entries(data.generationStats.videos.byModel).map(([model, count]) => ({
+      model: model,
+      count: count,
+      type: 'Vídeo',
+      fill: "hsl(var(--chart-2))"
+    })) : [];
+
+    return [...imageStats, ...videoStats].sort((a, b) => b.count - a.count);
+  }, [data]);
+
+  // Chart Config
+  const chartConfig = {
+    users: {
+      label: "Total Users",
+      color: "hsl(var(--chart-1))",
+    },
+    newUsers: {
+      label: "New Users",
+      color: "hsl(var(--chart-2))",
+    },
+    count: {
+      label: "Generations",
+      color: "hsl(var(--chart-1))",
+    }
+  } satisfies ChartConfig
+
   const userLookup = useMemo(() => {
     if (!data) return {};
     return data.users.reduce((acc, user) => {
@@ -199,9 +307,9 @@ export const AdminPage: React.FC = () => {
 
   const filteredAndSortedUsers = useMemo(() => {
     if (!data) return [];
-    
+
     let filtered = data.users;
-    
+
     // Apply search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
@@ -211,30 +319,30 @@ export const AdminPage: React.FC = () => {
           user.email.toLowerCase().includes(query)
       );
     }
-    
+
     // Apply sorting
     if (sortField) {
       filtered = [...filtered].sort((a, b) => {
         const aValue = a[sortField];
         const bValue = b[sortField];
-        
+
         if (aValue === null || aValue === undefined) return 1;
         if (bValue === null || bValue === undefined) return -1;
-        
+
         if (typeof aValue === 'string' && typeof bValue === 'string') {
           return sortDirection === 'asc'
             ? aValue.localeCompare(bValue)
             : bValue.localeCompare(aValue);
         }
-        
+
         if (typeof aValue === 'number' && typeof bValue === 'number') {
           return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
         }
-        
+
         return 0;
       });
     }
-    
+
     return filtered;
   }, [data, searchQuery, sortField, sortDirection]);
 
@@ -255,346 +363,440 @@ export const AdminPage: React.FC = () => {
         noindex={true}
       />
       <div className="min-h-screen bg-[#121212] text-zinc-300 pt-12 md:pt-14 relative">
-      <div className="fixed inset-0 z-0">
-        <GridDotsBackground />
-      </div>
-      <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
-        {/* Header Compacto */}
-        <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl mb-6">
-          <CardContent className="p-4 md:p-6">
-            <div className="mb-4">
-              <BreadcrumbWithBack to="/">
-                <BreadcrumbList>
-                  <BreadcrumbItem>
-                    <BreadcrumbLink asChild>
-                      <Link to="/">{t('apps.home')}</Link>
-                    </BreadcrumbLink>
-                  </BreadcrumbItem>
-                  <BreadcrumbSeparator />
-                  <BreadcrumbItem>
-                    <BreadcrumbPage>{t('admin.title') || 'Admin'}</BreadcrumbPage>
-                  </BreadcrumbItem>
-                </BreadcrumbList>
-              </BreadcrumbWithBack>
-            </div>
-            
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <ShieldCheck className="h-6 w-6 md:h-8 md:w-8 text-[#52ddeb]" />
-                  <h1 className="text-2xl md:text-3xl font-semibold font-manrope text-zinc-300">
-                    Painel Administrativo
-                  </h1>
-                </div>
-                <p className="text-zinc-500 font-mono text-sm md:text-base ml-9 md:ml-11">
-                  Visualize usuários, assinaturas e créditos em tempo real
-                </p>
+        <div className="fixed inset-0 z-0">
+          <GridDotsBackground />
+        </div>
+        <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
+          {/* Header Compacto */}
+          <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl mb-6">
+            <CardContent className="p-4 md:p-6">
+              <div className="mb-4">
+                <BreadcrumbWithBack to="/">
+                  <BreadcrumbList>
+                    <BreadcrumbItem>
+                      <BreadcrumbLink asChild>
+                        <Link to="/">{t('apps.home')}</Link>
+                      </BreadcrumbLink>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                      <BreadcrumbPage>{t('admin.title') || 'Admin'}</BreadcrumbPage>
+                    </BreadcrumbItem>
+                  </BreadcrumbList>
+                </BreadcrumbWithBack>
               </div>
-              
-              {isAuthenticated && data && (
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    variant={location.pathname === '/admin' ? 'default' : 'outline'}
-                    onClick={() => navigate('/admin')}
-                    className="flex items-center gap-2"
-                  >
-                    <Users className="h-4 w-4" />
-                    Usuários
-                  </Button>
-                  <Button
-                    variant={location.pathname === '/admin/presets' ? 'default' : 'outline'}
-                    onClick={() => navigate('/admin/presets')}
-                    className="flex items-center gap-2"
-                  >
-                    <Settings className="h-4 w-4" />
-                    Presets
-                  </Button>
+
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                    <ShieldCheck className="h-6 w-6 md:h-8 md:w-8 text-[#52ddeb]" />
+                    <h1 className="text-2xl md:text-3xl font-semibold font-manrope text-zinc-300">
+                      Painel Administrativo
+                    </h1>
+                  </div>
+                  <p className="text-zinc-500 font-mono text-sm md:text-base ml-9 md:ml-11">
+                    Visualize usuários, assinaturas e créditos em tempo real
+                  </p>
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
 
-        {isCheckingAuth && (
-          <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl max-w-md mx-auto">
-            <CardContent className="p-6 md:p-8 text-center">
-              <GlitchLoader size={32} />
-            </CardContent>
-          </Card>
-        )}
-
-        {!isCheckingAuth && !isAuthenticated && (
-          <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl max-w-md mx-auto">
-            <CardContent className="p-6 md:p-8 space-y-4 text-center">
-              {isUserAuthenticated === false ? (
-                <>
-                  <p className="text-zinc-400 font-mono mb-4">
-                    Você precisa estar logado para acessar esta página.
-                  </p>
-                  <Button
-                    onClick={() => navigate('/')}
-                    className="bg-[#52ddeb]/80 hover:bg-[#52ddeb] text-black"
-                  >
-                    Fazer Login
-                  </Button>
-                </>
-              ) : isAdmin === false ? (
-                <>
-                  <p className="text-zinc-400 font-mono mb-4">
-                    Acesso negado. Você precisa ser um administrador para acessar esta página.
-                  </p>
-                  {error && (
-                    <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-sm text-red-400 font-mono">
-                      {error}
-                    </div>
-                  )}
-                </>
-              ) : null}
-            </CardContent>
-          </Card>
-        )}
-
-        {isAuthenticated && data && (
-          <Tabs defaultValue="overview" className="space-y-6">
-            <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between gap-4">
-                  <TabsList className="bg-transparent border-0">
-                    <TabsTrigger value="overview" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black">
-                      Visão Geral
-                    </TabsTrigger>
-                    <TabsTrigger value="users" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black">
+                {isAuthenticated && data && (
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant={location.pathname === '/admin' ? 'default' : 'outline'}
+                      onClick={() => navigate('/admin')}
+                      className="flex items-center gap-2"
+                    >
+                      <Users className="h-4 w-4" />
                       Usuários
-                    </TabsTrigger>
-                    {data.generationStats && (
-                      <TabsTrigger value="stats" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black">
-                        Estatísticas
-                      </TabsTrigger>
-                    )}
-                  </TabsList>
-                  <Button
-                    onClick={handleRefresh}
-                    disabled={isLoading}
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-2"
-                  >
-                    <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-                    Atualizar
-                  </Button>
-                </div>
+                    </Button>
+                    <Button
+                      variant={location.pathname === '/admin/presets' ? 'default' : 'outline'}
+                      onClick={() => navigate('/admin/presets')}
+                      className="flex items-center gap-2"
+                    >
+                      <Settings className="h-4 w-4" />
+                      Presets
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {isCheckingAuth && (
+            <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl max-w-md mx-auto">
+              <CardContent className="p-6 md:p-8 text-center">
+                <GlitchLoader size={32} />
               </CardContent>
             </Card>
+          )}
 
-            <TabsContent value="overview" className="space-y-6">
-              {/* Main KPI Cards - Bento Box Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                {/* Total Users - Large Card */}
-                <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl md:col-span-2 lg:col-span-1">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                        <User className="h-6 w-6 text-[#52ddeb]" />
+          {!isCheckingAuth && !isAuthenticated && (
+            <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl max-w-md mx-auto">
+              <CardContent className="p-6 md:p-8 space-y-4 text-center">
+                {isUserAuthenticated === false ? (
+                  <>
+                    <p className="text-zinc-400 font-mono mb-4">
+                      Você precisa estar logado para acessar esta página.
+                    </p>
+                    <Button
+                      onClick={() => navigate('/')}
+                      className="bg-[#52ddeb]/80 hover:bg-[#52ddeb] text-black"
+                    >
+                      Fazer Login
+                    </Button>
+                  </>
+                ) : isAdmin === false ? (
+                  <>
+                    <p className="text-zinc-400 font-mono mb-4">
+                      Acesso negado. Você precisa ser um administrador para acessar esta página.
+                    </p>
+                    {error && (
+                      <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-sm text-red-400 font-mono">
+                        {error}
                       </div>
-                      <div className="flex items-center gap-1 text-xs text-zinc-500 font-mono">
-                        <TrendingUp className="h-3 w-3 text-[#52ddeb]" />
-                        <span>+12.5%</span>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-4xl font-bold text-zinc-300 mb-2 font-mono">
-                        {data.totalUsers}
-                      </p>
-                      <p className="text-sm text-zinc-500 font-mono">Total Usuários</p>
-                      <p className="text-xs text-zinc-400 font-mono mt-1">Crescimento este mês</p>
-                    </div>
-                  </CardContent>
-                </Card>
+                    )}
+                  </>
+                ) : null}
+              </CardContent>
+            </Card>
+          )}
 
-                {/* Total Mockups Generated */}
-                <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                        <Image className="h-6 w-6 text-[#52ddeb]" />
-                      </div>
-                      <div className="flex items-center gap-1 text-xs text-zinc-500 font-mono">
-                        <TrendingUp className="h-3 w-3 text-[#52ddeb]" />
-                        <span>+8.2%</span>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-3xl font-bold text-[#52ddeb] mb-2 font-mono">
-                        {data.totalMockupsGenerated}
-                      </p>
-                      <p className="text-sm text-zinc-500 font-mono">Mockups Gerados</p>
-                      <p className="text-xs text-zinc-400 font-mono mt-1">Total de gerações</p>
-                    </div>
-                  </CardContent>
-                </Card>
+          {isAuthenticated && data && (
+            <Tabs defaultValue="overview" className="space-y-6">
+              <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <TabsList className="bg-transparent border-0">
+                      <TabsTrigger value="overview" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black">
+                        Dashboard
+                      </TabsTrigger>
+                      {data.generationStats && (
+                        <TabsTrigger value="generations" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black">
+                          Gerações
+                        </TabsTrigger>
+                      )}
+                      <TabsTrigger value="users" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black">
+                        Usuários
+                      </TabsTrigger>
+                    </TabsList>
+                    <Button
+                      onClick={handleRefresh}
+                      disabled={isLoading}
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-2"
+                    >
+                      <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                      Atualizar
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
 
-                {/* Total Mockups Saved */}
-                <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                        <Database className="h-6 w-6 text-[#52ddeb]" />
-                      </div>
-                      <div className="flex items-center gap-1 text-xs text-zinc-500 font-mono">
-                        <TrendingUp className="h-3 w-3 text-[#52ddeb]" />
-                        <span>+5.1%</span>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-3xl font-bold text-[#52ddeb] mb-2 font-mono">
-                        {data.totalMockupsSaved}
-                      </p>
-                      <p className="text-sm text-zinc-500 font-mono">Mockups Salvos</p>
-                      <p className="text-xs text-zinc-400 font-mono mt-1">Armazenados no sistema</p>
-                    </div>
-                  </CardContent>
-                </Card>
+              <TabsContent value="overview" className="space-y-6">
 
-                {/* Total Credits Used */}
-                <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl md:col-span-2">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                        <CreditCard className="h-6 w-6 text-[#52ddeb]" />
+                {/* KPI Grid - Top Level Metrics */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                  {/* Total Estimated Cost */}
+                  <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl ring-1 ring-[#52ddeb]/20">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
+                          <DollarSign className="h-6 w-6 text-[#52ddeb]" />
+                        </div>
+                        <Badge variant="outline" className="text-[10px] bg-black/40 border-[#52ddeb]/30 text-[#52ddeb]">
+                          ESTIMADO
+                        </Badge>
                       </div>
-                      <div className="flex items-center gap-1 text-xs text-zinc-500 font-mono">
-                        <TrendingUp className="h-3 w-3 text-[#52ddeb]" />
-                        <span>+15.3%</span>
+                      <div>
+                        <p className="text-3xl font-bold text-zinc-300 mb-2 font-mono">
+                          $ {totalEstimatedCost.toFixed(3)}
+                        </p>
+                        <p className="text-sm text-zinc-500 font-mono">Custo Estimado</p>
+                        <p className="text-xs text-zinc-400 font-mono mt-1">Baseado no uso (Gemini)</p>
                       </div>
-                    </div>
-                    <div>
-                      <p className="text-4xl font-bold text-[#52ddeb] mb-2 font-mono">
-                        {data.totalCreditsUsed.toLocaleString()}
-                      </p>
-                      <p className="text-sm text-zinc-500 font-mono">Créditos Usados</p>
-                      <p className="text-xs text-zinc-400 font-mono mt-1">Consumo total da plataforma</p>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
 
-                {/* Total Storage Used */}
-                <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                        <HardDrive className="h-6 w-6 text-[#52ddeb]" />
-                      </div>
-                      <div className="flex items-center gap-1 text-xs text-zinc-500 font-mono">
-                        <TrendingUp className="h-3 w-3 text-[#52ddeb]" />
-                        <span>+2.8%</span>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-3xl font-bold text-[#52ddeb] mb-2 font-mono">
-                        {data.totalStorageUsed !== undefined ? formatBytes(data.totalStorageUsed) : '—'}
-                      </p>
-                      <p className="text-sm text-zinc-500 font-mono">Armazenamento Total</p>
-                      <p className="text-xs text-zinc-400 font-mono mt-1">Espaço utilizado</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Referral Stats - Bento Box Cards */}
-              {data.referralStats && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                  {/* Total Users */}
                   <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                          <Link2 className="h-6 w-6 text-[#52ddeb]" />
+                          <User className="h-6 w-6 text-[#52ddeb]" />
                         </div>
                         <div className="flex items-center gap-1 text-xs text-zinc-500 font-mono">
                           <TrendingUp className="h-3 w-3 text-[#52ddeb]" />
-                          <span>+10.2%</span>
+                          <span>+12.5%</span>
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-3xl font-bold text-zinc-300 mb-2 font-mono">
+                          {data.totalUsers}
+                        </p>
+                        <p className="text-sm text-zinc-500 font-mono">Total Usuários</p>
+                        <p className="text-xs text-zinc-400 font-mono mt-1">Cadastrados no sistema</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Active Subscriptions */}
+                  <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
+                          <CreditCard className="h-6 w-6 text-[#52ddeb]" />
                         </div>
                       </div>
                       <div>
                         <p className="text-3xl font-bold text-[#52ddeb] mb-2 font-mono">
-                          {data.referralStats.totalReferralCount}
+                          {data.users.filter(u => u.subscriptionStatus === 'active' || u.subscriptionStatus === 'trialing').length}
                         </p>
-                        <p className="text-sm text-zinc-500 font-mono">Indicações Registradas</p>
-                        <p className="text-xs text-zinc-400 font-mono mt-1">Total de referências</p>
+                        <p className="text-sm text-zinc-500 font-mono">Assinaturas Ativas</p>
+                        <p className="text-xs text-zinc-400 font-mono mt-1">Planos recorrentes</p>
                       </div>
                     </CardContent>
                   </Card>
 
+                  {/* Total Storage Used */}
                   <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                          <UserPlus className="h-6 w-6 text-[#52ddeb]" />
-                        </div>
-                        <div className="flex items-center gap-1 text-xs text-zinc-500 font-mono">
-                          <TrendingUp className="h-3 w-3 text-[#52ddeb]" />
-                          <span>+7.5%</span>
+                          <HardDrive className="h-6 w-6 text-[#52ddeb]" />
                         </div>
                       </div>
                       <div>
-                        <p className="text-3xl font-bold text-zinc-300 mb-2 font-mono">
-                          {data.referralStats.totalReferredUsers}
+                        <p className="text-3xl font-bold text-[#52ddeb] mb-2 font-mono">
+                          {data.totalStorageUsed !== undefined ? formatBytes(data.totalStorageUsed) : '—'}
                         </p>
-                        <p className="text-sm text-zinc-500 font-mono">Usuários Indicados</p>
-                        <p className="text-xs text-zinc-400 font-mono mt-1">Novos usuários via referência</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                          <Link2 className="h-6 w-6 text-[#52ddeb]" />
-                        </div>
-                        <div className="flex items-center gap-1 text-xs text-zinc-500 font-mono">
-                          <TrendingUp className="h-3 w-3 text-[#52ddeb]" />
-                          <span>+3.1%</span>
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-3xl font-bold text-zinc-300 mb-2 font-mono">
-                          {data.referralStats.usersWithReferralCode}
-                        </p>
-                        <p className="text-sm text-zinc-500 font-mono">Links Ativos</p>
-                        <p className="text-xs text-zinc-400 font-mono mt-1">Códigos de referência ativos</p>
+                        <p className="text-sm text-zinc-500 font-mono">Armazenamento</p>
+                        <p className="text-xs text-zinc-400 font-mono mt-1">Uso total em disco</p>
                       </div>
                     </CardContent>
                   </Card>
                 </div>
-              )}
-            </TabsContent>
 
-            {data.generationStats && (
-              <TabsContent value="stats" className="space-y-6">
-                {/* Images by Model - Individual Cards */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-zinc-300 font-mono">Imagens por Modelo</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                    {Object.entries(data.generationStats.imagesByModel).map(([model, stats]) => (
-                      <Card key={model} className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                {/* User Growth Chart */}
+                <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl">
+                  <CardHeader>
+                    <CardTitle className="text-zinc-300">Crescimento de Usuários</CardTitle>
+                    <CardDescription className="text-zinc-500">Novos usuários nos últimos 30 dias</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-[300px] w-full">
+                      <ChartContainer config={chartConfig} className="aspect-auto h-full w-full">
+                        <AreaChart
+                          accessibilityLayer
+                          data={userGrowthData}
+                          margin={{
+                            left: 12,
+                            right: 12,
+                          }}
+                        >
+                          <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#333" />
+                          <XAxis
+                            dataKey="date"
+                            tickLine={false}
+                            axisLine={false}
+                            tickMargin={8}
+                            minTickGap={32}
+                            tickFormatter={(value) => {
+                              const date = new Date(value)
+                              return date.toLocaleDateString("pt-BR", {
+                                month: "short",
+                                day: "numeric",
+                              })
+                            }}
+                          />
+                          <ChartTooltip
+                            cursor={false}
+                            content={<ChartTooltipContent indicator="dot" />}
+                          />
+                          <Area
+                            dataKey="users"
+                            type="natural"
+                            fill="#52ddeb"
+                            fillOpacity={0.1}
+                            stroke="#52ddeb"
+                            stackId="a"
+                          />
+                        </AreaChart>
+                      </ChartContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Referral Stats */}
+                {data.referralStats && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                      <CardContent className="p-6">
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
+                            <Link2 className="h-6 w-6 text-[#52ddeb]" />
+                          </div>
+                          <div className="flex items-center gap-1 text-xs text-zinc-500 font-mono">
+                            <TrendingUp className="h-3 w-3 text-[#52ddeb]" />
+                            <span>+10.2%</span>
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-3xl font-bold text-[#52ddeb] mb-2 font-mono">
+                            {data.referralStats.totalReferralCount}
+                          </p>
+                          <p className="text-sm text-zinc-500 font-mono">Indicações</p>
+                          <p className="text-xs text-zinc-400 font-mono mt-1">Total de convites enviados</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                      <CardContent className="p-6">
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
+                            <UserPlus className="h-6 w-6 text-[#52ddeb]" />
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-3xl font-bold text-zinc-300 mb-2 font-mono">
+                            {data.referralStats.totalReferredUsers}
+                          </p>
+                          <p className="text-sm text-zinc-500 font-mono">Usuários Indicados</p>
+                          <p className="text-xs text-zinc-400 font-mono mt-1">Novas contas via convite</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                      <CardContent className="p-6">
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
+                            <Link2 className="h-6 w-6 text-[#52ddeb]" />
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-3xl font-bold text-zinc-300 mb-2 font-mono">
+                            {data.referralStats.usersWithReferralCode}
+                          </p>
+                          <p className="text-sm text-zinc-500 font-mono">Links Ativos</p>
+                          <p className="text-xs text-zinc-400 font-mono mt-1">Códigos de referência em uso</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+              </TabsContent>
+
+              {data.generationStats && (
+                <TabsContent value="generations" className="space-y-6">
+                  {/* Model Usage Chart */}
+                  <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl">
+                    <CardHeader>
+                      <CardTitle className="text-zinc-300">Gerações por Modelo (Imagem + Vídeo)</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-[300px] w-full">
+                        <ChartContainer config={chartConfig} className="aspect-auto h-full w-full">
+                          <BarChart accessibilityLayer data={modelUsageData}>
+                            <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#333" />
+                            <XAxis
+                              dataKey="model"
+                              tickLine={false}
+                              tickMargin={10}
+                              axisLine={false}
+                              tickFormatter={(value) => value.slice(0, 10)}
+                            />
+                            <ChartTooltip
+                              cursor={false}
+                              content={<ChartTooltipContent />}
+                            />
+                            <Bar dataKey="count" radius={8}>
+                              {modelUsageData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.fill} />
+                              ))}
+                            </Bar>
+                          </BarChart>
+                        </ChartContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* By Feature - Grid */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-zinc-300 font-mono">Por Feature</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                      {(['mockupmachine', 'canvas', 'brandingmachine'] as const).map((feature) => {
+                        const stats = data.generationStats.byFeature[feature];
+                        return (
+                          <Card key={feature} className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                            <CardContent className="p-6">
+                              <div className="flex items-start justify-between mb-4">
+                                <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
+                                  {feature === 'mockupmachine' ? <Image className="h-6 w-6 text-[#52ddeb]" /> :
+                                    feature === 'brandingmachine' ? <Type className="h-6 w-6 text-[#52ddeb]" /> :
+                                      <Palette className="h-6 w-6 text-[#52ddeb]" />}
+                                </div>
+                              </div>
+                              <div className="mb-4">
+                                <p className="text-sm font-semibold text-[#52ddeb] font-mono mb-3 uppercase">{feature}</p>
+                                <div className="space-y-2 text-xs font-mono">
+                                  <p className="text-zinc-300">Imagens: <span className="text-[#52ddeb] font-bold">{stats.images}</span></p>
+                                  <p className="text-zinc-300">Vídeos: <span className="text-[#52ddeb] font-bold">{stats.videos}</span></p>
+                                  <p className="text-zinc-300">Passos Texto: <span className="text-[#52ddeb] font-bold">{stats.textSteps}</span></p>
+                                  <p className="text-zinc-300">Prompts Gerados: <span className="text-[#52ddeb] font-bold">{stats.promptGenerations}</span></p>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Detailed Breakdowns Grid */}
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                    {/* Images by Model */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-zinc-300 font-mono">Imagens por Modelo</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {Object.entries(data.generationStats.imagesByModel).map(([model, stats]) => (
+                          <Card key={model} className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 transition-all duration-300 shadow-lg">
+                            <CardContent className="p-4">
+                              <p className="text-xs font-semibold text-[#52ddeb] font-mono mb-2 truncate" title={model}>{model}</p>
+                              <p className="text-2xl font-bold text-zinc-300 font-mono">{stats.total}</p>
+                              {Object.keys(stats.byResolution).length > 0 && (
+                                <div className="mt-3 pt-3 border-t border-zinc-800/50 flex flex-wrap gap-1">
+                                  {Object.entries(stats.byResolution).map(([resolution, count]) => (
+                                    <Badge key={resolution} variant="outline" className="text-[10px] px-1 py-0 h-5 bg-black/40 border-zinc-700/50">
+                                      {resolution}: {count}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              )}
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Videos by Model */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-zinc-300 font-mono">Vídeos por Modelo</h3>
+                      <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 transition-all duration-300 shadow-lg">
                         <CardContent className="p-6">
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                              <Image className="h-6 w-6 text-[#52ddeb]" />
-                            </div>
-                          </div>
                           <div className="mb-4">
-                            <p className="text-sm font-semibold text-[#52ddeb] font-mono mb-2">{model}</p>
-                            <p className="text-3xl font-bold text-zinc-300 font-mono">{stats.total}</p>
-                            <p className="text-xs text-zinc-500 font-mono mt-1">imagens geradas</p>
+                            <p className="text-3xl font-bold text-zinc-300 font-mono mb-2">{data.generationStats.videos.total}</p>
+                            <p className="text-sm text-zinc-500 font-mono">Total de Vídeos</p>
                           </div>
-                          {Object.keys(stats.byResolution).length > 0 && (
+                          {Object.keys(data.generationStats.videos.byModel).length > 0 && (
                             <div className="mt-4 pt-4 border-t border-zinc-800/50">
-                              <p className="text-xs text-zinc-500 font-mono mb-2 uppercase">Por Resolução:</p>
+                              <p className="text-xs text-zinc-500 font-mono mb-2 uppercase">Por Modelo:</p>
                               <div className="flex flex-wrap gap-2">
-                                {Object.entries(stats.byResolution).map(([resolution, count]) => (
-                                  <Badge key={resolution} variant="outline" className="text-xs bg-black/40 border-zinc-700/50">
-                                    {resolution}: {count}
+                                {Object.entries(data.generationStats.videos.byModel).map(([model, count]) => (
+                                  <Badge key={model} variant="outline" className="text-xs bg-black/40 border-zinc-700/50">
+                                    {model}: {count}
                                   </Badge>
                                 ))}
                               </div>
@@ -602,13 +804,105 @@ export const AdminPage: React.FC = () => {
                           )}
                         </CardContent>
                       </Card>
-                    ))}
+                    </div>
                   </div>
-                </div>
 
-                {/* Videos - Individual Card */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-zinc-300 font-mono">Vídeos</h3>
+                  {/* Text Tokens Section */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-zinc-300 font-mono">Processamento de Texto</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                      {/* Branding Tokens */}
+                      <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl col-span-2 md:col-span-2 lg:col-span-1">
+                        <CardContent className="p-4">
+                          <p className="text-xs text-zinc-500 font-mono mb-1">Branding Steps</p>
+                          <p className="text-xl font-bold text-zinc-300 font-mono">{data.generationStats.textTokens.totalSteps}</p>
+                        </CardContent>
+                      </Card>
+                      <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl">
+                        <CardContent className="p-4">
+                          <p className="text-xs text-zinc-500 font-mono mb-1">Input Tokens</p>
+                          <p className="text-xl font-bold text-[#52ddeb] font-mono">{data.generationStats.textTokens.inputTokens.toLocaleString()}</p>
+                        </CardContent>
+                      </Card>
+                      <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl">
+                        <CardContent className="p-4">
+                          <p className="text-xs text-zinc-500 font-mono mb-1">Output Tokens</p>
+                          <p className="text-xl font-bold text-[#52ddeb] font-mono">{data.generationStats.textTokens.outputTokens.toLocaleString()}</p>
+                        </CardContent>
+                      </Card>
+
+                      {/* Prompt Gen Tokens */}
+                      <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl col-span-2 md:col-span-2 lg:col-span-1">
+                        <CardContent className="p-4">
+                          <p className="text-xs text-zinc-500 font-mono mb-1">Prompt Gen Total</p>
+                          <p className="text-xl font-bold text-zinc-300 font-mono">{data.generationStats.byFeature['prompt-generation'].total}</p>
+                        </CardContent>
+                      </Card>
+                      <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl">
+                        <CardContent className="p-4">
+                          <p className="text-xs text-zinc-500 font-mono mb-1">Prompt Input</p>
+                          <p className="text-xl font-bold text-[#52ddeb] font-mono">{data.generationStats.byFeature['prompt-generation'].inputTokens.toLocaleString()}</p>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                </TabsContent>
+              )}
+
+              <TabsContent value="users" className="space-y-6">
+                {/* Summary Stats Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                  <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
+                          <Users className="h-6 w-6 text-[#52ddeb]" />
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-3xl font-bold text-zinc-300 mb-2 font-mono">
+                          {data.users.length}
+                        </p>
+                        <p className="text-sm text-zinc-500 font-mono">Total Usuários</p>
+                        <p className="text-xs text-zinc-400 font-mono mt-1">Cadastrados no sistema</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
+                          <CreditCard className="h-6 w-6 text-[#52ddeb]" />
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-3xl font-bold text-[#52ddeb] mb-2 font-mono">
+                          {data.users.filter(u => u.subscriptionStatus === 'active' || u.subscriptionStatus === 'trialing').length}
+                        </p>
+                        <p className="text-sm text-zinc-500 font-mono">Assinaturas Ativas</p>
+                        <p className="text-xs text-zinc-400 font-mono mt-1">Usuários com plano ativo</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
+                          <CreditCard className="h-6 w-6 text-[#52ddeb]" />
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-3xl font-bold text-[#52ddeb] mb-2 font-mono">
+                          {totals.monthlyCredits + totals.manualCredits}
+                        </p>
+                        <p className="text-sm text-zinc-500 font-mono">Créditos Distribuídos</p>
+                        <p className="text-xs text-zinc-400 font-mono mt-1">Total de créditos atribuídos</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
                   <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
@@ -616,399 +910,200 @@ export const AdminPage: React.FC = () => {
                           <Image className="h-6 w-6 text-[#52ddeb]" />
                         </div>
                       </div>
-                      <div className="mb-4">
-                        <p className="text-3xl font-bold text-zinc-300 font-mono mb-2">{data.generationStats.videos.total}</p>
-                        <p className="text-sm text-zinc-500 font-mono">Total de Vídeos</p>
+                      <div>
+                        <p className="text-3xl font-bold text-[#52ddeb] mb-2 font-mono">
+                          {data.users.reduce((sum, u) => sum + (u.mockupCount || 0), 0)}
+                        </p>
+                        <p className="text-sm text-zinc-500 font-mono">Mockups Criados</p>
+                        <p className="text-xs text-zinc-400 font-mono mt-1">Total de mockups gerados</p>
                       </div>
-                      {Object.keys(data.generationStats.videos.byModel).length > 0 && (
-                        <div className="mt-4 pt-4 border-t border-zinc-800/50">
-                          <p className="text-xs text-zinc-500 font-mono mb-2 uppercase">Por Modelo:</p>
-                          <div className="flex flex-wrap gap-2">
-                            {Object.entries(data.generationStats.videos.byModel).map(([model, count]) => (
-                              <Badge key={model} variant="outline" className="text-xs bg-black/40 border-zinc-700/50">
-                                {model}: {count}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                      )}
                     </CardContent>
                   </Card>
                 </div>
 
-                {/* Text Tokens - Individual Cards */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-zinc-300 font-mono">Tokens de Texto (Branding)</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
-                    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                      <CardContent className="p-6">
-                        <div className="mb-4">
-                          <p className="text-2xl font-bold text-zinc-300 font-mono mb-2">{data.generationStats.textTokens.totalSteps}</p>
-                          <p className="text-xs text-zinc-500 font-mono">Total Passos</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                      <CardContent className="p-6">
-                        <div className="mb-4">
-                          <p className="text-2xl font-bold text-[#52ddeb] font-mono mb-2">{data.generationStats.textTokens.inputTokens.toLocaleString()}</p>
-                          <p className="text-xs text-zinc-500 font-mono">Input Tokens</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                      <CardContent className="p-6">
-                        <div className="mb-4">
-                          <p className="text-2xl font-bold text-[#52ddeb] font-mono mb-2">{data.generationStats.textTokens.outputTokens.toLocaleString()}</p>
-                          <p className="text-xs text-zinc-500 font-mono">Output Tokens</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                      <CardContent className="p-6">
-                        <div className="mb-4">
-                          <p className="text-2xl font-bold text-zinc-300 font-mono mb-2">{(data.generationStats.textTokens.inputTokens + data.generationStats.textTokens.outputTokens).toLocaleString()}</p>
-                          <p className="text-xs text-zinc-500 font-mono">Total Tokens</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                      <CardContent className="p-6">
-                        <div className="mb-4">
-                          <p className="text-2xl font-bold text-zinc-300 font-mono mb-2">{data.generationStats.textTokens.totalPromptLength.toLocaleString()}</p>
-                          <p className="text-xs text-zinc-500 font-mono">Chars Prompt</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </div>
-
-                {/* Prompt Generations - Individual Cards */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-zinc-300 font-mono">Geração de Prompts Automáticos</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                      <CardContent className="p-6">
-                        <div className="mb-4">
-                          <p className="text-2xl font-bold text-zinc-300 font-mono mb-2">{data.generationStats.byFeature['prompt-generation'].total}</p>
-                          <p className="text-xs text-zinc-500 font-mono">Total</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                      <CardContent className="p-6">
-                        <div className="mb-4">
-                          <p className="text-2xl font-bold text-[#52ddeb] font-mono mb-2">{data.generationStats.byFeature['prompt-generation'].inputTokens.toLocaleString()}</p>
-                          <p className="text-xs text-zinc-500 font-mono">Input Tokens</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                      <CardContent className="p-6">
-                        <div className="mb-4">
-                          <p className="text-2xl font-bold text-[#52ddeb] font-mono mb-2">{data.generationStats.byFeature['prompt-generation'].outputTokens.toLocaleString()}</p>
-                          <p className="text-xs text-zinc-500 font-mono">Output Tokens</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                      <CardContent className="p-6">
-                        <div className="mb-4">
-                          <p className="text-2xl font-bold text-zinc-300 font-mono mb-2">{(data.generationStats.byFeature['prompt-generation'].inputTokens + data.generationStats.byFeature['prompt-generation'].outputTokens).toLocaleString()}</p>
-                          <p className="text-xs text-zinc-500 font-mono">Total Tokens</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </div>
-
-                {/* By Feature - Individual Cards */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-zinc-300 font-mono">Por Feature</h3>
-                  <div className="grid grid-cols-3 gap-4 md:gap-6">
-                    {(['mockupmachine', 'canvas', 'brandingmachine'] as const).map((feature) => {
-                      const stats = data.generationStats.byFeature[feature];
-                      return (
-                        <Card key={feature} className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                          <CardContent className="p-6">
-                            <div className="flex items-start justify-between mb-4">
-                              <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                                <Image className="h-6 w-6 text-[#52ddeb]" />
-                              </div>
-                            </div>
-                            <div className="mb-4">
-                              <p className="text-sm font-semibold text-[#52ddeb] font-mono mb-3 uppercase">{feature}</p>
-                              <div className="space-y-2 text-xs font-mono">
-                                <p className="text-zinc-300">Imagens: <span className="text-[#52ddeb] font-bold">{stats.images}</span></p>
-                                <p className="text-zinc-300">Vídeos: <span className="text-[#52ddeb] font-bold">{stats.videos}</span></p>
-                                <p className="text-zinc-300">Passos Texto: <span className="text-[#52ddeb] font-bold">{stats.textSteps}</span></p>
-                                <p className="text-zinc-300">Prompts Gerados: <span className="text-[#52ddeb] font-bold">{stats.promptGenerations}</span></p>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                  </div>
-                </div>
-              </TabsContent>
-            )}
-
-            <TabsContent value="users" className="space-y-6">
-              {/* Summary Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                {/* Search Card */}
+                <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 transition-all duration-300 shadow-lg">
                   <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                        <Users className="h-6 w-6 text-[#52ddeb]" />
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                      <div>
+                        <CardTitle className="flex items-center gap-3 text-zinc-300 font-mono mb-2">
+                          <Search className="h-5 w-5 text-[#52ddeb]" />
+                          Buscar Usuários
+                        </CardTitle>
+                        <CardDescription className="text-zinc-500 font-mono">
+                          {searchQuery
+                            ? `${filteredAndSortedUsers.length} de ${data.users.length} usuários encontrados`
+                            : `${data.users.length} usuários cadastrados`}
+                        </CardDescription>
                       </div>
-                    </div>
-                    <div>
-                      <p className="text-3xl font-bold text-zinc-300 mb-2 font-mono">
-                        {data.users.length}
-                      </p>
-                      <p className="text-sm text-zinc-500 font-mono">Total Usuários</p>
-                      <p className="text-xs text-zinc-400 font-mono mt-1">Cadastrados no sistema</p>
+                      <div className="relative w-full md:w-auto md:min-w-[300px]">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                        <Input
+                          type="text"
+                          placeholder="Buscar por nome ou email..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="pl-10 bg-black/40 border-zinc-800/50 text-zinc-300 placeholder:text-zinc-500"
+                        />
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                        <CreditCard className="h-6 w-6 text-[#52ddeb]" />
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-3xl font-bold text-[#52ddeb] mb-2 font-mono">
-                        {data.users.filter(u => u.subscriptionStatus === 'active' || u.subscriptionStatus === 'trialing').length}
-                      </p>
-                      <p className="text-sm text-zinc-500 font-mono">Assinaturas Ativas</p>
-                      <p className="text-xs text-zinc-400 font-mono mt-1">Usuários com plano ativo</p>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                        <CreditCard className="h-6 w-6 text-[#52ddeb]" />
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-3xl font-bold text-[#52ddeb] mb-2 font-mono">
-                        {totals.monthlyCredits + totals.manualCredits}
-                      </p>
-                      <p className="text-sm text-zinc-500 font-mono">Créditos Distribuídos</p>
-                      <p className="text-xs text-zinc-400 font-mono mt-1">Total de créditos atribuídos</p>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                        <Image className="h-6 w-6 text-[#52ddeb]" />
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-3xl font-bold text-[#52ddeb] mb-2 font-mono">
-                        {data.users.reduce((sum, u) => sum + (u.mockupCount || 0), 0)}
-                      </p>
-                      <p className="text-sm text-zinc-500 font-mono">Mockups Criados</p>
-                      <p className="text-xs text-zinc-400 font-mono mt-1">Total de mockups gerados</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Search Card */}
-              <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 transition-all duration-300 shadow-lg">
-                <CardContent className="p-6">
-                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                    <div>
-                      <CardTitle className="flex items-center gap-3 text-zinc-300 font-mono mb-2">
-                        <Search className="h-5 w-5 text-[#52ddeb]" />
-                        Buscar Usuários
-                      </CardTitle>
-                      <CardDescription className="text-zinc-500 font-mono">
-                        {searchQuery
-                          ? `${filteredAndSortedUsers.length} de ${data.users.length} usuários encontrados`
-                          : `${data.users.length} usuários cadastrados`}
-                      </CardDescription>
-                    </div>
-                    <div className="relative w-full md:w-auto md:min-w-[300px]">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                      <Input
-                        type="text"
-                        placeholder="Buscar por nome ou email..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10 bg-black/40 border-zinc-800/50 text-zinc-300 placeholder:text-zinc-500"
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Table Card */}
-              <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 transition-all duration-300 shadow-lg">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-3 text-zinc-300 font-mono">
-                    <Users className="h-5 w-5 text-[#52ddeb]" />
-                    Lista de Usuários
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="border-zinc-800/50 hover:bg-transparent">
-                        <TableHead className="text-zinc-500 font-mono">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleSort('name')}
-                            className="flex items-center gap-2 h-auto p-0 font-mono text-zinc-500 hover:text-zinc-300"
-                          >
-                            Usuário
-                            {sortField === 'name' && (
-                              sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </TableHead>
-                        <TableHead className="text-zinc-500 font-mono">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleSort('subscriptionTier')}
-                            className="flex items-center gap-2 h-auto p-0 font-mono text-zinc-500 hover:text-zinc-300"
-                          >
-                            Assinatura
-                            {sortField === 'subscriptionTier' && (
-                              sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </TableHead>
-                        <TableHead className="text-zinc-500 font-mono">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleSort('creditsRemaining')}
-                            className="flex items-center gap-2 h-auto p-0 font-mono text-zinc-500 hover:text-zinc-300"
-                          >
-                            Créditos
-                            {sortField === 'creditsRemaining' && (
-                              sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </TableHead>
-                        <TableHead className="text-zinc-500 font-mono">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleSort('referralCount')}
-                            className="flex items-center gap-2 h-auto p-0 font-mono text-zinc-500 hover:text-zinc-300"
-                          >
-                            Indicações
-                            {sortField === 'referralCount' && (
-                              sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </TableHead>
-                        <TableHead className="text-zinc-500 font-mono">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleSort('mockupCount')}
-                            className="flex items-center gap-2 h-auto p-0 font-mono text-zinc-500 hover:text-zinc-300"
-                          >
-                            Mockups
-                            {sortField === 'mockupCount' && (
-                              sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </TableHead>
-                        <TableHead className="text-zinc-500 font-mono">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleSort('transactionCount')}
-                            className="flex items-center gap-2 h-auto p-0 font-mono text-zinc-500 hover:text-zinc-300"
-                          >
-                            Transações
-                            {sortField === 'transactionCount' && (
-                              sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </TableHead>
-                        <TableHead className="text-zinc-500 font-mono">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleSort('createdAt')}
-                            className="flex items-center gap-2 h-auto p-0 font-mono text-zinc-500 hover:text-zinc-300"
-                          >
-                            Criado em
-                            {sortField === 'createdAt' && (
-                              sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredAndSortedUsers.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={7} className="text-center text-zinc-500 font-mono py-8">
-                            Nenhum usuário encontrado
-                          </TableCell>
+                {/* Table Card */}
+                <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 transition-all duration-300 shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-3 text-zinc-300 font-mono">
+                      <Users className="h-5 w-5 text-[#52ddeb]" />
+                      Lista de Usuários
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="border-zinc-800/50 hover:bg-transparent">
+                          <TableHead className="text-zinc-500 font-mono">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleSort('name')}
+                              className="flex items-center gap-2 h-auto p-0 font-mono text-zinc-500 hover:text-zinc-300"
+                            >
+                              Usuário
+                              {sortField === 'name' && (
+                                sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </TableHead>
+                          <TableHead className="text-zinc-500 font-mono">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleSort('subscriptionTier')}
+                              className="flex items-center gap-2 h-auto p-0 font-mono text-zinc-500 hover:text-zinc-300"
+                            >
+                              Assinatura
+                              {sortField === 'subscriptionTier' && (
+                                sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </TableHead>
+                          <TableHead className="text-zinc-500 font-mono">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleSort('creditsRemaining')}
+                              className="flex items-center gap-2 h-auto p-0 font-mono text-zinc-500 hover:text-zinc-300"
+                            >
+                              Créditos
+                              {sortField === 'creditsRemaining' && (
+                                sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </TableHead>
+                          <TableHead className="text-zinc-500 font-mono">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleSort('referralCount')}
+                              className="flex items-center gap-2 h-auto p-0 font-mono text-zinc-500 hover:text-zinc-300"
+                            >
+                              Indicações
+                              {sortField === 'referralCount' && (
+                                sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </TableHead>
+                          <TableHead className="text-zinc-500 font-mono">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleSort('mockupCount')}
+                              className="flex items-center gap-2 h-auto p-0 font-mono text-zinc-500 hover:text-zinc-300"
+                            >
+                              Mockups
+                              {sortField === 'mockupCount' && (
+                                sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </TableHead>
+                          <TableHead className="text-zinc-500 font-mono">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleSort('transactionCount')}
+                              className="flex items-center gap-2 h-auto p-0 font-mono text-zinc-500 hover:text-zinc-300"
+                            >
+                              Transações
+                              {sortField === 'transactionCount' && (
+                                sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </TableHead>
+                          <TableHead className="text-zinc-500 font-mono">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleSort('createdAt')}
+                              className="flex items-center gap-2 h-auto p-0 font-mono text-zinc-500 hover:text-zinc-300"
+                            >
+                              Criado em
+                              {sortField === 'createdAt' && (
+                                sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </TableHead>
                         </TableRow>
-                      ) : (
-                        filteredAndSortedUsers.map((user) => (
-                          <TableRow key={user.id} className="border-zinc-800/30 text-zinc-300 hover:bg-black/20 transition-colors">
-                            <TableCell className="px-4 py-4">
-                              <p className="font-medium text-zinc-200">{user.name || t('admin.noName')}</p>
-                              <p className="text-xs text-zinc-500 font-mono">{user.email}</p>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredAndSortedUsers.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={7} className="text-center text-zinc-500 font-mono py-8">
+                              Nenhum usuário encontrado
                             </TableCell>
-                            <TableCell className="px-4 py-4">
-                              <Badge variant="outline" className="bg-[#52ddeb]/10 text-[#52ddeb] border-[#52ddeb]/30 font-mono mb-1">
-                                {user.subscriptionTier}
-                              </Badge>
-                              <p className="text-xs text-zinc-500 font-mono mt-1">{user.subscriptionStatus}</p>
-                            </TableCell>
-                            <TableCell className="px-4 py-4 text-xs font-mono space-y-1">
-                              <p>{t('admin.monthly')}: {user.monthlyCredits ?? 0}</p>
-                              <p>{t('admin.used')}: {user.creditsUsed ?? 0}</p>
-                              <p className="text-[#52ddeb]">{t('admin.remaining')}: {user.creditsRemaining}</p>
-                              <p>{t('admin.manual')}: {user.manualCredits}</p>
-                            </TableCell>
-                            <TableCell className="px-4 py-4 text-xs font-mono space-y-1">
-                              <p>{t('admin.made')}: {user.referralCount ?? 0}</p>
-                              <p>{t('admin.code')}: {user.referralCode || '—'}</p>
-                              <p className="text-[11px] text-zinc-500">
-                                {user.referredBy
-                                  ? `${t('admin.referredBy')}: ${userLookup[user.referredBy]?.name || userLookup[user.referredBy]?.email || t('admin.unknown')}`
-                                  : t('admin.directOrigin')}
-                              </p>
-                            </TableCell>
-                            <TableCell className="px-4 py-4 font-mono">{user.mockupCount}</TableCell>
-                            <TableCell className="px-4 py-4 font-mono">{user.transactionCount}</TableCell>
-                            <TableCell className="px-4 py-4 text-xs font-mono text-zinc-400">{new Date(user.createdAt).toLocaleDateString()}</TableCell>
                           </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        )}
-      </div>
+                        ) : (
+                          filteredAndSortedUsers.map((user) => (
+                            <TableRow key={user.id} className="border-zinc-800/30 text-zinc-300 hover:bg-black/20 transition-colors">
+                              <TableCell className="px-4 py-4">
+                                <p className="font-medium text-zinc-200">{user.name || t('admin.noName')}</p>
+                                <p className="text-xs text-zinc-500 font-mono">{user.email}</p>
+                              </TableCell>
+                              <TableCell className="px-4 py-4">
+                                <Badge variant="outline" className="bg-[#52ddeb]/10 text-[#52ddeb] border-[#52ddeb]/30 font-mono mb-1">
+                                  {user.subscriptionTier}
+                                </Badge>
+                                <p className="text-xs text-zinc-500 font-mono mt-1">{user.subscriptionStatus}</p>
+                              </TableCell>
+                              <TableCell className="px-4 py-4 text-xs font-mono space-y-1">
+                                <p>{t('admin.monthly')}: {user.monthlyCredits ?? 0}</p>
+                                <p>{t('admin.used')}: {user.creditsUsed ?? 0}</p>
+                                <p className="text-[#52ddeb]">{t('admin.remaining')}: {user.creditsRemaining}</p>
+                                <p>{t('admin.manual')}: {user.manualCredits}</p>
+                              </TableCell>
+                              <TableCell className="px-4 py-4 text-xs font-mono space-y-1">
+                                <p>{t('admin.made')}: {user.referralCount ?? 0}</p>
+                                <p>{t('admin.code')}: {user.referralCode || '—'}</p>
+                                <p className="text-[11px] text-zinc-500">
+                                  {user.referredBy
+                                    ? `${t('admin.referredBy')}: ${userLookup[user.referredBy]?.name || userLookup[user.referredBy]?.email || t('admin.unknown')}`
+                                    : t('admin.directOrigin')}
+                                </p>
+                              </TableCell>
+                              <TableCell className="px-4 py-4 font-mono">{user.mockupCount}</TableCell>
+                              <TableCell className="px-4 py-4 font-mono">{user.transactionCount}</TableCell>
+                              <TableCell className="px-4 py-4 text-xs font-mono text-zinc-400">{new Date(user.createdAt).toLocaleDateString()}</TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          )}
+        </div>
       </div>
     </>
   );

@@ -170,52 +170,52 @@ export const CommunityPage: React.FC = () => {
         {!isCheckingAuth && (
           <div className="space-y-6">
             {/* Stats Bento Box */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="bg-[#1A1A1A] border border-zinc-800/50 rounded-lg p-4 hover:border-[#52ddeb]/30 transition-all group">
-                <div className="flex items-center gap-2">
-                  <div className="p-2 bg-[#52ddeb]/10 rounded-md group-hover:bg-[#52ddeb]/20 transition-colors">
-                    <Sparkles className="h-4 w-4 text-[#52ddeb]" />
+            {/* Category Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+              {presetTypes.map((category) => (
+                <div key={category.type} className="bg-[#1A1A1A] border border-zinc-800/50 rounded-md p-4 flex flex-col h-full hover:border-[#52ddeb]/30 transition-colors group">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2 text-zinc-300">
+                      <category.icon size={18} className="text-zinc-400 group-hover:text-[#52ddeb] transition-colors" />
+                      <span className="font-medium font-mono capitalize text-sm">{category.label}</span>
+                    </div>
+                    <span className="text-xl font-bold font-mono text-[#52ddeb]">{category.count}</span>
                   </div>
-                  <div>
-                    <p className="text-[10px] text-zinc-500 font-mono uppercase">Total Presets</p>
-                    <p className="text-xl font-bold text-zinc-200 font-mono">
-                      {isLoading ? '...' : stats.total}
-                    </p>
+
+                  <div className="space-y-2 flex-1">
+                    {category.presets.length > 0 ? (
+                      category.presets.slice(0, 3).map((preset: any) => (
+                        <div
+                          key={preset.id}
+                          className="bg-zinc-900/50 border border-zinc-800/50 rounded p-2 flex items-center gap-2 hover:bg-zinc-800/50 transition-colors"
+                        >
+                          {category.type === 'mockup' && preset.referenceImageUrl ? (
+                            <img
+                              src={preset.referenceImageUrl}
+                              alt={preset.name}
+                              className="w-8 h-8 rounded object-cover bg-zinc-800"
+                            />
+                          ) : (
+                            <div className="w-8 h-8 rounded bg-zinc-800 flex items-center justify-center text-zinc-500">
+                              <category.icon size={14} />
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-mono text-zinc-300 truncate">{preset.name}</p>
+                            <p className="text-[10px] text-zinc-500 font-mono truncate">
+                              {preset.createdAt ? new Date(preset.createdAt).toLocaleDateString() : 'N/A'}
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-xs text-zinc-500 font-mono italic p-2">
+                        No presets yet
+                      </div>
+                    )}
                   </div>
                 </div>
-              </div>
-
-              <div className="bg-[#1A1A1A] border border-zinc-800/50 rounded-lg p-4 hover:border-[#52ddeb]/30 transition-all group">
-                <div className="flex items-center gap-2">
-                  <div className="p-2 bg-[#52ddeb]/10 rounded-md group-hover:bg-[#52ddeb]/20 transition-colors">
-                    <TrendingUp className="h-4 w-4 text-[#52ddeb]" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-zinc-500 font-mono uppercase">Comunidade</p>
-                    <p className="text-xl font-bold text-zinc-200 font-mono">
-                      {isLoading ? '...' : activeUsersCount}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {isAuthenticated && (
-                <button
-                  onClick={() => navigate('/community/presets?view=my&create=true')}
-                  className="bg-gradient-to-br from-[#52ddeb]/20 to-[#52ddeb]/10 border border-[#52ddeb]/30 rounded-lg p-4 hover:border-[#52ddeb]/50 hover:shadow-lg hover:shadow-[#52ddeb]/10 transition-all group text-left"
-                >
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 bg-[#52ddeb]/20 rounded-md group-hover:bg-[#52ddeb]/30 transition-colors group-hover:scale-110">
-                      <Plus className="h-4 w-4 text-[#52ddeb]" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-[10px] text-zinc-500 font-mono uppercase">Criar Preset</p>
-                      <p className="text-base font-semibold text-[#52ddeb] font-mono">Novo</p>
-                    </div>
-                    <ArrowRight className="h-4 w-4 text-[#52ddeb] opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-                  </div>
-                </button>
-              )}
+              ))}
             </div>
 
             {/* Community Mockups Section */}

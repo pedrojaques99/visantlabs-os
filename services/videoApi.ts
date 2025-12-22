@@ -24,8 +24,20 @@ const getAuthHeaders = () => {
 
 export interface GenerateVideoParams {
   prompt: string;
-  imageBase64?: string;
-  imageMimeType?: string;
+  negativePrompt?: string;
+  mode?: string;
+  aspectRatio?: string;
+  resolution?: string;
+  duration?: string;
+
+  // Media inputs (Base64 or URL)
+  startFrame?: string;
+  endFrame?: string;
+  referenceImages?: string[];
+  inputVideo?: string;
+
+  isLooping?: boolean;
+
   model?: string;
   canvasId?: string;
   nodeId?: string;
@@ -49,8 +61,19 @@ export const videoApi = {
       headers: getAuthHeaders(),
       body: JSON.stringify({
         prompt: params.prompt,
-        imageBase64: params.imageBase64,
-        imageMimeType: params.imageMimeType || 'image/png',
+        negativePrompt: params.negativePrompt,
+        mode: params.mode,
+        aspectRatio: params.aspectRatio,
+        resolution: params.resolution,
+        duration: params.duration,
+
+        startFrame: params.startFrame,
+        endFrame: params.endFrame,
+        referenceImages: params.referenceImages,
+        inputVideo: params.inputVideo,
+
+        isLooping: params.isLooping,
+
         model: params.model || 'veo-3.1-generate-preview',
         canvasId: params.canvasId,
         nodeId: params.nodeId,
