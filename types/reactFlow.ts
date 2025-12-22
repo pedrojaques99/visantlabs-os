@@ -502,17 +502,59 @@ export interface BrandCoreData extends BaseNodeData {
 }
 
 // Video Node - generates videos from text prompts and/or images using Veo 3
+// Video Node - generates videos from text prompts and/or images using Veo 3
 export interface VideoNodeData extends BaseNodeData {
   type: 'video';
   prompt?: string;
+  negativePrompt?: string;
   model?: string; // Video model (e.g., 'veo-3.1-generate-preview')
+  mode?: GenerationMode;
+  aspectRatio?: AspectRatio;
+  resolution?: Resolution;
+  duration?: string; // e.g., '5s', '10s'
   isLoading?: boolean;
-  connectedImage?: string; // Base64 or URL of connected image (optional)
+
+  // Connected handles (synced from edges)
+  connectedText?: string;
+  connectedImage1?: string;
+  connectedImage2?: string;
+  connectedImage3?: string;
+  connectedImage4?: string;
+  connectedVideo?: string; // For extend mode
+
+  // Media inputs (Direct uploads)
+  startFrame?: string; // Base64 or URL
+  endFrame?: string; // Base64 or URL
+  referenceImages?: string[]; // Array of Base64 or URL strings
+  inputVideo?: string; // Base64 or URL for extension
+  inputVideoObject?: any; // To store the video object for file reference if needed
+
+  isLooping?: boolean;
+
   // Generated video support
   resultVideoUrl?: string; // R2 URL for generated video
   resultVideoBase64?: string; // Base64 fallback for generated video
-  onGenerate?: (nodeId: string, prompt: string, imageBase64?: string, model?: string) => Promise<void>;
+
+  // Handlers
+  onGenerate?: (params: GenerateVideoParams) => Promise<void>;
   onUpdateData?: (nodeId: string, newData: Partial<VideoNodeData>) => void;
+}
+
+export interface GenerateVideoParams {
+  nodeId: string;
+  prompt: string;
+  model: string;
+  aspectRatio: string;
+  resolution: string;
+  duration?: string;
+  mode: GenerationMode;
+  startFrame?: { file?: File; base64?: string; url?: string } | null;
+  endFrame?: { file?: File; base64?: string; url?: string } | null;
+  referenceImages?: Array<{ file?: File; base64?: string; url?: string }>;
+  inputVideo?: { file?: File; base64?: string; url?: string } | null;
+  inputVideoObject?: any;
+  isLooping?: boolean;
+  negativePrompt?: string;
 }
 
 // Brand Node - extracts brand identity from logo and PDF/PNG (legacy, kept for compatibility)
@@ -547,7 +589,8 @@ export interface ColorExtractorNodeData extends BaseNodeData {
   connectedImage?: string; // connected image from ImageNode
   extractedColors?: string[]; // array of hex colors (max 10)
   isExtracting?: boolean; // loading state
-  onExtract?: (nodeId: string, imageBase64: string) => Promise<void>;
+  onExtract?: (nodeId: string, imageBase64: string, shouldRandomize?: boolean) => Promise<void>;
+  onRegenerateOne?: (nodeId: string, imageBase64: string, index: number) => Promise<void>;
   onUpload?: (nodeId: string, imageBase64: string) => void;
   onUpdateData?: (nodeId: string, newData: Partial<ColorExtractorNodeData>) => void;
 }

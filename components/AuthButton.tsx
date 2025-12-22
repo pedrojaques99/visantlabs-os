@@ -4,7 +4,7 @@ import { subscriptionService, type SubscriptionStatus } from '../services/subscr
 import { useTranslation } from '../hooks/useTranslation';
 import { useLayout } from '../hooks/useLayout';
 import { GlitchLoader } from './ui/GlitchLoader';
-import { LogIn, LogOut, User as UserIcon, Mail, X, Loader2, Pickaxe, ChevronDown, Globe, Settings } from 'lucide-react';
+import { LogIn, LogOut, User as UserIcon, Mail, X, Loader2, Pickaxe, ChevronDown, Globe, Key } from 'lucide-react';
 import { ForgotPasswordModal } from './ForgotPasswordModal';
 import HCaptcha from '@hcaptcha/react-hcaptcha';
 import { toast } from 'sonner';
@@ -363,23 +363,17 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
                   {t('auth.community') || 'Community'}
                 </button>
                 <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    try {
-                      const layout = useLayout();
-                      layout.onConfigurationModalOpen();
-                    } catch (err) {
-                      console.warn('Layout context not available for configuration modal');
-                    }
+                  onClick={() => {
                     setIsDropdownOpen(false);
+                    window.history.pushState({}, '', '/profile?tab=configuration');
+                    window.dispatchEvent(new PopStateEvent('popstate'));
                   }}
-                  className="w-full text-left px-4 py-2 text-xs font-mono transition-colors cursor-pointer text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 flex items-center gap-2 relative z-[60]"
+                  className="w-full text-left px-4 py-2 text-xs font-mono transition-colors cursor-pointer text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 flex items-center gap-2"
                 >
-                  <Settings size={14} />
-                  {t('auth.configuration') || 'Configuration'}
+                  <Key size={14} />
+                  {t('configuration.menuTitle') || 'API Keys'}
                 </button>
+
                 <div className="border-t border-zinc-800/50 my-1" />
                 <button
                   onClick={handleLogout}
@@ -601,6 +595,8 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
           setIsSignUp(false);
         }}
       />
+
+
 
     </>
   );

@@ -139,6 +139,12 @@ export const CanvasPage: React.FC = () => {
     }
     return true;
   });
+  const [cursorColor, setCursorColor] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('canvasCursorColor') || '#FFFFFF';
+    }
+    return '#FFFFFF';
+  });
   const [isShaderSidebarCollapsed, setIsShaderSidebarCollapsed] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; sourceNodeId?: string } | null>(null);
   const [edgeContextMenu, setEdgeContextMenu] = useState<{ x: number; y: number; edgeId: string } | null>(null);
@@ -164,6 +170,18 @@ export const CanvasPage: React.FC = () => {
 
   // React Flow state
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<FlowNodeData>>([]);
+
+  // Persist settings
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('canvasBackgroundColor', backgroundColor);
+      localStorage.setItem('canvasGridColor', gridColor);
+      localStorage.setItem('canvasShowGrid', String(showGrid));
+      localStorage.setItem('canvasShowMinimap', String(showMinimap));
+      localStorage.setItem('canvasShowControls', String(showControls));
+      localStorage.setItem('canvasCursorColor', cursorColor);
+    }
+  }, [backgroundColor, gridColor, showGrid, showMinimap, showControls, cursorColor]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
   // Hooks - initialize history first so it can be used in handlers
@@ -1192,6 +1210,7 @@ export const CanvasPage: React.FC = () => {
         }
       }
     }
+
 
     // Skip updates during active loading/generation
     // Only allow updates when:
@@ -2682,7 +2701,7 @@ export const CanvasPage: React.FC = () => {
             onNodeContextMenu={onNodeContextMenu}
             onEdgeClick={onEdgeClick}
             onEdgeContextMenu={onEdgeContextMenu}
-            nodeTypes={nodeTypes as any}
+            nodeTypes={nodeTypes}
             onInit={setReactFlowInstance}
             reactFlowWrapper={reactFlowWrapper}
             backgroundColor={backgroundColor}
@@ -2690,6 +2709,7 @@ export const CanvasPage: React.FC = () => {
             showGrid={showGrid}
             showMinimap={showMinimap}
             showControls={showControls}
+            cursorColor={cursorColor}
             onDropImage={handleDropImage}
             onDropNode={handleDropNode}
             reactFlowInstance={reactFlowInstance}

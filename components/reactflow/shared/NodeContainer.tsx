@@ -40,7 +40,7 @@ export const NodeContainer: React.FC<NodeContainerProps> = ({
         dragging ? 'bg-[#0A0A0A]' : 'bg-[#0A0A0A]/80',
         // Keep all visual styles consistent during dragging
         'border rounded-xl relative node-container flex flex-col',
-        'min-w-[140px] min-h-[140px] h-full overflow-hidden',
+        'min-w-[140px] min-h-[140px] h-full rounded-xl',
         // Border color - maintain border even when dragging
         selected ? 'border-[#52ddeb]' : warning ? 'border-zinc-600/40' : 'border-gray-700/30',
         dragging && 'pointer-events-none',

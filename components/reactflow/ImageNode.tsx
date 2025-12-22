@@ -47,7 +47,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
   const isGenerating = nodeData.isGenerating || false;
   const isDescribing = nodeData.isDescribing || false;
   const description = nodeData.description || localDescription;
-  const handleDownload = useNodeDownload(imageUrl, 'generated-image');
+  const { handleDownload, isDownloading } = useNodeDownload(imageUrl, 'generated-image');
 
   // Use centralized like hook
   const { toggleLike: handleToggleLike } = useMockupLike({
@@ -439,7 +439,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       className={cn(
         'group node-wrapper',
         dragging ? 'node-dragging' : 'node-dragging-static',
-        imageUrl && '!bg-transparent p-0'
+        imageUrl && 'p-0'
       )}
       style={imageUrl ? {
         margin: 0,
@@ -468,7 +468,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       <NodeHandles />
 
       <NodeImageContainer
-        className={cn("flex items-center justify-center", imageUrl && "p-0 m-0")}
+        className={cn("flex items-center justify-center", imageUrl && "p-0 m-0 !absolute inset-0 z-0")}
         style={{ width: '100%', height: '100%', padding: 0, margin: 0, boxSizing: 'border-box' }}
       >
         {imageUrl ? (
@@ -579,11 +579,16 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
         )}
       </NodeImageContainer>
 
-      <NodeLabel label={(data as ImageNodeData).label} />
+      <div className={cn(imageUrl && "absolute top-0 left-0 w-full z-10 bg-gradient-to-b from-black/50 to-transparent pointer-events-none")}>
+        <NodeLabel label={(data as ImageNodeData).label} />
+      </div>
 
       {/* Description Section */}
       {description && (
-        <div className="px-2 py-2 border-t border-zinc-700/30 flex-shrink-0">
+        <div className={cn(
+          "px-2 py-2 border-t border-zinc-700/30 flex-shrink-0",
+          imageUrl && "absolute bottom-0 left-0 w-full z-10 bg-black/60 backdrop-blur-md border-t-0"
+        )}>
           <div className="flex items-center justify-between mb-1">
             <label className="text-xs text-zinc-400 font-mono">{t('canvasNodes.imageNode.description')}</label>
             <div className="flex items-center gap-1">
@@ -649,11 +654,21 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
           {isGenerated && (
             <button
               onClick={handleDownload}
-              className="p-1 bg-black/40 hover:bg-black/60 text-zinc-400 hover:text-zinc-200 rounded transition-colors backdrop-blur-sm border border-zinc-700/30 hover:border-zinc-600/50"
-              title={t('canvasNodes.imageNode.downloadImage')}
+              disabled={isDownloading}
+              className={cn(
+                "p-1 rounded transition-colors backdrop-blur-sm border",
+                isDownloading
+                  ? "bg-zinc-700/20 text-zinc-500 cursor-not-allowed border-zinc-700/20"
+                  : "bg-black/40 hover:bg-black/60 text-zinc-400 hover:text-zinc-200 border border-zinc-700/30 hover:border-zinc-600/50"
+              )}
+              title={isDownloading ? t('canvasNodes.shared.downloading') : t('canvasNodes.imageNode.downloadImage')}
               onMouseDown={(e) => e.stopPropagation()}
             >
-              <Download size={12} strokeWidth={2} />
+              {isDownloading ? (
+                <Loader2 size={12} strokeWidth={2} className="animate-spin" />
+              ) : (
+                <Download size={12} strokeWidth={2} />
+              )}
             </button>
           )}
           {(data as ImageNodeData).onDelete && (

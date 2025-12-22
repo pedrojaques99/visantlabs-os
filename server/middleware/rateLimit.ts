@@ -23,7 +23,7 @@ setInterval(() => {
 // Helper function to get client IP
 export function getClientIp(req: Request): string {
   const forwarded = req.headers['x-forwarded-for'];
-  const ip = forwarded 
+  const ip = forwarded
     ? (typeof forwarded === 'string' ? forwarded.split(',')[0].trim() : forwarded[0])
     : req.socket.remoteAddress || 'unknown';
   return ip || 'unknown';
@@ -117,5 +117,11 @@ export const signinRateLimiter = createRateLimiter({
   max: parseInt(process.env.RATE_LIMIT_MAX_SIGNIN || '10', 10), // 10 signin attempts per hour
   message: 'Too many signin attempts. Please try again later.',
   skipSuccessfulRequests: true, // Don't count successful logins
+});
+
+export const uploadImageRateLimiter = createRateLimiter({
+  windowMs: parseInt(process.env.RATE_LIMIT_UPLOAD_WINDOW_MS || '900000', 10), // 15 minutes default
+  max: parseInt(process.env.RATE_LIMIT_MAX_UPLOAD || '10', 10), // 10 uploads per 15 minutes
+  message: 'Too many upload attempts. Please try again later.',
 });
 

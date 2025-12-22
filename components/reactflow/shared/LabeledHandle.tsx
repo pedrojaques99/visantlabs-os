@@ -2,7 +2,7 @@ import React from 'react';
 import { Handle, Position, type HandleProps } from '@xyflow/react';
 import { cn } from '../../../lib/utils';
 
-export type HandleType = 'image' | 'text' | 'strategy' | 'generic';
+export type HandleType = 'image' | 'text' | 'strategy' | 'generic' | 'video';
 
 interface LabeledHandleProps extends HandleProps {
   label?: string;
@@ -36,7 +36,7 @@ export const LabeledHandle: React.FC<LabeledHandleProps> = ({
   };
 
   // Remove handle-top-* classes if style.top is provided (to avoid !important conflicts)
-  const cleanClassName = style?.top 
+  const cleanClassName = style?.top
     ? className?.replace(/handle-top-\d+/g, '').trim() || undefined
     : className;
 

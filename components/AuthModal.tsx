@@ -17,9 +17,9 @@ export interface AuthModalProps {
   defaultIsSignUp?: boolean;
 }
 
-export const AuthModal: React.FC<AuthModalProps> = ({ 
-  isOpen, 
-  onClose, 
+export const AuthModal: React.FC<AuthModalProps> = ({
+  isOpen,
+  onClose,
   onSuccess,
   isSignUp: externalIsSignUp,
   setIsSignUp: externalSetIsSignUp,
@@ -35,12 +35,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const captchaRef = useRef<HCaptcha>(null);
-  
-  const hcaptchaSiteKey = typeof window !== 'undefined' 
-    ? (import.meta as any).env?.VITE_HCAPTCHA_SITE_KEY 
+
+  const hcaptchaSiteKey = typeof window !== 'undefined'
+    ? (import.meta as any).env?.VITE_HCAPTCHA_SITE_KEY
     : undefined;
   const captchaEnabled = false; // Temporarily disabled
-  
+
   // Use external state if provided, otherwise use internal state
   const [internalIsSignUp, setInternalIsSignUp] = useState(defaultIsSignUp);
   const isSignUp = externalIsSignUp !== undefined ? externalIsSignUp : internalIsSignUp;
@@ -49,10 +49,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const handleGoogleAuth = async () => {
     setIsGoogleLoading(true);
     try {
-      const referralCode = typeof window !== 'undefined' 
-        ? localStorage.getItem('referral_code') 
+      const referralCode = typeof window !== 'undefined'
+        ? localStorage.getItem('referral_code')
         : null;
-      
+
       const authUrl = await authService.getAuthUrl(referralCode || undefined);
       window.location.href = authUrl;
     } catch (error: any) {
@@ -75,24 +75,24 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError(null);
-    
+
     setIsAuthLoading(true);
 
     try {
       if (isSignUp) {
         // Get referral code from localStorage if available
-        const referralCode = typeof window !== 'undefined' 
-          ? localStorage.getItem('referral_code') 
+        const referralCode = typeof window !== 'undefined'
+          ? localStorage.getItem('referral_code')
           : null;
-        
+
         await authService.signUp(email, password, name || undefined, referralCode || undefined, captchaToken || undefined);
-        
+
         // Reset CAPTCHA after successful signup
         if (captchaRef.current) {
           captchaRef.current.resetCaptcha();
         }
         setCaptchaToken(null);
-        
+
         // Clear referral code after successful signup
         if (referralCode && typeof window !== 'undefined') {
           localStorage.removeItem('referral_code');
@@ -100,7 +100,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       } else {
         await authService.signIn(email, password);
       }
-      
+
       toast.success(isSignUp ? t('auth.accountCreatedSuccess') : t('auth.signedInSuccess'), { duration: 2000 });
       onSuccess();
     } catch (error: any) {
@@ -121,7 +121,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           setAuthError(error.message || t('auth.authenticationFailed'));
         }
       }
-      
+
       // Reset CAPTCHA on error
       if (isSignUp && captchaRef.current) {
         captchaRef.current.resetCaptcha();
@@ -197,7 +197,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
             <div className="flex items-center gap-2 mb-4">
               <div className="flex-1 h-px bg-zinc-800/50"></div>
-              <span className="text-xs text-zinc-500 font-mono">ou</span>
+              <span className="text-xs text-zinc-500 font-mono">{t('auth.or')}</span>
               <div className="flex-1 h-px bg-zinc-800/50"></div>
             </div>
           </>

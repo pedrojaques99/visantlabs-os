@@ -132,6 +132,7 @@ app.use(`${routePrefix}/storage`, storageRoutes);
 app.use(`${routePrefix}/users`, usersRoutes);
 console.log(`✅ Video routes registered at: ${routePrefix}/video`);
 console.log(`✅ Community routes registered at: ${routePrefix}/community`);
+console.log(`✅ Images routes registered at: ${routePrefix}/images`);
 
 // Import referral routes
 import referralRoutes from './routes/referral.js';

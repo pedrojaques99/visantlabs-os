@@ -1,5 +1,6 @@
 import React from 'react';
-import { Heart, Download, Maximize2, Copy, Wand2, X, Trash2, Copy as CopyIcon, FileText, Upload, ExternalLink } from 'lucide-react';
+import { Heart, Download, Maximize2, Copy, Wand2, X, Trash2, Copy as CopyIcon, FileText, Upload, ExternalLink, Loader2 } from 'lucide-react';
+import { cn } from '../../lib/utils';
 
 interface ImageContextMenuProps {
   x: number;
@@ -34,8 +35,11 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
   imageUrl,
   isLiked,
 }) => {
+  const [isDownloading, setIsDownloading] = React.useState(false);
+
   // Improved download handler - ensures proper download behavior
   const handleDownload = async () => {
+    setIsDownloading(true);
     try {
       if (imageUrl) {
         try {
@@ -98,8 +102,10 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
 
     } catch (error) {
       console.error('Download error:', error);
+    } finally {
+      setIsDownloading(false);
+      onClose();
     }
-    onClose();
   };
 
   // Fullscreen handler - uses the original onFullscreen callback for in-app fullscreen
@@ -147,10 +153,14 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
 
       <button
         onClick={handleDownload}
-        className="w-full px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-[#52ddeb] transition-colors flex items-center gap-2 font-mono cursor-pointer"
+        disabled={isDownloading}
+        className={cn(
+          "w-full px-3 py-2 text-left text-sm text-zinc-300 transition-colors flex items-center gap-2 font-mono cursor-pointer",
+          isDownloading ? "cursor-not-allowed opacity-50" : "hover:bg-zinc-800/50 hover:text-[#52ddeb]"
+        )}
       >
-        <Download size={14} />
-        Download
+        {isDownloading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+        {isDownloading ? 'Downloading...' : 'Download'}
       </button>
 
       {onExport && (

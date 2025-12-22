@@ -1,5 +1,7 @@
 import { authService } from './authService';
 import { RateLimitError } from './geminiService';
+import { toast } from 'sonner';
+import { hasGeminiApiKey } from './userSettingsService';
 
 // Get API URL from environment or use current origin for production
 const getApiBaseUrl = () => {
@@ -294,6 +296,20 @@ export const mockupApi = {
       requestId,
       requestKey: requestKey.substring(0, 100),
     });
+
+    // Check if user has their own API key and notify them
+    try {
+      const userHasApiKey = await hasGeminiApiKey();
+      if (userHasApiKey) {
+        toast.info('API do usuário está sendo usada', {
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      // Silently fail - don't block generation if key check fails
+      console.warn('[mockupApi.generate] Failed to check user API key:', error);
+    }
+
 
 
     // Create the request promise
