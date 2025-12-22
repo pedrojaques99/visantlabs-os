@@ -189,6 +189,54 @@ function formatStrategyData(strategyData?: StrategyNodeData['strategyData']): st
 }
 
 /**
+ * Process an image source (URL or base64) into the format required by Gemini
+ */
+async function processImage(source: string): Promise<{ data: string; mimeType: string }> {
+  try {
+    // Handle URLs
+    if (source.startsWith('http://') || source.startsWith('https://')) {
+      const response = await fetch(source);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch image: ${response.statusText}`);
+      }
+      const blob = await response.blob();
+
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64String = reader.result as string;
+          // Format is "data:image/png;base64,..."
+          const [header, data] = base64String.split(',');
+          const mimeType = header.split(':')[1].split(';')[0];
+          resolve({
+            data: data,
+            mimeType: mimeType
+          });
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    // Handle existing Base64
+    if (source.includes(',')) {
+      const [header, data] = source.split(',');
+      const mimeType = header.split(':')[1].split(';')[0];
+      return { data, mimeType };
+    }
+
+    // Handle raw Base64 (assume PNG if no mime type provided, though unlikely in this app's context)
+    return {
+      data: source,
+      mimeType: 'image/png'
+    };
+  } catch (error) {
+    console.error('Error processing image:', error);
+    throw new Error('Failed to process image. Please ensure the image URL is accessible and valid.');
+  }
+}
+
+/**
  * Send chat message to Gemini API
  * 
  * @param messages - Conversation history
@@ -230,30 +278,28 @@ export async function sendChatMessage(
       contextParts.push('Text Context:\n' + context.text);
     }
 
+    // Pre-process images if present
+    const processedImages: { inlineData: { data: string; mimeType: string } }[] = [];
+    if (context?.images && context.images.length > 0) {
+      const imagePromises = context.images.map(processImage);
+      const results = await Promise.all(imagePromises);
+      results.forEach(img => {
+        processedImages.push({
+          inlineData: {
+            data: img.data,
+            mimeType: img.mimeType
+          }
+        });
+      });
+    }
+
     // Build contents for Gemini
     const contents = messages.map((msg, index) => {
       const parts: any[] = [];
 
       // Add images to context only on the last user message
-      if (msg.role === 'user' && index === messages.length - 1 && context?.images && context.images.length > 0) {
-        context.images.forEach(imageBase64 => {
-          // Extract base64 data (remove data URL prefix if present)
-          const base64Data = imageBase64.includes(',')
-            ? imageBase64.split(',')[1]
-            : imageBase64;
-
-          // Detect mime type
-          const mimeType = imageBase64.startsWith('data:')
-            ? imageBase64.split(';')[0].split(':')[1]
-            : 'image/png';
-
-          parts.push({
-            inlineData: {
-              data: base64Data,
-              mimeType: mimeType,
-            },
-          });
-        });
+      if (msg.role === 'user' && index === messages.length - 1 && processedImages.length > 0) {
+        parts.push(...processedImages);
       }
 
       // Build text content

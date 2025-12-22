@@ -1247,6 +1247,17 @@ export const useCanvasNodeHandlers = (
           hasStartFrame: !!startFrame,
           startFrameSource: params.startFrame ? 'direct' : (videoData.connectedImage1 ? 'connected' : 'none')
         });
+
+        // CRITICAL: Ensure the startFrame is ALSO passed as a reference image
+        // This forces the model to "analyze" and "follow" the image even in Text-to-Video mode
+        if (startFrame) {
+          if (!referenceImages) referenceImages = [];
+          // Avoid duplicates if it's already there
+          if (!referenceImages.includes(startFrame)) {
+            referenceImages.push(startFrame);
+            console.log('[handleVideoNodeGenerate] Auto-added startFrame to referenceImages to ensure analysis');
+          }
+        }
       }
 
       // Handle Connected Text (Prompt)
@@ -1689,7 +1700,7 @@ export const useCanvasNodeHandlers = (
     updateNodeData<ColorExtractorNodeData>(nodeId, { imageBase64 }, 'colorExtractor');
   }, [updateNodeData]);
 
-  const handleColorExtractorExtract = useCallback(async (nodeId: string, imageBase64: string) => {
+  const handleColorExtractorExtract = useCallback(async (nodeId: string, imageBase64: string, shouldRandomize: boolean = false) => {
     const node = nodesRef.current.find(n => n.id === nodeId);
     if (!node || node.type !== 'colorExtractor') {
       console.warn('handleColorExtractorExtract: Node not found or wrong type', { nodeId, foundNode: !!node });
@@ -1699,7 +1710,7 @@ export const useCanvasNodeHandlers = (
     updateNodeData<ColorExtractorNodeData>(nodeId, { isExtracting: true }, 'colorExtractor');
 
     try {
-      const result = await extractColors(imageBase64);
+      const result = await extractColors(imageBase64, 'image/png', 10, shouldRandomize);
 
       updateNodeData<ColorExtractorNodeData>(nodeId, {
         extractedColors: result.colors,
@@ -1715,6 +1726,49 @@ export const useCanvasNodeHandlers = (
       console.error('Error extracting colors:', error);
       toast.error(error?.message || 'Failed to extract colors', { duration: 5000 });
       updateNodeData<ColorExtractorNodeData>(nodeId, { isExtracting: false }, 'colorExtractor');
+    }
+  }, [nodesRef, updateNodeData, saveImmediately]);
+
+  const handleColorExtractorRegenerateOne = useCallback(async (nodeId: string, imageBase64: string, index: number) => {
+    const node = nodesRef.current.find(n => n.id === nodeId);
+    if (!node || node.type !== 'colorExtractor') return;
+
+    const currentColors = (node.data as ColorExtractorNodeData).extractedColors || [];
+
+    // Optimistic UI update could be done here if needed, but we'll wait for result
+    // We don't want to set full 'isExtracting' because that might lock the whole node UI, 
+    // but we can if we want to show global loading. For "subtle", maybe just let it pop in?
+    // Let's not set global isExtracting to avoid flashing the big button loader.
+
+    try {
+      // We request MORE colors (e.g. 30) with randomization to find a good candidate
+      const result = await extractColors(imageBase64, 'image/png', 30, true);
+
+      // Filter out colors that are already in the CURRENT palette (excluding the one we are replacing)
+      const otherColors = currentColors.filter((_, i) => i !== index);
+
+      // Find the first extracted color that is NOT in otherColors AND is effectively different from the current one
+      // We check for exact string match first.
+      const newColor = result.colors.find(c => !otherColors.includes(c) && c !== currentColors[index]);
+
+      if (newColor) {
+        const newColors = [...currentColors];
+        newColors[index] = newColor;
+
+        updateNodeData<ColorExtractorNodeData>(nodeId, {
+          extractedColors: newColors
+        }, 'colorExtractor');
+
+        if (saveImmediately) {
+          setTimeout(() => saveImmediately(), 100);
+        }
+      } else {
+        console.warn('No new distinct color found for single regeneration');
+        toast('No new distinct color found', { duration: 2000 });
+      }
+
+    } catch (error) {
+      console.error('Error regenerating single color:', error);
     }
   }, [nodesRef, updateNodeData, saveImmediately]);
 
@@ -2114,6 +2168,7 @@ export const useCanvasNodeHandlers = (
     handleBrandPdfUpload,
     handleBrandAnalyze,
     handleColorExtractorExtract,
+    handleColorExtractorRegenerateOne,
     handleColorExtractorUpload,
     handleColorExtractorNodeDataUpdate,
     handleAngleGenerate,

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, memo } from 'react';
+import React, { useState, useRef, useCallback, memo, useEffect } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { Loader2, UploadCloud, Palette, X, Copy, RefreshCw } from 'lucide-react';
 import type { ColorExtractorNodeData } from '../../types/reactFlow';
@@ -18,6 +18,25 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
   const { t } = useTranslation();
   const nodeData = data as ColorExtractorNodeData;
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const [glitchText, setGlitchText] = useState('');
+
+  // Glitch effect for extraction state
+  useEffect(() => {
+    if (!nodeData.isExtracting) {
+      setGlitchText('');
+      return;
+    }
+
+    const glitchInterval = setInterval(() => {
+      const glitchChars = '*-•.';
+      const randomGlitch = Array.from({ length: 4 }, () =>
+        glitchChars[Math.floor(Math.random() * glitchChars.length)]
+      ).join('');
+      setGlitchText(randomGlitch);
+    }, 150);
+
+    return () => clearInterval(glitchInterval);
+  }, [nodeData.isExtracting]);
 
   // Prioritize connected data over direct uploads
   const connectedImage = nodeData.connectedImage;
@@ -25,9 +44,11 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
   const extractedColors = nodeData.extractedColors || [];
   const isExtracting = nodeData.isExtracting || false;
 
-  // Format image URL - handle both base64 strings and data URLs
+  // Format image URL - handle base64, data URLs, and HTTP(S) URLs
   const imageUrl = imageBase64
-    ? (imageBase64.startsWith('data:') ? imageBase64 : `data:image/png;base64,${imageBase64}`)
+    ? (imageBase64.startsWith('data:') || imageBase64.startsWith('http')
+      ? imageBase64
+      : `data:image/png;base64,${imageBase64}`)
     : undefined;
 
   const handleUploadClick = (e: React.MouseEvent) => {
@@ -70,7 +91,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
     }
   };
 
-  const handleExtract = useCallback(async () => {
+  const handleExtract = useCallback(async (isRegeneration = false) => {
     if (!nodeData.onExtract || !imageBase64) {
       toast.error('Please upload or connect an image first', { duration: 3000 });
       return;
@@ -89,7 +110,8 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
       }
     }
 
-    await nodeData.onExtract(id, imageForExtraction);
+    // Pass shouldRandomize=true if this is a regeneration action
+    await nodeData.onExtract(id, imageForExtraction, isRegeneration);
   }, [nodeData, id, imageBase64]);
 
   const handleRemoveImage = () => {
@@ -120,6 +142,16 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
   }, [nodeData, id, extractedColors]);
 
   const canExtract = !!(imageBase64 && !isExtracting);
+
+  const handleRegenerateOne = useCallback(async (index: number) => {
+    if (!nodeData.onRegenerateOne || !imageBase64) return;
+    try {
+      // Small animation or feedback could be added here
+      await nodeData.onRegenerateOne(id, imageBase64, index);
+    } catch (error) {
+      console.error('Failed to regenerate color:', error);
+    }
+  }, [nodeData, id, imageBase64]);
 
   return (
     <NodeContainer
@@ -193,7 +225,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
 
       {/* Extract Button */}
       <NodeButton
-        onClick={handleExtract}
+        onClick={() => handleExtract(false)}
         disabled={!canExtract}
         variant="primary"
         className="mb-4"
@@ -201,7 +233,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
         {isExtracting ? (
           <>
             <Loader2 size={14} className="animate-spin" />
-            Extracting Colors...
+            Extracting {glitchText}
           </>
         ) : (
           <>
@@ -217,46 +249,68 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
           <div className="flex items-center justify-between">
             <NodeLabel className="mb-0">Extracted Colors ({extractedColors.length})</NodeLabel>
             <NodeButton
-              onClick={handleExtract}
+              onClick={() => handleExtract(true)}
               disabled={!canExtract}
               variant="default"
               className="w-auto px-3 py-2 mb-0"
             >
               <RefreshCw size={12} />
-              Regenerate
+              Regenerate All
             </NodeButton>
           </div>
 
           <div className="grid grid-cols-2 gap-2">
             {extractedColors.map((color, index) => (
               <div
-                key={index}
-                className="flex items-center gap-2 p-2 bg-zinc-900/50 rounded border border-zinc-700/30 hover:border-[#52ddeb]/50 transition-colors group/color"
+                key={`${color}-${index}`}
+                className="flex items-center gap-2 p-2 bg-zinc-900/50 rounded border border-zinc-700/30 hover:border-[#52ddeb]/50 transition-colors group/color cursor-pointer hover:bg-zinc-800/50 opacity-0 animate-[fadeInScale_0.4s_cubic-bezier(0.34,1.56,0.64,1)_forwards] relative"
+                style={{ animationDelay: `${index * 50}ms` }}
+                onClick={() => handleCopyColor(color)}
+                title="Click to copy hex code"
               >
                 <div
                   className="w-8 h-8 rounded border border-zinc-700/50 flex-shrink-0"
                   style={{ backgroundColor: color }}
-                  title={color}
                 />
-                <span className="text-xs font-mono text-zinc-400 flex-1 truncate" title={color}>
+                <span className="text-xs font-mono text-zinc-400 flex-1 truncate">
                   {color}
                 </span>
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  <button
-                    onClick={() => handleCopyColor(color)}
-                    className="p-1 hover:bg-zinc-700/50 rounded transition-colors opacity-0 group-hover/color:opacity-100"
-                    title="Copy color"
+
+                {/* Actions: Regenerate & Edit */}
+                <div
+                  className="flex items-center gap-1 flex-shrink-0 relative z-20"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {/* Regenerate Single Color */}
+                  <div
+                    className="p-1.5 rounded hover:bg-zinc-700/50 opacity-0 group-hover/color:opacity-100 transition-opacity cursor-pointer relative"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      handleRegenerateOne(index);
+                    }}
+                    title="Regenerate only this color"
                   >
-                    <Copy size={12} className="text-zinc-400 hover:text-[#52ddeb]" />
-                  </button>
-                  <input
-                    type="color"
-                    value={color}
-                    onChange={(e) => handleColorChange(index, e.target.value)}
-                    className="w-6 h-6 rounded border border-zinc-700/50 cursor-pointer opacity-0 group-hover/color:opacity-100 transition-opacity"
-                    title="Edit color"
-                    onMouseDown={(e) => e.stopPropagation()}
-                  />
+                    <RefreshCw size={10} className="text-zinc-400 hover:text-[#52ddeb] transition-colors" />
+                  </div>
+
+                  {/* Manual Edit via invisible input + visible icon */}
+                  <div className="relative w-5 h-5 flex items-center justify-center opacity-0 group-hover/color:opacity-100 transition-opacity">
+                    <input
+                      type="color"
+                      value={color}
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={(e) => handleColorChange(index, e.target.value)}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30"
+                      title="Edit specific color"
+                    />
+                    {/* Visual fake icon for edit */}
+                    <div className="p-1 rounded hover:bg-zinc-700/50 pointer-events-none">
+                      <div className="w-2.5 h-2.5 rounded-full border border-zinc-400/50 bg-transparent flex items-center justify-center">
+                        <div className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
