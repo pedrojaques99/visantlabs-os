@@ -684,18 +684,6 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
         </div>
       )}
 
-      {/* Result Preview */}
-      {hasResult && (data.resultImageUrl || data.resultImageBase64) && (
-        <div className="mt-2 pt-2 border-t border-zinc-700/30">
-          <img
-            src={(data.resultImageUrl && isSafeUrl(data.resultImageUrl)) ? data.resultImageUrl : (data.resultImageBase64 ? `data:image/png;base64,${data.resultImageBase64}` : '')}
-            alt={t('canvasNodes.mockupNode.mockupResult')}
-            className="w-full h-auto rounded"
-          />
-        </div>
-      )}
-
-
       {/* Add Mockup Button */}
       <div className="mt-2 pt-2 border-t border-zinc-700/30 flex justify-center">
         <button

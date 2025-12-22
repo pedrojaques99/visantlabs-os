@@ -130,14 +130,29 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   useEffect(() => {
     if (!nodes || !edges) return;
 
-    // Find edge connecting to this node
-    const incomingEdge = edges.find(e => e.target === id);
-    if (!incomingEdge) {
+    // PRIORITY 1: Use result from THIS node if available (OutputNode's own memory)
+    // This ensures that once an output is generated, it stays fixed and doesn't change when PromptNode updates
+    if (resultImageUrl || resultImageBase64) {
       const newImageUrl = resultImageUrl || (resultImageBase64 ? `data:image/png;base64,${resultImageBase64}` : null);
-      // Only update if the value actually changed
       if (newImageUrl !== previousImageUrlRef.current) {
         previousImageUrlRef.current = newImageUrl;
         setImageUrl(newImageUrl);
+        // Reset video state if we have an image result
+        setVideoUrl(null);
+        setIsVideo(false);
+      }
+      return;
+    }
+
+    // PRIORITY 2: If no result yet, look for connected source node (Preview/Loading state)
+
+    // Find edge connecting to this node
+    const incomingEdge = edges.find(e => e.target === id);
+    if (!incomingEdge) {
+      // No edge and no result -> clear
+      if (previousImageUrlRef.current !== null) {
+        previousImageUrlRef.current = null;
+        setImageUrl(null);
       }
       return;
     }
@@ -145,11 +160,11 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     // Find source node
     const sourceNode = nodes.find(n => n.id === incomingEdge.source);
     if (!sourceNode) {
-      const newImageUrl = resultImageUrl || (resultImageBase64 ? `data:image/png;base64,${resultImageBase64}` : null);
-      // Only update if the value actually changed
-      if (newImageUrl !== previousImageUrlRef.current) {
-        previousImageUrlRef.current = newImageUrl;
-        setImageUrl(newImageUrl);
+      // Source node missing -> keep current state or clear? Better clear if strictly following state.
+      // But to avoid flicker, maybe do nothing? Let's clear to be safe state-wise.
+      if (previousImageUrlRef.current !== null) {
+        previousImageUrlRef.current = null;
+        setImageUrl(null);
       }
       return;
     }
@@ -234,7 +249,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         setIsVideo(true);
       }
     } else {
-      const newImageUrl = sourceImageUrl || resultImageUrl || (resultImageBase64 ? `data:image/png;base64,${resultImageBase64}` : null);
+      const newImageUrl = sourceImageUrl; // Only use source if we didn't have a result (handled at top)
 
       if (newImageUrl !== previousImageUrlRef.current) {
         previousImageUrlRef.current = newImageUrl;

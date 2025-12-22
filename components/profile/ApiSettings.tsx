@@ -228,7 +228,7 @@ export const ApiSettings: React.FC = () => {
                 onClose={() => setShowDeleteConfirm(false)}
                 onConfirm={handleDelete}
                 title={t('configuration.delete') || 'Excluir Chave da API'}
-                message={t('configuration.deleteConfirm') || "Tem certeza de que deseja excluir sua chave de API? Você precisará inseri-la novamente para usar sua própria cota."}
+                message={t('configuration.deleteConfirmMessage') || "Tem certeza de que deseja excluir sua chave de API? Você precisará inseri-la novamente para usar sua própria cota."}
                 variant="danger"
             />
 

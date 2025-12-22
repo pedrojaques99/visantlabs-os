@@ -443,6 +443,7 @@
     "manage": "Manage",
     "manageSubscription": "Manage subscription",
     "credits": "{remaining}/{total} credits",
+    "active": "Active",
     "renews": "Renews {date}",
     "resets": "Resets {date}",
     "portalError": "Failed to open subscription portal",
@@ -461,7 +462,10 @@
     "buyCredits": "Buy",
     "notificationUsed": "{count} credit{plural} used",
     "notificationUsedAdmin": "No credits deducted (administrator)",
-    "notificationRemaining": "{remaining} credit{plural} remaining"
+    "notificationUsedAdmin": "No credits deducted (administrator)",
+    "notificationRemaining": "{remaining} credit{plural} remaining",
+    "storage": "Storage",
+    "active": "Active"
   },
   "creditsPackages": {
     "title": "BUY CREDITS",
@@ -495,6 +499,8 @@
   },
   "profile": {
     "title": "Profile",
+    "seoTitle": "Your Profile",
+    "seoDescription": "Manage your profile settings",
     "subtitle": "Manage your account and subscription",
     "name": "Your name",
     "uploadPicture": "Click to upload picture",
@@ -576,6 +582,7 @@
     "accountCreatedSuccess": "Account created successfully!",
     "signedInSuccess": "Signed in successfully!",
     "failedToConnectGoogle": "Failed to connect with Google. Please try again.",
+    "failedToConnectGoogle": "Failed to connect with Google. Please try again.",
     "or": "or",
     "profile": "Profile",
     "userMenu": "User menu",
@@ -598,7 +605,9 @@
     "save": "Save Changes",
     "delete": "Remove Key",
     "deleteConfirmTitle": "Delete API Key",
+    "deleteConfirmTitle": "Delete API Key",
     "deleteConfirmMessage": "Are you sure you want to delete your API key? You'll need to enter it again to use your own quota.",
+    "menuTitle": "API Keys",
     "saved": "API key saved successfully",
     "deleted": "API key removed successfully",
     "error": "Failed to save API key",

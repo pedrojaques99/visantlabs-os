@@ -21,33 +21,33 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
   const nodeData = data as BrandNodeData;
   const logoInputRef = useRef<HTMLInputElement>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
-  
+
   // Prioritize connected data over direct uploads
   const connectedLogo = nodeData.connectedLogo;
   const connectedIdentity = nodeData.connectedIdentity;
   const connectedIdentityType = nodeData.connectedIdentityType;
-  
+
   const logoBase64 = connectedLogo || nodeData.logoBase64;
   const identityBase64 = connectedIdentity || nodeData.identityPdfBase64 || nodeData.identityImageBase64;
   const identityFileType = connectedIdentityType || nodeData.identityFileType || (nodeData.identityPdfBase64 ? 'pdf' : nodeData.identityImageBase64 ? 'png' : undefined);
   const brandIdentity = nodeData.brandIdentity;
-  
+
   // Start expanded if brandIdentity already exists
   const [isExpanded, setIsExpanded] = useState(!!brandIdentity);
   const isAnalyzing = nodeData.isAnalyzing || false;
-  
+
   // Auto-expand when brandIdentity is added
   useEffect(() => {
     if (brandIdentity && !isExpanded) {
       setIsExpanded(true);
     }
   }, [brandIdentity, isExpanded]);
-  
+
   // Format logo URL - handle both base64 strings and data URLs
-  const logoImageUrl = logoBase64 
+  const logoImageUrl = logoBase64
     ? (logoBase64.startsWith('data:') ? logoBase64 : `data:image/png;base64,${logoBase64}`)
     : nodeData.logoImage;
-  
+
   // Format identity image URL - handle both base64 strings and data URLs
   const identityImageUrl = identityFileType === 'png' && identityBase64
     ? (identityBase64.startsWith('data:') ? identityBase64 : `data:image/png;base64,${identityBase64}`)
@@ -154,13 +154,13 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       // Update node with the uploaded file
       if (nodeData.onUpdateData) {
         if (fileType === 'pdf') {
-          nodeData.onUpdateData(id, { 
-            identityPdfBase64: base64, 
+          nodeData.onUpdateData(id, {
+            identityPdfBase64: base64,
             identityImageBase64: undefined,
             identityFileType: 'pdf'
           });
         } else {
-          nodeData.onUpdateData(id, { 
+          nodeData.onUpdateData(id, {
             identityImageBase64: base64,
             identityPdfBase64: undefined,
             identityFileType: 'png'
@@ -185,55 +185,8 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       return;
     }
 
-    // Convert URLs to base64 if necessary for analysis
-    let logoForAnalysis = logoBase64;
-    let identityForAnalysis = identityBase64;
-    
-    // If logo is a URL, convert to base64
-    if (logoBase64.startsWith('http://') || logoBase64.startsWith('https://')) {
-      try {
-        logoForAnalysis = await normalizeImageToBase64(logoBase64);
-      } catch (error: any) {
-        toast.error('Failed to load logo image', { duration: 3000 });
-        console.error('Failed to convert logo URL to base64:', error);
-        return;
-      }
-    }
-    
-    // If identity is a URL (PDF or PNG), convert to base64
-    if (identityBase64.startsWith('http://') || identityBase64.startsWith('https://')) {
-      try {
-        if (identityFileType === 'pdf') {
-          // For PDF, use proxy to avoid CORS
-          const getApiBaseUrl = () => {
-            const viteApiUrl = (import.meta as any).env?.VITE_API_URL;
-            if (viteApiUrl) return viteApiUrl;
-            return '/api';
-          };
-          const API_BASE_URL = getApiBaseUrl();
-          const proxyUrl = `${API_BASE_URL}/images/proxy?url=${encodeURIComponent(identityBase64)}`;
-          const response = await fetch(proxyUrl);
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error || `Proxy failed: ${response.status}`);
-          }
-          const data = await response.json();
-          if (!data.base64) {
-            throw new Error('Proxy returned empty base64 data');
-          }
-          identityForAnalysis = data.base64;
-        } else {
-          // For PNG, use normalizeImageToBase64 (which already uses proxy for R2)
-          identityForAnalysis = await normalizeImageToBase64(identityBase64);
-        }
-      } catch (error: any) {
-        toast.error('Failed to load identity file', { duration: 3000 });
-        console.error('Failed to convert identity URL to base64:', error);
-        return;
-      }
-    }
-
-    await nodeData.onAnalyze(id, logoForAnalysis, identityForAnalysis, identityFileType);
+    // Pass image references directly to handler - conversion handled by service layer
+    await nodeData.onAnalyze(id, logoBase64, identityBase64, identityFileType);
   }, [nodeData, id, logoBase64, identityBase64, identityFileType, t]);
 
   const handleRemoveLogo = () => {
@@ -247,8 +200,8 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
   const handleRemoveIdentity = () => {
     if (nodeData.onUpdateData) {
-      nodeData.onUpdateData(id, { 
-        identityPdfBase64: undefined, 
+      nodeData.onUpdateData(id, {
+        identityPdfBase64: undefined,
         identityPdfUrl: undefined,
         identityImageBase64: undefined,
         identityImageUrl: undefined,
@@ -421,7 +374,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
             <span>Brand Identity</span>
             {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </button>
-          
+
           {isExpanded && (
             <div className="space-y-3 text-xs">
               {/* Colors */}
