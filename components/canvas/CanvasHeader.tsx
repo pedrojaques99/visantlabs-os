@@ -27,8 +27,6 @@ interface CanvasHeaderProps {
   onShowGridChange?: (show: boolean) => void;
   showMinimap?: boolean;
   onShowMinimapChange?: (show: boolean) => void;
-  showMinimap?: boolean;
-  onShowMinimapChange?: (show: boolean) => void;
   showControls?: boolean;
   onShowControlsChange?: (show: boolean) => void;
   cursorColor?: string;

@@ -67,6 +67,12 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
     }
   }, [isOpen, onClose]);
 
+  // Extracted handler for cursor color changes
+  const handleCursorColorChange = (newColor: string) => {
+    setCurColor(newColor);
+    onCursorColorChange?.(newColor);
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -243,22 +249,14 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
               <input
                 type="color"
                 value={curColor}
-                onChange={(e) => {
-                  const newColor = e.target.value;
-                  setCurColor(newColor);
-                  onCursorColorChange?.(newColor);
-                }}
+                onChange={(e) => handleCursorColorChange(e.target.value)}
                 className="w-10 h-10 rounded border border-zinc-700/50 cursor-pointer bg-transparent flex-shrink-0"
                 title={t('canvas.selectColor') || 'Select color'}
               />
               <input
                 type="text"
                 value={curColor}
-                onChange={(e) => {
-                  const newColor = e.target.value;
-                  setCurColor(newColor);
-                  onCursorColorChange?.(newColor);
-                }}
+                onChange={(e) => handleCursorColorChange(e.target.value)}
                 className="flex-1 px-2 py-1.5 bg-black/40 border border-zinc-700/50 rounded text-xs text-zinc-300 font-mono focus:outline-none focus:border-[#52ddeb]/50"
                 placeholder="#FFFFFF"
               />
