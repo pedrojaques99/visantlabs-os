@@ -278,7 +278,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         style={{ left: '50%', marginLeft: -3 }}
       />
 
-      <div className="flex flex-col h-full min-w-[500px] min-h-0">
+      <div className="flex flex-col h-full min-w-[500px] min-h-[600px]">
         {/* Header */}
         <div className="flex items-center justify-between p-3 border-b border-zinc-700/50">
           <div className="flex items-center gap-2">

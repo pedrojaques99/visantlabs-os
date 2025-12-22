@@ -1,5 +1,5 @@
 import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
-import { type NodeProps, useReactFlow, NodeResizer, Position } from '@xyflow/react';
+import { type NodeProps, type Node, useReactFlow, NodeResizer, Position } from '@xyflow/react';
 import { Loader2, Clapperboard, Video as VideoIcon, Image as ImageIcon, Settings, ChevronRight } from 'lucide-react';
 import type { VideoNodeData, GenerateVideoParams } from '../../types/reactFlow';
 import { VeoModel, GenerationMode, Resolution, AspectRatio } from '../../types';
@@ -17,7 +17,7 @@ import { Switch } from '../ui/switch';
 import { ConnectedImagesDisplay } from '../ui/ConnectedImagesDisplay';
 import { GlitchLoader } from '../ui/GlitchLoader';
 
-const VideoNodeComponent: React.FC<NodeProps<VideoNodeData>> = ({ data, selected, id, dragging }) => {
+const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
   const { setNodes } = useReactFlow();
 
@@ -119,6 +119,14 @@ const VideoNodeComponent: React.FC<NodeProps<VideoNodeData>> = ({ data, selected
     data.connectedImage4
   ].filter(Boolean) as string[];
 
+  console.log('[VideoNode] processing connected images:', {
+    connectedImage1: data.connectedImage1 ? 'present' : 'missing',
+    connectedImage2: data.connectedImage2 ? 'present' : 'missing',
+    connectedImage3: data.connectedImage3 ? 'present' : 'missing',
+    connectedImage4: data.connectedImage4 ? 'present' : 'missing',
+    totalFiltered: connectedImages.length
+  });
+
   // Determine handles based on mode
   const showSecondHandle = mode === GenerationMode.FRAMES_TO_VIDEO || mode === GenerationMode.REFERENCES;
   const showHandles3and4 = mode === GenerationMode.REFERENCES;
@@ -127,7 +135,7 @@ const VideoNodeComponent: React.FC<NodeProps<VideoNodeData>> = ({ data, selected
     <NodeContainer
       selected={selected}
       dragging={dragging}
-      className="p-0 min-w-[320px] max-w-[400px]"
+      className="p-0 min-w-[320px] max-w-[400px] overflow-visible"
     >
       {selected && !dragging && (
         <NodeResizer
@@ -184,6 +192,7 @@ const VideoNodeComponent: React.FC<NodeProps<VideoNodeData>> = ({ data, selected
             ]}
             variant="node"
             disabled={isLoading}
+            className="z-[99999]"
           />
         </div>
 
@@ -227,7 +236,7 @@ const VideoNodeComponent: React.FC<NodeProps<VideoNodeData>> = ({ data, selected
         )}
 
         {/* Advanced Settings */}
-        <div className="border border-zinc-800 rounded-md overflow-hidden bg-zinc-900/30">
+        <div className="border border-zinc-800 rounded-md bg-zinc-900/30">
           <button
             onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
             className="flex items-center gap-2 text-xs font-mono text-zinc-400 hover:text-zinc-200 transition-colors w-full p-2 hover:bg-zinc-800/50"
@@ -250,6 +259,7 @@ const VideoNodeComponent: React.FC<NodeProps<VideoNodeData>> = ({ data, selected
                   ]}
                   variant="node"
                   disabled={isLoading}
+                  className="z-[99999]"
                 />
               </div>
 
@@ -286,6 +296,7 @@ const VideoNodeComponent: React.FC<NodeProps<VideoNodeData>> = ({ data, selected
                   ]}
                   variant="node"
                   disabled={isLoading}
+                  className="z-[99999]"
                 />
               </div>
 

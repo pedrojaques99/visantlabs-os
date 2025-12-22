@@ -1178,6 +1178,31 @@
   box-shadow: 0 0 0 3px rgba(61, 213, 230, 0.5), 0 0 12px rgba(61, 213, 230, 0.8);
 }
 
+/* Video handles - same as image */
+.react-flow__handle.handle-video {
+  background: #52ddeb !important;
+  border: 0.5px solid rgba(82, 221, 235, 0.4) !important;
+}
+
+.react-flow__handle.handle-video:hover:not(.connected):not([data-connected="true"]) {
+  background: #3dd5e6 !important;
+  border: 0.5px solid rgba(61, 213, 230, 0.6) !important;
+}
+
+.react-flow__handle.handle-video.connected,
+.react-flow__handle.handle-video[data-connected="true"] {
+  background: #52ddeb !important;
+  border: 0.5px solid rgba(82, 221, 235, 0.6) !important;
+  box-shadow: 0 0 0 2px rgba(82, 221, 235, 0.4), 0 0 8px rgba(82, 221, 235, 0.6);
+}
+
+.react-flow__handle.handle-video.connected:hover,
+.react-flow__handle.handle-video[data-connected="true"]:hover {
+  background: #3dd5e6 !important;
+  border: 0.5px solid rgba(61, 213, 230, 0.7) !important;
+  box-shadow: 0 0 0 3px rgba(61, 213, 230, 0.5), 0 0 12px rgba(61, 213, 230, 0.8);
+}
+
 /* Text handles - lighter gray */
 .react-flow__handle.handle-text {
   background: #999999 !important;

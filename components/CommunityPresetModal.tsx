@@ -30,7 +30,7 @@ interface CommunityPresetModalProps {
     isCreating: boolean;
 }
 
-const COMMUNITY_API = '/api/community-presets';
+const PRESET_API_BASE = '/api/community';
 
 // Helper function to generate slug from text
 const generateSlug = (text: string): string => {
@@ -142,13 +142,19 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                 throw new Error('Image data is missing');
             }
 
-            const response = await fetch(`${COMMUNITY_API}/${presetId}/upload-image`, {
+            const uploadUrl = `${PRESET_API_BASE}/upload-image`;
+            console.log('[CommunityPresetModal] Uploading image to:', uploadUrl);
+
+            const response = await fetch(uploadUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ base64Image: image.base64 }),
+                body: JSON.stringify({
+                    base64Image: image.base64,
+                    id: presetId
+                }),
             });
 
             if (!response.ok) {

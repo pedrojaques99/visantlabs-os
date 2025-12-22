@@ -38,7 +38,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
       const handleClickOutside = (event: MouseEvent) => {
         if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
           setIsOpen(false);
-          setFocusedIndex(-1);
+          setFocusedIndex(0);
         }
       };
 
@@ -55,7 +55,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
       const handleKeyDown = (e: KeyboardEvent) => {
         if (e.key === 'Escape') {
           setIsOpen(false);
-          setFocusedIndex(-1);
+          setFocusedIndex(0);
           buttonRef.current?.focus();
         } else if (e.key === 'ArrowDown') {
           e.preventDefault();
@@ -103,7 +103,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
     React.useEffect(() => {
       if (isOpen && selectedOption) {
         const index = options.findIndex(opt => opt.value === selectedOption.value);
-        setFocusedIndex(index >= 0 ? index : 0);
+        setFocusedIndex(index >= 0 ? index : 10);
       }
     }, [isOpen]);
 
@@ -114,15 +114,15 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
     };
 
     const baseStyles = variant === 'node'
-      ? "w-full px-3 py-2 bg-zinc-800 border border-zinc-800/30 rounded text-xs font-mono text-zinc-300"
-      : "w-full px-3 py-2.5 bg-zinc-800 border border-zinc-800 rounded-xl text-zinc-200 text-sm font-mono";
+      ? "w-full px-3 py-2 bg-zinc-800 border border-zinc-800/30 rounded text-xs font-mono text-zinc-300 z-[100]"
+      : "w-full px-3 py-2.5 bg-zinc-800 border border-zinc-800 rounded-xl text-zinc-200 text-sm font-mono z-[100]";
 
     const focusStyles = variant === 'node'
-      ? "focus:outline-none focus:border-[#52ddeb]/50"
-      : "focus:outline-none focus:border-[#52ddeb]/70 focus:ring-2 focus:ring-[#52ddeb]/20";
+      ? "focus:outline-none focus:border-[#52ddeb]/50 z-[100]"
+      : "focus:outline-none focus:border-[#52ddeb]/70 focus:ring-2 focus:ring-[#52ddeb]/20 z-[100]";
 
     return (
-      <div ref={containerRef} className="relative w-full">
+      <div ref={containerRef} className={cn("relative w-full", isOpen && "z-[100]")}>
         <button
           ref={buttonRef}
           type="button"
@@ -136,7 +136,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
             "hover:border-zinc-600/50",
             "disabled:cursor-not-allowed disabled:opacity-50",
             isOpen && "border-[#52ddeb]/50",
-            variant === 'node' ? "node-interactive" : "",
+            variant === 'node' ? "node-interactive z-[100]" : "",
             className
           )}
           aria-haspopup="listbox"
@@ -163,12 +163,12 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
         {isOpen && (
           <div
             className={cn(
-              "absolute z-[100] w-full mt-1",
+              "absolute z-[9999] w-full mt-1",
               "bg-zinc-800 backdrop-blur-xl",
               "border border-zinc-700/50 rounded-md",
               "shadow-2xl",
               "overflow-hidden",
-              "animate-fade-in"
+              "animate-fade-in z-[100]"
             )}
             role="listbox"
             style={{
@@ -192,12 +192,13 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
                     onMouseEnter={() => setFocusedIndex(index)}
                     className={cn(
                       "px-3 py-2 cursor-pointer",
-                      "text-xs font-mono",
-                      "transition-colors duration-150",
+                      "text-xs font-mono relative",
+                      "transition-all duration-150",
                       "flex items-center justify-between gap-2",
-                      isFocused && "bg-zinc-800/60",
-                      isSelected && "bg-[#52ddeb]/10 text-[#52ddeb]",
-                      !isSelected && !isFocused && "text-zinc-300 hover:bg-zinc-800/40 hover:text-zinc-200"
+                      "border-l-2 border-transparent", // Marker for hover
+                      isFocused && "bg-zinc-800/60 border-zinc-600", // Focused state
+                      isSelected && "bg-[#52ddeb]/10 text-[#52ddeb] border-[#52ddeb]", // Selected state
+                      !isSelected && !isFocused && "text-zinc-400 hover:bg-zinc-800/40 hover:text-zinc-200 hover:border-zinc-700" // Subtle hover
                     )}
                   >
                     <span className="truncate">{option.label}</span>
