@@ -46,8 +46,8 @@ export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(({ d
     });
 
     try {
-      // Pass empty string for imageBase64 parameter - handler will read from nodeData
-      await data.onUpscale(id, '', targetResolution);
+      // Pass image reference directly to handler - conversion handled by service layer
+      await data.onUpscale(id, connectedImageFromData || '', targetResolution);
     } catch (error) {
       console.error('Error in handleUpscale:', error);
       // Error is already handled by the handler, we just need to catch it here
@@ -56,13 +56,13 @@ export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(({ d
 
   const handleSave = useCallback(async () => {
     if (!resultImageUrl || isSaving) return;
-    
+
     // Only save if imageUrl is from R2 (not a data URL)
     if (resultImageUrl.startsWith('data:')) {
       toast.error(t('canvasNodes.upscaleNode.pleaseUseImageFromR2'), { duration: 3000 });
       return;
     }
-    
+
     setIsSaving(true);
     try {
       const savedMockup = await mockupApi.save({
@@ -113,7 +113,7 @@ export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(({ d
       )}
 
       {/* Resolution Selector */}
-      <div 
+      <div
         className="mb-4"
         onMouseDown={(e) => e.stopPropagation()}
         onClick={(e) => e.stopPropagation()}
@@ -194,12 +194,12 @@ export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(({ d
   const prevConnectedImage = (prevProps.data as any).connectedImage ?? undefined;
   const nextConnectedImage = (nextProps.data as any).connectedImage ?? undefined;
   const connectedImageChanged = prevConnectedImage !== nextConnectedImage;
-  
+
   // If connectedImage changed, force re-render
   if (connectedImageChanged) {
     return false; // Re-render
   }
-  
+
   // Otherwise, check other important props
   return (
     prevProps.id === nextProps.id &&

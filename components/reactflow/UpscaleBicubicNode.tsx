@@ -117,48 +117,9 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
   const handleDescribe = useCallback(async () => {
     if (!resultImageUrl || isDescribing) return;
 
-    let imageInput: string | { base64: string; mimeType: string };
-    const base64Fallback = data.resultImageBase64;
-
-    if (resultImageUrl.startsWith('data:')) {
-      imageInput = resultImageUrl;
-    } else if (base64Fallback && typeof base64Fallback === 'string') {
-      const cleanBase64 = base64Fallback.startsWith('data:')
-        ? base64Fallback.split(',')[1] || base64Fallback
-        : base64Fallback;
-      let mimeType = 'image/png';
-      if (resultImageUrl.includes('.jpg') || resultImageUrl.includes('.jpeg')) {
-        mimeType = 'image/jpeg';
-      } else if (resultImageUrl.includes('.webp')) {
-        mimeType = 'image/webp';
-      } else if (resultImageUrl.includes('.gif')) {
-        mimeType = 'image/gif';
-      }
-      imageInput = {
-        base64: cleanBase64,
-        mimeType: mimeType,
-      };
-    } else {
-      try {
-        const base64 = await normalizeImageToBase64(resultImageUrl, base64Fallback);
-        let mimeType = 'image/png';
-        if (resultImageUrl.includes('.jpg') || resultImageUrl.includes('.jpeg')) {
-          mimeType = 'image/jpeg';
-        } else if (resultImageUrl.includes('.webp')) {
-          mimeType = 'image/webp';
-        } else if (resultImageUrl.includes('.gif')) {
-          mimeType = 'image/gif';
-        }
-        imageInput = {
-          base64: base64,
-          mimeType: mimeType,
-        };
-      } catch (error: any) {
-        toast.error(error?.message || 'Failed to load image for analysis', { duration: 3000 });
-        console.error('Failed to convert image to base64:', error);
-        return;
-      }
-    }
+    // Pass image reference directly to service - conversion handled by service layer
+    const imageInput = resultImageUrl || data.resultImageBase64;
+    if (!imageInput) return;
 
     setIsDescribing(true);
     if (data.onUpdateData) {
@@ -211,7 +172,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
         data.onUpdateData(id, { isDescribing: false });
       }
     }
-  }, [resultImageUrl, isDescribing, data, id, t]);
+  }, [resultImageUrl, isDescribing, data, id, t, getNode]);
 
   // Sync local sharpening with node data
   useEffect(() => {

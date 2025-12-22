@@ -1399,6 +1399,13 @@ export const useCanvasNodeHandlers = (
     const hasCredits = await validateCredits(selectedModel, resolution);
     if (!hasCredits) return;
 
+    // Clear previous result from PromptNode to prevent new OutputNodes from showing old images
+    // This ensures a clean slate for each new generation
+    updateNodeData<PromptNodeData>(nodeId, {
+      resultImageUrl: undefined,
+      resultImageBase64: undefined,
+    }, 'prompt');
+
     updateNodeLoadingState<PromptNodeData>(nodeId, true, 'prompt');
 
     let newOutputNodeId: string | null = null;

@@ -446,6 +446,7 @@
     "manage": "Gerenciar",
     "manageSubscription": "Gerenciar assinatura",
     "credits": "{remaining}/{total} créditos",
+    "active": "Ativo",
     "renews": "Renova em {date}",
     "resets": "Reseta em {date}",
     "portalError": "Falha ao abrir portal de assinatura",
@@ -464,7 +465,10 @@
     "buyCredits": "Comprar",
     "notificationUsed": "{count} crédito{plural} usado{plural}",
     "notificationUsedAdmin": "Nenhum crédito deduzido (administrador)",
-    "notificationRemaining": "{remaining} crédito{plural} restante{plural}"
+    "notificationUsedAdmin": "Nenhum crédito deduzido (administrador)",
+    "notificationRemaining": "{remaining} crédito{plural} restante{plural}",
+    "storage": "Armazenamento",
+    "active": "Ativo"
   },
   "creditsPackages": {
     "title": "COMPRAR CRÉDITOS",
@@ -498,6 +502,8 @@
   },
   "profile": {
     "title": "Perfil",
+    "seoTitle": "Seu Perfil",
+    "seoDescription": "Gerencie as configurações do seu perfil",
     "subtitle": "Gerencie sua conta e assinatura",
     "name": "Seu nome",
     "uploadPicture": "Clique para enviar foto",
@@ -579,6 +585,7 @@
     "accountCreatedSuccess": "Conta criada com sucesso!",
     "signedInSuccess": "Login realizado com sucesso!",
     "failedToConnectGoogle": "Falha ao conectar com Google. Por favor, tente novamente.",
+    "failedToConnectGoogle": "Falha ao conectar com Google. Por favor, tente novamente.",
     "or": "ou",
     "profile": "Perfil",
     "userMenu": "Menu do usuário",
@@ -601,7 +608,9 @@
     "save": "Salvar Alterações",
     "delete": "Remover Chave",
     "deleteConfirmTitle": "Excluir Chave da API",
+    "deleteConfirmTitle": "Excluir Chave da API",
     "deleteConfirmMessage": "Tem certeza de que deseja excluir sua chave de API? Você precisará inseri-la novamente para usar sua própria cota.",
+    "menuTitle": "Chaves de API",
     "saved": "Chave da API salva com sucesso",
     "deleted": "Chave da API removida com sucesso",
     "error": "Falha ao salvar chave da API",

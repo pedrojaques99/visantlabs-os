@@ -5,7 +5,6 @@ import { useTranslation } from '../hooks/useTranslation';
 import { useLayout } from '../hooks/useLayout';
 import { GlitchLoader } from './ui/GlitchLoader';
 import { LogIn, LogOut, User as UserIcon, Mail, X, Loader2, Pickaxe, ChevronDown, Globe, Key } from 'lucide-react';
-import { ApiSettings } from './profile/ApiSettings';
 import { ForgotPasswordModal } from './ForgotPasswordModal';
 import HCaptcha from '@hcaptcha/react-hcaptcha';
 import { toast } from 'sonner';
@@ -45,7 +44,6 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [showApiSettings, setShowApiSettings] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const captchaRef = useRef<HCaptcha>(null);
 
@@ -367,7 +365,8 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
                 <button
                   onClick={() => {
                     setIsDropdownOpen(false);
-                    setShowApiSettings(true);
+                    window.history.pushState({}, '', '/profile?tab=configuration');
+                    window.dispatchEvent(new PopStateEvent('popstate'));
                   }}
                   className="w-full text-left px-4 py-2 text-xs font-mono transition-colors cursor-pointer text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 flex items-center gap-2"
                 >
@@ -597,27 +596,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
         }}
       />
 
-      {showApiSettings && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center min-h-screen bg-black/80 backdrop-blur-sm overflow-y-auto p-4 md:p-6">
-          <div
-            className="bg-[#0a0a0a] border border-zinc-800 rounded-2xl w-full max-w-2xl relative shadow-2xl animate-in fade-in zoom-in-95 duration-200"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="absolute top-4 right-4 z-10">
-              <button
-                onClick={() => setShowApiSettings(false)}
-                className="p-2 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 rounded-full transition-all"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <div className="p-6 md:p-8">
-              <ApiSettings />
-            </div>
-          </div>
-          <div className="fixed inset-0 -z-10" onClick={() => setShowApiSettings(false)} />
-        </div>
-      )}
+
 
     </>
   );
