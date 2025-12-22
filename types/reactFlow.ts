@@ -589,7 +589,8 @@ export interface ColorExtractorNodeData extends BaseNodeData {
   connectedImage?: string; // connected image from ImageNode
   extractedColors?: string[]; // array of hex colors (max 10)
   isExtracting?: boolean; // loading state
-  onExtract?: (nodeId: string, imageBase64: string) => Promise<void>;
+  onExtract?: (nodeId: string, imageBase64: string, shouldRandomize?: boolean) => Promise<void>;
+  onRegenerateOne?: (nodeId: string, imageBase64: string, index: number) => Promise<void>;
   onUpload?: (nodeId: string, imageBase64: string) => void;
   onUpdateData?: (nodeId: string, newData: Partial<ColorExtractorNodeData>) => void;
 }

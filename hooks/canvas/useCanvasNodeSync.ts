@@ -591,7 +591,7 @@ export const useCanvasNodeSync = ({
             if (sourceNode) {
               if (sourceNode.type === 'image') {
                 const imageData = sourceNode.data as ImageNodeData;
-                imageBase64 = imageData.mockup?.imageBase64;
+                imageBase64 = imageData.mockup?.imageBase64 || imageData.mockup?.imageUrl;
                 if (imageBase64) {
                   imageBase64 = imageBase64.startsWith('data:')
                     ? imageBase64.split(',')[1] || imageBase64
@@ -599,10 +599,11 @@ export const useCanvasNodeSync = ({
                 }
               } else if (sourceNode.type === 'output') {
                 const outputData = sourceNode.data as OutputNodeData;
-                if (outputData.resultImageBase64) {
-                  imageBase64 = outputData.resultImageBase64.startsWith('data:')
-                    ? outputData.resultImageBase64.split(',')[1] || outputData.resultImageBase64
-                    : outputData.resultImageBase64;
+                if (outputData.resultImageBase64 || outputData.resultImageUrl) {
+                  const sourceImage = outputData.resultImageBase64 || outputData.resultImageUrl;
+                  imageBase64 = sourceImage ? (sourceImage.startsWith('data:')
+                    ? sourceImage.split(',')[1] || sourceImage
+                    : sourceImage) : undefined;
                 }
               } else if (sourceNode.type === 'logo') {
                 const logoData = sourceNode.data as LogoNodeData;
@@ -694,13 +695,14 @@ export const useCanvasNodeSync = ({
               if (sourceNode) {
                 if (sourceNode.type === 'image') {
                   const imageData = sourceNode.data as ImageNodeData;
-                  imageBase64 = imageData.mockup?.imageBase64;
+                  imageBase64 = imageData.mockup?.imageBase64 || imageData.mockup?.imageUrl;
                 } else if (sourceNode.type === 'output') {
                   const outputData = sourceNode.data as OutputNodeData;
-                  if (outputData.resultImageBase64) {
-                    imageBase64 = outputData.resultImageBase64.startsWith('data:')
-                      ? outputData.resultImageBase64.split(',')[1] || outputData.resultImageBase64
-                      : outputData.resultImageBase64;
+                  if (outputData.resultImageBase64 || outputData.resultImageUrl) {
+                    imageBase64 = outputData.resultImageBase64 || outputData.resultImageUrl;
+                    if (imageBase64 && imageBase64.startsWith('data:')) {
+                      imageBase64 = imageBase64.split(',')[1] || imageBase64;
+                    }
                   }
                 } else if (sourceNode.type === 'logo') {
                   const logoData = sourceNode.data as LogoNodeData;
