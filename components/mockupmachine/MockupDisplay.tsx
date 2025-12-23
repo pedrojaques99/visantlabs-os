@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { Download, RefreshCw, ImageIcon, Palette, Loader2, Camera, MapPin, Heart, X, Pencil } from 'lucide-react';
+import { Download, RefreshCw, ImageIcon, Palette, Camera, MapPin, Heart, X, Pencil } from 'lucide-react';
 import { mockupApi } from '../../services/mockupApi';
 import { toast } from 'sonner';
 import { SkeletonLoader } from '../ui/SkeletonLoader';
+import { Spinner } from '../ui/Spinner';
 import { Tooltip } from '../ui/Tooltip';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ReImaginePanel } from '../ReImaginePanel';
@@ -216,7 +217,7 @@ const MockupCard: React.FC<{
 
       {isRedrawing && (
         <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-          <Loader2 size={32} className="animate-spin text-white/80" />
+          <Spinner size={32} color="white" />
         </div>
       )}
 

@@ -136,17 +136,17 @@ export const cleanEdgeHandles = (edge: Edge): Edge => {
   const cleaned: Edge = {
     ...edge,
   };
-  
+
   // Remove sourceHandle if it's null, "null", or empty string
   if (cleaned.sourceHandle === null || cleaned.sourceHandle === 'null' || cleaned.sourceHandle === '') {
     delete (cleaned as any).sourceHandle;
   }
-  
+
   // Remove targetHandle if it's null, "null", or empty string
   if (cleaned.targetHandle === null || cleaned.targetHandle === 'null' || cleaned.targetHandle === '') {
     delete (cleaned as any).targetHandle;
   }
-  
+
   return cleaned;
 };
 
@@ -160,11 +160,11 @@ export const arraysEqual = <T>(a: T[] | undefined | null, b: T[] | undefined | n
   if (a === b) return true;
   if (!a || !b) return false;
   if (a.length !== b.length) return false;
-  
+
   for (let i = 0; i < a.length; i++) {
     if (a[i] !== b[i]) return false;
   }
-  
+
   return true;
 };
 
@@ -173,18 +173,18 @@ export const mockupArraysEqual = (a: any[] | undefined | null, b: any[] | undefi
   if (a === b) return true;
   if (!a || !b) return false;
   if (a.length !== b.length) return false;
-  
+
   // Compare by _id if available, otherwise by reference
   const aIds = a.map(m => m?._id || m);
   const bIds = b.map(m => m?._id || m);
-  
+
   if (aIds.length !== bIds.length) return false;
-  
+
   const aIdSet = new Set(aIds);
   for (const id of bIds) {
     if (!aIdSet.has(id)) return false;
   }
-  
+
   return true;
 };
 
@@ -195,7 +195,7 @@ export const getConnectedBrandIdentity = (
   edges: Edge[]
 ): BrandIdentity | null => {
   const connectedEdges = edges.filter(e => e.target === nodeId);
-  
+
   for (const edge of connectedEdges) {
     const sourceNode = nodes.find(n => n.id === edge.source);
     if (sourceNode?.type === 'brand') {
@@ -205,7 +205,7 @@ export const getConnectedBrandIdentity = (
       }
     }
   }
-  
+
   return null;
 };
 
@@ -217,11 +217,11 @@ export const getConnectedBrandIdentity = (
  */
 export const getImageFromSourceNode = (sourceNode: Node<FlowNodeData>): string | null => {
   if (!sourceNode) return null;
-  
+
   if (sourceNode.type === 'image') {
     const imageData = sourceNode.data as ImageNodeData;
     if (!imageData.mockup) return null;
-    
+
     // Prioritize base64 for thumbnails
     if (imageData.mockup.imageBase64) {
       const base64 = imageData.mockup.imageBase64.startsWith('data:')
@@ -229,7 +229,7 @@ export const getImageFromSourceNode = (sourceNode: Node<FlowNodeData>): string |
         : `data:image/png;base64,${imageData.mockup.imageBase64}`;
       return base64;
     }
-    
+
     // Fallback to URL
     const imageUrl = getImageUrl(imageData.mockup);
     if (imageUrl && imageUrl.length > 0) {
@@ -237,7 +237,7 @@ export const getImageFromSourceNode = (sourceNode: Node<FlowNodeData>): string |
     }
     return null;
   }
-  
+
   // For LogoNode
   if (sourceNode.type === 'logo') {
     const logoData = sourceNode.data as LogoNodeData;
@@ -254,14 +254,14 @@ export const getImageFromSourceNode = (sourceNode: Node<FlowNodeData>): string |
     }
     return null;
   }
-  
+
   // For other node types that produce images
-  if (sourceNode.type === 'merge' || sourceNode.type === 'edit' || sourceNode.type === 'upscale' || 
-      sourceNode.type === 'mockup' || sourceNode.type === 'angle' || sourceNode.type === 'prompt' || 
-      sourceNode.type === 'output' || sourceNode.type === 'shader') {
-    const nodeData = sourceNode.data as MergeNodeData | EditNodeData | UpscaleNodeData | 
-                     PromptNodeData | MockupNodeData | AngleNodeData | OutputNodeData | any;
-    
+  if (sourceNode.type === 'merge' || sourceNode.type === 'edit' || sourceNode.type === 'upscale' ||
+    sourceNode.type === 'mockup' || sourceNode.type === 'angle' || sourceNode.type === 'prompt' ||
+    sourceNode.type === 'output' || sourceNode.type === 'shader') {
+    const nodeData = sourceNode.data as MergeNodeData | EditNodeData | UpscaleNodeData |
+      PromptNodeData | MockupNodeData | AngleNodeData | OutputNodeData | any;
+
     // Prioritize base64 for thumbnails
     if (nodeData.resultImageBase64 && typeof nodeData.resultImageBase64 === 'string') {
       const base64 = nodeData.resultImageBase64.startsWith('data:')
@@ -269,13 +269,13 @@ export const getImageFromSourceNode = (sourceNode: Node<FlowNodeData>): string |
         : `data:image/png;base64,${nodeData.resultImageBase64}`;
       return base64;
     }
-    
+
     // Fallback to resultImageUrl (R2 URL)
     if (nodeData.resultImageUrl && typeof nodeData.resultImageUrl === 'string' && nodeData.resultImageUrl.length > 0) {
       return nodeData.resultImageUrl;
     }
   }
-  
+
   // For BrandNode - extract logo image
   if (sourceNode.type === 'brand') {
     const brandData = sourceNode.data as BrandNodeData;
@@ -291,7 +291,7 @@ export const getImageFromSourceNode = (sourceNode: Node<FlowNodeData>): string |
       return brandData.logoImage;
     }
   }
-  
+
   // For VideoNode - extract video URL or base64
   if (sourceNode.type === 'video') {
     const videoData = sourceNode.data as VideoNodeData;
@@ -307,7 +307,7 @@ export const getImageFromSourceNode = (sourceNode: Node<FlowNodeData>): string |
       return videoData.resultVideoUrl;
     }
   }
-  
+
   // For PDFNode - extract PDF base64
   if (sourceNode.type === 'pdf') {
     const pdfData = sourceNode.data as PDFNodeData;
@@ -320,7 +320,7 @@ export const getImageFromSourceNode = (sourceNode: Node<FlowNodeData>): string |
       return pdfData.pdfUrl;
     }
   }
-  
+
   return null;
 };
 
@@ -332,7 +332,7 @@ export const getImageFromSourceNode = (sourceNode: Node<FlowNodeData>): string |
  */
 export const getDataFromSourceNode = (sourceNode: Node<FlowNodeData>): { data: string; type: 'pdf' | 'png' } | null => {
   if (!sourceNode) return null;
-  
+
   // For PDFNode
   if (sourceNode.type === 'pdf') {
     const pdfData = sourceNode.data as PDFNodeData;
@@ -344,13 +344,13 @@ export const getDataFromSourceNode = (sourceNode: Node<FlowNodeData>): { data: s
     }
     return null;
   }
-  
+
   // For ImageNode and other image-producing nodes
   const imageData = getImageFromSourceNode(sourceNode);
   if (imageData) {
     return { data: imageData, type: 'png' };
   }
-  
+
   return null;
 };
 
@@ -382,26 +382,26 @@ export const syncConnectedImage = (
 ): string | undefined => {
   const connectedEdge = edges.find(e => e.target === targetNodeId);
   if (!connectedEdge) return undefined;
-  
+
   const sourceNode = nodes.find(node => node.id === connectedEdge.source);
   if (!sourceNode) return undefined;
-  
+
   // Check if source node is a valid image source
-  const hasConnectedImage = sourceNode.type === 'image' || 
-                           sourceNode.type === 'logo' || 
-                           sourceNode.type === 'brand' || 
-                           sourceNode.type === 'output' ||
-                           sourceNode.type === 'merge' || 
-                           sourceNode.type === 'edit' || 
-                           sourceNode.type === 'upscale' || 
-                           sourceNode.type === 'upscaleBicubic' ||
-                           sourceNode.type === 'mockup' || 
-                           sourceNode.type === 'angle' || 
-                           sourceNode.type === 'prompt' ||
-                           sourceNode.type === 'shader';
-  
+  const hasConnectedImage = sourceNode.type === 'image' ||
+    sourceNode.type === 'logo' ||
+    sourceNode.type === 'brand' ||
+    sourceNode.type === 'output' ||
+    sourceNode.type === 'merge' ||
+    sourceNode.type === 'edit' ||
+    sourceNode.type === 'upscale' ||
+    sourceNode.type === 'upscaleBicubic' ||
+    sourceNode.type === 'mockup' ||
+    sourceNode.type === 'angle' ||
+    sourceNode.type === 'prompt' ||
+    sourceNode.type === 'shader';
+
   if (!hasConnectedImage) return undefined;
-  
+
   return getImageFromSourceNode(sourceNode) || undefined;
 };
 
@@ -452,10 +452,11 @@ export const getMediaFromNodeForCopy = (
     return null;
   }
 
-  // MergeNode, EditNode, UpscaleNode, MockupNode, AngleNode, PromptNode, ShaderNode
-  if (node.type === 'merge' || node.type === 'edit' || node.type === 'upscale' || 
-      node.type === 'mockup' || node.type === 'angle' || node.type === 'prompt' || 
-      node.type === 'shader') {
+  // MergeNode, EditNode, UpscaleNode, UpscaleBicubicNode, MockupNode, AngleNode, PromptNode, ShaderNode
+  if (node.type === 'merge' || node.type === 'edit' || node.type === 'upscale' ||
+    node.type === 'upscaleBicubic' ||
+    node.type === 'mockup' || node.type === 'angle' || node.type === 'prompt' ||
+    node.type === 'shader') {
     const nodeData = node.data as any;
     if (nodeData.resultImageUrl) {
       return { mediaUrl: nodeData.resultImageUrl, isVideo: false };
@@ -533,6 +534,94 @@ export const getMediaFromNodeForCopy = (
 };
 
 /**
+ * Copy image from a node to clipboard specifically as PNG
+ * @param node - The node to copy image from
+ * @returns Promise that resolves when copy is complete
+ */
+export const copyMediaAsPngFromNode = async (
+  node: Node<FlowNodeData>
+): Promise<{ success: boolean; error?: string }> => {
+  const media = getMediaFromNodeForCopy(node);
+  if (!media) {
+    return { success: false, error: 'No media found in node' };
+  }
+
+  try {
+    let blob: Blob;
+
+    if (media.mediaUrl.startsWith('data:')) {
+      const base64Data = media.mediaUrl.split(',')[1];
+      const byteCharacters = atob(base64Data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+
+      let mimeType = media.mimeType;
+      if (!mimeType) {
+        const mimeMatch = media.mediaUrl.match(/data:(.*?);/);
+        mimeType = mimeMatch ? mimeMatch[1] : (media.isVideo ? 'video/mp4' : 'image/png');
+      }
+
+      blob = new Blob([byteArray], { type: mimeType });
+    } else {
+      const response = await fetch(media.mediaUrl);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch media: ${response.statusText}`);
+      }
+      blob = await response.blob();
+    }
+
+    // If it's a video or not PNG, we try to convert it to PNG
+    if (media.isVideo || blob.type !== 'image/png') {
+      const convertToPng = async (inputBlob: Blob): Promise<Blob> => {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+              reject(new Error('Failed to get canvas context'));
+              return;
+            }
+            ctx.drawImage(img, 0, 0);
+            canvas.toBlob((resultBlob) => {
+              if (resultBlob) {
+                resolve(resultBlob);
+              } else {
+                reject(new Error('Failed to convert to PNG blob'));
+              }
+            }, 'image/png');
+            URL.revokeObjectURL(img.src);
+          };
+          img.onerror = () => {
+            reject(new Error('Failed to load image for conversion'));
+            URL.revokeObjectURL(img.src);
+          };
+          img.src = URL.createObjectURL(inputBlob);
+        });
+      };
+
+      blob = await convertToPng(blob);
+    }
+
+    // Copy to clipboard
+    await navigator.clipboard.write([
+      new ClipboardItem({ 'image/png': blob })
+    ]);
+
+    return { success: true };
+  } catch (error: any) {
+    console.error('Failed to copy media as PNG:', error);
+    return { success: false, error: error?.message || 'Failed to copy media to clipboard' };
+  }
+};
+
+/**
  * Copy image or video from a node to clipboard
  * @param node - The node to copy media from
  * @returns Promise that resolves when copy is complete
@@ -557,14 +646,14 @@ export const copyMediaFromNode = async (
         byteNumbers[i] = byteCharacters.charCodeAt(i);
       }
       const byteArray = new Uint8Array(byteNumbers);
-      
+
       // Extract mime type from data URL or use provided mimeType
       let mimeType = media.mimeType;
       if (!mimeType) {
         const mimeMatch = media.mediaUrl.match(/data:(.*?);/);
         mimeType = mimeMatch ? mimeMatch[1] : (media.isVideo ? 'video/mp4' : 'image/png');
       }
-      
+
       blob = new Blob([byteArray], { type: mimeType });
     } else {
       // Fetch from URL
@@ -576,9 +665,17 @@ export const copyMediaFromNode = async (
     }
 
     // Copy to clipboard
-    await navigator.clipboard.write([
-      new ClipboardItem({ [blob.type]: blob })
-    ]);
+    // Note: Some browsers only support a limited set of types for ClipboardItem (usually image/png)
+    // If it's not a common type, it might fail.
+    try {
+      await navigator.clipboard.write([
+        new ClipboardItem({ [blob.type]: blob })
+      ]);
+    } catch (clipboardError) {
+      console.warn('Direct clipboard write failed, trying conversion to PNG:', clipboardError);
+      // Fallback: Use the PNG conversion logic
+      return await copyMediaAsPngFromNode(node);
+    }
 
     return { success: true };
   } catch (error: any) {

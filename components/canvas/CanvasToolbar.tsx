@@ -40,6 +40,8 @@ interface CanvasToolbarProps {
   onAddPrompt?: () => void;
   onAddChat?: () => void;
   onAddShader?: () => void;
+  onAddColorExtractor?: () => void;
+  experimentalMode?: boolean;
   selectedNodesCount: number;
   variant?: 'standalone' | 'stacked';
   forceCollapsed?: boolean;
@@ -72,6 +74,8 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
   onAddPrompt,
   onAddChat,
   onAddShader,
+  onAddColorExtractor,
+  experimentalMode = false,
   selectedNodesCount,
   variant = 'standalone',
   forceCollapsed = false,
@@ -99,14 +103,6 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
       onClick: onAddPrompt,
       category: 'core' as const,
     }] : []),
-    ...(onAddChat ? [{
-      id: 'chat',
-      icon: <MessageSquare className="w-4 h-4" />,
-      label: t('canvasToolbar.labels.chat') || 'Chat',
-      tooltip: t('canvasToolbar.addChatNode') || 'Add Chat Node',
-      onClick: onAddChat,
-      category: 'core' as const,
-    }] : []),
     {
       id: 'mockup',
       icon: <ImageIcon className="w-4 h-4" />,
@@ -115,12 +111,28 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
       onClick: onAddMockup,
       category: 'core' as const,
     },
-    ...(onAddShader ? [{
+    ...(experimentalMode && onAddChat ? [{
+      id: 'chat',
+      icon: <MessageSquare className="w-4 h-4" />,
+      label: t('canvasToolbar.labels.chat') || 'Chat',
+      tooltip: t('canvasToolbar.addChatNode') || 'Add Chat Node',
+      onClick: onAddChat,
+      category: 'core' as const,
+    }] : []),
+    ...(experimentalMode && onAddShader ? [{
       id: 'shader',
       icon: <Sparkles className="w-4 h-4" />,
       label: t('canvasToolbar.labels.shader'),
       tooltip: t('canvasToolbar.addShaderNode'),
       onClick: onAddShader,
+      category: 'core' as const,
+    }] : []),
+    ...(experimentalMode && onAddColorExtractor ? [{
+      id: 'colorExtractor',
+      icon: <Palette className="w-4 h-4" />,
+      label: t('canvasToolbar.labels.colorExtractor') || 'Color Extractor',
+      tooltip: t('canvasToolbar.addColorExtractorNode') || 'Add Color Extractor',
+      onClick: onAddColorExtractor,
       category: 'core' as const,
     }] : []),
     {
@@ -164,7 +176,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
       onClick: onAddPDF,
       category: 'branding' as const,
     }] : []),
-    ...(onAddStrategy ? [{
+    ...(experimentalMode && onAddStrategy ? [{
       id: 'strategy',
       icon: <Target className="w-4 h-4" />,
       label: t('canvasToolbar.labels.strategy'),
@@ -172,7 +184,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
       onClick: onAddStrategy,
       category: 'branding' as const,
     }] : []),
-    ...(onAddBrandCore ? [{
+    ...(experimentalMode && onAddBrandCore ? [{
       id: 'brandcore',
       icon: <Dna className="w-4 h-4" />,
       label: t('canvasToolbar.labels.brandCore'),

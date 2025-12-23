@@ -1,6 +1,7 @@
 import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
 import { Handle, Position, type NodeProps, useReactFlow, NodeResizer } from '@xyflow/react';
-import { FileText, Wand2, Loader2 } from 'lucide-react';
+import { FileText, Wand2 } from 'lucide-react';
+import { Spinner } from '../ui/Spinner';
 import type { TextNodeData } from '../../types/reactFlow';
 import { Textarea } from '../ui/textarea';
 import { NodeContainer } from './shared/NodeContainer';
@@ -157,7 +158,7 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
               title={isImproving ? (t('canvasNodes.textNode.improvingPrompt') || 'Improving prompt...') : (t('canvasNodes.textNode.improvePrompt') || 'Improve prompt')}
             >
               {isImproving ? (
-                <Loader2 size={14} strokeWidth={2} className="animate-spin" />
+                <Spinner size={14} color="currentColor" />
               ) : (
                 <Wand2 size={14} strokeWidth={2} />
               )}

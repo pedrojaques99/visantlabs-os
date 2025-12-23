@@ -4,9 +4,9 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useLayout } from '../../hooks/useLayout';
 import { authService } from '../../services/authService';
 import { AuthModal } from '../AuthModal';
-import { GlitchLoader } from './GlitchLoader';
+import { Spinner } from './Spinner';
 import type { UploadedImage } from '../../types';
-import { UploadCloud, Loader2 } from 'lucide-react';
+import { UploadCloud } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ImageUploaderProps {
@@ -36,10 +36,10 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload, onP
 
   const processFile = useCallback(async (file: File | Blob | null) => {
     if (!file) return;
-    
+
     // Check authentication using context state first
     setIsVerifyingAuth(true);
-    
+
     // If still checking auth, verify with cache
     if (isCheckingAuth || isAuthenticated === null) {
       try {
@@ -57,7 +57,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload, onP
         return;
       }
     }
-    
+
     // Use context state - if not authenticated, show modal
     if (isAuthenticated === false) {
       setPendingAction('upload');
@@ -65,23 +65,23 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload, onP
       setIsVerifyingAuth(false);
       return;
     }
-    
+
     // isAuthenticated === true, safe to process
     setIsVerifyingAuth(false);
-    
+
     // Check file type
     if (!SUPPORTED_MIME_TYPES.includes(file.type)) {
       setError(t('upload.unsupportedFileType'));
       return;
     }
-    
+
     // Check file size
     if (file.size > MAX_IMAGE_SIZE_BYTES) {
       const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
       setError(t('upload.imageTooLarge', { size: fileSizeMB, max: MAX_IMAGE_SIZE_MB }));
       return;
     }
-    
+
     setIsProcessing(true);
     setError(null);
     try {
@@ -111,14 +111,14 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload, onP
   const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => e.preventDefault();
   const handleDragEnter = (e: React.DragEvent<HTMLLabelElement>) => { e.preventDefault(); setIsDragging(true); };
   const handleDragLeave = (e: React.DragEvent<HTMLLabelElement>) => { e.preventDefault(); setIsDragging(false); };
-  
+
   const handlePaste = useCallback(async (event: ClipboardEvent) => {
     const items = event.clipboardData?.items;
     if (!items) return;
     for (const item of items) {
       if (item.type.includes("image")) {
         const blob = item.getAsFile();
-        if(blob) {
+        if (blob) {
           await processFile(blob);
           break;
         }
@@ -151,9 +151,8 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload, onP
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         data-tutorial-target="upload-image"
-        className={`relative block w-full p-4 bg-black/95 backdrop-blur-xl border rounded-md cursor-pointer transition-all duration-300 group ${
-          isDragging ? 'border-dashed border-2 border-[#52ddeb]/40 bg-[#52ddeb]/10 shadow-2xl shadow-[#52ddeb]/10' : 'border-zinc-800/10 hover:border-zinc-800/20 hover:text-zinc-300'
-        } ${isProcessing ? 'cursor-wait' : ''}`}
+        className={`relative block w-full p-4 bg-black/95 backdrop-blur-xl border rounded-md cursor-pointer transition-all duration-300 group ${isDragging ? 'border-dashed border-2 border-[#52ddeb]/40 bg-[#52ddeb]/10 shadow-2xl shadow-[#52ddeb]/10' : 'border-zinc-800/10 hover:border-zinc-800/20 hover:text-zinc-300'
+          } ${isProcessing ? 'cursor-wait' : ''}`}
       >
         <input
           id="file-upload"
@@ -165,11 +164,11 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload, onP
         />
         <div className="flex items-center justify-center gap-4">
           {(isCheckingAuth || isVerifyingAuth) && (
-            <GlitchLoader size={24} color="#52ddeb" />
+            <Spinner size={24} color="#52ddeb" />
           )}
           {isProcessing && !isCheckingAuth && !isVerifyingAuth && (
             <>
-              <GlitchLoader size={24} color="#52ddeb" />
+              <Spinner size={24} color="#52ddeb" />
               <div className="text-left min-w-0">
                 <p className="text-md font-semibold text-zinc-400">{t('upload.processingImage')}</p>
                 <p className="text-xs font-mono tracking-wider text-zinc-500">{t('upload.pleaseWait')}</p>
@@ -216,7 +215,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload, onP
             setEmail('');
             setPassword('');
             setName('');
-            
+
             // For upload, the file input will be triggered by the user clicking again
             setPendingAction(null);
           }}

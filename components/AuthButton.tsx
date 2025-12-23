@@ -3,8 +3,8 @@ import { authService, type User } from '../services/authService';
 import { subscriptionService, type SubscriptionStatus } from '../services/subscriptionService';
 import { useTranslation } from '../hooks/useTranslation';
 import { useLayout } from '../hooks/useLayout';
-import { GlitchLoader } from './ui/GlitchLoader';
-import { LogIn, LogOut, User as UserIcon, Mail, X, Loader2, Pickaxe, ChevronDown, Globe, Key } from 'lucide-react';
+import { Spinner } from './ui/Spinner';
+import { LogIn, LogOut, User as UserIcon, Mail, X, Pickaxe, ChevronDown, Globe, Key } from 'lucide-react';
 import { ForgotPasswordModal } from './ForgotPasswordModal';
 import HCaptcha from '@hcaptcha/react-hcaptcha';
 import { toast } from 'sonner';
@@ -282,7 +282,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
   if (isCheckingAuth || isLoading) {
     return (
       <div className="px-3 py-2 flex items-center gap-2 text-xs text-zinc-500 font-mono">
-        <GlitchLoader size={12} color="#52ddeb" />
+        <Spinner size={12} color="#52ddeb" />
       </div>
     );
   }
@@ -401,7 +401,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
             className="flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 bg-zinc-800/50 text-zinc-400 rounded-md border border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300 disabled:opacity-50 disabled:cursor-not-allowed text-[10px] md:text-xs font-mono transition-colors"
           >
             {isGoogleLoading ? (
-              <Loader2 size={12} className="md:w-[14px] md:h-[14px] animate-spin" />
+              <Spinner size={12} color="currentColor" />
             ) : (
               <span>{t('auth.signInWithGoogle')}</span>
             )}
@@ -453,7 +453,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
                 >
                   {isGoogleLoading ? (
                     <>
-                      <Loader2 size={16} className="animate-spin" />
+                      <Spinner size={16} color="currentColor" />
                       {t('auth.signingInWithGoogle')}
                     </>
                   ) : (
@@ -560,7 +560,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
               >
                 {isAuthLoading ? (
                   <>
-                    <Loader2 size={16} className="animate-spin" />
+                    <Spinner size={16} color="currentColor" />
                     {isSignUp ? t('auth.creatingAccount') : t('auth.signingIn')}
                   </>
                 ) : (

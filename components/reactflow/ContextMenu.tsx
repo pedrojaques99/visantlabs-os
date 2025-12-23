@@ -31,6 +31,7 @@ interface ContextMenuProps {
   onAddChat?: () => void;
   onExport?: () => void;
   sourceNodeId?: string;
+  experimentalMode?: boolean;
 }
 
 interface MenuItem {
@@ -72,6 +73,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   onAddChat,
   onExport,
   sourceNodeId,
+  experimentalMode = false,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [position, setPosition] = useState({ x, y });
@@ -93,7 +95,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     const windowHeight = window.innerHeight;
     const windowWidth = window.innerWidth;
     const isBottomHalf = y > windowHeight / 2;
-    
+
     // Wait for menu to render to get its dimensions
     const timeoutId = setTimeout(() => {
       const menuRect = menuRef.current?.getBoundingClientRect();
@@ -101,7 +103,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
 
       const menuHeight = menuRect.height;
       const menuWidth = menuRect.width;
-      
+
       let finalX = x;
       let finalY = y;
 
@@ -118,7 +120,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
         // Ensure menu doesn't go below viewport
         if (finalY + menuHeight > windowHeight - 8) {
           finalY = windowHeight - menuHeight - 8;
-      }
+        }
       }
 
       // Adjust horizontal position if menu goes off screen
@@ -303,7 +305,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       section: 'processing' as const,
       category: 'Effects',
     }] : []),
-    ...(onAddShader ? [{
+    ...(experimentalMode && onAddShader ? [{
       id: 'shader',
       label: 'Shader Node',
       icon: <Sparkles size={16} />,
@@ -311,7 +313,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       section: 'processing' as const,
       category: 'Effects',
     }] : []),
-    ...(onAddColorExtractor ? [{
+    ...(experimentalMode && onAddColorExtractor ? [{
       id: 'colorExtractor',
       label: 'Color Extractor',
       icon: <Palette size={16} />,
@@ -328,7 +330,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       section: 'processing',
       category: 'Branding',
     },
-    ...(onAddBrandCore ? [{
+    ...(experimentalMode && onAddBrandCore ? [{
       id: 'brandcore',
       label: 'Brand Core',
       icon: <Dna size={16} />,
@@ -336,7 +338,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       section: 'processing' as const,
       category: 'Branding',
     }] : []),
-    ...(onAddStrategy ? [{
+    ...(experimentalMode && onAddStrategy ? [{
       id: 'strategy',
       label: 'Strategy Node',
       icon: <Target size={16} />,
@@ -344,7 +346,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       section: 'processing' as const,
       category: 'Branding',
     }] : []),
-    ...(onAddChat ? [{
+    ...(experimentalMode && onAddChat ? [{
       id: 'chat',
       label: 'Chat Node',
       icon: <MessageSquare size={16} />,
@@ -374,8 +376,8 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
 
   const filteredItems = searchQuery
     ? menuItems.filter(item =>
-        item.label.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+      item.label.toLowerCase().includes(searchQuery.toLowerCase())
+    )
     : menuItems;
 
   const inputItems = filteredItems.filter(item => item.section === 'input');
@@ -416,7 +418,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
         "flex items-center gap-3",
         item.highlight
           ? "text-[#52ddeb] hover:bg-[#52ddeb]/10"
-          : "text-zinc-300 hover:bg-zinc-800/50 hover:text-[#52ddeb]"
+          : "text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-400"
       )}
     >
       <span className={cn(
@@ -456,9 +458,9 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       {/* Header with Search */}
       <div className="sticky top-0 bg-[#0A0A0A]/80 backdrop-blur-md border-b border-zinc-700/40 z-10 rounded-t-xl">
         <div className="px-3 py-2.5 flex items-center justify-between gap-2">
-            <span className="text-xs font-mono text-zinc-400 uppercase tracking-wider font-semibold">
-              Add Node
-            </span>
+          <span className="text-xs font-mono text-zinc-400 uppercase tracking-wider font-semibold">
+            Add Node
+          </span>
           <button
             onClick={onClose}
             className="p-1 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 rounded transition-all duration-200 cursor-pointer"
@@ -468,7 +470,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             <X size={14} />
           </button>
         </div>
-        
+
         {/* Search Input */}
         <div className="px-3 pb-2.5" onMouseDown={(e) => e.stopPropagation()}>
           <div className="relative">
@@ -518,8 +520,8 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
                 cat => groupedProcessingItems[cat]?.length > 0
               );
               const hasItemsAfter = categoryOrder.slice(categoryIndex + 1).some(
-                cat => groupedProcessingItems[cat]?.length > 0 || 
-                (cat === categoryOrder[categoryOrder.length - 1] && (exportItems.length > 0 || brandItems.length > 0))
+                cat => groupedProcessingItems[cat]?.length > 0 ||
+                  (cat === categoryOrder[categoryOrder.length - 1] && (exportItems.length > 0 || brandItems.length > 0))
               );
 
               return (
@@ -545,9 +547,9 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
                   <div className="h-px bg-zinc-700/30 my-1.5" />
                 )}
                 <GroupLabel title="Export" />
-                  {exportItems.map((item, index) => (
-                    <MenuItemButton key={item.id} item={item} index={inputItems.length + processingItems.length + index} />
-                  ))}
+                {exportItems.map((item, index) => (
+                  <MenuItemButton key={item.id} item={item} index={inputItems.length + processingItems.length + index} />
+                ))}
               </>
             )}
 
@@ -558,9 +560,9 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
                   <div className="h-px bg-zinc-700/30 my-1.5" />
                 )}
                 <GroupLabel title="Brand" />
-                  {brandItems.map((item, index) => (
-                    <MenuItemButton key={item.id} item={item} index={inputItems.length + processingItems.length + exportItems.length + index} />
-                  ))}
+                {brandItems.map((item, index) => (
+                  <MenuItemButton key={item.id} item={item} index={inputItems.length + processingItems.length + exportItems.length + index} />
+                ))}
               </>
             )}
           </div>
