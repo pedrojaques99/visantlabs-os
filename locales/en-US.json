@@ -124,7 +124,7 @@
     "viewMy": "my presets",
     "openInCanvas": "Open in Canvas",
     "tabs": {
-      "all": "all",
+      "all": "All",
       "mockup": "mockup",
       "angle": "angle",
       "texture": "texture",
@@ -209,6 +209,9 @@
     "invalidMockupData": "Invalid mockup data",
     "mockupMissingImageData": "Mockup missing image data",
     "storageQuotaExceeded": "Storage quota exceeded"
+  },
+  "canvasLoading": {
+    "Project": "Loading Project..."
   },
   "myOutputs": {
     "seoTitle": "My Outputs",

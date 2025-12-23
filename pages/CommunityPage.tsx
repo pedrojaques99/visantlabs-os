@@ -171,13 +171,9 @@ export const CommunityPage: React.FC = () => {
           className="mb-16 rounded-3xl border border-zinc-800/50 min-h-[600px] h-auto"
           color="#52ddeb"
           starColor="#52ddeb"
+
         >
           <div className="relative z-10 p-8 md:p-12 h-full flex flex-col justify-between">
-            {/* Background decorative elements */}
-            <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
-              <Globe size={300} className="text-[#52ddeb]" />
-            </div>
-
             <div className="relative z-10 max-w-2xl pointer-events-auto">
               <div className="flex items-center gap-2 mb-4">
                 <span className="px-3 py-1 bg-[#52ddeb]/10 text-[#52ddeb] text-xs font-mono rounded-full border border-[#52ddeb]/20">

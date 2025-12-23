@@ -296,10 +296,14 @@ export default function ClubLogo3D({
 
   // Calculate camera position based on screen size
   const cameraPosition = useMemo(() => {
-    if (isSmallScreen) return new THREE.Vector3(0, -2, 15);
-    if (isMediumScreen) return new THREE.Vector3(0, -1, 18);
+    if (isSmallScreen) return new THREE.Vector3(10, -20, 15);
+    if (isMediumScreen) return new THREE.Vector3(10, -10, 18);
     return new THREE.Vector3(0, 0, 20);
   }, [isSmallScreen, isMediumScreen]);
+
+  const controlsTarget = useMemo(() => {
+    return new THREE.Vector3(0, isSmallScreen ? -2 : -1, 0);
+  }, [isSmallScreen]);
 
   return (
     <div className="absolute inset-0 flex items-center justify-center">
@@ -353,7 +357,7 @@ export default function ClubLogo3D({
             maxDistance={isSmallScreen ? 15 : 20}
             minPolarAngle={Math.PI / 3}
             maxPolarAngle={Math.PI / 2}
-            target={new THREE.Vector3(0, isSmallScreen ? -2 : -1, 0)}
+            target={controlsTarget}
           />
         </Suspense>
       </Canvas>
