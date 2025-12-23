@@ -3,6 +3,7 @@ import { X, MessageCircle, Bug } from 'lucide-react';
 import { Spinner } from './ui/Spinner';
 import { useTranslation } from '../hooks/useTranslation';
 import { toast } from 'sonner';
+import { getGithubUrl } from '../config/branding';
 
 export interface SupportModalProps {
   isOpen: boolean;
@@ -102,9 +103,22 @@ ${t('support.message')}:
 ${message}
       `.trim();
 
-      const mailtoLink = `mailto:support@example.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
+      if (contactType === 'reportBug') {
+        const githubUrl = getGithubUrl();
+        const issueBody = `
+**User:** ${name || 'Anonymous'}
+**Email:** ${email || 'Not provided'}
 
-      window.location.href = mailtoLink;
+**Message:**
+${message}
+        `.trim();
+
+        const issueUrl = `${githubUrl}/issues/new?title=${encodeURIComponent(subject)}&body=${encodeURIComponent(issueBody)}`;
+        window.open(issueUrl, '_blank');
+      } else {
+        const mailtoLink = `mailto:support@example.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
+        window.location.href = mailtoLink;
+      }
 
       toast.success(t('support.success') || 'Message sent successfully!', { duration: 3000 });
 
@@ -154,8 +168,8 @@ ${message}
                 type="button"
                 onClick={() => setContactType('customerService')}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md border transition-all text-sm font-mono ${contactType === 'customerService'
-                    ? 'bg-[#52ddeb]/20 border-[#52ddeb]/50 text-[#52ddeb]'
-                    : 'bg-black/40 border-zinc-700/50 text-zinc-400 hover:border-zinc-600'
+                  ? 'bg-[#52ddeb]/20 border-[#52ddeb]/50 text-[#52ddeb]'
+                  : 'bg-black/40 border-zinc-700/50 text-zinc-400 hover:border-zinc-600'
                   }`}
               >
                 <MessageCircle size={16} />
@@ -165,8 +179,8 @@ ${message}
                 type="button"
                 onClick={() => setContactType('reportBug')}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md border transition-all text-sm font-mono ${contactType === 'reportBug'
-                    ? 'bg-[#52ddeb]/20 border-[#52ddeb]/50 text-[#52ddeb]'
-                    : 'bg-black/40 border-zinc-700/50 text-zinc-400 hover:border-zinc-600'
+                  ? 'bg-[#52ddeb]/20 border-[#52ddeb]/50 text-[#52ddeb]'
+                  : 'bg-black/40 border-zinc-700/50 text-zinc-400 hover:border-zinc-600'
                   }`}
               >
                 <Bug size={16} />
