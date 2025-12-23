@@ -16,7 +16,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/visantlabs/vsn-mockup-machine"
+    "url": "https://github.com/pedrojaques99/visantlabs-os"
   },
   "scripts": {
     "type-check": "tsc",

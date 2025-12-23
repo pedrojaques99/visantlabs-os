@@ -129,7 +129,7 @@
       "angle": "ângulo",
       "texture": "textura",
       "ambience": "ambiente",
-      "luminance": "luminância"
+      "luminance": "Iluminação"
     },
     "table": {
       "noPresets": "Nenhum preset disponível"
@@ -2521,13 +2521,13 @@
       "result": "Resultado do ambiente"
     },
     "luminanceNode": {
-      "title": "Preset de Luminância",
-      "selectLuminance": "Selecionar luminância",
+      "title": "Preset de Iluminação",
+      "selectLuminance": "Selecionar Iluminação",
       "inputImage": "Imagem de Entrada",
       "connectImageNode": "Conecte um nó de imagem",
-      "generateLuminance": "Gerar Luminância",
+      "generateLuminance": "Gerar Iluminação",
       "generating": "Gerando...",
-      "result": "Resultado da luminância"
+      "result": "Resultado da Iluminação"
     },
     "chatNode": {
       "title": "Chat Node",
@@ -2866,7 +2866,7 @@
       "angle": "Ângulo",
       "texture": "Textura",
       "ambience": "Ambiente",
-      "luminance": "Luminância"
+      "luminance": "Iluminação"
     },
     "tags": {
       "label": "Tags (opcional)",
