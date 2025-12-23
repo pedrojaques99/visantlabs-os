@@ -1,4 +1,4 @@
-import { Suspense, useRef, useMemo, useEffect } from 'react';
+import { Suspense, useRef, useMemo, useEffect, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF, OrbitControls, Environment } from '@react-three/drei';
 import * as THREE from 'three';
@@ -95,7 +95,7 @@ function Stars({ color }: StarsProps) {
           attach="attributes-size"
           count={count}
           array={sizes.current}
-          itemSize={2}
+          itemSize={1}
           args={[sizes.current, 1]}
         />
       </bufferGeometry>
@@ -292,6 +292,7 @@ export default function ClubLogo3D({
 }: ClubLogo3DProps) {
   const isSmallScreen = useMediaQuery('(max-width: 640px)');
   const isMediumScreen = useMediaQuery('(max-width: 768px)');
+  const [cursor, setCursor] = useState(isMobile ? 'default' : 'grab');
 
   // Calculate camera position based on screen size
   const cameraPosition = useMemo(() => {
@@ -313,23 +314,23 @@ export default function ClubLogo3D({
         style={{
           width: '100%',
           height: '100%',
-          cursor: isMobile ? 'default' : 'grab',
+          cursor,
           touchAction: isMobile ? 'none' : 'auto',
           background: 'transparent'
         }}
         onPointerDown={() => {
           if (!isMobile) {
-            document.body.style.cursor = 'grabbing';
+            setCursor('grabbing');
           }
         }}
         onPointerUp={() => {
           if (!isMobile) {
-            document.body.style.cursor = 'grab';
+            setCursor('grab');
           }
         }}
         onPointerLeave={() => {
           if (!isMobile) {
-            document.body.style.cursor = 'default';
+            setCursor('grab');
           }
         }}
       >
