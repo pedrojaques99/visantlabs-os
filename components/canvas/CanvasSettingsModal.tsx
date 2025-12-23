@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, Grid3x3, Maximize2, ZoomIn, Palette, MousePointer2 } from 'lucide-react';
+import { X, Grid3x3, Maximize2, ZoomIn, Palette, MousePointer2, Beaker } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 
 interface CanvasSettingsModalProps {
@@ -17,6 +17,8 @@ interface CanvasSettingsModalProps {
   onShowControlsChange?: (show: boolean) => void;
   cursorColor?: string;
   onCursorColorChange?: (color: string) => void;
+  experimentalMode?: boolean;
+  onExperimentalModeChange?: (experimental: boolean) => void;
 }
 
 export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
@@ -34,6 +36,8 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
   onShowControlsChange,
   cursorColor = '#FFFFFF',
   onCursorColorChange,
+  experimentalMode = false,
+  onExperimentalModeChange,
 }) => {
   const { t } = useTranslation();
   const [bgColor, setBgColor] = useState(backgroundColor);
@@ -153,6 +157,33 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
             >
               <span
                 className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-md transition-transform ${showControls ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+              />
+            </button>
+          </div>
+        </div>
+
+        {/* Experimental Mode Toggle */}
+        <div className="mb-4">
+          <div className="flex items-center justify-between p-2 bg-black/40 border border-zinc-800/50 rounded-md">
+            <div className="flex items-center gap-2">
+              <Beaker size={16} className="text-zinc-400 flex-shrink-0" />
+              <div className="flex flex-col">
+                <label className="text-xs font-mono text-zinc-300 cursor-pointer">
+                  {t('canvas.experimentalMode') || 'Experimental Mode'}
+                </label>
+                <span className="text-[10px] text-zinc-500 font-mono">
+                  {t('canvas.experimentalModeDesc') || 'Show preview nodes like Shader, Strategy, etc.'}
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={() => onExperimentalModeChange?.(!experimentalMode)}
+              className={`relative w-10 h-5 rounded-md transition-colors cursor-pointer flex-shrink-0 ${experimentalMode ? 'bg-[#52ddeb]' : 'bg-zinc-700'
+                }`}
+            >
+              <span
+                className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-md transition-transform ${experimentalMode ? 'translate-x-5' : 'translate-x-0'
                   }`}
               />
             </button>

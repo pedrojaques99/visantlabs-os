@@ -1,11 +1,11 @@
 import React, { useState, memo, useEffect, useRef, useCallback } from 'react';
 import { Handle, Position, type NodeProps, type Node, useReactFlow, NodeResizer } from '@xyflow/react';
-import { Wrench, Loader2, Wand2 } from 'lucide-react';
+import { Wrench, Wand2 } from 'lucide-react';
+import { Spinner } from '../ui/Spinner';
 import type { MergeNodeData } from '../../types/reactFlow';
 import type { GeminiModel } from '../../types';
 import { cn } from '../../lib/utils';
 import { ConnectedImagesDisplay } from '../ui/ConnectedImagesDisplay';
-import { GlitchLoader } from '../ui/GlitchLoader';
 import { NodeContainer } from './shared/NodeContainer';
 import { Select } from '../ui/select';
 import { Textarea } from '../ui/textarea';
@@ -201,7 +201,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
         >
           {isGeneratingPrompt ? (
             <>
-              <Loader2 size={14} className="animate-spin" />
+              <Spinner size={14} color="currentColor" />
               Generating Prompt...
             </>
           ) : (
@@ -270,7 +270,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
       >
         {isLoading ? (
           <>
-            <GlitchLoader size={14} className="mr-1" color="#52ddeb" />
+            <Spinner size={14} className="mr-1" color="#52ddeb" />
             Generating Image...
           </>
         ) : (

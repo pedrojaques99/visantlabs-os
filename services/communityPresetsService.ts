@@ -70,4 +70,19 @@ export async function initializeCommunityPresets(): Promise<void> {
   await loadPresetsFromAPI();
 }
 
+/**
+ * Get global community stats
+ */
+export async function getCommunityStats(): Promise<{ totalUsers: number; totalPresets: number; totalBlankMockups: number }> {
+  try {
+    const response = await fetch('/api/community/stats');
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (error) {
+    console.warn('Failed to fetch community stats:', error);
+  }
+  return { totalUsers: 0, totalPresets: 0, totalBlankMockups: 0 };
+}
+
 

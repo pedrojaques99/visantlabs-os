@@ -52,7 +52,7 @@ import { CanvasHeader } from '../components/canvas/CanvasHeader';
 import { CanvasFlow } from '../components/canvas/CanvasFlow';
 import { ShaderControlsSidebar } from '../components/canvas/ShaderControlsSidebar';
 import { ShareModal } from '../components/canvas/ShareModal';
-import { cleanEdgeHandles, mockupArraysEqual, arraysEqual, getConnectedBrandIdentity, generateNodeId, getImageFromSourceNode, syncConnectedImage } from '../utils/canvas/canvasNodeUtils';
+import { cleanEdgeHandles, mockupArraysEqual, arraysEqual, getConnectedBrandIdentity, generateNodeId, getImageFromSourceNode, syncConnectedImage, getMediaFromNodeForCopy } from '../utils/canvas/canvasNodeUtils';
 import { SEO } from '../components/SEO';
 import { ExportPanel } from '../components/ui/ExportPanel';
 import { toast } from 'sonner';
@@ -168,6 +168,14 @@ export const CanvasPage: React.FC = () => {
     }>;
   } | null>(null);
 
+  const [experimentalMode, setExperimentalMode] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('canvasExperimentalMode');
+      return saved !== null ? saved === 'true' : false;
+    }
+    return false;
+  });
+
   // React Flow state
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<FlowNodeData>>([]);
 
@@ -180,8 +188,9 @@ export const CanvasPage: React.FC = () => {
       localStorage.setItem('canvasShowMinimap', String(showMinimap));
       localStorage.setItem('canvasShowControls', String(showControls));
       localStorage.setItem('canvasCursorColor', cursorColor);
+      localStorage.setItem('canvasExperimentalMode', String(experimentalMode));
     }
-  }, [backgroundColor, gridColor, showGrid, showMinimap, showControls, cursorColor]);
+  }, [backgroundColor, gridColor, showGrid, showMinimap, showControls, cursorColor, experimentalMode]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
   // Hooks - initialize history first so it can be used in handlers
@@ -778,24 +787,17 @@ export const CanvasPage: React.FC = () => {
 
   // Unified handlers for ImageNode and OutputNode
   const {
-    handleDownload: handleImageDownload,
+    handleDownload,
     handleExport: handleImageExport,
-    handleFullscreen: handleImageFullscreen,
-    handleCopy: handleImageCopy,
-    handleEditWithPrompt: handleImageEditWithPrompt,
-    handleDelete: handleImageDelete,
-    handleDuplicate: handleImageDuplicate,
+    handleFullscreen,
+    handleCopy,
+    handleCopyPNG,
+    handleEditWithPrompt,
+    handleDelete: handleImageNodeDelete,
+    handleDuplicate,
     handleImageLike,
     handleImageDescribe,
     handleOutputLike,
-    // For OutputNode, use the same generic handlers
-    handleDownload: handleOutputDownload,
-    handleExport: handleOutputExport,
-    handleFullscreen: handleOutputFullscreen,
-    handleCopy: handleOutputCopy,
-    handleEditWithPrompt: handleOutputEditWithPrompt,
-    handleDelete: handleOutputDelete,
-    handleDuplicate: handleOutputDuplicate,
   } = useImageNodeHandlers({
     imageContextMenu,
     nodes,
@@ -2646,6 +2648,95 @@ export const CanvasPage: React.FC = () => {
               localStorage.setItem('canvasShowControls', String(show));
             }
           }}
+          cursorColor={cursorColor}
+          onCursorColorChange={(color) => {
+            setCursorColor(color);
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('canvasCursorColor', color);
+            }
+          }}
+          experimentalMode={experimentalMode}
+          onExperimentalModeChange={setExperimentalMode}
+          onImportCommunityPreset={(preset, type) => {
+            if (!reactFlowInstance) return;
+
+            // Get center of viewport
+            const viewport = reactFlowInstance.getViewport();
+            const centerX = (window.innerWidth / 2 - viewport.x) / viewport.zoom;
+            const centerY = (window.innerHeight / 2 - viewport.y) / viewport.zoom;
+
+            // Create appropriate node based on preset type
+            switch (type) {
+              case 'mockup':
+                addMockupNode({ x: centerX, y: centerY }, true);
+                // Update the newly created node with the preset
+                setTimeout(() => {
+                  setNodes((nds) => {
+                    const newNodes = [...nds];
+                    const lastMockupNode = newNodes.filter(n => n.type === 'mockup').pop();
+                    if (lastMockupNode && lastMockupNode.data.onUpdateData) {
+                      lastMockupNode.data.onUpdateData(lastMockupNode.id, { selectedPreset: preset.id });
+                    }
+                    return newNodes;
+                  });
+                }, 100);
+                break;
+              case 'angle':
+                addAngleNode({ x: centerX, y: centerY });
+                setTimeout(() => {
+                  setNodes((nds) => {
+                    const newNodes = [...nds];
+                    const lastAngleNode = newNodes.filter(n => n.type === 'angle').pop();
+                    if (lastAngleNode && lastAngleNode.data.onUpdateData) {
+                      lastAngleNode.data.onUpdateData(lastAngleNode.id, { selectedPreset: preset.id });
+                    }
+                    return newNodes;
+                  });
+                }, 100);
+                break;
+              case 'texture':
+                addTextureNode({ x: centerX, y: centerY });
+                setTimeout(() => {
+                  setNodes((nds) => {
+                    const newNodes = [...nds];
+                    const lastTextureNode = newNodes.filter(n => n.type === 'texture').pop();
+                    if (lastTextureNode && lastTextureNode.data.onUpdateData) {
+                      lastTextureNode.data.onUpdateData(lastTextureNode.id, { selectedPreset: preset.id });
+                    }
+                    return newNodes;
+                  });
+                }, 100);
+                break;
+              case 'ambience':
+                addAmbienceNode({ x: centerX, y: centerY });
+                setTimeout(() => {
+                  setNodes((nds) => {
+                    const newNodes = [...nds];
+                    const lastAmbienceNode = newNodes.filter(n => n.type === 'ambience').pop();
+                    if (lastAmbienceNode && lastAmbienceNode.data.onUpdateData) {
+                      lastAmbienceNode.data.onUpdateData(lastAmbienceNode.id, { selectedPreset: preset.id });
+                    }
+                    return newNodes;
+                  });
+                }, 100);
+                break;
+              case 'luminance':
+                addLuminanceNode({ x: centerX, y: centerY });
+                setTimeout(() => {
+                  setNodes((nds) => {
+                    const newNodes = [...nds];
+                    const lastLuminanceNode = newNodes.filter(n => n.type === 'luminance').pop();
+                    if (lastLuminanceNode && lastLuminanceNode.data.onUpdateData) {
+                      lastLuminanceNode.data.onUpdateData(lastLuminanceNode.id, { selectedPreset: preset.id });
+                    }
+                    return newNodes;
+                  });
+                }, 100);
+                break;
+            }
+
+            toast.success(t('canvas.presetImported', { name: preset.name }) || `Imported ${preset.name}`, { duration: 2000 });
+          }}
         />
 
         {isCollaborative && projectId && isAuthenticated && authService.getToken() ? (
@@ -2684,6 +2775,8 @@ export const CanvasPage: React.FC = () => {
               showControls={showControls}
               onDropImage={handleDropImage}
               onDropNode={handleDropNode}
+              onAddColorExtractor={addColorExtractorNode}
+              experimentalMode={experimentalMode}
             />
           </RoomProvider>
         ) : (
@@ -2713,6 +2806,8 @@ export const CanvasPage: React.FC = () => {
             onDropImage={handleDropImage}
             onDropNode={handleDropNode}
             reactFlowInstance={reactFlowInstance}
+            experimentalMode={experimentalMode}
+            onAddColorExtractor={addColorExtractorNode}
           />
         )}
 
@@ -3072,6 +3167,7 @@ export const CanvasPage: React.FC = () => {
                 }
               }
             }}
+
             onAddBrandKit={() => {
               if (reactFlowInstance) {
                 const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
@@ -3156,6 +3252,7 @@ export const CanvasPage: React.FC = () => {
                 }
               }
             }}
+            experimentalMode={experimentalMode}
           />
         )}
 
@@ -3172,67 +3269,48 @@ export const CanvasPage: React.FC = () => {
         {/* Image Context Menu */}
         {imageContextMenu && (() => {
           const node = nodes.find(n => n.id === imageContextMenu.nodeId);
-          if (!node || (node.type !== 'image' && node.type !== 'output')) return null;
+          if (!node) return null;
 
-          // Get image URL for both image and output nodes
-          let imageUrl: string | undefined;
-          if (node.type === 'image') {
-            const imageData = node.data as ImageNodeData;
-            imageUrl = getImageUrl(imageData.mockup) || undefined;
-          } else if (node.type === 'output') {
-            const outputData = node.data as OutputNodeData;
-            imageUrl = outputData.resultImageUrl ||
-              (outputData.resultImageBase64
-                ? (outputData.resultImageBase64.startsWith('data:')
-                  ? outputData.resultImageBase64
-                  : `data:image/png;base64,${outputData.resultImageBase64}`)
-                : undefined);
-          }
+          // Check if node has media
+          const media = getMediaFromNodeForCopy(node);
+          if (!media) return null;
 
-          if (node.type === 'image') {
-            const imageData = node.data as ImageNodeData;
-            const isLiked = imageData.mockup.isLiked || false;
+          const imageUrl = media.mediaUrl;
+          const isLiked = (node.data as any).isLiked || (node.data as any).mockup?.isLiked || false;
 
-            return (
-              <ImageContextMenu
-                x={imageContextMenu.x}
-                y={imageContextMenu.y}
-                onClose={() => setImageContextMenu(null)}
-                onLike={handleImageLike}
-                onDownload={handleImageDownload}
-                onExport={handleImageExport}
-                onFullscreen={handleImageFullscreen}
-                onCopy={handleImageCopy}
-                onDescribe={handleImageDescribe}
-                onEditWithPrompt={handleImageEditWithPrompt}
-                onDelete={handleImageDelete}
-                onDuplicate={handleImageDuplicate}
-                imageUrl={imageUrl}
-                isLiked={isLiked}
-              />
-            );
-          } else if (node.type === 'output') {
-            // OutputNode doesn't have a like state, so we'll use false
-            return (
-              <ImageContextMenu
-                x={imageContextMenu.x}
-                y={imageContextMenu.y}
-                onClose={() => setImageContextMenu(null)}
-                onLike={handleOutputLike}
-                onDownload={handleOutputDownload}
-                onExport={handleOutputExport}
-                onFullscreen={handleOutputFullscreen}
-                onCopy={handleOutputCopy}
-                onEditWithPrompt={handleOutputEditWithPrompt}
-                onDelete={handleOutputDelete}
-                onDuplicate={handleOutputDuplicate}
-                imageUrl={imageUrl}
-                isLiked={false}
-              />
-            );
-          }
+          // Use appropriate handlers
+          const isOutputNode = node.type === 'output';
 
-          return null;
+          const onLike = isOutputNode ? handleOutputLike : handleImageLike;
+          const onDownload = handleDownload;
+          const onExport = handleImageExport;
+          const onFullscreen = handleFullscreen;
+          const onCopy = handleCopy;
+          const onCopyPNG = handleCopyPNG;
+          const onEditWithPrompt = handleEditWithPrompt;
+          const onDelete = handleImageNodeDelete;
+          const onDuplicate = handleDuplicate;
+          const onDescribe = isOutputNode ? undefined : handleImageDescribe;
+
+          return (
+            <ImageContextMenu
+              x={imageContextMenu.x}
+              y={imageContextMenu.y}
+              onClose={() => setImageContextMenu(null)}
+              onLike={onLike}
+              onDownload={onDownload}
+              onExport={onExport}
+              onFullscreen={onFullscreen}
+              onCopy={onCopy}
+              onCopyPNG={onCopyPNG}
+              onDescribe={onDescribe}
+              onEditWithPrompt={onEditWithPrompt}
+              onDelete={onDelete}
+              onDuplicate={onDuplicate}
+              imageUrl={imageUrl}
+              isLiked={isLiked}
+            />
+          );
         })()}
 
         {/* Node Context Menu */}
@@ -3297,6 +3375,7 @@ export const CanvasPage: React.FC = () => {
               }
             }
           }}
+
         />
       )}
 
@@ -3461,6 +3540,7 @@ export const CanvasPage: React.FC = () => {
           variant="stacked"
           position="left"
           selectedNodesCount={nodes.filter(n => n.selected).length}
+          experimentalMode={experimentalMode}
           onAddMerge={() => {
             const selectedNodes = nodes.filter(n => n.selected);
             const newNodeId = addMergeNode();
@@ -3701,6 +3781,17 @@ export const CanvasPage: React.FC = () => {
               }, 100);
             }
           }}
+          onAddColorExtractor={() => {
+            if (reactFlowInstance) {
+              const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
+              if (pane) {
+                addColorExtractorNode({
+                  x: window.innerWidth / 2,
+                  y: window.innerHeight / 2,
+                });
+              }
+            }
+          }}
           onAddShader={() => {
             const selectedNodes = nodes.filter(n => n.selected);
             let newNodeId: string | undefined;
@@ -3759,6 +3850,8 @@ const CollaborativeCanvas: React.FC<{
   showControls?: boolean;
   onDropImage?: (image: UploadedImage, position: { x: number; y: number }) => void;
   onDropNode?: (nodeType: string, position: { x: number; y: number }) => void;
+  onAddColorExtractor?: (position?: { x: number; y: number }) => void;
+  experimentalMode?: boolean;
 }> = ({
   nodes,
   edges,
@@ -3789,6 +3882,8 @@ const CollaborativeCanvas: React.FC<{
   showControls = true,
   onDropImage,
   onDropNode,
+  onAddColorExtractor,
+  experimentalMode = false,
 }) => {
     const { t } = useTranslation();
     const [reactFlowInstance, setReactFlowInstanceLocal] = React.useState<ReactFlowInstance | null>(null);
@@ -3940,9 +4035,11 @@ const CollaborativeCanvas: React.FC<{
           onNodeDragStart={handleNodeDragStart}
           onNodeDragStop={handleNodeDragStop}
           onPaneContextMenu={onPaneContextMenu}
-          onNodeContextMenu={onNodeContextMenu}
+          onNodeContextMenu={(e, node) => onNodeContextMenu(e, node)}
           onEdgeClick={onEdgeClick}
           onEdgeContextMenu={onEdgeContextMenu}
+          onAddColorExtractor={onAddColorExtractor}
+          experimentalMode={experimentalMode}
           nodeTypes={nodeTypes as any}
           onInit={handleInit}
           reactFlowWrapper={reactFlowWrapper}
@@ -3954,6 +4051,7 @@ const CollaborativeCanvas: React.FC<{
           onDropImage={onDropImage}
           onDropNode={onDropNode}
           reactFlowInstance={reactFlowInstance}
+
         />
         {reactFlowInstance && reactFlowWrapper.current && (
           <CollaborativeCursors

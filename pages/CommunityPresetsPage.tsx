@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { Users, Plus, Edit2, Trash2, X, Save, Image as ImageIcon, Camera, Layers, MapPin, Sun, ArrowLeft, Heart, Maximize2, ExternalLink, RefreshCcw, Copy } from 'lucide-react';
+import { Users, Plus, Edit2, Trash2, X, Save, Image as ImageIcon, Camera, Layers, MapPin, Sun, ArrowLeft, Heart, Maximize2, ExternalLink, RefreshCcw, Copy, Globe, User, LayoutGrid } from 'lucide-react';
 
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 
@@ -26,10 +26,10 @@ import { ConfirmationModal } from '../components/ConfirmationModal';
 
 // Constants
 const COMMUNITY_API = '/api/community/presets';
-const PRESET_TYPES = ['mockup', 'angle', 'texture', 'ambience', 'luminance'] as const;
+const PRESET_TYPES = ['all', 'mockup', 'angle', 'texture', 'ambience', 'luminance'] as const;
 
 // Types
-type PresetType = 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance';
+type PresetType = 'all' | 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance';
 
 interface PresetFormData {
   presetType: PresetType;
@@ -66,6 +66,7 @@ interface CommunityPreset {
 
 const getPresetIcon = (type: PresetType) => {
   const icons = {
+    all: LayoutGrid,
     mockup: ImageIcon,
     angle: Camera,
     texture: Layers,
@@ -105,10 +106,10 @@ export const CommunityPresetsPage: React.FC = () => {
   const [presets, setPresets] = useState<CommunityPreset[]>([]);
   const [activeTab, setActiveTab] = useState<PresetType>(() => {
     const typeParam = searchParams.get('type');
-    if (typeParam && ['mockup', 'angle', 'texture', 'ambience', 'luminance'].includes(typeParam)) {
+    if (typeParam && PRESET_TYPES.includes(typeParam as any)) {
       return typeParam as PresetType;
     }
-    return 'mockup';
+    return 'all';
   });
   const [editingPreset, setEditingPreset] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -599,7 +600,9 @@ export const CommunityPresetsPage: React.FC = () => {
   // Computed - Tags and filtering
   const allTags = useMemo(() => {
     const sourcePresets = viewMode === 'my' ? presets : allPresets;
-    const currentPresets = sourcePresets.filter(p => p.presetType === activeTab);
+    const currentPresets = activeTab === 'all'
+      ? sourcePresets
+      : sourcePresets.filter(p => p.presetType === activeTab);
     const tags = new Set<string>();
 
     currentPresets.forEach(preset => {
@@ -617,7 +620,9 @@ export const CommunityPresetsPage: React.FC = () => {
 
   const currentPresets = useMemo(() => {
     const sourcePresets = viewMode === 'my' ? presets : allPresets;
-    let filtered = sourcePresets.filter(p => p.presetType === activeTab);
+    let filtered = activeTab === 'all'
+      ? sourcePresets
+      : sourcePresets.filter(p => p.presetType === activeTab);
     if (filterTag) {
       filtered = filtered.filter(p =>
         p.tags && Array.isArray(p.tags) && p.tags.includes(filterTag)
@@ -666,8 +671,15 @@ export const CommunityPresetsPage: React.FC = () => {
           </button>
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
-              <Users className="h-6 w-6 md:h-8 md:w-8 text-brand-cyan" />
-              <h1 className="text-3xl md:text-4xl font-semibold font-manrope text-zinc-300">
+              {viewMode === 'all' ? (
+                <Globe className="h-6 w-6 md:h-8 md:w-8 text-brand-cyan" />
+              ) : (
+                <User className="h-6 w-6 md:h-8 md:w-8 text-indigo-400" />
+              )}
+              <h1 className={cn(
+                "text-3xl md:text-4xl font-semibold font-manrope",
+                viewMode === 'all' ? "text-zinc-300" : "text-indigo-100"
+              )}>
                 {viewMode === 'my' ? t('communityPresets.myPresets') : t('communityPresets.allPresets')}
               </h1>
             </div>
@@ -704,54 +716,32 @@ export const CommunityPresetsPage: React.FC = () => {
         {!isCheckingAuth && (viewMode === 'all' || isAuthenticated) && (
           <div className="space-y-6">
             <div className="bg-[#1A1A1A] border border-zinc-800/50 rounded-md p-4 md:p-6">
-              {/* View Mode Tabs */}
-              <div className="flex gap-2 mb-4 pb-4 border-b border-zinc-800/30">
-                <button
-                  onClick={() => handleViewModeChange('all')}
-                  className={cn(
-                    "px-4 py-2 rounded-md text-sm font-mono transition-all",
-                    viewMode === 'all'
-                      ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30'
-                      : 'bg-zinc-900/50 border border-zinc-700/50 text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-300'
-                  )}
-                >
-                  {t('communityPresets.viewAll')}
-                </button>
-                <button
-                  onClick={() => handleViewModeChange('my')}
-                  className={cn(
-                    "px-4 py-2 rounded-md text-sm font-mono transition-all",
-                    viewMode === 'my'
-                      ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30'
-                      : 'bg-zinc-900/50 border border-zinc-700/50 text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-300'
-                  )}
-                  disabled={!isAuthenticated}
-                >
-                  {t('communityPresets.viewMy')}
-                </button>
-              </div>
-
-              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
+              {/* Primary Category Tabs */}
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-8">
                 <div className="flex gap-2 flex-wrap">
-                  {PRESET_TYPES.map((type) => (
-                    <button
-                      key={type}
-                      onClick={() => handleTabChange(type)}
-                      className={cn(
-                        "px-4 py-2 rounded-md text-sm font-mono transition-all",
-                        activeTab === type
-                          ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30'
-                          : 'bg-zinc-900/50 border border-zinc-700/50 text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-300'
-                      )}
-                    >
-                      {t(`communityPresets.tabs.${type}`)}
-                    </button>
-                  ))}
+                  {PRESET_TYPES.map((type) => {
+                    const Icon = type === 'all' ? LayoutGrid : (getPresetIcon(type as any).type);
+                    return (
+                      <button
+                        key={type}
+                        onClick={() => handleTabChange(type)}
+                        className={cn(
+                          "px-5 py-2.5 rounded-md text-sm font-mono transition-all flex items-center gap-2",
+                          activeTab === type
+                            ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 shadow-[0_0_15px_rgba(82,221,235,0.1)]'
+                            : 'bg-zinc-900/50 border border-zinc-700/50 text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-300'
+                        )}
+                      >
+                        {type === 'all' ? <LayoutGrid size={16} /> : getPresetIcon(type as any)}
+                        {t(`communityPresets.tabs.${type}`)}
+                      </button>
+                    );
+                  })}
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={handleRefresh}
-                    className="flex items-center justify-center p-2 bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700/50 text-zinc-300 rounded-md transition-colors disabled:bg-zinc-900/50 disabled:text-zinc-600 disabled:border-zinc-800/50"
+                    className="flex items-center justify-center p-2.5 bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700/50 text-zinc-300 rounded-md transition-colors disabled:bg-zinc-900/50 disabled:text-zinc-600 disabled:border-zinc-800/50"
                     disabled={isLoading}
                     title={t('communityPresets.actions.refresh')}
                     aria-label={t('communityPresets.actions.refresh')}
@@ -761,12 +751,55 @@ export const CommunityPresetsPage: React.FC = () => {
                   {viewMode === 'my' && !isEditing && isAuthenticated && (
                     <button
                       onClick={handleCreate}
-                      className="flex items-center gap-2 px-3 py-2 bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700/50 text-zinc-300 font-medium rounded-md text-sm font-mono transition-colors"
+                      className="flex items-center gap-2 px-4 py-2.5 bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700/50 text-zinc-300 font-medium rounded-md text-sm font-mono transition-colors"
                     >
                       <Plus className="h-4 w-4" />
                       {t('communityPresets.createNew')}
                     </button>
                   )}
+                </div>
+              </div>
+
+              {/* View Mode (All/My) - Sub Hierarchy Tabs */}
+              <div className="flex items-center justify-between mb-6 pt-6 border-t border-zinc-800/30">
+                <div className="flex bg-black/40 p-1 rounded-lg border border-zinc-800/50">
+                  <button
+                    onClick={() => handleViewModeChange('all')}
+                    className={cn(
+                      "px-6 py-2 rounded-md text-xs font-mono transition-all flex items-center gap-2",
+                      viewMode === 'all'
+                        ? 'bg-zinc-800 text-brand-cyan shadow-sm'
+                        : 'text-zinc-500 hover:text-zinc-300'
+                    )}
+                  >
+                    <Globe className="h-3.5 w-3.5" />
+                    {t('communityPresets.viewAll')}
+                  </button>
+                  <button
+                    onClick={() => handleViewModeChange('my')}
+                    className={cn(
+                      "px-6 py-2 rounded-md text-xs font-mono transition-all flex items-center gap-2",
+                      viewMode === 'my'
+                        ? 'bg-zinc-800 text-indigo-400 shadow-sm'
+                        : 'text-zinc-500 hover:text-zinc-300'
+                    )}
+                    disabled={!isAuthenticated}
+                  >
+                    <User className="h-3.5 w-3.5" />
+                    {t('communityPresets.viewMy')}
+                  </button>
+                </div>
+
+                <div className="hidden md:flex items-center gap-4 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
+                  <div className="flex items-center gap-1.5">
+                    <div className={cn("w-1.5 h-1.5 rounded-full", viewMode === 'all' ? "bg-brand-cyan shadow-[0_0_5px_var(--brand-cyan)]" : "bg-zinc-800")} />
+                    Global Library
+                  </div>
+                  <div className="w-[1px] h-3 bg-zinc-800" />
+                  <div className="flex items-center gap-1.5">
+                    <div className={cn("w-1.5 h-1.5 rounded-full", viewMode === 'my' ? "bg-indigo-500 shadow-[0_0_5px_#6366f1]" : "bg-zinc-800")} />
+                    User Private
+                  </div>
                 </div>
               </div>
 
@@ -811,11 +844,11 @@ export const CommunityPresetsPage: React.FC = () => {
 
               {/* Bento Box Grid */}
               {currentPresets.length === 0 ? (
-                <div className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl p-12 text-center">
+                <div key="empty" className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl p-12 text-center tab-content-active">
                   <p className="text-zinc-500 font-mono">{t('communityPresets.table.noPresets')}</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div key={`${activeTab}-${viewMode}`} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 tab-content-active">
                   {currentPresets.map((preset) => (
                     <PresetCard
                       key={preset.id}

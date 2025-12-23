@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Globe, Sparkles, TrendingUp, Plus, Image as ImageIcon, Camera, Layers, MapPin, Sun, ArrowRight } from 'lucide-react';
+import { Globe, Sparkles, TrendingUp, Plus, Image as ImageIcon, Camera, Layers, MapPin, Sun, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { BreadcrumbWithBack, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '../components/ui/BreadcrumbWithBack';
 import { useLayout } from '../hooks/useLayout';
 import { useTranslation } from '../hooks/useTranslation';
-import { getAllCommunityPresets } from '../services/communityPresetsService';
+import { getAllCommunityPresets, getCommunityStats } from '../services/communityPresetsService';
 import { mockupApi } from '../services/mockupApi';
 import { cn } from '../lib/utils';
+import { Github } from 'lucide-react';
 
 type PresetType = 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance';
 
@@ -26,6 +27,12 @@ interface CategoryPresets {
   texture: any[];
   ambience: any[];
   luminance: any[];
+}
+
+interface GlobalStats {
+  totalUsers: number;
+  totalPresets: number;
+  totalBlankMockups: number;
 }
 
 export const CommunityPage: React.FC = () => {
@@ -47,17 +54,25 @@ export const CommunityPage: React.FC = () => {
     ambience: [],
     luminance: [],
   });
+  const [globalCommunityStats, setGlobalCommunityStats] = useState<GlobalStats>({
+    totalUsers: 0,
+    totalPresets: 0,
+    totalBlankMockups: 0,
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [activeUsersCount, setActiveUsersCount] = useState<number>(0);
   const [communityMockups, setCommunityMockups] = useState<any[]>([]);
+  const [allPublicMockups, setAllPublicMockups] = useState<any[]>([]);
+  const [isGalleryExpanded, setIsGalleryExpanded] = useState(false);
 
   useEffect(() => {
     const loadStats = async () => {
       setIsLoading(true);
       try {
-        const [allPresets, publicMockups] = await Promise.all([
+        const [allPresets, publicMockups, globalStats] = await Promise.all([
           getAllCommunityPresets(),
-          mockupApi.getAllPublic().catch(() => [])
+          mockupApi.getAllPublic().catch(() => []),
+          getCommunityStats()
         ]);
 
         const newStats: PresetStats = {
@@ -70,6 +85,7 @@ export const CommunityPage: React.FC = () => {
         };
         newStats.total = Object.values(newStats).reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0);
         setStats(newStats);
+        setGlobalCommunityStats(globalStats);
 
         // Store the last 5 presets for each category
         setCategoryPresets({
@@ -81,16 +97,15 @@ export const CommunityPage: React.FC = () => {
         });
 
         // Store latest mockups
-        // Sort by date (newest first) and take top 5
         const sortedMockups = (publicMockups || [])
           .filter((mockup: any) => mockup?._id && (mockup.imageUrl || mockup.imageBase64))
           .sort((a: any, b: any) => {
             const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
             const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
             return dateB - dateA;
-          })
-          .slice(0, 5);
-        setCommunityMockups(sortedMockups);
+          });
+        setAllPublicMockups(sortedMockups);
+        setCommunityMockups(sortedMockups.slice(0, 10));
 
         // Count unique users from all presets
         const allPresetsArray = [
@@ -127,12 +142,13 @@ export const CommunityPage: React.FC = () => {
   const isAuthenticated = isUserAuthenticated === true;
 
   return (
-    <div className="min-h-screen bg-[#121212] text-zinc-300 pt-12 md:pt-14 relative">
+    <div className="min-h-screen bg-[#0A0A0A] text-zinc-300 pt-12 md:pt-14 relative overflow-x-hidden">
       <div className="fixed inset-0 z-0">
         <GridDotsBackground />
       </div>
-      <div className="max-w-7xl mx-auto px-4 pt-[20px] pb-16 md:pb-24 relative z-10">
-        <div className="mb-3">
+
+      <div className="max-w-7xl mx-auto px-4 pt-8 pb-16 md:pb-24 relative z-10">
+        <div className="mb-8">
           <BreadcrumbWithBack to="/">
             <BreadcrumbList>
               <BreadcrumbItem>
@@ -147,179 +163,272 @@ export const CommunityPage: React.FC = () => {
             </BreadcrumbList>
           </BreadcrumbWithBack>
         </div>
-        <div className="flex items-start gap-3 mb-4">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <Globe className="h-5 w-5 md:h-6 md:w-6 text-[#52ddeb]" />
-              <h1 className="text-2xl md:text-3xl font-semibold font-manrope text-zinc-300">
-                {t('communityPresets.title')}
-              </h1>
+
+        {/* Hero Section */}
+        <div className="relative mb-16 rounded-3xl overflow-hidden bg-gradient-to-br from-[#1A1A1A] to-[#0A0A0A] border border-zinc-800/50 p-8 md:p-12">
+          <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+            <Globe size={300} className="text-[#52ddeb]" />
+          </div>
+
+          <div className="relative z-10 max-w-2xl">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="px-3 py-1 bg-[#52ddeb]/10 text-[#52ddeb] text-xs font-mono rounded-full border border-[#52ddeb]/20">
+                COMUNIDADE ATIVA
+              </span>
             </div>
-            <p className="text-zinc-500 font-mono text-xs md:text-sm ml-7 md:ml-8">
+            <h1 className="text-4xl md:text-6xl font-bold font-manrope text-white mb-6 leading-tight">
+              {t('communityPresets.title')}
+            </h1>
+            <p className="text-zinc-400 text-lg md:text-xl font-mono mb-8 max-w-xl leading-relaxed">
               {t('communityPresets.subtitle')}
             </p>
+
+            <div className="flex flex-wrap gap-4">
+              <button
+                onClick={() => navigate('/canvas')}
+                className="flex items-center gap-2 px-6 py-3 bg-[#52ddeb] hover:bg-[#52ddeb]/90 text-black font-semibold rounded-xl transition-all hover:scale-105 active:scale-95 shadow-lg shadow-[#52ddeb]/20"
+              >
+                <Plus size={20} />
+                <span className="font-mono uppercase tracking-wider text-sm">Criar Conteúdo</span>
+              </button>
+              <button
+                onClick={() => navigate('/community/presets')}
+                className="flex items-center gap-2 px-6 py-3 bg-zinc-800/50 hover:bg-zinc-800 text-white font-semibold rounded-xl border border-zinc-700/50 transition-all hover:scale-105 active:scale-95"
+              >
+                <Globe size={20} />
+                <span className="font-mono uppercase tracking-wider text-sm">Ver Tudo</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Global Stats Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-16 relative z-10">
+            <div className="bg-black/40 backdrop-blur-sm border border-zinc-800/50 rounded-2xl p-6 transition-all hover:border-[#52ddeb]/30 group">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-zinc-500 font-mono text-xs uppercase tracking-widest">Usuários</span>
+                <TrendingUp size={16} className="text-[#52ddeb]" />
+              </div>
+              <p className="text-4xl font-bold text-white font-mono group-hover:scale-110 transition-transform origin-left">
+                {isLoading ? '...' : globalCommunityStats.totalUsers}
+              </p>
+            </div>
+            <div className="bg-black/40 backdrop-blur-sm border border-zinc-800/50 rounded-2xl p-6 transition-all hover:border-[#52ddeb]/30 group">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-zinc-500 font-mono text-xs uppercase tracking-widest">Presets Criados</span>
+                <Sparkles size={16} className="text-[#52ddeb]" />
+              </div>
+              <p className="text-4xl font-bold text-white font-mono group-hover:scale-110 transition-transform origin-left">
+                {isLoading ? '...' : globalCommunityStats.totalPresets}
+              </p>
+            </div>
+            <div className="bg-black/40 backdrop-blur-sm border border-zinc-800/50 rounded-2xl p-6 transition-all hover:border-[#52ddeb]/30 group">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-zinc-500 font-mono text-xs uppercase tracking-widest">Public Mockups</span>
+                <ImageIcon size={16} className="text-[#52ddeb]" />
+              </div>
+              <p className="text-4xl font-bold text-white font-mono group-hover:scale-110 transition-transform origin-left">
+                {isLoading ? '...' : globalCommunityStats.totalBlankMockups}
+              </p>
+            </div>
           </div>
         </div>
 
         {isCheckingAuth && (
           <div className="flex items-center justify-center py-20">
-            <p className="text-zinc-400 font-mono">{t('common.loading')}</p>
+            <p className="text-zinc-400 font-mono animate-pulse">{t('common.loading')}</p>
           </div>
         )}
 
         {!isCheckingAuth && (
-          <div className="space-y-6">
-            {/* Stats Bento Box */}
-            {/* Category Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-              {presetTypes.map((category) => (
-                <div key={category.type} className="bg-[#1A1A1A] border border-zinc-800/50 rounded-md p-4 flex flex-col h-full hover:border-[#52ddeb]/30 transition-colors group">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2 text-zinc-300">
-                      <category.icon size={18} className="text-zinc-400 group-hover:text-[#52ddeb] transition-colors" />
-                      <span className="font-medium font-mono capitalize text-sm">{category.label}</span>
-                    </div>
-                    <span className="text-xl font-bold font-mono text-[#52ddeb]">{category.count}</span>
-                  </div>
-
-                  <div className="space-y-2 flex-1">
-                    {category.presets.length > 0 ? (
-                      category.presets.slice(0, 3).map((preset: any) => (
-                        <div
-                          key={preset.id}
-                          className="bg-zinc-900/50 border border-zinc-800/50 rounded p-2 flex items-center gap-2 hover:bg-zinc-800/50 transition-colors"
-                        >
-                          {category.type === 'mockup' && preset.referenceImageUrl ? (
-                            <img
-                              src={preset.referenceImageUrl}
-                              alt={preset.name}
-                              className="w-8 h-8 rounded object-cover bg-zinc-800"
-                            />
-                          ) : (
-                            <div className="w-8 h-8 rounded bg-zinc-800 flex items-center justify-center text-zinc-500">
-                              <category.icon size={14} />
-                            </div>
-                          )}
-                          <div className="min-w-0 flex-1">
-                            <p className="text-xs font-mono text-zinc-300 truncate">{preset.name}</p>
-                            <p className="text-[10px] text-zinc-500 font-mono truncate">
-                              {preset.createdAt ? new Date(preset.createdAt).toLocaleDateString() : 'N/A'}
-                            </p>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-xs text-zinc-500 font-mono italic p-2">
-                        No presets yet
-                      </div>
-                    )}
-                  </div>
+          <div className="space-y-24">
+            {/* Exploration Categories */}
+            <section className="space-y-8">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div className="space-y-2">
+                  <h2 className="text-3xl font-bold text-white font-manrope">Explorar por Categoria</h2>
+                  <p className="text-zinc-500 font-mono text-sm max-w-lg">
+                    Encontre o recurso perfeito para o seu próximo design entre milhares de criações da comunidade.
+                  </p>
                 </div>
-              ))}
-            </div>
-
-            {/* Community Mockups Section */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-zinc-200 font-mono">
-                  Galeria da Comunidade
-                </h2>
                 <Link
-                  to="/mockups"
-                  className="text-sm text-[#52ddeb] hover:text-[#52ddeb]/80 font-mono flex items-center gap-1 transition-colors"
+                  to="/community/presets"
+                  className="inline-flex items-center gap-2 text-[#52ddeb] hover:text-[#52ddeb]/80 font-mono text-sm transition-all hover:translate-x-1"
                 >
-                  Ver todos
-                  <ArrowRight className="h-4 w-4" />
+                  Todas as categorias
+                  <ArrowRight size={16} />
                 </Link>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                {presetTypes.map((category) => (
+                  <button
+                    key={category.type}
+                    onClick={() => navigate(`/community/presets?type=${category.type}`)}
+                    className="group relative bg-[#141414] border border-zinc-800/50 rounded-2xl p-6 flex flex-col h-full hover:border-[#52ddeb]/40 transition-all hover:-translate-y-1 active:translate-y-0"
+                  >
+                    <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-10 transition-opacity">
+                      <category.icon size={64} className="text-[#52ddeb]" />
+                    </div>
+
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="p-3 bg-zinc-900 rounded-xl group-hover:bg-[#52ddeb]/10 transition-colors">
+                        <category.icon size={24} className="text-zinc-400 group-hover:text-[#52ddeb] transition-colors" />
+                      </div>
+                      <div className="flex flex-col items-end">
+                        <span className="text-2xl font-bold font-mono text-white whitespace-nowrap">{category.count}</span>
+                        <span className="text-[10px] text-zinc-600 font-mono uppercase tracking-widest">Presets</span>
+                      </div>
+                    </div>
+
+                    <div className="mb-6 flex-1">
+                      <h3 className="text-lg font-semibold text-white font-manrope mb-1 capitalize group-hover:text-[#52ddeb] transition-colors">
+                        {category.label}
+                      </h3>
+                      <p className="text-xs text-zinc-500 font-mono line-clamp-2 leading-relaxed">
+                        Explorar {category.label.toLowerCase()} criados pela nossa comunidade.
+                      </p>
+                    </div>
+
+                    <div className="space-y-2 pt-4 border-t border-zinc-800/50">
+                      {category.presets.length > 0 ? (
+                        category.presets.slice(0, 3).map((preset: any) => (
+                          <div
+                            key={preset.id}
+                            className="flex items-center gap-3 py-1 group/item"
+                          >
+                            <div className="w-1.5 h-1.5 rounded-full bg-zinc-700 group-hover/item:bg-[#52ddeb] transition-colors" />
+                            <p className="text-xs font-mono text-zinc-500 group-hover/item:text-zinc-300 truncate transition-colors">
+                              {preset.name}
+                            </p>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-[10px] text-zinc-700 font-mono italic">Ainda sem presets</p>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            {/* Gallery Section */}
+            <section className="space-y-8">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div className="space-y-2">
+                  <h2 className="text-3xl font-bold text-white font-manrope">Galeria da Comunidade</h2>
+                  <p className="text-zinc-500 font-mono text-sm max-w-lg">
+                    Inspirado pelas criações enviadas pelos nossos usuários em tempo real.
+                  </p>
+                </div>
+                <Link
+                  to="/mockups"
+                  className="inline-flex items-center gap-2 text-[#52ddeb] hover:text-[#52ddeb]/80 font-mono text-sm transition-all hover:translate-x-1"
+                >
+                  Ver galeria completa
+                  <ArrowRight size={16} />
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
                 {isLoading ? (
-                  // Loading skeletons
-                  Array.from({ length: 5 }).map((_, i) => (
-                    <div key={i} className="aspect-square bg-[#1A1A1A] rounded-lg animate-pulse border border-zinc-800/50" />
+                  Array.from({ length: 10 }).map((_, i) => (
+                    <div key={i} className="aspect-square bg-[#1A1A1A] rounded-2xl animate-pulse border border-zinc-800/50" />
                   ))
-                ) : communityMockups.length > 0 ? (
-                  communityMockups.map((mockup) => (
+                ) : (isGalleryExpanded ? allPublicMockups : communityMockups).length > 0 ? (
+                  (isGalleryExpanded ? allPublicMockups : communityMockups).map((mockup) => (
                     <Link
                       key={mockup._id}
-                      to="/mockups" // Direct to gallery
-                      className="group relative aspect-square bg-[#1A1A1A] rounded-lg overflow-hidden border border-zinc-800/50 hover:border-[#52ddeb]/50 transition-all"
+                      to="/mockups"
+                      className="group relative aspect-square bg-[#141414] rounded-2xl overflow-hidden border border-zinc-800/50 hover:border-[#52ddeb]/50 transition-all hover:shadow-2xl hover:shadow-[#52ddeb]/5"
                     >
                       {mockup.imageUrl || mockup.imageBase64 ? (
                         <img
                           src={mockup.imageUrl || mockup.imageBase64}
                           alt={mockup.prompt || 'Community Mockup'}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-zinc-700">
-                          <ImageIcon size={32} />
+                        <div className="w-full h-full flex items-center justify-center text-zinc-800">
+                          <ImageIcon size={48} />
                         </div>
                       )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-3 flex flex-col justify-end">
-                        <p className="text-xs text-white font-mono line-clamp-1">
+                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 p-4 flex flex-col justify-end">
+                        <p className="text-[10px] text-[#52ddeb] font-mono uppercase tracking-widest mb-1">Prompt</p>
+                        <p className="text-xs text-white font-mono line-clamp-2 mb-2">
                           {mockup.prompt}
                         </p>
+                        <div className="flex items-center gap-2 pt-2 border-t border-white/10">
+                          <Plus size={10} className="text-[#52ddeb]" />
+                          <span className="text-[9px] text-zinc-400 font-mono uppercase">Usar como referência</span>
+                        </div>
                       </div>
                     </Link>
                   ))
                 ) : (
-                  <div className="col-span-full py-8 text-center bg-[#1A1A1A] rounded-lg border border-zinc-800/50 border-dashed">
-                    <p className="text-zinc-500 font-mono text-sm">
-                      Nenhum mockup encontrado
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Preset Types & View All Navigation */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Button 1: Categories (Unified) */}
-              <button
-                onClick={() => navigate('/community/presets')}
-                className="bg-[#1A1A1A] border border-zinc-800/50 rounded-lg p-4 hover:border-[#52ddeb]/30 hover:bg-[#1A1A1A]/80 transition-all group text-left relative overflow-hidden"
-              >
-                <div className="flex items-center justify-between pointer-events-none">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-zinc-900/50 rounded-md group-hover:bg-[#52ddeb]/10 transition-colors">
-                      <Layers size={20} className="text-[#52ddeb]" />
-                    </div>
-                    <div>
-                      <h3 className="text-base font-semibold text-zinc-200 font-mono">Por Categorias</h3>
-                      <div className="flex items-center gap-2 mt-1">
-                        {presetTypes.map((t) => (
-                          <t.icon key={t.type} size={14} className="text-zinc-500 group-hover:text-zinc-400 transition-colors" />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <ArrowRight className="h-5 w-5 text-zinc-600 group-hover:text-[#52ddeb] group-hover:translate-x-1 transition-all" />
-                </div>
-              </button>
-
-              {/* Button 2: See All */}
-              <button
-                onClick={() => navigate('/community/presets?view=all')}
-                className="bg-[#1A1A1A] border border-zinc-800/50 rounded-lg p-4 hover:border-[#52ddeb]/30 hover:bg-[#1A1A1A]/80 transition-all group text-left relative overflow-hidden"
-              >
-                <div className="flex items-center justify-between pointer-events-none">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-zinc-900/50 rounded-md group-hover:bg-[#52ddeb]/10 transition-colors">
-                      <Globe size={20} className="text-[#52ddeb]" />
-                    </div>
-                    <div>
-                      <h3 className="text-base font-semibold text-zinc-200 font-mono">Ver Todos</h3>
-                      <p className="text-xs text-zinc-500 font-mono mt-0.5">
-                        {isLoading ? '...' : stats.total} presets na biblioteca
+                  <div className="col-span-full py-20 text-center bg-[#141414] rounded-3xl border border-zinc-800/50 border-dashed">
+                    <div className="flex flex-col items-center gap-4">
+                      <ImageIcon size={48} className="text-zinc-800" />
+                      <p className="text-zinc-500 font-mono text-sm">
+                        Nenhum mockup encontrado na galeria pública
                       </p>
                     </div>
                   </div>
-                  <ArrowRight className="h-5 w-5 text-zinc-600 group-hover:text-[#52ddeb] group-hover:translate-x-1 transition-all" />
+                )}
+              </div>
+
+              {allPublicMockups.length > 10 && (
+                <div className="flex justify-center mt-8">
+                  <button
+                    onClick={() => setIsGalleryExpanded(!isGalleryExpanded)}
+                    className="flex items-center gap-2 px-6 py-2 bg-zinc-900/50 hover:bg-[#52ddeb]/10 text-zinc-500 hover:text-[#52ddeb] border border-zinc-800/50 rounded-full transition-all text-sm font-mono group"
+                  >
+                    {isGalleryExpanded ? (
+                      <>
+                        Ver menos <ChevronUp size={16} className="group-hover:-translate-y-0.5 transition-transform" />
+                      </>
+                    ) : (
+                      <>
+                        Ver mais <ChevronDown size={16} className="group-hover:translate-y-0.5 transition-transform" />
+                      </>
+                    )}
+                  </button>
                 </div>
-              </button>
-            </div>
+              )}
+            </section>
+
+            {/* GitHub Ecosystem CTA */}
+            <section className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-[#52ddeb]/5 to-transparent rounded-3xl" />
+              <div className="relative z-10 p-8 md:p-12 rounded-3xl border border-zinc-800/50 bg-[#141414] overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
+                <div className="max-w-xl space-y-4 text-center md:text-left">
+                  <div className="flex items-center justify-center md:justify-start gap-3 text-[#52ddeb]">
+                    <Github size={24} />
+                    <span className="font-mono text-sm font-semibold tracking-widest uppercase">Open Source</span>
+                  </div>
+                  <h2 className="text-3xl md:text-4xl font-bold text-white font-manrope leading-tight">
+                    Vamos crescer junto
+                  </h2>
+                  <p className="text-zinc-400 font-mono text-sm md:text-base leading-relaxed">
+                    Visant Labs é movido pela paixão e colaboração. Acesse nosso repositório no GitHub para contribuir, relatar bugs ou dar uma estrela.
+                  </p>
+                </div>
+                <div className="flex flex-col items-center gap-4">
+                  <a
+                    href="https://github.com/pedrojaques99/visantlabs-os"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-center gap-3 px-8 py-4 bg-white text-black font-bold rounded-2xl transition-all hover:scale-105 active:scale-95 shadow-xl hover:shadow-white/10"
+                  >
+                    <Github size={22} className="group-hover:rotate-12 transition-transform" />
+                    <span className="font-mono uppercase tracking-widest">Ver Repositório</span>
+                    <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                  </a>
+                  <p className="text-[10px] text-zinc-500 font-mono uppercase tracking-widest animate-pulse">
+                    v1.0.0-alpha • MIT License
+                  </p>
+                </div>
+              </div>
+            </section>
           </div>
         )}
       </div>

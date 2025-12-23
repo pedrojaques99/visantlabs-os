@@ -3,7 +3,7 @@ import { type Node, type Edge } from '@xyflow/react';
 import { toast } from 'sonner';
 import type { FlowNodeData, ImageNodeData, OutputNodeData } from '../../types/reactFlow';
 import { getImageUrl } from '../../utils/imageUtils';
-import { generateNodeId, copyMediaFromNode, getMediaFromNodeForCopy } from '../../utils/canvas/canvasNodeUtils';
+import { generateNodeId, copyMediaFromNode, getMediaFromNodeForCopy, copyMediaAsPngFromNode } from '../../utils/canvas/canvasNodeUtils';
 import { canvasApi } from '../../services/canvasApi';
 import { mockupApi } from '../../services/mockupApi';
 import type { Mockup } from '../../services/mockupApi';
@@ -66,6 +66,11 @@ export const useImageNodeHandlers = ({
 }: UseImageNodeHandlersParams) => {
   // Helper to get image URL from node
   const getImageUrlFromNode = useCallback((node: Node<FlowNodeData>): string | null => {
+    // Try using getMediaFromNodeForCopy for a generic approach
+    const media = getMediaFromNodeForCopy(node);
+    if (media) return media.mediaUrl;
+
+    // Fallback for types not fully supported by getMediaFromNodeForCopy yet
     if (node.type === 'image') {
       const imageData = node.data as ImageNodeData;
       return getImageUrl(imageData.mockup);
@@ -102,7 +107,7 @@ export const useImageNodeHandlers = ({
     if (!imageContextMenu?.nodeId) return;
 
     const node = nodes.find(n => n.id === imageContextMenu.nodeId);
-    if (!node || (node.type !== 'image' && node.type !== 'output')) {
+    if (!node) {
       toast.error(t('canvas.nodeNotFound'), { duration: 2000 });
       return;
     }
@@ -223,7 +228,7 @@ export const useImageNodeHandlers = ({
     if (!imageContextMenu?.nodeId) return;
 
     const node = nodes.find(n => n.id === imageContextMenu.nodeId);
-    if (!node || (node.type !== 'image' && node.type !== 'output')) return;
+    if (!node) return;
 
     const imageUrl = getImageUrlFromNode(node);
     const nodeName = getNodeName(node);
@@ -241,7 +246,7 @@ export const useImageNodeHandlers = ({
     if (!imageContextMenu?.nodeId) return;
 
     const node = nodes.find(n => n.id === imageContextMenu.nodeId);
-    if (!node || (node.type !== 'image' && node.type !== 'output')) return;
+    if (!node) return;
 
     const imageUrl = getImageUrlFromNode(node);
     if (!imageUrl) return;
@@ -253,10 +258,11 @@ export const useImageNodeHandlers = ({
       } else {
         window.open(imageUrl, '_blank');
       }
-    } else if (node.type === 'output') {
-      const outputData = node.data as OutputNodeData;
-      if (outputData.onView) {
-        outputData.onView(imageUrl);
+    } else {
+      // Generic viewer for other types
+      const nodeData = node.data as any;
+      if (nodeData.onView) {
+        nodeData.onView(imageUrl);
       } else {
         window.open(imageUrl, '_blank');
       }
@@ -289,12 +295,27 @@ export const useImageNodeHandlers = ({
     }
   }, [imageContextMenu, nodes]);
 
+  // Generic copy as PNG handler
+  const handleCopyPNG = useCallback(async () => {
+    if (!imageContextMenu?.nodeId) return;
+
+    const node = nodes.find(n => n.id === imageContextMenu.nodeId);
+    if (!node) return;
+
+    const result = await copyMediaAsPngFromNode(node);
+    if (result.success) {
+      toast.success('Image copied to clipboard as PNG!', { duration: 2000 });
+    } else {
+      toast.error(result.error || 'Failed to copy image as PNG to clipboard', { duration: 3000 });
+    }
+  }, [imageContextMenu, nodes]);
+
   // Generic edit with prompt handler
   const handleEditWithPrompt = useCallback(() => {
     if (!imageContextMenu?.nodeId) return;
 
     const imageNode = nodes.find(n => n.id === imageContextMenu.nodeId);
-    if (!imageNode || (imageNode.type !== 'image' && imageNode.type !== 'output')) return;
+    if (!imageNode) return;
 
     // Check if there's already a connected PromptNode
     const connectedPromptEdge = edges.find(
@@ -344,7 +365,7 @@ export const useImageNodeHandlers = ({
     if (!imageContextMenu?.nodeId) return;
 
     const node = nodes.find(n => n.id === imageContextMenu.nodeId);
-    if (!node || (node.type !== 'image' && node.type !== 'output')) return;
+    if (!node) return;
 
     addToHistory(nodes, edges);
 
@@ -405,7 +426,7 @@ export const useImageNodeHandlers = ({
     if (!imageContextMenu?.nodeId || !reactFlowInstance) return;
 
     const node = nodes.find(n => n.id === imageContextMenu.nodeId);
-    if (!node || (node.type !== 'image' && node.type !== 'output')) return;
+    if (!node) return;
 
     addToHistory(nodes, edges);
 
@@ -446,21 +467,29 @@ export const useImageNodeHandlers = ({
         }, 0);
         return newNodes;
       });
-    } else if (node.type === 'output') {
-      const outputData = node.data as OutputNodeData;
-
+    } else {
+      // Generic duplication for other node types
       const duplicatedNode: Node<FlowNodeData> = {
         ...node,
-        id: generateNodeId('output'),
+        id: generateNodeId(node.type || 'node'),
         position: newPosition,
         selected: false,
         data: {
-          ...outputData,
-          onView: (imageUrl: string) => {
-            window.open(imageUrl, '_blank');
-          },
-        } as OutputNodeData,
+          ...node.data,
+          // Reset common states
+          isLoading: false,
+          isGenerating: false,
+          isDescribing: false,
+          isAnalyzing: false,
+          isGeneratingPrompt: false,
+        } as any,
       };
+
+      if (node.type === 'output' && (duplicatedNode.data as OutputNodeData).onView) {
+        (duplicatedNode.data as OutputNodeData).onView = (imageUrl: string) => {
+          window.open(imageUrl, '_blank');
+        };
+      }
 
       setNodes((nds: Node<FlowNodeData>[]) => {
         const newNodes = [...nds, duplicatedNode];
@@ -479,16 +508,16 @@ export const useImageNodeHandlers = ({
     if (!imageContextMenu?.nodeId || !handleImageNodeDataUpdate) return;
 
     const node = nodes.find(n => n.id === imageContextMenu.nodeId);
-    if (!node || node.type !== 'image') return;
+    if (!node) return;
 
-    const imageData = node.data as ImageNodeData;
-    const mockupId = imageData.mockup._id || '';
-    const isLiked = imageData.mockup.isLiked || false;
+    const nodeData = node.data as any;
+    const mockupId = nodeData.mockup?._id || nodeData._id || '';
+    const isLiked = nodeData.isLiked || nodeData.mockup?.isLiked || false;
     const newLikedState = !isLiked;
 
     // Update local state immediately
     handleImageNodeDataUpdate(imageContextMenu.nodeId, {
-      mockup: { ...imageData.mockup, isLiked: newLikedState },
+      mockup: { ...nodeData.mockup, isLiked: newLikedState },
     });
 
     // Update in backend if saved
@@ -498,7 +527,7 @@ export const useImageNodeHandlers = ({
         console.error('Failed to update like status:', error);
         // Revert on error
         handleImageNodeDataUpdate(imageContextMenu.nodeId, {
-          mockup: { ...imageData.mockup, isLiked: isLiked },
+          mockup: { ...nodeData.mockup, isLiked: isLiked },
         });
         toast.error(t('canvas.failedToUpdateLikeStatus'), { duration: 3000 });
       });
@@ -511,7 +540,7 @@ export const useImageNodeHandlers = ({
     if (!imageContextMenu?.nodeId || !handleImageNodeDataUpdate) return;
 
     const node = nodes.find(n => n.id === imageContextMenu.nodeId);
-    if (!node || node.type !== 'image') return;
+    if (!node) return;
 
     const imageData = node.data as ImageNodeData;
     const imageUrl = getImageUrl(imageData.mockup);
@@ -624,6 +653,7 @@ export const useImageNodeHandlers = ({
     handleExport,
     handleFullscreen,
     handleCopy,
+    handleCopyPNG,
     handleEditWithPrompt,
     handleDelete: handleDeleteNode,
     handleDuplicate,

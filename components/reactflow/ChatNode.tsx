@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, memo, useCallback, useMemo } from 'react';
 import { Handle, Position, type NodeProps, NodeResizer, useReactFlow } from '@xyflow/react';
-import { Send, Loader2, MessageSquare, X, FileText, Image as ImageIcon, CheckCircle2, Target, ChevronDown, ChevronUp } from 'lucide-react';
+import { Send, MessageSquare, X, FileText, Image as ImageIcon, CheckCircle2, Target, ChevronDown, ChevronUp } from 'lucide-react';
+import { Spinner } from '../ui/Spinner';
 import type { ChatNodeData } from '../../types/reactFlow';
 import { cn } from '../../lib/utils';
 import { NodeContainer } from './shared/NodeContainer';
@@ -607,7 +608,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
             <div className="flex justify-start">
               <Card className="bg-muted max-w-[85%] p-3">
                 <CardContent className="p-0 flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Spinner size={16} color="currentColor" />
                   <span className="text-sm text-muted-foreground">{t('canvasNodes.chatNode.thinking')}</span>
                 </CardContent>
               </Card>

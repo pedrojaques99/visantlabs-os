@@ -49,6 +49,8 @@ interface CanvasFlowProps {
   onDropNode?: (nodeType: string, position: { x: number; y: number }) => void;
   reactFlowInstance?: ReactFlowInstance | null;
   cursorColor?: string;
+  onAddColorExtractor?: (position?: { x: number; y: number }) => void;
+  experimentalMode?: boolean;
 }
 
 export const CanvasFlow: React.FC<CanvasFlowProps> = ({
@@ -563,6 +565,13 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
         }
         .react-flow__pane:active {
            cursor: ${spacePressed ? 'grabbing' : 'default'} !important;
+        }
+        
+        /* Custom selection box styling to match brand ::selection */
+        .react-flow__selection {
+          background-color: var(--brand-cyan) !important;
+          border: 2px solid var(--brand-cyan) !important;
+          opacity: 0.3 !important;
         }
       `}</style>
       <ReactFlow

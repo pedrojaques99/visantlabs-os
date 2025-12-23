@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, Loader2, MessageCircle, Bug } from 'lucide-react';
+import { X, MessageCircle, Bug } from 'lucide-react';
+import { Spinner } from './ui/Spinner';
 import { useTranslation } from '../hooks/useTranslation';
 import { toast } from 'sonner';
 
@@ -78,7 +79,7 @@ export const SupportModal: React.FC<SupportModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -86,10 +87,10 @@ export const SupportModal: React.FC<SupportModalProps> = ({
     setIsSubmitting(true);
 
     try {
-      const typeLabel = contactType === 'customerService' 
-        ? t('support.customerService') 
+      const typeLabel = contactType === 'customerService'
+        ? t('support.customerService')
         : t('support.reportBug');
-      
+
       const emailBody = `
 ${typeLabel}
 
@@ -102,11 +103,11 @@ ${message}
       `.trim();
 
       const mailtoLink = `mailto:support@example.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
-      
+
       window.location.href = mailtoLink;
-      
+
       toast.success(t('support.success') || 'Message sent successfully!', { duration: 3000 });
-      
+
       setTimeout(() => {
         handleClose();
       }, 1000);
@@ -121,11 +122,11 @@ ${message}
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-black/50 backdrop-blur-sm overflow-y-auto"
       onClick={handleClose}
     >
-      <div 
+      <div
         className="bg-[#1A1A1A] border border-zinc-800/50 rounded-md p-6 w-full max-w-lg mx-4 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
@@ -152,11 +153,10 @@ ${message}
               <button
                 type="button"
                 onClick={() => setContactType('customerService')}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md border transition-all text-sm font-mono ${
-                  contactType === 'customerService'
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md border transition-all text-sm font-mono ${contactType === 'customerService'
                     ? 'bg-[#52ddeb]/20 border-[#52ddeb]/50 text-[#52ddeb]'
                     : 'bg-black/40 border-zinc-700/50 text-zinc-400 hover:border-zinc-600'
-                }`}
+                  }`}
               >
                 <MessageCircle size={16} />
                 {t('support.customerService') || 'Customer Service'}
@@ -164,11 +164,10 @@ ${message}
               <button
                 type="button"
                 onClick={() => setContactType('reportBug')}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md border transition-all text-sm font-mono ${
-                  contactType === 'reportBug'
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md border transition-all text-sm font-mono ${contactType === 'reportBug'
                     ? 'bg-[#52ddeb]/20 border-[#52ddeb]/50 text-[#52ddeb]'
                     : 'bg-black/40 border-zinc-700/50 text-zinc-400 hover:border-zinc-600'
-                }`}
+                  }`}
               >
                 <Bug size={16} />
                 {t('support.reportBug') || 'Report Bug'}
@@ -250,7 +249,7 @@ ${message}
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 size={14} className="animate-spin" />
+                  <Spinner size={14} color="currentColor" />
                   {t('support.sending') || 'Sending...'}
                 </>
               ) : (

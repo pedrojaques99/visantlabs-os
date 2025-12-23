@@ -42,6 +42,7 @@ import {
   AVAILABLE_ANGLE_TAGS,
   AVAILABLE_LIGHTING_TAGS,
   AVAILABLE_EFFECT_TAGS,
+  AVAILABLE_MATERIAL_TAGS,
   GENERIC_MOCKUP_TAGS,
   GENERIC_BRANDING_TAGS
 } from '../utils/mockupConstants';
@@ -98,6 +99,7 @@ export const MockupMachinePage: React.FC = () => {
   const [selectedAngleTags, setSelectedAngleTags] = useState<string[]>([]);
   const [selectedLightingTags, setSelectedLightingTags] = useState<string[]>([]);
   const [selectedEffectTags, setSelectedEffectTags] = useState<string[]>([]);
+  const [selectedMaterialTags, setSelectedMaterialTags] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [colorInput, setColorInput] = useState('');
   const [isValidColor, setIsValidColor] = useState(false);
@@ -109,6 +111,7 @@ export const MockupMachinePage: React.FC = () => {
   const [customAngleInput, setCustomAngleInput] = useState('');
   const [customLightingInput, setCustomLightingInput] = useState('');
   const [customEffectInput, setCustomEffectInput] = useState('');
+  const [customMaterialInput, setCustomMaterialInput] = useState('');
   const [showWelcome, setShowWelcome] = useState(true);
   const [shouldAutoGenerate, setShouldAutoGenerate] = useState(false);
   const [autoGenerateSource, setAutoGenerateSource] = useState<'surprise' | 'angles' | 'environments' | null>(null);
@@ -384,6 +387,7 @@ export const MockupMachinePage: React.FC = () => {
     if (selectedAngleTags.length > 0) basePrompt += ` The camera angle should be: ${selectedAngleTags.join(', ')}.`;
     if (selectedLightingTags.length > 0) basePrompt += ` The lighting should be: ${selectedLightingTags.join(', ')}.`;
     if (selectedEffectTags.length > 0) basePrompt += ` Apply a visual effect of: ${selectedEffectTags.join(', ')}.`;
+    if (selectedMaterialTags.length > 0) basePrompt += ` The materials and textures should feature: ${selectedMaterialTags.join(', ')}.`;
     if (selectedColors.length > 0) basePrompt += ` The scene's color palette should be dominated by or feature accents of: ${selectedColors.join(', ')}.`;
 
     // Add instruction about reference images if present
@@ -422,7 +426,7 @@ export const MockupMachinePage: React.FC = () => {
     }
 
     return basePrompt;
-  }, [designType, selectedTags, aspectRatio, selectedBrandingTags, selectedLocationTags, selectedAngleTags, selectedLightingTags, selectedEffectTags, selectedColors, generateText, withHuman, negativePrompt, additionalPrompt, referenceImages]);
+  }, [designType, selectedTags, aspectRatio, selectedBrandingTags, selectedLocationTags, selectedAngleTags, selectedLightingTags, selectedEffectTags, selectedMaterialTags, selectedColors, generateText, withHuman, negativePrompt, additionalPrompt, referenceImages]);
 
   const handleGenerateSmartPrompt = useCallback(async () => {
     if (isGeneratingPrompt) {
@@ -439,6 +443,23 @@ export const MockupMachinePage: React.FC = () => {
 
     setIsGeneratingPrompt(true);
     setPromptSuggestions([]);
+
+    // Check if user has their own API key and notify them
+    try {
+      const { hasGeminiApiKey } = await import('../services/userSettingsService');
+      const userHasApiKey = await hasGeminiApiKey();
+      if (userHasApiKey) {
+        toast.info('API do usuário está sendo usada', {
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      // Silently fail - don't block generation if key check fails
+      if (isLocalDevelopment()) {
+        console.warn('Failed to check user API key:', error);
+      }
+    }
+
     try {
       const smartPromptResult = await aiApi.generateSmartPrompt({
         baseImage: uploadedImage,
@@ -564,6 +585,7 @@ export const MockupMachinePage: React.FC = () => {
     setSelectedAngleTags([]);
     setSelectedLightingTags([]);
     setSelectedEffectTags([]);
+    setSelectedMaterialTags([]);
     setSelectedColors([]);
     setColorInput('');
     setIsValidColor(false);
@@ -881,6 +903,16 @@ export const MockupMachinePage: React.FC = () => {
     if (newTag) {
       setSelectedEffectTags([newTag]);
       setCustomEffectInput('');
+    }
+  };
+
+  const handleMaterialTagToggle = (tag: string) => setSelectedMaterialTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [tag]);
+
+  const handleAddCustomMaterialTag = () => {
+    const newTag = customMaterialInput.trim();
+    if (newTag) {
+      setSelectedMaterialTags([newTag]);
+      setCustomMaterialInput('');
     }
   };
 
@@ -2946,6 +2978,7 @@ Generate the new mockup image with the requested changes applied.`;
                   selectedAngleTags={selectedAngleTags}
                   selectedLightingTags={selectedLightingTags}
                   selectedEffectTags={selectedEffectTags}
+                  selectedMaterialTags={selectedMaterialTags}
                   selectedColors={selectedColors}
                   colorInput={colorInput}
                   isValidColor={isValidColor}
@@ -2955,6 +2988,7 @@ Generate the new mockup image with the requested changes applied.`;
                   onAngleTagToggle={handleAngleTagToggle}
                   onLightingTagToggle={handleLightingTagToggle}
                   onEffectTagToggle={handleEffectTagToggle}
+                  onMaterialTagToggle={handleMaterialTagToggle}
                   onColorInputChange={handleColorInputChange}
                   onAddColor={handleAddColor}
                   onRemoveColor={handleRemoveColor}
@@ -2964,18 +2998,22 @@ Generate the new mockup image with the requested changes applied.`;
                   availableAngleTags={AVAILABLE_ANGLE_TAGS}
                   availableLightingTags={AVAILABLE_LIGHTING_TAGS}
                   availableEffectTags={AVAILABLE_EFFECT_TAGS}
+                  availableMaterialTags={AVAILABLE_MATERIAL_TAGS}
                   customLocationInput={customLocationInput}
                   customAngleInput={customAngleInput}
                   customLightingInput={customLightingInput}
                   customEffectInput={customEffectInput}
+                  customMaterialInput={customMaterialInput}
                   onCustomLocationInputChange={setCustomLocationInput}
                   onCustomAngleInputChange={setCustomAngleInput}
                   onCustomLightingInputChange={setCustomLightingInput}
                   onCustomEffectInputChange={setCustomEffectInput}
+                  onCustomMaterialInputChange={setCustomMaterialInput}
                   onAddCustomLocationTag={handleAddCustomLocationTag}
                   onAddCustomAngleTag={handleAddCustomAngleTag}
                   onAddCustomLightingTag={handleAddCustomLightingTag}
                   onAddCustomEffectTag={handleAddCustomEffectTag}
+                  onAddCustomMaterialTag={handleAddCustomMaterialTag}
                   mockupCount={mockupCount}
                   onMockupCountChange={setMockupCount}
                   generateText={generateText}
@@ -3041,6 +3079,7 @@ Generate the new mockup image with the requested changes applied.`;
 
       {fullScreenImageIndex !== null && (
         <FullScreenViewer
+          showActions={true}
           base64Image={mockups[fullScreenImageIndex]}
           isLoading={isLoading[fullScreenImageIndex]}
           onClose={handleCloseFullScreen}
