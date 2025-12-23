@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BackButton } from '../ui/BackButton';
-import { Share2, ChevronRight, Settings } from 'lucide-react';
+import { Share2, ChevronRight, Settings, Users } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useLayout } from '../../hooks/useLayout';
 import { AuthButton } from '../AuthButton';
 import { CanvasSettingsModal } from './CanvasSettingsModal';
+import { CommunityPresetsSidebar } from './CommunityPresetsSidebar';
 import type { Node } from '@xyflow/react';
 import type { FlowNodeData } from '../../types/reactFlow';
 
@@ -31,6 +32,9 @@ interface CanvasHeaderProps {
   onShowControlsChange?: (show: boolean) => void;
   cursorColor?: string;
   onCursorColorChange?: (color: string) => void;
+  experimentalMode?: boolean;
+  onExperimentalModeChange?: (experimental: boolean) => void;
+  onImportCommunityPreset?: (preset: any, type: string) => void;
 }
 
 export const CanvasHeader: React.FC<CanvasHeaderProps> = ({
@@ -52,6 +56,9 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({
   onShowControlsChange,
   cursorColor,
   onCursorColorChange,
+  experimentalMode = false,
+  onExperimentalModeChange,
+  onImportCommunityPreset,
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -60,6 +67,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({
   const [localName, setLocalName] = useState(projectName || 'Untitled');
   const inputRef = useRef<HTMLInputElement>(null);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showCommunityPresetsSidebar, setShowCommunityPresetsSidebar] = useState(false);
 
   useEffect(() => {
     setLocalName(projectName || 'Untitled');
@@ -102,6 +110,12 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({
       onSettingsClick();
     } else {
       setShowSettingsModal(true);
+    }
+  };
+
+  const handleImportPreset = (preset: any, type: string) => {
+    if (onImportCommunityPreset) {
+      onImportCommunityPreset(preset, type);
     }
   };
 
@@ -157,6 +171,13 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({
               <Share2 size={14} />
             </button>
           )}
+          <button
+            onClick={() => setShowCommunityPresetsSidebar(true)}
+            className="p-1.5 border rounded-md transition-all flex items-center justify-center bg-zinc-800/50 hover:bg-zinc-700/50 text-zinc-300 border-zinc-700/50 hover:border-zinc-600 cursor-pointer"
+            title="Community Presets"
+          >
+            <Users size={14} />
+          </button>
           <AuthButton subscriptionStatus={contextSubscriptionStatus} onCreditsClick={handleCreditsClick} />
           <button
             onClick={handleSettingsClick}
@@ -184,8 +205,16 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({
           onShowControlsChange={onShowControlsChange}
           cursorColor={cursorColor}
           onCursorColorChange={onCursorColorChange}
+          experimentalMode={experimentalMode}
+          onExperimentalModeChange={onExperimentalModeChange}
         />
       )}
+
+      <CommunityPresetsSidebar
+        isOpen={showCommunityPresetsSidebar}
+        onClose={() => setShowCommunityPresetsSidebar(false)}
+        onImportPreset={handleImportPreset}
+      />
     </div>
   );
 };

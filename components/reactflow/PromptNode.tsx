@@ -1,13 +1,13 @@
 import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
 import { Handle, Position, type NodeProps, useReactFlow, NodeResizer } from '@xyflow/react';
-import { Loader2, Pickaxe, Image as ImageIcon, Wand2 } from 'lucide-react';
+import { Pickaxe, Image as ImageIcon, Wand2 } from 'lucide-react';
+import { Spinner } from '../ui/Spinner';
 import type { PromptNodeData } from '../../types/reactFlow';
 import type { GeminiModel, AspectRatio, Resolution } from '../../types';
 import { cn } from '../../lib/utils';
 import { PromptInput } from '../PromptInput';
 import { ConnectedImagesDisplay } from '../ui/ConnectedImagesDisplay';
 import { BrandIdentityPanel } from '../ui/BrandIdentityPanel';
-import { GlitchLoader } from '../ui/GlitchLoader';
 import { NodeContainer } from './shared/NodeContainer';
 import { Select } from '../ui/select';
 import { NodeInput } from './shared/node-input';
@@ -503,7 +503,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               onMouseDown={(e) => e.stopPropagation()}
             >
               {isSuggestingPrompts ? (
-                <Loader2 size={14} className="animate-spin" />
+                <Spinner size={14} color="currentColor" />
               ) : (
                 <Wand2 size={14} />
               )}
@@ -551,21 +551,73 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           <NodeLabel className="mb-1.5 text-[10px]">
             {t('canvasNodes.promptNode.model')}
           </NodeLabel>
-          <Select
-            value={model}
-            onChange={(value) => {
-              const newModel = value as GeminiModel;
-              const previousModel = model;
-              const isSwitchingToPro = newModel === 'gemini-3-pro-image-preview';
-              const isSwitchingToFlash = newModel === 'gemini-2.5-flash-image';
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                const newModel: GeminiModel = 'gemini-2.5-flash-image';
+                const previousModel = model;
 
-              setModel(newModel);
+                setModel(newModel);
 
-              if (nodeData.onUpdateData) {
-                const updates: Partial<PromptNodeData> = { model: newModel };
+                if (nodeData.onUpdateData) {
+                  const updates: Partial<PromptNodeData> = { model: newModel };
 
-                // If switching to Pro, set default resolution and aspectRatio if not set
-                if (isSwitchingToPro) {
+                  // Clear resolution and aspectRatio when switching to Flash
+                  updates.resolution = undefined;
+                  updates.aspectRatio = undefined;
+
+                  // If switching from Pro to Flash, clear images 3 and 4
+                  if (previousModel === 'gemini-3-pro-image-preview') {
+                    updates.connectedImage3 = undefined;
+                    updates.connectedImage4 = undefined;
+
+                    // Remove edges for input-3 and input-4
+                    if (nodeData.onRemoveEdge) {
+                      if (connectedImage3) {
+                        nodeData.onRemoveEdge(id, 'input-3');
+                      }
+                      if (connectedImage4) {
+                        nodeData.onRemoveEdge(id, 'input-4');
+                      }
+                    }
+
+                    setConnectedImage3(undefined);
+                    setConnectedImage4(undefined);
+                  }
+
+                  nodeData.onUpdateData(id, updates);
+                }
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
+              disabled={isLoading}
+              className={cn(
+                'p-2 rounded border transition-all text-left node-interactive',
+                model === 'gemini-2.5-flash-image'
+                  ? 'bg-[#52ddeb]/20 border-[#52ddeb]/50 text-[#52ddeb]'
+                  : 'bg-zinc-900/50 border-zinc-700/50 text-zinc-400 hover:bg-zinc-800/50 hover:border-zinc-600/50',
+                isLoading && 'opacity-50 cursor-not-allowed'
+              )}
+            >
+              <div className="text-[11px] font-mono font-semibold">
+                {t('canvasNodes.promptNode.modelHD')}
+              </div>
+              <div className="text-[9px] font-mono opacity-70 mt-0.5">
+                {getCreditsRequired('gemini-2.5-flash-image')} {t('canvasNodes.promptNode.credits')}
+              </div>
+            </button>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                const newModel: GeminiModel = 'gemini-3-pro-image-preview';
+
+                setModel(newModel);
+
+                if (nodeData.onUpdateData) {
+                  const updates: Partial<PromptNodeData> = { model: newModel };
+
+                  // Set default resolution and aspectRatio if not set
                   if (!nodeData.resolution) {
                     updates.resolution = '4K';
                     setResolution('4K');
@@ -574,46 +626,28 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
                     updates.aspectRatio = '16:9';
                     setAspectRatio('16:9');
                   }
+
+                  nodeData.onUpdateData(id, updates);
                 }
-
-                // If switching from Pro to Flash, clear resolution and aspectRatio
-                if (isSwitchingToFlash) {
-                  updates.resolution = undefined;
-                  updates.aspectRatio = undefined;
-                }
-
-                // If switching from 4K to HD, clear images 3 and 4
-                if (previousModel === 'gemini-3-pro-image-preview' && newModel === 'gemini-2.5-flash-image') {
-                  updates.connectedImage3 = undefined;
-                  updates.connectedImage4 = undefined;
-
-                  // Remove edges for input-3 and input-4
-                  if (nodeData.onRemoveEdge) {
-                    if (connectedImage3) {
-                      nodeData.onRemoveEdge(id, 'input-3');
-                    }
-                    if (connectedImage4) {
-                      nodeData.onRemoveEdge(id, 'input-4');
-                    }
-                  }
-
-                  setConnectedImage3(undefined);
-                  setConnectedImage4(undefined);
-                }
-
-                nodeData.onUpdateData(id, updates);
-              }
-            }}
-            variant="node"
-            disabled={isLoading}
-            onMouseDown={(e) => {
-              e.stopPropagation();
-            }}
-            options={[
-              { value: 'gemini-2.5-flash-image', label: t('canvasNodes.promptNode.modelHD') },
-              { value: 'gemini-3-pro-image-preview', label: t('canvasNodes.promptNode.model4K') }
-            ]}
-          />
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
+              disabled={isLoading}
+              className={cn(
+                'p-2 rounded border transition-all text-left node-interactive',
+                model === 'gemini-3-pro-image-preview'
+                  ? 'bg-[#52ddeb]/20 border-[#52ddeb]/50 text-[#52ddeb]'
+                  : 'bg-zinc-900/50 border-zinc-700/50 text-zinc-400 hover:bg-zinc-800/50 hover:border-zinc-600/50',
+                isLoading && 'opacity-50 cursor-not-allowed'
+              )}
+            >
+              <div className="text-[11px] font-mono font-semibold">
+                {t('canvasNodes.promptNode.model4K')}
+              </div>
+              <div className="text-[9px] font-mono opacity-70 mt-0.5">
+                {getCreditsRequired('gemini-3-pro-image-preview', resolution)} {t('canvasNodes.promptNode.credits')}
+              </div>
+            </button>
+          </div>
         </div>
 
         {/* Pro Model Settings - Grouped in a row */}
@@ -681,7 +715,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       >
         {isLoading ? (
           <>
-            <GlitchLoader size={14} className="mr-1" color="#52ddeb" />
+            <Spinner size={14} className="mr-1" color="#52ddeb" />
             <span>{t('canvasNodes.promptNode.generating')}</span>
           </>
         ) : (

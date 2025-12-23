@@ -112,7 +112,115 @@
     "subtitle": "Manage your account and subscription"
   },
   "communityPresets": {
-    "title": "Community Presets"
+    "title": "Community Presets",
+    "subtitle": "Browse and import community presets",
+    "createNew": "New",
+    "new": "New",
+    "noPresets": "No presets available",
+    "myPresets": "My Presets",
+    "allPresets": "Community Presets",
+    "myPresetsSubtitle": "manage and edit your community presets",
+    "viewAll": "all",
+    "viewMy": "my presets",
+    "openInCanvas": "Open in Canvas",
+    "tabs": {
+      "all": "all",
+      "mockup": "mockup",
+      "angle": "angle",
+      "texture": "texture",
+      "ambience": "ambience",
+      "luminance": "luminance"
+    },
+    "table": {
+      "noPresets": "No presets available"
+    },
+    "actions": {
+      "refresh": "Refresh",
+      "duplicate": "Duplicate",
+      "duplicateConfirm": "Duplicate Preset",
+      "duplicateMessage": "Are you sure you want to duplicate this preset? It will be added to your personal collection.",
+      "duplicateButton": "Duplicate",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "delete": "Delete",
+      "save": "Save",
+      "like": "Like",
+      "unlike": "Unlike"
+    },
+    "messages": {
+      "presetCreated": "Preset created successfully",
+      "presetUpdated": "Preset updated successfully",
+      "presetDeleted": "Preset deleted successfully",
+      "presetDuplicated": "Preset duplicated successfully",
+      "presetDeleteConfirm": "Are you sure you want to delete this preset? This action cannot be undone."
+    },
+    "errors": {
+      "failedToLoad": "Failed to load presets",
+      "failedToCreate": "Failed to create preset",
+      "failedToUpdate": "Failed to update preset",
+      "failedToDelete": "Failed to delete preset",
+      "failedToToggleLike": "Failed to toggle like",
+      "mustBeAuthenticated": "You must be signed in to access this feature",
+      "mustBeAuthenticatedToCreate": "You must be signed in to create presets"
+    }
+  },
+  "canvas": {
+    "seoTitle": "Canvas Editor",
+    "seoDescription": "Visual flow-based editor for creating designs. Collaborate in real-time and create professional visual projects.",
+    "seoKeywords": "canvas editor, visual editor, design editor, collaboration, visual flow editor",
+    "title": "Canvas",
+    "projects": "Projects",
+    "newProject": "New Project",
+    "noProjectsYet": "No projects yet",
+    "createFirstProject": "Create your first canvas project to start working with nodes.",
+    "createFirstProjectButton": "Create Your First Project",
+    "clickToEdit": "Click to edit",
+    "untitled": "Untitled",
+    "open": "Open",
+    "deleteProject": "Delete Project",
+    "deleteProjectMessage": "Are you sure you want to delete this project? This action cannot be undone.",
+    "delete": "Delete",
+    "loadingProject": "Loading project...",
+    "projectNameUpdated": "Project name updated",
+    "projectDeletedSuccessfully": "Project deleted successfully",
+    "failedToLoadProjects": "Failed to load canvas projects",
+    "invalidProjectId": "Invalid project ID",
+    "failedToCreateProject": "Failed to create new project",
+    "failedToDeleteProject": "Failed to delete project",
+    "failedToUpdateProjectName": "Failed to update project name",
+    "addedToFavorites": "Added to favorites",
+    "removedFromFavorites": "Removed from favorites",
+    "outputImagePrompt": "Output Image",
+    "droppedImagePrompt": "Dropped Image",
+    "imageDropped": "Image dropped",
+    "nodeDuplicated": "Node duplicated",
+    "nodeDuplicatedSingular": "Node duplicated",
+    "nodeDeleted": "Node deleted",
+    "shaderEffect": "Shader Effect",
+    "creatingMockups": "Creating mockups",
+    "mockupImportedToCanvas": "Mockup imported to canvas",
+    "failedToDeleteMockup": "Failed to delete mockup",
+    "noImageAvailableToExport": "No image available to export",
+    "sourceNodeNotFound": "Source node not found",
+    "failedToLoadImage": "Failed to load image",
+    "noImageDataAvailable": "No image data available",
+    "failedToGenerateMockup": "Failed to generate mockup",
+    "invalidMockupDataFormat": "Invalid mockup data format",
+    "invalidMockupData": "Invalid mockup data",
+    "mockupMissingImageData": "Mockup missing image data",
+    "storageQuotaExceeded": "Storage quota exceeded"
+  },
+  "myOutputs": {
+    "seoTitle": "My Outputs",
+    "seoDescription": "View and manage your saved mockup outputs"
+  },
+  "community": {
+    "profileTitle": "{name}'s Profile",
+    "viewProfile": "View {name}'s profile",
+    "instagram": "Instagram",
+    "youtube": "YouTube",
+    "twitter": "Twitter",
+    "website": "Website"
   },
   "usageHistory": {
     "title": "Usage History",
@@ -714,7 +822,8 @@
       "nordic": "Nordic",
       "californiaCoast": "California Coast",
       "minimalistStudio": "Minimalist Studio",
-      "natureLandscape": "Nature landscape",
+      "lightBox": "Light Box",
+      "natureLandscape": "Nature Landscape",
       "urbanCity": "Urban City",
       "workspace": "Workspace",
       "grassLawn": "Grass/Lawn",
@@ -722,7 +831,11 @@
       "woodenSlatWall": "Wooden Slat Wall",
       "woodenTable": "Wooden Table",
       "glassEnvironment": "Glass Environment",
-      "modernOffice": "Modern Office"
+      "modernOffice": "Modern Office",
+      "brutalistConcrete": "Brutalist Concrete",
+      "texturedBoucleSofa": "Textured Bouclé Sofa",
+      "limestoneSurfaces": "Limestone Surfaces",
+      "urbanLoft": "Urban Loft"
     },
     "angle": {
       "eyeLevel": "Eye-Level",
@@ -730,7 +843,18 @@
       "lowAngle": "Low Angle",
       "topDownFlatLay": "Top-Down (Flat Lay)",
       "dutchAngle": "Dutch Angle",
-      "wormsEyeView": "Worm's-Eye View"
+      "wormsEyeView": "Worm's-Eye View",
+      "45Angle": "45° Angle",
+      "threeQuarterView": "Three-Quarter View",
+      "sideView": "Side View",
+      "profile": "Profile",
+      "closeUp": "Close-Up",
+      "detailShot": "Detail Shot",
+      "wideShot": "Wide Shot",
+      "establishingShot": "Establishing Shot",
+      "macro100mm": "Macro 100mm",
+      "heroAngle": "Hero Angle",
+      "isometricView": "Isometric View"
     },
     "lighting": {
       "studioLighting": "Studio Lighting",
@@ -740,7 +864,15 @@
       "directSunlight": "Direct Sunlight",
       "nightScene": "Night Scene",
       "cinematic": "Cinematic",
-      "shadowOverlay": "Shadow overlay"
+      "shadowOverlay": "Shadow Overlay",
+      "softLight": "Soft Light",
+      "diffused": "Diffused",
+      "naturalLight": "Natural Light",
+      "hardSunlight": "Hard Sunlight",
+      "globalIllumination": "Global Illumination",
+      "chiaroscuro": "Chiaroscuro",
+      "rimLight": "Rim Light",
+      "causticLighting": "Caustic Lighting"
     },
     "effect": {
       "bokeh": "Bokeh",
@@ -750,8 +882,27 @@
       "longExposure": "Long Exposure",
       "lensFlare": "Lens Flare",
       "highContrast": "High Contrast",
-      "fisheyeLens": "Fish-eye lens",
-      "halftone": "Halftone"
+      "fisheyeLens": "Fish-eye Lens",
+      "halftone": "Halftone",
+      "rayTracing": "Ray-tracing",
+      "subsurfaceScattering": "Subsurface Scattering",
+      "microContrast": "Micro-contrast",
+      "8kResolution": "8K Resolution",
+      "anamorphicFlare": "Anamorphic Flare"
+    },
+    "material": {
+      "frostedGlass": "Frosted Glass",
+      "brushedAluminum": "Brushed Aluminum",
+      "rawLinen": "Raw Linen",
+      "liquidChrome": "Liquid Chrome",
+      "softTouchPlastic": "Soft-touch Plastic",
+      "embossed": "Embossed",
+      "debossed": "Debossed",
+      "tactilePaperGrain": "Tactile Paper Grain",
+      "ceramic": "Ceramic",
+      "metallicPlatinum": "Metallic Platinum",
+      "liquidGlass": "Liquid Glass",
+      "condensationDroplets": "Condensation Droplets"
     }
   },
   "messages": {
@@ -2500,6 +2651,7 @@
     "addStrategyNode": "Add Strategy Node",
     "addBrandCore": "Add Brand Core",
     "addChatNode": "Add Chat Node",
+    "addColorExtractorNode": "Add Color Extractor",
     "expandToolbar": "Expand toolbar",
     "collapseToolbar": "Collapse toolbar",
     "labels": {
@@ -2513,7 +2665,8 @@
       "pdf": "PDF",
       "strategy": "Strategy",
       "brandCore": "Brand Core",
-      "chat": "Chat"
+      "chat": "Chat",
+      "colorExtractor": "Color Extractor"
     },
     "categories": {
       "core": "Core",
@@ -2816,5 +2969,9 @@
     "noCode": "Referral code not available",
     "linkCopied": "Referral link copied!",
     "copyFailed": "Failed to copy link"
+  },
+  "canvas": {
+    "experimentalMode": "Experimental Mode",
+    "experimentalModeDesc": "Show preview nodes like Shader, Strategy, etc."
   }
 }

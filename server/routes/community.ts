@@ -158,6 +158,30 @@ router.get('/presets/public', async (req, res) => {
   }
 });
 
+// Get global community stats
+router.get('/stats', async (req, res) => {
+  try {
+    const { prisma } = await import('../db/prisma.js');
+    await connectToMongoDB();
+    const db = getDb();
+
+    const [totalUsers, totalPresets, totalBlankMockups] = await Promise.all([
+      prisma.user.count(),
+      db.collection('community_presets').countDocuments({ isApproved: true }),
+      db.collection('mockups').countDocuments({ designType: 'blank' }),
+    ]);
+
+    return res.json({
+      totalUsers,
+      totalPresets,
+      totalBlankMockups,
+    });
+  } catch (error) {
+    console.error('Failed to fetch community stats:', error);
+    return res.status(500).json({ error: 'Failed to fetch community stats' });
+  }
+});
+
 // Helper function to get likes data for presets
 async function getPresetsLikesData(db: any, presetIds: string[], userId?: string): Promise<Map<string, { likesCount: number; isLikedByUser: boolean }>> {
   const likesMap = new Map<string, { likesCount: number; isLikedByUser: boolean }>();

@@ -27,6 +27,16 @@ const DEFAULT_MODEL_INFO: Record<GeminiModel, {
     emoji: '⛏️💎',
     name: '4K',
     version: '3-10 credits'
+  },
+  'veo-3.1-generate-preview': {
+    emoji: '🎬',
+    name: 'VEO 3.1',
+    version: 'Video'
+  },
+  'veo-3.1-fast-generate-preview': {
+    emoji: '⚡',
+    name: 'VEO Fast',
+    version: 'Video'
   }
 };
 
@@ -45,8 +55,8 @@ export const ModelSelectionSection: React.FC<ModelSelectionSectionProps> = ({
         key={model}
         onClick={() => onModelChange(model)}
         className={`w-full aspect-square max-h-32 flex flex-col items-center justify-center gap-1 p-4 text-xs font-mono rounded border transition-colors cursor-pointer ${isSelected
-            ? 'bg-[#52ddeb]/10 text-[#52ddeb] border-[#52ddeb]/40'
-            : 'bg-zinc-800/30 text-zinc-400 border-zinc-700/30 hover:border-zinc-600/50'
+          ? 'bg-[#52ddeb]/10 text-[#52ddeb] border-[#52ddeb]/40'
+          : 'bg-zinc-800/30 text-zinc-400 border-zinc-700/30 hover:border-zinc-600/50'
           }`}
       >
         <span className="text-2xl">{info.emoji}</span>

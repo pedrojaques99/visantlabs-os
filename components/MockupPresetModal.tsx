@@ -1,6 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { X, Image as ImageIcon, ChevronDown, ChevronUp, Check, Users, Layers, Camera, MapPin, Sun, Grid } from 'lucide-react';
+import { X, Image as ImageIcon, ChevronDown, ChevronUp, Check, Users, Layers, Camera, MapPin, Sun, Grid, Plus } from 'lucide-react';
 import type { MockupPresetType, MockupPreset } from '../types/mockupPresets';
 import type { Mockup } from '../services/mockupApi';
 import { getImageUrl } from '../utils/imageUtils';
@@ -444,8 +444,21 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
                   <Users size={14} className="text-[#52ddeb]" />
                   <h3 className="text-xs font-mono text-zinc-400 uppercase">Community Presets</h3>
                 </div>
-                <div className="text-[10px] font-mono text-zinc-500">
-                  {filteredCommunityPresets.length} items
+                <div className="flex items-center gap-2">
+                  <div className="text-[10px] font-mono text-zinc-500">
+                    {filteredCommunityPresets.length} items
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      window.location.href = '/canvas';
+                    }}
+                    className="flex items-center gap-1 px-2 py-1 bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 border border-[#52ddeb]/30 rounded text-[10px] font-mono text-[#52ddeb] transition-all hover:scale-105"
+                    title="Create new community preset"
+                  >
+                    <Plus size={10} />
+                    <span>New</span>
+                  </button>
                 </div>
               </div>
 

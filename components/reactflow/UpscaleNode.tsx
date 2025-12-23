@@ -1,6 +1,7 @@
 import React, { memo, useState, useCallback } from 'react';
 import { type NodeProps, type Node } from '@xyflow/react';
-import { Maximize2, Loader2, Heart } from 'lucide-react';
+import { Maximize2, Heart } from 'lucide-react';
+import { Spinner } from '../ui/Spinner';
 import type { UpscaleNodeData } from '../../types/reactFlow';
 import type { Resolution, GeminiModel } from '../../types';
 import { cn } from '../../lib/utils';
@@ -174,7 +175,7 @@ export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(({ d
       >
         {isLoading ? (
           <>
-            <Loader2 size={14} className="animate-spin" />
+            <Spinner size={14} color="currentColor" />
             Upscaling...
           </>
         ) : (

@@ -279,8 +279,27 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
       return;
     }
 
-    // Pass image references directly to handler - conversion handled by service layer
-    await nodeData.onAnalyze(id, logoBase64, identityBase64, identityType);
+    try {
+      // Normalize images to base64 before sending to analysis
+      const normalizedLogo = await normalizeImageToBase64(logoBase64);
+
+      // For identity, only normalize if it's an image (PNG)
+      // PDF handling might be different (usually direct URL or base64 depending on backend need)
+      // Assuming onAnalyze expects base64 for images:
+      let finalIdentity = identityBase64;
+      if (identityType === 'png') {
+        finalIdentity = await normalizeImageToBase64(identityBase64);
+      }
+
+      if (!normalizedLogo || !finalIdentity) {
+        throw new Error('Failed to process property images');
+      }
+
+      await nodeData.onAnalyze(id, normalizedLogo, finalIdentity, identityType);
+    } catch (error) {
+      console.error('Analysis failed:', error);
+      toast.error('Failed to prepare images for analysis', { duration: 3000 });
+    }
   }, [nodeData, id, logoBase64, identityBase64, identityType]);
 
   const hasLogo = !!logoBase64;

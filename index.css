@@ -631,6 +631,22 @@
   animation: slide-up 0.3s ease-out;
 }
 
+@keyframes tabSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tab-content-active {
+  animation: tabSlideIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
 .animate-slide-down {
   animation: slide-down 0.3s ease-out;
 }
@@ -1313,10 +1329,10 @@
    ============================================ */
 .react-flow__edge-path {
   stroke: #52ddeb;
-  stroke-width: 1.5;
-  stroke-dasharray: 8 4;
-  animation: edge-dash-scroll 1s linear infinite;
-  transition: stroke-width 0.2s;
+  stroke-width: 0.75;
+  stroke-dasharray: 15 6;
+  animation: edge-dash-scroll 2s ease-in-out infinite;
+  transition: stroke-width 0.5s;
   /* Garantir que edges comecem/terminem no centro dos handles */
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -1328,12 +1344,8 @@
   }
 
   100% {
-    stroke-dashoffset: -12;
+    stroke-dashoffset: -21;
   }
-}
-
-.react-flow__edge:hover .react-flow__edge-path {
-  stroke-width: 2;
 }
 
 
@@ -1353,7 +1365,7 @@
   transition: opacity 0.2s ease-in-out;
 }
 
-.react-flow__minimap-visible {
+.react-flow__minimap:hover {
   opacity: 1;
 }
 
@@ -1365,17 +1377,6 @@
   /* Remove transform and opacity overrides to allow drag preview */
   will-change: transform !important;
   transform-origin: center center;
-}
-
-/* Optimize image rendering during drag */
-.react-flow__node.dragging img {
-  image-rendering: optimizeSpeed;
-  will-change: transform;
-}
-
-/* Override for upscale nodes - always use high quality even during drag */
-.react-flow__node-upscaleBicubic.dragging img {
-  image-rendering: auto;
 }
 
 /* Remove white background from node wrappers */
@@ -1411,46 +1412,6 @@
   height: 100%;
 }
 
-/* Remove padding for image nodes */
-.node-container.p-0 {
-  padding: 0 !important;
-  box-sizing: border-box;
-}
-
-/* Ensure image nodes have no internal spacing */
-.node-container.p-0 .node-image-container,
-.node-container.p-0 .node-image-container>*,
-.node-container.p-0 .node-image-container>*>* {
-  padding: 0 !important;
-  margin: 0 !important;
-  box-sizing: border-box;
-}
-
-/* Ensure image fills container completely */
-.node-container.p-0 img.node-image {
-  width: 100% !important;
-  height: 100% !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  box-sizing: border-box;
-}
-
-/* 
- * Node spacing utility classes
- * 
- * Use these classes instead of hardcoded Tailwind spacing classes.
- * This ensures consistent spacing and makes global changes easier.
- * 
- * Examples:
- *   <div className="node-padding">...</div>           // padding: var(--node-padding)
- *   <div className="flex node-gap">...</div>          // gap: var(--node-gap)
- *   <div className="node-margin">...</div>            // margin-bottom: var(--node-margin)
- *   <div className="node-space-y">...</div>          // vertical spacing between children
- */
-.node-padding {
-  padding: var(--node-padding);
-}
-
 .node-gap {
   gap: var(--node-gap);
 }
@@ -1473,39 +1434,6 @@
 
 .node-margin-lg {
   margin-bottom: var(--node-margin-lg);
-}
-
-.node-space-y {
-  --tw-space-y-reverse: 0;
-  margin-top: calc(var(--node-space-y) * calc(1 - var(--tw-space-y-reverse)));
-  margin-bottom: calc(var(--node-space-y) * var(--tw-space-y-reverse));
-}
-
-.node-space-y>*+* {
-  margin-top: var(--node-space-y);
-  margin-bottom: 0;
-}
-
-.node-space-y-sm {
-  --tw-space-y-reverse: 0;
-  margin-top: calc(var(--node-space-y-sm) * calc(1 - var(--tw-space-y-reverse)));
-  margin-bottom: calc(var(--node-space-y-sm) * var(--tw-space-y-reverse));
-}
-
-.node-space-y-sm>*+* {
-  margin-top: var(--node-space-y-sm);
-  margin-bottom: 0;
-}
-
-.node-space-y-lg {
-  --tw-space-y-reverse: 0;
-  margin-top: calc(var(--node-space-y-lg) * calc(1 - var(--tw-space-y-reverse)));
-  margin-bottom: calc(var(--node-space-y-lg) * var(--tw-space-y-reverse));
-}
-
-.node-space-y-lg>*+* {
-  margin-top: var(--node-space-y-lg);
-  margin-bottom: 0;
 }
 
 .node-dragging {
@@ -1596,40 +1524,7 @@ select.w-full.font-mono.node-interactive {
   background-color: rgba(33, 33, 33, 1);
 }
 
-/* Image containers */
-.node-image-container {
-  z-index: 1;
-  list-style: none;
-  overflow: visible;
-  display: flex;
-  align-items: center;
-  box-sizing: border-box;
-  justify-content: center;
-}
 
-.node-image {
-  display: block;
-  position: relative;
-  z-index: 1;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  object-position: center;
-  image-rendering: auto;
-}
-
-/* High quality image rendering for upscale nodes - preserve maximum quality */
-.react-flow__node-upscaleBicubic img {
-  image-rendering: -webkit-optimize-contrast;
-  /* Chrome/Safari */
-  image-rendering: high-quality;
-  /* Modern browsers */
-  -ms-interpolation-mode: bicubic;
-  /* IE */
-}
 
 .node-image-dragging {
   will-change: transform;

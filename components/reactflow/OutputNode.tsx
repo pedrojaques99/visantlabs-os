@@ -1,9 +1,10 @@
 import React, { useRef, useState, useCallback, memo, useEffect } from 'react';
 import { type NodeProps, useNodes, useEdges, useReactFlow, NodeResizer } from '@xyflow/react';
-import { Maximize2, Heart, Loader2, Download, FileText, Edit, Trash2, Palette } from 'lucide-react';
+import { Maximize2, Heart, Download, FileText, Edit, Trash2, Palette } from 'lucide-react';
 import type { OutputNodeData, FlowNodeData } from '../../types/reactFlow';
 import { cn } from '../../lib/utils';
 import { isSafeUrl } from '../../utils/imageUtils';
+import { Spinner } from '../ui/Spinner';
 import { mockupApi } from '../../services/mockupApi';
 import { aiApi } from '../../services/aiApi';
 import { normalizeImageToBase64 } from '../../services/reactFlowService';
@@ -549,7 +550,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
                 onMouseDown={(e) => e.stopPropagation()}
               >
                 {isDescribing ? (
-                  <Loader2 size={12} strokeWidth={2} className="animate-spin" />
+                  <Spinner size={12} color="currentColor" />
                 ) : (
                   <FileText size={12} strokeWidth={2} />
                 )}
@@ -572,7 +573,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
                 onMouseDown={(e) => e.stopPropagation()}
               >
                 {isSaving ? (
-                  <Loader2 size={12} className="animate-spin" strokeWidth={2} />
+                  <Spinner size={12} color="currentColor" />
                 ) : (
                   <Heart size={12} className={isLiked ? "fill-current" : ""} strokeWidth={2} />
                 )}
@@ -624,7 +625,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
             onMouseDown={(e) => e.stopPropagation()}
           >
             {isDownloading ? (
-              <Loader2 size={12} strokeWidth={2} className="animate-spin" />
+              <Spinner size={12} color="currentColor" />
             ) : (
               <Download size={12} strokeWidth={2} />
             )}
@@ -671,7 +672,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
             onMouseDown={(e) => e.stopPropagation()}
           >
             {isDescribing ? (
-              <Loader2 size={12} strokeWidth={2} className="animate-spin" />
+              <Spinner size={12} color="currentColor" />
             ) : (
               <FileText size={12} strokeWidth={2} />
             )}
