@@ -42,6 +42,20 @@ export interface UsageHistoryPagination {
   offset?: number;
 }
 
+
+export interface UsageStats {
+  totalRecords: number;
+  totalCredits: number;
+  byFeature: {
+    mockupmachine: { count: number; credits: number };
+    brandingmachine: { count: number; credits: number };
+    canvas: { count: number; credits: number };
+  };
+  last7Days: { count: number; credits: number };
+  last30Days: { count: number; credits: number };
+  byModel: Record<string, number>;
+}
+
 export interface UsageHistoryResponse {
   records: UsageHistoryRecord[];
   pagination: {
@@ -50,6 +64,7 @@ export interface UsageHistoryResponse {
     offset: number;
     hasMore: boolean;
   };
+  stats?: UsageStats;
 }
 
 export const usageHistoryService = {
@@ -58,15 +73,15 @@ export const usageHistoryService = {
     pagination?: UsageHistoryPagination
   ): Promise<UsageHistoryResponse> {
     const params = new URLSearchParams();
-    
+
     if (filters?.feature) {
       params.append('feature', filters.feature);
     }
-    
+
     if (pagination?.limit) {
       params.append('limit', pagination.limit.toString());
     }
-    
+
     if (pagination?.offset) {
       params.append('offset', pagination.offset.toString());
     }
@@ -80,7 +95,7 @@ export const usageHistoryService = {
     if (!response.ok) {
       const errorText = await response.text();
       let errorMessage = `Failed to fetch usage history: ${response.status} ${response.statusText}`;
-      
+
       try {
         const errorData = JSON.parse(errorText);
         errorMessage = errorData.error || errorData.message || errorMessage;
@@ -89,12 +104,12 @@ export const usageHistoryService = {
           errorMessage = errorText;
         }
       }
-      
+
       throw new Error(errorMessage);
     }
 
     const data = await response.json();
-    
+
     // Convert timestamp strings to Date objects
     const records = data.records.map((record: UsageHistoryRecord) => ({
       ...record,

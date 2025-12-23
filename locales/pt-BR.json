@@ -124,7 +124,7 @@
     "viewMy": "meus presets",
     "openInCanvas": "Abrir no Canvas",
     "tabs": {
-      "all": "todos",
+      "all": "Todos",
       "mockup": "mockup",
       "angle": "ângulo",
       "texture": "textura",
@@ -209,6 +209,9 @@
     "invalidMockupData": "Dados de mockup inválidos",
     "mockupMissingImageData": "Mockup sem dados de imagem",
     "storageQuotaExceeded": "Cota de armazenamento excedida"
+  },
+  "canvasLoading": {
+    "Project": "Carregando Projeto..."
   },
   "myOutputs": {
     "seoTitle": "Meus Resultados",
@@ -2246,7 +2249,9 @@
     "processingFiles": "Processando Arquivos...",
     "processingProgress": "Processando {current} de {total} imagens...",
     "invalidNodeType": "Tipo de node inválido: {nodeType}",
-    "imageTooLargeDetailed": "A imagem \"{fileName}\" ({size}) excede o limite de {limit}."
+    "imageTooLargeDetailed": "A imagem \"{fileName}\" ({size}) excede o limite de {limit}.",
+    "experimentalMode": "Modo Experimental",
+    "experimentalModeDesc": "Mostrar nodes de preview como Shader, Strategy, etc."
   },
   "canvasNodes": {
     "promptNode": {
@@ -2965,9 +2970,5 @@
     "noCode": "Código de indicação não disponível",
     "linkCopied": "Link de indicação copiado!",
     "copyFailed": "Falha ao copiar link"
-  },
-  "canvas": {
-    "experimentalMode": "Modo Experimental",
-    "experimentalModeDesc": "Mostrar nodes de preview como Shader, Strategy, etc."
   }
 }
