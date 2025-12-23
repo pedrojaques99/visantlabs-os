@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { cn } from '../../lib/utils'
 
 interface AnimatedTitleProps {
   text: string
@@ -16,7 +17,7 @@ export default function AnimatedTitle({ text, className = '' }: AnimatedTitlePro
   }
 
   return (
-    <h1 className={`${className} inline-flex`}>
+    <h1 className={cn("inline-flex", className)}>
       {text.split('').map((char, index) => (
         <span
           key={index}
@@ -27,8 +28,8 @@ export default function AnimatedTitle({ text, className = '' }: AnimatedTitlePro
             transformOrigin: 'center',
           }}
         >
-          {hoveredIndex === index && char !== ' ' && char !== '[' && char !== ']' 
-            ? getRandomChar() 
+          {hoveredIndex === index && char !== ' ' && char !== '[' && char !== ']'
+            ? getRandomChar()
             : char}
         </span>
       ))}

@@ -18,7 +18,7 @@ export default function ClubHero3D({
   starColor,
   className,
   children
-}: ClubHero3DProps = {}) {
+}: ClubHero3DProps) {
   const [mounted, setMounted] = useState(false);
   const isMobile = useMediaQuery('(max-width: 768px)');
 
