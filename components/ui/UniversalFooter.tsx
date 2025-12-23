@@ -12,8 +12,8 @@ function UniversalFooterComponent({ isDarkMode, className = '' }: UniversalFoote
 
   useEffect(() => {
     const glitchInterval = setInterval(() => {
-      const glitchChars = '*-•.'
-      const randomGlitch = Array.from({ length: 4 }, () => 
+      const glitchChars = '*•.'
+      const randomGlitch = Array.from({ length: 4 }, () =>
         glitchChars[Math.floor(Math.random() * glitchChars.length)]
       ).join('')
       setGlitchText(randomGlitch)
@@ -24,7 +24,7 @@ function UniversalFooterComponent({ isDarkMode, className = '' }: UniversalFoote
 
   return (
     <div className={`text-center text-[9px] sm:text-[10px] md:text-[11px] text-zinc-500 ${className}`}>
-      <span>{glitchText}  {' | '} MM® v1.0</span>
+      <span>{glitchText}  {' | '} VSNLABS® v1.0</span>
     </div>
   )
 }

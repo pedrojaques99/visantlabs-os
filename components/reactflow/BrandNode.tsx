@@ -45,12 +45,16 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
   // Format logo URL - handle both base64 strings and data URLs
   const logoImageUrl = logoBase64
-    ? (logoBase64.startsWith('data:') ? logoBase64 : `data:image/png;base64,${logoBase64}`)
+    ? (logoBase64.startsWith('http') || logoBase64.startsWith('data:')
+      ? logoBase64
+      : `data:image/png;base64,${logoBase64}`)
     : nodeData.logoImage;
 
   // Format identity image URL - handle both base64 strings and data URLs
   const identityImageUrl = identityFileType === 'png' && identityBase64
-    ? (identityBase64.startsWith('data:') ? identityBase64 : `data:image/png;base64,${identityBase64}`)
+    ? (identityBase64.startsWith('http') || identityBase64.startsWith('data:')
+      ? identityBase64
+      : `data:image/png;base64,${identityBase64}`)
     : undefined;
 
   const handleLogoUploadClick = (e: React.MouseEvent) => {
@@ -185,8 +189,21 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       return;
     }
 
-    // Pass image references directly to handler - conversion handled by service layer
-    await nodeData.onAnalyze(id, logoBase64, identityBase64, identityFileType);
+    try {
+      // Normalize images to base64 before sending to analysis
+      // This ensures we always send base64 data even if inputs are URLs
+      const normalizedLogo = await normalizeImageToBase64(logoBase64);
+      const normalizedIdentity = await normalizeImageToBase64(identityBase64);
+
+      if (!normalizedLogo || !normalizedIdentity) {
+        throw new Error('Failed to process properties images');
+      }
+
+      await nodeData.onAnalyze(id, normalizedLogo, normalizedIdentity, identityFileType);
+    } catch (error) {
+      console.error('Analysis failed:', error);
+      toast.error(t('canvasNodes.brandNode.analysisFailed'), { duration: 3000 });
+    }
   }, [nodeData, id, logoBase64, identityBase64, identityFileType, t]);
 
   const handleRemoveLogo = () => {

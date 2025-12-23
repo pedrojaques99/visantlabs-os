@@ -1,6 +1,7 @@
 import React, { useEffect, memo, useRef, useCallback, useState } from 'react';
 import { type NodeProps, type Node, NodeResizer, useReactFlow } from '@xyflow/react';
-import { Maximize2, Download, Upload, Loader2, Sparkles, Trash2, Palette, FileText, Heart } from 'lucide-react';
+import { Maximize2, Download, Upload, Sparkles, Trash2, Palette, FileText, Heart } from 'lucide-react';
+import { Spinner } from '../ui/Spinner';
 import type { UpscaleBicubicNodeData } from '../../types/reactFlow';
 import { cn } from '../../lib/utils';
 import { NodeHandles } from './shared/NodeHandles';
@@ -476,7 +477,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
       {isLoading && !hasResult && hasConnectedImage && (
         <div className="relative mt-2 min-h-[200px] flex items-center justify-center bg-black/10 rounded-md border border-zinc-700/30">
           <div className="p-2 rounded-md bg-black/60 backdrop-blur-sm border border-[#52ddeb]/30 shadow-lg">
-            <Loader2 size={14} className="text-[#52ddeb] animate-spin" />
+            <Spinner size={14} color="#52ddeb" />
           </div>
         </div>
       )}
@@ -577,7 +578,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
             onMouseDown={(e) => e.stopPropagation()}
           >
             {isSaving ? (
-              <Loader2 size={12} className="animate-spin" strokeWidth={2} />
+              <Spinner size={12} color="currentColor" />
             ) : (
               <Heart size={12} className={isLiked ? "fill-current" : ""} strokeWidth={2} />
             )}
@@ -624,7 +625,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
             onMouseDown={(e) => e.stopPropagation()}
           >
             {isDescribing ? (
-              <Loader2 size={12} strokeWidth={2} className="animate-spin" />
+              <Spinner size={12} color="currentColor" />
             ) : (
               <FileText size={12} strokeWidth={2} />
             )}

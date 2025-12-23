@@ -476,6 +476,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       <div className="h-screen bg-background text-foreground font-sans flex flex-col">
         <Toaster
           position="top-right"
+          offset={40}
           richColors={false}
           closeButton={true}
           duration={1000}

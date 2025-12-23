@@ -82,6 +82,7 @@ interface SidebarOrchestratorProps {
   selectedAngleTags: string[];
   selectedLightingTags: string[];
   selectedEffectTags: string[];
+  selectedMaterialTags: string[];
   selectedColors: string[];
   colorInput: string;
   isValidColor: boolean;
@@ -91,6 +92,7 @@ interface SidebarOrchestratorProps {
   onAngleTagToggle: (tag: string) => void;
   onLightingTagToggle: (tag: string) => void;
   onEffectTagToggle: (tag: string) => void;
+  onMaterialTagToggle: (tag: string) => void;
   onColorInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onAddColor: () => void;
   onRemoveColor: (color: string) => void;
@@ -100,18 +102,22 @@ interface SidebarOrchestratorProps {
   availableAngleTags: string[];
   availableLightingTags: string[];
   availableEffectTags: string[];
+  availableMaterialTags: string[];
   customLocationInput: string;
   customAngleInput: string;
   customLightingInput: string;
   customEffectInput: string;
+  customMaterialInput: string;
   onCustomLocationInputChange: (value: string) => void;
   onCustomAngleInputChange: (value: string) => void;
   onCustomLightingInputChange: (value: string) => void;
   onCustomEffectInputChange: (value: string) => void;
+  onCustomMaterialInputChange: (value: string) => void;
   onAddCustomLocationTag: () => void;
   onAddCustomAngleTag: () => void;
   onAddCustomLightingTag: () => void;
   onAddCustomEffectTag: () => void;
+  onAddCustomMaterialTag: () => void;
 
   // Aspect Ratio
   aspectRatio: AspectRatio;
@@ -210,6 +216,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
   selectedAngleTags,
   selectedLightingTags,
   selectedEffectTags,
+  selectedMaterialTags,
   selectedColors,
   colorInput,
   isValidColor,
@@ -219,6 +226,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
   onAngleTagToggle,
   onLightingTagToggle,
   onEffectTagToggle,
+  onMaterialTagToggle,
   onColorInputChange,
   onAddColor,
   onRemoveColor,
@@ -228,18 +236,22 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
   availableAngleTags,
   availableLightingTags,
   availableEffectTags,
+  availableMaterialTags,
   customLocationInput,
   customAngleInput,
   customLightingInput,
   customEffectInput,
+  customMaterialInput,
   onCustomLocationInputChange,
   onCustomAngleInputChange,
   onCustomLightingInputChange,
   onCustomEffectInputChange,
+  onCustomMaterialInputChange,
   onAddCustomLocationTag,
   onAddCustomAngleTag,
   onAddCustomLightingTag,
   onAddCustomEffectTag,
+  onAddCustomMaterialTag,
   aspectRatio,
   onAspectRatioChange,
   mockupCount,
@@ -621,6 +633,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
                       selectedAngleTags,
                       selectedLightingTags,
                       selectedEffectTags,
+                      selectedMaterialTags,
                       selectedColors,
                       colorInput,
                       isValidColor,
@@ -630,6 +643,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
                       onAngleTagToggle,
                       onLightingTagToggle,
                       onEffectTagToggle,
+                      onMaterialTagToggle,
                       onColorInputChange,
                       onAddColor,
                       onRemoveColor,
@@ -639,18 +653,22 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
                       availableAngleTags,
                       availableLightingTags,
                       availableEffectTags,
+                      availableMaterialTags,
                       customLocationInput,
                       customAngleInput,
                       customLightingInput,
                       customEffectInput,
+                      customMaterialInput,
                       onCustomLocationInputChange,
                       onCustomAngleInputChange,
                       onCustomLightingInputChange,
                       onCustomEffectInputChange,
+                      onCustomMaterialInputChange,
                       onAddCustomLocationTag,
                       onAddCustomAngleTag,
                       onAddCustomLightingTag,
-                      onAddCustomEffectTag
+                      onAddCustomEffectTag,
+                      onAddCustomMaterialTag
                     }}
                   />
 

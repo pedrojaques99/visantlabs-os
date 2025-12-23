@@ -112,7 +112,115 @@
     "subtitle": "Gerencie sua conta e assinatura"
   },
   "communityPresets": {
-    "title": "Presets da Comunidade"
+    "title": "Presets da Comunidade",
+    "subtitle": "Navegue e importe presets da comunidade",
+    "createNew": "Novo",
+    "new": "Novo",
+    "noPresets": "Nenhum preset disponível",
+    "myPresets": "Meus Presets",
+    "allPresets": "Presets da Comunidade",
+    "myPresetsSubtitle": "gerencie e edite seus presets da comunidade",
+    "viewAll": "todos",
+    "viewMy": "meus presets",
+    "openInCanvas": "Abrir no Canvas",
+    "tabs": {
+      "all": "todos",
+      "mockup": "mockup",
+      "angle": "ângulo",
+      "texture": "textura",
+      "ambience": "ambiente",
+      "luminance": "luminância"
+    },
+    "table": {
+      "noPresets": "Nenhum preset disponível"
+    },
+    "actions": {
+      "refresh": "Atualizar",
+      "duplicate": "Duplicar",
+      "duplicateConfirm": "Duplicar Preset",
+      "duplicateMessage": "Tem certeza de que deseja duplicar este preset? Ele será adicionado à sua coleção pessoal.",
+      "duplicateButton": "Duplicar",
+      "cancel": "Cancelar",
+      "edit": "Editar",
+      "delete": "Excluir",
+      "save": "Salvar",
+      "like": "Curtir",
+      "unlike": "Descurtir"
+    },
+    "messages": {
+      "presetCreated": "Preset criado com sucesso",
+      "presetUpdated": "Preset atualizado com sucesso",
+      "presetDeleted": "Preset excluído com sucesso",
+      "presetDuplicated": "Preset duplicado com sucesso",
+      "presetDeleteConfirm": "Tem certeza de que deseja excluir este preset? Esta ação não pode ser desfeita."
+    },
+    "errors": {
+      "failedToLoad": "Falha ao carregar presets",
+      "failedToCreate": "Falha ao criar preset",
+      "failedToUpdate": "Falha ao atualizar preset",
+      "failedToDelete": "Falha ao excluir preset",
+      "failedToToggleLike": "Falha ao curtir/descurtir",
+      "mustBeAuthenticated": "Você precisa estar autenticado para acessar este recurso",
+      "mustBeAuthenticatedToCreate": "Você precisa estar autenticado para criar presets"
+    }
+  },
+  "canvas": {
+    "seoTitle": "Editor Canvas",
+    "seoDescription": "Editor visual baseado em fluxos para criação de designs. Colabore em tempo real e crie projetos visuais profissionais.",
+    "seoKeywords": "canvas editor, editor visual, design editor, colaboração, visual flow editor",
+    "title": "Canvas",
+    "projects": "Projetos",
+    "newProject": "Novo Projeto",
+    "noProjectsYet": "Nenhum projeto ainda",
+    "createFirstProject": "Crie seu primeiro projeto canvas para começar a trabalhar com nós.",
+    "createFirstProjectButton": "Criar Seu Primeiro Projeto",
+    "clickToEdit": "Clique para editar",
+    "untitled": "Sem título",
+    "open": "Abrir",
+    "deleteProject": "Excluir Projeto",
+    "deleteProjectMessage": "Tem certeza de que deseja excluir este projeto? Esta ação não pode ser desfeita.",
+    "delete": "Excluir",
+    "loadingProject": "Carregando projeto...",
+    "projectNameUpdated": "Nome do projeto atualizado",
+    "projectDeletedSuccessfully": "Projeto excluído com sucesso",
+    "failedToLoadProjects": "Falha ao carregar projetos canvas",
+    "invalidProjectId": "ID de projeto inválido",
+    "failedToCreateProject": "Falha ao criar novo projeto",
+    "failedToDeleteProject": "Falha ao excluir projeto",
+    "failedToUpdateProjectName": "Falha ao atualizar nome do projeto",
+    "addedToFavorites": "Adicionado aos favoritos",
+    "removedFromFavorites": "Removido dos favoritos",
+    "outputImagePrompt": "Imagem de Saída",
+    "droppedImagePrompt": "Imagem Solta",
+    "imageDropped": "Imagem solta",
+    "nodeDuplicated": "Nó duplicado",
+    "nodeDuplicatedSingular": "Nó duplicado",
+    "nodeDeleted": "Nó excluído",
+    "shaderEffect": "Efeito Shader",
+    "creatingMockups": "Criando mockups",
+    "mockupImportedToCanvas": "Mockup importado para o canvas",
+    "failedToDeleteMockup": "Falha ao excluir mockup",
+    "noImageAvailableToExport": "Nenhuma imagem disponível para exportar",
+    "sourceNodeNotFound": "Nó de origem não encontrado",
+    "failedToLoadImage": "Falha ao carregar imagem",
+    "noImageDataAvailable": "Nenhum dado de imagem disponível",
+    "failedToGenerateMockup": "Falha ao gerar mockup",
+    "invalidMockupDataFormat": "Formato de dados de mockup inválido",
+    "invalidMockupData": "Dados de mockup inválidos",
+    "mockupMissingImageData": "Mockup sem dados de imagem",
+    "storageQuotaExceeded": "Cota de armazenamento excedida"
+  },
+  "myOutputs": {
+    "seoTitle": "Meus Resultados",
+    "seoDescription": "Visualize e gerencie seus resultados de mockup salvos"
+  },
+  "community": {
+    "profileTitle": "Perfil de {name}",
+    "viewProfile": "Ver perfil de {name}",
+    "instagram": "Instagram",
+    "youtube": "YouTube",
+    "twitter": "Twitter",
+    "website": "Website"
   },
   "usageHistory": {
     "title": "Histórico de Uso",
@@ -714,10 +822,11 @@
       "brazil": "Brasil",
       "paris": "Paris",
       "london": "Londres",
-      "nordic": "Noderdico",
-      "californiaCoast": "California Coast",
+      "nordic": "Nórdico",
+      "californiaCoast": "Costa da Califórnia",
       "minimalistStudio": "Estúdio Minimalista",
-      "natureLandscape": "Paisagem natural",
+      "lightBox": "Light Box",
+      "natureLandscape": "Paisagem Natural",
       "urbanCity": "Cidade Urbana",
       "workspace": "Espaço de Trabalho",
       "grassLawn": "Gramado",
@@ -725,36 +834,78 @@
       "woodenSlatWall": "Parede de Ripado",
       "woodenTable": "Mesa de Madeira",
       "glassEnvironment": "Ambiente com Vidros",
-      "modernOffice": "Escritório Moderno"
+      "modernOffice": "Escritório Moderno",
+      "brutalistConcrete": "Concreto Brutalista",
+      "texturedBoucleSofa": "Sofá Bouclé Texturizado",
+      "limestoneSurfaces": "Superfícies de Calcário",
+      "urbanLoft": "Loft Urbano"
     },
     "angle": {
-      "eyeLevel": "Eye-Level",
-      "highAngle": "High Angle",
-      "lowAngle": "Low Angle",
+      "eyeLevel": "Nível dos Olhos",
+      "highAngle": "Ângulo Alto",
+      "lowAngle": "Ângulo Baixo",
       "topDownFlatLay": "Vista Superior (Flat Lay)",
-      "dutchAngle": "Dutch Angle",
-      "wormsEyeView": "Worm's-Eye View"
+      "dutchAngle": "Ângulo Holandês",
+      "wormsEyeView": "Vista de Baixo para Cima",
+      "45Angle": "Ângulo 45°",
+      "threeQuarterView": "Vista Três Quartos",
+      "sideView": "Vista Lateral",
+      "profile": "Perfil",
+      "closeUp": "Close-Up",
+      "detailShot": "Plano Detalhe",
+      "wideShot": "Plano Aberto",
+      "establishingShot": "Plano Geral",
+      "macro100mm": "Macro 100mm",
+      "heroAngle": "Ângulo Heroico",
+      "isometricView": "Vista Isométrica"
     },
     "lighting": {
       "studioLighting": "Iluminação de Estúdio",
-      "goldenHour": "Golden Hour",
-      "blueHour": "Blue Hour",
+      "goldenHour": "Hora Dourada",
+      "blueHour": "Hora Azul",
       "overcast": "Nublado",
       "directSunlight": "Luz Solar Direta",
-      "nightScene": "Noturno",
+      "nightScene": "Cena Noturna",
       "cinematic": "Cinematográfico",
-      "shadowOverlay": "Shadow overlay"
+      "shadowOverlay": "Sobreposição de Sombras",
+      "softLight": "Luz Suave",
+      "diffused": "Difusa",
+      "naturalLight": "Luz Natural",
+      "hardSunlight": "Luz Solar Intensa",
+      "globalIllumination": "Iluminação Global",
+      "chiaroscuro": "Chiaroscuro",
+      "rimLight": "Luz de Contorno",
+      "causticLighting": "Iluminação Cáustica"
     },
     "effect": {
       "bokeh": "Bokeh",
-      "motionBlur": "Motion Blur",
-      "vintageFilm": "Vintage Film",
+      "motionBlur": "Desfoque de Movimento",
+      "vintageFilm": "Filme Vintage",
       "monochrome": "Monocromático",
-      "longExposure": "Long Exposure",
+      "longExposure": "Longa Exposição",
       "lensFlare": "Lens Flare",
-      "highContrast": "High Contrast",
-      "fisheyeLens": "Fish-eye lens",
-      "halftone": "Halftone"
+      "highContrast": "Alto Contraste",
+      "fisheyeLens": "Lente Olho de Peixe",
+      "halftone": "Retícula",
+      "rayTracing": "Ray-tracing",
+      "subsurfaceScattering": "Dispersão Subsuperficial",
+      "microContrast": "Micro-contraste",
+      "8kResolution": "Resolução 8K",
+      "anamorphicFlare": "Flare Anamórfico"
+    },
+    "material": {
+      "frostedGlass": "Vidro Fosco",
+      "brushedAluminum": "Alumínio Escovado",
+      "rawLinen": "Linho Cru",
+      "liquidChrome": "Cromo Líquido",
+      "softTouchPlastic": "Plástico Soft-touch",
+      "embossed": "Relevo",
+      "debossed": "Baixo-relevo",
+      "tactilePaperGrain": "Textura de Papel Tátil",
+      "ceramic": "Cerâmica",
+      "metallicPlatinum": "Platina Metálica",
+      "liquidGlass": "Vidro Líquido",
+      "condensationDroplets": "Gotas de Condensação"
     }
   },
   "messages": {
@@ -2496,6 +2647,7 @@
     "addStrategyNode": "Adicionar Strategy Node",
     "addBrandCore": "Adicionar Brand Core",
     "addChatNode": "Adicionar Chat Node",
+    "addColorExtractorNode": "Adicionar Color Extractor",
     "expandToolbar": "Expandir barra de ferramentas",
     "collapseToolbar": "Recolher barra de ferramentas",
     "labels": {
@@ -2509,7 +2661,8 @@
       "pdf": "PDF",
       "strategy": "Strategy",
       "brandCore": "Brand Core",
-      "chat": "Chat"
+      "chat": "Chat",
+      "colorExtractor": "Color Extractor"
     },
     "categories": {
       "core": "Core",
@@ -2812,5 +2965,9 @@
     "noCode": "Código de indicação não disponível",
     "linkCopied": "Link de indicação copiado!",
     "copyFailed": "Falha ao copiar link"
+  },
+  "canvas": {
+    "experimentalMode": "Modo Experimental",
+    "experimentalModeDesc": "Mostrar nodes de preview como Shader, Strategy, etc."
   }
 }

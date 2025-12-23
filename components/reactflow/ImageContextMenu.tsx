@@ -10,6 +10,7 @@ interface ImageContextMenuProps {
   onDownload: () => void;
   onFullscreen: () => void;
   onCopy: () => void;
+  onCopyPNG?: () => void;
   onEditWithPrompt: () => void;
   onDelete: () => void;
   onDuplicate: () => void;
@@ -27,6 +28,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
   onDownload,
   onFullscreen,
   onCopy,
+  onCopyPNG,
   onEditWithPrompt,
   onDelete,
   onDuplicate,
@@ -205,8 +207,27 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
         className="w-full px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-[#52ddeb] transition-colors flex items-center gap-2 font-mono cursor-pointer"
       >
         <Copy size={14} />
-        Copy
+        <div className="flex-1 flex items-center justify-between gap-4">
+          <span>Copy</span>
+          <span className="text-[10px] text-zinc-500 bg-zinc-800 px-1 rounded">Ctrl+C</span>
+        </div>
       </button>
+
+      {onCopyPNG && (
+        <button
+          onClick={() => {
+            onCopyPNG();
+            onClose();
+          }}
+          className="w-full px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-[#52ddeb] transition-colors flex items-center gap-2 font-mono cursor-pointer"
+        >
+          <CopyIcon size={14} />
+          <div className="flex-1 flex items-center justify-between gap-4">
+            <span>Copy as PNG</span>
+            <span className="text-[10px] text-zinc-500 bg-zinc-800 px-1 rounded">Ctrl+Shift+C</span>
+          </div>
+        </button>
+      )}
 
       {onDescribe && (
         <button

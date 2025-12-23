@@ -57,6 +57,7 @@ interface FullScreenViewerProps {
   onToggleLike?: () => void;
   onLikeStateChange?: (newIsLiked: boolean) => void;
   isLiked?: boolean;
+  showActions?: boolean;
 }
 
 export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
@@ -88,7 +89,8 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
   creditsPerOperation,
   onToggleLike,
   onLikeStateChange,
-  isLiked = false
+  isLiked = false,
+  showActions = false
 }) => {
   const { t } = useTranslation();
   const [showPrompt, setShowPrompt] = useState(false);
@@ -101,8 +103,8 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
     setLocalIsLiked(isLiked);
   }, [isLiked]);
 
-  // Check if edit buttons should be shown (when props are provided from MockupMachinePage)
-  const showEditButtons = !!(onZoomIn || onZoomOut || onNewAngle || onNewBackground || onNewLighting || onReImagine);
+  // Check if edit buttons should be shown (only when showActions is true and props are provided)
+  const showEditButtons = showActions && !!(onZoomIn || onZoomOut || onNewAngle || onNewBackground || onNewLighting || onReImagine);
 
   const handleToggleLike = () => {
     if (onToggleLike) {
@@ -250,11 +252,11 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-6 md:p-8 lg:p-12 animate-fade-in"
       onClick={onClose}
     >
       <div
-        className="relative max-w-[95vw] w-full max-h-[95vh] bg-[#1A1A1A] border border-zinc-800/50 rounded-md shadow-2xl p-6 flex flex-col gap-4"
+        className="relative max-w-[90vw] md:max-w-[85vw] lg:max-w-[80vw] w-full max-h-[90vh] bg-[#1A1A1A] border border-zinc-800/50 rounded-md shadow-2xl p-6 flex flex-col gap-4"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -455,7 +457,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
         )}
 
         {/* Open in Editor Button */}
-        {!isLoading && hasImage && onOpenInEditor && (
+        {!isLoading && hasImage && onOpenInEditor && showActions && (
           <div className="flex-shrink-0">
             <button
               onClick={handleOpenInEditor}

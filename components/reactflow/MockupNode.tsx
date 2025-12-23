@@ -432,16 +432,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
             }
           }}
         />
-      ) : (
-        <div className="mb-2 p-2 rounded border border-zinc-600/30 bg-zinc-800/20">
-          <div className="text-xs font-mono text-zinc-400 mb-1">{t('canvasNodes.mockupNode.missingInput')}</div>
-          <div className="text-[10px] text-zinc-500 space-y-0.5">
-            <div>{t('canvasNodes.mockupNode.missingInputConnectLogo')}</div>
-            <div>{t('canvasNodes.mockupNode.missingInputIdentityOptional')}</div>
-            <div>{t('canvasNodes.mockupNode.missingInputOrImage')}</div>
-          </div>
-        </div>
-      )}
+      ) : null}
 
       {/* Prompt Editor Toggle */}
       <div className="mb-2">
@@ -675,14 +666,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
         )}
       </button>
 
-      {/* Requirements hint when button is disabled */}
-      {!hasConnectedImage && !isLoading && (
-        <div className="mt-1.5 p-1.5 rounded border border-zinc-600/30 bg-zinc-800/20">
-          <div className="text-[10px] font-mono text-zinc-500 text-center">
-            {t('canvasNodes.mockupNode.requires')}
-          </div>
-        </div>
-      )}
+
 
       {/* Add Mockup Button */}
       <div className="mt-2 pt-2 border-t border-zinc-700/30 flex justify-center">
