@@ -7,7 +7,7 @@ Obrigado por considerar contribuir! Este documento fornece diretrizes para contr
 ### 1. Configurar Ambiente de Desenvolvimento
 
 1. Faça um fork do repositório
-2. Clone o fork: `git clone https://github.com/pedrojaques99/visantlabs-os.git`
+2. Clone o fork: `git clone https://github.com/[SEU-USUARIO]/visantlabs-os.git`
 3. Instale as dependências: `npm install`
 4. Copie `env.example` para `.env.local` e configure as variáveis necessárias
 5. Execute `npm run dev:all` para iniciar o servidor de desenvolvimento
