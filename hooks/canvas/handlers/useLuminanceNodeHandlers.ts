@@ -1,7 +1,7 @@
 /**
  * useLuminanceNodeHandlers
  * 
- * Handlers para gerenciar operações de geração de luminância
+ * Handlers para gerenciar operações de geração de Iluminação
  */
 
 import { useCallback } from 'react';

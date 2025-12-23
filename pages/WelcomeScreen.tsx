@@ -15,6 +15,7 @@ import { Tooltip } from '../components/ui/Tooltip';
 import type { UploadedImage } from '../types';
 import { toast } from 'sonner';
 import { branding, getYoutubeThumbnail } from '../config/branding';
+import AnimatedTitle from '../components/shared/AnimatedTitle';
 
 const SUPPORTED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const MAX_IMAGE_SIZE_MB = 10;
@@ -387,10 +388,13 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
         <div className="space-y-4">
           <div className="flex justify-center">
           </div>
-          <h1 className={`text-2xl md:text-3xl font-regular font-mono tracking-wider ${theme === 'dark' ? 'text-zinc-200' : 'text-zinc-800'
-            }`}>
-            MOCKUP MACHINE® <span className="text-brand-cyan text-sm">v1.0</span>
-          </h1>
+          <div className="flex items-baseline justify-center gap-2">
+            <AnimatedTitle
+              text="MOCKUP MACHINE®"
+              className={`text-2xl md:text-3xl font-regular font-mono tracking-wider ${theme === 'dark' ? 'text-zinc-200' : 'text-zinc-800'}`}
+            />
+            <span className="text-brand-cyan text-sm font-mono transform -translate-y-1">v1.0</span>
+          </div>
         </div>
         <div className="flex flex-col gap-4 justify-center items-center">
           <input

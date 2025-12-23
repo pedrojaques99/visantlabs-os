@@ -9,6 +9,8 @@ import { getAllCommunityPresets, getCommunityStats } from '../services/community
 import { mockupApi } from '../services/mockupApi';
 import { cn } from '../lib/utils';
 import { Github } from 'lucide-react';
+import { getGithubUrl } from '../config/branding';
+import ClubHero3D from '../components/3d/club-hero3d';
 
 type PresetType = 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance';
 
@@ -131,7 +133,7 @@ export const CommunityPage: React.FC = () => {
     loadStats();
   }, []);
 
-  const presetTypes: Array<{ type: PresetType; icon: React.ElementType; label: string; count: number; presets: any[] }> = [
+  const presetTypes: Array<{ type: PresetType; icon: any; label: string; count: number; presets: any[] }> = [
     { type: 'mockup', icon: ImageIcon, label: t('communityPresets.tabs.mockup'), count: stats.mockup, presets: categoryPresets.mockup },
     { type: 'angle', icon: Camera, label: t('communityPresets.tabs.angle'), count: stats.angle, presets: categoryPresets.angle },
     { type: 'texture', icon: Layers, label: t('communityPresets.tabs.texture'), count: stats.texture, presets: categoryPresets.texture },
@@ -165,73 +167,80 @@ export const CommunityPage: React.FC = () => {
         </div>
 
         {/* Hero Section */}
-        <div className="relative mb-16 rounded-3xl overflow-hidden bg-gradient-to-br from-[#1A1A1A] to-[#0A0A0A] border border-zinc-800/50 p-8 md:p-12">
-          <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
-            <Globe size={300} className="text-[#52ddeb]" />
-          </div>
+        <ClubHero3D
+          className="mb-16 rounded-3xl border border-zinc-800/50 min-h-[600px] h-auto"
+          color="#52ddeb"
+          starColor="#52ddeb"
+        >
+          <div className="relative z-10 p-8 md:p-12 h-full flex flex-col justify-between">
+            {/* Background decorative elements */}
+            <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
+              <Globe size={300} className="text-[#52ddeb]" />
+            </div>
 
-          <div className="relative z-10 max-w-2xl">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="px-3 py-1 bg-[#52ddeb]/10 text-[#52ddeb] text-xs font-mono rounded-full border border-[#52ddeb]/20">
-                COMUNIDADE ATIVA
-              </span>
-            </div>
-            <h1 className="text-4xl md:text-6xl font-bold font-manrope text-white mb-6 leading-tight">
-              {t('communityPresets.title')}
-            </h1>
-            <p className="text-zinc-400 text-lg md:text-xl font-mono mb-8 max-w-xl leading-relaxed">
-              {t('communityPresets.subtitle')}
-            </p>
+            <div className="relative z-10 max-w-2xl pointer-events-auto">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="px-3 py-1 bg-[#52ddeb]/10 text-[#52ddeb] text-xs font-mono rounded-full border border-[#52ddeb]/20">
+                  COMUNIDADE ATIVA
+                </span>
+              </div>
+              <h1 className="text-4xl md:text-6xl font-bold font-manrope text-white mb-6 leading-tight">
+                {t('communityPresets.title')}
+              </h1>
+              <p className="text-zinc-400 text-lg md:text-xl font-mono mb-8 max-w-xl leading-relaxed">
+                {t('communityPresets.subtitle')}
+              </p>
 
-            <div className="flex flex-wrap gap-4">
-              <button
-                onClick={() => navigate('/canvas')}
-                className="flex items-center gap-2 px-6 py-3 bg-[#52ddeb] hover:bg-[#52ddeb]/90 text-black font-semibold rounded-xl transition-all hover:scale-105 active:scale-95 shadow-lg shadow-[#52ddeb]/20"
-              >
-                <Plus size={20} />
-                <span className="font-mono uppercase tracking-wider text-sm">Criar Conteúdo</span>
-              </button>
-              <button
-                onClick={() => navigate('/community/presets')}
-                className="flex items-center gap-2 px-6 py-3 bg-zinc-800/50 hover:bg-zinc-800 text-white font-semibold rounded-xl border border-zinc-700/50 transition-all hover:scale-105 active:scale-95"
-              >
-                <Globe size={20} />
-                <span className="font-mono uppercase tracking-wider text-sm">Ver Tudo</span>
-              </button>
+              <div className="flex flex-wrap gap-4">
+                <button
+                  onClick={() => navigate('/canvas')}
+                  className="flex items-center gap-2 px-6 py-3 bg-[#52ddeb] hover:bg-[#52ddeb]/90 text-black font-semibold rounded-xl transition-all hover:scale-105 active:scale-95 shadow-lg shadow-[#52ddeb]/20"
+                >
+                  <Plus size={20} />
+                  <span className="font-mono uppercase tracking-wider text-sm">Criar Conteúdo</span>
+                </button>
+                <button
+                  onClick={() => navigate('/community/presets')}
+                  className="flex items-center gap-2 px-6 py-3 bg-zinc-800/50 hover:bg-zinc-800 text-white font-semibold rounded-xl border border-zinc-700/50 transition-all hover:scale-105 active:scale-95 backdrop-blur-sm"
+                >
+                  <Globe size={20} />
+                  <span className="font-mono uppercase tracking-wider text-sm">Ver Tudo</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Global Stats Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-16 relative z-10 pointer-events-auto">
+              <div className="bg-black/40 backdrop-blur-sm border border-zinc-800/50 rounded-2xl p-6 transition-all hover:border-[#52ddeb]/30 group hover:bg-black/60">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-zinc-500 font-mono text-xs uppercase tracking-widest">Usuários</span>
+                  <TrendingUp size={16} className="text-[#52ddeb]" />
+                </div>
+                <p className="text-4xl font-bold text-white font-mono group-hover:scale-110 transition-transform origin-left">
+                  {isLoading ? '...' : globalCommunityStats.totalUsers}
+                </p>
+              </div>
+              <div className="bg-black/40 backdrop-blur-sm border border-zinc-800/50 rounded-2xl p-6 transition-all hover:border-[#52ddeb]/30 group hover:bg-black/60">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-zinc-500 font-mono text-xs uppercase tracking-widest">Presets Criados</span>
+                  <Sparkles size={16} className="text-[#52ddeb]" />
+                </div>
+                <p className="text-4xl font-bold text-white font-mono group-hover:scale-110 transition-transform origin-left">
+                  {isLoading ? '...' : globalCommunityStats.totalPresets}
+                </p>
+              </div>
+              <div className="bg-black/40 backdrop-blur-sm border border-zinc-800/50 rounded-2xl p-6 transition-all hover:border-[#52ddeb]/30 group hover:bg-black/60">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-zinc-500 font-mono text-xs uppercase tracking-widest">Public Mockups</span>
+                  <ImageIcon size={16} className="text-[#52ddeb]" />
+                </div>
+                <p className="text-4xl font-bold text-white font-mono group-hover:scale-110 transition-transform origin-left">
+                  {isLoading ? '...' : globalCommunityStats.totalBlankMockups}
+                </p>
+              </div>
             </div>
           </div>
-
-          {/* Global Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-16 relative z-10">
-            <div className="bg-black/40 backdrop-blur-sm border border-zinc-800/50 rounded-2xl p-6 transition-all hover:border-[#52ddeb]/30 group">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-zinc-500 font-mono text-xs uppercase tracking-widest">Usuários</span>
-                <TrendingUp size={16} className="text-[#52ddeb]" />
-              </div>
-              <p className="text-4xl font-bold text-white font-mono group-hover:scale-110 transition-transform origin-left">
-                {isLoading ? '...' : globalCommunityStats.totalUsers}
-              </p>
-            </div>
-            <div className="bg-black/40 backdrop-blur-sm border border-zinc-800/50 rounded-2xl p-6 transition-all hover:border-[#52ddeb]/30 group">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-zinc-500 font-mono text-xs uppercase tracking-widest">Presets Criados</span>
-                <Sparkles size={16} className="text-[#52ddeb]" />
-              </div>
-              <p className="text-4xl font-bold text-white font-mono group-hover:scale-110 transition-transform origin-left">
-                {isLoading ? '...' : globalCommunityStats.totalPresets}
-              </p>
-            </div>
-            <div className="bg-black/40 backdrop-blur-sm border border-zinc-800/50 rounded-2xl p-6 transition-all hover:border-[#52ddeb]/30 group">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-zinc-500 font-mono text-xs uppercase tracking-widest">Public Mockups</span>
-                <ImageIcon size={16} className="text-[#52ddeb]" />
-              </div>
-              <p className="text-4xl font-bold text-white font-mono group-hover:scale-110 transition-transform origin-left">
-                {isLoading ? '...' : globalCommunityStats.totalBlankMockups}
-              </p>
-            </div>
-          </div>
-        </div>
+        </ClubHero3D>
 
         {isCheckingAuth && (
           <div className="flex items-center justify-center py-20">
@@ -414,7 +423,7 @@ export const CommunityPage: React.FC = () => {
                 </div>
                 <div className="flex flex-col items-center gap-4">
                   <a
-                    href="https://github.com/pedrojaques99/visantlabs-os"
+                    href={getGithubUrl()}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group flex items-center gap-3 px-8 py-4 bg-white text-black font-bold rounded-2xl transition-all hover:scale-105 active:scale-95 shadow-xl hover:shadow-white/10"

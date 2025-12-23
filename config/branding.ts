@@ -13,14 +13,14 @@ export const branding = {
   // Company/Organization Info
   companyName: 'Visant Labs',
   productName: 'VSN Mockup Machine',
-  
+
   // Repository
   github: {
-    organization: 'visantlabs',
-    repository: 'vsn-mockup-machine',
-    url: 'https://github.com/visantlabs/vsn-mockup-machine',
+    organization: 'pedrojaques99',
+    repository: 'visantlabs-os',
+    url: 'https://github.com/pedrojaques99/visantlabs-os',
   },
-  
+
   // Contact & Support
   support: {
     // These emails appear in legal pages and support sections
@@ -28,13 +28,13 @@ export const branding = {
     email: 'contato@visant.co',
     supportEmail: 'suporte@visantlabs.com',
   },
-  
+
   // External Links
   links: {
     // Portfolio/website link shown in About page
     website: 'https://www.visant.co/works',
   },
-  
+
   // Tutorial Video
   // YouTube video ID for the tutorial shown on welcome screen
   // Set to empty string to hide the tutorial video
