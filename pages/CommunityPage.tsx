@@ -133,7 +133,7 @@ export const CommunityPage: React.FC = () => {
     loadStats();
   }, []);
 
-  const presetTypes: Array<{ type: PresetType; icon: any; label: string; count: number; presets: any[] }> = [
+  const presetTypes: Array<{ type: PresetType; icon: React.ElementType; label: string; count: number; presets: any[] }> = [
     { type: 'mockup', icon: ImageIcon, label: t('communityPresets.tabs.mockup'), count: stats.mockup, presets: categoryPresets.mockup },
     { type: 'angle', icon: Camera, label: t('communityPresets.tabs.angle'), count: stats.angle, presets: categoryPresets.angle },
     { type: 'texture', icon: Layers, label: t('communityPresets.tabs.texture'), count: stats.texture, presets: categoryPresets.texture },
