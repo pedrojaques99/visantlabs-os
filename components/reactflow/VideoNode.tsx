@@ -14,8 +14,9 @@ import { AspectRatioSelector } from './shared/AspectRatioSelector';
 import { ResolutionSelector } from './shared/ResolutionSelector';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Switch } from '../ui/switch';
-import { ConnectedImagesDisplay } from '../ui/ConnectedImagesDisplay';
+import { ConnectedImagesDisplay } from './ConnectedImagesDisplay';
 import { GlitchLoader } from '../ui/GlitchLoader';
+import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
 
 const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
@@ -57,6 +58,13 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
     }
   };
 
+  // Debounced update for text inputs to avoid log spam
+  const debouncedUpdateData = useDebouncedCallback((updates: Partial<VideoNodeData>) => {
+    if (data.onUpdateData) {
+      data.onUpdateData(id, updates);
+    }
+  }, 500);
+
   const handleGenerate = async () => {
     if (!data.onGenerate) return;
 
@@ -65,6 +73,11 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
     if (mode === GenerationMode.FRAMES_TO_VIDEO && !data.connectedImage1) missingInput = true;
     if (mode === GenerationMode.EXTEND_VIDEO && !data.connectedVideo) missingInput = true;
     if (missingInput) return; // Add visual feedback/toast here ideally
+
+    const toInput = (str?: string) => {
+      if (!str) return undefined;
+      return str.startsWith('http') ? { url: str } : { base64: str };
+    };
 
     const params: GenerateVideoParams = {
       nodeId: id,
@@ -76,7 +89,15 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
       resolution,
       duration,
       isLooping,
-      // Connected inputs are handled in the hook
+      // Pass connected inputs
+      startFrame: mode === GenerationMode.FRAMES_TO_VIDEO ? toInput(data.connectedImage1) : undefined,
+      endFrame: mode === GenerationMode.FRAMES_TO_VIDEO ? toInput(data.connectedImage2) : undefined,
+      inputVideo: mode === GenerationMode.EXTEND_VIDEO ? toInput(data.connectedVideo) : undefined,
+      referenceImages: mode === GenerationMode.REFERENCES
+        ? [data.connectedImage1, data.connectedImage2, data.connectedImage3, data.connectedImage4]
+          .filter((str): str is string => !!str)
+          .map((str) => toInput(str)!)
+        : undefined,
     };
 
     await data.onGenerate(params);
@@ -119,13 +140,7 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
     data.connectedImage4
   ].filter(Boolean) as string[];
 
-  console.log('[VideoNode] processing connected images:', {
-    connectedImage1: data.connectedImage1 ? 'present' : 'missing',
-    connectedImage2: data.connectedImage2 ? 'present' : 'missing',
-    connectedImage3: data.connectedImage3 ? 'present' : 'missing',
-    connectedImage4: data.connectedImage4 ? 'present' : 'missing',
-    totalFiltered: connectedImages.length
-  });
+
 
   // Determine handles based on mode
   const showSecondHandle = mode === GenerationMode.FRAMES_TO_VIDEO || mode === GenerationMode.REFERENCES;
@@ -149,14 +164,17 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
 
       {/* Handles */}
       <LabeledHandle type="target" position={Position.Left} id="text-input" label={t('Prompt')} handleType="text" style={{ top: '60px' }} />
-      <LabeledHandle
-        type="target"
-        position={Position.Left}
-        id="input-1"
-        label={getInputLabel(1)}
-        handleType={mode === GenerationMode.EXTEND_VIDEO ? 'video' : 'image'}
-        style={{ top: '100px' }}
-      />
+
+      {mode !== GenerationMode.TEXT_TO_VIDEO && (
+        <LabeledHandle
+          type="target"
+          position={Position.Left}
+          id="input-1"
+          label={getInputLabel(1)}
+          handleType={mode === GenerationMode.EXTEND_VIDEO ? 'video' : 'image'}
+          style={{ top: '100px' }}
+        />
+      )}
 
       {showSecondHandle && (
         <LabeledHandle type="target" position={Position.Left} id="input-2" label={getInputLabel(2)} handleType="image" style={{ top: '140px' }} />
@@ -173,9 +191,9 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
         <NodeHeader icon={Clapperboard} title="Veo Video" className="mb-0" />
       </div>
 
-      <div className="p-4 space-y-4">
+      <div className="p-4 space-y-4 relative z-50">
         {/* Mode Selector */}
-        <div>
+        <div className="relative z-50">
           <NodeLabel>{t('Generation Mode')}</NodeLabel>
           <Select
             value={mode}
@@ -197,6 +215,9 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
         </div>
 
         {/* Prompt Input */}
+
+
+        {/* Prompt Input */}
         <div>
           <NodeLabel>{t('Prompt')}</NodeLabel>
           {data.connectedText && (
@@ -209,7 +230,7 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
             value={prompt}
             onChange={(v) => {
               setPrompt(v);
-              updateData({ prompt: v });
+              debouncedUpdateData({ prompt: v });
             }}
             onSubmit={handleGenerate}
             placeholder={t('Describe your video...')}
@@ -315,7 +336,10 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
                   className="w-full bg-zinc-900 border border-zinc-700 rounded p-2 text-xs font-mono text-zinc-300 focus:border-[#52ddeb] outline-none placeholder:text-zinc-600"
                   placeholder={t('What to avoid...')}
                   value={negativePrompt}
-                  onChange={(e) => { setNegativePrompt(e.target.value); updateData({ negativePrompt: e.target.value }); }}
+                  onChange={(e) => {
+                    setNegativePrompt(e.target.value);
+                    debouncedUpdateData({ negativePrompt: e.target.value });
+                  }}
                   disabled={isLoading}
                 />
               </div>

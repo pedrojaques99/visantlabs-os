@@ -5,7 +5,7 @@ import { Spinner } from '../ui/Spinner';
 import type { MergeNodeData } from '../../types/reactFlow';
 import type { GeminiModel } from '../../types';
 import { cn } from '../../lib/utils';
-import { ConnectedImagesDisplay } from '../ui/ConnectedImagesDisplay';
+import { ConnectedImagesDisplay } from './ConnectedImagesDisplay';
 import { NodeContainer } from './shared/NodeContainer';
 import { Select } from '../ui/select';
 import { Textarea } from '../ui/textarea';

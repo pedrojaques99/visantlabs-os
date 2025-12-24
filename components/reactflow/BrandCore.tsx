@@ -10,7 +10,7 @@ import { NodeHeader } from './shared/node-header';
 import { NodeButton } from './shared/node-button';
 import { NodeLabel } from './shared/node-label';
 import { generateVisualPrompt, consolidateStrategies, consolidateStrategiesToText } from '../../services/brandPromptService';
-import { ConnectedImagesDisplay } from '../ui/ConnectedImagesDisplay';
+import { ConnectedImagesDisplay } from './ConnectedImagesDisplay';
 import { ImageThumbnail } from '../ui/ImageThumbnail';
 import { fileToBase64 } from '../../utils/fileUtils';
 import { pdfToBase64, validatePdfFile, validatePdfBase64Size } from '../../utils/pdfUtils';

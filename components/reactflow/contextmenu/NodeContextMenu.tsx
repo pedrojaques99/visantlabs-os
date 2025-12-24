@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, Trash2, Copy as CopyIcon } from 'lucide-react';
-import { useTranslation } from '../../hooks/useTranslation';
+import { useTranslation } from '../../../hooks/useTranslation';
 
 interface NodeContextMenuProps {
   x: number;
@@ -39,7 +39,7 @@ export const NodeContextMenu: React.FC<NodeContextMenuProps> = ({
           <X size={12} />
         </button>
       </div>
-      
+
       <button
         onClick={() => {
           onDuplicate();
@@ -50,7 +50,7 @@ export const NodeContextMenu: React.FC<NodeContextMenuProps> = ({
         <CopyIcon size={14} />
         {t('canvasNodes.nodeContextMenu.duplicate')}
       </button>
-      
+
       <button
         onClick={() => {
           onDelete();

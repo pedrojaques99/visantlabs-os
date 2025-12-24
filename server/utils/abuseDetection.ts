@@ -1,5 +1,5 @@
 import { prisma } from '../db/prisma.js';
-import { validate } from 'temporary-email-address-validator';
+import { validate } from 'temporary-email-address-validator'; 
 
 interface AbuseScore {
   score: number; // 0-100, higher = more suspicious

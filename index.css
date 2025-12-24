@@ -1169,42 +1169,22 @@
 }
 
 /* Handle type differentiation - visual styles using gray tones */
-/* Image handles - blue accent color */
-.react-flow__handle.handle-image {
-  background: #52ddeb !important;
-  border: 0.5px solid rgba(82, 221, 235, 0.4) !important;
-}
 
-.react-flow__handle.handle-image:hover:not(.connected):not([data-connected="true"]) {
-  background: #3dd5e6 !important;
-  border: 0.5px solid rgba(61, 213, 230, 0.6) !important;
-}
-
-.react-flow__handle.handle-image.connected,
-.react-flow__handle.handle-image[data-connected="true"] {
-  background: #52ddeb !important;
-  border: 0.5px solid rgba(82, 221, 235, 0.6) !important;
-  box-shadow: 0 0 0 2px rgba(82, 221, 235, 0.4), 0 0 8px rgba(82, 221, 235, 0.6);
-}
-
-.react-flow__handle.handle-image.connected:hover,
-.react-flow__handle.handle-image[data-connected="true"]:hover {
-  background: #3dd5e6 !important;
-  border: 0.5px solid rgba(61, 213, 230, 0.7) !important;
-  box-shadow: 0 0 0 3px rgba(61, 213, 230, 0.5), 0 0 12px rgba(61, 213, 230, 0.8);
-}
-
-/* Video handles - same as image */
+/* Image and Video handles - blue accent color */
+.react-flow__handle.handle-image,
 .react-flow__handle.handle-video {
   background: #52ddeb !important;
   border: 0.5px solid rgba(82, 221, 235, 0.4) !important;
 }
 
+.react-flow__handle.handle-image:hover:not(.connected):not([data-connected="true"]),
 .react-flow__handle.handle-video:hover:not(.connected):not([data-connected="true"]) {
   background: #3dd5e6 !important;
   border: 0.5px solid rgba(61, 213, 230, 0.6) !important;
 }
 
+.react-flow__handle.handle-image.connected,
+.react-flow__handle.handle-image[data-connected="true"],
 .react-flow__handle.handle-video.connected,
 .react-flow__handle.handle-video[data-connected="true"] {
   background: #52ddeb !important;
@@ -1212,6 +1192,8 @@
   box-shadow: 0 0 0 2px rgba(82, 221, 235, 0.4), 0 0 8px rgba(82, 221, 235, 0.6);
 }
 
+.react-flow__handle.handle-image.connected:hover,
+.react-flow__handle.handle-image[data-connected="true"]:hover,
 .react-flow__handle.handle-video.connected:hover,
 .react-flow__handle.handle-video[data-connected="true"]:hover {
   background: #3dd5e6 !important;
@@ -1704,108 +1686,4 @@ select.w-full.font-mono.node-interactive {
 
 .tutorial-button-position>button {
   position: relative;
-}
-
-/* Toast Styles - Subtle, Retro, Micro Animations */
-@keyframes toast-slide-in {
-  from {
-    opacity: 0;
-    transform: translateX(8px) scale(0.96);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
-}
-
-@keyframes toast-slide-out {
-  from {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
-
-  to {
-    opacity: 0;
-    transform: translateX(8px) scale(0.96);
-  }
-}
-
-/* Sonner Toast Overrides - Subtle Retro Style */
-[data-sonner-toast] {
-  animation: toast-slide-in 0.12s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
-  font-family: 'Red Hat Mono', monospace !important;
-  font-size: 11px !important;
-  line-height: 1.3 !important;
-  padding: 6px 10px !important;
-  min-height: auto !important;
-  border-radius: 3px !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
-  backdrop-filter: blur(2px) !important;
-  transition: all 0.1s ease !important;
-}
-
-[data-sonner-toast][data-swipe="end"] {
-  animation: toast-slide-out 0.1s ease-out forwards !important;
-}
-
-[data-sonner-toast]:hover {
-  transform: translateX(-1px) !important;
-  transition: transform 0.1s ease !important;
-}
-
-/* Toast content - ultra compact */
-[data-sonner-toast] [data-title] {
-  font-size: 11px !important;
-  font-weight: 400 !important;
-  line-height: 1.3 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-[data-sonner-toast] [data-description] {
-  font-size: 10px !important;
-  line-height: 1.3 !important;
-  margin-top: 2px !important;
-  opacity: 0.8 !important;
-}
-
-/* Remove icons or make them smaller */
-[data-sonner-toast] [data-icon] {
-  width: 12px !important;
-  height: 12px !important;
-  margin-right: 6px !important;
-}
-
-/* Success toast - subtle green tint */
-[data-sonner-toast][data-type="success"] {
-  border-left: 1.5px solid rgba(82, 221, 235, 0.3) !important;
-}
-
-/* Error toast - subtle red tint */
-[data-sonner-toast][data-type="error"] {
-  border-left: 1.5px solid rgba(239, 68, 68, 0.3) !important;
-}
-
-/* Info toast - subtle blue tint */
-[data-sonner-toast][data-type="info"] {
-  border-left: 1.5px solid rgba(59, 130, 246, 0.3) !important;
-}
-
-/* Loading toast - subtle pulse */
-[data-sonner-toast][data-type="loading"] {
-  border-left: 1.5px solid rgba(161, 161, 170, 0.3) !important;
-}
-
-/* Toast container - minimal spacing */
-[data-sonner-toaster] {
-  gap: 6px !important;
-  padding: 8px !important;
-}
-
-/* Remove default close button styling if present */
-[data-sonner-toast] [data-close-button] {
-  opacity: 0 !important;
-  pointer-events: none !important;
-  display: none !important;
 }
