@@ -1192,22 +1192,26 @@ export const useCanvasNodeHandlers = (
 
     try {
       // Helper to process media input (File, base64, or URL)
-      const processMediaInput = async (input?: { file?: File; base64?: string; url?: string } | null, connectedInput?: string) => {
-        if (input?.file) {
-          const base64 = await videoToBase64(input.file); // Reuse videoToBase64 or similar for images too if generic
-          // actually for images usage `normalizeImageToBase64` might be safer or `file` to base64
-          // Assuming the UI sends base64 for images mostly or we convert it here.
-          // For now, let's assume input.base64 is populated by UI or we use input.url
-          return input.base64;
+      const processMediaInput = async (input?: { file?: File; base64?: string; url?: string } | string | null, connectedInput?: string) => {
+        if (!input && !connectedInput) return undefined;
+
+        // Handle string input (direct base64 or URL)
+        if (typeof input === 'string') return input;
+
+        // Handle object input
+        if (typeof input === 'object') {
+          if (input?.file) {
+            const base64 = await videoToBase64(input.file);
+            return base64.base64 ? `data:${base64.mimeType};base64,${base64.base64}` : undefined;
+          }
+          if (input?.base64) return input.base64;
+          if (input?.url) return input.url;
         }
-        if (input?.base64) return input.base64;
-        if (input?.url) return input.url;
+
+        // Fallback to connected input
         if (connectedInput) return connectedInput;
         return undefined;
       };
-
-      // Helper to upload to R2 if needed (for large files) - currently simplified to passing to API
-      // In a full implementation, we might upload large files to R2 first and pass URL
 
       // Resolve inputs (UI inputs override connected handles for now, or we can merge logic)
 
@@ -1225,20 +1229,35 @@ export const useCanvasNodeHandlers = (
         // Collect all connected images
         const refs: string[] = [];
         if (params.referenceImages) {
-          params.referenceImages.forEach(img => {
-            if (img.base64) refs.push(img.base64);
-            else if (img.url) refs.push(img.url);
-          });
+          // params.referenceImages can be string[] (from VideoNode) or object[] (legacy/upload)
+          if (Array.isArray(params.referenceImages)) {
+            params.referenceImages.forEach((img: any) => {
+              if (typeof img === 'string') {
+                refs.push(img);
+              } else if (img && typeof img === 'object') {
+                if (img.base64) refs.push(img.base64);
+                else if (img.url) refs.push(img.url);
+              }
+            });
+          }
         }
-        if (videoData.connectedImage1) refs.push(videoData.connectedImage1);
-        if (videoData.connectedImage2) refs.push(videoData.connectedImage2);
-        if (videoData.connectedImage3) refs.push(videoData.connectedImage3);
-        if (videoData.connectedImage4) refs.push(videoData.connectedImage4);
+        // Also check connectedImages directly if they weren't passed in params (fallback)
+        if (refs.length === 0) {
+          if (videoData.connectedImage1) refs.push(videoData.connectedImage1);
+          if (videoData.connectedImage2) refs.push(videoData.connectedImage2);
+          if (videoData.connectedImage3) refs.push(videoData.connectedImage3);
+          if (videoData.connectedImage4) refs.push(videoData.connectedImage4);
+        }
+
         if (refs.length > 0) referenceImages = refs;
       } else if (params.mode === 'extend_video') {
         inputVideo = await processMediaInput(params.inputVideo, videoData.connectedVideo);
+      } else if (params.mode === 'text_to_video') {
+        // Strictly Text-to-Video: Ignore connected images
+        // This matches the UI hiding the handle
+        console.log('[handleVideoNodeGenerate] Processing text-to-video (ignoring images)');
       } else {
-        // TEXT_TO_VIDEO or implicit IMAGE_TO_VIDEO
+        // Fallback or implicit IMAGE_TO_VIDEO (if distinct mode added later)
         // If an image is connected to input-1, it serves as the startFrame (Image-to-Video)
         startFrame = await processMediaInput(params.startFrame, videoData.connectedImage1);
 

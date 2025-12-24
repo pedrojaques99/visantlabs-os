@@ -1,6 +1,6 @@
 import type { Node, Edge } from '@xyflow/react';
 import type { Mockup } from '../services/mockupApi';
-import type { GeminiModel, Resolution, AspectRatio, DesignType, UploadedImage } from '../types';
+import type { GeminiModel, Resolution, AspectRatio, DesignType, UploadedImage, GenerationMode } from '../types';
 import type { SubscriptionStatus } from '../services/subscriptionService';
 
 // Base node data interface
@@ -293,6 +293,7 @@ export interface PromptNodeData extends BaseNodeData {
   // BrandCore connection data
   connectedLogo?: string; // Base64 do logo conectado do BrandCore
   connectedIdentity?: string; // Base64 ou URL da identity conectada do BrandCore
+  connectedIdentityType?: 'pdf' | 'png'; // Type of connected identity file
   connectedTextDirection?: string; // Direcionamento textual do BrandCore (compositionPrompt, stylePrompt)
   connectedText?: string; // Texto do TextNode conectado (sincronização em tempo real)
   pdfPageReference?: string; // Reference to specific page/section of PDF (e.g., "Page 3" or "Color section")

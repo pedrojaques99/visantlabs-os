@@ -1,5 +1,5 @@
 import React from 'react';
-import { ImageThumbnail } from './ImageThumbnail';
+import { ImageThumbnail } from '../ui/ImageThumbnail';
 import { cn } from '../../lib/utils';
 
 interface ConnectedImagesDisplayProps {
@@ -34,11 +34,7 @@ export const ConnectedImagesDisplay: React.FC<ConnectedImagesDisplayProps> = ({
       img.trim().length > 0
   );
 
-  console.log('[ConnectedImagesDisplay] Received images:', {
-    rawImages: images,
-    validImages,
-    label
-  });
+
 
   if (validImages.length === 0) {
     return null;
