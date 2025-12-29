@@ -1688,3 +1688,54 @@ select.w-full.font-mono.node-interactive {
 .tutorial-button-position>button {
   position: relative;
 }
+
+/* ============================================
+   SONNER TOAST CUSTOM STYLES
+   ============================================ */
+[data-sonner-toast] {
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  border-radius: var(--radius) !important;
+  font-family: 'Red Hat Mono', monospace !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border: 0.5px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.dark [data-sonner-toast] {
+  background: rgba(10, 10, 10, 0.6) !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+[data-sonner-toast]:hover {
+  transform: translateY(-2px) scale(1.02) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2) !important;
+}
+
+[data-sonner-toast] [data-title] {
+  font-weight: 500 !important;
+  letter-spacing: -0.01em !important;
+}
+
+[data-sonner-toast] [data-close-button] {
+  border: none !important;
+  background: transparent !important;
+  transition: opacity 0.2s ease !important;
+}
+
+/* Success type styling */
+[data-sonner-toast][data-type="success"] {
+  border-color: color-mix(in srgb, var(--brand-cyan), transparent 85%) !important;
+}
+
+.dark [data-sonner-toast][data-type="success"] {
+  background: color-mix(in srgb, var(--brand-cyan), transparent 95%) !important;
+}
+
+/* Error type styling */
+[data-sonner-toast][data-type="error"] {
+  border-color: color-mix(in srgb, var(--destructive), transparent 85%) !important;
+}
+
+.dark [data-sonner-toast][data-type="error"] {
+  background: color-mix(in srgb, var(--destructive), transparent 95%) !important;
+}

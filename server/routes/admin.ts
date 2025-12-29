@@ -17,6 +17,31 @@ function normalizeTags(tags: any): string[] | undefined {
   return normalized.length > 0 ? normalized : undefined;
 }
 
+// Helper function to determine if a resolution is high-res (>= 2048px in either dimension)
+function isHighResolution(resolution: string | undefined | null): boolean {
+  if (!resolution) return false;
+  
+  // Direct check for common high-res indicators
+  const resLower = resolution.toLowerCase();
+  if (resLower.includes('4k') || resLower.includes('8k')) return true;
+  
+  // Parse dimensions like "3840x2160", "2048x1024", etc.
+  const dimensions = resolution.match(/(\d+)\s*[x*×,]\s*(\d+)/i);
+  if (dimensions) {
+    const width = parseInt(dimensions[1], 10);
+    const height = parseInt(dimensions[2], 10);
+    if (!isNaN(width) && !isNaN(height)) {
+      return width >= 2048 || height >= 2048;
+    }
+  }
+  
+  // Fallback to numeric-only check for strings like "4096"
+  const singleNumber = parseInt(resolution.replace(/\D/g, ''), 10);
+  if (!isNaN(singleNumber) && singleNumber >= 2048) return true;
+  
+  return false;
+}
+
 // Admin status endpoint - checks auth and database connection
 router.get('/status', validateAdmin, async (req: AuthRequest, res) => {
   try {
@@ -160,8 +185,8 @@ router.get('/users', validateAdmin, async (_req, res) => {
             if (model === 'gemini-2.5-flash-image') {
               apiCostUSD += imageCount * 0.039;
             } else if (model === 'gemini-3-pro-image-preview') {
-              // Check if high resolution (4K)
-              if (resolution && (resolution.includes('4096') || resolution.includes('4k') || resolution === '4K')) {
+              // Check if high resolution
+              if (isHighResolution(resolution)) {
                 apiCostUSD += imageCount * 0.24;
               } else {
                 apiCostUSD += imageCount * 0.134;
@@ -481,7 +506,7 @@ router.get('/users', validateAdmin, async (_req, res) => {
         if (model === 'gemini-2.5-flash-image') {
           totalApiCostUSD += imageCount * 0.039;
         } else if (model === 'gemini-3-pro-image-preview') {
-          if (resolution && (resolution.includes('4096') || resolution.includes('4k') || resolution === '4K')) {
+          if (isHighResolution(resolution)) {
             totalApiCostUSD += imageCount * 0.24;
           } else {
             totalApiCostUSD += imageCount * 0.134;
@@ -533,7 +558,7 @@ router.get('/users', validateAdmin, async (_req, res) => {
         if (model === 'gemini-2.5-flash-image') {
           costByDateMap[date] += imageCount * 0.039;
         } else if (model === 'gemini-3-pro-image-preview') {
-          if (resolution && (resolution.includes('4096') || resolution.includes('4k') || resolution === '4K')) {
+          if (isHighResolution(resolution)) {
             costByDateMap[date] += imageCount * 0.24;
           } else {
             costByDateMap[date] += imageCount * 0.134;
