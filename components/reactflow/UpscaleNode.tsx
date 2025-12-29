@@ -8,7 +8,7 @@ import { cn } from '../../lib/utils';
 import { Select } from '../ui/select';
 import { mockupApi } from '../../services/mockupApi';
 import { toast } from 'sonner';
-import { ConnectedImagesDisplay } from '../ui/ConnectedImagesDisplay';
+import { ConnectedImagesDisplay } from './ConnectedImagesDisplay';
 import { NodeHandles } from './shared/NodeHandles';
 import { NodeContainer } from './shared/NodeContainer';
 import { NodeHeader } from './shared/node-header';

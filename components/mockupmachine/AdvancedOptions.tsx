@@ -39,6 +39,12 @@ interface AdvancedOptionsProps {
   onAddCustomAngleTag: () => void;
   onAddCustomLightingTag: () => void;
   onAddCustomEffectTag: () => void;
+  selectedMaterialTags: string[];
+  availableMaterialTags: string[];
+  customMaterialInput: string;
+  onMaterialTagToggle: (tag: string) => void;
+  onCustomMaterialInputChange: (value: string) => void;
+  onAddCustomMaterialTag: () => void;
 }
 
 interface CollapsableTagSectionProps {
@@ -70,7 +76,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
     if (isEditingCustom && inputRef.current) {
       inputRef.current.focus();
     }
-    
+
     return () => {
       if (blurTimeoutRef.current) {
         clearTimeout(blurTimeoutRef.current);
@@ -123,25 +129,24 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
       <div className="flex items-center justify-between mb-2">
         <h4 className={`text-xs font-mono ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-600'}`}>{title}</h4>
       </div>
-      
+
       <div className="flex flex-wrap gap-2 cursor-pointer">
         {tags.map(tag => {
           const isSelected = selectedTags.includes(tag);
           const hasSelection = selectedTags.length > 0;
-          
+
           return (
             <button
               key={tag}
               onClick={() => onTagToggle(tag)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer ${
-                isSelected 
-                  ? theme === 'dark'
-                    ? 'bg-[#52ddeb]/20 text-[#52ddeb] border-[#52ddeb]/30 shadow-sm shadow-[#52ddeb]/10'
-                    : 'bg-[#52ddeb]/20 text-zinc-800 border-[#52ddeb]/30 shadow-sm shadow-[#52ddeb]/10'
-                  : theme === 'dark'
-                    ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
-                    : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'
-              } ${hasSelection && !isSelected ? 'opacity-40' : ''}`}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer ${isSelected
+                ? theme === 'dark'
+                  ? 'bg-[#52ddeb]/20 text-[#52ddeb] border-[#52ddeb]/30 shadow-sm shadow-[#52ddeb]/10'
+                  : 'bg-[#52ddeb]/20 text-zinc-800 border-[#52ddeb]/30 shadow-sm shadow-[#52ddeb]/10'
+                : theme === 'dark'
+                  ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
+                  : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'
+                } ${hasSelection && !isSelected ? 'opacity-40' : ''}`}
             >
               {translateTag(tag)}
             </button>
@@ -150,11 +155,10 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
         {!isEditingCustom ? (
           <button
             onClick={handleCustomTagClick}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border transform hover:-translate-y-0.5 active:translate-y-0 inline-flex items-center gap-1 cursor-pointer ${
-              theme === 'dark'
-                ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
-                : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'
-            }`}
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border transform hover:-translate-y-0.5 active:translate-y-0 inline-flex items-center gap-1 cursor-pointer ${theme === 'dark'
+              ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
+              : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'
+              }`}
           >
             <Plus size={14} />
             <span>{t('mockup.customTagLabel')}</span>
@@ -168,11 +172,10 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
             onKeyDown={handleKeyDown}
             onBlur={handleBlur}
             placeholder={t('mockup.customCategoryPlaceholder')}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border border-[#52ddeb]/30 focus:outline-none focus:ring-0 min-w-[120px] font-mono ${
-              theme === 'dark'
-                ? 'bg-[#52ddeb]/20 text-[#52ddeb]'
-                : 'bg-[#52ddeb]/20 text-zinc-800'
-            }`}
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border border-[#52ddeb]/30 focus:outline-none focus:ring-0 min-w-[120px] font-mono ${theme === 'dark'
+              ? 'bg-[#52ddeb]/20 text-[#52ddeb]'
+              : 'bg-[#52ddeb]/20 text-zinc-800'
+              }`}
             autoFocus
           />
         )}
@@ -215,11 +218,18 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
   onAddCustomLocationTag,
   onAddCustomAngleTag,
   onAddCustomLightingTag,
-  onAddCustomEffectTag
+
+  onAddCustomEffectTag,
+  selectedMaterialTags,
+  availableMaterialTags,
+  customMaterialInput,
+  onMaterialTagToggle,
+  onCustomMaterialInputChange,
+  onAddCustomMaterialTag
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
-  
+
   const handleColorInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value;
     // Remove todos os # existentes e adiciona um no início se houver conteúdo
@@ -239,7 +249,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
     } as React.ChangeEvent<HTMLInputElement>;
     onColorInputChange(syntheticEvent);
   };
-  
+
   return (
     <div className="space-y-4 pt-4 animate-fade-in-down">
       <div>
@@ -250,17 +260,16 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
               type="text"
               value={colorInput}
               onChange={handleColorInputChange}
-              onKeyDown={(e) => { 
-                if (e.key === 'Enter') { 
-                  e.preventDefault(); 
-                  onAddColor(); 
-                } 
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  onAddColor();
+                }
               }}
-              className={`w-full p-2 rounded-md border focus:outline-none focus:border-[#52ddeb]/50 focus:ring-0 text-xs font-mono transition-colors duration-200 pl-8 ${
-                theme === 'dark'
-                  ? 'bg-black/40 border-zinc-700/50 text-zinc-400'
-                  : 'bg-zinc-50 border-zinc-300 text-zinc-700'
-              }`}
+              className={`w-full p-2 rounded-md border focus:outline-none focus:border-[#52ddeb]/50 focus:ring-0 text-xs font-mono transition-colors duration-200 pl-8 ${theme === 'dark'
+                ? 'bg-black/40 border-zinc-700/50 text-zinc-400'
+                : 'bg-zinc-50 border-zinc-300 text-zinc-700'
+                }`}
               placeholder="#52ddeb"
             />
             {(isValidColor || !colorInput) && (
@@ -270,13 +279,12 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
               ></span>
             )}
           </div>
-          <button 
-            onClick={onAddColor} 
-            className={`px-3 rounded-md border text-xs font-mono cursor-pointer ${
-              theme === 'dark'
-                ? 'bg-zinc-700/50 text-zinc-400 border-zinc-700/50 hover:bg-zinc-600/50 hover:text-zinc-300'
-                : 'bg-zinc-200 text-zinc-700 border-zinc-300 hover:bg-zinc-300 hover:text-zinc-900'
-            }`}
+          <button
+            onClick={onAddColor}
+            className={`px-3 rounded-md border text-xs font-mono cursor-pointer ${theme === 'dark'
+              ? 'bg-zinc-700/50 text-zinc-400 border-zinc-700/50 hover:bg-zinc-600/50 hover:text-zinc-300'
+              : 'bg-zinc-200 text-zinc-700 border-zinc-300 hover:bg-zinc-300 hover:text-zinc-900'
+              }`}
           >
             {t('common.add')}
           </button>
@@ -284,19 +292,17 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
         {selectedColors.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-2 min-h-[26px]">
             {selectedColors.map(color => (
-                <div key={color} className={`flex items-center gap-1.5 pl-2 pr-1 py-0.5 rounded-md border text-xs ${
-                  theme === 'dark'
-                    ? 'bg-zinc-900/80 border-zinc-700'
-                    : 'bg-zinc-200 border-zinc-300'
+              <div key={color} className={`flex items-center gap-1.5 pl-2 pr-1 py-0.5 rounded-md border text-xs ${theme === 'dark'
+                ? 'bg-zinc-900/80 border-zinc-700'
+                : 'bg-zinc-200 border-zinc-300'
                 }`}>
                 <span
                   className="w-3 h-3 rounded-md border border-white/10"
                   style={{ backgroundColor: color }}
                 ></span>
                 <span className="font-mono">{color}</span>
-                <button onClick={() => onRemoveColor(color)} className={`rounded-md cursor-pointer ${
-                  theme === 'dark' ? 'text-zinc-500 hover:text-white' : 'text-zinc-600 hover:text-zinc-900'
-                }`}>
+                <button onClick={() => onRemoveColor(color)} className={`rounded-md cursor-pointer ${theme === 'dark' ? 'text-zinc-500 hover:text-white' : 'text-zinc-600 hover:text-zinc-900'
+                  }`}>
                   <X size={14} />
                 </button>
               </div>
@@ -342,17 +348,25 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
         onCustomInputChange={onCustomEffectInputChange}
         onAddCustomTag={onAddCustomEffectTag}
       />
+      <CollapsableTagSection
+        title={t('mockup.material')}
+        tags={availableMaterialTags}
+        selectedTags={selectedMaterialTags}
+        onTagToggle={onMaterialTagToggle}
+        customInput={customMaterialInput}
+        onCustomInputChange={onCustomMaterialInputChange}
+        onAddCustomTag={onAddCustomMaterialTag}
+      />
       <div>
         <h4 className={`text-xs font-mono mb-2 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-600'}`}>{t('mockup.negativePrompt')}</h4>
         <textarea
           value={negativePrompt}
           onChange={onNegativePromptChange}
           rows={2}
-          className={`w-full p-2 rounded-md border focus:outline-none focus:border-[#52ddeb]/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y ${
-            theme === 'dark'
-              ? 'bg-black/40 border-zinc-700/50 text-zinc-400'
-              : 'bg-zinc-50 border-zinc-300 text-zinc-700'
-          }`}
+          className={`w-full p-2 rounded-md border focus:outline-none focus:border-[#52ddeb]/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y ${theme === 'dark'
+            ? 'bg-black/40 border-zinc-700/50 text-zinc-400'
+            : 'bg-zinc-50 border-zinc-300 text-zinc-700'
+            }`}
           placeholder={t('mockup.negativePromptPlaceholder')}
         />
       </div>
@@ -362,11 +376,10 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
           value={additionalPrompt}
           onChange={onAdditionalPromptChange}
           rows={2}
-          className={`w-full p-2 rounded-md border focus:outline-none focus:border-[#52ddeb]/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y ${
-            theme === 'dark'
-              ? 'bg-black/40 border-zinc-700/50 text-zinc-400'
-              : 'bg-zinc-50 border-zinc-300 text-zinc-700'
-          }`}
+          className={`w-full p-2 rounded-md border focus:outline-none focus:border-[#52ddeb]/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y ${theme === 'dark'
+            ? 'bg-black/40 border-zinc-700/50 text-zinc-400'
+            : 'bg-zinc-50 border-zinc-300 text-zinc-700'
+            }`}
           placeholder={t('mockup.additionalPromptPlaceholder')}
         />
       </div>

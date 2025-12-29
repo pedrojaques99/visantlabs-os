@@ -8,7 +8,7 @@ import { NodeContainer } from './shared/NodeContainer';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 import { Card, CardContent } from '../ui/card';
-import { ConnectedImagesDisplay } from '../ui/ConnectedImagesDisplay';
+import { ConnectedImagesDisplay } from './ConnectedImagesDisplay';
 import { LabeledHandle } from './shared/LabeledHandle';
 import { NodeLabel } from './shared/node-label';
 import { NodeButton } from './shared/node-button';

@@ -18,6 +18,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
     const [historyError, setHistoryError] = useState<string | null>(null);
     const [historyFilter, setHistoryFilter] = useState<FeatureType | 'all'>('all');
     const [historyPagination, setHistoryPagination] = useState({ limit: 50, offset: 0, total: 0, hasMore: false });
+    const [serverStats, setServerStats] = useState<any>(null);
 
     // Load usage history
     useEffect(() => {
@@ -40,6 +41,9 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
                     total: response.pagination.total,
                     hasMore: response.pagination.hasMore,
                 }));
+                if (response.stats) {
+                    setServerStats(response.stats);
+                }
             } catch (err: any) {
                 console.error('Failed to load usage history:', err);
                 setHistoryError(err.message || t('usageHistory.loadError'));
@@ -73,8 +77,14 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
         });
     };
 
-    // Calculate statistics from usage history
+    // Calculate statistics (mix of server stats and local fallback if needed)
     const usageStats = useMemo(() => {
+        // If we have server stats, use them (they are more accurate for totals > limit)
+        if (serverStats) {
+            return serverStats;
+        }
+
+        // Fallback to local calculation (only accurate if total records <= limit)
         if (!usageHistory || usageHistory.length === 0) {
             return {
                 totalRecords: 0,
@@ -135,7 +145,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
         });
 
         return stats;
-    }, [usageHistory]);
+    }, [usageHistory, serverStats]);
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">

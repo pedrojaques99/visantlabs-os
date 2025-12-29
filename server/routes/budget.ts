@@ -54,7 +54,7 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
     let finalCustomPdfUrl = customPdfUrl;
     const budgetData = data || {};
     const pdfUrlFromData = budgetData.customPdfUrl || customPdfUrl;
-    
+
     if (pdfUrlFromData && isBase64Pdf(pdfUrlFromData)) {
       try {
         finalCustomPdfUrl = await uploadBudgetPdf(pdfUrlFromData, req.userId);
@@ -137,15 +137,15 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
     });
   } catch (error: any) {
     // Check Prisma connection if error might be connection-related
-    const isConnectionError = error.code === 'P1001' || 
-                             error.message?.includes('connect') ||
-                             error.message?.includes('connection');
-    
+    const isConnectionError = error.code === 'P1001' ||
+      error.message?.includes('connect') ||
+      error.message?.includes('connection');
+
     let connectionStatus = null;
     if (isConnectionError) {
       connectionStatus = await verifyPrismaConnectionWithDetails();
     }
-    
+
     // Enhanced error logging
     console.error('Error fetching budgets:', {
       error: error.message || error,
@@ -157,12 +157,12 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
       connectionStatus,
       timestamp: new Date().toISOString(),
     });
-    
+
     const isDevelopment = process.env.NODE_ENV === 'development';
-    const errorMessage = isDevelopment 
+    const errorMessage = isDevelopment
       ? error.message || 'An error occurred'
       : 'Failed to fetch budgets';
-    
+
     res.status(500).json({
       error: 'Failed to fetch budgets',
       message: errorMessage,
@@ -235,15 +235,15 @@ router.get('/pdf-presets', authenticate, async (req: AuthRequest, res) => {
     });
   } catch (error: any) {
     // Check Prisma connection if error might be connection-related
-    const isConnectionError = error.code === 'P1001' || 
-                             error.message?.includes('connect') ||
-                             error.message?.includes('connection');
-    
+    const isConnectionError = error.code === 'P1001' ||
+      error.message?.includes('connect') ||
+      error.message?.includes('connection');
+
     let connectionStatus = null;
     if (isConnectionError) {
       connectionStatus = await verifyPrismaConnectionWithDetails();
     }
-    
+
     // Enhanced error logging with full details
     console.error('Error fetching PDF presets:', {
       error: error.message || error,
@@ -255,13 +255,13 @@ router.get('/pdf-presets', authenticate, async (req: AuthRequest, res) => {
       connectionStatus,
       timestamp: new Date().toISOString(),
     });
-    
+
     // Return detailed error in development, sanitized in production
     const isDevelopment = process.env.NODE_ENV === 'development';
-    const errorMessage = isDevelopment 
+    const errorMessage = isDevelopment
       ? error.message || 'An error occurred'
       : 'Failed to fetch PDF presets';
-    
+
     res.status(500).json({
       error: 'Failed to fetch PDF presets',
       message: errorMessage,
@@ -422,7 +422,7 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
     // Migrate customPdfUrl from base64 to R2 if needed
     const budgetData = data || (existingBudget.data as any || {});
     const pdfUrlFromData = budgetData.customPdfUrl || customPdfUrl;
-    
+
     if (pdfUrlFromData && isBase64Pdf(pdfUrlFromData)) {
       try {
         const migratedUrl = await uploadBudgetPdf(pdfUrlFromData, req.userId, id);
@@ -585,7 +585,7 @@ router.post('/:id/duplicate', authenticate, async (req: AuthRequest, res) => {
 
     // Create new budget with copied data
     // Set shareId to null for the duplicate
-    const newName = existingBudget.name 
+    const newName = existingBudget.name
       ? `Copy of ${existingBudget.name}`
       : `Copy of Budget`;
 
@@ -598,24 +598,24 @@ router.post('/:id/duplicate', authenticate, async (req: AuthRequest, res) => {
         projectDescription: existingBudget.projectDescription,
         startDate: existingBudget.startDate,
         endDate: existingBudget.endDate,
-        deliverables: existingBudget.deliverables,
+        deliverables: existingBudget.deliverables as any,
         observations: existingBudget.observations,
-        links: existingBudget.links,
-        faq: existingBudget.faq,
-        brandColors: existingBudget.brandColors,
+        links: existingBudget.links as any,
+        faq: existingBudget.faq as any,
+        brandColors: existingBudget.brandColors as any,
         brandName: existingBudget.brandName,
         brandLogo: existingBudget.brandLogo,
         brandBackgroundColor: existingBudget.brandBackgroundColor,
         brandAccentColor: existingBudget.brandAccentColor,
-        timeline: existingBudget.timeline,
-        paymentInfo: existingBudget.paymentInfo,
-        signatures: existingBudget.signatures,
-        giftOptions: existingBudget.giftOptions,
-        customContent: existingBudget.customContent,
+        timeline: existingBudget.timeline as any,
+        paymentInfo: existingBudget.paymentInfo as any,
+        signatures: existingBudget.signatures as any,
+        giftOptions: existingBudget.giftOptions as any,
+        customContent: existingBudget.customContent as any,
         finalCTAText: existingBudget.finalCTAText,
         year: existingBudget.year,
         shareId: null, // New shareId will be generated when shared
-        data: existingBudget.data,
+        data: (existingBudget.data ?? {}) as any,
       },
     });
 

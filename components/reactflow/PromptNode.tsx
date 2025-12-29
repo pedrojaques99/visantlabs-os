@@ -6,7 +6,7 @@ import type { PromptNodeData } from '../../types/reactFlow';
 import type { GeminiModel, AspectRatio, Resolution } from '../../types';
 import { cn } from '../../lib/utils';
 import { PromptInput } from '../PromptInput';
-import { ConnectedImagesDisplay } from '../ui/ConnectedImagesDisplay';
+import { ConnectedImagesDisplay } from './ConnectedImagesDisplay';
 import { BrandIdentityPanel } from '../ui/BrandIdentityPanel';
 import { NodeContainer } from './shared/NodeContainer';
 import { Select } from '../ui/select';
@@ -445,20 +445,22 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
             onInsertElement={handleInsertElement}
           />
 
-          {/* PDF Page Reference Input */}
-          <div className="mb-3">
-            <NodeLabel className="text-[10px] mb-1.5">
-              {t('canvasNodes.promptNode.pdfReference')}
-            </NodeLabel>
-            <NodeInput
-              type="text"
-              value={pdfPageReference}
-              onChange={(e) => handlePdfPageReferenceChange(e.target.value)}
-              placeholder={t('canvasNodes.promptNode.pdfReferencePlaceholder')}
-              onMouseDown={(e) => e.stopPropagation()}
-              onClick={(e) => e.stopPropagation()}
-            />
-          </div>
+          {/* PDF Page Reference Input - Only show if Identity is a PDF */}
+          {nodeData.connectedIdentityType === 'pdf' && (
+            <div className="mb-3">
+              <NodeLabel className="text-[10px] mb-1.5">
+                {t('canvasNodes.promptNode.pdfReference')}
+              </NodeLabel>
+              <NodeInput
+                type="text"
+                value={pdfPageReference}
+                onChange={(e) => handlePdfPageReferenceChange(e.target.value)}
+                placeholder={t('canvasNodes.promptNode.pdfReferencePlaceholder')}
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          )}
         </>
       )}
 
