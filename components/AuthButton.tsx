@@ -4,7 +4,7 @@ import { subscriptionService, type SubscriptionStatus } from '../services/subscr
 import { useTranslation } from '../hooks/useTranslation';
 import { useLayout } from '../hooks/useLayout';
 import { Spinner } from './ui/Spinner';
-import { LogIn, LogOut, User as UserIcon, Mail, X, Pickaxe, ChevronDown, Globe, Key } from 'lucide-react';
+import { LogIn, LogOut, User as UserIcon, Mail, X, Pickaxe, ChevronDown, Globe, Key, ShieldCheck } from 'lucide-react';
 import { ForgotPasswordModal } from './ForgotPasswordModal';
 import HCaptcha from '@hcaptcha/react-hcaptcha';
 import { toast } from 'sonner';
@@ -373,6 +373,23 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
                   <Key size={14} />
                   {t('configuration.menuTitle') || 'API Keys'}
                 </button>
+
+                {user.isAdmin && (
+                  <>
+                    <div className="border-t border-zinc-800/50 my-1" />
+                    <button
+                      onClick={() => {
+                        setIsDropdownOpen(false);
+                        window.history.pushState({}, '', '/admin');
+                        window.dispatchEvent(new PopStateEvent('popstate'));
+                      }}
+                      className="w-full text-left px-4 py-2 text-xs font-mono transition-colors cursor-pointer text-[#52ddeb] hover:text-[#52ddeb]/80 hover:bg-[#52ddeb]/10 flex items-center gap-2"
+                    >
+                      <ShieldCheck size={14} />
+                      {t('auth.adminPanel') || 'Admin'}
+                    </button>
+                  </>
+                )}
 
                 <div className="border-t border-zinc-800/50 my-1" />
                 <button

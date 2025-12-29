@@ -10,7 +10,7 @@ const getAI = (): GoogleGenAI => {
   // Use cached instance or create from environment
   if (!ai || currentApiKey !== (import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_API_KEY || '').trim()) {
     const envApiKey = (import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_API_KEY || '').trim();
-    
+
     if (!envApiKey || envApiKey === 'undefined' || envApiKey.length === 0) {
       throw new Error(
         "GEMINI_API_KEY não encontrada. " +
@@ -18,7 +18,7 @@ const getAI = (): GoogleGenAI => {
         "Veja docs/SETUP_LLM.md para mais informações."
       );
     }
-    
+
     currentApiKey = envApiKey;
     ai = new GoogleGenAI({ apiKey: envApiKey });
   }
@@ -40,7 +40,7 @@ export const extractBrandIdentity = async (
   strategyText?: string
 ): Promise<BrandIdentity> => {
   const identityTypeName = identityType === 'pdf' ? 'PDF document' : 'PNG/image document';
-  
+
   let prompt = `You are an expert brand identity analyst. Your task is to analyze a logo image and a brand identity guide ${identityTypeName}, then extract comprehensive brand information in a structured format.
 
 **LOGO ANALYSIS:**
@@ -75,7 +75,7 @@ You must return a JSON object matching this exact structure:
 {
   "logo": {
     "colors": ["#HEX1", "#HEX2"],
-    "style": "description",
+    "style": "description (CONCISE: max 15 words)",
     "elements": ["element1", "element2"]
   },
   "colors": {
@@ -89,20 +89,20 @@ You must return a JSON object matching this exact structure:
     "weights": ["400", "700", "900"]
   },
   "composition": {
-    "style": "description",
-    "grid": "description",
-    "spacing": "description"
+    "style": "description (CONCISE: max 15 words)",
+    "grid": "description (CONCISE: max 15 words)",
+    "spacing": "description (CONCISE: max 15 words)"
   },
   "personality": {
-    "tone": "description",
-    "feeling": "description",
+    "tone": "description (CONCISE: max 10 words)",
+    "feeling": "description (CONCISE: max 10 words)",
     "values": ["value1", "value2", "value3"]
   },
   "visualElements": ["element1", "element2", "element3"]
 }
 
 **INSTRUCTIONS:**
-1. Be thorough and accurate in your analysis
+1. Be thorough but CONCISE in descriptions. Avoid long paragraphs. 
 2. Extract ALL colors as hex codes (e.g., #FF5733)
 3. If information is missing from the ${identityTypeName}, infer from the logo where reasonable${strategyText ? ', or use strategic context to inform your analysis' : ''}
 4. Return ONLY valid JSON, no markdown, no code blocks, no explanation
@@ -123,7 +123,7 @@ You must return a JSON object matching this exact structure:
   // Clean base64 (remove data URL prefix if present)
   const cleanBase64 = identityBase64.includes(',') ? identityBase64.split(',')[1] : identityBase64;
   const identityMimeType = identityType === 'pdf' ? 'application/pdf' : 'image/png';
-  
+
   parts.push({
     inlineData: {
       data: cleanBase64,
@@ -155,6 +155,7 @@ You must return a JSON object matching this exact structure:
                 items: { type: Type.STRING },
               },
             },
+            required: ['colors', 'style', 'elements'],
           },
           colors: {
             type: Type.OBJECT,
@@ -172,6 +173,7 @@ You must return a JSON object matching this exact structure:
                 items: { type: Type.STRING },
               },
             },
+            required: ['primary', 'secondary', 'accent'],
           },
           typography: {
             type: Type.OBJECT,
@@ -183,6 +185,7 @@ You must return a JSON object matching this exact structure:
                 items: { type: Type.STRING },
               },
             },
+            required: ['primary', 'weights'],
           },
           composition: {
             type: Type.OBJECT,
@@ -191,6 +194,7 @@ You must return a JSON object matching this exact structure:
               grid: { type: Type.STRING },
               spacing: { type: Type.STRING },
             },
+            required: ['style', 'grid', 'spacing'],
           },
           personality: {
             type: Type.OBJECT,
@@ -202,12 +206,14 @@ You must return a JSON object matching this exact structure:
                 items: { type: Type.STRING },
               },
             },
+            required: ['tone', 'feeling', 'values'],
           },
           visualElements: {
             type: Type.ARRAY,
             items: { type: Type.STRING },
           },
         },
+        required: ['logo', 'colors', 'typography', 'composition', 'personality', 'visualElements'],
       },
     },
   });
@@ -219,7 +225,7 @@ You must return a JSON object matching this exact structure:
 
   try {
     const identity = JSON.parse(jsonString) as BrandIdentity;
-    
+
     // Validate required fields
     if (!identity.logo || !identity.colors || !identity.typography || !identity.composition || !identity.personality || !identity.visualElements) {
       throw new Error('Invalid brand identity structure returned from Gemini');

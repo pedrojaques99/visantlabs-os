@@ -1,6 +1,6 @@
 import React from 'react';
 import { Heart, Download, Maximize2, Copy, Wand2, X, Trash2, Copy as CopyIcon, FileText, Upload, ExternalLink, Loader2 } from 'lucide-react';
-import { cn } from '../../lib/utils';
+import { cn } from '../../../lib/utils';
 
 interface ImageContextMenuProps {
   x: number;

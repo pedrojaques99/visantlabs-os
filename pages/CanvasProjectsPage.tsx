@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { FolderKanban, Calendar, Eye, Trash2, Plus, Pickaxe } from 'lucide-react';
 import { SEO } from '../components/SEO';
 import { useTranslation } from '../hooks/useTranslation';
+import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
 import type { Node } from '@xyflow/react';
 import type { FlowNodeData, OutputNodeData, ImageNodeData } from '../types/reactFlow';
 import { getImageUrl } from '../utils/imageUtils';
@@ -126,26 +127,30 @@ export const CanvasProjectsPage: React.FC = () => {
     }
   }, []);
 
-  useEffect(() => {
-    // Skip if auth is still being checked (null)
-    if (isAuthenticated === null) {
-      return;
-    }
-
+  // Debounce the auth handling to give time for MongoDB/Auth to settle.
+  // This prevents the "limbo" state where the user might see the auth modal 
+  // or an empty state while the backend is still warming up.
+  const handleAuthAction = useDebouncedCallback((auth: boolean | null) => {
+    if (auth === null) return;
+    
     // Skip if already loaded or currently loading
     if (hasLoadedProjectsRef.current || isLoadingRef.current) {
       return;
     }
 
-    console.log('[CanvasProjects] 🔄 Auth state changed:', isAuthenticated);
-    if (isAuthenticated === false) {
+    console.log('[CanvasProjects] 🔄 Auth action (debounced):', auth);
+    if (auth === false) {
       console.log('[CanvasProjects] 🔐 Not authenticated - showing auth modal');
       setShowAuthModal(true);
-    } else if (isAuthenticated === true) {
+    } else if (auth === true) {
       console.log('[CanvasProjects] ✅ Authenticated - loading projects');
       loadProjects();
     }
-  }, [isAuthenticated, loadProjects]);
+  }, 800);
+
+  useEffect(() => {
+    handleAuthAction(isAuthenticated);
+  }, [isAuthenticated, handleAuthAction]);
 
   const handleView = (project: CanvasProject) => {
     console.log('[CanvasProjects] 👁️ Viewing project:', {
@@ -274,16 +279,57 @@ export const CanvasProjectsPage: React.FC = () => {
   // Show loading state while checking access
   if (isLoadingAccess || isLoading) {
     return (
-      <div className="min-h-screen bg-[#121212] text-zinc-300 pt-14 relative">
+      <div className="min-h-screen bg-[#121212] text-zinc-300 pt-14 relative overflow-hidden">
         <div className="fixed inset-0 z-0">
           <GridDotsBackground />
         </div>
-        <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-[#141414] border border-zinc-800/60 rounded-xl p-6">
-                <SkeletonLoader height="1.5rem" className="w-3/4 mb-2" />
-                <SkeletonLoader height="1rem" className="w-1/2" />
+        <div className="max-w-[1800px] mx-auto px-4 md:px-6 py-4 md:py-6 relative z-10">
+          {/* Header Skeleton */}
+          <div className="mb-4">
+            <SkeletonLoader height="1.25rem" className="w-48" />
+          </div>
+          <div className="flex items-start gap-4 mb-6">
+            <div className="flex-1">
+              <SkeletonLoader height="2.5rem" className="w-48 mb-2" />
+              <SkeletonLoader height="1rem" className="w-24" />
+            </div>
+            <SkeletonLoader height="2.5rem" className="w-36 rounded-md" />
+          </div>
+
+          {/* Grid Skeleton */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div
+                key={i}
+                className="bg-[#141414] border border-zinc-800/60 rounded-2xl p-6 md:p-8"
+                style={{ animationDelay: `${i * 100}ms` }}
+              >
+                {/* Thumbnail Skeleton */}
+                <SkeletonLoader height="12rem" className="w-full rounded-md mb-4" />
+
+                {/* Title Row */}
+                <div className="flex items-center gap-2 mb-2">
+                  <SkeletonLoader height="1.25rem" className="w-5 rounded" />
+                  <SkeletonLoader height="1.5rem" className="flex-1" />
+                </div>
+
+                {/* Date Row */}
+                <div className="flex items-center gap-2 mb-4">
+                  <SkeletonLoader height="0.875rem" className="w-3.5 rounded" />
+                  <SkeletonLoader height="0.875rem" className="w-24" />
+                </div>
+
+                {/* Stats Row */}
+                <div className="flex items-center gap-4 mb-4">
+                  <SkeletonLoader height="0.75rem" className="w-16" />
+                  <SkeletonLoader height="0.75rem" className="w-16" />
+                </div>
+
+                {/* Buttons Row */}
+                <div className="flex items-center gap-2">
+                  <SkeletonLoader height="2.5rem" className="flex-1 rounded-md" />
+                  <SkeletonLoader height="2.5rem" className="w-12 rounded-xl" />
+                </div>
               </div>
             ))}
           </div>

@@ -23,6 +23,11 @@ import dotenv from 'dotenv';
 let client: MongoClient | null = null;
 let db: Db | null = null;
 
+// Cold start handling - debounce inicial para dar tempo do MongoDB estar pronto
+let isFirstConnection = true;
+let connectionPromise: Promise<Db> | null = null;
+const COLD_START_DELAY_MS = 500; // 500ms delay no cold start
+
 // Função para obter MONGODB_URI (avalia process.env quando chamada, não na importação)
 const getMongoUri = () => process.env.MONGODB_URI || 'mongodb://localhost:27017';
 const getDbName = () => process.env.MONGODB_DB_NAME || 'mockup-machine';
@@ -80,10 +85,38 @@ const getErrorMessage = (error: any): string => {
 };
 
 export const connectToMongoDB = async (): Promise<Db> => {
+  // Se já temos conexão ativa, retorna imediatamente
   if (db) {
     return db;
   }
 
+  // Se já existe uma tentativa de conexão em andamento, aguarda ela
+  // Isso evita múltiplas conexões simultâneas no cold start
+  if (connectionPromise) {
+    return connectionPromise;
+  }
+
+  // Debounce no cold start para dar tempo do MongoDB estar pronto
+  if (isFirstConnection && process.env.NODE_ENV === 'production') {
+    console.log(`🔄 MongoDB: Cold start detected, waiting ${COLD_START_DELAY_MS}ms before connecting...`);
+    await new Promise(resolve => setTimeout(resolve, COLD_START_DELAY_MS));
+    isFirstConnection = false;
+  }
+
+  // Cria promise de conexão para evitar múltiplas tentativas simultâneas
+  connectionPromise = (async () => {
+    try {
+      return await _performConnection();
+    } finally {
+      connectionPromise = null;
+    }
+  })();
+
+  return connectionPromise;
+};
+
+// Função interna que realiza a conexão de fato
+const _performConnection = async (): Promise<Db> => {
   // Obter valores de env dentro da função (avalia quando chamada, não na importação)
   const MONGODB_URI = getMongoUri();
   const DB_NAME = getDbName();

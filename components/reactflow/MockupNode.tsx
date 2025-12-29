@@ -8,7 +8,7 @@ import { cn } from '../../lib/utils';
 import { getAllPresets, getPreset, getAllPresetsAsync, clearPresetsCache } from '../../services/mockupPresetsService';
 import { MockupPresetModal } from '../MockupPresetModal';
 import { getImageUrl, isSafeUrl } from '../../utils/imageUtils';
-import { ConnectedImagesDisplay } from '../ui/ConnectedImagesDisplay';
+import { ConnectedImagesDisplay } from './ConnectedImagesDisplay';
 import { NodeHandles } from './shared/NodeHandles';
 import { LabeledHandle } from './shared/LabeledHandle';
 import { NodeContainer } from './shared/NodeContainer';

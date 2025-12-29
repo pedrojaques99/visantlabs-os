@@ -7,7 +7,7 @@
 
 import { useEffect, useRef } from 'react';
 import type { Node, Edge } from '@xyflow/react';
-import type { FlowNodeData, EditNodeData, MockupNodeData, PromptNodeData, AngleNodeData, VideoNodeData, VideoInputNodeData, BrandCoreData, ImageNodeData, OutputNodeData, LogoNodeData, PDFNodeData, StrategyNodeData, ShaderNodeData, UpscaleBicubicNodeData, ColorExtractorNodeData, TextNodeData, ChatNodeData } from '../../types/reactFlow';
+import type { FlowNodeData, EditNodeData, MockupNodeData, PromptNodeData, AngleNodeData, VideoNodeData, VideoInputNodeData, BrandCoreData, ImageNodeData, OutputNodeData, LogoNodeData, PDFNodeData, StrategyNodeData, ShaderNodeData, UpscaleBicubicNodeData, ColorExtractorNodeData, TextNodeData, ChatNodeData, BrandNodeData } from '../../types/reactFlow';
 import { getImageUrl } from '../../utils/imageUtils';
 import { getImageBase64FromNode, getImageUrlFromNode } from './utils/imageSyncUtils';
 
@@ -121,13 +121,99 @@ export const useCanvasNodeSync = ({
           const updates: Partial<PromptNodeData> = {};
           let nodeHasChanges = false;
 
-          const brandCoreEdge = edges.find(e =>
+          // 1. Sync from Brand nodes (BrandCore or BrandNode)
+          const brandEdge = edges.find(e =>
             e.target === n.id &&
             e.source &&
-            nds.find(src => src.id === e.source)?.type === 'brandCore'
+            // Ignore specific granular image output handles (treated as generic image inputs instead)
+            e.sourceHandle !== 'logo-output' &&
+            e.sourceHandle !== 'identity-output' &&
+            (nds.find(src => src.id === e.source)?.type === 'brandCore' ||
+              nds.find(src => src.id === e.source)?.type === 'brand')
           );
 
-          if (!brandCoreEdge) {
+          if (brandEdge) {
+            const sourceNode = nds.find(src => src.id === brandEdge.source);
+
+            if (sourceNode?.type === 'brandCore') {
+              const brandCoreData = sourceNode.data as BrandCoreData;
+
+              // Sync Logo
+              if (brandCoreData.connectedLogo !== promptData.connectedLogo) {
+                updates.connectedLogo = brandCoreData.connectedLogo;
+                nodeHasChanges = true;
+              }
+
+              // Sync Identity (prefer connectedImage/Identity over PDF)
+              const identity = brandCoreData.connectedImage || brandCoreData.uploadedIdentity || brandCoreData.connectedPdf;
+              if (identity !== promptData.connectedIdentity) {
+                updates.connectedIdentity = identity;
+
+                // Determine type
+                if (brandCoreData.connectedPdf || brandCoreData.uploadedIdentityType === 'pdf') {
+                  updates.connectedIdentityType = 'pdf';
+                } else {
+                  updates.connectedIdentityType = 'png';
+                }
+
+                nodeHasChanges = true;
+              }
+
+              // Sync Text Direction
+              const visualPrompts = brandCoreData.visualPrompts;
+              const textDirection = visualPrompts?.compositionPrompt || visualPrompts?.stylePrompt;
+              if (textDirection !== promptData.connectedTextDirection) {
+                updates.connectedTextDirection = textDirection;
+                nodeHasChanges = true;
+              }
+
+            } else if (sourceNode?.type === 'brand') {
+              const brandData = sourceNode.data as BrandNodeData;
+
+              // Sync Logo
+              const logo = brandData.connectedLogo || brandData.logoBase64 || brandData.logoImage;
+              // Clean up data prefix if present for consistency with internal storage often expecting clean base64 or handling it downstream
+              const cleanLogo = logo && logo.startsWith('data:') ? logo.split(',')[1] : logo;
+
+              if (cleanLogo !== promptData.connectedLogo) {
+                updates.connectedLogo = cleanLogo;
+                nodeHasChanges = true;
+              }
+
+              // Sync Identity
+              const identity = brandData.connectedIdentity || brandData.identityImageBase64 || brandData.identityImageUrl || brandData.identityPdfBase64 || brandData.identityPdfUrl;
+              const cleanIdentity = identity && identity.startsWith('data:') ? identity.split(',')[1] : identity;
+
+              if (cleanIdentity !== promptData.connectedIdentity) {
+                updates.connectedIdentity = cleanIdentity;
+
+                // Determine type
+                // Either explicit type from BrandNode, or infer from fields
+                const isPdf = brandData.identityFileType === 'pdf' ||
+                  brandData.connectedIdentityType === 'pdf' ||
+                  !!brandData.identityPdfBase64 ||
+                  !!brandData.identityPdfUrl;
+
+                updates.connectedIdentityType = isPdf ? 'pdf' : 'png';
+
+                nodeHasChanges = true;
+              }
+
+              // Sync Text Direction (Brand Identity JSON)
+              // BrandNode holds extracted identity in `brandIdentity` object.
+              // We might want to pass a summary or specific string.
+              // For now, let's pass the BrandIdentity object if PromptNode supports it, 
+              // BUT PromptNode expects connectedTextDirection (string).
+              // Let's rely on what BrandNode provides. 
+              // Warning: BrandNode.tsx doesn't seem to generate a specific text direction prompt property.
+              // It has `brandIdentity` object.
+              if (brandData.brandIdentity && JSON.stringify(brandData.brandIdentity) !== JSON.stringify(promptData.connectedBrandIdentity)) {
+                updates.connectedBrandIdentity = brandData.brandIdentity;
+                nodeHasChanges = true;
+              }
+            }
+          } else {
+            // Disconnected: Clear fields
             if (promptData.connectedLogo) {
               updates.connectedLogo = undefined;
               nodeHasChanges = true;
@@ -140,9 +226,13 @@ export const useCanvasNodeSync = ({
               updates.connectedTextDirection = undefined;
               nodeHasChanges = true;
             }
+            if (promptData.connectedBrandIdentity) {
+              updates.connectedBrandIdentity = undefined;
+              nodeHasChanges = true;
+            }
           }
 
-          // Sync text from connected TextNode
+          // 2. Sync from TextNode
           const textEdge = edges.find(e =>
             e.target === n.id &&
             e.targetHandle === 'text-input' &&
@@ -154,13 +244,11 @@ export const useCanvasNodeSync = ({
             const textNode = nds.find(src => src.id === textEdge.source);
             if (textNode?.type === 'text') {
               const textData = textNode.data as TextNodeData;
-              // Sync connectedText for real-time updates
               if (textData.text !== undefined) {
                 if (textData.text !== promptData.connectedText) {
                   updates.connectedText = textData.text;
                   nodeHasChanges = true;
                 }
-                // Also update prompt in real-time when connected
                 if (textData.text !== promptData.prompt) {
                   updates.prompt = textData.text;
                   nodeHasChanges = true;
@@ -168,12 +256,82 @@ export const useCanvasNodeSync = ({
               }
             }
           } else {
-            // If text edge was disconnected, clear connectedText but keep prompt
             if (promptData.connectedText !== undefined) {
               updates.connectedText = undefined;
               nodeHasChanges = true;
             }
           }
+
+          // 3. Sync from Generic Image Inputs (input-1 to input-4)
+          const imageHandles = ['input-1', 'input-2', 'input-3', 'input-4'] as const;
+          imageHandles.forEach((handleId, index) => {
+            const imageEdge = edges.find(e =>
+              e.target === n.id &&
+              e.targetHandle === handleId
+            );
+            const fieldName = `connectedImage${index + 1}` as 'connectedImage1' | 'connectedImage2' | 'connectedImage3' | 'connectedImage4';
+
+            if (imageEdge) {
+              const sourceNode = nds.find(src => src.id === imageEdge.source);
+              let imageBase64: string | undefined = undefined;
+
+              if (sourceNode) {
+                // Handle different source types (Image, Output, Brand, Logo, VideoInput, Video)
+                if (sourceNode.type === 'image') {
+                  const imageData = sourceNode.data as ImageNodeData;
+                  imageBase64 = imageData.mockup?.imageBase64 || imageData.mockup?.imageUrl;
+                } else if (sourceNode.type === 'output') {
+                  const outputData = sourceNode.data as OutputNodeData;
+                  imageBase64 = outputData.resultImageBase64 || outputData.resultImageUrl;
+                  // If explicit image output is missing, check for video preview? PromptNode needs image.
+                  if (!imageBase64 && (outputData.resultVideoBase64 || outputData.resultVideoUrl)) {
+                    // PromptNode likely can't handle video as image input directly without frame extraction
+                    // So we skip video-only outputs for now
+                  }
+                } else if (sourceNode.type === 'logo') {
+                  const logoData = sourceNode.data as LogoNodeData;
+                  imageBase64 = logoData.logoBase64 || logoData.logoImageUrl;
+                } else if (sourceNode.type === 'brand') {
+                  // Handle specific output handles from BrandNode
+                  const brandData = sourceNode.data as BrandNodeData;
+
+                  if (imageEdge.sourceHandle === 'logo-output') {
+                    imageBase64 = brandData.connectedLogo || brandData.logoBase64 || brandData.logoImage;
+                  } else if (imageEdge.sourceHandle === 'identity-output') {
+                    imageBase64 = brandData.connectedIdentity || brandData.identityImageBase64 || brandData.identityImageUrl || brandData.identityPdfBase64 || brandData.identityPdfUrl;
+                  } else {
+                    // Default to Logo (primary visual symbol) if generic output is used
+                    imageBase64 = brandData.connectedLogo || brandData.logoBase64 || brandData.logoImage;
+                  }
+                }
+              }
+
+              // Standardize format (strip data: prefix for consistency if passed this way)
+              // Note: PromptNode usually handles both, but keeping it clean is safer
+              if (imageBase64 && imageBase64.startsWith('data:')) {
+                imageBase64 = imageBase64.split(',')[1] || imageBase64;
+              }
+
+              if (imageBase64) {
+                if (promptData[fieldName] !== imageBase64) {
+                  updates[fieldName] = imageBase64;
+                  nodeHasChanges = true;
+                }
+              } else {
+                // Edge exists but no image data found
+                if (promptData[fieldName] !== undefined) {
+                  updates[fieldName] = undefined;
+                  nodeHasChanges = true;
+                }
+              }
+            } else {
+              // No edge
+              if (promptData[fieldName] !== undefined) {
+                updates[fieldName] = undefined;
+                nodeHasChanges = true;
+              }
+            }
+          });
 
           if (nodeHasChanges && Object.keys(updates).length > 0) {
             hasChanges = true;

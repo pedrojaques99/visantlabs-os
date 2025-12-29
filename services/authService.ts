@@ -30,6 +30,9 @@ class AuthService {
   private lastVerifyTime: number = 0;
   private lastValidResult: User | null = null; // Cache do último resultado válido
   private readonly VERIFY_THROTTLE_MS = 5000; // 5 segundos de throttle
+  private retryCount: number = 0;
+  private readonly MAX_RETRIES = 3;
+  private readonly INITIAL_RETRY_DELAY_MS = 500; // 500ms delay inicial para retry
 
   constructor() {
     // Load token from localStorage on initialization
@@ -405,6 +408,7 @@ class AuthService {
   private async _performVerify(): Promise<User | null> {
     if (!this.token) {
       this.lastValidResult = null;
+      this.retryCount = 0;
       return null;
     }
 
@@ -420,14 +424,25 @@ class AuthService {
       if (response.status === 401) {
         this.clearToken();
         this.lastValidResult = null;
+        this.retryCount = 0;
         return null;
       }
 
       if (!response.ok) {
-        // Server error (500, 503, etc.) - don't clear token, might be temporary
-        // Não atualiza cache em caso de erro - mantém último resultado válido se existir
+        // Server error (500, 503, etc.) - pode ser cold start do MongoDB
+        // Tenta retry com backoff exponencial
+        if (this.retryCount < this.MAX_RETRIES) {
+          this.retryCount++;
+          const delay = this.INITIAL_RETRY_DELAY_MS * Math.pow(2, this.retryCount - 1);
+          console.warn(`Token verification failed (${response.status}), retry ${this.retryCount}/${this.MAX_RETRIES} in ${delay}ms...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          return this._performVerify();
+        }
+        
+        // Esgotou retries - retorna cache se existir
         console.warn('Token verification failed with status:', response.status, '- keeping token for retry');
-        return this.lastValidResult; // Retorna cache se existir, senão null
+        this.retryCount = 0;
+        return this.lastValidResult;
       }
 
       // Check if response is JSON
@@ -439,16 +454,26 @@ class AuthService {
       }
 
       const data = await response.json();
-      // Atualiza cache com resultado válido
+      // Sucesso - reseta retry count e atualiza cache
+      this.retryCount = 0;
       this.lastValidResult = data.user;
       return data.user;
     } catch (error: any) {
-      // Network error or fetch failed - don't clear token, might be temporary connection issue
-      // Only log if it's not a common network error to avoid console spam
+      // Network error or fetch failed - pode ser cold start
+      // Tenta retry com backoff exponencial
+      if (this.retryCount < this.MAX_RETRIES) {
+        this.retryCount++;
+        const delay = this.INITIAL_RETRY_DELAY_MS * Math.pow(2, this.retryCount - 1);
+        console.warn(`Token verification network error, retry ${this.retryCount}/${this.MAX_RETRIES} in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return this._performVerify();
+      }
+      
+      // Esgotou retries - retorna cache se existir
       if (error?.name !== 'TypeError' && !error?.message?.includes('Failed to fetch')) {
         console.warn('Token verification error:', error);
       }
-      // Keep token for retry - retorna cache se existir, senão null
+      this.retryCount = 0;
       return this.lastValidResult;
     }
   }

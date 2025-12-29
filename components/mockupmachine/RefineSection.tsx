@@ -42,6 +42,12 @@ interface RefineSectionProps {
     onAddCustomAngleTag: () => void;
     onAddCustomLightingTag: () => void;
     onAddCustomEffectTag: () => void;
+    selectedMaterialTags: string[];
+    availableMaterialTags: string[];
+    customMaterialInput: string;
+    onMaterialTagToggle: (tag: string) => void;
+    onCustomMaterialInputChange: (value: string) => void;
+    onAddCustomMaterialTag: () => void;
   };
 }
 
@@ -55,14 +61,13 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
   return (
     <section>
       <h2 className={`text-sm font-semibold font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'}`}>{t('mockup.refine')}</h2>
-      
-      <button 
-        onClick={onToggleAdvanced} 
-        className={`w-full flex justify-between items-center text-left text-sm font-semibold font-mono uppercase tracking-widest mt-3 p-3 rounded-md border transition-all cursor-pointer ${
-          theme === 'dark'
+
+      <button
+        onClick={onToggleAdvanced}
+        className={`w-full flex justify-between items-center text-left text-sm font-semibold font-mono uppercase tracking-widest mt-3 p-3 rounded-md border transition-all cursor-pointer ${theme === 'dark'
             ? 'text-zinc-400 bg-zinc-800/30 border-zinc-700/50 hover:border-zinc-600/80'
             : 'text-zinc-700 bg-zinc-100 border-zinc-300 hover:border-zinc-400'
-        }`}
+          }`}
       >
         <span>{t('mockup.advancedOptions')}</span>
         {isAdvancedOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}

@@ -2,7 +2,7 @@ import React, { useState, useEffect, memo, ComponentType } from 'react';
 import { type NodeProps, type Node } from '@xyflow/react';
 import { ChevronDown, LucideIcon } from 'lucide-react';
 import { cn } from '../../../lib/utils';
-import { ConnectedImagesDisplay } from '../../ui/ConnectedImagesDisplay';
+import { ConnectedImagesDisplay } from '../ConnectedImagesDisplay';
 import { GlitchLoader } from '../../ui/GlitchLoader';
 import { NodeHandles } from './NodeHandles';
 import { NodeContainer } from './NodeContainer';

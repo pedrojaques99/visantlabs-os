@@ -253,6 +253,11 @@ router.post('/generate', authenticate, checkSubscription, async (req: Subscripti
       model = 'veo-3.1-generate-preview',
       canvasId,
       nodeId,
+      // New params
+      referenceImages,
+      inputVideo,
+      startFrame,
+      endFrame,
     } = req.body;
 
     console.log(`${logPrefix} [REQUEST] Received video generation request`, {
@@ -260,6 +265,8 @@ router.post('/generate', authenticate, checkSubscription, async (req: Subscripti
       requestId,
       hasPrompt: !!prompt,
       hasImage: !!imageBase64,
+      hasReferenceImages: referenceImages?.length || 0,
+      hasInputVideo: !!inputVideo,
       model,
       canvasId: canvasId || 'not provided',
       nodeId: nodeId || 'not provided',
@@ -427,6 +434,7 @@ router.post('/generate', authenticate, checkSubscription, async (req: Subscripti
         requestId,
         model: normalizedModel,
         promptLength: prompt?.length || 0,
+        hasReferenceImages: referenceImages?.length || 0,
       });
 
       videoBase64 = await generateVideo({
@@ -434,6 +442,11 @@ router.post('/generate', authenticate, checkSubscription, async (req: Subscripti
         imageBase64,
         imageMimeType,
         model: normalizedModel,
+        // Pass new params
+        referenceImages,
+        inputVideo,
+        startFrame,
+        endFrame,
       });
 
       console.log(`${logPrefix} [GENERATION] ✅ Video generated successfully`, {

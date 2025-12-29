@@ -193,10 +193,15 @@ const withRetry = async <T>(
 
 export interface GenerateVideoParams {
   prompt: string;
-  imageBase64?: string;
+  imageBase64?: string; // Legacy support
   imageMimeType?: string;
   model?: string;
   onRetry?: (attempt: number, maxRetries: number, delay: number) => void;
+  // New props
+  referenceImages?: string[];
+  inputVideo?: string;
+  startFrame?: string;
+  endFrame?: string;
 }
 
 /**
@@ -212,7 +217,11 @@ export const generateVideo = async (
     imageBase64,
     imageMimeType = 'image/png',
     model = 'veo-3.1-generate-preview',
-    onRetry
+    onRetry,
+    referenceImages,
+    inputVideo,
+    startFrame,
+    endFrame,
   } = params;
 
   // Normalize model name - map old model names to new valid model
@@ -230,22 +239,57 @@ export const generateVideo = async (
         prompt: prompt,
       };
 
-      // Add image if provided - Veo 3.1 supports image input using imageBytes
-      if (imageBase64) {
-        // Extract base64 data if it's a data URL
-        let imageBytes = imageBase64;
-        if (imageBase64.startsWith('data:')) {
-          // Remove data URL prefix (e.g., "data:image/png;base64,")
-          const base64Match = imageBase64.match(/^data:[^;]+;base64,(.+)$/);
-          if (base64Match) {
-            imageBytes = base64Match[1];
+      // Helper to process base64 string
+      const processBase64 = (b64: string) => {
+        if (b64.startsWith('data:')) {
+          const match = b64.match(/^data:([^;]+);base64,(.+)$/);
+          if (match) {
+            return { mimeType: match[1], data: match[2] };
           }
         }
+        return { mimeType: imageMimeType, data: b64 };
+      };
 
-        // Veo 3.1 uses imageBytes format (not inlineData)
+      // Handle Inputs (Veo 3.1)
+      // The Veo API has specific prioritization for inputs:
+      // 1. video (for video-to-video editing or extension)
+      // 2. image (for image-to-video, often the start frame)
+      
+      // Process video input if provided
+      if (inputVideo) {
+        const processed = processBase64(inputVideo);
+        requestParams.video = {
+          videoBytes: processed.data,
+          mimeType: processed.mimeType
+        };
+      }
+
+      // Determine the primary image input. We prioritize:
+      // 1. startFrame (explicit starting point)
+      // 2. first reference image (style or content reference)
+      // 3. imageBase64 (legacy support)
+      
+      let primaryImage: string | undefined = startFrame || (referenceImages && referenceImages.length > 0 ? referenceImages[0] : undefined) || imageBase64;
+      
+      if (primaryImage) {
+        const processed = processBase64(primaryImage);
         requestParams.image = {
-          imageBytes: imageBytes,
-          mimeType: imageMimeType,
+          imageBytes: processed.data,
+          mimeType: processed.mimeType
+        };
+      }
+
+      // NOTE: Current SDK constraints often limit us to a single primary image input.
+      // If the SDK is updated to support multiple reference images or separate style/content
+      // inputs (e.g., 'reference_images' or 'style_image' fields), this logic should be expanded.
+      // For now, we prioritize the most relevant single input to ensure reliable generation.
+      
+      if (endFrame) {
+        // Some experimental versions of Veo support an end frame
+        const processed = processBase64(endFrame);
+        requestParams.end_image = {
+          imageBytes: processed.data,
+          mimeType: processed.mimeType
         };
       }
 
