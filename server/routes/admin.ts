@@ -4,8 +4,30 @@ import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { ObjectId } from 'mongodb';
 import { validateAdmin } from '../middleware/adminAuth.js';
 import { AuthRequest } from '../middleware/auth.js';
+import { rateLimit } from 'express-rate-limit';
 
 const router = express.Router();
+
+// Rate limiter for admin routes to prevent abuse
+const adminLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 300, // Limit each IP to 300 requests per windowMs
+  message: { error: 'Too many requests to admin endpoints, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Targeted rate limiter for expensive admin user queries
+const adminUsersLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10, // Limit each IP to 10 requests per minute
+  message: { error: 'Too many requests for user data, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Apply rate limiting to all admin routes
+router.use(adminLimiter);
 
 // Helper function to normalize tags
 function normalizeTags(tags: any): string[] | undefined {
@@ -92,7 +114,7 @@ router.get('/status', validateAdmin, async (req: AuthRequest, res) => {
   }
 });
 
-router.get('/users', validateAdmin, async (_req, res) => {
+router.get('/users', adminUsersLimiter, validateAdmin, async (_req, res) => {
   try {
     // Connect to MongoDB for direct collection queries
     await connectToMongoDB();

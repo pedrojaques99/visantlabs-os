@@ -15,7 +15,7 @@ const usageHistoryLimiter = rateLimit({
 });
 
 // Get usage history for authenticated user
-router.get('/history', authenticate, usageHistoryLimiter, async (req: AuthRequest, res) => {
+router.get('/history', usageHistoryLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     await connectToMongoDB();
     const db = getDb();
@@ -26,10 +26,16 @@ router.get('/history', authenticate, usageHistoryLimiter, async (req: AuthReques
     const limit = parseInt(req.query.limit as string) || 50; // Default 50 records
     const offset = parseInt(req.query.offset as string) || 0; // Default offset 0
 
-    // Build query filter
-    const filter: any = { userId };
-    if (feature && ['brandingmachine', 'mockupmachine', 'canvas'].includes(feature)) {
-      filter.feature = feature;
+    // Build query filter explicitly to avoid user-controlled query injection alerts
+    const filter: Record<string, any> = { userId: String(userId) };
+    
+    // Only allow specific, validated features
+    if (feature === 'brandingmachine') {
+      filter.feature = 'brandingmachine';
+    } else if (feature === 'mockupmachine') {
+      filter.feature = 'mockupmachine';
+    } else if (feature === 'canvas') {
+      filter.feature = 'canvas';
     }
 
     // Parallel execution: fetch records, count total, and calculate aggregate stats
@@ -47,7 +53,7 @@ router.get('/history', authenticate, usageHistoryLimiter, async (req: AuthReques
 
       // 3. Calculate global stats (ignoring pagination, but respecting user)
       db.collection('usage_records').aggregate([
-        { $match: { userId } }, // Global stats for the user
+        { $match: { userId: String(userId) } }, // Global stats for the user
         {
           $group: {
             _id: null,
