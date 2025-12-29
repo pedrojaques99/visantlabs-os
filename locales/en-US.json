@@ -2908,7 +2908,11 @@
     "code": "Code",
     "referredBy": "Referred by",
     "directOrigin": "Direct origin",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "revenueOverTime": "Revenue Over Time",
+    "cumulativeRevenue": "Cumulative Revenue (BRL)",
+    "costOverTime": "Estimated Cost Over Time",
+    "cumulativeCost": "Cumulative API Cost (USD)"
   },
   "communityPresets": {
     "title": "Community Presets",
