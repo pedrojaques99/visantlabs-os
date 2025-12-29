@@ -286,7 +286,7 @@ function Model({ url, color }: ModelProps) {
 
 export default function ClubLogo3D({
   isMobile,
-  modelUrl = '/public/models/visant-3d-simple-2.glb',
+  modelUrl = '/models/visant-3d-simple-2.glb',
   color = '#1a1a1a',
   starColor = '#4B4B4BFF'
 }: ClubLogo3DProps) {
