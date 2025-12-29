@@ -1,12 +1,21 @@
 import express from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { getDb, connectToMongoDB } from '../db/mongodb.js';
-import { ObjectId } from 'mongodb';
+import { rateLimit } from 'express-rate-limit';
 
 const router = express.Router();
 
+// Rate limiter for history requests to prevent database abuse
+const usageHistoryLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: { error: 'Too many requests for usage history, please try again later.' },
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
 // Get usage history for authenticated user
-router.get('/history', authenticate, async (req: AuthRequest, res) => {
+router.get('/history', authenticate, usageHistoryLimiter, async (req: AuthRequest, res) => {
   try {
     await connectToMongoDB();
     const db = getDb();
