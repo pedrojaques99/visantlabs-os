@@ -1024,6 +1024,7 @@
 .react-flow__node {
   cursor: grab;
   border-radius: 10px;
+  border: none !important;
 }
 
 .react-flow__node:active {
