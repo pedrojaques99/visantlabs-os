@@ -5,7 +5,7 @@ import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell } fro
 
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { BreadcrumbWithBack, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '../components/ui/BreadcrumbWithBack';
-import { GlitchLoader } from '../components/ui/GlitchLoader';
+import { SkeletonLoader } from '../components/ui/SkeletonLoader';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../components/ui/card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../components/ui/table';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
@@ -37,6 +37,9 @@ interface AdminUser {
   referralCode?: string | null;
   referralCount?: number | null;
   referredBy?: string | null;
+  totalSpentBRL: number;
+  totalSpentUSD: number;
+  apiCostUSD: number;
 }
 
 interface GenerationStats {
@@ -65,12 +68,29 @@ interface GenerationStats {
   };
 }
 
+interface RevenueTimeSeriesItem {
+  date: string;
+  revenueBRL: number;
+  revenueUSD: number;
+  cumulativeBRL: number;
+  cumulativeUSD: number;
+}
+
+interface CostTimeSeriesItem {
+  date: string;
+  cost: number;
+  cumulative: number;
+}
+
 interface AdminResponse {
   totalUsers: number;
   totalMockupsGenerated: number;
   totalMockupsSaved: number;
   totalCreditsUsed: number;
   totalStorageUsed?: number;
+  totalRevenueBRL: number;
+  totalRevenueUSD: number;
+  totalApiCostUSD: number;
   referralStats?: {
     totalReferralCount: number;
     totalReferredUsers: number;
@@ -78,6 +98,8 @@ interface AdminResponse {
   };
   users: AdminUser[];
   generationStats?: GenerationStats;
+  revenueTimeSeries?: RevenueTimeSeriesItem[];
+  costTimeSeries?: CostTimeSeriesItem[];
 }
 
 const ADMIN_API = '/api/admin/users';
@@ -104,6 +126,116 @@ function formatBytes(bytes: number): string {
   return `${value} ${sizes[i]}`;
 }
 
+// Helper function to format currency (cents to display)
+function formatCurrency(cents: number, currency: 'BRL' | 'USD'): string {
+  const value = cents / 100;
+  return currency === 'BRL'
+    ? value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+    : value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+}
+
+// Admin Dashboard Skeleton Component
+const AdminDashboardSkeleton: React.FC = () => (
+  <div className="space-y-6 animate-in fade-in duration-300">
+    {/* Tabs Skeleton */}
+    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl">
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex gap-2">
+            <SkeletonLoader width="100px" height="36px" className="rounded-md" />
+            <SkeletonLoader width="100px" height="36px" className="rounded-md" />
+            <SkeletonLoader width="100px" height="36px" className="rounded-md" />
+          </div>
+          <SkeletonLoader width="100px" height="36px" className="rounded-md" />
+        </div>
+      </CardContent>
+    </Card>
+
+    {/* KPI Cards Grid Skeleton */}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+      {[...Array(4)].map((_, i) => (
+        <Card key={i} className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between mb-4">
+              <SkeletonLoader width="48px" height="48px" className="rounded-lg" />
+              <SkeletonLoader width="60px" height="20px" className="rounded-full" />
+            </div>
+            <div className="space-y-2">
+              <SkeletonLoader width="80px" height="36px" className="rounded" />
+              <SkeletonLoader width="120px" height="16px" className="rounded" />
+              <SkeletonLoader width="100px" height="12px" className="rounded" />
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+
+    {/* Revenue Card Skeleton */}
+    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl">
+      <CardContent className="p-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <SkeletonLoader width="56px" height="56px" className="rounded-lg" />
+            <div className="space-y-2">
+              <SkeletonLoader width="100px" height="16px" className="rounded" />
+              <SkeletonLoader width="140px" height="12px" className="rounded" />
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-6 md:gap-8">
+            <div className="space-y-2">
+              <SkeletonLoader width="140px" height="32px" className="rounded" />
+              <SkeletonLoader width="100px" height="12px" className="rounded" />
+            </div>
+            <div className="space-y-2">
+              <SkeletonLoader width="120px" height="32px" className="rounded" />
+              <SkeletonLoader width="100px" height="12px" className="rounded" />
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+
+    {/* Chart Skeleton */}
+    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl">
+      <CardHeader>
+        <SkeletonLoader width="200px" height="24px" className="rounded mb-2" />
+        <SkeletonLoader width="280px" height="16px" className="rounded" />
+      </CardHeader>
+      <CardContent>
+        <div className="h-[300px] w-full flex items-end justify-between gap-2 px-4">
+          {[40, 65, 55, 80, 45, 70, 60, 75, 50, 85, 55, 90].map((height, i) => (
+            <SkeletonLoader
+              key={i}
+              width="100%"
+              height={`${height}%`}
+              className="rounded-t flex-1"
+            />
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+
+    {/* Referral Stats Skeleton */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+      {[...Array(3)].map((_, i) => (
+        <Card key={i} className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between mb-4">
+              <SkeletonLoader width="48px" height="48px" className="rounded-lg" />
+              <SkeletonLoader width="50px" height="16px" className="rounded" />
+            </div>
+            <div className="space-y-2">
+              <SkeletonLoader width="60px" height="36px" className="rounded" />
+              <SkeletonLoader width="100px" height="16px" className="rounded" />
+              <SkeletonLoader width="140px" height="12px" className="rounded" />
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  </div>
+);
+
 export const AdminPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -120,7 +252,7 @@ export const AdminPage: React.FC = () => {
   const handleFetch = async () => {
     const token = authService.getToken();
     if (!token) {
-      setError('Você precisa estar autenticado para acessar esta página.');
+      setError(t('admin.authRequired'));
       return;
     }
 
@@ -145,7 +277,7 @@ export const AdminPage: React.FC = () => {
     } catch (fetchError: any) {
       console.error('Erro ao carregar dados do admin:', fetchError);
       setData(null);
-      setError(fetchError.message || 'Erro inesperado.');
+      setError(fetchError.message || t('admin.unexpectedError'));
     } finally {
       setIsLoading(false);
     }
@@ -294,6 +426,14 @@ export const AdminPage: React.FC = () => {
     count: {
       label: "Generations",
       color: "hsl(var(--chart-1))",
+    },
+    revenue: {
+      label: "Revenue (BRL)",
+      color: "#22c55e", // green-500
+    },
+    cost: {
+      label: "Cost (USD)",
+      color: "#f97316", // orange-500
     }
   } satisfies ChartConfig
 
@@ -391,11 +531,11 @@ export const AdminPage: React.FC = () => {
                   <div className="flex items-center gap-3 mb-2">
                     <ShieldCheck className="h-6 w-6 md:h-8 md:w-8 text-[#52ddeb]" />
                     <h1 className="text-2xl md:text-3xl font-semibold font-manrope text-zinc-300">
-                      Painel Administrativo
+                      {t('admin.panelTitle')}
                     </h1>
                   </div>
                   <p className="text-zinc-500 font-mono text-sm md:text-base ml-9 md:ml-11">
-                    Visualize usuários, assinaturas e créditos em tempo real
+                    {t('admin.panelSubtitle')}
                   </p>
                 </div>
 
@@ -407,7 +547,7 @@ export const AdminPage: React.FC = () => {
                       className="flex items-center gap-2"
                     >
                       <Users className="h-4 w-4" />
-                      Usuários
+                      {t('admin.users')}
                     </Button>
                     <Button
                       variant={location.pathname === '/admin/presets' ? 'default' : 'outline'}
@@ -415,7 +555,7 @@ export const AdminPage: React.FC = () => {
                       className="flex items-center gap-2"
                     >
                       <Settings className="h-4 w-4" />
-                      Presets
+                      {t('admin.presets')}
                     </Button>
                   </div>
                 )}
@@ -423,33 +563,31 @@ export const AdminPage: React.FC = () => {
             </CardContent>
           </Card>
 
-          {isCheckingAuth && (
-            <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl max-w-md mx-auto">
-              <CardContent className="p-6 md:p-8 text-center">
-                <GlitchLoader size={32} />
-              </CardContent>
-            </Card>
+          {/* Skeleton Loading States */}
+          {(isCheckingAuth || (isUserAuthenticated && isAdmin === null) || (!isCheckingAuth && isUserAuthenticated && isAdmin === true && isLoading && !data)) && (
+            <AdminDashboardSkeleton />
           )}
 
-          {!isCheckingAuth && !isAuthenticated && (
+          {/* Access Denied States */}
+          {!isCheckingAuth && !isAuthenticated && !isLoading && (
             <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl max-w-md mx-auto">
               <CardContent className="p-6 md:p-8 space-y-4 text-center">
                 {isUserAuthenticated === false ? (
                   <>
                     <p className="text-zinc-400 font-mono mb-4">
-                      Você precisa estar logado para acessar esta página.
+                      {t('admin.loginRequired')}
                     </p>
                     <Button
                       onClick={() => navigate('/')}
                       className="bg-[#52ddeb]/80 hover:bg-[#52ddeb] text-black"
                     >
-                      Fazer Login
+                      {t('admin.doLogin')}
                     </Button>
                   </>
                 ) : isAdmin === false ? (
                   <>
                     <p className="text-zinc-400 font-mono mb-4">
-                      Acesso negado. Você precisa ser um administrador para acessar esta página.
+                      {t('admin.accessDeniedFull')}
                     </p>
                     {error && (
                       <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-sm text-red-400 font-mono">
@@ -469,15 +607,15 @@ export const AdminPage: React.FC = () => {
                   <div className="flex items-center justify-between gap-4">
                     <TabsList className="bg-transparent border-0">
                       <TabsTrigger value="overview" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black">
-                        Dashboard
+                        {t('admin.dashboard')}
                       </TabsTrigger>
                       {data.generationStats && (
                         <TabsTrigger value="generations" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black">
-                          Gerações
+                          {t('admin.generations')}
                         </TabsTrigger>
                       )}
                       <TabsTrigger value="users" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black">
-                        Usuários
+                        {t('admin.users')}
                       </TabsTrigger>
                     </TabsList>
                     <Button
@@ -488,7 +626,7 @@ export const AdminPage: React.FC = () => {
                       className="flex items-center gap-2"
                     >
                       <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-                      Atualizar
+                      {t('admin.refresh')}
                     </Button>
                   </div>
                 </CardContent>
@@ -506,15 +644,15 @@ export const AdminPage: React.FC = () => {
                           <DollarSign className="h-6 w-6 text-[#52ddeb]" />
                         </div>
                         <Badge variant="outline" className="text-[10px] bg-black/40 border-[#52ddeb]/30 text-[#52ddeb]">
-                          ESTIMADO
+                          {t('admin.estimated')}
                         </Badge>
                       </div>
                       <div>
                         <p className="text-3xl font-bold text-zinc-300 mb-2 font-mono">
                           $ {totalEstimatedCost.toFixed(3)}
                         </p>
-                        <p className="text-sm text-zinc-500 font-mono">Custo Estimado</p>
-                        <p className="text-xs text-zinc-400 font-mono mt-1">Baseado no uso (Gemini)</p>
+                        <p className="text-sm text-zinc-500 font-mono">{t('admin.estimatedCost')}</p>
+                        <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.basedOnUsage')}</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -535,8 +673,8 @@ export const AdminPage: React.FC = () => {
                         <p className="text-3xl font-bold text-zinc-300 mb-2 font-mono">
                           {data.totalUsers}
                         </p>
-                        <p className="text-sm text-zinc-500 font-mono">Total Usuários</p>
-                        <p className="text-xs text-zinc-400 font-mono mt-1">Cadastrados no sistema</p>
+                        <p className="text-sm text-zinc-500 font-mono">{t('admin.totalUsers')}</p>
+                        <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.registeredInSystem')}</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -553,8 +691,8 @@ export const AdminPage: React.FC = () => {
                         <p className="text-3xl font-bold text-[#52ddeb] mb-2 font-mono">
                           {data.users.filter(u => u.subscriptionStatus === 'active' || u.subscriptionStatus === 'trialing').length}
                         </p>
-                        <p className="text-sm text-zinc-500 font-mono">Assinaturas Ativas</p>
-                        <p className="text-xs text-zinc-400 font-mono mt-1">Planos recorrentes</p>
+                        <p className="text-sm text-zinc-500 font-mono">{t('admin.activeSubscriptions')}</p>
+                        <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.recurringPlans')}</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -571,18 +709,49 @@ export const AdminPage: React.FC = () => {
                         <p className="text-3xl font-bold text-[#52ddeb] mb-2 font-mono">
                           {data.totalStorageUsed !== undefined ? formatBytes(data.totalStorageUsed) : '—'}
                         </p>
-                        <p className="text-sm text-zinc-500 font-mono">Armazenamento</p>
-                        <p className="text-xs text-zinc-400 font-mono mt-1">Uso total em disco</p>
+                        <p className="text-sm text-zinc-500 font-mono">{t('admin.storage')}</p>
+                        <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.totalDiskUsage')}</p>
                       </div>
                     </CardContent>
                   </Card>
                 </div>
 
+                {/* Revenue Total Card */}
+                <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-green-500/30 transition-all duration-300 shadow-lg ring-1 ring-green-500/20">
+                  <CardContent className="p-6">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 bg-green-500/10 rounded-lg">
+                          <DollarSign className="h-8 w-8 text-green-500" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-zinc-500 font-mono mb-1">{t('admin.totalRevenue')}</p>
+                          <p className="text-xs text-zinc-400 font-mono">{t('admin.completedTransactions')}</p>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-6 md:gap-8">
+                        <div className="text-right">
+                          <p className="text-2xl md:text-3xl font-bold text-green-500 font-mono">
+                            {formatCurrency(data.totalRevenueBRL, 'BRL')}
+                          </p>
+                          <p className="text-xs text-zinc-500 font-mono mt-1">{t('admin.brazilianReal')}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-2xl md:text-3xl font-bold text-green-400 font-mono">
+                            {formatCurrency(data.totalRevenueUSD, 'USD')}
+                          </p>
+                          <p className="text-xs text-zinc-500 font-mono mt-1">{t('admin.usDollar')}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* User Growth Chart */}
                 <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl">
                   <CardHeader>
-                    <CardTitle className="text-zinc-300">Crescimento de Usuários</CardTitle>
-                    <CardDescription className="text-zinc-500">Novos usuários nos últimos 30 dias</CardDescription>
+                    <CardTitle className="text-zinc-300">{t('admin.userGrowth')}</CardTitle>
+                    <CardDescription className="text-zinc-500">{t('admin.newUsersLast30Days')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="h-[300px] w-full">
@@ -628,6 +797,137 @@ export const AdminPage: React.FC = () => {
                   </CardContent>
                 </Card>
 
+                {/* Revenue & Cost Charts Grid */}
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
+                  {/* Revenue Chart */}
+                  {data.revenueTimeSeries && data.revenueTimeSeries.length > 0 && (
+                    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-green-500/30 transition-all duration-300">
+                      <CardHeader>
+                        <CardTitle className="text-zinc-300 flex items-center gap-2">
+                          <DollarSign className="h-5 w-5 text-green-500" />
+                          {t('admin.revenueOverTime') || 'Receita ao Longo do Tempo'}
+                        </CardTitle>
+                        <CardDescription className="text-zinc-500">
+                          {t('admin.cumulativeRevenue') || 'Receita acumulada (BRL)'}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="h-[250px] w-full">
+                          <ChartContainer config={chartConfig} className="aspect-auto h-full w-full">
+                            <AreaChart
+                              accessibilityLayer
+                              data={data.revenueTimeSeries}
+                              margin={{ left: 12, right: 12 }}
+                            >
+                              <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#333" />
+                              <XAxis
+                                dataKey="date"
+                                tickLine={false}
+                                axisLine={false}
+                                tickMargin={8}
+                                minTickGap={32}
+                                tickFormatter={(value) => {
+                                  const date = new Date(value)
+                                  return date.toLocaleDateString("pt-BR", {
+                                    month: "short",
+                                    day: "numeric",
+                                  })
+                                }}
+                              />
+                              <ChartTooltip
+                                cursor={false}
+                                content={
+                                  <ChartTooltipContent
+                                    indicator="dot"
+                                    formatter={(value, name) => {
+                                      if (name === 'cumulativeBRL') {
+                                        return [formatCurrency(value as number, 'BRL'), 'Total BRL'];
+                                      }
+                                      return [value, name];
+                                    }}
+                                  />
+                                }
+                              />
+                              <Area
+                                dataKey="cumulativeBRL"
+                                type="natural"
+                                fill="#22c55e"
+                                fillOpacity={0.1}
+                                stroke="#22c55e"
+                                strokeWidth={2}
+                              />
+                            </AreaChart>
+                          </ChartContainer>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Cost Chart */}
+                  {data.costTimeSeries && data.costTimeSeries.length > 0 && (
+                    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-orange-500/30 transition-all duration-300">
+                      <CardHeader>
+                        <CardTitle className="text-zinc-300 flex items-center gap-2">
+                          <Database className="h-5 w-5 text-orange-500" />
+                          {t('admin.costOverTime') || 'Custo Estimado ao Longo do Tempo'}
+                        </CardTitle>
+                        <CardDescription className="text-zinc-500">
+                          {t('admin.cumulativeCost') || 'Custo API acumulado (USD)'}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="h-[250px] w-full">
+                          <ChartContainer config={chartConfig} className="aspect-auto h-full w-full">
+                            <AreaChart
+                              accessibilityLayer
+                              data={data.costTimeSeries}
+                              margin={{ left: 12, right: 12 }}
+                            >
+                              <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#333" />
+                              <XAxis
+                                dataKey="date"
+                                tickLine={false}
+                                axisLine={false}
+                                tickMargin={8}
+                                minTickGap={32}
+                                tickFormatter={(value) => {
+                                  const date = new Date(value)
+                                  return date.toLocaleDateString("pt-BR", {
+                                    month: "short",
+                                    day: "numeric",
+                                  })
+                                }}
+                              />
+                              <ChartTooltip
+                                cursor={false}
+                                content={
+                                  <ChartTooltipContent
+                                    indicator="dot"
+                                    formatter={(value, name) => {
+                                      if (name === 'cumulative') {
+                                        return [`$ ${(value as number).toFixed(3)}`, 'Total USD'];
+                                      }
+                                      return [value, name];
+                                    }}
+                                  />
+                                }
+                              />
+                              <Area
+                                dataKey="cumulative"
+                                type="natural"
+                                fill="#f97316"
+                                fillOpacity={0.1}
+                                stroke="#f97316"
+                                strokeWidth={2}
+                              />
+                            </AreaChart>
+                          </ChartContainer>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+
                 {/* Referral Stats */}
                 {data.referralStats && (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
@@ -646,8 +946,8 @@ export const AdminPage: React.FC = () => {
                           <p className="text-3xl font-bold text-[#52ddeb] mb-2 font-mono">
                             {data.referralStats.totalReferralCount}
                           </p>
-                          <p className="text-sm text-zinc-500 font-mono">Indicações</p>
-                          <p className="text-xs text-zinc-400 font-mono mt-1">Total de convites enviados</p>
+                          <p className="text-sm text-zinc-500 font-mono">{t('admin.referrals')}</p>
+                          <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.totalInvitesSent')}</p>
                         </div>
                       </CardContent>
                     </Card>
@@ -663,8 +963,8 @@ export const AdminPage: React.FC = () => {
                           <p className="text-3xl font-bold text-zinc-300 mb-2 font-mono">
                             {data.referralStats.totalReferredUsers}
                           </p>
-                          <p className="text-sm text-zinc-500 font-mono">Usuários Indicados</p>
-                          <p className="text-xs text-zinc-400 font-mono mt-1">Novas contas via convite</p>
+                          <p className="text-sm text-zinc-500 font-mono">{t('admin.referredUsers')}</p>
+                          <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.newAccountsViaInvite')}</p>
                         </div>
                       </CardContent>
                     </Card>
@@ -680,8 +980,8 @@ export const AdminPage: React.FC = () => {
                           <p className="text-3xl font-bold text-zinc-300 mb-2 font-mono">
                             {data.referralStats.usersWithReferralCode}
                           </p>
-                          <p className="text-sm text-zinc-500 font-mono">Links Ativos</p>
-                          <p className="text-xs text-zinc-400 font-mono mt-1">Códigos de referência em uso</p>
+                          <p className="text-sm text-zinc-500 font-mono">{t('admin.activeLinks')}</p>
+                          <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.referralCodesInUse')}</p>
                         </div>
                       </CardContent>
                     </Card>
@@ -694,7 +994,7 @@ export const AdminPage: React.FC = () => {
                   {/* Model Usage Chart */}
                   <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl">
                     <CardHeader>
-                      <CardTitle className="text-zinc-300">Gerações por Modelo (Imagem + Vídeo)</CardTitle>
+                      <CardTitle className="text-zinc-300">{t('admin.generationsByModel')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="h-[300px] w-full">
@@ -725,7 +1025,7 @@ export const AdminPage: React.FC = () => {
 
                   {/* By Feature - Grid */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-zinc-300 font-mono">Por Feature</h3>
+                    <h3 className="text-lg font-semibold text-zinc-300 font-mono">{t('admin.byFeature')}</h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                       {(['mockupmachine', 'canvas', 'brandingmachine'] as const).map((feature) => {
                         const stats = data.generationStats.byFeature[feature];
@@ -742,10 +1042,10 @@ export const AdminPage: React.FC = () => {
                               <div className="mb-4">
                                 <p className="text-sm font-semibold text-[#52ddeb] font-mono mb-3 uppercase">{feature}</p>
                                 <div className="space-y-2 text-xs font-mono">
-                                  <p className="text-zinc-300">Imagens: <span className="text-[#52ddeb] font-bold">{stats.images}</span></p>
-                                  <p className="text-zinc-300">Vídeos: <span className="text-[#52ddeb] font-bold">{stats.videos}</span></p>
-                                  <p className="text-zinc-300">Passos Texto: <span className="text-[#52ddeb] font-bold">{stats.textSteps}</span></p>
-                                  <p className="text-zinc-300">Prompts Gerados: <span className="text-[#52ddeb] font-bold">{stats.promptGenerations}</span></p>
+                                  <p className="text-zinc-300">{t('admin.images')}: <span className="text-[#52ddeb] font-bold">{stats.images}</span></p>
+                                  <p className="text-zinc-300">{t('admin.videos')}: <span className="text-[#52ddeb] font-bold">{stats.videos}</span></p>
+                                  <p className="text-zinc-300">{t('admin.textSteps')}: <span className="text-[#52ddeb] font-bold">{stats.textSteps}</span></p>
+                                  <p className="text-zinc-300">{t('admin.promptsGenerated')}: <span className="text-[#52ddeb] font-bold">{stats.promptGenerations}</span></p>
                                 </div>
                               </div>
                             </CardContent>
@@ -759,7 +1059,7 @@ export const AdminPage: React.FC = () => {
                   <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                     {/* Images by Model */}
                     <div className="space-y-4">
-                      <h3 className="text-lg font-semibold text-zinc-300 font-mono">Imagens por Modelo</h3>
+                      <h3 className="text-lg font-semibold text-zinc-300 font-mono">{t('admin.imagesByModel')}</h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {Object.entries(data.generationStats.imagesByModel).map(([model, stats]) => (
                           <Card key={model} className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 transition-all duration-300 shadow-lg">
@@ -783,16 +1083,16 @@ export const AdminPage: React.FC = () => {
 
                     {/* Videos by Model */}
                     <div className="space-y-4">
-                      <h3 className="text-lg font-semibold text-zinc-300 font-mono">Vídeos por Modelo</h3>
+                      <h3 className="text-lg font-semibold text-zinc-300 font-mono">{t('admin.videosByModel')}</h3>
                       <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 transition-all duration-300 shadow-lg">
                         <CardContent className="p-6">
                           <div className="mb-4">
                             <p className="text-3xl font-bold text-zinc-300 font-mono mb-2">{data.generationStats.videos.total}</p>
-                            <p className="text-sm text-zinc-500 font-mono">Total de Vídeos</p>
+                            <p className="text-sm text-zinc-500 font-mono">{t('admin.totalVideos')}</p>
                           </div>
                           {Object.keys(data.generationStats.videos.byModel).length > 0 && (
                             <div className="mt-4 pt-4 border-t border-zinc-800/50">
-                              <p className="text-xs text-zinc-500 font-mono mb-2 uppercase">Por Modelo:</p>
+                              <p className="text-xs text-zinc-500 font-mono mb-2 uppercase">{t('admin.byModel')}:</p>
                               <div className="flex flex-wrap gap-2">
                                 {Object.entries(data.generationStats.videos.byModel).map(([model, count]) => (
                                   <Badge key={model} variant="outline" className="text-xs bg-black/40 border-zinc-700/50">
@@ -809,24 +1109,24 @@ export const AdminPage: React.FC = () => {
 
                   {/* Text Tokens Section */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-zinc-300 font-mono">Processamento de Texto</h3>
+                    <h3 className="text-lg font-semibold text-zinc-300 font-mono">{t('admin.textProcessing')}</h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
                       {/* Branding Tokens */}
                       <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl col-span-2 md:col-span-2 lg:col-span-1">
                         <CardContent className="p-4">
-                          <p className="text-xs text-zinc-500 font-mono mb-1">Branding Steps</p>
+                          <p className="text-xs text-zinc-500 font-mono mb-1">{t('admin.brandingSteps')}</p>
                           <p className="text-xl font-bold text-zinc-300 font-mono">{data.generationStats.textTokens.totalSteps}</p>
                         </CardContent>
                       </Card>
                       <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl">
                         <CardContent className="p-4">
-                          <p className="text-xs text-zinc-500 font-mono mb-1">Input Tokens</p>
+                          <p className="text-xs text-zinc-500 font-mono mb-1">{t('admin.inputTokens')}</p>
                           <p className="text-xl font-bold text-[#52ddeb] font-mono">{data.generationStats.textTokens.inputTokens.toLocaleString()}</p>
                         </CardContent>
                       </Card>
                       <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl">
                         <CardContent className="p-4">
-                          <p className="text-xs text-zinc-500 font-mono mb-1">Output Tokens</p>
+                          <p className="text-xs text-zinc-500 font-mono mb-1">{t('admin.outputTokens')}</p>
                           <p className="text-xl font-bold text-[#52ddeb] font-mono">{data.generationStats.textTokens.outputTokens.toLocaleString()}</p>
                         </CardContent>
                       </Card>
@@ -834,13 +1134,13 @@ export const AdminPage: React.FC = () => {
                       {/* Prompt Gen Tokens */}
                       <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl col-span-2 md:col-span-2 lg:col-span-1">
                         <CardContent className="p-4">
-                          <p className="text-xs text-zinc-500 font-mono mb-1">Prompt Gen Total</p>
+                          <p className="text-xs text-zinc-500 font-mono mb-1">{t('admin.promptGenTotal')}</p>
                           <p className="text-xl font-bold text-zinc-300 font-mono">{data.generationStats.byFeature['prompt-generation'].total}</p>
                         </CardContent>
                       </Card>
                       <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl">
                         <CardContent className="p-4">
-                          <p className="text-xs text-zinc-500 font-mono mb-1">Prompt Input</p>
+                          <p className="text-xs text-zinc-500 font-mono mb-1">{t('admin.promptInput')}</p>
                           <p className="text-xl font-bold text-[#52ddeb] font-mono">{data.generationStats.byFeature['prompt-generation'].inputTokens.toLocaleString()}</p>
                         </CardContent>
                       </Card>
@@ -863,8 +1163,8 @@ export const AdminPage: React.FC = () => {
                         <p className="text-3xl font-bold text-zinc-300 mb-2 font-mono">
                           {data.users.length}
                         </p>
-                        <p className="text-sm text-zinc-500 font-mono">Total Usuários</p>
-                        <p className="text-xs text-zinc-400 font-mono mt-1">Cadastrados no sistema</p>
+                        <p className="text-sm text-zinc-500 font-mono">{t('admin.totalUsers')}</p>
+                        <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.registeredInSystem')}</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -880,8 +1180,8 @@ export const AdminPage: React.FC = () => {
                         <p className="text-3xl font-bold text-[#52ddeb] mb-2 font-mono">
                           {data.users.filter(u => u.subscriptionStatus === 'active' || u.subscriptionStatus === 'trialing').length}
                         </p>
-                        <p className="text-sm text-zinc-500 font-mono">Assinaturas Ativas</p>
-                        <p className="text-xs text-zinc-400 font-mono mt-1">Usuários com plano ativo</p>
+                        <p className="text-sm text-zinc-500 font-mono">{t('admin.activeSubscriptions')}</p>
+                        <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.usersWithActivePlan')}</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -897,8 +1197,8 @@ export const AdminPage: React.FC = () => {
                         <p className="text-3xl font-bold text-[#52ddeb] mb-2 font-mono">
                           {totals.monthlyCredits + totals.manualCredits}
                         </p>
-                        <p className="text-sm text-zinc-500 font-mono">Créditos Distribuídos</p>
-                        <p className="text-xs text-zinc-400 font-mono mt-1">Total de créditos atribuídos</p>
+                        <p className="text-sm text-zinc-500 font-mono">{t('admin.creditsDistributed')}</p>
+                        <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.totalCreditsAssigned')}</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -914,8 +1214,8 @@ export const AdminPage: React.FC = () => {
                         <p className="text-3xl font-bold text-[#52ddeb] mb-2 font-mono">
                           {data.users.reduce((sum, u) => sum + (u.mockupCount || 0), 0)}
                         </p>
-                        <p className="text-sm text-zinc-500 font-mono">Mockups Criados</p>
-                        <p className="text-xs text-zinc-400 font-mono mt-1">Total de mockups gerados</p>
+                        <p className="text-sm text-zinc-500 font-mono">{t('admin.mockupsCreated')}</p>
+                        <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.totalMockupsGenerated')}</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -928,19 +1228,19 @@ export const AdminPage: React.FC = () => {
                       <div>
                         <CardTitle className="flex items-center gap-3 text-zinc-300 font-mono mb-2">
                           <Search className="h-5 w-5 text-[#52ddeb]" />
-                          Buscar Usuários
+                          {t('admin.searchUsers')}
                         </CardTitle>
                         <CardDescription className="text-zinc-500 font-mono">
                           {searchQuery
-                            ? `${filteredAndSortedUsers.length} de ${data.users.length} usuários encontrados`
-                            : `${data.users.length} usuários cadastrados`}
+                            ? t('admin.usersFound', { found: filteredAndSortedUsers.length, total: data.users.length })
+                            : t('admin.usersRegistered', { count: data.users.length })}
                         </CardDescription>
                       </div>
                       <div className="relative w-full md:w-auto md:min-w-[300px]">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-500" />
                         <Input
                           type="text"
-                          placeholder="Buscar por nome ou email..."
+                          placeholder={t('admin.searchPlaceholder')}
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
                           className="pl-10 bg-black/40 border-zinc-800/50 text-zinc-300 placeholder:text-zinc-500"
@@ -955,7 +1255,7 @@ export const AdminPage: React.FC = () => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-3 text-zinc-300 font-mono">
                       <Users className="h-5 w-5 text-[#52ddeb]" />
-                      Lista de Usuários
+                      {t('admin.userList')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -969,7 +1269,7 @@ export const AdminPage: React.FC = () => {
                               onClick={() => handleSort('name')}
                               className="flex items-center gap-2 h-auto p-0 font-mono text-zinc-500 hover:text-zinc-300"
                             >
-                              Usuário
+                              {t('admin.user')}
                               {sortField === 'name' && (
                                 sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
                               )}
@@ -982,7 +1282,7 @@ export const AdminPage: React.FC = () => {
                               onClick={() => handleSort('subscriptionTier')}
                               className="flex items-center gap-2 h-auto p-0 font-mono text-zinc-500 hover:text-zinc-300"
                             >
-                              Assinatura
+                              {t('admin.subscription')}
                               {sortField === 'subscriptionTier' && (
                                 sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
                               )}
@@ -995,7 +1295,7 @@ export const AdminPage: React.FC = () => {
                               onClick={() => handleSort('creditsRemaining')}
                               className="flex items-center gap-2 h-auto p-0 font-mono text-zinc-500 hover:text-zinc-300"
                             >
-                              Créditos
+                              {t('admin.credits')}
                               {sortField === 'creditsRemaining' && (
                                 sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
                               )}
@@ -1008,7 +1308,7 @@ export const AdminPage: React.FC = () => {
                               onClick={() => handleSort('referralCount')}
                               className="flex items-center gap-2 h-auto p-0 font-mono text-zinc-500 hover:text-zinc-300"
                             >
-                              Indicações
+                              {t('admin.referrals')}
                               {sortField === 'referralCount' && (
                                 sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
                               )}
@@ -1034,8 +1334,34 @@ export const AdminPage: React.FC = () => {
                               onClick={() => handleSort('transactionCount')}
                               className="flex items-center gap-2 h-auto p-0 font-mono text-zinc-500 hover:text-zinc-300"
                             >
-                              Transações
+                              {t('admin.transactions')}
                               {sortField === 'transactionCount' && (
+                                sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </TableHead>
+                          <TableHead className="text-zinc-500 font-mono">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleSort('totalSpentBRL')}
+                              className="flex items-center gap-2 h-auto p-0 font-mono text-zinc-500 hover:text-zinc-300"
+                            >
+                              {t('admin.spent')}
+                              {sortField === 'totalSpentBRL' && (
+                                sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </TableHead>
+                          <TableHead className="text-zinc-500 font-mono">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleSort('apiCostUSD')}
+                              className="flex items-center gap-2 h-auto p-0 font-mono text-zinc-500 hover:text-zinc-300"
+                            >
+                              {t('admin.apiCostColumn')}
+                              {sortField === 'apiCostUSD' && (
                                 sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
                               )}
                             </Button>
@@ -1047,7 +1373,7 @@ export const AdminPage: React.FC = () => {
                               onClick={() => handleSort('createdAt')}
                               className="flex items-center gap-2 h-auto p-0 font-mono text-zinc-500 hover:text-zinc-300"
                             >
-                              Criado em
+                              {t('admin.createdAt')}
                               {sortField === 'createdAt' && (
                                 sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
                               )}
@@ -1058,8 +1384,8 @@ export const AdminPage: React.FC = () => {
                       <TableBody>
                         {filteredAndSortedUsers.length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={7} className="text-center text-zinc-500 font-mono py-8">
-                              Nenhum usuário encontrado
+                            <TableCell colSpan={9} className="text-center text-zinc-500 font-mono py-8">
+                              {t('admin.noUserFound')}
                             </TableCell>
                           </TableRow>
                         ) : (
@@ -1092,6 +1418,27 @@ export const AdminPage: React.FC = () => {
                               </TableCell>
                               <TableCell className="px-4 py-4 font-mono">{user.mockupCount}</TableCell>
                               <TableCell className="px-4 py-4 font-mono">{user.transactionCount}</TableCell>
+                              <TableCell className="px-4 py-4 text-xs font-mono space-y-1">
+                                {user.totalSpentBRL > 0 && (
+                                  <p className="text-green-500">{formatCurrency(user.totalSpentBRL, 'BRL')}</p>
+                                )}
+                                {user.totalSpentUSD > 0 && (
+                                  <p className="text-green-400">{formatCurrency(user.totalSpentUSD, 'USD')}</p>
+                                )}
+                                {user.totalSpentBRL === 0 && user.totalSpentUSD === 0 && (
+                                  <p className="text-zinc-500">—</p>
+                                )}
+                              </TableCell>
+                              <TableCell className="px-4 py-4 text-xs font-mono">
+                                {user.apiCostUSD > 0 ? (
+                                  <>
+                                    <p className="text-orange-500">{user.apiCostUSD.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 })}</p>
+                                    <p className="text-orange-400/60 text-[10px]">{(user.apiCostUSD * 6).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
+                                  </>
+                                ) : (
+                                  <p className="text-zinc-500">—</p>
+                                )}
+                              </TableCell>
                               <TableCell className="px-4 py-4 text-xs font-mono text-zinc-400">{new Date(user.createdAt).toLocaleDateString()}</TableCell>
                             </TableRow>
                           ))

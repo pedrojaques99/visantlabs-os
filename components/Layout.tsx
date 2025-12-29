@@ -360,8 +360,17 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   // Centralized authentication check - única fonte de verdade para estado de autenticação
   useEffect(() => {
     let isMounted = true;
+    let isFirstCheck = true;
 
     const checkAuth = async () => {
+      // Debounce mínimo no primeiro check para dar tempo do backend (MongoDB) inicializar
+      // Evita erro loop no cold start do serverless
+      if (isFirstCheck) {
+        isFirstCheck = false;
+        await new Promise(resolve => setTimeout(resolve, 300));
+        if (!isMounted) return;
+      }
+
       try {
         const user = await authService.verifyToken();
         if (!isMounted) return;

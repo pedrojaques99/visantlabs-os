@@ -108,7 +108,7 @@ router.get('/users', validateAdmin, async (_req, res) => {
         const userIdString = user.id;
         const userIdObjectId = new ObjectId(userIdString);
         
-        const [mockupCount, transactionCount] = await Promise.all([
+        const [mockupCount, transactionCount, spendingByUser, userUsageAgg] = await Promise.all([
           db.collection('mockups').countDocuments({
             $or: [
               { userId: userIdString },
@@ -118,7 +118,60 @@ router.get('/users', validateAdmin, async (_req, res) => {
           prisma.transaction.count({
             where: { userId: user.id },
           }),
+          prisma.transaction.groupBy({
+            by: ['currency'],
+            where: { 
+              userId: user.id, 
+              status: 'completed' 
+            },
+            _sum: { amount: true }
+          }),
+          // Aggregate usage by model/resolution for correct cost calculation
+          db.collection('usage_records').aggregate([
+            { $match: { userId: userIdString } },
+            { $group: {
+              _id: { model: '$model', resolution: '$resolution', type: '$type' },
+              totalImages: { $sum: { $ifNull: ['$imagesGenerated', 0] } },
+              totalVideos: { $sum: { $ifNull: ['$videosGenerated', 0] } }
+            }}
+          ]).toArray(),
         ]);
+
+        const totalSpentBRL = spendingByUser.find(s => s.currency === 'BRL')?._sum.amount || 0;
+        const totalSpentUSD = spendingByUser.find(s => s.currency === 'USD')?._sum.amount || 0;
+        
+        // Calculate API cost with correct Gemini pricing
+        // Flash: $0.039 per image, Pro Standard: $0.134, Pro High Res (4K): $0.24, Video: $0.50
+        let apiCostUSD = 0;
+        for (const item of userUsageAgg) {
+          const model = item._id.model || '';
+          const resolution = item._id.resolution || '';
+          const type = item._id.type || '';
+          const imageCount = item.totalImages || 0;
+          const videoCount = item.totalVideos || 0;
+          
+          // Video cost: $0.50 per video
+          if (type === 'video' || videoCount > 0) {
+            apiCostUSD += (videoCount || 1) * 0.50;
+          }
+          
+          // Image cost based on model and resolution
+          if (imageCount > 0) {
+            if (model === 'gemini-2.5-flash-image') {
+              apiCostUSD += imageCount * 0.039;
+            } else if (model === 'gemini-3-pro-image-preview') {
+              // Check if high resolution (4K)
+              if (resolution && (resolution.includes('4096') || resolution.includes('4k') || resolution === '4K')) {
+                apiCostUSD += imageCount * 0.24;
+              } else {
+                apiCostUSD += imageCount * 0.134;
+              }
+            } else {
+              // Default to flash pricing for unknown models
+              apiCostUSD += imageCount * 0.039;
+            }
+          }
+        }
 
         return {
           ...user,
@@ -126,6 +179,9 @@ router.get('/users', validateAdmin, async (_req, res) => {
           manualCredits: totalCreditsEarned,
           mockupCount,
           transactionCount,
+          totalSpentBRL,
+          totalSpentUSD,
+          apiCostUSD,
         };
       })
     );
@@ -348,12 +404,167 @@ router.get('/users', validateAdmin, async (_req, res) => {
     byFeature['prompt-generation'].inputTokens = promptGenerations.inputTokens || 0;
     byFeature['prompt-generation'].outputTokens = promptGenerations.outputTokens || 0;
 
+    // Aggregate global revenue by currency
+    const globalRevenue = await prisma.transaction.groupBy({
+      by: ['currency'],
+      where: { status: 'completed' },
+      _sum: { amount: true }
+    });
+
+    const totalRevenueBRL = globalRevenue.find(r => r.currency === 'BRL')?._sum.amount || 0;
+    const totalRevenueUSD = globalRevenue.find(r => r.currency === 'USD')?._sum.amount || 0;
+
+    // Aggregate revenue time series (transactions by date)
+    const revenueByDate = await prisma.transaction.groupBy({
+      by: ['createdAt', 'currency'],
+      where: { status: 'completed' },
+      _sum: { amount: true },
+      orderBy: { createdAt: 'asc' }
+    });
+
+    // Process revenue time series - group by date and sum BRL + USD (converted to cents)
+    const revenueByDateMap: Record<string, { brl: number; usd: number }> = {};
+    for (const item of revenueByDate) {
+      const date = new Date(item.createdAt).toLocaleDateString('en-CA'); // YYYY-MM-DD
+      if (!revenueByDateMap[date]) {
+        revenueByDateMap[date] = { brl: 0, usd: 0 };
+      }
+      if (item.currency === 'BRL') {
+        revenueByDateMap[date].brl += item._sum.amount || 0;
+      } else if (item.currency === 'USD') {
+        revenueByDateMap[date].usd += item._sum.amount || 0;
+      }
+    }
+
+    // Convert to cumulative array
+    const sortedRevenueDates = Object.keys(revenueByDateMap).sort();
+    let cumulativeBRL = 0;
+    let cumulativeUSD = 0;
+    const revenueTimeSeries = sortedRevenueDates.map(date => {
+      cumulativeBRL += revenueByDateMap[date].brl;
+      cumulativeUSD += revenueByDateMap[date].usd;
+      return {
+        date,
+        revenueBRL: revenueByDateMap[date].brl,
+        revenueUSD: revenueByDateMap[date].usd,
+        cumulativeBRL,
+        cumulativeUSD
+      };
+    });
+
+    // Aggregate global API cost with correct Gemini pricing
+    const globalUsageAgg = await db.collection('usage_records').aggregate([
+      { $group: {
+        _id: { model: '$model', resolution: '$resolution', type: '$type' },
+        totalImages: { $sum: { $ifNull: ['$imagesGenerated', 0] } },
+        totalVideos: { $sum: { $ifNull: ['$videosGenerated', 0] } }
+      }}
+    ]).toArray();
+
+    // Calculate total API cost with correct pricing
+    // Flash: $0.039, Pro Standard: $0.134, Pro High Res (4K): $0.24, Video: $0.50
+    let totalApiCostUSD = 0;
+    for (const item of globalUsageAgg) {
+      const model = item._id.model || '';
+      const resolution = item._id.resolution || '';
+      const type = item._id.type || '';
+      const imageCount = item.totalImages || 0;
+      const videoCount = item.totalVideos || 0;
+      
+      // Video cost: $0.50 per video
+      if (type === 'video' || videoCount > 0) {
+        totalApiCostUSD += (videoCount || 1) * 0.50;
+      }
+      
+      // Image cost based on model and resolution
+      if (imageCount > 0) {
+        if (model === 'gemini-2.5-flash-image') {
+          totalApiCostUSD += imageCount * 0.039;
+        } else if (model === 'gemini-3-pro-image-preview') {
+          if (resolution && (resolution.includes('4096') || resolution.includes('4k') || resolution === '4K')) {
+            totalApiCostUSD += imageCount * 0.24;
+          } else {
+            totalApiCostUSD += imageCount * 0.134;
+          }
+        } else {
+          totalApiCostUSD += imageCount * 0.039;
+        }
+      }
+    }
+
+    // Aggregate cost time series (usage_records by date with cost calculation)
+    const costByDateAgg = await db.collection('usage_records').aggregate([
+      {
+        $group: {
+          _id: {
+            date: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
+            model: '$model',
+            resolution: '$resolution',
+            type: '$type'
+          },
+          totalImages: { $sum: { $ifNull: ['$imagesGenerated', 0] } },
+          totalVideos: { $sum: { $ifNull: ['$videosGenerated', 0] } }
+        }
+      },
+      { $sort: { '_id.date': 1 } }
+    ]).toArray();
+
+    // Calculate cost per date
+    const costByDateMap: Record<string, number> = {};
+    for (const item of costByDateAgg) {
+      const date = item._id.date;
+      const model = item._id.model || '';
+      const resolution = item._id.resolution || '';
+      const type = item._id.type || '';
+      const imageCount = item.totalImages || 0;
+      const videoCount = item.totalVideos || 0;
+
+      if (!costByDateMap[date]) {
+        costByDateMap[date] = 0;
+      }
+
+      // Video cost: $0.50 per video
+      if (type === 'video' || videoCount > 0) {
+        costByDateMap[date] += (videoCount || 1) * 0.50;
+      }
+
+      // Image cost based on model and resolution
+      if (imageCount > 0) {
+        if (model === 'gemini-2.5-flash-image') {
+          costByDateMap[date] += imageCount * 0.039;
+        } else if (model === 'gemini-3-pro-image-preview') {
+          if (resolution && (resolution.includes('4096') || resolution.includes('4k') || resolution === '4K')) {
+            costByDateMap[date] += imageCount * 0.24;
+          } else {
+            costByDateMap[date] += imageCount * 0.134;
+          }
+        } else {
+          costByDateMap[date] += imageCount * 0.039;
+        }
+      }
+    }
+
+    // Convert to cumulative array
+    const sortedCostDates = Object.keys(costByDateMap).sort();
+    let cumulativeCost = 0;
+    const costTimeSeries = sortedCostDates.map(date => {
+      cumulativeCost += costByDateMap[date];
+      return {
+        date,
+        cost: costByDateMap[date],
+        cumulative: cumulativeCost
+      };
+    });
+
     return res.json({
       totalUsers: formattedUsers.length,
       totalMockupsGenerated,
       totalMockupsSaved,
       totalCreditsUsed,
       totalStorageUsed,
+      totalRevenueBRL,
+      totalRevenueUSD,
+      totalApiCostUSD,
       referralStats: {
         totalReferralCount,
         totalReferredUsers,
@@ -374,7 +585,9 @@ router.get('/users', validateAdmin, async (_req, res) => {
           outputTokens: textTokens.outputTokens || 0
         },
         byFeature
-      }
+      },
+      revenueTimeSeries,
+      costTimeSeries
     });
   } catch (error) {
     console.error('Failed to load admin users:', error);
