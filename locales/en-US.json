@@ -148,6 +148,25 @@
     },
     "home": "Home"
   },
+  "surpriseMeSettings": {
+    "title": "Surprise Me Settings",
+    "info": "Select tags to exclude when using Surprise Me. Excluded tags will not be randomly selected.",
+    "categories": "Categories",
+    "categoriesDescription": "Mockup categories",
+    "locations": "Locations",
+    "locationsDescription": "Environments and locations",
+    "angles": "Angles",
+    "anglesDescription": "Camera angles",
+    "lighting": "Lighting",
+    "lightingDescription": "Lighting types",
+    "effects": "Effects",
+    "effectsDescription": "Visual effects",
+    "materials": "Materials",
+    "materialsDescription": "Materials and textures",
+    "saved": "Settings saved successfully",
+    "saveError": "Failed to save settings",
+    "loadError": "Failed to load settings"
+  },
   "common": {
     "loading": "Loading...",
     "verifyingAuth": "Verifying authentication...",
@@ -608,6 +627,8 @@
     },
     "surpriseMe": "Surprise Me!",
     "surpriseMeTooltip": "Randomly select branding, categories, and styles for quick inspiration!",
+    "surpriseMeSettings": "Surprise Me Settings",
+    "surpriseMeSettingsTooltip": "Configure which tags to exclude from Surprise Me",
     "autoGenerate": "Auto generate",
     "autoGenerateTooltip": "Skip prompt generation and directly generate outputs (default 2 outputs)",
     "newAngles": "New Angles",
@@ -651,6 +672,7 @@
     "resolution4kOnly": "// RESOLUTION (Mockup Machine® 4K Only)",
     "generateContextualText": "Generate contextual text",
     "includeHumanInteraction": "Include human interaction",
+    "enhanceTexture": "Enhance texture",
     "aspectRatio": "// ASPECT RATIO",
     "aspectRatioTitle": "ASPECT_RATIO_",
     "autoAspectRatioTitle": "AUTO_ASPECT_RATIO_",
@@ -2504,7 +2526,12 @@
       "connectedContextAsReference": "connected context as reference",
       "suggestMockups": "Suggest Mockups",
       "detectedMockups": "DETECTED MOCKUPS",
-      "createNode": "Create Node"
+      "detectedActions": "DETECTED ACTIONS",
+      "createNode": "Create Node",
+      "quickActions": "Quick Actions",
+      "attachMedia": "Attach Image",
+      "mediaAttached": "Image node created!",
+      "context": "Context"
     }
   },
   "shaderControls": {
@@ -2842,7 +2869,17 @@
     "revenueOverTime": "Revenue Over Time",
     "cumulativeRevenue": "Cumulative Revenue (BRL)",
     "costOverTime": "Estimated Cost Over Time",
-    "cumulativeCost": "Cumulative API Cost (USD)"
+    "cumulativeCost": "Cumulative API Cost (USD)",
+    "dailyCost": "Daily Cost",
+    "dailyCostChart": "Daily Cost (USD)",
+    "averageDailyCost": "Average Daily Cost",
+    "maxDailyCost": "Max Daily Cost",
+    "last7DaysCost": "Last 7 Days",
+    "last30DaysCost": "Last 30 Days",
+    "financial": "Financial",
+    "profit": "Profit",
+    "totalProfit": "Total Profit",
+    "revenueMinusCost": "Revenue - Cost"
   },
   "storage": {
     "title": "Storage",

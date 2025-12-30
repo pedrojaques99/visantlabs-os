@@ -80,8 +80,8 @@ const IMAGE_GENERATION_PATTERNS = [
   /make.*photo/gi,
 ];
 
-// Safe system prompt
-const DEFAULT_SYSTEM_PROMPT = `You are a helpful design assistant specializing in product mockups and brand strategy.
+// Safe system prompt with action detection support
+const DEFAULT_SYSTEM_PROMPT = `You are a helpful design assistant specializing in product mockups and brand strategy. You can help users create and manage nodes in their design canvas.
 
 RULES:
 - You can ONLY respond with TEXT. Never generate images.
@@ -95,7 +95,56 @@ RULES:
 CONTEXT AWARENESS:
 - If brand strategy is provided, use it to inform your suggestions.
 - If images are provided, you can analyze them for design feedback.
-- If text context is provided, use it to understand the project better.`;
+- If text context is provided, use it to understand the project better.
+
+NODE SUGGESTIONS:
+When suggesting mockups, prompts, or design ideas that the user might want to create as nodes, format them as actionable suggestions using this structure:
+
+**[ACTION:node_type]** Title: Description
+
+Available node types:
+- prompt: For text-to-image generation prompts
+- mockup: For product mockup presets (cap, tshirt, mug, poster, etc.)
+- strategy: For brand strategy analysis
+- text: For text notes
+
+Example format:
+**[ACTION:prompt]** Coffee Bag Mockup: A premium kraft paper coffee bag with minimalist typography, placed on a rustic wooden table with scattered coffee beans, morning sunlight
+
+**[ACTION:mockup]** T-Shirt Display: Use the "tshirt" preset for a lifestyle product shot
+
+When the user asks for mockup suggestions, creative ideas, or prompts, use this format so they can easily create nodes from your suggestions.`;
+
+// Regex to detect action suggestions in AI responses
+export const ACTION_PATTERN = /\*\*\[ACTION:(prompt|mockup|strategy|text)\]\*\*\s*([^:]+):\s*(.+?)(?=\n\*\*\[ACTION:|$)/gs;
+
+export interface DetectedAction {
+  type: 'prompt' | 'mockup' | 'strategy' | 'text';
+  title: string;
+  description: string;
+  fullPrompt: string;
+}
+
+/**
+ * Parse AI response to detect actionable suggestions
+ */
+export function parseActionsFromResponse(content: string): DetectedAction[] {
+  const actions: DetectedAction[] = [];
+  const regex = new RegExp(ACTION_PATTERN.source, 'gs');
+  let match;
+  
+  while ((match = regex.exec(content)) !== null) {
+    const [, type, title, description] = match;
+    actions.push({
+      type: type as DetectedAction['type'],
+      title: title.trim(),
+      description: description.trim(),
+      fullPrompt: `${title.trim()}: ${description.trim()}`,
+    });
+  }
+  
+  return actions;
+}
 
 /**
  * Validate message content

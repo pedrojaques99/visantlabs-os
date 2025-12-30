@@ -551,7 +551,13 @@ export const CanvasPage: React.FC = () => {
     setImageContextMenu,
     setNodeContextMenu,
     addToHistory,
-    reactFlowInstance
+    reactFlowInstance,
+    {
+      addPromptNode,
+      addTextNode,
+      addStrategyNode,
+      addImageNode,
+    }
   );
 
   // Callback for when drag starts - set ref to prevent useEffect execution

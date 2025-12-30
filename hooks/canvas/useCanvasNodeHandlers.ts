@@ -1198,8 +1198,8 @@ export const useCanvasNodeHandlers = (
         // Handle string input (direct base64 or URL)
         if (typeof input === 'string') return input;
 
-        // Handle object input
-        if (typeof input === 'object') {
+        // Handle object input (but not null)
+        if (input && typeof input === 'object' && input !== null) {
           if (input?.file) {
             const base64 = await videoToBase64(input.file);
             return base64.base64 ? `data:${base64.mimeType};base64,${base64.base64}` : undefined;
@@ -1348,7 +1348,9 @@ export const useCanvasNodeHandlers = (
 
       // Show appropriate error message
       let errorMessage = 'Failed to generate video';
-      if (error?.status === 409) {
+      if (error?.status === 400) {
+        errorMessage = error?.message || 'Invalid request. Please check your inputs and try again.';
+      } else if (error?.status === 409) {
         errorMessage = 'Video generation already in progress. Please wait.';
       } else if (error?.message) {
         errorMessage = error.message;

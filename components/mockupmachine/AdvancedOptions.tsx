@@ -3,6 +3,7 @@ import { X, Plus } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useTheme } from '../../hooks/useTheme';
 import { translateTag } from '../../utils/localeUtils';
+import type { DesignType } from '../../types';
 
 interface AdvancedOptionsProps {
   selectedLocationTags: string[];
@@ -45,6 +46,7 @@ interface AdvancedOptionsProps {
   onMaterialTagToggle: (tag: string) => void;
   onCustomMaterialInputChange: (value: string) => void;
   onAddCustomMaterialTag: () => void;
+  designType: DesignType | null;
 }
 
 interface CollapsableTagSectionProps {
@@ -225,7 +227,8 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
   customMaterialInput,
   onMaterialTagToggle,
   onCustomMaterialInputChange,
-  onAddCustomMaterialTag
+  onAddCustomMaterialTag,
+  designType
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
@@ -348,15 +351,17 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
         onCustomInputChange={onCustomEffectInputChange}
         onAddCustomTag={onAddCustomEffectTag}
       />
-      <CollapsableTagSection
-        title={t('mockup.material')}
-        tags={availableMaterialTags}
-        selectedTags={selectedMaterialTags}
-        onTagToggle={onMaterialTagToggle}
-        customInput={customMaterialInput}
-        onCustomInputChange={onCustomMaterialInputChange}
-        onAddCustomTag={onAddCustomMaterialTag}
-      />
+      {designType === 'logo' && (
+        <CollapsableTagSection
+          title={t('mockup.material')}
+          tags={availableMaterialTags}
+          selectedTags={selectedMaterialTags}
+          onTagToggle={onMaterialTagToggle}
+          customInput={customMaterialInput}
+          onCustomInputChange={onCustomMaterialInputChange}
+          onAddCustomTag={onAddCustomMaterialTag}
+        />
+      )}
       <div>
         <h4 className={`text-xs font-mono mb-2 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-600'}`}>{t('mockup.negativePrompt')}</h4>
         <textarea

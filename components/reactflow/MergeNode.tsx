@@ -15,10 +15,12 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { getCreditsRequired } from '../../utils/creditCalculator';
 import { isSafeUrl } from '../../utils/imageUtils';
 import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
+import { useNodeResize } from '../../hooks/canvas/useNodeResize';
 
 export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
   const { setNodes } = useReactFlow();
+  const { handleResize: handleResizeWithDebounce } = useNodeResize();
   const [prompt, setPrompt] = useState(data.prompt || '');
   const [model, setModel] = useState<GeminiModel>(data.model || 'gemini-2.5-flash-image');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -106,28 +108,10 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
     }
   }, 500);
 
-  // Handle resize from NodeResizer
+  // Handle resize from NodeResizer (com debounce - aplica apenas quando soltar o mouse)
   const handleResize = useCallback((width: number, height: number) => {
-    if (data.onResize && typeof data.onResize === 'function') {
-      data.onResize(id, width, height);
-    }
-
-    setNodes((nds) => {
-      return nds.map((n) => {
-        if (n.id === id && n.type === 'merge') {
-          return {
-            ...n,
-            style: {
-              ...n.style,
-              width,
-              height,
-            },
-          };
-        }
-        return n;
-      });
-    });
-  }, [id, data, setNodes]);
+    handleResizeWithDebounce(id, width, height, data.onResize);
+  }, [id, data.onResize, handleResizeWithDebounce]);
 
   return (
     <NodeContainer

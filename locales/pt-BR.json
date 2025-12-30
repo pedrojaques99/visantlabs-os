@@ -611,6 +611,8 @@
     },
     "surpriseMe": "Me Surpreenda!",
     "surpriseMeTooltip": "Seleciona aleatoriamente branding, categorias e estilos para inspiração rápida!",
+    "surpriseMeSettings": "Configurações do Me Surpreenda",
+    "surpriseMeSettingsTooltip": "Configure quais tags excluir do Me Surpreenda",
     "autoGenerate": "Auto gerar",
     "autoGenerateTooltip": "Pula a geração de prompt e gera diretamente os outputs (padrão 2 outputs)",
     "newAngles": "Novos Ângulos",
@@ -654,6 +656,7 @@
     "resolution4kOnly": "// RESOLUÇÃO (Mockup Machine® 4K apenas)",
     "generateContextualText": "Gerar texto contextual",
     "includeHumanInteraction": "Incluir interação humana",
+    "enhanceTexture": "Realçar textura",
     "aspectRatio": "// PROPORÇÃO",
     "aspectRatioTitle": "PROPORÇÃO_",
     "autoAspectRatioTitle": "PROPORÇÃO_AUTOMÁTICA_",
@@ -2500,7 +2503,12 @@
       "connectedContextAsReference": "contexto conectado como referência",
       "suggestMockups": "Sugerir Mockups",
       "detectedMockups": "MOCKUPS DETECTADOS",
-      "createNode": "Criar Node"
+      "detectedActions": "AÇÕES DETECTADAS",
+      "createNode": "Criar Node",
+      "quickActions": "Ações Rápidas",
+      "attachMedia": "Anexar Imagem",
+      "mediaAttached": "Image node criado!",
+      "context": "Contexto"
     }
   },
   "shaderControls": {
@@ -2838,7 +2846,17 @@
     "revenueOverTime": "Receita ao Longo do Tempo",
     "cumulativeRevenue": "Receita acumulada (BRL)",
     "costOverTime": "Custo Estimado ao Longo do Tempo",
-    "cumulativeCost": "Custo API acumulado (USD)"
+    "cumulativeCost": "Custo API acumulado (USD)",
+    "dailyCost": "Custo por Dia",
+    "dailyCostChart": "Custo Diário (USD)",
+    "averageDailyCost": "Custo Médio Diário",
+    "maxDailyCost": "Maior Custo Diário",
+    "last7DaysCost": "Últimos 7 Dias",
+    "last30DaysCost": "Últimos 30 Dias",
+    "financial": "Financeiro",
+    "profit": "Lucro",
+    "totalProfit": "Lucro Total",
+    "revenueMinusCost": "Receita - Custo"
   },
   "storage": {
     "title": "Armazenamento",
@@ -2846,5 +2864,24 @@
     "remaining": "Restante",
     "of": "de",
     "unavailable": "Informações de armazenamento não disponíveis"
+  },
+  "surpriseMeSettings": {
+    "title": "Configurações do Me Surpreenda",
+    "info": "Selecione as tags que deseja excluir ao usar o Me Surpreenda. As tags excluídas não serão selecionadas aleatoriamente.",
+    "categories": "Categorias",
+    "categoriesDescription": "Categorias de mockup",
+    "locations": "Localizações",
+    "locationsDescription": "Ambientes e locais",
+    "angles": "Ângulos",
+    "anglesDescription": "Ângulos de câmera",
+    "lighting": "Iluminação",
+    "lightingDescription": "Tipos de iluminação",
+    "effects": "Efeitos",
+    "effectsDescription": "Efeitos visuais",
+    "materials": "Materiais",
+    "materialsDescription": "Materiais e texturas",
+    "saved": "Configurações salvas com sucesso",
+    "saveError": "Falha ao salvar configurações",
+    "loadError": "Falha ao carregar configurações"
   }
 }

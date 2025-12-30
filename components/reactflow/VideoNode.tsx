@@ -17,10 +17,12 @@ import { Switch } from '../ui/switch';
 import { ConnectedImagesDisplay } from './ConnectedImagesDisplay';
 import { GlitchLoader } from '../ui/GlitchLoader';
 import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
+import { useNodeResize } from '../../hooks/canvas/useNodeResize';
 
 const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
   const { setNodes } = useReactFlow();
+  const { handleResize: handleResizeWithDebounce } = useNodeResize();
 
   // State initialization
   const [prompt, setPrompt] = useState(data.prompt || '');
@@ -103,16 +105,10 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
     await data.onGenerate(params);
   };
 
-  // Resize handler
+  // Resize handler (com debounce - aplica apenas quando soltar o mouse)
   const handleResize = useCallback((width: number, height: number) => {
-    if (data.onResize && typeof data.onResize === 'function') data.onResize(id, width, height);
-    setNodes((nds) => nds.map((n) => {
-      if (n.id === id && n.type === 'video') {
-        return { ...n, style: { ...n.style, width, height } };
-      }
-      return n;
-    }));
-  }, [id, data, setNodes]);
+    handleResizeWithDebounce(id, width, height, data.onResize);
+  }, [id, data.onResize, handleResizeWithDebounce]);
 
   // Derived states
   const isLoading = data.isLoading || false;

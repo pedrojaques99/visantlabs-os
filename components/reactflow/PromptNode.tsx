@@ -19,12 +19,14 @@ import { ResolutionSelector } from './shared/ResolutionSelector';
 import { useTranslation } from '../../hooks/useTranslation';
 import { getCreditsRequired } from '../../utils/creditCalculator';
 import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
+import { useNodeResize } from '../../hooks/canvas/useNodeResize';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
   const { t } = useTranslation();
   const { setNodes } = useReactFlow();
   const nodeData = data as PromptNodeData;
+  const { handleResize: handleResizeWithDebounce } = useNodeResize();
   const [prompt, setPrompt] = useState(nodeData.prompt || '');
   const [model, setModel] = useState<GeminiModel>(nodeData.model || 'gemini-2.5-flash-image');
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>(nodeData.aspectRatio || '16:9');
@@ -297,28 +299,10 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     debouncedUpdateData({ pdfPageReference: value || undefined });
   };
 
-  // Handle resize from NodeResizer
+  // Handle resize from NodeResizer (com debounce - aplica apenas quando soltar o mouse)
   const handleResize = useCallback((width: number, height: number) => {
-    if (nodeData.onResize && typeof nodeData.onResize === 'function') {
-      nodeData.onResize(id, width, height);
-    }
-
-    setNodes((nds) => {
-      return nds.map((n) => {
-        if (n.id === id && n.type === 'prompt') {
-          return {
-            ...n,
-            style: {
-              ...n.style,
-              width,
-              height,
-            },
-          };
-        }
-        return n;
-      });
-    });
-  }, [id, nodeData, setNodes]);
+    handleResizeWithDebounce(id, width, height, nodeData.onResize);
+  }, [id, nodeData.onResize, handleResizeWithDebounce]);
 
   return (
     <NodeContainer
