@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react';
 import type { Node } from '@xyflow/react';
-import type { FlowNodeData, ChatNodeData, StrategyNodeData } from '../../types/reactFlow';
+import type { FlowNodeData, ChatNodeData, StrategyNodeData, PromptNodeData } from '../../types/reactFlow';
 import { toast } from 'sonner';
 import { sendChatMessage } from '../../services/chatService';
 import { getChatMessageCreditsRequired } from '../../utils/creditCalculator';
@@ -14,6 +14,7 @@ interface UseChatNodeHandlerParams {
   ) => void;
   userId?: string;
   saveImmediately?: () => Promise<void>;
+  addPromptNode?: (customPosition?: { x: number; y: number }, initialData?: Partial<PromptNodeData>) => string | undefined;
 }
 
 export const useCanvasChatHandler = ({
@@ -21,6 +22,7 @@ export const useCanvasChatHandler = ({
   updateNodeData,
   userId,
   saveImmediately,
+  addPromptNode,
 }: UseChatNodeHandlerParams) => {
   
   const handleChatSendMessage = useCallback(async (
@@ -131,11 +133,36 @@ export const useCanvasChatHandler = ({
     }, 'chat');
     toast.success('Chat history cleared', { duration: 2000 });
   }, [updateNodeData]);
+
+  const handleChatAddPromptNode = useCallback((nodeId: string, prompt: string) => {
+    if (!addPromptNode) {
+      toast.error('Unable to create prompt node');
+      return;
+    }
+
+    const node = nodesRef.current.find(n => n.id === nodeId);
+    if (!node) return;
+
+    // Create prompt node to the right of the chat node
+    const position = {
+      x: window.innerWidth / 2 + 300,
+      y: window.innerHeight / 2,
+    };
+
+    // If we have access to the real position in the flow, we'd use it, 
+    // but addPromptNode handles screen to flow conversion if passed screen coords.
+    // By passing undefined customPosition, it defaults to center of screen.
+    // For now let's use the default center and pre-fill the prompt.
+    
+    addPromptNode(undefined, { prompt });
+    toast.success('Prompt node created!', { duration: 2000 });
+  }, [addPromptNode, nodesRef]);
   
   return {
     handleChatSendMessage,
     handleChatUpdateData,
     handleChatClearHistory,
+    handleChatAddPromptNode,
   };
 };
 

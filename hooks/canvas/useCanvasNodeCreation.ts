@@ -54,11 +54,13 @@ export const useCanvasNodeCreation = (
     handleChatSendMessage,
     handleChatUpdateData,
     handleChatClearHistory,
+    handleChatAddPromptNode,
   } = useCanvasChatHandler({
     nodesRef,
     updateNodeData,
     userId: undefined, // Optional: userId can be passed for user-specific features
     saveImmediately,
+    addPromptNode: (pos, data) => addPromptNode(pos, data),
   });
 
   // Atualiza handlersRef com os Strategy handlers
@@ -92,11 +94,13 @@ export const useCanvasNodeCreation = (
       handleChatSendMessage,
       handleChatUpdateData,
       handleChatClearHistory,
+      handleChatAddPromptNode,
     };
   }, [
     handleChatSendMessage,
     handleChatUpdateData,
     handleChatClearHistory,
+    handleChatAddPromptNode,
   ]);
 
   const addMergeNode = useCallback((customPosition?: { x: number; y: number }): string | undefined => {
@@ -152,7 +156,7 @@ export const useCanvasNodeCreation = (
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
-  const addPromptNode = useCallback((customPosition?: { x: number; y: number }): string | undefined => {
+  const addPromptNode = useCallback((customPosition?: { x: number; y: number }, initialData?: Partial<PromptNodeData>): string | undefined => {
     if (!reactFlowInstance) {
       toast.error('Canvas not ready. Please wait a moment and try again.');
       return;
@@ -186,8 +190,8 @@ export const useCanvasNodeCreation = (
       selectable: true,
       data: {
         type: 'prompt',
-        prompt: '',
-        model: 'gemini-2.5-flash-image',
+        prompt: initialData?.prompt || '',
+        model: initialData?.model || 'gemini-2.5-flash-image',
         onGenerate: handlersRef.current?.handlePromptGenerate || (() => Promise.resolve()),
         onSuggestPrompts: handlersRef.current?.handlePromptSuggestPrompts || (() => Promise.resolve()),
         onUpdateData: handlersRef.current?.handlePromptNodeDataUpdate || (() => {}),
@@ -1686,6 +1690,7 @@ export const useCanvasNodeCreation = (
         onSendMessage: handlersRef.current?.handleChatSendMessage || (() => Promise.resolve()),
         onUpdateData: handlersRef.current?.handleChatUpdateData || (() => {}),
         onClearHistory: handlersRef.current?.handleChatClearHistory || (() => {}),
+        onAddPromptNode: handlersRef.current?.handleChatAddPromptNode || (() => {}),
       },
     };
 

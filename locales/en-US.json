@@ -2501,7 +2501,10 @@
       "image": "image",
       "imagesPlural": "images",
       "and": "and",
-      "connectedContextAsReference": "connected context as reference"
+      "connectedContextAsReference": "connected context as reference",
+      "suggestMockups": "Suggest Mockups",
+      "detectedMockups": "DETECTED MOCKUPS",
+      "createNode": "Create Node"
     }
   },
   "shaderControls": {

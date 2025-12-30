@@ -504,5 +504,67 @@ router.get('/settings/gemini-api-key', authenticate, async (req: AuthRequest, re
   }
 });
 
+// Get user canvas settings
+router.get('/settings/canvas', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+    
+    if (!userId) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+    
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        canvasSettings: true,
+      },
+    });
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    res.json(user.canvasSettings || {});
+  } catch (error: any) {
+    console.error('Failed to get canvas settings:', error);
+    res.status(500).json({ 
+      error: 'Failed to get canvas settings', 
+      message: error.message 
+    });
+  }
+});
+
+// Update user canvas settings
+router.put('/settings/canvas', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+    
+    if (!userId) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+    
+    const settings = req.body;
+    
+    // Update user with new settings
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        canvasSettings: settings,
+      },
+    });
+    
+    res.json({ 
+      success: true,
+      message: 'Canvas settings updated successfully'
+    });
+  } catch (error: any) {
+    console.error('Failed to update canvas settings:', error);
+    res.status(500).json({ 
+      error: 'Failed to update canvas settings', 
+      message: error.message 
+    });
+  }
+});
+
 export default router;
 

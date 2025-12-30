@@ -2497,7 +2497,10 @@
       "image": "imagem",
       "imagesPlural": "imagens",
       "and": "e",
-      "connectedContextAsReference": "contexto conectado como referência"
+      "connectedContextAsReference": "contexto conectado como referência",
+      "suggestMockups": "Sugerir Mockups",
+      "detectedMockups": "MOCKUPS DETECTADOS",
+      "createNode": "Criar Node"
     }
   },
   "shaderControls": {
