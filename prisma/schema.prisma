@@ -46,6 +46,7 @@ model User {
   encryptedGeminiApiKey String?  // Encrypted Gemini API key for user's own quota
   storageLimitBytes    Int?      // Custom storage limit in bytes (optional, overrides tier-based limit)
   storageUsedBytes     Int       @default(0) // Current storage used in bytes (calculated from uploads/deletes)
+  canvasSettings       Json?     // User settings for the canvas (colors, grid, etc.)
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 

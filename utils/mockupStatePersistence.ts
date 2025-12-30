@@ -34,6 +34,7 @@ export interface PersistedMockupState {
   mockupCount: number;
   generateText: boolean;
   withHuman: boolean;
+  enhanceTexture: boolean;
   negativePrompt: string;
   additionalPrompt: string;
   timestamp: number;

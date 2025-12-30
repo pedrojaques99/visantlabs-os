@@ -62,12 +62,14 @@ import { RoomProvider } from '../config/liveblocks';
 import { LiveList } from '@liveblocks/client';
 import { useCanvasCollaboration } from '../hooks/canvas/useCanvasCollaboration';
 import { authService } from '../services/authService';
+import { getCanvasSettings, updateCanvasSettings } from '../services/userSettingsService';
 import { CollaborativeCursors } from '../components/canvas/CollaborativeCursors';
 import { useTranslation } from '../hooks/useTranslation';
 import { AuthModal } from '../components/AuthModal';
 import { useImageNodeHandlers } from '../hooks/canvas/useImageNodeHandlers';
 import { useImmediateR2Upload } from '../hooks/canvas/useImmediateR2Upload';
 import { collectR2UrlsForDeletion } from '../hooks/canvas/utils/r2UploadHelpers';
+import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
 import type { UploadedImage } from '../types';
 
 import { isLocalDevelopment } from '../utils/env';
@@ -153,6 +155,33 @@ export const CanvasPage: React.FC = () => {
   const [selectedMockup, setSelectedMockup] = useState<Mockup | null>(null);
   const [userMockups, setUserMockups] = useState<Mockup[]>([]);
   const [exportPanel, setExportPanel] = useState<{ nodeId: string; nodeName: string; imageUrl: string | null; nodeType: string } | null>(null);
+  const [isSettingsLoaded, setIsSettingsLoaded] = useState(false);
+
+  // Load user settings from backend
+  useEffect(() => {
+    const loadSettings = async () => {
+      if (isAuthenticated === true && !isSettingsLoaded) {
+        try {
+          const settings = await getCanvasSettings();
+          if (settings) {
+            if (settings.backgroundColor) setBackgroundColor(settings.backgroundColor);
+            if (settings.gridColor) setGridColor(settings.gridColor);
+            if (settings.showGrid !== undefined) setShowGrid(settings.showGrid);
+            if (settings.showMinimap !== undefined) setShowMinimap(settings.showMinimap);
+            if (settings.showControls !== undefined) setShowControls(settings.showControls);
+            if (settings.cursorColor) setCursorColor(settings.cursorColor);
+            if (settings.experimentalMode !== undefined) setExperimentalMode(settings.experimentalMode);
+            setIsSettingsLoaded(true);
+          }
+        } catch (error) {
+          console.error('Failed to load canvas settings:', error);
+        }
+      }
+    };
+
+    loadSettings();
+  }, [isAuthenticated, isSettingsLoaded]);
+
   const [imageFullscreenModal, setImageFullscreenModal] = useState<{
     imageUrl: string | null;
     imageBase64?: string | null;
@@ -176,6 +205,17 @@ export const CanvasPage: React.FC = () => {
     return false;
   });
 
+  // Debounced settings update to backend
+  const debouncedUpdateSettings = useDebouncedCallback(async (settings: any) => {
+    if (isAuthenticated === true) {
+      try {
+        await updateCanvasSettings(settings);
+      } catch (error) {
+        console.error('Failed to update canvas settings on backend:', error);
+      }
+    }
+  }, 1000);
+
   // React Flow state
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<FlowNodeData>>([]);
 
@@ -190,7 +230,20 @@ export const CanvasPage: React.FC = () => {
       localStorage.setItem('canvasCursorColor', cursorColor);
       localStorage.setItem('canvasExperimentalMode', String(experimentalMode));
     }
-  }, [backgroundColor, gridColor, showGrid, showMinimap, showControls, cursorColor, experimentalMode]);
+
+    // Also update backend
+    if (isAuthenticated === true) {
+      debouncedUpdateSettings({
+        backgroundColor,
+        gridColor,
+        showGrid,
+        showMinimap,
+        showControls,
+        cursorColor,
+        experimentalMode,
+      });
+    }
+  }, [backgroundColor, gridColor, showGrid, showMinimap, showControls, cursorColor, experimentalMode, isAuthenticated, debouncedUpdateSettings]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
   // Hooks - initialize history first so it can be used in handlers
@@ -498,7 +551,13 @@ export const CanvasPage: React.FC = () => {
     setImageContextMenu,
     setNodeContextMenu,
     addToHistory,
-    reactFlowInstance
+    reactFlowInstance,
+    {
+      addPromptNode,
+      addTextNode,
+      addStrategyNode,
+      addImageNode,
+    }
   );
 
   // Callback for when drag starts - set ref to prevent useEffect execution

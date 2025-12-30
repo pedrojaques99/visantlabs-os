@@ -29,7 +29,7 @@ interface CanvasFlowProps {
   onNodesChange: (changes: any) => void;
   onEdgesChange: (changes: any) => void;
   onConnect: (params: any) => void;
-  onConnectStart?: (event: MouseEvent | TouchEvent, params: { nodeId: string | null }) => void;
+  onConnectStart?: (event: MouseEvent | TouchEvent, params: { nodeId: string | null; handleId?: string | null }) => void;
   onConnectEnd?: (event: MouseEvent | TouchEvent) => void;
   onNodeDragStart?: () => void;
   onNodeDragStop: () => void;
@@ -88,6 +88,8 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
   const [processingProgress, setProcessingProgress] = useState({ current: 0, total: 0, fileName: '' });
   const reactFlowInstanceRef = useRef<ReactFlowInstance | null>(null);
   const [zoom, setZoom] = useState(1);
+  const [showCreateIndicator, setShowCreateIndicator] = useState(false);
+  const [createIndicatorPos, setCreateIndicatorPos] = useState({ x: 0, y: 0 });
 
   // Panning logic:
   // - Space pressed: Enable panning with Left Click (0) and Middle Click (1)
@@ -372,6 +374,51 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
   // Account for floating sidebar: width + right margin (16px) + spacing (16px)
   const sidebarSpace = sidebarWidth > 0 ? sidebarWidth + 32 : 0;
 
+  // Enhanced onConnectStart to show indicator
+  const handleConnectStart = useCallback((event: MouseEvent | TouchEvent, params: { nodeId: string | null; handleId?: string | null }) => {
+    if (params.nodeId) {
+      setShowCreateIndicator(true);
+      const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
+      if (pane) {
+        const rect = pane.getBoundingClientRect();
+        const clientX = 'clientX' in event ? event.clientX : event.touches[0].clientX;
+        const clientY = 'clientY' in event ? event.clientY : event.touches[0].clientY;
+        setCreateIndicatorPos({
+          x: clientX - rect.left,
+          y: clientY - rect.top,
+        });
+      }
+    }
+    onConnectStart?.(event, params);
+  }, [onConnectStart, reactFlowWrapper]);
+
+  // Enhanced onConnectEnd to hide indicator
+  const handleConnectEnd = useCallback((event: MouseEvent | TouchEvent) => {
+    setShowCreateIndicator(false);
+    onConnectEnd?.(event);
+  }, [onConnectEnd]);
+
+  // Update indicator position during mouse move
+  useEffect(() => {
+    if (!showCreateIndicator) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
+      if (!pane) return;
+      
+      const rect = pane.getBoundingClientRect();
+      setCreateIndicatorPos({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, [showCreateIndicator, reactFlowWrapper]);
+
   return (
     <div
       ref={reactFlowWrapper}
@@ -580,8 +627,8 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
-        onConnectStart={onConnectStart}
-        onConnectEnd={onConnectEnd}
+        onConnectStart={handleConnectStart}
+        onConnectEnd={handleConnectEnd}
         onNodeDragStart={handleNodeDragStart}
         onNodeDragStop={handleNodeDragStop}
         onPaneContextMenu={onPaneContextMenu}
@@ -627,6 +674,50 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
           />
         )}
       </ReactFlow>
+      
+      {/* Create node indicator */}
+      {showCreateIndicator && (
+        <div
+          className="absolute pointer-events-none z-[10000] transition-opacity duration-200"
+          style={{
+            left: `${createIndicatorPos.x}px`,
+            top: `${createIndicatorPos.y}px`,
+            transform: 'translate(-50%, -50%)',
+          }}
+        >
+          <div
+            className="w-5 h-5 rounded-full flex items-center justify-center"
+            style={{
+              background: 'rgba(82, 221, 235, 0.2)',
+              border: '1.5px solid rgba(82, 221, 235, 0.6)',
+              animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            }}
+          >
+            <span
+              className="text-xs font-bold"
+              style={{
+                color: '#52ddeb',
+                lineHeight: 1,
+              }}
+            >
+              +
+            </span>
+          </div>
+        </div>
+      )}
+      
+      <style>{`
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 0.6;
+            transform: translate(-50%, -50%) scale(1);
+          }
+          50% {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1.1);
+          }
+        }
+      `}</style>
     </div>
   );
 };

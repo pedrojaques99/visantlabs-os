@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, memo, useCallback, useMemo } from 'react';
 import { Handle, Position, type NodeProps, NodeResizer, useReactFlow } from '@xyflow/react';
-import { Send, MessageSquare, X, FileText, Image as ImageIcon, CheckCircle2, Target, ChevronDown, ChevronUp } from 'lucide-react';
+import { Send, MessageSquare, X, FileText, Image as ImageIcon, CheckCircle2, Target, ChevronDown, ChevronUp, Sparkles, Plus, Wand2, Layers, Paperclip } from 'lucide-react';
 import { Spinner } from '../ui/Spinner';
-import type { ChatNodeData } from '../../types/reactFlow';
+import type { ChatNodeData, FlowNodeType } from '../../types/reactFlow';
 import { cn } from '../../lib/utils';
 import { NodeContainer } from './shared/NodeContainer';
 import { Button } from '../ui/button';
@@ -10,10 +10,13 @@ import { Textarea } from '../ui/textarea';
 import { Card, CardContent } from '../ui/card';
 import { ConnectedImagesDisplay } from './ConnectedImagesDisplay';
 import { LabeledHandle } from './shared/LabeledHandle';
-import { NodeLabel } from './shared/node-label';
-import { NodeButton } from './shared/node-button';
 import { getMessagesUntilNextCredit } from '../../utils/creditCalculator';
 import { useTranslation } from '../../hooks/useTranslation';
+import { MarkdownRenderer } from '../../utils/markdownRenderer';
+import { parseActionsFromResponse, type DetectedAction } from '../../services/chatService';
+import { toast } from 'sonner';
+import { fileToBase64 } from '../../utils/fileUtils';
+import { useNodeResize } from '../../hooks/canvas/useNodeResize';
 
 // Auto-resize textarea component (reused from StrategyNode)
 const AutoResizeTextarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
@@ -67,6 +70,180 @@ const AutoResizeTextarea = React.forwardRef<HTMLTextAreaElement, React.TextareaH
 
 AutoResizeTextarea.displayName = 'AutoResizeTextarea';
 
+/**
+ * Icon mapping for different action types
+ */
+const getActionIcon = (type: DetectedAction['type']) => {
+  switch (type) {
+    case 'prompt': return <Wand2 size={10} />;
+    case 'mockup': return <Layers size={10} />;
+    case 'strategy': return <Target size={10} />;
+    case 'text': return <FileText size={10} />;
+    default: return <Plus size={10} />;
+  }
+};
+
+const getActionColor = (type: DetectedAction['type']) => {
+  switch (type) {
+    case 'prompt': return 'text-purple-400 border-purple-400/30 bg-purple-400/10 hover:bg-purple-400/20';
+    case 'mockup': return 'text-[#52ddeb] border-[#52ddeb]/30 bg-[#52ddeb]/10 hover:bg-[#52ddeb]/20';
+    case 'strategy': return 'text-amber-400 border-amber-400/30 bg-amber-400/10 hover:bg-amber-400/20';
+    case 'text': return 'text-green-400 border-green-400/30 bg-green-400/10 hover:bg-green-400/20';
+    default: return 'text-zinc-400 border-zinc-400/30 bg-zinc-400/10 hover:bg-zinc-400/20';
+  }
+};
+
+/**
+ * Component to detect and display actionable suggestions from AI messages
+ * Uses the new structured action format from the system prompt
+ */
+const ActionDetector = ({ 
+  content, 
+  onAddPrompt, 
+  onCreateNode,
+  nodeId, 
+  t 
+}: { 
+  content: string;
+  onAddPrompt?: (nodeId: string, prompt: string) => void;
+  onCreateNode?: (chatNodeId: string, nodeType: FlowNodeType, initialData?: any, connectToChat?: boolean) => string | undefined;
+  nodeId: string;
+  t: any;
+}) => {
+  const actions = useMemo(() => {
+    if (!content) return [];
+    
+    // First try to parse structured actions
+    const structuredActions = parseActionsFromResponse(content);
+    if (structuredActions.length > 0) {
+      return structuredActions;
+    }
+    
+    // Fallback to legacy detection for backwards compatibility
+    const lines = content.split('\n');
+    const results: DetectedAction[] = [];
+    
+    lines.forEach(line => {
+      // Matches format like: "**Title**: Description" or "* **Title**: Description" or "1. Title: Description"
+      const match = line.match(/^[-*•\d.]*\s*(?:\*\*)?([^*:]+)(?:\*\*)?:\s*(.+)$/i);
+      if (match) {
+        const title = match[1].trim();
+        const description = match[2].trim();
+        // Heuristic to detect mockup suggestions
+        if (title.length > 3 && (
+            title.toLowerCase().includes('mockup') || 
+            description.toLowerCase().includes('mockup') || 
+            (description.length > 30 && title.length < 50)
+        )) {
+          results.push({
+            type: 'prompt',
+            title,
+            description,
+            fullPrompt: `${title}: ${description}`
+          });
+        }
+      }
+    });
+    return results;
+  }, [content]);
+
+  const handleActionClick = useCallback((action: DetectedAction) => {
+    if (action.type === 'prompt' && onAddPrompt) {
+      onAddPrompt(nodeId, action.fullPrompt);
+    } else if (onCreateNode) {
+      const initialData = action.type === 'prompt' 
+        ? { prompt: action.fullPrompt }
+        : action.type === 'text'
+        ? { text: action.fullPrompt }
+        : undefined;
+      onCreateNode(nodeId, action.type, initialData, true);
+    }
+  }, [nodeId, onAddPrompt, onCreateNode]);
+
+  if (actions.length === 0) return null;
+
+  return (
+    <div className="mt-3 pt-3 border-t border-zinc-700/30 space-y-2">
+      <div className="text-[10px] font-mono text-[#52ddeb]/70 flex items-center gap-1 mb-1">
+        <Sparkles size={10} className="animate-pulse" />
+        <span>{t('canvasNodes.chatNode.detectedActions') || 'Detected Actions'}</span>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {actions.map((action, i) => (
+          <button
+            key={i}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleActionClick(action);
+            }}
+            className={cn(
+              "flex items-center gap-1.5 px-2 py-1 border rounded text-[10px] transition-all group animate-in fade-in slide-in-from-bottom-1 duration-300 nodrag",
+              getActionColor(action.type)
+            )}
+            style={{ animationDelay: `${i * 50}ms` }}
+            title={action.description}
+          >
+            {getActionIcon(action.type)}
+            <span className="max-w-[180px] truncate">{action.title}</span>
+            <Plus size={8} className="opacity-50 group-hover:opacity-100 group-hover:scale-125 transition-all" />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+/**
+ * Quick Actions panel for common node creation tasks
+ */
+const QuickActionsPanel = ({ 
+  nodeId, 
+  onCreateNode, 
+  onAddPrompt,
+  isLoading,
+  t 
+}: { 
+  nodeId: string;
+  onCreateNode?: (chatNodeId: string, nodeType: FlowNodeType, initialData?: any, connectToChat?: boolean) => string | undefined;
+  onAddPrompt?: (nodeId: string, prompt: string) => void;
+  isLoading: boolean;
+  t: any;
+}) => {
+  const quickActions = [
+    { type: 'prompt' as FlowNodeType, label: 'Prompt', icon: <Wand2 size={12} />, color: 'text-purple-400' },
+    { type: 'mockup' as FlowNodeType, label: 'Mockup', icon: <Layers size={12} />, color: 'text-[#52ddeb]' },
+    { type: 'strategy' as FlowNodeType, label: 'Strategy', icon: <Target size={12} />, color: 'text-amber-400' },
+    { type: 'text' as FlowNodeType, label: 'Text', icon: <FileText size={12} />, color: 'text-green-400' },
+  ];
+
+  const handleQuickAction = (type: FlowNodeType) => {
+    if (!onCreateNode) return;
+    onCreateNode(nodeId, type, undefined, false);
+  };
+
+  if (!onCreateNode) return null;
+
+  return (
+    <div className="flex items-center gap-1.5 ml-auto">
+      {quickActions.map((action) => (
+        <button
+          key={action.type}
+          onClick={() => handleQuickAction(action.type)}
+          disabled={isLoading}
+          className={cn(
+            "p-1.5 rounded border border-zinc-700/30 transition-all hover:border-zinc-600/50 disabled:opacity-50 nodrag",
+            "bg-zinc-900/50 hover:bg-zinc-800/50",
+            action.color
+          )}
+          title={`Create ${action.label} Node`}
+        >
+          {action.icon}
+        </button>
+      ))}
+    </div>
+  );
+};
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
   // Type assertions for props
@@ -75,9 +252,11 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
   const isDragging = dragging as boolean;
   const { t } = useTranslation();
   const { setNodes } = useReactFlow();
+  const { handleResize: handleResizeWithDebounce } = useNodeResize();
   const nodeData = data as ChatNodeData;
   const [inputMessage, setInputMessage] = useState('');
   const messagesAreaRef = useRef<HTMLDivElement>(null);
+  const mediaInputRef = useRef<HTMLInputElement>(null);
   const isLoading = nodeData.isLoading || false;
   const model = nodeData.model || 'gemini-2.5-flash';
   const userMessageCount = nodeData.userMessageCount || 0;
@@ -134,8 +313,24 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
     return sections;
   }, [connectedStrategyData]);
 
-  const [expandedText, setExpandedText] = useState(false);
   const [expandedStrategy, setExpandedStrategy] = useState(false);
+
+  const handleSuggestMockups = useCallback(() => {
+    if (isLoading || !nodeData.onSendMessage) return;
+    
+    const message = "Sugira 5 mockups criativos e específicos para esta marca com base no contexto. Descreva cada um detalhadamente no formato: 'Título: Descrição detalhada'.";
+    setInputMessage(message);
+    
+    // We need to use the current state values because setInputMessage is async
+    const context = {
+      images: connectedImages.length > 0 ? connectedImages : undefined,
+      text: connectedText,
+      strategyData: connectedStrategyData,
+    };
+
+    nodeData.onSendMessage(nodeId, message, context);
+    setInputMessage('');
+  }, [isLoading, nodeData, nodeId, connectedImages, connectedText, connectedStrategyData]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -181,33 +376,73 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
     nodeData.onRemoveEdge(nodeId, targetHandle);
   }, [nodeId, nodeData]);
 
-  // Handle resize from NodeResizer
-  const handleResize = useCallback((width: number, height: number) => {
-    if (nodeData.onResize && typeof nodeData.onResize === 'function') {
-      nodeData.onResize(nodeId, width, height);
+  // Handle media attachment - opens file picker
+  const handleAttachMediaClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    mediaInputRef.current?.click();
+  }, []);
+
+  // Handle file selection for media attachment
+  const handleMediaFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Reset input
+    if (mediaInputRef.current) {
+      mediaInputRef.current.value = '';
     }
 
-    setNodes((nds) => {
-      return nds.map((n) => {
-        if (n.id === nodeId && n.type === 'chat') {
-          return {
-            ...n,
-            style: {
-              ...n.style,
-              width,
-              height,
-            },
-          };
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error(t('upload.unsupportedFileType') || 'Please select an image file', { duration: 3000 });
+      return;
+    }
+
+    // Validate file size (10MB max)
+    const MAX_FILE_SIZE = 10 * 1024 * 1024;
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error(t('upload.imageTooLarge') || 'File size exceeds 10MB limit', { duration: 5000 });
+      return;
+    }
+
+    try {
+      const imageData = await fileToBase64(file);
+      
+      if (nodeData.onAttachMedia) {
+        // Use dedicated attach media callback
+        const newNodeId = nodeData.onAttachMedia(nodeId, imageData.base64, imageData.mimeType);
+        if (newNodeId) {
+          toast.success(t('canvasNodes.chatNode.mediaAttached') || 'Image node created!', { duration: 2000 });
         }
-        return n;
-      });
-    });
-  }, [nodeId, nodeData, setNodes]);
+      } else if (nodeData.onCreateNode) {
+        // Fallback to generic create node
+        const newNodeId = nodeData.onCreateNode(nodeId, 'image', {
+          mockup: {
+            imageBase64: imageData.base64,
+            mimeType: imageData.mimeType,
+          }
+        } as any, true);
+        if (newNodeId) {
+          toast.success(t('canvasNodes.chatNode.mediaAttached') || 'Image node created!', { duration: 2000 });
+        }
+      } else {
+        toast.error('Unable to attach media. Feature not available.', { duration: 3000 });
+      }
+    } catch (error: any) {
+      console.error('Failed to process media:', error);
+      toast.error(error?.message || 'Failed to process image', { duration: 5000 });
+    }
+  }, [nodeId, nodeData, t]);
+
+  // Handle resize from NodeResizer (com debounce - aplica apenas quando soltar o mouse)
+  const handleResize = useCallback((width: number, height: number) => {
+    handleResizeWithDebounce(nodeId, width, height, nodeData.onResize);
+  }, [nodeId, nodeData.onResize, handleResizeWithDebounce]);
 
   const maxImages = 4; // Chat supports up to 4 images
 
   return (
-    <NodeContainer selected={isSelected} dragging={isDragging}>
+    <NodeContainer selected={isSelected} dragging={isDragging} className="h-full p-0 overflow-hidden">
       {/* Text Input Handle */}
       <LabeledHandle
         type="target"
@@ -279,7 +514,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         style={{ left: '50%', marginLeft: -3 }}
       />
 
-      <div className="flex flex-col h-full min-w-[500px] min-h-[600px]">
+      <div className="flex flex-col h-full min-w-[500px] min-h-[600px] overflow-hidden max-h-[inherit]">
         {/* Header */}
         <div className="flex items-center justify-between p-3 border-b border-zinc-700/50">
           <div className="flex items-center gap-2">
@@ -287,10 +522,18 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
             <h3 className="text-sm font-semibold text-zinc-300 font-mono">{t('canvasNodes.chatNode.title')}</h3>
           </div>
           <div className="flex items-center gap-2">
+            {/* Quick Actions Panel */}
+            <QuickActionsPanel
+              nodeId={nodeId}
+              onCreateNode={nodeData.onCreateNode}
+              onAddPrompt={nodeData.onAddPromptNode}
+              isLoading={isLoading}
+              t={t}
+            />
             {messages.length > 0 && nodeData.onClearHistory && (
               <button
                 onClick={() => nodeData.onClearHistory!(nodeId)}
-                className="p-1.5 rounded border transition-all bg-zinc-900/50 border-zinc-700/30 text-zinc-400 hover:border-zinc-600/50 hover:text-zinc-300"
+                className="p-1.5 rounded border transition-all bg-zinc-900/50 border-zinc-700/30 text-zinc-400 hover:border-zinc-600/50 hover:text-zinc-300 nodrag"
                 title={t('canvasNodes.chatNode.clearHistory')}
               >
                 <X size={14} />
@@ -316,249 +559,6 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
             />
           </div>
         </div>
-
-        {/* Context Preview */}
-        {hasContext && (
-          <div className="p-3 border-b border-zinc-700/50 bg-gradient-to-b from-zinc-900/50 to-zinc-900/30 space-y-3">
-            {/* Header with context summary */}
-            <div className="flex items-center justify-between pb-2 border-b border-zinc-700/30">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-[#52ddeb]" />
-                <span className="text-xs font-semibold text-zinc-300 font-mono">{t('canvasNodes.chatNode.connectedContext')}</span>
-              </div>
-              <div className="flex items-center gap-2 text-xs text-zinc-500 font-mono">
-                {connectedImages.length > 0 && (
-                  <span className="px-1.5 py-0.5 bg-[#52ddeb]/20 text-[#52ddeb] rounded">
-                    {connectedImages.length} {connectedImages.length === 1 ? t('canvasNodes.chatNode.image') : t('canvasNodes.chatNode.imagesPlural')}
-                  </span>
-                )}
-                {connectedText && (
-                  <span className="px-1.5 py-0.5 bg-[#52ddeb]/20 text-[#52ddeb] rounded">{t('canvasNodes.chatNode.textContext')}</span>
-                )}
-                {connectedStrategyData && (
-                  <span className="px-1.5 py-0.5 bg-[#52ddeb]/20 text-[#52ddeb] rounded">
-                    {strategySections.length} {strategySections.length === 1 ? t('canvasNodes.chatNode.section') : t('canvasNodes.chatNode.sections')}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Images Display */}
-            {connectedImages.length > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <ImageIcon className="w-3.5 h-3.5 text-[#52ddeb]" />
-                  <span className="text-xs font-semibold text-zinc-400 font-mono">
-                    {t('canvasNodes.chatNode.images')} ({connectedImages.length})
-                  </span>
-                </div>
-                <div className="bg-zinc-900/50 p-2 rounded border border-[#52ddeb]/20">
-                  <ConnectedImagesDisplay
-                    images={connectedImages}
-                    label=""
-                    maxThumbnails={4}
-                    onImageRemove={handleImageRemove}
-                    showLabel={false}
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Text Context */}
-            {connectedText && (
-              <div className="space-y-2">
-                <button
-                  onClick={() => setExpandedText(!expandedText)}
-                  className="flex items-center justify-between w-full group"
-                >
-                  <div className="flex items-center gap-2">
-                    <FileText className="w-3.5 h-3.5 text-[#52ddeb]" />
-                    <span className="text-xs font-semibold text-zinc-400 font-mono">{t('canvasNodes.chatNode.textContext')}</span>
-                    <span className="text-xs text-zinc-600 font-mono">
-                      ({connectedText.length} {t('canvasNodes.chatNode.chars')})
-                    </span>
-                  </div>
-                  {expandedText ? (
-                    <ChevronUp className="w-3.5 h-3.5 text-zinc-500 group-hover:text-zinc-400 transition-colors" />
-                  ) : (
-                    <ChevronDown className="w-3.5 h-3.5 text-zinc-500 group-hover:text-zinc-400 transition-colors" />
-                  )}
-                </button>
-                <div className={cn(
-                  "text-xs text-zinc-300 bg-zinc-900/50 p-2.5 rounded border border-[#52ddeb]/20 overflow-y-auto transition-all",
-                  expandedText ? "max-h-48" : "max-h-20"
-                )}>
-                  <div className="whitespace-pre-wrap break-words font-mono leading-relaxed">
-                    {expandedText ? connectedText : (
-                      <>
-                        {connectedText.substring(0, 150)}
-                        {connectedText.length > 150 && '...'}
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Strategy Data */}
-            {connectedStrategyData && (
-              <div className="space-y-2">
-                <button
-                  onClick={() => setExpandedStrategy(!expandedStrategy)}
-                  className="flex items-center justify-between w-full group"
-                >
-                  <div className="flex items-center gap-2">
-                    <Target className="w-3.5 h-3.5 text-[#52ddeb]" />
-                    <span className="text-xs font-semibold text-zinc-400 font-mono">{t('canvasNodes.chatNode.strategyData')}</span>
-                    <span className="text-xs text-zinc-600 font-mono">
-                      ({strategySections.length} {strategySections.length === 1 ? t('canvasNodes.chatNode.section') : t('canvasNodes.chatNode.sections')})
-                    </span>
-                  </div>
-                  {expandedStrategy ? (
-                    <ChevronUp className="w-3.5 h-3.5 text-zinc-500 group-hover:text-zinc-400 transition-colors" />
-                  ) : (
-                    <ChevronDown className="w-3.5 h-3.5 text-zinc-500 group-hover:text-zinc-400 transition-colors" />
-                  )}
-                </button>
-                <div className={cn(
-                  "bg-zinc-900/50 p-2.5 rounded border border-[#52ddeb]/20 transition-all",
-                  expandedStrategy ? "max-h-64 overflow-y-auto" : "min-h-[40px]"
-                )}>
-                  {expandedStrategy ? (
-                    <div className="space-y-3 text-xs">
-                      {connectedStrategyData.persona && (
-                        <div>
-                          <div className="font-semibold text-[#52ddeb] mb-1 font-mono">👤 Persona</div>
-                          <div className="text-zinc-400 space-y-1 pl-2">
-                            {connectedStrategyData.persona.demographics && (
-                              <div><span className="text-zinc-500">Demographics:</span> {connectedStrategyData.persona.demographics}</div>
-                            )}
-                            {connectedStrategyData.persona.desires && connectedStrategyData.persona.desires.length > 0 && (
-                              <div><span className="text-zinc-500">Desires:</span> {connectedStrategyData.persona.desires.join(', ')}</div>
-                            )}
-                            {connectedStrategyData.persona.pains && connectedStrategyData.persona.pains.length > 0 && (
-                              <div><span className="text-zinc-500">Pains:</span> {connectedStrategyData.persona.pains.join(', ')}</div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                      {connectedStrategyData.archetypes && (
-                        <div>
-                          <div className="font-semibold text-[#52ddeb] mb-1 font-mono">🎭 Archetypes</div>
-                          <div className="text-zinc-400 space-y-1 pl-2">
-                            {connectedStrategyData.archetypes.primary && (
-                              <div><span className="text-zinc-500">Primary:</span> {connectedStrategyData.archetypes.primary.title}</div>
-                            )}
-                            {connectedStrategyData.archetypes.secondary && (
-                              <div><span className="text-zinc-500">Secondary:</span> {connectedStrategyData.archetypes.secondary.title}</div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                      {connectedStrategyData.marketResearch && (
-                        <div>
-                          <div className="font-semibold text-[#52ddeb] mb-1 font-mono">📊 Market Research</div>
-                          <div className="text-zinc-400 space-y-1 pl-2">
-                            {connectedStrategyData.marketResearch.mercadoNicho && (
-                              <div><span className="text-zinc-500">Niche:</span> {connectedStrategyData.marketResearch.mercadoNicho}</div>
-                            )}
-                            {connectedStrategyData.marketResearch.publicoAlvo && (
-                              <div><span className="text-zinc-500">Target:</span> {connectedStrategyData.marketResearch.publicoAlvo}</div>
-                            )}
-                            {connectedStrategyData.marketResearch.posicionamento && (
-                              <div><span className="text-zinc-500">Positioning:</span> {connectedStrategyData.marketResearch.posicionamento}</div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                      {connectedStrategyData.competitors && connectedStrategyData.competitors.length > 0 && (
-                        <div>
-                          <div className="font-semibold text-[#52ddeb] mb-1 font-mono">🏢 Competitors</div>
-                          <div className="text-zinc-400 pl-2">
-                            {Array.isArray(connectedStrategyData.competitors) &&
-                              connectedStrategyData.competitors.map((comp, idx) => (
-                                <div key={idx}>
-                                  {typeof comp === 'string' ? comp : comp.name}
-                                </div>
-                              ))
-                            }
-                          </div>
-                        </div>
-                      )}
-                      {connectedStrategyData.swot && (
-                        <div>
-                          <div className="font-semibold text-[#52ddeb] mb-1 font-mono">⚖️ SWOT Analysis</div>
-                          <div className="text-zinc-400 space-y-1 pl-2 text-[10px]">
-                            {connectedStrategyData.swot.strengths && connectedStrategyData.swot.strengths.length > 0 && (
-                              <div><span className="text-green-400">Strengths:</span> {connectedStrategyData.swot.strengths.join(', ')}</div>
-                            )}
-                            {connectedStrategyData.swot.weaknesses && connectedStrategyData.swot.weaknesses.length > 0 && (
-                              <div><span className="text-red-400">Weaknesses:</span> {connectedStrategyData.swot.weaknesses.join(', ')}</div>
-                            )}
-                            {connectedStrategyData.swot.opportunities && connectedStrategyData.swot.opportunities.length > 0 && (
-                              <div><span className="text-blue-400">Opportunities:</span> {connectedStrategyData.swot.opportunities.join(', ')}</div>
-                            )}
-                            {connectedStrategyData.swot.threats && connectedStrategyData.swot.threats.length > 0 && (
-                              <div><span className="text-orange-400">Threats:</span> {connectedStrategyData.swot.threats.join(', ')}</div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                      {connectedStrategyData.colorPalettes && connectedStrategyData.colorPalettes.length > 0 && (
-                        <div>
-                          <div className="font-semibold text-[#52ddeb] mb-1 font-mono">🎨 Color Palettes</div>
-                          <div className="text-zinc-400 space-y-1 pl-2">
-                            {connectedStrategyData.colorPalettes.map((palette, idx) => (
-                              <div key={idx}>
-                                <span className="text-zinc-500">{palette.name}:</span> {palette.colors.join(', ')}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {connectedStrategyData.visualElements && connectedStrategyData.visualElements.length > 0 && (
-                        <div>
-                          <div className="font-semibold text-[#52ddeb] mb-1 font-mono">🎨 Visual Elements</div>
-                          <div className="text-zinc-400 pl-2">{connectedStrategyData.visualElements.join(', ')}</div>
-                        </div>
-                      )}
-                      {connectedStrategyData.mockupIdeas && connectedStrategyData.mockupIdeas.length > 0 && (
-                        <div>
-                          <div className="font-semibold text-[#52ddeb] mb-1 font-mono">💡 Mockup Ideas</div>
-                          <div className="text-zinc-400 pl-2">{connectedStrategyData.mockupIdeas.join(', ')}</div>
-                        </div>
-                      )}
-                      {connectedStrategyData.moodboard && (
-                        <div>
-                          <div className="font-semibold text-[#52ddeb] mb-1 font-mono">🎨 Moodboard</div>
-                          <div className="text-zinc-400 space-y-1 pl-2">
-                            {connectedStrategyData.moodboard.summary && (
-                              <div><span className="text-zinc-500">Summary:</span> {connectedStrategyData.moodboard.summary}</div>
-                            )}
-                            {connectedStrategyData.moodboard.visualDirection && (
-                              <div><span className="text-zinc-500">Direction:</span> {connectedStrategyData.moodboard.visualDirection}</div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex flex-wrap gap-1.5">
-                      {strategySections.map((section, idx) => (
-                        <span
-                          key={idx}
-                          className="px-2 py-0.5 bg-[#52ddeb]/10 text-[#52ddeb] border border-[#52ddeb]/30 rounded text-[10px] font-mono"
-                        >
-                          {section}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
 
         {/* Messages Area */}
         <div
@@ -594,11 +594,26 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                     "max-w-[85%] p-3",
                     msg.role === 'user'
                       ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted'
+                      : 'bg-muted border-zinc-700/50'
                   )}
                 >
                   <CardContent className="p-0">
-                    <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
+                    <div className="text-sm break-words leading-relaxed">
+                      {msg.role === 'assistant' ? (
+                        <MarkdownRenderer content={msg.content} preserveLines className="font-sans" />
+                      ) : (
+                        <p className="whitespace-pre-wrap">{msg.content}</p>
+                      )}
+                    </div>
+                    {msg.role === 'assistant' && (nodeData.onAddPromptNode || nodeData.onCreateNode) && (
+                      <ActionDetector 
+                        content={msg.content} 
+                        nodeId={nodeId} 
+                        onAddPrompt={nodeData.onAddPromptNode}
+                        onCreateNode={nodeData.onCreateNode}
+                        t={t} 
+                      />
+                    )}
                   </CardContent>
                 </Card>
               </div>
@@ -616,9 +631,121 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
           )}
         </div>
 
+        {/* Compact Context Preview at the bottom */}
+        {hasContext && (
+          <div className="px-3 py-2 border-t border-zinc-700/30 bg-zinc-900/30">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3 overflow-x-auto py-0.5">
+                <div className="flex items-center gap-1 text-[10px] text-zinc-500 font-mono shrink-0 uppercase tracking-wider border-r border-zinc-700/50 pr-2 mr-1">
+                  <CheckCircle2 size={10} className="text-[#52ddeb]" />
+                  <span>{t('canvasNodes.chatNode.context')}</span>
+                </div>
+                
+                {connectedImages.length > 0 && (
+                  <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#52ddeb]/5 border border-[#52ddeb]/20 rounded-full shrink-0">
+                    <ImageIcon size={10} className="text-[#52ddeb]" />
+                    <span className="text-[10px] text-[#52ddeb] font-mono font-bold">{connectedImages.length}</span>
+                  </div>
+                )}
+                
+                {connectedText && (
+                  <div className="flex items-center gap-1.5 px-2 py-0.5 bg-purple-500/5 border border-purple-500/20 rounded-full shrink-0">
+                    <FileText size={10} className="text-purple-400" />
+                    <span className="text-[10px] text-purple-400 font-mono font-bold">{connectedText.length}</span>
+                  </div>
+                )}
+                
+                {connectedStrategyData && (
+                  <div className="flex items-center gap-1.5 px-2 py-0.5 bg-amber-500/5 border border-amber-500/20 rounded-full shrink-0">
+                    <Target size={10} className="text-amber-400" />
+                    <span className="text-[10px] text-amber-400 font-mono font-bold">{strategySections.length}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={handleSuggestMockups}
+                  disabled={isLoading}
+                  className="flex items-center gap-1.5 px-2 py-1 bg-[#52ddeb]/10 hover:bg-[#52ddeb]/20 border border-[#52ddeb]/30 rounded text-[10px] text-[#52ddeb] transition-all disabled:opacity-50 font-mono uppercase tracking-tighter nodrag"
+                >
+                  <Sparkles size={10} />
+                  <span>{t('canvasNodes.chatNode.suggestMockups')}</span>
+                </button>
+                
+                <button
+                  onClick={() => setExpandedStrategy(!expandedStrategy)}
+                  className="p-1 text-zinc-500 hover:text-zinc-300 transition-colors nodrag"
+                  title="Toggle details"
+                >
+                  {expandedStrategy ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Expanded Details */}
+            {expandedStrategy && (
+              <div className="mt-2 pt-2 border-t border-zinc-700/20 space-y-3 animate-in slide-in-from-bottom-1 duration-200">
+                {/* Images Preview */}
+                {connectedImages.length > 0 && (
+                  <div className="bg-zinc-900/50 p-1.5 rounded border border-[#52ddeb]/10">
+                    <ConnectedImagesDisplay
+                      images={connectedImages}
+                      label=""
+                      maxThumbnails={4}
+                      onImageRemove={handleImageRemove}
+                      showLabel={false}
+                    />
+                  </div>
+                )}
+                
+                {/* Text & Strategy simplified list */}
+                <div className="flex flex-col gap-1.5">
+                  {connectedText && (
+                    <div className="text-[10px] text-zinc-400 font-mono line-clamp-2 bg-purple-500/5 p-1.5 rounded border border-purple-500/10">
+                      <span className="text-purple-400 mr-1 uppercase">Text:</span>
+                      {connectedText}
+                    </div>
+                  )}
+                  {connectedStrategyData && (
+                    <div className="flex flex-wrap gap-1">
+                      {strategySections.map((s, i) => (
+                        <span key={i} className="text-[9px] px-1.5 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded font-mono uppercase">
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Input Area */}
-        <div className="p-3 border-t border-zinc-700/50">
+        <div className="p-3 border-t border-zinc-700/50 bg-zinc-900/50 relative z-10">
+          {/* Hidden file input for media attachment */}
+          <input
+            ref={mediaInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleMediaFileChange}
+            className="hidden"
+          />
           <div className="flex gap-2">
+            {/* Attach Media Button */}
+            {(nodeData.onAttachMedia || nodeData.onCreateNode) && (
+              <Button
+                onClick={handleAttachMediaClick}
+                disabled={isLoading}
+                size="icon"
+                variant="outline"
+                className="self-end shrink-0 border-zinc-700/50 hover:border-[#52ddeb]/50 hover:bg-[#52ddeb]/10 text-zinc-400 hover:text-[#52ddeb] nodrag"
+                title={t('canvasNodes.chatNode.attachMedia') || 'Attach Image'}
+              >
+                <Paperclip className="w-4 h-4" />
+              </Button>
+            )}
             <AutoResizeTextarea
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
@@ -633,18 +760,11 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
               onClick={handleSend}
               disabled={!inputMessage.trim() || isLoading}
               size="icon"
-              className="self-end shrink-0"
+              className="self-end shrink-0 nodrag"
             >
               <Send className="w-4 h-4" />
             </Button>
           </div>
-          {hasContext && (
-            <p className="text-xs text-muted-foreground mt-2">
-              💡 {t('canvasNodes.chatNode.chatWillUse')} {connectedImages.length > 0 ? `${connectedImages.length} ${connectedImages.length === 1 ? t('canvasNodes.chatNode.image') : t('canvasNodes.chatNode.imagesPlural')}` : ''}
-              {connectedImages.length > 0 && (connectedText || connectedStrategyData) ? ` ${t('canvasNodes.chatNode.and')} ` : ''}
-              {(connectedText || connectedStrategyData) ? t('canvasNodes.chatNode.connectedContextAsReference') : ''}
-            </p>
-          )}
         </div>
       </div>
 
@@ -653,7 +773,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
           color="#52ddeb"
           isVisible={isSelected}
           minWidth={500}
-          minHeight={1200}
+          minHeight={600}
           maxWidth={2000}
           maxHeight={2000}
           onResize={(_, { width, height }) => {

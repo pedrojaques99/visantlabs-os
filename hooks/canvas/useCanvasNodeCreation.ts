@@ -46,6 +46,23 @@ export const useCanvasNodeCreation = (
     saveImmediately,
   });
 
+  // ========== REFS FOR NODE CREATORS ==========
+  // Refs to hold node creation functions (defined later in hook)
+  const nodeCreatorsRef = useRef<{
+    addPromptNode?: (pos?: { x: number; y: number }, data?: any) => string | undefined;
+    addMockupNode?: (pos?: { x: number; y: number }) => string | undefined;
+    addStrategyNode?: (pos?: { x: number; y: number }) => string | undefined;
+    addTextNode?: (pos?: { x: number; y: number }, text?: string) => string | undefined;
+    addMergeNode?: (pos?: { x: number; y: number }) => string | undefined;
+    addEditNode?: (pos?: { x: number; y: number }) => string | undefined;
+    addImageNode?: (pos?: { x: number; y: number }) => string | undefined;
+  }>({});
+  
+  const edgesRef = useRef<Edge[]>(edges);
+  useEffect(() => {
+    edgesRef.current = edges;
+  }, [edges]);
+
   // ========== CHAT NODE HANDLERS ==========
   // Handlers para gerenciar operações de node de chat
   // Utiliza hook separado useCanvasChatHandler
@@ -54,11 +71,20 @@ export const useCanvasNodeCreation = (
     handleChatSendMessage,
     handleChatUpdateData,
     handleChatClearHistory,
+    handleChatAddPromptNode,
+    handleChatCreateNode,
+    handleChatEditConnectedNode,
+    getConnectedNodeIds,
+    handleChatAttachMedia,
   } = useCanvasChatHandler({
     nodesRef,
+    edgesRef,
     updateNodeData,
     userId: undefined, // Optional: userId can be passed for user-specific features
     saveImmediately,
+    nodeCreators: nodeCreatorsRef.current,
+    setEdges: undefined, // Will be passed from CanvasPage if needed
+    addPromptNode: (pos, data) => nodeCreatorsRef.current.addPromptNode?.(pos, data),
   });
 
   // Atualiza handlersRef com os Strategy handlers
@@ -92,11 +118,21 @@ export const useCanvasNodeCreation = (
       handleChatSendMessage,
       handleChatUpdateData,
       handleChatClearHistory,
+      handleChatAddPromptNode,
+      handleChatCreateNode,
+      handleChatEditConnectedNode,
+      getConnectedNodeIds,
+      handleChatAttachMedia,
     };
   }, [
     handleChatSendMessage,
     handleChatUpdateData,
     handleChatClearHistory,
+    handleChatAddPromptNode,
+    handleChatCreateNode,
+    handleChatEditConnectedNode,
+    getConnectedNodeIds,
+    handleChatAttachMedia,
   ]);
 
   const addMergeNode = useCallback((customPosition?: { x: number; y: number }): string | undefined => {
@@ -152,7 +188,7 @@ export const useCanvasNodeCreation = (
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
-  const addPromptNode = useCallback((customPosition?: { x: number; y: number }): string | undefined => {
+  const addPromptNode = useCallback((customPosition?: { x: number; y: number }, initialData?: Partial<PromptNodeData>): string | undefined => {
     if (!reactFlowInstance) {
       toast.error('Canvas not ready. Please wait a moment and try again.');
       return;
@@ -186,8 +222,8 @@ export const useCanvasNodeCreation = (
       selectable: true,
       data: {
         type: 'prompt',
-        prompt: '',
-        model: 'gemini-2.5-flash-image',
+        prompt: initialData?.prompt || '',
+        model: initialData?.model || 'gemini-2.5-flash-image',
         onGenerate: handlersRef.current?.handlePromptGenerate || (() => Promise.resolve()),
         onSuggestPrompts: handlersRef.current?.handlePromptSuggestPrompts || (() => Promise.resolve()),
         onUpdateData: handlersRef.current?.handlePromptNodeDataUpdate || (() => {}),
@@ -1674,6 +1710,7 @@ export const useCanvasNodeCreation = (
       id: generateNodeId('chat'),
       type: 'chat',
       position,
+      style: { width: 500, height: 800 },
       draggable: true,
       connectable: true,
       selectable: true,
@@ -1686,7 +1723,12 @@ export const useCanvasNodeCreation = (
         onSendMessage: handlersRef.current?.handleChatSendMessage || (() => Promise.resolve()),
         onUpdateData: handlersRef.current?.handleChatUpdateData || (() => {}),
         onClearHistory: handlersRef.current?.handleChatClearHistory || (() => {}),
-      },
+        onAddPromptNode: handlersRef.current?.handleChatAddPromptNode || (() => {}),
+        onCreateNode: handlersRef.current?.handleChatCreateNode || (() => undefined),
+        onEditConnectedNode: handlersRef.current?.handleChatEditConnectedNode || (() => {}),
+        onAttachMedia: handlersRef.current?.handleChatAttachMedia || (() => undefined),
+        connectedNodeIds: [],
+      } as ChatNodeData,
     };
 
     setNodes((nds: Node<FlowNodeData>[]) => {
@@ -1699,6 +1741,20 @@ export const useCanvasNodeCreation = (
     
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
+
+  // ========== UPDATE NODE CREATORS REF ==========
+  // Keep nodeCreatorsRef updated with the latest node creation functions
+  useEffect(() => {
+    nodeCreatorsRef.current = {
+      addPromptNode,
+      addMockupNode,
+      addStrategyNode,
+      addTextNode,
+      addMergeNode,
+      addEditNode,
+      addImageNode,
+    };
+  }, [addPromptNode, addMockupNode, addStrategyNode, addTextNode, addMergeNode, addEditNode, addImageNode]);
 
   return {
     addMergeNode,

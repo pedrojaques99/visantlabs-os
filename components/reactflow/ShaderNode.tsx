@@ -14,10 +14,12 @@ import { fileToBase64, videoToBase64 } from '../../utils/fileUtils';
 import { canvasApi } from '../../services/canvasApi';
 import { toast } from 'sonner';
 import type { ShaderSettings } from '../../utils/shaders/shaderRenderer';
+import { useNodeResize } from '../../hooks/canvas/useNodeResize';
 
 const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
   const { setNodes } = useReactFlow();
+  const { handleResize: handleResizeWithDebounce } = useNodeResize();
   const { id: canvasId } = useParams<{ id: string }>();
   const isLoading = data.isLoading || false;
   const hasResult = !!(data.resultImageUrl || data.resultImageBase64 || data.resultVideoUrl || data.resultVideoBase64);
@@ -409,24 +411,11 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
     await data.onApply(id, connectedImageFromData);
   };
 
+  // Handle resize from NodeResizer (com debounce - aplica apenas quando soltar o mouse)
   const handleResize = useCallback((_: any, params: { width: number; height: number }) => {
     const { width, height } = params;
-    setNodes((nds) => {
-      return nds.map((n) => {
-        if (n.id === id) {
-          return {
-            ...n,
-            style: {
-              ...n.style,
-              width,
-              height,
-            },
-          };
-        }
-        return n;
-      });
-    });
-  }, [id, setNodes]);
+    handleResizeWithDebounce(id, width, height);
+  }, [id, handleResizeWithDebounce]);
 
   // Timer for loading state (similar to OutputNode)
   useEffect(() => {

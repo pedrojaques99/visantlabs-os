@@ -398,6 +398,7 @@ interface SmartPromptParams {
   aspectRatio: AspectRatio;
   generateText: boolean;
   withHuman: boolean;
+  enhanceTexture: boolean;
   negativePrompt: string;
   additionalPrompt: string;
 }
@@ -470,7 +471,7 @@ Based ${isBlankMockup ? '' : 'on the user\'s input and the provided design image
     - For '4:3', start with: "A photorealistic, super-detailed standard photo of..."
     - For '1:1', start with: "A photorealistic, super-detailed square composition of..."
 ${designTypeHandlingInstruction}
-4.  **Focus on Realism:** After the aspect ratio prefix, describe the scene. Emphasize photorealistic details: "authentic materials", "subtle surface details", "natural reflections", "professional product photography", "sharp focus".
+4.  **Focus on Realism:** After the aspect ratio prefix, describe the scene. Emphasize photorealistic details: ${params.enhanceTexture ? '"authentic materials", "subtle surface details", ' : ''}"natural reflections", "professional product photography", "sharp focus".
 ${locationInstruction}
 6.  **Color Palette:** If the user specifies a color palette, integrate it into the prompt. For example: "The scene's color palette should be dominated by or feature accents of: ${params.selectedColors.join(', ')}." This should influence background, lighting, and environmental elements, not the uploaded design itself.
 7.  **Structure:** The output must be a single, direct paragraph.

@@ -20,6 +20,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useMockupLike } from '../../hooks/useMockupLike';
 import { ConfirmationModal } from '../ConfirmationModal';
 import { MockupPresetModal } from '../MockupPresetModal';
+import { useNodeResize } from '../../hooks/canvas/useNodeResize';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -28,6 +29,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   const edges = useEdges();
   const { getZoom, setNodes, getNode } = useReactFlow();
   const nodeData = data as OutputNodeData;
+  const { handleResize: handleResizeWithDebounce } = useNodeResize();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
@@ -426,24 +428,11 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     }
   }, [imageUrl, isDescribing, nodeData, id]);
 
+  // Handle resize from NodeResizer (com debounce - aplica apenas quando soltar o mouse)
   const handleResize = useCallback((_: any, params: { width: number; height: number; x: number; y: number }) => {
     const { width, height } = params;
-    setNodes((nds) => {
-      return nds.map((n) => {
-        if (n.id === id) {
-          return {
-            ...n,
-            style: {
-              ...n.style,
-              width,
-              height,
-            },
-          };
-        }
-        return n;
-      });
-    });
-  }, [id, setNodes]);
+    handleResizeWithDebounce(id, width, height);
+  }, [id, handleResizeWithDebounce]);
 
   return (
     <NodeContainer

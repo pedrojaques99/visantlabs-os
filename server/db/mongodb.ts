@@ -26,7 +26,7 @@ let db: Db | null = null;
 // Cold start handling - debounce inicial para dar tempo do MongoDB estar pronto
 let isFirstConnection = true;
 let connectionPromise: Promise<Db> | null = null;
-const COLD_START_DELAY_MS = 500; // 500ms delay no cold start
+const COLD_START_DELAY_MS = 100; // 500ms delay no cold start
 
 // Função para obter MONGODB_URI (avalia process.env quando chamada, não na importação)
 const getMongoUri = () => process.env.MONGODB_URI || 'mongodb://localhost:27017';
