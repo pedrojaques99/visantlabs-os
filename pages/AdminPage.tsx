@@ -18,6 +18,9 @@ import { useTranslation } from '../hooks/useTranslation';
 import { authService } from '../services/authService';
 import { SEO } from '../components/SEO';
 
+import { DataTable } from '../components/ui/data-table';
+import { ColumnDef } from '@tanstack/react-table';
+
 interface AdminUser {
   id: string;
   email: string;
@@ -245,9 +248,6 @@ export const AdminPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState<AdminResponse | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortField, setSortField] = useState<keyof AdminUser | null>(null);
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   const handleFetch = async () => {
     const token = authService.getToken();
@@ -445,55 +445,126 @@ export const AdminPage: React.FC = () => {
     }, {} as Record<string, AdminUser>);
   }, [data]);
 
-  const filteredAndSortedUsers = useMemo(() => {
-    if (!data) return [];
-
-    let filtered = data.users;
-
-    // Apply search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (user) =>
-          user.name?.toLowerCase().includes(query) ||
-          user.email.toLowerCase().includes(query)
-      );
-    }
-
-    // Apply sorting
-    if (sortField) {
-      filtered = [...filtered].sort((a, b) => {
-        const aValue = a[sortField];
-        const bValue = b[sortField];
-
-        if (aValue === null || aValue === undefined) return 1;
-        if (bValue === null || bValue === undefined) return -1;
-
-        if (typeof aValue === 'string' && typeof bValue === 'string') {
-          return sortDirection === 'asc'
-            ? aValue.localeCompare(bValue)
-            : bValue.localeCompare(aValue);
-        }
-
-        if (typeof aValue === 'number' && typeof bValue === 'number') {
-          return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
-        }
-
-        return 0;
-      });
-    }
-
-    return filtered;
-  }, [data, searchQuery, sortField, sortDirection]);
-
-  const handleSort = (field: keyof AdminUser) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
-    }
-  };
+  const columns = useMemo<ColumnDef<AdminUser>[]>(() => [
+    {
+      accessorKey: 'name',
+      header: t('admin.user'),
+      cell: ({ row }) => (
+        <div className="flex flex-col">
+          <p className="font-medium text-zinc-200">{row.original.name || t('admin.noName')}</p>
+          <p className="text-xs text-zinc-500 font-mono">{row.original.email}</p>
+        </div>
+      ),
+      size: 200,
+      enableSorting: true,
+    },
+    {
+      accessorKey: 'subscriptionTier',
+      header: t('admin.subscription'),
+      cell: ({ row }) => (
+        <div className="flex flex-col">
+          <Badge variant="outline" className="bg-[#52ddeb]/10 text-[#52ddeb] border-[#52ddeb]/30 font-mono mb-1 w-fit">
+            {row.original.subscriptionTier}
+          </Badge>
+          <p className="text-xs text-zinc-500 font-mono">{row.original.subscriptionStatus}</p>
+        </div>
+      ),
+      size: 150,
+      enableSorting: true,
+    },
+    {
+      id: 'creditsRemaining',
+      accessorKey: 'creditsRemaining',
+      header: t('admin.credits'),
+      cell: ({ row }) => (
+        <div className="text-xs font-mono space-y-1">
+          <p>{t('admin.monthly')}: {row.original.monthlyCredits ?? 0}</p>
+          <p>{t('admin.used')}: {row.original.creditsUsed ?? 0}</p>
+          <p className="text-[#52ddeb]">{t('admin.remaining')}: {row.original.creditsRemaining}</p>
+          <p>{t('admin.manual')}: {row.original.manualCredits}</p>
+        </div>
+      ),
+      size: 150,
+      enableSorting: true,
+    },
+    {
+      id: 'referralCount',
+      accessorKey: 'referralCount',
+      header: t('admin.referrals'),
+      cell: ({ row }) => (
+        <div className="text-xs font-mono space-y-1">
+          <p>{t('admin.made')}: {row.original.referralCount ?? 0}</p>
+          <p>{t('admin.code')}: {row.original.referralCode || '—'}</p>
+          <p className="text-[11px] text-zinc-500">
+            {row.original.referredBy
+              ? `${t('admin.referredBy')}: ${userLookup[row.original.referredBy]?.name || userLookup[row.original.referredBy]?.email || t('admin.unknown')}`
+              : t('admin.directOrigin')}
+          </p>
+        </div>
+      ),
+      size: 180,
+      enableSorting: true,
+    },
+    {
+      accessorKey: 'mockupCount',
+      header: 'Mockups',
+      cell: ({ row }) => <span className="font-mono">{row.original.mockupCount}</span>,
+      size: 100,
+      enableSorting: true,
+    },
+    {
+      accessorKey: 'transactionCount',
+      header: t('admin.transactions'),
+      cell: ({ row }) => <span className="font-mono">{row.original.transactionCount}</span>,
+      size: 120,
+      enableSorting: true,
+    },
+    {
+      id: 'totalSpentBRL',
+      accessorKey: 'totalSpentBRL',
+      header: t('admin.spent'),
+      cell: ({ row }) => (
+        <div className="text-xs font-mono space-y-1">
+          {row.original.totalSpentBRL > 0 && (
+            <p className="text-green-500">{formatCurrency(row.original.totalSpentBRL, 'BRL')}</p>
+          )}
+          {row.original.totalSpentUSD > 0 && (
+            <p className="text-green-400">{formatCurrency(row.original.totalSpentUSD, 'USD')}</p>
+          )}
+          {row.original.totalSpentBRL === 0 && row.original.totalSpentUSD === 0 && (
+            <p className="text-zinc-500">—</p>
+          )}
+        </div>
+      ),
+      size: 130,
+      enableSorting: true,
+    },
+    {
+      accessorKey: 'apiCostUSD',
+      header: t('admin.apiCostColumn'),
+      cell: ({ row }) => (
+        <div className="text-xs font-mono">
+          {row.original.apiCostUSD > 0 ? (
+            <>
+              <p className="text-orange-500">{row.original.apiCostUSD.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 })}</p>
+              <p className="text-orange-400/60 text-[10px]">{(row.original.apiCostUSD * 6).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
+            </>
+          ) : (
+            <p className="text-zinc-500">—</p>
+          )}
+        </div>
+      ),
+      size: 130,
+      enableSorting: true,
+    },
+    {
+      accessorKey: 'createdAt',
+      header: t('admin.createdAt'),
+      cell: ({ row }) => <span className="text-xs font-mono text-zinc-400">{new Date(row.original.createdAt).toLocaleDateString()}</span>,
+      size: 120,
+      enableSorting: true,
+    },
+  ], [t, userLookup]);
 
   return (
     <>
@@ -1227,24 +1298,12 @@ export const AdminPage: React.FC = () => {
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                       <div>
                         <CardTitle className="flex items-center gap-3 text-zinc-300 font-mono mb-2">
-                          <Search className="h-5 w-5 text-[#52ddeb]" />
+                          <Users className="h-5 w-5 text-[#52ddeb]" />
                           {t('admin.searchUsers')}
                         </CardTitle>
                         <CardDescription className="text-zinc-500 font-mono">
-                          {searchQuery
-                            ? t('admin.usersFound', { found: filteredAndSortedUsers.length, total: data.users.length })
-                            : t('admin.usersRegistered', { count: data.users.length })}
+                          {t('admin.usersRegistered', { count: data.users.length })}
                         </CardDescription>
-                      </div>
-                      <div className="relative w-full md:w-auto md:min-w-[300px]">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                        <Input
-                          type="text"
-                          placeholder={t('admin.searchPlaceholder')}
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          className="pl-10 bg-black/40 border-zinc-800/50 text-zinc-300 placeholder:text-zinc-500"
-                        />
                       </div>
                     </div>
                   </CardContent>
@@ -1259,192 +1318,12 @@ export const AdminPage: React.FC = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="border-zinc-800/50 hover:bg-transparent">
-                          <TableHead className="text-zinc-500 font-mono">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleSort('name')}
-                              className="flex items-center gap-2 h-auto p-0 font-mono text-zinc-500 hover:text-zinc-300"
-                            >
-                              {t('admin.user')}
-                              {sortField === 'name' && (
-                                sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </TableHead>
-                          <TableHead className="text-zinc-500 font-mono">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleSort('subscriptionTier')}
-                              className="flex items-center gap-2 h-auto p-0 font-mono text-zinc-500 hover:text-zinc-300"
-                            >
-                              {t('admin.subscription')}
-                              {sortField === 'subscriptionTier' && (
-                                sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </TableHead>
-                          <TableHead className="text-zinc-500 font-mono">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleSort('creditsRemaining')}
-                              className="flex items-center gap-2 h-auto p-0 font-mono text-zinc-500 hover:text-zinc-300"
-                            >
-                              {t('admin.credits')}
-                              {sortField === 'creditsRemaining' && (
-                                sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </TableHead>
-                          <TableHead className="text-zinc-500 font-mono">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleSort('referralCount')}
-                              className="flex items-center gap-2 h-auto p-0 font-mono text-zinc-500 hover:text-zinc-300"
-                            >
-                              {t('admin.referrals')}
-                              {sortField === 'referralCount' && (
-                                sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </TableHead>
-                          <TableHead className="text-zinc-500 font-mono">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleSort('mockupCount')}
-                              className="flex items-center gap-2 h-auto p-0 font-mono text-zinc-500 hover:text-zinc-300"
-                            >
-                              Mockups
-                              {sortField === 'mockupCount' && (
-                                sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </TableHead>
-                          <TableHead className="text-zinc-500 font-mono">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleSort('transactionCount')}
-                              className="flex items-center gap-2 h-auto p-0 font-mono text-zinc-500 hover:text-zinc-300"
-                            >
-                              {t('admin.transactions')}
-                              {sortField === 'transactionCount' && (
-                                sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </TableHead>
-                          <TableHead className="text-zinc-500 font-mono">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleSort('totalSpentBRL')}
-                              className="flex items-center gap-2 h-auto p-0 font-mono text-zinc-500 hover:text-zinc-300"
-                            >
-                              {t('admin.spent')}
-                              {sortField === 'totalSpentBRL' && (
-                                sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </TableHead>
-                          <TableHead className="text-zinc-500 font-mono">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleSort('apiCostUSD')}
-                              className="flex items-center gap-2 h-auto p-0 font-mono text-zinc-500 hover:text-zinc-300"
-                            >
-                              {t('admin.apiCostColumn')}
-                              {sortField === 'apiCostUSD' && (
-                                sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </TableHead>
-                          <TableHead className="text-zinc-500 font-mono">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleSort('createdAt')}
-                              className="flex items-center gap-2 h-auto p-0 font-mono text-zinc-500 hover:text-zinc-300"
-                            >
-                              {t('admin.createdAt')}
-                              {sortField === 'createdAt' && (
-                                sortDirection === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredAndSortedUsers.length === 0 ? (
-                          <TableRow>
-                            <TableCell colSpan={9} className="text-center text-zinc-500 font-mono py-8">
-                              {t('admin.noUserFound')}
-                            </TableCell>
-                          </TableRow>
-                        ) : (
-                          filteredAndSortedUsers.map((user) => (
-                            <TableRow key={user.id} className="border-zinc-800/30 text-zinc-300 hover:bg-black/20 transition-colors">
-                              <TableCell className="px-4 py-4">
-                                <p className="font-medium text-zinc-200">{user.name || t('admin.noName')}</p>
-                                <p className="text-xs text-zinc-500 font-mono">{user.email}</p>
-                              </TableCell>
-                              <TableCell className="px-4 py-4">
-                                <Badge variant="outline" className="bg-[#52ddeb]/10 text-[#52ddeb] border-[#52ddeb]/30 font-mono mb-1">
-                                  {user.subscriptionTier}
-                                </Badge>
-                                <p className="text-xs text-zinc-500 font-mono mt-1">{user.subscriptionStatus}</p>
-                              </TableCell>
-                              <TableCell className="px-4 py-4 text-xs font-mono space-y-1">
-                                <p>{t('admin.monthly')}: {user.monthlyCredits ?? 0}</p>
-                                <p>{t('admin.used')}: {user.creditsUsed ?? 0}</p>
-                                <p className="text-[#52ddeb]">{t('admin.remaining')}: {user.creditsRemaining}</p>
-                                <p>{t('admin.manual')}: {user.manualCredits}</p>
-                              </TableCell>
-                              <TableCell className="px-4 py-4 text-xs font-mono space-y-1">
-                                <p>{t('admin.made')}: {user.referralCount ?? 0}</p>
-                                <p>{t('admin.code')}: {user.referralCode || '—'}</p>
-                                <p className="text-[11px] text-zinc-500">
-                                  {user.referredBy
-                                    ? `${t('admin.referredBy')}: ${userLookup[user.referredBy]?.name || userLookup[user.referredBy]?.email || t('admin.unknown')}`
-                                    : t('admin.directOrigin')}
-                                </p>
-                              </TableCell>
-                              <TableCell className="px-4 py-4 font-mono">{user.mockupCount}</TableCell>
-                              <TableCell className="px-4 py-4 font-mono">{user.transactionCount}</TableCell>
-                              <TableCell className="px-4 py-4 text-xs font-mono space-y-1">
-                                {user.totalSpentBRL > 0 && (
-                                  <p className="text-green-500">{formatCurrency(user.totalSpentBRL, 'BRL')}</p>
-                                )}
-                                {user.totalSpentUSD > 0 && (
-                                  <p className="text-green-400">{formatCurrency(user.totalSpentUSD, 'USD')}</p>
-                                )}
-                                {user.totalSpentBRL === 0 && user.totalSpentUSD === 0 && (
-                                  <p className="text-zinc-500">—</p>
-                                )}
-                              </TableCell>
-                              <TableCell className="px-4 py-4 text-xs font-mono">
-                                {user.apiCostUSD > 0 ? (
-                                  <>
-                                    <p className="text-orange-500">{user.apiCostUSD.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 })}</p>
-                                    <p className="text-orange-400/60 text-[10px]">{(user.apiCostUSD * 6).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
-                                  </>
-                                ) : (
-                                  <p className="text-zinc-500">—</p>
-                                )}
-                              </TableCell>
-                              <TableCell className="px-4 py-4 text-xs font-mono text-zinc-400">{new Date(user.createdAt).toLocaleDateString()}</TableCell>
-                            </TableRow>
-                          ))
-                        )}
-                      </TableBody>
-                    </Table>
+                    <DataTable 
+                      columns={columns} 
+                      data={data.users} 
+                      searchKey="name"
+                      searchPlaceholder={t('admin.searchPlaceholder')}
+                    />
                   </CardContent>
                 </Card>
               </TabsContent>

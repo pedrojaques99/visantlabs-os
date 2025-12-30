@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, memo, useCallback, useMemo } from 'react';
 import { Handle, Position, type NodeProps, NodeResizer, useReactFlow } from '@xyflow/react';
-import { Send, MessageSquare, X, FileText, Image as ImageIcon, CheckCircle2, Target, ChevronDown, ChevronUp } from 'lucide-react';
+import { Send, MessageSquare, X, FileText, Image as ImageIcon, CheckCircle2, Target, ChevronDown, ChevronUp, Sparkles, Plus, Wand2 } from 'lucide-react';
 import { Spinner } from '../ui/Spinner';
 import type { ChatNodeData } from '../../types/reactFlow';
 import { cn } from '../../lib/utils';
@@ -14,6 +14,7 @@ import { NodeLabel } from './shared/node-label';
 import { NodeButton } from './shared/node-button';
 import { getMessagesUntilNextCredit } from '../../utils/creditCalculator';
 import { useTranslation } from '../../hooks/useTranslation';
+import { MarkdownRenderer } from '../../utils/markdownRenderer';
 
 // Auto-resize textarea component (reused from StrategyNode)
 const AutoResizeTextarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
@@ -66,6 +67,65 @@ const AutoResizeTextarea = React.forwardRef<HTMLTextAreaElement, React.TextareaH
 });
 
 AutoResizeTextarea.displayName = 'AutoResizeTextarea';
+
+/**
+ * Component to detect and display mockup suggestions from AI messages
+ */
+const DetectedSuggestions = ({ content, onAddPrompt, nodeId, t }: { content: string, onAddPrompt: (nodeId: string, prompt: string) => void, nodeId: string, t: any }) => {
+  const suggestions = useMemo(() => {
+    if (!content) return [];
+    const lines = content.split('\n');
+    const results: { title: string; fullPrompt: string }[] = [];
+    
+    lines.forEach(line => {
+      // Matches format like: "**Title**: Description" or "* **Title**: Description" or "1. Title: Description"
+      const match = line.match(/^[-*•\d.]*\s*(?:\*\*)?([^*:]+)(?:\*\*)?:\s*(.+)$/i);
+      if (match) {
+        const title = match[1].trim();
+        const description = match[2].trim();
+        // Heuristic to detect mockup suggestions: contains "mockup" or has a reasonable description length
+        if (title.length > 3 && (
+            title.toLowerCase().includes('mockup') || 
+            description.toLowerCase().includes('mockup') || 
+            (description.length > 30 && title.length < 50)
+        )) {
+          results.push({
+            title,
+            fullPrompt: `${title}: ${description}`
+          });
+        }
+      }
+    });
+    return results;
+  }, [content]);
+
+  if (suggestions.length === 0) return null;
+
+  return (
+    <div className="mt-3 pt-3 border-t border-zinc-700/30 space-y-2">
+      <div className="text-[10px] font-mono text-[#52ddeb]/70 flex items-center gap-1 mb-1">
+        <Sparkles size={10} className="animate-pulse" />
+        <span>{t('canvasNodes.chatNode.detectedMockups')}</span>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {suggestions.map((s, i) => (
+          <button
+            key={i}
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddPrompt(nodeId, s.fullPrompt);
+            }}
+            className="flex items-center gap-1.5 px-2 py-1 bg-[#52ddeb]/5 hover:bg-[#52ddeb]/20 border border-[#52ddeb]/20 hover:border-[#52ddeb]/50 rounded text-[10px] text-[#52ddeb] transition-all group animate-in fade-in slide-in-from-bottom-1 duration-300"
+            style={{ animationDelay: `${i * 50}ms` }}
+          >
+            <Plus size={10} className="group-hover:scale-125 transition-transform" />
+            <span className="max-w-[200px] truncate">{s.title}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -136,6 +196,23 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
 
   const [expandedText, setExpandedText] = useState(false);
   const [expandedStrategy, setExpandedStrategy] = useState(false);
+
+  const handleSuggestMockups = useCallback(() => {
+    if (isLoading || !nodeData.onSendMessage) return;
+    
+    const message = "Sugira 5 mockups criativos e específicos para esta marca com base no contexto. Descreva cada um detalhadamente no formato: 'Título: Descrição detalhada'.";
+    setInputMessage(message);
+    
+    // We need to use the current state values because setInputMessage is async
+    const context = {
+      images: connectedImages.length > 0 ? connectedImages : undefined,
+      text: connectedText,
+      strategyData: connectedStrategyData,
+    };
+
+    nodeData.onSendMessage(nodeId, message, context);
+    setInputMessage('');
+  }, [isLoading, nodeData, nodeId, connectedImages, connectedText, connectedStrategyData]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -326,20 +403,31 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                 <CheckCircle2 className="w-4 h-4 text-[#52ddeb]" />
                 <span className="text-xs font-semibold text-zinc-300 font-mono">{t('canvasNodes.chatNode.connectedContext')}</span>
               </div>
-              <div className="flex items-center gap-2 text-xs text-zinc-500 font-mono">
-                {connectedImages.length > 0 && (
-                  <span className="px-1.5 py-0.5 bg-[#52ddeb]/20 text-[#52ddeb] rounded">
-                    {connectedImages.length} {connectedImages.length === 1 ? t('canvasNodes.chatNode.image') : t('canvasNodes.chatNode.imagesPlural')}
-                  </span>
-                )}
-                {connectedText && (
-                  <span className="px-1.5 py-0.5 bg-[#52ddeb]/20 text-[#52ddeb] rounded">{t('canvasNodes.chatNode.textContext')}</span>
-                )}
-                {connectedStrategyData && (
-                  <span className="px-1.5 py-0.5 bg-[#52ddeb]/20 text-[#52ddeb] rounded">
-                    {strategySections.length} {strategySections.length === 1 ? t('canvasNodes.chatNode.section') : t('canvasNodes.chatNode.sections')}
-                  </span>
-                )}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleSuggestMockups}
+                  disabled={isLoading}
+                  className="flex items-center gap-1.5 px-2 py-0.5 bg-[#52ddeb]/10 hover:bg-[#52ddeb]/20 border border-[#52ddeb]/30 rounded text-[10px] text-[#52ddeb] transition-all disabled:opacity-50"
+                  title={t('canvasNodes.chatNode.suggestMockups')}
+                >
+                  <Sparkles size={10} />
+                  <span>{t('canvasNodes.chatNode.suggestMockups')}</span>
+                </button>
+                <div className="flex items-center gap-2 text-xs text-zinc-500 font-mono">
+                  {connectedImages.length > 0 && (
+                    <span className="px-1.5 py-0.5 bg-[#52ddeb]/20 text-[#52ddeb] rounded">
+                      {connectedImages.length} {connectedImages.length === 1 ? t('canvasNodes.chatNode.image') : t('canvasNodes.chatNode.imagesPlural')}
+                    </span>
+                  )}
+                  {connectedText && (
+                    <span className="px-1.5 py-0.5 bg-[#52ddeb]/20 text-[#52ddeb] rounded">{t('canvasNodes.chatNode.textContext')}</span>
+                  )}
+                  {connectedStrategyData && (
+                    <span className="px-1.5 py-0.5 bg-[#52ddeb]/20 text-[#52ddeb] rounded">
+                      {strategySections.length} {strategySections.length === 1 ? t('canvasNodes.chatNode.section') : t('canvasNodes.chatNode.sections')}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -524,8 +612,30 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                       )}
                       {connectedStrategyData.mockupIdeas && connectedStrategyData.mockupIdeas.length > 0 && (
                         <div>
-                          <div className="font-semibold text-[#52ddeb] mb-1 font-mono">💡 Mockup Ideas</div>
-                          <div className="text-zinc-400 pl-2">{connectedStrategyData.mockupIdeas.join(', ')}</div>
+                          <div className="font-semibold text-[#52ddeb] mb-1 font-mono flex items-center gap-2">
+                            <span>💡 Mockup Ideas</span>
+                          </div>
+                          <div className="flex flex-wrap gap-2 pl-2">
+                            {connectedStrategyData.mockupIdeas.map((idea, idx) => (
+                              <div key={idx} className="group relative">
+                                <span className="text-zinc-400 text-xs bg-zinc-800/50 px-2 py-1 rounded border border-zinc-700/50 flex items-center gap-2">
+                                  {idea}
+                                  {nodeData.onAddPromptNode && (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        nodeData.onAddPromptNode!(nodeId, idea);
+                                      }}
+                                      className="p-1 hover:bg-[#52ddeb]/20 rounded text-[#52ddeb] transition-colors"
+                                      title={t('canvasNodes.chatNode.createNode')}
+                                    >
+                                      <Plus size={10} />
+                                    </button>
+                                  )}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       )}
                       {connectedStrategyData.moodboard && (
@@ -594,11 +704,25 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                     "max-w-[85%] p-3",
                     msg.role === 'user'
                       ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted'
+                      : 'bg-muted border-zinc-700/50'
                   )}
                 >
                   <CardContent className="p-0">
-                    <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
+                    <div className="text-sm break-words leading-relaxed">
+                      {msg.role === 'assistant' ? (
+                        <MarkdownRenderer content={msg.content} preserveLines className="font-sans" />
+                      ) : (
+                        <p className="whitespace-pre-wrap">{msg.content}</p>
+                      )}
+                    </div>
+                    {msg.role === 'assistant' && nodeData.onAddPromptNode && (
+                      <DetectedSuggestions 
+                        content={msg.content} 
+                        nodeId={nodeId} 
+                        onAddPrompt={nodeData.onAddPromptNode} 
+                        t={t} 
+                      />
+                    )}
                   </CardContent>
                 </Card>
               </div>
