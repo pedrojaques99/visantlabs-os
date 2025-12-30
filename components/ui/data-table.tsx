@@ -29,6 +29,8 @@ interface DataTableProps<TData, TValue> {
   className?: string
   searchKey?: string
   searchPlaceholder?: string
+  title?: string
+  icon?: React.ReactNode
 }
 
 export function DataTable<TData, TValue>({
@@ -37,6 +39,8 @@ export function DataTable<TData, TValue>({
   className,
   searchKey,
   searchPlaceholder,
+  title,
+  icon,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({})
@@ -65,17 +69,27 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
-      {searchKey && (
-        <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-500" />
-          <Input
-            placeholder={searchPlaceholder || "Search..."}
-            value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
-            onChange={(event) =>
-              table.getColumn(searchKey)?.setFilterValue(event.target.value)
-            }
-            className="pl-10 bg-black/40 border-zinc-800/50 text-zinc-300 placeholder:text-zinc-500 focus:ring-[#52ddeb]/30 focus:border-[#52ddeb]/50"
-          />
+      {(title || searchKey) && (
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          {title && (
+            <div className="flex items-center gap-3 text-zinc-300 font-mono">
+              {icon}
+              <h2 className="text-xl font-semibold">{title}</h2>
+            </div>
+          )}
+          {searchKey && (
+            <div className="relative w-full md:w-auto md:min-w-[300px]">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-500" />
+              <Input
+                placeholder={searchPlaceholder || "Search..."}
+                value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
+                onChange={(event) =>
+                  table.getColumn(searchKey)?.setFilterValue(event.target.value)
+                }
+                className="pl-10 bg-black/40 border-zinc-800/50 text-zinc-300 placeholder:text-zinc-500 focus:ring-[#52ddeb]/30 focus:border-[#52ddeb]/50"
+              />
+            </div>
+          )}
         </div>
       )}
       <div className={cn("rounded-md border border-zinc-800/50", className)}>

@@ -546,7 +546,7 @@ export const AdminPage: React.FC = () => {
         <div className="text-xs font-mono">
           {row.original.apiCostUSD > 0 ? (
             <>
-              <p className="text-orange-500">{row.original.apiCostUSD.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 })}</p>
+              <p className="text-orange-500">$ {row.original.apiCostUSD.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
               <p className="text-orange-400/60 text-[10px]">{(row.original.apiCostUSD * 6).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
             </>
           ) : (
@@ -578,62 +578,6 @@ export const AdminPage: React.FC = () => {
           <GridDotsBackground />
         </div>
         <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
-          {/* Header Compacto */}
-          <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl mb-6">
-            <CardContent className="p-4 md:p-6">
-              <div className="mb-4">
-                <BreadcrumbWithBack to="/">
-                  <BreadcrumbList>
-                    <BreadcrumbItem>
-                      <BreadcrumbLink asChild>
-                        <Link to="/">{t('apps.home')}</Link>
-                      </BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator />
-                    <BreadcrumbItem>
-                      <BreadcrumbPage>{t('admin.title') || 'Admin'}</BreadcrumbPage>
-                    </BreadcrumbItem>
-                  </BreadcrumbList>
-                </BreadcrumbWithBack>
-              </div>
-
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <ShieldCheck className="h-6 w-6 md:h-8 md:w-8 text-[#52ddeb]" />
-                    <h1 className="text-2xl md:text-3xl font-semibold font-manrope text-zinc-300">
-                      {t('admin.panelTitle')}
-                    </h1>
-                  </div>
-                  <p className="text-zinc-500 font-mono text-sm md:text-base ml-9 md:ml-11">
-                    {t('admin.panelSubtitle')}
-                  </p>
-                </div>
-
-                {isAuthenticated && data && (
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      variant={location.pathname === '/admin' ? 'default' : 'outline'}
-                      onClick={() => navigate('/admin')}
-                      className="flex items-center gap-2"
-                    >
-                      <Users className="h-4 w-4" />
-                      {t('admin.users')}
-                    </Button>
-                    <Button
-                      variant={location.pathname === '/admin/presets' ? 'default' : 'outline'}
-                      onClick={() => navigate('/admin/presets')}
-                      className="flex items-center gap-2"
-                    >
-                      <Settings className="h-4 w-4" />
-                      {t('admin.presets')}
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Skeleton Loading States */}
           {(isCheckingAuth || (isUserAuthenticated && isAdmin === null) || (!isCheckingAuth && isUserAuthenticated && isAdmin === true && isLoading && !data)) && (
             <AdminDashboardSkeleton />
@@ -672,33 +616,71 @@ export const AdminPage: React.FC = () => {
           )}
 
           {isAuthenticated && data && (
-            <Tabs defaultValue="overview" className="space-y-6">
-              <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between gap-4">
-                    <TabsList className="bg-transparent border-0">
-                      <TabsTrigger value="overview" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black">
-                        {t('admin.dashboard')}
-                      </TabsTrigger>
-                      {data.generationStats && (
-                        <TabsTrigger value="generations" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black">
-                          {t('admin.generations')}
+            <Tabs defaultValue="overview" className="space-y-6" onValueChange={(val) => {
+              if (val === 'presets') navigate('/admin/presets');
+            }}>
+              {/* Unified Header */}
+              <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl mb-6">
+                <CardContent className="p-4 md:p-6">
+                  <div className="mb-4">
+                    <BreadcrumbWithBack to="/">
+                      <BreadcrumbList>
+                        <BreadcrumbItem>
+                          <BreadcrumbLink asChild>
+                            <Link to="/">{t('apps.home')}</Link>
+                          </BreadcrumbLink>
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator />
+                        <BreadcrumbItem>
+                          <BreadcrumbPage>{t('admin.title') || 'Admin'}</BreadcrumbPage>
+                        </BreadcrumbItem>
+                      </BreadcrumbList>
+                    </BreadcrumbWithBack>
+                  </div>
+
+                  <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <ShieldCheck className="h-6 w-6 md:h-8 md:w-8 text-[#52ddeb]" />
+                      <div>
+                        <h1 className="text-2xl md:text-3xl font-semibold font-manrope text-zinc-300">
+                          {t('admin.panelTitle')}
+                        </h1>
+                        <p className="text-zinc-500 font-mono text-xs md:text-sm">
+                          {t('admin.panelSubtitle')}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2 md:gap-4">
+                      <TabsList className="bg-zinc-900/50 border border-zinc-800/50 p-1 h-auto flex-wrap">
+                        <TabsTrigger value="overview" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black py-1.5 px-3 text-xs md:text-sm">
+                          {t('admin.dashboard')}
                         </TabsTrigger>
-                      )}
-                      <TabsTrigger value="users" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black">
-                        {t('admin.users')}
-                      </TabsTrigger>
-                    </TabsList>
-                    <Button
-                      onClick={handleRefresh}
-                      disabled={isLoading}
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center gap-2"
-                    >
-                      <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-                      {t('admin.refresh')}
-                    </Button>
+                        {data.generationStats && (
+                          <TabsTrigger value="generations" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black py-1.5 px-3 text-xs md:text-sm">
+                            {t('admin.generations')}
+                          </TabsTrigger>
+                        )}
+                        <TabsTrigger value="users" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black py-1.5 px-3 text-xs md:text-sm">
+                          {t('admin.users')}
+                        </TabsTrigger>
+                        <TabsTrigger value="presets" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black py-1.5 px-3 text-xs md:text-sm">
+                          <Settings className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
+                          {t('admin.presets')}
+                        </TabsTrigger>
+                      </TabsList>
+                      
+                      <Button
+                        onClick={handleRefresh}
+                        disabled={isLoading}
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-2 border-zinc-800/50 hover:bg-zinc-800/50 h-9"
+                      >
+                        <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                        <span className="hidden sm:inline">{t('admin.refresh')}</span>
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -719,8 +701,11 @@ export const AdminPage: React.FC = () => {
                         </Badge>
                       </div>
                       <div>
-                        <p className="text-3xl font-bold text-zinc-300 mb-2 font-mono">
-                          $ {totalEstimatedCost.toFixed(3)}
+                        <p className="text-3xl font-bold text-zinc-300 mb-1 font-mono">
+                          $ {totalEstimatedCost.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </p>
+                        <p className="text-sm font-semibold text-zinc-400 mb-2 font-mono">
+                          {(totalEstimatedCost * 6).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                         </p>
                         <p className="text-sm text-zinc-500 font-mono">{t('admin.estimatedCost')}</p>
                         <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.basedOnUsage')}</p>
@@ -976,7 +961,9 @@ export const AdminPage: React.FC = () => {
                                     indicator="dot"
                                     formatter={(value, name) => {
                                       if (name === 'cumulative') {
-                                        return [`$ ${(value as number).toFixed(3)}`, 'Total USD'];
+                                        const usd = (value as number).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                                        const brl = ((value as number) * 6).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                                        return [`$ ${usd} (${brl})`, 'Total USD'];
                                       }
                                       return [value, name];
                                     }}
@@ -1292,37 +1279,16 @@ export const AdminPage: React.FC = () => {
                   </Card>
                 </div>
 
-                {/* Search Card */}
-                <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 transition-all duration-300 shadow-lg">
-                  <CardContent className="p-6">
-                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                      <div>
-                        <CardTitle className="flex items-center gap-3 text-zinc-300 font-mono mb-2">
-                          <Users className="h-5 w-5 text-[#52ddeb]" />
-                          {t('admin.searchUsers')}
-                        </CardTitle>
-                        <CardDescription className="text-zinc-500 font-mono">
-                          {t('admin.usersRegistered', { count: data.users.length })}
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
                 {/* Table Card */}
                 <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 transition-all duration-300 shadow-lg">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-3 text-zinc-300 font-mono">
-                      <Users className="h-5 w-5 text-[#52ddeb]" />
-                      {t('admin.userList')}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-6">
                     <DataTable 
                       columns={columns} 
                       data={data.users} 
                       searchKey="name"
                       searchPlaceholder={t('admin.searchPlaceholder')}
+                      title={t('admin.userList')}
+                      icon={<Users className="h-5 w-5 text-[#52ddeb]" />}
                     />
                   </CardContent>
                 </Card>
