@@ -852,49 +852,6 @@ export const AdminPresetsPage: React.FC = () => {
         <GridDotsBackground />
       </div>
       <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
-        <div className="mb-6">
-          <BreadcrumbWithBack to="/admin">
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link to="/">Home</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link to="/admin">Admin</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Presets</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </BreadcrumbWithBack>
-        </div>
-        <div className="flex items-start gap-4 mb-8">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <ShieldCheck className="h-6 w-6 md:h-8 md:w-8 text-[#52ddeb]" />
-              <h1 className="text-3xl md:text-4xl font-semibold font-manrope text-zinc-300">
-                Administração de Presets
-              </h1>
-            </div>
-            <p className="text-zinc-500 font-mono text-sm md:text-base ml-9 md:ml-11">
-              Gerencie presets de mockup e angle
-            </p>
-          </div>
-        </div>
-
-        {isCheckingAuth && (
-          <div className="max-w-md mx-auto">
-            <div className="bg-[#1A1A1A] border border-zinc-800/50 rounded-md p-6 md:p-8 text-center">
-              <p className="text-zinc-400 font-mono">Verificando autenticação...</p>
-            </div>
-          </div>
-        )}
-
         {!isCheckingAuth && !isAuthenticated && (
           <div className="max-w-md mx-auto">
             <div className="bg-[#1A1A1A] border border-zinc-800/50 rounded-md p-6 md:p-8 space-y-4 text-center">
@@ -927,12 +884,84 @@ export const AdminPresetsPage: React.FC = () => {
         )}
 
         {isAuthenticated && data && (
-          <div className="space-y-6">
-            {/* Tabs and Actions Card */}
-            <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 transition-all duration-300 shadow-lg">
+          <Tabs value="presets" className="space-y-6" onValueChange={(val) => {
+            if (val !== 'presets') navigate('/admin');
+          }}>
+            {/* Unified Header */}
+            <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl mb-6">
               <CardContent className="p-4 md:p-6">
-                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
-                <div className="flex gap-2 flex-wrap">
+                <div className="mb-4">
+                  <BreadcrumbWithBack to="/">
+                    <BreadcrumbList>
+                      <BreadcrumbItem>
+                        <BreadcrumbLink asChild>
+                          <Link to="/">{t('apps.home') || 'Home'}</Link>
+                        </BreadcrumbLink>
+                      </BreadcrumbItem>
+                      <BreadcrumbSeparator />
+                      <BreadcrumbItem>
+                        <BreadcrumbLink asChild>
+                          <Link to="/admin">{t('admin.title') || 'Admin'}</Link>
+                        </BreadcrumbLink>
+                      </BreadcrumbItem>
+                      <BreadcrumbSeparator />
+                      <BreadcrumbItem>
+                        <BreadcrumbPage>Presets</BreadcrumbPage>
+                      </BreadcrumbItem>
+                    </BreadcrumbList>
+                  </BreadcrumbWithBack>
+                </div>
+
+                <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <ShieldCheck className="h-6 w-6 md:h-8 md:w-8 text-[#52ddeb]" />
+                    <div>
+                      <h1 className="text-2xl md:text-3xl font-semibold font-manrope text-zinc-300">
+                        {t('adminPresets.title') || 'Administração de Presets'}
+                      </h1>
+                      <p className="text-zinc-500 font-mono text-xs md:text-sm">
+                        {t('adminPresets.subtitle') || 'Gerencie presets de mockup e gerações'}
+                      </p>
+                    </div>
+                  </div>
+
+                    <TabsList className="bg-zinc-900/50 border border-zinc-800/50 p-1 h-auto flex-wrap">
+                      <TabsTrigger value="overview" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black py-1.5 px-3 text-xs md:text-sm">
+                        {t('admin.dashboard')}
+                      </TabsTrigger>
+                      <TabsTrigger value="generations" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black py-1.5 px-3 text-xs md:text-sm">
+                        {t('admin.generations')}
+                      </TabsTrigger>
+                      <TabsTrigger value="users" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black py-1.5 px-3 text-xs md:text-sm">
+                        {t('admin.users')}
+                      </TabsTrigger>
+                      <TabsTrigger value="presets" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black py-1.5 px-3 text-xs md:text-sm">
+                        <Settings className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
+                        {t('admin.presets')}
+                      </TabsTrigger>
+                    </TabsList>
+                    
+                    <Button
+                      onClick={handleRefresh}
+                      disabled={isLoading}
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-2 border-zinc-800/50 hover:bg-zinc-800/50 h-9"
+                    >
+                      <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                      <span className="hidden sm:inline">{t('admin.refresh') || 'Atualizar'}</span>
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="space-y-6">
+              {/* Tabs and Actions Card */}
+              <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 transition-all duration-300 shadow-lg">
+                <CardContent className="p-4 md:p-6">
+                  <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
+                  <div className="flex gap-2 flex-wrap">
                   <Button
                     onClick={() => {
                       setActiveTab('mockup');
@@ -1524,6 +1553,7 @@ export const AdminPresetsPage: React.FC = () => {
               </CardContent>
             </Card>
           </div>
+          </Tabs>
         )}
       </div>
     </div>
