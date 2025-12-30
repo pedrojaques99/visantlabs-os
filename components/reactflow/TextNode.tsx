@@ -11,12 +11,14 @@ import { aiApi } from '../../services/aiApi';
 import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
 import { cn } from '../../lib/utils';
 import { toast } from 'sonner';
+import { useNodeResize } from '../../hooks/canvas/useNodeResize';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
   const { t } = useTranslation();
   const { setNodes } = useReactFlow();
   const nodeData = data as TextNodeData;
+  const { handleResize: handleResizeWithDebounce } = useNodeResize();
   const [text, setText] = useState(nodeData.text || '');
   const [isImproving, setIsImproving] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -72,28 +74,10 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
     }
   };
 
-  // Handle resize from NodeResizer
+  // Handle resize from NodeResizer (com debounce - aplica apenas quando soltar o mouse)
   const handleResize = useCallback((width: number, height: number) => {
-    if (nodeData.onResize && typeof nodeData.onResize === 'function') {
-      nodeData.onResize(id, width, height);
-    }
-
-    setNodes((nds) => {
-      return nds.map((n) => {
-        if (n.id === id && n.type === 'text') {
-          return {
-            ...n,
-            style: {
-              ...n.style,
-              width,
-              height,
-            },
-          };
-        }
-        return n;
-      });
-    });
-  }, [id, nodeData, setNodes]);
+    handleResizeWithDebounce(id, width, height, nodeData.onResize);
+  }, [id, nodeData.onResize, handleResizeWithDebounce]);
 
   return (
     <NodeContainer

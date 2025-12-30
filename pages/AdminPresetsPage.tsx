@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Plus, Edit2, Trash2, X, Save, Upload, Image as ImageIcon, Camera, Layers, MapPin, Sun } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ShieldCheck, Plus, Edit2, Trash2, X, Save, Upload, Image as ImageIcon, Camera, Layers, MapPin, Sun, RefreshCw, Settings, Users } from 'lucide-react';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { AdminImageUploader } from '../components/ui/AdminImageUploader';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
 import {
   BreadcrumbWithBack,
   BreadcrumbItem,
@@ -59,6 +61,7 @@ interface PresetFormData {
 
 export const AdminPresetsPage: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { isAuthenticated: isUserAuthenticated, isCheckingAuth } = useLayout();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -912,44 +915,45 @@ export const AdminPresetsPage: React.FC = () => {
                   </BreadcrumbWithBack>
                 </div>
 
-                <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <ShieldCheck className="h-6 w-6 md:h-8 md:w-8 text-[#52ddeb]" />
-                    <div>
-                      <h1 className="text-2xl md:text-3xl font-semibold font-manrope text-zinc-300">
-                        {t('adminPresets.title') || 'Administração de Presets'}
-                      </h1>
-                      <p className="text-zinc-500 font-mono text-xs md:text-sm">
-                        {t('adminPresets.subtitle') || 'Gerencie presets de mockup e gerações'}
-                      </p>
+                  <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <ShieldCheck className="h-6 w-6 md:h-8 md:w-8 text-[#52ddeb]" />
+                      <div>
+                        <h1 className="text-2xl md:text-3xl font-semibold font-manrope text-zinc-300">
+                          {t('adminPresets.title') || 'Administração de Presets'}
+                        </h1>
+                        <p className="text-zinc-500 font-mono text-xs md:text-sm">
+                          {t('adminPresets.subtitle') || 'Gerencie presets de mockup e gerações'}
+                        </p>
+                      </div>
                     </div>
-                  </div>
 
+                    <div className="flex items-center gap-4">
                     <TabsList className="bg-zinc-900/50 border border-zinc-800/50 p-1 h-auto flex-wrap">
-                      <TabsTrigger value="overview" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black py-1.5 px-3 text-xs md:text-sm">
+                      <TabsTrigger value="overview" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/10 transition-all py-1.5 px-3 text-xs md:text-sm">
                         {t('admin.dashboard')}
                       </TabsTrigger>
-                      <TabsTrigger value="generations" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black py-1.5 px-3 text-xs md:text-sm">
+                      <TabsTrigger value="generations" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/10 transition-all py-1.5 px-3 text-xs md:text-sm">
                         {t('admin.generations')}
                       </TabsTrigger>
-                      <TabsTrigger value="users" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black py-1.5 px-3 text-xs md:text-sm">
+                      <TabsTrigger value="users" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/10 transition-all py-1.5 px-3 text-xs md:text-sm">
                         {t('admin.users')}
                       </TabsTrigger>
-                      <TabsTrigger value="presets" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black py-1.5 px-3 text-xs md:text-sm">
+                      <TabsTrigger value="presets" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/10 transition-all py-1.5 px-3 text-xs md:text-sm">
                         <Settings className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
                         {t('admin.presets')}
                       </TabsTrigger>
                     </TabsList>
-                    
-                    <Button
-                      onClick={handleRefresh}
-                      disabled={isLoading}
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center gap-2 border-zinc-800/50 hover:bg-zinc-800/50 h-9"
-                    >
-                      <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-                      <span className="hidden sm:inline">{t('admin.refresh') || 'Atualizar'}</span>
+
+                      <Button
+                        onClick={handleRefresh}
+                        disabled={isLoading}
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-2 border-zinc-800/50 hover:bg-zinc-800/50 h-9"
+                      >
+                        <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                        <span className="hidden sm:inline">{t('admin.refresh') || 'Atualizar'}</span>
                     </Button>
                   </div>
                 </div>
@@ -1179,7 +1183,6 @@ export const AdminPresetsPage: React.FC = () => {
               </div>
             )}
           </div>
-        )}
 
         {/* Batch Upload Modal */}
         {isBatchModalOpen && (
@@ -1553,8 +1556,9 @@ export const AdminPresetsPage: React.FC = () => {
               </CardContent>
             </Card>
           </div>
-          </Tabs>
         )}
+      </Tabs>
+    )}
       </div>
     </div>
   );

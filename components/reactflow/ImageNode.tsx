@@ -22,6 +22,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useMockupLike } from '../../hooks/useMockupLike';
 import { NodeButton } from './shared/node-button';
 import { fileToBase64 } from '../../utils/fileUtils';
+import { useNodeResize } from '../../hooks/canvas/useNodeResize';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -48,6 +49,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
   const isDescribing = nodeData.isDescribing || false;
   const description = nodeData.description || localDescription;
   const { handleDownload, isDownloading } = useNodeDownload(imageUrl, 'generated-image');
+  const { handleResize: handleResizeWithDebounce } = useNodeResize();
 
   // Use centralized like hook
   const { toggleLike: handleToggleLike } = useMockupLike({
@@ -165,28 +167,10 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
     }
   }, [imageUrl, id, nodeData]);
 
-  // Handle resize from NodeResizer
+  // Handle resize from NodeResizer (com debounce - aplica apenas quando soltar o mouse)
   const handleResize = useCallback((width: number, height: number) => {
-    if (nodeData.onResize) {
-      nodeData.onResize(id, width, height);
-    }
-
-    setNodes((nds) => {
-      return nds.map((n) => {
-        if (n.id === id && n.type === 'image') {
-          return {
-            ...n,
-            style: {
-              ...n.style,
-              width,
-              height,
-            },
-          };
-        }
-        return n;
-      });
-    });
-  }, [id, nodeData, setNodes]);
+    handleResizeWithDebounce(id, width, height, nodeData.onResize);
+  }, [id, nodeData.onResize, handleResizeWithDebounce]);
 
   // Check if this image was generated (connected from a generating node)
   // Compute directly without state/useEffect to avoid infinite loops

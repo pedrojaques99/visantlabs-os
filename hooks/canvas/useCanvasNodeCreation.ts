@@ -46,6 +46,23 @@ export const useCanvasNodeCreation = (
     saveImmediately,
   });
 
+  // ========== REFS FOR NODE CREATORS ==========
+  // Refs to hold node creation functions (defined later in hook)
+  const nodeCreatorsRef = useRef<{
+    addPromptNode?: (pos?: { x: number; y: number }, data?: any) => string | undefined;
+    addMockupNode?: (pos?: { x: number; y: number }) => string | undefined;
+    addStrategyNode?: (pos?: { x: number; y: number }) => string | undefined;
+    addTextNode?: (pos?: { x: number; y: number }, text?: string) => string | undefined;
+    addMergeNode?: (pos?: { x: number; y: number }) => string | undefined;
+    addEditNode?: (pos?: { x: number; y: number }) => string | undefined;
+    addImageNode?: (pos?: { x: number; y: number }) => string | undefined;
+  }>({});
+  
+  const edgesRef = useRef<Edge[]>(edges);
+  useEffect(() => {
+    edgesRef.current = edges;
+  }, [edges]);
+
   // ========== CHAT NODE HANDLERS ==========
   // Handlers para gerenciar operações de node de chat
   // Utiliza hook separado useCanvasChatHandler
@@ -55,12 +72,19 @@ export const useCanvasNodeCreation = (
     handleChatUpdateData,
     handleChatClearHistory,
     handleChatAddPromptNode,
+    handleChatCreateNode,
+    handleChatEditConnectedNode,
+    getConnectedNodeIds,
+    handleChatAttachMedia,
   } = useCanvasChatHandler({
     nodesRef,
+    edgesRef,
     updateNodeData,
     userId: undefined, // Optional: userId can be passed for user-specific features
     saveImmediately,
-    addPromptNode: (pos, data) => addPromptNode(pos, data),
+    nodeCreators: nodeCreatorsRef.current,
+    setEdges: undefined, // Will be passed from CanvasPage if needed
+    addPromptNode: (pos, data) => nodeCreatorsRef.current.addPromptNode?.(pos, data),
   });
 
   // Atualiza handlersRef com os Strategy handlers
@@ -95,12 +119,20 @@ export const useCanvasNodeCreation = (
       handleChatUpdateData,
       handleChatClearHistory,
       handleChatAddPromptNode,
+      handleChatCreateNode,
+      handleChatEditConnectedNode,
+      getConnectedNodeIds,
+      handleChatAttachMedia,
     };
   }, [
     handleChatSendMessage,
     handleChatUpdateData,
     handleChatClearHistory,
     handleChatAddPromptNode,
+    handleChatCreateNode,
+    handleChatEditConnectedNode,
+    getConnectedNodeIds,
+    handleChatAttachMedia,
   ]);
 
   const addMergeNode = useCallback((customPosition?: { x: number; y: number }): string | undefined => {
@@ -1678,6 +1710,7 @@ export const useCanvasNodeCreation = (
       id: generateNodeId('chat'),
       type: 'chat',
       position,
+      style: { width: 500, height: 800 },
       draggable: true,
       connectable: true,
       selectable: true,
@@ -1691,7 +1724,11 @@ export const useCanvasNodeCreation = (
         onUpdateData: handlersRef.current?.handleChatUpdateData || (() => {}),
         onClearHistory: handlersRef.current?.handleChatClearHistory || (() => {}),
         onAddPromptNode: handlersRef.current?.handleChatAddPromptNode || (() => {}),
-      },
+        onCreateNode: handlersRef.current?.handleChatCreateNode || (() => undefined),
+        onEditConnectedNode: handlersRef.current?.handleChatEditConnectedNode || (() => {}),
+        onAttachMedia: handlersRef.current?.handleChatAttachMedia || (() => undefined),
+        connectedNodeIds: [],
+      } as ChatNodeData,
     };
 
     setNodes((nds: Node<FlowNodeData>[]) => {
@@ -1704,6 +1741,20 @@ export const useCanvasNodeCreation = (
     
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
+
+  // ========== UPDATE NODE CREATORS REF ==========
+  // Keep nodeCreatorsRef updated with the latest node creation functions
+  useEffect(() => {
+    nodeCreatorsRef.current = {
+      addPromptNode,
+      addMockupNode,
+      addStrategyNode,
+      addTextNode,
+      addMergeNode,
+      addEditNode,
+      addImageNode,
+    };
+  }, [addPromptNode, addMockupNode, addStrategyNode, addTextNode, addMergeNode, addEditNode, addImageNode]);
 
   return {
     addMergeNode,

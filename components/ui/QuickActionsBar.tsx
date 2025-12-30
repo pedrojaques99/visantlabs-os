@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Dices } from 'lucide-react';
+import { Dices, Settings } from 'lucide-react';
 import { Tooltip } from './Tooltip';
 import { GlitchLoader } from './GlitchLoader';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -11,6 +11,7 @@ interface QuickActionsBarProps {
   isGeneratingPrompt: boolean;
   autoGenerate: boolean;
   onAutoGenerateChange: (value: boolean) => void;
+  onOpenSurpriseMeSettings?: () => void;
 }
 
 export const QuickActionsBar: React.FC<QuickActionsBarProps> = ({
@@ -19,6 +20,7 @@ export const QuickActionsBar: React.FC<QuickActionsBarProps> = ({
   isGeneratingPrompt,
   autoGenerate,
   onAutoGenerateChange,
+  onOpenSurpriseMeSettings,
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
@@ -63,28 +65,45 @@ export const QuickActionsBar: React.FC<QuickActionsBarProps> = ({
             {t('mockup.surpriseMe')}
           </button>
         </Tooltip>
-        <Tooltip content={t('mockup.autoGenerateTooltip')} position="top">
-          <div
-            className={`group flex items-center gap-1.5 cursor-pointer opacity-40 hover:opacity-100 transition-opacity duration-200 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-500'}`}
-            onClick={() => onAutoGenerateChange(!autoGenerate)}
-          >
-            <div className={`w-3 h-3 rounded-md flex items-center justify-center border transition-all duration-200 ${autoGenerate
-              ? 'bg-[#52ddeb]/80 border-[#52ddeb] opacity-100'
-              : theme === 'dark'
-                ? 'bg-zinc-700/50 border-zinc-600/50 group-hover:border-zinc-500 group-hover:bg-zinc-700'
-                : 'bg-white/50 border-zinc-400/50 group-hover:border-zinc-400 group-hover:bg-white'
-              }`}>
-              {autoGenerate && (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-2 w-2 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                </svg>
-              )}
+        <div className="flex items-center gap-1.5">
+          <Tooltip content={t('mockup.autoGenerateTooltip')} position="top">
+            <div
+              className={`group flex items-center gap-1.5 cursor-pointer opacity-40 hover:opacity-100 transition-opacity duration-200 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-500'}`}
+              onClick={() => onAutoGenerateChange(!autoGenerate)}
+            >
+              <div className={`w-3 h-3 rounded-md flex items-center justify-center border transition-all duration-200 ${autoGenerate
+                ? 'bg-[#52ddeb]/80 border-[#52ddeb] opacity-100'
+                : theme === 'dark'
+                  ? 'bg-zinc-700/50 border-zinc-600/50 group-hover:border-zinc-500 group-hover:bg-zinc-700'
+                  : 'bg-white/50 border-zinc-400/50 group-hover:border-zinc-400 group-hover:bg-white'
+                }`}>
+                {autoGenerate && (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-2 w-2 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </div>
+              <label className={`text-[10px] select-none cursor-pointer font-mono group-hover:text-[11px] transition-all ${theme === 'dark' ? 'text-zinc-500 group-hover:text-zinc-400' : 'text-zinc-500 group-hover:text-zinc-600'}`}>
+                {t('mockup.autoGenerate')}
+              </label>
             </div>
-            <label className={`text-[10px] select-none cursor-pointer font-mono group-hover:text-[11px] transition-all ${theme === 'dark' ? 'text-zinc-500 group-hover:text-zinc-400' : 'text-zinc-500 group-hover:text-zinc-600'}`}>
-              {t('mockup.autoGenerate')}
-            </label>
-          </div>
-        </Tooltip>
+          </Tooltip>
+          {onOpenSurpriseMeSettings && (
+            <Tooltip content={t('mockup.surpriseMeSettingsTooltip') || 'Surprise Me Settings'} position="top">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenSurpriseMeSettings();
+                }}
+                disabled={isGenerating || isGeneratingPrompt}
+                className={`opacity-40 hover:opacity-100 transition-opacity duration-200 p-1 rounded hover:bg-zinc-800/50 disabled:opacity-30 disabled:cursor-not-allowed ${theme === 'dark' ? 'text-zinc-500 hover:text-zinc-400' : 'text-zinc-500 hover:text-zinc-600'}`}
+                aria-label={t('mockup.surpriseMeSettings')}
+              >
+                <Settings size={12} />
+              </button>
+            </Tooltip>
+          )}
+        </div>
       </div>
       <div className={`flex-grow border-t border-dashed ${theme === 'dark' ? 'border-zinc-700/50' : 'border-zinc-300/50'}`}></div>
     </div>

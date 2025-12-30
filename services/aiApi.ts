@@ -85,6 +85,7 @@ export const aiApi = {
     aspectRatio: string;
     generateText: boolean;
     withHuman: boolean;
+    enhanceTexture: boolean;
     negativePrompt: string;
     additionalPrompt: string;
   }): Promise<{ prompt: string; inputTokens?: number; outputTokens?: number }> {

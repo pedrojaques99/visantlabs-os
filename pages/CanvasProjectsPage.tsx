@@ -146,7 +146,7 @@ export const CanvasProjectsPage: React.FC = () => {
       console.log('[CanvasProjects] ✅ Authenticated - loading projects');
       loadProjects();
     }
-  }, 800);
+  }, 200); // 200ms debounce delay
 
   useEffect(() => {
     handleAuthAction(isAuthenticated);

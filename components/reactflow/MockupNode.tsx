@@ -15,10 +15,12 @@ import { NodeContainer } from './shared/NodeContainer';
 import { Textarea } from '../ui/textarea';
 import { toast } from 'sonner';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useNodeResize } from '../../hooks/canvas/useNodeResize';
 
 const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
   const { setNodes } = useReactFlow();
+  const { handleResize: handleResizeWithDebounce } = useNodeResize();
   const [selectedPresetId, setSelectedPresetId] = useState<MockupPresetType | string>(
     (data.selectedPreset as MockupPresetType | string) || 'cap'
   );
@@ -249,28 +251,10 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
     await data.onGenerate(id, imageToUse, selectedPresetId, selectedColors, withHuman, finalPrompt || undefined);
   };
 
-  // Handle resize from NodeResizer
+  // Handle resize from NodeResizer (com debounce - aplica apenas quando soltar o mouse)
   const handleResize = useCallback((width: number, height: number) => {
-    if (data.onResize && typeof data.onResize === 'function') {
-      data.onResize(id, width, height);
-    }
-
-    setNodes((nds) => {
-      return nds.map((n) => {
-        if (n.id === id && n.type === 'mockup') {
-          return {
-            ...n,
-            style: {
-              ...n.style,
-              width,
-              height: 'auto', // MockupNode uses auto height, so we keep it
-            },
-          };
-        }
-        return n;
-      });
-    });
-  }, [id, data, setNodes]);
+    handleResizeWithDebounce(id, width, 'auto', data.onResize);
+  }, [id, data.onResize, handleResizeWithDebounce]);
 
   return (
     <NodeContainer

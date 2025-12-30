@@ -647,6 +647,60 @@
   animation: tabSlideIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
+/* Admin Page Tab Transitions */
+@keyframes tabSlideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes tabSlideOutLeft {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+}
+
+@keyframes tabSlideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes tabSlideOutRight {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+}
+
+/* Admin Page Tab Transitions */
+.admin-tab-enter {
+  animation: tabSlideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
 .animate-slide-down {
   animation: slide-down 0.3s ease-out;
 }
