@@ -254,11 +254,35 @@ router.post('/generate', authenticate, checkSubscription, async (req: Subscripti
       canvasId,
       nodeId,
       // New params
-      referenceImages,
-      inputVideo,
-      startFrame,
-      endFrame,
+      referenceImages: referenceImagesRaw,
+      inputVideo: inputVideoRaw,
+      startFrame: startFrameRaw,
+      endFrame: endFrameRaw,
     } = req.body;
+
+    // Helper to normalize media inputs (handle objects from client)
+    const normalizeMediaInput = (input: any): string | undefined => {
+      if (!input) return undefined;
+      if (typeof input === 'string') return input;
+      if (typeof input === 'object' && input !== null) {
+        return input.base64 || input.url || undefined;
+      }
+      return undefined;
+    };
+
+    // Normalize all media inputs - handle objects from client
+    const startFrame = normalizeMediaInput(startFrameRaw);
+    const endFrame = normalizeMediaInput(endFrameRaw);
+    const inputVideo = normalizeMediaInput(inputVideoRaw);
+    
+    // Normalize referenceImages array
+    let referenceImages: string[] | undefined = undefined;
+    if (referenceImagesRaw && Array.isArray(referenceImagesRaw)) {
+      referenceImages = referenceImagesRaw
+        .map(normalizeMediaInput)
+        .filter((img): img is string => !!img);
+      if (referenceImages.length === 0) referenceImages = undefined;
+    }
 
     console.log(`${logPrefix} [REQUEST] Received video generation request`, {
       userId: req.userId,

@@ -31,6 +31,8 @@ import type { AnglePreset } from '../types/anglePresets';
 import type { TexturePreset } from '../types/texturePresets';
 import type { AmbiencePreset } from '../types/ambiencePresets';
 import type { LuminancePreset } from '../types/luminancePresets';
+import { SurpriseMeSettingsModal } from '../components/SurpriseMeSettingsModal';
+import { getSurpriseMeExcludedTags } from '../utils/surpriseMeSettings';
 
 const MOCKUP_COUNT = 2;
 
@@ -82,6 +84,7 @@ export const MockupMachinePage: React.FC = () => {
   const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
   const [generateText, setGenerateText] = useState<boolean>(false);
   const [withHuman, setWithHuman] = useState<boolean>(false);
+  const [enhanceTexture, setEnhanceTexture] = useState<boolean>(false);
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
   const [promptPreview, setPromptPreview] = useState<string>('');
   const [negativePrompt, setNegativePrompt] = useState<string>('');
@@ -126,6 +129,7 @@ export const MockupMachinePage: React.FC = () => {
     message: string;
     showSaveAll?: boolean;
   } | null>(null);
+  const [isSurpriseMeSettingsOpen, setIsSurpriseMeSettingsOpen] = useState(false);
 
   // Check if there are unsaved images for navigation blocker
   const hasUnsavedImages = mockups.some((mockup, index) =>
@@ -196,6 +200,7 @@ export const MockupMachinePage: React.FC = () => {
         setMockupCount(persistedState.mockupCount);
         setGenerateText(persistedState.generateText);
         setWithHuman(persistedState.withHuman);
+        setEnhanceTexture(persistedState.enhanceTexture ?? false);
         setNegativePrompt(persistedState.negativePrompt);
         setAdditionalPrompt(persistedState.additionalPrompt);
 
@@ -306,6 +311,7 @@ export const MockupMachinePage: React.FC = () => {
           mockupCount,
           generateText,
           withHuman,
+          enhanceTexture,
           negativePrompt,
           additionalPrompt,
         });
@@ -339,6 +345,7 @@ export const MockupMachinePage: React.FC = () => {
     mockupCount,
     generateText,
     withHuman,
+    enhanceTexture,
     negativePrompt,
     additionalPrompt,
   ]);
@@ -474,6 +481,7 @@ export const MockupMachinePage: React.FC = () => {
         aspectRatio: aspectRatio,
         generateText: generateText,
         withHuman: withHuman,
+        enhanceTexture: enhanceTexture,
         negativePrompt: negativePrompt,
         additionalPrompt: additionalPrompt,
       });
@@ -552,7 +560,7 @@ export const MockupMachinePage: React.FC = () => {
     } finally {
       setIsGeneratingPrompt(false);
     }
-  }, [uploadedImage, designType, selectedTags, selectedBrandingTags, selectedLocationTags, selectedAngleTags, selectedLightingTags, selectedEffectTags, selectedColors, aspectRatio, generateText, withHuman, negativePrompt, additionalPrompt, buildPrompt, t, isGeneratingPrompt, referenceImages]);
+  }, [uploadedImage, designType, selectedTags, selectedBrandingTags, selectedLocationTags, selectedAngleTags, selectedLightingTags, selectedEffectTags, selectedColors, aspectRatio, generateText, withHuman, enhanceTexture, negativePrompt, additionalPrompt, buildPrompt, t, isGeneratingPrompt, referenceImages]);
 
   useEffect(() => {
     // Tags changed - reset prompt ready state and track that it was reset
@@ -570,7 +578,8 @@ export const MockupMachinePage: React.FC = () => {
     JSON.stringify(selectedColors),
     aspectRatio,
     generateText,
-    withHuman
+    withHuman,
+    enhanceTexture
   ]);
 
 
@@ -1641,14 +1650,25 @@ export const MockupMachinePage: React.FC = () => {
     // Use current branding tags from state
     const brandingTagsToUse = selectedBrandingTags.length > 0 ? selectedBrandingTags : [];
 
-    const shuffledCategories = [...GENERIC_MOCKUP_TAGS].sort(() => 0.5 - Math.random());
+    // Load excluded tags from settings
+    const excludedTags = getSurpriseMeExcludedTags();
+
+    // Filter categories excluding user-configured excluded tags
+    const availableCategories = GENERIC_MOCKUP_TAGS.filter(
+      tag => !excludedTags.excludedCategoryTags.includes(tag)
+    );
+    const shuffledCategories = availableCategories.length > 0
+      ? [...availableCategories].sort(() => 0.5 - Math.random())
+      : [...GENERIC_MOCKUP_TAGS].sort(() => 0.5 - Math.random()); // Fallback to all if all excluded
     const selectedCategory = shuffledCategories[0];
     setSelectedTags([selectedCategory]);
 
-    // Seleciona background baseado no branding escolhido (excluindo "Nature landscape" do Surprise Me)
+    // Seleciona background baseado no branding escolhido (excluindo "Nature landscape" e tags excluídas)
     // Inclui "Light Box" e "Minimalist Studio" como opções preferenciais para Surprise Me
     const suitableBackgrounds = getBackgroundsForBranding(brandingTagsToUse);
-    const filteredBackgrounds = suitableBackgrounds.filter(bg => bg !== 'Nature landscape');
+    const filteredBackgrounds = suitableBackgrounds.filter(bg =>
+      bg !== 'Nature landscape' && !excludedTags.excludedLocationTags.includes(bg)
+    );
 
     // Add Light Box and Minimalist Studio as preferred options if not already included
     const preferredBackgrounds = ['Light Box', 'Minimalist Studio'];
@@ -1703,9 +1723,30 @@ export const MockupMachinePage: React.FC = () => {
     }
 
     // Fallback para lógica antiga se não houver presets selecionados
-    const randomAngle = selectedPresets.angle ? null : (Math.random() < 0.4 ? AVAILABLE_ANGLE_TAGS[Math.floor(Math.random() * AVAILABLE_ANGLE_TAGS.length)] : null);
-    const randomLighting = selectedPresets.luminance ? null : (Math.random() < 0.5 ? AVAILABLE_LIGHTING_TAGS[Math.floor(Math.random() * AVAILABLE_LIGHTING_TAGS.length)] : null);
-    const randomEffect = Math.random() < 0.3 ? AVAILABLE_EFFECT_TAGS[Math.floor(Math.random() * AVAILABLE_EFFECT_TAGS.length)] : null;
+    // Filter available tags excluding user-configured excluded tags
+    const availableAngles = AVAILABLE_ANGLE_TAGS.filter(
+      tag => !excludedTags.excludedAngleTags.includes(tag)
+    );
+    const availableLightings = AVAILABLE_LIGHTING_TAGS.filter(
+      tag => !excludedTags.excludedLightingTags.includes(tag)
+    );
+    const availableEffects = AVAILABLE_EFFECT_TAGS.filter(
+      tag => !excludedTags.excludedEffectTags.includes(tag)
+    );
+
+    const randomAngle = selectedPresets.angle
+      ? null
+      : availableAngles.length > 0 && Math.random() < 0.4
+      ? availableAngles[Math.floor(Math.random() * availableAngles.length)]
+      : null;
+    const randomLighting = selectedPresets.luminance
+      ? null
+      : availableLightings.length > 0 && Math.random() < 0.5
+      ? availableLightings[Math.floor(Math.random() * availableLightings.length)]
+      : null;
+    const randomEffect = availableEffects.length > 0 && Math.random() < 0.3
+      ? availableEffects[Math.floor(Math.random() * availableEffects.length)]
+      : null;
 
     setSelectedAngleTags(randomAngle ? [randomAngle] : []);
     setSelectedLightingTags(randomLighting ? [randomLighting] : []);
@@ -2928,6 +2969,7 @@ Generate the new mockup image with the requested changes applied.`;
                   aspectRatio={aspectRatio}
                   onAspectRatioChange={setAspectRatio}
                   onSurpriseMe={handleSurpriseMe}
+                  onOpenSurpriseMeSettings={() => setIsSurpriseMeSettingsOpen(true)}
                   isGenerating={isGenerating}
                   isGeneratingPrompt={isGeneratingPrompt}
                   displayBrandingTags={displayBrandingTags}
@@ -3020,6 +3062,8 @@ Generate the new mockup image with the requested changes applied.`;
                   onGenerateTextChange={setGenerateText}
                   withHuman={withHuman}
                   onWithHumanChange={setWithHuman}
+                  enhanceTexture={enhanceTexture}
+                  onEnhanceTextureChange={setEnhanceTexture}
                   promptPreview={promptPreview}
                   onPromptChange={handlePromptChange}
                   promptSuggestions={promptSuggestions}
@@ -3155,6 +3199,11 @@ Generate the new mockup image with the requested changes applied.`;
           showSaveAll={unsavedDialogConfig.showSaveAll}
         />
       )}
+
+      <SurpriseMeSettingsModal
+        isOpen={isSurpriseMeSettingsOpen}
+        onClose={() => setIsSurpriseMeSettingsOpen(false)}
+      />
     </>
   );
 };

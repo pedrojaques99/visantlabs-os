@@ -10,6 +10,8 @@ interface OutputConfigSectionProps {
   onGenerateTextChange: (value: boolean) => void;
   withHuman: boolean;
   onWithHumanChange: (value: boolean) => void;
+  enhanceTexture: boolean;
+  onEnhanceTextureChange: (value: boolean) => void;
   designType: DesignType | null;
   selectedModel: GeminiModel | null;
   resolution: Resolution;
@@ -23,6 +25,8 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
   onGenerateTextChange,
   withHuman,
   onWithHumanChange,
+  enhanceTexture,
+  onEnhanceTextureChange,
   designType,
   selectedModel,
   resolution,
@@ -110,6 +114,21 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
               )}
             </div>
             <label className={`ml-3 text-xs select-none cursor-pointer ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-700'}`}>{t('mockup.includeHumanInteraction')}</label>
+          </div>
+          <div 
+            className={`flex items-center p-2.5 rounded-md cursor-pointer border ${designType !== 'blank' ? 'flex-1' : 'w-full'} ${theme === 'dark' ? 'bg-zinc-800/50 border-zinc-700/50' : 'bg-zinc-100 border-zinc-300'}`}
+            onClick={() => onEnhanceTextureChange(!enhanceTexture)}
+          >
+            <div className={`w-4 h-4 rounded-md flex items-center justify-center border transition-all duration-200 ${
+              enhanceTexture ? 'bg-[#52ddeb]/80 border-[#52ddeb]' : theme === 'dark' ? 'bg-zinc-700 border-zinc-600' : 'bg-white border-zinc-400'
+            }`}>
+              {enhanceTexture && (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </div>
+            <label className={`ml-3 text-xs select-none cursor-pointer ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-700'}`}>{t('mockup.enhanceTexture')}</label>
           </div>
         </div>
       </div>

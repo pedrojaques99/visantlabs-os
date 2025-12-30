@@ -648,8 +648,32 @@ export interface ChatNodeData extends BaseNodeData {
 
   onUpdateData?: (nodeId: string, newData: Partial<ChatNodeData>) => void;
   onClearHistory?: (nodeId: string) => void;
+  onAddPromptNode?: (nodeId: string, prompt: string) => void;
   onRemoveEdge?: (nodeId: string, targetHandle: 'input-1' | 'input-2' | 'input-3' | 'input-4' | 'text-input' | 'strategy-input') => void;
   onResize?: (nodeId: string, width: number, height: number) => void;
+  
+  // Advanced node creation and editing callbacks
+  onCreateNode?: (
+    chatNodeId: string,
+    nodeType: FlowNodeType,
+    initialData?: Partial<FlowNodeData>,
+    connectToChat?: boolean
+  ) => string | undefined;
+  
+  onEditConnectedNode?: (
+    targetNodeId: string,
+    updates: Partial<FlowNodeData>
+  ) => void;
+  
+  // Callback to create an ImageNode with uploaded media
+  onAttachMedia?: (
+    chatNodeId: string,
+    imageBase64: string,
+    mimeType: string
+  ) => string | undefined;
+  
+  // Get list of connected node IDs for editing
+  connectedNodeIds?: string[];
 }
 
 // Union type for all node data

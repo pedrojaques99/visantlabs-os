@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { RotateCcw, Lock, X, Dices, RefreshCcw, FileText } from 'lucide-react';
+import { RotateCcw, Lock, X, Dices, RefreshCcw, FileText, Settings } from 'lucide-react';
 import { InputSection } from './ui/InputSection';
 import { DesignTypeSection } from './mockupmachine/DesignTypeSection';
 import { QuickActionsBar } from './ui/QuickActionsBar';
@@ -48,6 +48,7 @@ interface SidebarOrchestratorProps {
 
   // Quick Actions
   onSurpriseMe: (autoGenerate: boolean) => void;
+  onOpenSurpriseMeSettings?: () => void;
   isGenerating: boolean;
   isGeneratingPrompt: boolean;
 
@@ -130,6 +131,8 @@ interface SidebarOrchestratorProps {
   onGenerateTextChange: (value: boolean) => void;
   withHuman: boolean;
   onWithHumanChange: (value: boolean) => void;
+  enhanceTexture: boolean;
+  onEnhanceTextureChange: (value: boolean) => void;
 
   // Prompt
   promptPreview: string;
@@ -188,6 +191,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
   onModelChange,
   onResolutionChange,
   onSurpriseMe,
+  onOpenSurpriseMeSettings,
   isGenerating,
   isGeneratingPrompt,
   displayBrandingTags,
@@ -260,6 +264,8 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
   onGenerateTextChange,
   withHuman,
   onWithHumanChange,
+  enhanceTexture,
+  onEnhanceTextureChange,
   promptPreview,
   onPromptChange,
   promptSuggestions,
@@ -597,6 +603,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
                   isGeneratingPrompt={isGeneratingPrompt}
                   autoGenerate={autoGenerate}
                   onAutoGenerateChange={setAutoGenerate}
+                  onOpenSurpriseMeSettings={onOpenSurpriseMeSettings}
                 />
               )}
 
@@ -668,7 +675,8 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
                       onAddCustomAngleTag,
                       onAddCustomLightingTag,
                       onAddCustomEffectTag,
-                      onAddCustomMaterialTag
+                      onAddCustomMaterialTag,
+                      designType
                     }}
                   />
 
@@ -679,6 +687,8 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
                     onGenerateTextChange={onGenerateTextChange}
                     withHuman={withHuman}
                     onWithHumanChange={onWithHumanChange}
+                    enhanceTexture={enhanceTexture}
+                    onEnhanceTextureChange={onEnhanceTextureChange}
                     designType={designType}
                     selectedModel={selectedModel}
                     resolution={resolution}
@@ -734,15 +744,28 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
                           {isGenerating ? <RefreshCcw size={18} className="animate-spin" /> : <RefreshCcw size={18} />}
                         </button>
                       )}
-                      <button
-                        onClick={handleSurpriseMe}
-                        disabled={isGenerating || isGeneratingPrompt}
-                        className={`flex items-center justify-center h-[48px] bg-zinc-800/50 hover:bg-[#52ddeb]/10 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-zinc-400 hover:text-[#52ddeb] border border-zinc-700/50 hover:border-[#52ddeb]/30 rounded-md transition-all duration-300 shadow-lg hover:shadow-[#52ddeb]/10 transform hover:scale-[1.02] active:scale-100 disabled:hover:scale-100 focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50 focus:ring-offset-2 focus:ring-offset-[#1A1A1A] ${isDiceAnimating ? 'dice-button-clicked' : ''}`}
-                        aria-label={t('mockup.surpriseMe')}
-                        title={t('mockup.surpriseMeTooltip')}
-                      >
-                        <Dices size={18} className={isDiceAnimating ? 'dice-icon-animate' : ''} />
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={handleSurpriseMe}
+                          disabled={isGenerating || isGeneratingPrompt}
+                          className={`flex-1 flex items-center justify-center h-[48px] bg-zinc-800/50 hover:bg-[#52ddeb]/10 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-zinc-400 hover:text-[#52ddeb] border border-zinc-700/50 hover:border-[#52ddeb]/30 rounded-md transition-all duration-300 shadow-lg hover:shadow-[#52ddeb]/10 transform hover:scale-[1.02] active:scale-100 disabled:hover:scale-100 focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50 focus:ring-offset-2 focus:ring-offset-[#1A1A1A] ${isDiceAnimating ? 'dice-button-clicked' : ''}`}
+                          aria-label={t('mockup.surpriseMe')}
+                          title={t('mockup.surpriseMeTooltip')}
+                        >
+                          <Dices size={18} className={isDiceAnimating ? 'dice-icon-animate' : ''} />
+                        </button>
+                        {onOpenSurpriseMeSettings && (
+                          <button
+                            onClick={onOpenSurpriseMeSettings}
+                            disabled={isGenerating || isGeneratingPrompt}
+                            className="flex items-center justify-center h-[48px] w-[48px] bg-zinc-800/50 hover:bg-[#52ddeb]/10 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-zinc-400 hover:text-[#52ddeb] border border-zinc-700/50 hover:border-[#52ddeb]/30 rounded-md transition-all duration-300 shadow-lg hover:shadow-[#52ddeb]/10 transform hover:scale-[1.02] active:scale-100 disabled:hover:scale-100 focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50 focus:ring-offset-2 focus:ring-offset-[#1A1A1A]"
+                            aria-label={t('mockup.surpriseMeSettings')}
+                            title={t('mockup.surpriseMeSettingsTooltip')}
+                          >
+                            <Settings size={18} />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
 

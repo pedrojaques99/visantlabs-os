@@ -13,6 +13,7 @@ import { NodeButton } from './shared/node-button';
 import { getSectionEmoji, cleanMarketResearchText } from '../../utils/brandingHelpers';
 import type { BrandingData } from '../../types';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useNodeResize } from '../../hooks/canvas/useNodeResize';
 
 // Auto-resize textarea component
 const AutoResizeTextarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
@@ -71,6 +72,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
   const { t } = useTranslation();
   const { setNodes } = useReactFlow();
   const nodeData = data as StrategyNodeData;
+  const { handleResize: handleResizeWithDebounce } = useNodeResize();
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>(
     nodeData.expandedSections || {}
   );
@@ -696,28 +698,10 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
     }
   }, [sections, expandedSections, strategyData, id, nodeData]);
 
-  // Handle resize from NodeResizer
+  // Handle resize from NodeResizer (com debounce - aplica apenas quando soltar o mouse)
   const handleResize = useCallback((width: number, height: number) => {
-    if (nodeData.onResize && typeof nodeData.onResize === 'function') {
-      nodeData.onResize(id, width, height);
-    }
-    
-    setNodes((nds) => {
-      return nds.map((n) => {
-        if (n.id === id && n.type === 'strategy') {
-          return {
-            ...n,
-            style: {
-              ...n.style,
-              width,
-              height,
-            },
-          };
-        }
-        return n;
-      });
-    });
-  }, [id, nodeData, setNodes]);
+    handleResizeWithDebounce(id, width, height, nodeData.onResize);
+  }, [id, nodeData.onResize, handleResizeWithDebounce]);
 
   return (
     <NodeContainer

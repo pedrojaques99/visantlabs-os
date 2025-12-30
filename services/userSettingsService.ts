@@ -77,6 +77,58 @@ export async function hasGeminiApiKey(): Promise<boolean> {
   }
 }
 
+/**
+ * Get user's canvas settings
+ */
+export async function getCanvasSettings(): Promise<any> {
+  const token = authService.getToken();
+  if (!token) {
+    return null;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/users/settings/canvas`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to get canvas settings:', error);
+    return null;
+  }
+}
+
+/**
+ * Update user's canvas settings
+ */
+export async function updateCanvasSettings(settings: any): Promise<void> {
+  const token = authService.getToken();
+  if (!token) {
+    return;
+  }
+
+  const response = await fetch(`${API_BASE_URL}/users/settings/canvas`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(settings),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ error: 'Failed to update settings' }));
+    throw new Error(errorData.error || errorData.message || 'Failed to update settings');
+  }
+}
+
 
 
 

@@ -3,6 +3,7 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import { AdvancedOptions } from './AdvancedOptions';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useTheme } from '../../hooks/useTheme';
+import type { DesignType } from '../../types';
 
 interface RefineSectionProps {
   isAdvancedOpen: boolean;
@@ -48,6 +49,7 @@ interface RefineSectionProps {
     onMaterialTagToggle: (tag: string) => void;
     onCustomMaterialInputChange: (value: string) => void;
     onAddCustomMaterialTag: () => void;
+    designType: DesignType | null;
   };
 }
 

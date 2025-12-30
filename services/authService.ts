@@ -32,7 +32,7 @@ class AuthService {
   private readonly VERIFY_THROTTLE_MS = 5000; // 5 segundos de throttle
   private retryCount: number = 0;
   private readonly MAX_RETRIES = 3;
-  private readonly INITIAL_RETRY_DELAY_MS = 500; // 500ms delay inicial para retry
+  private readonly INITIAL_RETRY_DELAY_MS = 200; // 200ms delay inicial para retry
 
   constructor() {
     // Load token from localStorage on initialization
