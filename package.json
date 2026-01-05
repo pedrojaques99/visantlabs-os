@@ -100,7 +100,7 @@
     "harden-react-markdown": "^1.1.5",
     "html2canvas": "^1.4.1",
     "jsonwebtoken": "^9.0.2",
-    "jspdf": "^3.0.4",
+    "jspdf": "^4.0.0",
     "katex": "^0.16.25",
     "lucide-react": "^0.418.0",
     "mongodb": "^6.21.0",
