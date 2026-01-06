@@ -1,7 +1,7 @@
 import { authService } from './authService';
 import type { Node, Edge } from '@xyflow/react';
 import type { FlowNodeData } from '../types/reactFlow';
-import { compressImage } from '../utils/imageCompression';
+import { compressImage } from '../utils/imageCompression.js';
 
 // Get API URL from environment or use current origin for production
 const getApiBaseUrl = () => {
@@ -220,11 +220,11 @@ export const canvasApi = {
       const response = await fetch(`${API_BASE_URL}/canvas`, {
         headers: getAuthHeaders(),
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         let errorMessage = `Failed to fetch canvas projects: ${response.status} ${response.statusText}`;
-        
+
         try {
           const errorData = JSON.parse(errorText);
           errorMessage = errorData.error || errorData.message || errorMessage;
@@ -233,18 +233,18 @@ export const canvasApi = {
             errorMessage = errorText;
           }
         }
-        
+
         const error = new Error(errorMessage);
         (error as any).status = response.status;
         throw error;
       }
-      
+
       const data = await response.json();
       return Array.isArray(data.projects) ? data.projects : [];
     } catch (error: any) {
-      if (error?.message?.includes('Failed to fetch') || 
-          error?.message?.includes('NetworkError') ||
-          error?.name === 'TypeError') {
+      if (error?.message?.includes('Failed to fetch') ||
+        error?.message?.includes('NetworkError') ||
+        error?.name === 'TypeError') {
         console.error('Network error fetching canvas projects:', error);
         return [];
       }
@@ -260,11 +260,11 @@ export const canvasApi = {
     const response = await fetch(`${API_BASE_URL}/canvas/${id}`, {
       headers: getAuthHeaders(),
     });
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       let errorMessage = 'Failed to fetch canvas project';
-      
+
       try {
         const errorData = JSON.parse(errorText);
         errorMessage = errorData.error || errorData.message || errorMessage;
@@ -273,21 +273,21 @@ export const canvasApi = {
           errorMessage = errorText;
         }
       }
-      
+
       const error = new Error(errorMessage);
       (error as any).status = response.status;
       throw error;
     }
-    
+
     const data = await response.json();
     return data.project;
   },
 
   async save(name: string, nodes: Node[], edges: Edge[], projectId?: string, drawings?: any[]): Promise<CanvasProject> {
-    const url = projectId 
+    const url = projectId
       ? `${API_BASE_URL}/canvas/${projectId}`
       : `${API_BASE_URL}/canvas`;
-    
+
     const method = projectId ? 'PUT' : 'POST';
 
     // Clean base64 images before sending to reduce payload size
@@ -305,21 +305,21 @@ export const canvasApi = {
       headers: getAuthHeaders(),
       body: JSON.stringify(payload),
     });
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       let errorMessage = `Failed to ${projectId ? 'update' : 'create'} canvas project`;
-      
+
       try {
         const errorData = JSON.parse(errorText);
         errorMessage = errorData.error || errorData.message || errorMessage;
-        
+
         // Improve error message for payload too large (413) - user-friendly version
         if (response.status === 413 || (response.status === 400 && errorMessage.toLowerCase().includes('payload too large')) || errorMessage.toLowerCase().includes('request entity too large')) {
           const payloadSizeMB = errorData.payloadSizeMB || errorData.sizeMB || '4.5';
           const maxSizeMB = errorData.maxSizeMB || '4.5';
           const base64ImageCount = errorData.base64ImageCount || 0;
-          
+
           if (errorData.r2Configured === false) {
             errorMessage = `Projeto muito grande (${payloadSizeMB}MB). ` +
               `O limite é ${maxSizeMB}MB devido ao limite da plataforma Vercel. ` +
@@ -344,12 +344,12 @@ export const canvasApi = {
           errorMessage = errorText;
         }
       }
-      
+
       const error = new Error(errorMessage);
       (error as any).status = response.status;
       throw error;
     }
-    
+
     const result = await response.json();
     return result.project;
   },
@@ -359,11 +359,11 @@ export const canvasApi = {
       method: 'DELETE',
       headers: getAuthHeaders(),
     });
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       let errorMessage = 'Failed to delete canvas project';
-      
+
       try {
         const errorData = JSON.parse(errorText);
         errorMessage = errorData.error || errorData.message || errorMessage;
@@ -372,7 +372,7 @@ export const canvasApi = {
           errorMessage = errorText;
         }
       }
-      
+
       const error = new Error(errorMessage);
       (error as any).status = response.status;
       throw error;
@@ -385,7 +385,7 @@ export const canvasApi = {
       const queryParams = new URLSearchParams();
       if (canvasId) queryParams.append('canvasId', canvasId);
       if (nodeId) queryParams.append('nodeId', nodeId);
-      
+
       // Detect content type from file
       const contentType = file.type || 'image/png';
       queryParams.append('contentType', contentType);
@@ -434,18 +434,18 @@ export const canvasApi = {
   async uploadImageToR2(base64Image: string, canvasId?: string, nodeId?: string, options?: { skipCompression?: boolean }): Promise<string> {
     try {
       const skipCompression = options?.skipCompression ?? false;
-      
+
       // Dev logging
       const logR2 = (msg: string, data?: any) => console.log(`[R2Upload] ${msg}`, data ?? '');
-      
+
       // Vercel Pro limit is 50MB for serverless functions
       const VERCEL_LIMIT = 50 * 1024 * 1024; // 50MB (Vercel Pro)
-      
+
       // Calculate current payload size
       const base64Data = base64Image.includes(',') ? base64Image.split(',')[1] : base64Image;
       const binarySize = (base64Data.length * 3) / 4; // Approximate binary size from base64
       const binarySizeMB = (binarySize / 1024 / 1024).toFixed(2);
-      
+
       logR2('Upload started', {
         binarySizeMB: `${binarySizeMB}MB`,
         skipCompression,
@@ -453,7 +453,7 @@ export const canvasApi = {
         nodeId,
         exceedsLimit: binarySize > VERCEL_LIMIT * 0.75,
       });
-      
+
       // If skipCompression is true and image exceeds Vercel limit, try direct upload
       if (skipCompression && binarySize > VERCEL_LIMIT * 0.75) {
         logR2('Attempting direct upload (presigned URL)...');
@@ -461,9 +461,9 @@ export const canvasApi = {
           // Convert base64 to Blob for direct upload
           const blob = await canvasApi.base64ToBlob(base64Image);
           const file = new File([blob], `upscale-${Date.now()}.png`, { type: 'image/png' });
-          
+
           logR2('Blob created', { blobSize: `${(blob.size / 1024 / 1024).toFixed(2)}MB` });
-          
+
           // Use direct upload (presigned URL) to bypass Vercel limit
           const result = await canvasApi.uploadImageToR2Direct(file, canvasId, nodeId);
           logR2('Direct upload SUCCESS!', { resultUrl: result });
@@ -472,33 +472,33 @@ export const canvasApi = {
           // If direct upload fails (e.g., CORS), fall back to chunked or standard upload
           logR2('Direct upload FAILED', { error: directUploadError.message });
           console.warn('Direct upload failed, trying standard upload with compression:', directUploadError.message);
-          
+
           // For very large images, we need to compress to fit Vercel limit
           // Use high quality compression to preserve as much detail as possible
           logR2('Falling back to compressed upload (quality: 0.98)...');
-          const dataUrl = base64Image.startsWith('data:') 
-            ? base64Image 
+          const dataUrl = base64Image.startsWith('data:')
+            ? base64Image
             : `data:image/png;base64,${base64Image}`;
-          
+
           const compressedBase64 = await compressImage(dataUrl, {
             maxWidth: 8192, // Allow very large dimensions
             maxHeight: 8192,
             maxSizeBytes: 48 * 1024 * 1024, // 48MB target (below 50MB Vercel Pro limit)
             quality: 0.98, // Near-maximum quality
           });
-          
+
           // Extract base64 data
-          const compressedData = compressedBase64.includes(',') 
-            ? compressedBase64.split(',')[1] 
+          const compressedData = compressedBase64.includes(',')
+            ? compressedBase64.split(',')[1]
             : compressedBase64;
-          
+
           const compressedSizeMB = ((compressedData.length * 3 / 4) / 1024 / 1024).toFixed(2);
           logR2('Compression complete', {
             originalMB: binarySizeMB,
             compressedMB: compressedSizeMB,
             reduction: `${(100 - (parseFloat(compressedSizeMB) / parseFloat(binarySizeMB) * 100)).toFixed(0)}%`,
           });
-          
+
           // Continue with standard upload using compressed image
           logR2('Uploading compressed image via server...');
           const response = await fetch(`${API_BASE_URL}/canvas/image/upload`, {
@@ -510,36 +510,36 @@ export const canvasApi = {
               nodeId,
             }),
           });
-          
+
           if (!response.ok) {
             const errorText = await response.text();
             logR2('Server upload FAILED', { status: response.status, error: errorText });
             throw new Error(errorText || 'Failed to upload image');
           }
-          
+
           const data = await response.json();
           logR2('Server upload SUCCESS!', { imageUrl: data.imageUrl });
           return data.imageUrl;
         }
       }
-      
+
       // Check if R2 is configured to determine compression strategy
       const r2Status = await canvasApi.checkR2Status();
       const r2Configured = r2Status.configured;
-      
+
       // When R2 is configured, we can preserve maximum quality
       // Use minimal compression (high quality, larger size limit) for designers
       let compressedBase64 = base64Image;
       const COMPRESSION_THRESHOLD = 10 * 1024 * 1024; // 10MB - only compress very large images
       const needsCompression = !skipCompression && binarySize > COMPRESSION_THRESHOLD;
-      
+
       if (needsCompression) {
         try {
           // Add data URL prefix if missing for compression
-          const dataUrl = base64Image.startsWith('data:') 
-            ? base64Image 
+          const dataUrl = base64Image.startsWith('data:')
+            ? base64Image
             : `data:image/jpeg;base64,${base64Image}`;
-          
+
           if (r2Configured) {
             // R2 configured: Use MAXIMUM quality for designers
             // Higher quality (0.95), larger size limit, preserve dimensions better
@@ -558,17 +558,17 @@ export const canvasApi = {
               quality: 0.85, // Standard quality
             });
           }
-          
+
           // Extract base64 data (remove data URL prefix)
-          compressedBase64 = compressedBase64.includes(',') 
-            ? compressedBase64.split(',')[1] 
+          compressedBase64 = compressedBase64.includes(',')
+            ? compressedBase64.split(',')[1]
             : compressedBase64;
         } catch (compressError) {
           console.warn('Failed to compress image, using original:', compressError);
           // Continue with original if compression fails
         }
       }
-      
+
       // Calculate final payload size before sending
       const payload = {
         base64Image: compressedBase64,
@@ -577,11 +577,11 @@ export const canvasApi = {
       };
       const payloadString = JSON.stringify(payload);
       const payloadSize = new Blob([payloadString]).size;
-      
+
       // Check payload size after compression
       if (payloadSize > VERCEL_LIMIT) {
         const payloadSizeMB = (payloadSize / 1024 / 1024).toFixed(2);
-        const qualityMessage = r2Configured 
+        const qualityMessage = r2Configured
           ? ' Mesmo com qualidade máxima preservada, a imagem ainda excede o limite.'
           : ' Configure o R2 para preservar qualidade máxima em imagens grandes.';
         throw new Error(
@@ -599,11 +599,11 @@ export const canvasApi = {
           nodeId,
         }),
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         let errorMessage = 'Failed to upload image to R2';
-        
+
         // Handle 413 Payload Too Large errors with a user-friendly message
         if (response.status === 413) {
           errorMessage = 'Imagem muito grande para upload. O tamanho máximo é 50MB. Por favor, use uma imagem menor.';
@@ -617,10 +617,10 @@ export const canvasApi = {
             }
           }
         }
-        
+
         throw new Error(errorMessage);
       }
-      
+
       const data = await response.json();
       return data.imageUrl;
     } catch (error: any) {
@@ -635,7 +635,7 @@ export const canvasApi = {
       const queryParams = new URLSearchParams();
       if (canvasId) queryParams.append('canvasId', canvasId);
       if (nodeId) queryParams.append('nodeId', nodeId);
-      
+
       // Detect content type from file
       const contentType = file.type || 'video/mp4';
       queryParams.append('contentType', contentType);
@@ -687,16 +687,16 @@ export const canvasApi = {
     try {
       // IMPORTANT: Videos are uploaded to R2 WITHOUT COMPRESSION
       // Original quality is preserved for designers
-      
+
       // Vercel Pro limit is 50MB for serverless functions
       const VERCEL_LIMIT = 50 * 1024 * 1024; // 50MB (Vercel Pro)
-      
+
       // Calculate base64 video size
-      const base64Data = videoBase64.includes(',') 
-        ? videoBase64.split(',')[1] 
+      const base64Data = videoBase64.includes(',')
+        ? videoBase64.split(',')[1]
         : videoBase64;
       const videoSizeBytes = base64Data ? (base64Data.length * 3) / 4 : 0;
-      
+
       // Check payload size
       const payload = {
         videoBase64: videoBase64,
@@ -705,7 +705,7 @@ export const canvasApi = {
       };
       const payloadString = JSON.stringify(payload);
       const payloadSize = new Blob([payloadString]).size;
-      
+
       if (payloadSize > VERCEL_LIMIT) {
         const payloadSizeMB = (payloadSize / 1024 / 1024).toFixed(2);
         throw new Error(
@@ -726,11 +726,11 @@ export const canvasApi = {
           nodeId,
         }),
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         let errorMessage = 'Failed to upload video to R2';
-        
+
         // Handle 413 Payload Too Large errors with a user-friendly message
         if (response.status === 413) {
           errorMessage = 'Vídeo muito grande para upload. O limite é 50MB (Vercel Pro). ' +
@@ -746,10 +746,10 @@ export const canvasApi = {
             }
           }
         }
-        
+
         throw new Error(errorMessage);
       }
-      
+
       const data = await response.json();
       return data.videoUrl;
     } catch (error: any) {
@@ -769,11 +769,11 @@ export const canvasApi = {
           nodeId,
         }),
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         let errorMessage = 'Failed to upload PDF to R2';
-        
+
         // Handle 413 Payload Too Large errors with a user-friendly message
         if (response.status === 413) {
           errorMessage = 'PDF is too large to upload. Maximum size is 3MB. Please compress the PDF or use a smaller file.';
@@ -787,10 +787,10 @@ export const canvasApi = {
             }
           }
         }
-        
+
         throw new Error(errorMessage);
       }
-      
+
       const data = await response.json();
       return data.pdfUrl;
     } catch (error: any) {
@@ -811,7 +811,7 @@ export const canvasApi = {
         method: 'DELETE',
         headers: getAuthHeaders(),
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Failed to delete image from R2:', errorText);
@@ -828,7 +828,7 @@ export const canvasApi = {
       const response = await fetch(`${API_BASE_URL}/health/r2`, {
         headers: getAuthHeaders(),
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         return {
@@ -836,7 +836,7 @@ export const canvasApi = {
           error: errorData.error || 'R2 não está configurado',
         };
       }
-      
+
       const data = await response.json();
       return {
         configured: data.status === 'connected',
@@ -857,11 +857,11 @@ export const canvasApi = {
         headers: getAuthHeaders(),
         body: JSON.stringify({ canEdit, canView }),
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         let errorMessage = 'Failed to share project';
-        
+
         try {
           const errorData = JSON.parse(errorText);
           errorMessage = errorData.error || errorData.message || errorMessage;
@@ -870,10 +870,10 @@ export const canvasApi = {
             errorMessage = errorText;
           }
         }
-        
+
         throw new Error(errorMessage);
       }
-      
+
       return await response.json();
     } catch (error: any) {
       console.error('Error sharing project:', error);
@@ -889,11 +889,11 @@ export const canvasApi = {
           'Content-Type': 'application/json',
         },
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         let errorMessage = 'Failed to fetch shared project';
-        
+
         try {
           const errorData = JSON.parse(errorText);
           errorMessage = errorData.error || errorData.message || errorMessage;
@@ -902,10 +902,10 @@ export const canvasApi = {
             errorMessage = errorText;
           }
         }
-        
+
         throw new Error(errorMessage);
       }
-      
+
       const data = await response.json();
       return data.project;
     } catch (error: any) {
@@ -921,11 +921,11 @@ export const canvasApi = {
         headers: getAuthHeaders(),
         body: JSON.stringify(settings),
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         let errorMessage = 'Failed to update share settings';
-        
+
         try {
           const errorData = JSON.parse(errorText);
           errorMessage = errorData.error || errorData.message || errorMessage;
@@ -934,10 +934,10 @@ export const canvasApi = {
             errorMessage = errorText;
           }
         }
-        
+
         throw new Error(errorMessage);
       }
-      
+
       return await response.json();
     } catch (error: any) {
       console.error('Error updating share settings:', error);
@@ -951,11 +951,11 @@ export const canvasApi = {
         method: 'DELETE',
         headers: getAuthHeaders(),
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         let errorMessage = 'Failed to remove sharing';
-        
+
         try {
           const errorData = JSON.parse(errorText);
           errorMessage = errorData.error || errorData.message || errorMessage;
@@ -964,7 +964,7 @@ export const canvasApi = {
             errorMessage = errorText;
           }
         }
-        
+
         throw new Error(errorMessage);
       }
     } catch (error: any) {
@@ -979,11 +979,11 @@ export const canvasApi = {
         method: 'POST',
         headers: getAuthHeaders(),
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         let errorMessage = 'Failed to authenticate with Liveblocks';
-        
+
         try {
           const errorData = JSON.parse(errorText);
           errorMessage = errorData.error || errorData.message || errorMessage;
@@ -992,14 +992,14 @@ export const canvasApi = {
             errorMessage = errorText;
           }
         }
-        
+
         throw new Error(errorMessage);
       }
-      
+
       // Liveblocks returns the token in the response body
       const text = await response.text();
       const data = JSON.parse(text);
-      
+
       return {
         token: data.token || text,
         roomId: `canvas-${projectId}`,
@@ -1018,7 +1018,7 @@ export const canvasApi = {
     // Extract the base64 data and mime type
     let mimeType = 'image/png';
     let base64Data = base64;
-    
+
     if (base64.startsWith('data:')) {
       const match = base64.match(/^data:([^;]+);base64,(.+)$/);
       if (match) {
@@ -1032,14 +1032,14 @@ export const canvasApi = {
         }
       }
     }
-    
+
     // Decode base64 to binary
     const binaryString = atob(base64Data);
     const bytes = new Uint8Array(binaryString.length);
     for (let i = 0; i < binaryString.length; i++) {
       bytes[i] = binaryString.charCodeAt(i);
     }
-    
+
     return new Blob([bytes], { type: mimeType });
   },
 };

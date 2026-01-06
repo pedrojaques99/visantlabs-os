@@ -1,5 +1,5 @@
-import { migrateLegacyPreset } from '../types/communityPrompts';
-import type { PromptCategory } from '../types/communityPrompts';
+import { migrateLegacyPreset } from '../types/communityPrompts.js';
+import type { PromptCategory } from '../types/communityPrompts.js';
 
 // Cache for community presets
 let cachedPresets: Record<string, any[]> | null = null;
@@ -14,10 +14,10 @@ async function loadPresetsFromAPI(): Promise<Record<string, any[]>> {
     while (isLoadingPresets) {
       await new Promise(resolve => setTimeout(resolve, 100));
     }
-    return cachedPresets || { 
+    return cachedPresets || {
       '3d': [], 'presets': [], 'aesthetics': [], 'themes': [],
       // Compatibilidade
-      mockup: [], angle: [], texture: [], ambience: [], luminance: [] 
+      mockup: [], angle: [], texture: [], ambience: [], luminance: []
     };
   }
 
@@ -51,10 +51,10 @@ async function loadPresetsFromAPI(): Promise<Record<string, any[]>> {
     isLoadingPresets = false;
   }
 
-  return { 
+  return {
     '3d': [], 'presets': [], 'aesthetics': [], 'themes': [],
     // Compatibilidade
-    mockup: [], angle: [], texture: [], ambience: [], luminance: [] 
+    mockup: [], angle: [], texture: [], ambience: [], luminance: []
   };
 }
 

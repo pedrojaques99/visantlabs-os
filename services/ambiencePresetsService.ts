@@ -1,5 +1,5 @@
-import type { AmbiencePreset, AmbiencePresetType } from '../types/ambiencePresets';
-import { AMBIENCE_PRESETS } from '../types/ambiencePresets';
+import type { AmbiencePreset, AmbiencePresetType } from '../types/ambiencePresets.js';
+import { AMBIENCE_PRESETS } from '../types/ambiencePresets.js';
 
 // Cache for MongoDB presets
 let cachedPresets: AmbiencePreset[] | null = null;

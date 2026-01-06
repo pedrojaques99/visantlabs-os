@@ -1,5 +1,5 @@
-import type { LuminancePreset, LuminancePresetType } from '../types/luminancePresets';
-import { LUMINANCE_PRESETS } from '../types/luminancePresets';
+import type { LuminancePreset, LuminancePresetType } from '../types/luminancePresets.js';
+import { LUMINANCE_PRESETS } from '../types/luminancePresets.js';
 
 // Cache for MongoDB presets
 let cachedPresets: LuminancePreset[] | null = null;

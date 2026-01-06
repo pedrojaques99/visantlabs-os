@@ -1,10 +1,10 @@
-import type { MockupPreset, MockupPresetType } from '../types/mockupPresets';
-import type { UploadedImage } from '../types';
-import { MOCKUP_PRESETS } from '../types/mockupPresets';
-import { TEXTURE_PRESETS } from '../types/texturePresets';
-import { ANGLE_PRESETS } from '../types/anglePresets';
-import { AMBIENCE_PRESETS } from '../types/ambiencePresets';
-import { LUMINANCE_PRESETS } from '../types/luminancePresets';
+import type { MockupPreset, MockupPresetType } from '../types/mockupPresets.js';
+import type { UploadedImage } from '../types.js';
+import { MOCKUP_PRESETS } from '../types/mockupPresets.js';
+import { TEXTURE_PRESETS } from '../types/texturePresets.js';
+import { ANGLE_PRESETS } from '../types/anglePresets.js';
+import { AMBIENCE_PRESETS } from '../types/ambiencePresets.js';
+import { LUMINANCE_PRESETS } from '../types/luminancePresets.js';
 import { getAllCommunityPresets } from './communityPresetsService';
 
 // Combine all static presets

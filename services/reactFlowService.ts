@@ -1,4 +1,4 @@
-import { getCreditsRequired, getVideoCreditsRequired } from '../utils/creditCalculator';
+import { getCreditsRequired, getVideoCreditsRequired } from '../utils/creditCalculator.js';
 import type { GeminiModel, Resolution, UploadedImage } from '../types';
 import { toast } from 'sonner';
 import { mockupApi } from './mockupApi';
