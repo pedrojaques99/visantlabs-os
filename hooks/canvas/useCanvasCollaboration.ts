@@ -339,14 +339,17 @@ export const useCanvasCollaboration = ({
   // Initialize storage when collaborative mode is enabled
   useEffect(() => {
     // Wait for storage to be loaded before initializing
-    // Storage is ready when room is connected
+    // Storage is ready when useStorage returns non-null values
     // Skip if not in collaborative mode or missing requirements
     if (!isCollaborative || !projectId || nodes.length === 0 || isInitializedRef.current) {
       return;
     }
     
-    // Wait for connection state to be defined and connected
-    if (status === 'connected') {
+    // Wait for connection state to be connected AND storage to be available
+    // useStorage returns null until storage is loaded, so we check both conditions
+    const isStorageReady = liveNodes !== null && liveEdges !== null;
+    
+    if (status === 'connected' && isStorageReady) {
       console.log('[Liveblocks] 🚀 Initializing storage for room:', roomId, 'with', nodes.length, 'nodes and', edges.length, 'edges');
       try {
         initializeStorage();
@@ -355,11 +358,14 @@ export const useCanvasCollaboration = ({
         console.error('[Liveblocks] ❌ Error initializing storage:', error);
       }
     } else {
-      // Connection not yet connected, but state is defined (e.g., 'connecting', 'authenticating')
-      // Will retry when connection state changes to 'connected'
-      console.log('[Liveblocks] ⏳ Waiting for connection to open. Current state:', status);
+      // Connection not yet connected or storage not ready
+      if (status !== 'connected') {
+        console.log('[Liveblocks] ⏳ Waiting for connection to open. Current state:', status);
+      } else if (!isStorageReady) {
+        console.log('[Liveblocks] ⏳ Waiting for storage to load...');
+      }
     }
-  }, [isCollaborative, projectId, nodes, edges, initializeStorage, status, roomId]);
+  }, [isCollaborative, projectId, nodes, edges, initializeStorage, status, roomId, liveNodes, liveEdges]);
 
   // Sync local changes to Liveblocks (instant for position changes, debounced for others)
   const syncToLiveblocksInstant = useCallback(

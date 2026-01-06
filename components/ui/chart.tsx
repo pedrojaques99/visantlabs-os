@@ -99,9 +99,14 @@ ${colorConfig
 
 const ChartTooltip = RechartsPrimitive.Tooltip
 
+type TooltipProps = React.ComponentProps<typeof RechartsPrimitive.Tooltip> & {
+  payload?: any[];
+  label?: any;
+};
+
 const ChartTooltipContent = React.forwardRef<
     HTMLDivElement,
-    React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
+    TooltipProps &
     React.ComponentProps<"div"> & {
         hideLabel?: boolean
         hideIndicator?: boolean
@@ -126,9 +131,9 @@ const ChartTooltipContent = React.forwardRef<
             color,
             nameKey,
             labelClassName,
-            ref,
+            ...rest
         },
-        refProp
+        ref
     ) => {
         const { config } = useChart()
 
@@ -255,10 +260,13 @@ ChartTooltipContent.displayName = "ChartTooltipContent"
 
 const ChartLegend = RechartsPrimitive.Legend
 
+type LegendProps = React.ComponentProps<typeof RechartsPrimitive.Legend>;
+
 const ChartLegendContent = React.forwardRef<
     HTMLDivElement,
-    React.ComponentProps<"div"> &
-    Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
+    React.ComponentProps<"div"> & {
+        payload?: any[]
+        verticalAlign?: 'top' | 'bottom'
         hideIcon?: boolean
         nameKey?: string
     }
@@ -269,7 +277,7 @@ const ChartLegendContent = React.forwardRef<
     ) => {
         const { config } = useChart()
 
-        if (!payload?.length) {
+        if (!payload || !Array.isArray(payload) || payload.length === 0) {
             return null
         }
 

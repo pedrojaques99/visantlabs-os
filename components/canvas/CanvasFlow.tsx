@@ -702,6 +702,8 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
       style={{
         marginRight: `${sidebarSpace}px`,
         backgroundColor: backgroundColor,
+        width: '100%',
+        height: '100%',
         // Maintain custom cursor during selection box
         cursor: isSelecting && !isDrawingMode && activeTool === 'select' && !spacePressed
           ? customCursorSvg
@@ -868,6 +870,11 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
         }
         .react-flow__pane:active {
            cursor: ${cursorActiveCss} !important;
+        }
+        
+        /* ReactFlow overflow override */
+        .react-flow {
+          overflow: visible !important;
         }
         
         /* ReactFlow native selection disabled - using custom selection box for drawings */

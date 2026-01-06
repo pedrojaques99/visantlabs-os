@@ -67,15 +67,30 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { subscriptionStatus: contextSubscriptionStatus, onCreditPackagesModalOpen } = useLayout();
+
+  // Log when onShareClick changes
+  useEffect(() => {
+    console.log('[CanvasHeader] 🔍 onShareClick prop changed', {
+      hasHandler: !!onShareClick,
+      isCollaborative,
+      projectName,
+      timestamp: new Date().toISOString(),
+      stackTrace: new Error().stack
+    });
+  }, [onShareClick, isCollaborative, projectName]);
   const [isEditing, setIsEditing] = useState(false);
   const [localName, setLocalName] = useState(projectName || 'Untitled');
   const inputRef = useRef<HTMLInputElement>(null);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showCommunityPresetsSidebar, setShowCommunityPresetsSidebar] = useState(false);
+  const isUserEditRef = useRef(false); // Track if the user actually edited
 
   useEffect(() => {
-    setLocalName(projectName || 'Untitled');
-  }, [projectName]);
+    // Only update localName if not currently editing (to avoid interrupting user input)
+    if (!isEditing) {
+      setLocalName(projectName || 'Untitled');
+    }
+  }, [projectName, isEditing]);
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -86,12 +101,32 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({
 
   const handleBlur = () => {
     setIsEditing(false);
-    const trimmedName = localName.trim() || 'Untitled';
-    if (trimmedName !== projectName && onProjectNameChange) {
-      onProjectNameChange(trimmedName);
+    // Safety check: ensure localName is a string before calling trim
+    const safeLocalName = localName && typeof localName === 'string' ? localName : (projectName || 'Untitled');
+    const trimmedName = safeLocalName.trim() || 'Untitled';
+    // Only call onProjectNameChange if user actually edited (not just programmatic update)
+    if (trimmedName !== projectName && isUserEditRef.current) {
+      if (onProjectNameChange) {
+        onProjectNameChange(trimmedName);
+      } else {
+        // Handler not available yet, just reset to original
+        setLocalName(projectName || 'Untitled');
+      }
+      isUserEditRef.current = false; // Reset flag
     } else {
       setLocalName(projectName || 'Untitled');
+      isUserEditRef.current = false; // Reset flag
     }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalName(e.target.value);
+    isUserEditRef.current = true; // Mark as user edit
+  };
+
+  const handleEditStart = () => {
+    setIsEditing(true);
+    isUserEditRef.current = false; // Reset flag when starting edit
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -136,7 +171,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({
             >
               {t('canvas.title') || 'Canvas'}
             </button>
-            {projectName && (
+            {(projectName || isEditing) && (
               <>
                 <ChevronRight size={12} className="flex-shrink-0 text-zinc-600" />
                 {isEditing ? (
@@ -144,18 +179,18 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({
                     ref={inputRef}
                     type="text"
                     value={localName}
-                    onChange={(e) => setLocalName(e.target.value)}
+                    onChange={handleInputChange}
                     onBlur={handleBlur}
                     onKeyDown={handleKeyDown}
                     className="text-xs font-mono text-zinc-300 bg-transparent border-b border-zinc-600 focus:border-[#52ddeb] focus:outline-none px-1 min-w-[80px] sm:min-w-[100px] max-w-[200px] sm:max-w-none"
                   />
                 ) : (
                   <span
-                    onClick={() => setIsEditing(true)}
+                    onClick={handleEditStart}
                     className="text-zinc-300 truncate cursor-text hover:text-zinc-200 transition-colors"
-                    title={projectName}
+                    title={projectName || 'Untitled'}
                   >
-                    {projectName}
+                    {projectName || 'Untitled'}
                   </span>
                 )}
               </>
@@ -165,12 +200,29 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({
         <div className="flex items-center gap-2 flex-shrink-0">
           {onShareClick && (
             <button
-              onClick={onShareClick}
+              onClick={(e) => {
+                // Only proceed if this is a real user click event
+                if (!e || !e.isTrusted) {
+                  console.warn('[CanvasHeader] ⚠️ Share button click ignored - not a trusted event');
+                  return;
+                }
+                
+                console.log('[CanvasHeader] 🔍 Share button clicked', {
+                  isCollaborative,
+                  projectName,
+                  timestamp: new Date().toISOString(),
+                  stackTrace: new Error().stack
+                });
+                e.preventDefault();
+                e.stopPropagation();
+                onShareClick();
+              }}
               className={`p-1.5 border rounded-md transition-all flex items-center justify-center ${isCollaborative
                 ? 'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border-[#52ddeb]/30 hover:border-[#52ddeb]/50'
                 : 'bg-zinc-800/50 hover:bg-zinc-700/50 text-zinc-300 border-zinc-700/50 hover:border-zinc-600'
                 }`}
               title={t('canvas.share')}
+              type="button"
             >
               <Share2 size={14} />
             </button>

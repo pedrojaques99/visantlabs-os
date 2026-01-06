@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { useCanvasEditingState } from './useCanvasEditingState';
 import { saveCanvasToLocalStorage } from '../../utils/canvas/canvasLocalStorage';
 import { flushAllPendingUploads } from './utils/r2UploadUtils';
+import { isLocalDevelopment } from '../../utils/env';
 
 const STORAGE_KEY = 'canvas-flow-state';
 
@@ -123,6 +124,12 @@ export const useCanvasProject = (
     const loadProject = async () => {
       setIsLoadingProject(true);
       
+      if (isLocalDevelopment()) {
+        console.log('[useCanvasProject] 📥 Starting to load project:', {
+          projectId: id,
+          timestamp: new Date().toISOString()
+        });
+      }
       
       // Add timeout to prevent infinite loading
       const timeoutId = setTimeout(() => {
@@ -137,8 +144,24 @@ export const useCanvasProject = (
       }, 30000); // 30 second timeout
       
       try {
+        const startTime = performance.now();
         const project = await canvasApi.getById(id);
+        const loadTime = performance.now() - startTime;
         clearTimeout(timeoutId);
+        
+        if (isLocalDevelopment()) {
+          console.log('[useCanvasProject] ✅ Project loaded successfully:', {
+            projectId: id,
+            projectName: project.name || 'Untitled',
+            nodeCount: Array.isArray(project.nodes) ? project.nodes.length : 0,
+            edgeCount: Array.isArray(project.edges) ? project.edges.length : 0,
+            drawingCount: Array.isArray(project.drawings) ? project.drawings.length : 0,
+            isCollaborative: project.isCollaborative || false,
+            hasShareId: !!project.shareId,
+            loadTimeMs: Math.round(loadTime),
+            timestamp: new Date().toISOString()
+          });
+        }
         
         setProjectName(project.name || 'Untitled');
         setShareId(project.shareId || null);
@@ -182,6 +205,15 @@ export const useCanvasProject = (
               })
               .map((edge) => cleanEdgeHandles(edge));
             setEdges(validatedEdges);
+            
+            if (isLocalDevelopment()) {
+              console.log('[useCanvasProject] 📊 Project data validated and set:', {
+                projectId: id,
+                validatedNodeCount: validatedNodes.length,
+                validatedEdgeCount: validatedEdges.length,
+                timestamp: new Date().toISOString()
+              });
+            }
           }
 
           // Upload base64 images to R2 in background after project loads
@@ -251,6 +283,17 @@ export const useCanvasProject = (
         }
       } catch (error: any) {
         clearTimeout(timeoutId);
+        
+        if (isLocalDevelopment()) {
+          console.error('[useCanvasProject] ❌ Failed to load project:', {
+            projectId: id,
+            error: error?.message || error,
+            status: error?.status,
+            stack: error?.stack,
+            timestamp: new Date().toISOString()
+          });
+        }
+        
         console.error('Failed to load project:', error);
         // Reset flag on error so it can retry if needed
         hasLoadedProject.current = false;
@@ -265,6 +308,13 @@ export const useCanvasProject = (
         navigate('/canvas');
       } finally {
         setIsLoadingProject(false);
+        
+        if (isLocalDevelopment()) {
+          console.log('[useCanvasProject] ⏸️ Project loading finished:', {
+            projectId: id,
+            timestamp: new Date().toISOString()
+          });
+        }
       }
     };
 

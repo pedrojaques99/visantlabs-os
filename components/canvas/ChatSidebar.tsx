@@ -540,36 +540,36 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   const currentWidth = isCollapsed ? COLLAPSED_WIDTH : sidebarWidth;
 
   return (
-    <>
-      {/* Resizer - only show on large screens when expanded, positioned before sidebar */}
+    <aside
+      ref={actualSidebarRef as React.RefObject<HTMLDivElement>}
+      data-chat-sidebar="true"
+      className={cn(
+        "relative",
+        "z-50",
+        "backdrop-blur-xl border-l border-zinc-800/50",
+        "shadow-2xl",
+        "transition-all duration-300 ease-out",
+        "flex flex-col",
+        "bg-black/40",
+        "flex-shrink-0",
+        isCollapsed ? "w-[56px]" : ""
+      )}
+      style={{
+        width: `${currentWidth}px`,
+        height: '100%',
+        backgroundColor: 'var(--sidebar)',
+      }}
+    >
+      {/* Resizer - only show on large screens when expanded, positioned on left edge */}
       {!isCollapsed && isLargeScreen && onSidebarWidthChange && (
         <div
           ref={resizerRef}
-          className="hidden lg:block flex-shrink-0 w-2 cursor-col-resize group"
+          className="hidden lg:block absolute left-0 top-0 h-full w-2 cursor-col-resize group z-10"
+          style={{ touchAction: 'none' }}
         >
           <div className="w-px h-full mx-auto bg-zinc-800/50 group-hover:bg-brand-cyan/50 transition-colors duration-200"></div>
         </div>
       )}
-      <aside
-        ref={actualSidebarRef as React.RefObject<HTMLDivElement>}
-        data-chat-sidebar="true"
-        className={cn(
-          "relative",
-          "z-50",
-          "backdrop-blur-xl border-l border-zinc-800/50",
-          "shadow-2xl",
-          "transition-all duration-300 ease-out",
-          "flex flex-col",
-          "bg-black/40",
-          "flex-shrink-0",
-          isCollapsed ? "w-[56px]" : ""
-        )}
-        style={{
-          width: `${currentWidth}px`,
-          height: '100%',
-          backgroundColor: 'var(--sidebar)',
-        }}
-      >
       {/* Toggle Button - Only visible when expanded */}
       {!isCollapsed && (
         <button
@@ -918,8 +918,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
           </div>
         </div>
       )}
-      </aside>
-    </>
+    </aside>
   );
 };
 

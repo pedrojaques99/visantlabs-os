@@ -522,6 +522,7 @@ export const useCanvasNodeHandlers = (
         aspectRatio: editData.aspectRatio || '16:9',
         generateText: editData.generateText || false,
         withHuman: editData.withHuman || false,
+        enhanceTexture: (editData as any).enhanceTexture === true,
         negativePrompt: editData.negativePrompt || '',
         additionalPrompt: editData.additionalPrompt || '',
       });

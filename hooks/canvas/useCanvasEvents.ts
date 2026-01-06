@@ -12,7 +12,7 @@ const FLOW_NODE_TYPES = ['mockup', 'merge', 'edit', 'upscale', 'prompt', 'angle'
 
 interface NodeCreationFunctions {
   addPromptNode?: (pos?: { x: number; y: number }, data?: any) => string | undefined;
-  addTextNode?: (pos?: { x: number; y: number }, text?: string, isFlowPosition?: boolean) => string | undefined;
+  addTextNode?: (pos?: { x: number; y: number } | { x: number; y: number }, text?: string, isFlowPosition?: boolean) => string | undefined;
   addStrategyNode?: (pos?: { x: number; y: number }) => string | undefined;
   addImageNode?: (pos?: { x: number; y: number }) => string | undefined;
 }
@@ -860,20 +860,16 @@ export const useCanvasEvents = (
         
         // Determine node type to create based on handle type
         let nodeTypeToCreate: 'prompt' | 'text' | 'strategy' | null = null;
-        let createNodeFn: ((pos?: { x: number; y: number }, data?: any) => string | undefined) | undefined;
         
         if (handleType === 'generic') {
           nodeTypeToCreate = 'prompt';
-          createNodeFn = nodeCreators.addPromptNode;
         } else if (handleType === 'text') {
           nodeTypeToCreate = 'text';
-          createNodeFn = nodeCreators.addTextNode;
         } else if (handleType === 'strategy') {
           nodeTypeToCreate = 'strategy';
-          createNodeFn = nodeCreators.addStrategyNode;
         }
         
-        if (nodeTypeToCreate && createNodeFn) {
+        if (nodeTypeToCreate) {
           const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
           if (pane && reactFlowInstance) {
             const paneRect = pane.getBoundingClientRect();
@@ -882,15 +878,20 @@ export const useCanvasEvents = (
             // For prompt and strategy, pass screen coordinates (they convert internally)
             let newNodeId: string | undefined;
             
-            if (nodeTypeToCreate === 'text') {
+            if (nodeTypeToCreate === 'text' && nodeCreators.addTextNode) {
               const flowPosition = reactFlowInstance.screenToFlowPosition({
                 x: clientX - paneRect.left,
                 y: clientY - paneRect.top,
               });
-              newNodeId = createNodeFn(flowPosition, undefined, true);
-            } else {
+              newNodeId = nodeCreators.addTextNode(flowPosition, undefined, true);
+            } else if (nodeTypeToCreate === 'prompt' && nodeCreators.addPromptNode) {
               // Prompt and strategy expect screen coordinates
-              newNodeId = createNodeFn({
+              newNodeId = nodeCreators.addPromptNode({
+                x: clientX,
+                y: clientY,
+              });
+            } else if (nodeTypeToCreate === 'strategy' && nodeCreators.addStrategyNode) {
+              newNodeId = nodeCreators.addStrategyNode({
                 x: clientX,
                 y: clientY,
               });

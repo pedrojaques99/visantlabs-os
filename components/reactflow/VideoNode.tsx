@@ -107,7 +107,10 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
 
   // Resize handler (com debounce - aplica apenas quando soltar o mouse)
   const handleResize = useCallback((width: number, height: number) => {
-    handleResizeWithDebounce(id, width, height, data.onResize);
+    const onResize = typeof data.onResize === 'function' 
+      ? data.onResize as (nodeId: string, width: number, height: number) => void
+      : undefined;
+    handleResizeWithDebounce(id, width, height, onResize);
   }, [id, data.onResize, handleResizeWithDebounce]);
 
   // Derived states
