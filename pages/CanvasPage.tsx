@@ -73,6 +73,10 @@ import { collectR2UrlsForDeletion } from '../hooks/canvas/utils/r2UploadHelpers'
 import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
 import { useCanvasDrawing } from '../hooks/canvas/useCanvasDrawing';
 import type { UploadedImage } from '../types';
+import { WorkflowLibraryModal } from '../components/WorkflowLibraryModal';
+import { SaveWorkflowDialog } from '../components/SaveWorkflowDialog';
+import { workflowApi } from '../services/workflowApi';
+import type { CanvasWorkflow } from '../services/workflowApi';
 
 import { isLocalDevelopment } from '../utils/env';
 
@@ -111,7 +115,7 @@ export const CanvasPage: React.FC = () => {
   const canvasHeader = useCanvasHeader();
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
-  
+
   // Log when CanvasPage component mounts
   useEffect(() => {
     if (isLocalDevelopment()) {
@@ -137,7 +141,7 @@ export const CanvasPage: React.FC = () => {
   const [chatSidebarWidth, setChatSidebarWidth] = useState(400);
   const chatSidebarRef = useRef<HTMLElement>(null);
   const [isLargeScreen, setIsLargeScreen] = useState(false);
-  
+
   // Chat sidebar dimensions
   const CHAT_SIDEBAR_WIDTH = 400;
   const CHAT_SIDEBAR_COLLAPSED_WIDTH = 56;
@@ -163,6 +167,10 @@ export const CanvasPage: React.FC = () => {
   const [userMockups, setUserMockups] = useState<Mockup[]>([]);
   const [exportPanel, setExportPanel] = useState<{ nodeId: string; nodeName: string; imageUrl: string | null; nodeType: string } | null>(null);
   const [isSettingsLoaded, setIsSettingsLoaded] = useState(false);
+
+  // Workflow state
+  const [showWorkflowLibrary, setShowWorkflowLibrary] = useState(false);
+  const [showSaveWorkflow, setShowSaveWorkflow] = useState(false);
 
   // Load user settings from backend and update context
   useEffect(() => {
@@ -231,7 +239,7 @@ export const CanvasPage: React.FC = () => {
 
   // React Flow state
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<FlowNodeData>>([]);
-  
+
   // Sync selected nodes count with header context
   const setSelectedNodesCountInContext = canvasHeader.setSelectedNodesCount;
   useEffect(() => {
@@ -327,10 +335,10 @@ export const CanvasPage: React.FC = () => {
           return true;
         });
 
-          // Add to history after deletion
-          setTimeout(() => {
-            addToHistory(newNodes, edges, drawing.drawings);
-          }, 0);
+        // Add to history after deletion
+        setTimeout(() => {
+          addToHistory(newNodes, edges, drawing.drawings);
+        }, 0);
 
         return newNodes;
       });
@@ -416,7 +424,7 @@ export const CanvasPage: React.FC = () => {
     drawing.drawings,
     drawing.setDrawings
   );
-  
+
   // Log when projectId changes (project loaded)
   useEffect(() => {
     if (isLocalDevelopment() && projectId) {
@@ -429,7 +437,7 @@ export const CanvasPage: React.FC = () => {
       });
     }
   }, [projectId, projectName, isCollaborative, isLoadingProject]);
-  
+
   // Log when project finishes loading
   useEffect(() => {
     if (isLocalDevelopment() && !isLoadingProject && projectId) {
@@ -456,7 +464,7 @@ export const CanvasPage: React.FC = () => {
       try {
         const project = await canvasApi.getById(projectId);
         const latestName = project.name || 'Untitled';
-        
+
         // Only update if name changed (to avoid unnecessary re-renders)
         if (latestName !== projectName) {
           setProjectName(latestName);
@@ -501,18 +509,29 @@ export const CanvasPage: React.FC = () => {
       return; // Safety check: ignore undefined/null/non-string values
     }
     const trimmedName = newName.trim();
-    if (trimmedName && trimmedName !== projectNameRef.current && trimmedName !== 'Untitled') {
-      // Update local state immediately
+
+    // Save any valid name that's different from current (including generic names with timestamps)
+    if (trimmedName && trimmedName !== projectNameRef.current) {
+      // Update ref immediately so saveImmediately uses the new name
+      const previousName = projectNameRef.current;
+      projectNameRef.current = trimmedName;
+
+      // Update local state
       setProjectName(trimmedName);
-      
+
       // Save to database immediately (don't wait for debounce)
       if (projectId && saveImmediately) {
         try {
+          // Small delay to ensure state is updated
+          await new Promise(resolve => setTimeout(resolve, 50));
           await saveImmediately();
           toast.success(t('canvas.projectNameUpdated'), { duration: 1200 });
         } catch (error) {
           console.error('Failed to save project name:', error);
           toast.error(t('canvas.failedToUpdateProjectName') || 'Failed to update project name', { duration: 3000 });
+          // Revert to previous name on error
+          projectNameRef.current = previousName;
+          setProjectName(previousName);
         }
       } else {
         toast.success(t('canvas.projectNameUpdated'), { duration: 1200 });
@@ -650,7 +669,7 @@ export const CanvasPage: React.FC = () => {
   // Handle tool changes
   const handleToolChange = useCallback((tool: CanvasTool) => {
     setActiveTool(tool);
-    
+
     if (tool === 'hand') {
       // Enable pan mode (space key behavior)
       // This is handled by the space key logic in CanvasFlow
@@ -918,6 +937,71 @@ export const CanvasPage: React.FC = () => {
 
   usePasteImage(handlePasteImage, isAuthenticated === true);
 
+  // Workflow handlers
+  const handleSaveWorkflow = useCallback(async (metadata: {
+    name: string;
+    description: string;
+    category: string;
+    tags: string[];
+    isPublic: boolean;
+  }) => {
+    try {
+      await workflowApi.create({
+        ...metadata,
+        nodes,
+        edges,
+      });
+
+      toast.success(t('workflows.messages.saved') || 'Workflow saved successfully!');
+    } catch (error: any) {
+      console.error('Error saving workflow:', error);
+      toast.error(error.message || t('workflows.errors.failedToSave') || 'Failed to save workflow');
+      throw error;
+    }
+  }, [nodes, edges, t]);
+
+  const handleLoadWorkflow = useCallback((workflow: CanvasWorkflow) => {
+    // Add to history before clearing
+    addToHistory(nodes, edges, drawing.drawings);
+
+    // Clear current canvas
+    setNodes([]);
+    setEdges([]);
+    drawing.setDrawings([]);
+
+    // Load workflow nodes and edges
+    setTimeout(() => {
+      setNodes(workflow.nodes as Node<FlowNodeData>[]);
+      setEdges(workflow.edges as Edge[]);
+
+      // Add to history after loading
+      setTimeout(() => {
+        addToHistory(workflow.nodes as Node<FlowNodeData>[], workflow.edges as Edge[], []);
+      }, 100);
+    }, 50);
+
+    // Increment usage count
+    workflowApi.incrementUsage(workflow._id);
+
+    toast.success(t('workflows.messages.loaded') || `Loaded workflow: ${workflow.name}`);
+  }, [nodes, edges, drawing, setNodes, setEdges, addToHistory, t]);
+
+  // Expose workflow functions to header context
+  const setOnSaveWorkflow = canvasHeader.setOnSaveWorkflow;
+  const setOnLoadWorkflow = canvasHeader.setOnLoadWorkflow;
+
+  useEffect(() => {
+    if (setOnSaveWorkflow) {
+      setOnSaveWorkflow(() => () => setShowSaveWorkflow(true));
+    }
+  }, [setOnSaveWorkflow]);
+
+  useEffect(() => {
+    if (setOnLoadWorkflow) {
+      setOnLoadWorkflow(() => () => setShowWorkflowLibrary(true));
+    }
+  }, [setOnLoadWorkflow]);
+
   // Handle drop of images onto canvas
   const handleDropImage = useCallback((image: UploadedImage, position: { x: number; y: number }) => {
     if (!reactFlowInstance) return;
@@ -936,7 +1020,6 @@ export const CanvasPage: React.FC = () => {
       id: generateNodeId('image'),
       type: 'image',
       position,
-      style: { width: 150, height: 100 },
       data: {
         type: 'image',
         mockup: tempMockup,
@@ -2194,11 +2277,11 @@ export const CanvasPage: React.FC = () => {
                 isLoading: chatData.isLoading || false,
                 // Inject callbacks
                 onSendMessage: handlersRef.current?.handleChatSendMessage || (() => Promise.resolve()),
-                onUpdateData: handlersRef.current?.handleChatUpdateData || (() => {}),
-                onClearHistory: handlersRef.current?.handleChatClearHistory || (() => {}),
-                onAddPromptNode: handlersRef.current?.handleChatAddPromptNode || (() => {}),
+                onUpdateData: handlersRef.current?.handleChatUpdateData || (() => { }),
+                onClearHistory: handlersRef.current?.handleChatClearHistory || (() => { }),
+                onAddPromptNode: handlersRef.current?.handleChatAddPromptNode || (() => { }),
                 onCreateNode: handlersRef.current?.handleChatCreateNode || (() => undefined),
-                onEditConnectedNode: handlersRef.current?.handleChatEditConnectedNode || (() => {}),
+                onEditConnectedNode: handlersRef.current?.handleChatEditConnectedNode || (() => { }),
                 onAttachMedia: handlersRef.current?.handleChatAttachMedia || (() => undefined),
                 onOpenSidebar: handleChatOpenSidebar,
                 connectedNodeIds: [],
@@ -2359,10 +2442,10 @@ export const CanvasPage: React.FC = () => {
                 onGenerateSection: handlersRef.current?.handleStrategyNodeGenerateSection || (() => Promise.resolve()),
                 onGenerateAll: handlersRef.current?.handleStrategyNodeGenerateAll || (() => Promise.resolve()),
                 onInitialAnalysis: handlersRef.current?.handleStrategyNodeInitialAnalysis || (() => Promise.resolve()),
-                onCancelGeneration: handlersRef.current?.handleStrategyNodeCancelGeneration || (() => {}),
-                onGeneratePDF: handlersRef.current?.handleStrategyNodeGeneratePDF || (() => {}),
+                onCancelGeneration: handlersRef.current?.handleStrategyNodeCancelGeneration || (() => { }),
+                onGeneratePDF: handlersRef.current?.handleStrategyNodeGeneratePDF || (() => { }),
                 onSave: handlersRef.current?.handleStrategyNodeSave || (() => Promise.resolve(undefined)),
-                onUpdateData: handlersRef.current?.handleStrategyNodeDataUpdate || (() => {}),
+                onUpdateData: handlersRef.current?.handleStrategyNodeDataUpdate || (() => { }),
                 onDeleteNode: handleDeleteNodeById,
               } as StrategyNodeData,
             } as Node<FlowNodeData>;
@@ -2684,7 +2767,6 @@ export const CanvasPage: React.FC = () => {
             id: `image-${Date.now()}`,
             type: 'image',
             position,
-            style: { width: 150, height: 100 },
             data: {
               type: 'image',
               mockup: mockup,
@@ -2885,90 +2967,168 @@ export const CanvasPage: React.FC = () => {
         {/* Main Canvas Container with Sidebar Layout - Starts below header (81px) */}
         <div className="flex relative w-full" style={{ height: 'calc(100vh - 81px)', paddingTop: '0px', justifyContent: 'flex-start' }}>
           {/* Canvas Area - Adjusts width when sidebar is open */}
-          <div 
+          <div
             className="flex-1 transition-all duration-300 ease-out relative"
             style={{
-              width: openChatNodeId && !isChatSidebarCollapsed 
-                ? `calc(100% - ${chatSidebarWidth}px)` 
-                : openChatNodeId && isChatSidebarCollapsed 
-                ? `calc(100% - ${CHAT_SIDEBAR_COLLAPSED_WIDTH}px)` 
-                : '100%',
+              width: openChatNodeId && !isChatSidebarCollapsed
+                ? `calc(100% - ${chatSidebarWidth}px)`
+                : openChatNodeId && isChatSidebarCollapsed
+                  ? `calc(100% - ${CHAT_SIDEBAR_COLLAPSED_WIDTH}px)`
+                  : '100%',
             }}
           >
-        {isCollaborative && projectId && isAuthenticated && authService.getToken() ? (
-          <RoomProvider
-            id={`canvas-${projectId}`}
-            initialPresence={{ cursor: null, selectedNodeId: null, nodePosition: null, isMoving: false }}
-            initialStorage={{ nodes: new LiveList([]) as any, edges: new LiveList([]) as any }}
-          >
-            <CollaborativeCanvas
-              nodes={nodes}
-              edges={edges}
-              handleNodesChange={handleNodesChange}
-              onEdgesChange={onEdgesChange}
-              onConnect={onConnect}
-              onConnectStart={onConnectStart}
-              onConnectEnd={onConnectEnd}
-              onNodeDragStart={onNodeDragStart}
-              onNodeDragStop={onNodeDragStop}
-              onPaneContextMenu={onPaneContextMenu}
-              onNodeContextMenu={onNodeContextMenu}
-              onEdgeClick={onEdgeClick}
-              onEdgeContextMenu={onEdgeContextMenu}
-              nodeTypes={nodeTypes}
-              setReactFlowInstance={setReactFlowInstance}
-              reactFlowWrapper={reactFlowWrapper}
-              projectId={projectId}
-              isCollaborative={isCollaborative}
-              setNodes={setNodes}
-              setEdges={setEdges}
-              saveImmediately={saveImmediately}
-              onOthersCountChange={setOthersCount}
-              backgroundColor={backgroundColor}
-              gridColor={gridColor}
-              showGrid={showGrid}
-              showMinimap={showMinimap}
-              showControls={showControls}
-              onDropImage={handleDropImage}
-              onDropNode={handleDropNode}
-              onAddColorExtractor={addColorExtractorNode}
-              experimentalMode={experimentalMode}
-              cursorColor={cursorColor}
-              isDrawingMode={drawing.drawingState.isDrawingMode}
-              drawingType={drawing.drawingState.drawingType}
-              onDrawingStart={drawing.startDrawing}
-              onDrawingMove={drawing.draw}
-              onDrawingEnd={handleStopDrawing}
-              currentPathData={drawing.currentPathData}
-              isDrawing={drawing.isDrawing}
-              drawings={drawing.drawings}
-              selectedDrawingIds={drawing.selectedDrawingIds}
-              selectionBox={drawing.selectionBox}
-              activeTool={activeTool}
-              onSelectionBoxStart={drawing.startSelectionBox}
-              onSelectionBoxUpdate={drawing.updateSelectionBox}
-              onSelectionBoxEnd={drawing.endSelectionBox}
-              onDrawingClick={(id: string) => {
-                drawing.setSelectedDrawingId(id);
-              }}
-              editingDrawingId={drawing.editingDrawingId}
-              onStartEditingText={drawing.startEditingText}
-              onUpdateDrawingText={handleUpdateDrawingText}
-              onStopEditingText={drawing.stopEditingText}
-              onCreateTextDrawing={(position) => {
-                addToHistory(nodes, edges, drawing.drawings);
-                drawing.createTextDrawing?.(position);
-              }}
-              onUpdateDrawingBounds={(id, bounds) => {
-                addToHistory(nodes, edges, drawing.drawings);
-                drawing.updateDrawingBounds?.(id, bounds);
-              }}
-              shapePreview={
-                drawing.drawingState.drawingType === 'shape' &&
-                drawing.isDrawing &&
-                drawing.startPosition &&
-                drawing.currentPosition
-                  ? {
+            {isCollaborative && projectId && isAuthenticated && authService.getToken() ? (
+              <RoomProvider
+                id={`canvas-${projectId}`}
+                initialPresence={{ cursor: null, selectedNodeId: null, nodePosition: null, isMoving: false }}
+                initialStorage={{ nodes: new LiveList([]) as any, edges: new LiveList([]) as any }}
+              >
+                <CollaborativeCanvas
+                  nodes={nodes}
+                  edges={edges}
+                  handleNodesChange={handleNodesChange}
+                  onEdgesChange={onEdgesChange}
+                  onConnect={onConnect}
+                  onConnectStart={onConnectStart}
+                  onConnectEnd={onConnectEnd}
+                  onNodeDragStart={onNodeDragStart}
+                  onNodeDragStop={onNodeDragStop}
+                  onPaneContextMenu={onPaneContextMenu}
+                  onNodeContextMenu={onNodeContextMenu}
+                  onEdgeClick={onEdgeClick}
+                  onEdgeContextMenu={onEdgeContextMenu}
+                  nodeTypes={nodeTypes}
+                  setReactFlowInstance={setReactFlowInstance}
+                  reactFlowWrapper={reactFlowWrapper}
+                  projectId={projectId}
+                  isCollaborative={isCollaborative}
+                  setNodes={setNodes}
+                  setEdges={setEdges}
+                  saveImmediately={saveImmediately}
+                  onOthersCountChange={setOthersCount}
+                  backgroundColor={backgroundColor}
+                  gridColor={gridColor}
+                  showGrid={showGrid}
+                  showMinimap={showMinimap}
+                  showControls={showControls}
+                  onDropImage={handleDropImage}
+                  onDropNode={handleDropNode}
+                  onAddColorExtractor={addColorExtractorNode}
+                  experimentalMode={experimentalMode}
+                  cursorColor={cursorColor}
+                  isDrawingMode={drawing.drawingState.isDrawingMode}
+                  drawingType={drawing.drawingState.drawingType}
+                  onDrawingStart={drawing.startDrawing}
+                  onDrawingMove={drawing.draw}
+                  onDrawingEnd={handleStopDrawing}
+                  currentPathData={drawing.currentPathData}
+                  isDrawing={drawing.isDrawing}
+                  drawings={drawing.drawings}
+                  selectedDrawingIds={drawing.selectedDrawingIds}
+                  selectionBox={drawing.selectionBox}
+                  activeTool={activeTool}
+                  onSelectionBoxStart={drawing.startSelectionBox}
+                  onSelectionBoxUpdate={drawing.updateSelectionBox}
+                  onSelectionBoxEnd={drawing.endSelectionBox}
+                  onDrawingClick={(id: string) => {
+                    drawing.setSelectedDrawingId(id);
+                  }}
+                  editingDrawingId={drawing.editingDrawingId}
+                  onStartEditingText={drawing.startEditingText}
+                  onUpdateDrawingText={handleUpdateDrawingText}
+                  onStopEditingText={drawing.stopEditingText}
+                  onCreateTextDrawing={(position) => {
+                    addToHistory(nodes, edges, drawing.drawings);
+                    drawing.createTextDrawing?.(position);
+                  }}
+                  onUpdateDrawingBounds={(id, bounds) => {
+                    addToHistory(nodes, edges, drawing.drawings);
+                    drawing.updateDrawingBounds?.(id, bounds);
+                  }}
+                  shapePreview={
+                    drawing.drawingState.drawingType === 'shape' &&
+                      drawing.isDrawing &&
+                      drawing.startPosition &&
+                      drawing.currentPosition
+                      ? {
+                        startPosition: drawing.startPosition,
+                        currentPosition: drawing.currentPosition,
+                        shapeType: drawing.drawingState.shapeType,
+                        shapeColor: drawing.drawingState.shapeColor,
+                        shapeStrokeColor: drawing.drawingState.shapeStrokeColor,
+                        shapeStrokeWidth: drawing.drawingState.shapeStrokeWidth,
+                        shapeFill: drawing.drawingState.shapeFill,
+                      }
+                      : null
+                  }
+                />
+              </RoomProvider>
+            ) : (
+              <CanvasFlow
+                nodes={nodes}
+                edges={edges}
+                onNodesChange={handleNodesChange}
+                onEdgesChange={onEdgesChange}
+                onConnect={onConnect}
+                onConnectStart={onConnectStart}
+                onConnectEnd={onConnectEnd}
+                onNodeDragStart={onNodeDragStart}
+                onNodeDragStop={onNodeDragStop}
+                onPaneContextMenu={onPaneContextMenu}
+                onNodeContextMenu={onNodeContextMenu}
+                onEdgeClick={onEdgeClick}
+                onEdgeContextMenu={onEdgeContextMenu}
+                nodeTypes={nodeTypes}
+                onInit={setReactFlowInstance}
+                reactFlowWrapper={reactFlowWrapper}
+                backgroundColor={backgroundColor}
+                gridColor={gridColor}
+                showGrid={showGrid}
+                showMinimap={showMinimap}
+                showControls={showControls}
+                cursorColor={cursorColor}
+                onDropImage={handleDropImage}
+                onDropNode={handleDropNode}
+                reactFlowInstance={reactFlowInstance}
+                experimentalMode={experimentalMode}
+                onAddColorExtractor={addColorExtractorNode}
+                isDrawingMode={drawing.drawingState.isDrawingMode}
+                drawingType={drawing.drawingState.drawingType}
+                onDrawingStart={drawing.startDrawing}
+                onDrawingMove={drawing.draw}
+                onDrawingEnd={handleStopDrawing}
+                currentPathData={drawing.currentPathData}
+                isDrawing={drawing.isDrawing}
+                drawings={drawing.drawings}
+                selectedDrawingIds={drawing.selectedDrawingIds}
+                onDrawingClick={(id: string) => {
+                  // Handle single click - for now just select single item
+                  // Multi-select with Shift/Ctrl can be added later if needed
+                  drawing.setSelectedDrawingId(id);
+                }}
+                selectionBox={drawing.selectionBox}
+                activeTool={activeTool}
+                onSelectionBoxStart={drawing.startSelectionBox}
+                onSelectionBoxUpdate={drawing.updateSelectionBox}
+                onSelectionBoxEnd={drawing.endSelectionBox}
+                editingDrawingId={drawing.editingDrawingId}
+                onStartEditingText={drawing.startEditingText}
+                onUpdateDrawingText={handleUpdateDrawingText}
+                onStopEditingText={drawing.stopEditingText}
+                onCreateTextDrawing={(position) => {
+                  addToHistory(nodes, edges, drawing.drawings);
+                  drawing.createTextDrawing?.(position);
+                }}
+                onUpdateDrawingBounds={(id, bounds) => {
+                  addToHistory(nodes, edges, drawing.drawings);
+                  drawing.updateDrawingBounds?.(id, bounds);
+                }}
+                shapePreview={
+                  drawing.drawingState.drawingType === 'shape' &&
+                    drawing.isDrawing &&
+                    drawing.startPosition &&
+                    drawing.currentPosition
+                    ? {
                       startPosition: drawing.startPosition,
                       currentPosition: drawing.currentPosition,
                       shapeType: drawing.drawingState.shapeType,
@@ -2977,93 +3137,15 @@ export const CanvasPage: React.FC = () => {
                       shapeStrokeWidth: drawing.drawingState.shapeStrokeWidth,
                       shapeFill: drawing.drawingState.shapeFill,
                     }
-                  : null
-              }
-            />
-          </RoomProvider>
-        ) : (
-          <CanvasFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={handleNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            onConnectStart={onConnectStart}
-            onConnectEnd={onConnectEnd}
-            onNodeDragStart={onNodeDragStart}
-            onNodeDragStop={onNodeDragStop}
-            onPaneContextMenu={onPaneContextMenu}
-            onNodeContextMenu={onNodeContextMenu}
-            onEdgeClick={onEdgeClick}
-            onEdgeContextMenu={onEdgeContextMenu}
-            nodeTypes={nodeTypes}
-            onInit={setReactFlowInstance}
-            reactFlowWrapper={reactFlowWrapper}
-            backgroundColor={backgroundColor}
-            gridColor={gridColor}
-            showGrid={showGrid}
-            showMinimap={showMinimap}
-            showControls={showControls}
-            cursorColor={cursorColor}
-            onDropImage={handleDropImage}
-            onDropNode={handleDropNode}
-            reactFlowInstance={reactFlowInstance}
-            experimentalMode={experimentalMode}
-            onAddColorExtractor={addColorExtractorNode}
-            isDrawingMode={drawing.drawingState.isDrawingMode}
-            drawingType={drawing.drawingState.drawingType}
-            onDrawingStart={drawing.startDrawing}
-            onDrawingMove={drawing.draw}
-            onDrawingEnd={handleStopDrawing}
-            currentPathData={drawing.currentPathData}
-            isDrawing={drawing.isDrawing}
-            drawings={drawing.drawings}
-            selectedDrawingIds={drawing.selectedDrawingIds}
-            onDrawingClick={(id: string) => {
-              // Handle single click - for now just select single item
-              // Multi-select with Shift/Ctrl can be added later if needed
-              drawing.setSelectedDrawingId(id);
-            }}
-            selectionBox={drawing.selectionBox}
-            activeTool={activeTool}
-            onSelectionBoxStart={drawing.startSelectionBox}
-            onSelectionBoxUpdate={drawing.updateSelectionBox}
-            onSelectionBoxEnd={drawing.endSelectionBox}
-            editingDrawingId={drawing.editingDrawingId}
-            onStartEditingText={drawing.startEditingText}
-            onUpdateDrawingText={handleUpdateDrawingText}
-            onStopEditingText={drawing.stopEditingText}
-            onCreateTextDrawing={(position) => {
-              addToHistory(nodes, edges, drawing.drawings);
-              drawing.createTextDrawing?.(position);
-            }}
-            onUpdateDrawingBounds={(id, bounds) => {
-              addToHistory(nodes, edges, drawing.drawings);
-              drawing.updateDrawingBounds?.(id, bounds);
-            }}
-            shapePreview={
-              drawing.drawingState.drawingType === 'shape' &&
-              drawing.isDrawing &&
-              drawing.startPosition &&
-              drawing.currentPosition
-                ? {
-                    startPosition: drawing.startPosition,
-                    currentPosition: drawing.currentPosition,
-                    shapeType: drawing.drawingState.shapeType,
-                    shapeColor: drawing.drawingState.shapeColor,
-                    shapeStrokeColor: drawing.drawingState.shapeStrokeColor,
-                    shapeStrokeWidth: drawing.drawingState.shapeStrokeWidth,
-                    shapeFill: drawing.drawingState.shapeFill,
-                  }
-                : null
-            }
-          />
-        )}
+                    : null
+                }
+              />
+            )}
           </div>
-          
+
           {/* Chat Sidebar - Positioned absolutely within flex container */}
           {(() => {
-            const chatNode = openChatNodeId 
+            const chatNode = openChatNodeId
               ? nodes.find((node) => node.id === openChatNodeId && node.type === 'chat') as Node<ChatNodeData> | undefined
               : undefined;
 
@@ -3668,6 +3750,25 @@ export const CanvasPage: React.FC = () => {
             nodeType={exportPanel.nodeType}
           />
         )}
+
+        {/* Workflow Modals */}
+        <WorkflowLibraryModal
+          isOpen={showWorkflowLibrary}
+          onClose={() => setShowWorkflowLibrary(false)}
+          onLoadWorkflow={handleLoadWorkflow}
+          isAuthenticated={isAuthenticated === true}
+          isAdmin={isAdminOrPremium}
+          t={t}
+        />
+
+        <SaveWorkflowDialog
+          isOpen={showSaveWorkflow}
+          onClose={() => setShowSaveWorkflow(false)}
+          onSave={handleSaveWorkflow}
+          nodes={nodes}
+          edges={edges}
+          t={t}
+        />
       </div>
 
 
@@ -3692,7 +3793,7 @@ export const CanvasPage: React.FC = () => {
                       nodeId: projectModalNodeId
                     });
                   }
-                  
+
                   const { brandingApi } = await import('../services/brandingApi');
                   const project = await brandingApi.getById(projectId);
 
@@ -3851,14 +3952,14 @@ export const CanvasPage: React.FC = () => {
                         convertedStrategyData
                       });
                     }
-                    
+
                     strategyData.onUpdateData(projectModalNodeId, {
                       prompt: project.prompt || '',
                       name: project.name || '',
                       strategyData: convertedStrategyData,
                       projectId: project._id || (project as any).id,
                     });
-                    
+
                     if (isLocalDevelopment()) {
                       console.log(`[CanvasPage] ✅ onUpdateData called successfully`, {
                         projectId,

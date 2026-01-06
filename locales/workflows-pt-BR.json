@@ -1,0 +1,73 @@
+{
+    "workflows": {
+        "loadWorkflow": "Carregar Workflow",
+        "saveWorkflow": "Salvar como Workflow",
+        "library": {
+            "title": "Biblioteca de Workflows",
+            "description": "Navegue e carregue templates de workflow reutilizáveis",
+            "tabs": {
+                "my": "Meus Workflows",
+                "community": "Comunidade",
+                "all": "Todos"
+            },
+            "search": "Buscar workflows...",
+            "noResults": "Nenhum workflow encontrado",
+            "noWorkflows": "Nenhum workflow ainda",
+            "noCommunityWorkflows": "Nenhum workflow da comunidade disponível"
+        },
+        "saveDialog": {
+            "title": "Salvar Workflow",
+            "description": "Salve seu canvas como um template de workflow reutilizável",
+            "name": "Nome do Workflow",
+            "namePlaceholder": "ex.: Workflow de Identidade de Marca",
+            "description": "Descrição",
+            "descriptionPlaceholder": "Descreva o que este workflow faz...",
+            "category": "Categoria",
+            "tags": "Tags",
+            "tagsPlaceholder": "ex.: branding, logo, identidade (separadas por vírgula)",
+            "tagsHint": "Separe as tags com vírgulas",
+            "makePublic": "Tornar Público",
+            "makePublicHint": "Compartilhe este workflow com a comunidade (requer aprovação)",
+            "save": "Salvar Workflow",
+            "saving": "Salvando..."
+        },
+        "actions": {
+            "duplicate": "Duplicar",
+            "addToLibrary": "Adicionar à Biblioteca",
+            "edit": "Editar",
+            "delete": "Excluir",
+            "like": "Curtir",
+            "unlike": "Descurtir"
+        },
+        "messages": {
+            "saved": "Workflow salvo com sucesso!",
+            "loaded": "Workflow carregado",
+            "liked": "Workflow curtido!",
+            "unliked": "Curtida removida",
+            "duplicated": "Workflow adicionado à sua biblioteca!",
+            "deleted": "Workflow excluído"
+        },
+        "errors": {
+            "failedToLoad": "Falha ao carregar workflows",
+            "failedToSave": "Falha ao salvar workflow",
+            "failedToToggleLike": "Falha ao atualizar curtida",
+            "failedToDuplicate": "Falha ao duplicar workflow",
+            "failedToDelete": "Falha ao excluir workflow",
+            "mustBeAuthenticated": "Você deve estar autenticado para curtir workflows"
+        },
+        "deleteConfirmation": {
+            "title": "Excluir Workflow",
+            "message": "Tem certeza que deseja excluir este workflow? Esta ação não pode ser desfeita.",
+            "confirm": "Excluir",
+            "cancel": "Cancelar"
+        },
+        "categories": {
+            "all": "Todos",
+            "branding": "Branding",
+            "mockup": "Mockup",
+            "imageEditing": "Edição de Imagem",
+            "video": "Vídeo",
+            "general": "Geral"
+        }
+    }
+}
