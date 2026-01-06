@@ -1,6 +1,6 @@
 import { GoogleGenAI, Modality, Type } from "@google/genai";
 import type { UploadedImage, AspectRatio, DesignType, GeminiModel, Resolution } from '../types';
-import { buildGeminiPromptInstructionsTemplate } from '../utils/mockupPromptFormat';
+import { buildGeminiPromptInstructionsTemplate } from '../utils/mockupPromptFormat.js';
 
 // Lazy initialization to avoid breaking app startup if API key is not configured
 let ai: GoogleGenAI | null = null;
