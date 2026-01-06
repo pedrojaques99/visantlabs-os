@@ -55,6 +55,7 @@ model User {
   brandingProjects BrandingProject[]
   budgetProjects   BudgetProject[]
   canvasProjects   CanvasProject[]
+  canvasWorkflows  CanvasWorkflow[]
   customPdfPresets CustomPdfPreset[]
 
   // Indexes for better query performance
@@ -215,6 +216,59 @@ model CanvasProject {
   @@index([userId])
   @@index([createdAt])
   @@map("canvas_projects")
+}
+
+model CanvasWorkflow {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String   @db.ObjectId
+  
+  // Workflow metadata
+  name         String
+  description  String
+  category     String   @default("general") // 'branding', 'mockup', 'image-editing', 'video', 'general'
+  tags         String[]
+  
+  // Workflow structure
+  nodes        Json     // Array of nodes
+  edges        Json     // Array of edges
+  
+  // Thumbnail for preview
+  thumbnailUrl String?
+  
+  // Sharing & visibility
+  isPublic     Boolean  @default(false)
+  isApproved   Boolean  @default(false) // For community workflows
+  
+  // Engagement metrics
+  likesCount   Int      @default(0)
+  usageCount   Int      @default(0)
+  
+  // Timestamps
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Relations
+  user  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes WorkflowLike[]
+  
+  @@index([userId])
+  @@index([category])
+  @@index([isPublic, isApproved])
+  @@index([createdAt])
+  @@map("canvas_workflows")
+}
+
+model WorkflowLike {
+  id         String         @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String         @db.ObjectId
+  workflowId String         @db.ObjectId
+  workflow   CanvasWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  createdAt  DateTime       @default(now())
+  
+  @@unique([userId, workflowId])
+  @@index([userId])
+  @@index([workflowId])
+  @@map("workflow_likes")
 }
 
 model CustomPdfPreset {
