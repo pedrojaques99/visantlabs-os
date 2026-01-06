@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BackButton } from '../ui/BackButton';
-import { Share2, ChevronRight, Settings, Users } from 'lucide-react';
+import { Share2, ChevronRight, Settings, Users, Save, FolderOpen } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useLayout } from '../../hooks/useLayout';
 import { AuthButton } from '../AuthButton';
@@ -49,6 +49,8 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
     experimentalMode,
     setExperimentalMode,
     onImportCommunityPreset,
+    onSaveWorkflow,
+    onLoadWorkflow,
   } = useCanvasHeader();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -57,7 +59,6 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showCommunityPresetsSidebar, setShowCommunityPresetsSidebar] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
-  const isUserEditRef = useRef(false);
 
   // Handle share button click
   const handleShareClick = useCallback(() => {
@@ -81,12 +82,14 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
     }
   }, [projectId, setShareId, setIsCollaborative, setCanEdit, setCanView]);
 
+  // Sync localName with projectName when not editing
   useEffect(() => {
-    if (!isEditing && projectName !== undefined) {
+    if (!isEditing) {
       setLocalName(projectName || 'Untitled');
     }
   }, [projectName, isEditing]);
 
+  // Focus and select input when entering edit mode
   useEffect(() => {
     if (isEditing && inputRef.current) {
       inputRef.current.focus();
@@ -94,38 +97,47 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
     }
   }, [isEditing]);
 
-  const handleBlur = () => {
-    setIsEditing(false);
-    const trimmedName = (localName?.trim() || 'Untitled');
-    const currentName = projectName || 'Untitled';
-    
-    // Only call onProjectNameChange if user actually edited and name changed
-    if (isUserEditRef.current && trimmedName !== currentName && trimmedName !== 'Untitled') {
-      if (onProjectNameChange) {
-        // Call the handler - it will update the context, which will update projectName
-        // The useEffect will then update localName when projectName changes
-        onProjectNameChange(trimmedName);
-        // Optimistically update localName to show the change immediately
-        setLocalName(trimmedName);
-      } else {
-        // Handler not available yet, just reset to original
-        setLocalName(currentName);
-      }
-    } else {
-      // Reset to original name if no change or invalid
-      setLocalName(currentName);
-    }
-    isUserEditRef.current = false;
-  };
+  // Generate a generic project name with timestamp
+  const generateGenericName = useCallback(() => {
+    const now = new Date();
+    const date = now.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const time = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    return `Projeto - ${date} ${time}`;
+  }, []);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.currentTarget.blur();
-    } else if (e.key === 'Escape') {
-      setLocalName(projectName || 'Untitled');
-      setIsEditing(false);
+  // Handle saving the project name
+  const handleSaveProjectName = useCallback(() => {
+    setIsEditing(false);
+    const trimmedName = localName?.trim();
+
+    // If empty, generate a generic name
+    if (!trimmedName) {
+      const genericName = generateGenericName();
+      setLocalName(genericName);
+      if (onProjectNameChange) {
+        onProjectNameChange(genericName);
+      }
+      return;
     }
-  };
+
+    // Validate and save if changed
+    if (trimmedName !== projectName && onProjectNameChange) {
+      onProjectNameChange(trimmedName);
+    } else {
+      // Revert to original name if unchanged
+      setLocalName(projectName || generateGenericName());
+    }
+  }, [localName, projectName, onProjectNameChange, generateGenericName]);
+
+  // Handle keyboard shortcuts in edit mode
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSaveProjectName();
+    } else if (e.key === 'Escape') {
+      setIsEditing(false);
+      setLocalName(projectName || generateGenericName());
+    }
+  }, [handleSaveProjectName, projectName, generateGenericName]);
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-[#121212]/95 backdrop-blur-sm border-b border-zinc-800/50">
@@ -139,35 +151,25 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
             >
               {t('canvas.title') || 'Canvas'}
             </button>
-            {(projectName || isEditing) && (
-              <>
-                <ChevronRight size={12} className="flex-shrink-0 text-zinc-600" />
-                {isEditing ? (
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    value={localName}
-                    onChange={(e) => {
-                      setLocalName(e.target.value);
-                      isUserEditRef.current = true;
-                    }}
-                    onBlur={handleBlur}
-                    onKeyDown={handleKeyDown}
-                    className="text-xs font-mono text-zinc-300 bg-transparent border-b border-zinc-600 focus:border-[#52ddeb] focus:outline-none px-1 min-w-[80px] sm:min-w-[100px] max-w-[200px] sm:max-w-none"
-                  />
-                ) : (
-                  <span
-                    onClick={() => {
-                      setIsEditing(true);
-                      isUserEditRef.current = false;
-                    }}
-                    className="text-zinc-300 truncate cursor-text hover:text-zinc-200 transition-colors"
-                    title={projectName || 'Untitled'}
-                  >
-                    {projectName || 'Untitled'}
-                  </span>
-                )}
-              </>
+            <ChevronRight size={12} className="flex-shrink-0 text-zinc-600" />
+            {isEditing ? (
+              <input
+                ref={inputRef}
+                type="text"
+                value={localName}
+                onChange={(e) => setLocalName(e.target.value)}
+                onBlur={handleSaveProjectName}
+                onKeyDown={handleKeyDown}
+                className="text-xs font-mono text-zinc-300 bg-transparent border-b border-zinc-600 focus:border-[#52ddeb] focus:outline-none px-1 min-w-[80px] sm:min-w-[100px] max-w-[200px] sm:max-w-none"
+              />
+            ) : (
+              <span
+                onClick={() => setIsEditing(true)}
+                className="text-zinc-300 truncate cursor-text hover:text-zinc-200 transition-colors"
+                title={localName}
+              >
+                {localName}
+              </span>
             )}
           </div>
         </div>
@@ -196,6 +198,24 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
           >
             <Users size={14} />
           </button>
+          {onLoadWorkflow && (
+            <button
+              onClick={() => onLoadWorkflow?.()}
+              className="p-1.5 border rounded-md transition-all flex items-center justify-center bg-zinc-800/50 hover:bg-zinc-700/50 text-zinc-300 border-zinc-700/50 hover:border-zinc-600 cursor-pointer"
+              title={t('workflows.loadWorkflow') || 'Load Workflow'}
+            >
+              <FolderOpen size={14} />
+            </button>
+          )}
+          {onSaveWorkflow && (
+            <button
+              onClick={() => onSaveWorkflow?.()}
+              className="p-1.5 border rounded-md transition-all flex items-center justify-center bg-zinc-800/50 hover:bg-zinc-700/50 text-zinc-300 border-zinc-700/50 hover:border-zinc-600 cursor-pointer"
+              title={t('workflows.saveWorkflow') || 'Save as Workflow'}
+            >
+              <Save size={14} />
+            </button>
+          )}
           <AuthButton
             subscriptionStatus={contextSubscriptionStatus}
             onCreditsClick={() => onCreditPackagesModalOpen?.()}
@@ -261,6 +281,29 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
     </div>
   );
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

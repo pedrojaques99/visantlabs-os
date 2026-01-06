@@ -14,6 +14,10 @@ import ClubHero3D from '../components/3d/club-hero3d';
 import { CommunityPresetModal } from '../components/CommunityPresetModal';
 import { authService } from '../services/authService';
 import { toast } from 'sonner';
+import { workflowApi } from '../services/workflowApi';
+import type { CanvasWorkflow } from '../services/workflowApi';
+import { WORKFLOW_CATEGORY_CONFIG } from '../types/workflow';
+import { Workflow } from 'lucide-react';
 
 type PresetType = 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance' | '3d' | 'presets' | 'aesthetics' | 'themes';
 
@@ -86,6 +90,8 @@ export const CommunityPage: React.FC = () => {
   const [allPublicMockups, setAllPublicMockups] = useState<any[]>([]);
   const [isGalleryExpanded, setIsGalleryExpanded] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [workflows, setWorkflows] = useState<CanvasWorkflow[]>([]);
+  const [workflowsLoading, setWorkflowsLoading] = useState(true);
 
   useEffect(() => {
     const loadStats = async () => {
@@ -175,6 +181,23 @@ export const CommunityPage: React.FC = () => {
     loadStats();
   }, []);
 
+  // Load workflows
+  useEffect(() => {
+    const loadWorkflows = async () => {
+      setWorkflowsLoading(true);
+      try {
+        const publicWorkflows = await workflowApi.getPublic();
+        setWorkflows(publicWorkflows);
+      } catch (error) {
+        console.error('Failed to load workflows:', error);
+      } finally {
+        setWorkflowsLoading(false);
+      }
+    };
+
+    loadWorkflows();
+  }, []);
+
   const presetTypes: Array<{ type: PresetType; icon: React.ComponentType<{ size?: number; className?: string }>; label: string; count: number; presets: any[] }> = [
     { type: 'mockup', icon: ImageIcon, label: t('communityPresets.tabs.mockup'), count: stats.mockup, presets: categoryPresets.mockup },
     { type: 'angle', icon: Camera, label: t('communityPresets.tabs.angle'), count: stats.angle, presets: categoryPresets.angle },
@@ -229,7 +252,7 @@ export const CommunityPage: React.FC = () => {
 
       clearCommunityPresetsCache();
       toast.success(t('communityPresets.messages.presetCreated'));
-      
+
       // Reload stats after creating preset
       const [allPresets, globalStats] = await Promise.all([
         getAllCommunityPresets(),
@@ -424,6 +447,115 @@ export const CommunityPage: React.FC = () => {
                   </button>
                 ))}
               </div>
+            </section>
+
+            {/* Workflows Section */}
+            <section className="space-y-8">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl font-bold text-white font-manrope">Workflows da Comunidade</h2>
+                  <p className="text-zinc-500 font-mono text-sm max-w-lg mt-2">
+                    Workflows completos criados pela comunidade. Salve, compartilhe e reutilize estruturas de canvas inteiras.
+                  </p>
+                </div>
+                <button
+                  onClick={() => navigate('/canvas')}
+                  className="inline-flex items-center gap-2 text-brand-cyan hover:text-brand-cyan/80 font-mono text-sm transition-all hover:translate-x-1"
+                >
+                  Abrir Canvas
+                  <ArrowRight size={16} />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {workflowsLoading ? (
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="bg-[#141414] border border-zinc-800/50 rounded-2xl p-6 animate-pulse">
+                      <div className="aspect-video bg-zinc-900 rounded-lg mb-4" />
+                      <div className="h-4 bg-zinc-900 rounded mb-2" />
+                      <div className="h-3 bg-zinc-900 rounded w-2/3" />
+                    </div>
+                  ))
+                ) : workflows.length > 0 ? (
+                  workflows.slice(0, 8).map((workflow) => {
+                    const categoryConfig = WORKFLOW_CATEGORY_CONFIG[workflow.category as keyof typeof WORKFLOW_CATEGORY_CONFIG] || WORKFLOW_CATEGORY_CONFIG.general;
+                    const CategoryIcon = categoryConfig.icon;
+
+                    return (
+                      <button
+                        key={workflow._id}
+                        onClick={() => navigate('/canvas')}
+                        className="group relative bg-[#141414] border border-zinc-800/50 rounded-2xl p-6 flex flex-col h-full hover:border-[#52ddeb]/40 transition-all hover:-translate-y-1 active:translate-y-0 text-left"
+                      >
+                        {workflow.thumbnailUrl ? (
+                          <div className="aspect-video rounded-lg overflow-hidden border border-zinc-700/30 bg-zinc-900/30 mb-4">
+                            <img
+                              src={workflow.thumbnailUrl}
+                              alt={workflow.name}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          </div>
+                        ) : (
+                          <div className="aspect-video rounded-lg border border-zinc-700/30 bg-zinc-900/30 flex items-center justify-center mb-4">
+                            <CategoryIcon size={32} className="text-zinc-700" />
+                          </div>
+                        )}
+
+                        <div className="flex-1">
+                          <h3 className="text-base font-semibold text-white font-mono mb-1 line-clamp-1 group-hover:text-brand-cyan transition-colors">
+                            {workflow.name}
+                          </h3>
+                          <p className="text-xs text-zinc-500 font-mono line-clamp-2 mb-3">
+                            {workflow.description}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-2 pt-3 border-t border-zinc-800/50">
+                          <span
+                            className={cn(
+                              'px-2 py-0.5 rounded border font-mono text-[10px] flex-shrink-0',
+                              categoryConfig.color.replace('text-', 'bg-').replace('-400', '-500/20'),
+                              categoryConfig.color.replace('text-', 'border-').replace('-400', '-500/30'),
+                              categoryConfig.color
+                            )}
+                          >
+                            {categoryConfig.label}
+                          </span>
+                          <span className="px-2 py-0.5 bg-zinc-800/40 rounded border border-zinc-700/30 text-zinc-500 font-mono text-[10px] flex-shrink-0">
+                            {Array.isArray(workflow.nodes) ? workflow.nodes.length : 0} nodes
+                          </span>
+                          {workflow.likesCount > 0 && (
+                            <span className="px-2 py-0.5 bg-zinc-800/40 rounded border border-zinc-700/30 text-zinc-500 font-mono text-[10px] flex-shrink-0">
+                              ❤️ {workflow.likesCount}
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="col-span-full py-20 text-center bg-[#141414] rounded-3xl border border-zinc-800/50 border-dashed">
+                    <div className="flex flex-col items-center gap-4">
+                      <Workflow size={48} className="text-zinc-800" />
+                      <p className="text-zinc-500 font-mono text-sm">
+                        Nenhum workflow público disponível ainda
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {workflows.length > 8 && (
+                <div className="flex justify-center mt-8">
+                  <button
+                    onClick={() => navigate('/canvas')}
+                    className="flex items-center gap-2 px-6 py-2 bg-zinc-900/50 hover:bg-brand-cyan/10 text-zinc-500 hover:text-brand-cyan border border-zinc-800/50 rounded-full transition-all text-sm font-mono group"
+                  >
+                    Ver todos os workflows
+                    <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+                  </button>
+                </div>
+              )}
             </section>
 
             {/* Gallery Section */}
