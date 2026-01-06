@@ -57,7 +57,7 @@ export const useCanvasNodeCreation = (
     addEditNode?: (pos?: { x: number; y: number }) => string | undefined;
     addImageNode?: (pos?: { x: number; y: number }) => string | undefined;
   }>({});
-  
+
   const edgesRef = useRef<Edge[]>(edges);
   useEffect(() => {
     edgesRef.current = edges;
@@ -145,7 +145,7 @@ export const useCanvasNodeCreation = (
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,
     };
-    
+
     let position;
     try {
       position = reactFlowInstance.screenToFlowPosition(screenPos);
@@ -184,7 +184,7 @@ export const useCanvasNodeCreation = (
       }, 0);
       return newNodes;
     });
-    
+
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -198,7 +198,7 @@ export const useCanvasNodeCreation = (
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,
     };
-    
+
     let position;
     try {
       position = reactFlowInstance.screenToFlowPosition(screenPos);
@@ -226,7 +226,7 @@ export const useCanvasNodeCreation = (
         model: initialData?.model || 'gemini-2.5-flash-image',
         onGenerate: handlersRef.current?.handlePromptGenerate || (() => Promise.resolve()),
         onSuggestPrompts: handlersRef.current?.handlePromptSuggestPrompts || (() => Promise.resolve()),
-        onUpdateData: handlersRef.current?.handlePromptNodeDataUpdate || (() => {}),
+        onUpdateData: handlersRef.current?.handlePromptNodeDataUpdate || (() => { }),
       } as PromptNodeData,
     };
 
@@ -237,7 +237,7 @@ export const useCanvasNodeCreation = (
       }, 0);
       return newNodes;
     });
-    
+
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -251,7 +251,7 @@ export const useCanvasNodeCreation = (
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,
     };
-    
+
     let position;
     try {
       position = reactFlowInstance.screenToFlowPosition(screenPos);
@@ -277,7 +277,7 @@ export const useCanvasNodeCreation = (
         prompt: '',
         model: 'veo-3.1-generate-preview',
         onGenerate: handlersRef.current?.handleVideoNodeGenerate || (() => Promise.resolve()),
-        onUpdateData: handlersRef.current?.handleVideoNodeDataUpdate || (() => {}),
+        onUpdateData: handlersRef.current?.handleVideoNodeDataUpdate || (() => { }),
       } as VideoNodeData,
     };
 
@@ -288,7 +288,7 @@ export const useCanvasNodeCreation = (
       }, 0);
       return newNodes;
     });
-    
+
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -302,7 +302,7 @@ export const useCanvasNodeCreation = (
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,
     };
-    
+
     let position;
     try {
       position = reactFlowInstance.screenToFlowPosition(screenPos);
@@ -327,9 +327,9 @@ export const useCanvasNodeCreation = (
       data: {
         type: 'brand',
         onAnalyze: handlersRef.current?.handleBrandAnalyze || (() => Promise.resolve()),
-        onUploadLogo: handlersRef.current?.handleBrandLogoUpload || (() => {}),
-        onUploadPdf: handlersRef.current?.handleBrandPdfUpload || (() => {}),
-        onUpdateData: handlersRef.current?.handleBrandNodeDataUpdate || (() => {}),
+        onUploadLogo: handlersRef.current?.handleBrandLogoUpload || (() => { }),
+        onUploadPdf: handlersRef.current?.handleBrandPdfUpload || (() => { }),
+        onUpdateData: handlersRef.current?.handleBrandNodeDataUpdate || (() => { }),
       } as BrandNodeData,
     };
 
@@ -340,7 +340,7 @@ export const useCanvasNodeCreation = (
       }, 0);
       return newNodes;
     });
-    
+
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -351,7 +351,7 @@ export const useCanvasNodeCreation = (
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,
     };
-    
+
     let position;
     try {
       position = reactFlowInstance.screenToFlowPosition(screenPos);
@@ -365,7 +365,7 @@ export const useCanvasNodeCreation = (
     }
 
     addToHistory(nodes, edges);
-    
+
     const newNode: Node<FlowNodeData> = {
       id: generateNodeId('edit'),
       type: 'edit',
@@ -379,7 +379,7 @@ export const useCanvasNodeCreation = (
         resolution: '1K',
         aspectRatio: '16:9',
         onApply: handlersRef.current?.handleEditApply || (() => Promise.resolve()),
-        onUpdateData: handlersRef.current?.handleEditNodeDataUpdate || (() => {}),
+        onUpdateData: handlersRef.current?.handleEditNodeDataUpdate || (() => { }),
         onGenerateSmartPrompt: handlersRef.current?.handleEditNodeGenerateSmartPrompt || (() => Promise.resolve()),
         onSuggestPrompts: handlersRef.current?.handleEditNodeSuggestPrompts || (() => Promise.resolve()),
         subscriptionStatus: subscriptionStatus,
@@ -393,7 +393,7 @@ export const useCanvasNodeCreation = (
       }, 0);
       return newNodes;
     });
-    
+
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef, subscriptionStatus]);
 
@@ -404,7 +404,7 @@ export const useCanvasNodeCreation = (
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,
     };
-    
+
     let position;
     try {
       position = reactFlowInstance.screenToFlowPosition(screenPos);
@@ -418,7 +418,7 @@ export const useCanvasNodeCreation = (
     }
 
     addToHistory(nodes, edges);
-    
+
     const newNode: Node<FlowNodeData> = {
       id: generateNodeId('upscale'),
       type: 'upscale',
@@ -430,7 +430,7 @@ export const useCanvasNodeCreation = (
         type: 'upscale',
         targetResolution: '4K',
         onUpscale: handlersRef.current?.handleUpscale || (() => Promise.resolve()),
-        onUpdateData: handlersRef.current?.handleUpscaleNodeDataUpdate || (() => {}),
+        onUpdateData: handlersRef.current?.handleUpscaleNodeDataUpdate || (() => { }),
       } as UpscaleNodeData,
     };
 
@@ -441,7 +441,7 @@ export const useCanvasNodeCreation = (
       }, 0);
       return newNodes;
     });
-    
+
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -449,7 +449,7 @@ export const useCanvasNodeCreation = (
     if (!reactFlowInstance) return;
 
     let position;
-    
+
     if (customPosition && isFlowPosition) {
       // Use flow coordinates directly
       position = customPosition;
@@ -463,7 +463,7 @@ export const useCanvasNodeCreation = (
         x: window.innerWidth / 2,
         y: window.innerHeight / 2,
       };
-      
+
       try {
         position = reactFlowInstance.screenToFlowPosition(screenPos);
         // Validate position
@@ -477,7 +477,7 @@ export const useCanvasNodeCreation = (
     }
 
     addToHistory(nodes, edges);
-    
+
     const newNode: Node<FlowNodeData> = {
       id: generateNodeId('mockup'),
       type: 'mockup',
@@ -489,7 +489,7 @@ export const useCanvasNodeCreation = (
         type: 'mockup',
         selectedPreset: 'cap', // Default to first preset
         onGenerate: handlersRef.current?.handleMockupGenerate || (() => Promise.resolve()),
-        onUpdateData: handlersRef.current?.handleMockupNodeDataUpdate || (() => {}),
+        onUpdateData: handlersRef.current?.handleMockupNodeDataUpdate || (() => { }),
         onAddMockupNode: () => {
           // This will be set by CanvasPage when node is updated
         },
@@ -503,7 +503,7 @@ export const useCanvasNodeCreation = (
       }, 0);
       return newNodes;
     });
-    
+
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -514,7 +514,7 @@ export const useCanvasNodeCreation = (
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,
     };
-    
+
     let position;
     try {
       position = reactFlowInstance.screenToFlowPosition(screenPos);
@@ -527,7 +527,7 @@ export const useCanvasNodeCreation = (
     }
 
     addToHistory(nodes, edges);
-    
+
     const newNode: Node<FlowNodeData> = {
       id: generateNodeId('angle'),
       type: 'angle',
@@ -539,7 +539,7 @@ export const useCanvasNodeCreation = (
         type: 'angle',
         selectedAngle: 'eye-level', // Default to first angle
         onGenerate: handlersRef.current?.handleAngleGenerate || (() => Promise.resolve()),
-        onUpdateData: handlersRef.current?.handleAngleNodeDataUpdate || (() => {}),
+        onUpdateData: handlersRef.current?.handleAngleNodeDataUpdate || (() => { }),
       } as AngleNodeData,
     };
 
@@ -550,7 +550,7 @@ export const useCanvasNodeCreation = (
       }, 0);
       return newNodes;
     });
-    
+
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -561,7 +561,7 @@ export const useCanvasNodeCreation = (
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,
     };
-    
+
     let position;
     try {
       position = reactFlowInstance.screenToFlowPosition(screenPos);
@@ -574,7 +574,7 @@ export const useCanvasNodeCreation = (
     }
 
     addToHistory(nodes, edges);
-    
+
     const newNode: Node<FlowNodeData> = {
       id: generateNodeId('texture'),
       type: 'texture',
@@ -586,7 +586,7 @@ export const useCanvasNodeCreation = (
         type: 'texture',
         selectedPreset: 'wood-grain', // Default to first texture
         onGenerate: handlersRef.current?.handleTextureGenerate || (() => Promise.resolve()),
-        onUpdateData: handlersRef.current?.handleTextureNodeDataUpdate || (() => {}),
+        onUpdateData: handlersRef.current?.handleTextureNodeDataUpdate || (() => { }),
       } as TextureNodeData,
     };
 
@@ -597,7 +597,7 @@ export const useCanvasNodeCreation = (
       }, 0);
       return newNodes;
     });
-    
+
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -608,7 +608,7 @@ export const useCanvasNodeCreation = (
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,
     };
-    
+
     let position;
     try {
       position = reactFlowInstance.screenToFlowPosition(screenPos);
@@ -621,7 +621,7 @@ export const useCanvasNodeCreation = (
     }
 
     addToHistory(nodes, edges);
-    
+
     const newNode: Node<FlowNodeData> = {
       id: generateNodeId('ambience'),
       type: 'ambience',
@@ -633,7 +633,7 @@ export const useCanvasNodeCreation = (
         type: 'ambience',
         selectedPreset: 'studio', // Default to first ambience
         onGenerate: handlersRef.current?.handleAmbienceGenerate || (() => Promise.resolve()),
-        onUpdateData: handlersRef.current?.handleAmbienceNodeDataUpdate || (() => {}),
+        onUpdateData: handlersRef.current?.handleAmbienceNodeDataUpdate || (() => { }),
       } as AmbienceNodeData,
     };
 
@@ -644,7 +644,7 @@ export const useCanvasNodeCreation = (
       }, 0);
       return newNodes;
     });
-    
+
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -655,7 +655,7 @@ export const useCanvasNodeCreation = (
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,
     };
-    
+
     let position;
     try {
       position = reactFlowInstance.screenToFlowPosition(screenPos);
@@ -668,7 +668,7 @@ export const useCanvasNodeCreation = (
     }
 
     addToHistory(nodes, edges);
-    
+
     const newNode: Node<FlowNodeData> = {
       id: generateNodeId('luminance'),
       type: 'luminance',
@@ -680,7 +680,7 @@ export const useCanvasNodeCreation = (
         type: 'luminance',
         selectedPreset: 'natural-light', // Default to first luminance
         onGenerate: handlersRef.current?.handleLuminanceGenerate || (() => Promise.resolve()),
-        onUpdateData: handlersRef.current?.handleLuminanceNodeDataUpdate || (() => {}),
+        onUpdateData: handlersRef.current?.handleLuminanceNodeDataUpdate || (() => { }),
       } as LuminanceNodeData,
     };
 
@@ -691,7 +691,7 @@ export const useCanvasNodeCreation = (
       }, 0);
       return newNodes;
     });
-    
+
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -702,7 +702,7 @@ export const useCanvasNodeCreation = (
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,
     };
-    
+
     let position;
     try {
       position = reactFlowInstance.screenToFlowPosition(screenPos);
@@ -715,7 +715,7 @@ export const useCanvasNodeCreation = (
     }
 
     addToHistory(nodes, edges);
-    
+
     const newNode: Node<FlowNodeData> = {
       id: generateNodeId('shader'),
       type: 'shader',
@@ -726,7 +726,7 @@ export const useCanvasNodeCreation = (
       data: {
         type: 'shader',
         onApply: handlersRef.current?.handleShaderApply || (() => Promise.resolve()),
-        onUpdateData: handlersRef.current?.handleShaderNodeDataUpdate || (() => {}),
+        onUpdateData: handlersRef.current?.handleShaderNodeDataUpdate || (() => { }),
       } as ShaderNodeData,
     };
 
@@ -737,7 +737,7 @@ export const useCanvasNodeCreation = (
       }, 0);
       return newNodes;
     });
-    
+
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -748,7 +748,7 @@ export const useCanvasNodeCreation = (
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,
     };
-    
+
     let position;
     try {
       position = reactFlowInstance.screenToFlowPosition(screenPos);
@@ -761,7 +761,7 @@ export const useCanvasNodeCreation = (
     }
 
     addToHistory(nodes, edges);
-    
+
     const newNode: Node<FlowNodeData> = {
       id: generateNodeId('upscaleBicubic'),
       type: 'upscaleBicubic',
@@ -773,7 +773,7 @@ export const useCanvasNodeCreation = (
         type: 'upscaleBicubic',
         scaleFactor: 2.0,
         onApply: handlersRef.current?.handleUpscaleBicubicApply || (() => Promise.resolve()),
-        onUpdateData: handlersRef.current?.handleUpscaleBicubicNodeDataUpdate || (() => {}),
+        onUpdateData: handlersRef.current?.handleUpscaleBicubicNodeDataUpdate || (() => { }),
       } as UpscaleBicubicNodeData,
     };
 
@@ -784,7 +784,7 @@ export const useCanvasNodeCreation = (
       }, 0);
       return newNodes;
     });
-    
+
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -795,7 +795,7 @@ export const useCanvasNodeCreation = (
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,
     };
-    
+
     let position;
     try {
       position = reactFlowInstance.screenToFlowPosition(screenPos);
@@ -824,7 +824,6 @@ export const useCanvasNodeCreation = (
       id: generateNodeId('image'),
       type: 'image',
       position,
-      style: { width: 150, height: 100 },
       data: {
         type: 'image',
         mockup: tempMockup,
@@ -852,7 +851,7 @@ export const useCanvasNodeCreation = (
       toast.error('Canvas não está pronto. Por favor, aguarde um momento e tente novamente.');
       return;
     }
-    
+
     // Validate image data
     if (!image.file && !image.base64) {
       toast.error('Nenhuma imagem encontrada. Por favor, tente colar novamente.');
@@ -860,13 +859,13 @@ export const useCanvasNodeCreation = (
     }
 
     const selectedImageNodes = nodes.filter(n => n.selected && n.type === 'image');
-    
+
     // If File is available, use direct upload to R2 (bypasses 4.5MB JSON limit)
     if (image.file && canvasId) {
       try {
         // Show loading toast for large images
         const fileSizeMB = image.file.size / 1024 / 1024;
-        const loadingToast = fileSizeMB > 2 
+        const loadingToast = fileSizeMB > 2
           ? toast.loading('Fazendo upload...', { duration: Infinity })
           : null;
 
@@ -882,7 +881,7 @@ export const useCanvasNodeCreation = (
           // Upload to existing nodes
           let successCount = 0;
           let errorCount = 0;
-          
+
           for (const node of selectedImageNodes) {
             try {
               // Verify node still exists before uploading
@@ -892,9 +891,9 @@ export const useCanvasNodeCreation = (
                 errorCount++;
                 continue;
               }
-              
+
               const imageUrl = await canvasApi.uploadImageToR2Direct(image.file, canvasId, node.id);
-              
+
               // Verify node still exists before updating (may have been deleted during upload)
               setNodes((nds: Node<FlowNodeData>[]) => {
                 const nodeExists = nds.some(n => n.id === node.id && n.type === 'image');
@@ -902,7 +901,7 @@ export const useCanvasNodeCreation = (
                   console.warn(`Node ${node.id} was deleted during upload`);
                   return nds;
                 }
-                
+
                 return nds.map((n: Node<FlowNodeData>) => {
                   if (n.id === node.id && n.type === 'image') {
                     const data = n.data as ImageNodeData;
@@ -962,9 +961,9 @@ export const useCanvasNodeCreation = (
               }
             }
           }
-          
+
           if (loadingToast) toast.dismiss(loadingToast);
-          
+
           if (errorCount > 0 && successCount === 0) {
             toast.error(`Falha ao fazer upload da imagem para ${errorCount} node(s). Usando método alternativo.`, { duration: 4000 });
           } else if (errorCount > 0) {
@@ -1004,7 +1003,6 @@ export const useCanvasNodeCreation = (
           id: newNodeId,
           type: 'image',
           position,
-          style: { width: 150, height: 100 },
           data: {
             type: 'image',
             mockup: tempMockup,
@@ -1028,7 +1026,7 @@ export const useCanvasNodeCreation = (
         // Upload directly to R2
         try {
           const imageUrl = await canvasApi.uploadImageToR2Direct(image.file, canvasId, newNodeId);
-          
+
           // Verify node still exists before updating (may have been deleted during upload)
           setNodes((nds: Node<FlowNodeData>[]) => {
             const nodeExists = nds.some(n => n.id === newNodeId && n.type === 'image');
@@ -1036,7 +1034,7 @@ export const useCanvasNodeCreation = (
               console.warn(`Node ${newNodeId} was deleted during upload`);
               return nds;
             }
-            
+
             return nds.map((n: Node<FlowNodeData>) => {
               if (n.id === newNodeId && n.type === 'image') {
                 const data = n.data as ImageNodeData;
@@ -1057,22 +1055,22 @@ export const useCanvasNodeCreation = (
               return n;
             });
           });
-          
+
           if (loadingToast) toast.dismiss(loadingToast);
           toast.success('Imagem colada!', { duration: 2000 });
         } catch (error: any) {
           console.error('Failed to upload pasted image to R2:', error);
           if (loadingToast) toast.dismiss(loadingToast);
-          
+
           // Show user-friendly error message
-          const errorMessage = error?.message?.includes('Failed to get upload URL') 
+          const errorMessage = error?.message?.includes('Failed to get upload URL')
             ? 'Falha ao conectar com o servidor. Usando método alternativo.'
             : error?.message?.includes('Failed to upload to R2')
-            ? 'Falha ao fazer upload. Usando método alternativo.'
-            : 'Falha ao fazer upload. Usando método alternativo.';
-          
+              ? 'Falha ao fazer upload. Usando método alternativo.'
+              : 'Falha ao fazer upload. Usando método alternativo.';
+
           toast.warning(errorMessage, { duration: 3000 });
-          
+
           // Fallback to base64 if direct upload fails
           try {
             const reader = new FileReader();
@@ -1126,13 +1124,13 @@ export const useCanvasNodeCreation = (
     if (!canvasId) {
       toast.warning('Projeto não salvo. Salve o projeto para fazer upload direto de imagens grandes.', { duration: 4000 });
     }
-    
+
     let processedBase64 = image.base64;
     if (!processedBase64) {
       toast.error('Falha ao processar imagem colada. Por favor, tente novamente.');
       return;
     }
-    
+
     if (selectedImageNodes.length > 0) {
       selectedImageNodes.forEach(node => {
         handlersRef.current.handleUploadImage(node.id, processedBase64);
@@ -1170,7 +1168,6 @@ export const useCanvasNodeCreation = (
       id: generateNodeId('image'),
       type: 'image',
       position,
-      style: { width: 150, height: 100 },
       data: {
         type: 'image',
         mockup: tempMockup,
@@ -1183,7 +1180,7 @@ export const useCanvasNodeCreation = (
     };
 
     addToHistory(nodes, edges);
-    
+
     setNodes((nds: Node<FlowNodeData>[]) => {
       const newNodes = [...nds, newNode];
       setTimeout(() => {
@@ -1191,7 +1188,7 @@ export const useCanvasNodeCreation = (
       }, 0);
       return newNodes;
     });
-    
+
     // Automatically upload to Cloudflare R2 in background
     // Use setTimeout to ensure node is added to state before upload
     setTimeout(() => {
@@ -1199,7 +1196,7 @@ export const useCanvasNodeCreation = (
         handlersRef.current.handleUploadImage(newNode.id, processedBase64);
       }
     }, 100);
-    
+
     toast.success('Image pasted!', { duration: 2000 });
   }, [reactFlowInstance, handleView, handleEdit, handleDelete, nodes, edges, addToHistory, setNodes, handlersRef, canvasId]);
 
@@ -1210,7 +1207,7 @@ export const useCanvasNodeCreation = (
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,
     };
-    
+
     let position;
     try {
       position = reactFlowInstance.screenToFlowPosition(screenPos);
@@ -1228,7 +1225,6 @@ export const useCanvasNodeCreation = (
       id: generateNodeId('output'),
       type: 'output',
       position,
-      style: { width: 150, height: 100 },
       data: {
         type: 'output',
         onView: (imageUrl: string) => {
@@ -1245,7 +1241,7 @@ export const useCanvasNodeCreation = (
       }, 0);
       return newNodes;
     });
-    
+
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -1259,7 +1255,7 @@ export const useCanvasNodeCreation = (
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,
     };
-    
+
     let basePosition;
     try {
       basePosition = reactFlowInstance.screenToFlowPosition(screenPos);
@@ -1291,7 +1287,7 @@ export const useCanvasNodeCreation = (
           type: 'mockup',
           selectedPreset: preset,
           onGenerate: handlersRef.current?.handleMockupGenerate || (() => Promise.resolve()),
-          onUpdateData: handlersRef.current?.handleMockupNodeDataUpdate || (() => {}),
+          onUpdateData: handlersRef.current?.handleMockupNodeDataUpdate || (() => { }),
           onAddMockupNode: () => {
             // This will be set by CanvasPage when node is updated
           },
@@ -1310,7 +1306,7 @@ export const useCanvasNodeCreation = (
     });
 
     toast.success('Brand Kit created with 5 mockup presets', { duration: 2000 });
-    
+
     return newNodeIds;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -1324,7 +1320,7 @@ export const useCanvasNodeCreation = (
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,
     };
-    
+
     let position;
     try {
       position = reactFlowInstance.screenToFlowPosition(screenPos);
@@ -1347,8 +1343,8 @@ export const useCanvasNodeCreation = (
       selectable: true,
       data: {
         type: 'logo',
-        onUploadLogo: handlersRef.current?.handleLogoNodeUpload || (() => {}),
-        onUpdateData: handlersRef.current?.handleLogoNodeDataUpdate || (() => {}),
+        onUploadLogo: handlersRef.current?.handleLogoNodeUpload || (() => { }),
+        onUpdateData: handlersRef.current?.handleLogoNodeDataUpdate || (() => { }),
       },
     };
 
@@ -1359,7 +1355,7 @@ export const useCanvasNodeCreation = (
       }, 0);
       return newNodes;
     });
-    
+
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -1373,7 +1369,7 @@ export const useCanvasNodeCreation = (
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,
     };
-    
+
     let position;
     try {
       position = reactFlowInstance.screenToFlowPosition(screenPos);
@@ -1398,8 +1394,8 @@ export const useCanvasNodeCreation = (
         type: 'colorExtractor',
         extractedColors: [],
         onExtract: handlersRef.current?.handleColorExtractorExtract || (() => Promise.resolve()),
-        onUpload: handlersRef.current?.handleColorExtractorUpload || (() => {}),
-        onUpdateData: handlersRef.current?.handleColorExtractorNodeDataUpdate || (() => {}),
+        onUpload: handlersRef.current?.handleColorExtractorUpload || (() => { }),
+        onUpdateData: handlersRef.current?.handleColorExtractorNodeDataUpdate || (() => { }),
       },
     };
 
@@ -1410,7 +1406,7 @@ export const useCanvasNodeCreation = (
       }, 0);
       return newNodes;
     });
-    
+
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -1424,7 +1420,7 @@ export const useCanvasNodeCreation = (
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,
     };
-    
+
     let position;
     try {
       position = reactFlowInstance.screenToFlowPosition(screenPos);
@@ -1447,8 +1443,8 @@ export const useCanvasNodeCreation = (
       selectable: true,
       data: {
         type: 'pdf',
-        onUploadPdf: handlersRef.current?.handlePDFNodeUpload || (() => {}),
-        onUpdateData: handlersRef.current?.handlePDFNodeDataUpdate || (() => {}),
+        onUploadPdf: handlersRef.current?.handlePDFNodeUpload || (() => { }),
+        onUpdateData: handlersRef.current?.handlePDFNodeDataUpdate || (() => { }),
       },
     };
 
@@ -1459,7 +1455,7 @@ export const useCanvasNodeCreation = (
       }, 0);
       return newNodes;
     });
-    
+
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -1473,7 +1469,7 @@ export const useCanvasNodeCreation = (
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,
     };
-    
+
     let position;
     try {
       position = reactFlowInstance.screenToFlowPosition(screenPos);
@@ -1501,10 +1497,10 @@ export const useCanvasNodeCreation = (
         onGenerateSection: handlersRef.current?.handleStrategyNodeGenerateSection || (() => Promise.resolve()),
         onGenerateAll: handlersRef.current?.handleStrategyNodeGenerateAll || (() => Promise.resolve()),
         onInitialAnalysis: handlersRef.current?.handleStrategyNodeInitialAnalysis || (() => Promise.resolve()),
-        onCancelGeneration: handlersRef.current?.handleStrategyNodeCancelGeneration || (() => {}),
-        onGeneratePDF: handlersRef.current?.handleStrategyNodeGeneratePDF || (() => {}),
+        onCancelGeneration: handlersRef.current?.handleStrategyNodeCancelGeneration || (() => { }),
+        onGeneratePDF: handlersRef.current?.handleStrategyNodeGeneratePDF || (() => { }),
         onSave: handlersRef.current?.handleStrategyNodeSave || (() => Promise.resolve(undefined)),
-        onUpdateData: handlersRef.current?.handleStrategyNodeDataUpdate || (() => {}),
+        onUpdateData: handlersRef.current?.handleStrategyNodeDataUpdate || (() => { }),
       },
     };
 
@@ -1515,7 +1511,7 @@ export const useCanvasNodeCreation = (
       }, 0);
       return newNodes;
     });
-    
+
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -1529,7 +1525,7 @@ export const useCanvasNodeCreation = (
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,
     };
-    
+
     let position;
     try {
       position = reactFlowInstance.screenToFlowPosition(screenPos);
@@ -1553,10 +1549,10 @@ export const useCanvasNodeCreation = (
       data: {
         type: 'brandCore',
         onAnalyze: handlersRef.current?.handleBrandCoreAnalyze || (() => Promise.resolve()),
-        onCancelAnalyze: handlersRef.current?.handleBrandCoreCancelAnalyze || (() => {}),
+        onCancelAnalyze: handlersRef.current?.handleBrandCoreCancelAnalyze || (() => { }),
         onGenerateVisualPrompts: handlersRef.current?.handleBrandCoreGenerateVisualPrompts || (() => Promise.resolve()),
         onGenerateStrategicPrompts: handlersRef.current?.handleBrandCoreGenerateStrategicPrompts || (() => Promise.resolve()),
-        onUpdateData: handlersRef.current?.handleBrandCoreDataUpdate || (() => {}),
+        onUpdateData: handlersRef.current?.handleBrandCoreDataUpdate || (() => { }),
         onUploadPdfToR2: handlersRef.current?.handleBrandCoreUploadPdfToR2 || (() => Promise.resolve('')),
       },
     };
@@ -1568,7 +1564,7 @@ export const useCanvasNodeCreation = (
       }, 0);
       return newNodes;
     });
-    
+
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -1582,7 +1578,7 @@ export const useCanvasNodeCreation = (
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,
     };
-    
+
     let position;
     try {
       position = reactFlowInstance.screenToFlowPosition(screenPos);
@@ -1606,7 +1602,7 @@ export const useCanvasNodeCreation = (
       data: {
         type: 'videoInput',
         onUploadVideo: handlersRef.current?.handleVideoInputNodeUpload || (() => Promise.resolve()),
-        onUpdateData: handlersRef.current?.handleVideoInputNodeDataUpdate || (() => {}),
+        onUpdateData: handlersRef.current?.handleVideoInputNodeDataUpdate || (() => { }),
       } as any,
     };
 
@@ -1617,7 +1613,7 @@ export const useCanvasNodeCreation = (
       }, 0);
       return newNodes;
     });
-    
+
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -1630,8 +1626,8 @@ export const useCanvasNodeCreation = (
     let position;
     if (customPosition && isFlowPosition) {
       // If customPosition is already in flow coordinates, validate and use it directly
-      if (customPosition.x !== undefined && customPosition.y !== undefined && 
-          !isNaN(customPosition.x) && !isNaN(customPosition.y)) {
+      if (customPosition.x !== undefined && customPosition.y !== undefined &&
+        !isNaN(customPosition.x) && !isNaN(customPosition.y)) {
         position = { x: customPosition.x, y: customPosition.y };
       } else {
         console.warn('Invalid flow position provided, using default position');
@@ -1643,7 +1639,7 @@ export const useCanvasNodeCreation = (
         x: window.innerWidth / 2,
         y: window.innerHeight / 2,
       };
-      
+
       try {
         position = reactFlowInstance.screenToFlowPosition(screenPos);
         // Validate position
@@ -1668,7 +1664,7 @@ export const useCanvasNodeCreation = (
       data: {
         type: 'text',
         text: initialText || '',
-        onUpdateData: handlersRef.current?.handleTextNodeDataUpdate || (() => {}),
+        onUpdateData: handlersRef.current?.handleTextNodeDataUpdate || (() => { }),
       } as TextNodeData,
     };
 
@@ -1679,7 +1675,7 @@ export const useCanvasNodeCreation = (
       }, 0);
       return newNodes;
     });
-    
+
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
@@ -1693,7 +1689,7 @@ export const useCanvasNodeCreation = (
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,
     };
-    
+
     let position;
     try {
       position = reactFlowInstance.screenToFlowPosition(screenPos);
@@ -1722,11 +1718,11 @@ export const useCanvasNodeCreation = (
         model: 'gemini-2.5-flash',
         isLoading: false,
         onSendMessage: handlersRef.current?.handleChatSendMessage || (() => Promise.resolve()),
-        onUpdateData: handlersRef.current?.handleChatUpdateData || (() => {}),
-        onClearHistory: handlersRef.current?.handleChatClearHistory || (() => {}),
-        onAddPromptNode: handlersRef.current?.handleChatAddPromptNode || (() => {}),
+        onUpdateData: handlersRef.current?.handleChatUpdateData || (() => { }),
+        onClearHistory: handlersRef.current?.handleChatClearHistory || (() => { }),
+        onAddPromptNode: handlersRef.current?.handleChatAddPromptNode || (() => { }),
         onCreateNode: handlersRef.current?.handleChatCreateNode || (() => undefined),
-        onEditConnectedNode: handlersRef.current?.handleChatEditConnectedNode || (() => {}),
+        onEditConnectedNode: handlersRef.current?.handleChatEditConnectedNode || (() => { }),
         onAttachMedia: handlersRef.current?.handleChatAttachMedia || (() => undefined),
         connectedNodeIds: [],
       } as ChatNodeData,
@@ -1739,7 +1735,7 @@ export const useCanvasNodeCreation = (
       }, 0);
       return newNodes;
     });
-    
+
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 

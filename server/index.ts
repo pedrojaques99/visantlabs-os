@@ -146,6 +146,11 @@ app.use(`${routePrefix}/budget`, budgetRoutes);
 import visantTemplatesRoutes from './routes/visant-templates.js';
 app.use(`${routePrefix}/visant-templates`, visantTemplatesRoutes);
 
+// Import workflow routes
+import workflowRoutes from './routes/workflows.js';
+app.use(`${routePrefix}/workflows`, workflowRoutes);
+console.log(`✅ Workflow routes registered at: ${routePrefix}/workflows`);
+
 // Import AI routes
 import aiRoutes from './routes/ai.js';
 app.use(`${routePrefix}/ai`, aiRoutes);
