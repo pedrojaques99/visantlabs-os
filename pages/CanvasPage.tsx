@@ -233,12 +233,12 @@ export const CanvasPage: React.FC = () => {
   // React Flow state
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<FlowNodeData>>([]);
   
-  // Sync selected nodes with header context
-  const setSelectedNodesInContext = canvasHeader.setSelectedNodes;
+  // Sync selected nodes count with header context
+  const setSelectedNodesCountInContext = canvasHeader.setSelectedNodesCount;
   useEffect(() => {
-    const selected = nodes.filter(n => n.selected) as Node<FlowNodeData>[];
-    setSelectedNodesInContext(selected);
-  }, [nodes, setSelectedNodesInContext]);
+    const count = nodes.filter(n => n.selected).length;
+    setSelectedNodesCountInContext(count);
+  }, [nodes, setSelectedNodesCountInContext]);
 
   // Persist settings to backend (localStorage is handled by context)
   useEffect(() => {
@@ -544,47 +544,31 @@ export const CanvasPage: React.FC = () => {
   const shareModalOpenRef = useRef(false);
   
   const handleShareClick = useCallback(() => {
-    // Prevent multiple calls
+    // Prevent multiple calls using ref only
     if (shareModalOpenRef.current) {
-      console.warn('[CanvasPage] ⚠️ handleShareClick called but modal is already opening, ignoring');
       return;
     }
     
     shareModalOpenRef.current = true;
-    console.log('[CanvasPage] 🔍 handleShareClick called - user clicked share button', {
-      projectId,
-      isAdminOrPremium,
-      isCollaborative,
-      timestamp: new Date().toISOString(),
-      stackTrace: new Error().stack
-    });
     
     // Defer state update to avoid "Cannot update component while rendering" error
-    // Use requestAnimationFrame to ensure it runs after render phase
-    requestAnimationFrame(() => {
+    setTimeout(() => {
       setShowShareModal(true);
-      // Reset flag after modal state is set
-      setTimeout(() => {
-        shareModalOpenRef.current = false;
-      }, 100);
-    });
-  }, [projectId, isAdminOrPremium, isCollaborative]);
+    }, 0);
+  }, []);
   
   useEffect(() => {
-    console.log('[CanvasPage] 🔍 Setting onShareClick handler', {
-      isAdminOrPremium,
-      hasHandler: !!handleShareClick,
-      projectId,
-      timestamp: new Date().toISOString(),
-      stackTrace: new Error().stack
-    });
-    // Only set handler if user is admin or premium
-    if (isAdminOrPremium) {
+    // Always set handler - button is always visible
+    if (projectId) {
       setOnShareClickInContext(handleShareClick);
     } else {
       setOnShareClickInContext(undefined);
     }
-  }, [isAdminOrPremium, setOnShareClickInContext, handleShareClick, projectId]);
+    return () => {
+      // Cleanup: reset handler when component unmounts
+      setOnShareClickInContext(undefined);
+    };
+  }, [setOnShareClickInContext, handleShareClick, projectId]);
 
   // Sync collaborative state
   const setIsCollaborativeInContext = canvasHeader.setIsCollaborative;
@@ -601,7 +585,7 @@ export const CanvasPage: React.FC = () => {
   const [projectModalNodeId, setProjectModalNodeId] = useState<string | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
-  // Check if user is admin or premium
+  // Check if user is admin or premium (still needed for other features)
   useEffect(() => {
     const checkUserStatus = async () => {
       if (isAuthenticated) {
@@ -613,6 +597,8 @@ export const CanvasPage: React.FC = () => {
         } catch (error) {
           setIsAdminOrPremium(false);
         }
+      } else {
+        setIsAdminOrPremium(false);
       }
     };
     checkUserStatus();
@@ -3720,6 +3706,10 @@ export const CanvasPage: React.FC = () => {
               stackTrace: new Error().stack
             });
             setShowShareModal(false);
+            // Reset ref after a short delay to allow state update
+            setTimeout(() => {
+              shareModalOpenRef.current = false;
+            }, 100);
           }}
           projectId={projectId}
           shareId={shareId}

@@ -7,87 +7,50 @@ import { useLayout } from '../../hooks/useLayout';
 import { AuthButton } from '../AuthButton';
 import { CanvasSettingsModal } from './CanvasSettingsModal';
 import { CommunityPresetsSidebar } from './CommunityPresetsSidebar';
-import type { Node } from '@xyflow/react';
-import type { FlowNodeData } from '../../types/reactFlow';
+import { useCanvasHeader } from './CanvasHeaderContext';
 
 interface CanvasHeaderProps {
-  projectName?: string;
   onBack: () => void;
-  onProjectNameChange?: (name: string) => void;
-  selectedNodesCount?: number;
-  selectedNodes?: Node<FlowNodeData>[];
-  onShareClick?: () => void;
-  isCollaborative?: boolean;
-  othersCount?: number;
   onSettingsClick?: () => void;
-  backgroundColor?: string;
-  onBackgroundColorChange?: (color: string) => void;
-  gridColor?: string;
-  onGridColorChange?: (color: string) => void;
-  showGrid?: boolean;
-  onShowGridChange?: (show: boolean) => void;
-  showMinimap?: boolean;
-  onShowMinimapChange?: (show: boolean) => void;
-  showControls?: boolean;
-  onShowControlsChange?: (show: boolean) => void;
-  cursorColor?: string;
-  onCursorColorChange?: (color: string) => void;
-  brandCyan?: string;
-  onBrandCyanChange?: (color: string) => void;
-  experimentalMode?: boolean;
-  onExperimentalModeChange?: (experimental: boolean) => void;
-  onImportCommunityPreset?: (preset: any, type: string) => void;
 }
 
-export const CanvasHeader: React.FC<CanvasHeaderProps> = ({
-  projectName,
-  onBack,
-  onProjectNameChange,
-  onShareClick,
-  isCollaborative = false,
-  onSettingsClick,
-  backgroundColor = '#121212',
-  onBackgroundColorChange,
-  gridColor = 'rgba(255, 255, 255, 0.1)',
-  onGridColorChange,
-  showGrid = true,
-  onShowGridChange,
-  showMinimap = true,
-  onShowMinimapChange,
-  showControls = true,
-  onShowControlsChange,
-  cursorColor,
-  onCursorColorChange,
-  brandCyan,
-  onBrandCyanChange,
-  experimentalMode = false,
-  onExperimentalModeChange,
-  onImportCommunityPreset,
-}) => {
+export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsClick }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { subscriptionStatus: contextSubscriptionStatus, onCreditPackagesModalOpen } = useLayout();
+  const {
+    projectName,
+    onProjectNameChange,
+    onShareClick,
+    isCollaborative,
+    backgroundColor,
+    setBackgroundColor,
+    gridColor,
+    setGridColor,
+    showGrid,
+    setShowGrid,
+    showMinimap,
+    setShowMinimap,
+    showControls,
+    setShowControls,
+    cursorColor,
+    setCursorColor,
+    brandCyan,
+    setBrandCyan,
+    experimentalMode,
+    setExperimentalMode,
+    onImportCommunityPreset,
+  } = useCanvasHeader();
 
-  // Log when onShareClick changes
-  useEffect(() => {
-    console.log('[CanvasHeader] 🔍 onShareClick prop changed', {
-      hasHandler: !!onShareClick,
-      isCollaborative,
-      projectName,
-      timestamp: new Date().toISOString(),
-      stackTrace: new Error().stack
-    });
-  }, [onShareClick, isCollaborative, projectName]);
   const [isEditing, setIsEditing] = useState(false);
   const [localName, setLocalName] = useState(projectName || 'Untitled');
   const inputRef = useRef<HTMLInputElement>(null);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showCommunityPresetsSidebar, setShowCommunityPresetsSidebar] = useState(false);
-  const isUserEditRef = useRef(false); // Track if the user actually edited
+  const isUserEditRef = useRef(false);
 
   useEffect(() => {
-    // Only update localName if not currently editing (to avoid interrupting user input)
-    if (!isEditing) {
+    if (!isEditing && projectName !== undefined) {
       setLocalName(projectName || 'Untitled');
     }
   }, [projectName, isEditing]);
@@ -101,32 +64,26 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({
 
   const handleBlur = () => {
     setIsEditing(false);
-    // Safety check: ensure localName is a string before calling trim
-    const safeLocalName = localName && typeof localName === 'string' ? localName : (projectName || 'Untitled');
-    const trimmedName = safeLocalName.trim() || 'Untitled';
-    // Only call onProjectNameChange if user actually edited (not just programmatic update)
-    if (trimmedName !== projectName && isUserEditRef.current) {
+    const trimmedName = (localName?.trim() || 'Untitled');
+    const currentName = projectName || 'Untitled';
+    
+    // Only call onProjectNameChange if user actually edited and name changed
+    if (isUserEditRef.current && trimmedName !== currentName && trimmedName !== 'Untitled') {
       if (onProjectNameChange) {
+        // Call the handler - it will update the context, which will update projectName
+        // The useEffect will then update localName when projectName changes
         onProjectNameChange(trimmedName);
+        // Optimistically update localName to show the change immediately
+        setLocalName(trimmedName);
       } else {
         // Handler not available yet, just reset to original
-        setLocalName(projectName || 'Untitled');
+        setLocalName(currentName);
       }
-      isUserEditRef.current = false; // Reset flag
     } else {
-      setLocalName(projectName || 'Untitled');
-      isUserEditRef.current = false; // Reset flag
+      // Reset to original name if no change or invalid
+      setLocalName(currentName);
     }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLocalName(e.target.value);
-    isUserEditRef.current = true; // Mark as user edit
-  };
-
-  const handleEditStart = () => {
-    setIsEditing(true);
-    isUserEditRef.current = false; // Reset flag when starting edit
+    isUserEditRef.current = false;
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -138,29 +95,8 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({
     }
   };
 
-  const handleCreditsClick = () => {
-    if (onCreditPackagesModalOpen) {
-      onCreditPackagesModalOpen();
-    }
-  };
-
-  const handleSettingsClick = () => {
-    if (onSettingsClick) {
-      onSettingsClick();
-    } else {
-      setShowSettingsModal(true);
-    }
-  };
-
-  const handleImportPreset = (preset: any, type: string) => {
-    if (onImportCommunityPreset) {
-      onImportCommunityPreset(preset, type);
-    }
-  };
-
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-[#121212]/95 backdrop-blur-sm border-b border-zinc-800/50">
-      {/* First line: Breadcrumb and user actions */}
       <div className="px-2 sm:px-4 md:px-6 flex items-center justify-between h-12 gap-2 py-2">
         <div className="flex items-center gap-2 min-w-0 flex-1">
           <BackButton onClick={onBack} className="mt-8 flex-shrink-0" />
@@ -179,14 +115,20 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({
                     ref={inputRef}
                     type="text"
                     value={localName}
-                    onChange={handleInputChange}
+                    onChange={(e) => {
+                      setLocalName(e.target.value);
+                      isUserEditRef.current = true;
+                    }}
                     onBlur={handleBlur}
                     onKeyDown={handleKeyDown}
                     className="text-xs font-mono text-zinc-300 bg-transparent border-b border-zinc-600 focus:border-[#52ddeb] focus:outline-none px-1 min-w-[80px] sm:min-w-[100px] max-w-[200px] sm:max-w-none"
                   />
                 ) : (
                   <span
-                    onClick={handleEditStart}
+                    onClick={() => {
+                      setIsEditing(true);
+                      isUserEditRef.current = false;
+                    }}
                     className="text-zinc-300 truncate cursor-text hover:text-zinc-200 transition-colors"
                     title={projectName || 'Untitled'}
                   >
@@ -201,18 +143,6 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({
           {onShareClick && (
             <button
               onClick={(e) => {
-                // Only proceed if this is a real user click event
-                if (!e || !e.isTrusted) {
-                  console.warn('[CanvasHeader] ⚠️ Share button click ignored - not a trusted event');
-                  return;
-                }
-                
-                console.log('[CanvasHeader] 🔍 Share button clicked', {
-                  isCollaborative,
-                  projectName,
-                  timestamp: new Date().toISOString(),
-                  stackTrace: new Error().stack
-                });
                 e.preventDefault();
                 e.stopPropagation();
                 onShareClick();
@@ -234,9 +164,18 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({
           >
             <Users size={14} />
           </button>
-          <AuthButton subscriptionStatus={contextSubscriptionStatus} onCreditsClick={handleCreditsClick} />
+          <AuthButton
+            subscriptionStatus={contextSubscriptionStatus}
+            onCreditsClick={() => onCreditPackagesModalOpen?.()}
+          />
           <button
-            onClick={handleSettingsClick}
+            onClick={() => {
+              if (onSettingsClick) {
+                onSettingsClick();
+              } else {
+                setShowSettingsModal(true);
+              }
+            }}
             className="p-1.5 border rounded-md transition-all flex items-center justify-center bg-zinc-800/50 hover:bg-zinc-700/50 text-zinc-300 border-zinc-700/50 hover:border-zinc-600 cursor-pointer"
             title={t('canvas.settings')}
           >
@@ -250,28 +189,28 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({
           isOpen={showSettingsModal}
           onClose={() => setShowSettingsModal(false)}
           backgroundColor={backgroundColor}
-          onBackgroundColorChange={onBackgroundColorChange}
+          onBackgroundColorChange={setBackgroundColor}
           gridColor={gridColor}
-          onGridColorChange={onGridColorChange}
+          onGridColorChange={setGridColor}
           showGrid={showGrid}
-          onShowGridChange={onShowGridChange}
+          onShowGridChange={setShowGrid}
           showMinimap={showMinimap}
-          onShowMinimapChange={onShowMinimapChange}
+          onShowMinimapChange={setShowMinimap}
           showControls={showControls}
-          onShowControlsChange={onShowControlsChange}
+          onShowControlsChange={setShowControls}
           cursorColor={cursorColor}
-          onCursorColorChange={onCursorColorChange}
+          onCursorColorChange={setCursorColor}
           brandCyan={brandCyan}
-          onBrandCyanChange={onBrandCyanChange}
+          onBrandCyanChange={setBrandCyan}
           experimentalMode={experimentalMode}
-          onExperimentalModeChange={onExperimentalModeChange}
+          onExperimentalModeChange={setExperimentalMode}
         />
       )}
 
       <CommunityPresetsSidebar
         isOpen={showCommunityPresetsSidebar}
         onClose={() => setShowCommunityPresetsSidebar(false)}
-        onImportPreset={handleImportPreset}
+        onImportPreset={onImportCommunityPreset}
       />
     </div>
   );

@@ -6,8 +6,7 @@ interface CanvasHeaderContextValue {
   projectName?: string;
   setProjectName: (name: string) => void;
   selectedNodesCount: number;
-  selectedNodes: Node<FlowNodeData>[];
-  setSelectedNodes: (nodes: Node<FlowNodeData>[]) => void;
+  setSelectedNodesCount: (count: number) => void;
   onShareClick?: () => void;
   setOnShareClick: (handler: (() => void) | undefined) => void;
   isCollaborative: boolean;
@@ -46,155 +45,58 @@ export const useCanvasHeader = () => {
   return context;
 };
 
+// Helper hook for localStorage
+const useLocalStorage = <T,>(key: string, defaultValue: T): [T, (value: T) => void] => {
+  const [state, setState] = useState<T>(() => {
+    if (typeof window === 'undefined') return defaultValue;
+    const item = localStorage.getItem(key);
+    if (item === null) return defaultValue;
+    if (typeof defaultValue === 'boolean') return (item === 'true') as T;
+    if (typeof defaultValue === 'string') return item as T;
+    return defaultValue;
+  });
+
+  const setValue = useCallback((value: T) => {
+    setState(value);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(key, String(value));
+    }
+  }, [key]);
+
+  return [state, setValue];
+};
+
 interface CanvasHeaderProviderProps {
   children: React.ReactNode;
 }
 
 export const CanvasHeaderProvider: React.FC<CanvasHeaderProviderProps> = ({ children }) => {
   const [projectName, setProjectNameState] = useState<string>('');
-  const [selectedNodesCount, setSelectedNodesCount] = useState(0);
-  const [selectedNodes, setSelectedNodesState] = useState<Node<FlowNodeData>[]>([]);
+  const [selectedNodesCount, setSelectedNodesCount] = useState<number>(0);
   const [onShareClick, setOnShareClick] = useState<(() => void) | undefined>(undefined);
-  const [isCollaborative, setIsCollaborativeState] = useState(false);
-  const [othersCount, setOthersCountState] = useState(0);
-  
-  // Initialize from localStorage with proper defaults
-  const [backgroundColor, setBackgroundColorState] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('canvasBackgroundColor') || '#121212';
-    }
-    return '#121212';
-  });
-  const [gridColor, setGridColorState] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('canvasGridColor') || 'rgba(255, 255, 255, 0.1)';
-    }
-    return 'rgba(255, 255, 255, 0.1)';
-  });
-  const [showGrid, setShowGridState] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('canvasShowGrid');
-      return saved !== null ? saved === 'true' : true;
-    }
-    return true;
-  });
-  const [showMinimap, setShowMinimapState] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('canvasShowMinimap');
-      return saved !== null ? saved === 'true' : true;
-    }
-    return true;
-  });
-  const [showControls, setShowControlsState] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('canvasShowControls');
-      return saved !== null ? saved === 'true' : true;
-    }
-    return true;
-  });
-  const [cursorColor, setCursorColorState] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('canvasCursorColor') || '#FFFFFF';
-    }
-    return '#FFFFFF';
-  });
-  const [brandCyan, setBrandCyanState] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('canvasBrandCyan') || '#52ddeb';
-    }
-    return '#52ddeb';
-  });
-  const [experimentalMode, setExperimentalModeState] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('canvasExperimentalMode');
-      return saved !== null ? saved === 'true' : false;
-    }
-    return false;
-  });
+  const [isCollaborative, setIsCollaborative] = useState(false);
+  const [othersCount, setOthersCount] = useState(0);
   const [onImportCommunityPreset, setOnImportCommunityPreset] = useState<((preset: any, type: string) => void) | undefined>(undefined);
   const [onProjectNameChange, setOnProjectNameChange] = useState<((name: string) => void) | undefined>(undefined);
 
+  const [backgroundColor, setBackgroundColor] = useLocalStorage('canvasBackgroundColor', '#121212');
+  const [gridColor, setGridColor] = useLocalStorage('canvasGridColor', 'rgba(255, 255, 255, 0.1)');
+  const [showGrid, setShowGrid] = useLocalStorage('canvasShowGrid', true);
+  const [showMinimap, setShowMinimap] = useLocalStorage('canvasShowMinimap', true);
+  const [showControls, setShowControls] = useLocalStorage('canvasShowControls', true);
+  const [cursorColor, setCursorColor] = useLocalStorage('canvasCursorColor', '#FFFFFF');
+  const [brandCyan, setBrandCyan] = useLocalStorage('canvasBrandCyan', '#52ddeb');
+  const [experimentalMode, setExperimentalMode] = useLocalStorage('canvasExperimentalMode', false);
+
   const setProjectName = useCallback((name: string) => {
-    // Just update the state - don't call onProjectNameChange here
-    // onProjectNameChange should only be called by the header component
-    // when the user actually edits the name, not during state synchronization
-    // Safety check: ensure name is a string
     setProjectNameState(name && typeof name === 'string' ? name : '');
   }, []);
 
-  const setSelectedNodes = useCallback((nodes: Node<FlowNodeData>[]) => {
-    setSelectedNodesState(nodes);
-    setSelectedNodesCount(nodes.length);
-  }, []);
-
-  const setIsCollaborative = useCallback((value: boolean) => {
-    setIsCollaborativeState(value);
-  }, []);
-
-  const setOthersCount = useCallback((value: number) => {
-    setOthersCountState(value);
-  }, []);
-
-  const setExperimentalMode = useCallback((value: boolean) => {
-    setExperimentalModeState(value);
-  }, []);
-
-  const setBackgroundColor = useCallback((color: string) => {
-    setBackgroundColorState(color);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('canvasBackgroundColor', color);
-    }
-  }, []);
-
-  const setGridColor = useCallback((color: string) => {
-    setGridColorState(color);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('canvasGridColor', color);
-    }
-  }, []);
-
-  const setShowGrid = useCallback((show: boolean) => {
-    setShowGridState(show);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('canvasShowGrid', String(show));
-    }
-  }, []);
-
-  const setShowMinimap = useCallback((show: boolean) => {
-    setShowMinimapState(show);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('canvasShowMinimap', String(show));
-    }
-  }, []);
-
-  const setShowControls = useCallback((show: boolean) => {
-    setShowControlsState(show);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('canvasShowControls', String(show));
-    }
-  }, []);
-
-  const setCursorColor = useCallback((color: string) => {
-    setCursorColorState(color);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('canvasCursorColor', color);
-    }
-  }, []);
-
-  const setBrandCyan = useCallback((color: string) => {
-    setBrandCyanState(color);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('canvasBrandCyan', color);
-    }
-  }, []);
-
-  // Memoize the context value to prevent unnecessary re-renders
   const value: CanvasHeaderContextValue = useMemo(() => ({
     projectName,
     setProjectName,
     selectedNodesCount,
-    selectedNodes,
-    setSelectedNodes,
+    setSelectedNodesCount,
     onShareClick,
     setOnShareClick,
     isCollaborative,
@@ -223,36 +125,20 @@ export const CanvasHeaderProvider: React.FC<CanvasHeaderProviderProps> = ({ chil
     setOnProjectNameChange,
   }), [
     projectName,
-    setProjectName,
     selectedNodesCount,
-    selectedNodes,
-    setSelectedNodes,
     onShareClick,
-    setOnShareClick,
     isCollaborative,
-    setIsCollaborative,
     othersCount,
-    setOthersCount,
     backgroundColor,
-    setBackgroundColor,
     gridColor,
-    setGridColor,
     showGrid,
-    setShowGrid,
     showMinimap,
-    setShowMinimap,
     showControls,
-    setShowControls,
     cursorColor,
-    setCursorColor,
     brandCyan,
-    setBrandCyan,
     experimentalMode,
-    setExperimentalMode,
     onImportCommunityPreset,
-    setOnImportCommunityPreset,
     onProjectNameChange,
-    setOnProjectNameChange,
   ]);
 
   return (

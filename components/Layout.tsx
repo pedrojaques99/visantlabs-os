@@ -41,38 +41,9 @@ interface LayoutProps {
 
 const CanvasHeaderWrapper: React.FC<{ navigate: (path: string) => void }> = ({ navigate }) => {
   try {
-    const headerData = useCanvasHeader();
-    return (
-      <CanvasHeader
-        projectName={headerData.projectName}
-        onBack={() => navigate('/canvas')}
-        onProjectNameChange={headerData.onProjectNameChange}
-        selectedNodesCount={headerData.selectedNodesCount}
-        selectedNodes={headerData.selectedNodes}
-        onShareClick={headerData.onShareClick}
-        isCollaborative={headerData.isCollaborative}
-        othersCount={headerData.othersCount}
-        backgroundColor={headerData.backgroundColor}
-        onBackgroundColorChange={headerData.setBackgroundColor}
-        gridColor={headerData.gridColor}
-        onGridColorChange={headerData.setGridColor}
-        showGrid={headerData.showGrid}
-        onShowGridChange={headerData.setShowGrid}
-        showMinimap={headerData.showMinimap}
-        onShowMinimapChange={headerData.setShowMinimap}
-        showControls={headerData.showControls}
-        onShowControlsChange={headerData.setShowControls}
-        cursorColor={headerData.cursorColor}
-        onCursorColorChange={headerData.setCursorColor}
-        brandCyan={headerData.brandCyan}
-        onBrandCyanChange={headerData.setBrandCyan}
-        experimentalMode={headerData.experimentalMode}
-        onExperimentalModeChange={headerData.setExperimentalMode}
-        onImportCommunityPreset={headerData.onImportCommunityPreset}
-      />
-    );
+    useCanvasHeader(); // Verify context is available
+    return <CanvasHeader onBack={() => navigate('/canvas')} />;
   } catch {
-    // Context not available, return null
     return null;
   }
 };

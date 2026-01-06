@@ -16,7 +16,7 @@ interface ShareModalProps {
   onShareUpdate?: () => void;
 }
 
-export const ShareModal: React.FC<ShareModalProps> = ({
+const ShareModalComponent: React.FC<ShareModalProps> = ({
   isOpen,
   onClose,
   projectId,
@@ -36,47 +36,8 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   const [newViewUser, setNewViewUser] = useState('');
   const [copied, setCopied] = useState(false);
 
-  // Log when component mounts/unmounts
-  useEffect(() => {
-    console.log('[ShareModal] 🔍 Component mounted', {
-      isOpen,
-      projectId,
-      shareId,
-      isCollaborative,
-      timestamp: new Date().toISOString(),
-      stackTrace: new Error().stack
-    });
-
-    return () => {
-      console.log('[ShareModal] 🔍 Component unmounted', {
-        isOpen,
-        projectId,
-        timestamp: new Date().toISOString()
-      });
-    };
-  }, []);
-
-  // Log when isOpen changes
-  useEffect(() => {
-    console.log('[ShareModal] 🔍 isOpen changed', {
-      isOpen,
-      projectId,
-      shareId,
-      isCollaborative,
-      timestamp: new Date().toISOString(),
-      stackTrace: new Error().stack
-    });
-  }, [isOpen, projectId, shareId, isCollaborative]);
-
   useEffect(() => {
     if (isOpen) {
-      console.log('[ShareModal] 🔍 Opening modal - initializing state', {
-        projectId,
-        shareId,
-        canEdit: canEdit.length,
-        canView: canView.length,
-        timestamp: new Date().toISOString()
-      });
       setEditUsers(canEdit);
       setViewUsers(canView);
       if (shareId) {
@@ -84,7 +45,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
         setShareUrl(`${baseUrl}/canvas/shared/${shareId}`);
       }
     }
-  }, [isOpen, canEdit, canView, shareId, projectId]);
+  }, [isOpen, canEdit, canView, shareId]);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -188,21 +149,9 @@ export const ShareModal: React.FC<ShareModalProps> = ({
     setViewUsers(viewUsers.filter(id => id !== userId));
   };
 
-  // Log before early return
   if (!isOpen) {
     return null;
   }
-
-  // Log when modal is actually rendered
-  console.log('[ShareModal] 🔍 Rendering modal', {
-    projectId,
-    shareId,
-    isCollaborative,
-    hasShareUrl: !!shareUrl,
-    editUsersCount: editUsers.length,
-    viewUsersCount: viewUsers.length,
-    timestamp: new Date().toISOString()
-  });
 
   const hasChanges = 
     JSON.stringify(editUsers) !== JSON.stringify(canEdit) ||
@@ -423,3 +372,6 @@ export const ShareModal: React.FC<ShareModalProps> = ({
     </div>
   );
 };
+
+// Memoize the component to prevent unnecessary re-renders
+export const ShareModal = React.memo(ShareModalComponent);
