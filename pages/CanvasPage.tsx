@@ -112,51 +112,26 @@ export const CanvasPage: React.FC = () => {
   const canvasHeader = useCanvasHeader();
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
-  const [backgroundColor, setBackgroundColor] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('canvasBackgroundColor') || 'var(--brand-bg)';
+  
+  // Log when CanvasPage component mounts
+  useEffect(() => {
+    if (isLocalDevelopment()) {
+      console.log('[CanvasPage] 🎨 Component mounted:', {
+        timestamp: new Date().toISOString(),
+        isAuthenticated,
+        hasAccess,
+        isLoadingAccess
+      });
     }
-    return 'var(--brand-bg)';
-  });
-  const [gridColor, setGridColor] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('canvasGridColor') || 'rgba(255, 255, 255, 0.1)';
-    }
-    return 'rgba(255, 255, 255, 0.1)';
-  });
-  const [showGrid, setShowGrid] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('canvasShowGrid');
-      return saved !== null ? saved === 'true' : true;
-    }
-    return true;
-  });
-  const [showMinimap, setShowMinimap] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('canvasShowMinimap');
-      return saved !== null ? saved === 'true' : true;
-    }
-    return true;
-  });
-  const [showControls, setShowControls] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('canvasShowControls');
-      return saved !== null ? saved === 'true' : true;
-    }
-    return true;
-  });
-  const [cursorColor, setCursorColor] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('canvasCursorColor') || '#FFFFFF';
-    }
-    return '#FFFFFF';
-  });
-  const [brandCyan, setBrandCyan] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('canvasBrandCyan') || '#52ddeb';
-    }
-    return '#52ddeb';
-  });
+  }, []);
+  // Use settings directly from context instead of duplicating state
+  const backgroundColor = canvasHeader.backgroundColor;
+  const gridColor = canvasHeader.gridColor;
+  const showGrid = canvasHeader.showGrid;
+  const showMinimap = canvasHeader.showMinimap;
+  const showControls = canvasHeader.showControls;
+  const cursorColor = canvasHeader.cursorColor;
+  const brandCyan = canvasHeader.brandCyan;
   const [isShaderSidebarCollapsed, setIsShaderSidebarCollapsed] = useState(false);
   const [isChatSidebarCollapsed, setIsChatSidebarCollapsed] = useState(false);
   const [openChatNodeId, setOpenChatNodeId] = useState<string | null>(null);
@@ -190,21 +165,21 @@ export const CanvasPage: React.FC = () => {
   const [exportPanel, setExportPanel] = useState<{ nodeId: string; nodeName: string; imageUrl: string | null; nodeType: string } | null>(null);
   const [isSettingsLoaded, setIsSettingsLoaded] = useState(false);
 
-  // Load user settings from backend
+  // Load user settings from backend and update context
   useEffect(() => {
     const loadSettings = async () => {
       if (isAuthenticated === true && !isSettingsLoaded) {
         try {
           const settings = await getCanvasSettings();
           if (settings) {
-            if (settings.backgroundColor) setBackgroundColor(settings.backgroundColor);
-            if (settings.gridColor) setGridColor(settings.gridColor);
-            if (settings.showGrid !== undefined) setShowGrid(settings.showGrid);
-            if (settings.showMinimap !== undefined) setShowMinimap(settings.showMinimap);
-            if (settings.showControls !== undefined) setShowControls(settings.showControls);
-            if (settings.cursorColor) setCursorColor(settings.cursorColor);
-            if (settings.brandCyan) setBrandCyan(settings.brandCyan);
-            if (settings.experimentalMode !== undefined) setExperimentalMode(settings.experimentalMode);
+            if (settings.backgroundColor) canvasHeader.setBackgroundColor(settings.backgroundColor);
+            if (settings.gridColor) canvasHeader.setGridColor(settings.gridColor);
+            if (settings.showGrid !== undefined) canvasHeader.setShowGrid(settings.showGrid);
+            if (settings.showMinimap !== undefined) canvasHeader.setShowMinimap(settings.showMinimap);
+            if (settings.showControls !== undefined) canvasHeader.setShowControls(settings.showControls);
+            if (settings.cursorColor) canvasHeader.setCursorColor(settings.cursorColor);
+            if (settings.brandCyan) canvasHeader.setBrandCyan(settings.brandCyan);
+            if (settings.experimentalMode !== undefined) canvasHeader.setExperimentalMode(settings.experimentalMode);
             setIsSettingsLoaded(true);
           }
         } catch (error) {
@@ -214,7 +189,7 @@ export const CanvasPage: React.FC = () => {
     };
 
     loadSettings();
-  }, [isAuthenticated, isSettingsLoaded]);
+  }, [isAuthenticated, isSettingsLoaded, canvasHeader]);
 
   const [imageFullscreenModal, setImageFullscreenModal] = useState<{
     imageUrl: string | null;
@@ -231,13 +206,8 @@ export const CanvasPage: React.FC = () => {
     }>;
   } | null>(null);
 
-  const [experimentalMode, setExperimentalMode] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('canvasExperimentalMode');
-      return saved !== null ? saved === 'true' : false;
-    }
-    return false;
-  });
+  // Use experimentalMode directly from context
+  const experimentalMode = canvasHeader.experimentalMode;
 
   // Debounced settings update to backend
   const debouncedUpdateSettings = useDebouncedCallback(async (settings: any) => {
@@ -250,7 +220,7 @@ export const CanvasPage: React.FC = () => {
     }
   }, 1000);
 
-  // Apply brandCyan color to CSS variable on mount and when it changes
+  // Apply brandCyan color to CSS variable when it changes
   useEffect(() => {
     if (typeof document !== 'undefined') {
       const root = document.documentElement;
@@ -260,70 +230,19 @@ export const CanvasPage: React.FC = () => {
     }
   }, [brandCyan]);
 
-  // Apply initial brandCyan color on mount
-  useEffect(() => {
-    if (typeof document !== 'undefined') {
-      const root = document.documentElement;
-      root.style.setProperty('--brand-cyan', brandCyan);
-    }
-  }, []);
-
-  // Sync local state with canvas header context
-  useEffect(() => {
-    canvasHeader.setBackgroundColor(backgroundColor);
-  }, [backgroundColor, canvasHeader]);
-
-  useEffect(() => {
-    canvasHeader.setGridColor(gridColor);
-  }, [gridColor, canvasHeader]);
-
-  useEffect(() => {
-    canvasHeader.setShowGrid(showGrid);
-  }, [showGrid, canvasHeader]);
-
-  useEffect(() => {
-    canvasHeader.setShowMinimap(showMinimap);
-  }, [showMinimap, canvasHeader]);
-
-  useEffect(() => {
-    canvasHeader.setShowControls(showControls);
-  }, [showControls, canvasHeader]);
-
-  useEffect(() => {
-    canvasHeader.setCursorColor(cursorColor);
-  }, [cursorColor, canvasHeader]);
-
-  useEffect(() => {
-    canvasHeader.setBrandCyan(brandCyan);
-  }, [brandCyan, canvasHeader]);
-
-  useEffect(() => {
-    canvasHeader.setExperimentalMode(experimentalMode);
-  }, [experimentalMode, canvasHeader]);
-
   // React Flow state
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<FlowNodeData>>([]);
   
   // Sync selected nodes with header context
+  const setSelectedNodesInContext = canvasHeader.setSelectedNodes;
   useEffect(() => {
     const selected = nodes.filter(n => n.selected) as Node<FlowNodeData>[];
-    canvasHeader.setSelectedNodes(selected);
-  }, [nodes, canvasHeader]);
+    setSelectedNodesInContext(selected);
+  }, [nodes, setSelectedNodesInContext]);
 
-  // Persist settings
+  // Persist settings to backend (localStorage is handled by context)
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('canvasBackgroundColor', backgroundColor);
-      localStorage.setItem('canvasGridColor', gridColor);
-      localStorage.setItem('canvasShowGrid', String(showGrid));
-      localStorage.setItem('canvasShowMinimap', String(showMinimap));
-      localStorage.setItem('canvasShowControls', String(showControls));
-      localStorage.setItem('canvasCursorColor', cursorColor);
-      localStorage.setItem('canvasBrandCyan', brandCyan);
-      localStorage.setItem('canvasExperimentalMode', String(experimentalMode));
-    }
-
-    // Also update backend
+    // Update backend when settings change
     if (isAuthenticated === true) {
       debouncedUpdateSettings({
         backgroundColor,
@@ -498,38 +417,186 @@ export const CanvasPage: React.FC = () => {
     drawing.drawings,
     drawing.setDrawings
   );
+  
+  // Log when projectId changes (project loaded)
+  useEffect(() => {
+    if (isLocalDevelopment() && projectId) {
+      console.log('[CanvasPage] 📦 Project ID available:', {
+        projectId,
+        projectName,
+        isCollaborative,
+        isLoadingProject,
+        timestamp: new Date().toISOString()
+      });
+    }
+  }, [projectId, projectName, isCollaborative, isLoadingProject]);
+  
+  // Log when project finishes loading
+  useEffect(() => {
+    if (isLocalDevelopment() && !isLoadingProject && projectId) {
+      console.log('[CanvasPage] ✅ Project fully loaded and ready:', {
+        projectId,
+        projectName,
+        nodeCount: nodes.length,
+        edgeCount: edges.length,
+        drawingCount: drawing.drawings.length,
+        isCollaborative,
+        timestamp: new Date().toISOString()
+      });
+    }
+  }, [isLoadingProject, projectId, projectName, nodes.length, edges.length, drawing.drawings.length, isCollaborative]);
+
+  // Poll for project name updates in collaborative mode
+  useEffect(() => {
+    if (!isCollaborative || !projectId || !isAuthenticated || isLoadingProject) {
+      return;
+    }
+
+    // Poll every 5 seconds to check for name updates from other users
+    const pollInterval = setInterval(async () => {
+      try {
+        const project = await canvasApi.getById(projectId);
+        const latestName = project.name || 'Untitled';
+        
+        // Only update if name changed (to avoid unnecessary re-renders)
+        if (latestName !== projectName) {
+          setProjectName(latestName);
+        }
+      } catch (error) {
+        // Silently fail - don't spam console with errors
+        if (isLocalDevelopment()) {
+          console.warn('[CanvasPage] Failed to poll project name:', error);
+        }
+      }
+    }, 5000); // Poll every 5 seconds
+
+    return () => clearInterval(pollInterval);
+  }, [isCollaborative, projectId, isAuthenticated, isLoadingProject, projectName, setProjectName]);
 
   const [showShareModal, setShowShareModal] = useState(false);
   const [isAdminOrPremium, setIsAdminOrPremium] = useState(false);
   const [othersCount, setOthersCount] = useState(0);
+  
+  // Debug: Log when showShareModal changes
+  useEffect(() => {
+    console.log('[CanvasPage] 🔍 showShareModal changed', {
+      showShareModal,
+      projectId,
+      isAdminOrPremium,
+      isCollaborative,
+      timestamp: new Date().toISOString(),
+      stackTrace: new Error().stack
+    });
+  }, [showShareModal, projectId, isAdminOrPremium, isCollaborative]);
 
   // Sync project name with header context
+  // Use ref to track previous value and avoid unnecessary updates
+  const previousProjectNameRef = useRef<string>(projectName || '');
+  const setProjectNameInContext = canvasHeader.setProjectName;
   useEffect(() => {
-    canvasHeader.setProjectName(projectName);
-  }, [projectName, canvasHeader]);
+    // Only update if projectName actually changed
+    if (previousProjectNameRef.current !== projectName) {
+      previousProjectNameRef.current = projectName || '';
+      setProjectNameInContext(projectName || '');
+    }
+  }, [projectName, setProjectNameInContext]);
 
   // Sync project name change handler
+  // Use useCallback to prevent handler from being recreated on every render
+  // Use ref to access latest projectName without causing re-renders
+  const projectNameRef = useRef<string>(projectName || '');
   useEffect(() => {
-    canvasHeader.setOnProjectNameChange((newName: string) => {
-      setProjectName(newName);
-      toast.success(t('canvas.projectNameUpdated'), { duration: 1200 });
-    });
-  }, [setProjectName, canvasHeader, t]);
+    projectNameRef.current = projectName || '';
+  }, [projectName]);
+
+  const handleProjectNameChange = useCallback(async (newName: string) => {
+    // Only update if name actually changed and is not empty
+    if (!newName || typeof newName !== 'string') {
+      return; // Safety check: ignore undefined/null/non-string values
+    }
+    const trimmedName = newName.trim();
+    if (trimmedName && trimmedName !== projectNameRef.current && trimmedName !== 'Untitled') {
+      // Update local state immediately
+      setProjectName(trimmedName);
+      
+      // Save to database immediately (don't wait for debounce)
+      if (projectId && saveImmediately) {
+        try {
+          await saveImmediately();
+          toast.success(t('canvas.projectNameUpdated'), { duration: 1200 });
+        } catch (error) {
+          console.error('Failed to save project name:', error);
+          toast.error(t('canvas.failedToUpdateProjectName') || 'Failed to update project name', { duration: 3000 });
+        }
+      } else {
+        toast.success(t('canvas.projectNameUpdated'), { duration: 1200 });
+      }
+    }
+  }, [setProjectName, t, projectId, saveImmediately]);
+
+  const setOnProjectNameChangeInContext = canvasHeader.setOnProjectNameChange;
+  useEffect(() => {
+    setOnProjectNameChangeInContext(handleProjectNameChange);
+  }, [handleProjectNameChange, setOnProjectNameChangeInContext]);
 
   // Sync share click handler
+  const setOnShareClickInContext = canvasHeader.setOnShareClick;
+  const shareModalOpenRef = useRef(false);
+  
+  const handleShareClick = useCallback(() => {
+    // Prevent multiple calls
+    if (shareModalOpenRef.current) {
+      console.warn('[CanvasPage] ⚠️ handleShareClick called but modal is already opening, ignoring');
+      return;
+    }
+    
+    shareModalOpenRef.current = true;
+    console.log('[CanvasPage] 🔍 handleShareClick called - user clicked share button', {
+      projectId,
+      isAdminOrPremium,
+      isCollaborative,
+      timestamp: new Date().toISOString(),
+      stackTrace: new Error().stack
+    });
+    
+    // Defer state update to avoid "Cannot update component while rendering" error
+    // Use requestAnimationFrame to ensure it runs after render phase
+    requestAnimationFrame(() => {
+      setShowShareModal(true);
+      // Reset flag after modal state is set
+      setTimeout(() => {
+        shareModalOpenRef.current = false;
+      }, 100);
+    });
+  }, [projectId, isAdminOrPremium, isCollaborative]);
+  
   useEffect(() => {
-    canvasHeader.setOnShareClick(isAdminOrPremium ? () => setShowShareModal(true) : undefined);
-  }, [isAdminOrPremium, canvasHeader, setShowShareModal]);
+    console.log('[CanvasPage] 🔍 Setting onShareClick handler', {
+      isAdminOrPremium,
+      hasHandler: !!handleShareClick,
+      projectId,
+      timestamp: new Date().toISOString(),
+      stackTrace: new Error().stack
+    });
+    // Only set handler if user is admin or premium
+    if (isAdminOrPremium) {
+      setOnShareClickInContext(handleShareClick);
+    } else {
+      setOnShareClickInContext(undefined);
+    }
+  }, [isAdminOrPremium, setOnShareClickInContext, handleShareClick, projectId]);
 
   // Sync collaborative state
+  const setIsCollaborativeInContext = canvasHeader.setIsCollaborative;
   useEffect(() => {
-    canvasHeader.setIsCollaborative(isCollaborative);
-  }, [isCollaborative, canvasHeader]);
+    setIsCollaborativeInContext(isCollaborative);
+  }, [isCollaborative, setIsCollaborativeInContext]);
 
   // Sync others count
+  const setOthersCountInContext = canvasHeader.setOthersCount;
   useEffect(() => {
-    canvasHeader.setOthersCount(othersCount);
-  }, [othersCount, canvasHeader]);
+    setOthersCountInContext(othersCount);
+  }, [othersCount, setOthersCountInContext]);
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [projectModalNodeId, setProjectModalNodeId] = useState<string | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -878,8 +945,8 @@ export const CanvasPage: React.FC = () => {
     handleUndo,
     handleRedo,
     addToHistory,
-    drawing.drawings,
     handlersRef,
+    drawing.drawings,
     reactFlowInstance,
     reactFlowWrapper,
     handleDuplicateNodes,
@@ -2855,13 +2922,13 @@ export const CanvasPage: React.FC = () => {
         {/* CanvasHeader is now rendered in Layout component */}
 
         {/* Main Canvas Container with Sidebar Layout - Starts below header (81px) */}
-        <div className="flex relative w-full" style={{ height: 'calc(100vh - 81px)', paddingTop: '81px' }}>
+        <div className="flex relative w-full" style={{ height: 'calc(100vh - 81px)', paddingTop: '0px', justifyContent: 'flex-start' }}>
           {/* Canvas Area - Adjusts width when sidebar is open */}
           <div 
             className="flex-1 transition-all duration-300 ease-out relative"
             style={{
               width: openChatNodeId && !isChatSidebarCollapsed 
-                ? `calc(100% - ${chatSidebarWidth}px${isLargeScreen ? ` - ${RESIZER_WIDTH}px` : ''})` 
+                ? `calc(100% - ${chatSidebarWidth}px)` 
                 : openChatNodeId && isChatSidebarCollapsed 
                 ? `calc(100% - ${CHAT_SIDEBAR_COLLAPSED_WIDTH}px)` 
                 : '100%',
@@ -3646,13 +3713,24 @@ export const CanvasPage: React.FC = () => {
       {projectId && (
         <ShareModal
           isOpen={showShareModal}
-          onClose={() => setShowShareModal(false)}
+          onClose={() => {
+            console.log('[CanvasPage] 🔍 ShareModal onClose called', {
+              projectId,
+              timestamp: new Date().toISOString(),
+              stackTrace: new Error().stack
+            });
+            setShowShareModal(false);
+          }}
           projectId={projectId}
           shareId={shareId}
           isCollaborative={isCollaborative}
           canEdit={canEdit}
           canView={canView}
           onShareUpdate={async () => {
+            console.log('[CanvasPage] 🔍 ShareModal onShareUpdate called', {
+              projectId,
+              timestamp: new Date().toISOString()
+            });
             // Reload project to get updated share info
             if (projectId) {
               try {

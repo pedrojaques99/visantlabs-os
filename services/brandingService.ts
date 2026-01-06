@@ -802,7 +802,7 @@ IMPORTANT:
 - Focus on essential points that directly connect the archetypes to the brand's key characteristics`;
 
     if (examples.length > 0) {
-      basePrompt += `\n\nHere are examples of high-quality outputs for this task:\n${examples.join('\n\n')}`;
+      sectionPrompt += `\n\nHere are examples of high-quality outputs for this task:\n${examples.join('\n\n')}`;
     }
 
     const strategicPrompt = buildStrategicPrompt(sectionPrompt, prompt);
@@ -1035,7 +1035,7 @@ Return a JSON object with a single key "mockups" which is an array of mockup ide
 Example: {"mockups": ["Mockup idea 1", "Mockup idea 2", "Mockup idea 3"]}`;
 
     if (examples.length > 0) {
-      basePrompt += `\n\nHere are examples of high-quality outputs for this task:\n${examples.join('\n\n')}`;
+      sectionPrompt += `\n\nHere are examples of high-quality outputs for this task:\n${examples.join('\n\n')}`;
     }
 
     const strategicPrompt = buildStrategicPrompt(sectionPrompt, prompt);

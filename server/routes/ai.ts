@@ -134,6 +134,7 @@ router.post('/generate-smart-prompt', authenticate, async (req: AuthRequest, res
       aspectRatio,
       generateText,
       withHuman,
+      enhanceTexture,
       negativePrompt,
       additionalPrompt,
     } = req.body;
@@ -163,6 +164,7 @@ router.post('/generate-smart-prompt', authenticate, async (req: AuthRequest, res
       aspectRatio: aspectRatio || '16:9',
       generateText: generateText || false,
       withHuman: withHuman || false,
+      enhanceTexture: enhanceTexture || false,
       negativePrompt: negativePrompt || '',
       additionalPrompt: additionalPrompt || '',
     }, userApiKey);

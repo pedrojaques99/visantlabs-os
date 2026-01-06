@@ -382,6 +382,11 @@ router.put('/presets/:id', authenticate, async (req: AuthRequest, res) => {
         : [])
       : undefined;
 
+    // Build update object
+    const update: any = {
+      updatedAt: new Date().toISOString(),
+    };
+
     // Validar category/presetType se fornecidos
     if (category !== undefined || presetType !== undefined) {
       const categoryData = normalizeCategoryAndPresetType({ category: category || preset?.category, presetType: presetType || preset?.presetType });
@@ -391,11 +396,6 @@ router.put('/presets/:id', authenticate, async (req: AuthRequest, res) => {
       if (categoryData.category) update.category = categoryData.category;
       if (categoryData.presetType) update.presetType = categoryData.presetType;
     }
-
-    // Build update object
-    const update: any = {
-      updatedAt: new Date().toISOString(),
-    };
 
     if (name !== undefined) update.name = name;
     if (description !== undefined) update.description = description;
