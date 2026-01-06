@@ -4,6 +4,7 @@ import { Layout } from './components/Layout';
 import { ErrorBoundaryWrapper } from './components/ErrorBoundaryWrapper';
 import { GlitchLoader } from './components/ui/GlitchLoader';
 import { lazyWithRetry } from './utils/lazyWithRetry';
+import { CanvasHeaderProvider } from './components/canvas/CanvasHeaderContext';
 
 // Lazy load all pages for code-splitting with automatic retry
 const MockupMachinePage = lazyWithRetry(() => import('./pages/MockupMachinePage').then(m => ({ default: m.MockupMachinePage })));
@@ -59,7 +60,11 @@ const App: React.FC = () => {
               <Route path="/my-outputs" element={<MyOutputsPage />} />
               <Route path="/canvas" element={<CanvasProjectsPage />} />
               <Route path="/canvas/shared/:shareId" element={<CanvasSharedPage />} />
-              <Route path="/canvas/:id" element={<CanvasPage />} />
+              <Route path="/canvas/:id" element={
+                <CanvasHeaderProvider>
+                  <CanvasPage />
+                </CanvasHeaderProvider>
+              } />
               <Route path="/branding-machine" element={<BrandingMachinePage />} />
               <Route path="/my-brandings" element={<MyBrandingsPage />} />
               <Route path="/budget-machine" element={<BudgetMachinePage />} />

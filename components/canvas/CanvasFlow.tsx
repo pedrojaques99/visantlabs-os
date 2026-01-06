@@ -19,7 +19,9 @@ import {
   isValidDroppableNodeType,
   MAX_IMAGE_FILE_SIZE,
   MAX_IMAGE_FILE_SIZE_MB,
-  formatFileSize
+  formatFileSize,
+  isValidMediaFile,
+  getMediaType
 } from '../../utils/canvasConstants';
 import { DrawingLayer } from './DrawingLayer';
 
@@ -256,15 +258,40 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const hasFiles = e.dataTransfer.types.includes('Files');
+    
+    // Don't show drop feedback if user is actively interacting (dragging nodes, drawing, or selecting)
+    if (isDragging || isDrawing || selectionBox) {
+      return;
+    }
+    
     const hasToolbarNode = e.dataTransfer.types.includes('application/vsn-toolbar-node') ||
       e.dataTransfer.types.includes('text/plain');
 
-    if (hasFiles || hasToolbarNode) {
+    if (hasToolbarNode) {
       setIsDraggingOver(true);
       e.dataTransfer.dropEffect = 'copy';
+      return;
     }
-  }, []);
+
+    // Check if files are valid media files before showing feedback
+    const hasFiles = e.dataTransfer.types.includes('Files');
+    if (hasFiles && e.dataTransfer.items) {
+      // Check if at least one file is valid media
+      const items = Array.from(e.dataTransfer.items);
+      const hasValidMedia = items.some(item => {
+        if (item.kind === 'file') {
+          const file = item.getAsFile();
+          return file && isValidMediaFile(file);
+        }
+        return false;
+      });
+
+      if (hasValidMedia) {
+        setIsDraggingOver(true);
+        e.dataTransfer.dropEffect = 'copy';
+      }
+    }
+  }, [isDragging, isDrawing, selectionBox]);
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -279,6 +306,11 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
     e.preventDefault();
     e.stopPropagation();
     setIsDraggingOver(false);
+
+    // Don't process drop if user is actively interacting (dragging nodes, drawing, or selecting)
+    if (isDragging || isDrawing || selectionBox) {
+      return;
+    }
 
     if (!reactFlowInstanceRef.current) return;
 
@@ -319,12 +351,11 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
       }
     }
 
-    // Otherwise, handle as image file drop
+    // Otherwise, handle as media file drop (image, video, or PDF)
     if (!onDropImage) return;
 
-    const files = Array.from(e.dataTransfer.files).filter(file =>
-      file.type.startsWith('image/')
-    );
+    // Filter files to only include valid media files
+    const files = Array.from(e.dataTransfer.files).filter(file => isValidMediaFile(file));
 
     if (files.length === 0) {
       return;
@@ -334,9 +365,11 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
     setIsProcessingFiles(true);
     setProcessingProgress({ current: 0, total: files.length, fileName: '' });
 
-    // Process each dropped image file
+    // Process each dropped media file
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
+      const mediaType = getMediaType(file);
+      
       // Update progress with file name
       setProcessingProgress({ current: i + 1, total: files.length, fileName: file.name });
 
@@ -354,19 +387,25 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
           continue;
         }
 
-        // Convert to base64
-        const imageData = await fileToBase64(file);
+        // Only process images for now (video and PDF support can be added later)
+        if (mediaType === 'image') {
+          // Convert to base64
+          const imageData = await fileToBase64(file);
 
-        // Call the callback to create image node
-        onDropImage(imageData, position);
+          // Call the callback to create image node
+          onDropImage(imageData, position);
 
-        // Offset position slightly for multiple files
-        position = {
-          x: position.x + 50,
-          y: position.y + 50,
-        };
+          // Offset position slightly for multiple files
+          position = {
+            x: position.x + 50,
+            y: position.y + 50,
+          };
+        } else if (mediaType === 'video' || mediaType === 'pdf') {
+          // TODO: Add support for video and PDF nodes
+          toast.info(t('canvas.mediaTypeNotSupported', { mediaType, fileName: file.name }), { duration: 3000 });
+        }
       } catch (error: any) {
-        console.error('Error processing dropped image:', error);
+        console.error('Error processing dropped media:', error);
         const errorMessage = error?.message || t('common.error');
         toast.error(t('canvas.failedToProcessImageWithName', { fileName: file.name, errorMessage }), { duration: 5000 });
       }
@@ -375,7 +414,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
     // Hide loading state
     setIsProcessingFiles(false);
     setProcessingProgress({ current: 0, total: 0, fileName: '' });
-  }, [onDropImage, onDropNode, reactFlowWrapper, t]);
+  }, [onDropImage, onDropNode, reactFlowWrapper, isDragging, isDrawing, selectionBox, t]);
 
   // Find selected ShaderNode (but not UpscaleBicubicNode - it has its own type)
   const selectedShaderNode = useMemo(() => {
@@ -657,7 +696,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
     <div
       ref={reactFlowWrapper}
       className={cn(
-        "w-full h-[calc(100vh-65px)] mt-[65px] transition-all duration-300 ease-in-out relative",
+        "w-full h-full transition-all duration-300 ease-in-out relative",
         isDragging && "is-dragging",
       )}
       style={{

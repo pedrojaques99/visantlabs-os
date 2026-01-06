@@ -49,9 +49,10 @@ import { useCanvasNodeCreation } from '../hooks/canvas/useCanvasNodeCreation';
 import { useCanvasEvents } from '../hooks/canvas/useCanvasEvents';
 import { useCanvasKeyboard } from '../hooks/canvas/useCanvasKeyboard';
 import { CanvasToolbar } from '../components/canvas/CanvasNodeToolbar';
-import { CanvasHeader } from '../components/canvas/CanvasHeader';
+import { useCanvasHeader } from '../components/canvas/CanvasHeaderContext';
 import { CanvasFlow } from '../components/canvas/CanvasFlow';
 import { ShaderControlsSidebar } from '../components/canvas/ShaderControlsSidebar';
+import { ChatSidebar } from '../components/canvas/ChatSidebar';
 import { ShareModal } from '../components/canvas/ShareModal';
 import { cleanEdgeHandles, mockupArraysEqual, arraysEqual, getConnectedBrandIdentity, generateNodeId, getImageFromSourceNode, syncConnectedImage, getMediaFromNodeForCopy } from '../utils/canvas/canvasNodeUtils';
 import { SEO } from '../components/SEO';
@@ -108,6 +109,7 @@ export const CanvasPage: React.FC = () => {
   const { isAuthenticated, subscriptionStatus, setSubscriptionStatus } = useLayout();
   const { hasAccess, isLoading: isLoadingAccess } = usePremiumAccess();
   const { t } = useTranslation();
+  const canvasHeader = useCanvasHeader();
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
   const [backgroundColor, setBackgroundColor] = useState<string>(() => {
@@ -156,6 +158,29 @@ export const CanvasPage: React.FC = () => {
     return '#52ddeb';
   });
   const [isShaderSidebarCollapsed, setIsShaderSidebarCollapsed] = useState(false);
+  const [isChatSidebarCollapsed, setIsChatSidebarCollapsed] = useState(false);
+  const [openChatNodeId, setOpenChatNodeId] = useState<string | null>(null);
+  const [chatSidebarWidth, setChatSidebarWidth] = useState(400);
+  const chatSidebarRef = useRef<HTMLElement>(null);
+  const [isLargeScreen, setIsLargeScreen] = useState(false);
+  
+  // Chat sidebar dimensions
+  const CHAT_SIDEBAR_WIDTH = 400;
+  const CHAT_SIDEBAR_COLLAPSED_WIDTH = 56;
+  const RESIZER_WIDTH = 8;
+  const [showDeleteChatNodeModal, setShowDeleteChatNodeModal] = useState(false);
+  const [chatNodeToDelete, setChatNodeToDelete] = useState<string | null>(null);
+
+  // Check screen size for resizer visibility
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsLargeScreen(window.innerWidth >= 1024);
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; sourceNodeId?: string } | null>(null);
   const [edgeContextMenu, setEdgeContextMenu] = useState<{ x: number; y: number; edgeId: string } | null>(null);
   const [imageContextMenu, setImageContextMenu] = useState<{ x: number; y: number; nodeId: string } | null>(null);
@@ -243,8 +268,47 @@ export const CanvasPage: React.FC = () => {
     }
   }, []);
 
+  // Sync local state with canvas header context
+  useEffect(() => {
+    canvasHeader.setBackgroundColor(backgroundColor);
+  }, [backgroundColor, canvasHeader]);
+
+  useEffect(() => {
+    canvasHeader.setGridColor(gridColor);
+  }, [gridColor, canvasHeader]);
+
+  useEffect(() => {
+    canvasHeader.setShowGrid(showGrid);
+  }, [showGrid, canvasHeader]);
+
+  useEffect(() => {
+    canvasHeader.setShowMinimap(showMinimap);
+  }, [showMinimap, canvasHeader]);
+
+  useEffect(() => {
+    canvasHeader.setShowControls(showControls);
+  }, [showControls, canvasHeader]);
+
+  useEffect(() => {
+    canvasHeader.setCursorColor(cursorColor);
+  }, [cursorColor, canvasHeader]);
+
+  useEffect(() => {
+    canvasHeader.setBrandCyan(brandCyan);
+  }, [brandCyan, canvasHeader]);
+
+  useEffect(() => {
+    canvasHeader.setExperimentalMode(experimentalMode);
+  }, [experimentalMode, canvasHeader]);
+
   // React Flow state
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<FlowNodeData>>([]);
+  
+  // Sync selected nodes with header context
+  useEffect(() => {
+    const selected = nodes.filter(n => n.selected) as Node<FlowNodeData>[];
+    canvasHeader.setSelectedNodes(selected);
+  }, [nodes, canvasHeader]);
 
   // Persist settings
   useEffect(() => {
@@ -438,6 +502,34 @@ export const CanvasPage: React.FC = () => {
   const [showShareModal, setShowShareModal] = useState(false);
   const [isAdminOrPremium, setIsAdminOrPremium] = useState(false);
   const [othersCount, setOthersCount] = useState(0);
+
+  // Sync project name with header context
+  useEffect(() => {
+    canvasHeader.setProjectName(projectName);
+  }, [projectName, canvasHeader]);
+
+  // Sync project name change handler
+  useEffect(() => {
+    canvasHeader.setOnProjectNameChange((newName: string) => {
+      setProjectName(newName);
+      toast.success(t('canvas.projectNameUpdated'), { duration: 1200 });
+    });
+  }, [setProjectName, canvasHeader, t]);
+
+  // Sync share click handler
+  useEffect(() => {
+    canvasHeader.setOnShareClick(isAdminOrPremium ? () => setShowShareModal(true) : undefined);
+  }, [isAdminOrPremium, canvasHeader, setShowShareModal]);
+
+  // Sync collaborative state
+  useEffect(() => {
+    canvasHeader.setIsCollaborative(isCollaborative);
+  }, [isCollaborative, canvasHeader]);
+
+  // Sync others count
+  useEffect(() => {
+    canvasHeader.setOthersCount(othersCount);
+  }, [othersCount, canvasHeader]);
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [projectModalNodeId, setProjectModalNodeId] = useState<string | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -850,25 +942,21 @@ export const CanvasPage: React.FC = () => {
     // Position is already in flow coordinates from CanvasFlow
     const flowPosition = position;
 
-    // Helper to convert flow to screen coordinates
+    // Helper to convert flow coordinates to screen coordinates
+    // Most node creation functions expect screen coordinates and convert internally
     const flowToScreen = (flowPos: { x: number; y: number }): { x: number; y: number } => {
-      if (reactFlowInstance.flowToScreenPosition) {
-        const screenPos = reactFlowInstance.flowToScreenPosition(flowPos);
-        if (screenPos) return screenPos;
-      }
-      // Fallback: use viewport to calculate
       if (reactFlowInstance.getViewport) {
         const viewport = reactFlowInstance.getViewport();
         if (viewport) {
-          // Approximate conversion: flowPos * zoom + viewport offset
-          // This is a simplified calculation - actual ReactFlow might be more complex
+          // Convert flow coordinates to screen coordinates using viewport
+          // Formula: screen = (flow * zoom) + viewport offset
           return {
             x: flowPos.x * viewport.zoom + viewport.x,
             y: flowPos.y * viewport.zoom + viewport.y,
           };
         }
       }
-      // Ultimate fallback: return center of screen
+      // Fallback: return center of screen
       return {
         x: window.innerWidth / 2,
         y: window.innerHeight / 2,
@@ -880,7 +968,7 @@ export const CanvasPage: React.FC = () => {
         addPromptNode(flowToScreen(flowPosition));
         break;
       case 'mockup':
-        // addMockupNode supports flow coordinates directly
+        // addMockupNode supports flow coordinates directly via isFlowPosition parameter
         addMockupNode(flowPosition, true);
         break;
       case 'shader':
@@ -908,6 +996,7 @@ export const CanvasPage: React.FC = () => {
         addBrandCoreNode(flowToScreen(flowPosition));
         break;
       case 'text':
+        // addTextNode supports flow coordinates directly via isFlowPosition parameter
         addTextNode(flowPosition, undefined, true);
         break;
       case 'chat':
@@ -1284,12 +1373,25 @@ export const CanvasPage: React.FC = () => {
     });
   }, [nodes, edges, setEdges, addToHistory]);
 
-  // Handler to delete node by ID (used by NodeContainer delete button)
-  const handleDeleteNodeById = useCallback(async (nodeId: string) => {
+  // Handler to open ChatNode sidebar
+  const handleChatOpenSidebar = useCallback((nodeId: string) => {
+    setOpenChatNodeId(nodeId);
+  }, []);
+
+  // Perform actual node deletion
+  const performNodeDeletion = useCallback(async (nodeId: string) => {
     const node = nodes.find(n => n.id === nodeId);
     if (!node) return;
 
     addToHistory(nodes, edges);
+
+    // If it's a ChatNode, clear history before deleting
+    if (node.type === 'chat') {
+      const chatData = node.data as ChatNodeData;
+      if (chatData.onClearHistory && chatData.messages && chatData.messages.length > 0) {
+        chatData.onClearHistory(nodeId);
+      }
+    }
 
     // Check if the image is liked (should be preserved in R2 for MyOutputsPage)
     const nodeData = node.data as any;
@@ -1315,6 +1417,11 @@ export const CanvasPage: React.FC = () => {
       !nodeIdsToRemove.has(e.source) && !nodeIdsToRemove.has(e.target)
     );
 
+    // Clear openChatNodeId if the deleted node was the open one
+    if (openChatNodeId === nodeId) {
+      setOpenChatNodeId(null);
+    }
+
     setNodes(newNodes);
     setEdges(newEdges);
 
@@ -1323,7 +1430,23 @@ export const CanvasPage: React.FC = () => {
     }, 0);
 
     toast.success(t('canvas.nodeDeleted'), { duration: 2000 });
-  }, [nodes, edges, setNodes, setEdges, addToHistory, t]);
+  }, [nodes, edges, setNodes, setEdges, addToHistory, openChatNodeId, setOpenChatNodeId, t]);
+
+  // Handler to delete node by ID (used by NodeContainer delete button)
+  const handleDeleteNodeById = useCallback(async (nodeId: string) => {
+    const node = nodes.find(n => n.id === nodeId);
+    if (!node) return;
+
+    // If it's a ChatNode, show confirmation modal first
+    if (node.type === 'chat') {
+      setChatNodeToDelete(nodeId);
+      setShowDeleteChatNodeModal(true);
+      return;
+    }
+
+    // For other node types, delete directly
+    await performNodeDeletion(nodeId);
+  }, [nodes, performNodeDeletion]);
 
   // Update node data with handlers - always ensure handlers are attached
   const lastSubscriptionStatusRef = useRef(subscriptionStatus);
@@ -1481,7 +1604,7 @@ export const CanvasPage: React.FC = () => {
         (n.type === 'brand' && (!(n.data as BrandNodeData).onAnalyze || !(n.data as BrandNodeData).onUploadLogo || !(n.data as BrandNodeData).onUpdateData || !handlersRef.current?.handleBrandAnalyze)) ||
         (n.type === 'strategy' && (!(n.data as StrategyNodeData).onOpenProjectModal || !(n.data as StrategyNodeData).onGenerate || !(n.data as StrategyNodeData).onGenerateSection || !(n.data as StrategyNodeData).onGenerateAll || !(n.data as StrategyNodeData).onInitialAnalysis || !(n.data as StrategyNodeData).onCancelGeneration || !(n.data as StrategyNodeData).onGeneratePDF || !(n.data as StrategyNodeData).onSave || !(n.data as StrategyNodeData).onUpdateData || !handlersRef.current?.handleStrategyNodeGenerate || !handlersRef.current?.handleStrategyNodeDataUpdate)) ||
         (n.type === 'brandCore' && (!(n.data as BrandCoreData).onAnalyze || !(n.data as BrandCoreData).onUpdateData || !(n.data as BrandCoreData).onUploadPdfToR2 || !(n.data as BrandCoreData).onCancelAnalyze || !handlersRef.current?.handleBrandCoreAnalyze || !handlersRef.current?.handleBrandCoreDataUpdate || !handlersRef.current?.handleBrandCoreUploadPdfToR2 || !handlersRef.current?.handleBrandCoreCancelAnalyze)) ||
-        (n.type === 'chat' && (!(n.data as ChatNodeData).onSendMessage || !(n.data as ChatNodeData).onUpdateData || !(n.data as ChatNodeData).onClearHistory || !(n.data as ChatNodeData).onAddPromptNode || !(n.data as ChatNodeData).onCreateNode || !handlersRef.current?.handleChatSendMessage || !handlersRef.current?.handleChatUpdateData))
+        (n.type === 'chat' && (!(n.data as ChatNodeData).onSendMessage || !(n.data as ChatNodeData).onUpdateData || !(n.data as ChatNodeData).onClearHistory || !(n.data as ChatNodeData).onAddPromptNode || !(n.data as ChatNodeData).onCreateNode || !(n.data as ChatNodeData).onOpenSidebar || !handlersRef.current?.handleChatSendMessage || !handlersRef.current?.handleChatUpdateData))
       );
 
       // Check if there are edges connected to nodes that need image synchronization
@@ -1760,69 +1883,8 @@ export const CanvasPage: React.FC = () => {
         if (n.type === 'upscale') {
           const upscaleData = n.data as UpscaleNodeData;
 
-          // Check for connected ImageNode, LogoNode, BrandNode, or OutputNode and sync connectedImage
-          const connectedEdge = edges.find(e => e.target === n.id);
-          const sourceNode = connectedEdge ? nds.find(node => node.id === connectedEdge.source) : null;
-          const hasConnectedImage = sourceNode?.type === 'image' || sourceNode?.type === 'logo' || sourceNode?.type === 'brand' || sourceNode?.type === 'output';
-
-          // Get connected image - prioritize base64 for better thumbnail display
-          let newConnectedImage: string | undefined = undefined;
-          if (hasConnectedImage && sourceNode) {
-            if (sourceNode.type === 'image') {
-              const imageData = sourceNode.data as ImageNodeData;
-              // Prioritize base64 for thumbnails
-              if (imageData.mockup?.imageBase64) {
-                const base64 = imageData.mockup.imageBase64.startsWith('data:')
-                  ? imageData.mockup.imageBase64
-                  : `data:image/png;base64,${imageData.mockup.imageBase64}`;
-                newConnectedImage = base64;
-              } else {
-                // Fallback to URL
-                const imageUrl = getImageUrl(imageData.mockup);
-                if (imageUrl && imageUrl.length > 0) {
-                  newConnectedImage = imageUrl;
-                }
-              }
-            } else if (sourceNode.type === 'logo') {
-              const logoData = sourceNode.data as LogoNodeData;
-              // Prioritize base64 for thumbnails
-              if (logoData.logoBase64) {
-                const base64 = logoData.logoBase64.startsWith('data:')
-                  ? logoData.logoBase64
-                  : `data:image/png;base64,${logoData.logoBase64}`;
-                newConnectedImage = base64;
-              } else if (logoData.logoImageUrl) {
-                // Fallback to logoImageUrl
-                newConnectedImage = logoData.logoImageUrl;
-              }
-            } else if (sourceNode.type === 'merge' || sourceNode.type === 'edit' || sourceNode.type === 'mockup' || sourceNode.type === 'angle' || sourceNode.type === 'prompt' || sourceNode.type === 'upscale' || sourceNode.type === 'output') {
-              const nodeData = sourceNode.data as any;
-              // Prioritize base64 for thumbnails
-              if (nodeData.resultImageBase64) {
-                const base64 = nodeData.resultImageBase64.startsWith('data:')
-                  ? nodeData.resultImageBase64
-                  : `data:image/png;base64,${nodeData.resultImageBase64}`;
-                newConnectedImage = base64;
-              } else if (nodeData.resultImageUrl) {
-                // Fallback to URL
-                newConnectedImage = nodeData.resultImageUrl;
-              }
-            } else if (sourceNode.type === 'brand') {
-              const brandData = sourceNode.data as BrandNodeData;
-              // Prioritize base64 for thumbnails
-              if (brandData.logoBase64) {
-                const base64 = brandData.logoBase64.startsWith('data:')
-                  ? brandData.logoBase64
-                  : `data:image/png;base64,${brandData.logoBase64}`;
-                newConnectedImage = base64;
-              } else if (brandData.logoImage) {
-                // Fallback to logoImage
-                newConnectedImage = brandData.logoImage;
-              }
-            }
-          }
-
-          // Detect change
+          // Sync connected image using helper (handles all source types)
+          const newConnectedImage = syncConnectedImage(n.id, edges, nds);
           const currentConnectedImage = (upscaleData as any).connectedImage ?? undefined;
           const connectedImageChanged = currentConnectedImage !== newConnectedImage;
 
@@ -1844,19 +1906,8 @@ export const CanvasPage: React.FC = () => {
         if (n.type === 'mockup') {
           const mockupData = n.data as any;
 
-          // Check for connected ImageNode, LogoNode, BrandNode, or OutputNode and sync connectedImage
-          const connectedEdge = edges.find(e => e.target === n.id);
-          const sourceNode = connectedEdge ? nds.find(node => node.id === connectedEdge.source) : null;
-          const hasConnectedImage = sourceNode?.type === 'image' || sourceNode?.type === 'logo' || sourceNode?.type === 'brand' || sourceNode?.type === 'output';
-
-          // Get connected image - prioritize base64 for better thumbnail display
-          const newConnectedImage: string | undefined = hasConnectedImage && sourceNode
-            ? (getImageFromSourceNode(sourceNode) || undefined)
-            : undefined;
-          // If no edge connected, explicitly set to undefined to clear the image
-          // This ensures cleanup when edge is removed
-
-          // Detect change: compare current value with new value, handling undefined/null cases
+          // Sync connected image using helper
+          const newConnectedImage = syncConnectedImage(n.id, edges, nds);
           const currentConnectedImage = mockupData.connectedImage || undefined;
           const connectedImageChanged = currentConnectedImage !== newConnectedImage;
 
@@ -1898,17 +1949,10 @@ export const CanvasPage: React.FC = () => {
         if (n.type === 'angle') {
           const angleData = n.data as any;
 
-          // Check for connected ImageNode, LogoNode, BrandNode, or OutputNode and sync connectedImage
-          const connectedEdge = edges.find(e => e.target === n.id);
-          const sourceNode = connectedEdge ? nds.find(node => node.id === connectedEdge.source) : null;
-          const hasConnectedImage = sourceNode?.type === 'image' || sourceNode?.type === 'logo' || sourceNode?.type === 'brand' || sourceNode?.type === 'output';
-
-          // Get connected image - prioritize base64 for better thumbnail display
-          const newConnectedImage: string | undefined = hasConnectedImage && sourceNode
-            ? (getImageFromSourceNode(sourceNode) || undefined)
-            : undefined;
-
-          const connectedImageChanged = angleData.connectedImage !== newConnectedImage;
+          // Sync connected image using helper
+          const newConnectedImage = syncConnectedImage(n.id, edges, nds);
+          const currentConnectedImage = angleData.connectedImage || undefined;
+          const connectedImageChanged = currentConnectedImage !== newConnectedImage;
           const needsUpdate = !angleData.onGenerate || !angleData.onUpdateData || !handlersRef.current?.handleAngleGenerate || connectedImageChanged;
           if (needsUpdate) {
             hasChanges = true;
@@ -1926,13 +1970,9 @@ export const CanvasPage: React.FC = () => {
         }
         if (n.type === 'texture') {
           const textureData = n.data as any;
-          const connectedEdge = edges.find(e => e.target === n.id);
-          const sourceNode = connectedEdge ? nds.find(node => node.id === connectedEdge.source) : null;
-          const hasConnectedImage = sourceNode?.type === 'image' || sourceNode?.type === 'logo' || sourceNode?.type === 'brand' || sourceNode?.type === 'output';
-          const newConnectedImage: string | undefined = hasConnectedImage && sourceNode
-            ? (getImageFromSourceNode(sourceNode) || undefined)
-            : undefined;
-          const connectedImageChanged = textureData.connectedImage !== newConnectedImage;
+          const newConnectedImage = syncConnectedImage(n.id, edges, nds);
+          const currentConnectedImage = textureData.connectedImage || undefined;
+          const connectedImageChanged = currentConnectedImage !== newConnectedImage;
           const needsUpdate = !textureData.onGenerate || !textureData.onUpdateData || !handlersRef.current?.handleTextureGenerate || connectedImageChanged;
           if (needsUpdate) {
             hasChanges = true;
@@ -1950,13 +1990,9 @@ export const CanvasPage: React.FC = () => {
         }
         if (n.type === 'ambience') {
           const ambienceData = n.data as any;
-          const connectedEdge = edges.find(e => e.target === n.id);
-          const sourceNode = connectedEdge ? nds.find(node => node.id === connectedEdge.source) : null;
-          const hasConnectedImage = sourceNode?.type === 'image' || sourceNode?.type === 'logo' || sourceNode?.type === 'brand' || sourceNode?.type === 'output';
-          const newConnectedImage: string | undefined = hasConnectedImage && sourceNode
-            ? (getImageFromSourceNode(sourceNode) || undefined)
-            : undefined;
-          const connectedImageChanged = ambienceData.connectedImage !== newConnectedImage;
+          const newConnectedImage = syncConnectedImage(n.id, edges, nds);
+          const currentConnectedImage = ambienceData.connectedImage || undefined;
+          const connectedImageChanged = currentConnectedImage !== newConnectedImage;
           const needsUpdate = !ambienceData.onGenerate || !ambienceData.onUpdateData || !handlersRef.current?.handleAmbienceGenerate || connectedImageChanged;
           if (needsUpdate) {
             hasChanges = true;
@@ -1974,13 +2010,9 @@ export const CanvasPage: React.FC = () => {
         }
         if (n.type === 'luminance') {
           const luminanceData = n.data as any;
-          const connectedEdge = edges.find(e => e.target === n.id);
-          const sourceNode = connectedEdge ? nds.find(node => node.id === connectedEdge.source) : null;
-          const hasConnectedImage = sourceNode?.type === 'image' || sourceNode?.type === 'logo' || sourceNode?.type === 'brand' || sourceNode?.type === 'output';
-          const newConnectedImage: string | undefined = hasConnectedImage && sourceNode
-            ? (getImageFromSourceNode(sourceNode) || undefined)
-            : undefined;
-          const connectedImageChanged = luminanceData.connectedImage !== newConnectedImage;
+          const newConnectedImage = syncConnectedImage(n.id, edges, nds);
+          const currentConnectedImage = luminanceData.connectedImage || undefined;
+          const connectedImageChanged = currentConnectedImage !== newConnectedImage;
           const needsUpdate = !luminanceData.onGenerate || !luminanceData.onUpdateData || !handlersRef.current?.handleLuminanceGenerate || connectedImageChanged;
           if (needsUpdate) {
             hasChanges = true;
@@ -1998,12 +2030,8 @@ export const CanvasPage: React.FC = () => {
         }
         if (n.type === 'shader') {
           const shaderData = n.data as ShaderNodeData;
-          const connectedEdge = edges.find(e => e.target === n.id);
-          const sourceNode = connectedEdge ? nds.find(node => node.id === connectedEdge.source) : null;
-          const hasConnectedImage = sourceNode?.type === 'image' || sourceNode?.type === 'logo' || sourceNode?.type === 'brand' || sourceNode?.type === 'output' || sourceNode?.type === 'merge' || sourceNode?.type === 'edit' || sourceNode?.type === 'upscale' || sourceNode?.type === 'upscaleBicubic' || sourceNode?.type === 'mockup' || sourceNode?.type === 'angle' || sourceNode?.type === 'prompt' || sourceNode?.type === 'shader' || sourceNode?.type === 'video' || sourceNode?.type === 'videoInput';
-          const newConnectedImage: string | undefined = hasConnectedImage && sourceNode
-            ? (getImageFromSourceNode(sourceNode) || undefined)
-            : undefined;
+          // Sync connected image using helper (supports all source types including video)
+          const newConnectedImage = syncConnectedImage(n.id, edges, nds);
           const connectedImageChanged = shaderData.connectedImage !== newConnectedImage;
           const needsUpdate = !shaderData.onApply || !shaderData.onUpdateData || !shaderData.onViewFullscreen || !handlersRef.current?.handleShaderApply || connectedImageChanged;
           if (needsUpdate) {
@@ -2038,12 +2066,8 @@ export const CanvasPage: React.FC = () => {
         }
         if (n.type === 'upscaleBicubic') {
           const upscaleBicubicData = n.data as UpscaleBicubicNodeData;
-          const connectedEdge = edges.find(e => e.target === n.id);
-          const sourceNode = connectedEdge ? nds.find(node => node.id === connectedEdge.source) : null;
-          const hasConnectedImage = sourceNode?.type === 'image' || sourceNode?.type === 'logo' || sourceNode?.type === 'brand' || sourceNode?.type === 'output' || sourceNode?.type === 'merge' || sourceNode?.type === 'edit' || sourceNode?.type === 'upscale' || sourceNode?.type === 'upscaleBicubic' || sourceNode?.type === 'mockup' || sourceNode?.type === 'angle' || sourceNode?.type === 'prompt' || sourceNode?.type === 'shader';
-          const newConnectedImage: string | undefined = hasConnectedImage && sourceNode
-            ? (getImageFromSourceNode(sourceNode) || undefined)
-            : undefined;
+          // Sync connected image using helper
+          const newConnectedImage = syncConnectedImage(n.id, edges, nds);
           const connectedImageChanged = upscaleBicubicData.connectedImage !== newConnectedImage;
           const needsUpdate = !upscaleBicubicData.onApply || !upscaleBicubicData.onUpdateData || !handlersRef.current?.handleUpscaleBicubicApply || connectedImageChanged;
           if (needsUpdate) {
@@ -2126,6 +2150,7 @@ export const CanvasPage: React.FC = () => {
             !chatData.onClearHistory ||
             !chatData.onAddPromptNode ||
             !chatData.onCreateNode ||
+            !chatData.onOpenSidebar ||
             !handlersRef.current?.handleChatSendMessage ||
             !handlersRef.current?.handleChatUpdateData;
           if (needsUpdate) {
@@ -2147,6 +2172,7 @@ export const CanvasPage: React.FC = () => {
                 onCreateNode: handlersRef.current?.handleChatCreateNode || (() => undefined),
                 onEditConnectedNode: handlersRef.current?.handleChatEditConnectedNode || (() => {}),
                 onAttachMedia: handlersRef.current?.handleChatAttachMedia || (() => undefined),
+                onOpenSidebar: handleChatOpenSidebar,
                 connectedNodeIds: [],
                 onDeleteNode: handleDeleteNodeById,
               } as ChatNodeData,
@@ -2479,18 +2505,6 @@ export const CanvasPage: React.FC = () => {
           }
         }
 
-        // Ensure all nodes have onDeleteNode handler
-        if (!(n.data as any).onDeleteNode) {
-          hasChanges = true;
-          return {
-            ...n,
-            data: {
-              ...n.data,
-              onDeleteNode: handleDeleteNodeById,
-            } as FlowNodeData,
-          } as Node<FlowNodeData>;
-        }
-
         return n;
       });
 
@@ -2511,7 +2525,7 @@ export const CanvasPage: React.FC = () => {
       previousEdgesRef.current = edges;
       return nds;
     });
-  }, [nodes, edges, setNodes, handleView, handleEdit, handleEditOutput, handleDelete, subscriptionStatus, handlersRef, handleMergeGeneratePrompt, handleMergeNodeDataUpdate, handlePromptNodeDataUpdate, handlePromptRemoveEdge, userMockups, handleBrandKit, handleDeleteNodeById]);
+  }, [nodes, edges, setNodes, handleView, handleEdit, handleEditOutput, handleDelete, subscriptionStatus, handlersRef, handleMergeGeneratePrompt, handleMergeNodeDataUpdate, handlePromptNodeDataUpdate, handlePromptRemoveEdge, userMockups, handleBrandKit, handleDeleteNodeById, handleChatOpenSidebar]);
 
   // Validate and fix node positions to prevent NaN errors
   useEffect(() => {
@@ -2713,6 +2727,14 @@ export const CanvasPage: React.FC = () => {
     loadUserMockups();
   }, [isAuthenticated]);
 
+  // Manage openChatNodeId - clear when deleted
+  useEffect(() => {
+    // Clear openChatNodeId if the node was deleted
+    if (openChatNodeId && !nodes.find(n => n.id === openChatNodeId)) {
+      setOpenChatNodeId(null);
+    }
+  }, [nodes, openChatNodeId]);
+
   // Disable page scroll permanently on this page
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -2770,46 +2792,6 @@ export const CanvasPage: React.FC = () => {
     toast.success(t('canvas.nodeDuplicatedSingular'), { duration: 2000 });
   }, [nodeContextMenu, nodes, edges, reactFlowInstance, setNodes, addToHistory, t]);
 
-  const handleNodeDelete = useCallback(async () => {
-    if (!nodeContextMenu?.nodeId) return;
-
-    const node = nodes.find(n => n.id === nodeContextMenu.nodeId);
-    if (!node) return;
-
-    addToHistory(nodes, edges);
-
-    // Check if the image is liked (should be preserved in R2 for MyOutputsPage)
-    const nodeData = node.data as any;
-    const isLiked = nodeData.isLiked === true || nodeData.mockup?.isLiked === true;
-
-    // Delete image from R2 if node has resultImageUrl AND is not liked
-    const imageUrl = nodeData.resultImageUrl;
-
-    if (!isLiked && imageUrl && !imageUrl.startsWith('data:')) {
-      try {
-        await canvasApi.deleteImageFromR2(imageUrl);
-      } catch (error) {
-        if (isLocalDevelopment()) {
-          console.error('Failed to delete image from R2:', error);
-        }
-      }
-    }
-
-    const nodeIdsToRemove = new Set([node.id]);
-    const newNodes = nodes.filter(n => !nodeIdsToRemove.has(n.id));
-    const newEdges = edges.filter(e =>
-      !nodeIdsToRemove.has(e.source) && !nodeIdsToRemove.has(e.target)
-    );
-
-    setNodes(newNodes);
-    setEdges(newEdges);
-
-    setTimeout(() => {
-      addToHistory(newNodes, newEdges, drawing.drawings);
-    }, 0);
-
-    toast.success(t('canvas.nodeDeleted'), { duration: 2000 });
-  }, [nodeContextMenu, nodes, edges, setNodes, setEdges, addToHistory, t]);
 
   // Show loading state while loading project
   // Show loading state while checking access
@@ -2863,158 +2845,28 @@ export const CanvasPage: React.FC = () => {
   return (
     <>
       <div
-        className="min-h-screen text-zinc-300 relative overflow-hidden transition-colors duration-300"
-        style={{ backgroundColor: backgroundColor }}
+        className="text-zinc-300 relative overflow-hidden transition-colors duration-300"
+        style={{ backgroundColor: backgroundColor, minHeight: '100vh' }}
       >
         <div className="fixed inset-0 z-0" style={{ position: 'relative', opacity: 1, scale: 5 }}>
           <GridDotsBackground />
         </div>
 
-        <CanvasHeader
-          projectName={projectName}
-          onBack={() => navigate('/canvas')}
-          onProjectNameChange={(newName: string) => {
-            setProjectName(newName);
-            toast.success(t('canvas.projectNameUpdated'), { duration: 1200 });
-          }}
-          selectedNodesCount={nodes.filter(n => n.selected).length}
-          selectedNodes={nodes.filter(n => n.selected) as Node<FlowNodeData>[]}
-          onShareClick={isAdminOrPremium ? () => setShowShareModal(true) : undefined}
-          isCollaborative={isCollaborative}
-          othersCount={othersCount}
-          backgroundColor={backgroundColor}
-          onBackgroundColorChange={(color) => {
-            setBackgroundColor(color);
-            if (typeof window !== 'undefined') {
-              localStorage.setItem('canvasBackgroundColor', color);
-            }
-          }}
-          gridColor={gridColor}
-          onGridColorChange={(color) => {
-            setGridColor(color);
-            if (typeof window !== 'undefined') {
-              localStorage.setItem('canvasGridColor', color);
-            }
-          }}
-          showGrid={showGrid}
-          onShowGridChange={(show) => {
-            setShowGrid(show);
-            if (typeof window !== 'undefined') {
-              localStorage.setItem('canvasShowGrid', String(show));
-            }
-          }}
-          showMinimap={showMinimap}
-          onShowMinimapChange={(show) => {
-            setShowMinimap(show);
-            if (typeof window !== 'undefined') {
-              localStorage.setItem('canvasShowMinimap', String(show));
-            }
-          }}
-          showControls={showControls}
-          onShowControlsChange={(show) => {
-            setShowControls(show);
-            if (typeof window !== 'undefined') {
-              localStorage.setItem('canvasShowControls', String(show));
-            }
-          }}
-          cursorColor={cursorColor}
-          onCursorColorChange={(color) => {
-            setCursorColor(color);
-            if (typeof window !== 'undefined') {
-              localStorage.setItem('canvasCursorColor', color);
-            }
-          }}
-          brandCyan={brandCyan}
-          onBrandCyanChange={(color) => {
-            setBrandCyan(color);
-            if (typeof window !== 'undefined') {
-              localStorage.setItem('canvasBrandCyan', color);
-            }
-          }}
-          experimentalMode={experimentalMode}
-          onExperimentalModeChange={setExperimentalMode}
-          onImportCommunityPreset={(preset, type) => {
-            if (!reactFlowInstance) return;
+        {/* CanvasHeader is now rendered in Layout component */}
 
-            // Get center of viewport
-            const viewport = reactFlowInstance.getViewport();
-            const centerX = (window.innerWidth / 2 - viewport.x) / viewport.zoom;
-            const centerY = (window.innerHeight / 2 - viewport.y) / viewport.zoom;
-
-            // Create appropriate node based on preset type
-            switch (type) {
-              case 'mockup':
-                addMockupNode({ x: centerX, y: centerY }, true);
-                // Update the newly created node with the preset
-                setTimeout(() => {
-                  setNodes((nds) => {
-                    const newNodes = [...nds];
-                    const lastMockupNode = newNodes.filter(n => n.type === 'mockup').pop();
-                    if (lastMockupNode && lastMockupNode.data.onUpdateData) {
-                      lastMockupNode.data.onUpdateData(lastMockupNode.id, { selectedPreset: preset.id });
-                    }
-                    return newNodes;
-                  });
-                }, 100);
-                break;
-              case 'angle':
-                addAngleNode({ x: centerX, y: centerY });
-                setTimeout(() => {
-                  setNodes((nds) => {
-                    const newNodes = [...nds];
-                    const lastAngleNode = newNodes.filter(n => n.type === 'angle').pop();
-                    if (lastAngleNode && lastAngleNode.data.onUpdateData) {
-                      lastAngleNode.data.onUpdateData(lastAngleNode.id, { selectedPreset: preset.id });
-                    }
-                    return newNodes;
-                  });
-                }, 100);
-                break;
-              case 'texture':
-                addTextureNode({ x: centerX, y: centerY });
-                setTimeout(() => {
-                  setNodes((nds) => {
-                    const newNodes = [...nds];
-                    const lastTextureNode = newNodes.filter(n => n.type === 'texture').pop();
-                    if (lastTextureNode && lastTextureNode.data.onUpdateData) {
-                      lastTextureNode.data.onUpdateData(lastTextureNode.id, { selectedPreset: preset.id });
-                    }
-                    return newNodes;
-                  });
-                }, 100);
-                break;
-              case 'ambience':
-                addAmbienceNode({ x: centerX, y: centerY });
-                setTimeout(() => {
-                  setNodes((nds) => {
-                    const newNodes = [...nds];
-                    const lastAmbienceNode = newNodes.filter(n => n.type === 'ambience').pop();
-                    if (lastAmbienceNode && lastAmbienceNode.data.onUpdateData) {
-                      lastAmbienceNode.data.onUpdateData(lastAmbienceNode.id, { selectedPreset: preset.id });
-                    }
-                    return newNodes;
-                  });
-                }, 100);
-                break;
-              case 'luminance':
-                addLuminanceNode({ x: centerX, y: centerY });
-                setTimeout(() => {
-                  setNodes((nds) => {
-                    const newNodes = [...nds];
-                    const lastLuminanceNode = newNodes.filter(n => n.type === 'luminance').pop();
-                    if (lastLuminanceNode && lastLuminanceNode.data.onUpdateData) {
-                      lastLuminanceNode.data.onUpdateData(lastLuminanceNode.id, { selectedPreset: preset.id });
-                    }
-                    return newNodes;
-                  });
-                }, 100);
-                break;
-            }
-
-            toast.success(t('canvas.presetImported', { name: preset.name }) || `Imported ${preset.name}`, { duration: 2000 });
-          }}
-        />
-
+        {/* Main Canvas Container with Sidebar Layout - Starts below header (81px) */}
+        <div className="flex relative w-full" style={{ height: 'calc(100vh - 81px)', paddingTop: '81px' }}>
+          {/* Canvas Area - Adjusts width when sidebar is open */}
+          <div 
+            className="flex-1 transition-all duration-300 ease-out relative"
+            style={{
+              width: openChatNodeId && !isChatSidebarCollapsed 
+                ? `calc(100% - ${chatSidebarWidth}px${isLargeScreen ? ` - ${RESIZER_WIDTH}px` : ''})` 
+                : openChatNodeId && isChatSidebarCollapsed 
+                ? `calc(100% - ${CHAT_SIDEBAR_COLLAPSED_WIDTH}px)` 
+                : '100%',
+            }}
+          >
         {isCollaborative && projectId && isAuthenticated && authService.getToken() ? (
           <RoomProvider
             id={`canvas-${projectId}`}
@@ -3179,6 +3031,29 @@ export const CanvasPage: React.FC = () => {
             }
           />
         )}
+          </div>
+          
+          {/* Chat Sidebar - Positioned absolutely within flex container */}
+          {(() => {
+            const chatNode = openChatNodeId 
+              ? nodes.find((node) => node.id === openChatNodeId && node.type === 'chat') as Node<ChatNodeData> | undefined
+              : undefined;
+
+            return chatNode ? (
+              <ChatSidebar
+                isCollapsed={isChatSidebarCollapsed}
+                onToggleCollapse={() => setIsChatSidebarCollapsed(!isChatSidebarCollapsed)}
+                nodeData={chatNode.data}
+                nodeId={chatNode.id}
+                onUpdateData={chatNode.data.onUpdateData}
+                variant="stacked"
+                sidebarWidth={chatSidebarWidth}
+                onSidebarWidthChange={setChatSidebarWidth}
+                sidebarRef={chatSidebarRef}
+              />
+            ) : null;
+          })()}
+        </div>
 
         {/* Bottom Toolbar */}
         <CanvasBottomToolbar
@@ -3717,7 +3592,7 @@ export const CanvasPage: React.FC = () => {
             y={nodeContextMenu.y}
             onClose={() => setNodeContextMenu(null)}
             onDuplicate={handleNodeDuplicate}
-            onDelete={handleNodeDelete}
+            onDelete={() => nodeContextMenu?.nodeId && handleDeleteNodeById(nodeContextMenu.nodeId)}
           />
         )}
 
@@ -3731,6 +3606,27 @@ export const CanvasPage: React.FC = () => {
           confirmText={t('canvas.saveProject')}
           cancelText={t('canvas.discard')}
           variant="info"
+        />
+
+        {/* Delete ChatNode Confirmation Modal */}
+        <ConfirmationModal
+          isOpen={showDeleteChatNodeModal}
+          onClose={() => {
+            setShowDeleteChatNodeModal(false);
+            setChatNodeToDelete(null);
+          }}
+          onConfirm={async () => {
+            if (chatNodeToDelete) {
+              await performNodeDeletion(chatNodeToDelete);
+            }
+            setShowDeleteChatNodeModal(false);
+            setChatNodeToDelete(null);
+          }}
+          title={t('canvas.deleteChatNode') || 'Delete Chat Node'}
+          message={t('canvas.deleteChatNodeMessage') || 'This will delete the chat node and clear all conversation history. This action cannot be undone.'}
+          confirmText={t('canvas.delete') || 'Delete'}
+          cancelText={t('canvas.cancel') || 'Cancel'}
+          variant="danger"
         />
 
         {/* Export Panel */}
@@ -4084,6 +3980,7 @@ export const CanvasPage: React.FC = () => {
           </div>
         ) : null;
       })()}
+
 
       {/* Canvas Toolbar - Always visible, independent from ShaderControlsSidebar */}
       <div className="fixed left-4 top-[81px] z-40">
