@@ -3,6 +3,9 @@ import { Plus } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useTheme } from '../../hooks/useTheme';
 import { translateTag } from '../../utils/localeUtils';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { cn } from '../../lib/utils';
 
 interface BrandingSectionProps {
   tags: string[];
@@ -101,44 +104,50 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
             const isDisabled = limitReached && !isSelected;
             
             return (
-              <button
+              <Button
                 key={tag}
                 onClick={() => onTagToggle(tag)}
                 disabled={isDisabled}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border transform hover:-translate-y-0.5 active:translate-y-0 ${
+                variant="outline"
+                size="sm"
+                className={cn(
+                  "text-xs font-medium transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0",
                   isSelected 
                     ? theme === 'dark'
-                      ? 'bg-[#52ddeb]/20 text-[#52ddeb] border-[#52ddeb]/30 shadow-sm shadow-[#52ddeb]/10'
-                      : 'bg-[#52ddeb]/20 text-zinc-800 border-[#52ddeb]/30 shadow-sm shadow-[#52ddeb]/10'
+                      ? 'bg-brand-cyan/20 text-brand-cyan border-[#52ddeb]/30 shadow-sm shadow-[#52ddeb]/10'
+                      : 'bg-brand-cyan/20 text-zinc-800 border-[#52ddeb]/30 shadow-sm shadow-[#52ddeb]/10'
                     : theme === 'dark'
                       ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
                       : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'
-                } ${isDisabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
+                )}
               >
                 {translateTag(tag)}
-              </button>
+              </Button>
             );
           })}
           {!isComplete && (
             !isEditingCustom ? (
-              <button
+              <Button
                 onClick={handleCustomTagClick}
                 disabled={limitReached}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border transform hover:-translate-y-0.5 active:translate-y-0 inline-flex items-center gap-1 ${
+                variant="outline"
+                size="sm"
+                className={cn(
+                  "text-xs font-medium transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0",
                   limitReached
                     ? theme === 'dark'
-                      ? 'opacity-40 cursor-not-allowed bg-zinc-800/50 text-zinc-400 border-zinc-700/50'
-                      : 'opacity-40 cursor-not-allowed bg-zinc-100 text-zinc-500 border-zinc-300'
+                      ? 'opacity-40 bg-zinc-800/50 text-zinc-400 border-zinc-700/50'
+                      : 'opacity-40 bg-zinc-100 text-zinc-500 border-zinc-300'
                     : theme === 'dark'
-                      ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300 cursor-pointer'
-                      : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900 cursor-pointer'
-                }`}
+                      ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
+                      : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'
+                )}
               >
                 <Plus size={14} />
                 <span>{t('mockup.customTagLabel')}</span>
-              </button>
+              </Button>
             ) : (
-              <input
+              <Input
                 ref={inputRef}
                 type="text"
                 value={customInput}
@@ -146,11 +155,12 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
                 onKeyDown={handleKeyDown}
                 onBlur={handleBlur}
                 placeholder={t('mockup.customStylePlaceholder')}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border border-[#52ddeb]/30 focus:outline-none focus:ring-0 min-w-[120px] font-mono ${
+                className={cn(
+                  "px-3 py-1.5 text-xs font-medium transition-all duration-200 border-[#52ddeb]/30 focus:ring-0 min-w-[120px] font-mono",
                   theme === 'dark'
-                    ? 'bg-[#52ddeb]/20 text-[#52ddeb]'
-                    : 'bg-[#52ddeb]/20 text-zinc-800'
-                }`}
+                    ? 'bg-brand-cyan/20 text-brand-cyan'
+                    : 'bg-brand-cyan/20 text-zinc-800'
+                )}
                 autoFocus
               />
             )

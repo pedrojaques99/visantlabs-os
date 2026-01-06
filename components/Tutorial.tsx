@@ -187,8 +187,8 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
               }}
               className={`inline-flex items-center gap-3 px-6 py-3 sm:px-8 sm:py-4 rounded-md transition-all duration-300 font-mono text-sm sm:text-base font-semibold cursor-pointer ${
                 theme === 'dark'
-                  ? 'bg-[#52ddeb] hover:bg-[#52ddeb]/90 text-black shadow-lg shadow-[#52ddeb]/30'
-                  : 'bg-[#52ddeb] hover:bg-[#52ddeb]/90 text-black shadow-lg shadow-[#52ddeb]/30'
+                  ? 'bg-brand-cyan hover:bg-brand-cyan/90 text-black shadow-lg shadow-[#52ddeb]/30'
+                  : 'bg-brand-cyan hover:bg-brand-cyan/90 text-black shadow-lg shadow-[#52ddeb]/30'
               }`}
             >
               <span>{t('tutorial.createMockup')}</span>

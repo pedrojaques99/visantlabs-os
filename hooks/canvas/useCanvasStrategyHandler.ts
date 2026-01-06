@@ -57,16 +57,19 @@ export const useCanvasStrategyHandler = ({
 
       if (strategyType === 'all' || strategyType === 'persona') {
         const marketResearch = getMarketResearchString(newStrategyData.marketResearch);
-        newStrategyData.persona = await generatePersona(brandPrompt, marketResearch || brandPrompt);
+        const personaResult = await generatePersona(brandPrompt, marketResearch || brandPrompt);
+        newStrategyData.persona = personaResult.result;
       }
 
       if (strategyType === 'all' || strategyType === 'archetypes') {
         const marketResearch = getMarketResearchString(newStrategyData.marketResearch);
-        newStrategyData.archetypes = await generateArchetypes(brandPrompt, marketResearch || brandPrompt);
+        const archetypesResult = await generateArchetypes(brandPrompt, marketResearch || brandPrompt);
+        newStrategyData.archetypes = archetypesResult.result;
       }
 
       if (strategyType === 'all' || strategyType === 'marketResearch') {
-        newStrategyData.marketResearch = await generateMarketResearch(brandPrompt);
+        const marketResearchResult = await generateMarketResearch(brandPrompt);
+        newStrategyData.marketResearch = marketResearchResult.result;
       }
 
       updateNodeData<StrategyNodeData>(nodeId, { 
@@ -86,29 +89,67 @@ export const useCanvasStrategyHandler = ({
   }, [nodesRef, updateNodeData, saveImmediately]);
 
   const handleStrategyNodeDataUpdate = useCallback((nodeId: string, newData: any) => {
-    // Preserve onOpenProjectModal handler if it exists
+    // Preserve all handlers when updating data
     const node = nodesRef.current.find(n => n.id === nodeId);
     if (node && node.type === 'strategy') {
       const strategyData = node.data as StrategyNodeData;
+      
+      // Preserve all handlers that might not be in newData
+      const preservedHandlers: Partial<StrategyNodeData> = {};
       if (strategyData.onOpenProjectModal && !newData.onOpenProjectModal) {
-        updateNodeData<StrategyNodeData>(nodeId, {
-          ...newData,
-          onOpenProjectModal: strategyData.onOpenProjectModal,
-        }, 'strategy');
-      } else {
-        updateNodeData<StrategyNodeData>(nodeId, newData, 'strategy');
+        preservedHandlers.onOpenProjectModal = strategyData.onOpenProjectModal;
       }
+      if (strategyData.onGenerate && !newData.onGenerate) {
+        preservedHandlers.onGenerate = strategyData.onGenerate;
+      }
+      if (strategyData.onGenerateSection && !newData.onGenerateSection) {
+        preservedHandlers.onGenerateSection = strategyData.onGenerateSection;
+      }
+      if (strategyData.onGenerateAll && !newData.onGenerateAll) {
+        preservedHandlers.onGenerateAll = strategyData.onGenerateAll;
+      }
+      if (strategyData.onInitialAnalysis && !newData.onInitialAnalysis) {
+        preservedHandlers.onInitialAnalysis = strategyData.onInitialAnalysis;
+      }
+      if (strategyData.onCancelGeneration && !newData.onCancelGeneration) {
+        preservedHandlers.onCancelGeneration = strategyData.onCancelGeneration;
+      }
+      if (strategyData.onGeneratePDF && !newData.onGeneratePDF) {
+        preservedHandlers.onGeneratePDF = strategyData.onGeneratePDF;
+      }
+      if (strategyData.onSave && !newData.onSave) {
+        preservedHandlers.onSave = strategyData.onSave;
+      }
+      if (strategyData.onUpdateData && !newData.onUpdateData) {
+        preservedHandlers.onUpdateData = strategyData.onUpdateData;
+      }
+      
+      // Merge newData with preserved handlers
+      updateNodeData<StrategyNodeData>(nodeId, {
+        ...newData,
+        ...preservedHandlers,
+      }, 'strategy');
     } else {
       updateNodeData<StrategyNodeData>(nodeId, newData, 'strategy');
     }
   }, [updateNodeData, nodesRef]);
 
-  const handleStrategyNodeInitialAnalysis = useCallback(async (nodeId: string) => {
-    const node = nodesRef.current.find(n => n.id === nodeId);
-    if (!node || node.type !== 'strategy') return;
+  const handleStrategyNodeInitialAnalysis = useCallback(async (nodeId: string, promptOverride?: string) => {
+    // Get the latest node data - try multiple times to ensure we have the updated data
+    let node = nodesRef.current.find(n => n.id === nodeId);
+    if (!node || node.type !== 'strategy') {
+      // Wait a bit and try again in case updateNodeData hasn't updated nodesRef yet
+      await new Promise(resolve => setTimeout(resolve, 100));
+      node = nodesRef.current.find(n => n.id === nodeId);
+      if (!node || node.type !== 'strategy') {
+        toast.error('Strategy node not found', { duration: 3000 });
+        return;
+      }
+    }
 
     const strategyData = node.data as any;
-    const brandPrompt = strategyData.prompt || '';
+    // Use promptOverride if provided (from component state), otherwise use nodeData
+    const brandPrompt = (promptOverride !== undefined ? promptOverride : strategyData.prompt) || '';
     
     if (!brandPrompt.trim()) {
       toast.error('Please enter a brand description', { duration: 3000 });
@@ -123,7 +164,9 @@ export const useCanvasStrategyHandler = ({
       const newStrategyData: any = { ...strategyData.strategyData };
       
       // Only generate Market Research as initial analysis
-      newStrategyData.marketResearch = await generateMarketResearch(brandPrompt);
+      const marketResearchResult = await generateMarketResearch(brandPrompt);
+      // Extract the result string from the response object
+      newStrategyData.marketResearch = marketResearchResult.result;
 
       updateNodeData<StrategyNodeData>(nodeId, { 
         strategyData: newStrategyData, 
@@ -211,30 +254,46 @@ export const useCanvasStrategyHandler = ({
       const marketResearch = getMarketResearchString(newStrategyData.marketResearch);
 
       switch (sectionType) {
-        case 'persona':
-          newStrategyData.persona = await generatePersona(brandPrompt, marketResearch || brandPrompt);
+        case 'persona': {
+          const personaResult = await generatePersona(brandPrompt, marketResearch || brandPrompt);
+          newStrategyData.persona = personaResult.result;
           break;
-        case 'archetypes':
-          newStrategyData.archetypes = await generateArchetypes(brandPrompt, marketResearch || brandPrompt);
+        }
+        case 'archetypes': {
+          const archetypesResult = await generateArchetypes(brandPrompt, marketResearch || brandPrompt);
+          newStrategyData.archetypes = archetypesResult.result;
           break;
-        case 'marketResearch':
-          newStrategyData.marketResearch = await generateMarketResearch(brandPrompt);
+        }
+        case 'marketResearch': {
+          const marketResearchResult = await generateMarketResearch(brandPrompt);
+          newStrategyData.marketResearch = marketResearchResult.result;
           break;
-        case 'competitors':
-          newStrategyData.competitors = await generateCompetitors(brandPrompt, marketResearch || brandPrompt, []);
+        }
+        case 'competitors': {
+          const competitorsResult = await generateCompetitors(brandPrompt, marketResearch || brandPrompt, []);
+          newStrategyData.competitors = competitorsResult.result;
           break;
-        case 'references':
-          newStrategyData.references = await generateReferences(brandPrompt, marketResearch || brandPrompt, newStrategyData.competitors || []);
+        }
+        case 'references': {
+          const referencesResult = await generateReferences(brandPrompt, marketResearch || brandPrompt, newStrategyData.competitors || []);
+          newStrategyData.references = referencesResult.result;
           break;
-        case 'swot':
-          newStrategyData.swot = await generateSWOT(brandPrompt, marketResearch || brandPrompt, newStrategyData.competitors || []);
+        }
+        case 'swot': {
+          const swotResult = await generateSWOT(brandPrompt, marketResearch || brandPrompt, newStrategyData.competitors || []);
+          newStrategyData.swot = swotResult.result;
           break;
-        case 'colorPalettes':
-          newStrategyData.colorPalettes = await generateColorPalettes(brandPrompt, newStrategyData.swot || {}, newStrategyData.references || []);
+        }
+        case 'colorPalettes': {
+          const colorPalettesResult = await generateColorPalettes(brandPrompt, newStrategyData.swot || {}, newStrategyData.references || []);
+          newStrategyData.colorPalettes = colorPalettesResult.result;
           break;
-        case 'visualElements':
-          newStrategyData.visualElements = await generateVisualElements(brandPrompt, newStrategyData.colorPalettes || []);
+        }
+        case 'visualElements': {
+          const visualElementsResult = await generateVisualElements(brandPrompt, newStrategyData.colorPalettes || []);
+          newStrategyData.visualElements = visualElementsResult.result;
           break;
+        }
         case 'mockupIdeas': {
           // For backward compatibility, extract old format fields if they exist
           const mr = newStrategyData.marketResearch;
@@ -253,7 +312,8 @@ export const useCanvasStrategyHandler = ({
             persona: newStrategyData.persona,
             archetypes: newStrategyData.archetypes,
           };
-          newStrategyData.mockupIdeas = await generateMockupIdeas(brandPrompt, mockupData, []);
+          const mockupIdeasResult = await generateMockupIdeas(brandPrompt, mockupData, []);
+          newStrategyData.mockupIdeas = mockupIdeasResult.result;
           break;
         }
       }
@@ -431,40 +491,51 @@ export const useCanvasStrategyHandler = ({
 
         try {
           switch (section.type) {
-            case 'marketResearch':
-              newStrategyData.marketResearch = await generateMarketResearch(brandPrompt);
+            case 'marketResearch': {
+              const marketResearchResult = await generateMarketResearch(brandPrompt);
+              newStrategyData.marketResearch = marketResearchResult.result;
               break;
+            }
             case 'persona': {
               const marketResearch = getMarketResearchString(newStrategyData.marketResearch) || brandPrompt;
-              newStrategyData.persona = await generatePersona(brandPrompt, marketResearch);
+              const personaResult = await generatePersona(brandPrompt, marketResearch);
+              newStrategyData.persona = personaResult.result;
               break;
             }
             case 'archetypes': {
               const marketResearch = getMarketResearchString(newStrategyData.marketResearch) || brandPrompt;
-              newStrategyData.archetypes = await generateArchetypes(brandPrompt, marketResearch);
+              const archetypesResult = await generateArchetypes(brandPrompt, marketResearch);
+              newStrategyData.archetypes = archetypesResult.result;
               break;
             }
             case 'competitors': {
               const marketResearch = getMarketResearchString(newStrategyData.marketResearch) || brandPrompt;
-              newStrategyData.competitors = await generateCompetitors(brandPrompt, marketResearch, []);
+              const competitorsResult = await generateCompetitors(brandPrompt, marketResearch, []);
+              newStrategyData.competitors = competitorsResult.result;
               break;
             }
             case 'references': {
               const marketResearch = getMarketResearchString(newStrategyData.marketResearch) || brandPrompt;
-              newStrategyData.references = await generateReferences(brandPrompt, marketResearch, newStrategyData.competitors || []);
+              const referencesResult = await generateReferences(brandPrompt, marketResearch, newStrategyData.competitors || []);
+              newStrategyData.references = referencesResult.result;
               break;
             }
             case 'swot': {
               const marketResearch = getMarketResearchString(newStrategyData.marketResearch) || brandPrompt;
-              newStrategyData.swot = await generateSWOT(brandPrompt, marketResearch, newStrategyData.competitors || []);
+              const swotResult = await generateSWOT(brandPrompt, marketResearch, newStrategyData.competitors || []);
+              newStrategyData.swot = swotResult.result;
               break;
             }
-            case 'colorPalettes':
-              newStrategyData.colorPalettes = await generateColorPalettes(brandPrompt, newStrategyData.swot || {}, newStrategyData.references || []);
+            case 'colorPalettes': {
+              const colorPalettesResult = await generateColorPalettes(brandPrompt, newStrategyData.swot || {}, newStrategyData.references || []);
+              newStrategyData.colorPalettes = colorPalettesResult.result;
               break;
-            case 'visualElements':
-              newStrategyData.visualElements = await generateVisualElements(brandPrompt, newStrategyData.colorPalettes || []);
+            }
+            case 'visualElements': {
+              const visualElementsResult = await generateVisualElements(brandPrompt, newStrategyData.colorPalettes || []);
+              newStrategyData.visualElements = visualElementsResult.result;
               break;
+            }
             case 'mockupIdeas': {
               // For backward compatibility, extract old format fields if they exist
               const mr = newStrategyData.marketResearch;
@@ -483,7 +554,8 @@ export const useCanvasStrategyHandler = ({
                 persona: newStrategyData.persona,
                 archetypes: newStrategyData.archetypes,
               };
-              newStrategyData.mockupIdeas = await generateMockupIdeas(brandPrompt, allData);
+              const mockupIdeasResult = await generateMockupIdeas(brandPrompt, allData, []);
+              newStrategyData.mockupIdeas = mockupIdeasResult.result;
               break;
             }
             case 'moodboard': {
@@ -502,6 +574,7 @@ export const useCanvasStrategyHandler = ({
                 archetypes: newStrategyData.archetypes,
                 mockupIdeas: newStrategyData.mockupIdeas,
               };
+              // Note: moodboard generation is not implemented in the switch, but if it were, it would need .result extraction too
               break;
             }
           }
@@ -645,6 +718,7 @@ export const useCanvasStrategyHandler = ({
 
     const strategyData = node.data as any;
     const prompt = strategyData.prompt || '';
+    const name = strategyData.name || '';
     const strategyDataContent = strategyData.strategyData || {};
     const projectId = strategyData.projectId;
 
@@ -700,12 +774,15 @@ export const useCanvasStrategyHandler = ({
         }),
       };
 
+      // Generate default name if not provided
+      const projectName = name.trim() || `Strategy Node - ${new Date().toLocaleDateString()}`;
+
       // Save to branding_projects table
-      const savedProject = await brandingApi.save(brandingData, projectId, `Strategy Node - ${new Date().toLocaleDateString()}`);
+      const savedProject = await brandingApi.save(brandingData, projectId, projectName);
       const savedProjectId = savedProject._id || (savedProject as any).id;
 
-      // Update node with projectId
-      updateNodeData<StrategyNodeData>(nodeId, { projectId: savedProjectId }, 'strategy');
+      // Update node with projectId and name
+      updateNodeData<StrategyNodeData>(nodeId, { projectId: savedProjectId, name: savedProject.name || projectName }, 'strategy');
 
       // Also save canvas if saveImmediately is available
       if (saveImmediately) {

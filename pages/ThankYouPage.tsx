@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
-import { CheckCircle, Pickaxe, ArrowRight, Loader2 } from 'lucide-react';
+import { CheckCircle, Pickaxe, ArrowRight } from 'lucide-react';
+import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { useTranslation } from '../hooks/useTranslation';
 import { useLayout } from '../hooks/useLayout';
 import { subscriptionService } from '../services/subscriptionService';
@@ -84,7 +85,7 @@ export const ThankYouPage: React.FC = () => {
 
           {isCheckingAuth || isLoading ? (
             <div className="flex items-center justify-center gap-2 mt-4">
-              <Loader2 size={20} className="animate-spin text-brand-cyan" />
+              <GlitchLoader size={20} color="#52ddeb" />
             </div>
           ) : subscriptionStatus?.hasActiveSubscription ? (
             <div className="mt-6 inline-block bg-brand-cyan/10 border border-brand-cyan/30 rounded-md px-4 py-2">
@@ -96,7 +97,7 @@ export const ThankYouPage: React.FC = () => {
         </div>
 
         {subscriptionStatus?.hasActiveSubscription && (
-          <div className="bg-[#1A1A1A] border border-zinc-800/50 rounded-md p-6 mb-8">
+          <div className="bg-zinc-900 border border-zinc-800/50 rounded-md p-6 mb-8">
             <div className="flex items-center gap-3 mb-4">
               <Pickaxe size={24} className="text-brand-cyan" />
               <h2 className="text-xl font-semibold font-mono text-zinc-200">

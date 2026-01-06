@@ -788,8 +788,8 @@ export const useCanvasNodeCreation = (
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
-  const addImageNode = useCallback((customPosition?: { x: number; y: number }) => {
-    if (!reactFlowInstance) return;
+  const addImageNode = useCallback((customPosition?: { x: number; y: number }): string | undefined => {
+    if (!reactFlowInstance) return undefined;
 
     const screenPos = customPosition || {
       x: window.innerWidth / 2,
@@ -844,6 +844,7 @@ export const useCanvasNodeCreation = (
       return newNodes;
     });
     toast.success('Image node added! Upload an image to fill it.', { duration: 3000 });
+    return newNode.id;
   }, [reactFlowInstance, handleView, handleEdit, handleDelete, nodes, edges, addToHistory, setNodes, handlersRef]);
 
   const handlePasteImage = useCallback(async (image: UploadedImage) => {

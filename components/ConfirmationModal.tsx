@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { X, AlertTriangle, Heart, Loader2 } from 'lucide-react';
+import { X, AlertTriangle, Heart } from 'lucide-react';
+import { GlitchLoader } from './ui/GlitchLoader';
 import { useTranslation } from '../hooks/useTranslation';
 
 interface ConfirmationModalProps {
@@ -56,8 +57,8 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       button: 'bg-red-500/20 hover:bg-red-500/30 text-red-400 border-red-500/30 hover:border-red-500/50'
     },
     info: {
-      icon: 'text-[#52ddeb]',
-      button: 'bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 text-[#52ddeb] border-[#52ddeb]/30 hover:border-[#52ddeb]/50'
+      icon: 'text-brand-cyan',
+      button: 'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border-[#52ddeb]/30 hover:border-[#52ddeb]/50'
     }
   };
 
@@ -125,11 +126,11 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                 }
               }}
               disabled={isSaving}
-              className="flex items-center gap-2 px-4 py-2 text-xs font-mono bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 text-[#52ddeb] border border-[#52ddeb]/30 hover:border-[#52ddeb]/50 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 text-xs font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-[#52ddeb]/30 hover:border-[#52ddeb]/50 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSaving ? (
                 <>
-                  <Loader2 size={14} className="animate-spin" />
+                  <GlitchLoader size={14} />
                   <span>{t('common.save')}...</span>
                 </>
               ) : (

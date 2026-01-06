@@ -202,6 +202,7 @@ model CanvasProject {
   name            String   @default("Untitled")
   nodes           Json     // Array de nodes do React Flow
   edges           Json     // Array de edges do React Flow
+  drawings        Json?    // Array de drawings (freehand, shapes, text)
   shareId         String?  @unique // ID único para compartilhamento
   isCollaborative Boolean  @default(false) // Se o projeto está em modo colaborativo
   canEdit         String[] @default([]) // IDs de usuários que podem editar

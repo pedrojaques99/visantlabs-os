@@ -57,7 +57,7 @@ export const BrandIdentityPanel: React.FC<BrandIdentityPanelProps> = ({
         className="w-full flex items-center justify-between text-xs font-mono text-zinc-400 hover:text-zinc-300 mb-2"
       >
         <div className="flex items-center gap-2">
-          <Dna size={14} className="text-[#52ddeb]" />
+          <Dna size={14} className="text-brand-cyan" />
           <span>Brand Identity</span>
         </div>
         {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}

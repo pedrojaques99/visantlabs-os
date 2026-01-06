@@ -39,7 +39,7 @@ export const PrivacyPolicyPage: React.FC = () => {
           {t('privacy.backToHome')}
         </button>
 
-        <div className="bg-[#1A1A1A] border border-zinc-800/50 rounded-md shadow-2xl p-6 md:p-8">
+        <div className="bg-zinc-900 border border-zinc-800/50 rounded-md shadow-2xl p-6 md:p-8">
           <h1 className="text-2xl md:text-3xl font-semibold font-mono text-zinc-200 mb-2 tracking-wider uppercase">
             {t('privacy.title')}
           </h1>
@@ -355,7 +355,7 @@ export const PrivacyPolicyPage: React.FC = () => {
               <p className="text-zinc-400 mb-2" dangerouslySetInnerHTML={{ __html: `<strong class="text-zinc-300">${t('privacy.sections.contact.company')}</strong>` }} />
               <p className="text-zinc-400">
                 {t('privacy.sections.contact.support').split('contato@visant.co')[0]}
-                <a href="mailto:contato@visant.co" className="text-[#52ddeb] hover:text-[#52ddeb]/80 underline">contato@visant.co</a>
+                <a href="mailto:contato@visant.co" className="text-brand-cyan hover:text-brand-cyan/80 underline">contato@visant.co</a>
                 {t('privacy.sections.contact.support').split('contato@visant.co')[1]}
               </p>
             </div>

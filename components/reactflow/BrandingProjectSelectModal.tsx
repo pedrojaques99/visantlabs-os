@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, FolderOpen, Loader2, Plus } from 'lucide-react';
+import { X, FolderOpen, Plus } from 'lucide-react';
+import { GlitchLoader } from '../ui/GlitchLoader';
 import { toast } from 'sonner';
 import { useTranslation } from '../../hooks/useTranslation';
 
@@ -136,7 +137,7 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 size={20} className="animate-spin text-[#52ddeb]" />
+              <GlitchLoader size={20} color="#52ddeb" />
               <span className="ml-2 text-sm text-zinc-400">Loading projects...</span>
             </div>
           ) : filteredProjects.length > 0 ? (
@@ -149,7 +150,7 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
                   className="w-full px-4 py-3 text-left border rounded-md transition-all bg-zinc-900/50 border-zinc-700/30 text-zinc-300 hover:border-[#52ddeb]/50 hover:bg-zinc-800/50 group"
                 >
                   <div className="flex items-start gap-3">
-                    <FolderOpen size={16} className="text-[#52ddeb] flex-shrink-0 mt-0.5" />
+                    <FolderOpen size={16} className="text-brand-cyan flex-shrink-0 mt-0.5" />
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-sm text-zinc-200 truncate">
                         {project.name || 'Untitled'}
@@ -183,7 +184,7 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
         <div className="p-4 border-t border-zinc-800/60 flex gap-2">
           <button
             onClick={handleCreateNew}
-            className="flex-1 px-4 py-2 bg-[#52ddeb]/90 hover:bg-[#52ddeb] text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
+            className="flex-1 px-4 py-2 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
           >
             <Plus size={16} />
             Create New Project

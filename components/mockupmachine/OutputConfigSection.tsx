@@ -50,7 +50,7 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
                   onClick={() => onResolutionChange(res)}
                   className={`flex-1 flex items-center justify-center gap-1 py-2 text-xs font-mono rounded-md transition-all duration-200 border cursor-pointer ${
                     resolution === res 
-                      ? 'bg-[#52ddeb]/20 text-[#52ddeb] border-[#52ddeb]/30' 
+                      ? 'bg-brand-cyan/20 text-brand-cyan border-[#52ddeb]/30' 
                       : theme === 'dark'
                         ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600'
                         : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400'
@@ -71,7 +71,7 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
                 onClick={() => onMockupCountChange(count)}
                 className={`flex-1 flex items-center justify-center gap-1 py-2 text-xs font-mono rounded-md transition-all duration-200 border cursor-pointer ${
                   mockupCount === count 
-                    ? 'bg-[#52ddeb]/20 text-[#52ddeb] border-[#52ddeb]/30' 
+                    ? 'bg-brand-cyan/20 text-brand-cyan border-[#52ddeb]/30' 
                     : theme === 'dark'
                       ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600'
                       : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400'
@@ -89,7 +89,7 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
               onClick={() => onGenerateTextChange(!generateText)}
             >
               <div className={`w-4 h-4 rounded-md flex items-center justify-center border transition-all duration-200 ${
-                generateText ? 'bg-[#52ddeb]/80 border-[#52ddeb]' : theme === 'dark' ? 'bg-zinc-700 border-zinc-600' : 'bg-white border-zinc-400'
+                generateText ? 'bg-brand-cyan/80 border-[#52ddeb]' : theme === 'dark' ? 'bg-zinc-700 border-zinc-600' : 'bg-white border-zinc-400'
               }`}>
                 {generateText && (
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -105,7 +105,7 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
             onClick={() => onWithHumanChange(!withHuman)}
           >
             <div className={`w-4 h-4 rounded-md flex items-center justify-center border transition-all duration-200 ${
-              withHuman ? 'bg-[#52ddeb]/80 border-[#52ddeb]' : theme === 'dark' ? 'bg-zinc-700 border-zinc-600' : 'bg-white border-zinc-400'
+              withHuman ? 'bg-brand-cyan/80 border-[#52ddeb]' : theme === 'dark' ? 'bg-zinc-700 border-zinc-600' : 'bg-white border-zinc-400'
             }`}>
               {withHuman && (
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -120,7 +120,7 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
             onClick={() => onEnhanceTextureChange(!enhanceTexture)}
           >
             <div className={`w-4 h-4 rounded-md flex items-center justify-center border transition-all duration-200 ${
-              enhanceTexture ? 'bg-[#52ddeb]/80 border-[#52ddeb]' : theme === 'dark' ? 'bg-zinc-700 border-zinc-600' : 'bg-white border-zinc-400'
+              enhanceTexture ? 'bg-brand-cyan/80 border-[#52ddeb]' : theme === 'dark' ? 'bg-zinc-700 border-zinc-600' : 'bg-white border-zinc-400'
             }`}>
               {enhanceTexture && (
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">

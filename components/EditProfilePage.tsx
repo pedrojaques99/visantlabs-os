@@ -331,7 +331,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
               <span className={`absolute bottom-2 right-2 rounded-md p-2 shadow-lg transition ${
                 isUploadingPicture 
                   ? 'bg-zinc-600 text-zinc-300' 
-                  : 'bg-[#52ddeb] text-black hover:bg-[#52ddeb]/90'
+                  : 'bg-brand-cyan text-black hover:bg-brand-cyan/90'
               }`}>
                 <Camera size={16} />
               </span>
@@ -398,7 +398,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
             <button
               onClick={handleSave}
               disabled={isSaving}
-              className={`w-full px-4 py-3 bg-[#52ddeb]/90 hover:bg-[#52ddeb] text-black font-semibold rounded-xl text-sm font-mono transition flex items-center justify-center gap-2 ${
+              className={`w-full px-4 py-3 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-xl text-sm font-mono transition flex items-center justify-center gap-2 ${
                 theme === 'dark'
                   ? 'disabled:bg-zinc-700 disabled:text-zinc-500'
                   : 'disabled:bg-zinc-300 disabled:text-zinc-400'

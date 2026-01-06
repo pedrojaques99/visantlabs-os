@@ -45,7 +45,7 @@ export const GeneratingPromptOverlay: React.FC<GeneratingPromptOverlayProps> = (
       }`}>
         <div className="flex flex-col items-center justify-center gap-4">
           <GlitchLoader size={24} />
-          <span className="text-lg font-mono font-semibold text-[#52ddeb] uppercase tracking-wider">
+          <span className="text-lg font-mono font-semibold text-brand-cyan uppercase tracking-wider">
             GENERATING PROMPT...
           </span>
           <div className="h-5 text-sm font-mono uppercase tracking-wide text-foreground overflow-hidden">
@@ -61,7 +61,7 @@ export const GeneratingPromptOverlay: React.FC<GeneratingPromptOverlayProps> = (
               theme === 'dark' ? 'bg-zinc-800/30' : 'bg-zinc-300/50'
             }`}>
               <div 
-                className="h-full bg-[#52ddeb] rounded-md absolute"
+                className="h-full bg-brand-cyan rounded-md absolute"
                 style={{
                   width: '30%',
                   animation: 'scroll-horizontal 1.5s linear infinite'

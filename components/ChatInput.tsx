@@ -51,7 +51,9 @@ interface ChatInputProps {
 const MODEL_NAMES: Record<GeminiModel, string> = {
   'gemini-2.5-flash-image': 'Mockup Machine® HD',
   'gemini-2.5-flash': 'Gemini Flash',
-  'gemini-3-pro-image-preview': 'Mockup Machine® 4K'
+  'gemini-3-pro-image-preview': 'Mockup Machine® 4K',
+  'veo-3.1-generate-preview': 'Mockup Machine® 4K',
+  'veo-3.1-fast-generate-preview': 'Mockup Machine® 4K'
 };
 
 export const ChatInput: React.FC<ChatInputProps> = ({
@@ -252,7 +254,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           <Button
             onClick={onGenerateClick}
             disabled={isGenerateDisabled || (isPromptReady && isGenerating)}
-            className="w-full bg-[#52ddeb] hover:bg-[#52ddeb]/90 text-black font-semibold shadow-lg shadow-[#52ddeb]/20"
+            className="w-full bg-brand-cyan hover:bg-brand-cyan/90 text-black font-semibold shadow-lg shadow-[#52ddeb]/20"
             size="lg"
           >
             {isGeneratingPrompt ? (
@@ -301,7 +303,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                           onGenerateSuggestion(suggestion);
                         }}
                         disabled={isGenerating || !suggestion.trim()}
-                        className="flex-1 bg-[#52ddeb] hover:bg-[#52ddeb]/90 text-black"
+                        className="flex-1 bg-brand-cyan hover:bg-brand-cyan/90 text-black"
                         size="sm"
                       >
                         {isGenerating ? (

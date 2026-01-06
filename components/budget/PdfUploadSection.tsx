@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Button } from '../ui/button';
-import { X, Upload, Loader2, FileText, Save, RefreshCw } from 'lucide-react';
+import { X, Upload, FileText, Save, RefreshCw } from 'lucide-react';
+import { GlitchLoader } from '../ui/GlitchLoader';
 import { budgetApi } from '../../services/budgetApi';
 import { toast } from 'sonner';
 
@@ -157,7 +158,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
       {/* Modal para salvar preset */}
       {showSavePresetModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1A1A1A] border border-zinc-800 rounded-xl p-4 sm:p-6 max-w-md w-full">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 sm:p-6 max-w-md w-full">
             <h4 className="text-lg font-semibold font-mono text-zinc-200 mb-4">
               Salvar como Preset
             </h4>
@@ -182,10 +183,10 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
               <Button
                 onClick={handleSavePreset}
                 disabled={isSavingPreset || !presetName.trim()}
-                className="flex-1 bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 border border-[#52ddeb]/50 text-[#52ddeb]"
+                className="flex-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#52ddeb]/50 text-brand-cyan"
               >
                 {isSavingPreset ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <GlitchLoader size={16} />
                 ) : (
                   <>
                     <Save className="h-4 w-4 mr-2" />
@@ -207,7 +208,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
 
       {isUploading || isSavingPreset ? (
         <div className="flex items-center gap-2 p-4 border border-zinc-800 rounded-xl bg-black/20">
-          <Loader2 className="h-4 w-4 animate-spin text-[#52ddeb]" />
+          <GlitchLoader size={16} color="#52ddeb" />
           <span className="text-sm text-zinc-400 font-mono">
             {isSavingPreset ? 'Salvando preset...' : 'Enviando PDF...'}
           </span>
@@ -215,7 +216,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
       ) : customPdfUrl ? (
         <div className="relative p-4 border border-zinc-800 rounded-xl bg-black/20">
           <div className="flex items-center gap-3">
-            <FileText className="h-8 w-8 text-[#52ddeb] flex-shrink-0" />
+            <FileText className="h-8 w-8 text-brand-cyan flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-mono text-zinc-300">
                 PDF customizado carregado
@@ -238,7 +239,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
                 variant="outline"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploading}
-                className="border border-zinc-800 bg-black/20 hover:bg-black/30 text-zinc-200 hover:text-[#52ddeb] transition-colors"
+                className="border border-zinc-800 bg-black/20 hover:bg-black/30 text-zinc-200 hover:text-brand-cyan transition-colors"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 <span className="hidden sm:inline">Substituir PDF</span>
@@ -271,7 +272,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
             variant="outline"
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploading}
-            className="border border-zinc-800 bg-black/20 hover:bg-black/30 text-zinc-200 hover:text-[#52ddeb]"
+            className="border border-zinc-800 bg-black/20 hover:bg-black/30 text-zinc-200 hover:text-brand-cyan"
           >
             <Upload className="h-4 w-4" />
             Enviar PDF Customizado

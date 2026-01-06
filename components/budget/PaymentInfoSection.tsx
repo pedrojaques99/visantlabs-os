@@ -77,7 +77,7 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
         {t('budget.paymentInfo') || 'Informações de Pagamento'}
       </h3>
 
-      <div className="space-y-4 p-4 bg-[#1A1A1A] border border-zinc-800 rounded-xl">
+      <div className="space-y-4 p-4 bg-zinc-900 border border-zinc-800 rounded-xl">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs text-zinc-400 mb-2 font-mono">
@@ -192,7 +192,7 @@ export const PaymentInfoSection: React.FC<PaymentInfoSectionProps> = ({
             {paymentInfo.paymentMethods.map((method, index) => (
               <div key={index}>
                 <div
-                  className="p-4 bg-[#1A1A1A] border border-zinc-800 rounded-xl space-y-3"
+                  className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl space-y-3"
                 >
                   <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                     <div className="flex-1 w-full space-y-3">

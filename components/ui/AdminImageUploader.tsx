@@ -79,9 +79,9 @@ export const AdminImageUploader: React.FC<AdminImageUploaderProps> = ({
         onDragOver={handleDragOver}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
-        className={`relative block w-full p-4 bg-[#1A1A1A] border rounded-md cursor-pointer transition-all duration-300 ${
+        className={`relative block w-full p-4 bg-zinc-900 border rounded-md cursor-pointer transition-all duration-300 ${
           isDragging 
-            ? 'border-dashed border-2 border-[#52ddeb]/40 bg-[#52ddeb]/10 shadow-2xl shadow-[#52ddeb]/10' 
+            ? 'border-dashed border-2 border-[#52ddeb]/40 bg-brand-cyan/10 shadow-2xl shadow-[#52ddeb]/10' 
             : 'border-zinc-800/10 hover:border-zinc-800/20'
         } ${isProcessing || disabled ? 'cursor-wait opacity-50' : ''}`}
       >
@@ -105,7 +105,7 @@ export const AdminImageUploader: React.FC<AdminImageUploaderProps> = ({
           )}
           {!isProcessing && isDragging && (
             <>
-              <UploadCloud size={32} className="text-[#52ddeb]/80 transition-colors flex-shrink-0" />
+              <UploadCloud size={32} className="text-brand-cyan/80 transition-colors flex-shrink-0" />
               <div className="text-left min-w-0">
                 <p className="text-sm font-semibold text-zinc-300">Solte a imagem aqui</p>
                 <p className="text-xs font-mono tracking-wider text-zinc-500">Solte para fazer upload</p>
@@ -114,7 +114,7 @@ export const AdminImageUploader: React.FC<AdminImageUploaderProps> = ({
           )}
           {!isProcessing && !isDragging && (
             <>
-              <UploadCloud size={32} className="text-zinc-600 group-hover:text-[#52ddeb]/80 transition-colors flex-shrink-0" />
+              <UploadCloud size={32} className="text-zinc-600 group-hover:text-brand-cyan/80 transition-colors flex-shrink-0" />
               <div className="text-left min-w-0">
                 <p className="text-sm font-semibold text-zinc-400">Clique para fazer upload</p>
                 <p className="text-xs font-mono tracking-wider text-zinc-500">JPEG, PNG, WebP ou GIF (máx. {MAX_IMAGE_SIZE_MB}MB)</p>

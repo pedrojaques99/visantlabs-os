@@ -79,7 +79,7 @@ export const LogoNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         type="source"
         position={Position.Right}
         id="logo-output"
-        className="w-2 h-2 bg-[#52ddeb] border-2 border-black node-handle"
+        className="w-2 h-2 bg-brand-cyan border-2 border-black node-handle"
       />
 
       {/* Header */}

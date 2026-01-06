@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, Copy, Share2, Users, Edit, Eye, Trash2, Loader2, Check } from 'lucide-react';
+import { X, Copy, Share2, Users, Edit, Eye, Trash2, Check } from 'lucide-react';
+import { GlitchLoader } from '../ui/GlitchLoader';
 import { canvasApi } from '../../services/canvasApi';
 import { toast } from 'sonner';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -160,12 +161,12 @@ export const ShareModal: React.FC<ShareModalProps> = ({
       onClick={onClose}
     >
       <div 
-        className="bg-[#1A1A1A] border border-zinc-800/50 rounded-md p-6 w-full max-w-2xl mx-4 shadow-xl max-h-[90vh] overflow-y-auto"
+        className="bg-zinc-900 border border-zinc-800/50 rounded-md p-6 w-full max-w-2xl mx-4 shadow-xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-center gap-3">
-            <Share2 className="text-[#52ddeb]" size={24} />
+            <Share2 className="text-brand-cyan" size={24} />
             <h2 className="text-lg font-semibold font-mono text-zinc-200 uppercase">
               {t('shareModal.shareProject')}
             </h2>
@@ -194,7 +195,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
               />
               <button
                 onClick={handleCopyLink}
-                className="px-4 py-2 bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 text-[#52ddeb] border border-[#52ddeb]/30 hover:border-[#52ddeb]/50 rounded-md transition-all flex items-center gap-2"
+                className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-[#52ddeb]/30 hover:border-[#52ddeb]/50 rounded-md transition-all flex items-center gap-2"
               >
                 {copied ? (
                   <>
@@ -213,11 +214,11 @@ export const ShareModal: React.FC<ShareModalProps> = ({
             <button
               onClick={handleGenerateShare}
               disabled={isGenerating}
-              className="w-full px-4 py-2 bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 text-[#52ddeb] border border-[#52ddeb]/30 hover:border-[#52ddeb]/50 rounded-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-[#52ddeb]/30 hover:border-[#52ddeb]/50 rounded-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isGenerating ? (
                 <>
-                  <Loader2 size={16} className="animate-spin" />
+                  <GlitchLoader size={16} />
                   <span className="text-xs font-mono">Gerando...</span>
                 </>
               ) : (
@@ -236,7 +237,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
             {/* Can Edit Section */}
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <Edit className="text-[#52ddeb]" size={18} />
+                <Edit className="text-brand-cyan" size={18} />
                 <label className="text-sm font-mono text-zinc-300">
                   {t('shareModal.usersWhoCanEdit')}
                 </label>
@@ -282,7 +283,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
             {/* Can View Section */}
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <Eye className="text-[#52ddeb]" size={18} />
+                <Eye className="text-brand-cyan" size={18} />
                 <label className="text-sm font-mono text-zinc-300">
                   Usuários que podem Visualizar
                 </label>
@@ -348,11 +349,11 @@ export const ShareModal: React.FC<ShareModalProps> = ({
               <button
                 onClick={handleUpdatePermissions}
                 disabled={isLoading}
-                className="px-4 py-2 text-xs font-mono bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 text-[#52ddeb] border border-[#52ddeb]/30 hover:border-[#52ddeb]/50 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-4 py-2 text-xs font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-[#52ddeb]/30 hover:border-[#52ddeb]/50 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {isLoading ? (
                   <>
-                    <Loader2 size={14} className="animate-spin" />
+                    <GlitchLoader size={14} />
                     <span>Salvando...</span>
                   </>
                 ) : (

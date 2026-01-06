@@ -166,7 +166,7 @@ export const CompetitorsSection: React.FC<CompetitorsSectionProps> = ({
         </div>
         <button
           onClick={handleAddCompetitor}
-          className={`flex items-center gap-2 px-4 py-2 border hover:border-[#52ddeb]/50 hover:text-[#52ddeb] rounded-xl text-sm font-mono transition-all duration-300 ${
+          className={`flex items-center gap-2 px-4 py-2 border hover:border-[#52ddeb]/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-all duration-300 ${
             theme === 'dark'
               ? 'bg-black/40 border-zinc-800/60 text-zinc-300'
               : 'bg-zinc-100 border-zinc-300 text-zinc-800'
@@ -204,7 +204,7 @@ export const CompetitorsSection: React.FC<CompetitorsSectionProps> = ({
                   rel="noopener noreferrer"
                   className={`flex items-center gap-1 mt-2 w-full min-w-0 text-xs font-mono transition-colors ${
                     theme === 'dark'
-                      ? 'text-[#52ddeb] hover:text-[#52ddeb]/80'
+                      ? 'text-brand-cyan hover:text-brand-cyan/80'
                       : 'text-blue-600 hover:text-blue-700'
                   }`}
                   onClick={(e) => e.stopPropagation()}

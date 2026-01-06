@@ -28,7 +28,7 @@ export const TermsOfService: React.FC<TermsOfServiceProps> = ({ isOpen, onClose 
   if (!isOpen) return null;
 
   return (
-    <div className="min-h-screen bg-[#1A1A1A] text-zinc-300">
+    <div className="min-h-screen bg-zinc-900 text-zinc-300">
       <div className="max-w-4xl mx-auto px-6 py-12 md:px-8 md:py-16">
         <h1 className="text-2xl md:text-3xl font-semibold text-zinc-200 mb-3">
           {t('terms.title')}

@@ -909,7 +909,7 @@ router.get('/:id', authenticate, async (req: AuthRequest, res) => {
 // Create new canvas project
 router.post('/', authenticate, async (req: AuthRequest, res) => {
   try {
-    const { name, nodes, edges } = req.body;
+    const { name, nodes, edges, drawings } = req.body;
 
     if (!req.userId) {
       return res.status(401).json({ error: 'User not authenticated' });
@@ -937,6 +937,7 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
         name: name || 'Untitled',
         nodes: processedNodes as any,
         edges: edges as any,
+        drawings: drawings !== undefined ? (drawings as any) : null,
       },
     });
 
@@ -991,7 +992,13 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
     }
 
     const { id } = req.params;
-    const { name, nodes, edges } = req.body;
+    
+    // Validate request body exists
+    if (!req.body || typeof req.body !== 'object') {
+      return res.status(400).json({ error: 'Invalid request body' });
+    }
+    
+    const { name, nodes, edges, drawings } = req.body;
 
     if (!req.userId) {
       return res.status(401).json({ error: 'User not authenticated' });
@@ -1018,6 +1025,17 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
     // This uploads base64 images to R2 and removes them from payload, reducing size
     let processedNodes = nodes !== undefined ? nodes : existingProject.nodes;
     let r2ProcessingFailed = false;
+    
+    // Validate nodes if provided
+    if (nodes !== undefined) {
+      if (!Array.isArray(nodes)) {
+        return res.status(400).json({ 
+          error: 'Invalid nodes format',
+          message: 'Nodes must be an array'
+        });
+      }
+    }
+    
     if (nodes !== undefined && Array.isArray(nodes)) {
       // Clean expired base64 images and add timestamps to new ones
       processedNodes = cleanExpiredBase64Images(nodes);
@@ -1025,9 +1043,16 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
       
       // Process nodes to upload base64 images to R2 and replace with URLs
       try {
-        processedNodes = await processCanvasNodesForR2(processedNodes, req.userId, id);
+        if (isR2Configured()) {
+          processedNodes = await processCanvasNodesForR2(processedNodes, req.userId, id);
+        }
       } catch (processError: any) {
-        console.error('Error processing nodes for R2 upload:', processError);
+        console.error('Error processing nodes for R2 upload:', {
+          error: processError.message || processError,
+          stack: processError.stack,
+          userId: req.userId,
+          canvasId: id,
+        });
         r2ProcessingFailed = true;
         // Continue with processed nodes (expired base64 already removed)
         // Will check payload size below with partially processed nodes
@@ -1128,18 +1153,12 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
       });
     }
 
-    // Validate nodes array if provided
-    if (nodes !== undefined) {
-      if (!Array.isArray(nodes)) {
-        return res.status(400).json({ error: 'Nodes must be an array' });
-      }
-      // Check for reasonable array size
-      if (nodes.length > 10000) {
-        return res.status(400).json({ 
-          error: 'Too many nodes',
-          message: `Number of nodes (${nodes.length}) exceeds maximum allowed (10000)`
-        });
-      }
+    // Check for reasonable array size (nodes already validated above)
+    if (nodes !== undefined && Array.isArray(nodes) && nodes.length > 10000) {
+      return res.status(400).json({ 
+        error: 'Too many nodes',
+        message: `Number of nodes (${nodes.length}) exceeds maximum allowed (10000)`
+      });
     }
 
     // Validate edges array if provided
@@ -1168,6 +1187,9 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
     }
     if (edges !== undefined) {
       updateData.edges = edges as any;
+    }
+    if (drawings !== undefined) {
+      updateData.drawings = drawings as any;
     }
 
     const project = await prisma.canvasProject.update({
@@ -1679,18 +1701,44 @@ router.post('/:id/liveblocks-auth', authenticate, validateAdminOrPremium, requir
       return res.status(403).json({ error: 'You do not have permission to access this project' });
     }
 
-    // Get user info for Liveblocks
-    const { connectToMongoDB, getDb } = await import('../db/mongodb.js');
-    const { ObjectId } = await import('mongodb');
-    await connectToMongoDB();
-    const db = getDb();
-    const userDoc = await db.collection('users').findOne(
-      { _id: new ObjectId(req.userId) },
-      { projection: { email: 1, name: 1, picture: 1 } }
-    );
+    // Get user info for Liveblocks (use Prisma as primary source)
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: { email: true, name: true, picture: true },
+    });
+
+    // Fallback to MongoDB if Prisma user not found (shouldn't happen, but safe fallback)
+    let userInfo = {
+      name: user?.name || user?.email || 'Anonymous',
+      email: user?.email || undefined,
+      picture: user?.picture || undefined,
+    };
+
+    if (!user) {
+      try {
+        const { connectToMongoDB, getDb } = await import('../db/mongodb.js');
+        const { ObjectId } = await import('mongodb');
+        await connectToMongoDB();
+        const db = getDb();
+        const userDoc = await db.collection('users').findOne(
+          { _id: new ObjectId(req.userId) },
+          { projection: { email: 1, name: 1, picture: 1 } }
+        );
+        if (userDoc) {
+          userInfo = {
+            name: userDoc.name || userDoc.email || 'Anonymous',
+            email: userDoc.email,
+            picture: userDoc.picture,
+          };
+        }
+      } catch (mongoError) {
+        console.warn('Could not fetch user from MongoDB, using defaults:', mongoError);
+      }
+    }
 
     const LIVEBLOCKS_SECRET_KEY = process.env.LIVEBLOCKS_SECRET_KEY;
     if (!LIVEBLOCKS_SECRET_KEY) {
+      console.error('[Liveblocks Auth] LIVEBLOCKS_SECRET_KEY not configured');
       return res.status(500).json({ error: 'Liveblocks is not configured' });
     }
 
@@ -1700,11 +1748,7 @@ router.post('/:id/liveblocks-auth', authenticate, validateAdminOrPremium, requir
     });
 
     const session = liveblocks.prepareSession(req.userId, {
-      userInfo: {
-        name: userDoc?.name || userDoc?.email || 'Anonymous',
-        email: userDoc?.email,
-        picture: userDoc?.picture,
-      },
+      userInfo: userInfo,
     });
 
     // Grant appropriate access based on permissions
@@ -1714,7 +1758,8 @@ router.post('/:id/liveblocks-auth', authenticate, validateAdminOrPremium, requir
 
     res.status(status).end(body);
   } catch (error: any) {
-    console.error('Error in Liveblocks auth:', error);
+    console.error('[Liveblocks Auth] Error:', error);
+    console.error('[Liveblocks Auth] Error stack:', error?.stack);
     res.status(500).json({
       error: 'Failed to authenticate with Liveblocks',
       message: error.message || 'An error occurred'

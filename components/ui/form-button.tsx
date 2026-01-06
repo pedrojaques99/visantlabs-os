@@ -1,7 +1,7 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
-import { Spinner } from "./Spinner"
+import { GlitchLoader } from "./GlitchLoader"
 
 const formButtonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-semibold font-mono transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50 focus:ring-offset-2 focus:ring-offset-background disabled:pointer-events-none disabled:opacity-50 uppercase",
@@ -9,11 +9,11 @@ const formButtonVariants = cva(
     variants: {
       variant: {
         primary:
-          "bg-[#52ddeb]/80 hover:bg-[#52ddeb] text-black shadow-lg shadow-[#52ddeb]/20 hover:scale-[1.02] active:scale-95",
+          "bg-brand-cyan/80 hover:bg-brand-cyan text-black shadow-lg shadow-[#52ddeb]/20 hover:scale-[1.02] active:scale-95",
         outline:
-          "border border-zinc-800/10 bg-transparent hover:bg-zinc-800/50 text-zinc-200 hover:border-[#52ddeb]/30 hover:text-[#52ddeb] hover:scale-[1.02] active:scale-95",
+          "border border-zinc-800/10 bg-transparent hover:bg-zinc-800/50 text-zinc-200 hover:border-[#52ddeb]/30 hover:text-brand-cyan hover:scale-[1.02] active:scale-95",
         ghost:
-          "bg-transparent hover:bg-zinc-800/50 text-zinc-200 hover:text-[#52ddeb] hover:scale-[1.02] active:scale-95",
+          "bg-transparent hover:bg-zinc-800/50 text-zinc-200 hover:text-brand-cyan hover:scale-[1.02] active:scale-95",
         destructive:
           "bg-red-500/80 hover:bg-red-500 text-white shadow-lg shadow-red-500/20 hover:scale-[1.02] active:scale-95",
       },
@@ -46,7 +46,7 @@ const FormButton = React.forwardRef<HTMLButtonElement, FormButtonProps>(
         disabled={disabled || isLoading}
         {...props}
       >
-        {isLoading && <Spinner size={16} color="currentColor" />}
+        {isLoading && <GlitchLoader size={16} color="currentColor" />}
         {children}
       </button>
     )

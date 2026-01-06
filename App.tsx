@@ -34,6 +34,7 @@ const AuthCallbackPage = lazyWithRetry(() => import('./pages/AuthCallbackPage').
 const NotFoundPage = lazyWithRetry(() => import('./pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 const WaitlistPage = lazyWithRetry(() => import('./pages/WaitlistPage').then(m => ({ default: m.WaitlistPage })));
 const ForgotPasswordPage = lazyWithRetry(() => import('./pages/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })));
+const DesignSystemPage = lazyWithRetry(() => import('./pages/DesignSystemPage').then(m => ({ default: m.DesignSystemPage })));
 const EditorApp = lazyWithRetry(() => import('./EditorApp'));
 
 const LoadingFallback = () => (
@@ -68,6 +69,7 @@ const App: React.FC = () => {
               <Route path="/qrcode" element={<QRCodePage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/privacy" element={<PrivacyPolicyPage />} />
+              <Route path="/design-system" element={<DesignSystemPage />} />
               <Route path="/auth" element={<AuthCallbackPage />} />
               <Route path="/waitlist" element={<WaitlistPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />

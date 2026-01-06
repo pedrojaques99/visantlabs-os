@@ -4,7 +4,7 @@ import { Maximize2, Heart, Download, FileText, Edit, Trash2, Palette } from 'luc
 import type { OutputNodeData, FlowNodeData } from '../../types/reactFlow';
 import { cn } from '../../lib/utils';
 import { isSafeUrl } from '../../utils/imageUtils';
-import { Spinner } from '../ui/Spinner';
+import { GlitchLoader } from '../ui/GlitchLoader';
 import { mockupApi } from '../../services/mockupApi';
 import { aiApi } from '../../services/aiApi';
 import { normalizeImageToBase64 } from '../../services/reactFlowService';
@@ -539,7 +539,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
                 onMouseDown={(e) => e.stopPropagation()}
               >
                 {isDescribing ? (
-                  <Spinner size={12} color="currentColor" />
+                  <GlitchLoader size={12} color="currentColor" />
                 ) : (
                   <FileText size={12} strokeWidth={2} />
                 )}
@@ -555,14 +555,14 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
                   isSaving
                     ? "bg-black/40 text-zinc-500 cursor-wait border border-zinc-700/30"
                     : isLiked
-                      ? "bg-[#52ddeb]/20 text-[#52ddeb] hover:bg-[#52ddeb]/30 border border-[#52ddeb]/20"
+                      ? "bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30 border border-[#52ddeb]/20"
                       : "bg-black/40 hover:bg-black/60 text-zinc-400 hover:text-zinc-200 border border-zinc-700/30"
                 )}
                 title={isLiked ? t('canvasNodes.outputNode.removeFromFavorites') : t('canvasNodes.outputNode.saveToCollection')}
                 onMouseDown={(e) => e.stopPropagation()}
               >
                 {isSaving ? (
-                  <Spinner size={12} color="currentColor" />
+                  <GlitchLoader size={12} color="currentColor" />
                 ) : (
                   <Heart size={12} className={isLiked ? "fill-current" : ""} strokeWidth={2} />
                 )}
@@ -614,7 +614,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
             onMouseDown={(e) => e.stopPropagation()}
           >
             {isDownloading ? (
-              <Spinner size={12} color="currentColor" />
+              <GlitchLoader size={12} color="currentColor" />
             ) : (
               <Download size={12} strokeWidth={2} />
             )}
@@ -661,7 +661,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
             onMouseDown={(e) => e.stopPropagation()}
           >
             {isDescribing ? (
-              <Spinner size={12} color="currentColor" />
+              <GlitchLoader size={12} color="currentColor" />
             ) : (
               <FileText size={12} strokeWidth={2} />
             )}

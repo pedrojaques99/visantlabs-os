@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { CheckCircle, Pickaxe, ArrowRight, Loader2 } from 'lucide-react';
+import { CheckCircle, Pickaxe, ArrowRight } from 'lucide-react';
+import { GlitchLoader } from './ui/GlitchLoader';
 import { useTranslation } from '../hooks/useTranslation';
 import { useLayout } from '../hooks/useLayout';
 import { subscriptionService } from '../services/subscriptionService';
@@ -187,8 +188,8 @@ export const CreditRechargeSuccessPage: React.FC = () => {
         <div className="text-center mb-12">
           <div className="flex justify-center mb-6">
             <div className="relative">
-              <div className="absolute inset-0 bg-[#52ddeb]/20 rounded-md blur-xl"></div>
-              <CheckCircle size={80} className="text-[#52ddeb] relative" />
+              <div className="absolute inset-0 bg-brand-cyan/20 rounded-md blur-xl"></div>
+              <CheckCircle size={80} className="text-brand-cyan relative" />
             </div>
           </div>
 
@@ -202,11 +203,11 @@ export const CreditRechargeSuccessPage: React.FC = () => {
 
           {isCheckingAuth || isLoading ? (
             <div className="flex items-center justify-center gap-2 mt-4">
-              <Loader2 size={20} className="animate-spin text-[#52ddeb]" />
+              <GlitchLoader size={20} color="#52ddeb" />
             </div>
           ) : isVerifyingCredits ? (
             <div className="flex items-center justify-center gap-2 mt-4">
-              <Loader2 size={20} className="animate-spin text-[#52ddeb]" />
+              <GlitchLoader size={20} color="#52ddeb" />
               <span className="text-zinc-500 text-sm font-mono">
                 {t('creditRechargeSuccess.verifying')}
               </span>
@@ -217,7 +218,7 @@ export const CreditRechargeSuccessPage: React.FC = () => {
         {creditsConfirmed && (
           <div className="bg-black/95 backdrop-blur-xl border border-zinc-800/50 rounded-md p-6 mb-8">
             <div className="flex items-center gap-3 mb-6">
-              <Pickaxe size={24} className="text-[#52ddeb]" />
+              <Pickaxe size={24} className="text-brand-cyan" />
               <h2 className="text-xl font-semibold font-mono text-zinc-200">
                 {t('creditRechargeSuccess.creditsPurchased')}
               </h2>
@@ -225,8 +226,8 @@ export const CreditRechargeSuccessPage: React.FC = () => {
 
             {creditsPurchased && creditsConfirmed && (
               <div className="mb-6">
-                <div className="text-center py-4 bg-[#52ddeb]/10 border border-[#52ddeb]/30 rounded-md">
-                  <div className="text-5xl font-bold font-mono text-[#52ddeb] mb-2">
+                <div className="text-center py-4 bg-brand-cyan/10 border border-[#52ddeb]/30 rounded-md">
+                  <div className="text-5xl font-bold font-mono text-brand-cyan mb-2">
                     +{animatedCreditsPurchased}
                   </div>
                   <div className="text-zinc-400 font-mono text-sm">
@@ -252,16 +253,16 @@ export const CreditRechargeSuccessPage: React.FC = () => {
               {/* Arrow indicator */}
               {previousCredits !== null && (
                 <div className="flex justify-center">
-                  <ArrowRight size={20} className="text-[#52ddeb]/50 rotate-90" />
+                  <ArrowRight size={20} className="text-brand-cyan/50 rotate-90" />
                 </div>
               )}
 
               {/* Total Credits */}
-              <div className="flex items-center justify-between p-3 bg-[#52ddeb]/5 border border-[#52ddeb]/20 rounded-md">
+              <div className="flex items-center justify-between p-3 bg-brand-cyan/5 border border-[#52ddeb]/20 rounded-md">
                 <span className="text-zinc-300 font-mono text-sm font-semibold">
                   {t('creditRechargeSuccess.totalCredits')}
                 </span>
-                <span className="text-[#52ddeb] font-mono font-bold text-xl">
+                <span className="text-brand-cyan font-mono font-bold text-xl">
                   {animatedTotalCredits} {t('creditsPackages.credits')}
                 </span>
               </div>
@@ -272,7 +273,7 @@ export const CreditRechargeSuccessPage: React.FC = () => {
         <div className="text-center">
           <button
             onClick={handleGetStarted}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-[#52ddeb]/80 hover:bg-[#52ddeb] text-black font-semibold rounded-md text-sm font-mono transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-brand-cyan/80 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-colors"
           >
             <span>{t('creditRechargeSuccess.getStarted')}</span>
             <ArrowRight size={16} />

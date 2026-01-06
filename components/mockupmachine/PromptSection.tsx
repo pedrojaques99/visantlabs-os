@@ -125,7 +125,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
             <button
               onClick={onSuggestPrompts}
               disabled={isSuggestingPrompts || !promptPreview.trim() || isGeneratingPrompt}
-                className={`text-xs font-mono hover:text-[#52ddeb] transition-colors disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 ${
+                className={`text-xs font-mono hover:text-brand-cyan transition-colors disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 ${
                 theme === 'dark' ? 'text-zinc-500 disabled:text-zinc-600' : 'text-zinc-600 disabled:text-zinc-400'
               }`}
             >
@@ -139,7 +139,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
             <button
               onClick={onGenerateSmartPrompt}
               disabled={isGeneratingPrompt || isSuggestingPrompts || isGenerateDisabled}
-                className={`text-xs font-mono hover:text-[#52ddeb] transition-colors disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 ${
+                className={`text-xs font-mono hover:text-brand-cyan transition-colors disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 ${
               theme === 'dark' ? 'text-zinc-500 disabled:text-zinc-600' : 'text-zinc-600 disabled:text-zinc-400'
             }`}
             >
@@ -152,7 +152,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
             <Tooltip content={t('mockup.simplifyTooltip')} position="top">
             <button 
               onClick={onSimplify}
-                className="text-xs font-mono text-zinc-500 hover:text-[#52ddeb] transition-colors cursor-pointer flex items-center gap-1"
+                className="text-xs font-mono text-zinc-500 hover:text-brand-cyan transition-colors cursor-pointer flex items-center gap-1"
             >
               <ArrowLeftRight size={12} />
               <span>{t('mockup.simplify')}</span>
@@ -181,7 +181,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
             theme === 'dark' ? 'bg-black/60' : 'bg-white/60'
           } backdrop-blur-sm`}>
             <GlitchLoader size={16} />
-            <span className="text-xs font-mono font-semibold text-[#52ddeb] uppercase tracking-wider">
+            <span className="text-xs font-mono font-semibold text-brand-cyan uppercase tracking-wider">
               GENERATING PROMPT...
             </span>
             <div className="h-4 text-[10px] font-mono uppercase tracking-wide text-foreground overflow-hidden">
@@ -225,7 +225,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
                           onGenerateSuggestion(suggestion);
                         }}
                         disabled={isGenerating || !suggestion.trim() || isGenerateDisabled}
-                        className="flex-1 flex items-center justify-center gap-2 bg-[#52ddeb]/80 hover:bg-[#52ddeb]/90 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-semibold py-2 px-3 rounded-md transition-all duration-300 text-xs transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50"
+                        className="flex-1 flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-semibold py-2 px-3 rounded-md transition-all duration-300 text-xs transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50"
                       >
                         {isGenerating ? (
                           <>
@@ -247,7 +247,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
                       onGenerateSuggestion(suggestion);
                     }}
                     disabled={isGenerating || !suggestion.trim() || isGenerateDisabled}
-                    className="flex-1 flex items-center justify-center gap-2 bg-[#52ddeb]/80 hover:bg-[#52ddeb]/90 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-semibold py-2 px-3 rounded-md transition-all duration-300 text-xs transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50"
+                    className="flex-1 flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-semibold py-2 px-3 rounded-md transition-all duration-300 text-xs transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50"
                   >
                     {isGenerating ? (
                       <>

@@ -27,7 +27,7 @@ export const useCanvasEvents = (
   setEdgeContextMenu: (menu: { x: number; y: number; edgeId: string } | null) => void,
   setImageContextMenu: (menu: { x: number; y: number; nodeId: string } | null) => void,
   setNodeContextMenu: (menu: { x: number; y: number; nodeId: string } | null) => void,
-  addToHistory: (nodes: Node<FlowNodeData>[], edges: Edge[]) => void,
+  addToHistory: (nodes: Node<FlowNodeData>[], edges: Edge[], drawings?: any) => void,
   reactFlowInstance: ReactFlowInstance | null,
   nodeCreators?: NodeCreationFunctions
 ) => {
@@ -841,123 +841,119 @@ export const useCanvasEvents = (
     }
 
     // If dropped on empty canvas, create node based on handle type
-    if (!targetNodeElement && !targetHandle && nodeCreators) {
-      const handleType = connectionStart.handleType;
-      
-      // Determine node type to create based on handle type
-      let nodeTypeToCreate: 'prompt' | 'text' | 'strategy' | 'image' | null = null;
-      let createNodeFn: ((pos?: { x: number; y: number }, data?: any) => string | undefined) | undefined;
-      
-      if (handleType === 'image') {
-        nodeTypeToCreate = 'image';
-        createNodeFn = nodeCreators.addImageNode;
-      } else if (handleType === 'generic') {
-        nodeTypeToCreate = 'prompt';
-        createNodeFn = nodeCreators.addPromptNode;
-      } else if (handleType === 'text') {
-        nodeTypeToCreate = 'text';
-        createNodeFn = nodeCreators.addTextNode;
-      } else if (handleType === 'strategy') {
-        nodeTypeToCreate = 'strategy';
-        createNodeFn = nodeCreators.addStrategyNode;
+    // BUT: If it's an ImageNode or OutputNode output handle, open context menu instead
+    if (!targetNodeElement && !targetHandle) {
+      // If connection was started from an ImageNode or OutputNode and dropped on empty canvas
+      // Open context menu instead of creating node automatically
+      if (sourceNode.type === 'image' || sourceNode.type === 'output') {
+        setContextMenu({
+          x: clientX - rect.left,
+          y: clientY - rect.top,
+          sourceNodeId: connectionStart.nodeId,
+        });
+        return;
       }
       
-      if (nodeTypeToCreate && createNodeFn) {
-        const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-        if (pane && reactFlowInstance) {
-          const paneRect = pane.getBoundingClientRect();
-          
-          // For text node, pass flow coordinates with isFlowPosition flag
-          // For prompt and strategy, pass screen coordinates (they convert internally)
-          let newNodeId: string | undefined;
-          
-          if (nodeTypeToCreate === 'text') {
-            const flowPosition = reactFlowInstance.screenToFlowPosition({
-              x: clientX - paneRect.left,
-              y: clientY - paneRect.top,
-            });
-            newNodeId = createNodeFn(flowPosition, undefined, true);
-          } else {
-            // Prompt and strategy expect screen coordinates
-            newNodeId = createNodeFn({
-              x: clientX,
-              y: clientY,
-            });
-          }
-          
-          if (newNodeId) {
-            // Connect the new node to the source node after a short delay
-            // Use a longer delay to ensure the node is fully rendered
-            setTimeout(() => {
-              // Determine correct sourceHandle - only use if it's actually a source handle
-              // Don't use target handles (like "input-1") as sourceHandle
-              let sourceHandle: string | undefined = undefined;
-              if (connectionStart.sourceHandle) {
-                // Check if sourceHandle is actually a source handle (not a target handle like "input-1")
-                const sourceNode = nodes.find(n => n.id === connectionStart.nodeId);
-                if (sourceNode) {
-                  // If sourceHandle starts with "input-" or is a known target handle, ignore it
-                  if (!connectionStart.sourceHandle.startsWith('input-') && 
-                      connectionStart.sourceHandle !== 'text-input' && 
-                      connectionStart.sourceHandle !== 'strategy-input' &&
-                      connectionStart.sourceHandle !== 'logo-input' &&
-                      connectionStart.sourceHandle !== 'identity-input') {
-                    sourceHandle = connectionStart.sourceHandle;
+      // For other node types, create node based on handle type
+      if (nodeCreators) {
+        const handleType = connectionStart.handleType;
+        
+        // Determine node type to create based on handle type
+        let nodeTypeToCreate: 'prompt' | 'text' | 'strategy' | null = null;
+        let createNodeFn: ((pos?: { x: number; y: number }, data?: any) => string | undefined) | undefined;
+        
+        if (handleType === 'generic') {
+          nodeTypeToCreate = 'prompt';
+          createNodeFn = nodeCreators.addPromptNode;
+        } else if (handleType === 'text') {
+          nodeTypeToCreate = 'text';
+          createNodeFn = nodeCreators.addTextNode;
+        } else if (handleType === 'strategy') {
+          nodeTypeToCreate = 'strategy';
+          createNodeFn = nodeCreators.addStrategyNode;
+        }
+        
+        if (nodeTypeToCreate && createNodeFn) {
+          const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
+          if (pane && reactFlowInstance) {
+            const paneRect = pane.getBoundingClientRect();
+            
+            // For text node, pass flow coordinates with isFlowPosition flag
+            // For prompt and strategy, pass screen coordinates (they convert internally)
+            let newNodeId: string | undefined;
+            
+            if (nodeTypeToCreate === 'text') {
+              const flowPosition = reactFlowInstance.screenToFlowPosition({
+                x: clientX - paneRect.left,
+                y: clientY - paneRect.top,
+              });
+              newNodeId = createNodeFn(flowPosition, undefined, true);
+            } else {
+              // Prompt and strategy expect screen coordinates
+              newNodeId = createNodeFn({
+                x: clientX,
+                y: clientY,
+              });
+            }
+            
+            if (newNodeId) {
+              // Connect the new node to the source node after a short delay
+              // Use a longer delay to ensure the node is fully rendered
+              setTimeout(() => {
+                // Determine correct sourceHandle - only use if it's actually a source handle
+                // Don't use target handles (like "input-1") as sourceHandle
+                let sourceHandle: string | undefined = undefined;
+                if (connectionStart.sourceHandle) {
+                  // Check if sourceHandle is actually a source handle (not a target handle like "input-1")
+                  const sourceNode = nodes.find(n => n.id === connectionStart.nodeId);
+                  if (sourceNode) {
+                    // If sourceHandle starts with "input-" or is a known target handle, ignore it
+                    if (!connectionStart.sourceHandle.startsWith('input-') && 
+                        connectionStart.sourceHandle !== 'text-input' && 
+                        connectionStart.sourceHandle !== 'strategy-input' &&
+                        connectionStart.sourceHandle !== 'logo-input' &&
+                        connectionStart.sourceHandle !== 'identity-input') {
+                      sourceHandle = connectionStart.sourceHandle;
+                    }
                   }
                 }
-              }
-              
-              // Determine target handle based on node type and handle type
-              let targetHandle: string | undefined = undefined;
-              if (nodeTypeToCreate === 'prompt') {
-                // PromptNode accepts image inputs
-                if (handleType === 'image' || handleType === 'generic') {
-                  targetHandle = 'input-1';
-                } else if (handleType === 'text') {
-                  targetHandle = 'text-input';
-                }
-              } else if (nodeTypeToCreate === 'image') {
-                // ImageNode has a default target handle via NodeHandles (no specific ID, so undefined uses default)
-                // Connect if source handle type is image
-                if (handleType === 'image' || handleType === 'generic') {
-                  targetHandle = undefined; // Use default target handle
-                }
-              } else if (nodeTypeToCreate === 'text') {
-                // TextNode doesn't accept input connections
-                targetHandle = undefined;
-              } else if (nodeTypeToCreate === 'strategy') {
-                // StrategyNode doesn't accept input connections
-                targetHandle = undefined;
-              }
-              
-              // Create connection if we have a valid target (targetHandle can be undefined for default handles)
-              // Only skip if nodeType explicitly doesn't accept connections
-              if (nodeTypeToCreate !== 'text' && nodeTypeToCreate !== 'strategy') {
-                const connection: Connection = {
-                  source: connectionStart.nodeId,
-                  target: newNodeId!,
-                  sourceHandle: sourceHandle,
-                  targetHandle: targetHandle,
-                };
                 
-                onConnect(connection);
-              }
-            }, 150);
-            
-            return;
+                // Determine target handle based on node type and handle type
+                let targetHandle: string | undefined = undefined;
+                if (nodeTypeToCreate === 'prompt') {
+                  // PromptNode accepts image inputs
+                  if (handleType === 'image' || handleType === 'generic') {
+                    targetHandle = 'input-1';
+                  } else if (handleType === 'text') {
+                    targetHandle = 'text-input';
+                  }
+                } else if (nodeTypeToCreate === 'text') {
+                  // TextNode doesn't accept input connections
+                  targetHandle = undefined;
+                } else if (nodeTypeToCreate === 'strategy') {
+                  // StrategyNode doesn't accept input connections
+                  targetHandle = undefined;
+                }
+                
+                // Create connection if we have a valid target (targetHandle can be undefined for default handles)
+                // Only skip if nodeType explicitly doesn't accept connections
+                if (nodeTypeToCreate !== 'text' && nodeTypeToCreate !== 'strategy') {
+                  const connection: Connection = {
+                    source: connectionStart.nodeId,
+                    target: newNodeId!,
+                    sourceHandle: sourceHandle,
+                    targetHandle: targetHandle,
+                  };
+                  
+                  onConnect(connection);
+                }
+              }, 150);
+              
+              return;
+            }
           }
         }
       }
-    }
-    
-    // If connection was started from an ImageNode or OutputNode and dropped on empty canvas
-    if ((sourceNode.type === 'image' || sourceNode.type === 'output') && !targetNodeElement) {
-      // Dropped on empty canvas - open context menu with source node info
-      setContextMenu({
-        x: clientX - rect.left,
-        y: clientY - rect.top,
-        sourceNodeId: connectionStart.nodeId,
-      });
     }
   }, [nodes, reactFlowWrapper, setContextMenu, reactFlowInstance, findNearestTargetHandle, onConnect, nodeCreators]);
 

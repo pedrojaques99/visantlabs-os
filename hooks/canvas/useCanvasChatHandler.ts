@@ -118,8 +118,8 @@ export const useCanvasChatHandler = ({
         content: msg.content,
       }));
       
-      // Call chat service
-      const response = await sendChatMessage(apiMessages, context);
+      // Call chat service with custom system prompt if available
+      const response = await sendChatMessage(apiMessages, context, undefined, chatData.systemPrompt);
       
       // Add assistant response
       const assistantMessage = {

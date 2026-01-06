@@ -127,7 +127,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
     return (
       <div className="space-y-6">
         {/* Custom PDF Section */}
-        <div className="space-y-6 rounded-xl p-4 sm:p-6 bg-[#1A1A1A] border border-zinc-800">
+        <div className="space-y-6 rounded-xl p-4 sm:p-6 bg-zinc-900 border border-zinc-800">
           <PdfUploadSection
             customPdfUrl={data.customPdfUrl}
             budgetId={budgetId}
@@ -242,7 +242,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
       />
 
       {/* Custom PDF Section */}
-      <div className="space-y-6 rounded-xl p-6 bg-[#1A1A1A] border border-zinc-800">
+      <div className="space-y-6 rounded-xl p-6 bg-zinc-900 border border-zinc-800">
         <PdfUploadSection
           customPdfUrl={data.customPdfUrl}
           budgetId={budgetId}

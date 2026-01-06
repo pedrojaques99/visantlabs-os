@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, MessageCircle, Bug } from 'lucide-react';
-import { Spinner } from './ui/Spinner';
+import { GlitchLoader } from './ui/GlitchLoader';
 import { useTranslation } from '../hooks/useTranslation';
 import { toast } from 'sonner';
 import { getGithubUrl } from '../config/branding';
@@ -141,7 +141,7 @@ ${message}
       onClick={handleClose}
     >
       <div
-        className="bg-[#1A1A1A] border border-zinc-800/50 rounded-md p-6 w-full max-w-lg mx-4 shadow-xl"
+        className="bg-zinc-900 border border-zinc-800/50 rounded-md p-6 w-full max-w-lg mx-4 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-6">
@@ -168,7 +168,7 @@ ${message}
                 type="button"
                 onClick={() => setContactType('customerService')}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md border transition-all text-sm font-mono ${contactType === 'customerService'
-                  ? 'bg-[#52ddeb]/20 border-[#52ddeb]/50 text-[#52ddeb]'
+                  ? 'bg-brand-cyan/20 border-[#52ddeb]/50 text-brand-cyan'
                   : 'bg-black/40 border-zinc-700/50 text-zinc-400 hover:border-zinc-600'
                   }`}
               >
@@ -179,7 +179,7 @@ ${message}
                 type="button"
                 onClick={() => setContactType('reportBug')}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md border transition-all text-sm font-mono ${contactType === 'reportBug'
-                  ? 'bg-[#52ddeb]/20 border-[#52ddeb]/50 text-[#52ddeb]'
+                  ? 'bg-brand-cyan/20 border-[#52ddeb]/50 text-brand-cyan'
                   : 'bg-black/40 border-zinc-700/50 text-zinc-400 hover:border-zinc-600'
                   }`}
               >
@@ -259,11 +259,11 @@ ${message}
             <button
               type="submit"
               disabled={isSubmitting || !subject.trim() || !message.trim()}
-              className="flex items-center justify-center gap-2 px-4 py-2 text-xs font-mono bg-[#52ddeb]/80 hover:bg-[#52ddeb]/90 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-semibold rounded-md transition-all duration-200"
+              className="flex items-center justify-center gap-2 px-4 py-2 text-xs font-mono bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-semibold rounded-md transition-all duration-200"
             >
               {isSubmitting ? (
                 <>
-                  <Spinner size={14} color="currentColor" />
+                  <GlitchLoader size={14} color="currentColor" />
                   {t('support.sending') || 'Sending...'}
                 </>
               ) : (

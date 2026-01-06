@@ -29,6 +29,7 @@ import { ColorExtractorNode } from '../components/reactflow/ColorExtractorNode';
 import { TextNode } from '../components/reactflow/TextNode';
 import { ChatNode } from '../components/reactflow/ChatNode';
 import { BrandingProjectSelectModal } from '../components/reactflow/BrandingProjectSelectModal';
+import { CanvasBottomToolbar, type CanvasTool } from '../components/canvas/CanvasBottomToolbar';
 import { ContextMenu } from '../components/reactflow/contextmenu/ContextMenu';
 import { EdgeContextMenu } from '../components/reactflow/contextmenu/EdgeContextMenu';
 import { ImageContextMenu } from '../components/reactflow/contextmenu/ImageContextMenu';
@@ -47,7 +48,7 @@ import { useCanvasNodeHandlers } from '../hooks/canvas/useCanvasNodeHandlers';
 import { useCanvasNodeCreation } from '../hooks/canvas/useCanvasNodeCreation';
 import { useCanvasEvents } from '../hooks/canvas/useCanvasEvents';
 import { useCanvasKeyboard } from '../hooks/canvas/useCanvasKeyboard';
-import { CanvasToolbar } from '../components/canvas/CanvasToolbar';
+import { CanvasToolbar } from '../components/canvas/CanvasNodeToolbar';
 import { CanvasHeader } from '../components/canvas/CanvasHeader';
 import { CanvasFlow } from '../components/canvas/CanvasFlow';
 import { ShaderControlsSidebar } from '../components/canvas/ShaderControlsSidebar';
@@ -70,6 +71,7 @@ import { useImageNodeHandlers } from '../hooks/canvas/useImageNodeHandlers';
 import { useImmediateR2Upload } from '../hooks/canvas/useImmediateR2Upload';
 import { collectR2UrlsForDeletion } from '../hooks/canvas/utils/r2UploadHelpers';
 import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
+import { useCanvasDrawing } from '../hooks/canvas/useCanvasDrawing';
 import type { UploadedImage } from '../types';
 
 import { isLocalDevelopment } from '../utils/env';
@@ -147,6 +149,12 @@ export const CanvasPage: React.FC = () => {
     }
     return '#FFFFFF';
   });
+  const [brandCyan, setBrandCyan] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('canvasBrandCyan') || '#52ddeb';
+    }
+    return '#52ddeb';
+  });
   const [isShaderSidebarCollapsed, setIsShaderSidebarCollapsed] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; sourceNodeId?: string } | null>(null);
   const [edgeContextMenu, setEdgeContextMenu] = useState<{ x: number; y: number; edgeId: string } | null>(null);
@@ -170,6 +178,7 @@ export const CanvasPage: React.FC = () => {
             if (settings.showMinimap !== undefined) setShowMinimap(settings.showMinimap);
             if (settings.showControls !== undefined) setShowControls(settings.showControls);
             if (settings.cursorColor) setCursorColor(settings.cursorColor);
+            if (settings.brandCyan) setBrandCyan(settings.brandCyan);
             if (settings.experimentalMode !== undefined) setExperimentalMode(settings.experimentalMode);
             setIsSettingsLoaded(true);
           }
@@ -216,6 +225,24 @@ export const CanvasPage: React.FC = () => {
     }
   }, 1000);
 
+  // Apply brandCyan color to CSS variable on mount and when it changes
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      const root = document.documentElement;
+      // Apply the brand cyan color as CSS variable
+      // This will override the default oklch value in index.css
+      root.style.setProperty('--brand-cyan', brandCyan);
+    }
+  }, [brandCyan]);
+
+  // Apply initial brandCyan color on mount
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      const root = document.documentElement;
+      root.style.setProperty('--brand-cyan', brandCyan);
+    }
+  }, []);
+
   // React Flow state
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<FlowNodeData>>([]);
 
@@ -228,6 +255,7 @@ export const CanvasPage: React.FC = () => {
       localStorage.setItem('canvasShowMinimap', String(showMinimap));
       localStorage.setItem('canvasShowControls', String(showControls));
       localStorage.setItem('canvasCursorColor', cursorColor);
+      localStorage.setItem('canvasBrandCyan', brandCyan);
       localStorage.setItem('canvasExperimentalMode', String(experimentalMode));
     }
 
@@ -240,18 +268,24 @@ export const CanvasPage: React.FC = () => {
         showMinimap,
         showControls,
         cursorColor,
+        brandCyan,
         experimentalMode,
       });
     }
-  }, [backgroundColor, gridColor, showGrid, showMinimap, showControls, cursorColor, experimentalMode, isAuthenticated, debouncedUpdateSettings]);
+  }, [backgroundColor, gridColor, showGrid, showMinimap, showControls, cursorColor, brandCyan, experimentalMode, isAuthenticated, debouncedUpdateSettings]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+
+  // Drawing hook - initialize before history so we can pass drawings to it
+  const drawing = useCanvasDrawing(reactFlowInstance);
 
   // Hooks - initialize history first so it can be used in handlers
   const { addToHistory, handleUndo, handleRedo } = useCanvasHistory(
     nodes,
     edges,
     setNodes,
-    setEdges
+    setEdges,
+    drawing.drawings,
+    drawing.setDrawings
   );
 
   // Handler functions
@@ -298,7 +332,7 @@ export const CanvasPage: React.FC = () => {
     }
 
     // Add to history before deletion
-    addToHistory(nodes, edges);
+    addToHistory(nodes, edges, drawing.drawings);
 
     try {
       await mockupApi.delete(id);
@@ -311,10 +345,10 @@ export const CanvasPage: React.FC = () => {
           return true;
         });
 
-        // Add to history after deletion
-        setTimeout(() => {
-          addToHistory(newNodes, edges);
-        }, 0);
+          // Add to history after deletion
+          setTimeout(() => {
+            addToHistory(newNodes, edges, drawing.drawings);
+          }, 0);
 
         return newNodes;
       });
@@ -396,7 +430,9 @@ export const CanvasPage: React.FC = () => {
     nodes,
     edges,
     setNodes,
-    setEdges
+    setEdges,
+    drawing.drawings,
+    drawing.setDrawings
   );
 
   const [showShareModal, setShowShareModal] = useState(false);
@@ -486,6 +522,125 @@ export const CanvasPage: React.FC = () => {
     setNodes,
     handlersRef,
   });
+
+  // Canvas tool state
+  const [activeTool, setActiveTool] = useState<CanvasTool>('select');
+  const [isToolbarCollapsed, setIsToolbarCollapsed] = useState(false);
+
+  // Handle tool changes
+  const handleToolChange = useCallback((tool: CanvasTool) => {
+    setActiveTool(tool);
+    
+    if (tool === 'hand') {
+      // Enable pan mode (space key behavior)
+      // This is handled by the space key logic in CanvasFlow
+    } else if (tool === 'select') {
+      // Disable drawing mode
+      if (drawing.drawingState.isDrawingMode) {
+        drawing.setIsDrawingMode(false);
+      }
+    } else if (tool === 'draw') {
+      // Drawing mode is toggled by onToggleDrawing
+    } else if (tool === 'type') {
+      // Type tool is independent - does not activate drawing mode
+      if (drawing.drawingState.isDrawingMode) {
+        drawing.setIsDrawingMode(false);
+      }
+    } else if (tool === 'shapes') {
+      // Set drawing type to shape
+      drawing.setDrawingType('shape');
+      if (!drawing.drawingState.isDrawingMode) {
+        drawing.setIsDrawingMode(true);
+      }
+    }
+  }, [drawing]);
+
+  // Handle drawing type change
+  const handleDrawingTypeChange = useCallback((type: 'freehand' | 'text' | 'shape') => {
+    drawing.setDrawingType(type);
+    if (type === 'text') {
+      setActiveTool('type');
+    } else if (type === 'shape') {
+      setActiveTool('shapes');
+    } else {
+      setActiveTool('draw');
+    }
+  }, [drawing]);
+
+  // Handle shape type change
+  const handleShapeTypeChange = useCallback((type: 'rectangle' | 'circle' | 'line' | 'arrow') => {
+    drawing.setShapeType(type);
+  }, [drawing]);
+
+  // Handle color change
+  const handleColorChange = useCallback((color: string) => {
+    drawing.setStrokeColor(color);
+    drawing.setTextColor(color);
+    drawing.setShapeColor(color);
+    if (drawing.setShapeStrokeColor) {
+      drawing.setShapeStrokeColor(color);
+    }
+  }, [drawing]);
+
+  // Wrappers for drawing functions that update history
+  const handleStopDrawing = useCallback(() => {
+    // Add to history before stopping (captures current state)
+    addToHistory(nodes, edges, drawing.drawings);
+    drawing.stopDrawing();
+  }, [drawing, nodes, edges, addToHistory]);
+
+  const handleDeleteSelectedDrawings = useCallback(() => {
+    if (drawing.selectedDrawingIds.size > 0) {
+      addToHistory(nodes, edges, drawing.drawings);
+      drawing.deleteSelectedDrawings();
+    }
+  }, [drawing, nodes, edges, addToHistory]);
+
+  const handleUpdateDrawingText = useCallback((id: string, newText: string) => {
+    // Only add to history if text actually changed
+    const drawingToUpdate = drawing.drawings.find(d => d.id === id);
+    if (drawingToUpdate && drawingToUpdate.text !== newText) {
+      addToHistory(nodes, edges, drawing.drawings);
+    }
+    drawing.updateDrawingText(id, newText);
+  }, [drawing, nodes, edges, addToHistory]);
+
+  // Handle Delete key for drawings
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.key === 'Delete' || e.key === 'Backspace') && drawing.selectedDrawingIds.size > 0) {
+        e.preventDefault();
+        handleDeleteSelectedDrawings();
+      }
+      // Escape key to stop editing text
+      if (e.key === 'Escape' && drawing.editingDrawingId) {
+        drawing.stopEditingText();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [drawing, handleDeleteSelectedDrawings]);
+
+  // Stop editing when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (drawing.editingDrawingId) {
+        const target = e.target as HTMLElement;
+        // Check if click is outside the text editor
+        if (!target.closest('textarea, .drawing-text-editor')) {
+          drawing.stopEditingText();
+        }
+      }
+    };
+
+    window.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      window.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [drawing.editingDrawingId, drawing]);
 
   const {
     addMergeNode,
@@ -579,7 +734,7 @@ export const CanvasPage: React.FC = () => {
     const nodesToDuplicate = nodes.filter(n => nodeIds.includes(n.id));
     if (nodesToDuplicate.length === 0) return;
 
-    addToHistory(nodes, edges);
+    addToHistory(nodes, edges, drawing.drawings);
 
     const duplicatedNodes: Node<FlowNodeData>[] = nodesToDuplicate.map((node, index) => {
       const newPosition = {
@@ -611,7 +766,7 @@ export const CanvasPage: React.FC = () => {
     setNodes((nds: Node<FlowNodeData>[]) => {
       const newNodes = [...nds, ...duplicatedNodes];
       setTimeout(() => {
-        addToHistory(newNodes, edges);
+        addToHistory(newNodes, edges, drawing.drawings);
       }, 0);
       return newNodes;
     });
@@ -631,6 +786,7 @@ export const CanvasPage: React.FC = () => {
     handleUndo,
     handleRedo,
     addToHistory,
+    drawing.drawings,
     handlersRef,
     reactFlowInstance,
     reactFlowWrapper,
@@ -673,12 +829,12 @@ export const CanvasPage: React.FC = () => {
       } as ImageNodeData,
     };
 
-    addToHistory(nodes, edges);
+    addToHistory(nodes, edges, drawing.drawings);
 
     setNodes((nds: Node<FlowNodeData>[]) => {
       const newNodes = [...nds, newNode];
       setTimeout(() => {
-        addToHistory(newNodes, edges);
+        addToHistory(newNodes, edges, drawing.drawings);
       }, 0);
       return newNodes;
     });
@@ -980,7 +1136,7 @@ export const CanvasPage: React.FC = () => {
     }
 
     // Add to history before making changes
-    addToHistory(nodes, edges);
+    addToHistory(nodes, edges, drawing.drawings);
 
     // Create nodes directly with flow coordinates - build all nodes first
     const newNodes: Node<FlowNodeData>[] = [];
@@ -1107,7 +1263,7 @@ export const CanvasPage: React.FC = () => {
 
   // Handler to remove edge from PromptNode
   const handlePromptRemoveEdge = useCallback((nodeId: string, targetHandle: 'input-1' | 'input-2' | 'input-3' | 'input-4') => {
-    addToHistory(nodes, edges);
+    addToHistory(nodes, edges, drawing.drawings);
 
     setEdges((eds: Edge[]) => {
       const edgeToRemove = eds.find(
@@ -1121,7 +1277,7 @@ export const CanvasPage: React.FC = () => {
       const newEdges = eds.filter(e => e.id !== edgeToRemove.id);
 
       setTimeout(() => {
-        addToHistory(nodes, newEdges);
+        addToHistory(nodes, newEdges, drawing.drawings);
       }, 0);
 
       return newEdges;
@@ -1163,7 +1319,7 @@ export const CanvasPage: React.FC = () => {
     setEdges(newEdges);
 
     setTimeout(() => {
-      addToHistory(newNodes, newEdges);
+      addToHistory(newNodes, newEdges, drawing.drawings);
     }, 0);
 
     toast.success(t('canvas.nodeDeleted'), { duration: 2000 });
@@ -1323,7 +1479,9 @@ export const CanvasPage: React.FC = () => {
         (n.type === 'mockup' && (!(n.data as any).onGenerate || !(n.data as any).onUpdateData || !handlersRef.current?.handleMockupGenerate || !mockupArraysEqual((n.data as any).userMockups, userMockups))) ||
         (n.type === 'image' && (!(n.data as ImageNodeData).onUpload || !(n.data as ImageNodeData).onView || !(n.data as ImageNodeData).addTextNode || !handlersRef.current?.handleUploadImage)) ||
         (n.type === 'brand' && (!(n.data as BrandNodeData).onAnalyze || !(n.data as BrandNodeData).onUploadLogo || !(n.data as BrandNodeData).onUpdateData || !handlersRef.current?.handleBrandAnalyze)) ||
-        (n.type === 'brandCore' && (!(n.data as BrandCoreData).onAnalyze || !(n.data as BrandCoreData).onUpdateData || !(n.data as BrandCoreData).onUploadPdfToR2 || !(n.data as BrandCoreData).onCancelAnalyze || !handlersRef.current?.handleBrandCoreAnalyze || !handlersRef.current?.handleBrandCoreDataUpdate || !handlersRef.current?.handleBrandCoreUploadPdfToR2 || !handlersRef.current?.handleBrandCoreCancelAnalyze))
+        (n.type === 'strategy' && (!(n.data as StrategyNodeData).onOpenProjectModal || !(n.data as StrategyNodeData).onGenerate || !(n.data as StrategyNodeData).onGenerateSection || !(n.data as StrategyNodeData).onGenerateAll || !(n.data as StrategyNodeData).onInitialAnalysis || !(n.data as StrategyNodeData).onCancelGeneration || !(n.data as StrategyNodeData).onGeneratePDF || !(n.data as StrategyNodeData).onSave || !(n.data as StrategyNodeData).onUpdateData || !handlersRef.current?.handleStrategyNodeGenerate || !handlersRef.current?.handleStrategyNodeDataUpdate)) ||
+        (n.type === 'brandCore' && (!(n.data as BrandCoreData).onAnalyze || !(n.data as BrandCoreData).onUpdateData || !(n.data as BrandCoreData).onUploadPdfToR2 || !(n.data as BrandCoreData).onCancelAnalyze || !handlersRef.current?.handleBrandCoreAnalyze || !handlersRef.current?.handleBrandCoreDataUpdate || !handlersRef.current?.handleBrandCoreUploadPdfToR2 || !handlersRef.current?.handleBrandCoreCancelAnalyze)) ||
+        (n.type === 'chat' && (!(n.data as ChatNodeData).onSendMessage || !(n.data as ChatNodeData).onUpdateData || !(n.data as ChatNodeData).onClearHistory || !(n.data as ChatNodeData).onAddPromptNode || !(n.data as ChatNodeData).onCreateNode || !handlersRef.current?.handleChatSendMessage || !handlersRef.current?.handleChatUpdateData))
       );
 
       // Check if there are edges connected to nodes that need image synchronization
@@ -1961,6 +2119,40 @@ export const CanvasPage: React.FC = () => {
             } as Node<FlowNodeData>;
           }
         }
+        if (n.type === 'chat') {
+          const chatData = n.data as ChatNodeData;
+          const needsUpdate = !chatData.onSendMessage ||
+            !chatData.onUpdateData ||
+            !chatData.onClearHistory ||
+            !chatData.onAddPromptNode ||
+            !chatData.onCreateNode ||
+            !handlersRef.current?.handleChatSendMessage ||
+            !handlersRef.current?.handleChatUpdateData;
+          if (needsUpdate) {
+            hasChanges = true;
+            return {
+              ...n,
+              data: {
+                ...chatData,
+                // Preserve existing messages and other data
+                messages: chatData.messages || [],
+                userMessageCount: chatData.userMessageCount || 0,
+                model: chatData.model || 'gemini-2.5-flash',
+                isLoading: chatData.isLoading || false,
+                // Inject callbacks
+                onSendMessage: handlersRef.current?.handleChatSendMessage || (() => Promise.resolve()),
+                onUpdateData: handlersRef.current?.handleChatUpdateData || (() => {}),
+                onClearHistory: handlersRef.current?.handleChatClearHistory || (() => {}),
+                onAddPromptNode: handlersRef.current?.handleChatAddPromptNode || (() => {}),
+                onCreateNode: handlersRef.current?.handleChatCreateNode || (() => undefined),
+                onEditConnectedNode: handlersRef.current?.handleChatEditConnectedNode || (() => {}),
+                onAttachMedia: handlersRef.current?.handleChatAttachMedia || (() => undefined),
+                connectedNodeIds: [],
+                onDeleteNode: handleDeleteNodeById,
+              } as ChatNodeData,
+            } as Node<FlowNodeData>;
+          }
+        }
         if (n.type === 'brand') {
           const brandData = n.data as BrandNodeData;
           const needsHandlerUpdate = !brandData.onAnalyze || !brandData.onUploadLogo || !brandData.onUpdateData || !handlersRef.current?.handleBrandAnalyze;
@@ -2088,7 +2280,17 @@ export const CanvasPage: React.FC = () => {
         }
         if (n.type === 'strategy') {
           const strategyData = n.data as StrategyNodeData;
-          const needsUpdate = !strategyData.onOpenProjectModal;
+          const needsUpdate = !strategyData.onOpenProjectModal ||
+            !strategyData.onGenerate ||
+            !strategyData.onGenerateSection ||
+            !strategyData.onGenerateAll ||
+            !strategyData.onInitialAnalysis ||
+            !strategyData.onCancelGeneration ||
+            !strategyData.onGeneratePDF ||
+            !strategyData.onSave ||
+            !strategyData.onUpdateData ||
+            !handlersRef.current?.handleStrategyNodeGenerate ||
+            !handlersRef.current?.handleStrategyNodeDataUpdate;
           if (needsUpdate) {
             hasChanges = true;
             return {
@@ -2099,6 +2301,14 @@ export const CanvasPage: React.FC = () => {
                   setProjectModalNodeId(nodeId);
                   setShowProjectModal(true);
                 },
+                onGenerate: handlersRef.current?.handleStrategyNodeGenerate || (() => Promise.resolve()),
+                onGenerateSection: handlersRef.current?.handleStrategyNodeGenerateSection || (() => Promise.resolve()),
+                onGenerateAll: handlersRef.current?.handleStrategyNodeGenerateAll || (() => Promise.resolve()),
+                onInitialAnalysis: handlersRef.current?.handleStrategyNodeInitialAnalysis || (() => Promise.resolve()),
+                onCancelGeneration: handlersRef.current?.handleStrategyNodeCancelGeneration || (() => {}),
+                onGeneratePDF: handlersRef.current?.handleStrategyNodeGeneratePDF || (() => {}),
+                onSave: handlersRef.current?.handleStrategyNodeSave || (() => Promise.resolve(undefined)),
+                onUpdateData: handlersRef.current?.handleStrategyNodeDataUpdate || (() => {}),
                 onDeleteNode: handleDeleteNodeById,
               } as StrategyNodeData,
             } as Node<FlowNodeData>;
@@ -2426,7 +2636,7 @@ export const CanvasPage: React.FC = () => {
             position = { x: 0, y: 0 };
           }
 
-          addToHistory(nodes, edges);
+          addToHistory(nodes, edges, drawing.drawings);
 
           const newNode: Node<FlowNodeData> = {
             id: `image-${Date.now()}`,
@@ -2521,7 +2731,7 @@ export const CanvasPage: React.FC = () => {
     const node = nodes.find(n => n.id === nodeContextMenu.nodeId);
     if (!node) return;
 
-    addToHistory(nodes, edges);
+    addToHistory(nodes, edges, drawing.drawings);
 
     const newPosition = {
       x: node.position.x + 50,
@@ -2552,7 +2762,7 @@ export const CanvasPage: React.FC = () => {
     setNodes((nds: Node<FlowNodeData>[]) => {
       const newNodes = [...nds, duplicatedNode];
       setTimeout(() => {
-        addToHistory(newNodes, edges);
+        addToHistory(newNodes, edges, drawing.drawings);
       }, 0);
       return newNodes;
     });
@@ -2595,7 +2805,7 @@ export const CanvasPage: React.FC = () => {
     setEdges(newEdges);
 
     setTimeout(() => {
-      addToHistory(newNodes, newEdges);
+      addToHistory(newNodes, newEdges, drawing.drawings);
     }, 0);
 
     toast.success(t('canvas.nodeDeleted'), { duration: 2000 });
@@ -2712,6 +2922,13 @@ export const CanvasPage: React.FC = () => {
             setCursorColor(color);
             if (typeof window !== 'undefined') {
               localStorage.setItem('canvasCursorColor', color);
+            }
+          }}
+          brandCyan={brandCyan}
+          onBrandCyanChange={(color) => {
+            setBrandCyan(color);
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('canvasBrandCyan', color);
             }
           }}
           experimentalMode={experimentalMode}
@@ -2836,6 +3053,52 @@ export const CanvasPage: React.FC = () => {
               onDropNode={handleDropNode}
               onAddColorExtractor={addColorExtractorNode}
               experimentalMode={experimentalMode}
+              cursorColor={cursorColor}
+              isDrawingMode={drawing.drawingState.isDrawingMode}
+              drawingType={drawing.drawingState.drawingType}
+              onDrawingStart={drawing.startDrawing}
+              onDrawingMove={drawing.draw}
+              onDrawingEnd={handleStopDrawing}
+              currentPathData={drawing.currentPathData}
+              isDrawing={drawing.isDrawing}
+              drawings={drawing.drawings}
+              selectedDrawingIds={drawing.selectedDrawingIds}
+              selectionBox={drawing.selectionBox}
+              activeTool={activeTool}
+              onSelectionBoxStart={drawing.startSelectionBox}
+              onSelectionBoxUpdate={drawing.updateSelectionBox}
+              onSelectionBoxEnd={drawing.endSelectionBox}
+              onDrawingClick={(id: string) => {
+                drawing.setSelectedDrawingId(id);
+              }}
+              editingDrawingId={drawing.editingDrawingId}
+              onStartEditingText={drawing.startEditingText}
+              onUpdateDrawingText={handleUpdateDrawingText}
+              onStopEditingText={drawing.stopEditingText}
+              onCreateTextDrawing={(position) => {
+                addToHistory(nodes, edges, drawing.drawings);
+                drawing.createTextDrawing?.(position);
+              }}
+              onUpdateDrawingBounds={(id, bounds) => {
+                addToHistory(nodes, edges, drawing.drawings);
+                drawing.updateDrawingBounds?.(id, bounds);
+              }}
+              shapePreview={
+                drawing.drawingState.drawingType === 'shape' &&
+                drawing.isDrawing &&
+                drawing.startPosition &&
+                drawing.currentPosition
+                  ? {
+                      startPosition: drawing.startPosition,
+                      currentPosition: drawing.currentPosition,
+                      shapeType: drawing.drawingState.shapeType,
+                      shapeColor: drawing.drawingState.shapeColor,
+                      shapeStrokeColor: drawing.drawingState.shapeStrokeColor,
+                      shapeStrokeWidth: drawing.drawingState.shapeStrokeWidth,
+                      shapeFill: drawing.drawingState.shapeFill,
+                    }
+                  : null
+              }
             />
           </RoomProvider>
         ) : (
@@ -2867,8 +3130,82 @@ export const CanvasPage: React.FC = () => {
             reactFlowInstance={reactFlowInstance}
             experimentalMode={experimentalMode}
             onAddColorExtractor={addColorExtractorNode}
+            isDrawingMode={drawing.drawingState.isDrawingMode}
+            drawingType={drawing.drawingState.drawingType}
+            onDrawingStart={drawing.startDrawing}
+            onDrawingMove={drawing.draw}
+            onDrawingEnd={handleStopDrawing}
+            currentPathData={drawing.currentPathData}
+            isDrawing={drawing.isDrawing}
+            drawings={drawing.drawings}
+            selectedDrawingIds={drawing.selectedDrawingIds}
+            onDrawingClick={(id: string) => {
+              // Handle single click - for now just select single item
+              // Multi-select with Shift/Ctrl can be added later if needed
+              drawing.setSelectedDrawingId(id);
+            }}
+            selectionBox={drawing.selectionBox}
+            activeTool={activeTool}
+            onSelectionBoxStart={drawing.startSelectionBox}
+            onSelectionBoxUpdate={drawing.updateSelectionBox}
+            onSelectionBoxEnd={drawing.endSelectionBox}
+            editingDrawingId={drawing.editingDrawingId}
+            onStartEditingText={drawing.startEditingText}
+            onUpdateDrawingText={handleUpdateDrawingText}
+            onStopEditingText={drawing.stopEditingText}
+            onCreateTextDrawing={(position) => {
+              addToHistory(nodes, edges, drawing.drawings);
+              drawing.createTextDrawing?.(position);
+            }}
+            onUpdateDrawingBounds={(id, bounds) => {
+              addToHistory(nodes, edges, drawing.drawings);
+              drawing.updateDrawingBounds?.(id, bounds);
+            }}
+            shapePreview={
+              drawing.drawingState.drawingType === 'shape' &&
+              drawing.isDrawing &&
+              drawing.startPosition &&
+              drawing.currentPosition
+                ? {
+                    startPosition: drawing.startPosition,
+                    currentPosition: drawing.currentPosition,
+                    shapeType: drawing.drawingState.shapeType,
+                    shapeColor: drawing.drawingState.shapeColor,
+                    shapeStrokeColor: drawing.drawingState.shapeStrokeColor,
+                    shapeStrokeWidth: drawing.drawingState.shapeStrokeWidth,
+                    shapeFill: drawing.drawingState.shapeFill,
+                  }
+                : null
+            }
           />
         )}
+
+        {/* Bottom Toolbar */}
+        <CanvasBottomToolbar
+          activeTool={activeTool}
+          onToolChange={handleToolChange}
+          onToggleDrawing={() => {
+            drawing.setIsDrawingMode(!drawing.drawingState.isDrawingMode);
+            if (!drawing.drawingState.isDrawingMode) {
+              setActiveTool('draw');
+            } else {
+              setActiveTool('select');
+            }
+          }}
+          isDrawingMode={drawing.drawingState.isDrawingMode}
+          drawingType={drawing.drawingState.drawingType}
+          onDrawingTypeChange={handleDrawingTypeChange}
+          strokeColor={drawing.drawingState.strokeColor}
+          onColorChange={handleColorChange}
+          onShapeTypeChange={handleShapeTypeChange}
+          shapeType={drawing.drawingState.shapeType}
+          fontFamily={drawing.drawingState.fontFamily}
+          onFontFamilyChange={(fontFamily) => {
+            drawing.setFontFamily(fontFamily);
+          }}
+          onToggleToolbar={() => setIsToolbarCollapsed(!isToolbarCollapsed)}
+          isToolbarCollapsed={isToolbarCollapsed}
+        />
 
         {/* Full Screen Viewer */}
         {selectedMockup && getImageUrl(selectedMockup) && (
@@ -2904,6 +3241,7 @@ export const CanvasPage: React.FC = () => {
             x={contextMenu.x}
             y={contextMenu.y}
             sourceNodeId={contextMenu.sourceNodeId}
+            nodes={nodes}
             onClose={() => setContextMenu(null)}
             onExport={handleExport}
             onAddImage={() => {
@@ -3453,62 +3791,216 @@ export const CanvasPage: React.FC = () => {
                 const strategyData = node.data as StrategyNodeData;
                 // Load project using the handler from StrategyNode
                 try {
+                  if (isLocalDevelopment()) {
+                    console.log(`[CanvasPage] 📂 Loading project from modal`, {
+                      projectId,
+                      nodeId: projectModalNodeId
+                    });
+                  }
+                  
                   const { brandingApi } = await import('../services/brandingApi');
                   const project = await brandingApi.getById(projectId);
+
+                  if (isLocalDevelopment()) {
+                    console.log(`[CanvasPage] 📦 Project loaded from API`, {
+                      projectId,
+                      projectName: project.name,
+                      hasPrompt: !!project.prompt,
+                      promptLength: project.prompt?.length || 0,
+                      dataKeys: Object.keys(project.data || {}),
+                      dataValues: Object.keys(project.data || {}).reduce((acc, key) => {
+                        const value = project.data[key];
+                        if (Array.isArray(value)) {
+                          acc[key] = `Array(${value.length})`;
+                        } else if (typeof value === 'object' && value !== null) {
+                          acc[key] = `Object(${Object.keys(value).length} keys)`;
+                        } else if (typeof value === 'string') {
+                          acc[key] = `String(${value.length} chars)`;
+                        } else {
+                          acc[key] = typeof value;
+                        }
+                        return acc;
+                      }, {} as Record<string, string>),
+                      fullData: project.data
+                    });
+                  }
 
                   // Convert BrandingData to StrategyNodeData format
                   const convertedStrategyData: any = {};
 
-                  if (typeof project.data.marketResearch === 'string') {
-                    convertedStrategyData.marketResearch = {
-                      mercadoNicho: project.data.mercadoNicho || '',
-                      publicoAlvo: project.data.publicoAlvo || '',
-                      posicionamento: project.data.posicionamento || '',
-                      insights: project.data.insights || '',
-                    };
-                  } else if (project.data.marketResearch && typeof project.data.marketResearch === 'object') {
+                  // Handle marketResearch - support multiple formats (same logic as StrategyNode)
+                  if (typeof project.data.marketResearch === 'string' && project.data.marketResearch.trim()) {
+                    // New format: marketResearch is a string (benchmarking paragraph)
                     convertedStrategyData.marketResearch = project.data.marketResearch;
+                    if (isLocalDevelopment()) {
+                      console.log(`[CanvasPage] ✅ Converted marketResearch (string)`, {
+                        length: project.data.marketResearch.length
+                      });
+                    }
+                  } else if (typeof project.data.marketResearch === 'object' && project.data.marketResearch !== null) {
+                    // Object format
+                    convertedStrategyData.marketResearch = project.data.marketResearch;
+                    if (isLocalDevelopment()) {
+                      console.log(`[CanvasPage] ✅ Converted marketResearch (object)`, {
+                        keys: Object.keys(project.data.marketResearch)
+                      });
+                    }
                   } else if (project.data.mercadoNicho || project.data.publicoAlvo || project.data.posicionamento || project.data.insights) {
+                    // Old format: separate fields
                     convertedStrategyData.marketResearch = {
                       mercadoNicho: project.data.mercadoNicho || '',
                       publicoAlvo: project.data.publicoAlvo || '',
                       posicionamento: project.data.posicionamento || '',
                       insights: project.data.insights || '',
                     };
+                    if (isLocalDevelopment()) {
+                      console.log(`[CanvasPage] ✅ Converted marketResearch (old format)`, {
+                        hasMercadoNicho: !!project.data.mercadoNicho,
+                        hasPublicoAlvo: !!project.data.publicoAlvo,
+                        hasPosicionamento: !!project.data.posicionamento,
+                        hasInsights: !!project.data.insights
+                      });
+                    }
                   }
 
-                  if (project.data.persona) convertedStrategyData.persona = project.data.persona;
-                  if (project.data.archetypes) convertedStrategyData.archetypes = project.data.archetypes;
-                  if (project.data.competitors && Array.isArray(project.data.competitors) && project.data.competitors.length > 0) {
-                    convertedStrategyData.competitors = project.data.competitors;
+                  // Convert persona
+                  if (project.data.persona) {
+                    if (typeof project.data.persona === 'object' && project.data.persona !== null) {
+                      convertedStrategyData.persona = project.data.persona;
+                      if (isLocalDevelopment()) {
+                        console.log(`[CanvasPage] ✅ Converted persona`, {
+                          hasDemographics: !!project.data.persona.demographics,
+                          desiresCount: Array.isArray(project.data.persona.desires) ? project.data.persona.desires.length : 0,
+                          painsCount: Array.isArray(project.data.persona.pains) ? project.data.persona.pains.length : 0
+                        });
+                      }
+                    }
                   }
-                  if (project.data.references && Array.isArray(project.data.references) && project.data.references.length > 0) {
-                    convertedStrategyData.references = project.data.references;
+
+                  // Convert archetypes
+                  if (project.data.archetypes) {
+                    if (typeof project.data.archetypes === 'object' && project.data.archetypes !== null) {
+                      convertedStrategyData.archetypes = project.data.archetypes;
+                      if (isLocalDevelopment()) {
+                        console.log(`[CanvasPage] ✅ Converted archetypes`, {
+                          hasPrimary: !!project.data.archetypes.primary,
+                          hasSecondary: !!project.data.archetypes.secondary,
+                          hasReasoning: !!project.data.archetypes.reasoning
+                        });
+                      }
+                    }
                   }
-                  if (project.data.swot) convertedStrategyData.swot = project.data.swot;
-                  if (project.data.colorPalettes && Array.isArray(project.data.colorPalettes) && project.data.colorPalettes.length > 0) {
-                    convertedStrategyData.colorPalettes = project.data.colorPalettes;
+
+                  // Convert array sections
+                  const arraySections = ['competitors', 'references', 'colorPalettes', 'visualElements', 'mockupIdeas'] as const;
+                  arraySections.forEach(key => {
+                    if (project.data[key] !== undefined && project.data[key] !== null) {
+                      if (Array.isArray(project.data[key])) {
+                        if (project.data[key].length > 0) {
+                          convertedStrategyData[key] = project.data[key];
+                          if (isLocalDevelopment()) {
+                            console.log(`[CanvasPage] ✅ Converted ${key}`, {
+                              count: project.data[key].length
+                            });
+                          }
+                        } else if (isLocalDevelopment()) {
+                          console.log(`[CanvasPage] ⚠️ Skipped ${key} (empty array)`);
+                        }
+                      } else if (isLocalDevelopment()) {
+                        console.log(`[CanvasPage] ⚠️ Skipped ${key} (not an array)`, {
+                          type: typeof project.data[key]
+                        });
+                      }
+                    }
+                  });
+
+                  // Convert object sections
+                  const objectSections = ['swot', 'moodboard'] as const;
+                  objectSections.forEach(key => {
+                    if (project.data[key] !== undefined && project.data[key] !== null) {
+                      if (typeof project.data[key] === 'object') {
+                        convertedStrategyData[key] = project.data[key];
+                        if (isLocalDevelopment()) {
+                          console.log(`[CanvasPage] ✅ Converted ${key}`, {
+                            keys: Object.keys(project.data[key])
+                          });
+                        }
+                      } else if (isLocalDevelopment()) {
+                        console.log(`[CanvasPage] ⚠️ Skipped ${key} (not an object)`, {
+                          type: typeof project.data[key]
+                        });
+                      }
+                    }
+                  });
+
+                  const convertedKeys = Object.keys(convertedStrategyData);
+                  if (isLocalDevelopment()) {
+                    console.log(`[CanvasPage] 🔄 Converting project data`, {
+                      projectId,
+                      nodeId: projectModalNodeId,
+                      convertedSections: convertedKeys,
+                      sectionsCount: convertedKeys.length,
+                      convertedData: convertedStrategyData
+                    });
                   }
-                  if (project.data.visualElements && Array.isArray(project.data.visualElements) && project.data.visualElements.length > 0) {
-                    convertedStrategyData.visualElements = project.data.visualElements;
-                  }
-                  if (project.data.mockupIdeas && Array.isArray(project.data.mockupIdeas) && project.data.mockupIdeas.length > 0) {
-                    convertedStrategyData.mockupIdeas = project.data.mockupIdeas;
-                  }
-                  if (project.data.moodboard) convertedStrategyData.moodboard = project.data.moodboard;
 
                   if (strategyData.onUpdateData) {
+                    if (isLocalDevelopment()) {
+                      console.log(`[CanvasPage] 🔄 Calling onUpdateData`, {
+                        projectId,
+                        nodeId: projectModalNodeId,
+                        prompt: project.prompt || '',
+                        name: project.name || '',
+                        strategyDataKeys: Object.keys(convertedStrategyData),
+                        strategyDataCount: Object.keys(convertedStrategyData).length,
+                        convertedStrategyData
+                      });
+                    }
+                    
                     strategyData.onUpdateData(projectModalNodeId, {
-                      prompt: project.prompt,
+                      prompt: project.prompt || '',
+                      name: project.name || '',
                       strategyData: convertedStrategyData,
                       projectId: project._id || (project as any).id,
+                    });
+                    
+                    if (isLocalDevelopment()) {
+                      console.log(`[CanvasPage] ✅ onUpdateData called successfully`, {
+                        projectId,
+                        nodeId: projectModalNodeId
+                      });
+                    }
+                  } else {
+                    if (isLocalDevelopment()) {
+                      console.error(`[CanvasPage] ❌ onUpdateData not available`, {
+                        projectId,
+                        nodeId: projectModalNodeId,
+                        hasStrategyData: !!strategyData,
+                        strategyDataKeys: strategyData ? Object.keys(strategyData) : []
+                      });
+                    }
+                  }
+
+                  if (isLocalDevelopment()) {
+                    console.log(`[CanvasPage] ✅ Project loaded successfully from modal`, {
+                      projectId,
+                      nodeId: projectModalNodeId,
+                      projectName: project.name,
+                      sectionsLoaded: convertedKeys.length,
+                      hasData: convertedKeys.length > 0,
+                      convertedSections: convertedKeys
                     });
                   }
 
                   toast.success(t('canvas.projectLoadedSuccessfully'));
                 } catch (error: any) {
                   if (isLocalDevelopment()) {
-                    console.error('Failed to load project:', error);
+                    console.error(`[CanvasPage] ❌ Failed to load project from modal`, {
+                      projectId,
+                      nodeId: projectModalNodeId,
+                      error: error?.message || error,
+                      stack: error?.stack
+                    });
                   }
                   toast.error(error?.message || t('canvas.failedToLoadProject'), { duration: 3000 });
                 }
@@ -3872,6 +4364,12 @@ export const CanvasPage: React.FC = () => {
               }, 100);
             }
           }}
+          onToggleDrawing={() => {
+            drawing.setIsDrawingMode(!drawing.drawingState.isDrawingMode);
+          }}
+          isDrawingMode={drawing.drawingState.isDrawingMode}
+          isCollapsed={isToolbarCollapsed}
+          onCollapseChange={setIsToolbarCollapsed}
         />
       </div>
     </>
@@ -3911,6 +4409,40 @@ const CollaborativeCanvas: React.FC<{
   onDropNode?: (nodeType: string, position: { x: number; y: number }) => void;
   onAddColorExtractor?: (position?: { x: number; y: number }) => void;
   experimentalMode?: boolean;
+  cursorColor?: string;
+  isDrawingMode?: boolean;
+  drawingType?: 'freehand' | 'text' | 'shape';
+  onDrawingStart?: (event: React.MouseEvent | React.TouchEvent) => void;
+  onDrawingMove?: (event: React.MouseEvent | React.TouchEvent) => void;
+  onDrawingEnd?: () => void;
+  currentPathData?: string;
+  isDrawing?: boolean;
+  drawings?: any[];
+  selectedDrawingIds?: Set<string>;
+  selectionBox?: {
+    start: { x: number; y: number };
+    end: { x: number; y: number };
+  } | null;
+  activeTool?: string;
+  onSelectionBoxStart?: (position: { x: number; y: number }) => void;
+  onSelectionBoxUpdate?: (position: { x: number; y: number }) => void;
+  onSelectionBoxEnd?: () => void;
+  onDrawingClick?: (id: string) => void;
+  editingDrawingId?: string | null;
+  onStartEditingText?: (id: string) => void;
+  onUpdateDrawingText?: (id: string, text: string) => void;
+  onStopEditingText?: () => void;
+  onCreateTextDrawing?: (position: { x: number; y: number }) => void;
+  onUpdateDrawingBounds?: (id: string, bounds: { x: number; y: number; width: number; height: number }) => void;
+  shapePreview?: {
+    startPosition: { x: number; y: number } | null;
+    currentPosition: { x: number; y: number } | null;
+    shapeType?: 'rectangle' | 'circle' | 'line' | 'arrow';
+    shapeColor?: string;
+    shapeStrokeColor?: string;
+    shapeStrokeWidth?: number;
+    shapeFill?: boolean;
+  } | null;
 }> = ({
   nodes,
   edges,
@@ -3943,6 +4475,29 @@ const CollaborativeCanvas: React.FC<{
   onDropNode,
   onAddColorExtractor,
   experimentalMode = false,
+  cursorColor = '#FFFFFF',
+  isDrawingMode = false,
+  drawingType = 'freehand',
+  onDrawingStart,
+  onDrawingMove,
+  onDrawingEnd,
+  currentPathData = '',
+  isDrawing = false,
+  drawings = [],
+  selectedDrawingIds = new Set(),
+  selectionBox = null,
+  activeTool = 'select',
+  onSelectionBoxStart,
+  onSelectionBoxUpdate,
+  onSelectionBoxEnd,
+  onDrawingClick,
+  editingDrawingId = null,
+  onStartEditingText,
+  onUpdateDrawingText,
+  onStopEditingText,
+  onCreateTextDrawing,
+  onUpdateDrawingBounds,
+  shapePreview = null,
 }) => {
     const { t } = useTranslation();
     const [reactFlowInstance, setReactFlowInstanceLocal] = React.useState<ReactFlowInstance | null>(null);
@@ -4110,7 +4665,29 @@ const CollaborativeCanvas: React.FC<{
           onDropImage={onDropImage}
           onDropNode={onDropNode}
           reactFlowInstance={reactFlowInstance}
-
+          cursorColor={cursorColor}
+          isDrawingMode={isDrawingMode}
+          drawingType={drawingType}
+          onDrawingStart={onDrawingStart}
+          onDrawingMove={onDrawingMove}
+          onDrawingEnd={onDrawingEnd}
+          currentPathData={currentPathData}
+          isDrawing={isDrawing}
+          drawings={drawings}
+          selectedDrawingIds={selectedDrawingIds}
+          selectionBox={selectionBox}
+          activeTool={activeTool}
+          onSelectionBoxStart={onSelectionBoxStart}
+          onSelectionBoxUpdate={onSelectionBoxUpdate}
+          onSelectionBoxEnd={onSelectionBoxEnd}
+          onDrawingClick={onDrawingClick}
+          editingDrawingId={editingDrawingId}
+          onStartEditingText={onStartEditingText}
+          onUpdateDrawingText={onUpdateDrawingText}
+          onStopEditingText={onStopEditingText}
+          onCreateTextDrawing={onCreateTextDrawing}
+          onUpdateDrawingBounds={onUpdateDrawingBounds}
+          shapePreview={shapePreview}
         />
         {reactFlowInstance && reactFlowWrapper.current && (
           <CollaborativeCursors

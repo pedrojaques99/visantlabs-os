@@ -134,7 +134,7 @@ export const VariableConfigModal: React.FC<VariableConfigModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-[#1A1A1A] border border-zinc-800 rounded-xl p-6 w-full max-w-md mx-4">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 w-full max-w-md mx-4">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold font-mono text-zinc-200">
             {label}
@@ -194,7 +194,7 @@ export const VariableConfigModal: React.FC<VariableConfigModalProps> = ({
             <button
               onClick={handleConfirm}
               disabled={showCustomInput && !customValue.trim()}
-              className="flex-1 px-4 py-2 bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 border border-[#52ddeb]/50 rounded-md text-[#52ddeb] font-mono text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#52ddeb]/50 rounded-md text-brand-cyan font-mono text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               OK - Posicionar no PDF
             </button>

@@ -9,6 +9,7 @@ import { WelcomeScreen } from './WelcomeScreen';
 import { SidebarOrchestrator } from '../components/SidebarOrchestrator';
 import { GenerateButton } from '../components/ui/GenerateButton';
 import { ConfirmationModal } from '../components/ConfirmationModal';
+import { Button } from '../components/ui/button';
 import { aiApi } from '../services/aiApi';
 import { RateLimitError, ModelOverloadedError } from '../services/geminiService';
 import { getCreditsRequired } from '../utils/creditCalculator';
@@ -3167,14 +3168,16 @@ Generate the new mockup image with the requested changes applied.`;
       {/* Floating sidebar toggle button for mobile */}
       {hasGenerated && !isSidebarVisibleMobile && (
         <div className="fixed bottom-4 left-4 md:hidden z-50 flex flex-col items-center gap-1">
-          <button
+          <Button
             onClick={() => setIsSidebarVisibleMobile(true)}
-            className="flex items-center justify-center w-10 h-10 bg-brand-cyan/90 hover:bg-brand-cyan text-black rounded-md shadow-2xl shadow-brand-cyan/20 transition-all duration-300 active:scale-95 focus:outline-none focus:ring-2 focus:ring-brand-cyan/50 focus:ring-offset-2 focus:ring-offset-background"
+            variant="brand"
+            size="icon"
+            className="w-10 h-10 shadow-2xl active:scale-95"
             aria-label={t('mockup.showSidebar')}
             title={t('mockup.showSidebar')}
           >
             <Pickaxe size={16} />
-          </button>
+          </Button>
         </div>
       )}
 

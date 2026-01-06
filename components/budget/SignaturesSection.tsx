@@ -40,7 +40,7 @@ export const SignaturesSection: React.FC<SignaturesSectionProps> = ({
         </h3>
         <button
           onClick={addSignature}
-          className="p-2 bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 border border-[#52ddeb]/50 rounded-xl text-[#52ddeb] transition-all duration-300 flex items-center justify-center"
+          className="p-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#52ddeb]/50 rounded-xl text-brand-cyan transition-all duration-300 flex items-center justify-center"
           title={t('budget.addSignature') || 'Adicionar Assinatura'}
         >
           <Plus size={18} />
@@ -56,7 +56,7 @@ export const SignaturesSection: React.FC<SignaturesSectionProps> = ({
           {signatures.map((signature, index) => (
             <div
               key={index}
-              className="p-4 bg-[#1A1A1A] border border-zinc-800 rounded-xl space-y-3"
+              className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl space-y-3"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3">

@@ -119,12 +119,21 @@ export const useTextureNodeHandlers = ({
         feature: 'canvas'
       });
 
+      const resultImage = result.imageUrl || result.imageBase64 || '';
+
+      // Update source node with result so manually connected nodes work
+      updateNodeData<TextureNodeData>(nodeId, {
+        isLoading: false,
+        resultImageUrl: result.imageUrl,
+        resultImageBase64: result.imageUrl ? undefined : result.imageBase64,
+      } as any, 'texture');
+
       updateNodeLoadingState<TextureNodeData>(nodeId, false, 'texture');
 
       if (newOutputNodeId) {
         updateOutputNodeWithResult(
           newOutputNodeId,
-          result.imageBase64,
+          resultImage,
           () => addToHistory(nodesRef.current, edgesRef.current),
           setNodes
         );
@@ -132,6 +141,14 @@ export const useTextureNodeHandlers = ({
         if (canvasId) {
           await uploadImageToR2Auto(result.imageBase64, newOutputNodeId, canvasId, setNodes, (imageUrl) => {
             updateOutputNodeWithR2Url(newOutputNodeId!, imageUrl, setNodes);
+          });
+
+          // Also upload to R2 for the TextureNode itself
+          await uploadImageToR2Auto(result.imageBase64, nodeId, canvasId, setNodes, (imageUrl) => {
+            updateNodeData<TextureNodeData>(nodeId, {
+              resultImageUrl: imageUrl,
+              resultImageBase64: undefined,
+            } as any, 'texture');
           });
         }
       }

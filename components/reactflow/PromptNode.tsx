@@ -1,7 +1,7 @@
 import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
 import { Handle, Position, type NodeProps, useReactFlow, NodeResizer } from '@xyflow/react';
 import { Pickaxe, Image as ImageIcon, Wand2 } from 'lucide-react';
-import { Spinner } from '../ui/Spinner';
+import { GlitchLoader } from '../ui/GlitchLoader';
 import type { PromptNodeData } from '../../types/reactFlow';
 import type { GeminiModel, AspectRatio, Resolution } from '../../types';
 import { cn } from '../../lib/utils';
@@ -413,8 +413,8 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
             />
           )}
           {connectedTextDirection && (
-            <div className="p-2 rounded border border-[#52ddeb]/30 bg-[#52ddeb]/5">
-              <div className="text-xs font-mono text-[#52ddeb] mb-1">{t('canvasNodes.promptNode.textDirectionFromBrandCore')}</div>
+            <div className="p-2 rounded border border-[#52ddeb]/30 bg-brand-cyan/5">
+              <div className="text-xs font-mono text-brand-cyan mb-1">{t('canvasNodes.promptNode.textDirectionFromBrandCore')}</div>
               <div className="text-xs text-zinc-400 line-clamp-3">{connectedTextDirection}</div>
             </div>
           )}
@@ -451,7 +451,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       {/* Prompt Input */}
       <div className="mb-3">
         {hasTextNodeConnection && (
-          <div className="mb-1.5 text-[10px] font-mono text-[#52ddeb]/70 flex items-center gap-1">
+          <div className="mb-1.5 text-[10px] font-mono text-brand-cyan/70 flex items-center gap-1">
             <span>•</span>
             <span>{t('canvasNodes.promptNode.connectedToTextNode')}</span>
           </div>
@@ -481,7 +481,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               className={cn(
                 'absolute top-2 right-2 p-1.5 rounded border transition-all',
                 'bg-zinc-800/50 hover:bg-zinc-700/50 border-zinc-700/50 hover:border-[#52ddeb]/40',
-                'text-zinc-400 hover:text-[#52ddeb]',
+                'text-zinc-400 hover:text-brand-cyan',
                 'disabled:opacity-50 disabled:cursor-not-allowed',
                 'node-interactive'
               )}
@@ -489,7 +489,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               onMouseDown={(e) => e.stopPropagation()}
             >
               {isSuggestingPrompts ? (
-                <Spinner size={14} color="currentColor" />
+                <GlitchLoader size={14} color="currentColor" />
               ) : (
                 <Wand2 size={14} />
               )}
@@ -500,7 +500,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         {/* Prompt Suggestions */}
         {promptSuggestions.length > 0 && (
           <div className="mt-2 space-y-1.5 animate-fade-in">
-            <div className="text-[10px] font-mono text-[#52ddeb]/70 mb-1.5">
+            <div className="text-[10px] font-mono text-brand-cyan/70 mb-1.5">
               {t('canvasNodes.promptNode.aiSuggestions') || t('canvasNodes.promptNode.suggestions')}
             </div>
             {promptSuggestions.map((suggestion, index) => (
@@ -518,7 +518,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
                 className={cn(
                   'w-full text-left p-1.5 text-[11px] font-mono rounded border transition-all',
                   'bg-zinc-800/30 hover:bg-zinc-800/50 border-zinc-700/30 hover:border-[#52ddeb]/40',
-                  'text-zinc-300 hover:text-[#52ddeb]',
+                  'text-zinc-300 hover:text-brand-cyan',
                   'node-interactive'
                 )}
                 onMouseDown={(e) => e.stopPropagation()}
@@ -580,7 +580,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               className={cn(
                 'p-2 rounded border transition-all text-left node-interactive',
                 model === 'gemini-2.5-flash-image'
-                  ? 'bg-[#52ddeb]/20 border-[#52ddeb]/50 text-[#52ddeb]'
+                  ? 'bg-brand-cyan/20 border-[#52ddeb]/50 text-brand-cyan'
                   : 'bg-zinc-900/50 border-zinc-700/50 text-zinc-400 hover:bg-zinc-800/50 hover:border-zinc-600/50',
                 isLoading && 'opacity-50 cursor-not-allowed'
               )}
@@ -621,7 +621,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               className={cn(
                 'p-2 rounded border transition-all text-left node-interactive',
                 model === 'gemini-3-pro-image-preview'
-                  ? 'bg-[#52ddeb]/20 border-[#52ddeb]/50 text-[#52ddeb]'
+                  ? 'bg-brand-cyan/20 border-[#52ddeb]/50 text-brand-cyan'
                   : 'bg-zinc-900/50 border-zinc-700/50 text-zinc-400 hover:bg-zinc-800/50 hover:border-zinc-600/50',
                 isLoading && 'opacity-50 cursor-not-allowed'
               )}
@@ -695,20 +695,20 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         }}
         disabled={isLoading || !prompt.trim()}
         className={cn(
-          'w-full px-3 py-2 bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 border border-[#52ddeb]/30 rounded text-xs font-mono text-[#52ddeb] transition-colors flex items-center justify-center gap-3 node-interactive',
+          'w-full px-3 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#52ddeb]/30 rounded text-xs font-mono text-brand-cyan transition-colors flex items-center justify-center gap-3 node-interactive',
           (isLoading || !prompt.trim()) ? 'opacity-50 node-button-disabled' : 'node-button-enabled'
         )}
       >
         {isLoading ? (
           <>
-            <Spinner size={14} className="mr-1" color="#52ddeb" />
+            <GlitchLoader size={14} className="mr-1" color="#52ddeb" />
             <span>{t('canvasNodes.promptNode.generating')}</span>
           </>
         ) : (
           <>
             <ImageIcon size={14} />
             <span>{t('canvasNodes.promptNode.generateImage')}</span>
-            <span className="text-[#52ddeb]/70">
+            <span className="text-brand-cyan/70">
               ({creditsRequired} {t('canvasNodes.promptNode.credits')})
             </span>
           </>

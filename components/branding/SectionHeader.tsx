@@ -43,7 +43,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
           <div className={`flex items-center gap-1.5 ${
             theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'
           }`}>
-            <Coins className="h-3.5 w-3.5 text-[#52ddeb]" />
+            <Coins className="h-3.5 w-3.5 text-brand-cyan" />
             <span>{creditsRequired} {creditsRequired === 1 ? 'credit' : 'credits'}</span>
           </div>
           {dependencies.length > 0 && (

@@ -256,7 +256,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
       onClick={onClose}
     >
       <div
-        className="relative max-w-[90vw] md:max-w-[85vw] lg:max-w-[80vw] w-full max-h-[90vh] bg-[#1A1A1A] border border-zinc-800/50 rounded-md shadow-2xl p-6 flex flex-col gap-4"
+        className="relative max-w-[90vw] md:max-w-[85vw] lg:max-w-[80vw] w-full max-h-[90vh] bg-zinc-900 border border-zinc-800/50 rounded-md shadow-2xl p-6 flex flex-col gap-4"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -303,7 +303,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                 <SkeletonLoader width="100%" height="100%" className="h-full w-full" variant="rectangular" />
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className="inline-flex items-center justify-center rounded-md bg-black/30 px-3 py-2 border border-white/5">
-                    <Pickaxe size={20} className="text-[#52ddeb] pickaxe-swing" />
+                    <Pickaxe size={20} className="text-brand-cyan pickaxe-swing" />
                   </div>
                 </div>
               </div>
@@ -324,7 +324,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                   handleToggleLike();
                 }}
                 className={`absolute top-4 right-4 p-2 rounded-md transition-all z-30 backdrop-blur-sm ${localIsLiked
-                  ? 'bg-[#52ddeb]/20 text-[#52ddeb] hover:bg-[#52ddeb]/30'
+                  ? 'bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30'
                   : 'bg-black/40 text-zinc-400 hover:bg-black/60 hover:text-zinc-200'
                   }`}
                 title={localIsLiked ? t('canvasNodes.outputNode.removeFromFavorites') : t('canvasNodes.outputNode.saveToCollection')}
@@ -403,7 +403,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                 <ZoomIn size={14} />
                 <span className="text-xs font-medium whitespace-nowrap">Zoom In</span>
                 {creditsPerOperation !== undefined && creditsPerOperation > 0 && (
-                  <span className="text-[10px] font-mono text-[#52ddeb] font-semibold">
+                  <span className="text-[10px] font-mono text-brand-cyan font-semibold">
                     {creditsPerOperation}
                   </span>
                 )}
@@ -425,7 +425,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                 <ZoomOut size={14} />
                 <span className="text-xs font-medium whitespace-nowrap">Zoom Out</span>
                 {creditsPerOperation !== undefined && creditsPerOperation > 0 && (
-                  <span className="text-[10px] font-mono text-[#52ddeb] font-semibold">
+                  <span className="text-[10px] font-mono text-brand-cyan font-semibold">
                     {creditsPerOperation}
                   </span>
                 )}
@@ -438,7 +438,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                   setShowReImaginePanel(true);
                 }}
                 disabled={editButtonsDisabled || isLoading}
-                className={`flex items-center gap-2 px-3 py-1.5 bg-black/10 backdrop-blur-sm text-[#52ddeb] border border-[#52ddeb]/20 hover:border-[#52ddeb]/40 hover:bg-[#52ddeb]/10 rounded-md transition-all duration-200 ${editButtonsDisabled || isLoading
+                className={`flex items-center gap-2 px-3 py-1.5 bg-black/10 backdrop-blur-sm text-brand-cyan border border-[#52ddeb]/20 hover:border-[#52ddeb]/40 hover:bg-brand-cyan/10 rounded-md transition-all duration-200 ${editButtonsDisabled || isLoading
                   ? 'opacity-50 cursor-not-allowed'
                   : ''
                   }`}
@@ -447,7 +447,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                 <Pencil size={14} />
                 <span className="text-xs font-medium whitespace-nowrap">Re-imagine</span>
                 {creditsPerOperation !== undefined && creditsPerOperation > 0 && (
-                  <span className="text-[10px] font-mono text-[#52ddeb] font-semibold">
+                  <span className="text-[10px] font-mono text-brand-cyan font-semibold">
                     {creditsPerOperation}
                   </span>
                 )}
@@ -498,7 +498,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                 <div>
                   <button
                     onClick={() => setShowPrompt(!showPrompt)}
-                    className="flex items-center gap-2 text-xs font-mono text-zinc-400 hover:text-[#52ddeb] transition-colors mb-2"
+                    className="flex items-center gap-2 text-xs font-mono text-zinc-400 hover:text-brand-cyan transition-colors mb-2"
                   >
                     <FileText size={14} />
                     <span>{showPrompt ? 'Hide' : 'Show'} Prompt</span>
