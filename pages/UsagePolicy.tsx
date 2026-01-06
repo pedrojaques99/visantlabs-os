@@ -28,7 +28,7 @@ export const UsagePolicy: React.FC<UsagePolicyProps> = ({ isOpen, onClose }) => 
   if (!isOpen) return null;
 
   return (
-    <div className="min-h-screen bg-[#1A1A1A] text-zinc-300">
+    <div className="min-h-screen bg-zinc-900 text-zinc-300">
       <div className="max-w-4xl mx-auto px-6 py-12 md:px-8 md:py-16">
         <h1 className="text-2xl md:text-3xl font-semibold text-zinc-200 mb-3">
           {t('usage.title')}
@@ -117,7 +117,7 @@ export const UsagePolicy: React.FC<UsagePolicyProps> = ({ isOpen, onClose }) => 
             </ul>
             <p className="text-zinc-400 mt-3">
               {t('usage.sections.dataUsage.note').split('Privacy Policy')[0]}
-              <a href="/privacy" className="text-[#52ddeb] hover:text-[#52ddeb]/80 underline">Privacy Policy</a>
+              <a href="/privacy" className="text-brand-cyan hover:text-brand-cyan/80 underline">Privacy Policy</a>
               {t('usage.sections.dataUsage.note').split('Privacy Policy')[1]}
             </p>
           </section>
@@ -230,7 +230,7 @@ export const UsagePolicy: React.FC<UsagePolicyProps> = ({ isOpen, onClose }) => 
             <p className="text-zinc-400 mb-2" dangerouslySetInnerHTML={{ __html: `<strong class="text-zinc-300">${t('usage.sections.contact.company')}</strong>` }} />
             <p className="text-zinc-400">
               {t('usage.sections.contact.support').split('contato@visant.co')[0]}
-              <a href="mailto:contato@visant.co" className="text-[#52ddeb] hover:text-[#52ddeb]/80 underline">contato@visant.co</a>
+              <a href="mailto:contato@visant.co" className="text-brand-cyan hover:text-brand-cyan/80 underline">contato@visant.co</a>
               {t('usage.sections.contact.support').split('contato@visant.co')[1]}
             </p>
           </section>

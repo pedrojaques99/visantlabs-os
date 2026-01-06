@@ -3,7 +3,8 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { FormInput } from '../ui/form-input';
 import { Button } from '../ui/button';
 import type { UploadedImage } from '../../types';
-import { X, Loader2, Upload } from 'lucide-react';
+import { X, Upload } from 'lucide-react';
+import { GlitchLoader } from '../ui/GlitchLoader';
 import { getContrastColor } from '../../utils/colorUtils';
 import { budgetApi } from '../../services/budgetApi';
 import { toast } from 'sonner';
@@ -151,7 +152,7 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
         </label>
         {isUploadingLogo ? (
           <div className="flex items-center gap-2 p-4 border border-zinc-800 rounded-xl bg-black/20">
-            <Loader2 className="h-4 w-4 animate-spin text-[#52ddeb]" />
+            <GlitchLoader size={16} color="#52ddeb" />
             <span className="text-sm text-zinc-400 font-mono">
               {t('budget.uploadingLogo') || 'Uploading logo...'}
             </span>
@@ -186,7 +187,7 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
               variant="outline"
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploadingLogo}
-              className="border border-zinc-800 bg-black/20 hover:bg-black/30 text-zinc-200 hover:text-[#52ddeb]"
+              className="border border-zinc-800 bg-black/20 hover:bg-black/30 text-zinc-200 hover:text-brand-cyan"
             >
               <Upload className="h-4 w-4" />
               {t('budget.uploadLogo') || 'Upload Logo'}

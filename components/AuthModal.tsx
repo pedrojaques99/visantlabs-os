@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Loader2 } from 'lucide-react';
+import { X } from 'lucide-react';
+import { GlitchLoader } from './ui/GlitchLoader';
 import { PillButton } from './ui/pill-button';
 import { authService } from '../services/authService';
 import { useTranslation } from '../hooks/useTranslation';
@@ -163,7 +164,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-black/50 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-[#1A1A1A] border border-zinc-800/50 rounded-md p-6 w-full max-w-md mx-4">
+      <div className="bg-zinc-900 border border-zinc-800/50 rounded-md p-6 w-full max-w-md mx-4">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold font-mono text-zinc-200 uppercase">
             {isSignUp ? t('auth.signUp') : t('auth.signIn')}
@@ -187,7 +188,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             >
               {isGoogleLoading ? (
                 <>
-                  <Loader2 size={16} className="animate-spin" />
+                  <GlitchLoader size={16} />
                   {t('auth.signingInWithGoogle')}
                 </>
               ) : (
@@ -255,7 +256,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <button
                 type="button"
                 onClick={() => setShowForgotPassword(true)}
-                className="text-xs text-[#52ddeb] hover:text-[#52ddeb]/80 font-mono mt-1 text-right w-full"
+                className="text-xs text-brand-cyan hover:text-brand-cyan/80 font-mono mt-1 text-right w-full"
               >
                 {t('auth.forgotPassword')}
               </button>
@@ -287,11 +288,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <button
             type="submit"
             disabled={isAuthLoading || !email || !password}
-            className="w-full flex items-center justify-center gap-2 bg-[#52ddeb]/80 hover:bg-[#52ddeb]/90 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
+            className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
           >
             {isAuthLoading ? (
               <>
-                <Loader2 size={16} className="animate-spin" />
+                <GlitchLoader size={16} />
                 {isSignUp ? t('auth.creatingAccount') : t('auth.signingIn')}
               </>
             ) : (
@@ -322,7 +323,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               {t('auth.bySigningUp')}{' '}
               <Link
                 to="/terms"
-                className="text-[#52ddeb] hover:text-[#52ddeb]/80 underline"
+                className="text-brand-cyan hover:text-brand-cyan/80 underline"
                 onClick={(e) => {
                   e.preventDefault();
                   window.history.pushState({}, '', '/terms');
@@ -334,7 +335,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               {' '}{t('auth.and')}{' '}
               <Link
                 to="/privacy"
-                className="text-[#52ddeb] hover:text-[#52ddeb]/80 underline"
+                className="text-brand-cyan hover:text-brand-cyan/80 underline"
                 onClick={(e) => {
                   e.preventDefault();
                   window.history.pushState({}, '', '/privacy');

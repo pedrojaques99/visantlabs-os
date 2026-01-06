@@ -23,7 +23,27 @@ let ai: GoogleGenAI | null = null;
 
 const getAI = (): GoogleGenAI => {
   if (!ai) {
-    const apiKey = (import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_API_KEY || '').trim();
+    // Try process.env first (server-side), then import.meta.env (client-side)
+    let apiKey = '';
+    
+    // Server-side: check process.env
+    if (typeof process !== 'undefined' && process.env) {
+      apiKey = (process.env.GEMINI_API_KEY || process.env.API_KEY || process.env.VITE_GEMINI_API_KEY || process.env.VITE_API_KEY || '').trim();
+    }
+    
+    // Client-side: check import.meta.env if not found in process.env
+    if (!apiKey || apiKey === 'undefined' || apiKey.length === 0) {
+      try {
+        // @ts-ignore - import.meta.env is Vite specific
+        if (typeof import.meta !== 'undefined' && import.meta.env) {
+          // @ts-ignore
+          apiKey = (import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_API_KEY || '').trim();
+        }
+      } catch (e) {
+        // Ignore errors accessing import.meta
+      }
+    }
+    
     if (!apiKey || apiKey === 'undefined' || apiKey.length === 0) {
       throw new Error("GEMINI_API_KEY não encontrada. Verifique o arquivo .env e reinicie o servidor.");
     }
@@ -76,6 +96,45 @@ const detectLanguage = (text: string): 'pt-BR' | 'en-US' => {
   
   // Padrão padrão: inglês
   return 'en-US';
+};
+
+// Strategic system prompt (aligned with chatService.ts)
+const STRATEGIC_SYSTEM_PROMPT = `Strategic Clarity Agent (V2: High-Precision Positioning)
+
+Role
+Strategic Branding & Positioning Architect with expertise in visual branding analysis and art direction. Strip away noise, identify the "Winning Difference," convert ambiguity into strategic roadmap.
+
+Core Principle
+Differentiation requires sacrifice. If a brand choice has no trade-off, it's not strategy—it's a wish list.
+
+Expertise
+- Competitive Defensibility: Why others can't copy the strategy.
+- Category Entry Point: Exact moment customer thinks of the brand.
+- Visual Branding Analysis: Color psychology, typography hierarchy, composition, brand consistency, visual differentiation, emotional resonance.
+- Art Direction: Strategic rationale, camera angles, lighting, styling/props, color harmony, typography integration, background/environment, visual hierarchy.
+
+Guardrails
+- Never suggest "high quality," "innovative," or "customer-centric" (table stakes, not strategy).
+- No fluff: Every sentence must drive a decision.
+- Lead, don't brainstorm.
+- Focus on strategic differentiation, not generic features.
+
+Language Detection (CRITICAL): Always detect the user's message language and respond in the exact same language. If user writes in Portuguese, respond in Portuguese. If in English, respond in English. If in Spanish, respond in Spanish. Maintain language consistency throughout the entire response. Never mix languages in a single response.`;
+
+/**
+ * Combines strategic system prompt with section-specific prompt
+ */
+const buildStrategicPrompt = (sectionPrompt: string, userPrompt: string): string => {
+  return `${STRATEGIC_SYSTEM_PROMPT}
+
+${sectionPrompt}
+
+**CRITICAL INSTRUCTIONS:**
+- Apply strategic thinking: focus on differentiation, trade-offs, and competitive defensibility.
+- Identify the "Winning Difference" - what makes this brand unique and defensible.
+- Avoid generic statements - every insight must drive strategic decisions.
+- Be concise, direct, and decision-focused.
+- Respond in the same language as the brand description.`;
 };
 
 /**
@@ -143,7 +202,7 @@ const extractTokens = (response: any): { inputTokens?: number; outputTokens?: nu
 
 export const generateMarketResearch = async (prompt: string, examples: string[] = []): Promise<{ result: string; inputTokens?: number; outputTokens?: number }> => {
   return withRetry(async () => {
-    let basePrompt = `You are a branding expert. Perform a market benchmarking analysis for the following brand description. Provide a concise, objective benchmarking paragraph that compares the brand with the market and competitors.
+    let sectionPrompt = `Perform a market benchmarking analysis for the following brand description. Provide a concise, objective benchmarking paragraph that compares the brand with the market and competitors.
 
 Brand Description: "${prompt}"
 
@@ -152,6 +211,7 @@ Write a single, objective paragraph of market benchmarking. Focus on:
 - Current market trends and how the brand fits
 - Competitive landscape and differentiation opportunities
 - Market gaps and opportunities
+- Strategic positioning and defensibility
 
 IMPORTANT:
 - Return ONLY the benchmarking text, no markdown, no code blocks, no JSON, no additional formatting
@@ -161,15 +221,16 @@ IMPORTANT:
 - Use natural, humanized language as if explaining to a colleague
 - Avoid unnecessary verbosity, long sentences, and repetitions
 - Focus on essential points only
-- Respond in the same language as the brand description
+- Identify strategic differentiation opportunities, not just market facts
 - DO NOT include introductory phrases like "Here is...", "Aqui está...", "This is...", "Esta é..."
 - Start directly with the benchmarking analysis content`;
 
     if (examples.length > 0) {
-      basePrompt += `\n\nHere are examples of high-quality outputs for this task:\n${examples.join('\n\n')}`;
+      sectionPrompt += `\n\nHere are examples of high-quality outputs for this task:\n${examples.join('\n\n')}`;
     }
 
-    const systemPrompt = addLanguageInstruction(basePrompt, prompt);
+    const strategicPrompt = buildStrategicPrompt(sectionPrompt, prompt);
+    const systemPrompt = addLanguageInstruction(strategicPrompt, prompt);
 
     const response = await getAI().models.generateContent({
       model: 'gemini-2.5-flash',
@@ -233,7 +294,7 @@ export const generateCompetitors = async (prompt: string, marketResearch: string
     ? marketResearch 
     : combineMarketResearch(marketResearch);
   return withRetry(async () => {
-    let basePrompt = `You are a branding expert. Based on the brand description and market research, identify and analyze the main competitors.
+    let sectionPrompt = `Based on the brand description and market research, identify and analyze the main competitors. Focus on strategic differentiation - identify competitors that challenge the brand's unique positioning.
 
 Brand Description: "${prompt}"
 Market Research: "${researchText}"
@@ -242,15 +303,16 @@ Return a JSON object with a single key "competitors" which is an array of compet
 - "name": The competitor's name (string)
 - "url": The competitor's website URL (string, optional but preferred if you know it)
 
-Try to include URLs when possible to facilitate research. If you don't know the exact URL, you can omit it.
+Focus on competitors that are strategically relevant - those that compete for the same positioning or challenge the brand's differentiation. Try to include URLs when possible to facilitate research. If you don't know the exact URL, you can omit it.
 
 Example: {"competitors": [{"name": "Competitor 1", "url": "https://competitor1.com"}, {"name": "Competitor 2", "url": "https://competitor2.com"}, {"name": "Competitor 3"}]}`;
 
     if (examples.length > 0) {
-      basePrompt += `\n\nHere are examples of high-quality outputs for this task:\n${examples.join('\n\n')}`;
+      sectionPrompt += `\n\nHere are examples of high-quality outputs for this task:\n${examples.join('\n\n')}`;
     }
 
-    const systemPrompt = addLanguageInstruction(basePrompt, prompt);
+    const strategicPrompt = buildStrategicPrompt(sectionPrompt, prompt);
+    const systemPrompt = addLanguageInstruction(strategicPrompt, prompt);
 
     const response = await getAI().models.generateContent({
       model: 'gemini-2.5-flash',
@@ -311,17 +373,18 @@ export const generateReferences = async (prompt: string, marketResearch: string 
     ? marketResearch 
     : combineMarketResearch(marketResearch);
   return withRetry(async () => {
-    const basePrompt = `You are a branding expert. Based on the brand description, market research, and competitors, suggest visual references and inspirations.
+    const sectionPrompt = `Based on the brand description, market research, and competitors, suggest visual references and inspirations that support the brand's strategic differentiation.
 
 Brand Description: "${prompt}"
 Market Research: "${researchText}"
 Competitors: ${competitors.join(', ')}
 
-Return a JSON object with a single key "references" which is an array of reference descriptions (strings). These should be visual styles, design directions, or inspirational brands.
+Return a JSON object with a single key "references" which is an array of reference descriptions (strings). These should be visual styles, design directions, or inspirational brands that align with the brand's strategic positioning and help differentiate it from competitors. Focus on references that support the "Winning Difference" - not generic visual trends.
 
 Example: {"references": ["Reference 1", "Reference 2", "Reference 3"]}`;
 
-    const systemPrompt = addLanguageInstruction(basePrompt, prompt);
+    const strategicPrompt = buildStrategicPrompt(sectionPrompt, prompt);
+    const systemPrompt = addLanguageInstruction(strategicPrompt, prompt);
 
     const response = await getAI().models.generateContent({
       model: 'gemini-2.5-flash',
@@ -369,13 +432,21 @@ export const generateSWOT = async (prompt: string, marketResearch: string | Bran
     ? marketResearch 
     : combineMarketResearch(marketResearch);
   return withRetry(async () => {
-    const basePrompt = `You are a branding expert. Perform a SWOT analysis for the following brand.
+    const sectionPrompt = `Perform a SWOT analysis for the following brand. Focus on strategic factors that impact differentiation and competitive defensibility.
 
 Brand Description: "${prompt}"
 Market Research: "${researchText}"
 Competitors: ${competitors.join(', ')}
 
 Return a JSON object with four keys: "strengths", "weaknesses", "opportunities", "threats". Each should be an array of strings.
+
+Focus on:
+- Strengths: What makes this brand defensible and hard to copy
+- Weaknesses: Strategic gaps that prevent differentiation
+- Opportunities: Market gaps that support unique positioning
+- Threats: Competitive forces that challenge the brand's position
+
+Avoid generic statements - focus on strategic factors that drive positioning decisions.
 
 Example: {
   "strengths": ["Strength 1", "Strength 2"],
@@ -384,7 +455,8 @@ Example: {
   "threats": ["Threat 1", "Threat 2"]
 }`;
 
-    const systemPrompt = addLanguageInstruction(basePrompt, prompt);
+    const strategicPrompt = buildStrategicPrompt(sectionPrompt, prompt);
+    const systemPrompt = addLanguageInstruction(strategicPrompt, prompt);
 
     const response = await getAI().models.generateContent({
       model: 'gemini-2.5-flash',
@@ -490,7 +562,7 @@ export const generateColorPalettes = async (prompt: string, swot: any, reference
   outputTokens?: number;
 }> => {
   return withRetry(async () => {
-    const basePrompt = `You are a branding expert and color psychologist. Based on the brand description, SWOT analysis, and references, suggest 2 color palettes.
+    const sectionPrompt = `Based on the brand description, SWOT analysis, and references, suggest 2 color palettes that support the brand's strategic differentiation.
 
 Brand Description: "${prompt}"
 SWOT Analysis: ${JSON.stringify(swot)}
@@ -499,7 +571,9 @@ References: ${references.join(', ')}
 For each palette, provide:
 - A name for the palette
 - 4-6 hex color codes (e.g., #FF5733)
-- A brief explanation of the color psychology and why these colors fit the brand
+- A brief explanation of the color psychology and why these colors fit the brand's strategic positioning
+
+Focus on colors that support the brand's "Winning Difference" - colors that help differentiate from competitors and reinforce the strategic positioning. Avoid generic color choices.
 
 Return a JSON object with a single key "palettes" which is an array of objects, each with "name", "colors" (array of hex strings), and "psychology" (string).
 
@@ -518,7 +592,8 @@ Example: {
   ]
 }`;
 
-    const systemPrompt = addLanguageInstruction(basePrompt, prompt);
+    const strategicPrompt = buildStrategicPrompt(sectionPrompt, prompt);
+    const systemPrompt = addLanguageInstruction(strategicPrompt, prompt);
 
     const response = await getAI().models.generateContent({
       model: 'gemini-2.5-flash',
@@ -601,18 +676,19 @@ Example: {
 
 export const generateVisualElements = async (prompt: string, colorPalettes: any[]): Promise<{ result: string[]; inputTokens?: number; outputTokens?: number }> => {
   return withRetry(async () => {
-    const basePrompt = `You are a branding expert. Based on the brand description and color palettes, suggest visual elements that represent the brand.
+    const sectionPrompt = `Based on the brand description and color palettes, suggest visual elements that represent the brand and support its strategic differentiation.
 
 Brand Description: "${prompt}"
 Color Palettes: ${JSON.stringify(colorPalettes)}
 
-Suggest visual elements like shapes, patterns, icons, or design motifs that would represent this brand well.
+Suggest visual elements like shapes, patterns, icons, or design motifs that would represent this brand well and help differentiate it from competitors. Focus on elements that support the brand's "Winning Difference" - not generic design trends.
 
 Return a JSON object with a single key "elements" which is an array of visual element descriptions (strings).
 
 Example: {"elements": ["Element 1", "Element 2", "Element 3"]}`;
 
-    const systemPrompt = addLanguageInstruction(basePrompt, prompt);
+    const strategicPrompt = buildStrategicPrompt(sectionPrompt, prompt);
+    const systemPrompt = addLanguageInstruction(strategicPrompt, prompt);
 
     const response = await getAI().models.generateContent({
       model: 'gemini-2.5-flash',
@@ -685,7 +761,7 @@ export const generateArchetypes = async (prompt: string, marketResearch: string 
       { id: 12, titulo: "O Bobo", tipo: "Secundário", descricao: "Marcas do arquétipo do Bobo usam humor, leveza e irreverência para quebrar tensão e aproximar pessoas. Não levam a vida tão a sério. Questionam o status quo com brincadeira, ironia e espontaneidade — mas por trás da piada, existe inteligência social.", exemplos: ["Skol", "Budweiser", "Doritos"] }
     ];
 
-    let basePrompt = `You are a branding expert specialized in Carl Jung's archetype theory. Based on the brand description and market research, identify the PRIMARY and SECONDARY archetypes that best represent this brand.
+    let sectionPrompt = `Based on the brand description and market research, identify the PRIMARY and SECONDARY archetypes that best represent this brand's strategic positioning. Focus on archetypes that support differentiation and competitive defensibility.
 
 Available Archetypes:
 ${archetypesRAG.map(a => `- ${a.titulo} (${a.tipo}): ${a.descricao}`).join('\n')}
@@ -729,7 +805,8 @@ IMPORTANT:
       basePrompt += `\n\nHere are examples of high-quality outputs for this task:\n${examples.join('\n\n')}`;
     }
 
-    const systemPrompt = addLanguageInstruction(basePrompt, prompt);
+    const strategicPrompt = buildStrategicPrompt(sectionPrompt, prompt);
+    const systemPrompt = addLanguageInstruction(strategicPrompt, prompt);
 
     const response = await getAI().models.generateContent({
       model: 'gemini-2.5-flash',
@@ -764,17 +841,24 @@ IMPORTANT:
     });
 
     const tokens = extractTokens(response);
-    const jsonString = response.text.trim();
+    let jsonString = response.text.trim();
     if (!jsonString) {
       throw new Error('Empty response from AI');
     }
     
+    // First attempt: direct JSON parse
     try {
       const parsed = JSON.parse(jsonString);
       
-      // Validate structure
-      if (!parsed.primary || !parsed.secondary || !parsed.reasoning) {
-        throw new Error('Invalid response structure');
+      // Validate structure - check if keys exist and are objects/strings
+      if (!parsed.primary || typeof parsed.primary !== 'object' || !parsed.primary.id) {
+        throw new Error('Invalid primary archetype structure');
+      }
+      if (!parsed.secondary || typeof parsed.secondary !== 'object' || !parsed.secondary.id) {
+        throw new Error('Invalid secondary archetype structure');
+      }
+      if (!parsed.reasoning || typeof parsed.reasoning !== 'string') {
+        throw new Error('Invalid reasoning structure');
       }
       
       // Ensure IDs match available archetypes
@@ -782,7 +866,7 @@ IMPORTANT:
       const secondaryArchetype = archetypesRAG.find(a => a.id === parsed.secondary.id);
       
       if (!primaryArchetype || !secondaryArchetype) {
-        throw new Error('Invalid archetype ID');
+        throw new Error(`Invalid archetype ID: primary=${parsed.primary.id}, secondary=${parsed.secondary.id}`);
       }
       
       const result = {
@@ -798,14 +882,65 @@ IMPORTANT:
           description: secondaryArchetype.descricao,
           examples: secondaryArchetype.exemplos,
         },
-        reasoning: parsed.reasoning || '',
+        reasoning: String(parsed.reasoning || '').trim(),
       };
       
       return { result, ...tokens };
     } catch (e) {
-      console.error("Failed to parse archetypes JSON:", e);
-      throw new Error('Failed to parse archetypes response');
+      console.warn("First JSON parse attempt failed, trying to fix JSON:", e);
     }
+    
+    // Second attempt: try to fix common JSON issues
+    try {
+      const fixedJson = fixJsonString(jsonString);
+      const parsed = JSON.parse(fixedJson);
+      
+      // Validate structure
+      if (!parsed.primary || typeof parsed.primary !== 'object' || !parsed.primary.id) {
+        throw new Error('Invalid primary archetype structure after fix');
+      }
+      if (!parsed.secondary || typeof parsed.secondary !== 'object' || !parsed.secondary.id) {
+        throw new Error('Invalid secondary archetype structure after fix');
+      }
+      if (!parsed.reasoning || typeof parsed.reasoning !== 'string') {
+        throw new Error('Invalid reasoning structure after fix');
+      }
+      
+      // Ensure IDs match available archetypes
+      const primaryArchetype = archetypesRAG.find(a => a.id === parsed.primary.id);
+      const secondaryArchetype = archetypesRAG.find(a => a.id === parsed.secondary.id);
+      
+      if (!primaryArchetype || !secondaryArchetype) {
+        throw new Error(`Invalid archetype ID after fix: primary=${parsed.primary.id}, secondary=${parsed.secondary.id}`);
+      }
+      
+      const result = {
+        primary: {
+          id: parsed.primary.id,
+          title: primaryArchetype.titulo,
+          description: primaryArchetype.descricao,
+          examples: primaryArchetype.exemplos,
+        },
+        secondary: {
+          id: parsed.secondary.id,
+          title: secondaryArchetype.titulo,
+          description: secondaryArchetype.descricao,
+          examples: secondaryArchetype.exemplos,
+        },
+        reasoning: String(parsed.reasoning || '').trim(),
+      };
+      
+      console.warn("Used fixed JSON to parse archetypes");
+      return { result, ...tokens };
+    } catch (e) {
+      console.error("Fixed JSON parse attempt failed:", e);
+    }
+    
+    // Final error: log details and throw
+    console.error("Failed to parse archetypes JSON after all attempts. JSON string length:", jsonString.length);
+    console.error("First 500 chars of JSON:", jsonString.substring(0, 500));
+    console.error("Last 500 chars of JSON:", jsonString.substring(Math.max(0, jsonString.length - 500)));
+    throw new Error(`Failed to parse archetypes response: Invalid response structure`);
   });
 };
 
@@ -822,7 +957,7 @@ export const generatePersona = async (prompt: string, marketResearch: string | B
     ? marketResearch 
     : combineMarketResearch(marketResearch);
   return withRetry(async () => {
-    const basePrompt = `You are a branding expert. Create a detailed persona for the target audience of this brand.
+    const sectionPrompt = `Create a detailed persona for the target audience of this brand. Focus on the persona that aligns with the brand's strategic positioning and "Winning Difference".
 
 Brand Description: "${prompt}"
 Market Research: "${researchText}"
@@ -845,7 +980,8 @@ Example: {
   "pains": ["Pain 1", "Pain 2"]
 }`;
 
-    const systemPrompt = addLanguageInstruction(basePrompt, prompt);
+    const strategicPrompt = buildStrategicPrompt(sectionPrompt, prompt);
+    const systemPrompt = addLanguageInstruction(strategicPrompt, prompt);
 
     const response = await getAI().models.generateContent({
       model: 'gemini-2.5-flash',
@@ -887,7 +1023,7 @@ Example: {
 
 export const generateMockupIdeas = async (prompt: string, allData: BrandingData, examples: string[] = []): Promise<{ result: string[]; inputTokens?: number; outputTokens?: number }> => {
   return withRetry(async () => {
-    let basePrompt = `You are a branding expert. Based on all the branding information, suggest mockup ideas that would be coherent with this brand segment.
+    let sectionPrompt = `Based on all the branding information, suggest mockup ideas that would be coherent with this brand segment and showcase its strategic differentiation.
 
 Brand Description: "${prompt}"
 Branding Data: ${JSON.stringify(allData, null, 2)}
@@ -902,7 +1038,8 @@ Example: {"mockups": ["Mockup idea 1", "Mockup idea 2", "Mockup idea 3"]}`;
       basePrompt += `\n\nHere are examples of high-quality outputs for this task:\n${examples.join('\n\n')}`;
     }
 
-    const systemPrompt = addLanguageInstruction(basePrompt, prompt);
+    const strategicPrompt = buildStrategicPrompt(sectionPrompt, prompt);
+    const systemPrompt = addLanguageInstruction(strategicPrompt, prompt);
 
     const response = await getAI().models.generateContent({
       model: 'gemini-2.5-flash',
@@ -946,7 +1083,7 @@ export const generateMoodboard = async (prompt: string, allData: BrandingData): 
   outputTokens?: number;
 }> => {
   return withRetry(async () => {
-    const basePrompt = `You are a branding expert. Based on all the branding information, create a comprehensive moodboard that synthesizes the brand's visual identity and direction.
+    const sectionPrompt = `Based on all the branding information, create a comprehensive moodboard that synthesizes the brand's visual identity and direction, emphasizing strategic differentiation.
 
 Brand Description: "${prompt}"
 Branding Data: ${JSON.stringify(allData, null, 2)}
@@ -974,7 +1111,8 @@ Example: {
   "keyElements": ["Geometric patterns", "Natural textures", "Bold typography"]
 }`;
 
-    const systemPrompt = addLanguageInstruction(basePrompt, prompt);
+    const strategicPrompt = buildStrategicPrompt(sectionPrompt, prompt);
+    const systemPrompt = addLanguageInstruction(strategicPrompt, prompt);
 
     const response = await getAI().models.generateContent({
       model: 'gemini-2.5-flash',

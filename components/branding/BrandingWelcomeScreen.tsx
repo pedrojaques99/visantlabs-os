@@ -67,7 +67,7 @@ export const BrandingWelcomeScreen: React.FC<BrandingWelcomeScreenProps> = ({
           <div className="space-y-4">
             <h1 className={`text-2xl md:text-3xl font-regular font-mono tracking-wider flex items-center justify-center gap-2 ${theme === 'dark' ? 'text-zinc-200' : 'text-zinc-800'
               }`}>
-              BRANDING MACHINE® <span className="text-[#52ddeb] text-sm">v1.0</span>
+              BRANDING MACHINE® <span className="text-brand-cyan text-sm">v1.0</span>
             </h1>
           </div>
 

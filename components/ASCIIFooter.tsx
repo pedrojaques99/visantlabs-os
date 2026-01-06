@@ -123,7 +123,7 @@ export default function ASCIIFooter({
                         className="fixed inset-0 z-[60]" 
                         onClick={() => setIsPoliciesMenuOpen(false)}
                       />
-                      <div className="absolute bottom-full right-0 mb-2 bg-[#1A1A1A] border border-zinc-800/50 rounded-md shadow-lg z-[70] min-w-[120px]">
+                      <div className="absolute bottom-full right-0 mb-2 bg-zinc-900 border border-zinc-800/50 rounded-md shadow-lg z-[70] min-w-[120px]">
                         {onTermsClick && (
                           <button
                             onClick={() => handlePolicyClick(onTermsClick)}
@@ -170,7 +170,7 @@ export default function ASCIIFooter({
                     className="fixed inset-0 z-[60]" 
                     onClick={() => setIsLanguageMenuOpen(false)}
                   />
-                  <div className="absolute bottom-full right-0 mb-2 bg-[#1A1A1A] border border-zinc-800/50 rounded-md shadow-lg z-[70] min-w-[100px]">
+                  <div className="absolute bottom-full right-0 mb-2 bg-zinc-900 border border-zinc-800/50 rounded-md shadow-lg z-[70] min-w-[100px]">
                     <button
                       onClick={() => handleLocaleChange('en-US')}
                       className="w-full text-left px-3 py-1.5 text-[10px] font-mono transition-colors cursor-pointer text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50"

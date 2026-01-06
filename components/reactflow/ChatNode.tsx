@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, memo, useCallback, useMemo } from 'react';
 import { Handle, Position, type NodeProps, NodeResizer, useReactFlow } from '@xyflow/react';
-import { Send, MessageSquare, X, FileText, Image as ImageIcon, CheckCircle2, Target, ChevronDown, ChevronUp, Sparkles, Plus, Wand2, Layers, Paperclip } from 'lucide-react';
-import { Spinner } from '../ui/Spinner';
+import { Send, MessageSquare, X, FileText, Image as ImageIcon, CheckCircle2, Target, ChevronDown, ChevronUp, Sparkles, Plus, Wand2, Layers, Paperclip, Copy, Check, Settings2 } from 'lucide-react';
+import { GlitchLoader } from '../ui/GlitchLoader';
 import type { ChatNodeData, FlowNodeType } from '../../types/reactFlow';
 import { cn } from '../../lib/utils';
 import { NodeContainer } from './shared/NodeContainer';
@@ -86,7 +86,7 @@ const getActionIcon = (type: DetectedAction['type']) => {
 const getActionColor = (type: DetectedAction['type']) => {
   switch (type) {
     case 'prompt': return 'text-purple-400 border-purple-400/30 bg-purple-400/10 hover:bg-purple-400/20';
-    case 'mockup': return 'text-[#52ddeb] border-[#52ddeb]/30 bg-[#52ddeb]/10 hover:bg-[#52ddeb]/20';
+    case 'mockup': return 'text-brand-cyan border-[#52ddeb]/30 bg-brand-cyan/10 hover:bg-brand-cyan/20';
     case 'strategy': return 'text-amber-400 border-amber-400/30 bg-amber-400/10 hover:bg-amber-400/20';
     case 'text': return 'text-green-400 border-green-400/30 bg-green-400/10 hover:bg-green-400/20';
     default: return 'text-zinc-400 border-zinc-400/30 bg-zinc-400/10 hover:bg-zinc-400/20';
@@ -163,12 +163,12 @@ const ActionDetector = ({
   if (actions.length === 0) return null;
 
   return (
-    <div className="mt-3 pt-3 border-t border-zinc-700/30 space-y-2">
-      <div className="text-[10px] font-mono text-[#52ddeb]/70 flex items-center gap-1 mb-1">
-        <Sparkles size={10} className="animate-pulse" />
-        <span>{t('canvasNodes.chatNode.detectedActions') || 'Detected Actions'}</span>
+    <div className="mt-4 pt-3 border-t border-zinc-700/20 space-y-2.5 min-w-0">
+      <div className="text-[10px] font-mono text-brand-cyan/80 flex items-center gap-1.5 mb-2 min-w-0">
+        <Sparkles size={11} className="animate-pulse text-brand-cyan shrink-0" />
+        <span className="uppercase tracking-wider truncate">{t('canvasNodes.chatNode.detectedActions') || 'Detected Actions'}</span>
       </div>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 min-w-0">
         {actions.map((action, i) => (
           <button
             key={i}
@@ -177,14 +177,15 @@ const ActionDetector = ({
               handleActionClick(action);
             }}
             className={cn(
-              "flex items-center gap-1.5 px-2 py-1 border rounded text-[10px] transition-all group animate-in fade-in slide-in-from-bottom-1 duration-300 nodrag",
+              "flex items-center gap-1.5 px-2.5 py-1.5 border rounded-md text-[10px] transition-all group animate-in fade-in slide-in-from-bottom-1 duration-300 nodrag",
+              "backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98]",
               getActionColor(action.type)
             )}
             style={{ animationDelay: `${i * 50}ms` }}
             title={action.description}
           >
             {getActionIcon(action.type)}
-            <span className="max-w-[180px] truncate">{action.title}</span>
+            <span className="max-w-[180px] truncate font-medium">{action.title}</span>
             <Plus size={8} className="opacity-50 group-hover:opacity-100 group-hover:scale-125 transition-all" />
           </button>
         ))}
@@ -211,7 +212,7 @@ const QuickActionsPanel = ({
 }) => {
   const quickActions = [
     { type: 'prompt' as FlowNodeType, label: 'Prompt', icon: <Wand2 size={12} />, color: 'text-purple-400' },
-    { type: 'mockup' as FlowNodeType, label: 'Mockup', icon: <Layers size={12} />, color: 'text-[#52ddeb]' },
+    { type: 'mockup' as FlowNodeType, label: 'Mockup', icon: <Layers size={12} />, color: 'text-brand-cyan' },
     { type: 'strategy' as FlowNodeType, label: 'Strategy', icon: <Target size={12} />, color: 'text-amber-400' },
     { type: 'text' as FlowNodeType, label: 'Text', icon: <FileText size={12} />, color: 'text-green-400' },
   ];
@@ -231,8 +232,9 @@ const QuickActionsPanel = ({
           onClick={() => handleQuickAction(action.type)}
           disabled={isLoading}
           className={cn(
-            "p-1.5 rounded border border-zinc-700/30 transition-all hover:border-zinc-600/50 disabled:opacity-50 nodrag",
-            "bg-zinc-900/50 hover:bg-zinc-800/50",
+            "p-2 rounded-md border border-zinc-700/40 transition-all hover:border-zinc-600/60 disabled:opacity-50 nodrag",
+            "bg-zinc-900/60 hover:bg-zinc-800/70 backdrop-blur-sm",
+            "hover:scale-105 active:scale-95 shadow-sm hover:shadow-md",
             action.color
           )}
           title={`Create ${action.label} Node`}
@@ -257,6 +259,9 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
   const [inputMessage, setInputMessage] = useState('');
   const messagesAreaRef = useRef<HTMLDivElement>(null);
   const mediaInputRef = useRef<HTMLInputElement>(null);
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  const [showSystemPromptEditor, setShowSystemPromptEditor] = useState(false);
+  const [systemPrompt, setSystemPrompt] = useState(nodeData.systemPrompt || '');
   const isLoading = nodeData.isLoading || false;
   const model = nodeData.model || 'gemini-2.5-flash';
   const userMessageCount = nodeData.userMessageCount || 0;
@@ -315,10 +320,34 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
 
   const [expandedStrategy, setExpandedStrategy] = useState(false);
 
+  // Sync system prompt from nodeData
+  useEffect(() => {
+    setSystemPrompt(nodeData.systemPrompt || '');
+  }, [nodeData.systemPrompt]);
+
+  // Save system prompt
+  const handleSaveSystemPrompt = useCallback(() => {
+    if (nodeData.onUpdateData) {
+      nodeData.onUpdateData(nodeId, { systemPrompt: systemPrompt.trim() || undefined });
+      setShowSystemPromptEditor(false);
+      toast.success(t('canvasNodes.chatNode.systemPromptSaved') || 'System prompt saved', { duration: 2000 });
+    }
+  }, [nodeId, nodeData, systemPrompt, t]);
+
+  // Reset to default system prompt
+  const handleResetSystemPrompt = useCallback(() => {
+    if (nodeData.onUpdateData) {
+      nodeData.onUpdateData(nodeId, { systemPrompt: undefined });
+      setSystemPrompt('');
+      setShowSystemPromptEditor(false);
+      toast.success(t('canvasNodes.chatNode.systemPromptReset') || 'System prompt reset to default', { duration: 2000 });
+    }
+  }, [nodeId, nodeData, t]);
+
   const handleSuggestMockups = useCallback(() => {
     if (isLoading || !nodeData.onSendMessage) return;
     
-    const message = "Sugira 5 mockups criativos e específicos para esta marca com base no contexto. Descreva cada um detalhadamente no formato: 'Título: Descrição detalhada'.";
+    const message = "Suggest 5 creative and specific mockups for this brand based on the context. For each mockup, create a detailed prompt following this structure: camera positioning, main object, screen content (if applicable), textures and materials, color palette and aesthetics, lighting and environment, and photographic style. Use the format **[ACTION:prompt]** with detailed descriptions in a single continuous paragraph.";
     setInputMessage(message);
     
     // We need to use the current state values because setInputMessage is async
@@ -361,6 +390,18 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
       handleSend();
     }
   };
+
+  const handleCopyMessage = useCallback(async (messageId: string, content: string) => {
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopiedMessageId(messageId);
+      toast.success(t('canvasNodes.chatNode.messageCopied') || 'Message copied to clipboard', { duration: 2000 });
+      setTimeout(() => setCopiedMessageId(null), 2000);
+    } catch (error) {
+      console.error('Failed to copy message:', error);
+      toast.error(t('canvasNodes.chatNode.copyFailed') || 'Failed to copy message', { duration: 3000 });
+    }
+  }, [t]);
 
   const handleImageRemove = useCallback((index: number) => {
     const handleMap: Record<number, 'input-1' | 'input-2' | 'input-3' | 'input-4'> = {
@@ -514,14 +555,16 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         style={{ left: '50%', marginLeft: -3 }}
       />
 
-      <div className="flex flex-col h-full min-w-[500px] min-h-[600px] overflow-hidden max-h-[inherit]">
+      <div className="flex flex-col h-full w-full min-h-[600px] overflow-hidden max-h-[inherit]">
         {/* Header */}
-        <div className="flex items-center justify-between p-3 border-b border-zinc-700/50">
-          <div className="flex items-center gap-2">
-            <MessageSquare size={18} className="text-[#52ddeb]" />
-            <h3 className="text-sm font-semibold text-zinc-300 font-mono">{t('canvasNodes.chatNode.title')}</h3>
+        <div className="flex items-center justify-between p-4 border-b border-zinc-700/30 bg-gradient-to-r from-zinc-900/40 to-zinc-900/20 backdrop-blur-sm min-w-0 nodrag">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <div className="p-1.5 rounded-md bg-brand-cyan/10 border border-brand-cyan/20 shrink-0">
+              <MessageSquare size={16} className="text-brand-cyan" />
+            </div>
+            <h3 className="text-sm font-semibold text-zinc-200 font-mono tracking-tight truncate">{t('canvasNodes.chatNode.title')}</h3>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             {/* Quick Actions Panel */}
             <QuickActionsPanel
               nodeId={nodeId}
@@ -530,10 +573,21 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
               isLoading={isLoading}
               t={t}
             />
+            {/* System Prompt Settings Button */}
+            <button
+              onClick={() => setShowSystemPromptEditor(!showSystemPromptEditor)}
+              className={cn(
+                "p-2 rounded-md border transition-all bg-zinc-900/60 border-zinc-700/40 text-zinc-400 hover:border-zinc-600/60 hover:text-zinc-200 hover:bg-zinc-800/70 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95 nodrag",
+                showSystemPromptEditor && "border-brand-cyan/50 text-brand-cyan bg-brand-cyan/10"
+              )}
+              title={t('canvasNodes.chatNode.systemPromptSettings') || 'System Prompt Settings'}
+            >
+              <Settings2 size={14} />
+            </button>
             {messages.length > 0 && nodeData.onClearHistory && (
               <button
                 onClick={() => nodeData.onClearHistory!(nodeId)}
-                className="p-1.5 rounded border transition-all bg-zinc-900/50 border-zinc-700/30 text-zinc-400 hover:border-zinc-600/50 hover:text-zinc-300 nodrag"
+                className="p-2 rounded-md border transition-all bg-zinc-900/60 border-zinc-700/40 text-zinc-400 hover:border-zinc-600/60 hover:text-zinc-200 hover:bg-zinc-800/70 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95 nodrag"
                 title={t('canvasNodes.chatNode.clearHistory')}
               >
                 <X size={14} />
@@ -542,19 +596,58 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
           </div>
         </div>
 
+        {/* System Prompt Editor */}
+        {showSystemPromptEditor && (
+          <div className="px-4 py-3 border-b border-zinc-700/30 bg-gradient-to-r from-zinc-900/50 to-zinc-900/30 backdrop-blur-sm animate-in slide-in-from-top-1 duration-200 nodrag">
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-mono text-zinc-300 font-semibold uppercase tracking-wider">
+                {t('canvasNodes.chatNode.systemPrompt') || 'System Prompt (Agent Personality)'}
+              </label>
+              <div className="flex items-center gap-2">
+                {systemPrompt && (
+                  <button
+                    onClick={handleResetSystemPrompt}
+                    className="text-[10px] px-2 py-1 rounded border border-zinc-600/40 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500/60 transition-all nodrag"
+                  >
+                    {t('canvasNodes.chatNode.resetToDefault') || 'Reset to Default'}
+                  </button>
+                )}
+                <button
+                  onClick={handleSaveSystemPrompt}
+                  className="text-[10px] px-2 py-1 rounded bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan hover:bg-brand-cyan/30 transition-all nodrag"
+                >
+                  {t('canvasNodes.chatNode.save') || 'Save'}
+                </button>
+              </div>
+            </div>
+            <AutoResizeTextarea
+              value={systemPrompt}
+              onChange={(e) => setSystemPrompt(e.target.value)}
+              placeholder={t('canvasNodes.chatNode.systemPromptPlaceholder') || 'Enter custom system prompt to personalize the agent personality. Leave empty to use default.'}
+              className="resize-none nodrag nopan bg-zinc-900/60 border-zinc-700/40 focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 backdrop-blur-sm text-xs font-mono min-h-[120px] max-h-[300px]"
+              minHeight={120}
+              maxHeight={300}
+              disabled={isLoading}
+            />
+            <p className="text-[10px] text-zinc-500 mt-2 font-mono">
+              {t('canvasNodes.chatNode.systemPromptHint') || 'This prompt defines how the AI assistant behaves. Use it to customize tone, style, and expertise.'}
+            </p>
+          </div>
+        )}
+
         {/* Credit Indicator */}
-        <div className="p-2 border-b border-zinc-700/50 bg-zinc-900/30">
-          <div className="flex items-center justify-between text-xs mb-1">
-            <span className="text-zinc-400 font-mono">
-              {t('canvasNodes.chatNode.messages')}: {userMessageCount}
+        <div className="px-4 py-2.5 border-b border-zinc-700/30 bg-gradient-to-r from-zinc-900/50 to-zinc-900/30 backdrop-blur-sm nodrag">
+          <div className="flex items-center justify-between text-xs mb-2">
+            <span className="text-zinc-300 font-mono font-medium">
+              {t('canvasNodes.chatNode.messages')}: <span className="text-brand-cyan">{userMessageCount}</span>
             </span>
-            <span className="text-zinc-500 font-mono">
+            <span className="text-zinc-400 font-mono text-[10px]">
               {t('canvasNodes.chatNode.nextCreditIn')} {messagesUntilNextCredit} {messagesUntilNextCredit > 1 ? t('canvasNodes.chatNode.messagesPlural') : t('canvasNodes.chatNode.message')}
             </span>
           </div>
-          <div className="h-1 bg-zinc-800/50 rounded-full overflow-hidden">
+          <div className="h-1.5 bg-zinc-800/40 rounded-full overflow-hidden shadow-inner">
             <div
-              className="h-full bg-[#52ddeb] transition-all duration-300"
+              className="h-full bg-gradient-to-r from-brand-cyan to-brand-cyan/80 transition-all duration-500 ease-out shadow-sm"
               style={{ width: `${((userMessageCount % 4) / 4) * 100}%` }}
             />
           </div>
@@ -563,20 +656,26 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         {/* Messages Area */}
         <div
           ref={messagesAreaRef}
-          className="flex-1 p-4 overflow-y-auto space-y-4 min-h-0 scroll-smooth"
+          className="flex-1 p-4 overflow-y-auto overflow-x-hidden space-y-4 min-h-0 min-w-0 scroll-smooth bg-gradient-to-b from-transparent via-zinc-900/10 to-transparent nodrag"
           onWheel={(e) => e.stopPropagation()}
         >
           {messages.length === 0 ? (
-            <div className="text-center text-sm text-muted-foreground py-8">
+            <div className="text-center text-sm text-muted-foreground py-12">
               {hasContext ? (
-                <div className="space-y-2">
-                  <p>{t('canvasNodes.chatNode.startConversationWithContext')}</p>
-                  <p className="text-xs">{t('canvasNodes.chatNode.chatWillUseImagesAndTexts')}</p>
+                <div className="space-y-3">
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-brand-cyan/10 border border-brand-cyan/20 mb-2">
+                    <MessageSquare size={20} className="text-brand-cyan/70" />
+                  </div>
+                  <p className="text-zinc-300 font-medium">{t('canvasNodes.chatNode.startConversationWithContext')}</p>
+                  <p className="text-xs text-zinc-500">{t('canvasNodes.chatNode.chatWillUseImagesAndTexts')}</p>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  <p>{t('canvasNodes.chatNode.startConversationWithAI')}</p>
-                  <p className="text-xs">{t('canvasNodes.chatNode.connectImagesOrTexts')}</p>
+                <div className="space-y-3">
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-zinc-800/50 border border-zinc-700/30 mb-2">
+                    <MessageSquare size={20} className="text-zinc-500" />
+                  </div>
+                  <p className="text-zinc-300 font-medium">{t('canvasNodes.chatNode.startConversationWithAI')}</p>
+                  <p className="text-xs text-zinc-500">{t('canvasNodes.chatNode.connectImagesOrTexts')}</p>
                 </div>
               )}
             </div>
@@ -591,18 +690,39 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
               >
                 <Card
                   className={cn(
-                    "max-w-[85%] p-3",
+                    "max-w-[85%] min-w-0 p-3.5 rounded-lg shadow-sm relative group nodrag",
                     msg.role === 'user'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted border-zinc-700/50'
+                      ? 'bg-primary text-primary-foreground border-primary/20'
+                      : 'bg-muted/80 border-zinc-700/40 backdrop-blur-sm'
                   )}
                 >
-                  <CardContent className="p-0">
-                    <div className="text-sm break-words leading-relaxed">
+                  {/* Copy button - appears on hover */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCopyMessage(msg.id, msg.content);
+                    }}
+                    className={cn(
+                      "absolute top-2 right-2 p-1.5 rounded-md transition-all opacity-0 group-hover:opacity-100",
+                      "backdrop-blur-sm shadow-sm hover:shadow-md nodrag",
+                      msg.role === 'user'
+                        ? 'bg-primary/20 hover:bg-primary/30 text-primary-foreground/80 hover:text-primary-foreground'
+                        : 'bg-zinc-800/60 hover:bg-zinc-700/80 text-zinc-300 hover:text-zinc-100'
+                    )}
+                    title={t('canvasNodes.chatNode.copyMessage') || 'Copy message'}
+                  >
+                    {copiedMessageId === msg.id ? (
+                      <Check size={14} className="text-green-400" />
+                    ) : (
+                      <Copy size={14} />
+                    )}
+                  </button>
+                  <CardContent className="p-0 min-w-0 select-text">
+                    <div className="text-sm break-words leading-relaxed min-w-0 select-text">
                       {msg.role === 'assistant' ? (
-                        <MarkdownRenderer content={msg.content} preserveLines className="font-sans" />
+                        <MarkdownRenderer content={msg.content} preserveLines className="font-sans select-text" />
                       ) : (
-                        <p className="whitespace-pre-wrap">{msg.content}</p>
+                        <p className="whitespace-pre-wrap select-text">{msg.content}</p>
                       )}
                     </div>
                     {msg.role === 'assistant' && (nodeData.onAddPromptNode || nodeData.onCreateNode) && (
@@ -621,9 +741,9 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
           )}
           {isLoading && (
             <div className="flex justify-start">
-              <Card className="bg-muted max-w-[85%] p-3">
-                <CardContent className="p-0 flex items-center gap-2">
-                  <Spinner size={16} color="currentColor" />
+              <Card className="bg-muted/80 border-zinc-700/40 max-w-[85%] min-w-0 p-3.5 rounded-lg backdrop-blur-sm shadow-sm nodrag">
+                <CardContent className="p-0 flex items-center gap-2.5 min-w-0">
+                  <GlitchLoader size={16} color="currentColor" />
                   <span className="text-sm text-muted-foreground">{t('canvasNodes.chatNode.thinking')}</span>
                 </CardContent>
               </Card>
@@ -633,31 +753,31 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
 
         {/* Compact Context Preview at the bottom */}
         {hasContext && (
-          <div className="px-3 py-2 border-t border-zinc-700/30 bg-zinc-900/30">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3 overflow-x-auto py-0.5">
-                <div className="flex items-center gap-1 text-[10px] text-zinc-500 font-mono shrink-0 uppercase tracking-wider border-r border-zinc-700/50 pr-2 mr-1">
-                  <CheckCircle2 size={10} className="text-[#52ddeb]" />
-                  <span>{t('canvasNodes.chatNode.context')}</span>
+          <div className="px-4 py-3 border-t border-zinc-700/30 bg-gradient-to-r from-zinc-900/40 to-zinc-900/20 backdrop-blur-sm min-w-0 nodrag">
+            <div className="flex items-center justify-between gap-4 min-w-0">
+              <div className="flex items-center gap-3 overflow-x-auto py-0.5 min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 text-[10px] text-zinc-400 font-mono shrink-0 uppercase tracking-wider border-r border-zinc-700/40 pr-3 mr-1">
+                  <CheckCircle2 size={11} className="text-brand-cyan" />
+                  <span className="font-medium">{t('canvasNodes.chatNode.context')}</span>
                 </div>
                 
                 {connectedImages.length > 0 && (
-                  <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#52ddeb]/5 border border-[#52ddeb]/20 rounded-full shrink-0">
-                    <ImageIcon size={10} className="text-[#52ddeb]" />
-                    <span className="text-[10px] text-[#52ddeb] font-mono font-bold">{connectedImages.length}</span>
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-brand-cyan/10 border border-brand-cyan/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm">
+                    <ImageIcon size={11} className="text-brand-cyan" />
+                    <span className="text-[10px] text-brand-cyan font-mono font-bold">{connectedImages.length}</span>
                   </div>
                 )}
                 
                 {connectedText && (
-                  <div className="flex items-center gap-1.5 px-2 py-0.5 bg-purple-500/5 border border-purple-500/20 rounded-full shrink-0">
-                    <FileText size={10} className="text-purple-400" />
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-purple-500/10 border border-purple-500/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm">
+                    <FileText size={11} className="text-purple-400" />
                     <span className="text-[10px] text-purple-400 font-mono font-bold">{connectedText.length}</span>
                   </div>
                 )}
                 
                 {connectedStrategyData && (
-                  <div className="flex items-center gap-1.5 px-2 py-0.5 bg-amber-500/5 border border-amber-500/20 rounded-full shrink-0">
-                    <Target size={10} className="text-amber-400" />
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm">
+                    <Target size={11} className="text-amber-400" />
                     <span className="text-[10px] text-amber-400 font-mono font-bold">{strategySections.length}</span>
                   </div>
                 )}
@@ -667,15 +787,15 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                 <button
                   onClick={handleSuggestMockups}
                   disabled={isLoading}
-                  className="flex items-center gap-1.5 px-2 py-1 bg-[#52ddeb]/10 hover:bg-[#52ddeb]/20 border border-[#52ddeb]/30 rounded text-[10px] text-[#52ddeb] transition-all disabled:opacity-50 font-mono uppercase tracking-tighter nodrag"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/40 rounded-md text-[10px] text-brand-cyan transition-all disabled:opacity-50 font-mono uppercase tracking-tighter nodrag backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
                 >
-                  <Sparkles size={10} />
+                  <Sparkles size={11} />
                   <span>{t('canvasNodes.chatNode.suggestMockups')}</span>
                 </button>
                 
                 <button
                   onClick={() => setExpandedStrategy(!expandedStrategy)}
-                  className="p-1 text-zinc-500 hover:text-zinc-300 transition-colors nodrag"
+                  className="p-1.5 text-zinc-500 hover:text-zinc-300 transition-all rounded-md hover:bg-zinc-800/50 nodrag"
                   title="Toggle details"
                 >
                   {expandedStrategy ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
@@ -685,10 +805,10 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
 
             {/* Expanded Details */}
             {expandedStrategy && (
-              <div className="mt-2 pt-2 border-t border-zinc-700/20 space-y-3 animate-in slide-in-from-bottom-1 duration-200">
+              <div className="mt-3 pt-3 border-t border-zinc-700/20 space-y-3 animate-in slide-in-from-bottom-1 duration-200">
                 {/* Images Preview */}
                 {connectedImages.length > 0 && (
-                  <div className="bg-zinc-900/50 p-1.5 rounded border border-[#52ddeb]/10">
+                  <div className="bg-zinc-900/60 p-2 rounded-lg border border-brand-cyan/20 backdrop-blur-sm shadow-sm">
                     <ConnectedImagesDisplay
                       images={connectedImages}
                       label=""
@@ -700,17 +820,17 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                 )}
                 
                 {/* Text & Strategy simplified list */}
-                <div className="flex flex-col gap-1.5">
+                <div className="flex flex-col gap-2">
                   {connectedText && (
-                    <div className="text-[10px] text-zinc-400 font-mono line-clamp-2 bg-purple-500/5 p-1.5 rounded border border-purple-500/10">
-                      <span className="text-purple-400 mr-1 uppercase">Text:</span>
+                    <div className="text-[10px] text-zinc-300 font-mono line-clamp-2 bg-purple-500/10 p-2 rounded-md border border-purple-500/20 backdrop-blur-sm">
+                      <span className="text-purple-400 mr-1.5 uppercase font-semibold">Text:</span>
                       {connectedText}
                     </div>
                   )}
                   {connectedStrategyData && (
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-wrap gap-1.5">
                       {strategySections.map((s, i) => (
-                        <span key={i} className="text-[9px] px-1.5 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded font-mono uppercase">
+                        <span key={i} className="text-[9px] px-2 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-md font-mono uppercase backdrop-blur-sm shadow-sm">
                           {s}
                         </span>
                       ))}
@@ -723,7 +843,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         )}
 
         {/* Input Area */}
-        <div className="p-3 border-t border-zinc-700/50 bg-zinc-900/50 relative z-10">
+        <div className="p-4 border-t border-zinc-700/30 bg-gradient-to-r from-zinc-900/60 to-zinc-900/40 backdrop-blur-sm relative z-10 nodrag">
           {/* Hidden file input for media attachment */}
           <input
             ref={mediaInputRef}
@@ -732,7 +852,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
             onChange={handleMediaFileChange}
             className="hidden"
           />
-          <div className="flex gap-2">
+          <div className="flex gap-2.5 min-w-0">
             {/* Attach Media Button */}
             {(nodeData.onAttachMedia || nodeData.onCreateNode) && (
               <Button
@@ -740,7 +860,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                 disabled={isLoading}
                 size="icon"
                 variant="outline"
-                className="self-end shrink-0 border-zinc-700/50 hover:border-[#52ddeb]/50 hover:bg-[#52ddeb]/10 text-zinc-400 hover:text-[#52ddeb] nodrag"
+                className="self-end shrink-0 border-zinc-700/50 hover:border-brand-cyan/50 hover:bg-brand-cyan/10 text-zinc-400 hover:text-brand-cyan nodrag backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95 transition-all"
                 title={t('canvasNodes.chatNode.attachMedia') || 'Attach Image'}
               >
                 <Paperclip className="w-4 h-4" />
@@ -751,7 +871,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={hasContext ? t('canvasNodes.chatNode.askAboutContext') : t('canvasNodes.chatNode.typeYourMessage')}
-              className="resize-none nodrag nopan"
+              className="resize-none nodrag nopan bg-zinc-900/60 border-zinc-700/40 focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 backdrop-blur-sm min-w-0 flex-1"
               minHeight={60}
               maxHeight={200}
               disabled={isLoading}
@@ -760,7 +880,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
               onClick={handleSend}
               disabled={!inputMessage.trim() || isLoading}
               size="icon"
-              className="self-end shrink-0 nodrag"
+              className="self-end shrink-0 nodrag bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-brand-cyan/40 text-brand-cyan hover:text-brand-cyan shadow-sm hover:shadow-md hover:scale-105 active:scale-95 transition-all backdrop-blur-sm"
             >
               <Send className="w-4 h-4" />
             </Button>

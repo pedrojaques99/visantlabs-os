@@ -28,6 +28,7 @@ import { mockupApi } from '../../services/mockupApi';
 import { videoApi } from '../../services/videoApi';
 import { extractBrandIdentity } from '../../services/brandIdentityService';
 import { getPreset, getPresetAsync, loadReferenceImage } from '../../services/mockupPresetsService';
+import { isLocalDevelopment } from '../../utils/env';
 import { canvasApi } from '../../services/canvasApi';
 import { videoToBase64 } from '../../utils/fileUtils';
 import { extractColors } from '../../utils/colorExtraction';
@@ -167,12 +168,36 @@ export const useCanvasNodeHandlers = (
     setNodes((nds: Node<FlowNodeData>[]) =>
       nds.map((n: Node<FlowNodeData>) => {
         if (n.id === nodeId && (!nodeType || n.type === nodeType)) {
+          const updatedData = {
+            ...(n.data as T),
+            ...newData,
+          } as T;
+          
+          // For strategy nodes, ensure strategyData is properly merged if it's an object
+          if (n.type === 'strategy' && newData.strategyData && typeof newData.strategyData === 'object') {
+            const currentStrategyData = (n.data as any).strategyData;
+            if (currentStrategyData && typeof currentStrategyData === 'object') {
+              // Merge strategyData objects instead of replacing
+              updatedData.strategyData = {
+                ...currentStrategyData,
+                ...newData.strategyData,
+              } as any;
+            }
+          }
+          
+          if (isLocalDevelopment() && n.type === 'strategy' && newData.strategyData) {
+            console.log(`[updateNodeData] Updating strategy node`, {
+              nodeId,
+              strategyDataKeys: Object.keys(newData.strategyData as any),
+              strategyDataCount: Object.keys(newData.strategyData as any).length,
+              updatedStrategyDataKeys: updatedData.strategyData ? Object.keys(updatedData.strategyData as any) : [],
+              updatedStrategyDataCount: updatedData.strategyData ? Object.keys(updatedData.strategyData as any).length : 0
+            });
+          }
+          
           return {
             ...n,
-            data: {
-              ...(n.data as T),
-              ...newData,
-            } as T,
+            data: updatedData,
           } as Node<FlowNodeData>;
         }
         return n;
@@ -420,7 +445,8 @@ export const useCanvasNodeHandlers = (
     // Try to upload to R2 in the background (non-blocking)
     if (canvasId) {
       try {
-        const imageUrl = await canvasApi.uploadImageToR2(imageBase64, canvasId, nodeId);
+        // Preservar tamanho original da imagem - sem compressão
+        const imageUrl = await canvasApi.uploadImageToR2(imageBase64, canvasId, nodeId, { skipCompression: true });
         // Update node with R2 URL and remove base64 to reduce payload size
         setNodes((nds: Node<FlowNodeData>[]) => {
           return nds.map((n: Node<FlowNodeData>) => {
@@ -1165,7 +1191,7 @@ export const useCanvasNodeHandlers = (
 
     const videoData = node.data as VideoNodeData;
 
-    // Validate credits before generation (15 credits per video)
+    // Validate credits before generation (20 credits per video)
     const hasCredits = await validateVideoCredits();
     if (!hasCredits) {
       return;

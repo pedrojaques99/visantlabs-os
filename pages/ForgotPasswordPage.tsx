@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Loader2, Lock, CheckCircle2, XCircle } from 'lucide-react';
+import { Lock, CheckCircle2, XCircle } from 'lucide-react';
+import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { authService } from '../services/authService';
 import { useTranslation } from '../hooks/useTranslation';
 import { toast } from 'sonner';
@@ -78,7 +79,7 @@ export const ForgotPasswordPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-[#121212] flex items-center justify-center p-4">
         <GridDotsBackground />
-        <div className="bg-[#1A1A1A] border border-zinc-800/50 rounded-md p-8 w-full max-w-md relative z-10">
+        <div className="bg-zinc-900 border border-zinc-800/50 rounded-md p-8 w-full max-w-md relative z-10">
           <div className="flex flex-col items-center text-center space-y-4">
             <div className="flex items-center justify-center w-16 h-16 rounded-md bg-green-500/20 mb-4">
               <CheckCircle2 className="w-8 h-8 text-green-500" />
@@ -99,7 +100,7 @@ export const ForgotPasswordPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-[#121212] flex items-center justify-center p-4">
         <GridDotsBackground />
-        <div className="bg-[#1A1A1A] border border-zinc-800/50 rounded-md p-8 w-full max-w-md relative z-10">
+        <div className="bg-zinc-900 border border-zinc-800/50 rounded-md p-8 w-full max-w-md relative z-10">
           <div className="flex flex-col items-center text-center space-y-4">
             <div className="flex items-center justify-center w-16 h-16 rounded-md bg-red-500/20 mb-4">
               <XCircle className="w-8 h-8 text-red-500" />
@@ -112,7 +113,7 @@ export const ForgotPasswordPage: React.FC = () => {
             </p>
             <button
               onClick={() => navigate('/')}
-              className="px-4 py-2 bg-[#52ddeb]/80 hover:bg-[#52ddeb]/90 text-black font-semibold rounded-md transition-all duration-200 text-sm font-mono"
+              className="px-4 py-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 text-black font-semibold rounded-md transition-all duration-200 text-sm font-mono"
             >
               {t('auth.backToHome') || 'Back to Home'}
             </button>
@@ -125,9 +126,9 @@ export const ForgotPasswordPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#121212] flex items-center justify-center p-4">
       <GridDotsBackground />
-      <div className="bg-[#1A1A1A] border border-zinc-800/50 rounded-md p-8 w-full max-w-md relative z-10">
-        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-6 rounded-md bg-[#52ddeb]/20">
-          <Lock className="w-8 h-8 text-[#52ddeb]" />
+      <div className="bg-zinc-900 border border-zinc-800/50 rounded-md p-8 w-full max-w-md relative z-10">
+        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-6 rounded-md bg-brand-cyan/20">
+          <Lock className="w-8 h-8 text-brand-cyan" />
         </div>
 
         <h1 className="text-2xl font-semibold font-mono text-zinc-200 text-center mb-2">
@@ -180,11 +181,11 @@ export const ForgotPasswordPage: React.FC = () => {
           <button
             type="submit"
             disabled={isLoading || !password || !confirmPassword}
-            className="w-full flex items-center justify-center gap-2 bg-[#52ddeb]/80 hover:bg-[#52ddeb]/90 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
+            className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
           >
             {isLoading ? (
               <>
-                <Loader2 size={16} className="animate-spin" />
+                <GlitchLoader size={16} />
                 {t('auth.resetting') || 'Resetting...'}
               </>
             ) : (

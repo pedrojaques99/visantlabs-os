@@ -16,7 +16,8 @@ import { Tooltip } from '../components/ui/Tooltip';
 import type { PdfFieldMapping } from '../types';
 import { toast } from 'sonner';
 import type { BudgetData } from '../types';
-import { Save, Download, Share2, Copy, Check, Loader2, AlertCircle, Menu, X } from 'lucide-react';
+import { Save, Download, Share2, Copy, Check, AlertCircle, Menu, X } from 'lucide-react';
+import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { generateBudgetPDF } from '../utils/generateBudgetPDF';
 import { getTemplateById } from '../utils/budgetTemplates';
 import { DndContext, PointerSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, DragOverlay } from '@dnd-kit/core';
@@ -582,7 +583,7 @@ export const BudgetMachinePage: React.FC = () => {
                 <div className="absolute top-2 right-2 z-10 flex items-center gap-2 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-md shadow-sm border border-zinc-200">
                   {saveStatus === 'saving' && (
                     <>
-                      <Loader2 size={14} className="animate-spin text-brand-cyan" />
+                      <GlitchLoader size={14} color="#52ddeb" />
                       <span className="text-xs text-zinc-600">Salvando...</span>
                     </>
                   )}
@@ -633,7 +634,7 @@ export const BudgetMachinePage: React.FC = () => {
               }}
             >
               {/* Header with actions */}
-              <div className="flex-shrink-0 border-b border-zinc-800 bg-[#1A1A1A] px-4 sm:px-6 py-4">
+              <div className="flex-shrink-0 border-b border-zinc-800 bg-zinc-900 px-4 sm:px-6 py-4">
                 {/* Row 1: Title and Description */}
                 <div className="flex flex-col mb-4">
                   <div className="flex items-center gap-2">
@@ -805,9 +806,9 @@ export const BudgetMachinePage: React.FC = () => {
 
               {/* Share Link Section */}
               {shareLink && (
-                <div className="flex-shrink-0 border-t border-zinc-800 p-4 sm:p-6 bg-[#1A1A1A]">
+                <div className="flex-shrink-0 border-t border-zinc-800 p-4 sm:p-6 bg-zinc-900">
                   <div className="max-w-2xl mx-auto">
-                    <div className="p-4 bg-[#1A1A1A] border border-zinc-800 rounded-xl">
+                    <div className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl">
                       <p className="text-sm text-zinc-400 mb-2 font-mono">Share Link:</p>
                       <div className="flex flex-col sm:flex-row gap-2">
                         <input

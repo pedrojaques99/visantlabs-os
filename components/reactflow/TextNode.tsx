@@ -1,7 +1,7 @@
 import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
 import { Handle, Position, type NodeProps, useReactFlow, NodeResizer } from '@xyflow/react';
 import { FileText, Wand2 } from 'lucide-react';
-import { Spinner } from '../ui/Spinner';
+import { GlitchLoader } from '../ui/GlitchLoader';
 import type { TextNodeData } from '../../types/reactFlow';
 import { Textarea } from '../ui/textarea';
 import { NodeContainer } from './shared/NodeContainer';
@@ -137,12 +137,12 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                 "absolute top-2 right-2 p-1.5 rounded-md transition-all backdrop-blur-sm node-interactive",
                 isImproving || !text.trim()
                   ? "bg-zinc-700/20 text-zinc-500 cursor-not-allowed"
-                  : "bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 text-[#52ddeb] hover:text-[#52ddeb] border border-[#52ddeb]/30"
+                  : "bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan hover:text-brand-cyan border border-[#52ddeb]/30"
               )}
               title={isImproving ? (t('canvasNodes.textNode.improvingPrompt') || 'Improving prompt...') : (t('canvasNodes.textNode.improvePrompt') || 'Improve prompt')}
             >
               {isImproving ? (
-                <Spinner size={14} color="currentColor" />
+                <GlitchLoader size={14} color="currentColor" />
               ) : (
                 <Wand2 size={14} strokeWidth={2} />
               )}

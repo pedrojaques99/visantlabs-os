@@ -8,8 +8,8 @@ const pillButtonVariants = cva(
     variants: {
       variant: {
         outline: "border-zinc-700/50 hover:border-zinc-600/50 text-zinc-500 hover:text-zinc-400",
-        outlineDark: "border-zinc-700/50 hover:border-zinc-600/50 text-zinc-500 hover:text-zinc-400 hover:text-[#52ddeb]",
-        outlineLight: "border-zinc-300/50 hover:border-zinc-400/50 text-zinc-600 hover:text-zinc-700 hover:text-[#52ddeb]",
+        outlineDark: "border-zinc-700/50 hover:border-zinc-600/50 text-zinc-500 hover:text-zinc-400 hover:text-brand-cyan",
+        outlineLight: "border-zinc-300/50 hover:border-zinc-400/50 text-zinc-600 hover:text-zinc-700 hover:text-brand-cyan",
       },
       size: {
         sm: "px-3 py-2 text-xs font-mono",

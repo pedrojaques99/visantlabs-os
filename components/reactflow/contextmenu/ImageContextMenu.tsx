@@ -1,5 +1,6 @@
 import React from 'react';
-import { Heart, Download, Maximize2, Copy, Wand2, X, Trash2, Copy as CopyIcon, FileText, Upload, ExternalLink, Loader2 } from 'lucide-react';
+import { Heart, Download, Maximize2, Copy, Wand2, X, Trash2, Copy as CopyIcon, FileText, Upload, ExternalLink } from 'lucide-react';
+import { GlitchLoader } from '../../ui/GlitchLoader';
 import { cn } from '../../../lib/utils';
 
 interface ImageContextMenuProps {
@@ -147,9 +148,9 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
           onLike();
           onClose();
         }}
-        className="w-full px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-[#52ddeb] transition-colors flex items-center gap-2 font-mono cursor-pointer"
+        className="w-full px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-brand-cyan transition-colors flex items-center gap-2 font-mono cursor-pointer"
       >
-        <Heart size={14} className={isLiked ? "fill-current text-[#52ddeb]" : ""} />
+        <Heart size={14} className={isLiked ? "fill-current text-brand-cyan" : ""} />
         {isLiked ? 'Unlike' : 'Like'}
       </button>
 
@@ -158,10 +159,10 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
         disabled={isDownloading}
         className={cn(
           "w-full px-3 py-2 text-left text-sm text-zinc-300 transition-colors flex items-center gap-2 font-mono cursor-pointer",
-          isDownloading ? "cursor-not-allowed opacity-50" : "hover:bg-zinc-800/50 hover:text-[#52ddeb]"
+          isDownloading ? "cursor-not-allowed opacity-50" : "hover:bg-zinc-800/50 hover:text-brand-cyan"
         )}
       >
-        {isDownloading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+        {isDownloading ? <GlitchLoader size={14} /> : <Download size={14} />}
         {isDownloading ? 'Downloading...' : 'Download'}
       </button>
 
@@ -171,7 +172,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
             onExport();
             onClose();
           }}
-          className="w-full px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-[#52ddeb] transition-colors flex items-center gap-2 font-mono cursor-pointer"
+          className="w-full px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-brand-cyan transition-colors flex items-center gap-2 font-mono cursor-pointer"
         >
           <Upload size={14} />
           Export
@@ -180,7 +181,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
 
       <button
         onClick={handleFullscreen}
-        className="w-full px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-[#52ddeb] transition-colors flex items-center gap-2 font-mono cursor-pointer"
+        className="w-full px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-brand-cyan transition-colors flex items-center gap-2 font-mono cursor-pointer"
       >
         <Maximize2 size={14} />
         Fullscreen
@@ -192,7 +193,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
             window.open(imageUrl, '_blank', 'noopener,noreferrer');
             onClose();
           }}
-          className="w-full px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-[#52ddeb] transition-colors flex items-center gap-2 font-mono cursor-pointer"
+          className="w-full px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-brand-cyan transition-colors flex items-center gap-2 font-mono cursor-pointer"
         >
           <ExternalLink size={14} />
           Open in New Tab
@@ -204,7 +205,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
           onCopy();
           onClose();
         }}
-        className="w-full px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-[#52ddeb] transition-colors flex items-center gap-2 font-mono cursor-pointer"
+        className="w-full px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-brand-cyan transition-colors flex items-center gap-2 font-mono cursor-pointer"
       >
         <Copy size={14} />
         <div className="flex-1 flex items-center justify-between gap-4">
@@ -219,7 +220,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
             onCopyPNG();
             onClose();
           }}
-          className="w-full px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-[#52ddeb] transition-colors flex items-center gap-2 font-mono cursor-pointer"
+          className="w-full px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-brand-cyan transition-colors flex items-center gap-2 font-mono cursor-pointer"
         >
           <CopyIcon size={14} />
           <div className="flex-1 flex items-center justify-between gap-4">
@@ -235,7 +236,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
             onDescribe();
             onClose();
           }}
-          className="w-full px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-[#52ddeb] transition-colors flex items-center gap-2 font-mono cursor-pointer"
+          className="w-full px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-brand-cyan transition-colors flex items-center gap-2 font-mono cursor-pointer"
         >
           <FileText size={14} />
           Describe Image
@@ -248,7 +249,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
             onEditWithPrompt();
             onClose();
           }}
-          className="w-full px-3 py-2 text-left text-sm text-[#52ddeb] hover:bg-[#52ddeb]/10 transition-colors flex items-center gap-2 font-mono font-semibold cursor-pointer"
+          className="w-full px-3 py-2 text-left text-sm text-brand-cyan hover:bg-brand-cyan/10 transition-colors flex items-center gap-2 font-mono font-semibold cursor-pointer"
         >
           <Wand2 size={14} />
           Edit with Prompt
@@ -261,7 +262,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
             onDuplicate();
             onClose();
           }}
-          className="w-full px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-[#52ddeb] transition-colors flex items-center gap-2 font-mono cursor-pointer"
+          className="w-full px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-brand-cyan transition-colors flex items-center gap-2 font-mono cursor-pointer"
         >
           <CopyIcon size={14} />
           Duplicate

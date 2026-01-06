@@ -115,7 +115,7 @@ export function GenericPresetModal<T extends string>({
                 className={cn(
                     'flex flex-col rounded-md border transition-all overflow-hidden group',
                     isSelected
-                        ? 'bg-[#52ddeb]/10 border-[#52ddeb]/50 hover:bg-[#52ddeb]/15'
+                        ? 'bg-brand-cyan/10 border-[#52ddeb]/50 hover:bg-brand-cyan/15'
                         : 'bg-zinc-900/30 border-zinc-700/30 hover:bg-zinc-900/50 hover:border-zinc-600/50',
                     isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                 )}
@@ -140,11 +140,11 @@ export function GenericPresetModal<T extends string>({
                     </div>
                     {/* Selection Indicator */}
                     {isSelected && (
-                        <div className="absolute top-2 right-2 w-3 h-3 bg-[#52ddeb] rounded-md border-2 border-black" />
+                        <div className="absolute top-2 right-2 w-3 h-3 bg-brand-cyan rounded-md border-2 border-black" />
                     )}
                     {/* Community Badge */}
                     {isCommunity && (
-                        <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-[#52ddeb]/20 border border-[#52ddeb]/30 rounded text-[8px] font-mono text-[#52ddeb]">
+                        <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-brand-cyan/20 border border-[#52ddeb]/30 rounded text-[8px] font-mono text-brand-cyan">
                             Community
                         </div>
                     )}
@@ -155,7 +155,7 @@ export function GenericPresetModal<T extends string>({
                     {/* Name */}
                     <div className={cn(
                         'text-sm font-mono font-semibold mb-2 line-clamp-2 leading-tight',
-                        isSelected ? 'text-[#52ddeb]' : 'text-zinc-200'
+                        isSelected ? 'text-brand-cyan' : 'text-zinc-200'
                     )}>
                         {preset.name}
                     </div>
@@ -212,7 +212,7 @@ export function GenericPresetModal<T extends string>({
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b border-zinc-800/50">
                     <div className="flex items-center gap-2">
-                        <Icon size={20} className="text-[#52ddeb]" />
+                        <Icon size={20} className="text-brand-cyan" />
                         <h2 id="preset-modal-title" className="text-sm font-mono text-zinc-300 uppercase">{title}</h2>
                     </div>
                     <button
@@ -231,7 +231,7 @@ export function GenericPresetModal<T extends string>({
                         className={cn(
                             'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 relative',
                             activeTab === 'official'
-                                ? 'text-[#52ddeb] border-[#52ddeb]'
+                                ? 'text-brand-cyan border-[#52ddeb]'
                                 : 'text-zinc-400 border-transparent hover:text-zinc-300 hover:border-zinc-600/50'
                         )}
                     >
@@ -242,7 +242,7 @@ export function GenericPresetModal<T extends string>({
                         className={cn(
                             'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 flex items-center gap-1.5 relative',
                             activeTab === 'community'
-                                ? 'text-[#52ddeb] border-[#52ddeb]'
+                                ? 'text-brand-cyan border-[#52ddeb]'
                                 : 'text-zinc-400 border-transparent hover:text-zinc-300 hover:border-zinc-600/50'
                         )}
                     >
@@ -281,7 +281,7 @@ export function GenericPresetModal<T extends string>({
                     >
                         <div>
                             <div className="flex items-center gap-2 mb-4">
-                                <Users size={14} className="text-[#52ddeb]" />
+                                <Users size={14} className="text-brand-cyan" />
                                 <h3 className="text-xs font-mono text-zinc-400 uppercase">Community Presets</h3>
                             </div>
                             {isLoadingCommunityPresets ? (

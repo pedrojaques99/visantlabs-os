@@ -265,8 +265,8 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                       onClick={handleNameAccept}
                       className={`p-1.5 rounded-md transition-colors ${
                         theme === 'dark'
-                          ? 'bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 text-[#52ddeb]'
-                          : 'bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 text-[#52ddeb]'
+                          ? 'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan'
+                          : 'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan'
                       }`}
                       title="Salvar (Enter)"
                     >
@@ -289,7 +289,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                     {localProjectName ? (
                       <>
                         <h2 
-                          className={`text-xl md:text-2xl font-semibold font-manrope cursor-pointer hover:text-[#52ddeb] transition-colors truncate ${
+                          className={`text-xl md:text-2xl font-semibold font-manrope cursor-pointer hover:text-brand-cyan transition-colors truncate ${
                             theme === 'dark' ? 'text-zinc-200' : 'text-zinc-800'
                           }`}
                           onClick={() => setIsEditingName(true)}
@@ -304,7 +304,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                           }`}
                           title={t('branding.editProjectName') || 'Editar nome do projeto'}
                         >
-                          <Edit2 className={`h-4 w-4 hover:text-[#52ddeb] ${
+                          <Edit2 className={`h-4 w-4 hover:text-brand-cyan ${
                             theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'
                           }`} />
                         </button>
@@ -312,7 +312,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                     ) : (
                       <button
                         onClick={() => setIsEditingName(true)}
-                        className={`text-xl md:text-2xl font-semibold font-manrope hover:text-[#52ddeb] transition-colors ${
+                        className={`text-xl md:text-2xl font-semibold font-manrope hover:text-brand-cyan transition-colors ${
                           theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'
                         }`}
                       >
@@ -327,7 +327,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                   <button
                     onClick={onGenerateAll}
                     disabled={generatingSteps.size > 0}
-                    className={`px-4 py-2 border rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 hover:border-[#52ddeb]/50 hover:text-[#52ddeb] ${
+                    className={`px-4 py-2 border rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 hover:border-[#52ddeb]/50 hover:text-brand-cyan ${
                       theme === 'dark'
                         ? 'bg-black/40 border-zinc-800/60 text-zinc-300 disabled:border-zinc-800/30 disabled:text-zinc-600'
                         : 'bg-zinc-100 border-zinc-300 text-zinc-800 disabled:border-zinc-200 disabled:text-zinc-400'
@@ -339,7 +339,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                 )}
                 <button
                   onClick={handleGeneratePDF}
-                  className={`px-4 py-2 border rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 hover:border-[#52ddeb]/50 hover:text-[#52ddeb] ${
+                  className={`px-4 py-2 border rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 hover:border-[#52ddeb]/50 hover:text-brand-cyan ${
                     theme === 'dark'
                       ? 'bg-black/40 border-zinc-800/60 text-zinc-300'
                       : 'bg-zinc-100 border-zinc-300 text-zinc-800'
@@ -351,7 +351,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                 <button
                   onClick={handleSave}
                   disabled={isSaving || !hasContent(1)}
-                  className={`px-4 py-2 bg-[#52ddeb]/90 hover:bg-[#52ddeb] text-black font-semibold rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${
+                  className={`px-4 py-2 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${
                     theme === 'dark'
                       ? 'disabled:bg-zinc-700 disabled:text-zinc-500'
                       : 'disabled:bg-zinc-300 disabled:text-zinc-400'

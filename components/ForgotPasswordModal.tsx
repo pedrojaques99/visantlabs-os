@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, Loader2, Mail } from 'lucide-react';
+import { X, Mail } from 'lucide-react';
+import { GlitchLoader } from './ui/GlitchLoader';
 import { PillButton } from './ui/pill-button';
 import { authService } from '../services/authService';
 import { useTranslation } from '../hooks/useTranslation';
@@ -90,8 +91,8 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
 
         {isSuccess ? (
           <div className="space-y-4">
-            <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-md bg-[#52ddeb]/20">
-              <Mail className="w-8 h-8 text-[#52ddeb]" />
+            <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-md bg-brand-cyan/20">
+              <Mail className="w-8 h-8 text-brand-cyan" />
             </div>
             <p className="text-sm text-zinc-300 font-mono text-center">
               {t('auth.resetEmailSentMessage')}
@@ -143,11 +144,11 @@ export const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
               <button
                 type="submit"
                 disabled={isLoading || !email}
-                className="w-full flex items-center justify-center gap-2 bg-[#52ddeb]/80 hover:bg-[#52ddeb]/90 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
+                className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
               >
                 {isLoading ? (
                   <>
-                    <Loader2 size={16} className="animate-spin" />
+                    <GlitchLoader size={16} />
                     {t('auth.sending')}
                   </>
                 ) : (

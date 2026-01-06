@@ -68,7 +68,7 @@ export const MockupCard: React.FC<MockupCardProps> = ({
                   onView(mockup);
                 }}
                 onMouseDown={(e) => e.stopPropagation()}
-                className="p-2.5 bg-[#52ddeb]/70 hover:bg-[#52ddeb]/90 text-black rounded-md transition-all backdrop-blur-sm shadow-lg hover:shadow-xl pointer-events-auto"
+                className="p-2.5 bg-brand-cyan/70 hover:bg-brand-cyan/90 text-black rounded-md transition-all backdrop-blur-sm shadow-lg hover:shadow-xl pointer-events-auto"
                 title="View Full Screen"
               >
                 <Maximize2 size={18} />
@@ -82,7 +82,7 @@ export const MockupCard: React.FC<MockupCardProps> = ({
                   onEdit(mockup);
                 }}
                 onMouseDown={(e) => e.stopPropagation()}
-                className="p-2.5 bg-[#52ddeb]/70 hover:bg-[#52ddeb]/90 text-black rounded-md transition-all backdrop-blur-sm shadow-lg hover:shadow-xl pointer-events-auto"
+                className="p-2.5 bg-brand-cyan/70 hover:bg-brand-cyan/90 text-black rounded-md transition-all backdrop-blur-sm shadow-lg hover:shadow-xl pointer-events-auto"
                 title="Edit"
               >
                 <Edit size={18} />

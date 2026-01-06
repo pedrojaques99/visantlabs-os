@@ -1,7 +1,8 @@
 import React, { useState, useCallback, memo, useEffect, useRef } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { LabeledHandle } from './shared/LabeledHandle';
-import { Loader2, Dna, ChevronDown, ChevronUp, Copy, Check, UploadCloud, FileText, X } from 'lucide-react';
+import { Dna, ChevronDown, ChevronUp, Copy, Check, UploadCloud, FileText, X } from 'lucide-react';
+import { GlitchLoader } from '../ui/GlitchLoader';
 import type { BrandCoreData } from '../../types/reactFlow';
 import { cn } from '../../lib/utils';
 import { toast } from 'sonner';
@@ -320,7 +321,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
         position={Position.Left}
         id="image-input"
         label={t('canvasNodes.brandCore.logo') || 'Logo'}
-        className="w-2 h-2 bg-[#52ddeb] border-2 border-black"
+        className="w-2 h-2 bg-brand-cyan border-2 border-black"
         style={{ top: '90px' }}
       />
       <LabeledHandle
@@ -328,7 +329,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
         position={Position.Left}
         id="pdf-input"
         label={t('canvasNodes.brandCore.identityGuide') || 'Identity'}
-        className="w-2 h-2 bg-[#52ddeb] border-2 border-black"
+        className="w-2 h-2 bg-brand-cyan border-2 border-black"
         style={{ top: '180px' }}
       />
       <LabeledHandle
@@ -336,7 +337,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
         position={Position.Left}
         id="strategy-input"
         label={t('canvasNodes.brandCore.strategy') || 'Strategy'}
-        className="w-2 h-2 bg-[#52ddeb] border-2 border-black"
+        className="w-2 h-2 bg-brand-cyan border-2 border-black"
         style={{ top: '270px' }}
       />
 
@@ -346,7 +347,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
         position={Position.Right}
         id="prompt-output"
         label={t('canvasNodes.brandCore.output') || 'Output'}
-        className="w-2 h-2 bg-[#52ddeb] border-2 border-black"
+        className="w-2 h-2 bg-brand-cyan border-2 border-black"
         style={{ top: '50px' }}
       />
 
@@ -437,7 +438,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                   />
                 ) : uploadedIdentityUrl && identityType === 'pdf' ? (
                   <div className="px-3 py-2 bg-zinc-900/50 rounded border border-zinc-700/30 flex items-center gap-3">
-                    <FileText size={16} className="text-[#52ddeb]" />
+                    <FileText size={16} className="text-brand-cyan" />
                     <span className="text-xs font-mono text-zinc-400 flex-1">{t('canvasNodes.brandCore.pdfUploadedR2')}</span>
                   </div>
                 ) : uploadedIdentity && identityType === 'png' ? (
@@ -450,7 +451,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                   </div>
                 ) : (
                   <div className="px-3 py-2 bg-zinc-900/50 rounded border border-zinc-700/30 flex items-center gap-3">
-                    <FileText size={16} className="text-[#52ddeb]" />
+                    <FileText size={16} className="text-brand-cyan" />
                     <span className="text-xs font-mono text-zinc-400 flex-1">{identityType?.toUpperCase()} uploaded</span>
                   </div>
                 )}
@@ -522,7 +523,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
         >
           {isAnalyzing ? (
             <>
-              <Loader2 size={14} className="animate-spin" />
+              <GlitchLoader size={14} />
               Analyzing...
             </>
           ) : (
@@ -536,18 +537,18 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
       {/* Analysis Status */}
       {isAnalyzing && (
-        <div className="mb-4 px-3 py-2 bg-[#52ddeb]/20 border border-[#52ddeb]/30 rounded flex items-center justify-between gap-3">
+        <div className="mb-4 px-3 py-2 bg-brand-cyan/20 border border-[#52ddeb]/30 rounded flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <Loader2 size={14} className="animate-spin text-[#52ddeb]" />
-            <span className="text-xs font-mono text-[#52ddeb]">Analyzing brand identity...</span>
+            <GlitchLoader size={14} color="#52ddeb" />
+            <span className="text-xs font-mono text-brand-cyan">Analyzing brand identity...</span>
           </div>
           {nodeData.onCancelAnalyze && (
             <button
               onClick={() => nodeData.onCancelAnalyze?.(id)}
-              className="p-1 hover:bg-[#52ddeb]/30 rounded transition-colors"
+              className="p-1 hover:bg-brand-cyan/30 rounded transition-colors"
               title={t('canvasNodes.brandCore.cancelAnalysis')}
             >
-              <X size={14} className="text-[#52ddeb]" />
+              <X size={14} className="text-brand-cyan" />
             </button>
           )}
         </div>
@@ -903,9 +904,9 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
       {/* Generating Prompts Status */}
       {isGeneratingPrompts && (
-        <div className="mt-4 px-3 py-2 bg-[#52ddeb]/20 border border-[#52ddeb]/30 rounded flex items-center gap-3">
-          <Loader2 size={14} className="animate-spin text-[#52ddeb]" />
-          <span className="text-xs font-mono text-[#52ddeb]">Generating prompts...</span>
+        <div className="mt-4 px-3 py-2 bg-brand-cyan/20 border border-[#52ddeb]/30 rounded flex items-center gap-3">
+          <GlitchLoader size={14} color="#52ddeb" />
+          <span className="text-xs font-mono text-brand-cyan">Generating prompts...</span>
         </div>
       )}
     </NodeContainer>

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Edit2, Check, Loader2, AlertCircle } from 'lucide-react';
+import { Edit2, Check, AlertCircle } from 'lucide-react';
+import { GlitchLoader } from '../ui/GlitchLoader';
 
 interface InlineEditorProps {
   value: string | number;
@@ -153,7 +154,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
   const getStatusIcon = () => {
     switch (saveStatus) {
       case 'saving':
-        return <Loader2 size={12} className="inline-block ml-1 animate-spin text-[#52ddeb]" />;
+        return <GlitchLoader size={12} color="#52ddeb" className="inline-block ml-1" />;
       case 'saved':
         return <Check size={12} className="inline-block ml-1 text-green-500" />;
       case 'error':
@@ -170,7 +171,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
   return (
     <span
       onClick={handleClick}
-      className={`cursor-pointer group relative ${hasLineBreaks ? 'block' : 'inline-block'} ${className} transition-all hover:bg-[#52ddeb]/10 hover:rounded px-1 py-0.5`}
+      className={`cursor-pointer group relative ${hasLineBreaks ? 'block' : 'inline-block'} ${className} transition-all hover:bg-brand-cyan/10 hover:rounded px-1 py-0.5`}
       title="Click to edit"
       style={{
         ...style,
@@ -183,7 +184,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
       ) : (
         <Edit2
           size={12}
-          className="inline-block ml-1 opacity-0 group-hover:opacity-50 text-[#52ddeb]"
+          className="inline-block ml-1 opacity-0 group-hover:opacity-50 text-brand-cyan"
         />
       )}
     </span>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { Users, Plus, Edit2, Trash2, X, Save, Image as ImageIcon, Camera, Layers, MapPin, Sun, ArrowLeft, Heart, Maximize2, ExternalLink, RefreshCcw, Copy, Globe, User, LayoutGrid } from 'lucide-react';
+import { Users, Plus, Edit2, Trash2, X, Save, Image as ImageIcon, Camera, Layers, MapPin, Sun, ArrowLeft, Heart, Maximize2, ExternalLink, Copy, Globe, User, LayoutGrid, Box, Settings, Palette, Sparkles, Download, Search } from 'lucide-react';
 
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 
@@ -23,16 +23,33 @@ import { Select } from '../components/ui/select';
 import { getAllCommunityPresets, clearCommunityPresetsCache } from '../services/communityPresetsService';
 import { CommunityPresetModal } from '../components/CommunityPresetModal';
 import { ConfirmationModal } from '../components/ConfirmationModal';
+import { CommunityPresetsSidebar } from '../components/CommunityPresetsSidebar';
+import { PresetCard, CATEGORY_CONFIG } from '../components/PresetCard';
+import type { PromptCategory, LegacyPresetType, CommunityPrompt } from '../types/communityPrompts';
+import { migrateLegacyPreset } from '../types/communityPrompts';
 
 // Constants
 const COMMUNITY_API = '/api/community/presets';
 const PRESET_TYPES = ['all', 'mockup', 'angle', 'texture', 'ambience', 'luminance'] as const;
+const PROMPT_CATEGORIES: PromptCategory[] = [
+  'all', 
+  '3d', 
+  'presets', 
+  'aesthetics', 
+  'themes',
+  'mockup', 
+  'angle', 
+  'texture', 
+  'ambience', 
+  'luminance'
+];
 
-// Types
+// Types - manter compatibilidade
 type PresetType = 'all' | 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance';
 
 interface PresetFormData {
-  presetType: PresetType;
+  category: PromptCategory;
+  presetType?: LegacyPresetType;
   id: string;
   name: string;
   description: string;
@@ -41,44 +58,27 @@ interface PresetFormData {
   aspectRatio: AspectRatio;
   model?: GeminiModel;
   tags?: string[];
+  difficulty?: 'beginner' | 'intermediate' | 'advanced';
+  context?: 'canvas' | 'mockup' | 'branding' | 'general';
+  useCase?: string;
+  examples?: string[];
 }
 
-interface CommunityPreset {
-  _id?: string;
-  userId: string;
-  presetType: PresetType;
-  id: string;
-  name: string;
-  description: string;
-  prompt: string;
-  referenceImageUrl?: string;
-  aspectRatio: AspectRatio;
-  model?: GeminiModel;
-  tags?: string[];
-  isApproved: boolean;
-  createdAt: string;
-  updatedAt: string;
-  likesCount?: number;
-  isLikedByUser?: boolean;
-}
+// Usar CommunityPrompt do tipo importado
+type CommunityPreset = CommunityPrompt;
 
 
 
-const getPresetIcon = (type: PresetType) => {
-  const icons = {
-    all: LayoutGrid,
-    mockup: ImageIcon,
-    angle: Camera,
-    texture: Layers,
-    ambience: MapPin,
-    luminance: Sun,
-  };
-  const Icon = icons[type];
+
+const getPresetIcon = (type: PresetType | PromptCategory) => {
+  // Usa CATEGORY_CONFIG para todas as categorias
+  const Icon = CATEGORY_CONFIG[type as PromptCategory]?.icon || LayoutGrid;
   return <Icon size={20} />;
 };
 
-const getInitialFormData = (presetType: PresetType): PresetFormData => ({
-  presetType,
+const getInitialFormData = (category: PromptCategory = 'presets', presetType?: LegacyPresetType): PresetFormData => ({
+  category,
+  presetType: category === 'presets' ? (presetType || 'mockup') : undefined,
   id: '',
   name: '',
   description: '',
@@ -87,6 +87,8 @@ const getInitialFormData = (presetType: PresetType): PresetFormData => ({
   aspectRatio: '16:9',
   model: 'gemini-2.5-flash-image',
   tags: [],
+  difficulty: 'intermediate',
+  context: 'general',
 });
 
 const generateSlug = (name: string) => {
@@ -104,16 +106,21 @@ export const CommunityPresetsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [presets, setPresets] = useState<CommunityPreset[]>([]);
-  const [activeTab, setActiveTab] = useState<PresetType>(() => {
+  const [activeTab, setActiveTab] = useState<PromptCategory>(() => {
     const typeParam = searchParams.get('type');
+    if (typeParam && PROMPT_CATEGORIES.includes(typeParam as PromptCategory)) {
+      return typeParam as PromptCategory;
+    }
+    // Compatibilidade: se for presetType antigo, mapear para 'presets'
     if (typeParam && PRESET_TYPES.includes(typeParam as any)) {
-      return typeParam as PresetType;
+      return 'presets';
     }
     return 'all';
   });
   const [editingPreset, setEditingPreset] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [formData, setFormData] = useState<PresetFormData>({
+    category: 'presets',
     presetType: 'mockup',
     id: '',
     name: '',
@@ -123,6 +130,8 @@ export const CommunityPresetsPage: React.FC = () => {
     aspectRatio: '16:9',
     model: 'gemini-2.5-flash-image',
     tags: [],
+    difficulty: 'intermediate',
+    context: 'general',
   });
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [filterTag, setFilterTag] = useState<string | null>(null);
@@ -135,6 +144,8 @@ export const CommunityPresetsPage: React.FC = () => {
   const [selectedPreset, setSelectedPreset] = useState<CommunityPreset | null>(null);
   const [duplicateModalOpen, setDuplicateModalOpen] = useState(false);
   const [presetToDuplicate, setPresetToDuplicate] = useState<CommunityPreset | null>(null);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Computed values
   const isAuthenticated = isUserAuthenticated === true;
@@ -166,7 +177,8 @@ export const CommunityPresetsPage: React.FC = () => {
       }
 
       const result = (await response.json()) as CommunityPreset[];
-      setPresets(result);
+      // Migrar presets legados
+      setPresets(result.map(migrateLegacyPreset));
     } catch (fetchError: any) {
       console.error('Error loading my presets:', fetchError);
       setPresets([]);
@@ -192,11 +204,11 @@ export const CommunityPresetsPage: React.FC = () => {
       }
 
       const grouped = (await response.json()) as Record<string, CommunityPreset[]>;
-      // Flatten grouped presets into a single array
+      // Flatten grouped presets into a single array e migrar legados
       const allPresetsArray: CommunityPreset[] = [];
       Object.values(grouped).forEach(presetArray => {
         if (Array.isArray(presetArray)) {
-          allPresetsArray.push(...presetArray);
+          allPresetsArray.push(...presetArray.map(migrateLegacyPreset));
         }
       });
       setAllPresets(allPresetsArray);
@@ -217,23 +229,28 @@ export const CommunityPresetsPage: React.FC = () => {
     }
   }, [viewMode, handleFetchMyPresets, handleFetchAllPresets]);
 
-  const handleRefresh = useCallback(() => {
-    handleFetch();
-  }, [handleFetch]);
 
   // Handlers - Form management
   const handleEdit = useCallback((preset: CommunityPreset) => {
-    setEditingPreset(preset.id);
+    // Migrar preset se necessário
+    const migrated = migrateLegacyPreset(preset);
+    setEditingPreset(migrated.id);
     setIsCreating(false);
     setFormData({
-      presetType: preset.presetType,
-      id: preset.id,
-      name: preset.name,
-      description: preset.description,
-      prompt: preset.prompt,
-      referenceImageUrl: preset.referenceImageUrl || '',
-      aspectRatio: preset.aspectRatio,
-      tags: preset.tags || [],
+      category: migrated.category,
+      presetType: migrated.presetType,
+      id: migrated.id,
+      name: migrated.name,
+      description: migrated.description,
+      prompt: migrated.prompt,
+      referenceImageUrl: migrated.referenceImageUrl || '',
+      aspectRatio: migrated.aspectRatio,
+      model: migrated.model,
+      tags: migrated.tags || [],
+      difficulty: migrated.difficulty,
+      context: migrated.context,
+      useCase: migrated.useCase,
+      examples: migrated.examples,
     });
     setIsEditModalOpen(true);
   }, []);
@@ -241,22 +258,27 @@ export const CommunityPresetsPage: React.FC = () => {
   const handleCreate = useCallback(() => {
     setIsCreating(true);
     setEditingPreset(null);
-    setFormData(getInitialFormData(activeTab));
+    // Se activeTab for 'presets', usar 'mockup' como padrão, senão usar a categoria
+    const presetType = activeTab === 'presets' ? 'mockup' : undefined;
+    setFormData(getInitialFormData(activeTab === 'all' ? 'presets' : activeTab, presetType));
     setIsEditModalOpen(true);
   }, [activeTab]);
 
   const handleCancel = useCallback(() => {
     setIsCreating(false);
     setEditingPreset(null);
-    setFormData(getInitialFormData(activeTab));
+    setFormData(getInitialFormData('presets', 'mockup'));
     setIsEditModalOpen(false);
-  }, [activeTab]);
+  }, []);
 
   // Effects
   useEffect(() => {
     const typeParam = searchParams.get('type');
-    if (typeParam && PRESET_TYPES.includes(typeParam as PresetType)) {
-      setActiveTab(typeParam as PresetType);
+    if (typeParam && PROMPT_CATEGORIES.includes(typeParam as PromptCategory)) {
+      setActiveTab(typeParam as PromptCategory);
+    } else if (typeParam && PRESET_TYPES.includes(typeParam as any)) {
+      // Compatibilidade: mapear presetType antigo para 'presets'
+      setActiveTab('presets');
     }
   }, [searchParams]);
 
@@ -331,7 +353,7 @@ export const CommunityPresetsPage: React.FC = () => {
       const method = isCreating ? 'POST' : 'PUT';
 
       const body: any = {
-        presetType: data.presetType,
+        category: data.category,
         id: presetId,
         name: data.name,
         description: data.description,
@@ -340,9 +362,24 @@ export const CommunityPresetsPage: React.FC = () => {
         tags: data.tags && data.tags.length > 0 ? data.tags : undefined,
       };
 
-      if (data.presetType === 'mockup' && data.referenceImageUrl !== undefined) {
+      // Adicionar presetType apenas se category for 'presets'
+      if (data.category === 'presets' && data.presetType) {
+        body.presetType = data.presetType;
+      }
+
+      // Adicionar referenceImageUrl se necessário
+      const needsReferenceImage = (data.category === 'presets' && data.presetType === 'mockup') 
+        || (data.category !== 'presets' && data.referenceImageUrl);
+      if (needsReferenceImage && data.referenceImageUrl !== undefined) {
         body.referenceImageUrl = data.referenceImageUrl;
       }
+
+      // Adicionar novos campos opcionais
+      if (data.difficulty) body.difficulty = data.difficulty;
+      if (data.context) body.context = data.context;
+      if (data.useCase) body.useCase = data.useCase;
+      if (data.examples && data.examples.length > 0) body.examples = data.examples;
+      if (data.model) body.model = data.model;
 
       const response = await fetch(url, {
         method,
@@ -433,23 +470,39 @@ export const CommunityPresetsPage: React.FC = () => {
     setIsLoading(true);
 
     try {
+      // Migrar preset se necessário
+      const migrated = migrateLegacyPreset(presetToDuplicate);
       // Generate a new unique ID based on the name + random suffix
-      const newId = generateSlug(presetToDuplicate.name + '-copy');
+      const newId = generateSlug(migrated.name + '-copy');
 
       const body: any = {
-        presetType: presetToDuplicate.presetType,
+        category: migrated.category,
         id: newId,
-        name: `${presetToDuplicate.name} (Copy)`,
-        description: presetToDuplicate.description,
-        prompt: presetToDuplicate.prompt,
-        aspectRatio: presetToDuplicate.aspectRatio,
-        tags: presetToDuplicate.tags,
-        model: presetToDuplicate.model,
+        name: `${migrated.name} (Copy)`,
+        description: migrated.description,
+        prompt: migrated.prompt,
+        aspectRatio: migrated.aspectRatio,
+        tags: migrated.tags,
+        model: migrated.model,
       };
 
-      if (presetToDuplicate.presetType === 'mockup' && presetToDuplicate.referenceImageUrl) {
-        body.referenceImageUrl = presetToDuplicate.referenceImageUrl;
+      // Adicionar presetType se category for 'presets'
+      if (migrated.category === 'presets' && migrated.presetType) {
+        body.presetType = migrated.presetType;
       }
+
+      // Adicionar referenceImageUrl se necessário
+      const needsReferenceImage = (migrated.category === 'presets' && migrated.presetType === 'mockup') 
+        || (migrated.category !== 'presets' && migrated.referenceImageUrl);
+      if (needsReferenceImage && migrated.referenceImageUrl) {
+        body.referenceImageUrl = migrated.referenceImageUrl;
+      }
+
+      // Adicionar novos campos opcionais
+      if (migrated.difficulty) body.difficulty = migrated.difficulty;
+      if (migrated.context) body.context = migrated.context;
+      if (migrated.useCase) body.useCase = migrated.useCase;
+      if (migrated.examples && migrated.examples.length > 0) body.examples = migrated.examples;
 
       const response = await fetch(COMMUNITY_API, {
         method: 'POST',
@@ -585,9 +638,9 @@ export const CommunityPresetsPage: React.FC = () => {
   }, [viewMode, presets, allPresets, t]);
 
   // Handlers - Tab navigation
-  const handleTabChange = useCallback((type: PresetType) => {
-    setActiveTab(type);
-    navigate(`/community/presets?type=${type}&view=${viewMode}`, { replace: true });
+  const handleTabChange = useCallback((category: PromptCategory) => {
+    setActiveTab(category);
+    navigate(`/community/presets?type=${category}&view=${viewMode}`, { replace: true });
     if (isEditModalOpen) handleCancel();
   }, [navigate, isEditModalOpen, handleCancel, viewMode]);
 
@@ -600,11 +653,19 @@ export const CommunityPresetsPage: React.FC = () => {
   // Computed - Tags and filtering
   const allTags = useMemo(() => {
     const sourcePresets = viewMode === 'my' ? presets : allPresets;
-    const currentPresets = activeTab === 'all'
-      ? sourcePresets
-      : sourcePresets.filter(p => p.presetType === activeTab);
+    let currentPresets = sourcePresets;
+    
+    // Filtrar por categoria
+    if (activeTab !== 'all') {
+      if (activeTab === 'presets') {
+        // Para presets, manter compatibilidade com filtro de presetType se houver
+        currentPresets = sourcePresets.filter(p => p.category === 'presets');
+      } else {
+        currentPresets = sourcePresets.filter(p => p.category === activeTab);
+      }
+    }
+    
     const tags = new Set<string>();
-
     currentPresets.forEach(preset => {
       if (preset.tags && Array.isArray(preset.tags)) {
         preset.tags.forEach(tag => {
@@ -620,16 +681,73 @@ export const CommunityPresetsPage: React.FC = () => {
 
   const currentPresets = useMemo(() => {
     const sourcePresets = viewMode === 'my' ? presets : allPresets;
-    let filtered = activeTab === 'all'
-      ? sourcePresets
-      : sourcePresets.filter(p => p.presetType === activeTab);
+    let filtered = sourcePresets;
+    
+    // Filtrar por categoria
+    if (activeTab !== 'all') {
+      if (activeTab === 'presets') {
+        filtered = sourcePresets.filter(p => p.category === 'presets');
+      } else {
+        filtered = sourcePresets.filter(p => p.category === activeTab);
+      }
+    }
+    
+    // Filtrar por tag
     if (filterTag) {
       filtered = filtered.filter(p =>
         p.tags && Array.isArray(p.tags) && p.tags.includes(filterTag)
       );
     }
+    
+    // Filtrar por busca
+    if (searchQuery && searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(p => {
+        const migrated = migrateLegacyPreset(p);
+        const name = migrated.name?.toLowerCase() || '';
+        const description = migrated.description?.toLowerCase() || '';
+        const prompt = migrated.prompt?.toLowerCase() || '';
+        const tags = migrated.tags || [];
+        
+        return (
+          name.includes(query) ||
+          description.includes(query) ||
+          prompt.includes(query) ||
+          tags.some(tag => tag && typeof tag === 'string' && tag.toLowerCase().includes(query))
+        );
+      });
+    }
+    
     return filtered;
-  }, [presets, allPresets, activeTab, filterTag, viewMode]);
+  }, [presets, allPresets, activeTab, filterTag, searchQuery, viewMode]);
+
+  // Ordenar categorias por quantidade de presets
+  const sortedCategories = useMemo(() => {
+    const sourcePresets = viewMode === 'my' ? presets : allPresets;
+    
+    // Calcular quantidade por categoria
+    const categoryCounts = PROMPT_CATEGORIES.reduce((acc, category) => {
+      if (category === 'all') {
+        acc[category] = sourcePresets.length;
+      } else {
+        acc[category] = sourcePresets.filter(p => {
+          if (category === 'presets') {
+            return p.category === 'presets';
+          }
+          return p.category === category;
+        }).length;
+      }
+      return acc;
+    }, {} as Record<PromptCategory, number>);
+
+    // Separar 'all' e ordenar o resto por quantidade (decrescente)
+    const allCategory: PromptCategory[] = ['all'];
+    const otherCategories = PROMPT_CATEGORIES
+      .filter(cat => cat !== 'all')
+      .sort((a, b) => categoryCounts[b] - categoryCounts[a]);
+
+    return [...allCategory, ...otherCategories];
+  }, [presets, allPresets, viewMode]);
 
   const isEditing = editingPreset !== null || isCreating;
 
@@ -640,6 +758,7 @@ export const CommunityPresetsPage: React.FC = () => {
       <div className="fixed inset-0 z-0">
         <GridDotsBackground />
       </div>
+      
       <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
         <div className="mb-6">
           <Breadcrumb>
@@ -683,7 +802,7 @@ export const CommunityPresetsPage: React.FC = () => {
                 {viewMode === 'my' ? t('communityPresets.myPresets') : t('communityPresets.allPresets')}
               </h1>
             </div>
-            <p className="text-zinc-500 font-mono text-sm md:text-base ml-9 md:ml-11">
+            <p className="text-zinc-500 font-mono text-sm md:text-base ml-9 md:ml-11 mb-6">
               {viewMode === 'my' ? t('communityPresets.myPresetsSubtitle') : t('communityPresets.subtitle')}
             </p>
           </div>
@@ -691,7 +810,7 @@ export const CommunityPresetsPage: React.FC = () => {
 
         {isCheckingAuth && (
           <div className="max-w-md mx-auto">
-            <div className="bg-[#1A1A1A] border border-zinc-800/50 rounded-md p-6 md:p-8 text-center">
+            <div className="bg-zinc-900 border border-zinc-800/50 rounded-md p-6 md:p-8 text-center">
               <p className="text-zinc-400 font-mono">{t('common.loading')}</p>
             </div>
           </div>
@@ -699,7 +818,7 @@ export const CommunityPresetsPage: React.FC = () => {
 
         {!isCheckingAuth && viewMode === 'my' && !isAuthenticated && (
           <div className="max-w-md mx-auto">
-            <div className="bg-[#1A1A1A] border border-zinc-800/50 rounded-md p-6 md:p-8 space-y-4 text-center">
+            <div className="bg-zinc-900 border border-zinc-800/50 rounded-md p-6 md:p-8 space-y-4 text-center">
               <p className="text-zinc-400 font-mono mb-4">
                 {t('communityPresets.errors.mustBeAuthenticated')}
               </p>
@@ -715,54 +834,23 @@ export const CommunityPresetsPage: React.FC = () => {
 
         {!isCheckingAuth && (viewMode === 'all' || isAuthenticated) && (
           <div className="space-y-6">
-            <div className="bg-[#1A1A1A] border border-zinc-800/50 rounded-md p-4 md:p-6">
-              {/* Primary Category Tabs */}
-              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-8">
-                <div className="flex gap-2 flex-wrap">
-                  {PRESET_TYPES.map((type) => {
-                    const Icon = type === 'all' ? LayoutGrid : (getPresetIcon(type as any).type);
-                    return (
-                      <button
-                        key={type}
-                        onClick={() => handleTabChange(type)}
-                        className={cn(
-                          "px-5 py-2.5 rounded-md text-sm font-mono transition-all flex items-center gap-2",
-                          activeTab === type
-                            ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 shadow-[0_0_15px_rgba(82,221,235,0.1)]'
-                            : 'bg-zinc-900/50 border border-zinc-700/50 text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-300'
-                        )}
-                      >
-                        {type === 'all' ? <LayoutGrid size={16} /> : getPresetIcon(type as any)}
-                        {t(`communityPresets.tabs.${type}`)}
-                      </button>
-                    );
-                  })}
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleRefresh}
-                    className="flex items-center justify-center p-2.5 bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700/50 text-zinc-300 rounded-md transition-colors disabled:bg-zinc-900/50 disabled:text-zinc-600 disabled:border-zinc-800/50"
-                    disabled={isLoading}
-                    title={t('communityPresets.actions.refresh')}
-                    aria-label={t('communityPresets.actions.refresh')}
-                  >
-                    <RefreshCcw size={16} className={isLoading ? 'animate-spin' : ''} />
-                  </button>
-                  {viewMode === 'my' && !isEditing && isAuthenticated && (
-                    <button
-                      onClick={handleCreate}
-                      className="flex items-center gap-2 px-4 py-2.5 bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700/50 text-zinc-300 font-medium rounded-md text-sm font-mono transition-colors"
-                    >
-                      <Plus className="h-4 w-4" />
-                      {t('communityPresets.createNew')}
-                    </button>
-                  )}
-                </div>
-              </div>
+              {/* Sidebar */}
+              <CommunityPresetsSidebar
+                isCollapsed={isSidebarCollapsed}
+                onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                activeCategory={activeTab}
+                onCategoryChange={handleTabChange}
+                allTags={allTags}
+                filterTag={filterTag}
+                onFilterTagChange={setFilterTag}
+                currentPresetsCount={currentPresets.length}
+                categories={sortedCategories}
+                t={t}
+              />
 
               {/* View Mode (All/My) - Sub Hierarchy Tabs */}
-              <div className="flex items-center justify-between mb-6 pt-6 border-t border-zinc-800/30">
-                <div className="flex bg-black/40 p-1 rounded-lg border border-zinc-800/50">
+              <div className="flex items-center justify-between mb-[-0.5px] mt-[-20px] border-zinc-800/30">
+                <div className="flex p-1 rounded-lg border border-zinc-800/50">
                   <button
                     onClick={() => handleViewModeChange('all')}
                     className={cn(
@@ -778,7 +866,7 @@ export const CommunityPresetsPage: React.FC = () => {
                   <button
                     onClick={() => handleViewModeChange('my')}
                     className={cn(
-                      "px-6 py-2 rounded-md text-xs font-mono transition-all flex items-center gap-2",
+                      "px-6 rounded-md text-xs font-mono transition-all flex items-center gap-2",
                       viewMode === 'my'
                         ? 'bg-zinc-800 text-indigo-400 shadow-sm'
                         : 'text-zinc-500 hover:text-zinc-300'
@@ -790,86 +878,88 @@ export const CommunityPresetsPage: React.FC = () => {
                   </button>
                 </div>
 
-                <div className="hidden md:flex items-center gap-4 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
-                  <div className="flex items-center gap-1.5">
-                    <div className={cn("w-1.5 h-1.5 rounded-full", viewMode === 'all' ? "bg-brand-cyan shadow-[0_0_5px_var(--brand-cyan)]" : "bg-zinc-800")} />
-                    Global Library
+                <div className="flex items-center gap-2">
+                  {/* Search Bar */}
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder={t('communityPresets.search.placeholder') || 'Search presets...'}
+                      className="bg-black/40 backdrop-blur-sm border border-zinc-700/30 rounded-md pl-8 pr-8 py-2 w-48 md:w-64 focus:outline-none focus:border-[#52ddeb]/50 text-xs text-zinc-300 font-mono"
+                    />
+                    <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-zinc-500" size={14} />
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery('')}
+                        className="absolute right-2.5 top-1/2 transform -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                      >
+                        <X size={14} />
+                      </button>
+                    )}
                   </div>
-                  <div className="w-[1px] h-3 bg-zinc-800" />
-                  <div className="flex items-center gap-1.5">
-                    <div className={cn("w-1.5 h-1.5 rounded-full", viewMode === 'my' ? "bg-indigo-500 shadow-[0_0_5px_#6366f1]" : "bg-zinc-800")} />
-                    User Private
-                  </div>
+                  
+                  {!isEditing && isAuthenticated && (
+                    <button
+                      onClick={handleCreate}
+                      className="flex items-center gap-2 px-4 py-2 bg-zinc-950/70 hover:bg-zinc-800/50 border border-zinc-800/50 text-zinc-300 font-medium rounded-md text-sm font-mono transition-colors"
+                    >
+                      <Plus className="h-4 w-4" />
+                      {t('communityPresets.createNew')}
+                    </button>
+                  )}
                 </div>
               </div>
-
+            <div className="bg-zinc-900 border border-zinc-800/50 rounded-md p-4 md:p-6">
               {error && (
                 <div className="mb-4 bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-sm text-red-400 font-mono">
                   {error}
                 </div>
               )}
+              {/* Gallery Container */}
+              <div className="space-y-4">
 
-              {/* Tag Cloud - Minimalista dentro da galeria */}
-              {allTags.length > 0 && (
-                <div className="mb-6 pb-4 border-b border-zinc-800/30">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <button
-                      onClick={() => setFilterTag(null)}
-                      className={cn(
-                        "px-2.5 py-1 rounded text-xs font-mono transition-all",
-                        filterTag === null
-                          ? 'text-zinc-300 bg-zinc-800/50 border border-zinc-700/50'
-                          : 'text-zinc-500/60 hover:text-zinc-400 border border-transparent hover:border-zinc-700/30'
-                      )}
-                    >
-                      All
-                    </button>
-                    {allTags.map((tag) => (
+                {/* Bento Box Grid */}
+                {currentPresets.length === 0 ? (
+                  <div key="empty" className="bg-zinc-900 border border-zinc-800/50 rounded-xl p-12 text-center tab-content-active">
+                    <p className="text-zinc-500 font-mono">
+                      {searchQuery.trim() 
+                        ? (t('communityPresets.search.noResults') || `No presets found for "${searchQuery}"`)
+                        : t('communityPresets.table.noPresets')
+                      }
+                    </p>
+                    {searchQuery.trim() && (
                       <button
-                        key={tag}
-                        onClick={() => setFilterTag(filterTag === tag ? null : tag)}
-                        className={cn(
-                          "px-2.5 py-1 rounded text-xs font-mono transition-all",
-                          filterTag === tag
-                            ? 'text-zinc-300 bg-zinc-800/50 border border-zinc-700/50'
-                            : 'text-zinc-500/60 hover:text-zinc-400 border border-transparent hover:border-zinc-700/30'
-                        )}
+                        onClick={() => setSearchQuery('')}
+                        className="mt-4 px-4 py-2 text-xs font-mono text-zinc-400 hover:text-zinc-300 border border-zinc-700/50 rounded-md hover:border-zinc-600/50 transition-colors"
                       >
-                        {tag}
+                        {t('communityPresets.search.clear') || 'Clear search'}
                       </button>
+                    )}
+                  </div>
+                ) : (
+                  <div key={`${activeTab}-${viewMode}`} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 tab-content-active">
+                    {currentPresets.map((preset) => (
+                      <PresetCard
+                        key={preset.id}
+                        preset={preset}
+                        onClick={() => setSelectedPreset(preset)}
+                        onEdit={isAuthenticated ? () => handleEdit(preset) : undefined}
+                        onDelete={viewMode === 'my' ? () => handleDelete(preset.id) : undefined}
+                        onDuplicate={isAuthenticated ? () => handleDuplicateClick(preset) : undefined}
+                        onToggleLike={isAuthenticated ? () => handleToggleLike(preset.id) : undefined}
+                        isAuthenticated={isAuthenticated}
+                        canEdit={viewMode === 'my'}
+                        t={t}
+                      />
                     ))}
                   </div>
-                </div>
-              )}
-
-              {/* Bento Box Grid */}
-              {currentPresets.length === 0 ? (
-                <div key="empty" className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl p-12 text-center tab-content-active">
-                  <p className="text-zinc-500 font-mono">{t('communityPresets.table.noPresets')}</p>
-                </div>
-              ) : (
-                <div key={`${activeTab}-${viewMode}`} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 tab-content-active">
-                  {currentPresets.map((preset) => (
-                    <PresetCard
-                      key={preset.id}
-                      preset={preset}
-                      onClick={() => setSelectedPreset(preset)}
-                      onEdit={viewMode === 'my' ? () => handleEdit(preset) : undefined}
-                      onDelete={viewMode === 'my' ? () => handleDelete(preset.id) : undefined}
-                      onDuplicate={isAuthenticated ? () => handleDuplicateClick(preset) : undefined}
-                      onToggleLike={isAuthenticated ? () => handleToggleLike(preset.id) : undefined}
-                      isAuthenticated={isAuthenticated}
-                      canEdit={viewMode === 'my'}
-                      t={t}
-                    />
-                  ))}
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         )}
 
-        {/* Edit/Create Preset Modal */}
         {/* Edit/Create Preset Modal */}
         <CommunityPresetModal
           isOpen={isEditModalOpen}
@@ -914,16 +1004,18 @@ export const CommunityPresetsPage: React.FC = () => {
             onOpenInCanvas={() => {
               // Store preset in localStorage for canvas to pick up
               try {
+                const migrated = migrateLegacyPreset(selectedPreset);
                 localStorage.setItem('import-community-preset', JSON.stringify({
-                  presetType: selectedPreset.presetType,
-                  id: selectedPreset.id,
-                  name: selectedPreset.name,
-                  description: selectedPreset.description,
-                  prompt: selectedPreset.prompt,
-                  referenceImageUrl: selectedPreset.referenceImageUrl,
-                  aspectRatio: selectedPreset.aspectRatio,
-                  model: selectedPreset.model,
-                  tags: selectedPreset.tags,
+                  category: migrated.category,
+                  presetType: migrated.presetType,
+                  id: migrated.id,
+                  name: migrated.name,
+                  description: migrated.description,
+                  prompt: migrated.prompt,
+                  referenceImageUrl: migrated.referenceImageUrl,
+                  aspectRatio: migrated.aspectRatio,
+                  model: migrated.model,
+                  tags: migrated.tags,
                 }));
                 navigate('/canvas');
                 setSelectedPreset(null);
@@ -937,6 +1029,13 @@ export const CommunityPresetsPage: React.FC = () => {
                 handleToggleLike(selectedPreset.id);
               }
             } : undefined}
+            onEdit={() => {
+              if (selectedPreset) {
+                handleEdit(selectedPreset);
+                setSelectedPreset(null);
+                setIsEditModalOpen(true);
+              }
+            }}
             isLiked={selectedPreset.isLikedByUser || false}
             likesCount={selectedPreset.likesCount || 0}
             isAuthenticated={isAuthenticated}
@@ -948,144 +1047,6 @@ export const CommunityPresetsPage: React.FC = () => {
   );
 };
 
-// PresetCard Component
-const PresetCard: React.FC<{
-  preset: CommunityPreset;
-  onClick?: () => void;
-  onEdit?: () => void;
-  onDelete?: () => void;
-  onDuplicate?: () => void;
-  onToggleLike?: () => void;
-  isAuthenticated: boolean;
-  canEdit: boolean;
-  t: (key: string) => string;
-}> = ({ preset, onClick, onEdit, onDelete, onDuplicate, onToggleLike, isAuthenticated, canEdit, t }) => {
-  const hasImage = preset.presetType === 'mockup' && preset.referenceImageUrl;
-  const presetIcon = getPresetIcon(preset.presetType);
-  const isLiked = preset.isLikedByUser || false;
-  const likesCount = preset.likesCount || 0;
-
-  return (
-    <div
-      className="bg-card border border-zinc-800/50 rounded-md p-4 hover:border-brand-cyan/30 hover:bg-card/80 transition-all group relative cursor-pointer"
-      onClick={onClick}
-    >
-      <div className="mb-3">
-        {hasImage ? (
-          <div className="relative w-full aspect-square rounded-md overflow-hidden border border-zinc-700/30 bg-zinc-900/30">
-            <img
-              src={preset.referenceImageUrl}
-              alt={preset.name}
-              className="w-full h-full object-contain bg-zinc-900/50 group-hover:scale-105 transition-transform duration-300"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
-            />
-          </div>
-        ) : (
-          <div className="w-full aspect-square rounded-md border border-zinc-700/30 bg-zinc-900/30 flex items-center justify-center">
-            <div className="text-zinc-500">{presetIcon}</div>
-          </div>
-        )}
-      </div>
-
-      <div className="space-y-2">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <h3 className="text-base font-semibold text-zinc-200 mb-0.5 font-mono line-clamp-1">
-              {preset.name}
-            </h3>
-            <p className="text-xs text-zinc-500 font-mono line-clamp-2 leading-snug">
-              {preset.description}
-            </p>
-          </div>
-          <div className="flex gap-1 flex-shrink-0">
-            {isAuthenticated && onDuplicate && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDuplicate();
-                }}
-                className="p-1.5 text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-300 rounded transition-colors opacity-0 group-hover:opacity-100"
-                title={t('communityPresets.actions.duplicate') || "Duplicate"}
-              >
-                <Copy className="h-4 w-4" />
-              </button>
-            )}
-            {canEdit && onEdit && onDelete && (
-              <>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEdit?.();
-                  }}
-                  className="p-1.5 text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-300 rounded transition-colors opacity-0 group-hover:opacity-100"
-                  title={t('communityPresets.actions.edit')}
-                >
-                  <Edit2 className="h-4 w-4" />
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete?.();
-                  }}
-                  className="p-1.5 text-zinc-500 hover:bg-red-500/10 hover:text-red-400 rounded transition-colors opacity-0 group-hover:opacity-100"
-                  title={t('communityPresets.actions.delete')}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="px-2 py-0.5 bg-zinc-800/40 rounded border border-zinc-700/30 text-zinc-500 font-mono text-xs">
-            {preset.aspectRatio}
-          </span>
-          <span className="px-2 py-0.5 bg-zinc-800/40 rounded border border-zinc-700/30 text-zinc-500 font-mono text-[10px] uppercase">
-            {preset.presetType}
-          </span>
-          {isAuthenticated && onToggleLike && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleLike();
-              }}
-              className={`flex items-center gap-1 px-2 py-0.5 rounded-md transition-all text-xs font-mono ml-auto ${isLiked
-                ? 'bg-zinc-800/50 text-zinc-300 hover:bg-zinc-700/50'
-                : 'bg-zinc-900/40 text-zinc-500 hover:bg-zinc-800/50 hover:text-zinc-400'
-                }`}
-              title={isLiked ? t('communityPresets.actions.unlike') : t('communityPresets.actions.like')}
-            >
-              <Heart size={12} className={isLiked ? 'fill-current' : ''} />
-              <span>{likesCount}</span>
-            </button>
-          )}
-        </div>
-
-        {/* Tags */}
-        {preset.tags && preset.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {preset.tags.slice(0, 3).map((tag, index) => (
-              <span
-                key={index}
-                className="px-1.5 py-0.5 bg-zinc-800/40 rounded border border-zinc-700/20 text-zinc-500 font-mono text-[10px] hover:border-zinc-600/40 hover:text-zinc-400 transition-colors"
-              >
-                {tag}
-              </span>
-            ))}
-            {preset.tags.length > 3 && (
-              <span className="px-1.5 py-0.5 bg-zinc-800/40 rounded border border-zinc-700/20 text-zinc-500 font-mono text-[10px]">
-                +{preset.tags.length - 3}
-              </span>
-            )}
-          </div>
-        )}
-      </div>
-    </div >
-  );
-};
 
 // PresetDetailModal Component
 const PresetDetailModal: React.FC<{
@@ -1093,17 +1054,65 @@ const PresetDetailModal: React.FC<{
   onClose: () => void;
   onOpenInCanvas: () => void;
   onToggleLike?: () => void;
+  onEdit?: () => void;
   isLiked: boolean;
   likesCount: number;
   isAuthenticated: boolean;
   t: (key: string) => string;
-}> = ({ preset, onClose, onOpenInCanvas, onToggleLike, isLiked, likesCount, isAuthenticated, t }) => {
-  const hasImage = preset.presetType === 'mockup' && preset.referenceImageUrl;
-  const presetIcon = getPresetIcon(preset.presetType);
+}> = ({ preset, onClose, onOpenInCanvas, onToggleLike, onEdit, isLiked, likesCount, isAuthenticated, t }) => {
+  const migrated = migrateLegacyPreset(preset);
+  const hasImage = (migrated.category === 'presets' && migrated.presetType === 'mockup' && migrated.referenceImageUrl)
+    || (migrated.category !== 'presets' && migrated.referenceImageUrl);
+  const presetIcon = getPresetIcon(migrated.category);
+  const [isImageFullscreen, setIsImageFullscreen] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isCopying, setIsCopying] = useState(false);
+  const [glitchText, setGlitchText] = useState('');
+  const isOwner = currentUserId && migrated.userId && currentUserId === migrated.userId;
+
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      if (isAuthenticated) {
+        const user = await authService.verifyToken();
+        if (user) {
+          setCurrentUserId(user.id);
+        }
+      }
+    };
+    getCurrentUser();
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (isCopying) {
+      const glitchChars = '*•□./-®'
+      const glitchInterval = setInterval(() => {
+        const randomGlitch = Array.from({ length: 4 }, () => 
+          glitchChars[Math.floor(Math.random() * glitchChars.length)]
+        ).join('')
+        setGlitchText(randomGlitch)
+      }, 150)
+
+      const timeout = setTimeout(() => {
+        setIsCopying(false)
+        setGlitchText('')
+      }, 600)
+
+      return () => {
+        clearInterval(glitchInterval)
+        clearTimeout(timeout)
+      }
+    }
+  }, [isCopying]);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        if (isImageFullscreen) {
+          setIsImageFullscreen(false);
+        } else {
+          onClose();
+        }
+      }
     };
     document.addEventListener('keydown', handleEscape);
     document.body.style.overflow = 'hidden';
@@ -1112,7 +1121,7 @@ const PresetDetailModal: React.FC<{
       document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = '';
     };
-  }, [onClose]);
+  }, [onClose, isImageFullscreen]);
 
   return (
     <div
@@ -1127,13 +1136,26 @@ const PresetDetailModal: React.FC<{
         <div className="sticky top-0 bg-[#0F0F0F] border-b border-zinc-800/50 p-6 flex items-center justify-between z-10">
           <div className="flex-1 min-w-0">
             <h2 className="text-2xl font-semibold text-zinc-100 font-mono mb-1 truncate">
-              {preset.name}
+              {migrated.name}
             </h2>
             <p className="text-sm text-zinc-400 font-mono">
-              {preset.description}
+              {migrated.description}
             </p>
           </div>
           <div className="flex items-center gap-3 ml-4">
+            {isOwner && onEdit && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit();
+                }}
+                className="flex items-center gap-2 px-3 py-2 rounded-md transition-all text-sm font-mono bg-zinc-800/50 text-zinc-300 hover:bg-zinc-700/50"
+                title={t('communityPresets.actions.edit')}
+              >
+                <Edit2 size={16} />
+                <span>{t('communityPresets.actions.edit')}</span>
+              </button>
+            )}
             {isAuthenticated && onToggleLike && (
               <button
                 onClick={(e) => {
@@ -1160,67 +1182,135 @@ const PresetDetailModal: React.FC<{
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6">
-          {/* Image or Icon */}
-          {hasImage ? (
-            <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-zinc-700/30 bg-zinc-900/30">
-              <img
-                src={preset.referenceImageUrl}
-                alt={preset.name}
-                className="w-full h-full object-contain bg-zinc-900/50"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
-              />
-            </div>
-          ) : (
-            <div className="w-full aspect-video rounded-lg border border-zinc-700/30 bg-zinc-900/30 flex items-center justify-center">
-              <div className="text-zinc-500">{presetIcon}</div>
-            </div>
-          )}
-
-          {/* Details */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-4">
-              <label className="block text-xs font-semibold text-zinc-400 font-mono mb-2 uppercase">
-                Aspect Ratio
-              </label>
-              <p className="text-sm text-zinc-200 font-mono">{preset.aspectRatio}</p>
-            </div>
-            <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-4">
-              <label className="block text-xs font-semibold text-zinc-400 font-mono mb-2 uppercase">
-                Type
-              </label>
-              <p className="text-sm text-zinc-200 font-mono uppercase">{preset.presetType}</p>
-            </div>
-          </div>
-
-          {/* Prompt */}
-          <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-4">
-            <label className="block text-xs font-semibold text-zinc-400 font-mono mb-2 uppercase">
-              Prompt
-            </label>
-            <p className="text-sm text-zinc-300 font-mono whitespace-pre-wrap">{preset.prompt}</p>
-          </div>
-
-          {/* Tags */}
-          {preset.tags && preset.tags.length > 0 && (
-            <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-4">
-              <label className="block text-xs font-semibold text-zinc-400 font-mono mb-2 uppercase">
-                Tags
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {preset.tags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className="px-2 py-1 bg-zinc-800/40 rounded border border-zinc-700/20 text-zinc-400 font-mono text-xs"
+        <div className="p-6">
+          <div className="flex gap-6">
+            {/* Image or Icon - Left Side */}
+            <div className="flex-shrink-0 w-1/2">
+              {hasImage ? (
+                <div className="relative rounded-lg overflow-hidden border border-zinc-700/30 bg-zinc-900/30 aspect-square group">
+                  <img
+                    src={migrated.referenceImageUrl}
+                    alt={migrated.name}
+                    className="w-full h-full object-cover bg-zinc-900/50"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsImageFullscreen(true);
+                    }}
+                    className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-black/80 backdrop-blur-sm border border-zinc-700/50 rounded-md text-zinc-300 hover:text-white transition-all opacity-0 group-hover:opacity-100"
+                    title="View fullscreen"
                   >
-                    {tag}
-                  </span>
-                ))}
-              </div>
+                    <Maximize2 size={14} />
+                  </button>
+                </div>
+              ) : (
+                <div className="w-full aspect-square rounded-lg border border-zinc-700/30 bg-zinc-900/30 flex items-center justify-center">
+                  <div className="text-zinc-500">{presetIcon}</div>
+                </div>
+              )}
             </div>
-          )}
+
+            {/* Info - Right Side */}
+            <div className="flex-1 space-y-4 min-w-0">
+              {/* Details */}
+              <div className="grid grid-cols-2 gap-3">
+            <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-4">
+              <label className="block text-xs font-semibold text-zinc-400 font-mono mb-2 uppercase">
+                Category
+              </label>
+              <p className="text-sm text-zinc-200 font-mono">{t(`communityPresets.categories.${migrated.category}`)}</p>
+            </div>
+            {migrated.category === 'presets' && migrated.presetType && (
+              <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-4">
+                <label className="block text-xs font-semibold text-zinc-400 font-mono mb-2 uppercase">
+                  Preset Type
+                </label>
+                <p className="text-sm text-zinc-200 font-mono uppercase">{migrated.presetType}</p>
+              </div>
+            )}
+                <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-3">
+                  <label className="block text-xs font-semibold text-zinc-400 font-mono mb-1.5 uppercase">
+                    Aspect Ratio
+                  </label>
+                  <p className="text-sm text-zinc-200 font-mono">{migrated.aspectRatio}</p>
+                </div>
+              </div>
+
+              {/* Prompt */}
+              <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-semibold text-zinc-400 font-mono uppercase">
+                    Prompt
+                  </label>
+                  <button
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      setIsCopying(true);
+                      try {
+                        await navigator.clipboard.writeText(migrated.prompt);
+                        toast.success('Prompt copied to clipboard');
+                      } catch (err) {
+                        toast.error('Failed to copy prompt');
+                      }
+                    }}
+                    className="p-1.5 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 rounded-md transition-all relative min-w-[14px] min-h-[14px] flex items-center justify-center"
+                    title="Copy prompt"
+                  >
+                    {isCopying ? (
+                      <span className="text-[10px] font-mono text-zinc-400">
+                        {glitchText}
+                      </span>
+                    ) : (
+                      <Copy size={14} />
+                    )}
+                  </button>
+                </div>
+                <p className="text-sm text-zinc-300 font-mono whitespace-pre-wrap max-h-32 overflow-y-auto">{migrated.prompt}</p>
+              </div>
+
+              {/* Examples */}
+              {migrated.examples && migrated.examples.length > 0 && (
+                <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-4">
+                  <label className="block text-xs font-semibold text-zinc-400 font-mono mb-2 uppercase">
+                    {t('communityPresets.examples')}
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {migrated.examples.map((example, index) => (
+                      <span
+                        key={index}
+                        className="px-2 py-1 bg-zinc-800/40 rounded border border-zinc-700/20 text-zinc-400 font-mono text-xs"
+                      >
+                        {example}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Tags */}
+              {migrated.tags && migrated.tags.length > 0 && (
+                <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-4">
+                  <label className="block text-xs font-semibold text-zinc-400 font-mono mb-2 uppercase">
+                    Tags
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {migrated.tags.map((tag, index) => (
+                      <span
+                        key={index}
+                        className="px-2 py-1 bg-zinc-800/40 rounded border border-zinc-700/20 text-zinc-400 font-mono text-xs"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Footer Actions */}
@@ -1240,6 +1330,27 @@ const PresetDetailModal: React.FC<{
           </button>
         </div>
       </div>
+
+      {/* Fullscreen Image Modal */}
+      {isImageFullscreen && hasImage && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4"
+          onClick={() => setIsImageFullscreen(false)}
+        >
+          <button
+            onClick={() => setIsImageFullscreen(false)}
+            className="absolute top-4 right-4 p-2 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 rounded-lg transition-colors z-10"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <img
+            src={migrated.referenceImageUrl}
+            alt={migrated.name}
+            className="max-w-full max-h-full object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 };

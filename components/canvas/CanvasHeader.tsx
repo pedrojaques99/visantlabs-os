@@ -32,6 +32,8 @@ interface CanvasHeaderProps {
   onShowControlsChange?: (show: boolean) => void;
   cursorColor?: string;
   onCursorColorChange?: (color: string) => void;
+  brandCyan?: string;
+  onBrandCyanChange?: (color: string) => void;
   experimentalMode?: boolean;
   onExperimentalModeChange?: (experimental: boolean) => void;
   onImportCommunityPreset?: (preset: any, type: string) => void;
@@ -56,6 +58,8 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({
   onShowControlsChange,
   cursorColor,
   onCursorColorChange,
+  brandCyan,
+  onBrandCyanChange,
   experimentalMode = false,
   onExperimentalModeChange,
   onImportCommunityPreset,
@@ -163,7 +167,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({
             <button
               onClick={onShareClick}
               className={`p-1.5 border rounded-md transition-all flex items-center justify-center ${isCollaborative
-                ? 'bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 text-[#52ddeb] border-[#52ddeb]/30 hover:border-[#52ddeb]/50'
+                ? 'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border-[#52ddeb]/30 hover:border-[#52ddeb]/50'
                 : 'bg-zinc-800/50 hover:bg-zinc-700/50 text-zinc-300 border-zinc-700/50 hover:border-zinc-600'
                 }`}
               title={t('canvas.share')}
@@ -205,6 +209,8 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({
           onShowControlsChange={onShowControlsChange}
           cursorColor={cursorColor}
           onCursorColorChange={onCursorColorChange}
+          brandCyan={brandCyan}
+          onBrandCyanChange={onBrandCyanChange}
           experimentalMode={experimentalMode}
           onExperimentalModeChange={onExperimentalModeChange}
         />

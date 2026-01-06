@@ -41,7 +41,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                 className={cn(
                   'flex flex-col items-center justify-center gap-0.5 py-1 px-2 text-xs font-mono rounded border transition-all',
                   isSelected
-                    ? 'bg-[#52ddeb]/10 text-[#52ddeb] border-[#52ddeb]/40'
+                    ? 'bg-brand-cyan/10 text-brand-cyan border-[#52ddeb]/40'
                     : 'bg-zinc-800/30 text-zinc-500 border-zinc-700/30 hover:border-zinc-600/50 hover:text-zinc-400',
                   disabled && 'opacity-50 cursor-not-allowed'
                 )}
@@ -63,7 +63,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
             className={cn(
               'flex items-center justify-center py-1 px-2 text-xs font-mono rounded border transition-all',
               isOtherSelected
-                ? 'bg-[#52ddeb]/10 text-[#52ddeb] border-[#52ddeb]/40'
+                ? 'bg-brand-cyan/10 text-brand-cyan border-[#52ddeb]/40'
                 : 'bg-zinc-800/30 text-zinc-500 border-zinc-700/30 hover:border-zinc-600/50 hover:text-zinc-400',
               disabled && 'opacity-50 cursor-not-allowed'
             )}
@@ -96,7 +96,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                     className={cn(
                       'flex flex-col items-center justify-center gap-0.5 py-1 px-2 text-xs font-mono rounded border transition-all',
                       isSelected
-                        ? 'bg-[#52ddeb]/10 text-[#52ddeb] border-[#52ddeb]/40'
+                        ? 'bg-brand-cyan/10 text-brand-cyan border-[#52ddeb]/40'
                         : 'bg-zinc-800/30 text-zinc-500 border-zinc-700/30 hover:border-zinc-600/50 hover:text-zinc-400',
                       disabled && 'opacity-50 cursor-not-allowed'
                     )}
@@ -136,7 +136,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
             className={cn(
               'flex flex-col items-center justify-center gap-1 py-1.5 px-4 md:px-5 text-xs font-mono rounded-md transition-all duration-200 border',
               isSelected
-                ? 'bg-[#52ddeb]/10 text-[#52ddeb] border-[#52ddeb]/40 cursor-pointer'
+                ? 'bg-brand-cyan/10 text-brand-cyan border-[#52ddeb]/40 cursor-pointer'
                 : 'bg-zinc-800/30 text-zinc-500 border-zinc-700/30 hover:border-zinc-600/50 hover:text-zinc-400 cursor-pointer',
               disabled && 'opacity-50 cursor-not-allowed'
             )}
@@ -157,7 +157,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
         className={cn(
           'flex flex-col items-center justify-center gap-1 py-1.5 px-4 md:px-5 text-xs font-mono rounded-md transition-all duration-200 border cursor-pointer',
           isOtherSelected
-            ? 'bg-[#52ddeb]/10 text-[#52ddeb] border-[#52ddeb]/40'
+            ? 'bg-brand-cyan/10 text-brand-cyan border-[#52ddeb]/40'
             : 'bg-zinc-800/30 text-zinc-500 border-zinc-700/30 hover:border-zinc-600/50 hover:text-zinc-400',
           disabled && 'opacity-50 cursor-not-allowed'
         )}
@@ -188,7 +188,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                   className={cn(
                     'flex flex-col items-center justify-center gap-1 py-1.5 px-4 md:px-5 text-xs font-mono rounded-md transition-all duration-200 border cursor-pointer',
                     isSelected
-                      ? 'bg-[#52ddeb]/10 text-[#52ddeb] border-[#52ddeb]/40'
+                      ? 'bg-brand-cyan/10 text-brand-cyan border-[#52ddeb]/40'
                       : 'bg-zinc-800/30 text-zinc-500 border-zinc-700/30 hover:border-zinc-600/50 hover:text-zinc-400',
                     disabled && 'opacity-50 cursor-not-allowed'
                   )}

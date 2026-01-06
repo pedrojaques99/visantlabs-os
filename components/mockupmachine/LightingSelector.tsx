@@ -71,7 +71,7 @@ export const LightingSelector: React.FC<LightingSelectorProps> = ({
         <Sun size={16} />
         <span className="text-sm font-medium">New Lighting</span>
         {creditsPerOperation !== undefined && creditsPerOperation > 0 && (
-          <span className="text-xs font-mono text-[#52ddeb] ml-auto mr-1 font-semibold">
+          <span className="text-xs font-mono text-brand-cyan ml-auto mr-1 font-semibold">
             {creditsPerOperation}
           </span>
         )}
@@ -92,7 +92,7 @@ export const LightingSelector: React.FC<LightingSelectorProps> = ({
               <button
                 key={lighting}
                 onClick={(e) => handleLightingClick(lighting, e)}
-                className="px-3 py-2 text-xs font-medium text-zinc-300 bg-black/30 hover:bg-[#52ddeb]/20 hover:text-[#52ddeb] rounded-md border border-white/5 hover:border-[#52ddeb]/30 transition-all duration-200 text-left"
+                className="px-3 py-2 text-xs font-medium text-zinc-300 bg-black/30 hover:bg-brand-cyan/20 hover:text-brand-cyan rounded-md border border-white/5 hover:border-[#52ddeb]/30 transition-all duration-200 text-left"
                 title={`Change to ${lighting}`}
               >
                 {lighting}

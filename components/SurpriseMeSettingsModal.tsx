@@ -263,7 +263,7 @@ export const SurpriseMeSettingsModal: React.FC<SurpriseMeSettingsModalProps> = (
       >
         <div
           ref={modalRef}
-          className={`bg-[#1A1A1A] border border-zinc-800/40 rounded-2xl p-6 sm:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl transform transition-all duration-200 ${
+          className={`bg-zinc-900 border border-zinc-800/40 rounded-2xl p-6 sm:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl transform transition-all duration-200 ${
             isOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'
           }`}
           onClick={(e) => e.stopPropagation()}
@@ -393,4 +393,8 @@ export const SurpriseMeSettingsModal: React.FC<SurpriseMeSettingsModalProps> = (
   // Render modal in portal to ensure proper z-index stacking
   return createPortal(modalContent, document.body);
 };
+
+
+
+
 

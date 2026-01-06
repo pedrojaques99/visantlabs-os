@@ -23,7 +23,7 @@ export const ZoomControls: React.FC<ZoomControlsProps> = ({
       <div className="bg-black/20 backdrop-blur-sm border border-zinc-800/30 rounded-md px-3 py-2 flex items-center gap-3 opacity-60 hover:opacity-80 transition-opacity">
         <button
           onClick={onZoomOut}
-          className="p-1 text-zinc-500 hover:text-[#52ddeb] transition-colors"
+          className="p-1 text-zinc-500 hover:text-brand-cyan transition-colors"
           title="Zoom Out"
         >
           <ZoomOut size={16} />
@@ -40,7 +40,7 @@ export const ZoomControls: React.FC<ZoomControlsProps> = ({
         />
         <button
           onClick={onZoomIn}
-          className="p-1 text-zinc-500 hover:text-[#52ddeb] transition-colors"
+          className="p-1 text-zinc-500 hover:text-brand-cyan transition-colors"
           title="Zoom In"
         >
           <ZoomIn size={16} />

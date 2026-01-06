@@ -1,6 +1,7 @@
 import React, { useRef, useState, useCallback, memo, useEffect } from 'react';
 import { type NodeProps, useNodes, useEdges, useReactFlow, NodeResizer } from '@xyflow/react';
-import { Trash2, Maximize2, Upload, UploadCloud, Heart, Loader2, Download, FileText, Copy, X, Palette } from 'lucide-react';
+import { Trash2, Maximize2, Upload, UploadCloud, Heart, Download, FileText, Copy, X, Palette } from 'lucide-react';
+import { GlitchLoader } from '../ui/GlitchLoader';
 import type { ImageNodeData } from '../../types/reactFlow';
 import { getImageUrl } from '../../utils/imageUtils';
 import { cn } from '../../lib/utils';
@@ -513,7 +514,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 onMouseDown={(e) => e.stopPropagation()}
               >
                 {isDescribing ? (
-                  <Loader2 size={12} strokeWidth={2} className="animate-spin" />
+                  <GlitchLoader size={12} />
                 ) : (
                   <FileText size={12} strokeWidth={2} />
                 )}
@@ -526,7 +527,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 className={cn(
                   "p-1 rounded-md transition-all backdrop-blur-sm",
                   isLiked
-                    ? "bg-[#52ddeb]/20 text-[#52ddeb] hover:bg-[#52ddeb]/30"
+                    ? "bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30"
                     : "bg-black/40 hover:bg-black/60 text-zinc-400 hover:text-zinc-200"
                 )}
                 title={isLiked ? t('canvasNodes.imageNode.removeFromFavorites') : t('canvasNodes.imageNode.addToFavorites')}
@@ -581,7 +582,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                   e.stopPropagation();
                   handleCopyDescription();
                 }}
-                className="p-1 bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 text-[#52ddeb] rounded transition-colors backdrop-blur-sm border border-[#52ddeb]/20 hover:border-[#52ddeb]/30"
+                className="p-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan rounded transition-colors backdrop-blur-sm border border-[#52ddeb]/20 hover:border-[#52ddeb]/30"
                 title={t('canvasNodes.imageNode.copyDescription')}
                 onMouseDown={(e) => e.stopPropagation()}
               >
@@ -649,7 +650,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
               onMouseDown={(e) => e.stopPropagation()}
             >
               {isDownloading ? (
-                <Loader2 size={12} strokeWidth={2} className="animate-spin" />
+                <GlitchLoader size={12} />
               ) : (
                 <Download size={12} strokeWidth={2} />
               )}
@@ -703,7 +704,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
             onMouseDown={(e) => e.stopPropagation()}
           >
             {isDescribing ? (
-              <Loader2 size={12} strokeWidth={2} className="animate-spin" />
+              <GlitchLoader size={12} />
             ) : (
               <FileText size={12} strokeWidth={2} />
             )}

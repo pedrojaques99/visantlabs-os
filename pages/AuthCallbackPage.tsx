@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
+import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { authService } from '../services/authService';
 import { useTranslation } from '../hooks/useTranslation';
 import { toast } from 'sonner';
@@ -74,7 +75,7 @@ export const AuthCallbackPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-[#121212] flex items-center justify-center">
         <div className="text-center">
-          <Loader2 size={32} className="animate-spin text-[#52ddeb] mx-auto mb-4" />
+          <GlitchLoader size={32} color="#52ddeb" className="mx-auto mb-4" />
           <p className="text-zinc-400 font-mono text-sm">{t('auth.processing') || 'Processing authentication...'}</p>
         </div>
       </div>
@@ -83,7 +84,7 @@ export const AuthCallbackPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#121212] flex items-center justify-center p-4">
-      <div className="bg-[#1A1A1A] border border-zinc-800/50 rounded-md p-6 w-full max-w-md">
+      <div className="bg-zinc-900 border border-zinc-800/50 rounded-md p-6 w-full max-w-md">
         <div className="flex items-center gap-3 mb-4">
           <AlertCircle size={24} className="text-red-400" />
           <h2 className="text-lg font-semibold font-mono text-zinc-200 uppercase">
@@ -100,7 +101,7 @@ export const AuthCallbackPage: React.FC = () => {
         <div className="flex gap-3">
           <button
             onClick={() => navigate('/')}
-            className="flex-1 bg-[#52ddeb]/80 hover:bg-[#52ddeb]/90 text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
+            className="flex-1 bg-brand-cyan/80 hover:bg-brand-cyan/90 text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
           >
             {t('auth.backToHome') || 'Back to Home'}
           </button>

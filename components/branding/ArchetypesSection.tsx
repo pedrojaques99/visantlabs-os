@@ -3,6 +3,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useTheme } from '../../hooks/useTheme';
 import { RichTextEditor } from './RichTextEditor';
 import { Textarea } from '../ui/textarea';
+import { Card, CardContent } from '../ui/card';
 
 interface ArchetypesSectionProps {
   archetypes: {
@@ -399,29 +400,29 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({
       />
 
       {/* Reasoning */}
-      <div className={`border rounded-xl p-4 ${
-        theme === 'dark' ? 'bg-black/40 border-zinc-800/60' : 'bg-white border-zinc-300'
-      }`}>
-        <h4 className={`text-xs font-semibold font-manrope mb-2 ${
-          theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'
-        }`}>
-          Justificativa
-        </h4>
-        {isEditing ? (
-          <RichTextEditor
-            value={localArchetypes.reasoning}
-            onChange={handleReasoningChange}
-            placeholder="Por que esses arquétipos foram escolhidos..."
-            minHeight="80px"
-          />
-        ) : (
-          <p className={`text-xs font-manrope leading-snug whitespace-pre-wrap ${
+      <Card className={theme === 'dark' ? 'bg-black/40 border-zinc-800/60' : 'bg-white border-zinc-300'}>
+        <CardContent className="p-4">
+          <h4 className={`text-xs font-semibold font-manrope mb-2 ${
             theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'
           }`}>
-            {localArchetypes.reasoning}
-          </p>
-        )}
-      </div>
+            Justificativa
+          </h4>
+          {isEditing ? (
+            <RichTextEditor
+              value={localArchetypes.reasoning}
+              onChange={handleReasoningChange}
+              placeholder="Por que esses arquétipos foram escolhidos..."
+              minHeight="80px"
+            />
+          ) : (
+            <p className={`text-xs font-manrope leading-snug whitespace-pre-wrap ${
+              theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'
+            }`}>
+              {localArchetypes.reasoning}
+            </p>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };

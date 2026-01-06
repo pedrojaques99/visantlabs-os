@@ -17,7 +17,7 @@ import {
   Building2,
   Plus,
   Grid3x3,
-  Pickaxe
+  Pickaxe,
 } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Tooltip } from '../ui/Tooltip';
@@ -41,11 +41,15 @@ interface CanvasToolbarProps {
   onAddChat?: () => void;
   onAddShader?: () => void;
   onAddColorExtractor?: () => void;
+  onToggleDrawing?: () => void;
+  isDrawingMode?: boolean;
   experimentalMode?: boolean;
   selectedNodesCount: number;
   variant?: 'standalone' | 'stacked';
   forceCollapsed?: boolean;
   position?: 'left' | 'right';
+  isCollapsed?: boolean;
+  onCollapseChange?: (collapsed: boolean) => void;
 }
 
 interface ToolItem {
@@ -75,15 +79,29 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
   onAddChat,
   onAddShader,
   onAddColorExtractor,
+  onToggleDrawing,
+  isDrawingMode = false,
   experimentalMode = false,
   selectedNodesCount,
   variant = 'standalone',
   forceCollapsed = false,
   position = 'right',
+  isCollapsed: externalIsCollapsed,
+  onCollapseChange,
 }) => {
   const { t } = useTranslation();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [internalIsCollapsed, setInternalIsCollapsed] = useState(false);
   const toolbarRef = useRef<HTMLDivElement>(null);
+
+  // Use external state if provided, otherwise use internal state
+  const isCollapsed = externalIsCollapsed !== undefined ? externalIsCollapsed : internalIsCollapsed;
+  const setIsCollapsed = (value: boolean) => {
+    if (onCollapseChange) {
+      onCollapseChange(value);
+    } else {
+      setInternalIsCollapsed(value);
+    }
+  };
 
   // Auto-collapse when forceCollapsed is true
   useEffect(() => {
@@ -220,6 +238,8 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
   };
 
   const ToolButton: React.FC<{ tool: ToolItem }> = ({ tool }) => {
+    const isActive = tool.id === 'drawing' && isDrawingMode;
+
     if (isCollapsed) {
       return (
         <Tooltip content={tool.tooltip} position="right">
@@ -230,11 +250,12 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
             className={cn(
               "w-10 h-10 flex items-center justify-center",
               "bg-zinc-900/50 backdrop-blur-md",
-              "border border-zinc-800/40 rounded-md",
-              "text-zinc-400 hover:text-[#52ddeb]",
-              "hover:border-[#52ddeb]/40 hover:bg-zinc-800/50",
+              "border rounded-md",
               "transition-colors duration-150",
-              "cursor-grab active:cursor-grabbing"
+              "cursor-grab active:cursor-grabbing",
+              isActive
+                ? "border-[#52ddeb] text-brand-cyan bg-brand-cyan/10"
+                : "border-zinc-800/40 text-zinc-400 hover:text-brand-cyan hover:border-[#52ddeb]/40 hover:bg-zinc-800/50"
             )}
             aria-label={tool.label}
           >
@@ -253,11 +274,12 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
           className={cn(
             "w-full px-2 py-1.5",
             "bg-zinc-900/50 backdrop-blur-md",
-            "border border-zinc-800/40 rounded-md",
-            "text-zinc-400 hover:text-[#52ddeb]",
-            "hover:border-[#52ddeb]/40 hover:bg-zinc-800/50",
+            "border rounded-md",
             "transition-colors duration-150",
-            "flex items-center gap-2 cursor-grab active:cursor-grabbing"
+            "flex items-center gap-2 cursor-grab active:cursor-grabbing",
+            isActive
+              ? "border-[#52ddeb] text-brand-cyan bg-brand-cyan/10"
+              : "border-zinc-800/40 text-zinc-400 hover:text-brand-cyan hover:border-[#52ddeb]/40 hover:bg-zinc-800/50"
           )}
           aria-label={tool.label}
         >
@@ -302,11 +324,16 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
     );
   };
 
+  // Don't render when collapsed - the toggle button is now in CanvasBottomToolbar
+  if (isCollapsed) {
+    return null;
+  }
+
   return (
     <aside
       ref={toolbarRef}
       className={cn(
-        variant === 'stacked' && isCollapsed ? "fixed left-4 top-[81px]" : getPositionClasses(),
+        getPositionClasses(),
         "z-40",
         "backdrop-blur-xl border border-zinc-800/50",
         "rounded-2xl shadow-2xl",
@@ -315,26 +342,16 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
         "bg-black/40"
       )}
       style={{
-        width: isCollapsed ? `${COLLAPSED_WIDTH}px` : `${EXPANDED_WIDTH}px`,
-        height: isCollapsed ? `${COLLAPSED_WIDTH}px` : 'auto',
-        maxHeight: isCollapsed ? `${COLLAPSED_WIDTH}px` : 'calc(100vh - 97px)',
+        width: `${EXPANDED_WIDTH}px`,
+        height: 'auto',
+        maxHeight: 'calc(100vh - 97px)',
         backgroundColor: 'var(--sidebar)',
       }}
     >
-      {isCollapsed ? (
-        /* Collapsed State - Icon Only */
-        <button
-          onClick={() => setIsCollapsed(false)}
-          className="w-full h-full flex items-center justify-center hover:bg-zinc-800/30 transition-colors duration-200 cursor-pointer"
-          title={t('canvasToolbar.expandToolbar')}
-        >
-          <Plus size={16} className="text-zinc-500 hover:text-zinc-400 transition-colors duration-200" />
-        </button>
-      ) : (
-        /* Expanded State - Full Content with Sections */
-        <div className="w-full flex flex-col h-full overflow-hidden">
+      {/* Expanded State - Full Content with Sections */}
+      <div className="w-full flex flex-col h-full overflow-hidden">
           {/* Scrollable Content */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-zinc-400 dark:scrollbar-thumb-zinc-700 scrollbar-track-transparent">
             <div className="flex flex-col p-2 gap-2">
               {/* Header */}
               <div className="flex items-center gap-1.5 px-1 py-1.5 border-b border-zinc-800/30 flex-shrink-0 relative">
@@ -395,7 +412,6 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
             </div>
           </div>
         </div>
-      )}
     </aside>
   );
 };

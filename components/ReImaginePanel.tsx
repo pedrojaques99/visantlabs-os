@@ -46,12 +46,12 @@ export const ReImaginePanel: React.FC<ReImaginePanelProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-30 flex items-center justify-center p-4 animate-fade-in">
-      <div className="w-full max-w-2xl bg-[#1A1A1A] rounded-xl border border-zinc-800/50 shadow-2xl overflow-hidden">
+      <div className="w-full max-w-2xl bg-zinc-900 rounded-xl border border-zinc-800/50 shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-zinc-800/50">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-[#52ddeb]/20 rounded-md">
-              <Pencil size={20} className="text-[#52ddeb]" />
+            <div className="p-2 bg-brand-cyan/20 rounded-md">
+              <Pencil size={20} className="text-brand-cyan" />
             </div>
             <div>
               <h3 className="text-lg font-semibold text-zinc-200">Re-imagine</h3>

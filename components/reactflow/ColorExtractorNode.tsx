@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback, memo, useEffect } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import { Loader2, UploadCloud, Palette, X, Copy, RefreshCw } from 'lucide-react';
+import { UploadCloud, Palette, X, Copy, RefreshCw } from 'lucide-react';
+import { GlitchLoader } from '../ui/GlitchLoader';
 import type { ColorExtractorNodeData } from '../../types/reactFlow';
 import { cn } from '../../lib/utils';
 import { fileToBase64 } from '../../utils/fileUtils';
@@ -232,7 +233,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
       >
         {isExtracting ? (
           <>
-            <Loader2 size={14} className="animate-spin" />
+            <GlitchLoader size={14} />
             Extracting {glitchText}
           </>
         ) : (
@@ -291,7 +292,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
                     }}
                     title="Regenerate only this color"
                   >
-                    <RefreshCw size={10} className="text-zinc-400 hover:text-[#52ddeb] transition-colors" />
+                    <RefreshCw size={10} className="text-zinc-400 hover:text-brand-cyan transition-colors" />
                   </div>
 
                   {/* Manual Edit via invisible input + visible icon */}

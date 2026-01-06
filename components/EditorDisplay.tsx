@@ -1,5 +1,6 @@
 import React from 'react';
-import { Download, ImageIcon, Palette, Loader2, Camera, MapPin, ZoomIn, ZoomOut } from 'lucide-react';
+import { Download, ImageIcon, Palette, Camera, MapPin, ZoomIn, ZoomOut } from 'lucide-react';
+import { GlitchLoader } from './ui/GlitchLoader';
 import { AngleSelector } from './mockupmachine/AngleSelector';
 import type { AspectRatio } from '../types';
 
@@ -70,7 +71,7 @@ export const EditorDisplay: React.FC<EditorDisplayProps> = ({
           
           {isLoading && (
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-              <Loader2 size={32} className="animate-spin text-white/80" />
+              <GlitchLoader size={32} color="rgba(255, 255, 255, 0.8)" />
             </div>
           )}
 
@@ -87,7 +88,7 @@ export const EditorDisplay: React.FC<EditorDisplayProps> = ({
               <a
                 href={imageUrl}
                 download={`mockup-${Date.now()}.png`}
-                className="p-3 bg-zinc-900/50 rounded-md text-zinc-300 hover:bg-[#52ddeb]/20 hover:text-[#52ddeb] transition-all transform hover:scale-[1.03]"
+                className="p-3 bg-zinc-900/50 rounded-md text-zinc-300 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-all transform hover:scale-[1.03]"
                 title="Download"
                 onClick={(e) => e.stopPropagation()}
               >
@@ -99,12 +100,12 @@ export const EditorDisplay: React.FC<EditorDisplayProps> = ({
                   onAngleSelect={onNewAngle}
                   disabled={isLoading}
                   className="inline-flex"
-                  buttonClassName="p-3 bg-zinc-900/50 rounded-md text-zinc-300 hover:bg-[#52ddeb]/20 hover:text-[#52ddeb] transition-all transform hover:scale-[1.03]"
+                  buttonClassName="p-3 bg-zinc-900/50 rounded-md text-zinc-300 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-all transform hover:scale-[1.03]"
                 />
               </div>
               <button
                 onClick={(e) => { e.stopPropagation(); onNewBackground(); }}
-                className="p-3 bg-zinc-900/50 rounded-md text-zinc-300 hover:bg-[#52ddeb]/20 hover:text-[#52ddeb] transition-all transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50 focus:ring-offset-2 focus:ring-offset-black/70"
+                className="p-3 bg-zinc-900/50 rounded-md text-zinc-300 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-all transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50 focus:ring-offset-2 focus:ring-offset-black/70"
                 title="New Background (Change environment)"
                 aria-label="Generate new background"
               >
@@ -112,7 +113,7 @@ export const EditorDisplay: React.FC<EditorDisplayProps> = ({
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); onZoomIn(); }}
-                className="p-3 bg-zinc-900/50 rounded-md text-zinc-300 hover:bg-[#52ddeb]/20 hover:text-[#52ddeb] transition-all transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50 focus:ring-offset-2 focus:ring-offset-black/70"
+                className="p-3 bg-zinc-900/50 rounded-md text-zinc-300 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-all transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50 focus:ring-offset-2 focus:ring-offset-black/70"
                 title="Zoom In (Move camera closer)"
                 aria-label="Zoom in"
               >
@@ -120,7 +121,7 @@ export const EditorDisplay: React.FC<EditorDisplayProps> = ({
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); onZoomOut(); }}
-                className="p-3 bg-zinc-900/50 rounded-md text-zinc-300 hover:bg-[#52ddeb]/20 hover:text-[#52ddeb] transition-all transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50 focus:ring-offset-2 focus:ring-offset-black/70"
+                className="p-3 bg-zinc-900/50 rounded-md text-zinc-300 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-all transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50 focus:ring-offset-2 focus:ring-offset-black/70"
                 title="Zoom Out (Move camera further)"
                 aria-label="Zoom out"
               >

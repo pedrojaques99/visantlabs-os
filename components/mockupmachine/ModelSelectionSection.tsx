@@ -26,7 +26,7 @@ const DEFAULT_MODEL_INFO: Record<GeminiModel, {
   'gemini-3-pro-image-preview': {
     emoji: '⛏️💎',
     name: '4K',
-    version: '3-10 credits'
+    version: '3-7 credits'
   },
   'veo-3.1-generate-preview': {
     emoji: '🎬',
@@ -55,7 +55,7 @@ export const ModelSelectionSection: React.FC<ModelSelectionSectionProps> = ({
         key={model}
         onClick={() => onModelChange(model)}
         className={`w-full aspect-square max-h-32 flex flex-col items-center justify-center gap-1 p-4 text-xs font-mono rounded border transition-colors cursor-pointer ${isSelected
-          ? 'bg-[#52ddeb]/10 text-[#52ddeb] border-[#52ddeb]/40'
+          ? 'bg-brand-cyan/10 text-brand-cyan border-[#52ddeb]/40'
           : 'bg-zinc-800/30 text-zinc-400 border-zinc-700/30 hover:border-zinc-600/50'
           }`}
       >

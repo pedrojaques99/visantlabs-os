@@ -24,7 +24,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
   // Guard against undefined/null mapping
   if (!mapping) {
     return (
-      <div className="w-full h-full bg-[#1A1A1A] flex items-center justify-center">
+      <div className="w-full h-full bg-zinc-900 flex items-center justify-center">
         <p className="text-sm text-zinc-400 font-mono">Nenhum campo selecionado</p>
       </div>
     );
@@ -128,7 +128,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
   };
 
   return (
-    <div className="w-full h-full bg-[#1A1A1A] flex flex-col relative">
+    <div className="w-full h-full bg-zinc-900 flex flex-col relative">
       {/* Warning message when trying to close with pending changes */}
       {showCloseWarning && (
         <div className="absolute top-2 left-2 right-2 z-50 px-3 py-2 bg-yellow-500/20 border border-yellow-500/50 rounded-md text-yellow-400 text-xs font-mono animate-pulse">
@@ -219,7 +219,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
             onClick={() => updateLocal({ bold: !isBold })}
             className={`w-full px-3 py-2 rounded-md border transition-colors flex items-center justify-center gap-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50 ${
               isBold
-                ? 'bg-[#52ddeb]/20 border-[#52ddeb]/50 text-[#52ddeb]'
+                ? 'bg-brand-cyan/20 border-[#52ddeb]/50 text-brand-cyan'
                 : 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-700'
             }`}
             aria-label={isBold ? 'Desativar negrito' : 'Ativar negrito'}
@@ -263,7 +263,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
               onClick={() => updateLocal({ align: 'left' })}
               className={`flex-1 px-3 py-2 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50 ${
                 (getValue('align') || 'left') === 'left'
-                  ? 'bg-[#52ddeb]/20 border-[#52ddeb]/50 text-[#52ddeb]'
+                  ? 'bg-brand-cyan/20 border-[#52ddeb]/50 text-brand-cyan'
                   : 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-700'
               }`}
               title="Esquerda"
@@ -276,7 +276,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
               onClick={() => updateLocal({ align: 'center' })}
               className={`flex-1 px-3 py-2 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50 ${
                 getValue('align') === 'center'
-                  ? 'bg-[#52ddeb]/20 border-[#52ddeb]/50 text-[#52ddeb]'
+                  ? 'bg-brand-cyan/20 border-[#52ddeb]/50 text-brand-cyan'
                   : 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-700'
               }`}
               title="Centro"
@@ -289,7 +289,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
               onClick={() => updateLocal({ align: 'right' })}
               className={`flex-1 px-3 py-2 rounded-md border transition-colors focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50 ${
                 getValue('align') === 'right'
-                  ? 'bg-[#52ddeb]/20 border-[#52ddeb]/50 text-[#52ddeb]'
+                  ? 'bg-brand-cyan/20 border-[#52ddeb]/50 text-brand-cyan'
                   : 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-700'
               }`}
               title="Direita"
@@ -366,7 +366,7 @@ export const FieldPropertiesPanel: React.FC<FieldPropertiesPanelProps> = ({
         <div className="p-4 border-t border-zinc-800 flex gap-2">
           <button
             onClick={handleApply}
-            className="flex-1 px-3 py-2 bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 border border-[#52ddeb]/50 rounded-md text-[#52ddeb] font-mono text-sm transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50"
+            className="flex-1 px-3 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#52ddeb]/50 rounded-md text-brand-cyan font-mono text-sm transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50"
             title="Aplicar mudanças"
             aria-label="Aplicar mudanças"
           >

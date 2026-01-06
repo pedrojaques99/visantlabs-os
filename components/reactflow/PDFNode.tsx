@@ -101,7 +101,7 @@ export const PDFNode = memo(({ data, selected, id, dragging }: NodeProps<any>) =
         type="source"
         position={Position.Right}
         id="pdf-output"
-        className="w-2 h-2 bg-[#52ddeb] border-2 border-black node-handle"
+        className="w-2 h-2 bg-brand-cyan border-2 border-black node-handle"
       />
 
       {/* Header */}
@@ -126,7 +126,7 @@ export const PDFNode = memo(({ data, selected, id, dragging }: NodeProps<any>) =
             )}
           </div>
           {fileName && (
-            <div className="text-xs font-mono truncate text-[#52ddeb] px-1">
+            <div className="text-xs font-mono truncate text-brand-cyan px-1">
               {fileName}
             </div>
           )}

@@ -56,7 +56,8 @@ export function saveCanvasToLocalStorage(
   canvasId: string,
   nodes: Node<FlowNodeData>[],
   edges: Edge[],
-  projectName?: string
+  projectName?: string,
+  drawings?: any[]
 ): boolean {
   try {
     // Remover base64 grandes antes de salvar
@@ -83,6 +84,7 @@ export function saveCanvasToLocalStorage(
         }
         return edgeData;
       }),
+      drawings: drawings !== undefined ? drawings : null,
       projectName: projectName || 'Untitled',
       timestamp: Date.now(),
     };
@@ -114,7 +116,7 @@ export function saveCanvasToLocalStorage(
  */
 export function loadCanvasFromLocalStorage(
   canvasId: string
-): { nodes: Node<FlowNodeData>[]; edges: Edge[]; projectName?: string } | null {
+): { nodes: Node<FlowNodeData>[]; edges: Edge[]; drawings?: any[]; projectName?: string } | null {
   try {
     const storageKey = `${STORAGE_KEY_PREFIX}${canvasId}`;
     const saved = localStorage.getItem(storageKey);
@@ -127,6 +129,7 @@ export function loadCanvasFromLocalStorage(
     return {
       nodes: (state.nodes || []) as Node<FlowNodeData>[],
       edges: (state.edges || []) as Edge[],
+      drawings: state.drawings !== undefined ? (state.drawings || []) : undefined,
       projectName: state.projectName,
     };
   } catch (error) {

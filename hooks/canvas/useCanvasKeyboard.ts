@@ -1,6 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import type { Node, Edge } from '@xyflow/react';
 import type { FlowNodeData, ImageNodeData, OutputNodeData } from '../../types/reactFlow';
+import type { DrawingStroke } from './useCanvasDrawing';
 import { toast } from 'sonner';
 import { canvasApi } from '../../services/canvasApi';
 import { getImageUrl } from '../../utils/imageUtils';
@@ -15,7 +16,8 @@ export const useCanvasKeyboard = (
   setContextMenu: (menu: { x: number; y: number; sourceNodeId?: string } | null) => void,
   handleUndo: () => void,
   handleRedo: () => void,
-  addToHistory: (nodes: Node<FlowNodeData>[], edges: Edge[]) => void,
+  addToHistory: (nodes: Node<FlowNodeData>[], edges: Edge[], drawings?: DrawingStroke[]) => void,
+  drawings?: DrawingStroke[],
   handlersRef: React.MutableRefObject<any>,
   reactFlowInstance?: any,
   reactFlowWrapper?: React.RefObject<HTMLDivElement>,
@@ -24,8 +26,47 @@ export const useCanvasKeyboard = (
   addPromptNode?: (customPosition?: { x: number; y: number }) => string | undefined,
   addUpscaleNode?: (customPosition?: { x: number; y: number }) => string | undefined
 ) => {
+  const logTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const lifecycleLogTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const lastLifecycleLogRef = useRef<string>('');
+  
+  // Debounced lifecycle logger
+  const debouncedLifecycleLog = (message: string, data?: any) => {
+    if (lifecycleLogTimeoutRef.current) {
+      clearTimeout(lifecycleLogTimeoutRef.current);
+    }
+    
+    const logKey = `${message}-${JSON.stringify(data || {})}`;
+    lastLifecycleLogRef.current = logKey;
+    
+    lifecycleLogTimeoutRef.current = setTimeout(() => {
+      if (lastLifecycleLogRef.current === logKey) {
+        console.log(message, data || '');
+      }
+    }, 500);
+  };
+  
   useEffect(() => {
+    debouncedLifecycleLog('[Keyboard] Setting up keyboard handler', { 
+      hasHandleUndo: !!handleUndo, 
+      hasHandleRedo: !!handleRedo 
+    });
+    
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Debug log for all Ctrl/Cmd key presses (debounced)
+      if (event.ctrlKey || event.metaKey) {
+        if (logTimeoutRef.current) {
+          clearTimeout(logTimeoutRef.current);
+        }
+        logTimeoutRef.current = setTimeout(() => {
+          console.log('[Keyboard] Modifier key pressed:', event.key, {
+            ctrlKey: event.ctrlKey,
+            metaKey: event.metaKey,
+            shiftKey: event.shiftKey,
+            target: (event.target as HTMLElement)?.tagName,
+          });
+        }, 300);
+      }
       // Helper function to check if user is typing in an editable element
       const isEditableElement = (element: HTMLElement | null): boolean => {
         if (!element) return false;
@@ -52,7 +93,7 @@ export const useCanvasKeyboard = (
 
       // Process Undo/Redo FIRST with highest priority, before checking editable elements
       // This ensures undo/redo works even if focus is in certain contexts
-      const isUndoRedo = (event.ctrlKey || event.metaKey) && event.key === 'z';
+      const isUndoRedo = (event.ctrlKey || event.metaKey) && (event.key === 'z' || event.key === 'Z');
 
       if (isUndoRedo) {
         // Only skip if we're definitely in an input/textarea (not contentEditable for undo/redo)
@@ -65,6 +106,8 @@ export const useCanvasKeyboard = (
           if (!event.shiftKey) {
             event.preventDefault();
             event.stopImmediatePropagation();
+            event.stopPropagation();
+            console.log('[Undo] Ctrl+Z pressed, calling handleUndo');
             handleUndo();
             return;
           }
@@ -73,6 +116,8 @@ export const useCanvasKeyboard = (
           if (event.shiftKey) {
             event.preventDefault();
             event.stopImmediatePropagation();
+            event.stopPropagation();
+            console.log('[Redo] Ctrl+Shift+Z pressed, calling handleRedo');
             handleRedo();
             return;
           }
@@ -91,7 +136,7 @@ export const useCanvasKeyboard = (
         if (selectedNodes.length > 0) {
           event.preventDefault();
 
-          addToHistory(nodes, edges);
+          addToHistory(nodes, edges, drawings);
 
           // Delete images/videos from R2 for all node types before removing them
           // Use Promise.allSettled to handle all deletions without blocking
@@ -130,7 +175,7 @@ export const useCanvasKeyboard = (
           setEdges(newEdges);
 
           setTimeout(() => {
-            addToHistory(newNodes, newEdges);
+            addToHistory(newNodes, newEdges, drawings);
           }, 0);
 
           toast.success(`Removed ${selectedNodes.length} node${selectedNodes.length > 1 ? 's' : ''}`, { duration: 2000 });
@@ -502,11 +547,19 @@ export const useCanvasKeyboard = (
     };
 
     // Register listener in capture phase to ensure priority over other listeners
+    debouncedLifecycleLog('[Keyboard] Registering keyboard listener');
     window.addEventListener('keydown', handleKeyDown, { capture: true });
     return () => {
+      debouncedLifecycleLog('[Keyboard] Unregistering keyboard listener');
+      if (logTimeoutRef.current) {
+        clearTimeout(logTimeoutRef.current);
+      }
+      if (lifecycleLogTimeoutRef.current) {
+        clearTimeout(lifecycleLogTimeoutRef.current);
+      }
       window.removeEventListener('keydown', handleKeyDown, { capture: true });
     };
-  }, [nodes, edges, setNodes, setEdges, handleUndo, handleRedo, addToHistory, setContextMenu, handlersRef, reactFlowInstance, reactFlowWrapper, onDuplicateNodes, addMockupNode, addPromptNode, addUpscaleNode]);
+  }, [nodes, edges, setNodes, setEdges, handleUndo, handleRedo, addToHistory, drawings, setContextMenu, handlersRef, reactFlowInstance, reactFlowWrapper, onDuplicateNodes, addMockupNode, addPromptNode, addUpscaleNode]);
 };
 
 

@@ -264,6 +264,22 @@
       "ambience": "Ambience",
       "luminance": "Luminance"
     },
+    "category": "Category",
+    "difficulty": "Difficulty",
+    "difficultyBeginner": "Beginner",
+    "difficultyIntermediate": "Intermediate",
+    "difficultyAdvanced": "Advanced",
+    "context": "Context",
+    "contextCanvas": "Canvas",
+    "contextMockup": "Mockup",
+    "contextBranding": "Branding",
+    "contextGeneral": "General",
+    "useCase": "Use Case",
+    "useCasePlaceholder": "Describe when and how to use this prompt",
+    "examples": "Examples",
+    "addExample": "Add Example",
+    "examplePlaceholder": "Enter an example variation",
+    "removeExample": "Remove",
     "table": {
       "noPresets": "No presets yet"
     },
@@ -323,7 +339,33 @@
     "tags": {
       "label": "Tags (optional)",
       "placeholder": "Type a tag and press Enter",
-      "add": "Add"
+      "add": "Add",
+      "title": "Tags",
+      "all": "All Tags"
+    },
+    "search": {
+      "title": "Search",
+      "placeholder": "Search presets...",
+      "noResults": "No presets found for",
+      "clear": "Clear search"
+    },
+    "filters": {
+      "title": "Filters",
+      "show": "Show filters",
+      "collapse": "Collapse"
+    },
+    "categories": {
+      "all": "All",
+      "3d": "3D",
+      "presets": "Presets",
+      "aesthetics": "Aesthetics",
+      "themes": "Themes",
+      "mockup": "Mockup",
+      "angle": "Angle",
+      "texture": "Texture",
+      "ambience": "Ambience",
+      "luminance": "Luminance",
+      "title": "Categories"
     },
     "referenceImageAlt": "Reference",
     "sidebarTitle": "My Presets",
@@ -426,6 +468,10 @@
     "backgroundColorDescription": "Change canvas background color",
     "gridColor": "Grid Color",
     "gridColorDescription": "Change grid dots color",
+    "cursorColor": "Cursor Color",
+    "cursorColorDescription": "Change cursor color",
+    "brandCyanColor": "Brand Cyan Color",
+    "brandCyanColorDescription": "Change brand accent color used throughout the app",
     "selectColor": "Select color",
     "nodeBeingMovedBy": "Node is being moved by {userName}",
     "nodeBeingMovedByAnother": "Node is being moved by another user",
@@ -524,7 +570,7 @@
     },
     "step2": {
       "title": "2. Choose your model",
-      "description": "Select between Mockup Machine® HD (fast, 1 credit) or Mockup Machine® 4K (high quality, 3-10 credits)."
+      "description": "Select between Mockup Machine® HD (fast, 1 credit) or Mockup Machine® 4K (high quality, 3-7 credits)."
     },
     "step3": {
       "title": "3. Define design type",
@@ -622,7 +668,7 @@
           "Advanced tools",
           "Higher quality"
         ],
-        "credits": "3-10 credits"
+        "credits": "3-7 credits"
       }
     },
     "surpriseMe": "Surprise Me!",
@@ -1796,7 +1842,7 @@
           "model": "Powered by Google Gemini 3 Pro Preview",
           "features": [
             "High-resolution output up to 4K",
-            "3-10 credits per image (varies by resolution)",
+            "3-7 credits per image (varies by resolution)",
             "Manual aspect ratio control",
             "Advanced image quality and detail",
             "Support for multiple reference images"
@@ -1873,7 +1919,7 @@
           "title": "6.1 Credit Costs",
           "items": [
             "Mockup Machine® HD: 1 credit per image",
-            "Mockup Machine® 4K: 3-10 credits per image (varies by selected resolution)",
+            "Mockup Machine® 4K: 3-7 credits per image (varies by selected resolution)",
             "Credit costs are set by Mockup Machine and may change with notice",
             "Credits are consumed upon successful generation, not upon request"
           ]
@@ -2292,7 +2338,11 @@
       "collapseAll": "Collapse All",
       "expandAll": "Expand All",
       "selectExistingProject": "Select Existing Project",
-      "createNewProject": "Create New Project"
+      "createNewProject": "Create New Project",
+      "projectName": "Project Name",
+      "projectNamePlaceholder": "Enter project name...",
+      "analyze": "Analyze",
+      "reAnalyze": "Re-analyze"
     },
     "brandCore": {
       "title": "Brand Core",
@@ -2423,6 +2473,13 @@
       "title": "Text Node",
       "placeholder": "Enter text here..."
     },
+    "drawingNode": {
+      "freehand": "Freehand",
+      "text": "Text",
+      "shape": "Shape",
+      "drawing": "Drawing",
+      "textPlaceholder": "Click to edit text..."
+    },
     "brandNode": {
       "title": "Brand Node",
       "pleaseSelectImageFile": "Please select an image file",
@@ -2531,7 +2588,18 @@
       "quickActions": "Quick Actions",
       "attachMedia": "Attach Image",
       "mediaAttached": "Image node created!",
-      "context": "Context"
+      "context": "Context",
+      "copyMessage": "Copy message",
+      "messageCopied": "Message copied to clipboard",
+      "copyFailed": "Failed to copy message",
+      "systemPromptSettings": "System Prompt Settings",
+      "systemPrompt": "System Prompt (Agent Personality)",
+      "systemPromptPlaceholder": "Enter custom system prompt to personalize the agent personality. Leave empty to use default.",
+      "systemPromptHint": "This prompt defines how the AI assistant behaves. Use it to customize tone, style, and expertise.",
+      "systemPromptSaved": "System prompt saved",
+      "systemPromptReset": "System prompt reset to default",
+      "resetToDefault": "Reset to Default",
+      "save": "Save"
     }
   },
   "shaderControls": {
@@ -2639,13 +2707,29 @@
       "strategy": "Strategy",
       "brandCore": "Brand Core",
       "chat": "Chat",
-      "colorExtractor": "Color Extractor"
+      "colorExtractor": "Color Extractor",
+      "drawing": "Draw"
     },
+    "toggleDrawingMode": "Toggle Drawing Mode",
     "categories": {
       "core": "Core",
       "composition": "Composition",
       "branding": "Branding"
     }
+  },
+  "canvasBottomToolbar": {
+    "hand": "Hand",
+    "handTooltip": "Pan tool (Space)",
+    "select": "Select",
+    "selectTooltip": "Selection tool",
+    "draw": "Draw",
+    "drawTooltip": "Drawing tool",
+    "color": "Color",
+    "colorTooltip": "Color picker",
+    "type": "Type",
+    "typeTooltip": "Text tool",
+    "shapes": "Shapes",
+    "shapesTooltip": "Shapes tool"
   },
   "shareModal": {
     "userEmailPlaceholder": "User email",
@@ -2795,6 +2879,7 @@
     "panelSubtitle": "View users, subscriptions and credits in real time",
     "users": "Users",
     "presets": "Presets",
+    "designSystem": "Design System",
     "dashboard": "Dashboard",
     "generations": "Generations",
     "refresh": "Refresh",
@@ -2887,5 +2972,167 @@
     "remaining": "Remaining",
     "of": "of",
     "unavailable": "Storage information not available"
+  },
+  "designSystem": {
+    "title": "Design System",
+    "description": "Documentation of design tokens, components, and patterns",
+    "navigation": {
+      "title": "Navigation",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "seo": {
+      "title": "Design System - Visant Labs",
+      "description": "Design system documentation for Visant Labs",
+      "keywords": "design system, UI components, colors, typography"
+    },
+    "tabs": {
+      "home": "Home",
+      "colors": "Colors",
+      "typography": "Typography",
+      "components": "Components",
+      "spacing": "Spacing"
+    },
+    "home": {
+      "welcome": "Welcome to the Design System",
+      "description": "A comprehensive guide to our design tokens, components, and patterns",
+      "colorsDescription": "Color palette and tokens",
+      "typographyDescription": "Fonts and text styles",
+      "componentsDescription": "Reusable UI components",
+      "spacingDescription": "Spacing scale and system",
+      "quickStart": "Quick Start",
+      "quickStartDescription": "Get started with our design system by exploring the color palette, typography, and components.",
+      "quickStart1": "Browse components and their variants",
+      "quickStart2": "Copy CSS variables and class names",
+      "quickStart3": "Understand spacing and layout patterns",
+      "usage": "Usage",
+      "usageDescription": "All components follow consistent patterns and can be customized using CSS variables.",
+      "usageExample": "<Button variant=\"default\">Click me</Button>"
+    },
+    "colors": {
+      "primary": {
+        "title": "Primary Colors",
+        "description": "Main color palette used throughout the application"
+      },
+      "chart": {
+        "title": "Chart Colors",
+        "description": "Colors used for data visualization"
+      }
+    },
+    "typography": {
+      "fonts": {
+        "title": "Font Families",
+        "description": "Typography system and font families"
+      },
+      "scale": {
+        "title": "Type Scale",
+        "description": "Hierarchy of text sizes"
+      }
+    },
+    "components": {
+      "buttons": {
+        "title": "Buttons",
+        "description": "Button component variants and sizes"
+      },
+      "inputs": {
+        "title": "Inputs",
+        "description": "Text input components"
+      },
+      "textarea": {
+        "title": "Textarea",
+        "description": "Multiline text input"
+      },
+      "select": {
+        "title": "Select",
+        "description": "Dropdown select component"
+      },
+      "switch": {
+        "title": "Switch",
+        "description": "Toggle switch component"
+      },
+      "badge": {
+        "title": "Badge",
+        "description": "Badge component variants"
+      },
+      "card": {
+        "title": "Card",
+        "description": "Card container component"
+      },
+      "presetCard": {
+        "title": "Preset Card",
+        "description": "Card component for displaying community presets with image, metadata, and actions"
+      },
+      "navigationSidebar": {
+        "title": "Navigation Sidebar",
+        "description": "Reusable navigation sidebar component with collapsible sections and mobile support"
+      },
+      "modal": {
+        "title": "Modal",
+        "description": "Confirmation modal component for user confirmations and alerts"
+      },
+      "table": {
+        "title": "Table",
+        "description": "Basic table component for displaying structured data"
+      },
+      "dataTable": {
+        "title": "Data Table",
+        "description": "Advanced data table with sorting, filtering, and search capabilities"
+      },
+      "charts": {
+        "title": "Charts",
+        "description": "Chart components built with Recharts for data visualization"
+      },
+      "breadcrumb": {
+        "title": "Breadcrumb",
+        "description": "Navigation breadcrumb component with back button support"
+      },
+      "skeletonLoader": {
+        "title": "Skeleton Loader",
+        "description": "Loading placeholder component for better UX during data fetching"
+      },
+      "gridDotsBackground": {
+        "title": "Grid Dots Background",
+        "description": "Decorative background pattern with configurable dots"
+      },
+      "tabs": {
+        "title": "Tabs",
+        "description": "Tabbed interface component for organizing content into sections"
+      },
+      "canvasToolbar": {
+        "title": "Canvas Toolbar",
+        "description": "Collapsible toolbar for creating and managing canvas nodes with drag-and-drop support"
+      },
+      "canvasHeader": {
+        "title": "Canvas Header",
+        "description": "Header component for canvas pages with project name editing, settings, and collaboration features"
+      },
+      "canvasFlow": {
+        "title": "Canvas Flow",
+        "description": "Main React Flow canvas component with drag-and-drop, node management, and image handling"
+      }
+    },
+    "spacing": {
+      "scale": {
+        "title": "Spacing Scale",
+        "description": "Consistent spacing system based on Tailwind scale"
+      },
+      "custom": {
+        "title": "Custom Variables",
+        "description": "Custom spacing variables for specific use cases"
+      }
+    },
+    "commandPalette": {
+      "placeholder": "Search components, colors, typography...",
+      "noResults": "No results found",
+      "search": "Search",
+      "searchShortcut": "Search (Ctrl+K)",
+      "tab": "Tab",
+      "section": "Section"
+    },
+    "modal": {
+      "exampleTitle": "Example Modal",
+      "exampleMessage": "This is an example of the ConfirmationModal component.",
+      "confirmed": "Confirmed!"
+    }
   }
 }

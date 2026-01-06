@@ -56,7 +56,7 @@ export const DeliverablesSection: React.FC<DeliverablesSectionProps> = ({
         </h3>
         <button
           onClick={addDeliverable}
-          className="p-2 bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 border border-[#52ddeb]/50 rounded-xl text-[#52ddeb] transition-all duration-300 flex items-center justify-center"
+          className="p-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#52ddeb]/50 rounded-xl text-brand-cyan transition-all duration-300 flex items-center justify-center"
           title={t('budget.addDeliverable') || 'Adicionar Entregável'}
         >
           <Plus size={18} />
@@ -72,7 +72,7 @@ export const DeliverablesSection: React.FC<DeliverablesSectionProps> = ({
           {deliverables.map((deliverable, index) => (
             <div key={index}>
               <div
-                className="p-4 bg-[#1A1A1A] border border-zinc-800 rounded-xl space-y-3"
+                className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl space-y-3"
               >
                 <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                   <div className="flex-1 w-full space-y-3">

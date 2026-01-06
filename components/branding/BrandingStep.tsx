@@ -1,7 +1,8 @@
 import React from 'react';
 import { FormButton } from '../ui/form-button';
 import { Card, CardContent } from '../ui/card';
-import { CheckCircle2, RefreshCw, Loader2, Coins } from 'lucide-react';
+import { CheckCircle2, RefreshCw, Coins } from 'lucide-react';
+import { GlitchLoader } from '../ui/GlitchLoader';
 import { useTranslation } from '../../hooks/useTranslation';
 import { getBrandingStepCredits } from '../../utils/creditCalculator';
 
@@ -29,7 +30,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
     if (isGenerating) {
       return (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-[#52ddeb]" />
+          <GlitchLoader size={32} color="#52ddeb" />
           <span className="ml-3 text-muted-foreground">{t('branding.generating')} {title}...</span>
         </div>
       );
@@ -71,7 +72,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
               <ul key={elements.length} className="mb-6 space-y-2 list-none">
                 {listItems.map((item, idx) => (
                   <li key={idx} className="flex items-start gap-3">
-                    <span className="text-[#52ddeb] mt-1.5 flex-shrink-0">•</span>
+                    <span className="text-brand-cyan mt-1.5 flex-shrink-0">•</span>
                     <span className="text-foreground normal-case leading-relaxed">{parseInlineMarkdown(item.trim())}</span>
                   </li>
                 ))}
@@ -180,7 +181,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
         <ul className="space-y-2">
           {content.map((item, index) => (
             <li key={index} className="flex items-start gap-2 animate-fade-in">
-              <span className="text-[#52ddeb] mt-1">•</span>
+              <span className="text-brand-cyan mt-1">•</span>
               <span className="text-foreground">{item}</span>
             </li>
           ))}

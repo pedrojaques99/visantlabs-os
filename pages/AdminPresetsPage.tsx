@@ -7,6 +7,8 @@ import { AdminImageUploader } from '../components/ui/AdminImageUploader';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Textarea } from '../components/ui/textarea';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
 import {
   BreadcrumbWithBack,
@@ -857,7 +859,7 @@ export const AdminPresetsPage: React.FC = () => {
       <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
         {!isCheckingAuth && !isAuthenticated && (
           <div className="max-w-md mx-auto">
-            <div className="bg-[#1A1A1A] border border-zinc-800/50 rounded-md p-6 md:p-8 space-y-4 text-center">
+            <div className="bg-zinc-900 border border-zinc-800/50 rounded-md p-6 md:p-8 space-y-4 text-center">
               {isUserAuthenticated === false ? (
                 <>
                   <p className="text-zinc-400 font-mono mb-4">
@@ -865,7 +867,7 @@ export const AdminPresetsPage: React.FC = () => {
                   </p>
                   <a
                     href="/"
-                    className="inline-block px-4 py-2 bg-[#52ddeb]/80 hover:bg-[#52ddeb] text-black font-semibold rounded-md text-sm font-mono transition-colors"
+                    className="inline-block px-4 py-2 bg-brand-cyan/80 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-colors"
                   >
                     Fazer Login
                   </a>
@@ -891,7 +893,7 @@ export const AdminPresetsPage: React.FC = () => {
             if (val !== 'presets') navigate('/admin');
           }}>
             {/* Unified Header */}
-            <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl mb-6">
+            <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl mb-6">
               <CardContent className="p-4 md:p-6">
                 <div className="mb-4">
                   <BreadcrumbWithBack to="/">
@@ -917,7 +919,7 @@ export const AdminPresetsPage: React.FC = () => {
 
                   <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      <ShieldCheck className="h-6 w-6 md:h-8 md:w-8 text-[#52ddeb]" />
+                      <ShieldCheck className="h-6 w-6 md:h-8 md:w-8 text-brand-cyan" />
                       <div>
                         <h1 className="text-2xl md:text-3xl font-semibold font-manrope text-zinc-300">
                           {t('adminPresets.title') || 'Administração de Presets'}
@@ -930,16 +932,16 @@ export const AdminPresetsPage: React.FC = () => {
 
                     <div className="flex items-center gap-4">
                     <TabsList className="bg-zinc-900/50 border border-zinc-800/50 p-1 h-auto flex-wrap">
-                      <TabsTrigger value="overview" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/10 transition-all py-1.5 px-3 text-xs md:text-sm">
+                      <TabsTrigger value="overview" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/10 transition-all py-1.5 px-3 text-xs md:text-sm">
                         {t('admin.dashboard')}
                       </TabsTrigger>
-                      <TabsTrigger value="generations" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/10 transition-all py-1.5 px-3 text-xs md:text-sm">
+                      <TabsTrigger value="generations" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/10 transition-all py-1.5 px-3 text-xs md:text-sm">
                         {t('admin.generations')}
                       </TabsTrigger>
-                      <TabsTrigger value="users" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/10 transition-all py-1.5 px-3 text-xs md:text-sm">
+                      <TabsTrigger value="users" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/10 transition-all py-1.5 px-3 text-xs md:text-sm">
                         {t('admin.users')}
                       </TabsTrigger>
-                      <TabsTrigger value="presets" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/10 transition-all py-1.5 px-3 text-xs md:text-sm">
+                      <TabsTrigger value="presets" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/10 transition-all py-1.5 px-3 text-xs md:text-sm">
                         <Settings className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
                         {t('admin.presets')}
                       </TabsTrigger>
@@ -962,7 +964,7 @@ export const AdminPresetsPage: React.FC = () => {
 
             <div className="space-y-6">
               {/* Tabs and Actions Card */}
-              <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 transition-all duration-300 shadow-lg">
+              <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 transition-all duration-300 shadow-lg">
                 <CardContent className="p-4 md:p-6">
                   <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
                   <div className="flex gap-2 flex-wrap">
@@ -974,7 +976,7 @@ export const AdminPresetsPage: React.FC = () => {
                     variant={activeTab === 'mockup' ? 'default' : 'outline'}
                     className={`font-mono transition-all ${
                       activeTab === 'mockup'
-                        ? 'bg-[#52ddeb]/80 hover:bg-[#52ddeb] text-black'
+                        ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
                         : 'border-zinc-700/60 hover:border-[#52ddeb]/30'
                     }`}
                   >
@@ -988,7 +990,7 @@ export const AdminPresetsPage: React.FC = () => {
                     variant={activeTab === 'angle' ? 'default' : 'outline'}
                     className={`font-mono transition-all ${
                       activeTab === 'angle'
-                        ? 'bg-[#52ddeb]/80 hover:bg-[#52ddeb] text-black'
+                        ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
                         : 'border-zinc-700/60 hover:border-[#52ddeb]/30'
                     }`}
                   >
@@ -1002,7 +1004,7 @@ export const AdminPresetsPage: React.FC = () => {
                     variant={activeTab === 'texture' ? 'default' : 'outline'}
                     className={`font-mono transition-all ${
                       activeTab === 'texture'
-                        ? 'bg-[#52ddeb]/80 hover:bg-[#52ddeb] text-black'
+                        ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
                         : 'border-zinc-700/60 hover:border-[#52ddeb]/30'
                     }`}
                   >
@@ -1016,7 +1018,7 @@ export const AdminPresetsPage: React.FC = () => {
                     variant={activeTab === 'ambience' ? 'default' : 'outline'}
                     className={`font-mono transition-all ${
                       activeTab === 'ambience'
-                        ? 'bg-[#52ddeb]/80 hover:bg-[#52ddeb] text-black'
+                        ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
                         : 'border-zinc-700/60 hover:border-[#52ddeb]/30'
                     }`}
                   >
@@ -1030,7 +1032,7 @@ export const AdminPresetsPage: React.FC = () => {
                     variant={activeTab === 'luminance' ? 'default' : 'outline'}
                     className={`font-mono transition-all ${
                       activeTab === 'luminance'
-                        ? 'bg-[#52ddeb]/80 hover:bg-[#52ddeb] text-black'
+                        ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
                         : 'border-zinc-700/60 hover:border-[#52ddeb]/30'
                     }`}
                   >
@@ -1041,14 +1043,14 @@ export const AdminPresetsPage: React.FC = () => {
                   <Button
                     onClick={handleRefresh}
                     disabled={isLoading}
-                    className="font-mono bg-[#52ddeb]/80 hover:bg-[#52ddeb] text-black disabled:bg-zinc-700 disabled:text-zinc-500"
+                    className="font-mono bg-brand-cyan/80 hover:bg-brand-cyan text-black disabled:bg-zinc-700 disabled:text-zinc-500"
                   >
                     Atualizar
                   </Button>
                   {!isEditing && (
                     <Button
                       onClick={handleCreate}
-                      className="font-mono bg-[#52ddeb]/80 hover:bg-[#52ddeb] text-black"
+                      className="font-mono bg-brand-cyan/80 hover:bg-brand-cyan text-black"
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       Novo
@@ -1089,7 +1091,7 @@ export const AdminPresetsPage: React.FC = () => {
 
             {/* Presets Grid - Bento Box Cards */}
             {currentPresets.length === 0 ? (
-              <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl">
+              <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl">
                 <CardContent className="p-12 text-center">
                   <p className="text-zinc-500 font-mono">Nenhum preset encontrado</p>
                 </CardContent>
@@ -1101,7 +1103,7 @@ export const AdminPresetsPage: React.FC = () => {
                   return (
                     <Card
                       key={preset.id}
-                      className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl"
+                      className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl"
                     >
                       <CardContent className="p-6">
                         {/* Image */}
@@ -1144,7 +1146,7 @@ export const AdminPresetsPage: React.FC = () => {
                         <div className="space-y-2 mb-4">
                           <div className="flex items-center gap-2 text-xs font-mono">
                             <span className="text-zinc-500">Aspect Ratio:</span>
-                            <Badge variant="outline" className="bg-[#52ddeb]/10 text-[#52ddeb] border-[#52ddeb]/30 text-xs">
+                            <Badge variant="outline" className="bg-brand-cyan/10 text-brand-cyan border-[#52ddeb]/30 text-xs">
                               {preset.aspectRatio}
                             </Badge>
                           </div>
@@ -1162,7 +1164,7 @@ export const AdminPresetsPage: React.FC = () => {
                             onClick={() => handleEdit(activeTab, preset)}
                             variant="outline"
                             size="sm"
-                            className="flex-1 border-[#52ddeb]/30 text-[#52ddeb] hover:bg-[#52ddeb]/10 hover:border-[#52ddeb]/50 font-mono"
+                            className="flex-1 border-[#52ddeb]/30 text-brand-cyan hover:bg-brand-cyan/10 hover:border-[#52ddeb]/50 font-mono"
                           >
                             <Edit2 className="h-4 w-4 mr-2" />
                             Editar
@@ -1187,7 +1189,7 @@ export const AdminPresetsPage: React.FC = () => {
         {/* Batch Upload Modal */}
         {isBatchModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-            <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
               <CardContent className="p-6 md:p-8">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-semibold text-zinc-200 font-mono">
@@ -1260,7 +1262,7 @@ export const AdminPresetsPage: React.FC = () => {
                 <Button
                   onClick={handleBatchUpload}
                   disabled={isLoading || !batchJson.trim()}
-                  className="font-mono bg-[#52ddeb]/80 hover:bg-[#52ddeb] text-black disabled:bg-zinc-700 disabled:text-zinc-500"
+                  className="font-mono bg-brand-cyan/80 hover:bg-brand-cyan text-black disabled:bg-zinc-700 disabled:text-zinc-500"
                 >
                   <Upload className="h-4 w-4 mr-2" />
                   {isLoading ? 'Enviando...' : 'Enviar Batch'}
@@ -1285,7 +1287,7 @@ export const AdminPresetsPage: React.FC = () => {
             onClick={handleCancel}
           >
             <Card 
-              className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+              className="bg-zinc-900 border border-zinc-800/50 rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <CardContent className="p-6 md:p-8">
@@ -1312,12 +1314,12 @@ export const AdminPresetsPage: React.FC = () => {
                   <label className="block text-sm text-zinc-400 font-mono mb-2">
                     ID {isCreating && '(obrigatório)'}
                   </label>
-                  <input
+                  <Input
                     type="text"
                     value={formData.id}
                     onChange={(e) => setFormData({ ...formData, id: e.target.value })}
                     disabled={!isCreating}
-                    className="w-full px-4 py-2 bg-black/40 border border-zinc-700/50 rounded-md text-zinc-300 font-mono text-sm focus:outline-none focus:border-[#52ddeb]/50 disabled:opacity-50"
+                    className="font-mono"
                     placeholder="ex: my-custom-preset"
                   />
                 </div>
@@ -1326,11 +1328,11 @@ export const AdminPresetsPage: React.FC = () => {
                   <label className="block text-sm text-zinc-400 font-mono mb-2">
                     Nome (obrigatório)
                   </label>
-                  <input
+                  <Input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-2 bg-black/40 border border-zinc-700/50 rounded-md text-zinc-300 font-mono text-sm focus:outline-none focus:border-[#52ddeb]/50"
+                    className="font-mono"
                   />
                 </div>
 
@@ -1338,11 +1340,11 @@ export const AdminPresetsPage: React.FC = () => {
                   <label className="block text-sm text-zinc-400 font-mono mb-2">
                     Descrição (obrigatório)
                   </label>
-                  <input
+                  <Input
                     type="text"
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-4 py-2 bg-black/40 border border-zinc-700/50 rounded-md text-zinc-300 font-mono text-sm focus:outline-none focus:border-[#52ddeb]/50"
+                    className="font-mono"
                   />
                 </div>
 
@@ -1350,11 +1352,11 @@ export const AdminPresetsPage: React.FC = () => {
                   <label className="block text-sm text-zinc-400 font-mono mb-2">
                     Prompt (obrigatório)
                   </label>
-                  <textarea
+                  <Textarea
                     value={formData.prompt}
                     onChange={(e) => setFormData({ ...formData, prompt: e.target.value })}
                     rows={4}
-                    className="w-full px-4 py-2 bg-black/40 border border-zinc-700/50 rounded-md text-zinc-300 font-mono text-sm focus:outline-none focus:border-[#52ddeb]/50 resize-none"
+                    className="font-mono resize-none"
                   />
                 </div>
 
@@ -1503,7 +1505,7 @@ export const AdminPresetsPage: React.FC = () => {
                             setTagInput('');
                           }
                         }}
-                        className="px-4 py-2 bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 border border-[#52ddeb]/30 rounded-md text-[#52ddeb] font-mono text-sm transition-colors"
+                        className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#52ddeb]/30 rounded-md text-brand-cyan font-mono text-sm transition-colors"
                       >
                         Adicionar
                       </button>
@@ -1540,7 +1542,7 @@ export const AdminPresetsPage: React.FC = () => {
                 <Button
                   onClick={handleSave}
                   disabled={isLoading}
-                  className="font-mono bg-[#52ddeb]/80 hover:bg-[#52ddeb] text-black disabled:bg-zinc-700 disabled:text-zinc-500"
+                  className="font-mono bg-brand-cyan/80 hover:bg-brand-cyan text-black disabled:bg-zinc-700 disabled:text-zinc-500"
                 >
                   <Save className="h-4 w-4 mr-2" />
                   Salvar

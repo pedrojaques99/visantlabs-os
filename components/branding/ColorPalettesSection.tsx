@@ -180,7 +180,7 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
               {isEditing && onContentChange && (
                 <button
                   onClick={() => handleAddColor(index)}
-                  className={`flex flex-col items-center justify-center aspect-square border-2 border-dashed rounded-md transition-colors hover:border-[#52ddeb]/50 hover:text-[#52ddeb] ${
+                  className={`flex flex-col items-center justify-center aspect-square border-2 border-dashed rounded-md transition-colors hover:border-[#52ddeb]/50 hover:text-brand-cyan ${
                     theme === 'dark'
                       ? 'border-zinc-700/50 text-zinc-400'
                       : 'border-zinc-400/50 text-zinc-500'
@@ -221,7 +221,7 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
       {isEditing && onContentChange && (
         <button
           onClick={handleAddPalette}
-          className={`flex items-center gap-2 px-4 py-2 border hover:border-[#52ddeb]/50 hover:text-[#52ddeb] rounded-xl text-sm font-mono transition-all duration-300 ${
+          className={`flex items-center gap-2 px-4 py-2 border hover:border-[#52ddeb]/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-all duration-300 ${
             theme === 'dark'
               ? 'bg-black/40 border-zinc-800/60 text-zinc-300'
               : 'bg-zinc-100 border-zinc-300 text-zinc-800'

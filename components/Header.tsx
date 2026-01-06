@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom';
 import { AuthButton } from './AuthButton';
 import { AuthModal } from './AuthModal';
 import { ConfirmationModal } from './ConfirmationModal';
+import { Button } from './ui/button';
 import { useTheme } from '../hooks/useTheme';
 import { useLayout } from '../hooks/useLayout';
 import { useTranslation } from '../hooks/useTranslation';
@@ -192,7 +193,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
               window.location.href = '/';
             }
           }}
-          className="p-1.5 md:px-3 md:py-1.5 text-zinc-500 hover:text-[#52ddeb] transition-colors rounded border border-zinc-800/50 hover:border-[#52ddeb]/30 cursor-pointer"
+          className="p-1.5 md:px-3 md:py-1.5 text-zinc-500 hover:text-brand-cyan transition-colors rounded border border-zinc-800/50 hover:border-[#52ddeb]/30 cursor-pointer"
           title="Mockup Machine"
           aria-label="Go to Mockup Machine"
         >
@@ -200,15 +201,17 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
         </button> */}
         {/* New Mockup button - hidden on WelcomeScreen */}
         {!isOnWelcomeScreen && (
-          <button
+          <Button
             onClick={handleNewMockupClick}
-            className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-mono text-zinc-400 hover:text-[#52ddeb] transition-colors rounded border border-zinc-700/30 hover:border-[#52ddeb]/50 hover:bg-zinc-800/30 cursor-pointer"
+            variant="outline"
+            size="sm"
+            className="text-[10px] md:text-xs font-mono text-zinc-400 hover:text-brand-cyan border-zinc-700/30 hover:border-[#52ddeb]/50 hover:bg-zinc-800/30"
             title="New Mockup"
             aria-label="Create new mockup"
           >
             <Plus size={12} className="md:w-3.5 md:h-3.5" />
             <span className="hidden sm:inline">New Mockup</span>
-          </button>
+          </Button>
         )}
         {/* Explore Mockups button */}
         {/* Explore Mockups button - hidden */}
@@ -218,7 +221,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
             const popStateEvent = new PopStateEvent('popstate', { state: {} });
             window.dispatchEvent(popStateEvent);
           }}
-          className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-mono text-zinc-400 hover:text-[#52ddeb] transition-colors rounded border border-zinc-700/30 hover:border-[#52ddeb]/50 hover:bg-zinc-800/30 cursor-pointer"
+          className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-mono text-zinc-400 hover:text-brand-cyan transition-colors rounded border border-zinc-700/30 hover:border-[#52ddeb]/50 hover:bg-zinc-800/30 cursor-pointer"
           title="Explore Mockups"
           aria-label="Explore mockups"
         >
@@ -232,7 +235,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
             const popStateEvent = new PopStateEvent('popstate', { state: {} });
             window.dispatchEvent(popStateEvent);
           }}
-          className="p-1.5 md:p-2 text-zinc-500 hover:text-[#52ddeb] transition-colors rounded hover:bg-zinc-800/30 cursor-pointer"
+          className="p-1.5 md:p-2 text-zinc-500 hover:text-brand-cyan transition-colors rounded hover:bg-zinc-800/30 cursor-pointer"
           title="Community"
           aria-label="Community"
         >
@@ -246,7 +249,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
               const popStateEvent = new PopStateEvent('popstate', { state: {} });
               window.dispatchEvent(popStateEvent);
             }}
-            className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-mono text-zinc-400 hover:text-[#52ddeb] transition-colors rounded border border-zinc-700/30 hover:border-[#52ddeb]/50 hover:bg-zinc-800/30 cursor-pointer"
+            className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-mono text-zinc-400 hover:text-brand-cyan transition-colors rounded border border-zinc-700/30 hover:border-[#52ddeb]/50 hover:bg-zinc-800/30 cursor-pointer"
             title="About"
             aria-label="About"
           >
@@ -275,7 +278,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
         {isAuthenticated === false && (
           <button
             onClick={() => setShowRegisterModal(true)}
-            className="flex items-center gap-0.5 md:gap-1.5 p-1.5 md:px-3 md:py-1.5 bg-[#52ddeb]/20 text-[#52ddeb] rounded-md border border-[#52ddeb]/30 hover:border-[#52ddeb]/50 hover:bg-[#52ddeb]/30 text-[10px] md:text-xs font-mono transition-colors cursor-pointer"
+            className="flex items-center gap-0.5 md:gap-1.5 p-1.5 md:px-3 md:py-1.5 bg-brand-cyan/20 text-brand-cyan rounded-md border border-[#52ddeb]/30 hover:border-[#52ddeb]/50 hover:bg-brand-cyan/30 text-[10px] md:text-xs font-mono transition-colors cursor-pointer"
           >
             <UserPlus size={11} className="md:w-[14px] md:h-[14px]" />
             <span className="hidden sm:inline">Register</span>
@@ -284,7 +287,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
         {isAuthenticated && onMyOutputsClick && (
           <button
             onClick={onMyOutputsClick}
-            className="relative p-1.5 md:p-2 text-zinc-500 hover:text-[#52ddeb] transition-colors rounded hover:bg-zinc-800/30 cursor-pointer"
+            className="relative p-1.5 md:p-2 text-zinc-500 hover:text-brand-cyan transition-colors rounded hover:bg-zinc-800/30 cursor-pointer"
             title="Saved"
             aria-label="View saved outputs"
           >
@@ -300,7 +303,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
         {/* {isAuthenticated && onMyBrandingsClick && (
           <button
             onClick={onMyBrandingsClick}
-            className="relative p-1.5 md:p-2 text-zinc-500 hover:text-[#52ddeb] transition-colors rounded hover:bg-zinc-800/30"
+            className="relative p-1.5 md:p-2 text-zinc-500 hover:text-brand-cyan transition-colors rounded hover:bg-zinc-800/30"
             title="My Branding Projects"
             aria-label="View my branding projects"
           >
