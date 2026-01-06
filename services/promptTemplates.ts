@@ -5,8 +5,8 @@ import {
   AVAILABLE_LIGHTING_TAGS,
   AVAILABLE_EFFECT_TAGS,
   AVAILABLE_MATERIAL_TAGS,
-} from '../utils/mockupConstants';
-import { getMockupPromptFormatInstructions } from '../utils/mockupPromptFormat';
+} from '../utils/mockupConstants.js';
+import { getMockupPromptFormatInstructions } from '../utils/mockupPromptFormat.js';
 import type { ChatContext } from './chatService';
 
 /**

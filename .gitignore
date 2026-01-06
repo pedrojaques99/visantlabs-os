@@ -34,3 +34,6 @@ ENV_VARIABLES.md
 MONGODB_URI_FIX.md
 GOOGLE_OAUTH_SETUP.md
 /MD
+.agent
+/.agent
+

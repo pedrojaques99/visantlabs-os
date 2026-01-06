@@ -3,8 +3,8 @@ import {
   AVAILABLE_LIGHTING_TAGS,
   AVAILABLE_EFFECT_TAGS,
   AVAILABLE_MATERIAL_TAGS,
-} from '../utils/mockupConstants';
-import { getBackgroundsForBranding } from '../utils/promptHelpers';
+} from '../utils/mockupConstants.js';
+import { getBackgroundsForBranding } from '../utils/promptHelpers.js';
 
 /**
  * Tag mapping interface for all tag categories
