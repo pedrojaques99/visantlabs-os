@@ -1,5 +1,5 @@
-import type { AnglePreset, AnglePresetType } from '../types/anglePresets';
-import { ANGLE_PRESETS } from '../types/anglePresets';
+import type { AnglePreset, AnglePresetType } from '../types/anglePresets.js';
+import { ANGLE_PRESETS } from '../types/anglePresets.js';
 
 // Cache for MongoDB presets
 let cachedPresets: AnglePreset[] | null = null;

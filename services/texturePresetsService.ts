@@ -1,5 +1,5 @@
-import type { TexturePreset, TexturePresetType } from '../types/texturePresets';
-import { TEXTURE_PRESETS } from '../types/texturePresets';
+import type { TexturePreset, TexturePresetType } from '../types/texturePresets.js';
+import { TEXTURE_PRESETS } from '../types/texturePresets.js';
 
 // Cache for MongoDB presets
 let cachedPresets: TexturePreset[] | null = null;
