@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Button } from '../ui/button';
-import { X, FileText, Loader2, Trash2 } from 'lucide-react';
+import { X, FileText, Trash2 } from 'lucide-react';
+import { GlitchLoader } from '../ui/GlitchLoader';
 import { budgetApi } from '../../services/budgetApi';
 import { toast } from 'sonner';
 import type { CustomPdfPreset } from '../../types';
@@ -71,7 +72,7 @@ export const PdfPresetSelector: React.FC<PdfPresetSelectorProps> = ({
   if (isLoading) {
     return (
       <div className="flex items-center gap-2 p-4 border border-zinc-800 rounded-xl bg-black/20">
-        <Loader2 className="h-4 w-4 animate-spin text-[#52ddeb]" />
+        <GlitchLoader size={16} color="#52ddeb" />
         <span className="text-sm text-zinc-400 font-mono">
           Carregando presets...
         </span>
@@ -100,7 +101,7 @@ export const PdfPresetSelector: React.FC<PdfPresetSelectorProps> = ({
               className={`
                 relative p-3 border rounded-xl cursor-pointer transition-all
                 ${isSelected 
-                  ? 'border-[#52ddeb] bg-[#52ddeb]/10' 
+                  ? 'border-[#52ddeb] bg-brand-cyan/10' 
                   : 'border-zinc-800 bg-black/20 hover:bg-black/30'
                 }
               `}
@@ -121,12 +122,12 @@ export const PdfPresetSelector: React.FC<PdfPresetSelectorProps> = ({
                   title="Deletar preset"
                 >
                   {deletingId === presetId ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <GlitchLoader size={16} />
                   ) : (
                     <Trash2 size={14} />
                   )}
                 </button>
-                <FileText className="h-5 w-5 text-[#52ddeb] flex-shrink-0" />
+                <FileText className="h-5 w-5 text-brand-cyan flex-shrink-0" />
               </div>
             </div>
           );

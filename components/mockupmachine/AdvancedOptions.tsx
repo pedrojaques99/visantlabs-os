@@ -143,8 +143,8 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
               onClick={() => onTagToggle(tag)}
               className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer ${isSelected
                 ? theme === 'dark'
-                  ? 'bg-[#52ddeb]/20 text-[#52ddeb] border-[#52ddeb]/30 shadow-sm shadow-[#52ddeb]/10'
-                  : 'bg-[#52ddeb]/20 text-zinc-800 border-[#52ddeb]/30 shadow-sm shadow-[#52ddeb]/10'
+                  ? 'bg-brand-cyan/20 text-brand-cyan border-[#52ddeb]/30 shadow-sm shadow-[#52ddeb]/10'
+                  : 'bg-brand-cyan/20 text-zinc-800 border-[#52ddeb]/30 shadow-sm shadow-[#52ddeb]/10'
                 : theme === 'dark'
                   ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
                   : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'
@@ -175,8 +175,8 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
             onBlur={handleBlur}
             placeholder={t('mockup.customCategoryPlaceholder')}
             className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border border-[#52ddeb]/30 focus:outline-none focus:ring-0 min-w-[120px] font-mono ${theme === 'dark'
-              ? 'bg-[#52ddeb]/20 text-[#52ddeb]'
-              : 'bg-[#52ddeb]/20 text-zinc-800'
+              ? 'bg-brand-cyan/20 text-brand-cyan'
+              : 'bg-brand-cyan/20 text-zinc-800'
               }`}
             autoFocus
           />

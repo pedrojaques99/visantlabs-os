@@ -81,6 +81,10 @@ export const useCanvasNodeSync = ({
               updates.connectedTextDirection = undefined;
               nodeHasChanges = true;
             }
+            if (mockupData.connectedStrategyData) {
+              updates.connectedStrategyData = undefined;
+              nodeHasChanges = true;
+            }
 
             const imageEdge = edges.find(e =>
               e.target === n.id &&
@@ -99,6 +103,32 @@ export const useCanvasNodeSync = ({
               }
             } else if (mockupData.connectedImage) {
               updates.connectedImage = undefined;
+              nodeHasChanges = true;
+            }
+          }
+
+          // Also sync from direct StrategyNode connection (strategy-input handle)
+          const strategyEdge = edges.find(e =>
+            e.target === n.id &&
+            e.targetHandle === 'strategy-input' &&
+            e.source &&
+            nds.find(src => src.id === e.source)?.type === 'strategy'
+          );
+
+          if (strategyEdge) {
+            const strategyNode = nds.find(src => src.id === strategyEdge.source);
+            if (strategyNode?.type === 'strategy') {
+              const strategyNodeData = strategyNode.data as StrategyNodeData;
+              const strategyChanged = JSON.stringify(strategyNodeData.strategyData) !== JSON.stringify(mockupData.connectedStrategyData);
+              if (strategyChanged && strategyNodeData.strategyData) {
+                updates.connectedStrategyData = strategyNodeData.strategyData;
+                nodeHasChanges = true;
+              }
+            }
+          } else if (!brandCoreEdge) {
+            // Only clear if not connected via BrandCore either
+            if (mockupData.connectedStrategyData) {
+              updates.connectedStrategyData = undefined;
               nodeHasChanges = true;
             }
           }
@@ -332,6 +362,31 @@ export const useCanvasNodeSync = ({
               }
             }
           });
+
+          // 4. Sync from StrategyNode (strategy-input handle)
+          const strategyEdge = edges.find(e =>
+            e.target === n.id &&
+            e.targetHandle === 'strategy-input' &&
+            e.source &&
+            nds.find(src => src.id === e.source)?.type === 'strategy'
+          );
+
+          if (strategyEdge) {
+            const strategyNode = nds.find(src => src.id === strategyEdge.source);
+            if (strategyNode?.type === 'strategy') {
+              const strategyNodeData = strategyNode.data as StrategyNodeData;
+              const strategyChanged = JSON.stringify(strategyNodeData.strategyData) !== JSON.stringify(promptData.connectedStrategyData);
+              if (strategyChanged && strategyNodeData.strategyData) {
+                updates.connectedStrategyData = strategyNodeData.strategyData;
+                nodeHasChanges = true;
+              }
+            }
+          } else {
+            if (promptData.connectedStrategyData !== undefined) {
+              updates.connectedStrategyData = undefined;
+              nodeHasChanges = true;
+            }
+          }
 
           if (nodeHasChanges && Object.keys(updates).length > 0) {
             hasChanges = true;

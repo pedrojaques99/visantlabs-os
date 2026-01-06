@@ -181,9 +181,9 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-[#1A1A1A] border border-zinc-800/60 rounded-xl shadow-2xl">
+      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-zinc-900 border border-zinc-800/60 rounded-xl shadow-2xl">
         {/* Header */}
-        <div className="sticky top-0 bg-[#1A1A1A] border-b border-zinc-800/60 p-6 flex items-center justify-between z-10">
+        <div className="sticky top-0 bg-zinc-900 border-b border-zinc-800/60 p-6 flex items-center justify-between z-10">
           <h2 className="text-xl font-semibold text-zinc-200 font-manrope">
             Edit Profile
           </h2>
@@ -341,7 +341,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 bg-[#1A1A1A] border-t border-zinc-800/60 p-6 flex items-center justify-end gap-3">
+        <div className="sticky bottom-0 bg-zinc-900 border-t border-zinc-800/60 p-6 flex items-center justify-end gap-3">
           <button
             onClick={onClose}
             className="px-4 py-2 bg-transparent border border-zinc-800/60 text-zinc-400 hover:text-zinc-300 hover:border-zinc-700/60 rounded-md text-sm font-mono transition-colors"
@@ -351,7 +351,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
           <button
             onClick={handleSave}
             disabled={isSaving || isUploadingCover}
-            className="px-4 py-2 bg-[#52ddeb]/20 border border-[#52ddeb]/40 text-[#52ddeb] hover:bg-[#52ddeb]/30 disabled:opacity-50 disabled:cursor-not-allowed rounded-md text-sm font-mono transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-brand-cyan/20 border border-[#52ddeb]/40 text-brand-cyan hover:bg-brand-cyan/30 disabled:opacity-50 disabled:cursor-not-allowed rounded-md text-sm font-mono transition-colors flex items-center gap-2"
           >
             {isSaving ? (
               <>

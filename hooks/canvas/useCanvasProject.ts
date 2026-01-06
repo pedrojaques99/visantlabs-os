@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { useCanvasEditingState } from './useCanvasEditingState';
 import { saveCanvasToLocalStorage } from '../../utils/canvas/canvasLocalStorage';
 import { flushAllPendingUploads } from './utils/r2UploadUtils';
+import { isLocalDevelopment } from '../../utils/env';
 
 const STORAGE_KEY = 'canvas-flow-state';
 
@@ -20,7 +21,9 @@ export const useCanvasProject = (
   nodes: Node<FlowNodeData>[],
   edges: Edge[],
   setNodes: (nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])) => void,
-  setEdges: (edges: Edge[] | ((prev: Edge[]) => Edge[])) => void
+  setEdges: (edges: Edge[] | ((prev: Edge[]) => Edge[])) => void,
+  drawings?: any[],
+  setDrawings?: (drawings: any[] | ((prev: any[]) => any[])) => void
 ) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -77,7 +80,9 @@ export const useCanvasProject = (
         const newProject = await canvasApi.save(
           'Untitled',
           (state.nodes || []) as Node<FlowNodeData>[],
-          (state.edges || []) as Edge[]
+          (state.edges || []) as Edge[],
+          undefined,
+          state.drawings
         );
         localStorage.removeItem(STORAGE_KEY);
         navigate(`/canvas/${newProject._id}`, { replace: true });
@@ -119,6 +124,12 @@ export const useCanvasProject = (
     const loadProject = async () => {
       setIsLoadingProject(true);
       
+      if (isLocalDevelopment()) {
+        console.log('[useCanvasProject] 📥 Starting to load project:', {
+          projectId: id,
+          timestamp: new Date().toISOString()
+        });
+      }
       
       // Add timeout to prevent infinite loading
       const timeoutId = setTimeout(() => {
@@ -133,14 +144,41 @@ export const useCanvasProject = (
       }, 30000); // 30 second timeout
       
       try {
+        const startTime = performance.now();
         const project = await canvasApi.getById(id);
+        const loadTime = performance.now() - startTime;
         clearTimeout(timeoutId);
+        
+        if (isLocalDevelopment()) {
+          console.log('[useCanvasProject] ✅ Project loaded successfully:', {
+            projectId: id,
+            projectName: project.name || 'Untitled',
+            nodeCount: Array.isArray(project.nodes) ? project.nodes.length : 0,
+            edgeCount: Array.isArray(project.edges) ? project.edges.length : 0,
+            drawingCount: Array.isArray(project.drawings) ? project.drawings.length : 0,
+            isCollaborative: project.isCollaborative || false,
+            hasShareId: !!project.shareId,
+            loadTimeMs: Math.round(loadTime),
+            timestamp: new Date().toISOString()
+          });
+        }
         
         setProjectName(project.name || 'Untitled');
         setShareId(project.shareId || null);
         setIsCollaborative(project.isCollaborative || false);
         setCanEdit(Array.isArray(project.canEdit) ? project.canEdit : []);
         setCanView(Array.isArray(project.canView) ? project.canView : []);
+        
+        // Load drawings if available
+        if (setDrawings && project.drawings !== undefined && project.drawings !== null) {
+          if (Array.isArray(project.drawings)) {
+            setDrawings(project.drawings);
+          } else {
+            setDrawings([]);
+          }
+        } else if (setDrawings) {
+          setDrawings([]);
+        }
         
         if (project.nodes && Array.isArray(project.nodes)) {
           // Validate and fix node positions
@@ -167,6 +205,15 @@ export const useCanvasProject = (
               })
               .map((edge) => cleanEdgeHandles(edge));
             setEdges(validatedEdges);
+            
+            if (isLocalDevelopment()) {
+              console.log('[useCanvasProject] 📊 Project data validated and set:', {
+                projectId: id,
+                validatedNodeCount: validatedNodes.length,
+                validatedEdgeCount: validatedEdges.length,
+                timestamp: new Date().toISOString()
+              });
+            }
           }
 
           // Upload base64 images to R2 in background after project loads
@@ -236,6 +283,17 @@ export const useCanvasProject = (
         }
       } catch (error: any) {
         clearTimeout(timeoutId);
+        
+        if (isLocalDevelopment()) {
+          console.error('[useCanvasProject] ❌ Failed to load project:', {
+            projectId: id,
+            error: error?.message || error,
+            status: error?.status,
+            stack: error?.stack,
+            timestamp: new Date().toISOString()
+          });
+        }
+        
         console.error('Failed to load project:', error);
         // Reset flag on error so it can retry if needed
         hasLoadedProject.current = false;
@@ -250,6 +308,13 @@ export const useCanvasProject = (
         navigate('/canvas');
       } finally {
         setIsLoadingProject(false);
+        
+        if (isLocalDevelopment()) {
+          console.log('[useCanvasProject] ⏸️ Project loading finished:', {
+            projectId: id,
+            timestamp: new Date().toISOString()
+          });
+        }
       }
     };
 
@@ -268,7 +333,7 @@ export const useCanvasProject = (
 
     // Save to localStorage with short debounce during editing
     localStorageSaveTimeoutRef.current = window.setTimeout(() => {
-      saveCanvasToLocalStorage(id, nodes, edges, projectName);
+      saveCanvasToLocalStorage(id, nodes, edges, projectName, drawings);
     }, 500); // 500ms debounce for localStorage (very fast)
 
     return () => {
@@ -276,7 +341,7 @@ export const useCanvasProject = (
         clearTimeout(localStorageSaveTimeoutRef.current);
       }
     };
-  }, [id, isAuthenticated, nodes, edges, projectName, isEditing]);
+  }, [id, isAuthenticated, nodes, edges, projectName, drawings, isEditing]);
 
   // Save flow state to backend (debounced, longer delay during editing)
   useEffect(() => {
@@ -311,16 +376,24 @@ export const useCanvasProject = (
         // Only process nodes for R2 when user stops editing
         if (isEditing) {
           // Just save current state (with base64) - R2 processing will happen when editing stops
-          await canvasApi.save(projectName, nodes, cleanedEdges, id);
+          await canvasApi.save(projectName, nodes, cleanedEdges, id, drawings);
           // Also update localStorage
-          saveCanvasToLocalStorage(id, nodes, edges, projectName);
+          saveCanvasToLocalStorage(id, nodes, edges, projectName, drawings);
           isSavingRef.current = false;
           return;
         }
         
         // Check R2 status and process nodes proactively if needed
         let nodesToSave = nodes;
-        const r2Status = await canvasApi.checkR2Status();
+        let r2Status = { configured: false };
+        
+        try {
+          r2Status = await canvasApi.checkR2Status();
+        } catch (r2Error) {
+          console.warn('Failed to check R2 status, continuing without R2 processing:', r2Error);
+          // Continue without R2 processing if check fails
+        }
+        
         const WARNING_SIZE = 10 * 1024 * 1024; // 10MB warning threshold
         const MAX_SIZE = 15 * 1024 * 1024; // 15MB max (MongoDB limit is 16MB)
         const VERCEL_LIMIT = 50 * 1024 * 1024; // 50MB Vercel Pro serverless function limit
@@ -612,9 +685,9 @@ export const useCanvasProject = (
           // Don't reset warning flag - keep it true so toast only shows once per session
         }
         
-        await canvasApi.save(projectName, nodesToSave, cleanedEdges, id);
+        await canvasApi.save(projectName, nodesToSave, cleanedEdges, id, drawings);
         // Also save to localStorage (will clean base64 automatically)
-        saveCanvasToLocalStorage(id, nodesToSave, cleanedEdges, projectName);
+        saveCanvasToLocalStorage(id, nodesToSave, cleanedEdges, projectName, drawings);
       } catch (error: any) {
         console.error('Failed to save project:', error);
         
@@ -651,7 +724,7 @@ export const useCanvasProject = (
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [id, isAuthenticated, nodes, edges, projectName, isEditing]);
+  }, [id, isAuthenticated, nodes, edges, projectName, drawings, isEditing]);
 
   // Immediate save function (bypasses debounce) - useful for critical saves
   const saveImmediately = useCallback(async () => {
@@ -674,7 +747,15 @@ export const useCanvasProject = (
 
       // Check R2 and process nodes if needed (same logic as debounced save)
       let nodesToSave = nodes;
-      const r2Status = await canvasApi.checkR2Status();
+      let r2Status = { configured: false };
+      
+      try {
+        r2Status = await canvasApi.checkR2Status();
+      } catch (r2Error) {
+        console.warn('Failed to check R2 status, continuing without R2 processing:', r2Error);
+        // Continue without R2 processing if check fails
+      }
+      
       const WARNING_SIZE = 10 * 1024 * 1024;
       const VERCEL_LIMIT = 50 * 1024 * 1024; // 50MB Vercel Pro
       
@@ -707,7 +788,7 @@ export const useCanvasProject = (
         }
       }
 
-      await canvasApi.save(projectName, nodesToSave, cleanedEdges, id);
+      await canvasApi.save(projectName, nodesToSave, cleanedEdges, id, drawings);
     } catch (error: any) {
       console.error('Failed to save project immediately:', error);
       
@@ -724,7 +805,7 @@ export const useCanvasProject = (
     } finally {
       isSavingRef.current = false;
     }
-  }, [id, isAuthenticated, nodes, edges, projectName, setNodes]);
+  }, [id, isAuthenticated, nodes, edges, projectName, drawings, setNodes]);
 
   return {
     isLoadingProject,

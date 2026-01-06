@@ -1,3 +1,6 @@
+import { migrateLegacyPreset } from '../types/communityPrompts';
+import type { PromptCategory } from '../types/communityPrompts';
+
 // Cache for community presets
 let cachedPresets: Record<string, any[]> | null = null;
 let isLoadingPresets = false;
@@ -11,7 +14,11 @@ async function loadPresetsFromAPI(): Promise<Record<string, any[]>> {
     while (isLoadingPresets) {
       await new Promise(resolve => setTimeout(resolve, 100));
     }
-    return cachedPresets || { mockup: [], angle: [], texture: [], ambience: [], luminance: [] };
+    return cachedPresets || { 
+      '3d': [], 'presets': [], 'aesthetics': [], 'themes': [],
+      // Compatibilidade
+      mockup: [], angle: [], texture: [], ambience: [], luminance: [] 
+    };
   }
 
   if (cachedPresets) {
@@ -23,12 +30,18 @@ async function loadPresetsFromAPI(): Promise<Record<string, any[]>> {
     const response = await fetch('/api/community/presets/public');
     if (response.ok) {
       const data = await response.json();
+      // Migrar presets legados e estruturar por categoria
       cachedPresets = {
-        mockup: data.mockup || [],
-        angle: data.angle || [],
-        texture: data.texture || [],
-        ambience: data.ambience || [],
-        luminance: data.luminance || [],
+        '3d': (data['3d'] || []).map(migrateLegacyPreset),
+        'presets': (data['presets'] || []).map(migrateLegacyPreset),
+        'aesthetics': (data['aesthetics'] || []).map(migrateLegacyPreset),
+        'themes': (data['themes'] || []).map(migrateLegacyPreset),
+        // Compatibilidade com formato antigo
+        mockup: (data.mockup || []).map(migrateLegacyPreset),
+        angle: (data.angle || []).map(migrateLegacyPreset),
+        texture: (data.texture || []).map(migrateLegacyPreset),
+        ambience: (data.ambience || []).map(migrateLegacyPreset),
+        luminance: (data.luminance || []).map(migrateLegacyPreset),
       };
       return cachedPresets;
     }
@@ -38,15 +51,41 @@ async function loadPresetsFromAPI(): Promise<Record<string, any[]>> {
     isLoadingPresets = false;
   }
 
-  return { mockup: [], angle: [], texture: [], ambience: [], luminance: [] };
+  return { 
+    '3d': [], 'presets': [], 'aesthetics': [], 'themes': [],
+    // Compatibilidade
+    mockup: [], angle: [], texture: [], ambience: [], luminance: [] 
+  };
 }
 
 /**
- * Get community presets by type
+ * Get community presets by type (legacy - mantém compatibilidade)
  */
 export async function getCommunityPresetsByType(presetType: 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance'): Promise<any[]> {
   const presets = await loadPresetsFromAPI();
   return presets[presetType] || [];
+}
+
+/**
+ * Get prompts by category (nova função)
+ */
+export async function getPromptsByCategory(category: PromptCategory): Promise<any[]> {
+  const presets = await loadPresetsFromAPI();
+  if (category === 'all') {
+    // Retornar todos, incluindo categorias antigas e novas
+    return [
+      ...(presets['3d'] || []),
+      ...(presets['presets'] || []),
+      ...(presets['aesthetics'] || []),
+      ...(presets['themes'] || []),
+      ...(presets['mockup'] || []),
+      ...(presets['angle'] || []),
+      ...(presets['texture'] || []),
+      ...(presets['ambience'] || []),
+      ...(presets['luminance'] || []),
+    ];
+  }
+  return presets[category] || [];
 }
 
 /**

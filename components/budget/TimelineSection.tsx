@@ -41,7 +41,7 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({
         </h3>
         <button
           onClick={addMilestone}
-          className="px-4 py-2 bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 border border-[#52ddeb]/50 rounded-xl text-[#52ddeb] font-mono text-sm transition-all duration-300 flex items-center gap-2"
+          className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#52ddeb]/50 rounded-xl text-brand-cyan font-mono text-sm transition-all duration-300 flex items-center gap-2"
         >
           <Plus size={16} />
           {t('budget.addMilestone') || 'Adicionar Milestone'}
@@ -57,7 +57,7 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({
           {timeline.map((milestone, index) => (
             <div
               key={index}
-              className="p-4 bg-[#1A1A1A] border border-zinc-800 rounded-xl space-y-3"
+              className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl space-y-3"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3">

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback, memo, useEffect } from 'react';
-import { Handle, Position, type NodeProps } from '@xyflow/react';
-import { Loader2, UploadCloud, Palette, X, Copy, RefreshCw } from 'lucide-react';
+import { Handle, Position, type NodeProps, useReactFlow } from '@xyflow/react';
+import { UploadCloud, Palette, X, Copy, RefreshCw } from 'lucide-react';
+import { GlitchLoader } from '../ui/GlitchLoader';
 import type { ColorExtractorNodeData } from '../../types/reactFlow';
 import { cn } from '../../lib/utils';
 import { fileToBase64 } from '../../utils/fileUtils';
@@ -10,12 +11,14 @@ import { NodeContainer } from './shared/NodeContainer';
 import { NodeHeader } from './shared/node-header';
 import { NodeLabel } from './shared/node-label';
 import { NodeButton } from './shared/node-button';
+import { NodeActionBar } from './shared/NodeActionBar';
 import { LabeledHandle } from './shared/LabeledHandle';
 import { useTranslation } from '../../hooks/useTranslation';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
   const { t } = useTranslation();
+  const { getZoom } = useReactFlow();
   const nodeData = data as ColorExtractorNodeData;
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [glitchText, setGlitchText] = useState('');
@@ -188,7 +191,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
           Image {connectedImage && <span className="text-[10px] text-zinc-500">(connected)</span>}
         </NodeLabel>
         {imageUrl ? (
-          <div className="relative group/image">
+          <div className="relative">
             <div className="relative w-full h-24 bg-zinc-900/50 rounded border border-zinc-700/30 overflow-hidden">
               <img
                 src={imageUrl}
@@ -196,15 +199,6 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
                 className="w-full h-full object-contain p-2"
               />
             </div>
-            {!connectedImage && (
-              <button
-                onClick={handleRemoveImage}
-                className="absolute top-1 right-1 p-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded opacity-0 group-hover/image:opacity-100 transition-opacity"
-                title="Remove image"
-              >
-                <X size={12} />
-              </button>
-            )}
           </div>
         ) : (
           <>
@@ -232,7 +226,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
       >
         {isExtracting ? (
           <>
-            <Loader2 size={14} className="animate-spin" />
+            <GlitchLoader size={14} />
             Extracting {glitchText}
           </>
         ) : (
@@ -291,7 +285,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
                     }}
                     title="Regenerate only this color"
                   >
-                    <RefreshCw size={10} className="text-zinc-400 hover:text-[#52ddeb] transition-colors" />
+                    <RefreshCw size={10} className="text-zinc-400 hover:text-brand-cyan transition-colors" />
                   </div>
 
                   {/* Manual Edit via invisible input + visible icon */}
@@ -316,6 +310,22 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
             ))}
           </div>
         </div>
+      )}
+
+      {!dragging && imageUrl && !connectedImage && (
+        <NodeActionBar selected={selected} getZoom={getZoom}>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleRemoveImage();
+            }}
+            className="p-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded transition-colors backdrop-blur-sm border border-red-500/20 hover:border-red-500/30"
+            title="Remove image"
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <X size={12} strokeWidth={2} />
+          </button>
+        </NodeActionBar>
       )}
     </NodeContainer>
   );

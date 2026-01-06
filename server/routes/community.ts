@@ -30,22 +30,79 @@ async function checkPresetIdExists(id: string): Promise<boolean> {
   return false;
 }
 
+// Helper to normalize and validate category/presetType
+function normalizeCategoryAndPresetType(body: any): { category: string; presetType?: string; error?: string } {
+  const { category, presetType } = body;
+  
+  // Se tem category, usar ela
+  if (category) {
+    const validCategories = ['3d', 'presets', 'aesthetics', 'themes', 'mockup', 'angle', 'texture', 'ambience', 'luminance'];
+    if (!validCategories.includes(category)) {
+      return { category: '', error: 'Invalid category' };
+    }
+    
+    // Se category é uma das antigas (mockup, angle, etc), não precisa de presetType
+    if (['mockup', 'angle', 'texture', 'ambience', 'luminance'].includes(category)) {
+      return { category };
+    }
+    
+    // Se category é 'presets', presetType é obrigatório
+    if (category === 'presets') {
+      const validPresetTypes = ['mockup', 'angle', 'texture', 'ambience', 'luminance'];
+      if (!presetType || !validPresetTypes.includes(presetType)) {
+        return { category: '', error: 'presetType is required and must be valid when category is "presets"' };
+      }
+      return { category, presetType };
+    }
+    
+    // Para outras categorias, não retornar presetType
+    return { category };
+  }
+  
+  // Compatibilidade: se não tem category mas tem presetType, inferir category = 'presets'
+  if (presetType) {
+    const validPresetTypes = ['mockup', 'angle', 'texture', 'ambience', 'luminance'];
+    if (!validPresetTypes.includes(presetType)) {
+      return { category: '', error: 'Invalid preset type' };
+    }
+    return { category: 'presets', presetType };
+  }
+  
+  return { category: '', error: 'Either category or presetType is required' };
+}
+
+// Helper to migrate legacy preset (adds category if missing)
+function migratePresetIfNeeded(preset: any): any {
+  if (!preset.category && preset.presetType) {
+    // Usa presetType como category diretamente
+    return {
+      ...preset,
+      category: preset.presetType, // mockup, angle, etc vira category
+      difficulty: preset.difficulty || 'intermediate',
+      context: preset.presetType === 'mockup' ? 'mockup' : 'general',
+      usageCount: preset.usageCount || 0,
+    };
+  }
+  return preset;
+}
+
 // Create community preset
 router.post('/presets', authenticate, async (req: AuthRequest, res) => {
   try {
     await connectToMongoDB();
     const db = getDb();
 
-    const { presetType, id, name, description, prompt, referenceImageUrl, aspectRatio, model, tags } = req.body;
+    const { id, name, description, prompt, referenceImageUrl, aspectRatio, model, tags, difficulty, context, useCase, examples } = req.body;
 
-    // Validation
-    if (!presetType || !id || !name || !description || !prompt || !aspectRatio) {
+    // Validation - campos obrigatórios
+    if (!id || !name || !description || !prompt || !aspectRatio) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const validPresetTypes = ['mockup', 'angle', 'texture', 'ambience', 'luminance'];
-    if (!validPresetTypes.includes(presetType)) {
-      return res.status(400).json({ error: 'Invalid preset type' });
+    // Normalizar category e presetType
+    const categoryData = normalizeCategoryAndPresetType(req.body);
+    if (categoryData.error) {
+      return res.status(400).json({ error: categoryData.error });
     }
 
     // Check if ID already exists globally
@@ -59,14 +116,22 @@ router.post('/presets', authenticate, async (req: AuthRequest, res) => {
       ? tags.filter(tag => typeof tag === 'string' && tag.trim().length > 0).map(tag => tag.trim())
       : [];
 
-    const preset = {
+    // Normalize examples
+    const normalizedExamples = Array.isArray(examples)
+      ? examples.filter(ex => typeof ex === 'string' && ex.trim().length > 0).map(ex => ex.trim())
+      : undefined;
+
+    // Determinar se precisa de referenceImageUrl
+    const needsReferenceImage = (categoryData.category === 'presets' && categoryData.presetType === 'mockup') 
+      || (categoryData.category !== 'presets' && referenceImageUrl);
+
+    const preset: any = {
       userId: new ObjectId(req.userId!),
-      presetType,
+      category: categoryData.category,
       id,
       name,
       description,
       prompt,
-      referenceImageUrl: presetType === 'mockup' ? (referenceImageUrl || '') : undefined,
       aspectRatio,
       model: model || undefined,
       tags: normalizedTags.length > 0 ? normalizedTags : undefined,
@@ -75,6 +140,22 @@ router.post('/presets', authenticate, async (req: AuthRequest, res) => {
       updatedAt: new Date().toISOString(),
     };
 
+    // Adicionar presetType apenas se category for 'presets'
+    if (categoryData.presetType) {
+      preset.presetType = categoryData.presetType;
+    }
+
+    // Adicionar referenceImageUrl se necessário
+    if (needsReferenceImage && referenceImageUrl) {
+      preset.referenceImageUrl = referenceImageUrl;
+    }
+
+    // Adicionar novos campos opcionais
+    if (difficulty) preset.difficulty = difficulty;
+    if (context) preset.context = context;
+    if (useCase) preset.useCase = useCase;
+    if (normalizedExamples && normalizedExamples.length > 0) preset.examples = normalizedExamples;
+
     await db.collection('community_presets').insertOne(preset);
 
     // Create indexes if they don't exist
@@ -82,6 +163,7 @@ router.post('/presets', authenticate, async (req: AuthRequest, res) => {
       await db.collection('community_presets').createIndex({ id: 1 }, { unique: true });
       await db.collection('community_presets').createIndex({ userId: 1 });
       await db.collection('community_presets').createIndex({ presetType: 1 });
+      await db.collection('community_presets').createIndex({ category: 1 });
       await db.collection('community_presets').createIndex({ isApproved: 1 });
     } catch (e) {
       // Indexes might already exist, ignore
@@ -125,8 +207,13 @@ router.get('/presets/public', async (req, res) => {
     const presetIds = presets.map((p: any) => p.id);
     const likesMap = userId ? await getPresetsLikesData(db, presetIds, userId) : new Map();
 
-    // Group by presetType and add likes data
+    // Migrar presets legados e agrupar por category
     const grouped: Record<string, any[]> = {
+      '3d': [],
+      'presets': [],
+      'aesthetics': [],
+      'themes': [],
+      // Manter compatibilidade com formato antigo
       mockup: [],
       angle: [],
       texture: [],
@@ -135,13 +222,25 @@ router.get('/presets/public', async (req, res) => {
     };
 
     presets.forEach((preset) => {
-      if (grouped[preset.presetType]) {
-        const likesData = likesMap.get(preset.id) || { likesCount: 0, isLikedByUser: false };
-        grouped[preset.presetType].push({
-          ...preset,
-          likesCount: likesData.likesCount,
-          isLikedByUser: likesData.isLikedByUser,
-        });
+      // Migrar se necessário
+      const migrated = migratePresetIfNeeded(preset);
+      
+      // Adicionar likes data
+      const likesData = likesMap.get(migrated.id) || { likesCount: 0, isLikedByUser: false };
+      const presetWithLikes = {
+        ...migrated,
+        likesCount: likesData.likesCount,
+        isLikedByUser: likesData.isLikedByUser,
+      };
+
+      // Agrupar por category (nova estrutura)
+      if (migrated.category && grouped[migrated.category]) {
+        grouped[migrated.category].push(presetWithLikes);
+      }
+
+      // Manter compatibilidade: também agrupar por presetType (formato antigo)
+      if (migrated.presetType && grouped[migrated.presetType]) {
+        grouped[migrated.presetType].push(presetWithLikes);
       }
     });
 
@@ -149,6 +248,11 @@ router.get('/presets/public', async (req, res) => {
   } catch (error) {
     console.error('Failed to load community presets:', error);
     return res.json({
+      '3d': [],
+      'presets': [],
+      'aesthetics': [],
+      'themes': [],
+      // Compatibilidade
       mockup: [],
       angle: [],
       texture: [],
@@ -226,11 +330,12 @@ router.get('/presets/my', authenticate, async (req: AuthRequest, res) => {
     const presetIds = presets.map((p: any) => p.id);
     const likesMap = await getPresetsLikesData(db, presetIds, req.userId);
 
-    // Add likes data to presets
+    // Add likes data to presets and migrate if needed
     const presetsWithLikes = presets.map((preset: any) => {
-      const likesData = likesMap.get(preset.id) || { likesCount: 0, isLikedByUser: false };
+      const migrated = migratePresetIfNeeded(preset);
+      const likesData = likesMap.get(migrated.id) || { likesCount: 0, isLikedByUser: false };
       return {
-        ...preset,
+        ...migrated,
         likesCount: likesData.likesCount,
         isLikedByUser: likesData.isLikedByUser,
       };
@@ -250,7 +355,7 @@ router.put('/presets/:id', authenticate, async (req: AuthRequest, res) => {
     const db = getDb();
 
     const presetId = req.params.id;
-    const { name, description, prompt, referenceImageUrl, aspectRatio, model, tags } = req.body;
+    const { name, description, prompt, referenceImageUrl, aspectRatio, model, tags, category, presetType, difficulty, context, useCase, examples } = req.body;
 
     // Find preset and verify ownership
     const preset = await db.collection('community_presets').findOne({ id: presetId });
@@ -270,10 +375,27 @@ router.put('/presets/:id', authenticate, async (req: AuthRequest, res) => {
         : [])
       : undefined;
 
+    // Normalize examples
+    const normalizedExamples = examples !== undefined
+      ? (Array.isArray(examples)
+        ? examples.filter(ex => typeof ex === 'string' && ex.trim().length > 0).map(ex => ex.trim())
+        : [])
+      : undefined;
+
     // Build update object
     const update: any = {
       updatedAt: new Date().toISOString(),
     };
+
+    // Validar category/presetType se fornecidos
+    if (category !== undefined || presetType !== undefined) {
+      const categoryData = normalizeCategoryAndPresetType({ category: category || preset?.category, presetType: presetType || preset?.presetType });
+      if (categoryData.error) {
+        return res.status(400).json({ error: categoryData.error });
+      }
+      if (categoryData.category) update.category = categoryData.category;
+      if (categoryData.presetType) update.presetType = categoryData.presetType;
+    }
 
     if (name !== undefined) update.name = name;
     if (description !== undefined) update.description = description;
@@ -283,8 +405,23 @@ router.put('/presets/:id', authenticate, async (req: AuthRequest, res) => {
     if (normalizedTags !== undefined) {
       update.tags = normalizedTags.length > 0 ? normalizedTags : undefined;
     }
-    if (preset.presetType === 'mockup' && referenceImageUrl !== undefined) {
+    
+    // Determinar se precisa de referenceImageUrl
+    const currentCategory = category || preset.category || (preset.presetType ? 'presets' : undefined);
+    const currentPresetType = presetType || preset.presetType;
+    const needsReferenceImage = (currentCategory === 'presets' && currentPresetType === 'mockup') 
+      || (currentCategory && currentCategory !== 'presets' && referenceImageUrl);
+    
+    if (needsReferenceImage && referenceImageUrl !== undefined) {
       update.referenceImageUrl = referenceImageUrl;
+    }
+
+    // Novos campos opcionais
+    if (difficulty !== undefined) update.difficulty = difficulty;
+    if (context !== undefined) update.context = context;
+    if (useCase !== undefined) update.useCase = useCase;
+    if (normalizedExamples !== undefined) {
+      update.examples = normalizedExamples.length > 0 ? normalizedExamples : undefined;
     }
 
     await db.collection('community_presets').updateOne(
@@ -463,8 +600,13 @@ router.post('/presets/:id/upload-image', authenticate, async (req: AuthRequest, 
       return res.status(403).json({ error: 'You can only upload images for your own presets' });
     }
 
-    if (preset.presetType !== 'mockup') {
-      return res.status(400).json({ error: 'Reference images are only supported for mockup presets' });
+    // Verificar se pode ter referenceImageUrl
+    const migrated = migratePresetIfNeeded(preset);
+    const canHaveImage = (migrated.category === 'presets' && migrated.presetType === 'mockup') 
+      || (migrated.category && migrated.category !== 'presets');
+    
+    if (!canHaveImage) {
+      return res.status(400).json({ error: 'Reference images are only supported for mockup presets or non-preset categories' });
     }
 
     const r2Service = await import('../../services/r2Service.js');

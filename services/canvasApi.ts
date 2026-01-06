@@ -193,6 +193,7 @@ export interface CanvasProject {
   name: string;
   nodes: Node[];
   edges: Edge[];
+  drawings?: any[];
   shareId?: string | null;
   isCollaborative?: boolean;
   canEdit?: string[];
@@ -282,7 +283,7 @@ export const canvasApi = {
     return data.project;
   },
 
-  async save(name: string, nodes: Node[], edges: Edge[], projectId?: string): Promise<CanvasProject> {
+  async save(name: string, nodes: Node[], edges: Edge[], projectId?: string, drawings?: any[]): Promise<CanvasProject> {
     const url = projectId 
       ? `${API_BASE_URL}/canvas/${projectId}`
       : `${API_BASE_URL}/canvas`;
@@ -296,6 +297,7 @@ export const canvasApi = {
       name: name || 'Untitled',
       nodes: cleanedNodes,
       edges,
+      drawings: drawings !== undefined ? drawings : null,
     };
 
     const response = await fetch(url, {

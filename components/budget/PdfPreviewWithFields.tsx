@@ -828,8 +828,8 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
       {/* Pending field position indicator - top */}
       {pendingFieldPosition && editable && (
         <div className="sticky top-0 z-40 mb-4">
-          <div className="px-4 py-2 bg-[#52ddeb]/20 border border-[#52ddeb]/50 rounded-md max-w-4xl mx-auto flex items-center gap-3">
-            <p className="text-sm font-mono text-[#52ddeb] flex items-center gap-2 flex-1">
+          <div className="px-4 py-2 bg-brand-cyan/20 border border-[#52ddeb]/50 rounded-md max-w-4xl mx-auto flex items-center gap-3">
+            <p className="text-sm font-mono text-brand-cyan flex items-center gap-2 flex-1">
               <MapPin size={16} />
               Posição selecionada! Clique em um campo preenchido do formulário para adicioná-lo aqui.
             </p>
@@ -847,8 +847,8 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
       {/* Positioning mode indicator - top */}
       {isPositioningMode && editable && positioningFieldId && (
         <div className="sticky top-0 z-40 mb-4">
-          <div className="px-4 py-2 bg-[#52ddeb]/20 border border-[#52ddeb]/50 rounded-md max-w-4xl mx-auto flex items-center gap-3">
-            <p className="text-sm font-mono text-[#52ddeb] flex items-center gap-2 flex-1">
+          <div className="px-4 py-2 bg-brand-cyan/20 border border-[#52ddeb]/50 rounded-md max-w-4xl mx-auto flex items-center gap-3">
+            <p className="text-sm font-mono text-brand-cyan flex items-center gap-2 flex-1">
               <MapPin size={16} />
               Clique no PDF para posicionar: {AVAILABLE_FIELDS.find(f => f.id === positioningFieldId)?.label || positioningFieldId}
             </p>
@@ -1160,7 +1160,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
               minWidth: '300px',
               maxWidth: '400px',
             }}
-            className="bg-[#1A1A1A] border border-zinc-800 rounded-md shadow-xl"
+            className="bg-zinc-900 border border-zinc-800 rounded-md shadow-xl"
             role="dialog"
             aria-label="Painel de propriedades do campo"
           >

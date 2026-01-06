@@ -275,12 +275,12 @@ export const MyBudgetsPage: React.FC = () => {
                     return (
                       <div
                         key={presetId}
-                        className="bg-[#1A1A1A] border border-zinc-800/60 rounded-2xl p-6 md:p-8 hover:border-zinc-700/60 transition-all duration-300"
+                        className="bg-zinc-900 border border-zinc-800/60 rounded-2xl p-6 md:p-8 hover:border-zinc-700/60 transition-all duration-300"
                       >
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                              <FileText className="h-5 w-5 text-[#52ddeb]" />
+                              <FileText className="h-5 w-5 text-brand-cyan" />
                               <h3 className="font-semibold text-zinc-200 font-manrope text-lg line-clamp-2">
                                 {truncateText(preset.name, 60)}
                               </h3>
@@ -345,7 +345,7 @@ export const MyBudgetsPage: React.FC = () => {
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <FileText className="h-5 w-5 text-[#52ddeb]" />
+                        <FileText className="h-5 w-5 text-brand-cyan" />
                         <h3 className="font-semibold text-zinc-200 font-manrope text-lg line-clamp-2">
                           {budget.name ? truncateText(budget.name, 60) : truncateText(budget.projectDescription, 60)}
                         </h3>
@@ -367,7 +367,7 @@ export const MyBudgetsPage: React.FC = () => {
                         e.stopPropagation();
                         handleView(budget);
                       }}
-                      className="flex-1 px-4 py-2 bg-black/40 border border-zinc-800/60 hover:border-[#52ddeb]/50 hover:text-[#52ddeb] rounded-xl text-sm font-mono text-zinc-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+                      className="flex-1 px-4 py-2 bg-black/40 border border-zinc-800/60 hover:border-[#52ddeb]/50 hover:text-brand-cyan rounded-xl text-sm font-mono text-zinc-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Eye className="h-4 w-4" />
                       {t('budget.view') || 'View'}

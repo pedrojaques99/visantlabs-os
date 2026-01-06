@@ -79,7 +79,7 @@ export const getSectionInfo = (title: string): { icon: React.ReactNode; color: s
   if (lowerTitle.includes('comportamento') || lowerTitle.includes('behavior')) {
     return { icon: <ShoppingBag className="h-5 w-5" />, color: 'text-orange-400' };
   }
-  return { icon: <BarChart3 className="h-5 w-5" />, color: 'text-[#52ddeb]' };
+  return { icon: <BarChart3 className="h-5 w-5" />, color: 'text-brand-cyan' };
 };
 
 const extractBoldTitle = (line: string): string | null => {

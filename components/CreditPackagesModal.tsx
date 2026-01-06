@@ -224,7 +224,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
               onClick={() => setActiveTab('buy')}
               className={`px-4 py-2 text-xs font-mono uppercase tracking-wider transition-colors border-b-2 ${
                 activeTab === 'buy'
-                  ? 'text-[#52ddeb] border-[#52ddeb]'
+                  ? 'text-brand-cyan border-[#52ddeb]'
                   : 'text-zinc-500 border-transparent hover:text-zinc-400'
               }`}
             >
@@ -235,7 +235,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                 onClick={() => setActiveTab('credits')}
                 className={`px-4 py-2 text-xs font-mono uppercase tracking-wider transition-colors border-b-2 ${
                   activeTab === 'credits'
-                    ? 'text-[#52ddeb] border-[#52ddeb]'
+                    ? 'text-brand-cyan border-[#52ddeb]'
                     : 'text-zinc-500 border-transparent hover:text-zinc-400'
                 }`}
               >
@@ -251,7 +251,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
             {/* Package Selector */}
             <div className="flex items-center justify-center mb-6">
               {/* Current Package Display */}
-              <div className="bg-[#1A1A1A] border border-zinc-800/30 rounded-xl p-6 md:p-10 min-w-[280px] md:min-w-[420px] text-center shadow-sm">
+              <div className="bg-zinc-900 border border-zinc-800/30 rounded-xl p-6 md:p-10 min-w-[280px] md:min-w-[420px] text-center shadow-sm">
                 <div className="space-y-4">
                   <div>
                     {/* Credits Display with Pickaxe and +/- buttons */}
@@ -263,7 +263,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                         className={`p-2 md:p-2.5 transition-all duration-200 rounded-md active:scale-[0.95] ${
                           selectedIndex === 0
                             ? 'text-zinc-600 cursor-not-allowed opacity-50'
-                            : 'text-zinc-400 hover:text-[#52ddeb] hover:bg-zinc-800/50 hover:scale-110 cursor-pointer'
+                            : 'text-zinc-400 hover:text-brand-cyan hover:bg-zinc-800/50 hover:scale-110 cursor-pointer'
                         }`}
                         aria-label="Previous package"
                       >
@@ -271,7 +271,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                       </button>
 
                       {/* Credits number */}
-                      <div className="text-5xl md:text-6xl font-bold text-[#52ddeb]/80 font-mono">
+                      <div className="text-5xl md:text-6xl font-bold text-brand-cyan/80 font-mono">
                         {animatedCredits}
                       </div>
 
@@ -282,7 +282,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                         className={`p-2 md:p-2.5 transition-all duration-200 rounded-md active:scale-[0.95] ${
                           selectedIndex === CREDIT_PACKAGES.length - 1
                             ? 'text-zinc-600 cursor-not-allowed opacity-50'
-                            : 'text-zinc-400 hover:text-[#52ddeb] hover:bg-zinc-800/50 hover:scale-110 cursor-pointer'
+                            : 'text-zinc-400 hover:text-brand-cyan hover:bg-zinc-800/50 hover:scale-110 cursor-pointer'
                         }`}
                         aria-label="Next package"
                       >
@@ -293,7 +293,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                     <div className="flex items-center justify-center gap-2 text-sm text-zinc-400 font-mono uppercase tracking-wider">
                       <Pickaxe 
                         size={14} 
-                        className="md:w-4 md:h-4 text-[#52ddeb]/70 flex-shrink-0" 
+                        className="md:w-4 md:h-4 text-brand-cyan/70 flex-shrink-0" 
                       />
                       {t('creditsPackages.credits') || 'Credits'}
                     </div>
@@ -326,7 +326,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                   <div className="flex flex-col gap-2 mt-6">
                   <button
                     onClick={handleBuyCredits}
-                      className="w-full px-6 py-3 bg-[#52ddeb]/80 hover:bg-[#52ddeb] text-black font-semibold rounded-md text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-[#52ddeb]/20"
+                      className="w-full px-6 py-3 bg-brand-cyan/80 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-[#52ddeb]/20"
                   >
                     <CreditCard size={16} />
                     {t('creditsPackages.buy') || 'Buy'}
@@ -353,7 +353,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                   onClick={() => setSelectedIndex(index)}
                   className={`h-2 rounded-md transition-all duration-300 ease-out ${
                     index === selectedIndex
-                      ? 'bg-[#52ddeb] w-8 shadow-[0_0_8px_rgba(82,221,235,0.4)]'
+                      ? 'bg-brand-cyan w-8 shadow-[0_0_8px_rgba(82,221,235,0.4)]'
                       : 'bg-zinc-600 hover:bg-zinc-500 w-2 hover:scale-125'
                   }`}
                   aria-label={`Select ${CREDIT_PACKAGES[index].credits} credits package`}
@@ -396,12 +396,12 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
             return (
               <div className="flex flex-col items-center justify-center py-8 animate-slide-in-left transition-all duration-300 ease-in-out">
                 {/* Available Credits Box */}
-                <div className="bg-[#1A1A1A] border border-zinc-800/30 rounded-xl p-6 md:p-10 min-w-[280px] md:min-w-[420px] text-center shadow-sm mb-8">
+                <div className="bg-zinc-900 border border-zinc-800/30 rounded-xl p-6 md:p-10 min-w-[280px] md:min-w-[420px] text-center shadow-sm mb-8">
                   <div className="space-y-4">
                     <div>
                       {/* Credits Display */}
                       <div className="flex items-center justify-center mb-3">
-                        <div className="text-5xl md:text-6xl font-bold text-[#52ddeb]/80 font-mono">
+                        <div className="text-5xl md:text-6xl font-bold text-brand-cyan/80 font-mono">
                           {totalCreditsAvailable}
                         </div>
                       </div>
@@ -409,7 +409,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                       <div className="flex items-center justify-center gap-2 text-sm text-zinc-400 font-mono uppercase tracking-wider">
                         <Pickaxe 
                           size={14} 
-                          className="md:w-4 md:h-4 text-[#52ddeb]/70 flex-shrink-0" 
+                          className="md:w-4 md:h-4 text-brand-cyan/70 flex-shrink-0" 
                         />
                         {t('credits.available')}
                       </div>
@@ -447,7 +447,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                       </button>
                       <button
                         onClick={() => setActiveTab('buy')}
-                        className="w-full px-6 py-3 bg-[#52ddeb]/80 hover:bg-[#52ddeb] text-black font-semibold rounded-md text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-[#52ddeb]/20"
+                        className="w-full px-6 py-3 bg-brand-cyan/80 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-[#52ddeb]/20"
                       >
                         <CreditCard size={16} />
                         {t('credits.buyCredits')}

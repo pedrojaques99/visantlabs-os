@@ -1,5 +1,5 @@
 import React, { useRef, memo } from 'react';
-import { Handle, Position, type NodeProps } from '@xyflow/react';
+import { Handle, Position, type NodeProps, useReactFlow } from '@xyflow/react';
 import { UploadCloud, X } from 'lucide-react';
 import type { LogoNodeData } from '../../types/reactFlow';
 import { cn } from '../../lib/utils';
@@ -8,11 +8,14 @@ import { toast } from 'sonner';
 import { NodeContainer } from './shared/NodeContainer';
 import { NodeHeader } from './shared/node-header';
 import { NodeButton } from './shared/node-button';
+import { NodeActionBar } from './shared/NodeActionBar';
+import { ImageNodeActionButtons } from './shared/ImageNodeActionButtons';
 import { useTranslation } from '../../hooks/useTranslation';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const LogoNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
   const { t } = useTranslation();
+  const { getZoom } = useReactFlow();
   const nodeData = data as LogoNodeData;
   const logoInputRef = useRef<HTMLInputElement>(null);
   
@@ -79,7 +82,7 @@ export const LogoNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         type="source"
         position={Position.Right}
         id="logo-output"
-        className="w-2 h-2 bg-[#52ddeb] border-2 border-black node-handle"
+        className="w-2 h-2 bg-brand-cyan border-2 border-black node-handle"
       />
 
       {/* Header */}
@@ -87,7 +90,7 @@ export const LogoNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
 
       {/* Logo Upload Section */}
       {logoImageUrl ? (
-        <div className="relative group/logo">
+        <div className="relative">
           <div className="relative w-full h-32 bg-zinc-900/50 rounded border border-zinc-700/30 overflow-hidden">
             <img
               src={logoImageUrl}
@@ -95,13 +98,6 @@ export const LogoNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
               className="w-full h-full object-contain p-2"
             />
           </div>
-          <button
-            onClick={handleRemoveLogo}
-            className="absolute top-1 right-1 p-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded opacity-0 group-hover/logo:opacity-100 transition-opacity"
-            title={t('canvasNodes.logoNode.removeLogo')}
-          >
-            <X size={12} />
-          </button>
         </div>
       ) : (
         <>
@@ -117,6 +113,17 @@ export const LogoNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
             {t('canvasNodes.logoNode.uploadLogo')}
           </NodeButton>
         </>
+      )}
+
+      {!dragging && logoImageUrl && (
+        <NodeActionBar selected={selected} getZoom={getZoom}>
+          <ImageNodeActionButtons
+            onRemove={handleRemoveLogo}
+            showRemove={true}
+            translationKeyPrefix="canvasNodes.logoNode"
+            t={t}
+          />
+        </NodeActionBar>
       )}
     </NodeContainer>
   );

@@ -50,3 +50,50 @@ export const formatFileSize = (bytes: number): string => {
 export const isValidDroppableNodeType = (nodeType: string): nodeType is DroppableNodeType => {
     return DROPPABLE_NODE_TYPES.includes(nodeType as DroppableNodeType);
 };
+
+/**
+ * Check if a file is a valid media file (image, video, or PDF)
+ */
+export const isValidMediaFile = (file: File): boolean => {
+    const fileType = file.type.toLowerCase();
+    const fileName = file.name.toLowerCase();
+    
+    // Check for image types
+    if (fileType.startsWith('image/')) {
+        return true;
+    }
+    
+    // Check for video types
+    if (fileType.startsWith('video/')) {
+        return true;
+    }
+    
+    // Check for PDF
+    if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
+        return true;
+    }
+    
+    return false;
+};
+
+/**
+ * Get media type from file
+ */
+export const getMediaType = (file: File): 'image' | 'video' | 'pdf' | null => {
+    const fileType = file.type.toLowerCase();
+    const fileName = file.name.toLowerCase();
+    
+    if (fileType.startsWith('image/')) {
+        return 'image';
+    }
+    
+    if (fileType.startsWith('video/')) {
+        return 'video';
+    }
+    
+    if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
+        return 'pdf';
+    }
+    
+    return null;
+};

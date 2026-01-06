@@ -83,7 +83,7 @@ export const ListSection: React.FC<ListSectionProps> = ({
         </div>
         <button
           onClick={handleAddItem}
-          className={`flex items-center gap-2 px-4 py-2 border hover:border-[#52ddeb]/50 hover:text-[#52ddeb] rounded-xl text-sm font-mono transition-all duration-300 ${
+          className={`flex items-center gap-2 px-4 py-2 border hover:border-[#52ddeb]/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-all duration-300 ${
             theme === 'dark'
               ? 'bg-black/40 border-zinc-800/60 text-zinc-300'
               : 'bg-zinc-100 border-zinc-300 text-zinc-800'

@@ -49,7 +49,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
       onClick={onClose}
     >
       <div 
-        className="relative max-w-4xl w-full max-h-[90vh] bg-[#1A1A1A] border border-zinc-800/50 rounded-md shadow-2xl p-6 md:p-8 my-8"
+        className="relative max-w-4xl w-full max-h-[90vh] bg-zinc-900 border border-zinc-800/50 rounded-md shadow-2xl p-6 md:p-8 my-8"
         onClick={(e) => e.stopPropagation()}
       >
         <button 
@@ -246,7 +246,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
                     return (
                       <li key={idx}>
                         {item.split('Google Analytics Opt-out')[0]}
-                        <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer" className="text-[#52ddeb] hover:text-[#52ddeb]/80 underline">Google Analytics Opt-out Browser Add-on</a>
+                        <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer" className="text-brand-cyan hover:text-brand-cyan/80 underline">Google Analytics Opt-out Browser Add-on</a>
                         {item.split('Google Analytics Opt-out')[1]}
                       </li>
                     );
@@ -290,7 +290,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
                     return (
                       <li key={idx}>
                         {item.split('contato@visant.co')[0]}
-                        <a href="mailto:contato@visant.co" className="text-[#52ddeb] hover:text-[#52ddeb]/80 underline">contato@visant.co</a>
+                        <a href="mailto:contato@visant.co" className="text-brand-cyan hover:text-brand-cyan/80 underline">contato@visant.co</a>
                         {item.split('contato@visant.co')[1]}
                       </li>
                     );
@@ -299,7 +299,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
                     return (
                       <li key={idx}>
                         {item.split('myaccount.google.com/permissions')[0]}
-                        <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener noreferrer" className="text-[#52ddeb] hover:text-[#52ddeb]/80 underline">myaccount.google.com/permissions</a>
+                        <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener noreferrer" className="text-brand-cyan hover:text-brand-cyan/80 underline">myaccount.google.com/permissions</a>
                         {item.split('myaccount.google.com/permissions')[1]}
                       </li>
                     );
@@ -322,7 +322,7 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
               <p className="text-zinc-400 mb-2" dangerouslySetInnerHTML={{ __html: `<strong class="text-zinc-300">${t('privacy.sections.contact.company')}</strong>` }} />
               <p className="text-zinc-400">
                 {t('privacy.sections.contact.support').split('contato@visant.co')[0]}
-                <a href="mailto:contato@visant.co" className="text-[#52ddeb] hover:text-[#52ddeb]/80 underline">contato@visant.co</a>
+                <a href="mailto:contato@visant.co" className="text-brand-cyan hover:text-brand-cyan/80 underline">contato@visant.co</a>
                 {t('privacy.sections.contact.support').split('contato@visant.co')[1]}
               </p>
             </div>

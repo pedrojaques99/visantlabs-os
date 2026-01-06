@@ -41,7 +41,7 @@ export const YouTubeVideoModal: React.FC<YouTubeVideoModalProps> = ({
       onClick={onClose}
     >
       <div
-        className={`relative w-full max-w-4xl mx-4 ${theme === 'dark' ? 'bg-[#1A1A1A]' : 'bg-white'
+        className={`relative w-full max-w-4xl mx-4 ${theme === 'dark' ? 'bg-zinc-900' : 'bg-white'
           } border border-zinc-800/50 rounded-md shadow-xl overflow-hidden`}
         onClick={(e) => e.stopPropagation()}
       >

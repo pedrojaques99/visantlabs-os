@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, Grid3x3, Maximize2, ZoomIn, Palette, MousePointer2, Beaker } from 'lucide-react';
+import { X, Grid3x3, Maximize2, ZoomIn, Palette, MousePointer2, Beaker, Sparkles } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 
 interface CanvasSettingsModalProps {
@@ -17,6 +17,8 @@ interface CanvasSettingsModalProps {
   onShowControlsChange?: (show: boolean) => void;
   cursorColor?: string;
   onCursorColorChange?: (color: string) => void;
+  brandCyan?: string;
+  onBrandCyanChange?: (color: string) => void;
   experimentalMode?: boolean;
   onExperimentalModeChange?: (experimental: boolean) => void;
 }
@@ -36,6 +38,8 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
   onShowControlsChange,
   cursorColor = '#FFFFFF',
   onCursorColorChange,
+  brandCyan = '#52ddeb',
+  onBrandCyanChange,
   experimentalMode = false,
   onExperimentalModeChange,
 }) => {
@@ -43,6 +47,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
   const [bgColor, setBgColor] = useState(backgroundColor);
   const [gridCol, setGridCol] = useState(gridColor);
   const [curColor, setCurColor] = useState(cursorColor);
+  const [brandCyanColor, setBrandCyanColor] = useState(brandCyan);
 
   useEffect(() => {
     setBgColor(backgroundColor);
@@ -55,6 +60,10 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
   useEffect(() => {
     setCurColor(cursorColor);
   }, [cursorColor]);
+
+  useEffect(() => {
+    setBrandCyanColor(brandCyan);
+  }, [brandCyan]);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -77,6 +86,12 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
     onCursorColorChange?.(newColor);
   };
 
+  // Handler for brand cyan color changes
+  const handleBrandCyanChange = (newColor: string) => {
+    setBrandCyanColor(newColor);
+    onBrandCyanChange?.(newColor);
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -85,7 +100,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="bg-[#1A1A1A] border border-zinc-800/50 rounded-md p-4 w-full max-w-2xl mx-4 shadow-xl"
+        className="bg-zinc-900 border border-zinc-800/50 rounded-md p-4 w-full max-w-2xl mx-4 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
@@ -112,7 +127,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
             </div>
             <button
               onClick={() => onShowGridChange?.(!showGrid)}
-              className={`relative w-10 h-5 rounded-md transition-colors cursor-pointer flex-shrink-0 ${showGrid ? 'bg-[#52ddeb]' : 'bg-zinc-700'
+              className={`relative w-10 h-5 rounded-md transition-colors cursor-pointer flex-shrink-0 ${showGrid ? 'bg-brand-cyan' : 'bg-zinc-700'
                 }`}
             >
               <span
@@ -132,7 +147,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
             </div>
             <button
               onClick={() => onShowMinimapChange?.(!showMinimap)}
-              className={`relative w-10 h-5 rounded-md transition-colors cursor-pointer flex-shrink-0 ${showMinimap ? 'bg-[#52ddeb]' : 'bg-zinc-700'
+              className={`relative w-10 h-5 rounded-md transition-colors cursor-pointer flex-shrink-0 ${showMinimap ? 'bg-brand-cyan' : 'bg-zinc-700'
                 }`}
             >
               <span
@@ -152,7 +167,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
             </div>
             <button
               onClick={() => onShowControlsChange?.(!showControls)}
-              className={`relative w-10 h-5 rounded-md transition-colors cursor-pointer flex-shrink-0 ${showControls ? 'bg-[#52ddeb]' : 'bg-zinc-700'
+              className={`relative w-10 h-5 rounded-md transition-colors cursor-pointer flex-shrink-0 ${showControls ? 'bg-brand-cyan' : 'bg-zinc-700'
                 }`}
             >
               <span
@@ -179,7 +194,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
             </div>
             <button
               onClick={() => onExperimentalModeChange?.(!experimentalMode)}
-              className={`relative w-10 h-5 rounded-md transition-colors cursor-pointer flex-shrink-0 ${experimentalMode ? 'bg-[#52ddeb]' : 'bg-zinc-700'
+              className={`relative w-10 h-5 rounded-md transition-colors cursor-pointer flex-shrink-0 ${experimentalMode ? 'bg-brand-cyan' : 'bg-zinc-700'
                 }`}
             >
               <span
@@ -293,12 +308,38 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
               />
             </div>
           </div>
+
+          {/* Brand Cyan Color Settings */}
+          <div className="p-2 bg-black/40 border border-zinc-800/50 rounded-md">
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles size={16} className="text-zinc-400 flex-shrink-0" />
+              <label className="text-xs font-mono text-zinc-300">
+                {t('canvas.brandCyanColor') || 'Brand Cyan Color'}
+              </label>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={brandCyanColor}
+                onChange={(e) => handleBrandCyanChange(e.target.value)}
+                className="w-10 h-10 rounded border border-zinc-700/50 cursor-pointer bg-transparent flex-shrink-0"
+                title={t('canvas.selectColor') || 'Select color'}
+              />
+              <input
+                type="text"
+                value={brandCyanColor}
+                onChange={(e) => handleBrandCyanChange(e.target.value)}
+                className="flex-1 px-2 py-1.5 bg-black/40 border border-zinc-700/50 rounded text-xs text-zinc-300 font-mono focus:outline-none focus:border-[#52ddeb]/50"
+                placeholder="#52ddeb"
+              />
+            </div>
+          </div>
         </div>
 
         <div className="mt-4 pt-3 border-t border-zinc-800/50">
           <button
             onClick={onClose}
-            className="w-full px-3 py-1.5 bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 text-[#52ddeb] border border-[#52ddeb]/30 hover:border-[#52ddeb]/50 rounded-md transition-all text-xs font-mono cursor-pointer"
+            className="w-full px-3 py-1.5 bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-[#52ddeb]/30 hover:border-[#52ddeb]/50 rounded-md transition-all text-xs font-mono cursor-pointer"
           >
             {t('common.close') || 'Close'}
           </button>

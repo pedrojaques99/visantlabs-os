@@ -1,18 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Globe, Sparkles, TrendingUp, Plus, Image as ImageIcon, Camera, Layers, MapPin, Sun, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { Globe, Sparkles, TrendingUp, Plus, Image as ImageIcon, Camera, Layers, MapPin, Sun, ArrowRight, ChevronDown, ChevronUp, Box, Settings, Palette } from 'lucide-react';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { BreadcrumbWithBack, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '../components/ui/BreadcrumbWithBack';
 import { useLayout } from '../hooks/useLayout';
 import { useTranslation } from '../hooks/useTranslation';
-import { getAllCommunityPresets, getCommunityStats } from '../services/communityPresetsService';
+import { getAllCommunityPresets, getCommunityStats, clearCommunityPresetsCache } from '../services/communityPresetsService';
 import { mockupApi } from '../services/mockupApi';
 import { cn } from '../lib/utils';
 import { Github } from 'lucide-react';
 import { getGithubUrl } from '../config/branding';
 import ClubHero3D from '../components/3d/club-hero3d';
+import { CommunityPresetModal } from '../components/CommunityPresetModal';
+import { authService } from '../services/authService';
+import { toast } from 'sonner';
 
-type PresetType = 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance';
+type PresetType = 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance' | '3d' | 'presets' | 'aesthetics' | 'themes';
 
 interface PresetStats {
   mockup: number;
@@ -20,6 +23,10 @@ interface PresetStats {
   texture: number;
   ambience: number;
   luminance: number;
+  '3d': number;
+  presets: number;
+  aesthetics: number;
+  themes: number;
   total: number;
 }
 
@@ -29,6 +36,10 @@ interface CategoryPresets {
   texture: any[];
   ambience: any[];
   luminance: any[];
+  '3d': any[];
+  presets: any[];
+  aesthetics: any[];
+  themes: any[];
 }
 
 interface GlobalStats {
@@ -47,6 +58,10 @@ export const CommunityPage: React.FC = () => {
     texture: 0,
     ambience: 0,
     luminance: 0,
+    '3d': 0,
+    presets: 0,
+    aesthetics: 0,
+    themes: 0,
     total: 0,
   });
   const [categoryPresets, setCategoryPresets] = useState<CategoryPresets>({
@@ -55,6 +70,10 @@ export const CommunityPage: React.FC = () => {
     texture: [],
     ambience: [],
     luminance: [],
+    '3d': [],
+    presets: [],
+    aesthetics: [],
+    themes: [],
   });
   const [globalCommunityStats, setGlobalCommunityStats] = useState<GlobalStats>({
     totalUsers: 0,
@@ -66,6 +85,7 @@ export const CommunityPage: React.FC = () => {
   const [communityMockups, setCommunityMockups] = useState<any[]>([]);
   const [allPublicMockups, setAllPublicMockups] = useState<any[]>([]);
   const [isGalleryExpanded, setIsGalleryExpanded] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   useEffect(() => {
     const loadStats = async () => {
@@ -77,25 +97,43 @@ export const CommunityPage: React.FC = () => {
           getCommunityStats()
         ]);
 
+        // Store all presets for each category (remove duplicates by id)
+        const removeDuplicates = (presets: any[]) => {
+          const seen = new Set<string | number>();
+          return presets.filter((preset) => {
+            if (!preset?.id) return false;
+            if (seen.has(preset.id)) return false;
+            seen.add(preset.id);
+            return true;
+          });
+        };
+
         const newStats: PresetStats = {
           mockup: allPresets.mockup?.length || 0,
           angle: allPresets.angle?.length || 0,
           texture: allPresets.texture?.length || 0,
           ambience: allPresets.ambience?.length || 0,
           luminance: allPresets.luminance?.length || 0,
+          '3d': allPresets['3d']?.length || 0,
+          presets: allPresets.presets?.length || 0,
+          aesthetics: allPresets.aesthetics?.length || 0,
+          themes: allPresets.themes?.length || 0,
           total: 0,
         };
         newStats.total = Object.values(newStats).reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0);
         setStats(newStats);
         setGlobalCommunityStats(globalStats);
 
-        // Store the last 5 presets for each category
         setCategoryPresets({
-          mockup: (allPresets.mockup || []).slice(0, 5),
-          angle: (allPresets.angle || []).slice(0, 5),
-          texture: (allPresets.texture || []).slice(0, 5),
-          ambience: (allPresets.ambience || []).slice(0, 5),
-          luminance: (allPresets.luminance || []).slice(0, 5),
+          mockup: removeDuplicates(allPresets.mockup || []),
+          angle: removeDuplicates(allPresets.angle || []),
+          texture: removeDuplicates(allPresets.texture || []),
+          ambience: removeDuplicates(allPresets.ambience || []),
+          luminance: removeDuplicates(allPresets.luminance || []),
+          '3d': removeDuplicates(allPresets['3d'] || []),
+          presets: removeDuplicates(allPresets.presets || []),
+          aesthetics: removeDuplicates(allPresets.aesthetics || []),
+          themes: removeDuplicates(allPresets.themes || []),
         });
 
         // Store latest mockups
@@ -116,6 +154,10 @@ export const CommunityPage: React.FC = () => {
           ...(allPresets.texture || []),
           ...(allPresets.ambience || []),
           ...(allPresets.luminance || []),
+          ...(allPresets['3d'] || []),
+          ...(allPresets.presets || []),
+          ...(allPresets.aesthetics || []),
+          ...(allPresets.themes || []),
         ];
         const uniqueUserIds = new Set(
           allPresetsArray
@@ -133,15 +175,87 @@ export const CommunityPage: React.FC = () => {
     loadStats();
   }, []);
 
-  const presetTypes: Array<{ type: PresetType; icon: React.ElementType; label: string; count: number; presets: any[] }> = [
+  const presetTypes: Array<{ type: PresetType; icon: React.ComponentType<{ size?: number; className?: string }>; label: string; count: number; presets: any[] }> = [
     { type: 'mockup', icon: ImageIcon, label: t('communityPresets.tabs.mockup'), count: stats.mockup, presets: categoryPresets.mockup },
     { type: 'angle', icon: Camera, label: t('communityPresets.tabs.angle'), count: stats.angle, presets: categoryPresets.angle },
     { type: 'texture', icon: Layers, label: t('communityPresets.tabs.texture'), count: stats.texture, presets: categoryPresets.texture },
     { type: 'ambience', icon: MapPin, label: t('communityPresets.tabs.ambience'), count: stats.ambience, presets: categoryPresets.ambience },
     { type: 'luminance', icon: Sun, label: t('communityPresets.tabs.luminance'), count: stats.luminance, presets: categoryPresets.luminance },
+    { type: '3d', icon: Box, label: t('communityPresets.categories.3d'), count: stats['3d'], presets: categoryPresets['3d'] },
+    { type: 'presets', icon: Settings, label: t('communityPresets.categories.presets'), count: stats.presets, presets: categoryPresets.presets },
+    { type: 'aesthetics', icon: Palette, label: t('communityPresets.categories.aesthetics'), count: stats.aesthetics, presets: categoryPresets.aesthetics },
+    { type: 'themes', icon: Sparkles, label: t('communityPresets.categories.themes'), count: stats.themes, presets: categoryPresets.themes },
   ];
 
   const isAuthenticated = isUserAuthenticated === true;
+
+  const handleSavePreset = useCallback(async (data: any) => {
+    const token = authService.getToken();
+    if (!token) {
+      throw new Error(t('communityPresets.errors.mustBeAuthenticatedToCreate'));
+    }
+
+    const COMMUNITY_API = '/api/community/presets';
+    const presetId = data.id;
+
+    try {
+      const body: any = {
+        presetType: data.presetType,
+        id: presetId,
+        name: data.name,
+        description: data.description,
+        prompt: data.prompt,
+        aspectRatio: data.aspectRatio,
+        tags: data.tags && data.tags.length > 0 ? data.tags : undefined,
+      };
+
+      if (data.presetType === 'mockup' && data.referenceImageUrl !== undefined) {
+        body.referenceImageUrl = data.referenceImageUrl;
+      }
+
+      const response = await fetch(COMMUNITY_API, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || t('communityPresets.errors.failedToCreate'));
+      }
+
+      clearCommunityPresetsCache();
+      toast.success(t('communityPresets.messages.presetCreated'));
+      
+      // Reload stats after creating preset
+      const [allPresets, globalStats] = await Promise.all([
+        getAllCommunityPresets(),
+        getCommunityStats()
+      ]);
+
+      const newStats: PresetStats = {
+        mockup: allPresets.mockup?.length || 0,
+        angle: allPresets.angle?.length || 0,
+        texture: allPresets.texture?.length || 0,
+        ambience: allPresets.ambience?.length || 0,
+        luminance: allPresets.luminance?.length || 0,
+        '3d': allPresets['3d']?.length || 0,
+        presets: allPresets.presets?.length || 0,
+        aesthetics: allPresets.aesthetics?.length || 0,
+        themes: allPresets.themes?.length || 0,
+        total: 0,
+      };
+      newStats.total = Object.values(newStats).reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0);
+      setStats(newStats);
+      setGlobalCommunityStats(globalStats);
+    } catch (saveError: any) {
+      console.error('Save error:', saveError);
+      throw saveError;
+    }
+  }, [t]);
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-zinc-300 pt-12 md:pt-14 relative overflow-x-hidden">
@@ -168,69 +282,68 @@ export const CommunityPage: React.FC = () => {
 
         {/* Hero Section */}
         <ClubHero3D
-          className="mb-16 rounded-3xl border border-zinc-800/50 min-h-[600px] h-auto"
+          className="mb-16 rounded-3xl border border-zinc-800/50 min-h-[400px] h-auto"
           color="#52ddeb"
           starColor="#52ddeb"
-
         >
-          <div className="relative z-10 p-8 md:p-12 h-full flex flex-col justify-between">
+          <div className="relative z-10 p-6 md:p-8 h-full flex flex-col justify-between">
             <div className="relative z-10 max-w-2xl pointer-events-auto">
-              <div className="flex items-center gap-2 mb-4">
-                <span className="px-3 py-1 bg-[#52ddeb]/10 text-[#52ddeb] text-xs font-mono rounded-full border border-[#52ddeb]/20">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="px-3 py-1 bg-brand-cyan/10 text-brand-cyan text-xs font-mono rounded-full border border-[#52ddeb]/20">
                   COMUNIDADE ATIVA
                 </span>
               </div>
-              <h1 className="text-4xl md:text-6xl font-bold font-manrope text-white mb-6 leading-tight">
+              <h1 className="text-3xl md:text-5xl font-bold font-manrope text-white mb-4 leading-tight">
                 {t('communityPresets.title')}
               </h1>
-              <p className="text-zinc-400 text-lg md:text-xl font-mono mb-8 max-w-xl leading-relaxed">
+              <p className="text-zinc-400 text-base md:text-lg font-mono mb-6 max-w-xl leading-relaxed">
                 {t('communityPresets.subtitle')}
               </p>
 
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-wrap gap-3">
                 <button
-                  onClick={() => navigate('/canvas')}
-                  className="flex items-center gap-2 px-6 py-3 bg-[#52ddeb] hover:bg-[#52ddeb]/90 text-black font-semibold rounded-xl transition-all hover:scale-105 active:scale-95 shadow-lg shadow-[#52ddeb]/20"
+                  onClick={() => setIsCreateModalOpen(true)}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-brand-cyan hover:bg-brand-cyan/90 text-black font-semibold rounded-xl transition-all hover:scale-105 active:scale-95 shadow-lg shadow-[#52ddeb]/20"
                 >
-                  <Plus size={20} />
-                  <span className="font-mono uppercase tracking-wider text-sm">Criar Conteúdo</span>
+                  <Plus size={18} />
+                  <span className="font-mono uppercase tracking-wider text-sm">Criar um novo prompt</span>
                 </button>
                 <button
                   onClick={() => navigate('/community/presets')}
-                  className="flex items-center gap-2 px-6 py-3 bg-zinc-800/50 hover:bg-zinc-800 text-white font-semibold rounded-xl border border-zinc-700/50 transition-all hover:scale-105 active:scale-95 backdrop-blur-sm"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-zinc-800/50 hover:bg-zinc-800 text-white font-semibold rounded-xl border border-zinc-700/50 transition-all hover:scale-105 active:scale-95 backdrop-blur-sm"
                 >
-                  <Globe size={20} />
+                  <Globe size={18} />
                   <span className="font-mono uppercase tracking-wider text-sm">Ver Tudo</span>
                 </button>
               </div>
             </div>
 
             {/* Global Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-16 relative z-10 pointer-events-auto">
-              <div className="bg-black/40 backdrop-blur-sm border border-zinc-800/50 rounded-2xl p-6 transition-all hover:border-[#52ddeb]/30 group hover:bg-black/60">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 relative z-10 pointer-events-auto">
+              <div className="bg-black/40 backdrop-blur-sm border border-zinc-800/50 rounded-xl p-4 transition-all hover:border-[#52ddeb]/30 group hover:bg-black/60">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-zinc-500 font-mono text-xs uppercase tracking-widest">Usuários</span>
-                  <TrendingUp size={16} className="text-[#52ddeb]" />
+                  <TrendingUp size={14} className="text-brand-cyan" />
                 </div>
-                <p className="text-4xl font-bold text-white font-mono group-hover:scale-110 transition-transform origin-left">
+                <p className="text-3xl font-bold text-white font-mono group-hover:scale-110 transition-transform origin-left">
                   {isLoading ? '...' : globalCommunityStats.totalUsers}
                 </p>
               </div>
-              <div className="bg-black/40 backdrop-blur-sm border border-zinc-800/50 rounded-2xl p-6 transition-all hover:border-[#52ddeb]/30 group hover:bg-black/60">
+              <div className="bg-black/40 backdrop-blur-sm border border-zinc-800/50 rounded-xl p-4 transition-all hover:border-[#52ddeb]/30 group hover:bg-black/60">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-zinc-500 font-mono text-xs uppercase tracking-widest">Presets Criados</span>
-                  <Sparkles size={16} className="text-[#52ddeb]" />
+                  <Sparkles size={14} className="text-brand-cyan" />
                 </div>
-                <p className="text-4xl font-bold text-white font-mono group-hover:scale-110 transition-transform origin-left">
+                <p className="text-3xl font-bold text-white font-mono group-hover:scale-110 transition-transform origin-left">
                   {isLoading ? '...' : globalCommunityStats.totalPresets}
                 </p>
               </div>
-              <div className="bg-black/40 backdrop-blur-sm border border-zinc-800/50 rounded-2xl p-6 transition-all hover:border-[#52ddeb]/30 group hover:bg-black/60">
+              <div className="bg-black/40 backdrop-blur-sm border border-zinc-800/50 rounded-xl p-4 transition-all hover:border-[#52ddeb]/30 group hover:bg-black/60">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-zinc-500 font-mono text-xs uppercase tracking-widest">Public Mockups</span>
-                  <ImageIcon size={16} className="text-[#52ddeb]" />
+                  <ImageIcon size={14} className="text-brand-cyan" />
                 </div>
-                <p className="text-4xl font-bold text-white font-mono group-hover:scale-110 transition-transform origin-left">
+                <p className="text-3xl font-bold text-white font-mono group-hover:scale-110 transition-transform origin-left">
                   {isLoading ? '...' : globalCommunityStats.totalBlankMockups}
                 </p>
               </div>
@@ -249,22 +362,19 @@ export const CommunityPage: React.FC = () => {
             {/* Exploration Categories */}
             <section className="space-y-8">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                <div className="space-y-2">
-                  <h2 className="text-3xl font-bold text-white font-manrope">Explorar por Categoria</h2>
-                  <p className="text-zinc-500 font-mono text-sm max-w-lg">
-                    Encontre o recurso perfeito para o seu próximo design entre milhares de criações da comunidade.
-                  </p>
+                <div>
+                  <h2 className="text-2xl font-bold text-white font-manrope">Explorar por Categoria</h2>
                 </div>
                 <Link
                   to="/community/presets"
-                  className="inline-flex items-center gap-2 text-[#52ddeb] hover:text-[#52ddeb]/80 font-mono text-sm transition-all hover:translate-x-1"
+                  className="inline-flex items-center gap-2 text-brand-cyan hover:text-brand-cyan/80 font-mono text-sm transition-all hover:translate-x-1"
                 >
                   Todas as categorias
                   <ArrowRight size={16} />
                 </Link>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
                 {presetTypes.map((category) => (
                   <button
                     key={category.type}
@@ -272,12 +382,12 @@ export const CommunityPage: React.FC = () => {
                     className="group relative bg-[#141414] border border-zinc-800/50 rounded-2xl p-6 flex flex-col h-full hover:border-[#52ddeb]/40 transition-all hover:-translate-y-1 active:translate-y-0"
                   >
                     <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-10 transition-opacity">
-                      <category.icon size={64} className="text-[#52ddeb]" />
+                      <category.icon size={64} className="text-brand-cyan" />
                     </div>
 
                     <div className="flex items-center justify-between mb-6">
-                      <div className="p-3 bg-zinc-900 rounded-xl group-hover:bg-[#52ddeb]/10 transition-colors">
-                        <category.icon size={24} className="text-zinc-400 group-hover:text-[#52ddeb] transition-colors" />
+                      <div className="p-3 bg-zinc-900 rounded-xl group-hover:bg-brand-cyan/10 transition-colors">
+                        <category.icon size={24} className="text-zinc-400 group-hover:text-brand-cyan transition-colors" />
                       </div>
                       <div className="flex flex-col items-end">
                         <span className="text-2xl font-bold font-mono text-white whitespace-nowrap">{category.count}</span>
@@ -286,7 +396,7 @@ export const CommunityPage: React.FC = () => {
                     </div>
 
                     <div className="mb-6 flex-1">
-                      <h3 className="text-lg font-semibold text-white font-manrope mb-1 capitalize group-hover:text-[#52ddeb] transition-colors">
+                      <h3 className="text-lg font-semibold text-white font-manrope mb-1 capitalize group-hover:text-brand-cyan transition-colors">
                         {category.label}
                       </h3>
                       <p className="text-xs text-zinc-500 font-mono line-clamp-2 leading-relaxed">
@@ -294,14 +404,14 @@ export const CommunityPage: React.FC = () => {
                       </p>
                     </div>
 
-                    <div className="space-y-2 pt-4 border-t border-zinc-800/50">
+                    <div className="space-y-2 pt-4 border-t border-zinc-800/50 max-h-48 overflow-y-auto">
                       {category.presets.length > 0 ? (
-                        category.presets.slice(0, 3).map((preset: any) => (
+                        category.presets.map((preset: any, index: number) => (
                           <div
-                            key={preset.id}
+                            key={`${category.type}-${preset.id || preset._id || index}`}
                             className="flex items-center gap-3 py-1 group/item"
                           >
-                            <div className="w-1.5 h-1.5 rounded-full bg-zinc-700 group-hover/item:bg-[#52ddeb] transition-colors" />
+                            <div className="w-1.5 h-1.5 rounded-full bg-zinc-700 group-hover/item:bg-brand-cyan transition-colors" />
                             <p className="text-xs font-mono text-zinc-500 group-hover/item:text-zinc-300 truncate transition-colors">
                               {preset.name}
                             </p>
@@ -327,7 +437,7 @@ export const CommunityPage: React.FC = () => {
                 </div>
                 <Link
                   to="/mockups"
-                  className="inline-flex items-center gap-2 text-[#52ddeb] hover:text-[#52ddeb]/80 font-mono text-sm transition-all hover:translate-x-1"
+                  className="inline-flex items-center gap-2 text-brand-cyan hover:text-brand-cyan/80 font-mono text-sm transition-all hover:translate-x-1"
                 >
                   Ver galeria completa
                   <ArrowRight size={16} />
@@ -337,7 +447,7 @@ export const CommunityPage: React.FC = () => {
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
                 {isLoading ? (
                   Array.from({ length: 10 }).map((_, i) => (
-                    <div key={i} className="aspect-square bg-[#1A1A1A] rounded-2xl animate-pulse border border-zinc-800/50" />
+                    <div key={i} className="aspect-square bg-zinc-900 rounded-2xl animate-pulse border border-zinc-800/50" />
                   ))
                 ) : (isGalleryExpanded ? allPublicMockups : communityMockups).length > 0 ? (
                   (isGalleryExpanded ? allPublicMockups : communityMockups).map((mockup) => (
@@ -358,12 +468,12 @@ export const CommunityPage: React.FC = () => {
                         </div>
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 p-4 flex flex-col justify-end">
-                        <p className="text-[10px] text-[#52ddeb] font-mono uppercase tracking-widest mb-1">Prompt</p>
+                        <p className="text-[10px] text-brand-cyan font-mono uppercase tracking-widest mb-1">Prompt</p>
                         <p className="text-xs text-white font-mono line-clamp-2 mb-2">
                           {mockup.prompt}
                         </p>
                         <div className="flex items-center gap-2 pt-2 border-t border-white/10">
-                          <Plus size={10} className="text-[#52ddeb]" />
+                          <Plus size={10} className="text-brand-cyan" />
                           <span className="text-[9px] text-zinc-400 font-mono uppercase">Usar como referência</span>
                         </div>
                       </div>
@@ -385,7 +495,7 @@ export const CommunityPage: React.FC = () => {
                 <div className="flex justify-center mt-8">
                   <button
                     onClick={() => setIsGalleryExpanded(!isGalleryExpanded)}
-                    className="flex items-center gap-2 px-6 py-2 bg-zinc-900/50 hover:bg-[#52ddeb]/10 text-zinc-500 hover:text-[#52ddeb] border border-zinc-800/50 rounded-full transition-all text-sm font-mono group"
+                    className="flex items-center gap-2 px-6 py-2 bg-zinc-900/50 hover:bg-brand-cyan/10 text-zinc-500 hover:text-brand-cyan border border-zinc-800/50 rounded-full transition-all text-sm font-mono group"
                   >
                     {isGalleryExpanded ? (
                       <>
@@ -406,7 +516,7 @@ export const CommunityPage: React.FC = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-[#52ddeb]/5 to-transparent rounded-3xl" />
               <div className="relative z-10 p-8 md:p-12 rounded-3xl border border-zinc-800/50 bg-[#141414] overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
                 <div className="max-w-xl space-y-4 text-center md:text-left">
-                  <div className="flex items-center justify-center md:justify-start gap-3 text-[#52ddeb]">
+                  <div className="flex items-center justify-center md:justify-start gap-3 text-brand-cyan">
                     <Github size={24} />
                     <span className="font-mono text-sm font-semibold tracking-widest uppercase">Open Source</span>
                   </div>
@@ -436,6 +546,14 @@ export const CommunityPage: React.FC = () => {
             </section>
           </div>
         )}
+
+        {/* Create Preset Modal */}
+        <CommunityPresetModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onSave={handleSavePreset}
+          isCreating={true}
+        />
       </div>
     </div>
   );

@@ -140,7 +140,7 @@ export function DataTable<TData, TValue>({
                         onTouchStart={header.getResizeHandler()}
                         className={cn(
                           "absolute right-0 top-0 h-full w-1 cursor-col-resize bg-zinc-700/50 opacity-0 group-hover:opacity-100 transition-opacity z-10",
-                          header.column.getIsResizing() && "bg-[#52ddeb] opacity-100 w-0.5"
+                          header.column.getIsResizing() && "bg-brand-cyan opacity-100 w-0.5"
                         )}
                       />
                     )}

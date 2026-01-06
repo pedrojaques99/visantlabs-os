@@ -16,12 +16,15 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        brand: "bg-brand-cyan/80 hover:bg-brand-cyan/90 text-black border border-[#52ddeb]/30 hover:border-[#52ddeb]/50 shadow-lg shadow-[#52ddeb]/20",
+        sidebarAction: "bg-zinc-800/50 hover:bg-brand-cyan/10 disabled:bg-zinc-700 disabled:text-zinc-500 text-zinc-400 hover:text-brand-cyan border border-zinc-700/50 hover:border-[#52ddeb]/30 shadow-lg hover:shadow-[#52ddeb]/10 transform hover:scale-[1.02] active:scale-100 disabled:hover:scale-100",
       },
       size: {
         default: "h-10 px-4 py-2",
         sm: "h-9 rounded-md px-3",
         lg: "h-11 rounded-md px-8",
         icon: "h-10 w-10",
+        sidebar: "h-[48px] px-4",
       },
     },
     defaultVariants: {

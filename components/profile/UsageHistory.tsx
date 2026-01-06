@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { FileText, CreditCard, TrendingUp, Image, Palette, ImageIcon, X, Loader2 } from 'lucide-react';
+import { FileText, CreditCard, TrendingUp, Image, Palette, ImageIcon, X } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { usageHistoryService, type UsageHistoryRecord, type FeatureType } from '../../services/usageHistoryService';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -164,7 +164,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
 
             {/* Error Display */}
             {historyError && (
-                <Card className="bg-[#1A1A1A] border border-red-500/30 rounded-xl">
+                <Card className="bg-zinc-900 border border-red-500/30 rounded-xl">
                     <CardContent className="p-4">
                         <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-sm text-red-400 font-mono flex items-center gap-2">
                             <X size={16} />
@@ -178,13 +178,13 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
             {isLoadingHistory && usageHistory.length === 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {[1, 2, 3].map((i) => (
-                        <Card key={i} className="bg-[#1A1A1A] border border-zinc-800/50 h-32 flex items-center justify-center">
+                        <Card key={i} className="bg-zinc-900 border border-zinc-800/50 h-32 flex items-center justify-center">
                             <GlitchLoader size={20} />
                         </Card>
                     ))}
                 </div>
             ) : usageHistory.length === 0 ? (
-                <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl">
+                <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl">
                     <CardContent className="p-6 md:p-8">
                         <div className="flex flex-col items-center justify-center gap-3 py-8">
                             <p className="text-sm text-zinc-500 font-mono text-center">
@@ -198,7 +198,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
                     {/* Statistics Cards Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                         {/* Total Records */}
-                        <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-brand-cyan/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                        <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-brand-cyan/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                             <CardContent className="p-6">
                                 <div className="flex items-start justify-between mb-4">
                                     <div className="p-3 bg-brand-cyan/10 rounded-lg">
@@ -215,7 +215,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
                         </Card>
 
                         {/* Total Credits */}
-                        <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-brand-cyan/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                        <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-brand-cyan/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                             <CardContent className="p-6">
                                 <div className="flex items-start justify-between mb-4">
                                     <div className="p-3 bg-brand-cyan/10 rounded-lg">
@@ -232,7 +232,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
                         </Card>
 
                         {/* Mockup Machine Stats */}
-                        <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-brand-cyan/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                        <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-brand-cyan/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                             <CardContent className="p-6">
                                 <div className="flex items-start justify-between mb-4">
                                     <div className="p-3 bg-brand-cyan/10 rounded-lg">
@@ -250,7 +250,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
                         </Card>
 
                         {/* Canvas Stats */}
-                        <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-brand-cyan/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                        <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-brand-cyan/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                             <CardContent className="p-6">
                                 <div className="flex items-start justify-between mb-4">
                                     <div className="p-3 bg-brand-cyan/10 rounded-lg">
@@ -269,7 +269,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
                     </div>
 
                     {/* Filter buttons */}
-                    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl">
+                    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl">
                         <CardContent className="p-4 md:p-6">
                             <div className="flex flex-wrap gap-2">
                                 {(['all', 'brandingmachine', 'mockupmachine', 'canvas'] as const).map((filter) => (
@@ -292,7 +292,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
                     </Card>
 
                     {/* History Table */}
-                    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-brand-cyan/30 transition-all duration-300 shadow-lg">
+                    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-brand-cyan/30 transition-all duration-300 shadow-lg">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-3 text-zinc-300 font-mono text-base">
                                 <FileText className="h-5 w-5 text-brand-cyan" />

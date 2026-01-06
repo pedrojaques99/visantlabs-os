@@ -273,7 +273,7 @@ export const PricingPage: React.FC = () => {
                         <div className="flex items-center justify-center gap-2 text-sm text-zinc-400 font-mono uppercase tracking-wider">
                           <Pickaxe
                             size={14}
-                            className="md:w-4 md:h-4 text-[#52ddeb]/70 flex-shrink-0"
+                            className="md:w-4 md:h-4 text-brand-cyan/70 flex-shrink-0"
                           />
                           {t('pricing.creditsLabel') || 'Credits'}
                         </div>
@@ -293,7 +293,7 @@ export const PricingPage: React.FC = () => {
                       <div className="flex flex-col gap-2 mt-6">
                         <button
                           onClick={handleBuyCredits}
-                          className="w-full px-6 py-3 bg-[#52ddeb]/80 hover:bg-[#52ddeb] text-black font-semibold rounded-md text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-[#52ddeb]/20 cursor-pointer"
+                          className="w-full px-6 py-3 bg-brand-cyan/80 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-[#52ddeb]/20 cursor-pointer"
                         >
                           <CreditCard size={16} />
                           {t('pricing.buyCredits') || 'Buy'}
@@ -319,7 +319,7 @@ export const PricingPage: React.FC = () => {
                       key={index}
                       onClick={() => setSelectedCreditIndex(index)}
                       className={`h-2 rounded-md transition-all duration-300 ease-out cursor-pointer ${index === selectedCreditIndex
-                          ? 'bg-[#52ddeb] w-8 shadow-[0_0_8px_rgba(82,221,235,0.4)]'
+                          ? 'bg-brand-cyan w-8 shadow-[0_0_8px_rgba(82,221,235,0.4)]'
                           : 'bg-zinc-600 hover:bg-zinc-500 w-2 hover:scale-125'
                         }`}
                       aria-label={`Select ${CREDIT_PACKAGES[index].credits} credits package`}

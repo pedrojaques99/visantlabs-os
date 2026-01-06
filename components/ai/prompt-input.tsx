@@ -16,7 +16,8 @@
 'use client';
 
 import { cn } from '../../lib/utils';
-import { Loader2, Send, Square, X } from 'lucide-react';
+import { Send, Square, X } from 'lucide-react';
+import { GlitchLoader } from '../ui/GlitchLoader';
 import type {
   ComponentProps,
   HTMLAttributes,
@@ -112,7 +113,7 @@ export const PromptInputSubmit = ({
 }: PromptInputSubmitProps) => {
   let Icon = <Send className="size-4" />;
   if (status === 'submitted') {
-    Icon = <Loader2 className="size-4 animate-spin" />;
+    Icon = <GlitchLoader size={16} />;
   } else if (status === 'streaming') {
     Icon = <Square className="size-4" />;
   } else if (status === 'error') {
@@ -123,8 +124,8 @@ export const PromptInputSubmit = ({
     <button
       className={cn(
         'flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5',
-        'bg-[#52ddeb] text-black font-medium text-sm',
-        'hover:bg-[#52ddeb]/90 transition-colors',
+        'bg-brand-cyan text-black font-medium text-sm',
+        'hover:bg-brand-cyan/90 transition-colors',
         'disabled:opacity-50 disabled:cursor-not-allowed',
         className
       )}

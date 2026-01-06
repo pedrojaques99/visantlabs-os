@@ -30,7 +30,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
       onClick={onClose}
     >
       <div 
-        className="relative max-w-4xl w-full max-h-[90vh] bg-[#1A1A1A] border border-zinc-800/50 rounded-md shadow-2xl p-6 md:p-8 my-8"
+        className="relative max-w-4xl w-full max-h-[90vh] bg-zinc-900 border border-zinc-800/50 rounded-md shadow-2xl p-6 md:p-8 my-8"
         onClick={(e) => e.stopPropagation()}
       >
         <button 
@@ -43,7 +43,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
 
         <div className="pr-8">
           <div className="flex items-center gap-3 mb-2">
-            <Shield className="text-[#52ddeb]" size={24} />
+            <Shield className="text-brand-cyan" size={24} />
             <h1 className="text-2xl md:text-3xl font-semibold font-mono text-zinc-200 tracking-wider uppercase">
               API Key Security Policy
             </h1>
@@ -68,7 +68,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
               <div className="space-y-4">
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <Lock className="text-[#52ddeb]" size={18} />
+                    <Lock className="text-brand-cyan" size={18} />
                     <h3 className="text-base font-semibold text-zinc-300">Encryption</h3>
                   </div>
                   <ul className="list-disc list-inside space-y-1 text-zinc-400 ml-6">
@@ -81,7 +81,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
 
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <Key className="text-[#52ddeb]" size={18} />
+                    <Key className="text-brand-cyan" size={18} />
                     <h3 className="text-base font-semibold text-zinc-300">Access Control</h3>
                   </div>
                   <ul className="list-disc list-inside space-y-1 text-zinc-400 ml-6">
@@ -193,7 +193,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
                     href="https://aistudio.google.com/app/apikey" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-[#52ddeb] hover:text-[#52ddeb]/80 underline flex items-center gap-1"
+                    className="text-brand-cyan hover:text-brand-cyan/80 underline flex items-center gap-1"
                   >
                     Google AI Studio API Keys
                     <ExternalLink size={14} />
@@ -204,7 +204,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
                     href="https://cloud.google.com/docs/authentication/api-keys" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-[#52ddeb] hover:text-[#52ddeb]/80 underline flex items-center gap-1"
+                    className="text-brand-cyan hover:text-brand-cyan/80 underline flex items-center gap-1"
                   >
                     Google Cloud API Key Best Practices
                     <ExternalLink size={14} />
@@ -215,7 +215,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
                     href="https://cloud.google.com/security/best-practices" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-[#52ddeb] hover:text-[#52ddeb]/80 underline flex items-center gap-1"
+                    className="text-brand-cyan hover:text-brand-cyan/80 underline flex items-center gap-1"
                   >
                     Google Cloud Security Best Practices
                     <ExternalLink size={14} />

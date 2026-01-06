@@ -159,9 +159,9 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
           className={`
             flex items-center justify-center
             p-2
-            bg-[#1A1A1A] border border-zinc-800 rounded-xl
-            text-zinc-200 hover:text-[#52ddeb]
-            hover:bg-[#1A1A1A]/90 hover:border-[#52ddeb]/50
+            bg-zinc-900 border border-zinc-800 rounded-xl
+            text-zinc-200 hover:text-brand-cyan
+            hover:bg-zinc-900/90 hover:border-[#52ddeb]/50
             transition-all duration-300
             shadow-lg
             ${isOpen ? 'hidden' : ''}
@@ -179,7 +179,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
         className={`
           fixed top-20 right-0 z-50
           h-[calc(100vh-5rem)]
-          bg-[#1A1A1A] border-l border-zinc-800
+          bg-zinc-900 border-l border-zinc-800
           shadow-2xl
           transition-all duration-300 ease-in-out
           flex flex-col
@@ -190,7 +190,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
         {/* Panel Content */}
         <div className="flex-1 overflow-y-auto">
           {/* Panel Header */}
-          <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-zinc-800 bg-[#1A1A1A]">
+          <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-zinc-800 bg-zinc-900">
             <h3 className="text-lg font-semibold text-zinc-200 font-mono">
               {t('budget.brandCustomization') || 'Customização da Marca'}
             </h3>
@@ -228,7 +228,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
             <div className="space-y-3 mb-6">
               <div className="flex items-center justify-between mb-2">
                 <label className="text-xs text-zinc-400 font-mono">Formato do Documento</label>
-                <span className="font-mono text-[#52ddeb] font-semibold text-xs">
+                <span className="font-mono text-brand-cyan font-semibold text-xs">
                   {data.contentWidth || 800}px
                 </span>
               </div>
@@ -238,7 +238,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                   onClick={() => handleContentWidthChange(595)}
                   className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${
                     data.contentWidth === 595
-                      ? 'bg-[#52ddeb]/20 border-[#52ddeb] text-[#52ddeb]'
+                      ? 'bg-brand-cyan/20 border-[#52ddeb] text-brand-cyan'
                       : 'bg-black/40 border-zinc-800 text-zinc-300 hover:border-zinc-700'
                   }`}
                 >
@@ -250,7 +250,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                   onClick={() => handleContentWidthChange(842)}
                   className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${
                     data.contentWidth === 842
-                      ? 'bg-[#52ddeb]/20 border-[#52ddeb] text-[#52ddeb]'
+                      ? 'bg-brand-cyan/20 border-[#52ddeb] text-brand-cyan'
                       : 'bg-black/40 border-zinc-800 text-zinc-300 hover:border-zinc-700'
                   }`}
                 >
@@ -262,7 +262,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                   onClick={() => handleContentWidthChange(612)}
                   className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${
                     data.contentWidth === 612
-                      ? 'bg-[#52ddeb]/20 border-[#52ddeb] text-[#52ddeb]'
+                      ? 'bg-brand-cyan/20 border-[#52ddeb] text-brand-cyan'
                       : 'bg-black/40 border-zinc-800 text-zinc-300 hover:border-zinc-700'
                   }`}
                 >
@@ -274,7 +274,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                   onClick={() => handleContentWidthChange(800)}
                   className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${
                     (data.contentWidth === 800 || !data.contentWidth)
-                      ? 'bg-[#52ddeb]/20 border-[#52ddeb] text-[#52ddeb]'
+                      ? 'bg-brand-cyan/20 border-[#52ddeb] text-brand-cyan'
                       : 'bg-black/40 border-zinc-800 text-zinc-300 hover:border-zinc-700'
                   }`}
                 >
@@ -365,7 +365,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
             <div className="flex gap-2">
               <button
                 onClick={() => setShowSaveModal(true)}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-[#52ddeb]/10 hover:bg-[#52ddeb]/20 border border-[#52ddeb]/30 rounded-md text-[#52ddeb] text-sm font-mono transition-all"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-[#52ddeb]/30 rounded-md text-brand-cyan text-sm font-mono transition-all"
               >
                 <Save size={16} />
                 Salvar como Template
@@ -387,7 +387,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
       {/* Save Template Modal */}
       {showSaveModal && (
         <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
-          <div className="bg-[#1A1A1A] border border-zinc-800 rounded-xl p-6 max-w-md w-full">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 max-w-md w-full">
             <h3 className="text-lg font-semibold text-zinc-200 font-mono mb-4">
               Salvar como Template
             </h3>
@@ -410,7 +410,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
             <div className="flex gap-2">
               <button
                 onClick={saveTemplate}
-                className="flex-1 px-4 py-2 bg-[#52ddeb] hover:bg-[#52ddeb]/90 text-black font-semibold rounded-md text-sm font-mono transition-all"
+                className="flex-1 px-4 py-2 bg-brand-cyan hover:bg-brand-cyan/90 text-black font-semibold rounded-md text-sm font-mono transition-all"
               >
                 Salvar
               </button>
@@ -431,7 +431,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
       {/* Load Template Modal */}
       {showLoadModal && (
         <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
-          <div className="bg-[#1A1A1A] border border-zinc-800 rounded-xl p-6 max-w-md w-full max-h-[80vh] overflow-hidden flex flex-col">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 max-w-md w-full max-h-[80vh] overflow-hidden flex flex-col">
             <h3 className="text-lg font-semibold text-zinc-200 font-mono mb-4">
               Carregar Template
             </h3>

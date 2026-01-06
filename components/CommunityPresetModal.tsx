@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Loader2, Image as ImageIcon } from 'lucide-react';
+import { X, Save, Image as ImageIcon, Box, Settings, Palette, Sparkles, Camera, Layers, MapPin, Sun } from 'lucide-react';
+import { GlitchLoader } from './ui/GlitchLoader';
 import { toast } from 'sonner';
 import { useTranslation } from '../hooks/useTranslation';
 import { Select } from './ui/select';
 import { AdminImageUploader } from './ui/AdminImageUploader';
+import { FormField } from './ui/form-field';
+import { FormInput } from './ui/form-input';
+import { FormTextarea } from './ui/form-textarea';
 import type { UploadedImage, AspectRatio, GeminiModel } from '../types';
+import type { PromptCategory, LegacyPresetType } from '../types/communityPrompts';
 import { authService } from '../services/authService';
 import { cn } from '../lib/utils';
 
-type PresetType = 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance';
-
 interface PresetFormData {
-    presetType: PresetType;
+    category: PromptCategory;
+    presetType?: LegacyPresetType;
     id: string;
     name: string;
     description: string;
@@ -20,6 +24,8 @@ interface PresetFormData {
     aspectRatio: AspectRatio;
     model?: GeminiModel;
     tags?: string[];
+    useCase?: string;
+    examples?: string[];
 }
 
 interface CommunityPresetModalProps {
@@ -42,8 +48,9 @@ const generateSlug = (text: string): string => {
         .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
 };
 
-const getInitialFormData = (presetType: PresetType): PresetFormData => ({
-    presetType,
+const getInitialFormData = (category: PromptCategory = 'presets', presetType?: LegacyPresetType): PresetFormData => ({
+    category,
+    presetType: category === 'presets' ? (presetType || 'mockup') : undefined,
     id: '',
     name: '',
     description: '',
@@ -52,6 +59,7 @@ const getInitialFormData = (presetType: PresetType): PresetFormData => ({
     aspectRatio: '16:9',
     model: 'gemini-2.5-flash-image',
     tags: [],
+    useCase: '',
 });
 
 export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
@@ -63,7 +71,9 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
 }) => {
     const { t } = useTranslation();
     const [formData, setFormData] = useState<PresetFormData>(
-        initialData ? { ...getInitialFormData('mockup'), ...initialData } : getInitialFormData('mockup')
+        initialData 
+            ? { ...getInitialFormData(initialData.category || 'presets', initialData.presetType), ...initialData } 
+            : getInitialFormData('presets', 'mockup')
     );
     const [tagInput, setTagInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -85,9 +95,12 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
     useEffect(() => {
         if (isOpen) {
             if (initialData) {
-                setFormData({ ...getInitialFormData('mockup'), ...initialData });
+                setFormData({ 
+                    ...getInitialFormData(initialData.category || 'presets', initialData.presetType), 
+                    ...initialData 
+                });
             } else {
-                setFormData(getInitialFormData('mockup'));
+                setFormData(getInitialFormData('presets', 'mockup'));
             }
             setTagInput('');
             setError(null);
@@ -114,7 +127,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
     }, [isOpen]);
 
     const handleClose = () => {
-        setFormData(getInitialFormData('mockup'));
+        setFormData(getInitialFormData('presets', 'mockup'));
         setTagInput('');
         setError(null);
         setImageUploadError(null);
@@ -181,6 +194,12 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
             return;
         }
 
+        // Validar category e presetType
+        if (formData.category === 'presets' && !formData.presetType) {
+            setError('Preset type is required when category is "presets"');
+            return;
+        }
+
         if (!presetId || presetId.trim() === '') {
             setError('Could not generate preset ID. Please enter a valid name.');
             return;
@@ -198,6 +217,18 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
             setIsLoading(false);
         }
     };
+
+    const categoryOptions = [
+        { value: '3d', label: t('communityPresets.categories.3d'), icon: Box },
+        { value: 'presets', label: t('communityPresets.categories.presets'), icon: Settings },
+        { value: 'aesthetics', label: t('communityPresets.categories.aesthetics'), icon: Palette },
+        { value: 'themes', label: t('communityPresets.categories.themes'), icon: Sparkles },
+        { value: 'mockup', label: t('communityPresets.tabs.mockup'), icon: ImageIcon },
+        { value: 'angle', label: t('communityPresets.tabs.angle'), icon: Camera },
+        { value: 'texture', label: t('communityPresets.tabs.texture'), icon: Layers },
+        { value: 'ambience', label: t('communityPresets.tabs.ambience'), icon: MapPin },
+        { value: 'luminance', label: t('communityPresets.tabs.luminance'), icon: Sun },
+    ];
 
     const presetTypeOptions = [
         { value: 'mockup', label: t('communityPresets.tabs.mockup') },
@@ -218,15 +249,15 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
 
     if (!isOpen) return null;
 
-    const presetIcon = {
-        mockup: ImageIcon,
-        angle: ImageIcon,
-        texture: ImageIcon,
-        ambience: ImageIcon,
-        luminance: ImageIcon,
-    }[formData.presetType];
-
-    const Icon = presetIcon;
+    const categoryIcon = categoryOptions.find(opt => opt.value === formData.category)?.icon || Settings;
+    const Icon = categoryIcon;
+    
+    // Determinar se precisa mostrar referenceImageUrl
+    // Para categoria mockup OU para outras categorias (3d, aesthetics, themes)
+    // Categorias antigas (angle, texture, ambience, luminance) não precisam de imagem
+    const needsReferenceImage = formData.category === 'mockup' 
+        || (formData.category === 'presets' && formData.presetType === 'mockup')
+        || (formData.category !== 'presets' && formData.category !== 'all' && !['angle', 'texture', 'ambience', 'luminance'].includes(formData.category));
 
     return (
         <div
@@ -273,29 +304,120 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                     )}
 
                     <div className="space-y-6">
-                        {/* Preset Type */}
-                        <div className="relative z-10">
+                        {/* Image Upload - Primeiro campo */}
+                        {needsReferenceImage && (
+                            <div className="bg-zinc-900/40 backdrop-blur-sm border border-zinc-800/60 rounded-xl p-5 space-y-4 hover:border-zinc-700/60 transition-all">
+                                <FormField
+                                    label={t('communityPresets.referenceImage')}
+                                >
+                                    {!formData.referenceImageUrl ? (
+                                        <div className="space-y-3">
+                                            <AdminImageUploader
+                                                onImageUpload={handleImageUpload}
+                                                disabled={isUploadingImage || !formData.name || formData.name.trim() === ''}
+                                            />
+                                            {isUploadingImage && (
+                                                <div className="flex items-center gap-2 text-sm text-brand-cyan font-mono">
+                                                    <GlitchLoader size={16} />
+                                                    <span>{t('communityPresets.uploadingImage')}</span>
+                                                </div>
+                                            )}
+                                            {imageUploadError && (
+                                                <p className="text-sm text-red-400 font-mono flex items-center gap-2">
+                                                    <span>⚠</span>
+                                                    <span>{imageUploadError}</span>
+                                                </p>
+                                            )}
+                                            {(!formData.name || formData.name.trim() === '') && (
+                                                <p className="text-xs text-zinc-500 font-mono flex items-center gap-1.5">
+                                                    <span>ℹ️</span>
+                                                    <span>{t('communityPresets.enterPresetNameFirst')}</span>
+                                                </p>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-4">
+                                            <div className="relative rounded-lg overflow-hidden border border-zinc-700/40 bg-zinc-900/60 group">
+                                                <img
+                                                    src={formData.referenceImageUrl}
+                                                    alt={t('communityPresets.referenceImageAlt')}
+                                                    className="w-full max-h-64 object-contain"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setFormData({ ...formData, referenceImageUrl: '' });
+                                                        setImageUploadError(null);
+                                                    }}
+                                                    className="absolute top-3 right-3 p-2 bg-zinc-900/95 hover:bg-red-500/20 hover:border-red-500/50 border border-zinc-700/50 text-zinc-300 hover:text-red-400 rounded-lg transition-all shadow-lg opacity-0 group-hover:opacity-100"
+                                                >
+                                                    <X className="h-4 w-4" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className="mt-3">
+                                        <FormField label={t('communityPresets.referenceImageManual')}>
+                                            <FormInput
+                                                type="text"
+                                                value={formData.referenceImageUrl || ''}
+                                                onChange={(e) => {
+                                                    setFormData({ ...formData, referenceImageUrl: e.target.value });
+                                                    setImageUploadError(null);
+                                                }}
+                                                placeholder={t('communityPresets.referenceImageUrlPlaceholder')}
+                                            />
+                                        </FormField>
+                                    </div>
+                                </FormField>
+                            </div>
+                        )}
+
+                        {/* Category */}
+                        <div className="relative z-[99998]">
                             <div className="absolute inset-0 bg-gradient-to-r from-brand-cyan/5 to-transparent rounded-xl blur-xl"></div>
                             <div className="relative bg-zinc-900/40 backdrop-blur-sm border border-zinc-800/60 rounded-xl p-5 hover:border-zinc-700/60 transition-all">
-                                <label className="flex items-center gap-2 text-xs font-semibold text-zinc-400 font-mono mb-3 uppercase tracking-wider">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-brand-cyan"></span>
-                                    {t('communityPresets.presetType')}
-                                </label>
-                                <Select
-                                    options={presetTypeOptions}
-                                    value={formData.presetType}
-                                    onChange={(value) => setFormData({ ...formData, presetType: value as PresetType })}
-                                    disabled={!isCreating}
-                                    placeholder={t('communityPresets.presetType')}
-                                />
-                                {!isCreating && (
-                                    <p className="text-xs text-zinc-500 font-mono mt-2 flex items-center gap-1.5">
-                                        <span>🔒</span>
-                                        <span>{t('communityPresets.typeCannotBeChanged')}</span>
-                                    </p>
-                                )}
+                                <FormField
+                                    label={t('communityPresets.category')}
+                                    required
+                                    hint={!isCreating ? t('communityPresets.typeCannotBeChanged') : undefined}
+                                >
+                                    <Select
+                                        options={categoryOptions.map(opt => ({ value: opt.value, label: opt.label }))}
+                                        value={formData.category}
+                                        onChange={(value) => {
+                                            const newCategory = value as PromptCategory;
+                                            setFormData({ 
+                                                ...formData, 
+                                                category: newCategory,
+                                                presetType: newCategory === 'presets' ? (formData.presetType || 'mockup') : undefined,
+                                            });
+                                        }}
+                                        disabled={!isCreating}
+                                        placeholder={t('communityPresets.category')}
+                                    />
+                                </FormField>
                             </div>
                         </div>
+
+                        {/* Preset Type (only for presets category) */}
+                        {formData.category === 'presets' && (
+                            <div className="relative z-[99998] bg-zinc-900/40 backdrop-blur-sm border border-zinc-800/60 rounded-xl p-5 hover:border-zinc-700/60 transition-all">
+                                <FormField
+                                    label={t('communityPresets.presetType')}
+                                    required
+                                    hint={!isCreating ? t('communityPresets.typeCannotBeChanged') : undefined}
+                                >
+                                    <Select
+                                        options={presetTypeOptions}
+                                        value={formData.presetType || 'mockup'}
+                                        onChange={(value) => setFormData({ ...formData, presetType: value as LegacyPresetType })}
+                                        disabled={!isCreating}
+                                        placeholder={t('communityPresets.presetType')}
+                                    />
+                                </FormField>
+                            </div>
+                        )}
 
                         {/* Name & ID */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -358,7 +480,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                                 />
                             </div>
 
-                            <div className="relative z-10 bg-zinc-900/40 backdrop-blur-sm border border-zinc-800/60 rounded-xl p-5 hover:border-zinc-700/60 transition-all">
+                            <div className="relative z-[99998] bg-zinc-900/40 backdrop-blur-sm border border-zinc-800/60 rounded-xl p-5 hover:border-zinc-700/60 transition-all">
                                 <label className="flex items-center gap-2 text-xs font-semibold text-zinc-400 font-mono mb-3 uppercase tracking-wider">
                                     <span className="w-1.5 h-1.5 rounded-full bg-zinc-600"></span>
                                     {t('communityPresets.aspectRatioOptional')}
@@ -376,95 +498,21 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                         <div className="relative">
                             <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 via-transparent to-transparent rounded-xl blur-xl"></div>
                             <div className="relative group bg-zinc-900/40 backdrop-blur-sm border border-zinc-800/60 rounded-xl p-5 hover:border-zinc-700/60 transition-all">
-                                <label className="flex items-center gap-2 text-xs font-semibold text-zinc-400 font-mono mb-3 uppercase tracking-wider">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-brand-cyan"></span>
-                                    {t('communityPresets.promptRequired')}
-                                </label>
-                                <textarea
-                                    value={formData.prompt}
-                                    onChange={(e) => setFormData({ ...formData, prompt: e.target.value })}
-                                    rows={6}
-                                    className="w-full px-4 py-3 bg-zinc-900/60 border border-zinc-700/40 rounded-lg text-zinc-200 font-mono text-sm placeholder:text-zinc-600 focus:outline-none focus:border-brand-cyan/50 focus:ring-2 focus:ring-brand-cyan/10 focus:bg-zinc-900/80 resize-none transition-all leading-relaxed"
-                                    placeholder={t('communityPresets.promptRequired')}
-                                />
-                                <div className="flex items-center justify-between mt-2">
-                                    <p className="text-xs text-zinc-500 font-mono">{t('communityPresets.describeWhatToGenerate')}</p>
-                                    <p className="text-xs text-zinc-600 font-mono">{formData.prompt.length} chars</p>
-                                </div>
+                                <FormField
+                                    label={t('communityPresets.promptRequired')}
+                                    required
+                                    hint={t('communityPresets.describeWhatToGenerate')}
+                                >
+                                    <FormTextarea
+                                        value={formData.prompt}
+                                        onChange={(e) => setFormData({ ...formData, prompt: e.target.value })}
+                                        rows={6}
+                                        placeholder={t('communityPresets.promptRequired')}
+                                    />
+                                    <p className="text-xs text-zinc-600 font-mono mt-2 text-right">{formData.prompt.length} chars</p>
+                                </FormField>
                             </div>
                         </div>
-
-                        {/* Image Upload (Mockup only) */}
-                        {formData.presetType === 'mockup' && (
-                            <div className="bg-zinc-900/40 backdrop-blur-sm border border-zinc-800/60 rounded-xl p-5 space-y-4 hover:border-zinc-700/60 transition-all">
-                                <label className="flex items-center gap-2 text-xs font-semibold text-zinc-400 font-mono uppercase tracking-wider">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-zinc-600"></span>
-                                    {t('communityPresets.referenceImage')}
-                                </label>
-                                {!formData.referenceImageUrl ? (
-                                    <div className="space-y-3">
-                                        <AdminImageUploader
-                                            onImageUpload={handleImageUpload}
-                                            disabled={isUploadingImage || !formData.name || formData.name.trim() === ''}
-                                        />
-                                        {isUploadingImage && (
-                                            <div className="flex items-center gap-2 text-sm text-brand-cyan font-mono">
-                                                <Loader2 className="w-4 h-4 animate-spin" />
-                                                <span>{t('communityPresets.uploadingImage')}</span>
-                                            </div>
-                                        )}
-                                        {imageUploadError && (
-                                            <p className="text-sm text-red-400 font-mono flex items-center gap-2">
-                                                <span>⚠</span>
-                                                <span>{imageUploadError}</span>
-                                            </p>
-                                        )}
-                                        {(!formData.name || formData.name.trim() === '') && (
-                                            <p className="text-xs text-zinc-500 font-mono flex items-center gap-1.5">
-                                                <span>ℹ️</span>
-                                                <span>{t('communityPresets.enterPresetNameFirst')}</span>
-                                            </p>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <div className="space-y-4">
-                                        <div className="relative rounded-lg overflow-hidden border border-zinc-700/40 bg-zinc-900/60 group">
-                                            <img
-                                                src={formData.referenceImageUrl}
-                                                alt={t('communityPresets.referenceImageAlt')}
-                                                className="w-full max-h-64 object-contain"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setFormData({ ...formData, referenceImageUrl: '' });
-                                                    setImageUploadError(null);
-                                                }}
-                                                className="absolute top-3 right-3 p-2 bg-zinc-900/95 hover:bg-red-500/20 hover:border-red-500/50 border border-zinc-700/50 text-zinc-300 hover:text-red-400 rounded-lg transition-all shadow-lg opacity-0 group-hover:opacity-100"
-                                            >
-                                                <X className="h-4 w-4" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-                                <div>
-                                    <label className="flex items-center gap-2 text-xs font-semibold text-zinc-400 font-mono mb-3 uppercase tracking-wider">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-zinc-600"></span>
-                                        {t('communityPresets.referenceImageManual')}
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={formData.referenceImageUrl || ''}
-                                        onChange={(e) => {
-                                            setFormData({ ...formData, referenceImageUrl: e.target.value });
-                                            setImageUploadError(null);
-                                        }}
-                                        className="w-full px-4 py-3 bg-zinc-900/60 border border-zinc-700/40 rounded-lg text-zinc-200 font-mono text-sm placeholder:text-zinc-600 focus:outline-none focus:border-brand-cyan/50 focus:ring-2 focus:ring-brand-cyan/10 focus:bg-zinc-900/80 transition-all"
-                                        placeholder={t('communityPresets.referenceImageUrlPlaceholder')}
-                                    />
-                                </div>
-                            </div>
-                        )}
 
                         {/* Tags */}
                         <div className="bg-zinc-900/40 backdrop-blur-sm border border-zinc-800/60 rounded-xl p-5 hover:border-zinc-700/60 transition-all">
@@ -557,7 +605,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                     >
                         {isLoading ? (
                             <>
-                                <Loader2 className="w-4 h-4 animate-spin" />
+                                <GlitchLoader size={16} />
                                 <span>Saving...</span>
                             </>
                         ) : (

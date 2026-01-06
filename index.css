@@ -178,6 +178,10 @@
     font-family: 'Dancing Script', cursive;
   }
 
+  .font-rocksalt {
+    font-family: 'Rock Salt', cursive;
+  }
+
   /* Text selection color using brand variable */
   ::selection {
     background-color: var(--brand-cyan);
@@ -366,22 +370,45 @@
 }
 
 /* App Global Styles and Animations */
-/* Scrollbar Styles */
-::-webkit-scrollbar {
-  width: 6px;
+/* Scrollbar Styles - Dark Theme */
+/* Webkit browsers (Chrome, Safari, Edge) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(161, 161, 170, 0.3) transparent;
 }
 
-::-webkit-scrollbar-track {
-  background: var(--muted);
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 3px;
+*::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--muted-foreground);
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(161, 161, 170, 0.3);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.2s ease;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(161, 161, 170, 0.5);
+}
+
+/* Dark mode scrollbar */
+.dark * {
+  scrollbar-color: rgba(113, 113, 122, 0.4) transparent;
+}
+
+.dark *::-webkit-scrollbar-thumb {
+  background-color: rgba(113, 113, 122, 0.4);
+}
+
+.dark *::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(113, 113, 122, 0.6);
 }
 
 /* Animation Keyframes */
@@ -751,7 +778,7 @@
 }
 
 .ascii-char {
-  color: #52ddeb;
+  color: var(--brand-cyan);
   animation: asciiFade 2s ease-in-out infinite;
 }
 
@@ -1052,23 +1079,8 @@
   -ms-user-select: none;
 }
 
-/* Custom scrollbar for columns */
-.column-content::-webkit-scrollbar {
-  width: 6px;
-}
-
-.column-content::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.column-content::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
-}
-
-.column-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
+/* Custom scrollbar for columns - Using Tailwind utilities instead */
+/* Use: scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent hover:scrollbar-thumb-white/20 */
 
 /* React Flow Styles */
 .react-flow {
@@ -1202,9 +1214,9 @@
 .react-flow__node-merge .react-flow__handle[data-connected="true"]:not(.react-flow__resize-control),
 .react-flow__node-edit:not(.min-w-\[600px\]) .react-flow__handle.connected:not(.react-flow__resize-control),
 .react-flow__node-edit:not(.min-w-\[600px\]) .react-flow__handle[data-connected="true"]:not(.react-flow__resize-control) {
-  background: #52ddeb !important;
-  border: 0.5px solid rgba(82, 221, 235, 0.5) !important;
-  box-shadow: 0 0 0 1px rgba(82, 221, 235, 0.3), 0 0 4px rgba(82, 221, 235, 0.4);
+  background: var(--brand-cyan) !important;   
+  border: 0.5px solid rgba(var(--brand-cyan), 0.5) !important;
+  box-shadow: 0 0 0 1px rgba(var(--brand-cyan), 0.3), 0 0 4px rgba(var(--brand-cyan), 0.4);
   opacity: 0.8;
 }
 
@@ -1228,7 +1240,7 @@
 /* Image and Video handles - blue accent color */
 .react-flow__handle.handle-image,
 .react-flow__handle.handle-video {
-  background: #52ddeb !important;
+  background: var(--brand-cyan) !important;
   border: 0.5px solid rgba(82, 221, 235, 0.4) !important;
 }
 
@@ -1242,7 +1254,7 @@
 .react-flow__handle.handle-image[data-connected="true"],
 .react-flow__handle.handle-video.connected,
 .react-flow__handle.handle-video[data-connected="true"] {
-  background: #52ddeb !important;
+  background: var(--brand-cyan) !important;
   border: 0.5px solid rgba(82, 221, 235, 0.6) !important;
   box-shadow: 0 0 0 2px rgba(82, 221, 235, 0.4), 0 0 8px rgba(82, 221, 235, 0.6);
 }
@@ -1269,7 +1281,7 @@
 
 .react-flow__handle.handle-text.connected,
 .react-flow__handle.handle-text[data-connected="true"] {
-  background: #52ddeb !important;
+  background: var(--brand-cyan) !important;
   border: 0.5px solid rgba(82, 221, 235, 0.6) !important;
   box-shadow: 0 0 0 2px rgba(82, 221, 235, 0.4), 0 0 8px rgba(82, 221, 235, 0.6);
 }
@@ -1287,7 +1299,7 @@
 
 .react-flow__handle.handle-strategy.connected,
 .react-flow__handle.handle-strategy[data-connected="true"] {
-  background: #52ddeb !important;
+  background: var(--brand-cyan) !important;
   border: 0.5px solid rgba(82, 221, 235, 0.6) !important;
   box-shadow: 0 0 0 2px rgba(82, 221, 235, 0.4), 0 0 8px rgba(82, 221, 235, 0.6);
 }
@@ -1323,7 +1335,7 @@
 
 .react-flow__handle.handle-text-inverted.connected,
 .react-flow__handle.handle-text-inverted[data-connected="true"] {
-  background: #52ddeb !important;
+  background: var(--brand-cyan) !important;
   border: 0.5px solid rgba(82, 221, 235, 0.6) !important;
   box-shadow: 0 0 0 2px rgba(82, 221, 235, 0.4), 0 0 8px rgba(82, 221, 235, 0.6);
 }
@@ -1342,7 +1354,7 @@
 /* Connected handles - visual indicator (azul apenas quando conectado) */
 .react-flow__handle.connected,
 .react-flow__handle[data-connected="true"] {
-  background: #52ddeb !important;
+  background: var(--brand-cyan) !important;
   border: 0.5px solid rgba(82, 221, 235, 0.6) !important;
   box-shadow: 0 0 0 2px rgba(82, 221, 235, 0.4), 0 0 8px rgba(82, 221, 235, 0.6);
 }
@@ -1365,7 +1377,7 @@
    que estão alinhados na borda dos nodes
    ============================================ */
 .react-flow__edge-path {
-  stroke: #52ddeb;
+  stroke: var(--brand-cyan);
   stroke-width: 0.75;
   stroke-dasharray: 15 6;
   animation: edge-dash-scroll 2s ease-in-out infinite;

@@ -16,6 +16,7 @@ import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
 import type { Node } from '@xyflow/react';
 import type { FlowNodeData, OutputNodeData, ImageNodeData } from '../types/reactFlow';
 import { getImageUrl } from '../utils/imageUtils';
+import { isLocalDevelopment } from '../utils/env';
 
 // Helper function to get project thumbnail
 const getProjectThumbnail = (project: CanvasProject): string | null => {
@@ -153,17 +154,36 @@ export const CanvasProjectsPage: React.FC = () => {
   }, [isAuthenticated, handleAuthAction]);
 
   const handleView = (project: CanvasProject) => {
-    console.log('[CanvasProjects] 👁️ Viewing project:', {
-      id: project._id,
-      name: project.name,
-      isCollaborative: project.isCollaborative,
-      nodeCount: Array.isArray(project.nodes) ? project.nodes.length : 0,
-      edgeCount: Array.isArray(project.edges) ? project.edges.length : 0
-    });
+    if (isLocalDevelopment()) {
+      console.log('[CanvasProjects] 👁️ Viewing project:', {
+        id: project._id,
+        name: project.name,
+        isCollaborative: project.isCollaborative,
+        nodeCount: Array.isArray(project.nodes) ? project.nodes.length : 0,
+        edgeCount: Array.isArray(project.edges) ? project.edges.length : 0,
+        createdAt: project.createdAt,
+        updatedAt: project.updatedAt,
+        timestamp: new Date().toISOString()
+      });
+    }
+    
     if (project._id && project._id.trim() !== '') {
+      if (isLocalDevelopment()) {
+        console.log('[CanvasProjects] 🚀 Navigating to canvas page:', {
+          url: `/canvas/${project._id}`,
+          projectId: project._id,
+          timestamp: new Date().toISOString()
+        });
+      }
       navigate(`/canvas/${project._id}`);
     } else {
-      console.error('[CanvasProjects] ❌ Invalid project ID:', project._id);
+      if (isLocalDevelopment()) {
+        console.error('[CanvasProjects] ❌ Invalid project ID:', {
+          projectId: project._id,
+          project: project,
+          timestamp: new Date().toISOString()
+        });
+      }
       toast.error(t('canvas.invalidProjectId') || 'Invalid project ID');
     }
   };

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Loader2, Image as ImageIcon, Camera, Layers, MapPin, Sun, Plus } from 'lucide-react';
+import { Users, Image as ImageIcon, Camera, Layers, MapPin, Sun, Plus } from 'lucide-react';
+import { GlitchLoader } from '../ui/GlitchLoader';
 import { useNavigate } from 'react-router-dom';
 import {
     Sheet,
@@ -82,12 +83,12 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
         <Sheet open={isOpen} onOpenChange={onClose}>
             <SheetContent
                 side="right"
-                className="w-full sm:max-w-md bg-[#1A1A1A] border-zinc-800/50 text-zinc-300 overflow-y-auto p-6"
+                className="w-full sm:max-w-md bg-zinc-900 border-zinc-800/50 text-zinc-300 overflow-y-auto p-6"
             >
                 <SheetHeader className="border-b border-zinc-800/30 pb-6 mb-6">
                     <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3">
-                            <Users className="h-5 w-5 text-[#52ddeb]" />
+                            <Users className="h-5 w-5 text-brand-cyan" />
                             <SheetTitle className="text-zinc-300 text-lg">
                                 {t('communityPresets.title') || 'Community Presets'}
                             </SheetTitle>
@@ -97,7 +98,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                                 navigate(`/community/presets?type=${activeTab}&view=my&create=true`);
                                 onClose();
                             }}
-                            className="flex items-center gap-2 px-3 py-2 rounded-md text-xs font-mono bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 border border-[#52ddeb]/30 text-[#52ddeb] transition-all"
+                            className="flex items-center gap-2 px-3 py-2 rounded-md text-xs font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#52ddeb]/30 text-brand-cyan transition-all"
                             title={t('communityPresets.createNew') || 'Create New Preset'}
                         >
                             <Plus size={14} />
@@ -120,7 +121,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                                 className={cn(
                                     'px-4 py-2 rounded-md text-xs font-mono transition-all flex items-center gap-2',
                                     activeTab === type
-                                        ? 'bg-[#52ddeb]/20 text-[#52ddeb] border border-[#52ddeb]/30'
+                                        ? 'bg-brand-cyan/20 text-brand-cyan border border-[#52ddeb]/30'
                                         : 'bg-zinc-900/50 border border-zinc-700/50 text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-300'
                                 )}
                             >
@@ -135,7 +136,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                 <div className="space-y-4">
                     {isLoading && (
                         <div className="flex items-center justify-center py-16">
-                            <Loader2 className="h-6 w-6 animate-spin text-[#52ddeb]" />
+                            <GlitchLoader size={24} color="#52ddeb" />
                         </div>
                     )}
 
@@ -182,7 +183,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
 
                                 {/* Info */}
                                 <div className="flex-1 min-w-0">
-                                    <h4 className="text-sm font-semibold text-zinc-300 group-hover:text-[#52ddeb] transition-colors mb-2 truncate">
+                                    <h4 className="text-sm font-semibold text-zinc-300 group-hover:text-brand-cyan transition-colors mb-2 truncate">
                                         {preset.name}
                                     </h4>
                                     <p className="text-xs text-zinc-500 line-clamp-2 mb-2">

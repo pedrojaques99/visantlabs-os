@@ -3,7 +3,7 @@ import { authService, type User } from '../services/authService';
 import { subscriptionService, type SubscriptionStatus } from '../services/subscriptionService';
 import { useTranslation } from '../hooks/useTranslation';
 import { useLayout } from '../hooks/useLayout';
-import { Spinner } from './ui/Spinner';
+import { GlitchLoader } from './ui/GlitchLoader';
 import { LogIn, LogOut, User as UserIcon, Mail, X, Pickaxe, ChevronDown, Globe, Key, ShieldCheck } from 'lucide-react';
 import { ForgotPasswordModal } from './ForgotPasswordModal';
 import HCaptcha from '@hcaptcha/react-hcaptcha';
@@ -282,7 +282,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
   if (isCheckingAuth || isLoading) {
     return (
       <div className="px-3 py-2 flex items-center gap-2 text-xs text-zinc-500 font-mono">
-        <Spinner size={12} color="#52ddeb" />
+        <GlitchLoader size={12} color="#52ddeb" />
       </div>
     );
   }
@@ -304,7 +304,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
         {propSubscriptionStatus || subscriptionStatus ? (
           <button
             onClick={onCreditsClick}
-            className="flex items-center gap-1.5 px-2.5 md:px-3 py-1 md:py-1.5 text-[11px] md:text-xs font-mono text-[#52ddeb] hover:text-[#52ddeb]/80 transition-all rounded border border-[#52ddeb]/30 hover:border-[#52ddeb]/50 hover:bg-[#52ddeb]/10 focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50 focus:ring-offset-2 focus:ring-offset-[#0a0a0a] cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 md:px-3 py-1 md:py-1.5 text-[11px] md:text-xs font-mono text-brand-cyan hover:text-brand-cyan/80 transition-all rounded border border-[#52ddeb]/30 hover:border-[#52ddeb]/50 hover:bg-brand-cyan/10 focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50 focus:ring-offset-2 focus:ring-offset-[#0a0a0a] cursor-pointer"
             aria-label={t('auth.availableCredits', { count: availableCredits })}
             title={t('auth.creditsAvailable', { count: availableCredits })}
           >
@@ -343,7 +343,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
                 }}
                 onClick={() => setIsDropdownOpen(false)}
               />
-              <div className="absolute right-0 top-full mt-2 bg-[#1A1A1A] border border-zinc-800/50 rounded-md shadow-lg z-50 min-w-[160px] dropdown-menu">
+              <div className="absolute right-0 top-full mt-2 bg-zinc-900 border border-zinc-800/50 rounded-md shadow-lg z-50 min-w-[160px] dropdown-menu">
                 <button
                   onClick={handleProfileClick}
                   className="w-full text-left px-4 py-2 text-xs font-mono transition-colors cursor-pointer text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 flex items-center gap-2"
@@ -383,7 +383,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
                         window.history.pushState({}, '', '/admin');
                         window.dispatchEvent(new PopStateEvent('popstate'));
                       }}
-                      className="w-full text-left px-4 py-2 text-xs font-mono transition-colors cursor-pointer text-[#52ddeb] hover:text-[#52ddeb]/80 hover:bg-[#52ddeb]/10 flex items-center gap-2"
+                      className="w-full text-left px-4 py-2 text-xs font-mono transition-colors cursor-pointer text-brand-cyan hover:text-brand-cyan/80 hover:bg-brand-cyan/10 flex items-center gap-2"
                     >
                       <ShieldCheck size={14} />
                       {t('auth.adminPanel') || 'Admin'}
@@ -418,7 +418,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
             className="flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1 md:py-1.5 bg-zinc-800/50 text-zinc-400 rounded-md border border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300 disabled:opacity-50 disabled:cursor-not-allowed text-[10px] md:text-xs font-mono transition-colors"
           >
             {isGoogleLoading ? (
-              <Spinner size={12} color="currentColor" />
+              <GlitchLoader size={12} color="currentColor" />
             ) : (
               <span>{t('auth.signInWithGoogle')}</span>
             )}
@@ -436,7 +436,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
 
       {showEmailModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-black/50 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-[#1A1A1A] border border-zinc-800/50 rounded-md p-6 w-full max-w-md mx-4">
+          <div className="bg-zinc-900 border border-zinc-800/50 rounded-md p-6 w-full max-w-md mx-4">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold font-mono text-zinc-200 uppercase">
                 {isSignUp ? t('auth.signUp') : t('auth.signIn')}
@@ -470,7 +470,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
                 >
                   {isGoogleLoading ? (
                     <>
-                      <Spinner size={16} color="currentColor" />
+                      <GlitchLoader size={16} color="currentColor" />
                       {t('auth.signingInWithGoogle')}
                     </>
                   ) : (
@@ -541,7 +541,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
                       setShowEmailModal(false);
                       setShowForgotPassword(true);
                     }}
-                    className="text-xs text-[#52ddeb] hover:text-[#52ddeb]/80 font-mono mt-1 text-right w-full"
+                    className="text-xs text-brand-cyan hover:text-brand-cyan/80 font-mono mt-1 text-right w-full"
                   >
                     {t('auth.forgotPassword')}
                   </button>
@@ -573,11 +573,11 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
               <button
                 type="submit"
                 disabled={isAuthLoading || !email || !password}
-                className="w-full flex items-center justify-center gap-2 bg-[#52ddeb]/80 hover:bg-[#52ddeb]/90 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
+                className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
               >
                 {isAuthLoading ? (
                   <>
-                    <Spinner size={16} color="currentColor" />
+                    <GlitchLoader size={16} color="currentColor" />
                     {isSignUp ? t('auth.creatingAccount') : t('auth.signingIn')}
                   </>
                 ) : (

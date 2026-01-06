@@ -46,7 +46,7 @@ export const ConnectedImagesDisplay: React.FC<ConnectedImagesDisplayProps> = ({
     <div className={cn('mb-3 space-y-2', className)}>
       {showLabel && label && (
         <div className="flex items-center gap-2 mb-1.5">
-          <div className="w-2 h-2 bg-[#52ddeb] border border-black rounded-md" />
+          <div className="w-2 h-2 bg-brand-cyan border border-black rounded-md" />
           <span className="text-xs font-mono text-zinc-500">{label}</span>
         </div>
       )}

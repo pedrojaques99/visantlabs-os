@@ -1,7 +1,8 @@
 import React, { useEffect, memo, useRef, useCallback, useState } from 'react';
 import { type NodeProps, type Node, NodeResizer, useReactFlow } from '@xyflow/react';
 import { useParams } from 'react-router-dom';
-import { Sparkles, Download, Maximize2, Upload, Loader2, Video, Image as ImageIcon, X } from 'lucide-react';
+import { Sparkles, Download, Maximize2, Upload, Video, Image as ImageIcon, X } from 'lucide-react';
+import { GlitchLoader } from '../ui/GlitchLoader';
 import type { ShaderNodeData } from '../../types/reactFlow';
 import { cn } from '../../lib/utils';
 import { NodeHandles } from './shared/NodeHandles';
@@ -494,14 +495,14 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
 
       {/* Header */}
       <div className="flex items-center gap-3 mb-3">
-        <Sparkles size={16} className="text-[#52ddeb]" />
+        <Sparkles size={16} className="text-brand-cyan" />
         <h3 className="text-xs font-semibold text-zinc-300 font-mono">Shader Effect</h3>
       </div>
 
       {/* Status/Info - Show manual apply option when ready (only for images, videos auto-process) */}
       {!isLoading && hasConnectedImage && !hasResult && !isVideoInput ? (
         <div className="w-full px-2 py-1.5 bg-zinc-800/30 border border-zinc-700/30 rounded text-xs font-mono text-zinc-400 flex items-center justify-center gap-3">
-          <ImageIcon size={14} className="text-[#52ddeb]" />
+          <ImageIcon size={14} className="text-brand-cyan" />
           Ready to process
         </div>
       ) : null}
@@ -512,7 +513,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
             <ImageIcon size={14} />
             {t('canvasNodes.shaderNode.connectImage') || 'Connect an image or video'}
           </div>
-          <label className="w-full px-3 py-2 bg-[#52ddeb]/10 hover:bg-[#52ddeb]/20 border border-[#52ddeb]/30 hover:border-[#52ddeb]/50 rounded text-xs font-mono text-[#52ddeb] flex items-center justify-center gap-2 cursor-pointer transition-all">
+          <label className="w-full px-3 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-[#52ddeb]/30 hover:border-[#52ddeb]/50 rounded text-xs font-mono text-brand-cyan flex items-center justify-center gap-2 cursor-pointer transition-all">
             <Upload size={14} />
             {t('canvasNodes.shaderNode.uploadImageOrVideo') || 'Upload Image or Video'}
             <input
@@ -525,7 +526,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
         </div>
       ) : hasConnectedImage && !hasResult && !isVideoInput && !isLoading ? (
         <div className="w-full px-2 py-1.5 bg-zinc-800/30 border border-zinc-700/30 rounded text-xs font-mono text-zinc-400 flex items-center justify-center gap-3">
-          <ImageIcon size={14} className="text-[#52ddeb]" />
+          <ImageIcon size={14} className="text-brand-cyan" />
           <span>Image connected - Processing...</span>
         </div>
       ) : null}
@@ -600,7 +601,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
           {isLoading && (
             <div className="absolute top-3 left-3 z-20">
               <div className="p-1.5 rounded-md bg-black/60 backdrop-blur-sm border border-[#52ddeb]/30 shadow-lg">
-                <Loader2 size={14} className="text-[#52ddeb] animate-spin" />
+                <GlitchLoader size={14} color="#52ddeb" />
               </div>
             </div>
           )}

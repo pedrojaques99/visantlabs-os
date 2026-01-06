@@ -6,7 +6,8 @@ import { BUDGET_TEMPLATES } from '../../utils/budgetTemplates';
 import { budgetApi, type BudgetProject } from '../../services/budgetApi';
 import type { CustomPdfPreset } from '../../types';
 import { ConfirmationModal } from '../ConfirmationModal';
-import { Check, Upload, FileText, Edit, Trash2, Calendar, Loader2 } from 'lucide-react';
+import { Check, Upload, FileText, Edit, Trash2, Calendar } from 'lucide-react';
+import { GlitchLoader } from '../ui/GlitchLoader';
 import { toast } from 'sonner';
 
 interface BudgetTemplateSelectorProps {
@@ -199,14 +200,14 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
             <button
               key={template.id}
               onClick={() => onSelectTemplate(template.id)}
-              className={`relative p-6 bg-[#1A1A1A] border rounded-xl transition-all duration-300 text-left group ${
+              className={`relative p-6 bg-zinc-900 border rounded-xl transition-all duration-300 text-left group ${
                 selectedTemplate === template.id
-                  ? 'border-[#52ddeb] bg-[#52ddeb]/10'
+                  ? 'border-[#52ddeb] bg-brand-cyan/10'
                   : 'border-zinc-800 hover:border-zinc-700'
               }`}
             >
               {selectedTemplate === template.id && (
-                <div className="absolute top-4 right-4 w-6 h-6 bg-[#52ddeb] rounded-md flex items-center justify-center">
+                <div className="absolute top-4 right-4 w-6 h-6 bg-brand-cyan rounded-md flex items-center justify-center">
                   <Check size={16} className="text-black" />
                 </div>
               )}
@@ -244,7 +245,7 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
           </h3>
           {isLoadingPresets ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 size={24} className="text-[#52ddeb] animate-spin" />
+              <GlitchLoader size={24} color="#52ddeb" />
             </div>
           ) : presets.length === 0 ? (
             <p className="text-sm text-zinc-500 font-mono text-center py-4">
@@ -257,10 +258,10 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
                 return (
                   <div
                     key={presetId}
-                    className="relative p-6 bg-[#1A1A1A] border border-zinc-800 rounded-xl transition-all duration-300 group"
+                    className="relative p-6 bg-zinc-900 border border-zinc-800 rounded-xl transition-all duration-300 group"
                   >
                     <div className="absolute top-4 right-4">
-                      <Upload size={20} className="text-[#52ddeb]" />
+                      <Upload size={20} className="text-brand-cyan" />
                     </div>
                     <div>
                       <h3 className="text-xl font-semibold text-zinc-200 mb-2 font-mono line-clamp-2">
@@ -274,7 +275,7 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
                     <div className="flex items-center gap-2 mt-4">
                       <button
                         onClick={() => handleEditPreset(presetId)}
-                        className="flex-1 px-4 py-2 bg-black/40 border border-zinc-800/60 hover:border-[#52ddeb]/50 hover:text-[#52ddeb] rounded-xl text-sm font-mono text-zinc-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
+                        className="flex-1 px-4 py-2 bg-black/40 border border-zinc-800/60 hover:border-[#52ddeb]/50 hover:text-brand-cyan rounded-xl text-sm font-mono text-zinc-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
                       >
                         <Edit size={14} />
                         {t('budget.edit')}
@@ -285,7 +286,7 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
                         className="px-4 py-2 bg-black/40 border border-zinc-800/60 hover:border-red-500/50 hover:text-red-400 rounded-xl text-sm font-mono text-zinc-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                       >
                         {deletingPresetId === presetId ? (
-                          <Loader2 size={14} className="animate-spin" />
+                          <GlitchLoader size={14} />
                         ) : (
                           <Trash2 size={14} />
                         )}
@@ -307,7 +308,7 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
           </h3>
           {isLoadingBudgets ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 size={24} className="text-[#52ddeb] animate-spin" />
+              <GlitchLoader size={24} color="#52ddeb" />
             </div>
           ) : budgets.length === 0 ? (
             <p className="text-sm text-zinc-500 font-mono text-center py-4">
@@ -318,10 +319,10 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
               {budgets.map((budget) => (
                 <div
                   key={budget._id}
-                  className="relative p-6 bg-[#1A1A1A] border border-zinc-800 rounded-xl transition-all duration-300 group"
+                  className="relative p-6 bg-zinc-900 border border-zinc-800 rounded-xl transition-all duration-300 group"
                 >
                   <div className="absolute top-4 left-4">
-                    <FileText size={20} className="text-[#52ddeb]" />
+                    <FileText size={20} className="text-brand-cyan" />
                   </div>
                   <div className="pr-12">
                     <h3 className="text-xl font-semibold text-zinc-200 mb-2 font-mono line-clamp-2">
@@ -338,7 +339,7 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
                   <div className="flex items-center gap-2 mt-4">
                     <button
                       onClick={() => handleEditBudget(budget._id)}
-                      className="flex-1 px-4 py-2 bg-black/40 border border-zinc-800/60 hover:border-[#52ddeb]/50 hover:text-[#52ddeb] rounded-xl text-sm font-mono text-zinc-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
+                      className="flex-1 px-4 py-2 bg-black/40 border border-zinc-800/60 hover:border-[#52ddeb]/50 hover:text-brand-cyan rounded-xl text-sm font-mono text-zinc-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
                     >
                       <Edit size={14} />
                       {t('budget.edit')}
@@ -349,7 +350,7 @@ export const BudgetTemplateSelector: React.FC<BudgetTemplateSelectorProps> = ({
                       className="px-4 py-2 bg-black/40 border border-zinc-800/60 hover:border-red-500/50 hover:text-red-400 rounded-xl text-sm font-mono text-zinc-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                     >
                       {deletingBudgetId === budget._id ? (
-                        <Loader2 size={14} className="animate-spin" />
+                        <GlitchLoader size={14} />
                       ) : (
                         <Trash2 size={14} />
                       )}

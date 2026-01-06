@@ -147,7 +147,7 @@ export const TransactionsModal: React.FC<TransactionsModalProps> = ({ isOpen, on
                       className="bg-black/40 border border-zinc-800/60 rounded-md p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
                     >
                       <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-md bg-[#52ddeb]/10 flex items-center justify-center text-[#52ddeb]">
+                        <div className="w-10 h-10 rounded-md bg-brand-cyan/10 flex items-center justify-center text-brand-cyan">
                           <CreditCard size={18} />
                         </div>
                         <div>

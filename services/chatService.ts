@@ -1,10 +1,36 @@
 import { GoogleGenAI } from "@google/genai";
 import type { StrategyNodeData } from '../types/reactFlow';
+import { validateMessage, validateContext } from './chatValidators';
+import { buildSystemPrompt } from './promptTemplates';
+
+// ============================================================================
+// Types & Interfaces
+// ============================================================================
+
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export interface ChatContext {
+  images?: string[]; // Array of base64 images
+  text?: string; // Text context from TextNode
+  strategyData?: StrategyNodeData['strategyData']; // Strategy data from StrategyNode
+}
+
+// ============================================================================
+// AI Instance Management
+// ============================================================================
 
 // Lazy initialization to avoid breaking app startup if API key is not configured
 let ai: GoogleGenAI | null = null;
 let currentApiKey: string | null = null;
 
+/**
+ * Get or create AI instance
+ * @param apiKey - Optional API key (user's own key)
+ * @returns GoogleGenAI instance
+ */
 const getAI = (apiKey?: string): GoogleGenAI => {
   // If a specific API key is provided, use it (for user's own API key)
   if (apiKey && apiKey.trim().length > 0) {
@@ -35,7 +61,6 @@ const getAI = (apiKey?: string): GoogleGenAI => {
 
   // Otherwise use cached instance or create from environment
   if (!ai || currentApiKey !== currentKey) {
-
     if (!currentKey || currentKey === 'undefined' || currentKey.length === 0) {
       throw new Error(
         "GEMINI_API_KEY não encontrada. " +
@@ -49,74 +74,14 @@ const getAI = (apiKey?: string): GoogleGenAI => {
   return ai;
 };
 
-export interface ChatMessage {
-  role: 'user' | 'assistant';
-  content: string;
-}
-
-export interface ChatContext {
-  images?: string[]; // Array of base64 images
-  text?: string; // Text context from TextNode
-  strategyData?: StrategyNodeData['strategyData']; // Strategy data from StrategyNode
-}
-
-// Validation constants
-const MAX_MESSAGE_LENGTH = 5000;
-const MAX_CONTEXT_TEXT_LENGTH = 10000;
-const MAX_CONTEXT_IMAGES = 4;
-
-// Blocked patterns for security
-const BLOCKED_PATTERNS = [
-  /ignore.*previous/gi,
-  /forget.*context/gi,
-  /system.*prompt/gi,
-  /reveal.*(?:api|key|secret|password)/gi,
-];
-
-const IMAGE_GENERATION_PATTERNS = [
-  /generate.*image/gi,
-  /create.*image/gi,
-  /draw.*picture/gi,
-  /make.*photo/gi,
-];
-
-// Safe system prompt with action detection support
-const DEFAULT_SYSTEM_PROMPT = `You are a helpful design assistant specializing in product mockups and brand strategy. You can help users create and manage nodes in their design canvas.
-
-RULES:
-- You can ONLY respond with TEXT. Never generate images.
-- You can ANALYZE and DESCRIBE images provided as context.
-- You can help create and improve prompts for mockup generation.
-- You can analyze brand strategy and suggest improvements.
-- If asked to generate images, politely explain you can only provide text guidance.
-- Always use provided context (images, text, strategy) when answering questions.
-- Be helpful, creative, and professional.
-
-CONTEXT AWARENESS:
-- If brand strategy is provided, use it to inform your suggestions.
-- If images are provided, you can analyze them for design feedback.
-- If text context is provided, use it to understand the project better.
-
-NODE SUGGESTIONS:
-When suggesting mockups, prompts, or design ideas that the user might want to create as nodes, format them as actionable suggestions using this structure:
-
-**[ACTION:node_type]** Title: Description
-
-Available node types:
-- prompt: For text-to-image generation prompts
-- mockup: For product mockup presets (cap, tshirt, mug, poster, etc.)
-- strategy: For brand strategy analysis
-- text: For text notes
-
-Example format:
-**[ACTION:prompt]** Coffee Bag Mockup: A premium kraft paper coffee bag with minimalist typography, placed on a rustic wooden table with scattered coffee beans, morning sunlight
-
-**[ACTION:mockup]** T-Shirt Display: Use the "tshirt" preset for a lifestyle product shot
-
-When the user asks for mockup suggestions, creative ideas, or prompts, use this format so they can easily create nodes from your suggestions.`;
+// ============================================================================
+// Action Detection
+// ============================================================================
 
 // Regex to detect action suggestions in AI responses
-export const ACTION_PATTERN = /\*\*\[ACTION:(prompt|mockup|strategy|text)\]\*\*\s*([^:]+):\s*(.+?)(?=\n\*\*\[ACTION:|$)/gs;
+// Captures: type, title, and full description (including multi-line prompts)
+// Uses [\s\S] to match any character including newlines, stops at next ACTION or end of string
+export const ACTION_PATTERN = /\*\*\[ACTION:(prompt|mockup|strategy|text)\]\*\*\s*([^:\n]+?):\s*([\s\S]+?)(?=\n\*\*\[ACTION:|$)/g;
 
 export interface DetectedAction {
   type: 'prompt' | 'mockup' | 'strategy' | 'text';
@@ -146,45 +111,9 @@ export function parseActionsFromResponse(content: string): DetectedAction[] {
   return actions;
 }
 
-/**
- * Validate message content
- */
-function validateMessage(message: string): void {
-  if (!message || message.trim().length === 0) {
-    throw new Error('Message cannot be empty');
-  }
-
-  if (message.length > MAX_MESSAGE_LENGTH) {
-    throw new Error(`Message too long. Maximum ${MAX_MESSAGE_LENGTH} characters allowed.`);
-  }
-
-  // Check for blocked patterns
-  for (const pattern of BLOCKED_PATTERNS) {
-    if (pattern.test(message)) {
-      throw new Error('Message contains blocked content. Please rephrase.');
-    }
-  }
-
-  // Check for image generation requests
-  for (const pattern of IMAGE_GENERATION_PATTERNS) {
-    if (pattern.test(message)) {
-      throw new Error('Image generation is not available in chat. Please use image generation nodes for creating images.');
-    }
-  }
-}
-
-/**
- * Validate context
- */
-function validateContext(context: ChatContext): void {
-  if (context.text && context.text.length > MAX_CONTEXT_TEXT_LENGTH) {
-    throw new Error(`Context text too long. Maximum ${MAX_CONTEXT_TEXT_LENGTH} characters allowed.`);
-  }
-
-  if (context.images && context.images.length > MAX_CONTEXT_IMAGES) {
-    throw new Error(`Too many context images. Maximum ${MAX_CONTEXT_IMAGES} images allowed.`);
-  }
-}
+// ============================================================================
+// Utility Functions
+// ============================================================================
 
 /**
  * Format strategy data as text for context
@@ -291,12 +220,14 @@ async function processImage(source: string): Promise<{ data: string; mimeType: s
  * @param messages - Conversation history
  * @param context - Optional context (images, text, strategy)
  * @param apiKey - Optional API key (user's own key)
+ * @param systemPrompt - Optional custom system prompt (overrides DEFAULT_SYSTEM_PROMPT)
  * @returns AI response text
  */
 export async function sendChatMessage(
   messages: ChatMessage[],
   context?: ChatContext,
-  apiKey?: string
+  apiKey?: string,
+  systemPrompt?: string
 ): Promise<string> {
   // Validate last message (user message)
   const lastMessage = messages[messages.length - 1];
@@ -367,11 +298,21 @@ export async function sendChatMessage(
       };
     });
 
-    // Add system prompt as first message if there's context
-    if (contextParts.length > 0 || context?.images?.length) {
+    // Add system prompt as first message if there's context or custom system prompt
+    // Use custom system prompt if provided, otherwise use default only if there's context
+    if (systemPrompt) {
+      // Always add custom system prompt
       contents.unshift({
         role: 'user',
-        parts: [{ text: DEFAULT_SYSTEM_PROMPT }],
+        parts: [{ text: systemPrompt }],
+      });
+    } else if (contextParts.length > 0 || context?.images?.length) {
+      // Only add default system prompt if there's context
+      // Build prompt with context for better tag selection guidance
+      const systemPromptText = buildSystemPrompt(context);
+      contents.unshift({
+        role: 'user',
+        parts: [{ text: systemPromptText }],
       });
     }
 

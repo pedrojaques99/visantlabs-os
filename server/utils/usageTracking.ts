@@ -1,5 +1,8 @@
 // Usage tracking utilities for Gemini API billing
 
+import { calculateImageCost } from '../../utils/pricing.js';
+import type { GeminiModel, Resolution } from '../../types';
+
 export type FeatureType = 'brandingmachine' | 'mockupmachine' | 'canvas';
 
 export interface UsageRecord {
@@ -15,25 +18,12 @@ export interface UsageRecord {
   apiKeySource?: 'user' | 'system'; // Source of the API key used
 }
 
-// Gemini API Pricing (as of 2024)
-// Note: Update these based on actual Google Gemini pricing
-const GEMINI_PRICING = {
-  'gemini-2.5-flash-image': {
-    costPerImage: 0.002, // $0.002 per image (example pricing, adjust based on actual)
-    // For models with input image, may have different pricing
-    costPerImageWithInput: 0.004, // Slightly higher if input image is provided
-  },
-  'gemini-3-pro-image-preview': {
-    costPerImage: 0.03, // $0.03 per image (approximate)
-    // May vary by resolution, but using base cost for now
-  },
+// Text generation pricing (tokens-based) - kept here as it's not part of image/video pricing
+const TEXT_GENERATION_PRICING = {
   'gemini-2.5-flash': {
     costPer1KTokens: 0.075, // $0.075 per 1K tokens (for text generation)
   },
 };
-
-// Credit costs per model/resolution
-import type { GeminiModel, Resolution } from '../../types';
 
 /**
  * Get credits required for image generation based on model and resolution
@@ -53,7 +43,7 @@ export function getCreditsRequired(
       case '2K':
         return 5;
       case '4K':
-        return 10;
+        return 7;
       default:
         // Default to 1K if resolution not specified
         return 3;
@@ -66,14 +56,15 @@ export function getCreditsRequired(
 
 /**
  * Get credits required for video generation
- * Video generation costs 15 credits per video
+ * Video generation costs 20 credits per video
  */
 export function getVideoCreditsRequired(): number {
-  return 15;
+  return 20;
 }
 
 /**
  * Calculate cost for image generation
+ * Uses centralized pricing from utils/pricing.ts
  */
 export function calculateImageGenerationCost(
   imagesCount: number,
@@ -81,42 +72,21 @@ export function calculateImageGenerationCost(
   hasInputImage: boolean = false,
   resolution?: Resolution
 ): number {
-  const pricing = GEMINI_PRICING[model as keyof typeof GEMINI_PRICING];
-
-  if (!pricing) {
-    console.warn(`Unknown model pricing for ${model}, using default`);
-    return imagesCount * 0.002; // Default fallback
-  }
-
-  if ('costPerImage' in pricing) {
-    let costPerImage = hasInputImage && 'costPerImageWithInput' in pricing && pricing.costPerImageWithInput
-      ? pricing.costPerImageWithInput
-      : pricing.costPerImage;
-
-    // Adjust cost for 3 Pro based on resolution (if needed)
-    if (model === 'gemini-3-pro-image-preview' && resolution) {
-      // Base cost is for 1K, adjust for higher resolutions
-      // This is approximate - actual API pricing may vary
-      const resolutionMultiplier = resolution === '2K' ? 1.67 : resolution === '4K' ? 3.33 : 1;
-      costPerImage = costPerImage * resolutionMultiplier;
-    }
-
-    return imagesCount * costPerImage;
-  }
-
-  // Fallback
-  return imagesCount * 0.002;
+  // Note: hasInputImage is kept for API compatibility but not used in pricing
+  // as the new pricing structure doesn't differentiate based on input image
+  return calculateImageCost(imagesCount, model, resolution);
 }
 
 /**
  * Calculate cost for text generation (tokens-based)
+ * Note: Text generation pricing is kept here as it's not part of the image/video pricing structure
  */
 export function calculateTextGenerationCost(
   inputTokens: number,
   outputTokens: number,
   model: string = 'gemini-2.5-flash'
 ): number {
-  const pricing = GEMINI_PRICING[model as keyof typeof GEMINI_PRICING];
+  const pricing = TEXT_GENERATION_PRICING[model as keyof typeof TEXT_GENERATION_PRICING];
 
   if (!pricing || !('costPer1KTokens' in pricing)) {
     console.warn(`Unknown text model pricing for ${model}`);

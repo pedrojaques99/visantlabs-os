@@ -545,6 +545,14 @@ router.put('/settings/canvas', authenticate, async (req: AuthRequest, res) => {
     
     const settings = req.body;
     
+    // Validate settings is an object
+    if (!settings || typeof settings !== 'object' || Array.isArray(settings)) {
+      return res.status(400).json({ 
+        error: 'Invalid settings format',
+        message: 'Settings must be a valid JSON object'
+      });
+    }
+    
     // Update user with new settings
     await prisma.user.update({
       where: { id: userId },
@@ -558,10 +566,20 @@ router.put('/settings/canvas', authenticate, async (req: AuthRequest, res) => {
       message: 'Canvas settings updated successfully'
     });
   } catch (error: any) {
-    console.error('Failed to update canvas settings:', error);
+    console.error('[Canvas Settings] Failed to update:', error);
+    console.error('[Canvas Settings] Error stack:', error?.stack);
+    
+    // Handle Prisma-specific errors
+    if (error.code === 'P2025') {
+      return res.status(404).json({ 
+        error: 'User not found',
+        message: 'User does not exist'
+      });
+    }
+    
     res.status(500).json({ 
       error: 'Failed to update canvas settings', 
-      message: error.message 
+      message: error.message || 'An error occurred'
     });
   }
 });

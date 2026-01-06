@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { Pickaxe, Settings, Maximize2, X, Image as ImageIcon, Wand2, Palette, Target, Dna, FileDown, Camera, Upload, FileText, Video, Layers, MapPin, Sun, Search, Sparkles, MessageSquare } from 'lucide-react';
 import { cn } from '../../../lib/utils';
+import type { Node } from '@xyflow/react';
+import type { FlowNodeData } from '../../../types/reactFlow';
 
 interface ContextMenuProps {
   x: number;
@@ -31,6 +33,7 @@ interface ContextMenuProps {
   onAddChat?: () => void;
   onExport?: () => void;
   sourceNodeId?: string;
+  nodes?: Node<FlowNodeData>[];
   experimentalMode?: boolean;
 }
 
@@ -73,6 +76,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   onAddChat,
   onExport,
   sourceNodeId,
+  nodes,
   experimentalMode = false,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -167,7 +171,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      if (menuRef.current && !menuRef.current.contains(event.target as HTMLElement)) {
         onClose();
       }
     }
@@ -183,36 +187,42 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     };
   }, [onClose]);
 
+  // Check if source node is an ImageNode to hide media upload nodes
+  const sourceNode = sourceNodeId && nodes ? nodes.find(n => n.id === sourceNodeId) : null;
+  const isSourceImageNode = sourceNode?.type === 'image';
+  
   const menuItems: MenuItem[] = [
-    // Input nodes
-    {
+    // Input nodes - hide ImageNode and VideoNode if source is ImageNode
+    ...(isSourceImageNode ? [] : [{
       id: 'image',
       label: 'Image Node',
       icon: <ImageIcon size={16} />,
       onClick: () => { onAddImage(); onClose(); },
-      section: 'input',
-    },
-    ...(onAddText ? [{
+      section: 'input' as const,
+    }]),
+    // Hide Text Node if source is ImageNode
+    ...(isSourceImageNode ? [] : (onAddText ? [{
       id: 'text',
       label: 'Text Node',
       icon: <FileText size={16} />,
       onClick: () => { onAddText!(); onClose(); },
       section: 'input' as const,
-    }] : []),
-    ...(onAddLogo ? [{
+    }] : [])),
+    // Hide all media upload nodes (Logo, PDF) if source is ImageNode
+    ...(isSourceImageNode ? [] : (onAddLogo ? [{
       id: 'logo',
       label: 'Logo Node',
       icon: <Upload size={16} />,
       onClick: () => { onAddLogo!(); onClose(); },
       section: 'input' as const,
-    }] : []),
-    ...(onAddPDF ? [{
+    }] : [])),
+    ...(isSourceImageNode ? [] : (onAddPDF ? [{
       id: 'pdf',
       label: 'PDF Node',
       icon: <FileText size={16} />,
       onClick: () => { onAddPDF!(); onClose(); },
       section: 'input' as const,
-    }] : []),
+    }] : [])),
     // Video Input hidden
     // ...(onAddVideoInput ? [{
     //   id: 'videoInput',
@@ -238,22 +248,23 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       section: 'processing',
       category: 'Generate',
     },
-    {
+    // Hide VideoNode if source is ImageNode (it's a media upload node)
+    ...(isSourceImageNode ? [] : [{
       id: 'video',
       label: 'Video Node',
       icon: <Video size={16} />,
       onClick: () => { onAddVideo?.(); onClose(); },
-      section: 'processing',
+      section: 'processing' as const,
       category: 'Generate',
-    },
-    // Mockup
+    }]),
+    // Mockup - moved to Generate section
     {
       id: 'mockup',
       label: 'Mockup Preset',
       icon: <ImageIcon size={16} />,
       onClick: () => { onAddMockup(); onClose(); },
       section: 'processing',
-      category: 'Mockup',
+      category: 'Generate',
     },
     // Composition
     {
@@ -363,15 +374,6 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       section: 'export' as const,
       highlight: true,
     }] : []),
-    // Brand Kit
-    {
-      id: 'brandkit',
-      label: 'Brand Kit',
-      icon: <Palette size={16} />,
-      onClick: () => { onAddBrandKit(); onClose(); },
-      section: 'brand',
-      highlight: true,
-    },
   ];
 
   const filteredItems = searchQuery
@@ -383,7 +385,6 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   const inputItems = filteredItems.filter(item => item.section === 'input');
   const processingItems = filteredItems.filter(item => item.section === 'processing');
   const exportItems = filteredItems.filter(item => item.section === 'export');
-  const brandItems = filteredItems.filter(item => item.section === 'brand');
 
   // Group processing items by category
   const groupedProcessingItems = processingItems.reduce((acc, item) => {
@@ -400,7 +401,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     const parts = text.split(new RegExp(`(${query})`, 'gi'));
     return parts.map((part, i) =>
       part.toLowerCase() === query.toLowerCase() ? (
-        <mark key={i} className="bg-[#52ddeb]/20 text-[#52ddeb] px-0.5 rounded">
+        <mark key={i} className="bg-brand-cyan/20 text-brand-cyan px-0.5 rounded">
           {part}
         </mark>
       ) : (
@@ -417,13 +418,13 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
         "rounded-md transition-colors duration-150",
         "flex items-center gap-3",
         item.highlight
-          ? "text-[#52ddeb] hover:bg-[#52ddeb]/10"
+          ? "text-brand-cyan hover:bg-brand-cyan/10"
           : "text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-400"
       )}
     >
       <span className={cn(
         "transition-colors duration-150",
-        item.highlight ? "text-[#52ddeb]" : "text-zinc-400"
+        item.highlight ? "text-brand-cyan" : "text-zinc-400"
       )}>
         {item.icon}
       </span>
@@ -431,7 +432,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     </button>
   );
 
-  const categoryOrder = ['Generate', 'Mockup', 'Composition', 'Effects', 'Branding'];
+  const categoryOrder = ['Generate', 'Composition', 'Effects', 'Branding'];
 
   const GroupLabel: React.FC<{ title: string }> = ({ title }) => (
     <div className="px-3 py-1.5">
@@ -505,7 +506,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
                 {inputItems.map((item, index) => (
                   <MenuItemButton key={item.id} item={item} index={index} />
                 ))}
-                {(processingItems.length > 0 || exportItems.length > 0 || brandItems.length > 0) && (
+                {(processingItems.length > 0 || exportItems.length > 0) && (
                   <div className="h-px bg-zinc-700/30 my-1.5" />
                 )}
               </>
@@ -521,7 +522,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
               );
               const hasItemsAfter = categoryOrder.slice(categoryIndex + 1).some(
                 cat => groupedProcessingItems[cat]?.length > 0 ||
-                  (cat === categoryOrder[categoryOrder.length - 1] && (exportItems.length > 0 || brandItems.length > 0))
+                  (cat === categoryOrder[categoryOrder.length - 1] && exportItems.length > 0)
               );
 
               return (
@@ -533,7 +534,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
                   {categoryItems.map((item) => (
                     <MenuItemButton key={item.id} item={item} index={0} />
                   ))}
-                  {categoryIndex === categoryOrder.length - 1 && (exportItems.length > 0 || brandItems.length > 0) && (
+                  {categoryIndex === categoryOrder.length - 1 && exportItems.length > 0 && (
                     <div className="h-px bg-zinc-700/30 my-1.5" />
                   )}
                 </React.Fragment>
@@ -553,18 +554,6 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
               </>
             )}
 
-            {/* Brand Items */}
-            {brandItems.length > 0 && (
-              <>
-                {(inputItems.length > 0 || processingItems.length > 0 || exportItems.length > 0) && (
-                  <div className="h-px bg-zinc-700/30 my-1.5" />
-                )}
-                <GroupLabel title="Brand" />
-                {brandItems.map((item, index) => (
-                  <MenuItemButton key={item.id} item={item} index={inputItems.length + processingItems.length + exportItems.length + index} />
-                ))}
-              </>
-            )}
           </div>
         )}
       </div>

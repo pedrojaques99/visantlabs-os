@@ -199,29 +199,60 @@ export const useCanvasCollaboration = ({
   // Get presence update function
   const updateMyPresence = useUpdateMyPresence();
   
-  // Log storage and others state
+  // Refs to store latest values for debounced logging
+  const liveNodesRef = useRef(liveNodes);
+  const liveEdgesRef = useRef(liveEdges);
+  const othersRef = useRef(others);
+  
+  // Update refs when values change
   useEffect(() => {
-    if (!isCollaborative || !roomId) return;
-    
-    console.log('[Liveblocks] 📦 Storage available:', !!(liveNodes || liveEdges));
-    try {
-      const nodesCount = liveNodes && typeof liveNodes === 'object' && 'toArray' in liveNodes 
-        ? (liveNodes as any).toArray().length 
-        : 0;
-      const edgesCount = liveEdges && typeof liveEdges === 'object' && 'toArray' in liveEdges 
-        ? (liveEdges as any).toArray().length 
-        : 0;
-      console.log('[Liveblocks] 📊 Live nodes count:', nodesCount);
-      console.log('[Liveblocks] 📊 Live edges count:', edgesCount);
-    } catch (error) {
-      console.log('[Liveblocks] 📊 Live nodes count: 0');
-      console.log('[Liveblocks] 📊 Live edges count: 0');
+    liveNodesRef.current = liveNodes;
+    liveEdgesRef.current = liveEdges;
+    othersRef.current = others;
+  }, [liveNodes, liveEdges, others]);
+  
+  // Debounced logging function to reduce console spam during node dragging
+  const debouncedLogStorageState = useRef<ReturnType<typeof debounce> | null>(null);
+  
+  // Initialize debounced logger once
+  useEffect(() => {
+    if (!debouncedLogStorageState.current) {
+      debouncedLogStorageState.current = debounce(() => {
+        if (!isCollaborative || !roomId) return;
+        
+        const currentLiveNodes = liveNodesRef.current;
+        const currentLiveEdges = liveEdgesRef.current;
+        const currentOthers = othersRef.current;
+        
+        console.log('[Liveblocks] 📦 Storage available:', !!(currentLiveNodes || currentLiveEdges));
+        try {
+          const nodesCount = currentLiveNodes && typeof currentLiveNodes === 'object' && 'toArray' in currentLiveNodes 
+            ? (currentLiveNodes as any).toArray().length 
+            : 0;
+          const edgesCount = currentLiveEdges && typeof currentLiveEdges === 'object' && 'toArray' in currentLiveEdges 
+            ? (currentLiveEdges as any).toArray().length 
+            : 0;
+          console.log('[Liveblocks] 📊 Live nodes count:', nodesCount);
+          console.log('[Liveblocks] 📊 Live edges count:', edgesCount);
+        } catch (error) {
+          console.log('[Liveblocks] 📊 Live nodes count: 0');
+          console.log('[Liveblocks] 📊 Live edges count: 0');
+        }
+        console.log('[Liveblocks] 👥 Other users count:', currentOthers?.length ?? 0);
+        
+        if (currentOthers && currentOthers.length > 0) {
+          console.log('[Liveblocks] 👥 Other users:', currentOthers.map(u => ({ id: u.id, name: u.info?.name })));
+        }
+      }, 500); // Debounce by 500ms to reduce logs during dragging
     }
-    console.log('[Liveblocks] 👥 Other users count:', others?.length ?? 0);
+  }, [isCollaborative, roomId]);
+  
+  // Log storage and others state (debounced to prevent spam during dragging)
+  useEffect(() => {
+    if (!isCollaborative || !roomId || !debouncedLogStorageState.current) return;
     
-    if (others && others.length > 0) {
-      console.log('[Liveblocks] 👥 Other users:', others.map(u => ({ id: u.id, name: u.info?.name })));
-    }
+    // Trigger debounced logging
+    debouncedLogStorageState.current();
   }, [liveNodes, liveEdges, others, isCollaborative, roomId]);
 
   // Initialize storage from database
@@ -308,14 +339,17 @@ export const useCanvasCollaboration = ({
   // Initialize storage when collaborative mode is enabled
   useEffect(() => {
     // Wait for storage to be loaded before initializing
-    // Storage is ready when room is connected
+    // Storage is ready when useStorage returns non-null values
     // Skip if not in collaborative mode or missing requirements
     if (!isCollaborative || !projectId || nodes.length === 0 || isInitializedRef.current) {
       return;
     }
     
-    // Wait for connection state to be defined and connected
-    if (status === 'connected') {
+    // Wait for connection state to be connected AND storage to be available
+    // useStorage returns null until storage is loaded, so we check both conditions
+    const isStorageReady = liveNodes !== null && liveEdges !== null;
+    
+    if (status === 'connected' && isStorageReady) {
       console.log('[Liveblocks] 🚀 Initializing storage for room:', roomId, 'with', nodes.length, 'nodes and', edges.length, 'edges');
       try {
         initializeStorage();
@@ -324,11 +358,14 @@ export const useCanvasCollaboration = ({
         console.error('[Liveblocks] ❌ Error initializing storage:', error);
       }
     } else {
-      // Connection not yet connected, but state is defined (e.g., 'connecting', 'authenticating')
-      // Will retry when connection state changes to 'connected'
-      console.log('[Liveblocks] ⏳ Waiting for connection to open. Current state:', status);
+      // Connection not yet connected or storage not ready
+      if (status !== 'connected') {
+        console.log('[Liveblocks] ⏳ Waiting for connection to open. Current state:', status);
+      } else if (!isStorageReady) {
+        console.log('[Liveblocks] ⏳ Waiting for storage to load...');
+      }
     }
-  }, [isCollaborative, projectId, nodes, edges, initializeStorage, status, roomId]);
+  }, [isCollaborative, projectId, nodes, edges, initializeStorage, status, roomId, liveNodes, liveEdges]);
 
   // Sync local changes to Liveblocks (instant for position changes, debounced for others)
   const syncToLiveblocksInstant = useCallback(

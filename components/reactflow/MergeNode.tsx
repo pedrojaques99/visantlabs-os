@@ -1,7 +1,7 @@
 import React, { useState, memo, useEffect, useRef, useCallback } from 'react';
 import { Handle, Position, type NodeProps, type Node, useReactFlow, NodeResizer } from '@xyflow/react';
 import { Wrench, Wand2 } from 'lucide-react';
-import { Spinner } from '../ui/Spinner';
+import { GlitchLoader } from '../ui/GlitchLoader';
 import type { MergeNodeData } from '../../types/reactFlow';
 import type { GeminiModel } from '../../types';
 import { cn } from '../../lib/utils';
@@ -185,7 +185,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
         >
           {isGeneratingPrompt ? (
             <>
-              <Spinner size={14} color="currentColor" />
+              <GlitchLoader size={14} color="currentColor" />
               Generating Prompt...
             </>
           ) : (
@@ -254,7 +254,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
       >
         {isLoading ? (
           <>
-            <Spinner size={14} className="mr-1" color="#52ddeb" />
+            <GlitchLoader size={14} className="mr-1" color="#52ddeb" />
             Generating Image...
           </>
         ) : (
@@ -282,7 +282,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
         type="source"
         position={Position.Right}
         className={cn(
-          "w-2 h-2 bg-[#52ddeb] border-2 border-black node-handle",
+          "w-2 h-2 bg-brand-cyan border-2 border-black node-handle",
           !hasResult && "opacity-50"
         )}
       />

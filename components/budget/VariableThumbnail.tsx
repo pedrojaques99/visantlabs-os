@@ -48,7 +48,7 @@ export const VariableThumbnail: React.FC<VariableThumbnailProps> = ({
       case 'available':
         return 'border-zinc-700 bg-black/20 hover:bg-black/40 text-zinc-400';
       case 'added':
-        return 'border-[#52ddeb]/50 bg-[#52ddeb]/10 hover:bg-[#52ddeb]/20 text-[#52ddeb]';
+        return 'border-[#52ddeb]/50 bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan';
       case 'positioned':
         return 'border-green-500/50 bg-green-500/10 hover:bg-green-500/20 text-green-400';
       default:
@@ -61,7 +61,7 @@ export const VariableThumbnail: React.FC<VariableThumbnailProps> = ({
       case 'positioned':
         return <CheckCircle2 size={16} className="text-green-400" />;
       case 'added':
-        return <Circle size={16} className="text-[#52ddeb]" />;
+        return <Circle size={16} className="text-brand-cyan" />;
       default:
         return null;
     }
@@ -81,7 +81,7 @@ export const VariableThumbnail: React.FC<VariableThumbnailProps> = ({
       {icon && <div className="text-2xl">{icon}</div>}
       <span className="text-xs font-mono text-center font-medium">{label}</span>
       {instanceCount > 0 && (
-        <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-[#52ddeb]/20 text-[#52ddeb] border border-[#52ddeb]/30">
+        <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-brand-cyan/20 text-brand-cyan border border-[#52ddeb]/30">
           {instanceCount} {instanceCount === 1 ? 'instância' : 'instâncias'}
         </span>
       )}

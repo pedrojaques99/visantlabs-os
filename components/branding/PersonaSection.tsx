@@ -5,6 +5,7 @@ import { useTheme } from '../../hooks/useTheme';
 import { parseDemographics, parsePersonaInfo } from '../../utils/brandingParsers';
 import { RichTextEditor } from './RichTextEditor';
 import { Textarea } from '../ui/textarea';
+import { Badge } from '../ui/badge';
 
 interface PersonaSectionProps {
   persona: {
@@ -112,16 +113,15 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
           {personaInfo && personaInfo.characteristicTags.length > 0 && !isEditing && (
             <div className="flex flex-wrap gap-2 mt-3">
               {personaInfo.characteristicTags.map((tag, index) => (
-                <span
+                <Badge
                   key={index}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md border ${
-                    theme === 'dark'
-                      ? 'bg-zinc-800/50 text-zinc-300 border-zinc-700/50'
-                      : 'bg-zinc-200 text-zinc-700 border-zinc-300'
-                  }`}
+                  variant="outline"
+                  className={theme === 'dark'
+                    ? 'bg-zinc-800/50 text-zinc-300 border-zinc-700/50'
+                    : 'bg-zinc-200 text-zinc-700 border-zinc-300'}
                 >
                   {tag}
-                </span>
+                </Badge>
               ))}
             </div>
           )}
@@ -212,7 +212,7 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
               ))}
               <button
                 onClick={handleAddDesire}
-                className={`flex items-center gap-2 px-4 py-2 border hover:border-[#52ddeb]/50 hover:text-[#52ddeb] rounded-xl text-sm font-mono transition-all duration-300 ${
+                className={`flex items-center gap-2 px-4 py-2 border hover:border-[#52ddeb]/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-all duration-300 ${
                   theme === 'dark'
                     ? 'bg-black/40 border-zinc-800/60 text-zinc-300'
                     : 'bg-zinc-100 border-zinc-300 text-zinc-800'
@@ -278,7 +278,7 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
               ))}
               <button
                 onClick={handleAddPain}
-                className={`flex items-center gap-2 px-4 py-2 border hover:border-[#52ddeb]/50 hover:text-[#52ddeb] rounded-xl text-sm font-mono transition-all duration-300 ${
+                className={`flex items-center gap-2 px-4 py-2 border hover:border-[#52ddeb]/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-all duration-300 ${
                   theme === 'dark'
                     ? 'bg-black/40 border-zinc-800/60 text-zinc-300'
                     : 'bg-zinc-100 border-zinc-300 text-zinc-800'
