@@ -53,7 +53,6 @@ import { useCanvasHeader } from '../components/canvas/CanvasHeaderContext';
 import { CanvasFlow } from '../components/canvas/CanvasFlow';
 import { ShaderControlsSidebar } from '../components/canvas/ShaderControlsSidebar';
 import { ChatSidebar } from '../components/canvas/ChatSidebar';
-import { ShareModal } from '../components/canvas/ShareModal';
 import { cleanEdgeHandles, mockupArraysEqual, arraysEqual, getConnectedBrandIdentity, generateNodeId, getImageFromSourceNode, syncConnectedImage, getMediaFromNodeForCopy } from '../utils/canvas/canvasNodeUtils';
 import { SEO } from '../components/SEO';
 import { ExportPanel } from '../components/ui/ExportPanel';
@@ -473,21 +472,8 @@ export const CanvasPage: React.FC = () => {
     return () => clearInterval(pollInterval);
   }, [isCollaborative, projectId, isAuthenticated, isLoadingProject, projectName, setProjectName]);
 
-  const [showShareModal, setShowShareModal] = useState(false);
   const [isAdminOrPremium, setIsAdminOrPremium] = useState(false);
   const [othersCount, setOthersCount] = useState(0);
-  
-  // Debug: Log when showShareModal changes
-  useEffect(() => {
-    console.log('[CanvasPage] 🔍 showShareModal changed', {
-      showShareModal,
-      projectId,
-      isAdminOrPremium,
-      isCollaborative,
-      timestamp: new Date().toISOString(),
-      stackTrace: new Error().stack
-    });
-  }, [showShareModal, projectId, isAdminOrPremium, isCollaborative]);
 
   // Sync project name with header context
   // Use ref to track previous value and avoid unnecessary updates
@@ -539,45 +525,34 @@ export const CanvasPage: React.FC = () => {
     setOnProjectNameChangeInContext(handleProjectNameChange);
   }, [handleProjectNameChange, setOnProjectNameChangeInContext]);
 
-  // Sync share click handler
-  const setOnShareClickInContext = canvasHeader.setOnShareClick;
-  const shareModalOpenRef = useRef(false);
-  
-  const handleShareClick = useCallback(() => {
-    // Prevent multiple calls using ref only
-    if (shareModalOpenRef.current) {
-      return;
-    }
-    
-    shareModalOpenRef.current = true;
-    
-    // Defer state update to avoid "Cannot update component while rendering" error
-    setTimeout(() => {
-      setShowShareModal(true);
-    }, 0);
-  }, []);
-  
-  useEffect(() => {
-    // Always set handler - button is always visible
-    if (projectId) {
-      setOnShareClickInContext(handleShareClick);
-    } else {
-      setOnShareClickInContext(undefined);
-    }
-    return () => {
-      // Cleanup: reset handler when component unmounts
-      setOnShareClickInContext(undefined);
-    };
-  }, [setOnShareClickInContext, handleShareClick, projectId]);
-
-  // Sync collaborative state
+  // Sync project sharing data to context
+  const setProjectIdInContext = canvasHeader.setProjectId;
+  const setShareIdInContext = canvasHeader.setShareId;
   const setIsCollaborativeInContext = canvasHeader.setIsCollaborative;
+  const setCanEditInContext = canvasHeader.setCanEdit;
+  const setCanViewInContext = canvasHeader.setCanView;
+  const setOthersCountInContext = canvasHeader.setOthersCount;
+
+  useEffect(() => {
+    setProjectIdInContext(projectId || null);
+  }, [projectId, setProjectIdInContext]);
+
+  useEffect(() => {
+    setShareIdInContext(shareId || null);
+  }, [shareId, setShareIdInContext]);
+
   useEffect(() => {
     setIsCollaborativeInContext(isCollaborative);
   }, [isCollaborative, setIsCollaborativeInContext]);
 
-  // Sync others count
-  const setOthersCountInContext = canvasHeader.setOthersCount;
+  useEffect(() => {
+    setCanEditInContext(canEdit || []);
+  }, [canEdit, setCanEditInContext]);
+
+  useEffect(() => {
+    setCanViewInContext(canView || []);
+  }, [canView, setCanViewInContext]);
+
   useEffect(() => {
     setOthersCountInContext(othersCount);
   }, [othersCount, setOthersCountInContext]);
@@ -3695,50 +3670,6 @@ export const CanvasPage: React.FC = () => {
         )}
       </div>
 
-      {/* Share Modal */}
-      {projectId && (
-        <ShareModal
-          isOpen={showShareModal}
-          onClose={() => {
-            console.log('[CanvasPage] 🔍 ShareModal onClose called', {
-              projectId,
-              timestamp: new Date().toISOString(),
-              stackTrace: new Error().stack
-            });
-            setShowShareModal(false);
-            // Reset ref after a short delay to allow state update
-            setTimeout(() => {
-              shareModalOpenRef.current = false;
-            }, 100);
-          }}
-          projectId={projectId}
-          shareId={shareId}
-          isCollaborative={isCollaborative}
-          canEdit={canEdit}
-          canView={canView}
-          onShareUpdate={async () => {
-            console.log('[CanvasPage] 🔍 ShareModal onShareUpdate called', {
-              projectId,
-              timestamp: new Date().toISOString()
-            });
-            // Reload project to get updated share info
-            if (projectId) {
-              try {
-                const project = await canvasApi.getById(projectId);
-                setShareId(project.shareId || null);
-                setIsCollaborative(project.isCollaborative || false);
-                setCanEdit(Array.isArray(project.canEdit) ? project.canEdit : []);
-                setCanView(Array.isArray(project.canView) ? project.canView : []);
-              } catch (error) {
-                if (isLocalDevelopment()) {
-                  console.error('Failed to reload project:', error);
-                }
-              }
-            }
-          }}
-
-        />
-      )}
 
       {/* Branding Project Selection Modal */}
       {projectModalNodeId && (

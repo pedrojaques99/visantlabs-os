@@ -1,18 +1,24 @@
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
-import type { Node } from '@xyflow/react';
-import type { FlowNodeData } from '../../types/reactFlow';
 
 interface CanvasHeaderContextValue {
   projectName?: string;
   setProjectName: (name: string) => void;
   selectedNodesCount: number;
   setSelectedNodesCount: (count: number) => void;
-  onShareClick?: () => void;
-  setOnShareClick: (handler: (() => void) | undefined) => void;
+  // Project sharing data
+  projectId: string | null;
+  setProjectId: (id: string | null) => void;
+  shareId: string | null;
+  setShareId: (id: string | null) => void;
   isCollaborative: boolean;
   setIsCollaborative: (value: boolean) => void;
+  canEdit: string[];
+  setCanEdit: (users: string[]) => void;
+  canView: string[];
+  setCanView: (users: string[]) => void;
   othersCount: number;
   setOthersCount: (value: number) => void;
+  // Canvas settings
   backgroundColor: string;
   setBackgroundColor: (color: string) => void;
   gridColor: string;
@@ -73,8 +79,12 @@ interface CanvasHeaderProviderProps {
 export const CanvasHeaderProvider: React.FC<CanvasHeaderProviderProps> = ({ children }) => {
   const [projectName, setProjectNameState] = useState<string>('');
   const [selectedNodesCount, setSelectedNodesCount] = useState<number>(0);
-  const [onShareClick, setOnShareClick] = useState<(() => void) | undefined>(undefined);
+  // Project sharing state
+  const [projectId, setProjectId] = useState<string | null>(null);
+  const [shareId, setShareId] = useState<string | null>(null);
   const [isCollaborative, setIsCollaborative] = useState(false);
+  const [canEdit, setCanEdit] = useState<string[]>([]);
+  const [canView, setCanView] = useState<string[]>([]);
   const [othersCount, setOthersCount] = useState(0);
   const [onImportCommunityPreset, setOnImportCommunityPreset] = useState<((preset: any, type: string) => void) | undefined>(undefined);
   const [onProjectNameChange, setOnProjectNameChange] = useState<((name: string) => void) | undefined>(undefined);
@@ -97,10 +107,16 @@ export const CanvasHeaderProvider: React.FC<CanvasHeaderProviderProps> = ({ chil
     setProjectName,
     selectedNodesCount,
     setSelectedNodesCount,
-    onShareClick,
-    setOnShareClick,
+    projectId,
+    setProjectId,
+    shareId,
+    setShareId,
     isCollaborative,
     setIsCollaborative,
+    canEdit,
+    setCanEdit,
+    canView,
+    setCanView,
     othersCount,
     setOthersCount,
     backgroundColor,
@@ -126,8 +142,11 @@ export const CanvasHeaderProvider: React.FC<CanvasHeaderProviderProps> = ({ chil
   }), [
     projectName,
     selectedNodesCount,
-    onShareClick,
+    projectId,
+    shareId,
     isCollaborative,
+    canEdit,
+    canView,
     othersCount,
     backgroundColor,
     gridColor,
