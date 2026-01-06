@@ -654,6 +654,7 @@ export interface ChatNodeData extends BaseNodeData {
   onAddPromptNode?: (nodeId: string, prompt: string) => void;
   onRemoveEdge?: (nodeId: string, targetHandle: 'input-1' | 'input-2' | 'input-3' | 'input-4' | 'text-input' | 'strategy-input') => void;
   onResize?: (nodeId: string, width: number, height: number) => void;
+  onOpenSidebar?: (nodeId: string) => void;
   
   // Advanced node creation and editing callbacks
   onCreateNode?: (

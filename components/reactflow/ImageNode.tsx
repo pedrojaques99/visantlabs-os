@@ -1,6 +1,6 @@
 import React, { useRef, useState, useCallback, memo, useEffect } from 'react';
 import { type NodeProps, useNodes, useEdges, useReactFlow, NodeResizer } from '@xyflow/react';
-import { Trash2, Maximize2, Upload, UploadCloud, Heart, Download, FileText, Copy, X, Palette } from 'lucide-react';
+import { Upload, UploadCloud, Copy, X } from 'lucide-react';
 import { GlitchLoader } from '../ui/GlitchLoader';
 import type { ImageNodeData } from '../../types/reactFlow';
 import { getImageUrl } from '../../utils/imageUtils';
@@ -17,6 +17,7 @@ import { NodePlaceholder } from './shared/NodePlaceholder';
 import { NodeContainer } from './shared/NodeContainer';
 import { NodeImageContainer } from './shared/NodeImageContainer';
 import { NodeActionBar } from './shared/NodeActionBar';
+import { ImageNodeActionButtons } from './shared/ImageNodeActionButtons';
 import { useNodeDownload } from './shared/useNodeDownload';
 import { MockupPresetModal } from '../MockupPresetModal';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -490,52 +491,6 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 }
               }}
             />
-            {/* Like and Describe buttons overlay */}
-            <div
-              className={cn(
-                "absolute top-2 right-2 flex gap-1 opacity-0 transition-opacity z-10",
-                selected ? "opacity-100" : "group-hover/image:opacity-100"
-              )}
-              style={{ transform: `scale(${Math.min(1 / getZoom(), 3)})`, transformOrigin: 'top right' }}
-            >
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDescribe();
-                }}
-                disabled={isDescribing || !imageUrl}
-                className={cn(
-                  "p-1 rounded-md transition-all backdrop-blur-sm",
-                  isDescribing || !imageUrl
-                    ? "bg-zinc-700/20 text-zinc-500 cursor-not-allowed"
-                    : "bg-black/40 hover:bg-black/60 text-zinc-400 hover:text-zinc-200"
-                )}
-                title={isDescribing ? t('canvasNodes.imageNode.analyzingImage') : t('canvasNodes.imageNode.describeImageWithAI')}
-                onMouseDown={(e) => e.stopPropagation()}
-              >
-                {isDescribing ? (
-                  <GlitchLoader size={12} />
-                ) : (
-                  <FileText size={12} strokeWidth={2} />
-                )}
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleToggleLike();
-                }}
-                className={cn(
-                  "p-1 rounded-md transition-all backdrop-blur-sm",
-                  isLiked
-                    ? "bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30"
-                    : "bg-black/40 hover:bg-black/60 text-zinc-400 hover:text-zinc-200"
-                )}
-                title={isLiked ? t('canvasNodes.imageNode.removeFromFavorites') : t('canvasNodes.imageNode.addToFavorites')}
-                onMouseDown={(e) => e.stopPropagation()}
-              >
-                <Heart size={12} className={isLiked ? "fill-current" : ""} strokeWidth={2} />
-              </button>
-            </div>
           </div>
         ) : (
           <NodePlaceholder
@@ -622,93 +577,30 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
       {!dragging && imageUrl && (
         <NodeActionBar selected={selected} getZoom={getZoom}>
-          {(data as ImageNodeData).onView && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                const nodeData = data as ImageNodeData;
-                nodeData.onView?.(nodeData.mockup);
-              }}
-              className="p-1 bg-black/40 hover:bg-black/60 text-zinc-400 hover:text-zinc-200 rounded transition-colors backdrop-blur-sm border border-zinc-700/30 hover:border-zinc-600/50"
-              title={t('canvasNodes.imageNode.viewFullScreen')}
-              onMouseDown={(e) => e.stopPropagation()}
-            >
-              <Maximize2 size={12} strokeWidth={2} />
-            </button>
-          )}
-          {isGenerated && (
-            <button
-              onClick={handleDownload}
-              disabled={isDownloading}
-              className={cn(
-                "p-1 rounded transition-colors backdrop-blur-sm border",
-                isDownloading
-                  ? "bg-zinc-700/20 text-zinc-500 cursor-not-allowed border-zinc-700/20"
-                  : "bg-black/40 hover:bg-black/60 text-zinc-400 hover:text-zinc-200 border border-zinc-700/30 hover:border-zinc-600/50"
-              )}
-              title={isDownloading ? t('canvasNodes.shared.downloading') : t('canvasNodes.imageNode.downloadImage')}
-              onMouseDown={(e) => e.stopPropagation()}
-            >
-              {isDownloading ? (
-                <GlitchLoader size={12} />
-              ) : (
-                <Download size={12} strokeWidth={2} />
-              )}
-            </button>
-          )}
-          {(data as ImageNodeData).onDelete && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowDeleteModal(true);
-              }}
-              className="p-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded transition-colors backdrop-blur-sm border border-red-500/20 hover:border-red-500/30"
-              title={t('canvasNodes.imageNode.delete')}
-              onMouseDown={(e) => e.stopPropagation()}
-            >
-              <Trash2 size={12} strokeWidth={2} />
-            </button>
-          )}
-          {(data as ImageNodeData).onBrandKit && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowBrandKitModal(true);
-              }}
-              disabled={!imageUrl}
-              className={cn(
-                "p-1 rounded transition-colors backdrop-blur-sm border",
-                !imageUrl
-                  ? "bg-zinc-700/20 text-zinc-500 cursor-not-allowed border-zinc-700/20"
-                  : "bg-black/40 hover:bg-black/60 text-zinc-400 hover:text-zinc-200 border-zinc-700/30 hover:border-zinc-600/50"
-              )}
-              title={t('canvasNodes.imageNode.brandKit')}
-              onMouseDown={(e) => e.stopPropagation()}
-            >
-              <Palette size={12} strokeWidth={2} />
-            </button>
-          )}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDescribe();
+          <ImageNodeActionButtons
+            onView={() => {
+              const nodeData = data as ImageNodeData;
+              nodeData.onView?.(nodeData.mockup);
             }}
-            disabled={isDescribing || !imageUrl}
-            className={cn(
-              "p-1 rounded transition-colors backdrop-blur-sm border",
-              isDescribing || !imageUrl
-                ? "bg-zinc-700/20 text-zinc-500 cursor-not-allowed border-zinc-700/20"
-                : "bg-black/40 hover:bg-black/60 text-zinc-400 hover:text-zinc-200 border-zinc-700/30 hover:border-zinc-600/50"
-            )}
-            title={isDescribing ? t('canvasNodes.imageNode.analyzingImage') : t('canvasNodes.imageNode.describeImageWithAI')}
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            {isDescribing ? (
-              <GlitchLoader size={12} />
-            ) : (
-              <FileText size={12} strokeWidth={2} />
-            )}
-          </button>
+            showView={!!(data as ImageNodeData).onView}
+            onDownload={handleDownload}
+            isDownloading={isDownloading}
+            showDownload={isGenerated}
+            onDelete={() => setShowDeleteModal(true)}
+            showDelete={!!(data as ImageNodeData).onDelete}
+            onBrandKit={() => setShowBrandKitModal(true)}
+            showBrandKit={!!(data as ImageNodeData).onBrandKit}
+            brandKitDisabled={!imageUrl}
+            onLike={handleToggleLike}
+            isLiked={isLiked}
+            showLike={true}
+            onDescribe={handleDescribe}
+            isDescribing={isDescribing}
+            describeDisabled={!imageUrl}
+            showDescribe={true}
+            translationKeyPrefix="canvasNodes.imageNode"
+            t={t}
+          />
         </NodeActionBar>
       )}
 

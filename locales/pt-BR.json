@@ -458,6 +458,7 @@
     "nodeBeingMovedByAnother": "Node está sendo movido por outro usuário",
     "imageTooLargeWithName": "A imagem \"{fileName}\" é muito grande. O tamanho máximo é 10MB.",
     "failedToProcessImageWithName": "Falha ao processar a imagem \"{fileName}\": {errorMessage}",
+    "mediaTypeNotSupported": "Arquivos {mediaType} ainda não são suportados. Apenas imagens podem ser soltas. Arquivo: {fileName}",
     "dropHere": "Solte Aqui",
     "dropHint": "Solte para adicionar imagens ou nodes ao canvas",
     "processingFiles": "Processando Arquivos...",

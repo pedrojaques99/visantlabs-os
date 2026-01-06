@@ -17,6 +17,8 @@ import { authService, type User } from '../services/authService';
 import { subscriptionService, type SubscriptionStatus } from '../services/subscriptionService';
 import { useTranslation } from '../hooks/useTranslation';
 import { useTheme } from '../hooks/useTheme';
+import { CanvasHeader } from './canvas/CanvasHeader';
+import { useCanvasHeader } from './canvas/CanvasHeaderContext';
 
 // Export context values for child components
 export type LayoutContextValue = {
@@ -36,6 +38,44 @@ export const LayoutContext = React.createContext<LayoutContextValue | null>(null
 interface LayoutProps {
   children: React.ReactNode;
 }
+
+const CanvasHeaderWrapper: React.FC<{ navigate: (path: string) => void }> = ({ navigate }) => {
+  try {
+    const headerData = useCanvasHeader();
+    return (
+      <CanvasHeader
+        projectName={headerData.projectName}
+        onBack={() => navigate('/canvas')}
+        onProjectNameChange={headerData.onProjectNameChange}
+        selectedNodesCount={headerData.selectedNodesCount}
+        selectedNodes={headerData.selectedNodes}
+        onShareClick={headerData.onShareClick}
+        isCollaborative={headerData.isCollaborative}
+        othersCount={headerData.othersCount}
+        backgroundColor={headerData.backgroundColor}
+        onBackgroundColorChange={headerData.setBackgroundColor}
+        gridColor={headerData.gridColor}
+        onGridColorChange={headerData.setGridColor}
+        showGrid={headerData.showGrid}
+        onShowGridChange={headerData.setShowGrid}
+        showMinimap={headerData.showMinimap}
+        onShowMinimapChange={headerData.setShowMinimap}
+        showControls={headerData.showControls}
+        onShowControlsChange={headerData.setShowControls}
+        cursorColor={headerData.cursorColor}
+        onCursorColorChange={headerData.setCursorColor}
+        brandCyan={headerData.brandCyan}
+        onBrandCyanChange={headerData.setBrandCyan}
+        experimentalMode={headerData.experimentalMode}
+        onExperimentalModeChange={headerData.setExperimentalMode}
+        onImportCommunityPreset={headerData.onImportCommunityPreset}
+      />
+    );
+  } catch {
+    // Context not available, return null
+    return null;
+  }
+};
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { t } = useTranslation();
@@ -557,6 +597,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             onMyBrandingsClick={() => navigate('/my-brandings')}
           />
         )}
+        
+        {location.pathname.startsWith('/canvas/') && <CanvasHeaderWrapper navigate={navigate} />}
 
         <SubscriptionModal
           isOpen={isSubscriptionModalOpen}
@@ -591,7 +633,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           userEmail={currentUser?.email || ''}
         />
 
-        <div className="flex-1 overflow-y-auto">
+        <div className={location.pathname.startsWith('/canvas/') ? "flex-1 overflow-hidden" : "flex-1 overflow-y-auto"}>
           {children}
         </div>
 

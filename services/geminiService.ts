@@ -1,5 +1,6 @@
 import { GoogleGenAI, Modality, Type } from "@google/genai";
 import type { UploadedImage, AspectRatio, DesignType, GeminiModel, Resolution } from '../types';
+import { buildGeminiPromptInstructionsTemplate } from '../utils/mockupPromptFormat';
 
 // Lazy initialization to avoid breaking app startup if API key is not configured
 let ai: GoogleGenAI | null = null;
@@ -413,75 +414,29 @@ export const generateSmartPrompt = async (params: SmartPromptParams, apiKey?: st
   return withRetry(async () => {
     const isBlankMockup = params.designType === 'blank';
 
-    const designTypeDescription = isBlankMockup
-      ? 'A blank mockup (no design provided)'
-      : `A standalone ${params.designType}`;
+    // Use shared function to build instructions template
+    const instructionsTemplate = buildGeminiPromptInstructionsTemplate({
+      designType: params.designType,
+      isBlankMockup,
+      withHuman: params.withHuman,
+      enhanceTexture: params.enhanceTexture,
+      locationTags: params.locationTags,
+    });
 
-    const designTypeHandlingInstruction = isBlankMockup
-      ? `3.  **Handle Design Type:** The user selected 'blank mockup'. The prompt should describe a clean, empty mockup ready for a design, with a white or neutral surface.`
-      : `3.  **Handle Design Type:** If the type is 'logo', the prompt should focus on placing the logo onto the mockup surface. If the type is 'layout', the prompt should describe applying the entire graphic to the mockup surface (e.g., as a full book cover or poster design).`;
-
-    const textGenerationInstruction = isBlankMockup
-      ? `9.  **Text Generation:** The user wants a blank mockup. Explicitly state "Absolutely no text, letters, or words should be generated in the image."`
-      : `9.  **Text Generation:** If "Generate Placeholder Text" is Yes, include a phrase like "with plausible placeholder text for realism". If No, state "The design should be the sole focus, with absolutely no additional text, words, or letters generated anywhere in the image. Avoid text or letters.".`;
-
-    const humanInteractionInstruction = params.withHuman
-      ? (isBlankMockup
-        ? `10. **Human Interaction:** The user wants to include a human person in the scene. The scene should include a human person appearing in or interacting with the mockup in a natural, contextual way. The person should be shown in a way that makes sense for the mockup type and setting.`
-        : `10. **Human Interaction:** The user wants to include a human person in the scene. The scene should include a human person appearing in or interacting with the mockup product in a natural, contextual way. The person should be shown using, holding, or interacting with the product in a way that makes sense for the mockup type.`)
-      : '';
-
-    const designIntegrityStepNumber = params.withHuman ? 11 : 10;
-    const isLogo = params.designType === 'logo';
-    const safeAreaInstruction = isLogo
-      ? `\n${designIntegrityStepNumber + 1}. **Safe Area (CRITICAL):** The prompt must instruct the image generator to leave a comfortable 'safe area' or 'breathing room' around the uploaded design, stating that the design must not touch or be clipped by the edges of the mockup surface.`
-      : '';
-    const designIntegrityInstructions = isBlankMockup
-      ? `${designIntegrityStepNumber}. **No Graphics:** The prompt must instruct the model to generate a completely blank mockup with no logos, text, or other graphic elements.`
-      : `${designIntegrityStepNumber}. **Preserve the Design Integrity (CRITICAL):** The final prompt MUST include a clear instruction to use the uploaded design *exactly as provided*, forbidding any alteration, modification, or re-drawing. Use a sentence like: "It is crucial that the provided design is placed on the mockup surfaces exactly as it is, without any modification or re-drawing of the original design."${safeAreaInstruction}`;
-
-    // Special handling for Minimalist Studio location
-    const locationInstruction = params.locationTags.includes('Minimalist Studio')
-      ? `5.  **Minimalist Studio Setting (SPECIAL):** If "Minimalist Studio" is selected as the location, describe it as "a professional photography studio with infinite white wall background, studio lighting, clean and minimalist aesthetic". Include a plant in the setting.`
-      : `5.  **Incorporate Additional Details:** If the user provides "Additional Details (MUST HAVE)", integrate these keywords and concepts naturally into the core description of the scene. These are high-priority requirements.`;
-
-    const promptToGemini = `You are an expert AI prompt engineer. Your task is to convert user selections into a concise and effective prompt for an AI image generator to create a photorealistic product mockup.
-
-**USER'S INPUT:**
--   **Design Type:** ${designTypeDescription}
--   **Branding Style:** ${params.brandingTags.join(', ') || 'Not specified'}
--   **Mockup Subject(s):** ${params.categoryTags.join(', ')}
--   **Color Palette:** ${params.selectedColors.join(', ') || 'Not specified'}
--   **Setting/Location:** ${params.locationTags.join(', ') || 'Not specified'}
--   **Camera Angle:** ${params.angleTags.join(', ') || 'Not specified'}
--   **Lighting Style:** ${params.lightingTags.join(', ') || 'Not specified'}
--   **Visual Effects:** ${params.effectTags.join(', ') || 'Not specified'}
--   **Generate Placeholder Text:** ${isBlankMockup ? 'No (Blank Mockup)' : (params.generateText ? 'Yes' : 'No')}
--   **Include Human Interaction:** ${params.withHuman ? 'Yes' : 'No'}
--   **Additional Details (MUST HAVE):** ${params.additionalPrompt || 'Not specified'}
--   **Aspect Ratio:** ${params.aspectRatio}
--   **Negative Prompt (AVOID):** ${params.negativePrompt || 'Not specified'}
-
-
-**INSTRUCTIONS:**
-Based ${isBlankMockup ? '' : 'on the user\'s input and the provided design image, '}write an improved prompt.
-1.  **Be Concise & Objective:** Combine the user's selections into a clear, direct, and effective prompt. Prioritize clarity and efficiency over descriptive prose.
-2.  **Aspect Ratio is Paramount (CRITICAL):** Start the entire prompt with the aspect ratio description. This is the most important rule.
-    - For '16:9', start with: "A photorealistic, super-detailed widescreen cinematic shot of..."
-    - For '4:3', start with: "A photorealistic, super-detailed standard photo of..."
-    - For '1:1', start with: "A photorealistic, super-detailed square composition of..."
-${designTypeHandlingInstruction}
-4.  **Focus on Realism:** After the aspect ratio prefix, describe the scene. Emphasize photorealistic details: ${params.enhanceTexture ? '"authentic materials", "subtle surface details", ' : ''}"natural reflections", "professional product photography", "sharp focus".
-${locationInstruction}
-6.  **Color Palette:** If the user specifies a color palette, integrate it into the prompt. For example: "The scene's color palette should be dominated by or feature accents of: ${params.selectedColors.join(', ')}." This should influence background, lighting, and environmental elements, not the uploaded design itself.
-7.  **Structure:** The output must be a single, direct paragraph.
-8.  **Strictly Adhere:** Only use concepts derived from the user's selections. Do not introduce new, unrelated elements.
-${textGenerationInstruction}
-${humanInteractionInstruction}
-${designIntegrityInstructions}
-${isBlankMockup ? (designIntegrityStepNumber + 1) : (designIntegrityStepNumber + 2)}. **Negative Prompt:** If the user has provided a negative prompt, end your response with a new sentence: "AVOID THE FOLLOWING: ${params.negativePrompt}."
-
-**Your output must be ONLY the generated prompt text.**`;
+    // Replace placeholders with actual values
+    const promptToGemini = instructionsTemplate
+      .replace('[BRANDING_TAGS]', params.brandingTags.join(', ') || 'Not specified')
+      .replace('[CATEGORY_TAGS]', params.categoryTags.join(', '))
+      .replace('[COLORS]', params.selectedColors.join(', ') || 'Not specified')
+      .replace('[LOCATION_TAGS]', params.locationTags.join(', ') || 'Not specified')
+      .replace('[ANGLE_TAGS]', params.angleTags.join(', ') || 'Not specified')
+      .replace('[LIGHTING_TAGS]', params.lightingTags.join(', ') || 'Not specified')
+      .replace('[EFFECT_TAGS]', params.effectTags.join(', ') || 'Not specified')
+      .replace('[GENERATE_TEXT]', isBlankMockup ? 'No (Blank Mockup)' : (params.generateText ? 'Yes' : 'No'))
+      .replace('[WITH_HUMAN]', params.withHuman ? 'Yes' : 'No')
+      .replace('[ADDITIONAL_PROMPT]', params.additionalPrompt || 'Not specified')
+      .replace('[ASPECT_RATIO]', params.aspectRatio)
+      .replace('[NEGATIVE_PROMPT]', params.negativePrompt || 'Not specified');
 
     const parts = [];
     if (!isBlankMockup && params.baseImage) {

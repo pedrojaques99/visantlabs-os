@@ -1,11 +1,12 @@
 import React, { useState, useEffect, memo, useRef } from 'react';
-import { Handle, Position, type NodeProps } from '@xyflow/react';
+import { Handle, Position, type NodeProps, useReactFlow } from '@xyflow/react';
 import { Video, Upload, X } from 'lucide-react';
 import type { VideoInputNodeData } from '../../types/reactFlow';
 import { cn } from '../../lib/utils';
 import { NodeContainer } from './shared/NodeContainer';
 import { NodeLabel } from './shared/node-label';
 import { NodeHeader } from './shared/node-header';
+import { NodeActionBar } from './shared/NodeActionBar';
 import { useTranslation } from '../../hooks/useTranslation';
 import { videoToBase64 } from '../../utils/fileUtils';
 import { toast } from 'sonner';
@@ -13,6 +14,7 @@ import { toast } from 'sonner';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
   const { t } = useTranslation();
+  const { getZoom } = useReactFlow();
   const nodeData = data as VideoInputNodeData;
   const [uploadedVideo, setUploadedVideo] = useState<string | undefined>(nodeData.uploadedVideo || nodeData.uploadedVideoUrl);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -131,17 +133,7 @@ export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<
           <NodeLabel>
             {t('canvasNodes.videoInputNode.uploadedVideo') || 'Uploaded Video'}
           </NodeLabel>
-          <div className="relative group">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleVideoRemove();
-              }}
-              onMouseDown={(e) => e.stopPropagation()}
-              className="absolute top-0 right-0 w-5 h-5 bg-red-500/80 hover:bg-red-500 border border-black rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
-            >
-              <X size={10} className="text-white" strokeWidth={3} />
-            </button>
+          <div className="relative">
             <video
               src={getVideoDisplayUrl(uploadedVideo)}
               controls
@@ -156,6 +148,22 @@ export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<
             />
           </div>
         </div>
+      )}
+
+      {!dragging && hasUploadedVideo && (
+        <NodeActionBar selected={selected} getZoom={getZoom}>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleVideoRemove();
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+            className="p-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded transition-colors backdrop-blur-sm border border-red-500/20 hover:border-red-500/30"
+            title={t('canvasNodes.videoInputNode.removeVideo') || 'Remove Video'}
+          >
+            <X size={12} strokeWidth={2} />
+          </button>
+        </NodeActionBar>
       )}
     </NodeContainer>
   );
