@@ -102,8 +102,8 @@ async function performUpload(
         if (handlersRef.current?.handleUploadImage) {
           await handlersRef.current.handleUploadImage(nodeId, base64Data);
         } else {
-          // Fallback para upload direto
-          const imageUrl = await canvasApi.uploadImageToR2(base64Data, canvasId, nodeId);
+          // Fallback para upload direto - preservar tamanho original
+          const imageUrl = await canvasApi.uploadImageToR2(base64Data, canvasId, nodeId, { skipCompression: true });
           updateImageNodeMockup(setNodes, nodeId, imageUrl);
         }
         break;
@@ -114,16 +114,16 @@ async function performUpload(
         if (handlersRef.current?.handleLogoNodeUpload) {
           await handlersRef.current.handleLogoNodeUpload(nodeId, base64Data);
         } else {
-          // Fallback para upload direto
-          const imageUrl = await canvasApi.uploadImageToR2(base64Data, canvasId, nodeId);
+          // Fallback para upload direto - preservar tamanho original
+          const imageUrl = await canvasApi.uploadImageToR2(base64Data, canvasId, nodeId, { skipCompression: true });
           updateLogoNode(setNodes, nodeId, imageUrl);
         }
         break;
       }
 
       case 'brand-logo': {
-        // BrandNode logoBase64
-        const imageUrl = await canvasApi.uploadImageToR2(base64Data, canvasId, `${nodeId}-logo`);
+        // BrandNode logoBase64 - preservar tamanho original
+        const imageUrl = await canvasApi.uploadImageToR2(base64Data, canvasId, `${nodeId}-logo`, { skipCompression: true });
         updateBrandNodeLogo(setNodes, nodeId, imageUrl);
         break;
       }
@@ -136,15 +136,15 @@ async function performUpload(
       }
 
       case 'result-image': {
-        // Nodes com resultImageBase64 (merge, edit, upscale, mockup, prompt, output, shader, etc.)
-        const imageUrl = await canvasApi.uploadImageToR2(base64Data, canvasId, nodeId);
+        // Nodes com resultImageBase64 (merge, edit, upscale, mockup, prompt, output, shader, etc.) - preservar tamanho original
+        const imageUrl = await canvasApi.uploadImageToR2(base64Data, canvasId, nodeId, { skipCompression: true });
         updateResultImageNode(setNodes, nodeId, imageUrl);
         break;
       }
 
       case 'edit-uploaded': {
-        // EditNode uploadedImage.base64
-        const imageUrl = await canvasApi.uploadImageToR2(base64Data, canvasId, `${nodeId}-uploaded`);
+        // EditNode uploadedImage.base64 - preservar tamanho original
+        const imageUrl = await canvasApi.uploadImageToR2(base64Data, canvasId, `${nodeId}-uploaded`, { skipCompression: true });
         updateEditNodeUploadedImage(setNodes, nodeId, imageUrl);
         break;
       }

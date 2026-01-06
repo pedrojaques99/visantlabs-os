@@ -811,7 +811,7 @@ const EditorApp: React.FC = () => {
                 id="sidebar-resizer"
                 className="hidden md:block flex-shrink-0 w-2 cursor-col-resize group"
               >
-                <div className="w-px h-full mx-auto bg-zinc-800/50 group-hover:bg-[#52ddeb]/50 transition-colors duration-200"></div>
+                <div className="w-px h-full mx-auto bg-zinc-800/50 group-hover:bg-brand-cyan/50 transition-colors duration-200"></div>
               </div>
               <main className="flex-1 p-4 md:p-8 overflow-y-auto min-w-0">
                 <EditorDisplay

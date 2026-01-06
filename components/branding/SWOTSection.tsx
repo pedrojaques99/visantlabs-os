@@ -122,7 +122,7 @@ export const SWOTSection: React.FC<SWOTSectionProps> = ({
           {isEditing && onContentChange && (
             <button
               onClick={() => handleAddItem(category)}
-              className={`flex items-center gap-2 px-3 py-2 border hover:border-[#52ddeb]/50 hover:text-[#52ddeb] rounded-md text-xs font-mono transition-all duration-300 mt-2 ${
+              className={`flex items-center gap-2 px-3 py-2 border hover:border-[#52ddeb]/50 hover:text-brand-cyan rounded-md text-xs font-mono transition-all duration-300 mt-2 ${
                 theme === 'dark'
                   ? 'bg-black/40 border-zinc-800/60 text-zinc-400'
                   : 'bg-zinc-200 border-zinc-300 text-zinc-700'

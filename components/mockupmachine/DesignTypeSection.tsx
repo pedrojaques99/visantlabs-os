@@ -1,6 +1,8 @@
 import React from 'react';
 import type { DesignType, UploadedImage } from '../../types';
 import { useTranslation } from '../../hooks/useTranslation';
+import { Button } from '../ui/button';
+import { cn } from '../../lib/utils';
 
 interface DesignTypeSectionProps {
   designType: DesignType | null;
@@ -30,51 +32,57 @@ export const DesignTypeSection: React.FC<DesignTypeSectionProps> = ({
       )}
       <div className="space-y-2">
         {designType !== 'blank' && (
-          <div className="grid grid-cols-2 gap-2 cursor-pointer">
-            <button 
+          <div className="grid grid-cols-2 gap-2">
+            <Button 
               onClick={() => {
                 onDesignTypeChange('logo');
                 onScrollToSection('branding-section');
               }} 
               disabled={isImagelessMode} 
-              className={`w-full aspect-square max-h-32 flex flex-col items-center justify-center gap-1 p-4 text-xs font-mono rounded border transition-colors ${
+              variant="outline"
+              className={cn(
+                "w-full aspect-square max-h-32 flex flex-col items-center justify-center gap-1 p-4 text-xs font-mono",
                 designType === 'logo' 
-                  ? 'bg-[#52ddeb]/10 text-[#52ddeb] border-[#52ddeb]/40'
+                  ? 'bg-brand-cyan/10 text-brand-cyan border-[#52ddeb]/40'
                   : 'bg-zinc-800/30 text-zinc-400 border-zinc-700/30 hover:border-zinc-600/50'
-              } ${isImagelessMode ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
+              )}
             >
               <span className="text-2xl">🖼️</span>
               <span className="font-semibold text-sm">{t('mockup.itsALogo')}</span>
-            </button>
-            <button 
+            </Button>
+            <Button 
               onClick={() => {
                 onDesignTypeChange('layout');
                 onScrollToSection('branding-section');
               }} 
               disabled={isImagelessMode} 
-              className={`w-full aspect-square max-h-32 flex flex-col items-center justify-center gap-1 p-4 text-xs font-mono rounded border transition-colors ${
+              variant="outline"
+              className={cn(
+                "w-full aspect-square max-h-32 flex flex-col items-center justify-center gap-1 p-4 text-xs font-mono",
                 designType === 'layout' 
-                  ? 'bg-[#52ddeb]/10 text-[#52ddeb] border-[#52ddeb]/40'
+                  ? 'bg-brand-cyan/10 text-brand-cyan border-[#52ddeb]/40'
                   : 'bg-zinc-800/30 text-zinc-400 border-zinc-700/30 hover:border-zinc-600/50'
-              } ${isImagelessMode ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
+              )}
             >
               <span className="text-2xl">🎨</span>
               <span className="font-semibold text-sm">{t('mockup.itsALayout')}</span>
-            </button>
+            </Button>
           </div>
         )}
         {!uploadedImage && (
-          <button 
+          <Button 
             onClick={() => onDesignTypeChange('blank')} 
-            className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-mono rounded border transition-colors cursor-pointer ${
+            variant="outline"
+            className={cn(
+              "w-full flex items-center gap-2 px-3 py-2 text-xs font-mono",
               designType === 'blank' 
-                ? 'bg-[#52ddeb]/10 text-[#52ddeb] border-[#52ddeb]/40'
+                ? 'bg-brand-cyan/10 text-brand-cyan border-[#52ddeb]/40'
                 : 'bg-zinc-800/30 text-zinc-400 border-zinc-700/30 hover:border-zinc-600/50'
-            }`}
+            )}
           >
             <span className="text-lg">📄</span>
             <span className="font-semibold">{t('mockup.blankMockup')}</span>
-          </button>
+          </Button>
         )}
       </div>
     </section>

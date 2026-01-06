@@ -372,7 +372,7 @@ export const MockupsPage: React.FC = () => {
               <div className="relative flex-shrink-0">
                 <button
                   onClick={() => setShowSearch(!showSearch)}
-                  className="p-2 text-zinc-500 hover:text-[#52ddeb] transition-colors rounded-md hover:bg-black/20"
+                  className="p-2 text-zinc-500 hover:text-brand-cyan transition-colors rounded-md hover:bg-black/20"
                   title={t('mockupsPage.search')}
                 >
                   <Search size={20} />

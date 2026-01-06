@@ -113,7 +113,7 @@ export const AppsPage: React.FC = () => {
               <button
                 key={app.id}
                 onClick={handleClick}
-                className="group relative p-8 bg-[#1A1A1A] border border-zinc-800 rounded-2xl hover:border-[#52ddeb]/50 transition-all duration-300 text-left hover:scale-[1.02] active:scale-95 cursor-pointer"
+                className="group relative p-8 bg-zinc-900 border border-zinc-800 rounded-2xl hover:border-[#52ddeb]/50 transition-all duration-300 text-left hover:scale-[1.02] active:scale-95 cursor-pointer"
               >
                 <div className="flex flex-col items-start space-y-4">
                   <div

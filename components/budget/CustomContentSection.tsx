@@ -108,7 +108,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
           </h3>
           <button
             onClick={addProjectDetailSection}
-            className="px-4 py-2 bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 border border-[#52ddeb]/50 rounded-xl text-[#52ddeb] font-mono text-sm transition-all duration-300 flex items-center gap-2"
+            className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#52ddeb]/50 rounded-xl text-brand-cyan font-mono text-sm transition-all duration-300 flex items-center gap-2"
           >
             <Plus size={16} />
             {t('budget.addSection') || 'Adicionar Seção'}
@@ -124,7 +124,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
             {(customContent.projectDetailSections || []).map((section, sectionIndex) => (
               <div
                 key={sectionIndex}
-                className="p-4 bg-[#1A1A1A] border border-zinc-800 rounded-xl space-y-3"
+                className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl space-y-3"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 space-y-3">
@@ -147,7 +147,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
                         </label>
                         <button
                           onClick={() => addParagraph(sectionIndex)}
-                          className="px-2 py-1 bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 border border-[#52ddeb]/50 rounded text-[#52ddeb] font-mono text-xs transition-all duration-300 flex items-center gap-1"
+                          className="px-2 py-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#52ddeb]/50 rounded text-brand-cyan font-mono text-xs transition-all duration-300 flex items-center gap-1"
                         >
                           <Plus size={12} />
                           {t('budget.addParagraph') || 'Parágrafo'}
@@ -198,7 +198,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
           </h3>
           <button
             onClick={addInfoBox}
-            className="px-4 py-2 bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 border border-[#52ddeb]/50 rounded-xl text-[#52ddeb] font-mono text-sm transition-all duration-300 flex items-center gap-2"
+            className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#52ddeb]/50 rounded-xl text-brand-cyan font-mono text-sm transition-all duration-300 flex items-center gap-2"
           >
             <Plus size={16} />
             {t('budget.addInfoBox') || 'Adicionar Caixa'}
@@ -214,7 +214,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
             {(customContent.infoBoxes || []).map((box, index) => (
               <div
                 key={index}
-                className="p-4 bg-[#1A1A1A] border border-zinc-800 rounded-xl space-y-3"
+                className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl space-y-3"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 space-y-3">

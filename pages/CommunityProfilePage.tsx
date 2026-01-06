@@ -382,7 +382,7 @@ export const CommunityProfilePage: React.FC = () => {
                         className="p-2 bg-zinc-900/50 border border-zinc-800/60 rounded-md hover:border-[#52ddeb]/50 hover:bg-zinc-900/80 transition-colors"
                         title={t('community.instagram')}
                       >
-                        <Instagram size={18} className="text-zinc-400 hover:text-[#52ddeb] transition-colors" />
+                        <Instagram size={18} className="text-zinc-400 hover:text-brand-cyan transition-colors" />
                       </a>
                     )}
                     {profile.youtube && (
@@ -393,7 +393,7 @@ export const CommunityProfilePage: React.FC = () => {
                         className="p-2 bg-zinc-900/50 border border-zinc-800/60 rounded-md hover:border-[#52ddeb]/50 hover:bg-zinc-900/80 transition-colors"
                         title={t('community.youtube')}
                       >
-                        <Youtube size={18} className="text-zinc-400 hover:text-[#52ddeb] transition-colors" />
+                        <Youtube size={18} className="text-zinc-400 hover:text-brand-cyan transition-colors" />
                       </a>
                     )}
                     {profile.x && (
@@ -404,7 +404,7 @@ export const CommunityProfilePage: React.FC = () => {
                         className="p-2 bg-zinc-900/50 border border-zinc-800/60 rounded-md hover:border-[#52ddeb]/50 hover:bg-zinc-900/80 transition-colors"
                         title={t('community.twitter')}
                       >
-                        <Twitter size={18} className="text-zinc-400 hover:text-[#52ddeb] transition-colors" />
+                        <Twitter size={18} className="text-zinc-400 hover:text-brand-cyan transition-colors" />
                       </a>
                     )}
                     {profile.website && (
@@ -415,7 +415,7 @@ export const CommunityProfilePage: React.FC = () => {
                         className="p-2 bg-zinc-900/50 border border-zinc-800/60 rounded-md hover:border-[#52ddeb]/50 hover:bg-zinc-900/80 transition-colors"
                         title={t('community.website')}
                       >
-                        <Globe size={18} className="text-zinc-400 hover:text-[#52ddeb] transition-colors" />
+                        <Globe size={18} className="text-zinc-400 hover:text-brand-cyan transition-colors" />
                       </a>
                     )}
                   </div>
@@ -425,7 +425,7 @@ export const CommunityProfilePage: React.FC = () => {
                 {isOwnProfile && (
                   <button
                     onClick={() => setIsEditModalOpen(true)}
-                    className="px-4 py-2 bg-[#52ddeb]/15 text-[#52ddeb] border border-[#52ddeb]/40 hover:bg-[#52ddeb]/25 rounded-xl text-sm font-mono transition flex items-center gap-2"
+                    className="px-4 py-2 bg-brand-cyan/15 text-brand-cyan border border-[#52ddeb]/40 hover:bg-brand-cyan/25 rounded-xl text-sm font-mono transition flex items-center gap-2"
                   >
                     <Edit size={16} />
                     Edit Profile
@@ -437,13 +437,13 @@ export const CommunityProfilePage: React.FC = () => {
             {/* Stats Section */}
             <div className="grid grid-cols-3 gap-4 mb-8">
               <div className="bg-zinc-900/50 border border-zinc-800/60 rounded-xl p-4 text-center">
-                <p className="text-2xl font-bold text-[#52ddeb] font-mono mb-1">
+                <p className="text-2xl font-bold text-brand-cyan font-mono mb-1">
                   {profile.stats.mockups}
                 </p>
                 <p className="text-xs text-zinc-500 font-mono uppercase">Mockups</p>
               </div>
               <div className="bg-zinc-900/50 border border-zinc-800/60 rounded-xl p-4 text-center">
-                <p className="text-2xl font-bold text-[#52ddeb] font-mono mb-1">
+                <p className="text-2xl font-bold text-brand-cyan font-mono mb-1">
                   {profile.stats.presets}
                 </p>
                 <p className="text-xs text-zinc-500 font-mono uppercase">Presets</p>
@@ -465,7 +465,7 @@ export const CommunityProfilePage: React.FC = () => {
                 onClick={() => setActiveTab('mockups')}
                 className={`px-4 py-2 font-mono text-sm transition-colors border-b-2 ${
                   activeTab === 'mockups'
-                    ? 'text-[#52ddeb] border-[#52ddeb]'
+                    ? 'text-brand-cyan border-[#52ddeb]'
                     : 'text-zinc-500 border-transparent hover:text-zinc-400'
                 }`}
               >
@@ -475,7 +475,7 @@ export const CommunityProfilePage: React.FC = () => {
                 onClick={() => setActiveTab('presets')}
                 className={`px-4 py-2 font-mono text-sm transition-colors border-b-2 ${
                   activeTab === 'presets'
-                    ? 'text-[#52ddeb] border-[#52ddeb]'
+                    ? 'text-brand-cyan border-[#52ddeb]'
                     : 'text-zinc-500 border-transparent hover:text-zinc-400'
                 }`}
               >

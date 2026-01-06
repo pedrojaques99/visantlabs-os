@@ -6,6 +6,7 @@
 
 import { useCallback } from 'react';
 import type { PDFNodeData, FlowNodeData } from '../../../types/reactFlow';
+import { createNodeDataUpdateHandler } from '../utils/nodeDataUpdateUtils';
 
 interface UsePDFNodeHandlersParams {
   updateNodeData: <T extends FlowNodeData>(nodeId: string, newData: Partial<T>, nodeType?: string) => void;
@@ -18,9 +19,7 @@ export const usePDFNodeHandlers = ({
     updateNodeData<PDFNodeData>(nodeId, { pdfBase64 }, 'pdf');
   }, [updateNodeData]);
 
-  const handlePDFNodeDataUpdate = useCallback((nodeId: string, newData: Partial<PDFNodeData>) => {
-    updateNodeData<PDFNodeData>(nodeId, newData, 'pdf');
-  }, [updateNodeData]);
+  const handlePDFNodeDataUpdate = createNodeDataUpdateHandler<PDFNodeData>(updateNodeData, 'pdf');
 
   return {
     handlePDFNodeUpload,

@@ -205,7 +205,7 @@ export const MyBrandingsPage: React.FC = () => {
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <FileText className="h-5 w-5 text-[#52ddeb]" />
+                        <FileText className="h-5 w-5 text-brand-cyan" />
                         <h3 className="font-semibold text-zinc-200 font-manrope text-lg line-clamp-2">
                           {project.name ? truncateText(project.name, 60) : truncateText(project.prompt, 60)}
                         </h3>

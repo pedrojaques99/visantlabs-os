@@ -232,7 +232,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-zinc-800/50">
           <div className="flex items-center gap-2">
-            <ImageIcon size={20} className="text-[#52ddeb]" />
+            <ImageIcon size={20} className="text-brand-cyan" />
             <h2 id="mockup-preset-modal-title" className="text-sm font-mono text-zinc-300 uppercase">
               {multiSelect ? `Select Mockup Presets (${selectedPresetIds.size}/${maxSelections})` : 'Select Mockup Preset'}
             </h2>
@@ -253,7 +253,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
             className={cn(
               'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 relative',
               activeTab === 'official'
-                ? 'text-[#52ddeb] border-[#52ddeb]'
+                ? 'text-brand-cyan border-[#52ddeb]'
                 : 'text-zinc-400 border-transparent hover:text-zinc-300 hover:border-zinc-600/50'
             )}
           >
@@ -264,7 +264,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
             className={cn(
               'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 flex items-center gap-1.5 relative',
               activeTab === 'community'
-                ? 'text-[#52ddeb] border-[#52ddeb]'
+                ? 'text-brand-cyan border-[#52ddeb]'
                 : 'text-zinc-400 border-transparent hover:text-zinc-300 hover:border-zinc-600/50'
             )}
           >
@@ -277,7 +277,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
               className={cn(
                 'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 relative',
                 activeTab === 'custom'
-                  ? 'text-[#52ddeb] border-[#52ddeb]'
+                  ? 'text-brand-cyan border-[#52ddeb]'
                   : 'text-zinc-400 border-transparent hover:text-zinc-300 hover:border-zinc-600/50'
               )}
             >
@@ -298,7 +298,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
                   className={cn(
                     'flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[10px] font-mono uppercase transition-all whitespace-nowrap',
                     communityFilter === type
-                      ? 'bg-[#52ddeb]/20 text-[#52ddeb] border border-[#52ddeb]/30'
+                      ? 'bg-brand-cyan/20 text-brand-cyan border border-[#52ddeb]/30'
                       : 'bg-zinc-900/50 text-zinc-400 border border-zinc-700/50 hover:bg-zinc-800/50'
                   )}
                 >
@@ -346,7 +346,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
                         className={cn(
                           'flex flex-col rounded-md border transition-all overflow-hidden group',
                           isSelected
-                            ? 'bg-[#52ddeb]/10 border-[#52ddeb]/50 hover:bg-[#52ddeb]/15'
+                            ? 'bg-brand-cyan/10 border-[#52ddeb]/50 hover:bg-brand-cyan/15'
                             : 'bg-zinc-900/30 border-zinc-700/30 hover:bg-zinc-900/50 hover:border-zinc-600/50',
                           (isLoading || isDisabled) && 'opacity-50 cursor-not-allowed'
                         )}
@@ -376,7 +376,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
                           )}
                           {/* Selection Indicator */}
                           {isSelected && (
-                            <div className="absolute top-2 right-2 w-6 h-6 bg-[#52ddeb] rounded-md border-2 border-black flex items-center justify-center">
+                            <div className="absolute top-2 right-2 w-6 h-6 bg-brand-cyan rounded-md border-2 border-black flex items-center justify-center">
                               {multiSelect ? (
                                 <span className="text-[10px] font-mono font-bold text-black">
                                   {Array.from(selectedPresetIds).indexOf(preset.id) + 1}
@@ -393,7 +393,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
                           {/* Name */}
                           <div className={cn(
                             'text-sm font-mono font-semibold mb-2 line-clamp-2 leading-tight',
-                            isSelected ? 'text-[#52ddeb]' : 'text-zinc-200'
+                            isSelected ? 'text-brand-cyan' : 'text-zinc-200'
                           )}>
                             {preset.name}
                           </div>
@@ -441,7 +441,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
             <div>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <Users size={14} className="text-[#52ddeb]" />
+                  <Users size={14} className="text-brand-cyan" />
                   <h3 className="text-xs font-mono text-zinc-400 uppercase">Community Presets</h3>
                 </div>
                 <div className="flex items-center gap-2">
@@ -453,7 +453,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
                       e.stopPropagation();
                       window.location.href = '/canvas';
                     }}
-                    className="flex items-center gap-1 px-2 py-1 bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 border border-[#52ddeb]/30 rounded text-[10px] font-mono text-[#52ddeb] transition-all hover:scale-105"
+                    className="flex items-center gap-1 px-2 py-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#52ddeb]/30 rounded text-[10px] font-mono text-brand-cyan transition-all hover:scale-105"
                     title="Create new community preset"
                   >
                     <Plus size={10} />
@@ -486,7 +486,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
                         className={cn(
                           'flex flex-col rounded-md border transition-all overflow-hidden group',
                           isSelected
-                            ? 'bg-[#52ddeb]/10 border-[#52ddeb]/50 hover:bg-[#52ddeb]/15'
+                            ? 'bg-brand-cyan/10 border-[#52ddeb]/50 hover:bg-brand-cyan/15'
                             : 'bg-zinc-900/30 border-zinc-700/30 hover:bg-zinc-900/50 hover:border-zinc-600/50',
                           (isLoading || isDisabled) && 'opacity-50 cursor-not-allowed'
                         )}
@@ -516,7 +516,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
                           )}
                           {/* Selection Indicator */}
                           {isSelected && (
-                            <div className="absolute top-2 right-2 w-6 h-6 bg-[#52ddeb] rounded-md border-2 border-[#1A1A1A] flex items-center justify-center">
+                            <div className="absolute top-2 right-2 w-6 h-6 bg-brand-cyan rounded-md border-2 border-[#1A1A1A] flex items-center justify-center">
                               {multiSelect ? (
                                 <span className="text-[10px] font-mono font-bold text-[#1A1A1A]">
                                   {Array.from(selectedPresetIds).indexOf(preset.id) + 1}
@@ -528,7 +528,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
                           )}
                           {/* Community Badge */}
                           <div className="absolute top-2 left-2 flex gap-1">
-                            <div className="px-1.5 py-0.5 bg-[#52ddeb]/20 border border-[#52ddeb]/30 rounded text-[8px] font-mono text-[#52ddeb]">
+                            <div className="px-1.5 py-0.5 bg-brand-cyan/20 border border-[#52ddeb]/30 rounded text-[8px] font-mono text-brand-cyan">
                               Comm.
                             </div>
                             <div className="px-1.5 py-0.5 bg-zinc-800/80 border border-zinc-700/50 rounded text-[8px] font-mono text-zinc-400 capitalize">
@@ -542,7 +542,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
                           {/* Name */}
                           <div className={cn(
                             'text-sm font-mono font-semibold mb-2 line-clamp-2 leading-tight',
-                            isSelected ? 'text-[#52ddeb]' : 'text-zinc-200'
+                            isSelected ? 'text-brand-cyan' : 'text-zinc-200'
                           )}>
                             {preset.name}
                           </div>
@@ -604,7 +604,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
                         className={cn(
                           'flex flex-col rounded-md border transition-all overflow-hidden group',
                           isSelected
-                            ? 'bg-[#52ddeb]/10 border-[#52ddeb]/50 hover:bg-[#52ddeb]/15'
+                            ? 'bg-brand-cyan/10 border-[#52ddeb]/50 hover:bg-brand-cyan/15'
                             : 'bg-zinc-900/30 border-zinc-700/30 hover:bg-zinc-900/50 hover:border-zinc-600/50',
                           (isLoading || isDisabled) && 'opacity-50 cursor-not-allowed'
                         )}
@@ -634,7 +634,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
                           )}
                           {/* Selection Indicator */}
                           {isSelected && (
-                            <div className="absolute top-2 right-2 w-6 h-6 bg-[#52ddeb] rounded-md border-2 border-black flex items-center justify-center">
+                            <div className="absolute top-2 right-2 w-6 h-6 bg-brand-cyan rounded-md border-2 border-black flex items-center justify-center">
                               {multiSelect ? (
                                 <span className="text-[10px] font-mono font-bold text-black">
                                   {Array.from(selectedPresetIds).indexOf(mockupId) + 1}
@@ -650,7 +650,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
                         <div className="flex flex-col p-3 min-h-[80px]">
                           <div className={cn(
                             'text-sm font-mono font-semibold mb-2 line-clamp-2 leading-tight',
-                            isSelected ? 'text-[#52ddeb]' : 'text-zinc-200'
+                            isSelected ? 'text-brand-cyan' : 'text-zinc-200'
                           )}>
                             {mockup.prompt?.substring(0, 30) || 'Custom Mockup'}
                           </div>
@@ -676,7 +676,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
               onClick={handleSelectMockups}
               disabled={selectedPresetIds.size === 0 || isLoading}
               className={cn(
-                'px-4 py-2 bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 border border-[#52ddeb]/30 rounded text-xs font-mono text-[#52ddeb] transition-colors',
+                'px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#52ddeb]/30 rounded text-xs font-mono text-brand-cyan transition-colors',
                 (selectedPresetIds.size === 0 || isLoading) && 'opacity-50 cursor-not-allowed'
               )}
             >

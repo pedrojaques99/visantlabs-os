@@ -20,6 +20,7 @@ import { SEO } from '../components/SEO';
 
 import { DataTable } from '../components/ui/data-table';
 import { ColumnDef } from '@tanstack/react-table';
+import { getImagePricing } from '../utils/pricing';
 
 interface AdminUser {
   id: string;
@@ -107,18 +108,6 @@ interface AdminResponse {
 
 const ADMIN_API = '/api/admin/users';
 
-// Pricing constants based on Gemini pricing
-// Flash: $0.039 per image
-// Pro Standard (< 4K): $0.134 per image
-// Pro High Res (>= 4K): $0.24 per image
-const PRICING: Record<string, number | { standard: number; highRes: number }> = {
-  'gemini-2.5-flash-image': 0.039,
-  'gemini-3-pro-image-preview': {
-    standard: 0.134,
-    highRes: 0.24,
-  },
-};
-
 // Helper function to format bytes
 function formatBytes(bytes: number): string {
   if (bytes === 0) return '0 B';
@@ -141,7 +130,7 @@ function formatCurrency(cents: number, currency: 'BRL' | 'USD'): string {
 const AdminDashboardSkeleton: React.FC = () => (
   <div className="space-y-6 animate-in fade-in duration-300">
     {/* Tabs Skeleton */}
-    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl">
+    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl">
       <CardContent className="p-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex gap-2">
@@ -157,7 +146,7 @@ const AdminDashboardSkeleton: React.FC = () => (
     {/* KPI Cards Grid Skeleton */}
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
       {[...Array(4)].map((_, i) => (
-        <Card key={i} className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl">
+        <Card key={i} className="bg-zinc-900 border border-zinc-800/50 rounded-xl">
           <CardContent className="p-6">
             <div className="flex items-start justify-between mb-4">
               <SkeletonLoader width="48px" height="48px" className="rounded-lg" />
@@ -174,7 +163,7 @@ const AdminDashboardSkeleton: React.FC = () => (
     </div>
 
     {/* Revenue Card Skeleton */}
-    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl">
+    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl">
       <CardContent className="p-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -199,7 +188,7 @@ const AdminDashboardSkeleton: React.FC = () => (
     </Card>
 
     {/* Chart Skeleton */}
-    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl">
+    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl">
       <CardHeader>
         <SkeletonLoader width="200px" height="24px" className="rounded mb-2" />
         <SkeletonLoader width="280px" height="16px" className="rounded" />
@@ -221,7 +210,7 @@ const AdminDashboardSkeleton: React.FC = () => (
     {/* Referral Stats Skeleton */}
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
       {[...Array(3)].map((_, i) => (
-        <Card key={i} className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl">
+        <Card key={i} className="bg-zinc-900 border border-zinc-800/50 rounded-xl">
           <CardContent className="p-6">
             <div className="flex items-start justify-between mb-4">
               <SkeletonLoader width="48px" height="48px" className="rounded-lg" />
@@ -350,22 +339,28 @@ export const AdminPage: React.FC = () => {
 
     // Calculate Gemini 2.5 Flash cost
     if (stats['gemini-2.5-flash-image']) {
-      cost += stats['gemini-2.5-flash-image'].total * (PRICING['gemini-2.5-flash-image'] as number);
+      const price = getImagePricing('gemini-2.5-flash-image');
+      cost += stats['gemini-2.5-flash-image'].total * price;
     }
 
     // Calculate Gemini 3 Pro cost
     if (stats['gemini-3-pro-image-preview']) {
-      const proPreco = PRICING['gemini-3-pro-image-preview'] as { standard: number; highRes: number };
       const resolutions = stats['gemini-3-pro-image-preview'].byResolution;
 
       Object.entries(resolutions).forEach(([res, count]) => {
-        // Simple check for 4K (assuming "4096" in resolution string means high res)
-        // Adjust logic if resolution string format differs
-        if (res.includes('4096') || res.includes('4k')) {
-          cost += count * proPreco.highRes;
-        } else {
-          cost += count * proPreco.standard;
+        // Normalize resolution string to 1K, 2K, or 4K
+        let normalizedRes: string | undefined = undefined;
+        const resLower = res.toLowerCase();
+        if (resLower.includes('1k') || resLower === '1k') {
+          normalizedRes = '1K';
+        } else if (resLower.includes('2k') || resLower === '2k') {
+          normalizedRes = '2K';
+        } else if (resLower.includes('4k') || resLower === '4k' || resLower.includes('4096')) {
+          normalizedRes = '4K';
         }
+        
+        const price = getImagePricing('gemini-3-pro-image-preview', normalizedRes);
+        cost += count * price;
       });
     }
 
@@ -488,11 +483,18 @@ export const AdminPage: React.FC = () => {
       };
     }
 
-    // Revenue USD is in cents, convert to dollars
+    // Revenue is in cents, convert to dollars/reais
     const revenueUSD = data.totalRevenueUSD / 100;
+    const revenueBRL = data.totalRevenueBRL / 100;
+    
+    // If USD revenue is 0 but BRL revenue exists, convert BRL to USD (approximate rate: 1 USD = 6 BRL)
+    const effectiveRevenueUSD = revenueUSD > 0 ? revenueUSD : revenueBRL / 6;
+    
     const costUSD = data.totalApiCostUSD;
-    const profitUSD = revenueUSD - costUSD;
-    const profitBRL = profitUSD * 6;
+    const profitUSD = effectiveRevenueUSD - costUSD;
+    
+    // Calculate profit in BRL: use BRL revenue directly, or convert USD profit
+    const profitBRL = revenueBRL - (costUSD * 6);
 
     return {
       profitUSD,
@@ -519,7 +521,7 @@ export const AdminPage: React.FC = () => {
       header: t('admin.subscription'),
       cell: ({ row }) => (
         <div className="flex flex-col">
-          <Badge variant="outline" className="bg-[#52ddeb]/10 text-[#52ddeb] border-[#52ddeb]/30 font-mono mb-1 w-fit">
+          <Badge variant="outline" className="bg-brand-cyan/10 text-brand-cyan border-[#52ddeb]/30 font-mono mb-1 w-fit">
             {row.original.subscriptionTier}
           </Badge>
           <p className="text-xs text-zinc-500 font-mono">{row.original.subscriptionStatus}</p>
@@ -536,7 +538,7 @@ export const AdminPage: React.FC = () => {
         <div className="text-xs font-mono space-y-1">
           <p>{t('admin.monthly')}: {row.original.monthlyCredits ?? 0}</p>
           <p>{t('admin.used')}: {row.original.creditsUsed ?? 0}</p>
-          <p className="text-[#52ddeb]">{t('admin.remaining')}: {row.original.creditsRemaining}</p>
+          <p className="text-brand-cyan">{t('admin.remaining')}: {row.original.creditsRemaining}</p>
           <p>{t('admin.manual')}: {row.original.manualCredits}</p>
         </div>
       ),
@@ -641,7 +643,7 @@ export const AdminPage: React.FC = () => {
 
           {/* Access Denied States */}
           {!isCheckingAuth && !isAuthenticated && !isLoading && (
-            <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl max-w-md mx-auto">
+            <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl max-w-md mx-auto">
               <CardContent className="p-6 md:p-8 space-y-4 text-center">
                 {isUserAuthenticated === false ? (
                   <>
@@ -650,7 +652,7 @@ export const AdminPage: React.FC = () => {
                     </p>
                     <Button
                       onClick={() => navigate('/')}
-                      className="bg-[#52ddeb]/80 hover:bg-[#52ddeb] text-black"
+                      className="bg-brand-cyan/80 hover:bg-brand-cyan text-black"
                     >
                       {t('admin.doLogin')}
                     </Button>
@@ -677,6 +679,8 @@ export const AdminPage: React.FC = () => {
               onValueChange={(val) => {
                 if (val === 'presets') {
                   navigate('/admin/presets');
+                } else if (val === 'design-system') {
+                  navigate('/design-system');
                 } else {
                   setActiveTab(val);
                 }
@@ -684,7 +688,7 @@ export const AdminPage: React.FC = () => {
               className="space-y-6"
             >
               {/* Unified Header */}
-              <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl mb-6">
+              <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl mb-6">
                 <CardContent className="p-4 md:p-6">
                   {/* Breadcrumb */}
                   <div className="mb-4">
@@ -708,7 +712,7 @@ export const AdminPage: React.FC = () => {
 
                   {/* Icon | Title | Description */}
                   <div className="flex items-center gap-3 mb-4">
-                    <ShieldCheck className="h-6 w-6 md:h-8 md:w-8 text-[#52ddeb]" />
+                    <ShieldCheck className="h-6 w-6 md:h-8 md:w-8 text-brand-cyan" />
                     <div>
                       <h1 className="text-2xl md:text-3xl font-semibold font-manrope text-zinc-300">
                         {t('admin.panelTitle')}
@@ -725,23 +729,27 @@ export const AdminPage: React.FC = () => {
                   {/* Navbar abas | Botão atualizar (somente icon) */}
                   <div className="flex flex-wrap items-center justify-between gap-2 md:gap-4">
                     <TabsList className="bg-zinc-900/50 border border-zinc-800/50 p-1 h-auto flex-wrap">
-                      <TabsTrigger value="overview" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
+                      <TabsTrigger value="overview" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
                         {t('admin.dashboard')}
                       </TabsTrigger>
                       {data.generationStats && (
-                        <TabsTrigger value="generations" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
+                        <TabsTrigger value="generations" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
                           {t('admin.generations')}
                         </TabsTrigger>
                       )}
-                      <TabsTrigger value="users" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
+                      <TabsTrigger value="users" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
                         {t('admin.users')}
                       </TabsTrigger>
-                      <TabsTrigger value="financial" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
+                      <TabsTrigger value="financial" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
                         {t('admin.financial')}
                       </TabsTrigger>
-                      <TabsTrigger value="presets" className="data-[state=active]:bg-[#52ddeb]/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
+                      <TabsTrigger value="presets" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
                         <Settings className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
                         {t('admin.presets')}
+                      </TabsTrigger>
+                      <TabsTrigger value="design-system" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
+                        <Palette className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
+                        {t('admin.designSystem')}
                       </TabsTrigger>
                     </TabsList>
                     
@@ -763,14 +771,14 @@ export const AdminPage: React.FC = () => {
                 {/* KPI Grid - Top Level Metrics */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                   {/* Total Users */}
-                  <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
-                        <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                          <User className="h-6 w-6 text-[#52ddeb]" />
+                        <div className="p-3 bg-brand-cyan/10 rounded-lg">
+                          <User className="h-6 w-6 text-brand-cyan" />
                         </div>
                         <div className="flex items-center gap-1 text-xs text-zinc-500 font-mono">
-                          <TrendingUp className="h-3 w-3 text-[#52ddeb]" />
+                          <TrendingUp className="h-3 w-3 text-brand-cyan" />
                           <span>+12.5%</span>
                         </div>
                       </div>
@@ -785,15 +793,15 @@ export const AdminPage: React.FC = () => {
                   </Card>
 
                   {/* Active Subscriptions */}
-                  <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
-                        <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                          <CreditCard className="h-6 w-6 text-[#52ddeb]" />
+                        <div className="p-3 bg-brand-cyan/10 rounded-lg">
+                          <CreditCard className="h-6 w-6 text-brand-cyan" />
                         </div>
                       </div>
                       <div>
-                        <p className="text-3xl font-bold text-[#52ddeb] mb-2 font-mono">
+                        <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                           {data.users.filter(u => u.subscriptionStatus === 'active' || u.subscriptionStatus === 'trialing').length}
                         </p>
                         <p className="text-sm text-zinc-500 font-mono">{t('admin.activeSubscriptions')}</p>
@@ -803,11 +811,11 @@ export const AdminPage: React.FC = () => {
                   </Card>
 
                   {/* Total Transactions */}
-                  <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
-                        <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                          <ShoppingCart className="h-6 w-6 text-[#52ddeb]" />
+                        <div className="p-3 bg-brand-cyan/10 rounded-lg">
+                          <ShoppingCart className="h-6 w-6 text-brand-cyan" />
                         </div>
                       </div>
                       <div>
@@ -821,14 +829,14 @@ export const AdminPage: React.FC = () => {
                   </Card>
 
                   {/* New Users (Last 30 Days) */}
-                  <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
-                        <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                          <UserPlus className="h-6 w-6 text-[#52ddeb]" />
+                        <div className="p-3 bg-brand-cyan/10 rounded-lg">
+                          <UserPlus className="h-6 w-6 text-brand-cyan" />
                         </div>
                         <div className="flex items-center gap-1 text-xs text-zinc-500 font-mono">
-                          <TrendingUp className="h-3 w-3 text-[#52ddeb]" />
+                          <TrendingUp className="h-3 w-3 text-brand-cyan" />
                           <span>30d</span>
                         </div>
                       </div>
@@ -851,15 +859,15 @@ export const AdminPage: React.FC = () => {
                 {/* Additional Summary Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                   {/* Total Mockups */}
-                  <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
-                        <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                          <Image className="h-6 w-6 text-[#52ddeb]" />
+                        <div className="p-3 bg-brand-cyan/10 rounded-lg">
+                          <Image className="h-6 w-6 text-brand-cyan" />
                         </div>
                       </div>
                       <div>
-                        <p className="text-3xl font-bold text-[#52ddeb] mb-2 font-mono">
+                        <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                           {data.totalMockupsGenerated}
                         </p>
                         <p className="text-sm text-zinc-500 font-mono">{t('admin.mockupsCreated')}</p>
@@ -869,15 +877,15 @@ export const AdminPage: React.FC = () => {
                   </Card>
 
                   {/* Total Credits Used */}
-                  <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
-                        <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                          <CreditCard className="h-6 w-6 text-[#52ddeb]" />
+                        <div className="p-3 bg-brand-cyan/10 rounded-lg">
+                          <CreditCard className="h-6 w-6 text-brand-cyan" />
                         </div>
                       </div>
                       <div>
-                        <p className="text-3xl font-bold text-[#52ddeb] mb-2 font-mono">
+                        <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                           {data.totalCreditsUsed}
                         </p>
                         <p className="text-sm text-zinc-500 font-mono">{t('admin.creditsDistributed')}</p>
@@ -887,15 +895,15 @@ export const AdminPage: React.FC = () => {
                   </Card>
 
                   {/* Total Storage Used */}
-                  <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
-                        <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                          <HardDrive className="h-6 w-6 text-[#52ddeb]" />
+                        <div className="p-3 bg-brand-cyan/10 rounded-lg">
+                          <HardDrive className="h-6 w-6 text-brand-cyan" />
                         </div>
                       </div>
                       <div>
-                        <p className="text-3xl font-bold text-[#52ddeb] mb-2 font-mono">
+                        <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                           {data.totalStorageUsed !== undefined ? formatBytes(data.totalStorageUsed) : '—'}
                         </p>
                         <p className="text-sm text-zinc-500 font-mono">{t('admin.storage')}</p>
@@ -906,7 +914,7 @@ export const AdminPage: React.FC = () => {
                 </div>
 
                 {/* User Growth Chart */}
-                <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl">
+                <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl">
                   <CardHeader>
                     <CardTitle className="text-zinc-300">{t('admin.userGrowth')}</CardTitle>
                     <CardDescription className="text-zinc-500">{t('admin.newUsersLast30Days')}</CardDescription>
@@ -961,15 +969,15 @@ export const AdminPage: React.FC = () => {
                 <TabsContent value="generations" className={`space-y-6 ${activeTab === 'generations' ? 'admin-tab-enter' : ''}`}>
                   {/* Summary KPIs */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between mb-4">
-                          <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                            <Image className="h-6 w-6 text-[#52ddeb]" />
+                          <div className="p-3 bg-brand-cyan/10 rounded-lg">
+                            <Image className="h-6 w-6 text-brand-cyan" />
                           </div>
                         </div>
                         <div>
-                          <p className="text-3xl font-bold text-[#52ddeb] mb-2 font-mono">
+                          <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                             {Object.values(data.generationStats.imagesByModel).reduce((sum, stats) => sum + stats.total, 0)}
                           </p>
                           <p className="text-sm text-zinc-500 font-mono">{t('admin.images')}</p>
@@ -978,15 +986,15 @@ export const AdminPage: React.FC = () => {
                       </CardContent>
                     </Card>
 
-                    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between mb-4">
-                          <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                            <Image className="h-6 w-6 text-[#52ddeb]" />
+                          <div className="p-3 bg-brand-cyan/10 rounded-lg">
+                            <Image className="h-6 w-6 text-brand-cyan" />
                           </div>
                         </div>
                         <div>
-                          <p className="text-3xl font-bold text-[#52ddeb] mb-2 font-mono">
+                          <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                             {data.generationStats.videos.total}
                           </p>
                           <p className="text-sm text-zinc-500 font-mono">{t('admin.videos')}</p>
@@ -995,15 +1003,15 @@ export const AdminPage: React.FC = () => {
                       </CardContent>
                     </Card>
 
-                    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between mb-4">
-                          <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                            <Type className="h-6 w-6 text-[#52ddeb]" />
+                          <div className="p-3 bg-brand-cyan/10 rounded-lg">
+                            <Type className="h-6 w-6 text-brand-cyan" />
                           </div>
                         </div>
                         <div>
-                          <p className="text-3xl font-bold text-[#52ddeb] mb-2 font-mono">
+                          <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                             {data.generationStats.textTokens.totalSteps}
                           </p>
                           <p className="text-sm text-zinc-500 font-mono">Passos de Texto</p>
@@ -1012,15 +1020,15 @@ export const AdminPage: React.FC = () => {
                       </CardContent>
                     </Card>
 
-                    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between mb-4">
-                          <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                            <Type className="h-6 w-6 text-[#52ddeb]" />
+                          <div className="p-3 bg-brand-cyan/10 rounded-lg">
+                            <Type className="h-6 w-6 text-brand-cyan" />
                           </div>
                         </div>
                         <div>
-                          <p className="text-3xl font-bold text-[#52ddeb] mb-2 font-mono">
+                          <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                             {(data.generationStats.textTokens.inputTokens + data.generationStats.textTokens.outputTokens).toLocaleString()}
                           </p>
                           <p className="text-sm text-zinc-500 font-mono">Total Tokens</p>
@@ -1040,36 +1048,36 @@ export const AdminPage: React.FC = () => {
                         const stats = data.generationStats.byFeature[feature];
                         const total = stats.images + stats.videos + stats.textSteps + stats.promptGenerations;
                         return (
-                          <Card key={feature} className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                          <Card key={feature} className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                             <CardContent className="p-6">
                               <div className="flex items-start justify-between mb-4">
-                                <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                                  {feature === 'mockupmachine' ? <Image className="h-6 w-6 text-[#52ddeb]" /> :
-                                    feature === 'brandingmachine' ? <Type className="h-6 w-6 text-[#52ddeb]" /> :
-                                      <Palette className="h-6 w-6 text-[#52ddeb]" />}
+                                <div className="p-3 bg-brand-cyan/10 rounded-lg">
+                                  {feature === 'mockupmachine' ? <Image className="h-6 w-6 text-brand-cyan" /> :
+                                    feature === 'brandingmachine' ? <Type className="h-6 w-6 text-brand-cyan" /> :
+                                      <Palette className="h-6 w-6 text-brand-cyan" />}
                                 </div>
-                                <Badge variant="outline" className="text-[10px] bg-black/40 border-[#52ddeb]/30 text-[#52ddeb]">
+                                <Badge variant="outline" className="text-[10px] bg-black/40 border-[#52ddeb]/30 text-brand-cyan">
                                   {total} total
                                 </Badge>
                               </div>
                               <div className="mb-4">
-                                <p className="text-sm font-semibold text-[#52ddeb] font-mono mb-4 uppercase">{feature}</p>
+                                <p className="text-sm font-semibold text-brand-cyan font-mono mb-4 uppercase">{feature}</p>
                                 <div className="space-y-3">
                                   <div className="flex items-center justify-between">
                                     <span className="text-xs text-zinc-400 font-mono">{t('admin.images')}</span>
-                                    <span className="text-sm font-bold text-[#52ddeb] font-mono">{stats.images}</span>
+                                    <span className="text-sm font-bold text-brand-cyan font-mono">{stats.images}</span>
                                   </div>
                                   <div className="flex items-center justify-between">
                                     <span className="text-xs text-zinc-400 font-mono">{t('admin.videos')}</span>
-                                    <span className="text-sm font-bold text-[#52ddeb] font-mono">{stats.videos}</span>
+                                    <span className="text-sm font-bold text-brand-cyan font-mono">{stats.videos}</span>
                                   </div>
                                   <div className="flex items-center justify-between">
                                     <span className="text-xs text-zinc-400 font-mono">{t('admin.textSteps')}</span>
-                                    <span className="text-sm font-bold text-[#52ddeb] font-mono">{stats.textSteps}</span>
+                                    <span className="text-sm font-bold text-brand-cyan font-mono">{stats.textSteps}</span>
                                   </div>
                                   <div className="flex items-center justify-between">
                                     <span className="text-xs text-zinc-400 font-mono">{t('admin.promptsGenerated')}</span>
-                                    <span className="text-sm font-bold text-[#52ddeb] font-mono">{stats.promptGenerations}</span>
+                                    <span className="text-sm font-bold text-brand-cyan font-mono">{stats.promptGenerations}</span>
                                   </div>
                                 </div>
                               </div>
@@ -1081,10 +1089,10 @@ export const AdminPage: React.FC = () => {
                   </div>
 
                   {/* Model Usage Chart */}
-                  <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 transition-all duration-300">
+                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 transition-all duration-300">
                     <CardHeader>
                       <CardTitle className="text-zinc-300 flex items-center gap-2">
-                        <Image className="h-5 w-5 text-[#52ddeb]" />
+                        <Image className="h-5 w-5 text-brand-cyan" />
                         {t('admin.generationsByModel')}
                       </CardTitle>
                       <CardDescription className="text-zinc-500">
@@ -1121,10 +1129,10 @@ export const AdminPage: React.FC = () => {
                   {/* Detailed Breakdowns Grid */}
                   <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                     {/* Images by Model */}
-                    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 transition-all duration-300">
+                    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 transition-all duration-300">
                       <CardHeader>
                         <CardTitle className="text-zinc-300 flex items-center gap-2">
-                          <Image className="h-5 w-5 text-[#52ddeb]" />
+                          <Image className="h-5 w-5 text-brand-cyan" />
                           {t('admin.imagesByModel')}
                         </CardTitle>
                         <CardDescription className="text-zinc-500">
@@ -1136,7 +1144,7 @@ export const AdminPage: React.FC = () => {
                           {Object.entries(data.generationStats.imagesByModel).map(([model, stats]) => (
                             <Card key={model} className="bg-zinc-900/50 border border-zinc-800/30 rounded-lg hover:border-[#52ddeb]/20 transition-all">
                               <CardContent className="p-4">
-                                <p className="text-xs font-semibold text-[#52ddeb] font-mono mb-2 truncate" title={model}>{model}</p>
+                                <p className="text-xs font-semibold text-brand-cyan font-mono mb-2 truncate" title={model}>{model}</p>
                                 <p className="text-2xl font-bold text-zinc-300 font-mono mb-3">{stats.total}</p>
                                 {Object.keys(stats.byResolution).length > 0 && (
                                   <div className="mt-3 pt-3 border-t border-zinc-800/50">
@@ -1158,10 +1166,10 @@ export const AdminPage: React.FC = () => {
                     </Card>
 
                     {/* Videos by Model */}
-                    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 transition-all duration-300">
+                    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 transition-all duration-300">
                       <CardHeader>
                         <CardTitle className="text-zinc-300 flex items-center gap-2">
-                          <Image className="h-5 w-5 text-[#52ddeb]" />
+                          <Image className="h-5 w-5 text-brand-cyan" />
                           {t('admin.videosByModel')}
                         </CardTitle>
                         <CardDescription className="text-zinc-500">
@@ -1190,10 +1198,10 @@ export const AdminPage: React.FC = () => {
                   </div>
 
                   {/* Text Tokens Section */}
-                  <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 transition-all duration-300">
+                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 transition-all duration-300">
                     <CardHeader>
                       <CardTitle className="text-zinc-300 flex items-center gap-2">
-                        <Type className="h-5 w-5 text-[#52ddeb]" />
+                        <Type className="h-5 w-5 text-brand-cyan" />
                         {t('admin.textProcessing')}
                       </CardTitle>
                       <CardDescription className="text-zinc-500">
@@ -1214,7 +1222,7 @@ export const AdminPage: React.FC = () => {
                         <Card className="bg-zinc-900/50 border border-zinc-800/30 rounded-lg hover:border-[#52ddeb]/20 transition-all">
                           <CardContent className="p-4">
                             <p className="text-xs text-zinc-500 font-mono mb-2">{t('admin.inputTokens')}</p>
-                            <p className="text-2xl font-bold text-[#52ddeb] font-mono">{data.generationStats.textTokens.inputTokens.toLocaleString()}</p>
+                            <p className="text-2xl font-bold text-brand-cyan font-mono">{data.generationStats.textTokens.inputTokens.toLocaleString()}</p>
                           </CardContent>
                         </Card>
                         
@@ -1222,7 +1230,7 @@ export const AdminPage: React.FC = () => {
                         <Card className="bg-zinc-900/50 border border-zinc-800/30 rounded-lg hover:border-[#52ddeb]/20 transition-all">
                           <CardContent className="p-4">
                             <p className="text-xs text-zinc-500 font-mono mb-2">{t('admin.outputTokens')}</p>
-                            <p className="text-2xl font-bold text-[#52ddeb] font-mono">{data.generationStats.textTokens.outputTokens.toLocaleString()}</p>
+                            <p className="text-2xl font-bold text-brand-cyan font-mono">{data.generationStats.textTokens.outputTokens.toLocaleString()}</p>
                           </CardContent>
                         </Card>
 
@@ -1238,7 +1246,7 @@ export const AdminPage: React.FC = () => {
                         <Card className="bg-zinc-900/50 border border-zinc-800/30 rounded-lg hover:border-[#52ddeb]/20 transition-all">
                           <CardContent className="p-4">
                             <p className="text-xs text-zinc-500 font-mono mb-2">{t('admin.promptInput')}</p>
-                            <p className="text-2xl font-bold text-[#52ddeb] font-mono">{data.generationStats.byFeature['prompt-generation'].inputTokens.toLocaleString()}</p>
+                            <p className="text-2xl font-bold text-brand-cyan font-mono">{data.generationStats.byFeature['prompt-generation'].inputTokens.toLocaleString()}</p>
                           </CardContent>
                         </Card>
                       </div>
@@ -1250,11 +1258,11 @@ export const AdminPage: React.FC = () => {
               <TabsContent value="users" className={`space-y-6 ${activeTab === 'users' ? 'admin-tab-enter' : ''}`}>
                 {/* Summary Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                  <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
-                        <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                          <Users className="h-6 w-6 text-[#52ddeb]" />
+                        <div className="p-3 bg-brand-cyan/10 rounded-lg">
+                          <Users className="h-6 w-6 text-brand-cyan" />
                         </div>
                       </div>
                       <div>
@@ -1267,15 +1275,15 @@ export const AdminPage: React.FC = () => {
                     </CardContent>
                   </Card>
 
-                  <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
-                        <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                          <CreditCard className="h-6 w-6 text-[#52ddeb]" />
+                        <div className="p-3 bg-brand-cyan/10 rounded-lg">
+                          <CreditCard className="h-6 w-6 text-brand-cyan" />
                         </div>
                       </div>
                       <div>
-                        <p className="text-3xl font-bold text-[#52ddeb] mb-2 font-mono">
+                        <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                           {data.users.filter(u => u.subscriptionStatus === 'active' || u.subscriptionStatus === 'trialing').length}
                         </p>
                         <p className="text-sm text-zinc-500 font-mono">{t('admin.activeSubscriptions')}</p>
@@ -1284,15 +1292,15 @@ export const AdminPage: React.FC = () => {
                     </CardContent>
                   </Card>
 
-                  <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
-                        <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                          <CreditCard className="h-6 w-6 text-[#52ddeb]" />
+                        <div className="p-3 bg-brand-cyan/10 rounded-lg">
+                          <CreditCard className="h-6 w-6 text-brand-cyan" />
                         </div>
                       </div>
                       <div>
-                        <p className="text-3xl font-bold text-[#52ddeb] mb-2 font-mono">
+                        <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                           {totals.monthlyCredits + totals.manualCredits}
                         </p>
                         <p className="text-sm text-zinc-500 font-mono">{t('admin.creditsDistributed')}</p>
@@ -1301,15 +1309,15 @@ export const AdminPage: React.FC = () => {
                     </CardContent>
                   </Card>
 
-                  <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
-                        <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                          <Image className="h-6 w-6 text-[#52ddeb]" />
+                        <div className="p-3 bg-brand-cyan/10 rounded-lg">
+                          <Image className="h-6 w-6 text-brand-cyan" />
                         </div>
                       </div>
                       <div>
-                        <p className="text-3xl font-bold text-[#52ddeb] mb-2 font-mono">
+                        <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                           {data.users.reduce((sum, u) => sum + (u.mockupCount || 0), 0)}
                         </p>
                         <p className="text-sm text-zinc-500 font-mono">{t('admin.mockupsCreated')}</p>
@@ -1322,19 +1330,19 @@ export const AdminPage: React.FC = () => {
                 {/* Referral Stats */}
                 {data.referralStats && (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between mb-4">
-                          <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                            <Link2 className="h-6 w-6 text-[#52ddeb]" />
+                          <div className="p-3 bg-brand-cyan/10 rounded-lg">
+                            <Link2 className="h-6 w-6 text-brand-cyan" />
                           </div>
                           <div className="flex items-center gap-1 text-xs text-zinc-500 font-mono">
-                            <TrendingUp className="h-3 w-3 text-[#52ddeb]" />
+                            <TrendingUp className="h-3 w-3 text-brand-cyan" />
                             <span>+10.2%</span>
                           </div>
                         </div>
                         <div>
-                          <p className="text-3xl font-bold text-[#52ddeb] mb-2 font-mono">
+                          <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                             {data.referralStats.totalReferralCount}
                           </p>
                           <p className="text-sm text-zinc-500 font-mono">{t('admin.referrals')}</p>
@@ -1343,11 +1351,11 @@ export const AdminPage: React.FC = () => {
                       </CardContent>
                     </Card>
 
-                    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between mb-4">
-                          <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                            <UserPlus className="h-6 w-6 text-[#52ddeb]" />
+                          <div className="p-3 bg-brand-cyan/10 rounded-lg">
+                            <UserPlus className="h-6 w-6 text-brand-cyan" />
                           </div>
                         </div>
                         <div>
@@ -1360,11 +1368,11 @@ export const AdminPage: React.FC = () => {
                       </CardContent>
                     </Card>
 
-                    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between mb-4">
-                          <div className="p-3 bg-[#52ddeb]/10 rounded-lg">
-                            <Link2 className="h-6 w-6 text-[#52ddeb]" />
+                          <div className="p-3 bg-brand-cyan/10 rounded-lg">
+                            <Link2 className="h-6 w-6 text-brand-cyan" />
                           </div>
                         </div>
                         <div>
@@ -1380,7 +1388,7 @@ export const AdminPage: React.FC = () => {
                 )}
 
                 {/* Table Card */}
-                <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 transition-all duration-300 shadow-lg">
+                <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[#52ddeb]/30 transition-all duration-300 shadow-lg">
                   <CardContent className="p-6">
                     <DataTable 
                       columns={columns} 
@@ -1388,7 +1396,7 @@ export const AdminPage: React.FC = () => {
                       searchKey="name"
                       searchPlaceholder={t('admin.searchPlaceholder')}
                       title={t('admin.userList')}
-                      icon={<Users className="h-5 w-5 text-[#52ddeb]" />}
+                      icon={<Users className="h-5 w-5 text-brand-cyan" />}
                     />
                   </CardContent>
                 </Card>
@@ -1399,7 +1407,7 @@ export const AdminPage: React.FC = () => {
                 {/* Financial Overview - Revenue, Cost, Profit */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                   {/* Revenue Total Card */}
-                  <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-green-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl ring-1 ring-green-500/20">
+                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-green-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl ring-1 ring-green-500/20">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-green-500/10 rounded-lg">
@@ -1420,7 +1428,7 @@ export const AdminPage: React.FC = () => {
                   </Card>
 
                   {/* Total Cost Card */}
-                  <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-orange-500/10 rounded-lg">
@@ -1444,7 +1452,7 @@ export const AdminPage: React.FC = () => {
                   </Card>
 
                   {/* Profit Card */}
-                  <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-blue-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl ring-1 ring-blue-500/20">
+                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-blue-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl ring-1 ring-blue-500/20">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className={`p-3 rounded-lg ${profitStats.isPositive ? 'bg-blue-500/10' : 'bg-red-500/10'}`}>
@@ -1472,7 +1480,7 @@ export const AdminPage: React.FC = () => {
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
                   {/* Revenue Chart */}
                   {data.revenueTimeSeries && data.revenueTimeSeries.length > 0 && (
-                    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-green-500/30 transition-all duration-300">
+                    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-green-500/30 transition-all duration-300">
                       <CardHeader>
                         <CardTitle className="text-zinc-300 flex items-center gap-2">
                           <DollarSign className="h-5 w-5 text-green-500" />
@@ -1536,7 +1544,7 @@ export const AdminPage: React.FC = () => {
 
                   {/* Cost Chart */}
                   {data.costTimeSeries && data.costTimeSeries.length > 0 && (
-                    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-zinc-700/50 transition-all duration-300">
+                    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-zinc-700/50 transition-all duration-300">
                       <CardHeader>
                         <CardTitle className="text-zinc-300 flex items-center gap-2">
                           <Database className="h-5 w-5 text-orange-500" />
@@ -1606,7 +1614,7 @@ export const AdminPage: React.FC = () => {
                   <>
                     {/* Daily Cost Stats Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                      <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                      <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between mb-4">
                             <div className="p-3 bg-orange-500/10 rounded-lg">
@@ -1626,7 +1634,7 @@ export const AdminPage: React.FC = () => {
                         </CardContent>
                       </Card>
 
-                      <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                      <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between mb-4">
                             <div className="p-3 bg-orange-500/10 rounded-lg">
@@ -1646,7 +1654,7 @@ export const AdminPage: React.FC = () => {
                         </CardContent>
                       </Card>
 
-                      <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                      <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between mb-4">
                             <div className="p-3 bg-orange-500/10 rounded-lg">
@@ -1666,7 +1674,7 @@ export const AdminPage: React.FC = () => {
                         </CardContent>
                       </Card>
 
-                      <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                      <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between mb-4">
                             <div className="p-3 bg-orange-500/10 rounded-lg">
@@ -1688,7 +1696,7 @@ export const AdminPage: React.FC = () => {
                     </div>
 
                     {/* Daily Cost Chart */}
-                    <Card className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl hover:border-zinc-700/50 transition-all duration-300">
+                    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-zinc-700/50 transition-all duration-300">
                       <CardHeader>
                         <CardTitle className="text-zinc-300 flex items-center gap-2">
                           <Database className="h-5 w-5 text-orange-500" />

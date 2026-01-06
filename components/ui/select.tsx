@@ -122,7 +122,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
       : "focus:outline-none focus:border-[#52ddeb]/70 focus:ring-2 focus:ring-[#52ddeb]/20 z-[100]";
 
     return (
-      <div ref={containerRef} className={cn("relative w-full", isOpen && "z-[100]")}>
+      <div ref={containerRef} className={cn("relative w-full", isOpen && "z-[99999]")}>
         <button
           ref={buttonRef}
           type="button"
@@ -136,7 +136,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
             "hover:border-zinc-600/50",
             "disabled:cursor-not-allowed disabled:opacity-50",
             isOpen && "border-[#52ddeb]/50",
-            variant === 'node' ? "node-interactive z-[100]" : "",
+            variant === 'node' ? "node-interactive z-[99999]" : "",
             className
           )}
           aria-haspopup="listbox"
@@ -163,21 +163,22 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
         {isOpen && (
           <div
             className={cn(
-              "absolute z-[9999] w-full mt-1",
+              "absolute z-[99999] w-full mt-1",
               "bg-zinc-800 backdrop-blur-xl",
               "border border-zinc-700/50 rounded-md",
               "shadow-2xl",
               "overflow-hidden",
-              "animate-fade-in z-[100]"
+              "animate-fade-in"
             )}
             role="listbox"
             style={{
               animation: 'fade-in 0.2s ease-out',
+              zIndex: 99999,
             }}
           >
             <ul
               ref={listRef}
-              className="max-h-60 overflow-auto scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent"
+              className="max-h-60 overflow-auto scrollbar-thin scrollbar-thumb-zinc-400 dark:scrollbar-thumb-zinc-700 scrollbar-track-transparent"
             >
               {options.map((option, index) => {
                 const isSelected = option.value === value;
@@ -197,13 +198,13 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
                       "flex items-center justify-between gap-2",
                       "border-l-2 border-transparent", // Marker for hover
                       isFocused && "bg-zinc-800/60 border-zinc-600", // Focused state
-                      isSelected && "bg-[#52ddeb]/10 text-[#52ddeb] border-[#52ddeb]", // Selected state
+                      isSelected && "bg-brand-cyan/10 text-brand-cyan border-[#52ddeb]", // Selected state
                       !isSelected && !isFocused && "text-zinc-400 hover:bg-zinc-800/40 hover:text-zinc-200 hover:border-zinc-700" // Subtle hover
                     )}
                   >
                     <span className="truncate">{option.label}</span>
                     {isSelected && (
-                      <Check size={14} className="text-[#52ddeb] flex-shrink-0" />
+                      <Check size={14} className="text-brand-cyan flex-shrink-0" />
                     )}
                   </li>
                 );

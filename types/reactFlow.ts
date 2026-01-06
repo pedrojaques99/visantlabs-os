@@ -414,7 +414,7 @@ export interface StrategyNodeData extends BaseNodeData {
       };
       reasoning: string;
     };
-    marketResearch?: {
+    marketResearch?: string | {
       mercadoNicho: string;
       publicoAlvo: string;
       posicionamento: string;
@@ -445,16 +445,18 @@ export interface StrategyNodeData extends BaseNodeData {
   generatingStep?: string; // Deprecated: use generatingSteps instead
   generatingSteps?: string[]; // Array of section types currently being generated
   projectId?: string; // ID do projeto de branding na database (para sincronização)
+  name?: string; // Project name
   expandedSections?: Record<string, boolean>; // Persist expanded/collapsed state of sections
   onGenerate?: (nodeId: string, strategyType: string, prompt?: string) => Promise<void>;
   onGenerateSection?: (nodeId: string, sectionType: string) => Promise<void>;
   onGenerateAll?: (nodeId: string) => Promise<void>;
-  onInitialAnalysis?: (nodeId: string) => Promise<void>; // Initial analysis - only generates Market Research
+  onInitialAnalysis?: (nodeId: string, prompt?: string) => Promise<void>; // Initial analysis - only generates Market Research
   onCancelGeneration?: (nodeId: string, sectionType?: string) => void; // Cancel generation for specific section or all
   onGeneratePDF?: (nodeId: string) => void;
   onSave?: (nodeId: string) => Promise<string | undefined>; // Returns projectId
   onUpdateData?: (nodeId: string, newData: Partial<StrategyNodeData>) => void;
   onOpenProjectModal?: (nodeId: string) => void; // Opens project selection modal
+  onResize?: (nodeId: string, width: number, height: number) => void;
 }
 
 // Brand Core - central catalyst node that translates connected nodes into prompts
@@ -626,6 +628,7 @@ export interface ChatNodeData extends BaseNodeData {
   // State
   isLoading?: boolean;
   model?: GeminiModel; // 'gemini-2.5-flash' (text only)
+  systemPrompt?: string; // Custom system prompt for personalizing agent personality
 
   // Context inputs (via edges)
   connectedImage1?: string;
@@ -651,6 +654,7 @@ export interface ChatNodeData extends BaseNodeData {
   onAddPromptNode?: (nodeId: string, prompt: string) => void;
   onRemoveEdge?: (nodeId: string, targetHandle: 'input-1' | 'input-2' | 'input-3' | 'input-4' | 'text-input' | 'strategy-input') => void;
   onResize?: (nodeId: string, width: number, height: number) => void;
+  onOpenSidebar?: (nodeId: string) => void;
   
   // Advanced node creation and editing callbacks
   onCreateNode?: (

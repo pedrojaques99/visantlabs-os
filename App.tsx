@@ -4,6 +4,7 @@ import { Layout } from './components/Layout';
 import { ErrorBoundaryWrapper } from './components/ErrorBoundaryWrapper';
 import { GlitchLoader } from './components/ui/GlitchLoader';
 import { lazyWithRetry } from './utils/lazyWithRetry';
+import { CanvasHeaderProvider } from './components/canvas/CanvasHeaderContext';
 
 // Lazy load all pages for code-splitting with automatic retry
 const MockupMachinePage = lazyWithRetry(() => import('./pages/MockupMachinePage').then(m => ({ default: m.MockupMachinePage })));
@@ -34,6 +35,7 @@ const AuthCallbackPage = lazyWithRetry(() => import('./pages/AuthCallbackPage').
 const NotFoundPage = lazyWithRetry(() => import('./pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 const WaitlistPage = lazyWithRetry(() => import('./pages/WaitlistPage').then(m => ({ default: m.WaitlistPage })));
 const ForgotPasswordPage = lazyWithRetry(() => import('./pages/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })));
+const DesignSystemPage = lazyWithRetry(() => import('./pages/DesignSystemPage').then(m => ({ default: m.DesignSystemPage })));
 const EditorApp = lazyWithRetry(() => import('./EditorApp'));
 
 const LoadingFallback = () => (
@@ -45,44 +47,47 @@ const LoadingFallback = () => (
 const App: React.FC = () => {
   return (
     <ErrorBoundaryWrapper>
-      <Layout>
-        <ErrorBoundaryWrapper>
-          <Suspense fallback={<LoadingFallback />}>
-            <Routes>
-              <Route path="/" element={<MockupMachinePage />} />
-              <Route path="/pricing" element={<PricingPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/thank-you" element={<ThankYouPage />} />
-              <Route path="/recharge-success" element={<CreditRechargeSuccessPage />} />
-              <Route path="/mockups" element={<MockupsPage />} />
-              <Route path="/my-outputs" element={<MyOutputsPage />} />
-              <Route path="/canvas" element={<CanvasProjectsPage />} />
-              <Route path="/canvas/shared/:shareId" element={<CanvasSharedPage />} />
-              <Route path="/canvas/:id" element={<CanvasPage />} />
-              <Route path="/branding-machine" element={<BrandingMachinePage />} />
-              <Route path="/my-brandings" element={<MyBrandingsPage />} />
-              <Route path="/budget-machine" element={<BudgetMachinePage />} />
-              <Route path="/my-budgets" element={<MyBudgetsPage />} />
-              <Route path="/budget/shared/:shareId" element={<BudgetSharedPage />} />
-              <Route path="/apps" element={<AppsPage />} />
-              <Route path="/qrcode" element={<QRCodePage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/privacy" element={<PrivacyPolicyPage />} />
-              <Route path="/auth" element={<AuthCallbackPage />} />
-              <Route path="/waitlist" element={<WaitlistPage />} />
-              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-              <Route path="/editor" element={<EditorApp />} />
-              <Route path="/editor/*" element={<EditorApp />} />
-              <Route path="/admin" element={<AdminPage />} />
-              <Route path="/admin/presets" element={<AdminPresetsPage />} />
-              <Route path="/community" element={<CommunityPage />} />
-              <Route path="/community/presets" element={<CommunityPresetsPage />} />
-              <Route path="/profile/:identifier" element={<CommunityProfilePage />} />
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </Suspense>
-        </ErrorBoundaryWrapper>
-      </Layout>
+      <CanvasHeaderProvider>
+        <Layout>
+          <ErrorBoundaryWrapper>
+            <Suspense fallback={<LoadingFallback />}>
+              <Routes>
+                <Route path="/" element={<MockupMachinePage />} />
+                <Route path="/pricing" element={<PricingPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/thank-you" element={<ThankYouPage />} />
+                <Route path="/recharge-success" element={<CreditRechargeSuccessPage />} />
+                <Route path="/mockups" element={<MockupsPage />} />
+                <Route path="/my-outputs" element={<MyOutputsPage />} />
+                <Route path="/canvas" element={<CanvasProjectsPage />} />
+                <Route path="/canvas/shared/:shareId" element={<CanvasSharedPage />} />
+                <Route path="/canvas/:id" element={<CanvasPage />} />
+                <Route path="/branding-machine" element={<BrandingMachinePage />} />
+                <Route path="/my-brandings" element={<MyBrandingsPage />} />
+                <Route path="/budget-machine" element={<BudgetMachinePage />} />
+                <Route path="/my-budgets" element={<MyBudgetsPage />} />
+                <Route path="/budget/shared/:shareId" element={<BudgetSharedPage />} />
+                <Route path="/apps" element={<AppsPage />} />
+                <Route path="/qrcode" element={<QRCodePage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/privacy" element={<PrivacyPolicyPage />} />
+                <Route path="/design-system" element={<DesignSystemPage />} />
+                <Route path="/auth" element={<AuthCallbackPage />} />
+                <Route path="/waitlist" element={<WaitlistPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/editor" element={<EditorApp />} />
+                <Route path="/editor/*" element={<EditorApp />} />
+                <Route path="/admin" element={<AdminPage />} />
+                <Route path="/admin/presets" element={<AdminPresetsPage />} />
+                <Route path="/community" element={<CommunityPage />} />
+                <Route path="/community/presets" element={<CommunityPresetsPage />} />
+                <Route path="/profile/:identifier" element={<CommunityProfilePage />} />
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </Suspense>
+          </ErrorBoundaryWrapper>
+        </Layout>
+      </CanvasHeaderProvider>
     </ErrorBoundaryWrapper>
   );
 };

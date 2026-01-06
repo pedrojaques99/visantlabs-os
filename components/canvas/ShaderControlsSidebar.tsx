@@ -259,7 +259,7 @@ export const ShaderControlsSidebar: React.FC<ShaderControlsSidebarProps> = ({
         /* Expanded State - Full Content */
         <div className="w-full h-full flex flex-col overflow-hidden">
           {/* Scrollable Content */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-zinc-400 dark:scrollbar-thumb-zinc-700 scrollbar-track-transparent">
             <div className="flex flex-col p-2 gap-2">
               {/* Header */}
               <div className="flex items-center gap-1.5 px-1 py-1.5 border-b border-zinc-800/30 flex-shrink-0 relative">
@@ -385,7 +385,7 @@ export const ShaderControlsSidebar: React.FC<ShaderControlsSidebarProps> = ({
                     "border transition-all",
                     "hover:bg-zinc-800/30",
                     halftoneInvert > 0.5
-                      ? "border-[#52ddeb]/40 bg-[#52ddeb]/10 text-[#52ddeb]"
+                      ? "border-[#52ddeb]/40 bg-brand-cyan/10 text-brand-cyan"
                       : "border-zinc-700/30 bg-transparent text-zinc-500 hover:text-zinc-400 hover:border-zinc-600/40"
                   )}
                   title={t('shaderControls.labels.invert')}
@@ -413,7 +413,7 @@ export const ShaderControlsSidebar: React.FC<ShaderControlsSidebarProps> = ({
                       "border transition-all",
                       "text-xs font-mono uppercase tracking-wider",
                       isAnimating
-                        ? "bg-[#52ddeb]/20 border-[#52ddeb]/50 text-[#52ddeb] hover:bg-[#52ddeb]/30"
+                        ? "bg-brand-cyan/20 border-[#52ddeb]/50 text-brand-cyan hover:bg-brand-cyan/30"
                         : "bg-zinc-800/50 border-zinc-700/50 text-zinc-400 hover:bg-zinc-700/50 hover:border-zinc-600/50"
                     )}
                     title={isAnimating ? t('shaderControls.tooltips.stopAnimation') : t('shaderControls.tooltips.startAnimation')}
@@ -585,7 +585,7 @@ export const ShaderControlsSidebar: React.FC<ShaderControlsSidebarProps> = ({
                     className={cn(
                       "px-3 py-1.5 rounded border transition-all text-xs font-mono uppercase tracking-wider",
                       asciiColored > 0.5
-                        ? "bg-[#52ddeb]/20 border-[#52ddeb]/50 text-[#52ddeb]"
+                        ? "bg-brand-cyan/20 border-[#52ddeb]/50 text-brand-cyan"
                         : "bg-zinc-800/50 border-zinc-700/50 text-zinc-400"
                     )}
                   >
@@ -606,7 +606,7 @@ export const ShaderControlsSidebar: React.FC<ShaderControlsSidebarProps> = ({
                     className={cn(
                       "px-3 py-1.5 rounded border transition-all text-xs font-mono uppercase tracking-wider",
                       asciiInvert > 0.5
-                        ? "bg-[#52ddeb]/20 border-[#52ddeb]/50 text-[#52ddeb]"
+                        ? "bg-brand-cyan/20 border-[#52ddeb]/50 text-brand-cyan"
                         : "bg-zinc-800/50 border-zinc-700/50 text-zinc-400"
                     )}
                   >

@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Button } from '../ui/button';
-import { Upload, Loader2, FileText, ArrowRight, Save } from 'lucide-react';
+import { Upload, FileText, ArrowRight, Save } from 'lucide-react';
+import { GlitchLoader } from '../ui/GlitchLoader';
 import { budgetApi } from '../../services/budgetApi';
 import { toast } from 'sonner';
 
@@ -137,10 +138,10 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
   return (
     <div className="min-h-screen bg-[#121212] text-zinc-300 pt-14 flex items-center justify-center">
       <div className="max-w-2xl w-full px-4">
-        <div className="bg-[#1A1A1A] border border-zinc-800 rounded-xl p-8 space-y-6">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 space-y-6">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-[#52ddeb]/20 rounded-md mb-4">
-              <FileText className="h-10 w-10 text-[#52ddeb]" />
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-brand-cyan/20 rounded-md mb-4">
+              <FileText className="h-10 w-10 text-brand-cyan" />
             </div>
             <h2 className="text-2xl font-bold text-zinc-200 mb-2 font-mono">
               Layout Custom
@@ -153,7 +154,7 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
           {/* Modal para salvar preset */}
           {showSavePresetModal && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-              <div className="bg-[#1A1A1A] border border-zinc-800 rounded-xl p-6 max-w-md w-full mx-4">
+              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 max-w-md w-full mx-4">
                 <h4 className="text-lg font-semibold font-mono text-zinc-200 mb-4">
                   Salvar como Preset
                 </h4>
@@ -178,10 +179,10 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
                   <Button
                     onClick={handleSavePreset}
                     disabled={isSavingPreset || !presetName.trim()}
-                    className="flex-1 bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 border border-[#52ddeb]/50 text-[#52ddeb]"
+                    className="flex-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#52ddeb]/50 text-brand-cyan"
                   >
                     {isSavingPreset ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <GlitchLoader size={16} />
                     ) : (
                       <>
                         <Save className="h-4 w-4 mr-2" />
@@ -203,7 +204,7 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
 
           {isUploading || isSavingPreset ? (
             <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-zinc-800 rounded-xl bg-black/20">
-              <Loader2 className="h-12 w-12 animate-spin text-[#52ddeb] mb-4" />
+              <GlitchLoader size={48} color="#52ddeb" className="mb-4" />
               <p className="text-sm text-zinc-400 font-mono">
                 {isSavingPreset ? 'Salvando preset...' : 'Enviando PDF...'}
               </p>
@@ -228,7 +229,7 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
                   variant="outline"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isUploading}
-                  className="border border-[#52ddeb]/50 bg-[#52ddeb]/10 hover:bg-[#52ddeb]/20 text-[#52ddeb] font-mono"
+                  className="border border-[#52ddeb]/50 bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan font-mono"
                 >
                   <Upload className="h-4 w-4 mr-2" />
                   Selecionar PDF

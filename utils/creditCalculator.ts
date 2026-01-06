@@ -19,7 +19,7 @@ export function getCreditsRequired(
       case '2K':
         return 5;
       case '4K':
-        return 10;
+        return 7;
       default:
         // Default to 1K if resolution not specified
         return 3;
@@ -49,10 +49,10 @@ export function getTotalBrandingCredits(): number {
 
 /**
  * Get credits required for video generation
- * Video generation costs 15 credits per video
+ * Video generation costs 20 credits per video
  */
 export function getVideoCreditsRequired(): number {
-  return 15;
+  return 20;
 }
 
 /**

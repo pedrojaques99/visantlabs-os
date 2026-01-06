@@ -1,7 +1,8 @@
 import React, { useState, useRef, useCallback, memo, useEffect } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { LabeledHandle } from './shared/LabeledHandle';
-import { Loader2, UploadCloud, FileText, Palette, X, ChevronDown, ChevronUp, Plus, Trash2, Edit2, Check } from 'lucide-react';
+import { UploadCloud, FileText, Palette, X, ChevronDown, ChevronUp, Plus, Trash2, Edit2, Check } from 'lucide-react';
+import { GlitchLoader } from '../ui/GlitchLoader';
 import type { BrandNodeData, BrandIdentity } from '../../types/reactFlow';
 import { cn } from '../../lib/utils';
 import { fileToBase64 } from '../../utils/fileUtils';
@@ -570,7 +571,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
               </div>
             ) : (
               <div className="px-3 py-2 bg-zinc-900/50 rounded border border-zinc-700/30 flex items-center gap-3">
-                <FileText size={16} className="text-[#52ddeb]" />
+                <FileText size={16} className="text-brand-cyan" />
                 <span className="text-xs font-mono text-zinc-400 flex-1">{identityFileType?.toUpperCase()} {connectedIdentity ? 'connected' : 'uploaded'}</span>
                 {!connectedIdentity && (
                   <button
@@ -610,7 +611,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       >
         {isAnalyzing ? (
           <>
-            <Loader2 size={14} className="animate-spin" />
+            <GlitchLoader size={14} />
             Analyzing...
           </>
         ) : (

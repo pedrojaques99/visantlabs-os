@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Copy, Check, QrCode, Clock, Loader2, AlertCircle } from 'lucide-react';
+import { X, Copy, Check, QrCode, Clock, AlertCircle } from 'lucide-react';
+import { GlitchLoader } from './ui/GlitchLoader';
 import { abacatepayService } from '../services/abacatepayService';
 import { formatPixCode, copyPixToClipboard, formatExpirationTime } from '../utils/pixHelpers';
 import { QRCodeSVG } from 'qrcode.react';
@@ -291,7 +292,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl p-6 md:p-8 max-w-md w-full mx-4 relative max-h-[90vh] overflow-y-auto">
+      <div className="bg-zinc-900 border border-zinc-800/50 rounded-xl p-6 md:p-8 max-w-md w-full mx-4 relative max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-zinc-500 hover:text-zinc-300 transition-colors z-10"
@@ -303,7 +304,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
         <div className="space-y-6">
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
-              <QrCode size={24} className="text-[#52ddeb]" />
+              <QrCode size={24} className="text-brand-cyan" />
               <h2 className="text-xl md:text-2xl font-semibold font-mono text-zinc-200">
                 {t('pix.title') || 'Pagar com PIX'}
               </h2>
@@ -322,7 +323,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
 
           {isCheckingUserTaxId && (
             <div className="flex flex-col items-center justify-center py-8">
-              <Loader2 className="animate-spin text-[#52ddeb] mb-4" size={32} />
+              <GlitchLoader size={32} color="#52ddeb" className="mb-4" />
               <p className="text-zinc-400 font-mono text-sm">
                 {t('pix.checking') || 'Verificando dados...'}
               </p>
@@ -355,7 +356,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                 </div>
                 <button
                   type="submit"
-                  className="w-full px-4 py-3 bg-[#52ddeb] hover:bg-[#52ddeb]/90 text-zinc-900 font-mono font-semibold rounded-md transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[#52ddeb]/20"
+                  className="w-full px-4 py-3 bg-brand-cyan hover:bg-brand-cyan/90 text-zinc-900 font-mono font-semibold rounded-md transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[#52ddeb]/20"
                 >
                   {t('pix.continue') || 'Continuar'}
                 </button>
@@ -365,7 +366,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
 
           {isLoading && (
             <div className="flex flex-col items-center justify-center py-8">
-              <Loader2 className="animate-spin text-[#52ddeb] mb-4" size={32} />
+              <GlitchLoader size={32} color="#52ddeb" className="mb-4" />
               <p className="text-zinc-400 font-mono text-sm">
                 {t('pix.creating') || 'Criando pagamento PIX...'}
               </p>
@@ -384,7 +385,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                         href={paymentUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-1 px-6 py-3 bg-[#52ddeb] hover:bg-[#52ddeb]/90 text-zinc-900 font-mono font-semibold rounded-md transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[#52ddeb]/20 flex items-center justify-center gap-2"
+                        className="flex-1 px-6 py-3 bg-brand-cyan hover:bg-brand-cyan/90 text-zinc-900 font-mono font-semibold rounded-md transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[#52ddeb]/20 flex items-center justify-center gap-2"
                       >
                         {t('pix.openPaymentLink') || 'Abrir link de pagamento'}
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -396,11 +397,11 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                       {(qrCode || pixCode) && (
                         <button
                           onClick={() => setShowQrCodeModal(true)}
-                          className="p-3 bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 border border-[#52ddeb]/30 rounded-md transition-all hover:scale-105 active:scale-95 flex-shrink-0"
+                          className="p-3 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#52ddeb]/30 rounded-md transition-all hover:scale-105 active:scale-95 flex-shrink-0"
                           title={t('pix.showQrCode') || 'Mostrar QR Code'}
                           aria-label={t('pix.showQrCode') || 'Mostrar QR Code'}
                         >
-                          <QrCode size={20} className="text-[#52ddeb]" />
+                          <QrCode size={20} className="text-brand-cyan" />
                         </button>
                       )}
                     </>
@@ -409,7 +410,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                     (qrCode || pixCode) && (
                       <button
                         onClick={() => setShowQrCodeModal(true)}
-                        className="w-full px-6 py-3 bg-[#52ddeb] hover:bg-[#52ddeb]/90 text-zinc-900 font-mono font-semibold rounded-md transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[#52ddeb]/20 flex items-center justify-center gap-2"
+                        className="w-full px-6 py-3 bg-brand-cyan hover:bg-brand-cyan/90 text-zinc-900 font-mono font-semibold rounded-md transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[#52ddeb]/20 flex items-center justify-center gap-2"
                         title={t('pix.showQrCode') || 'Mostrar QR Code'}
                       >
                         <QrCode size={20} />
@@ -432,7 +433,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                 }
               }}
             >
-              <div className="bg-[#1A1A1A] border border-zinc-800/50 rounded-xl p-6 md:p-8 max-w-md w-full mx-4 relative">
+              <div className="bg-zinc-900 border border-zinc-800/50 rounded-xl p-6 md:p-8 max-w-md w-full mx-4 relative">
                 <button
                   onClick={() => setShowQrCodeModal(false)}
                   className="absolute top-4 right-4 text-zinc-500 hover:text-zinc-300 transition-colors z-10"
@@ -456,7 +457,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                     </div>
                   ) : (
                     <div className="bg-zinc-900/50 border border-zinc-700/50 rounded-xl p-8 text-center">
-                      <Loader2 className="animate-spin text-[#52ddeb] mx-auto mb-4" size={32} />
+                      <GlitchLoader size={32} color="#52ddeb" className="mx-auto mb-4" />
                       <p className="text-zinc-400 font-mono text-sm">
                         {t('pix.generatingQrCode') || 'Gerando QR Code...'}
                       </p>
@@ -468,7 +469,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                     <div className="w-full flex justify-center">
                       <button
                         onClick={handleCopyCode}
-                        className="px-4 py-2 bg-[#52ddeb]/20 hover:bg-[#52ddeb]/30 border border-[#52ddeb]/30 rounded-md transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
+                        className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#52ddeb]/30 rounded-md transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
                         title={t('pix.copy') || 'Copiar código PIX'}
                         aria-label={t('pix.copy') || 'Copiar código PIX'}
                       >
@@ -481,7 +482,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                           </>
                         ) : (
                           <>
-                            <Copy size={18} className="text-[#52ddeb]" />
+                            <Copy size={18} className="text-brand-cyan" />
                             <span className="text-sm text-zinc-300 font-mono">
                               {t('pix.copy') || 'Copiar código PIX'}
                             </span>

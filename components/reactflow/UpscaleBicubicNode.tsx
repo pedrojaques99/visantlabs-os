@@ -1,7 +1,7 @@
 import React, { useEffect, memo, useRef, useCallback, useState } from 'react';
 import { type NodeProps, type Node, NodeResizer, useReactFlow } from '@xyflow/react';
 import { Maximize2, Download, Upload, Sparkles, Trash2, Palette, FileText, Heart } from 'lucide-react';
-import { Spinner } from '../ui/Spinner';
+import { GlitchLoader } from '../ui/GlitchLoader';
 import type { UpscaleBicubicNodeData } from '../../types/reactFlow';
 import { cn } from '../../lib/utils';
 import { NodeHandles } from './shared/NodeHandles';
@@ -413,7 +413,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
 
       {/* Header */}
       <div className="flex items-center gap-3 mb-3">
-        <Maximize2 size={16} className="text-[#52ddeb]" />
+        <Maximize2 size={16} className="text-brand-cyan" />
         <h3 className="text-xs font-semibold text-zinc-300 font-mono">Upscale Bicubic</h3>
         <span className="text-xs text-zinc-500 font-mono ml-auto">{scaleFactor}x</span>
       </div>
@@ -422,7 +422,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
       <div className="mb-3 space-y-1.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <Sparkles size={12} className="text-[#52ddeb]" />
+            <Sparkles size={12} className="text-brand-cyan" />
             <span className="text-xs font-mono text-zinc-400">Sharpening</span>
           </div>
           <span className="text-xs font-mono text-zinc-500">{Math.round(localSharpening * 100)}%</span>
@@ -441,14 +441,14 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
             [&::-webkit-slider-thumb]:w-3
             [&::-webkit-slider-thumb]:h-3
             [&::-webkit-slider-thumb]:rounded-full
-            [&::-webkit-slider-thumb]:bg-[#52ddeb]
+            [&::-webkit-slider-thumb]:bg-brand-cyan
             [&::-webkit-slider-thumb]:cursor-pointer
             [&::-webkit-slider-thumb]:transition-all
             [&::-webkit-slider-thumb]:hover:scale-110
             [&::-moz-range-thumb]:w-3
             [&::-moz-range-thumb]:h-3
             [&::-moz-range-thumb]:rounded-full
-            [&::-moz-range-thumb]:bg-[#52ddeb]
+            [&::-moz-range-thumb]:bg-brand-cyan
             [&::-moz-range-thumb]:border-0
             [&::-moz-range-thumb]:cursor-pointer"
         />
@@ -466,7 +466,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
       {isLoading && !hasResult && hasConnectedImage && (
         <div className="relative mt-2 min-h-[200px] flex items-center justify-center bg-black/10 rounded-md border border-zinc-700/30">
           <div className="p-2 rounded-md bg-black/60 backdrop-blur-sm border border-[#52ddeb]/30 shadow-lg">
-            <Spinner size={14} color="#52ddeb" />
+            <GlitchLoader size={14} color="#52ddeb" />
           </div>
         </div>
       )}
@@ -477,7 +477,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
             <Maximize2 size={14} />
             Connect an image or video
           </div>
-          <label className="w-full px-3 py-2 bg-[#52ddeb]/10 hover:bg-[#52ddeb]/20 border border-[#52ddeb]/30 hover:border-[#52ddeb]/50 rounded text-xs font-mono text-[#52ddeb] flex items-center justify-center gap-2 cursor-pointer transition-all">
+          <label className="w-full px-3 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-[#52ddeb]/30 hover:border-[#52ddeb]/50 rounded text-xs font-mono text-brand-cyan flex items-center justify-center gap-2 cursor-pointer transition-all">
             <Upload size={14} />
             Upload Image
             <input
@@ -560,14 +560,14 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
               isSaving
                 ? "bg-black/40 text-zinc-500 cursor-wait border border-zinc-700/30"
                 : isLiked
-                  ? "bg-[#52ddeb]/20 text-[#52ddeb] hover:bg-[#52ddeb]/30 border border-[#52ddeb]/20"
+                  ? "bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30 border border-[#52ddeb]/20"
                   : "bg-black/40 hover:bg-black/60 text-zinc-400 hover:text-zinc-200 border border-zinc-700/30"
             )}
             title={isLiked ? t('canvasNodes.outputNode.removeFromFavorites') : t('canvasNodes.outputNode.saveToCollection')}
             onMouseDown={(e) => e.stopPropagation()}
           >
             {isSaving ? (
-              <Spinner size={12} color="currentColor" />
+              <GlitchLoader size={12} color="currentColor" />
             ) : (
               <Heart size={12} className={isLiked ? "fill-current" : ""} strokeWidth={2} />
             )}
@@ -614,7 +614,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
             onMouseDown={(e) => e.stopPropagation()}
           >
             {isDescribing ? (
-              <Spinner size={12} color="currentColor" />
+              <GlitchLoader size={12} color="currentColor" />
             ) : (
               <FileText size={12} strokeWidth={2} />
             )}

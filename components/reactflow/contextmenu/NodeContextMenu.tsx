@@ -45,7 +45,7 @@ export const NodeContextMenu: React.FC<NodeContextMenuProps> = ({
           onDuplicate();
           onClose();
         }}
-        className="w-full px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-[#52ddeb] transition-colors flex items-center gap-2 font-mono cursor-pointer"
+        className="w-full px-3 py-2 text-left text-sm text-zinc-300 hover:bg-zinc-800/50 hover:text-brand-cyan transition-colors flex items-center gap-2 font-mono cursor-pointer"
       >
         <CopyIcon size={14} />
         {t('canvasNodes.nodeContextMenu.duplicate')}

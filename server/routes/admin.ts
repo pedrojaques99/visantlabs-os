@@ -5,6 +5,7 @@ import { ObjectId } from 'mongodb';
 import { validateAdmin } from '../middleware/adminAuth.js';
 import { AuthRequest } from '../middleware/auth.js';
 import { rateLimit } from 'express-rate-limit';
+import { calculateImageCost, calculateVideoCost, getImagePricing } from '../../utils/pricing.js';
 
 const router = express.Router();
 
@@ -39,7 +40,18 @@ function normalizeTags(tags: any): string[] | undefined {
   return normalized.length > 0 ? normalized : undefined;
 }
 
+// Helper function to get resolution value from string (normalizes to 1K, 2K, 4K)
+function normalizeResolution(resolution: string | undefined | null): string | undefined {
+  if (!resolution) return undefined;
+  const resLower = resolution.toLowerCase();
+  if (resLower.includes('1k') || resLower === '1k') return '1K';
+  if (resLower.includes('2k') || resLower === '2k') return '2K';
+  if (resLower.includes('4k') || resLower === '4k' || resLower.includes('8k')) return '4K';
+  return undefined;
+}
+
 // Helper function to determine if a resolution is high-res (>= 2048px in either dimension)
+// Kept for backward compatibility, but prefer using normalizeResolution with getImagePricing
 function isHighResolution(resolution: string | undefined | null): boolean {
   if (!resolution) return false;
   
@@ -187,8 +199,7 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req, res) => {
         const totalSpentBRL = spendingByUser.find(s => s.currency === 'BRL')?._sum.amount || 0;
         const totalSpentUSD = spendingByUser.find(s => s.currency === 'USD')?._sum.amount || 0;
         
-        // Calculate API cost with correct Gemini pricing
-        // Flash: $0.039 per image, Pro Standard: $0.134, Pro High Res (4K): $0.24, Video: $0.50
+        // Calculate API cost using centralized pricing
         let apiCostUSD = 0;
         for (const item of userUsageAgg) {
           const model = item._id.model || '';
@@ -197,26 +208,15 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req, res) => {
           const imageCount = item.totalImages || 0;
           const videoCount = item.totalVideos || 0;
           
-          // Video cost: $0.50 per video
+          // Video cost
           if (type === 'video' || videoCount > 0) {
-            apiCostUSD += (videoCount || 1) * 0.50;
+            apiCostUSD += calculateVideoCost(videoCount || 1);
           }
           
           // Image cost based on model and resolution
           if (imageCount > 0) {
-            if (model === 'gemini-2.5-flash-image') {
-              apiCostUSD += imageCount * 0.039;
-            } else if (model === 'gemini-3-pro-image-preview') {
-              // Check if high resolution
-              if (isHighResolution(resolution)) {
-                apiCostUSD += imageCount * 0.24;
-              } else {
-                apiCostUSD += imageCount * 0.134;
-              }
-            } else {
-              // Default to flash pricing for unknown models
-              apiCostUSD += imageCount * 0.039;
-            }
+            const normalizedRes = normalizeResolution(resolution);
+            apiCostUSD += calculateImageCost(imageCount, model, normalizedRes);
           }
         }
 
@@ -508,8 +508,7 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req, res) => {
       }}
     ]).toArray();
 
-    // Calculate total API cost with correct pricing
-    // Flash: $0.039, Pro Standard: $0.134, Pro High Res (4K): $0.24, Video: $0.50
+    // Calculate total API cost using centralized pricing
     let totalApiCostUSD = 0;
     for (const item of globalUsageAgg) {
       const model = item._id.model || '';
@@ -518,24 +517,15 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req, res) => {
       const imageCount = item.totalImages || 0;
       const videoCount = item.totalVideos || 0;
       
-      // Video cost: $0.50 per video
+      // Video cost
       if (type === 'video' || videoCount > 0) {
-        totalApiCostUSD += (videoCount || 1) * 0.50;
+        totalApiCostUSD += calculateVideoCost(videoCount || 1);
       }
       
       // Image cost based on model and resolution
       if (imageCount > 0) {
-        if (model === 'gemini-2.5-flash-image') {
-          totalApiCostUSD += imageCount * 0.039;
-        } else if (model === 'gemini-3-pro-image-preview') {
-          if (isHighResolution(resolution)) {
-            totalApiCostUSD += imageCount * 0.24;
-          } else {
-            totalApiCostUSD += imageCount * 0.134;
-          }
-        } else {
-          totalApiCostUSD += imageCount * 0.039;
-        }
+        const normalizedRes = normalizeResolution(resolution);
+        totalApiCostUSD += calculateImageCost(imageCount, model, normalizedRes);
       }
     }
 
@@ -570,24 +560,15 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req, res) => {
         costByDateMap[date] = 0;
       }
 
-      // Video cost: $0.50 per video
+      // Video cost
       if (type === 'video' || videoCount > 0) {
-        costByDateMap[date] += (videoCount || 1) * 0.50;
+        costByDateMap[date] += calculateVideoCost(videoCount || 1);
       }
 
       // Image cost based on model and resolution
       if (imageCount > 0) {
-        if (model === 'gemini-2.5-flash-image') {
-          costByDateMap[date] += imageCount * 0.039;
-        } else if (model === 'gemini-3-pro-image-preview') {
-          if (isHighResolution(resolution)) {
-            costByDateMap[date] += imageCount * 0.24;
-          } else {
-            costByDateMap[date] += imageCount * 0.134;
-          }
-        } else {
-          costByDateMap[date] += imageCount * 0.039;
-        }
+        const normalizedRes = normalizeResolution(resolution);
+        costByDateMap[date] += calculateImageCost(imageCount, model, normalizedRes);
       }
     }
 

@@ -2,6 +2,7 @@ import React from 'react';
 import { useTheme } from '../../hooks/useTheme';
 import { RichTextEditor } from './RichTextEditor';
 import { MarkdownRenderer } from '../../utils/markdownRenderer';
+import { Card, CardContent } from '../ui/card';
 
 interface TextSectionProps {
   content: string;
@@ -51,17 +52,15 @@ export const TextSection: React.FC<TextSectionProps> = ({
   // If content is empty, show placeholder
   if (!safeContent.trim()) {
     return (
-      <div className={`border rounded-xl p-4 md:p-6 transition-colors ${
-        theme === 'dark'
-          ? 'bg-black/40 border-zinc-800/60'
-          : 'bg-zinc-100 border-zinc-300'
-      }`}>
-        <div className={`text-sm font-manrope italic ${
-          theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'
-        }`}>
-          Nenhum conteúdo disponível.
-        </div>
-      </div>
+      <Card className={theme === 'dark' ? 'bg-black/40 border-zinc-800/60' : 'bg-zinc-100 border-zinc-300'}>
+        <CardContent className="p-4 md:p-6">
+          <div className={`text-sm font-manrope italic ${
+            theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'
+          }`}>
+            Nenhum conteúdo disponível.
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -77,20 +76,20 @@ export const TextSection: React.FC<TextSectionProps> = ({
     return (
       <div className="space-y-4">
         {paragraphs.map((paragraph, index) => (
-          <div
+          <Card
             key={index}
-            className={`border rounded-xl p-4 md:p-6 transition-colors ${
-              theme === 'dark'
-                ? 'bg-black/40 border-zinc-800/60 hover:border-zinc-700/60'
-                : 'bg-zinc-100 border-zinc-300 hover:border-zinc-400'
-            }`}
+            className={theme === 'dark'
+              ? 'bg-black/40 border-zinc-800/60 hover:border-zinc-700/60'
+              : 'bg-zinc-100 border-zinc-300 hover:border-zinc-400'}
           >
-            <div className={`text-sm font-manrope leading-relaxed ${
-              theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'
-            }`}>
-              <MarkdownRenderer content={paragraph.trim()} preserveLines />
-            </div>
-          </div>
+            <CardContent className="p-4 md:p-6">
+              <div className={`text-sm font-manrope leading-relaxed ${
+                theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'
+              }`}>
+                <MarkdownRenderer content={paragraph.trim()} preserveLines />
+              </div>
+            </CardContent>
+          </Card>
         ))}
       </div>
     );
@@ -98,17 +97,18 @@ export const TextSection: React.FC<TextSectionProps> = ({
 
   // Render as a single block of text with proper line breaks
   return (
-    <div className={`border rounded-xl p-4 md:p-6 transition-colors ${
-      theme === 'dark'
-        ? 'bg-black/40 border-zinc-800/60 hover:border-zinc-700/60'
-        : 'bg-zinc-100 border-zinc-300 hover:border-zinc-400'
-    }`}>
-      <div className={`text-sm font-manrope leading-relaxed whitespace-pre-wrap ${
-        theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'
-      }`}>
-        <MarkdownRenderer content={safeContent} preserveLines />
-      </div>
-    </div>
+    <Card className={theme === 'dark'
+      ? 'bg-black/40 border-zinc-800/60 hover:border-zinc-700/60'
+      : 'bg-zinc-100 border-zinc-300 hover:border-zinc-400'}
+    >
+      <CardContent className="p-4 md:p-6">
+        <div className={`text-sm font-manrope leading-relaxed whitespace-pre-wrap ${
+          theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'
+        }`}>
+          <MarkdownRenderer content={safeContent} preserveLines />
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

@@ -36,8 +36,8 @@ export const TagSelector: React.FC<TagSelectorProps> = ({ tags, selectedTags, on
             className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border transform hover:-translate-y-0.5 active:translate-y-0 ${
               isSelected 
                 ? theme === 'dark'
-                  ? 'bg-[#52ddeb]/20 text-[#52ddeb] border-[#52ddeb]/30 shadow-sm shadow-[#52ddeb]/10'
-                  : 'bg-[#52ddeb]/20 text-zinc-800 border-[#52ddeb]/30 shadow-sm shadow-[#52ddeb]/10'
+                  ? 'bg-brand-cyan/20 text-brand-cyan border-[#52ddeb]/30 shadow-sm shadow-[#52ddeb]/10'
+                  : 'bg-brand-cyan/20 text-zinc-800 border-[#52ddeb]/30 shadow-sm shadow-[#52ddeb]/10'
                 : unselectedClass
             } ${isDisabled ? 'opacity-40 cursor-not-allowed' : ''}`}
           >

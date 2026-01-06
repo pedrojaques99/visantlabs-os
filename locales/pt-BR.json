@@ -245,6 +245,22 @@
       "ambience": "Ambiente",
       "luminance": "Iluminação"
     },
+    "category": "Categoria",
+    "difficulty": "Dificuldade",
+    "difficultyBeginner": "Iniciante",
+    "difficultyIntermediate": "Intermediário",
+    "difficultyAdvanced": "Avançado",
+    "context": "Contexto",
+    "contextCanvas": "Canvas",
+    "contextMockup": "Mockup",
+    "contextBranding": "Branding",
+    "contextGeneral": "Geral",
+    "useCase": "Caso de Uso",
+    "useCasePlaceholder": "Descreva quando e como usar este prompt",
+    "examples": "Exemplos",
+    "addExample": "Adicionar Exemplo",
+    "examplePlaceholder": "Digite uma variação de exemplo",
+    "removeExample": "Remover",
     "table": {
       "noPresets": "Nenhum preset ainda"
     },
@@ -304,7 +320,33 @@
     "tags": {
       "label": "Tags (opcional)",
       "placeholder": "Digite uma tag e pressione Enter",
-      "add": "Adicionar"
+      "add": "Adicionar",
+      "title": "Tags",
+      "all": "Todas as Tags"
+    },
+    "search": {
+      "title": "Buscar",
+      "placeholder": "Buscar presets...",
+      "noResults": "Nenhum preset encontrado para",
+      "clear": "Limpar busca"
+    },
+    "filters": {
+      "title": "Filtros",
+      "show": "Mostrar filtros",
+      "collapse": "Recolher"
+    },
+    "categories": {
+      "all": "Todos",
+      "3d": "3D",
+      "presets": "Presets",
+      "aesthetics": "Estéticas",
+      "themes": "Temas",
+      "mockup": "Mockup",
+      "angle": "Ângulo",
+      "texture": "Textura",
+      "ambience": "Ambiente",
+      "luminance": "Iluminação",
+      "title": "Categorias"
     },
     "referenceImageAlt": "Referência",
     "sidebarTitle": "Meus Presets",
@@ -407,11 +449,16 @@
     "backgroundColorDescription": "Alterar cor de fundo do canvas",
     "gridColor": "Cor da Grade",
     "gridColorDescription": "Alterar cor dos pontos da grade",
+    "cursorColor": "Cor do Cursor",
+    "cursorColorDescription": "Alterar cor do cursor",
+    "brandCyanColor": "Cor Brand Cyan",
+    "brandCyanColorDescription": "Alterar cor de destaque da marca usada em todo o app",
     "selectColor": "Selecionar cor",
     "nodeBeingMovedBy": "Node está sendo movido por {userName}",
     "nodeBeingMovedByAnother": "Node está sendo movido por outro usuário",
     "imageTooLargeWithName": "A imagem \"{fileName}\" é muito grande. O tamanho máximo é 10MB.",
     "failedToProcessImageWithName": "Falha ao processar a imagem \"{fileName}\": {errorMessage}",
+    "mediaTypeNotSupported": "Arquivos {mediaType} ainda não são suportados. Apenas imagens podem ser soltas. Arquivo: {fileName}",
     "dropHere": "Solte Aqui",
     "dropHint": "Solte para adicionar imagens ou nodes ao canvas",
     "processingFiles": "Processando Arquivos...",
@@ -1857,7 +1904,7 @@
           "title": "6.1 Custos de Crédito",
           "items": [
             "Mockup Machine® HD: 1 crédito por imagem",
-            "Mockup Machine® 4K: 3-10 créditos por imagem (varia conforme a resolução selecionada)",
+            "Mockup Machine® 4K: 3-7 créditos por imagem (varia conforme a resolução selecionada)",
             "Os custos de crédito são definidos pelo Mockup Machine e podem mudar com aviso",
             "Os créditos são consumidos após a geração bem-sucedida, não na solicitação"
           ]
@@ -2276,7 +2323,11 @@
       "collapseAll": "Recolher Todas",
       "expandAll": "Expandir Todas",
       "selectExistingProject": "Selecionar Projeto Existente",
-      "createNewProject": "Criar Novo Projeto"
+      "createNewProject": "Criar Novo Projeto",
+      "projectName": "Nome do Projeto",
+      "projectNamePlaceholder": "Digite o nome do projeto...",
+      "analyze": "Analisar",
+      "reAnalyze": "Re-analisar"
     },
     "brandCore": {
       "title": "Núcleo da Marca",
@@ -2403,6 +2454,13 @@
       "title": "Text Node",
       "placeholder": "Digite o texto aqui..."
     },
+    "drawingNode": {
+      "freehand": "Desenho Livre",
+      "text": "Texto",
+      "shape": "Forma",
+      "drawing": "Desenho",
+      "textPlaceholder": "Clique para editar texto..."
+    },
     "brandNode": {
       "title": "Brand Node",
       "pleaseSelectImageFile": "Por favor, selecione um arquivo de imagem",
@@ -2508,7 +2566,18 @@
       "quickActions": "Ações Rápidas",
       "attachMedia": "Anexar Imagem",
       "mediaAttached": "Image node criado!",
-      "context": "Contexto"
+      "context": "Contexto",
+      "copyMessage": "Copiar mensagem",
+      "messageCopied": "Mensagem copiada para a área de transferência",
+      "copyFailed": "Falha ao copiar mensagem",
+      "systemPromptSettings": "Configurações de System Prompt",
+      "systemPrompt": "System Prompt (Personalidade do Agente)",
+      "systemPromptPlaceholder": "Digite um system prompt personalizado para personalizar a personalidade do agente. Deixe vazio para usar o padrão.",
+      "systemPromptHint": "Este prompt define como o assistente de IA se comporta. Use-o para personalizar tom, estilo e expertise.",
+      "systemPromptSaved": "System prompt salvo",
+      "systemPromptReset": "System prompt resetado para o padrão",
+      "resetToDefault": "Resetar para Padrão",
+      "save": "Salvar"
     }
   },
   "shaderControls": {
@@ -2616,13 +2685,29 @@
       "strategy": "Strategy",
       "brandCore": "Brand Core",
       "chat": "Chat",
-      "colorExtractor": "Color Extractor"
+      "colorExtractor": "Color Extractor",
+      "drawing": "Desenhar"
     },
+    "toggleDrawingMode": "Alternar Modo de Desenho",
     "categories": {
       "core": "Core",
       "composition": "Composition",
       "branding": "Branding"
     }
+  },
+  "canvasBottomToolbar": {
+    "hand": "Mão",
+    "handTooltip": "Ferramenta de pan (Espaço)",
+    "select": "Selecionar",
+    "selectTooltip": "Ferramenta de seleção",
+    "draw": "Desenhar",
+    "drawTooltip": "Ferramenta de desenho",
+    "color": "Cor",
+    "colorTooltip": "Seletor de cor",
+    "type": "Texto",
+    "typeTooltip": "Ferramenta de texto",
+    "shapes": "Formas",
+    "shapesTooltip": "Ferramenta de formas"
   },
   "shareModal": {
     "userEmailPlaceholder": "E-mail do usuário",
@@ -2772,6 +2857,7 @@
     "panelSubtitle": "Visualize usuários, assinaturas e créditos em tempo real",
     "users": "Usuários",
     "presets": "Presets",
+    "designSystem": "Design System",
     "dashboard": "Dashboard",
     "generations": "Gerações",
     "refresh": "Atualizar",
@@ -2883,5 +2969,167 @@
     "saved": "Configurações salvas com sucesso",
     "saveError": "Falha ao salvar configurações",
     "loadError": "Falha ao carregar configurações"
+  },
+  "designSystem": {
+    "title": "Design System",
+    "description": "Documentação de tokens de design, componentes e padrões",
+    "navigation": {
+      "title": "Navegação",
+      "previous": "Anterior",
+      "next": "Próximo"
+    },
+    "seo": {
+      "title": "Design System - Visant Labs",
+      "description": "Documentação do design system da Visant Labs",
+      "keywords": "design system, componentes UI, cores, tipografia"
+    },
+    "tabs": {
+      "home": "Início",
+      "colors": "Cores",
+      "typography": "Tipografia",
+      "components": "Componentes",
+      "spacing": "Espaçamentos"
+    },
+    "home": {
+      "welcome": "Bem-vindo ao Design System",
+      "description": "Um guia abrangente sobre nossos tokens de design, componentes e padrões",
+      "colorsDescription": "Paleta de cores e tokens",
+      "typographyDescription": "Fontes e estilos de texto",
+      "componentsDescription": "Componentes UI reutilizáveis",
+      "spacingDescription": "Escala e sistema de espaçamento",
+      "quickStart": "Início Rápido",
+      "quickStartDescription": "Comece com nosso design system explorando a paleta de cores, tipografia e componentes.",
+      "quickStart1": "Navegue pelos componentes e suas variantes",
+      "quickStart2": "Copie variáveis CSS e nomes de classes",
+      "quickStart3": "Entenda os padrões de espaçamento e layout",
+      "usage": "Uso",
+      "usageDescription": "Todos os componentes seguem padrões consistentes e podem ser personalizados usando variáveis CSS.",
+      "usageExample": "<Button variant=\"default\">Clique em mim</Button>"
+    },
+    "colors": {
+      "primary": {
+        "title": "Cores Principais",
+        "description": "Paleta de cores principal usada em toda a aplicação"
+      },
+      "chart": {
+        "title": "Cores de Gráficos",
+        "description": "Cores usadas para visualização de dados"
+      }
+    },
+    "typography": {
+      "fonts": {
+        "title": "Famílias de Fontes",
+        "description": "Sistema de tipografia e famílias de fontes"
+      },
+      "scale": {
+        "title": "Escala de Tipografia",
+        "description": "Hierarquia de tamanhos de texto"
+      }
+    },
+    "components": {
+      "buttons": {
+        "title": "Botões",
+        "description": "Variantes e tamanhos do componente de botão"
+      },
+      "inputs": {
+        "title": "Inputs",
+        "description": "Componentes de entrada de texto"
+      },
+      "textarea": {
+        "title": "Textarea",
+        "description": "Entrada de texto multilinha"
+      },
+      "select": {
+        "title": "Select",
+        "description": "Componente de seleção dropdown"
+      },
+      "switch": {
+        "title": "Switch",
+        "description": "Componente de toggle switch"
+      },
+      "badge": {
+        "title": "Badge",
+        "description": "Variantes do componente badge"
+      },
+      "card": {
+        "title": "Card",
+        "description": "Componente de container card"
+      },
+      "presetCard": {
+        "title": "Preset Card",
+        "description": "Componente de card para exibir presets da comunidade com imagem, metadados e ações"
+      },
+      "navigationSidebar": {
+        "title": "Navigation Sidebar",
+        "description": "Componente de sidebar de navegação reutilizável com seções colapsáveis e suporte mobile"
+      },
+      "modal": {
+        "title": "Modal",
+        "description": "Componente de modal de confirmação para confirmações e alertas do usuário"
+      },
+      "table": {
+        "title": "Tabela",
+        "description": "Componente de tabela básico para exibir dados estruturados"
+      },
+      "dataTable": {
+        "title": "Data Table",
+        "description": "Tabela de dados avançada com ordenação, filtragem e capacidades de busca"
+      },
+      "charts": {
+        "title": "Gráficos",
+        "description": "Componentes de gráficos construídos com Recharts para visualização de dados"
+      },
+      "breadcrumb": {
+        "title": "Breadcrumb",
+        "description": "Componente de breadcrumb de navegação com suporte a botão de voltar"
+      },
+      "skeletonLoader": {
+        "title": "Skeleton Loader",
+        "description": "Componente de placeholder de carregamento para melhor UX durante a busca de dados"
+      },
+      "gridDotsBackground": {
+        "title": "Grid Dots Background",
+        "description": "Padrão de fundo decorativo com pontos configuráveis"
+      },
+      "tabs": {
+        "title": "Tabs",
+        "description": "Componente de interface com abas para organizar conteúdo em seções"
+      },
+      "canvasToolbar": {
+        "title": "Barra de Ferramentas do Canvas",
+        "description": "Barra de ferramentas recolhível para criar e gerenciar nós do canvas com suporte a arrastar e soltar"
+      },
+      "canvasHeader": {
+        "title": "Cabeçalho do Canvas",
+        "description": "Componente de cabeçalho para páginas do canvas com edição de nome do projeto, configurações e recursos de colaboração"
+      },
+      "canvasFlow": {
+        "title": "Canvas Flow",
+        "description": "Componente principal do canvas React Flow com arrastar e soltar, gerenciamento de nós e manipulação de imagens"
+      }
+    },
+    "spacing": {
+      "scale": {
+        "title": "Escala de Espaçamentos",
+        "description": "Sistema de espaçamento consistente baseado na escala Tailwind"
+      },
+      "custom": {
+        "title": "Variáveis Customizadas",
+        "description": "Variáveis de espaçamento customizadas para casos específicos"
+      }
+    },
+    "commandPalette": {
+      "placeholder": "Buscar componentes, cores, tipografia...",
+      "noResults": "Nenhum resultado encontrado",
+      "search": "Buscar",
+      "searchShortcut": "Buscar (Ctrl+K)",
+      "tab": "Aba",
+      "section": "Seção"
+    },
+    "modal": {
+      "exampleTitle": "Modal de Exemplo",
+      "exampleMessage": "Este é um exemplo do componente ConfirmationModal.",
+      "confirmed": "Confirmado!"
+    }
   }
 }

@@ -1,6 +1,8 @@
 import React from 'react';
 import { Pickaxe, RefreshCcw } from 'lucide-react';
 import { GlitchLoader } from './GlitchLoader';
+import { Button } from './button';
+import { cn } from '../../lib/utils';
 import { useTranslation } from '../../hooks/useTranslation';
 
 interface GenerateButtonProps {
@@ -36,10 +38,14 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
     };
 
     return (
-      <button
+      <Button
         onClick={handleClick}
         disabled={disabled}
-        className="fixed bottom-4 md:bottom-8 right-4 md:right-8 mb-10 z-30 flex flex-col items-center justify-center gap-0.5 md:gap-1 bg-[#52ddeb]/90 hover:bg-[#52ddeb] disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-semibold py-2 md:py-3 px-4 md:px-6 rounded-md transition-all duration-300 text-xs md:text-sm shadow-2xl shadow-[#52ddeb]/20 transform active:scale-95 animate-fade-in-up focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50 focus:ring-offset-2 focus:ring-offset-[#121212]"
+        variant="brand"
+        className={cn(
+          "fixed bottom-4 md:bottom-8 right-4 md:right-8 mb-10 z-30 flex-col gap-0.5 md:gap-1 font-semibold py-2 md:py-3 px-4 md:px-6 text-xs md:text-sm shadow-2xl transform active:scale-95 animate-fade-in-up",
+          "focus:ring-offset-[#121212]"
+        )}
         aria-label={isGeneratingPrompt ? t('mockup.generatingPrompt') : isGenerating ? t('mockup.generatingOutputs') : isPromptReady ? t('mockup.generateOutputs') : t('mockup.generatePrompt')}
         title={isPromptReady ? t('mockup.generateOutputsShortcut') : t('mockup.generatePromptShortcut')}
       >
@@ -83,7 +89,7 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
             <span className="sm:hidden">{t('mockup.promptShort')}</span>
           </div>
         )}
-      </button>
+      </Button>
     );
   }
 
@@ -97,11 +103,15 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
   };
 
   return (
-    <button
+    <Button
       ref={buttonRef}
       onClick={handleClick}
       disabled={disabled}
-      className="w-full flex flex-col items-center justify-center gap-1 bg-[#52ddeb]/80 hover:bg-[#52ddeb]/90 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-semibold py-3 px-6 rounded-md transition-all duration-300 text-md shadow-lg shadow-[#52ddeb]/20 mt-4 transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50 focus:ring-offset-2 focus:ring-offset-[#1A1A1A]"
+      variant="brand"
+      className={cn(
+        "w-full flex-col gap-1 font-semibold py-3 px-6 text-md shadow-lg mt-4 transform active:scale-95",
+        "focus:ring-offset-[#1A1A1A]"
+      )}
       aria-label={isGeneratingPrompt ? t('mockup.generatingPrompt') : isGenerating ? t('mockup.generatingOutputs') : isPromptReady ? t('mockup.generateOutputs') : t('mockup.generatePrompt')}
       title={isPromptReady ? t('mockup.generateOutputsShortcut') : t('mockup.generatePromptShortcut')}
     >
@@ -131,7 +141,7 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
           <span>{t('mockup.generatePrompt')}</span>
         </div>
       )}
-    </button>
+    </Button>
   );
 };
 

@@ -4,7 +4,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useLayout } from '../../hooks/useLayout';
 import { authService } from '../../services/authService';
 import { AuthModal } from '../AuthModal';
-import { Spinner } from './Spinner';
+import { GlitchLoader } from './GlitchLoader';
 import type { UploadedImage } from '../../types';
 import { UploadCloud } from 'lucide-react';
 import { toast } from 'sonner';
@@ -151,7 +151,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload, onP
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         data-tutorial-target="upload-image"
-        className={`relative block w-full p-4 bg-black/95 backdrop-blur-xl border rounded-md cursor-pointer transition-all duration-300 group ${isDragging ? 'border-dashed border-2 border-[#52ddeb]/40 bg-[#52ddeb]/10 shadow-2xl shadow-[#52ddeb]/10' : 'border-zinc-800/10 hover:border-zinc-800/20 hover:text-zinc-300'
+        className={`relative block w-full p-4 bg-black/95 backdrop-blur-xl border rounded-md cursor-pointer transition-all duration-300 group ${isDragging ? 'border-dashed border-2 border-[#52ddeb]/40 bg-brand-cyan/10 shadow-2xl shadow-[#52ddeb]/10' : 'border-zinc-800/10 hover:border-zinc-800/20 hover:text-zinc-300'
           } ${isProcessing ? 'cursor-wait' : ''}`}
       >
         <input
@@ -164,11 +164,11 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload, onP
         />
         <div className="flex items-center justify-center gap-4">
           {(isCheckingAuth || isVerifyingAuth) && (
-            <Spinner size={24} color="#52ddeb" />
+            <GlitchLoader size={24} color="#52ddeb" />
           )}
           {isProcessing && !isCheckingAuth && !isVerifyingAuth && (
             <>
-              <Spinner size={24} color="#52ddeb" />
+              <GlitchLoader size={24} color="#52ddeb" />
               <div className="text-left min-w-0">
                 <p className="text-md font-semibold text-zinc-400">{t('upload.processingImage')}</p>
                 <p className="text-xs font-mono tracking-wider text-zinc-500">{t('upload.pleaseWait')}</p>
@@ -177,7 +177,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload, onP
           )}
           {!isProcessing && !isCheckingAuth && !isVerifyingAuth && isDragging && (
             <>
-              <UploadCloud size={32} className="text-[#52ddeb]/80 transition-colors flex-shrink-0" />
+              <UploadCloud size={32} className="text-brand-cyan/80 transition-colors flex-shrink-0" />
               <div className="text-left min-w-0">
                 <p className="text-md font-semibold text-zinc-300">{t('upload.dropImageHere')}</p>
                 <p className="text-xs font-mono tracking-wider text-zinc-500">{t('upload.releaseToUpload')}</p>
@@ -186,7 +186,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload, onP
           )}
           {!isProcessing && !isCheckingAuth && !isVerifyingAuth && !isDragging && (
             <>
-              <UploadCloud size={32} className="text-zinc-600 group-hover:text-[#52ddeb]/80 transition-colors flex-shrink-0" />
+              <UploadCloud size={32} className="text-zinc-600 group-hover:text-brand-cyan/80 transition-colors flex-shrink-0" />
               <div className="text-left min-w-0">
                 <p className="text-md font-semibold text-zinc-400">{t('upload.clickToUpload')}</p>
                 <p className="text-xs font-mono tracking-wider text-zinc-500">{t('upload.supportedFormats')}</p>

@@ -114,7 +114,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
               </div>
               {isReferenceOnly && (
                 <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 bg-zinc-900/80 backdrop-blur-sm rounded-md border border-zinc-700/50">
-                  <Info size={12} className="text-[#52ddeb]/80" />
+                  <Info size={12} className="text-brand-cyan/80" />
                   <span className="text-[10px] font-mono text-zinc-400">{t('mockup.referenceOnly')}</span>
                 </div>
               )}

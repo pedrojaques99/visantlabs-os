@@ -141,13 +141,13 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       {/* Toolbar */}
       <div className={`flex items-center gap-1 p-2 border rounded-t-xl border-b-0 ${
         theme === 'dark'
-          ? 'bg-[#1a1a1a] border-zinc-800/60'
+          ? 'bg-zinc-900 border-zinc-800/60'
           : 'bg-zinc-100 border-zinc-300'
       }`}>
         <button
           type="button"
           onClick={handleBold}
-          className={`p-2 rounded transition-colors hover:text-[#52ddeb] ${
+          className={`p-2 rounded transition-colors hover:text-brand-cyan ${
             theme === 'dark'
               ? 'hover:bg-black/40 text-zinc-300'
               : 'hover:bg-zinc-200 text-zinc-700'
@@ -159,7 +159,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <button
           type="button"
           onClick={handleItalic}
-          className={`p-2 rounded transition-colors hover:text-[#52ddeb] ${
+          className={`p-2 rounded transition-colors hover:text-brand-cyan ${
             theme === 'dark'
               ? 'hover:bg-black/40 text-zinc-300'
               : 'hover:bg-zinc-200 text-zinc-700'
@@ -171,7 +171,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <button
           type="button"
           onClick={handleBullet}
-          className={`p-2 rounded transition-colors hover:text-[#52ddeb] ${
+          className={`p-2 rounded transition-colors hover:text-brand-cyan ${
             theme === 'dark'
               ? 'hover:bg-black/40 text-zinc-300'
               : 'hover:bg-zinc-200 text-zinc-700'
@@ -184,7 +184,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           <button
             type="button"
             onClick={() => setShowColorPicker(!showColorPicker)}
-            className={`p-2 rounded transition-colors hover:text-[#52ddeb] ${
+            className={`p-2 rounded transition-colors hover:text-brand-cyan ${
               theme === 'dark'
                 ? 'hover:bg-black/40 text-zinc-300'
                 : 'hover:bg-zinc-200 text-zinc-700'
@@ -201,7 +201,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
               />
               <div className={`absolute top-full left-0 mt-1 p-2 border rounded-md shadow-lg z-20 ${
                 theme === 'dark'
-                  ? 'bg-[#1a1a1a] border-zinc-800/60'
+                  ? 'bg-zinc-900 border-zinc-800/60'
                   : 'bg-white border-zinc-300'
               }`}>
                 <div className="grid grid-cols-4 gap-2">

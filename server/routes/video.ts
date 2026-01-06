@@ -7,6 +7,7 @@ import { checkSubscription, SubscriptionRequest } from '../middleware/subscripti
 import { generateVideo } from '../../services/videoService.js';
 import { getVideoCreditsRequired } from '../utils/usageTracking.js';
 import { uploadCanvasVideo, isR2Configured } from '../../services/r2Service.js';
+import { calculateVideoCost } from '../../utils/pricing.js';
 
 // Helper function to refund credits if generation fails
 // Uses deduction source information to properly refund credits to their original source
@@ -375,7 +376,7 @@ router.post('/generate', authenticate, checkSubscription, async (req: Subscripti
       return res.status(400).json({ error: 'Prompt is required' });
     }
 
-    // Calculate credits required (15 credits per video)
+    // Calculate credits required (20 credits per video)
     creditsToDeduct = getVideoCreditsRequired();
 
     console.log(`${logPrefix} [Credit Calculation] Before deduction`, {
@@ -615,7 +616,7 @@ router.post('/generate', authenticate, checkSubscription, async (req: Subscripti
         promptLength: prompt?.length || 0,
         hasInputImage: !!imageBase64,
         timestamp: new Date(),
-        cost: 0, // Video cost calculation can be added later if needed
+        cost: calculateVideoCost(1),
         creditsDeducted: actualCreditsDeducted,
         subscriptionStatus: updatedUser.subscriptionStatus || 'free',
         hasActiveSubscription: updatedUser.subscriptionStatus === 'active',

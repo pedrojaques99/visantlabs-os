@@ -148,8 +148,8 @@ export const FieldSelectionMenu: React.FC<FieldSelectionMenuProps> = ({
               onMouseEnter={() => setSelectedIndex(index)}
               className={`w-full px-3 py-2.5 text-left text-sm font-mono transition-colors border-b border-zinc-800/50 last:border-b-0 ${
                 index === selectedIndex
-                  ? 'bg-[#52ddeb]/20 text-[#52ddeb]'
-                  : 'text-zinc-300 hover:bg-[#52ddeb]/10 hover:text-[#52ddeb]'
+                  ? 'bg-brand-cyan/20 text-brand-cyan'
+                  : 'text-zinc-300 hover:bg-brand-cyan/10 hover:text-brand-cyan'
               }`}
               role="menuitem"
               aria-label={`Adicionar campo ${field.label}`}

@@ -96,7 +96,7 @@ export const CanvasSharedPage: React.FC = () => {
             <p className="text-zinc-400 mb-6">{error || 'The project you are looking for does not exist or is no longer shared.'}</p>
             <button
               onClick={() => navigate('/')}
-              className="px-4 py-2 bg-[#52ddeb]/90 hover:bg-[#52ddeb] text-black font-semibold rounded-md transition-colors"
+              className="px-4 py-2 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md transition-colors"
             >
               Go Home
             </button>

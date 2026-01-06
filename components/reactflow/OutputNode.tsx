@@ -1,10 +1,10 @@
 import React, { useRef, useState, useCallback, memo, useEffect } from 'react';
 import { type NodeProps, useNodes, useEdges, useReactFlow, NodeResizer } from '@xyflow/react';
-import { Maximize2, Heart, Download, FileText, Edit, Trash2, Palette } from 'lucide-react';
+import { Edit } from 'lucide-react';
 import type { OutputNodeData, FlowNodeData } from '../../types/reactFlow';
 import { cn } from '../../lib/utils';
 import { isSafeUrl } from '../../utils/imageUtils';
-import { Spinner } from '../ui/Spinner';
+import { GlitchLoader } from '../ui/GlitchLoader';
 import { mockupApi } from '../../services/mockupApi';
 import { aiApi } from '../../services/aiApi';
 import { normalizeImageToBase64 } from '../../services/reactFlowService';
@@ -15,6 +15,7 @@ import { NodePlaceholder } from './shared/NodePlaceholder';
 import { NodeContainer } from './shared/NodeContainer';
 import { NodeImageContainer } from './shared/NodeImageContainer';
 import { NodeActionBar } from './shared/NodeActionBar';
+import { ImageNodeActionButtons } from './shared/ImageNodeActionButtons';
 import { useNodeDownload } from './shared/useNodeDownload';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useMockupLike } from '../../hooks/useMockupLike';
@@ -515,59 +516,6 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
                 }
               }}
             />
-            {/* Save and View buttons overlay */}
-            <div
-              className={cn(
-                "absolute top-2 right-2 flex gap-1 opacity-0 transition-opacity z-10",
-                selected ? "opacity-100" : "group-hover/image:opacity-100"
-              )}
-              style={{ transform: `scale(${Math.min(1 / getZoom(), 3)})`, transformOrigin: 'top right' }}
-            >
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDescribe();
-                }}
-                disabled={isDescribing || !imageUrl}
-                className={cn(
-                  "p-1 rounded-md transition-all backdrop-blur-sm",
-                  isDescribing || !imageUrl
-                    ? "bg-zinc-700/20 text-zinc-500 cursor-not-allowed"
-                    : "bg-black/40 hover:bg-black/60 text-zinc-400 hover:text-zinc-200"
-                )}
-                title={isDescribing ? t('canvasNodes.outputNode.analyzingImage') : t('canvasNodes.outputNode.describeImageWithAI')}
-                onMouseDown={(e) => e.stopPropagation()}
-              >
-                {isDescribing ? (
-                  <Spinner size={12} color="currentColor" />
-                ) : (
-                  <FileText size={12} strokeWidth={2} />
-                )}
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleSave();
-                }}
-                disabled={isSaving}
-                className={cn(
-                  "p-1 rounded-md transition-all backdrop-blur-sm",
-                  isSaving
-                    ? "bg-black/40 text-zinc-500 cursor-wait border border-zinc-700/30"
-                    : isLiked
-                      ? "bg-[#52ddeb]/20 text-[#52ddeb] hover:bg-[#52ddeb]/30 border border-[#52ddeb]/20"
-                      : "bg-black/40 hover:bg-black/60 text-zinc-400 hover:text-zinc-200 border border-zinc-700/30"
-                )}
-                title={isLiked ? t('canvasNodes.outputNode.removeFromFavorites') : t('canvasNodes.outputNode.saveToCollection')}
-                onMouseDown={(e) => e.stopPropagation()}
-              >
-                {isSaving ? (
-                  <Spinner size={12} color="currentColor" />
-                ) : (
-                  <Heart size={12} className={isLiked ? "fill-current" : ""} strokeWidth={2} />
-                )}
-              </button>
-            </div>
             {isLoading && elapsedTime > 0 && (
               <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 z-10">
                 <span className="text-zinc-500/40 text-[10px] font-mono">
@@ -588,84 +536,27 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
 
       {!dragging && (imageUrl || videoUrl) && (
         <NodeActionBar selected={selected} getZoom={getZoom}>
-          {nodeData.onView && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleView();
-              }}
-              className="p-1 bg-black/40 hover:bg-black/60 text-zinc-400 hover:text-zinc-200 rounded transition-colors backdrop-blur-sm border border-zinc-700/30 hover:border-zinc-600/50"
-              title={t('canvasNodes.imageNode.viewFullScreen')}
-              onMouseDown={(e) => e.stopPropagation()}
-            >
-              <Maximize2 size={12} strokeWidth={2} />
-            </button>
-          )}
-          <button
-            onClick={handleDownload}
-            disabled={isDownloading}
-            className={cn(
-              "p-1 rounded transition-colors backdrop-blur-sm border",
-              isDownloading
-                ? "bg-zinc-700/20 text-zinc-500 cursor-not-allowed border-zinc-700/20"
-                : "bg-black/40 hover:bg-black/60 text-zinc-400 hover:text-zinc-200 border border-zinc-700/30 hover:border-zinc-600/50"
-            )}
-            title={isDownloading ? t('canvasNodes.shared.downloading') : t('canvasNodes.imageNode.downloadImage')}
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            {isDownloading ? (
-              <Spinner size={12} color="currentColor" />
-            ) : (
-              <Download size={12} strokeWidth={2} />
-            )}
-          </button>
-          {nodeData.onDelete && savedMockupId && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowDeleteModal(true);
-              }}
-              className="p-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded transition-colors backdrop-blur-sm border border-red-500/20 hover:border-red-500/30"
-              title={t('canvasNodes.imageNode.delete')}
-              onMouseDown={(e) => e.stopPropagation()}
-            >
-              <Trash2 size={12} strokeWidth={2} />
-            </button>
-          )}
-          {nodeData.onBrandKit && (imageUrl || videoUrl) && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowBrandKitModal(true);
-              }}
-              className="p-1 bg-black/40 hover:bg-black/60 text-zinc-400 hover:text-zinc-200 rounded transition-colors backdrop-blur-sm border border-zinc-700/30 hover:border-zinc-600/50"
-              title={t('canvasNodes.imageNode.brandKit')}
-              onMouseDown={(e) => e.stopPropagation()}
-            >
-              <Palette size={12} strokeWidth={2} />
-            </button>
-          )}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDescribe();
-            }}
-            disabled={isDescribing || !imageUrl}
-            className={cn(
-              "p-1 rounded transition-colors backdrop-blur-sm border",
-              isDescribing || !imageUrl
-                ? "bg-zinc-700/20 text-zinc-500 cursor-not-allowed border-zinc-700/20"
-                : "bg-black/40 hover:bg-black/60 text-zinc-400 hover:text-zinc-200 border-zinc-700/30 hover:border-zinc-600/50"
-            )}
-            title={isDescribing ? t('canvasNodes.imageNode.analyzingImage') : t('canvasNodes.imageNode.describeImageWithAI')}
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            {isDescribing ? (
-              <Spinner size={12} color="currentColor" />
-            ) : (
-              <FileText size={12} strokeWidth={2} />
-            )}
-          </button>
+          <ImageNodeActionButtons
+            onView={handleView}
+            showView={!!nodeData.onView}
+            onDownload={handleDownload}
+            isDownloading={isDownloading}
+            showDownload={true}
+            onDelete={() => setShowDeleteModal(true)}
+            showDelete={!!(nodeData.onDelete && savedMockupId)}
+            onBrandKit={() => setShowBrandKitModal(true)}
+            showBrandKit={!!(nodeData.onBrandKit && (imageUrl || videoUrl))}
+            onSave={() => handleSave()}
+            isLiked={isLiked}
+            isSaving={isSaving}
+            showLike={true}
+            onDescribe={handleDescribe}
+            isDescribing={isDescribing}
+            describeDisabled={!imageUrl}
+            showDescribe={true}
+            translationKeyPrefix="canvasNodes.outputNode"
+            t={t}
+          />
         </NodeActionBar>
       )}
 

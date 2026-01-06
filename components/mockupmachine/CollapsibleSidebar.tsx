@@ -130,7 +130,7 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
               ) : (
                 <button
                   onClick={onToggleSearch}
-                  className="p-1.5 text-zinc-500 hover:text-[#52ddeb] transition-colors"
+                  className="p-1.5 text-zinc-500 hover:text-brand-cyan transition-colors"
                   title="Search"
                 >
                   <Search size={14} />
@@ -152,11 +152,7 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
       {allTags.length > 0 && (
         <div 
           ref={scrollContainerRef}
-          className={`flex gap-2 overflow-x-auto pb-0.5 -mx-1 px-1 cursor-pointer select-none`}
-          style={{
-            scrollbarWidth: 'thin',
-            scrollbarColor: 'rgba(55, 65, 81, 0.3) transparent',
-          }}
+          className={`flex gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-zinc-400 dark:scrollbar-thumb-zinc-700 scrollbar-track-transparent pb-0.5 -mx-1 px-1 cursor-pointer select-none`}
           onMouseDown={handleMouseDown}
           onMouseLeave={handleMouseUp}
           onMouseUp={handleMouseUp}
@@ -166,7 +162,7 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
             onClick={(e) => handleTagClick(null, e)}
             className={`px-2.5 py-1 rounded-md text-xs font-mono border whitespace-nowrap flex-shrink-0 transition-all ${
               filterTag === null
-                ? 'text-[#52ddeb] border-[#52ddeb]/30 bg-[#52ddeb]/10'
+                ? 'text-brand-cyan border-[#52ddeb]/30 bg-brand-cyan/10'
                 : 'text-zinc-500 border-zinc-700/20 hover:border-zinc-600/30 hover:bg-zinc-800/30'
             }`}
           >
@@ -178,7 +174,7 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
               onClick={(e) => handleTagClick(tag, e)}
               className={`px-2.5 py-1 rounded-md text-xs font-mono border whitespace-nowrap flex-shrink-0 transition-all ${
                 filterTag === tag
-                  ? 'text-[#52ddeb] border-[#52ddeb]/30 bg-[#52ddeb]/10'
+                  ? 'text-brand-cyan border-[#52ddeb]/30 bg-brand-cyan/10'
                   : 'text-zinc-500 border-zinc-700/20 hover:border-zinc-600/30 hover:bg-zinc-800/30'
               }`}
             >

@@ -164,7 +164,7 @@ export const renderMarkdownWithLines = (text: string): React.ReactNode => {
           const bulletContent = bulletMatch[1];
           return (
             <div key={lineIndex} className="flex items-start gap-2 mb-2">
-              <span className="text-[#52ddeb] mt-1 flex-shrink-0 font-bold">•</span>
+              <span className="text-brand-cyan mt-1 flex-shrink-0 font-bold">•</span>
               <span className="flex-1">{renderMarkdown(bulletContent)}</span>
             </div>
           );

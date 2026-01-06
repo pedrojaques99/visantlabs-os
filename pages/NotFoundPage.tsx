@@ -96,14 +96,14 @@ export const NotFoundPage: React.FC = () => {
               <div className="flex flex-wrap justify-center gap-6">
                 <button
                   onClick={() => navigate('/')}
-                  className={`text-sm hover:text-[#52ddeb] transition-colors cursor-pointer ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'
+                  className={`text-sm hover:text-brand-cyan transition-colors cursor-pointer ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'
                     }`}
                 >
                   {t('notFound.mockupMachine') || 'Mockup Machine'}
                 </button>
                 <button
                   onClick={() => navigate('/pricing')}
-                  className={`text-sm hover:text-[#52ddeb] transition-colors cursor-pointer ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'
+                  className={`text-sm hover:text-brand-cyan transition-colors cursor-pointer ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'
                     }`}
                 >
                   {t('notFound.pricing') || 'Preços'}

@@ -51,7 +51,7 @@ export const uploadImageToR2Auto = async (
             // Remove base64 fields based on node type
             const updatedData: any = { ...nodeData };
             
-            if (n.type === 'upscale' || n.type === 'upscaleBicubic' || n.type === 'merge' || n.type === 'edit' || n.type === 'mockup' || n.type === 'prompt') {
+            if (n.type === 'upscale' || n.type === 'upscaleBicubic' || n.type === 'merge' || n.type === 'edit' || n.type === 'mockup' || n.type === 'prompt' || n.type === 'texture' || n.type === 'ambience' || n.type === 'angle') {
               // Remove base64 if URL matches (upload was successful)
               if (updatedData.resultImageUrl === imageUrl && updatedData.resultImageBase64) {
                 updatedData.resultImageUrl = imageUrl;

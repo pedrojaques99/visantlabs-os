@@ -3,7 +3,7 @@ import { Download, RefreshCw, ImageIcon, Palette, Camera, MapPin, Heart, X, Penc
 import { mockupApi } from '../../services/mockupApi';
 import { toast } from 'sonner';
 import { SkeletonLoader } from '../ui/SkeletonLoader';
-import { Spinner } from '../ui/Spinner';
+import { GlitchLoader } from '../ui/GlitchLoader';
 import { Tooltip } from '../ui/Tooltip';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ReImaginePanel } from '../ReImaginePanel';
@@ -217,7 +217,7 @@ const MockupCard: React.FC<{
 
       {isRedrawing && (
         <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-          <Spinner size={32} color="white" />
+          <GlitchLoader size={32} color="white" />
         </div>
       )}
 
@@ -233,7 +233,7 @@ const MockupCard: React.FC<{
         <button
           onClick={(e) => { e.stopPropagation(); handleToggleLike(); }}
           className={`absolute top-3 right-3 p-2 rounded-md transition-all z-30 backdrop-blur-sm ${localIsLiked
-            ? 'bg-[#52ddeb]/20 text-[#52ddeb] hover:bg-[#52ddeb]/30'
+            ? 'bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30'
             : 'bg-black/40 text-zinc-400 hover:bg-black/60 hover:text-zinc-200'
             }`}
           title={localIsLiked ? t('canvasNodes.outputNode.removeFromFavorites') : t('canvasNodes.outputNode.saveToCollection')}
@@ -312,7 +312,7 @@ const MockupCard: React.FC<{
               >
                 <RefreshCw size={16} aria-hidden="true" />
                 {creditsPerOperation !== undefined && creditsPerOperation > 0 && (
-                  <span className="text-[10px] font-mono text-[#52ddeb] leading-none font-semibold">
+                  <span className="text-[10px] font-mono text-brand-cyan leading-none font-semibold">
                     {creditsPerOperation}
                   </span>
                 )}
@@ -325,13 +325,13 @@ const MockupCard: React.FC<{
                   disabled={editButtonsDisabled || isRedrawing}
                   className={`p-2 rounded transition-colors duration-150 focus:outline-none focus:ring-1 focus:ring-[#52ddeb]/50 flex items-center gap-1 ${editButtonsDisabled || isRedrawing
                     ? 'text-zinc-600 cursor-not-allowed opacity-50'
-                    : 'text-[#52ddeb] hover:text-white hover:bg-[#52ddeb]/20'
+                    : 'text-brand-cyan hover:text-white hover:bg-brand-cyan/20'
                     }`}
                   aria-label="Re-imagine mockup"
                 >
                   <Pencil size={16} aria-hidden="true" />
                   {creditsPerOperation !== undefined && creditsPerOperation > 0 && (
-                    <span className="text-[10px] font-mono text-[#52ddeb] leading-none font-semibold">
+                    <span className="text-[10px] font-mono text-brand-cyan leading-none font-semibold">
                       {creditsPerOperation}
                     </span>
                   )}

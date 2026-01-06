@@ -12,8 +12,10 @@ import { GenerateButton } from './ui/GenerateButton';
 import { ModelSelectionSection } from './mockupmachine/ModelSelectionSection';
 import { AspectRatioSection } from './mockupmachine/AspectRatioSection';
 import { PillButton } from './ui/pill-button';
+import { Button } from './ui/button';
 import { getCreditsRequired } from '../utils/creditCalculator';
 import { useTranslation } from '../hooks/useTranslation';
+import { cn } from '../lib/utils';
 import type { UploadedImage, DesignType, AspectRatio, GeminiModel, Resolution } from '../types';
 import type { SubscriptionStatus } from '../services/subscriptionService';
 
@@ -493,14 +495,16 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
       >
         {/* Close button for mobile when hasGenerated */}
         {hasGenerated && onCloseMobile && (
-          <button
+          <Button
             onClick={onCloseMobile}
-            className="md:hidden absolute top-4 right-4 z-20 p-2 text-muted-foreground hover:text-[#52ddeb] hover:bg-sidebar-accent rounded-md transition-colors"
+            variant="ghost"
+            size="icon"
+            className="md:hidden absolute top-4 right-4 z-20 text-muted-foreground hover:text-brand-cyan hover:bg-sidebar-accent"
             aria-label={t('mockup.closeSidebar')}
             title={t('mockup.closeSidebar')}
           >
             <X size={18} />
-          </button>
+          </Button>
         )}
         <div className="space-y-4 md:space-y-8">
           <div
@@ -734,36 +738,42 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
                     <div className={`grid gap-2 ${hasGenerated && mockups.some(m => m !== null) ? 'grid-cols-2' : 'grid-cols-1'}`}>
                       {/* Show regenerate button only when hasGenerated and mockups have content */}
                       {hasGenerated && mockups.some(m => m !== null) && (
-                        <button
+                        <Button
                           onClick={onRegenerate}
                           disabled={isGenerating || !promptPreview.trim() || isGenerateDisabled}
-                          className="flex items-center justify-center h-[48px] bg-zinc-800/50 hover:bg-[#52ddeb]/10 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-zinc-400 hover:text-[#52ddeb] border border-zinc-700/50 hover:border-[#52ddeb]/30 rounded-md transition-all duration-300 shadow-lg hover:shadow-[#52ddeb]/10 transform hover:scale-[1.02] active:scale-100 disabled:hover:scale-100 focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50 focus:ring-offset-2 focus:ring-offset-[#1A1A1A]"
+                          variant="sidebarAction"
+                          size="sidebar"
+                          className="justify-center"
                           aria-label={t('mockup.regenerate')}
                           title={t('mockup.regenerateTooltip')}
                         >
                           {isGenerating ? <RefreshCcw size={18} className="animate-spin" /> : <RefreshCcw size={18} />}
-                        </button>
+                        </Button>
                       )}
                       <div className="flex items-center gap-2">
-                        <button
+                        <Button
                           onClick={handleSurpriseMe}
                           disabled={isGenerating || isGeneratingPrompt}
-                          className={`flex-1 flex items-center justify-center h-[48px] bg-zinc-800/50 hover:bg-[#52ddeb]/10 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-zinc-400 hover:text-[#52ddeb] border border-zinc-700/50 hover:border-[#52ddeb]/30 rounded-md transition-all duration-300 shadow-lg hover:shadow-[#52ddeb]/10 transform hover:scale-[1.02] active:scale-100 disabled:hover:scale-100 focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50 focus:ring-offset-2 focus:ring-offset-[#1A1A1A] ${isDiceAnimating ? 'dice-button-clicked' : ''}`}
+                          variant="sidebarAction"
+                          size="sidebar"
+                          className={cn("flex-1 justify-center", isDiceAnimating && 'dice-button-clicked')}
                           aria-label={t('mockup.surpriseMe')}
                           title={t('mockup.surpriseMeTooltip')}
                         >
                           <Dices size={18} className={isDiceAnimating ? 'dice-icon-animate' : ''} />
-                        </button>
+                        </Button>
                         {onOpenSurpriseMeSettings && (
-                          <button
+                          <Button
                             onClick={onOpenSurpriseMeSettings}
                             disabled={isGenerating || isGeneratingPrompt}
-                            className="flex items-center justify-center h-[48px] w-[48px] bg-zinc-800/50 hover:bg-[#52ddeb]/10 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-zinc-400 hover:text-[#52ddeb] border border-zinc-700/50 hover:border-[#52ddeb]/30 rounded-md transition-all duration-300 shadow-lg hover:shadow-[#52ddeb]/10 transform hover:scale-[1.02] active:scale-100 disabled:hover:scale-100 focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50 focus:ring-offset-2 focus:ring-offset-[#1A1A1A]"
+                            variant="sidebarAction"
+                            size="sidebar"
+                            className="w-[48px] justify-center"
                             aria-label={t('mockup.surpriseMeSettings')}
                             title={t('mockup.surpriseMeSettingsTooltip')}
                           >
                             <Settings size={18} />
-                          </button>
+                          </Button>
                         )}
                       </div>
                     </div>
@@ -786,14 +796,16 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
                   })()}
 
                   <div className="flex justify-center mt-8 mb-4">
-                    <button
+                    <Button
                       onClick={onResetControls}
-                      className="w-auto flex items-center justify-center gap-1.5 text-zinc-500 hover:text-zinc-400 rounded-md py-1.5 px-3 transition-all duration-200 text-[10px] font-mono opacity-60 hover:opacity-100"
+                      variant="ghost"
+                      size="sm"
+                      className="w-auto gap-1.5 text-zinc-500 hover:text-zinc-400 text-[10px] font-mono opacity-60 hover:opacity-100"
                       aria-label={t('mockup.clearAll')}
                     >
                       <RotateCcw size={12} />
                       <span>{t('mockup.clearAll')}</span>
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}
@@ -808,7 +820,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
           id="sidebar-resizer"
           className="hidden lg:block flex-shrink-0 w-2 cursor-col-resize group"
         >
-          <div className="w-px h-full mx-auto bg-sidebar-border group-hover:bg-[#52ddeb]/50 dark:group-hover:bg-[#52ddeb]/50 transition-colors duration-200"></div>
+          <div className="w-px h-full mx-auto bg-sidebar-border group-hover:bg-brand-cyan/50 dark:group-hover:bg-brand-cyan/50 transition-colors duration-200"></div>
         </div>
       )}
     </>

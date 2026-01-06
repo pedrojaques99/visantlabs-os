@@ -55,7 +55,7 @@ export const ImageThumbnail: React.FC<ImageThumbnailProps> = ({
       )}
 
       {/* Bullet indicator */}
-      <div className="absolute top-1 left-1 w-5 h-5 bg-[#52ddeb] border border-black rounded-md flex items-center justify-center z-10">
+      <div className="absolute top-1 left-1 w-5 h-5 bg-brand-cyan border border-black rounded-md flex items-center justify-center z-10">
         <span className="text-[10px] font-mono font-bold text-black">{index + 1}</span>
       </div>
 
