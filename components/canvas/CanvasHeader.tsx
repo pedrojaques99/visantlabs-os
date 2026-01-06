@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BackButton } from '../ui/BackButton';
 import { Share2, ChevronRight, Settings, Users } from 'lucide-react';
@@ -7,7 +7,9 @@ import { useLayout } from '../../hooks/useLayout';
 import { AuthButton } from '../AuthButton';
 import { CanvasSettingsModal } from './CanvasSettingsModal';
 import { CommunityPresetsSidebar } from './CommunityPresetsSidebar';
+import { ShareModal } from './ShareModal';
 import { useCanvasHeader } from './CanvasHeaderContext';
+import { canvasApi } from '../../services/canvasApi';
 
 interface CanvasHeaderProps {
   onBack: () => void;
@@ -21,8 +23,15 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
   const {
     projectName,
     onProjectNameChange,
-    onShareClick,
+    projectId,
+    shareId,
     isCollaborative,
+    canEdit,
+    canView,
+    setShareId,
+    setIsCollaborative,
+    setCanEdit,
+    setCanView,
     backgroundColor,
     setBackgroundColor,
     gridColor,
@@ -47,7 +56,30 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
   const inputRef = useRef<HTMLInputElement>(null);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showCommunityPresetsSidebar, setShowCommunityPresetsSidebar] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const isUserEditRef = useRef(false);
+
+  // Handle share button click
+  const handleShareClick = useCallback(() => {
+    if (projectId) {
+      setShowShareModal(true);
+    }
+  }, [projectId]);
+
+  // Handle share update - reload project data from backend
+  const handleShareUpdate = useCallback(async () => {
+    if (projectId) {
+      try {
+        const project = await canvasApi.getById(projectId);
+        setShareId(project.shareId || null);
+        setIsCollaborative(project.isCollaborative || false);
+        setCanEdit(Array.isArray(project.canEdit) ? project.canEdit : []);
+        setCanView(Array.isArray(project.canView) ? project.canView : []);
+      } catch (error) {
+        console.error('Failed to reload project:', error);
+      }
+    }
+  }, [projectId, setShareId, setIsCollaborative, setCanEdit, setCanView]);
 
   useEffect(() => {
     if (!isEditing && projectName !== undefined) {
@@ -140,12 +172,12 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          {onShareClick && (
+          {projectId && (
             <button
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                onShareClick();
+                handleShareClick();
               }}
               className={`p-1.5 border rounded-md transition-all flex items-center justify-center ${isCollaborative
                 ? 'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border-[#52ddeb]/30 hover:border-[#52ddeb]/50'
@@ -212,6 +244,20 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
         onClose={() => setShowCommunityPresetsSidebar(false)}
         onImportPreset={onImportCommunityPreset}
       />
+
+      {/* Share Modal */}
+      {projectId && (
+        <ShareModal
+          isOpen={showShareModal}
+          onClose={() => setShowShareModal(false)}
+          projectId={projectId}
+          shareId={shareId}
+          isCollaborative={isCollaborative}
+          canEdit={canEdit}
+          canView={canView}
+          onShareUpdate={handleShareUpdate}
+        />
+      )}
     </div>
   );
 };
