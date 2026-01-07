@@ -108,7 +108,6 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
             // Try using File System Access API for folder selection
             if ('showDirectoryPicker' in window) {
                 try {
-                    // @ts-ignore
                     const dirHandle = await window.showDirectoryPicker();
                     const usedNames = new Set<string>();
 
