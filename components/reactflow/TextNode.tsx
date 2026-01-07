@@ -18,7 +18,7 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
   const { t } = useTranslation();
   const { setNodes } = useReactFlow();
   const nodeData = data as TextNodeData;
-  const { handleResize: handleResizeWithDebounce } = useNodeResize();
+  const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
   const [text, setText] = useState(nodeData.text || '');
   const [isImproving, setIsImproving] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -76,16 +76,22 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
 
   // Handle resize from NodeResizer (com debounce - aplica apenas quando soltar o mouse)
   const handleResize = useCallback((width: number, height: number) => {
-    const onResize = typeof nodeData.onResize === 'function' 
+    const onResize = typeof nodeData.onResize === 'function'
       ? nodeData.onResize as (nodeId: string, width: number, height: number) => void
       : undefined;
     handleResizeWithDebounce(id, width, height, onResize);
   }, [id, nodeData.onResize, handleResizeWithDebounce]);
 
+  const handleFitToContent = useCallback(() => {
+    // For text nodes, we set height to auto to let it grow/shrink based on content
+    fitToContent(id, 'auto', 'auto', nodeData.onResize as any);
+  }, [id, nodeData.onResize, fitToContent]);
+
   return (
     <NodeContainer
       selected={selected}
       dragging={dragging}
+      onFitToContent={handleFitToContent}
       className="p-5 min-w-[320px]"
       onContextMenu={(e) => {
         // Allow ReactFlow to handle the context menu event

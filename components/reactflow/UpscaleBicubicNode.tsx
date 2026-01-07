@@ -22,7 +22,7 @@ import { useNodeResize } from '../../hooks/canvas/useNodeResize';
 export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>>> = memo(({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
   const { setNodes, getZoom, getNode } = useReactFlow();
-  const { handleResize: handleResizeWithDebounce } = useNodeResize();
+  const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
   const isLoading = data.isLoading || false;
   const hasResult = !!(data.resultImageUrl || data.resultImageBase64 || data.resultVideoUrl || data.resultVideoBase64);
   const hasVideoResult = !!(data.resultVideoUrl || data.resultVideoBase64);
@@ -382,17 +382,43 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
     await data.onApply(id, connectedImageFromData);
   };
 
+  const handleFitToContent = useCallback(() => {
+    const width = data.imageWidth as number;
+    const height = data.imageHeight as number;
+    if (width && height) {
+      // Calculate a reasonable size if image is too large
+      let targetWidth = width;
+      let targetHeight = height;
+      const MAX_FIT_WIDTH = 1200;
+
+      if (targetWidth > MAX_FIT_WIDTH) {
+        const ratio = MAX_FIT_WIDTH / targetWidth;
+        targetWidth = MAX_FIT_WIDTH;
+        targetHeight = targetHeight * ratio;
+      }
+
+      fitToContent(id, Math.round(targetWidth), Math.round(targetHeight), data.onResize);
+    }
+  }, [id, data.imageWidth, data.imageHeight, data.onResize, fitToContent]);
+
   // Handle resize from NodeResizer (com debounce - aplica apenas quando soltar o mouse)
   const handleResize = useCallback((_: any, params: { width: number; height: number }) => {
     const { width, height } = params;
     handleResizeWithDebounce(id, width, height);
   }, [id, handleResizeWithDebounce]);
 
+  const handleDuplicate = () => {
+    if (data.onDuplicate) {
+      data.onDuplicate(id);
+    }
+  };
+
   return (
     <NodeContainer
       selected={selected}
       dragging={dragging}
       warning={data.oversizedWarning}
+      onFitToContent={handleFitToContent}
       className="p-5 min-w-[320px] w-full h-full flex flex-col"
       onContextMenu={(e) => {
         // Allow ReactFlow to handle the context menu event
@@ -406,6 +432,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
           minHeight={200}
           maxWidth={2000}
           maxHeight={2000}
+          keepAspectRatio={true}
           onResize={handleResize}
         />
       )}
@@ -499,6 +526,17 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
                 src={resultVideoUrl || undefined}
                 controls
                 className="w-full h-full object-contain"
+                onLoadedMetadata={(e) => {
+                  const video = e.target as HTMLVideoElement;
+                  if (video.videoWidth > 0 && video.videoHeight > 0) {
+                    if (data.onUpdateData) {
+                      data.onUpdateData(String(id), {
+                        imageWidth: video.videoWidth,
+                        imageHeight: video.videoHeight,
+                      });
+                    }
+                  }
+                }}
                 onError={(e) => {
                   console.error('Video load error:', e);
                 }}
@@ -514,6 +552,17 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
                   display: 'block',
                   imageRendering: 'auto', // Use browser's best quality rendering
                   ['WebkitImageSmoothing' as any]: 'high',
+                }}
+                onLoad={(e) => {
+                  const img = e.target as HTMLImageElement;
+                  if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+                    if (data.onUpdateData) {
+                      data.onUpdateData(String(id), {
+                        imageWidth: img.naturalWidth,
+                        imageHeight: img.naturalHeight,
+                      });
+                    }
+                  }
                 }}
                 loading="eager"
                 decoding="sync"

@@ -1,72 +1,27 @@
 import type { LuminancePreset, LuminancePresetType } from '../types/luminancePresets.js';
 import { LUMINANCE_PRESETS } from '../types/luminancePresets.js';
 
-// Cache for MongoDB presets
-let cachedPresets: LuminancePreset[] | null = null;
-let isLoadingPresets = false;
-
-/**
- * Load presets from MongoDB API with fallback to TypeScript
- */
-async function loadPresetsFromMongoDB(): Promise<LuminancePreset[]> {
-  if (isLoadingPresets) {
-    // Wait for ongoing load
-    while (isLoadingPresets) {
-      await new Promise(resolve => setTimeout(resolve, 100));
-    }
-    return cachedPresets || LUMINANCE_PRESETS;
-  }
-
-  if (cachedPresets) {
-    return cachedPresets;
-  }
-
-  isLoadingPresets = true;
-  try {
-    const response = await fetch('/api/admin/presets/public');
-    if (response.ok) {
-      const data = await response.json();
-      if (data.luminancePresets && data.luminancePresets.length > 0) {
-        cachedPresets = data.luminancePresets;
-        return cachedPresets;
-      }
-    }
-  } catch (error) {
-    console.warn('Failed to load luminance presets from MongoDB, using TypeScript fallback:', error);
-  } finally {
-    isLoadingPresets = false;
-  }
-
-  return LUMINANCE_PRESETS;
-}
-
-/**
- * Initialize presets (call this on app startup)
- */
-export async function initializeLuminancePresets(): Promise<void> {
-  await loadPresetsFromMongoDB();
-}
+import { getPresetsByType, getPresetsByTypeSync, getPresetByIdSync, fetchAllOfficialPresets } from './unifiedPresetService';
 
 /**
  * Get a specific luminance preset by ID (synchronous, uses cache)
  */
 export function getLuminancePreset(presetId: LuminancePresetType | string): LuminancePreset | undefined {
-  const presets = cachedPresets || LUMINANCE_PRESETS;
-  return presets.find(preset => preset.id === presetId);
+  return getPresetByIdSync('luminance', presetId);
 }
 
 /**
  * Get all available luminance presets (synchronous, uses cache)
  */
 export function getAllLuminancePresets(): LuminancePreset[] {
-  return cachedPresets || LUMINANCE_PRESETS;
+  return getPresetsByTypeSync('luminance');
 }
 
 /**
  * Get a specific luminance preset by ID (async, loads from MongoDB)
  */
 export async function getLuminancePresetAsync(presetId: LuminancePresetType | string): Promise<LuminancePreset | undefined> {
-  const presets = await loadPresetsFromMongoDB();
+  const presets = await getPresetsByType('luminance');
   return presets.find(preset => preset.id === presetId);
 }
 
@@ -74,8 +29,16 @@ export async function getLuminancePresetAsync(presetId: LuminancePresetType | st
  * Get all available luminance presets (async, loads from MongoDB)
  */
 export async function getAllLuminancePresetsAsync(): Promise<LuminancePreset[]> {
-  return await loadPresetsFromMongoDB();
+  return await getPresetsByType('luminance');
 }
+
+/**
+ * Initialize presets (call this on app startup)
+ */
+export async function initializeLuminancePresets(): Promise<void> {
+  await fetchAllOfficialPresets();
+}
+
 
 
 

@@ -1,5 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import type { UploadedImage } from '../types';
+import { isLocalDevelopment } from '../utils/env';
 
 /**
  * Hook to handle paste events (Ctrl+V) and extract images from clipboard
@@ -10,6 +11,10 @@ export const usePasteImage = (
 ) => {
   const handlePaste = useCallback(
     async (e: ClipboardEvent) => {
+      if (isLocalDevelopment()) {
+        console.log('[usePasteImage] Paste event triggered', { enabled, clipboardData: e.clipboardData });
+      }
+
       if (!enabled) return;
 
       const items = e.clipboardData?.items;
@@ -18,6 +23,9 @@ export const usePasteImage = (
       // Find image in clipboard
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
+        if (isLocalDevelopment()) {
+          console.log('[usePasteImage] Checking item', { type: item.type, kind: item.kind });
+        }
         if (item.type.indexOf('image') !== -1) {
           e.preventDefault();
           e.stopPropagation();
@@ -39,6 +47,9 @@ export const usePasteImage = (
                 mimeType,
                 file, // Pass File object for direct upload to R2
               });
+              if (isLocalDevelopment()) {
+                console.log('[usePasteImage] calling onImagePaste with image data');
+              }
             }
           };
           reader.readAsDataURL(file);

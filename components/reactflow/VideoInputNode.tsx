@@ -1,5 +1,5 @@
-import React, { useState, useEffect, memo, useRef } from 'react';
-import { Handle, Position, type NodeProps, useReactFlow } from '@xyflow/react';
+import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
+import { Handle, Position, NodeResizer, type NodeProps, useViewport, useReactFlow } from '@xyflow/react';
 import { Video, Upload, X } from 'lucide-react';
 import type { VideoInputNodeData } from '../../types/reactFlow';
 import { cn } from '../../lib/utils';
@@ -10,11 +10,13 @@ import { NodeActionBar } from './shared/NodeActionBar';
 import { useTranslation } from '../../hooks/useTranslation';
 import { videoToBase64 } from '../../utils/fileUtils';
 import { toast } from 'sonner';
+import { useNodeResize } from '../../hooks/canvas/useNodeResize';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
   const { t } = useTranslation();
-  const { getZoom } = useReactFlow();
+  const { setNodes, getNode, getZoom } = useReactFlow();
+  const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
   const nodeData = data as VideoInputNodeData;
   const [uploadedVideo, setUploadedVideo] = useState<string | undefined>(nodeData.uploadedVideo || nodeData.uploadedVideoUrl);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -86,16 +88,54 @@ export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<
     return video; // Assume it's already a URL
   };
 
+  const handleFitToContent = useCallback(() => {
+    const width = nodeData.imageWidth;
+    const height = nodeData.imageHeight;
+
+    if (width && height) {
+      // Calculate a reasonable size if image is too large
+      let targetWidth = width;
+      let targetHeight = height;
+      const MAX_FIT_WIDTH = 1200;
+
+      if (targetWidth > MAX_FIT_WIDTH) {
+        const ratio = MAX_FIT_WIDTH / targetWidth;
+        targetWidth = MAX_FIT_WIDTH;
+        targetHeight = targetHeight * ratio;
+      }
+
+      fitToContent(id, Math.round(targetWidth), Math.round(targetHeight), nodeData.onResize);
+    }
+  }, [id, nodeData.imageWidth, nodeData.imageHeight, nodeData.onResize, fitToContent]);
+
+  const handleResize = useCallback((_: any, params: { width: number; height: number }) => {
+    const { width, height } = params;
+    handleResizeWithDebounce(id, width, height, nodeData.onResize as any);
+  }, [id, nodeData.onResize, handleResizeWithDebounce]);
+
   return (
     <NodeContainer
       selected={selected}
       dragging={dragging}
+      onFitToContent={handleFitToContent}
       className="p-5 min-w-[320px]"
       onContextMenu={(e) => {
         // Allow ReactFlow to handle the context menu event
       }}
     >
       {/* Output Handle */}
+      {selected && !dragging && (
+        <NodeResizer
+          color="#52ddeb"
+          isVisible={selected}
+          minWidth={320}
+          minHeight={200}
+          maxWidth={2000}
+          maxHeight={2000}
+          keepAspectRatio={hasUploadedVideo}
+          onResize={handleResize}
+        />
+      )}
       <Handle
         type="source"
         position={Position.Right}
@@ -140,7 +180,18 @@ export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<
               autoPlay
               muted
               loop
-              className="w-full h-32 object-cover rounded border border-[#52ddeb]/30"
+              className="w-full h-auto min-h-[128px] object-contain rounded border border-[#52ddeb]/30"
+              onLoadedMetadata={(e) => {
+                const video = e.target as HTMLVideoElement;
+                if (video.videoWidth > 0 && video.videoHeight > 0) {
+                  if (nodeData.onUpdateData) {
+                    nodeData.onUpdateData(id, {
+                      imageWidth: video.videoWidth,
+                      imageHeight: video.videoHeight,
+                    });
+                  }
+                }
+              }}
               onError={(e) => {
                 const target = e.target as HTMLVideoElement;
                 target.style.display = 'none';

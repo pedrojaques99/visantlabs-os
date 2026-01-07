@@ -16,9 +16,7 @@ const ALL_STATIC_PRESETS: MockupPreset[] = [
   ...LUMINANCE_PRESETS.map(p => ({ ...p, referenceImageUrl: '', id: p.id as string })),
 ];
 
-// Cache for MongoDB presets
-let cachedPresets: MockupPreset[] | null = null;
-let isLoadingPresets = false;
+import { fetchAllOfficialPresets, clearPresetsCache as clearUnifiedCache } from './unifiedPresetService';
 
 /**
  * Load presets from MongoDB API and merge with TypeScript defaults
@@ -40,20 +38,12 @@ async function loadPresetsFromMongoDB(): Promise<MockupPreset[]> {
 
   isLoadingPresets = true;
   try {
-    // 1. Load admin presets
-    const adminResponse = await fetch('/api/admin/presets/public');
-    let adminPresets: MockupPreset[] = [];
-
-    if (adminResponse.ok) {
-      const adminData = await adminResponse.json();
-      if (adminData.mockupPresets && Array.isArray(adminData.mockupPresets) && adminData.mockupPresets.length > 0) {
-        // Normalize admin presets to ensure referenceImageUrl is always a string
-        adminPresets = adminData.mockupPresets.map((p: any) => ({
-          ...p,
-          referenceImageUrl: p.referenceImageUrl || '',
-        }));
-      }
-    }
+    // 1. Load official presets using unified service
+    const official = await fetchAllOfficialPresets();
+    const adminPresets = official.mockupPresets.map(p => ({
+      ...p,
+      referenceImageUrl: p.referenceImageUrl || '',
+    }));
 
     // 2. Load community presets using the dedicated service
     let communityPresets: MockupPreset[] = [];
@@ -128,6 +118,7 @@ export async function initializePresets(): Promise<void> {
  */
 export async function refreshPresets(): Promise<void> {
   cachedPresets = null;
+  clearUnifiedCache();
   await loadPresetsFromMongoDB();
 }
 
@@ -136,6 +127,7 @@ export async function refreshPresets(): Promise<void> {
  */
 export function clearPresetsCache(): void {
   cachedPresets = null;
+  clearUnifiedCache();
 }
 
 /**
@@ -145,6 +137,7 @@ export function clearPresetsCache(): void {
 export function updatePresetsCache(presets: MockupPreset[]): void {
   // Invalidate cache to force a full reload that includes community presets
   cachedPresets = null;
+  clearUnifiedCache();
 }
 
 /**

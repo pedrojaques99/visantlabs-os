@@ -20,7 +20,7 @@ import { useNodeResize } from '../../hooks/canvas/useNodeResize';
 export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
   const { setNodes } = useReactFlow();
-  const { handleResize: handleResizeWithDebounce } = useNodeResize();
+  const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
   const [prompt, setPrompt] = useState(data.prompt || '');
   const [model, setModel] = useState<GeminiModel>(data.model || 'gemini-2.5-flash-image');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -113,10 +113,34 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
     handleResizeWithDebounce(id, width, height, data.onResize);
   }, [id, data.onResize, handleResizeWithDebounce]);
 
+  const handleFitToContent = useCallback(() => {
+    const width = data.imageWidth;
+    const height = data.imageHeight;
+
+    if (width && height) {
+      // Calculate a reasonable size if image is too large
+      let targetWidth = width;
+      let targetHeight = height;
+      const MAX_FIT_WIDTH = 1200;
+
+      if (targetWidth > MAX_FIT_WIDTH) {
+        const ratio = MAX_FIT_WIDTH / targetWidth;
+        targetWidth = MAX_FIT_WIDTH;
+        targetHeight = targetHeight * ratio;
+      }
+
+      fitToContent(id, Math.round(targetWidth), Math.round(targetHeight), data.onResize);
+    } else {
+      // For nodes without result image yet, reset to a clean state
+      fitToContent(id, 280, 'auto', data.onResize);
+    }
+  }, [id, data.imageWidth, data.imageHeight, data.onResize, fitToContent]);
+
   return (
     <NodeContainer
       selected={selected}
       dragging={dragging}
+      onFitToContent={handleFitToContent}
       warning={data.oversizedWarning}
       className="p-5 min-w-[280px]"
       onContextMenu={(e) => {
@@ -131,9 +155,8 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
           minHeight={200}
           maxWidth={2000}
           maxHeight={2000}
-          onResize={(_, { width, height }) => {
-            handleResize(width, height);
-          }}
+          keepAspectRatio={hasResult}
+          onResize={(_, { width, height }) => handleResize(width, height)}
         />
       )}
 
@@ -270,9 +293,20 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
       {hasResult && (data.resultImageUrl || data.resultImageBase64) && (
         <div className="mt-3 pt-3 border-t border-zinc-700/30">
           <img
-            src={(data.resultImageUrl && isSafeUrl(data.resultImageUrl)) ? data.resultImageUrl : (data.resultImageBase64 ? `data:image/png;base64,${data.resultImageBase64}` : '')}
-            alt="Merged result"
+            src={data.resultImageUrl || (data.resultImageBase64 ? `data:image/png;base64,${data.resultImageBase64}` : '')}
+            alt={t('canvasNodes.mergeNode.result')}
             className="w-full h-auto rounded"
+            onLoad={(e) => {
+              const img = e.target as HTMLImageElement;
+              if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+                if (data.onUpdateData) {
+                  data.onUpdateData(id, {
+                    imageWidth: img.naturalWidth,
+                    imageHeight: img.naturalHeight,
+                  });
+                }
+              }
+            }}
           />
         </div>
       )}

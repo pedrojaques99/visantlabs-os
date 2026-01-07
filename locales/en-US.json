@@ -487,18 +487,6 @@
     "experimentalMode": "Experimental Mode",
     "experimentalModeDesc": "Show preview nodes like Shader, Strategy, etc."
   },
-  "canvasNodes": {
-    "promptNode": {
-      "presets": "Presets",
-      "loadPreset": "Load Preset",
-      "save": "Save",
-      "savePrompt": "Save Prompt",
-      "promptPlaceholder": "Enter your prompt here...",
-      "suggestPrompts": "Suggest Prompts",
-      "connectedToTextNode": "Connected to Text Node",
-      "savedPromptName": "Saved Prompt"
-    }
-  },
   "canvasLoading": {
     "Project": "Loading Project..."
   },
@@ -2272,6 +2260,34 @@
   "canvasNodes": {
     "promptNode": {
       "title": "Prompt Node",
+      "presets": "Presets",
+      "loadPreset": "Load Preset",
+      "save": "Save",
+      "savePrompt": "Save Prompt",
+      "presetModal": {
+        "title": "Select Mockup Preset",
+        "titleMulti": "Select Mockup Presets ({selected}/{max})",
+        "tabs": {
+          "official": "Official ({count})",
+          "community": "Community ({count})",
+          "custom": "Custom ({count})"
+        },
+        "loading": "Loading presets...",
+        "loadingCommunity": "Loading community presets...",
+        "noOfficial": "No official presets found",
+        "noCommunity": "No community presets found",
+        "noCustom": "No custom mockups found",
+        "createNew": "Create New",
+        "multiSelectMessage": "{selected} of {max} presets selected",
+        "multiSelectMessageEmpty": "Select up to {max} presets",
+        "confirmSelection": "Confirm Selection"
+      },
+      "presetCard": {
+        "copied": "Prompt copied to clipboard",
+        "copyFailed": "Failed to copy prompt",
+        "viewMore": "View more",
+        "promptLabel": "Prompt:"
+      },
       "referenceImages": "Reference Images",
       "logoFromBrandCore": "Logo (from BrandCore) - Primary Focus",
       "identityFromBrandCore": "Identity (from BrandCore) - Context/Colors/Vibe",

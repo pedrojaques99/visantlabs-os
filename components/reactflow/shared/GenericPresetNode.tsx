@@ -1,5 +1,4 @@
-import React, { useState, useEffect, memo, ComponentType } from 'react';
-import { type NodeProps, type Node } from '@xyflow/react';
+import { type NodeProps, type Node, NodeResizer } from '@xyflow/react';
 import { ChevronDown, LucideIcon } from 'lucide-react';
 import { cn } from '../../../lib/utils';
 import { ConnectedImagesDisplay } from '../ConnectedImagesDisplay';
@@ -7,6 +6,8 @@ import { GlitchLoader } from '../../ui/GlitchLoader';
 import { NodeHandles } from './NodeHandles';
 import { NodeContainer } from './NodeContainer';
 import { useTranslation } from '../../../hooks/useTranslation';
+import { useNodeResize } from '../../../hooks/canvas/useNodeResize';
+import { ComponentType, memo, useCallback, useEffect, useState } from 'react';
 
 interface PresetItem {
     id: string;
@@ -57,6 +58,7 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
 ) {
     const GenericPresetNodeComponent: React.FC<NodeProps<Node<TNodeData>>> = ({ data, selected, id, dragging }) => {
         const { t } = useTranslation();
+        const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
         const [selectedPresetId, setSelectedPresetId] = useState<TPresetType | string>(
             (config.getSelectedPreset(data) as TPresetType | string) || config.defaultPresetId
         );
@@ -110,10 +112,37 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
             await onGenerate(id, connectedImage, selectedPresetId);
         };
 
+        const handleFitToContent = useCallback(() => {
+            const width = data.imageWidth as number;
+            const height = data.imageHeight as number;
+            if (width && height) {
+                // Calculate a reasonable size if image is too large
+                let targetWidth = width;
+                let targetHeight = height;
+                const MAX_FIT_WIDTH = 1200;
+
+                if (targetWidth > MAX_FIT_WIDTH) {
+                    const ratio = MAX_FIT_WIDTH / targetWidth;
+                    targetWidth = MAX_FIT_WIDTH;
+                    targetHeight = targetHeight * ratio;
+                }
+
+                fitToContent(id, Math.round(targetWidth), Math.round(targetHeight), data.onResize as any);
+            } else {
+                // For nodes without result image yet, just reset to original width/auto height
+                fitToContent(id, 320, 'auto', data.onResize as any);
+            }
+        }, [id, data.imageWidth, data.imageHeight, data.onResize, fitToContent]);
+
+        const handleResize = useCallback((width: number, height: number) => {
+            handleResizeWithDebounce(id, width, height, data.onResize as any);
+        }, [id, data.onResize, handleResizeWithDebounce]);
+
         return (
             <NodeContainer
                 selected={selected}
                 dragging={dragging}
+                onFitToContent={handleFitToContent}
                 className="p-5"
                 style={{
                     width: '320px',
@@ -123,6 +152,18 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                     // Allow ReactFlow to handle the context menu event
                 }}
             >
+                {selected && !dragging && (
+                    <NodeResizer
+                        color="#52ddeb"
+                        isVisible={selected}
+                        minWidth={320}
+                        minHeight={200}
+                        maxWidth={2000}
+                        maxHeight={2000}
+                        keepAspectRatio={hasResult}
+                        onResize={(_, { width, height }) => handleResize(width, height)}
+                    />
+                )}
                 <NodeHandles />
 
                 {/* Header */}
@@ -215,9 +256,21 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                 {hasResult && (resultImageUrl || resultImageBase64) && (
                     <div className="mt-2 pt-2 border-t border-zinc-700/30">
                         <img
-                            src={resultImageUrl || `data:image/png;base64,${resultImageBase64}`}
+                            src={resultImageUrl || (resultImageBase64 ? `data:image/png;base64,${resultImageBase64}` : '')}
                             alt={t(config.translationKeys.result) || `${config.title} result`}
                             className="w-full h-auto rounded"
+                            onLoad={(e) => {
+                                const img = e.target as HTMLImageElement;
+                                if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+                                    const onUpdateData = config.getOnUpdateData(data);
+                                    if (onUpdateData) {
+                                        onUpdateData(id, {
+                                            imageWidth: img.naturalWidth,
+                                            imageHeight: img.naturalHeight,
+                                        } as any);
+                                    }
+                                }
+                            }}
                         />
                     </div>
                 )}

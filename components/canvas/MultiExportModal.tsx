@@ -34,7 +34,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
     const [searchQuery, setSearchQuery] = useState('');
     const [isExporting, setIsExporting] = useState(false);
 
-    // Extract all exportable images from nodes
+    // Extract all exportable images from nodes (Strict filtering for outputs)
     const exportableImages = useMemo(() => {
         const images: ExportableImage[] = [];
 
@@ -42,16 +42,18 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
             let url: string | null = null;
             let name = node.data.label || `${node.type}-${node.id.substring(0, 4)}`;
 
-            if (node.type === 'image') {
-                const data = node.data as any;
-                url = getImageUrl(data.mockup) || null;
-                name = data.mockup.prompt || name;
-            } else if (['merge', 'edit', 'upscale', 'upscaleBicubic', 'mockup', 'angle', 'prompt', 'output', 'shader'].includes(node.type as string)) {
-                const data = node.data as any;
+            // Strict Filter: Only select nodes with explicit result data (Output nodes and processing nodes)
+            // This excludes standard ImageNode (inputs), LogoNode, etc.
+            const data = node.data as any;
+            if (data.resultImageUrl || data.resultImageBase64) {
                 url = data.resultImageUrl || (data.resultImageBase64 ? (data.resultImageBase64.startsWith('data:') ? data.resultImageBase64 : `data:image/png;base64,${data.resultImageBase64}`) : null);
-            } else if (node.type === 'logo') {
-                const data = node.data as any;
-                url = data.logoImageUrl || (data.logoBase64 ? (data.logoBase64.startsWith('data:') ? data.logoBase64 : `data:image/png;base64,${data.logoBase64}`) : null);
+            }
+            // Explicitly handle 'output' type if it relies on other fields, but OutputNodeData uses resultImageUrl too.
+            // If there's any edge case where OutputNode doesn't have result* but should be exported (e.g. connected image), we might need to handle it, but usually it has result data.
+
+            // Name fallback for OutputNode
+            if (node.type === 'output' && data.label) {
+                name = data.label;
             }
 
             if (url) {
@@ -103,6 +105,60 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
         const selectedList = exportableImages.filter(img => selectedImages.has(img.id));
 
         try {
+            // Try using File System Access API for folder selection
+            if ('showDirectoryPicker' in window) {
+                try {
+                    // @ts-ignore
+                    const dirHandle = await window.showDirectoryPicker();
+                    const usedNames = new Set<string>();
+
+                    for (const img of selectedList) {
+                        try {
+                            // For now we trust the URL is accessible (CORS might be tricky if external, but usually these are internal/R2)
+                            // Use helper or fetch directly
+                            const response = await fetch(img.url);
+                            const blob = await response.blob();
+
+                            // Handle filename uniqueness
+                            const safeName = img.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                            let baseFilename = safeName || 'image';
+                            const extension = exportFormat.toLowerCase();
+                            let filename = `${baseFilename}.${extension}`;
+
+                            let counter = 1;
+                            while (usedNames.has(filename)) {
+                                filename = `${baseFilename}_${counter}.${extension}`;
+                                counter++;
+                            }
+                            usedNames.add(filename);
+
+                            const fileHandle = await dirHandle.getFileHandle(filename, { create: true });
+                            const writable = await fileHandle.createWritable();
+                            await writable.write(blob);
+                            await writable.close();
+
+                        } catch (err) {
+                            console.error(`Failed to save ${img.name}:`, err);
+                            toast.error(`Failed to save ${img.name}`);
+                        }
+                    }
+                    toast.success(`${selectedImages.size} image(s) exported successfully!`);
+                    onClose();
+                    return;
+
+                } catch (err: any) {
+                    if (err.name !== 'AbortError') {
+                        console.error('Directory selection failed:', err);
+                        toast.error('Failed to access folder, falling back to individual downloads');
+                    } else {
+                        // User cancelled
+                        setIsExporting(false);
+                        return;
+                    }
+                }
+            }
+
+            // Fallback to individual downloads
             const promises = selectedList.map((img, index) => {
                 // Add a small delay between downloads to prevent browser blocking
                 return new Promise<void>((resolve) => {

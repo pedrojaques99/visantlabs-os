@@ -21,7 +21,7 @@ import { useNodeResize } from '../../hooks/canvas/useNodeResize';
 const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
   const { setNodes } = useReactFlow();
-  const { handleResize: handleResizeWithDebounce } = useNodeResize();
+  const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
   const [selectedPresetId, setSelectedPresetId] = useState<MockupPresetType | string>(
     (data.selectedPreset as MockupPresetType | string) || 'cap'
   );
@@ -257,11 +257,17 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
     handleResizeWithDebounce(id, width, 'auto', data.onResize);
   }, [id, data.onResize, handleResizeWithDebounce]);
 
+  const handleFitToContent = useCallback(() => {
+    // For mockup nodes, we set height to auto
+    fitToContent(id, 'auto', 'auto', data.onResize);
+  }, [id, data.onResize, fitToContent]);
+
   return (
     <NodeContainer
       selected={selected}
       dragging={dragging}
       warning={data.oversizedWarning}
+      onFitToContent={handleFitToContent}
       className="p-5"
       style={{
         height: 'auto'

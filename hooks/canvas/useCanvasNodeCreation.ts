@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { useCanvasStrategyHandler } from './useCanvasStrategyHandler';
 import { useCanvasChatHandler } from './useCanvasChatHandler';
 import { canvasApi } from '../../services/canvasApi';
+import { isLocalDevelopment } from '../../utils/env';
 
 export const useCanvasNodeCreation = (
   reactFlowInstance: ReactFlowInstance | null,
@@ -20,6 +21,7 @@ export const useCanvasNodeCreation = (
   handleView: (mockup: Mockup) => void,
   handleEdit: (mockup: Mockup) => void,
   handleDelete: (id: string) => Promise<void>,
+  handleDuplicate: (id: string) => void,
   handlersRef: React.MutableRefObject<any>,
   subscriptionStatus: any,
   nodesRef: React.MutableRefObject<Node<FlowNodeData>[]>,
@@ -174,6 +176,8 @@ export const useCanvasNodeCreation = (
         connectedImages: [],
         onGenerate: handlersRef.current?.handleMergeGenerate || (() => Promise.resolve()),
         onGeneratePrompt: handlersRef.current?.handleMergeGeneratePrompt || (() => Promise.resolve()),
+        onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
       } as MergeNodeData,
     };
 
@@ -228,6 +232,8 @@ export const useCanvasNodeCreation = (
         onSuggestPrompts: handlersRef.current?.handlePromptSuggestPrompts || (() => Promise.resolve()),
         onSavePrompt: handlersRef.current?.handleSavePrompt || (() => { }),
         onUpdateData: handlersRef.current?.handlePromptNodeDataUpdate || (() => { }),
+        onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
       } as PromptNodeData,
     };
 
@@ -279,6 +285,8 @@ export const useCanvasNodeCreation = (
         model: 'veo-3.1-generate-preview',
         onGenerate: handlersRef.current?.handleVideoNodeGenerate || (() => Promise.resolve()),
         onUpdateData: handlersRef.current?.handleVideoNodeDataUpdate || (() => { }),
+        onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
       } as VideoNodeData,
     };
 
@@ -331,6 +339,8 @@ export const useCanvasNodeCreation = (
         onUploadLogo: handlersRef.current?.handleBrandLogoUpload || (() => { }),
         onUploadPdf: handlersRef.current?.handleBrandPdfUpload || (() => { }),
         onUpdateData: handlersRef.current?.handleBrandNodeDataUpdate || (() => { }),
+        onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
       } as BrandNodeData,
     };
 
@@ -384,6 +394,8 @@ export const useCanvasNodeCreation = (
         onGenerateSmartPrompt: handlersRef.current?.handleEditNodeGenerateSmartPrompt || (() => Promise.resolve()),
         onSuggestPrompts: handlersRef.current?.handleEditNodeSuggestPrompts || (() => Promise.resolve()),
         subscriptionStatus: subscriptionStatus,
+        onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
       } as EditNodeData,
     };
 
@@ -432,6 +444,8 @@ export const useCanvasNodeCreation = (
         targetResolution: '4K',
         onUpscale: handlersRef.current?.handleUpscale || (() => Promise.resolve()),
         onUpdateData: handlersRef.current?.handleUpscaleNodeDataUpdate || (() => { }),
+        onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
       } as UpscaleNodeData,
     };
 
@@ -494,6 +508,8 @@ export const useCanvasNodeCreation = (
         onAddMockupNode: () => {
           // This will be set by CanvasPage when node is updated
         },
+        onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
       } as MockupNodeData,
     };
 
@@ -541,6 +557,8 @@ export const useCanvasNodeCreation = (
         selectedAngle: 'eye-level', // Default to first angle
         onGenerate: handlersRef.current?.handleAngleGenerate || (() => Promise.resolve()),
         onUpdateData: handlersRef.current?.handleAngleNodeDataUpdate || (() => { }),
+        onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
       } as AngleNodeData,
     };
 
@@ -588,6 +606,8 @@ export const useCanvasNodeCreation = (
         selectedPreset: 'wood-grain', // Default to first texture
         onGenerate: handlersRef.current?.handleTextureGenerate || (() => Promise.resolve()),
         onUpdateData: handlersRef.current?.handleTextureNodeDataUpdate || (() => { }),
+        onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
       } as TextureNodeData,
     };
 
@@ -635,6 +655,8 @@ export const useCanvasNodeCreation = (
         selectedPreset: 'studio', // Default to first ambience
         onGenerate: handlersRef.current?.handleAmbienceGenerate || (() => Promise.resolve()),
         onUpdateData: handlersRef.current?.handleAmbienceNodeDataUpdate || (() => { }),
+        onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
       } as AmbienceNodeData,
     };
 
@@ -682,6 +704,8 @@ export const useCanvasNodeCreation = (
         selectedPreset: 'natural-light', // Default to first luminance
         onGenerate: handlersRef.current?.handleLuminanceGenerate || (() => Promise.resolve()),
         onUpdateData: handlersRef.current?.handleLuminanceNodeDataUpdate || (() => { }),
+        onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
       } as LuminanceNodeData,
     };
 
@@ -728,6 +752,8 @@ export const useCanvasNodeCreation = (
         type: 'shader',
         onApply: handlersRef.current?.handleShaderApply || (() => Promise.resolve()),
         onUpdateData: handlersRef.current?.handleShaderNodeDataUpdate || (() => { }),
+        onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
       } as ShaderNodeData,
     };
 
@@ -775,6 +801,8 @@ export const useCanvasNodeCreation = (
         scaleFactor: 2.0,
         onApply: handlersRef.current?.handleUpscaleBicubicApply || (() => Promise.resolve()),
         onUpdateData: handlersRef.current?.handleUpscaleBicubicNodeDataUpdate || (() => { }),
+        onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
       } as UpscaleBicubicNodeData,
     };
 
@@ -831,6 +859,7 @@ export const useCanvasNodeCreation = (
         onView: handleView,
         onEdit: handleEdit,
         onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
         onUpload: handlersRef.current.handleUploadImage,
         onResize: handlersRef.current.handleImageNodeResize,
       } as ImageNodeData,
@@ -851,6 +880,14 @@ export const useCanvasNodeCreation = (
     if (!reactFlowInstance) {
       toast.error('Canvas não está pronto. Por favor, aguarde um momento e tente novamente.');
       return;
+    }
+
+    if (isLocalDevelopment()) {
+      console.log('[handlePasteImage] Called with:', {
+        hasFile: !!image.file,
+        hasBase64: !!image.base64,
+        base64Length: image.base64?.length
+      });
     }
 
     // Validate image data
@@ -1010,6 +1047,7 @@ export const useCanvasNodeCreation = (
             onView: handleView,
             onEdit: handleEdit,
             onDelete: handleDelete,
+            onDuplicate: handleDuplicate,
             onUpload: handlersRef.current.handleUploadImage,
             onResize: handlersRef.current.handleImageNodeResize,
           } as ImageNodeData,
@@ -1092,6 +1130,7 @@ export const useCanvasNodeCreation = (
                         ...n,
                         data: {
                           ...data,
+                          onDuplicate: handleDuplicate,
                           mockup: updatedMockup,
                         } as ImageNodeData,
                       } as Node<FlowNodeData>;
@@ -1175,6 +1214,7 @@ export const useCanvasNodeCreation = (
         onView: handleView,
         onEdit: handleEdit,
         onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
         onUpload: handlersRef.current.handleUploadImage,
         onResize: handlersRef.current.handleImageNodeResize,
       } as ImageNodeData,
@@ -1232,6 +1272,8 @@ export const useCanvasNodeCreation = (
           // Open in fullscreen viewer
           window.open(imageUrl, '_blank');
         },
+        onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
       } as OutputNodeData,
     };
 
@@ -1292,6 +1334,8 @@ export const useCanvasNodeCreation = (
           onAddMockupNode: () => {
             // This will be set by CanvasPage when node is updated
           },
+          onDelete: handleDelete,
+          onDuplicate: handleDuplicate,
         } as MockupNodeData,
       };
     });
@@ -1346,6 +1390,8 @@ export const useCanvasNodeCreation = (
         type: 'logo',
         onUploadLogo: handlersRef.current?.handleLogoNodeUpload || (() => { }),
         onUpdateData: handlersRef.current?.handleLogoNodeDataUpdate || (() => { }),
+        onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
       },
     };
 
@@ -1397,6 +1443,8 @@ export const useCanvasNodeCreation = (
         onExtract: handlersRef.current?.handleColorExtractorExtract || (() => Promise.resolve()),
         onUpload: handlersRef.current?.handleColorExtractorUpload || (() => { }),
         onUpdateData: handlersRef.current?.handleColorExtractorNodeDataUpdate || (() => { }),
+        onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
       },
     };
 
@@ -1446,6 +1494,8 @@ export const useCanvasNodeCreation = (
         type: 'pdf',
         onUploadPdf: handlersRef.current?.handlePDFNodeUpload || (() => { }),
         onUpdateData: handlersRef.current?.handlePDFNodeDataUpdate || (() => { }),
+        onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
       },
     };
 
@@ -1502,6 +1552,8 @@ export const useCanvasNodeCreation = (
         onGeneratePDF: handlersRef.current?.handleStrategyNodeGeneratePDF || (() => { }),
         onSave: handlersRef.current?.handleStrategyNodeSave || (() => Promise.resolve(undefined)),
         onUpdateData: handlersRef.current?.handleStrategyNodeDataUpdate || (() => { }),
+        onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
       },
     };
 
@@ -1555,6 +1607,8 @@ export const useCanvasNodeCreation = (
         onGenerateStrategicPrompts: handlersRef.current?.handleBrandCoreGenerateStrategicPrompts || (() => Promise.resolve()),
         onUpdateData: handlersRef.current?.handleBrandCoreDataUpdate || (() => { }),
         onUploadPdfToR2: handlersRef.current?.handleBrandCoreUploadPdfToR2 || (() => Promise.resolve('')),
+        onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
       },
     };
 
@@ -1604,6 +1658,8 @@ export const useCanvasNodeCreation = (
         type: 'videoInput',
         onUploadVideo: handlersRef.current?.handleVideoInputNodeUpload || (() => Promise.resolve()),
         onUpdateData: handlersRef.current?.handleVideoInputNodeDataUpdate || (() => { }),
+        onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
       } as any,
     };
 
@@ -1666,6 +1722,8 @@ export const useCanvasNodeCreation = (
         type: 'text',
         text: initialText || '',
         onUpdateData: handlersRef.current?.handleTextNodeDataUpdate || (() => { }),
+        onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
       } as TextNodeData,
     };
 
@@ -1726,6 +1784,8 @@ export const useCanvasNodeCreation = (
         onEditConnectedNode: handlersRef.current?.handleChatEditConnectedNode || (() => { }),
         onAttachMedia: handlersRef.current?.handleChatAttachMedia || (() => undefined),
         connectedNodeIds: [],
+        onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
       } as ChatNodeData,
     };
 

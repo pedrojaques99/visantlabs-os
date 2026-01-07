@@ -32,6 +32,9 @@ import { toast } from 'sonner';
 import { cn } from '../lib/utils';
 import type { CommunityPrompt } from '../types/communityPrompts';
 
+/**
+ * Helper component to display a color swatch with copy functionality.
+ */
 const ColorSwatch: React.FC<{
   name: string;
   variable: string;
@@ -81,6 +84,9 @@ const ColorSwatch: React.FC<{
   );
 };
 
+/**
+ * Helper component to visualize spacing values.
+ */
 const SpacingExample: React.FC<{
   name: string;
   value: string;
@@ -104,6 +110,19 @@ const SpacingExample: React.FC<{
   );
 };
 
+/**
+ * DesignSystemPage Component
+ * 
+ * This is the main documentation page for the application's design system.
+ * It showcases all available UI components, color tokens, typography, and spacing scales.
+ *
+ * Features:
+ * - Interactive navigation sidebar with section tracking
+ * - Live component previews
+ * - Copy-pasteable design tokens
+ * - Search functionality via Command Palette (Ctrl+K)
+ * - Responsive layout adaptation
+ */
 export const DesignSystemPage: React.FC = () => {
   const { t } = useTranslation();
   const { theme } = useTheme();
@@ -256,13 +275,13 @@ export const DesignSystemPage: React.FC = () => {
 
   // Define tab order for navigation
   const tabOrder = ['home', 'colors', 'typography', 'components', 'spacing'];
-  
+
   // Get previous and next tabs
   const { previousTab, nextTab } = useMemo(() => {
     const currentIndex = tabOrder.indexOf(activeTab);
     const previousIndex = currentIndex > 0 ? currentIndex - 1 : null;
     const nextIndex = currentIndex < tabOrder.length - 1 ? currentIndex + 1 : null;
-    
+
     return {
       previousTab: previousIndex !== null ? tabOrder[previousIndex] : null,
       nextTab: nextIndex !== null ? tabOrder[nextIndex] : null,
@@ -328,12 +347,12 @@ export const DesignSystemPage: React.FC = () => {
               const ratio = entry.intersectionRatio;
               const boundingRect = entry.boundingClientRect;
               const rootRect = entry.rootBounds;
-              
+
               // Calculate position score (prefer sections near top of viewport)
               const elementTop = boundingRect.top - rootRect.top;
               const viewportHeight = rootRect.height;
               const positionScore = Math.max(0, 1 - (elementTop / (viewportHeight * 0.6)));
-              
+
               // Combined score: visibility ratio * position preference
               const score = ratio * positionScore;
               sectionVisibility.set(sectionId, score);
@@ -341,7 +360,7 @@ export const DesignSystemPage: React.FC = () => {
               sectionVisibility.delete(sectionId);
             }
           });
-          
+
           updateActiveSection();
         },
         {
@@ -371,7 +390,7 @@ export const DesignSystemPage: React.FC = () => {
     const items: Array<{ id: string; label: string; category: string; onClick: () => void }> = [];
     const tabLabel = t('designSystem.commandPalette.tab') || 'Tab';
     const sectionLabel = t('designSystem.commandPalette.section') || 'Section';
-    
+
     // Add tabs
     navigationItems.forEach(item => {
       items.push({
@@ -380,7 +399,7 @@ export const DesignSystemPage: React.FC = () => {
         category: tabLabel,
         onClick: () => handleNavigationClick(item.id),
       });
-      
+
       // Add sections
       if (item.sections) {
         item.sections.forEach(section => {
@@ -393,7 +412,7 @@ export const DesignSystemPage: React.FC = () => {
         });
       }
     });
-    
+
     return items;
   }, [navigationItems, t, handleNavigationClick]);
 
@@ -444,7 +463,7 @@ export const DesignSystemPage: React.FC = () => {
         <div className="fixed inset-0 z-0">
           <GridDotsBackground />
         </div>
-        
+
         <div className="flex relative z-10">
           {/* Sidebar Navigation */}
           <NavigationSidebar
@@ -464,988 +483,1048 @@ export const DesignSystemPage: React.FC = () => {
           />
 
           {/* Main Content */}
-          <div 
+          <div
             className="flex-1 min-w-0 pt-10 md:pt-12 transition-all duration-300"
-            style={{ 
-              marginLeft: typeof window !== 'undefined' && window.innerWidth >= 1024 
-                ? `${sidebarWidth}px` 
-                : '0' 
+            style={{
+              marginLeft: typeof window !== 'undefined' && window.innerWidth >= 1024
+                ? `${sidebarWidth}px`
+                : '0'
             }}
           >
             <div className="h-screen overflow-y-auto">
               <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24">
-          {/* Breadcrumb */}
-          <div className="mb-4">
-            <BreadcrumbWithBack to="/">
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink asChild>
-                    <Link to="/">{t('common.home')}</Link>
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>{t('designSystem.title')}</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </BreadcrumbWithBack>
-          </div>
-
-          {/* Header - Only show on home */}
-          {activeTab === 'home' && (
-            <div className="flex items-center justify-between gap-4 mb-8">
-              <div className="flex items-center gap-4">
-                <Palette className="h-6 w-6 md:h-8 md:w-8 text-brand-cyan" />
-                <div className="flex-1">
-                  <h1 className="text-3xl md:text-4xl font-semibold font-manrope text-zinc-300">
-                    {t('designSystem.title')}
-                  </h1>
-                  <p className="text-zinc-500 font-mono text-sm md:text-base mt-1">
-                    {t('designSystem.description')}
-                  </p>
+                {/* Breadcrumb */}
+                <div className="mb-4">
+                  <BreadcrumbWithBack to="/">
+                    <BreadcrumbList>
+                      <BreadcrumbItem>
+                        <BreadcrumbLink asChild>
+                          <Link to="/">{t('common.home')}</Link>
+                        </BreadcrumbLink>
+                      </BreadcrumbItem>
+                      <BreadcrumbSeparator />
+                      <BreadcrumbItem>
+                        <BreadcrumbPage>{t('designSystem.title')}</BreadcrumbPage>
+                      </BreadcrumbItem>
+                    </BreadcrumbList>
+                  </BreadcrumbWithBack>
                 </div>
-              </div>
-              <button
-                onClick={() => {
-                  const event = new KeyboardEvent('keydown', {
-                    key: 'k',
-                    ctrlKey: true,
-                    bubbles: true,
-                  });
-                  document.dispatchEvent(event);
-                }}
-                className="hidden md:flex items-center gap-2 px-4 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-md text-zinc-400 hover:text-zinc-300 hover:border-brand-cyan/30 transition-colors text-sm font-mono"
-                title={t('designSystem.commandPalette.searchShortcut') || 'Search (Ctrl+K)'}
-              >
-                <Search className="w-4 h-4" />
-                <span>{t('designSystem.commandPalette.search') || 'Search'}</span>
-                <div className="flex items-center gap-1 px-1.5 py-0.5 bg-zinc-900/50 rounded border border-zinc-800/50">
-                  <Command className="w-3 h-3" />
-                  <kbd className="text-xs">K</kbd>
-                </div>
-              </button>
-            </div>
-          )}
 
-          {/* Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            {/* Home Tab */}
-            <TabsContent value="home" className="space-y-6 bg-transparent">
-              <Card className="overflow-hidden">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-brand-cyan" />
-                    {t('designSystem.home.welcome') || 'Welcome to the Design System'}
-                  </CardTitle>
-                  <CardDescription>
-                    {t('designSystem.home.description') || 'A comprehensive guide to our design tokens, components, and patterns'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Card 
-                      className="cursor-pointer hover:border-brand-cyan/50 hover:bg-zinc-800/30 hover:shadow-lg hover:shadow-brand-cyan/10 transition-all duration-200 group" 
-                      onClick={() => setActiveTab('colors')}
-                    >
-                      <CardHeader>
-                        <Palette className="w-8 h-8 text-brand-cyan mb-2" />
-                        <CardTitle className="text-lg group-hover:text-brand-cyan/90 transition-colors">{t('designSystem.tabs.colors')}</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-zinc-400 font-mono group-hover:text-zinc-300 transition-colors">
-                          {t('designSystem.home.colorsDescription') || 'Color palette and tokens'}
+                {/* Header - Only show on home */}
+                {activeTab === 'home' && (
+                  <div className="flex items-center justify-between gap-4 mb-8">
+                    <div className="flex items-center gap-4">
+                      <Palette className="h-6 w-6 md:h-8 md:w-8 text-brand-cyan" />
+                      <div className="flex-1">
+                        <h1 className="text-3xl md:text-4xl font-semibold font-manrope text-zinc-300">
+                          {t('designSystem.title')}
+                        </h1>
+                        <p className="text-zinc-500 font-mono text-sm md:text-base mt-1">
+                          {t('designSystem.description')}
                         </p>
-                      </CardContent>
-                    </Card>
-                    <Card 
-                      className="cursor-pointer hover:border-brand-cyan/50 hover:bg-zinc-800/30 hover:shadow-lg hover:shadow-brand-cyan/10 transition-all duration-200 group" 
-                      onClick={() => setActiveTab('typography')}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        const event = new KeyboardEvent('keydown', {
+                          key: 'k',
+                          ctrlKey: true,
+                          bubbles: true,
+                        });
+                        document.dispatchEvent(event);
+                      }}
+                      className="hidden md:flex items-center gap-2 px-4 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-md text-zinc-400 hover:text-zinc-300 hover:border-brand-cyan/30 transition-colors text-sm font-mono"
+                      title={t('designSystem.commandPalette.searchShortcut') || 'Search (Ctrl+K)'}
                     >
-                      <CardHeader>
-                        <Type className="w-8 h-8 text-brand-cyan mb-2" />
-                        <CardTitle className="text-lg group-hover:text-brand-cyan/90 transition-colors">{t('designSystem.tabs.typography')}</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-zinc-400 font-mono group-hover:text-zinc-300 transition-colors">
-                          {t('designSystem.home.typographyDescription') || 'Fonts and text styles'}
-                        </p>
-                      </CardContent>
-                    </Card>
-                    <Card 
-                      className="cursor-pointer hover:border-brand-cyan/50 hover:bg-zinc-800/30 hover:shadow-lg hover:shadow-brand-cyan/10 transition-all duration-200 group" 
-                      onClick={() => setActiveTab('components')}
-                    >
-                      <CardHeader>
-                        <Box className="w-8 h-8 text-brand-cyan mb-2" />
-                        <CardTitle className="text-lg group-hover:text-brand-cyan/90 transition-colors">{t('designSystem.tabs.components')}</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-zinc-400 font-mono group-hover:text-zinc-300 transition-colors">
-                          {t('designSystem.home.componentsDescription') || 'Reusable UI components'}
-                        </p>
-                      </CardContent>
-                    </Card>
-                    <Card 
-                      className="cursor-pointer hover:border-brand-cyan/50 hover:bg-zinc-800/30 hover:shadow-lg hover:shadow-brand-cyan/10 transition-all duration-200 group" 
-                      onClick={() => setActiveTab('spacing')}
-                    >
-                      <CardHeader>
-                        <LayoutGrid className="w-8 h-8 text-brand-cyan mb-2" />
-                        <CardTitle className="text-lg group-hover:text-brand-cyan/90 transition-colors">{t('designSystem.tabs.spacing')}</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-zinc-400 font-mono group-hover:text-zinc-300 transition-colors">
-                          {t('designSystem.home.spacingDescription') || 'Spacing scale and system'}
-                        </p>
-                      </CardContent>
-                    </Card>
+                      <Search className="w-4 h-4" />
+                      <span>{t('designSystem.commandPalette.search') || 'Search'}</span>
+                      <div className="flex items-center gap-1 px-1.5 py-0.5 bg-zinc-900/50 rounded border border-zinc-800/50">
+                        <Command className="w-3 h-3" />
+                        <kbd className="text-xs">K</kbd>
+                      </div>
+                    </button>
                   </div>
-                  <Separator />
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Card>
+                )}
+
+                {/* Tabs */}
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                  {/* Home Tab */}
+                  <TabsContent value="home" className="space-y-6 bg-transparent">
+                    <Card className="overflow-hidden">
                       <CardHeader>
-                        <CardTitle className="text-lg">{t('designSystem.home.quickStart') || 'Quick Start'}</CardTitle>
+                        <CardTitle className="flex items-center gap-2">
+                          <Sparkles className="w-5 h-5 text-brand-cyan" />
+                          {t('designSystem.home.welcome') || 'Welcome to the Design System'}
+                        </CardTitle>
+                        <CardDescription>
+                          {t('designSystem.home.description') || 'A comprehensive guide to our design tokens, components, and patterns'}
+                        </CardDescription>
                       </CardHeader>
-                      <CardContent className="space-y-2">
-                        <p className="text-sm text-zinc-400 font-mono">
-                          {t('designSystem.home.quickStartDescription') || 'Get started with our design system by exploring the color palette, typography, and components.'}
-                        </p>
-                        <ul className="text-sm text-zinc-400 font-mono list-disc list-inside space-y-1">
-                          <li>{t('designSystem.home.quickStart1') || 'Browse components and their variants'}</li>
-                          <li>{t('designSystem.home.quickStart2') || 'Copy CSS variables and class names'}</li>
-                          <li>{t('designSystem.home.quickStart3') || 'Understand spacing and layout patterns'}</li>
-                        </ul>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg">{t('designSystem.home.usage') || 'Usage'}</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-2">
-                        <p className="text-sm text-zinc-400 font-mono">
-                          {t('designSystem.home.usageDescription') || 'All components follow consistent patterns and can be customized using CSS variables.'}
-                        </p>
-                        <div className="p-3 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                          <code className="text-xs font-mono text-zinc-300">
-                            {t('designSystem.home.usageExample') || '<Button variant="default">Click me</Button>'}
-                          </code>
+                      <CardContent className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                          <Card
+                            className="cursor-pointer hover:border-brand-cyan/50 hover:bg-zinc-800/30 hover:shadow-lg hover:shadow-brand-cyan/10 transition-all duration-200 group"
+                            onClick={() => setActiveTab('colors')}
+                          >
+                            <CardHeader>
+                              <Palette className="w-8 h-8 text-brand-cyan mb-2" />
+                              <CardTitle className="text-lg group-hover:text-brand-cyan/90 transition-colors">{t('designSystem.tabs.colors')}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <p className="text-sm text-zinc-400 font-mono group-hover:text-zinc-300 transition-colors">
+                                {t('designSystem.home.colorsDescription') || 'Color palette and tokens'}
+                              </p>
+                            </CardContent>
+                          </Card>
+                          <Card
+                            className="cursor-pointer hover:border-brand-cyan/50 hover:bg-zinc-800/30 hover:shadow-lg hover:shadow-brand-cyan/10 transition-all duration-200 group"
+                            onClick={() => setActiveTab('typography')}
+                          >
+                            <CardHeader>
+                              <Type className="w-8 h-8 text-brand-cyan mb-2" />
+                              <CardTitle className="text-lg group-hover:text-brand-cyan/90 transition-colors">{t('designSystem.tabs.typography')}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <p className="text-sm text-zinc-400 font-mono group-hover:text-zinc-300 transition-colors">
+                                {t('designSystem.home.typographyDescription') || 'Fonts and text styles'}
+                              </p>
+                            </CardContent>
+                          </Card>
+                          <Card
+                            className="cursor-pointer hover:border-brand-cyan/50 hover:bg-zinc-800/30 hover:shadow-lg hover:shadow-brand-cyan/10 transition-all duration-200 group"
+                            onClick={() => setActiveTab('components')}
+                          >
+                            <CardHeader>
+                              <Box className="w-8 h-8 text-brand-cyan mb-2" />
+                              <CardTitle className="text-lg group-hover:text-brand-cyan/90 transition-colors">{t('designSystem.tabs.components')}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <p className="text-sm text-zinc-400 font-mono group-hover:text-zinc-300 transition-colors">
+                                {t('designSystem.home.componentsDescription') || 'Reusable UI components'}
+                              </p>
+                            </CardContent>
+                          </Card>
+                          <Card
+                            className="cursor-pointer hover:border-brand-cyan/50 hover:bg-zinc-800/30 hover:shadow-lg hover:shadow-brand-cyan/10 transition-all duration-200 group"
+                            onClick={() => setActiveTab('spacing')}
+                          >
+                            <CardHeader>
+                              <LayoutGrid className="w-8 h-8 text-brand-cyan mb-2" />
+                              <CardTitle className="text-lg group-hover:text-brand-cyan/90 transition-colors">{t('designSystem.tabs.spacing')}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <p className="text-sm text-zinc-400 font-mono group-hover:text-zinc-300 transition-colors">
+                                {t('designSystem.home.spacingDescription') || 'Spacing scale and system'}
+                              </p>
+                            </CardContent>
+                          </Card>
+                        </div>
+                        <Separator />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <Card>
+                            <CardHeader>
+                              <CardTitle className="text-lg">{t('designSystem.home.quickStart') || 'Quick Start'}</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-2">
+                              <p className="text-sm text-zinc-400 font-mono">
+                                {t('designSystem.home.quickStartDescription') || 'Get started with our design system by exploring the color palette, typography, and components.'}
+                              </p>
+                              <ul className="text-sm text-zinc-400 font-mono list-disc list-inside space-y-1">
+                                <li>{t('designSystem.home.quickStart1') || 'Browse components and their variants'}</li>
+                                <li>{t('designSystem.home.quickStart2') || 'Copy CSS variables and class names'}</li>
+                                <li>{t('designSystem.home.quickStart3') || 'Understand spacing and layout patterns'}</li>
+                              </ul>
+                            </CardContent>
+                          </Card>
+                          <Card>
+                            <CardHeader>
+                              <CardTitle className="text-lg">{t('designSystem.home.usage') || 'Usage'}</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-2">
+                              <p className="text-sm text-zinc-400 font-mono">
+                                {t('designSystem.home.usageDescription') || 'All components follow consistent patterns and can be customized using CSS variables.'}
+                              </p>
+                              <div className="p-3 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
+                                <code className="text-xs font-mono text-zinc-300">
+                                  {t('designSystem.home.usageExample') || '<Button variant="default">Click me</Button>'}
+                                </code>
+                              </div>
+                            </CardContent>
+                          </Card>
                         </div>
                       </CardContent>
                     </Card>
-                  </div>
-                </CardContent>
-              </Card>
-              <TabNavigation />
-            </TabsContent>
+                    <TabNavigation />
+                  </TabsContent>
 
-            {/* Colors Tab */}
-            <TabsContent value="colors" className="space-y-6">
-              <Card id="primary-colors" className="overflow-hidden bg-transparent">
-                <CardHeader>  
-                  <CardTitle>{t('designSystem.colors.primary.title')}</CardTitle>
-                  <CardDescription>
-                    {t('designSystem.colors.primary.description')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-                    {colors.map((color) => (
-                      <ColorSwatch
-                        key={color.variable}
-                        name={color.name}
-                        variable={color.variable}
-                        description={color.description}
-                      />
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+                  {/* Colors Tab */}
+                  <TabsContent value="colors" className="space-y-6">
+                    <Card id="primary-colors" className="overflow-hidden bg-transparent">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.colors.primary.title')}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.colors.primary.description')}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+                          {colors.map((color) => (
+                            <ColorSwatch
+                              key={color.variable}
+                              name={color.name}
+                              variable={color.variable}
+                              description={color.description}
+                            />
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
 
-              <Card id="chart-colors" className="overflow-hidden bg-transparent">
-                <CardHeader>
-                  <CardTitle>{t('designSystem.colors.chart.title')}</CardTitle>
-                  <CardDescription>
-                    {t('designSystem.colors.chart.description')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                    {chartColors.map((color) => (
-                      <ColorSwatch
-                        key={color.variable}
-                        name={color.name}
-                        variable={color.variable}
-                      />
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-              <TabNavigation />
-            </TabsContent>
+                    <Card id="chart-colors" className="overflow-hidden bg-transparent">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.colors.chart.title')}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.colors.chart.description')}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                          {chartColors.map((color) => (
+                            <ColorSwatch
+                              key={color.variable}
+                              name={color.name}
+                              variable={color.variable}
+                            />
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <TabNavigation />
+                  </TabsContent>
 
-            {/* Typography Tab */}
-            <TabsContent value="typography" className="space-y-6">
-              <Card id="fonts" className="overflow-hidden bg-transparent">
-                <CardHeader>
-                  <CardTitle>{t('designSystem.typography.fonts.title')}</CardTitle>
-                  <CardDescription>
-                    {t('designSystem.typography.fonts.description')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {typography.map((font) => (
-                    <div key={font.className} className="border border-zinc-800/50 rounded-md p-6 bg-zinc-900/30">
-                      <h3 className="font-mono font-semibold text-zinc-200 mb-2">{font.name}</h3>
-                      <p className="text-sm text-zinc-400 font-mono mb-4">{font.description}</p>
-                      <p className={cn('text-2xl', font.className)}>
-                        The quick brown fox jumps over the lazy dog
-                      </p>
-                      <p className={cn('text-lg mt-2', font.className)}>
-                        ABCDEFGHIJKLMNOPQRSTUVWXYZ
-                      </p>
-                      <p className={cn('text-lg mt-2', font.className)}>
-                        0123456789 !@#$%^&*()
-                      </p>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-
-              <Card id="scale">
-                <CardHeader>
-                  <CardTitle>{t('designSystem.typography.scale.title')}</CardTitle>
-                  <CardDescription>
-                    {t('designSystem.typography.scale.description')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <h1 className="text-4xl font-semibold font-manrope">Heading 1</h1>
-                    <h2 className="text-3xl font-semibold font-manrope">Heading 2</h2>
-                    <h3 className="text-2xl font-semibold font-manrope">Heading 3</h3>
-                    <h4 className="text-xl font-semibold font-manrope">Heading 4</h4>
-                    <h5 className="text-lg font-semibold font-manrope">Heading 5</h5>
-                    <h6 className="text-base font-semibold font-manrope">Heading 6</h6>
-                    <p className="text-base font-manrope">Body text - Regular paragraph text</p>
-                    <p className="text-sm font-manrope">Small text - For captions and labels</p>
-                    <p className="text-xs font-manrope">Extra small text - For fine print</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <TabNavigation />
-            </TabsContent>
-
-            {/* Components Tab */}
-            <TabsContent value="components" className="space-y-6">
-              {/* Buttons */}
-              <Card id="buttons">
-                <CardHeader>
-                  <CardTitle>{t('designSystem.components.buttons.title')}</CardTitle>
-                  <CardDescription>
-                    {t('designSystem.components.buttons.description')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex flex-wrap gap-4">
-                    <Button variant="default">Default</Button>
-                    <Button variant="secondary">Secondary</Button>
-                    <Button variant="destructive">Destructive</Button>
-                    <Button variant="outline">Outline</Button>
-                    <Button variant="ghost">Ghost</Button>
-                    <Button variant="link">Link</Button>
-                    <Button variant="brand">Brand</Button>
-                    <Button variant="sidebarAction">Sidebar Action</Button>
-                  </div>
-                  <Separator />
-                  <div className="flex flex-wrap gap-4">
-                    <Button size="sm">Small</Button>
-                    <Button size="default">Default</Button>
-                    <Button size="lg">Large</Button>
-                    <Button size="icon">
-                      <Palette className="w-4 h-4" />
-                    </Button>
-                    <Button size="sidebar">Sidebar</Button>
-                  </div>
-                  <Separator />
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-4">
-                    <div className="p-3 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                      <div className="text-xs font-mono text-zinc-500 mb-1">Brand</div>
-                      <Button variant="brand" size="sm" className="w-full">Brand Button</Button>
-                    </div>
-                    <div className="p-3 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                      <div className="text-xs font-mono text-zinc-500 mb-1">Sidebar</div>
-                      <Button variant="sidebarAction" size="sm" className="w-full">Sidebar</Button>
-                    </div>
-                    <div className="p-3 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                      <div className="text-xs font-mono text-zinc-500 mb-1">Icon</div>
-                      <Button size="icon" className="w-full">
-                        <Palette className="w-4 h-4" />
-                      </Button>
-                    </div>
-                    <div className="p-3 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                      <div className="text-xs font-mono text-zinc-500 mb-1">Large</div>
-                      <Button size="lg" className="w-full">Large</Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Inputs */}
-              <Card id="inputs">
-                <CardHeader>
-                  <CardTitle>{t('designSystem.components.inputs.title')}</CardTitle>
-                  <CardDescription>
-                    {t('designSystem.components.inputs.description')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Input placeholder="Enter text..." />
-                  <Input type="email" placeholder="email@example.com" />
-                  <Input type="password" placeholder="Password" />
-                  <Input disabled placeholder="Disabled input" />
-                </CardContent>
-              </Card>
-
-              {/* Textarea */}
-              <Card id="textarea">
-                <CardHeader>
-                  <CardTitle>{t('designSystem.components.textarea.title')}</CardTitle>
-                  <CardDescription>
-                    {t('designSystem.components.textarea.description')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Textarea placeholder="Enter multiline text..." />
-                </CardContent>
-              </Card>
-
-              {/* Select */}
-              <Card id="select">
-                <CardHeader>
-                  <CardTitle>{t('designSystem.components.select.title')}</CardTitle>
-                  <CardDescription>
-                    {t('designSystem.components.select.description')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Select
-                    options={[
-                      { value: 'option1', label: 'Option 1' },
-                      { value: 'option2', label: 'Option 2' },
-                      { value: 'option3', label: 'Option 3' },
-                    ]}
-                    value={selectValue}
-                    onChange={setSelectValue}
-                    placeholder="Select an option..."
-                  />
-                </CardContent>
-              </Card>
-
-              {/* Switch */}
-              <Card id="switch">
-                <CardHeader>
-                  <CardTitle>{t('designSystem.components.switch.title')}</CardTitle>
-                  <CardDescription>
-                    {t('designSystem.components.switch.description')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-4">
-                    <Switch checked={switchChecked} onCheckedChange={setSwitchChecked} />
-                    <span className="font-mono text-sm">
-                      {switchChecked ? 'Enabled' : 'Disabled'}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Badge */}
-              <Card id="badge">
-                <CardHeader>
-                  <CardTitle>{t('designSystem.components.badge.title')}</CardTitle>
-                  <CardDescription>
-                    {t('designSystem.components.badge.description')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    <Badge variant="default">Default</Badge>
-                    <Badge variant="secondary">Secondary</Badge>
-                    <Badge variant="destructive">Destructive</Badge>
-                    <Badge variant="outline">Outline</Badge>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Card Example */}
-              <Card id="card">
-                <CardHeader>
-                  <CardTitle>{t('designSystem.components.card.title')}</CardTitle>
-                  <CardDescription>
-                    {t('designSystem.components.card.description')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Card Title</CardTitle>
-                      <CardDescription>Card description text</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm font-mono text-zinc-400">
-                        This is the card content area.
-                      </p>
-                    </CardContent>
-                  </Card>
-                </CardContent>
-              </Card>
-
-              {/* PresetCard */}
-              <Card id="preset-card">
-                <CardHeader>
-                  <CardTitle>{t('designSystem.components.presetCard.title') || 'Preset Card'}</CardTitle>
-                  <CardDescription>
-                    {t('designSystem.components.presetCard.description') || 'Card component for displaying community presets with image, metadata, and actions'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {[
-                      {
-                        id: 'example-1',
-                        userId: 'system',
-                        category: 'presets' as const,
-                        presetType: 'mockup' as const,
-                        name: 'Modern Product Mockup',
-                        description: 'A clean and modern product presentation style',
-                        prompt: 'Create a modern product mockup with clean background and professional lighting',
-                        referenceImageUrl: undefined,
-                        aspectRatio: '16:9' as const,
-                        tags: ['product', 'modern', 'clean'],
-                        difficulty: 'beginner' as const,
-                        context: 'mockup' as const,
-                        isApproved: true,
-                        createdAt: new Date().toISOString(),
-                        updatedAt: new Date().toISOString(),
-                        likesCount: 42,
-                        isLikedByUser: false,
-                      },
-                      {
-                        id: 'example-2',
-                        userId: 'system',
-                        category: '3d' as const,
-                        name: '3D Render Style',
-                        description: 'Three-dimensional rendering with depth and shadows',
-                        prompt: 'Generate a 3D rendered scene with realistic lighting and shadows',
-                        aspectRatio: '16:9' as const,
-                        tags: ['3d', 'render', 'depth'],
-                        difficulty: 'intermediate' as const,
-                        context: 'general' as const,
-                        isApproved: true,
-                        createdAt: new Date().toISOString(),
-                        updatedAt: new Date().toISOString(),
-                        likesCount: 28,
-                        isLikedByUser: true,
-                      },
-                      {
-                        id: 'example-3',
-                        userId: 'system',
-                        category: 'aesthetics' as const,
-                        name: 'Minimalist Aesthetic',
-                        description: 'Clean and minimal design approach',
-                        prompt: 'Apply a minimalist aesthetic with clean lines and ample white space',
-                        aspectRatio: '1:1' as const,
-                        tags: ['minimalist', 'clean', 'simple'],
-                        difficulty: 'beginner' as const,
-                        context: 'general' as const,
-                        isApproved: true,
-                        createdAt: new Date().toISOString(),
-                        updatedAt: new Date().toISOString(),
-                        likesCount: 15,
-                        isLikedByUser: false,
-                      },
-                    ].map((preset) => (
-                      <PresetCard
-                        key={preset.id}
-                        preset={preset as CommunityPrompt}
-                        onClick={() => {}}
-                        isAuthenticated={true}
-                        canEdit={false}
-                        t={(key: string) => {
-                          const translations: Record<string, string> = {
-                            'communityPresets.actions.duplicate': 'Duplicate',
-                            'communityPresets.actions.edit': 'Edit',
-                            'communityPresets.actions.delete': 'Delete',
-                            'communityPresets.actions.like': 'Like',
-                            'communityPresets.actions.unlike': 'Unlike',
-                            'communityPresets.difficultyBeginner': 'Beginner',
-                            'communityPresets.difficultyIntermediate': 'Intermediate',
-                            'communityPresets.difficultyAdvanced': 'Advanced',
-                            'communityPresets.categories.presets': 'Presets',
-                            'communityPresets.categories.3d': '3D',
-                            'communityPresets.categories.aesthetics': 'Aesthetics',
-                            'communityPresets.tabs.presets': 'Presets',
-                            'communityPresets.tabs.3d': '3D',
-                            'communityPresets.tabs.aesthetics': 'Aesthetics',
-                          };
-                          return translations[key] || key;
-                        }}
-                      />
-                    ))}
-                  </div>
-                  <div className="mt-6 p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                    <p className="text-sm text-zinc-400 mb-3">
-                      Category icons and colors:
-                    </p>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                      {Object.entries(CATEGORY_CONFIG).map(([category, config]) => {
-                        const Icon = config.icon;
-                        return (
-                          <div
-                            key={category}
-                            className="flex items-center gap-2 px-2 py-1 bg-zinc-800/40 rounded border border-zinc-700/30"
-                          >
-                            <Icon size={14} className={config.color} />
-                            <span className="text-xs font-mono text-zinc-400">{category}</span>
+                  {/* Typography Tab */}
+                  <TabsContent value="typography" className="space-y-6">
+                    <Card id="fonts" className="overflow-hidden bg-transparent">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.typography.fonts.title')}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.typography.fonts.description')}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        {typography.map((font) => (
+                          <div key={font.className} className="border border-zinc-800/50 rounded-md p-6 bg-zinc-900/30">
+                            <h3 className="font-mono font-semibold text-zinc-200 mb-2">{font.name}</h3>
+                            <p className="text-sm text-zinc-400 font-mono mb-4">{font.description}</p>
+                            <p className={cn('text-2xl', font.className)}>
+                              The quick brown fox jumps over the lazy dog
+                            </p>
+                            <p className={cn('text-lg mt-2', font.className)}>
+                              ABCDEFGHIJKLMNOPQRSTUVWXYZ
+                            </p>
+                            <p className={cn('text-lg mt-2', font.className)}>
+                              0123456789 !@#$%^&*()
+                            </p>
                           </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                        ))}
+                      </CardContent>
+                    </Card>
 
-              {/* NavigationSidebar */}
-              <Card id="navigation-sidebar">
-                <CardHeader>
-                  <CardTitle>{t('designSystem.components.navigationSidebar.title') || 'Navigation Sidebar'}</CardTitle>
-                  <CardDescription>
-                    {t('designSystem.components.navigationSidebar.description') || 'Reusable navigation sidebar component with collapsible sections and mobile support'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="p-6 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                    <p className="text-sm text-zinc-400 mb-4">
-                      Navigation sidebar with collapsible sections, mobile support, and active state highlighting.
-                    </p>
-                    <div className="flex items-center gap-2 text-xs text-zinc-500">
-                      <Badge variant="outline">Responsive</Badge>
-                      <Badge variant="outline">Collapsible</Badge>
-                      <Badge variant="outline">Active States</Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                    <Card id="scale">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.typography.scale.title')}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.typography.scale.description')}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                          <h1 className="text-4xl font-semibold font-manrope">Heading 1</h1>
+                          <h2 className="text-3xl font-semibold font-manrope">Heading 2</h2>
+                          <h3 className="text-2xl font-semibold font-manrope">Heading 3</h3>
+                          <h4 className="text-xl font-semibold font-manrope">Heading 4</h4>
+                          <h5 className="text-lg font-semibold font-manrope">Heading 5</h5>
+                          <h6 className="text-base font-semibold font-manrope">Heading 6</h6>
+                          <p className="text-base font-manrope">Body text - Regular paragraph text</p>
+                          <p className="text-sm font-manrope">Small text - For captions and labels</p>
+                          <p className="text-xs font-manrope">Extra small text - For fine print</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <TabNavigation />
+                  </TabsContent>
 
-              {/* Modal */}
-              <Card id="modal">
-                <CardHeader>
-                  <CardTitle>{t('designSystem.components.modal.title') || 'Modal'}</CardTitle>
-                  <CardDescription>
-                    {t('designSystem.components.modal.description') || 'Confirmation modal component for user confirmations and alerts'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="p-6 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                    <p className="text-sm text-zinc-400 mb-4">
-                      Modal for confirmations, warnings, and alerts with multiple variants.
-                    </p>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      <Badge variant="outline">Warning</Badge>
-                      <Badge variant="outline">Danger</Badge>
-                      <Badge variant="outline">Info</Badge>
-                    </div>
-                    <Button onClick={() => setShowModal(true)} variant="outline" size="sm">
-                      {t('designSystem.modal.exampleTitle') || 'Open Example Modal'}
-                    </Button>
-                  </div>
-                  <ConfirmationModal
-                    isOpen={showModal}
-                    onClose={() => setShowModal(false)}
-                    onConfirm={() => {
-                      toast.success(t('designSystem.modal.confirmed') || 'Confirmed!');
-                      setShowModal(false);
-                    }}
-                    title={t('designSystem.modal.exampleTitle') || 'Example Modal'}
-                    message={t('designSystem.modal.exampleMessage') || 'This is an example of the ConfirmationModal component.'}
-                    variant="info"
-                  />
-                </CardContent>
-              </Card>
+                  {/* Components Tab */}
+                  <TabsContent value="components" className="space-y-6">
+                    {/* Buttons */}
+                    <Card id="buttons">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.components.buttons.title')}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.components.buttons.description')}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="flex flex-wrap gap-4">
+                          <Button variant="default">Default</Button>
+                          <Button variant="secondary">Secondary</Button>
+                          <Button variant="destructive">Destructive</Button>
+                          <Button variant="outline">Outline</Button>
+                          <Button variant="ghost">Ghost</Button>
+                          <Button variant="link">Link</Button>
+                          <Button variant="brand">Brand</Button>
+                          <Button variant="sidebarAction">Sidebar Action</Button>
+                        </div>
+                        <Separator />
+                        <div className="flex flex-wrap gap-4">
+                          <Button size="sm">Small</Button>
+                          <Button size="default">Default</Button>
+                          <Button size="lg">Large</Button>
+                          <Button size="icon">
+                            <Palette className="w-4 h-4" />
+                          </Button>
+                          <Button size="sidebar">Sidebar</Button>
+                        </div>
+                        <Separator />
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-4">
+                          <div className="p-3 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
+                            <div className="text-xs font-mono text-zinc-500 mb-1">Brand</div>
+                            <Button variant="brand" size="sm" className="w-full">Brand Button</Button>
+                          </div>
+                          <div className="p-3 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
+                            <div className="text-xs font-mono text-zinc-500 mb-1">Sidebar</div>
+                            <Button variant="sidebarAction" size="sm" className="w-full">Sidebar</Button>
+                          </div>
+                          <div className="p-3 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
+                            <div className="text-xs font-mono text-zinc-500 mb-1">Icon</div>
+                            <Button size="icon" className="w-full">
+                              <Palette className="w-4 h-4" />
+                            </Button>
+                          </div>
+                          <div className="p-3 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
+                            <div className="text-xs font-mono text-zinc-500 mb-1">Large</div>
+                            <Button size="lg" className="w-full">Large</Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
 
-              {/* Table */}
-              <Card id="table">
-                <CardHeader>
-                  <CardTitle>{t('designSystem.components.table.title') || 'Table'}</CardTitle>
-                  <CardDescription>
-                    {t('designSystem.components.table.description') || 'Basic table component for displaying structured data'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="border border-zinc-800/50 rounded-md overflow-hidden">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Role</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        <TableRow>
-                          <TableCell className="font-medium">John Doe</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">Active</Badge>
-                          </TableCell>
-                          <TableCell>Admin</TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell className="font-medium">Jane Smith</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">Inactive</Badge>
-                          </TableCell>
-                          <TableCell>User</TableCell>
-                        </TableRow>
-                      </TableBody>
-                    </Table>
-                  </div>
-                </CardContent>
-              </Card>
+                    {/* Inputs */}
+                    <Card id="inputs">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.components.inputs.title')}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.components.inputs.description')}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <Input placeholder="Enter text..." />
+                        <Input type="email" placeholder="email@example.com" />
+                        <Input type="password" placeholder="Password" />
+                        <Input disabled placeholder="Disabled input" />
+                      </CardContent>
+                    </Card>
 
-              {/* DataTable */}
-              <Card id="data-table">
-                <CardHeader>
-                  <CardTitle>{t('designSystem.components.dataTable.title') || 'Data Table'}</CardTitle>
-                  <CardDescription>
-                    {t('designSystem.components.dataTable.description') || 'Advanced data table with sorting, filtering, and search capabilities'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="p-6 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                    <p className="text-sm text-zinc-400 mb-4">
-                      Advanced data table with sorting, filtering, and search capabilities.
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant="outline">Sorting</Badge>
-                      <Badge variant="outline">Search</Badge>
-                      <Badge variant="outline">Filtering</Badge>
-                      <Badge variant="outline">Responsive</Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                    {/* Textarea */}
+                    <Card id="textarea">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.components.textarea.title')}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.components.textarea.description')}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <Textarea placeholder="Enter multiline text..." />
+                      </CardContent>
+                    </Card>
 
-              {/* Charts */}
-              <Card id="charts">
-                <CardHeader>
-                  <CardTitle>{t('designSystem.components.charts.title') || 'Charts'}</CardTitle>
-                  <CardDescription>
-                    {t('designSystem.components.charts.description') || 'Chart components built with Recharts for data visualization'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="p-6 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                    <p className="text-sm text-zinc-400 mb-4">
-                      Chart components for data visualization built on Recharts.
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant="outline">AreaChart</Badge>
-                      <Badge variant="outline">BarChart</Badge>
-                      <Badge variant="outline">LineChart</Badge>
-                      <Badge variant="outline">Tooltips</Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                    {/* Select */}
+                    <Card id="select">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.components.select.title')}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.components.select.description')}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <Select
+                          options={[
+                            { value: 'option1', label: 'Option 1' },
+                            { value: 'option2', label: 'Option 2' },
+                            { value: 'option3', label: 'Option 3' },
+                          ]}
+                          value={selectValue}
+                          onChange={setSelectValue}
+                          placeholder="Select an option..."
+                        />
+                      </CardContent>
+                    </Card>
 
-              {/* Breadcrumb */}
-              <Card id="breadcrumb">
-                <CardHeader>
-                  <CardTitle>{t('designSystem.components.breadcrumb.title') || 'Breadcrumb'}</CardTitle>
-                  <CardDescription>
-                    {t('designSystem.components.breadcrumb.description') || 'Navigation breadcrumb component with back button support'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="border border-zinc-800/50 rounded-md p-4">
-                    <BreadcrumbWithBack to="/">
-                      <BreadcrumbList>
-                        <BreadcrumbItem>
-                          <BreadcrumbLink asChild>
-                            <Link to="/">Home</Link>
-                          </BreadcrumbLink>
-                        </BreadcrumbItem>
-                        <BreadcrumbSeparator />
-                        <BreadcrumbItem>
-                          <BreadcrumbPage>Design System</BreadcrumbPage>
-                        </BreadcrumbItem>
-                      </BreadcrumbList>
-                    </BreadcrumbWithBack>
-                  </div>
-                </CardContent>
-              </Card>
+                    {/* Switch */}
+                    <Card id="switch">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.components.switch.title')}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.components.switch.description')}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-center gap-4">
+                          <Switch checked={switchChecked} onCheckedChange={setSwitchChecked} />
+                          <span className="font-mono text-sm">
+                            {switchChecked ? 'Enabled' : 'Disabled'}
+                          </span>
+                        </div>
+                      </CardContent>
+                    </Card>
 
-              {/* SkeletonLoader */}
-              <Card id="skeleton-loader">
-                <CardHeader>
-                  <CardTitle>{t('designSystem.components.skeletonLoader.title') || 'Skeleton Loader'}</CardTitle>
-                  <CardDescription>
-                    {t('designSystem.components.skeletonLoader.description') || 'Loading placeholder component for better UX during data fetching'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-xs font-mono text-zinc-500 mb-2">Rectangular (default):</p>
-                      <SkeletonLoader width="100%" height="40px" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-mono text-zinc-500 mb-2">Circular:</p>
-                      <SkeletonLoader width="48px" height="48px" variant="circular" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-mono text-zinc-500 mb-2">Text:</p>
-                      <SkeletonLoader width="200px" height="16px" variant="text" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                    {/* Badge */}
+                    <Card id="badge">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.components.badge.title')}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.components.badge.description')}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex flex-wrap gap-2">
+                          <Badge variant="default">Default</Badge>
+                          <Badge variant="secondary">Secondary</Badge>
+                          <Badge variant="destructive">Destructive</Badge>
+                          <Badge variant="outline">Outline</Badge>
+                        </div>
+                      </CardContent>
+                    </Card>
 
-              {/* GridDotsBackground */}
-              <Card id="grid-dots-background">
-                <CardHeader>
-                  <CardTitle>{t('designSystem.components.gridDotsBackground.title') || 'Grid Dots Background'}</CardTitle>
-                  <CardDescription>
-                    {t('designSystem.components.gridDotsBackground.description') || 'Decorative background pattern with configurable dots'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="relative h-32 border border-zinc-800/50 rounded-md overflow-hidden">
-                    <GridDotsBackground />
-                    <div className="relative z-10 flex items-center justify-center h-full">
-                      <p className="text-sm font-mono text-zinc-400">Grid Dots Background Example</p>
-                    </div>
-                  </div>
-                  <div className="p-6 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                    <p className="text-sm text-zinc-400 mb-4">
-                      Decorative background pattern with configurable dots, spacing, and opacity.
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant="outline">Theme-aware</Badge>
-                      <Badge variant="outline">Configurable</Badge>
-                      <Badge variant="outline">Overlay</Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                    {/* Card Example */}
+                    <Card id="card">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.components.card.title')}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.components.card.description')}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <Card>
+                          <CardHeader>
+                            <CardTitle>Card Title</CardTitle>
+                            <CardDescription>Card description text</CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <p className="text-sm font-mono text-zinc-400">
+                              This is the card content area.
+                            </p>
+                          </CardContent>
+                        </Card>
+                      </CardContent>
+                    </Card>
 
-              {/* Tabs */}
-              <Card id="tabs">
-                <CardHeader>
-                  <CardTitle>{t('designSystem.components.tabs.title') || 'Tabs'}</CardTitle>
-                  <CardDescription>
-                    {t('designSystem.components.tabs.description') || 'Tabbed interface component for organizing content into sections'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Tabs defaultValue="tab1" className="w-full">
-                    <TabsList>
-                      <TabsTrigger value="tab1">Tab 1</TabsTrigger>
-                      <TabsTrigger value="tab2">Tab 2</TabsTrigger>
-                      <TabsTrigger value="tab3">Tab 3</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="tab1" className="mt-4">
-                      <p className="text-sm font-mono text-zinc-400">Content for Tab 1</p>
-                    </TabsContent>
-                    <TabsContent value="tab2" className="mt-4">
-                      <p className="text-sm font-mono text-zinc-400">Content for Tab 2</p>
-                    </TabsContent>
-                    <TabsContent value="tab3" className="mt-4">
-                      <p className="text-sm font-mono text-zinc-400">Content for Tab 3</p>
-                    </TabsContent>
-                  </Tabs>
-                </CardContent>
-              </Card>
+                    {/* PresetCard */}
+                    <Card id="preset-card">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.components.presetCard.title') || 'Preset Card'}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.components.presetCard.description') || 'Card component for displaying community presets with image, metadata, and actions'}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {[
+                            {
+                              id: 'example-1',
+                              userId: 'system',
+                              category: 'presets' as const,
+                              presetType: 'mockup' as const,
+                              name: 'Modern Product Mockup',
+                              description: 'A clean and modern product presentation style',
+                              prompt: 'Create a modern product mockup with clean background and professional lighting',
+                              referenceImageUrl: undefined,
+                              aspectRatio: '16:9' as const,
+                              tags: ['product', 'modern', 'clean'],
+                              difficulty: 'beginner' as const,
+                              context: 'mockup' as const,
+                              isApproved: true,
+                              createdAt: new Date().toISOString(),
+                              updatedAt: new Date().toISOString(),
+                              likesCount: 42,
+                              isLikedByUser: false,
+                            },
+                            {
+                              id: 'example-2',
+                              userId: 'system',
+                              category: '3d' as const,
+                              name: '3D Render Style',
+                              description: 'Three-dimensional rendering with depth and shadows',
+                              prompt: 'Generate a 3D rendered scene with realistic lighting and shadows',
+                              aspectRatio: '16:9' as const,
+                              tags: ['3d', 'render', 'depth'],
+                              difficulty: 'intermediate' as const,
+                              context: 'general' as const,
+                              isApproved: true,
+                              createdAt: new Date().toISOString(),
+                              updatedAt: new Date().toISOString(),
+                              likesCount: 28,
+                              isLikedByUser: true,
+                            },
+                            {
+                              id: 'example-3',
+                              userId: 'system',
+                              category: 'aesthetics' as const,
+                              name: 'Minimalist Aesthetic',
+                              description: 'Clean and minimal design approach',
+                              prompt: 'Apply a minimalist aesthetic with clean lines and ample white space',
+                              aspectRatio: '1:1' as const,
+                              tags: ['minimalist', 'clean', 'simple'],
+                              difficulty: 'beginner' as const,
+                              context: 'general' as const,
+                              isApproved: true,
+                              createdAt: new Date().toISOString(),
+                              updatedAt: new Date().toISOString(),
+                              likesCount: 15,
+                              isLikedByUser: false,
+                            },
+                          ].map((preset) => (
+                            <PresetCard
+                              key={preset.id}
+                              preset={preset as CommunityPrompt}
+                              onClick={() => { }}
+                              isAuthenticated={true}
+                              canEdit={false}
+                              t={(key: string) => {
+                                const translations: Record<string, string> = {
+                                  'communityPresets.actions.duplicate': 'Duplicate',
+                                  'communityPresets.actions.edit': 'Edit',
+                                  'communityPresets.actions.delete': 'Delete',
+                                  'communityPresets.actions.like': 'Like',
+                                  'communityPresets.actions.unlike': 'Unlike',
+                                  'communityPresets.difficultyBeginner': 'Beginner',
+                                  'communityPresets.difficultyIntermediate': 'Intermediate',
+                                  'communityPresets.difficultyAdvanced': 'Advanced',
+                                  'communityPresets.categories.presets': 'Presets',
+                                  'communityPresets.categories.3d': '3D',
+                                  'communityPresets.categories.aesthetics': 'Aesthetics',
+                                  'communityPresets.tabs.presets': 'Presets',
+                                  'communityPresets.tabs.3d': '3D',
+                                  'communityPresets.tabs.aesthetics': 'Aesthetics',
+                                };
+                                return translations[key] || key;
+                              }}
+                            />
+                          ))}
+                        </div>
+                        <div className="mt-6 p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
+                          <p className="text-sm text-zinc-400 mb-3">
+                            Category icons and colors:
+                          </p>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                            {Object.entries(CATEGORY_CONFIG).map(([category, config]) => {
+                              const Icon = config.icon;
+                              return (
+                                <div
+                                  key={category}
+                                  className="flex items-center gap-2 px-2 py-1 bg-zinc-800/40 rounded border border-zinc-700/30"
+                                >
+                                  <Icon size={14} className={config.color} />
+                                  <span className="text-xs font-mono text-zinc-400">{category}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card id="preset-card">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.components.presetCard.title') || 'Preset Card'}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.components.presetCard.description') || 'Card component for displaying presets with selection and interaction states'}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {/* Default State */}
+                          <div>
+                            <p className="text-xs font-mono text-zinc-500 mb-2">Default State:</p>
+                            <PresetCard
+                              preset={{
+                                id: 'demo-1',
+                                userId: 'demo',
+                                category: 'mockup',
+                                name: 'T-shirt Mockup',
+                                description: 'Premium t-shirt mockup with high quality fabric texture.',
+                                prompt: 'T-shirt mockup prompt',
+                                referenceImageUrl: 'https://placehold.co/400x400/18181b/52ddeb?text=Mockup',
+                                aspectRatio: '1:1',
+                                isApproved: true,
+                                createdAt: new Date().toISOString(),
+                                updatedAt: new Date().toISOString(),
+                              }}
+                              isAuthenticated={true}
+                              canEdit={false}
+                              t={(key) => key}
+                            />
+                          </div>
 
-              {/* Canvas Components */}
-              <Card id="canvas-toolbar">
-                <CardHeader>
-                  <CardTitle>{t('designSystem.components.canvasToolbar.title') || 'Canvas Toolbar'}</CardTitle>
-                  <CardDescription>
-                    {t('designSystem.components.canvasToolbar.description') || 'Collapsible toolbar for creating and managing canvas nodes with drag-and-drop support'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <div className="p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                      <h4 className="text-sm font-semibold text-zinc-300 mb-2 font-mono">Features</h4>
-                      <div className="flex flex-wrap gap-1.5">
-                        <Badge variant="outline" className="text-xs">Collapsible</Badge>
-                        <Badge variant="outline" className="text-xs">Drag & Drop</Badge>
-                        <Badge variant="outline" className="text-xs">Categorized</Badge>
-                        <Badge variant="outline" className="text-xs">Stacked</Badge>
-                      </div>
-                    </div>
-                    <div className="p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                      <h4 className="text-sm font-semibold text-zinc-300 mb-2 font-mono">Props</h4>
-                      <div className="space-y-1 text-xs font-mono text-zinc-400">
-                        <div><span className="text-zinc-500">variant:</span> 'standalone' | 'stacked'</div>
-                        <div><span className="text-zinc-500">position:</span> 'left' | 'right'</div>
-                        <div><span className="text-zinc-500">experimentalMode:</span> boolean</div>
-                      </div>
-                    </div>
-                    <div className="p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                      <h4 className="text-sm font-semibold text-zinc-300 mb-2 font-mono">Handlers</h4>
-                      <div className="text-xs font-mono text-zinc-400 space-y-1">
-                        <div>onAddMerge, onAddEdit</div>
-                        <div>onAddUpscale, onAddMockup</div>
-                        <div>onAddAngle, onAddShader</div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                          {/* Selected State */}
+                          <div>
+                            <p className="text-xs font-mono text-zinc-500 mb-2">Selected State (Multi-select):</p>
+                            <PresetCard
+                              preset={{
+                                id: 'demo-2',
+                                userId: 'demo',
+                                category: 'presets',
+                                presetType: 'mockup',
+                                name: 'iPhone 15 Pro',
+                                description: 'Realistic iPhone 15 Pro mockup on dark background.',
+                                prompt: 'iPhone mockup prompt',
+                                referenceImageUrl: 'https://placehold.co/400x400/18181b/52ddeb?text=iPhone',
+                                aspectRatio: '1:1',
+                                isApproved: true,
+                                createdAt: new Date().toISOString(),
+                                updatedAt: new Date().toISOString(),
+                              }}
+                              isAuthenticated={true}
+                              canEdit={false}
+                              t={(key) => key}
+                              selected={true}
+                              selectionIndex={1}
+                            />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
 
-              <Card id="canvas-header">
-                <CardHeader>
-                  <CardTitle>{t('designSystem.components.canvasHeader.title') || 'Canvas Header'}</CardTitle>
-                  <CardDescription>
-                    {t('designSystem.components.canvasHeader.description') || 'Header component for canvas pages with project name editing, settings, and collaboration features'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <div className="p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                      <h4 className="text-sm font-semibold text-zinc-300 mb-2 font-mono">Features</h4>
-                      <div className="flex flex-wrap gap-1.5">
-                        <Badge variant="outline" className="text-xs">Editable Name</Badge>
-                        <Badge variant="outline" className="text-xs">Settings</Badge>
-                        <Badge variant="outline" className="text-xs">Collaboration</Badge>
-                        <Badge variant="outline" className="text-xs">Presets</Badge>
-                      </div>
-                    </div>
-                    <div className="p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                      <h4 className="text-sm font-semibold text-zinc-300 mb-2 font-mono">Actions</h4>
-                      <div className="space-y-1 text-xs font-mono text-zinc-400">
-                        <div>✓ Inline name editing</div>
-                        <div>✓ Settings modal</div>
-                        <div>✓ Share & collaboration</div>
-                        <div>✓ Community presets</div>
-                      </div>
-                    </div>
-                    <div className="p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                      <h4 className="text-sm font-semibold text-zinc-300 mb-2 font-mono">Customization</h4>
-                      <div className="space-y-1 text-xs font-mono text-zinc-400">
-                        <div>Background color</div>
-                        <div>Grid settings</div>
-                        <div>Display controls</div>
-                        <div>Cursor color</div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                    {/* NavigationSidebar */}
+                    <Card id="navigation-sidebar">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.components.navigationSidebar.title') || 'Navigation Sidebar'}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.components.navigationSidebar.description') || 'Reusable navigation sidebar component with collapsible sections and mobile support'}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="p-6 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
+                          <p className="text-sm text-zinc-400 mb-4">
+                            Navigation sidebar with collapsible sections, mobile support, and active state highlighting.
+                          </p>
+                          <div className="flex items-center gap-2 text-xs text-zinc-500">
+                            <Badge variant="outline">Responsive</Badge>
+                            <Badge variant="outline">Collapsible</Badge>
+                            <Badge variant="outline">Active States</Badge>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
 
-              <Card id="canvas-flow">
-                <CardHeader>
-                  <CardTitle>{t('designSystem.components.canvasFlow.title') || 'Canvas Flow'}</CardTitle>
-                  <CardDescription>
-                    {t('designSystem.components.canvasFlow.description') || 'Main React Flow canvas component with drag-and-drop, node management, and image handling'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                      <h4 className="text-sm font-semibold text-zinc-300 mb-2 font-mono">Core</h4>
-                      <div className="flex flex-wrap gap-1.5 mb-3">
-                        <Badge variant="outline" className="text-xs">React Flow</Badge>
-                        <Badge variant="outline" className="text-xs">Node Based</Badge>
-                      </div>
-                      <div className="space-y-1 text-xs font-mono text-zinc-400">
-                        <div>Node & edge management</div>
-                        <div>Customizable appearance</div>
-                      </div>
-                    </div>
-                    <div className="p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                      <h4 className="text-sm font-semibold text-zinc-300 mb-2 font-mono">Interactions</h4>
-                      <div className="flex flex-wrap gap-1.5 mb-3">
-                        <Badge variant="outline" className="text-xs">Drag & Drop</Badge>
-                        <Badge variant="outline" className="text-xs">Context Menus</Badge>
-                      </div>
-                      <div className="space-y-1 text-xs font-mono text-zinc-400">
-                        <div>Image drag-and-drop</div>
-                        <div>Pane & node menus</div>
-                        <div>Keyboard shortcuts</div>
-                      </div>
-                    </div>
-                    <div className="p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                      <h4 className="text-sm font-semibold text-zinc-300 mb-2 font-mono">Display</h4>
-                      <div className="flex flex-wrap gap-1.5 mb-3">
-                        <Badge variant="outline" className="text-xs">Custom Grid</Badge>
-                        <Badge variant="outline" className="text-xs">Minimap</Badge>
-                      </div>
-                      <div className="space-y-1 text-xs font-mono text-zinc-400">
-                        <div>Background color</div>
-                        <div>Grid customization</div>
-                        <div>Controls toggle</div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <TabNavigation />
-            </TabsContent>
+                    {/* Modal */}
+                    <Card id="modal">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.components.modal.title') || 'Modal'}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.components.modal.description') || 'Confirmation modal component for user confirmations and alerts'}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="p-6 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
+                          <p className="text-sm text-zinc-400 mb-4">
+                            Modal for confirmations, warnings, and alerts with multiple variants.
+                          </p>
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            <Badge variant="outline">Warning</Badge>
+                            <Badge variant="outline">Danger</Badge>
+                            <Badge variant="outline">Info</Badge>
+                          </div>
+                          <Button onClick={() => setShowModal(true)} variant="outline" size="sm">
+                            {t('designSystem.modal.exampleTitle') || 'Open Example Modal'}
+                          </Button>
+                        </div>
+                        <ConfirmationModal
+                          isOpen={showModal}
+                          onClose={() => setShowModal(false)}
+                          onConfirm={() => {
+                            toast.success(t('designSystem.modal.confirmed') || 'Confirmed!');
+                            setShowModal(false);
+                          }}
+                          title={t('designSystem.modal.exampleTitle') || 'Example Modal'}
+                          message={t('designSystem.modal.exampleMessage') || 'This is an example of the ConfirmationModal component.'}
+                          variant="info"
+                        />
+                      </CardContent>
+                    </Card>
 
-            {/* Spacing Tab */}
-            <TabsContent value="spacing" className="space-y-6">
-              <Card id="spacing-scale">
-                <CardHeader>
-                  <CardTitle>{t('designSystem.spacing.scale.title')}</CardTitle>
-                  <CardDescription>
-                    {t('designSystem.spacing.scale.description')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {spacingScale.map((spacing) => (
-                      <SpacingExample
-                        key={spacing.name}
-                        name={spacing.name}
-                        value={spacing.value}
-                        size={spacing.size}
-                      />
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+                    {/* Table */}
+                    <Card id="table">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.components.table.title') || 'Table'}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.components.table.description') || 'Basic table component for displaying structured data'}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="border border-zinc-800/50 rounded-md overflow-hidden">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Name</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead>Role</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              <TableRow>
+                                <TableCell className="font-medium">John Doe</TableCell>
+                                <TableCell>
+                                  <Badge variant="outline">Active</Badge>
+                                </TableCell>
+                                <TableCell>Admin</TableCell>
+                              </TableRow>
+                              <TableRow>
+                                <TableCell className="font-medium">Jane Smith</TableCell>
+                                <TableCell>
+                                  <Badge variant="outline">Inactive</Badge>
+                                </TableCell>
+                                <TableCell>User</TableCell>
+                              </TableRow>
+                            </TableBody>
+                          </Table>
+                        </div>
+                      </CardContent>
+                    </Card>
 
-              <Card id="custom-spacing">
-                <CardHeader>
-                  <CardTitle>{t('designSystem.spacing.custom.title')}</CardTitle>
-                  <CardDescription>
-                    {t('designSystem.spacing.custom.description')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="font-mono text-sm space-y-2">
-                    <div>
-                      <span className="text-zinc-400">--node-padding:</span>{' '}
-                      <span className="text-brand-cyan">1.75rem (28px)</span>
-                    </div>
-                    <div>
-                      <span className="text-zinc-400">--node-gap:</span>{' '}
-                      <span className="text-brand-cyan">0.75rem (12px)</span>
-                    </div>
-                    <div>
-                      <span className="text-zinc-400">--radius:</span>{' '}
-                      <span className="text-brand-cyan">0.625rem (10px)</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <TabNavigation />
-            </TabsContent>
-          </Tabs>
+                    {/* DataTable */}
+                    <Card id="data-table">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.components.dataTable.title') || 'Data Table'}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.components.dataTable.description') || 'Advanced data table with sorting, filtering, and search capabilities'}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="p-6 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
+                          <p className="text-sm text-zinc-400 mb-4">
+                            Advanced data table with sorting, filtering, and search capabilities.
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            <Badge variant="outline">Sorting</Badge>
+                            <Badge variant="outline">Search</Badge>
+                            <Badge variant="outline">Filtering</Badge>
+                            <Badge variant="outline">Responsive</Badge>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Charts */}
+                    <Card id="charts">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.components.charts.title') || 'Charts'}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.components.charts.description') || 'Chart components built with Recharts for data visualization'}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="p-6 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
+                          <p className="text-sm text-zinc-400 mb-4">
+                            Chart components for data visualization built on Recharts.
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            <Badge variant="outline">AreaChart</Badge>
+                            <Badge variant="outline">BarChart</Badge>
+                            <Badge variant="outline">LineChart</Badge>
+                            <Badge variant="outline">Tooltips</Badge>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Breadcrumb */}
+                    <Card id="breadcrumb">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.components.breadcrumb.title') || 'Breadcrumb'}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.components.breadcrumb.description') || 'Navigation breadcrumb component with back button support'}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="border border-zinc-800/50 rounded-md p-4">
+                          <BreadcrumbWithBack to="/">
+                            <BreadcrumbList>
+                              <BreadcrumbItem>
+                                <BreadcrumbLink asChild>
+                                  <Link to="/">Home</Link>
+                                </BreadcrumbLink>
+                              </BreadcrumbItem>
+                              <BreadcrumbSeparator />
+                              <BreadcrumbItem>
+                                <BreadcrumbPage>Design System</BreadcrumbPage>
+                              </BreadcrumbItem>
+                            </BreadcrumbList>
+                          </BreadcrumbWithBack>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* SkeletonLoader */}
+                    <Card id="skeleton-loader">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.components.skeletonLoader.title') || 'Skeleton Loader'}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.components.skeletonLoader.description') || 'Loading placeholder component for better UX during data fetching'}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-4">
+                          <div>
+                            <p className="text-xs font-mono text-zinc-500 mb-2">Rectangular (default):</p>
+                            <SkeletonLoader width="100%" height="40px" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-mono text-zinc-500 mb-2">Circular:</p>
+                            <SkeletonLoader width="48px" height="48px" variant="circular" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-mono text-zinc-500 mb-2">Text:</p>
+                            <SkeletonLoader width="200px" height="16px" variant="text" />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* GridDotsBackground */}
+                    <Card id="grid-dots-background">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.components.gridDotsBackground.title') || 'Grid Dots Background'}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.components.gridDotsBackground.description') || 'Decorative background pattern with configurable dots'}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="relative h-32 border border-zinc-800/50 rounded-md overflow-hidden">
+                          <GridDotsBackground />
+                          <div className="relative z-10 flex items-center justify-center h-full">
+                            <p className="text-sm font-mono text-zinc-400">Grid Dots Background Example</p>
+                          </div>
+                        </div>
+                        <div className="p-6 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
+                          <p className="text-sm text-zinc-400 mb-4">
+                            Decorative background pattern with configurable dots, spacing, and opacity.
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            <Badge variant="outline">Theme-aware</Badge>
+                            <Badge variant="outline">Configurable</Badge>
+                            <Badge variant="outline">Overlay</Badge>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Tabs */}
+                    <Card id="tabs">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.components.tabs.title') || 'Tabs'}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.components.tabs.description') || 'Tabbed interface component for organizing content into sections'}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <Tabs defaultValue="tab1" className="w-full">
+                          <TabsList>
+                            <TabsTrigger value="tab1">Tab 1</TabsTrigger>
+                            <TabsTrigger value="tab2">Tab 2</TabsTrigger>
+                            <TabsTrigger value="tab3">Tab 3</TabsTrigger>
+                          </TabsList>
+                          <TabsContent value="tab1" className="mt-4">
+                            <p className="text-sm font-mono text-zinc-400">Content for Tab 1</p>
+                          </TabsContent>
+                          <TabsContent value="tab2" className="mt-4">
+                            <p className="text-sm font-mono text-zinc-400">Content for Tab 2</p>
+                          </TabsContent>
+                          <TabsContent value="tab3" className="mt-4">
+                            <p className="text-sm font-mono text-zinc-400">Content for Tab 3</p>
+                          </TabsContent>
+                        </Tabs>
+                      </CardContent>
+                    </Card>
+
+                    {/* Canvas Components */}
+                    <Card id="canvas-toolbar">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.components.canvasToolbar.title') || 'Canvas Toolbar'}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.components.canvasToolbar.description') || 'Collapsible toolbar for creating and managing canvas nodes with drag-and-drop support'}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                          <div className="p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
+                            <h4 className="text-sm font-semibold text-zinc-300 mb-2 font-mono">Features</h4>
+                            <div className="flex flex-wrap gap-1.5">
+                              <Badge variant="outline" className="text-xs">Collapsible</Badge>
+                              <Badge variant="outline" className="text-xs">Drag & Drop</Badge>
+                              <Badge variant="outline" className="text-xs">Categorized</Badge>
+                              <Badge variant="outline" className="text-xs">Stacked</Badge>
+                            </div>
+                          </div>
+                          <div className="p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
+                            <h4 className="text-sm font-semibold text-zinc-300 mb-2 font-mono">Props</h4>
+                            <div className="space-y-1 text-xs font-mono text-zinc-400">
+                              <div><span className="text-zinc-500">variant:</span> 'standalone' | 'stacked'</div>
+                              <div><span className="text-zinc-500">position:</span> 'left' | 'right'</div>
+                              <div><span className="text-zinc-500">experimentalMode:</span> boolean</div>
+                            </div>
+                          </div>
+                          <div className="p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
+                            <h4 className="text-sm font-semibold text-zinc-300 mb-2 font-mono">Handlers</h4>
+                            <div className="text-xs font-mono text-zinc-400 space-y-1">
+                              <div>onAddMerge, onAddEdit</div>
+                              <div>onAddUpscale, onAddMockup</div>
+                              <div>onAddAngle, onAddShader</div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card id="canvas-header">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.components.canvasHeader.title') || 'Canvas Header'}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.components.canvasHeader.description') || 'Header component for canvas pages with project name editing, settings, and collaboration features'}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                          <div className="p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
+                            <h4 className="text-sm font-semibold text-zinc-300 mb-2 font-mono">Features</h4>
+                            <div className="flex flex-wrap gap-1.5">
+                              <Badge variant="outline" className="text-xs">Editable Name</Badge>
+                              <Badge variant="outline" className="text-xs">Settings</Badge>
+                              <Badge variant="outline" className="text-xs">Collaboration</Badge>
+                              <Badge variant="outline" className="text-xs">Presets</Badge>
+                            </div>
+                          </div>
+                          <div className="p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
+                            <h4 className="text-sm font-semibold text-zinc-300 mb-2 font-mono">Actions</h4>
+                            <div className="space-y-1 text-xs font-mono text-zinc-400">
+                              <div>✓ Inline name editing</div>
+                              <div>✓ Settings modal</div>
+                              <div>✓ Share & collaboration</div>
+                              <div>✓ Community presets</div>
+                            </div>
+                          </div>
+                          <div className="p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
+                            <h4 className="text-sm font-semibold text-zinc-300 mb-2 font-mono">Customization</h4>
+                            <div className="space-y-1 text-xs font-mono text-zinc-400">
+                              <div>Background color</div>
+                              <div>Grid settings</div>
+                              <div>Display controls</div>
+                              <div>Cursor color</div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card id="canvas-flow">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.components.canvasFlow.title') || 'Canvas Flow'}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.components.canvasFlow.description') || 'Main React Flow canvas component with drag-and-drop, node management, and image handling'}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
+                            <h4 className="text-sm font-semibold text-zinc-300 mb-2 font-mono">Core</h4>
+                            <div className="flex flex-wrap gap-1.5 mb-3">
+                              <Badge variant="outline" className="text-xs">React Flow</Badge>
+                              <Badge variant="outline" className="text-xs">Node Based</Badge>
+                            </div>
+                            <div className="space-y-1 text-xs font-mono text-zinc-400">
+                              <div>Node & edge management</div>
+                              <div>Customizable appearance</div>
+                            </div>
+                          </div>
+                          <div className="p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
+                            <h4 className="text-sm font-semibold text-zinc-300 mb-2 font-mono">Interactions</h4>
+                            <div className="flex flex-wrap gap-1.5 mb-3">
+                              <Badge variant="outline" className="text-xs">Drag & Drop</Badge>
+                              <Badge variant="outline" className="text-xs">Context Menus</Badge>
+                            </div>
+                            <div className="space-y-1 text-xs font-mono text-zinc-400">
+                              <div>Image drag-and-drop</div>
+                              <div>Pane & node menus</div>
+                              <div>Keyboard shortcuts</div>
+                            </div>
+                          </div>
+                          <div className="p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
+                            <h4 className="text-sm font-semibold text-zinc-300 mb-2 font-mono">Display</h4>
+                            <div className="flex flex-wrap gap-1.5 mb-3">
+                              <Badge variant="outline" className="text-xs">Custom Grid</Badge>
+                              <Badge variant="outline" className="text-xs">Minimap</Badge>
+                            </div>
+                            <div className="space-y-1 text-xs font-mono text-zinc-400">
+                              <div>Background color</div>
+                              <div>Grid customization</div>
+                              <div>Controls toggle</div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <TabNavigation />
+                  </TabsContent>
+
+                  {/* Spacing Tab */}
+                  <TabsContent value="spacing" className="space-y-6">
+                    <Card id="spacing-scale">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.spacing.scale.title')}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.spacing.scale.description')}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {spacingScale.map((spacing) => (
+                            <SpacingExample
+                              key={spacing.name}
+                              name={spacing.name}
+                              value={spacing.value}
+                              size={spacing.size}
+                            />
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card id="custom-spacing">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.spacing.custom.title')}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.spacing.custom.description')}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="font-mono text-sm space-y-2">
+                          <div>
+                            <span className="text-zinc-400">--node-padding:</span>{' '}
+                            <span className="text-brand-cyan">1.75rem (28px)</span>
+                          </div>
+                          <div>
+                            <span className="text-zinc-400">--node-gap:</span>{' '}
+                            <span className="text-brand-cyan">0.75rem (12px)</span>
+                          </div>
+                          <div>
+                            <span className="text-zinc-400">--radius:</span>{' '}
+                            <span className="text-brand-cyan">0.625rem (10px)</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <TabNavigation />
+                  </TabsContent>
+                </Tabs>
               </div>
             </div>
           </div>

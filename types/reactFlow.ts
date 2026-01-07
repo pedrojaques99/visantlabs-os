@@ -6,7 +6,10 @@ import type { SubscriptionStatus } from '../services/subscriptionService';
 // Base node data interface
 export interface BaseNodeData {
   label?: string;
+  onDelete?: (nodeId: string) => void;
   onDeleteNode?: (nodeId: string) => void;
+  onDuplicate?: (nodeId: string) => void;
+  onResize?: (nodeId: string, width: number, height: number) => void;
   /** Warning message for oversized/large content that can't be saved */
   oversizedWarning?: string;
   [key: string]: unknown;
@@ -25,7 +28,6 @@ export interface ImageNodeData extends BaseNodeData {
   userMockups?: Mockup[]; // User's custom mockups for brand kit selection
   onView?: (mockup: Mockup) => void;
   onEdit?: (mockup: Mockup) => void;
-  onDelete?: (id: string) => void;
   onUpload?: (nodeId: string, imageBase64: string) => void;
   onResize?: (nodeId: string, width: number, height: number) => void;
   onUpdateData?: (nodeId: string, newData: Partial<ImageNodeData>) => void;
@@ -42,6 +44,8 @@ export interface MergeNodeData extends BaseNodeData {
   isGeneratingPrompt?: boolean;
   resultImageBase64?: string;
   resultImageUrl?: string; // R2 URL for result image
+  imageWidth?: number; // Natural width of the image in pixels
+  imageHeight?: number; // Natural height of the image in pixels
   connectedImages?: string[];
   onGenerate?: (nodeId: string, connectedImages: string[], prompt: string, model?: GeminiModel) => Promise<void>;
   onGeneratePrompt?: (nodeId: string, images: string[]) => Promise<void>;
@@ -128,10 +132,11 @@ export interface UpscaleBicubicNodeData extends BaseNodeData {
   connectedImage?: string; // Base64 or URL of connected image or video
   scaleFactor?: number; // Scale factor (2.0, 3.0, 4.0, etc.), default 2.0
   sharpening?: number; // Sharpening intensity (0.0 to 1.0), default 0.3 - compensates for bicubic smoothing
+  imageWidth?: number; // Natural width of the image/video in pixels
+  imageHeight?: number; // Natural height of the image/video in pixels
   onApply?: (nodeId: string, imageBase64: string) => Promise<void>;
   onUpdateData?: (nodeId: string, newData: Partial<UpscaleBicubicNodeData>) => void;
   onView?: (imageUrl: string) => void;
-  onDelete?: (id: string) => void;
   onBrandKit?: (nodeId: string, presetIds: string[]) => void;
   onResize?: (nodeId: string, width: number, height: number) => void;
   userMockups?: Mockup[];
@@ -149,6 +154,8 @@ export interface MockupNodeData extends BaseNodeData {
   isLoading?: boolean;
   resultImageBase64?: string;
   resultImageUrl?: string; // R2 URL for result image
+  imageWidth?: number; // Natural width of the image in pixels
+  imageHeight?: number; // Natural height of the image in pixels
   connectedImage?: string; // Base64 da imagem conectada (legacy, mantido para compatibilidade)
   // BrandCore connection data
   connectedLogo?: string; // Base64 do logo conectado do BrandCore
@@ -222,6 +229,8 @@ export interface ShaderNodeData extends BaseNodeData {
   resultImageUrl?: string; // R2 URL for result image
   resultVideoBase64?: string; // Base64 for result video
   resultVideoUrl?: string; // R2 URL for result video
+  imageWidth?: number; // Natural width of the image/video in pixels
+  imageHeight?: number; // Natural height of the image/video in pixels
   connectedImage?: string; // Base64 or URL of connected image or video
   // Shader type selection
   shaderType?: 'halftone' | 'vhs' | 'ascii' | 'matrixDither' | 'dither' | 'duotone'; // Type of shader effect, default 'halftone'
@@ -314,6 +323,8 @@ export interface OutputNodeData extends BaseNodeData {
   resultImageBase64?: string; // Base64 fallback for image
   resultVideoUrl?: string; // R2 URL for result video
   resultVideoBase64?: string; // Base64 fallback for video
+  imageWidth?: number; // Natural width of the image/video in pixels
+  imageHeight?: number; // Natural height of the image/video in pixels
   sourceNodeId?: string; // ID of the source node that generated this image/video
   isLoading?: boolean; // Loading state for skeleton display
   savedMockupId?: string | null; // ID of saved mockup if saved to collection
@@ -323,7 +334,6 @@ export interface OutputNodeData extends BaseNodeData {
   userMockups?: Mockup[]; // User's custom mockups for brand kit selection
   onView?: (imageUrl: string) => void;
   onEdit?: (imageUrl: string) => void;
-  onDelete?: (id: string) => void;
   onBrandKit?: (nodeId: string, presetIds: string[]) => void;
   onResize?: (nodeId: string, width: number, height: number) => void;
   onUpdateData?: (nodeId: string, newData: Partial<OutputNodeData>) => void;
@@ -365,6 +375,8 @@ export interface LogoNodeData extends BaseNodeData {
   type: 'logo';
   logoBase64?: string;
   logoImageUrl?: string;
+  imageWidth?: number; // Natural width of the image in pixels
+  imageHeight?: number; // Natural height of the image in pixels
   onUploadLogo?: (nodeId: string, imageBase64: string) => void;
   onUpdateData?: (nodeId: string, newData: Partial<LogoNodeData>) => void;
 }
@@ -385,6 +397,8 @@ export interface VideoInputNodeData extends BaseNodeData {
   type: 'videoInput';
   uploadedVideo?: string; // Base64 or URL of uploaded video
   uploadedVideoUrl?: string; // URL do R2 para vídeo enviado
+  imageWidth?: number; // Natural width of the video in pixels
+  imageHeight?: number; // Natural height of the video in pixels
   onUploadVideo?: (nodeId: string, videoData: string | File) => Promise<void>;
   onUpdateData?: (nodeId: string, newData: Partial<VideoInputNodeData>) => void;
 }
@@ -506,7 +520,6 @@ export interface BrandCoreData extends BaseNodeData {
 }
 
 // Video Node - generates videos from text prompts and/or images using Veo 3
-// Video Node - generates videos from text prompts and/or images using Veo 3
 export interface VideoNodeData extends BaseNodeData {
   type: 'video';
   prompt?: string;
@@ -534,6 +547,8 @@ export interface VideoNodeData extends BaseNodeData {
   inputVideoObject?: any; // To store the video object for file reference if needed
 
   isLooping?: boolean;
+  imageWidth?: number;
+  imageHeight?: number;
 
   // Generated video support
   resultVideoUrl?: string; // R2 URL for generated video
@@ -591,6 +606,8 @@ export interface ColorExtractorNodeData extends BaseNodeData {
   type: 'colorExtractor';
   imageBase64?: string; // uploaded image
   connectedImage?: string; // connected image from ImageNode
+  imageWidth?: number; // Natural width of the image in pixels
+  imageHeight?: number; // Natural height of the image in pixels
   extractedColors?: string[]; // array of hex colors (max 10)
   isExtracting?: boolean; // loading state
   onExtract?: (nodeId: string, imageBase64: string, shouldRandomize?: boolean) => Promise<void>;

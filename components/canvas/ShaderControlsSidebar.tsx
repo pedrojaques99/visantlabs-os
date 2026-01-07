@@ -12,32 +12,33 @@ interface ShaderControlsSidebarProps {
   nodeData: ShaderNodeData;
   nodeId: string;
   onUpdateData?: (nodeId: string, newData: Partial<ShaderNodeData>) => void;
-  variant?: 'standalone' | 'stacked';
+  variant?: 'standalone' | 'stacked' | 'embedded';
 }
 
 const SIDEBAR_WIDTH = 280;
 const COLLAPSED_WIDTH = 56;
 
-export const ShaderControlsSidebar: React.FC<ShaderControlsSidebarProps> = ({
+export const ShaderControlsSidebar: React.FC<ShaderControlsSidebarProps & { width?: number }> = ({
   isCollapsed,
   onToggleCollapse,
   nodeData,
   nodeId,
   onUpdateData,
   variant = 'standalone',
+  width,
 }) => {
   const { t } = useTranslation();
   // Shader type with default
   const shaderType = nodeData.shaderType ?? 'halftone';
   const halftoneVariant = nodeData.halftoneVariant ?? 'ellipse';
-  
+
   // Halftone shader settings with defaults
   const dotSize = nodeData.dotSize ?? 5.0;
   const angle = nodeData.angle ?? 0.0;
   const contrast = nodeData.contrast ?? 1.0;
   const spacing = nodeData.spacing ?? 2.0;
   const halftoneInvert = nodeData.halftoneInvert ?? 0.0;
-  
+
   // VHS shader settings with defaults
   const tapeWaveIntensity = nodeData.tapeWaveIntensity ?? 1.0;
   const tapeCreaseIntensity = nodeData.tapeCreaseIntensity ?? 1.0;
@@ -45,7 +46,7 @@ export const ShaderControlsSidebar: React.FC<ShaderControlsSidebarProps> = ({
   const bloomIntensity = nodeData.bloomIntensity ?? 1.0;
   const acBeatIntensity = nodeData.acBeatIntensity ?? 1.0;
   const halftoneThreshold = nodeData.halftoneThreshold ?? 1.0;
-  
+
   // ASCII shader settings with defaults
   const asciiCharSize = nodeData.asciiCharSize ?? 8.0;
   const asciiContrast = nodeData.asciiContrast ?? 1.0;
@@ -53,18 +54,18 @@ export const ShaderControlsSidebar: React.FC<ShaderControlsSidebarProps> = ({
   const asciiCharSet = nodeData.asciiCharSet ?? 3.0;
   const asciiColored = nodeData.asciiColored ?? 0.0;
   const asciiInvert = nodeData.asciiInvert ?? 0.0;
-  
+
   // Matrix Dither shader settings with defaults
   const matrixSize = nodeData.matrixSize ?? 4.0;
   const bias = nodeData.bias ?? 0.0;
-  
+
   // Dither shader settings with defaults
   const ditherSize = nodeData.ditherSize ?? 4.0;
   const ditherContrast = nodeData.ditherContrast ?? 1.5;
   const offset = nodeData.offset ?? 0.0;
   const bitDepth = nodeData.bitDepth ?? 4.0;
   const palette = nodeData.palette ?? 0.0;
-  
+
   // Duotone shader settings with defaults
   const duotoneShadowColor = nodeData.duotoneShadowColor ?? [0.1, 0.0, 0.2] as [number, number, number];
   const duotoneHighlightColor = nodeData.duotoneHighlightColor ?? [0.3, 0.9, 0.9] as [number, number, number];
@@ -157,7 +158,7 @@ export const ShaderControlsSidebar: React.FC<ShaderControlsSidebarProps> = ({
         const base = baseValuesRef.current;
         // Subtle randomization: ±5% variation
         const variation = 0.05;
-        
+
         const randomizeValue = (value: number) => {
           const randomOffset = (Math.random() - 0.5) * 2 * variation; // -0.05 to +0.05
           return Math.max(0, Math.min(2, value + randomOffset));
@@ -205,22 +206,18 @@ export const ShaderControlsSidebar: React.FC<ShaderControlsSidebarProps> = ({
   return (
     <aside
       data-shader-sidebar="true"
-        className={cn(
-        variant === 'standalone' ? "fixed right-4 top-[81px]" : "relative",
-        "z-50",
-        "backdrop-blur-xl border border-zinc-800/50",
-        "rounded-2xl shadow-2xl",
-        "transition-all duration-300 ease-out",
+      className={cn(
+        variant === 'standalone' ? "fixed right-4 top-[81px]" : "relative h-full border-none shadow-none rounded-none bg-transparent backdrop-blur-none",
+        variant === 'standalone' && "z-50 backdrop-blur-xl border border-zinc-800/50 rounded-2xl shadow-2xl transition-all duration-300 ease-out bg-black/40",
         "flex flex-col",
-        "bg-black/40",
-        isCollapsed ? "w-[56px] h-[56px]" : variant === 'standalone' ? "w-[280px] h-[calc(100vh-97px)]" : "w-[280px]"
+        isCollapsed ? "w-[56px] h-[56px]" : variant === 'standalone' ? "w-[280px] h-[calc(100vh-97px)]" : "w-full"
       )}
       style={{
-        width: isCollapsed ? `${COLLAPSED_WIDTH}px` : `${SIDEBAR_WIDTH}px`,
-        height: isCollapsed ? `${COLLAPSED_WIDTH}px` : variant === 'standalone' ? `calc(100vh - 97px)` : 'auto',
+        width: variant === 'embedded' ? '100%' : (isCollapsed ? `${COLLAPSED_WIDTH}px` : `${SIDEBAR_WIDTH}px`),
+        height: variant === 'embedded' ? '100%' : (isCollapsed ? `${COLLAPSED_WIDTH}px` : variant === 'standalone' ? `calc(100vh - 97px)` : 'auto'),
         minHeight: isCollapsed ? `${COLLAPSED_WIDTH}px` : '400px',
-        maxHeight: isCollapsed ? `${COLLAPSED_WIDTH}px` : variant === 'standalone' ? `calc(100vh - 97px)` : 'calc(100vh - 97px)',
-        backgroundColor: 'var(--sidebar)',
+        maxHeight: variant === 'embedded' ? 'none' : (isCollapsed ? `${COLLAPSED_WIDTH}px` : variant === 'standalone' ? `calc(100vh - 97px)` : 'calc(100vh - 97px)'),
+        backgroundColor: variant === 'embedded' ? 'transparent' : 'var(--sidebar)',
       }}
     >
       {/* Toggle Button - Only visible when expanded */}
@@ -267,643 +264,643 @@ export const ShaderControlsSidebar: React.FC<ShaderControlsSidebarProps> = ({
                   {t('shaderControls.title')}
                 </h2>
               </div>
-            {/* Shader Type Select */}
-            <div className="space-y-1">
-              <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
-                {t('shaderControls.shaderType')}
-              </label>
-              <Select
-                variant="node"
-                value={shaderType}
-                onChange={(value) => {
-                  if (onUpdateData) {
-                    onUpdateData(nodeId, { shaderType: value as 'halftone' | 'vhs' | 'ascii' | 'matrixDither' | 'dither' | 'duotone' });
-                  }
-                }}
-                options={[
-                  { value: 'halftone', label: t('shaderControls.shaderTypes.halftone') },
-                  { value: 'vhs', label: t('shaderControls.shaderTypes.vhs') },
-                  { value: 'ascii', label: t('shaderControls.shaderTypes.ascii') },
-                  { value: 'matrixDither', label: t('shaderControls.shaderTypes.matrixDither') },
-                  { value: 'dither', label: t('shaderControls.shaderTypes.dither') },
-                  { value: 'duotone', label: t('shaderControls.shaderTypes.duotone') },
-                ]}
-              />
-            </div>
-
-            {/* Halftone Variant Select (only when halftone is selected) */}
-            {shaderType === 'halftone' && (
+              {/* Shader Type Select */}
               <div className="space-y-1">
                 <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
-                  {t('shaderControls.halftoneVariant')}
+                  {t('shaderControls.shaderType')}
                 </label>
                 <Select
                   variant="node"
-                  value={halftoneVariant}
+                  value={shaderType}
                   onChange={(value) => {
                     if (onUpdateData) {
-                      onUpdateData(nodeId, { halftoneVariant: value as 'ellipse' | 'square' | 'lines' });
+                      onUpdateData(nodeId, { shaderType: value as 'halftone' | 'vhs' | 'ascii' | 'matrixDither' | 'dither' | 'duotone' });
                     }
                   }}
                   options={[
-                    { value: 'ellipse', label: t('shaderControls.halftoneVariants.ellipse') },
-                    { value: 'square', label: t('shaderControls.halftoneVariants.square') },
-                    { value: 'lines', label: t('shaderControls.halftoneVariants.lines') },
+                    { value: 'halftone', label: t('shaderControls.shaderTypes.halftone') },
+                    { value: 'vhs', label: t('shaderControls.shaderTypes.vhs') },
+                    { value: 'ascii', label: t('shaderControls.shaderTypes.ascii') },
+                    { value: 'matrixDither', label: t('shaderControls.shaderTypes.matrixDither') },
+                    { value: 'dither', label: t('shaderControls.shaderTypes.dither') },
+                    { value: 'duotone', label: t('shaderControls.shaderTypes.duotone') },
                   ]}
                 />
               </div>
-            )}
 
-            {/* Halftone Shader Controls */}
-            {shaderType === 'halftone' && (
-              <>
-                <NodeSlider
-                  label={t('shaderControls.labels.dotSize')}
-                  value={dotSize}
-                  min={0.1}
-                  max={20}
-                  step={0.1}
-                  onChange={(value) => {
-                    if (onUpdateData) {
-                      onUpdateData(nodeId, { dotSize: value });
-                    }
-                  }}
-                  formatValue={(value) => value.toFixed(1)}
-                />
-
-                <NodeSlider
-                  label={t('shaderControls.labels.angle')}
-                  value={angle}
-                  min={0}
-                  max={360}
-                  step={1}
-                  onChange={(value) => {
-                    if (onUpdateData) {
-                      onUpdateData(nodeId, { angle: value });
-                    }
-                  }}
-                  formatValue={(value) => `${Math.round(value)}°`}
-                />
-
-                <NodeSlider
-                  label={t('shaderControls.labels.contrast')}
-                  value={contrast}
-                  min={0}
-                  max={2}
-                  step={0.01}
-                  onChange={(value) => {
-                    if (onUpdateData) {
-                      onUpdateData(nodeId, { contrast: value });
-                    }
-                  }}
-                  formatValue={(value) => value.toFixed(2)}
-                />
-
-                <NodeSlider
-                  label={t('shaderControls.labels.spacing')}
-                  value={spacing}
-                  min={0.5}
-                  max={5}
-                  step={0.1}
-                  onChange={(value) => {
-                    if (onUpdateData) {
-                      onUpdateData(nodeId, { spacing: value });
-                    }
-                  }}
-                  formatValue={(value) => value.toFixed(1)}
-                />
-
-                {/* Invert Checkbox - Subtle Icon Only */}
-                <button
-                  onClick={() => {
-                    if (onUpdateData) {
-                      onUpdateData(nodeId, { halftoneInvert: halftoneInvert > 0.5 ? 0.0 : 1.0 });
-                    }
-                  }}
-                  className={cn(
-                    "w-full flex items-center justify-center py-1.5 rounded",
-                    "border transition-all",
-                    "hover:bg-zinc-800/30",
-                    halftoneInvert > 0.5
-                      ? "border-[#52ddeb]/40 bg-brand-cyan/10 text-brand-cyan"
-                      : "border-zinc-700/30 bg-transparent text-zinc-500 hover:text-zinc-400 hover:border-zinc-600/40"
-                  )}
-                  title={t('shaderControls.labels.invert')}
-                >
-                  <RotateCcw size={14} className={cn(
-                    "transition-transform duration-200",
-                    halftoneInvert > 0.5 && "scale-x-[-1]"
-                  )} />
-                </button>
-              </>
-            )}
-
-            {/* VHS Shader Controls */}
-            {shaderType === 'vhs' && (
-              <>
-                {/* Animation Toggle Button */}
-                <div className="flex items-center justify-between py-1">
+              {/* Halftone Variant Select (only when halftone is selected) */}
+              {shaderType === 'halftone' && (
+                <div className="space-y-1">
                   <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
-                    {t('shaderControls.labels.animation')}
+                    {t('shaderControls.halftoneVariant')}
                   </label>
+                  <Select
+                    variant="node"
+                    value={halftoneVariant}
+                    onChange={(value) => {
+                      if (onUpdateData) {
+                        onUpdateData(nodeId, { halftoneVariant: value as 'ellipse' | 'square' | 'lines' });
+                      }
+                    }}
+                    options={[
+                      { value: 'ellipse', label: t('shaderControls.halftoneVariants.ellipse') },
+                      { value: 'square', label: t('shaderControls.halftoneVariants.square') },
+                      { value: 'lines', label: t('shaderControls.halftoneVariants.lines') },
+                    ]}
+                  />
+                </div>
+              )}
+
+              {/* Halftone Shader Controls */}
+              {shaderType === 'halftone' && (
+                <>
+                  <NodeSlider
+                    label={t('shaderControls.labels.dotSize')}
+                    value={dotSize}
+                    min={0.1}
+                    max={20}
+                    step={0.1}
+                    onChange={(value) => {
+                      if (onUpdateData) {
+                        onUpdateData(nodeId, { dotSize: value });
+                      }
+                    }}
+                    formatValue={(value) => value.toFixed(1)}
+                  />
+
+                  <NodeSlider
+                    label={t('shaderControls.labels.angle')}
+                    value={angle}
+                    min={0}
+                    max={360}
+                    step={1}
+                    onChange={(value) => {
+                      if (onUpdateData) {
+                        onUpdateData(nodeId, { angle: value });
+                      }
+                    }}
+                    formatValue={(value) => `${Math.round(value)}°`}
+                  />
+
+                  <NodeSlider
+                    label={t('shaderControls.labels.contrast')}
+                    value={contrast}
+                    min={0}
+                    max={2}
+                    step={0.01}
+                    onChange={(value) => {
+                      if (onUpdateData) {
+                        onUpdateData(nodeId, { contrast: value });
+                      }
+                    }}
+                    formatValue={(value) => value.toFixed(2)}
+                  />
+
+                  <NodeSlider
+                    label={t('shaderControls.labels.spacing')}
+                    value={spacing}
+                    min={0.5}
+                    max={5}
+                    step={0.1}
+                    onChange={(value) => {
+                      if (onUpdateData) {
+                        onUpdateData(nodeId, { spacing: value });
+                      }
+                    }}
+                    formatValue={(value) => value.toFixed(1)}
+                  />
+
+                  {/* Invert Checkbox - Subtle Icon Only */}
                   <button
-                    onClick={toggleAnimation}
+                    onClick={() => {
+                      if (onUpdateData) {
+                        onUpdateData(nodeId, { halftoneInvert: halftoneInvert > 0.5 ? 0.0 : 1.0 });
+                      }
+                    }}
                     className={cn(
-                      "flex items-center gap-2 px-3 py-1.5 rounded",
+                      "w-full flex items-center justify-center py-1.5 rounded",
                       "border transition-all",
-                      "text-xs font-mono uppercase tracking-wider",
-                      isAnimating
-                        ? "bg-brand-cyan/20 border-[#52ddeb]/50 text-brand-cyan hover:bg-brand-cyan/30"
-                        : "bg-zinc-800/50 border-zinc-700/50 text-zinc-400 hover:bg-zinc-700/50 hover:border-zinc-600/50"
+                      "hover:bg-zinc-800/30",
+                      halftoneInvert > 0.5
+                        ? "border-[#52ddeb]/40 bg-brand-cyan/10 text-brand-cyan"
+                        : "border-zinc-700/30 bg-transparent text-zinc-500 hover:text-zinc-400 hover:border-zinc-600/40"
                     )}
-                    title={isAnimating ? t('shaderControls.tooltips.stopAnimation') : t('shaderControls.tooltips.startAnimation')}
+                    title={t('shaderControls.labels.invert')}
                   >
-                    {isAnimating ? (
-                      <>
-                        <Pause size={14} />
-                        <span>{t('shaderControls.buttons.pause')}</span>
-                      </>
-                    ) : (
-                      <>
-                        <Play size={14} />
-                        <span>{t('shaderControls.buttons.play')}</span>
-                      </>
-                    )}
+                    <RotateCcw size={14} className={cn(
+                      "transition-transform duration-200",
+                      halftoneInvert > 0.5 && "scale-x-[-1]"
+                    )} />
                   </button>
-                </div>
+                </>
+              )}
 
-                <NodeSlider
-                  label={t('shaderControls.labels.tapeWave')}
-                  value={tapeWaveIntensity}
-                  min={0}
-                  max={2}
-                  step={0.01}
-                  onChange={(value) => {
-                    if (onUpdateData) {
-                      onUpdateData(nodeId, { tapeWaveIntensity: value });
-                    }
-                  }}
-                  formatValue={(value) => value.toFixed(2)}
-                />
+              {/* VHS Shader Controls */}
+              {shaderType === 'vhs' && (
+                <>
+                  {/* Animation Toggle Button */}
+                  <div className="flex items-center justify-between py-1">
+                    <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
+                      {t('shaderControls.labels.animation')}
+                    </label>
+                    <button
+                      onClick={toggleAnimation}
+                      className={cn(
+                        "flex items-center gap-2 px-3 py-1.5 rounded",
+                        "border transition-all",
+                        "text-xs font-mono uppercase tracking-wider",
+                        isAnimating
+                          ? "bg-brand-cyan/20 border-[#52ddeb]/50 text-brand-cyan hover:bg-brand-cyan/30"
+                          : "bg-zinc-800/50 border-zinc-700/50 text-zinc-400 hover:bg-zinc-700/50 hover:border-zinc-600/50"
+                      )}
+                      title={isAnimating ? t('shaderControls.tooltips.stopAnimation') : t('shaderControls.tooltips.startAnimation')}
+                    >
+                      {isAnimating ? (
+                        <>
+                          <Pause size={14} />
+                          <span>{t('shaderControls.buttons.pause')}</span>
+                        </>
+                      ) : (
+                        <>
+                          <Play size={14} />
+                          <span>{t('shaderControls.buttons.play')}</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
 
-                <NodeSlider
-                  label={t('shaderControls.labels.tapeCrease')}
-                  value={tapeCreaseIntensity}
-                  min={0}
-                  max={2}
-                  step={0.01}
-                  onChange={(value) => {
-                    if (onUpdateData) {
-                      onUpdateData(nodeId, { tapeCreaseIntensity: value });
-                    }
-                  }}
-                  formatValue={(value) => value.toFixed(2)}
-                />
-
-                <NodeSlider
-                  label={t('shaderControls.labels.switchingNoise')}
-                  value={switchingNoiseIntensity}
-                  min={0}
-                  max={2}
-                  step={0.01}
-                  onChange={(value) => {
-                    if (onUpdateData) {
-                      onUpdateData(nodeId, { switchingNoiseIntensity: value });
-                    }
-                  }}
-                  formatValue={(value) => value.toFixed(2)}
-                />
-
-                <NodeSlider
-                  label={t('shaderControls.labels.bloom')}
-                  value={bloomIntensity}
-                  min={0}
-                  max={2}
-                  step={0.01}
-                  onChange={(value) => {
-                    if (onUpdateData) {
-                      onUpdateData(nodeId, { bloomIntensity: value });
-                    }
-                  }}
-                  formatValue={(value) => value.toFixed(2)}
-                />
-
-                <NodeSlider
-                  label={t('shaderControls.labels.acBeat')}
-                  value={acBeatIntensity}
-                  min={0}
-                  max={2}
-                  step={0.01}
-                  onChange={(value) => {
-                    if (onUpdateData) {
-                      onUpdateData(nodeId, { acBeatIntensity: value });
-                    }
-                  }}
-                  formatValue={(value) => value.toFixed(2)}
-                />
-              </>
-            )}
-
-            {/* ASCII Shader Controls */}
-            {shaderType === 'ascii' && (
-              <>
-                <div className="space-y-1">
-                  <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
-                    {t('shaderControls.labels.characterSet')}
-                  </label>
-                  <Select
-                    variant="node"
-                    value={asciiCharSet.toString()}
+                  <NodeSlider
+                    label={t('shaderControls.labels.tapeWave')}
+                    value={tapeWaveIntensity}
+                    min={0}
+                    max={2}
+                    step={0.01}
                     onChange={(value) => {
                       if (onUpdateData) {
-                        onUpdateData(nodeId, { asciiCharSet: parseFloat(value) });
+                        onUpdateData(nodeId, { tapeWaveIntensity: value });
                       }
                     }}
-                    options={[
-                      { value: '0', label: t('shaderControls.characterSets.blocks') },
-                      { value: '1', label: t('shaderControls.characterSets.dots') },
-                      { value: '2', label: t('shaderControls.characterSets.lines') },
-                      { value: '3', label: t('shaderControls.characterSets.classic') },
-                      { value: '4', label: t('shaderControls.characterSets.matrix') },
-                      { value: '5', label: t('shaderControls.characterSets.braille') },
-                    ]}
+                    formatValue={(value) => value.toFixed(2)}
                   />
-                </div>
 
-                <NodeSlider
-                  label={t('shaderControls.labels.characterSize')}
-                  value={asciiCharSize}
-                  min={2}
-                  max={32}
-                  step={1}
-                  onChange={(value) => {
-                    if (onUpdateData) {
-                      onUpdateData(nodeId, { asciiCharSize: value });
-                    }
-                  }}
-                  formatValue={(value) => `${value.toFixed(0)}px`}
-                />
-
-                <NodeSlider
-                  label={t('shaderControls.labels.contrast')}
-                  value={asciiContrast}
-                  min={0.1}
-                  max={3}
-                  step={0.1}
-                  onChange={(value) => {
-                    if (onUpdateData) {
-                      onUpdateData(nodeId, { asciiContrast: value });
-                    }
-                  }}
-                  formatValue={(value) => value.toFixed(1)}
-                />
-
-                <NodeSlider
-                  label={t('shaderControls.labels.brightness')}
-                  value={asciiBrightness}
-                  min={-0.5}
-                  max={0.5}
-                  step={0.01}
-                  onChange={(value) => {
-                    if (onUpdateData) {
-                      onUpdateData(nodeId, { asciiBrightness: value });
-                    }
-                  }}
-                  formatValue={(value) => value.toFixed(2)}
-                />
-
-                <div className="flex items-center justify-between py-1">
-                  <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
-                    {t('shaderControls.labels.colored')}
-                  </label>
-                  <button
-                    onClick={() => {
-                      if (onUpdateData) {
-                        onUpdateData(nodeId, { asciiColored: asciiColored > 0.5 ? 0.0 : 1.0 });
-                      }
-                    }}
-                    className={cn(
-                      "px-3 py-1.5 rounded border transition-all text-xs font-mono uppercase tracking-wider",
-                      asciiColored > 0.5
-                        ? "bg-brand-cyan/20 border-[#52ddeb]/50 text-brand-cyan"
-                        : "bg-zinc-800/50 border-zinc-700/50 text-zinc-400"
-                    )}
-                  >
-                    {asciiColored > 0.5 ? t('shaderControls.buttons.on') : t('shaderControls.buttons.off')}
-                  </button>
-                </div>
-
-                <div className="flex items-center justify-between py-1">
-                  <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
-                    {t('shaderControls.labels.invert')}
-                  </label>
-                  <button
-                    onClick={() => {
-                      if (onUpdateData) {
-                        onUpdateData(nodeId, { asciiInvert: asciiInvert > 0.5 ? 0.0 : 1.0 });
-                      }
-                    }}
-                    className={cn(
-                      "px-3 py-1.5 rounded border transition-all text-xs font-mono uppercase tracking-wider",
-                      asciiInvert > 0.5
-                        ? "bg-brand-cyan/20 border-[#52ddeb]/50 text-brand-cyan"
-                        : "bg-zinc-800/50 border-zinc-700/50 text-zinc-400"
-                    )}
-                  >
-                    {asciiInvert > 0.5 ? t('shaderControls.buttons.on') : t('shaderControls.buttons.off')}
-                  </button>
-                </div>
-              </>
-            )}
-
-            {/* Matrix Dither Shader Controls */}
-            {shaderType === 'matrixDither' && (
-              <>
-                <div className="space-y-1">
-                  <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
-                    {t('shaderControls.labels.matrixSize')}
-                  </label>
-                  <Select
-                    variant="node"
-                    value={matrixSize.toString()}
+                  <NodeSlider
+                    label={t('shaderControls.labels.tapeCrease')}
+                    value={tapeCreaseIntensity}
+                    min={0}
+                    max={2}
+                    step={0.01}
                     onChange={(value) => {
                       if (onUpdateData) {
-                        onUpdateData(nodeId, { matrixSize: parseFloat(value) });
+                        onUpdateData(nodeId, { tapeCreaseIntensity: value });
                       }
                     }}
-                    options={[
-                      { value: '2', label: t('shaderControls.matrixSizes.coarse') },
-                      { value: '4', label: t('shaderControls.matrixSizes.medium') },
-                      { value: '8', label: t('shaderControls.matrixSizes.fine') },
-                    ]}
+                    formatValue={(value) => value.toFixed(2)}
                   />
-                </div>
 
-                <NodeSlider
-                  label={t('shaderControls.labels.bias')}
-                  value={bias}
-                  min={-1}
-                  max={1}
-                  step={0.01}
-                  onChange={(value) => {
-                    if (onUpdateData) {
-                      onUpdateData(nodeId, { bias: value });
-                    }
-                  }}
-                  formatValue={(value) => value.toFixed(2)}
-                />
-              </>
-            )}
-
-            {/* Dither Shader Controls */}
-            {shaderType === 'dither' && (
-              <>
-                <NodeSlider
-                  label={t('shaderControls.labels.ditherSize')}
-                  value={ditherSize}
-                  min={1}
-                  max={16}
-                  step={1}
-                  onChange={(value) => {
-                    if (onUpdateData) {
-                      onUpdateData(nodeId, { ditherSize: value });
-                    }
-                  }}
-                  formatValue={(value) => value.toFixed(0)}
-                />
-
-                <NodeSlider
-                  label={t('shaderControls.labels.contrast')}
-                  value={ditherContrast}
-                  min={0.1}
-                  max={3}
-                  step={0.1}
-                  onChange={(value) => {
-                    if (onUpdateData) {
-                      onUpdateData(nodeId, { ditherContrast: value });
-                    }
-                  }}
-                  formatValue={(value) => value.toFixed(1)}
-                />
-
-                <NodeSlider
-                  label={t('shaderControls.labels.offset')}
-                  value={offset}
-                  min={-0.5}
-                  max={0.5}
-                  step={0.01}
-                  onChange={(value) => {
-                    if (onUpdateData) {
-                      onUpdateData(nodeId, { offset: value });
-                    }
-                  }}
-                  formatValue={(value) => value.toFixed(2)}
-                />
-
-                <NodeSlider
-                  label={t('shaderControls.labels.bitDepth')}
-                  value={bitDepth}
-                  min={1}
-                  max={8}
-                  step={1}
-                  onChange={(value) => {
-                    if (onUpdateData) {
-                      onUpdateData(nodeId, { bitDepth: value });
-                    }
-                  }}
-                  formatValue={(value) => value.toFixed(0)}
-                />
-
-                <div className="space-y-1">
-                  <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
-                    {t('shaderControls.labels.palette')}
-                  </label>
-                  <Select
-                    variant="node"
-                    value={palette.toString()}
+                  <NodeSlider
+                    label={t('shaderControls.labels.switchingNoise')}
+                    value={switchingNoiseIntensity}
+                    min={0}
+                    max={2}
+                    step={0.01}
                     onChange={(value) => {
                       if (onUpdateData) {
-                        onUpdateData(nodeId, { palette: parseFloat(value) });
+                        onUpdateData(nodeId, { switchingNoiseIntensity: value });
                       }
                     }}
-                    options={[
-                      { value: '0', label: t('shaderControls.palettes.monochrome') },
-                      { value: '1', label: t('shaderControls.palettes.gameboy') },
-                      { value: '2', label: t('shaderControls.palettes.crtAmber') },
-                      { value: '3', label: t('shaderControls.palettes.crtGreen') },
-                      { value: '4', label: t('shaderControls.palettes.sepia') },
-                    ]}
+                    formatValue={(value) => value.toFixed(2)}
                   />
-                </div>
-              </>
-            )}
 
-            {/* Duotone Shader Controls */}
-            {shaderType === 'duotone' && (
-              <>
-                {/* Shadow Color Picker */}
-                <div className="space-y-1">
-                  <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
-                    {t('shaderControls.labels.shadowColor')}
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="color"
-                      value={rgbToHex(localShadowColor)}
-                      onChange={(e) => {
-                        const newColor = hexToRgb(e.target.value);
-                        
-                        // Update local state immediately for responsive UI
-                        setLocalShadowColor(newColor);
-                        
-                        // Clear existing timeout
-                        if (shadowColorUpdateTimeoutRef.current) {
-                          clearTimeout(shadowColorUpdateTimeoutRef.current);
-                        }
-                        
-                        // Update nodeData after a short delay (debounce)
-                        shadowColorUpdateTimeoutRef.current = setTimeout(() => {
-                          if (onUpdateData) {
-                            onUpdateData(nodeId, { duotoneShadowColor: newColor });
-                          }
-                        }, 150);
-                      }}
-                      onMouseDown={() => {
-                        isDraggingShadowRef.current = true;
-                      }}
-                      onMouseUp={() => {
-                        isDraggingShadowRef.current = false;
-                        // Force immediate update on mouse up
-                        if (shadowColorUpdateTimeoutRef.current) {
-                          clearTimeout(shadowColorUpdateTimeoutRef.current);
-                        }
+                  <NodeSlider
+                    label={t('shaderControls.labels.bloom')}
+                    value={bloomIntensity}
+                    min={0}
+                    max={2}
+                    step={0.01}
+                    onChange={(value) => {
+                      if (onUpdateData) {
+                        onUpdateData(nodeId, { bloomIntensity: value });
+                      }
+                    }}
+                    formatValue={(value) => value.toFixed(2)}
+                  />
+
+                  <NodeSlider
+                    label={t('shaderControls.labels.acBeat')}
+                    value={acBeatIntensity}
+                    min={0}
+                    max={2}
+                    step={0.01}
+                    onChange={(value) => {
+                      if (onUpdateData) {
+                        onUpdateData(nodeId, { acBeatIntensity: value });
+                      }
+                    }}
+                    formatValue={(value) => value.toFixed(2)}
+                  />
+                </>
+              )}
+
+              {/* ASCII Shader Controls */}
+              {shaderType === 'ascii' && (
+                <>
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
+                      {t('shaderControls.labels.characterSet')}
+                    </label>
+                    <Select
+                      variant="node"
+                      value={asciiCharSet.toString()}
+                      onChange={(value) => {
                         if (onUpdateData) {
-                          onUpdateData(nodeId, { duotoneShadowColor: localShadowColor });
+                          onUpdateData(nodeId, { asciiCharSet: parseFloat(value) });
                         }
                       }}
-                      onBlur={() => {
-                        isDraggingShadowRef.current = false;
-                        // Force immediate update on blur
-                        if (shadowColorUpdateTimeoutRef.current) {
-                          clearTimeout(shadowColorUpdateTimeoutRef.current);
-                        }
-                        if (onUpdateData) {
-                          onUpdateData(nodeId, { duotoneShadowColor: localShadowColor });
-                        }
-                      }}
-                      className="w-full h-8 rounded-md border border-zinc-700/50 bg-zinc-900/50 cursor-pointer [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-md [&::-moz-color-swatch]:border-none [&::-moz-color-swatch]:rounded-md"
-                      style={{
-                        WebkitAppearance: 'none',
-                        MozAppearance: 'none',
-                        appearance: 'none',
-                      }}
+                      options={[
+                        { value: '0', label: t('shaderControls.characterSets.blocks') },
+                        { value: '1', label: t('shaderControls.characterSets.dots') },
+                        { value: '2', label: t('shaderControls.characterSets.lines') },
+                        { value: '3', label: t('shaderControls.characterSets.classic') },
+                        { value: '4', label: t('shaderControls.characterSets.matrix') },
+                        { value: '5', label: t('shaderControls.characterSets.braille') },
+                      ]}
                     />
                   </div>
-                </div>
 
-                {/* Highlight Color Picker */}
-                <div className="space-y-1">
-                  <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
-                    {t('shaderControls.labels.highlightColor')}
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="color"
-                      value={rgbToHex(localHighlightColor)}
-                      onChange={(e) => {
-                        const newColor = hexToRgb(e.target.value);
-                        
-                        // Update local state immediately for responsive UI
-                        setLocalHighlightColor(newColor);
-                        
-                        // Clear existing timeout
-                        if (highlightColorUpdateTimeoutRef.current) {
-                          clearTimeout(highlightColorUpdateTimeoutRef.current);
-                        }
-                        
-                        // Update nodeData after a short delay (debounce)
-                        highlightColorUpdateTimeoutRef.current = setTimeout(() => {
-                          if (onUpdateData) {
-                            onUpdateData(nodeId, { duotoneHighlightColor: newColor });
-                          }
-                        }, 150);
-                      }}
-                      onMouseDown={() => {
-                        isDraggingHighlightRef.current = true;
-                      }}
-                      onMouseUp={() => {
-                        isDraggingHighlightRef.current = false;
-                        // Force immediate update on mouse up
-                        if (highlightColorUpdateTimeoutRef.current) {
-                          clearTimeout(highlightColorUpdateTimeoutRef.current);
-                        }
+                  <NodeSlider
+                    label={t('shaderControls.labels.characterSize')}
+                    value={asciiCharSize}
+                    min={2}
+                    max={32}
+                    step={1}
+                    onChange={(value) => {
+                      if (onUpdateData) {
+                        onUpdateData(nodeId, { asciiCharSize: value });
+                      }
+                    }}
+                    formatValue={(value) => `${value.toFixed(0)}px`}
+                  />
+
+                  <NodeSlider
+                    label={t('shaderControls.labels.contrast')}
+                    value={asciiContrast}
+                    min={0.1}
+                    max={3}
+                    step={0.1}
+                    onChange={(value) => {
+                      if (onUpdateData) {
+                        onUpdateData(nodeId, { asciiContrast: value });
+                      }
+                    }}
+                    formatValue={(value) => value.toFixed(1)}
+                  />
+
+                  <NodeSlider
+                    label={t('shaderControls.labels.brightness')}
+                    value={asciiBrightness}
+                    min={-0.5}
+                    max={0.5}
+                    step={0.01}
+                    onChange={(value) => {
+                      if (onUpdateData) {
+                        onUpdateData(nodeId, { asciiBrightness: value });
+                      }
+                    }}
+                    formatValue={(value) => value.toFixed(2)}
+                  />
+
+                  <div className="flex items-center justify-between py-1">
+                    <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
+                      {t('shaderControls.labels.colored')}
+                    </label>
+                    <button
+                      onClick={() => {
                         if (onUpdateData) {
-                          onUpdateData(nodeId, { duotoneHighlightColor: localHighlightColor });
+                          onUpdateData(nodeId, { asciiColored: asciiColored > 0.5 ? 0.0 : 1.0 });
                         }
                       }}
-                      onBlur={() => {
-                        isDraggingHighlightRef.current = false;
-                        // Force immediate update on blur
-                        if (highlightColorUpdateTimeoutRef.current) {
-                          clearTimeout(highlightColorUpdateTimeoutRef.current);
-                        }
+                      className={cn(
+                        "px-3 py-1.5 rounded border transition-all text-xs font-mono uppercase tracking-wider",
+                        asciiColored > 0.5
+                          ? "bg-brand-cyan/20 border-[#52ddeb]/50 text-brand-cyan"
+                          : "bg-zinc-800/50 border-zinc-700/50 text-zinc-400"
+                      )}
+                    >
+                      {asciiColored > 0.5 ? t('shaderControls.buttons.on') : t('shaderControls.buttons.off')}
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between py-1">
+                    <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
+                      {t('shaderControls.labels.invert')}
+                    </label>
+                    <button
+                      onClick={() => {
                         if (onUpdateData) {
-                          onUpdateData(nodeId, { duotoneHighlightColor: localHighlightColor });
+                          onUpdateData(nodeId, { asciiInvert: asciiInvert > 0.5 ? 0.0 : 1.0 });
                         }
                       }}
-                      className="w-full h-8 rounded-md border border-zinc-700/50 bg-zinc-900/50 cursor-pointer [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-md [&::-moz-color-swatch]:border-none [&::-moz-color-swatch]:rounded-md"
-                      style={{
-                        WebkitAppearance: 'none',
-                        MozAppearance: 'none',
-                        appearance: 'none',
+                      className={cn(
+                        "px-3 py-1.5 rounded border transition-all text-xs font-mono uppercase tracking-wider",
+                        asciiInvert > 0.5
+                          ? "bg-brand-cyan/20 border-[#52ddeb]/50 text-brand-cyan"
+                          : "bg-zinc-800/50 border-zinc-700/50 text-zinc-400"
+                      )}
+                    >
+                      {asciiInvert > 0.5 ? t('shaderControls.buttons.on') : t('shaderControls.buttons.off')}
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {/* Matrix Dither Shader Controls */}
+              {shaderType === 'matrixDither' && (
+                <>
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
+                      {t('shaderControls.labels.matrixSize')}
+                    </label>
+                    <Select
+                      variant="node"
+                      value={matrixSize.toString()}
+                      onChange={(value) => {
+                        if (onUpdateData) {
+                          onUpdateData(nodeId, { matrixSize: parseFloat(value) });
+                        }
                       }}
+                      options={[
+                        { value: '2', label: t('shaderControls.matrixSizes.coarse') },
+                        { value: '4', label: t('shaderControls.matrixSizes.medium') },
+                        { value: '8', label: t('shaderControls.matrixSizes.fine') },
+                      ]}
                     />
                   </div>
-                </div>
 
-                <NodeSlider
-                  label={t('shaderControls.labels.intensity')}
-                  value={duotoneIntensity}
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  onChange={(value) => {
-                    if (onUpdateData) {
-                      onUpdateData(nodeId, { duotoneIntensity: value });
-                    }
-                  }}
-                  formatValue={(value) => `${Math.round(value * 100)}%`}
-                />
+                  <NodeSlider
+                    label={t('shaderControls.labels.bias')}
+                    value={bias}
+                    min={-1}
+                    max={1}
+                    step={0.01}
+                    onChange={(value) => {
+                      if (onUpdateData) {
+                        onUpdateData(nodeId, { bias: value });
+                      }
+                    }}
+                    formatValue={(value) => value.toFixed(2)}
+                  />
+                </>
+              )}
 
-                <NodeSlider
-                  label={t('shaderControls.labels.contrast')}
-                  value={duotoneContrast}
-                  min={0.5}
-                  max={2}
-                  step={0.01}
-                  onChange={(value) => {
-                    if (onUpdateData) {
-                      onUpdateData(nodeId, { duotoneContrast: value });
-                    }
-                  }}
-                  formatValue={(value) => value.toFixed(2)}
-                />
+              {/* Dither Shader Controls */}
+              {shaderType === 'dither' && (
+                <>
+                  <NodeSlider
+                    label={t('shaderControls.labels.ditherSize')}
+                    value={ditherSize}
+                    min={1}
+                    max={16}
+                    step={1}
+                    onChange={(value) => {
+                      if (onUpdateData) {
+                        onUpdateData(nodeId, { ditherSize: value });
+                      }
+                    }}
+                    formatValue={(value) => value.toFixed(0)}
+                  />
 
-                <NodeSlider
-                  label={t('shaderControls.labels.brightness')}
-                  value={duotoneBrightness}
-                  min={-0.5}
-                  max={0.5}
-                  step={0.01}
-                  onChange={(value) => {
-                    if (onUpdateData) {
-                      onUpdateData(nodeId, { duotoneBrightness: value });
-                    }
-                  }}
-                  formatValue={(value) => value.toFixed(2)}
-                />
-              </>
-            )}
+                  <NodeSlider
+                    label={t('shaderControls.labels.contrast')}
+                    value={ditherContrast}
+                    min={0.1}
+                    max={3}
+                    step={0.1}
+                    onChange={(value) => {
+                      if (onUpdateData) {
+                        onUpdateData(nodeId, { ditherContrast: value });
+                      }
+                    }}
+                    formatValue={(value) => value.toFixed(1)}
+                  />
+
+                  <NodeSlider
+                    label={t('shaderControls.labels.offset')}
+                    value={offset}
+                    min={-0.5}
+                    max={0.5}
+                    step={0.01}
+                    onChange={(value) => {
+                      if (onUpdateData) {
+                        onUpdateData(nodeId, { offset: value });
+                      }
+                    }}
+                    formatValue={(value) => value.toFixed(2)}
+                  />
+
+                  <NodeSlider
+                    label={t('shaderControls.labels.bitDepth')}
+                    value={bitDepth}
+                    min={1}
+                    max={8}
+                    step={1}
+                    onChange={(value) => {
+                      if (onUpdateData) {
+                        onUpdateData(nodeId, { bitDepth: value });
+                      }
+                    }}
+                    formatValue={(value) => value.toFixed(0)}
+                  />
+
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
+                      {t('shaderControls.labels.palette')}
+                    </label>
+                    <Select
+                      variant="node"
+                      value={palette.toString()}
+                      onChange={(value) => {
+                        if (onUpdateData) {
+                          onUpdateData(nodeId, { palette: parseFloat(value) });
+                        }
+                      }}
+                      options={[
+                        { value: '0', label: t('shaderControls.palettes.monochrome') },
+                        { value: '1', label: t('shaderControls.palettes.gameboy') },
+                        { value: '2', label: t('shaderControls.palettes.crtAmber') },
+                        { value: '3', label: t('shaderControls.palettes.crtGreen') },
+                        { value: '4', label: t('shaderControls.palettes.sepia') },
+                      ]}
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Duotone Shader Controls */}
+              {shaderType === 'duotone' && (
+                <>
+                  {/* Shadow Color Picker */}
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
+                      {t('shaderControls.labels.shadowColor')}
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={rgbToHex(localShadowColor)}
+                        onChange={(e) => {
+                          const newColor = hexToRgb(e.target.value);
+
+                          // Update local state immediately for responsive UI
+                          setLocalShadowColor(newColor);
+
+                          // Clear existing timeout
+                          if (shadowColorUpdateTimeoutRef.current) {
+                            clearTimeout(shadowColorUpdateTimeoutRef.current);
+                          }
+
+                          // Update nodeData after a short delay (debounce)
+                          shadowColorUpdateTimeoutRef.current = setTimeout(() => {
+                            if (onUpdateData) {
+                              onUpdateData(nodeId, { duotoneShadowColor: newColor });
+                            }
+                          }, 150);
+                        }}
+                        onMouseDown={() => {
+                          isDraggingShadowRef.current = true;
+                        }}
+                        onMouseUp={() => {
+                          isDraggingShadowRef.current = false;
+                          // Force immediate update on mouse up
+                          if (shadowColorUpdateTimeoutRef.current) {
+                            clearTimeout(shadowColorUpdateTimeoutRef.current);
+                          }
+                          if (onUpdateData) {
+                            onUpdateData(nodeId, { duotoneShadowColor: localShadowColor });
+                          }
+                        }}
+                        onBlur={() => {
+                          isDraggingShadowRef.current = false;
+                          // Force immediate update on blur
+                          if (shadowColorUpdateTimeoutRef.current) {
+                            clearTimeout(shadowColorUpdateTimeoutRef.current);
+                          }
+                          if (onUpdateData) {
+                            onUpdateData(nodeId, { duotoneShadowColor: localShadowColor });
+                          }
+                        }}
+                        className="w-full h-8 rounded-md border border-zinc-700/50 bg-zinc-900/50 cursor-pointer [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-md [&::-moz-color-swatch]:border-none [&::-moz-color-swatch]:rounded-md"
+                        style={{
+                          WebkitAppearance: 'none',
+                          MozAppearance: 'none',
+                          appearance: 'none',
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Highlight Color Picker */}
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
+                      {t('shaderControls.labels.highlightColor')}
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={rgbToHex(localHighlightColor)}
+                        onChange={(e) => {
+                          const newColor = hexToRgb(e.target.value);
+
+                          // Update local state immediately for responsive UI
+                          setLocalHighlightColor(newColor);
+
+                          // Clear existing timeout
+                          if (highlightColorUpdateTimeoutRef.current) {
+                            clearTimeout(highlightColorUpdateTimeoutRef.current);
+                          }
+
+                          // Update nodeData after a short delay (debounce)
+                          highlightColorUpdateTimeoutRef.current = setTimeout(() => {
+                            if (onUpdateData) {
+                              onUpdateData(nodeId, { duotoneHighlightColor: newColor });
+                            }
+                          }, 150);
+                        }}
+                        onMouseDown={() => {
+                          isDraggingHighlightRef.current = true;
+                        }}
+                        onMouseUp={() => {
+                          isDraggingHighlightRef.current = false;
+                          // Force immediate update on mouse up
+                          if (highlightColorUpdateTimeoutRef.current) {
+                            clearTimeout(highlightColorUpdateTimeoutRef.current);
+                          }
+                          if (onUpdateData) {
+                            onUpdateData(nodeId, { duotoneHighlightColor: localHighlightColor });
+                          }
+                        }}
+                        onBlur={() => {
+                          isDraggingHighlightRef.current = false;
+                          // Force immediate update on blur
+                          if (highlightColorUpdateTimeoutRef.current) {
+                            clearTimeout(highlightColorUpdateTimeoutRef.current);
+                          }
+                          if (onUpdateData) {
+                            onUpdateData(nodeId, { duotoneHighlightColor: localHighlightColor });
+                          }
+                        }}
+                        className="w-full h-8 rounded-md border border-zinc-700/50 bg-zinc-900/50 cursor-pointer [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-md [&::-moz-color-swatch]:border-none [&::-moz-color-swatch]:rounded-md"
+                        style={{
+                          WebkitAppearance: 'none',
+                          MozAppearance: 'none',
+                          appearance: 'none',
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <NodeSlider
+                    label={t('shaderControls.labels.intensity')}
+                    value={duotoneIntensity}
+                    min={0}
+                    max={1}
+                    step={0.01}
+                    onChange={(value) => {
+                      if (onUpdateData) {
+                        onUpdateData(nodeId, { duotoneIntensity: value });
+                      }
+                    }}
+                    formatValue={(value) => `${Math.round(value * 100)}%`}
+                  />
+
+                  <NodeSlider
+                    label={t('shaderControls.labels.contrast')}
+                    value={duotoneContrast}
+                    min={0.5}
+                    max={2}
+                    step={0.01}
+                    onChange={(value) => {
+                      if (onUpdateData) {
+                        onUpdateData(nodeId, { duotoneContrast: value });
+                      }
+                    }}
+                    formatValue={(value) => value.toFixed(2)}
+                  />
+
+                  <NodeSlider
+                    label={t('shaderControls.labels.brightness')}
+                    value={duotoneBrightness}
+                    min={-0.5}
+                    max={0.5}
+                    step={0.01}
+                    onChange={(value) => {
+                      if (onUpdateData) {
+                        onUpdateData(nodeId, { duotoneBrightness: value });
+                      }
+                    }}
+                    formatValue={(value) => value.toFixed(2)}
+                  />
+                </>
+              )}
             </div>
           </div>
         </div>

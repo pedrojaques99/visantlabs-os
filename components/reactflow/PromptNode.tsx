@@ -21,17 +21,16 @@ import { getCreditsRequired } from '../../utils/creditCalculator';
 import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
 import { useNodeResize } from '../../hooks/canvas/useNodeResize';
 import { PromptContextMenu } from './contextmenu/PromptContextMenu';
-import { SavePromptModal } from './SavePromptModal';
 import { MockupPresetModal } from '../MockupPresetModal';
-import { getAllPresetsAsync } from '../../services/mockupPresetsService';
+import { getPresetByIdSync } from '../../services/unifiedPresetService';
 
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
   const { t } = useTranslation();
-  const { setNodes } = useReactFlow();
+  const { setNodes, getNode, getZoom } = useReactFlow();
   const nodeData = data as PromptNodeData;
-  const { handleResize: handleResizeWithDebounce } = useNodeResize();
+  const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
   const [prompt, setPrompt] = useState(nodeData.prompt || '');
   const [model, setModel] = useState<GeminiModel>(nodeData.model || 'gemini-2.5-flash-image');
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>(nodeData.aspectRatio || '16:9');
@@ -45,20 +44,14 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
 
   // Context Menu state
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
-  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const [isPresetModalOpen, setIsPresetModalOpen] = useState(false);
 
   // Preset Selection Handler
-  const handlePresetSelect = async (presetId: string) => {
-    try {
-      const allPresets = await getAllPresetsAsync();
-      const preset = allPresets.find(p => p.id === presetId);
-      if (preset && preset.prompt) {
-        setPrompt(preset.prompt);
-        debouncedUpdateData({ prompt: preset.prompt });
-      }
-    } catch (error) {
-      console.error('Failed to load preset:', error);
+  const handlePresetSelect = (presetId: string) => {
+    const preset = getPresetByIdSync('mockup', presetId);
+    if (preset && preset.prompt) {
+      setPrompt(preset.prompt);
+      debouncedUpdateData({ prompt: preset.prompt });
     }
     setIsPresetModalOpen(false);
   };
@@ -330,6 +323,11 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     handleResizeWithDebounce(id, width, height, nodeData.onResize);
   }, [id, nodeData.onResize, handleResizeWithDebounce]);
 
+  const handleFitToContent = useCallback(() => {
+    // For prompt nodes, we set height to auto to let it grow based on prompt length
+    fitToContent(id, 'auto', 'auto', nodeData.onResize);
+  }, [id, nodeData.onResize, fitToContent]);
+
   const handleDuplicate = () => {
     // ReactFlow handle duplication through the internal state
     // but we can trigger it via a helper if available or by creating a new node
@@ -352,6 +350,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       selected={selected}
       dragging={dragging}
       warning={nodeData.oversizedWarning}
+      onFitToContent={handleFitToContent}
       className="p-5 min-w-[320px]"
       onContextMenu={(e) => {
         e.preventDefault();
@@ -533,8 +532,6 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               e.preventDefault();
               if (nodeData.onSavePrompt) {
                 nodeData.onSavePrompt(prompt);
-              } else {
-                setIsSaveModalOpen(true); // Fallback if handler not connected
               }
             }}
             disabled={isLoading || !prompt.trim()}
@@ -826,10 +823,13 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           x={contextMenu.x}
           y={contextMenu.y}
           onClose={() => setContextMenu(null)}
-          prompt={prompt}
-          nodeId={id}
-          nodeData={nodeData}
-          onSavePrompt={() => setIsSaveModalOpen(true)}
+          onDuplicate={handleDuplicate}
+          onDelete={handleDelete}
+          onSavePrompt={() => {
+            if (nodeData.onSavePrompt) {
+              nodeData.onSavePrompt(prompt);
+            }
+          }}
         />
       )}
 
@@ -838,16 +838,6 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         selectedPresetId=""
         onClose={() => setIsPresetModalOpen(false)}
         onSelectPreset={handlePresetSelect}
-      />
-
-      {/* Save Prompt Modal */}
-      <SavePromptModal
-        isOpen={isSaveModalOpen}
-        onClose={() => setIsSaveModalOpen(false)}
-        prompt={prompt}
-        initialData={{
-          name: t('canvasNodes.promptNode.savedPromptName') || 'Novo Prompt',
-        }}
       />
     </NodeContainer>
   );
