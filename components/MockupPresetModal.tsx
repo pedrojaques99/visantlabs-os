@@ -62,63 +62,26 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
         // Fetch ALL official presets (mockup, angle, texture, ambience, luminance)
         const officialData = await fetchAllOfficialPresets();
 
+        // Helper function to process presets by type (reduces code duplication)
+        const processPresetType = (presets: any[] | undefined, presetType: string): any[] => {
+          if (!presets || !Array.isArray(presets)) {
+            return [];
+          }
+          return presets.map((p: any) => ({
+            ...p,
+            referenceImageUrl: p.referenceImageUrl || '',
+            presetType,
+          }));
+        };
+
         // Combine all official presets with their correct presetType
-        const allOfficialPresets: any[] = [];
-
-        // Mockup presets
-        if (officialData.mockupPresets && Array.isArray(officialData.mockupPresets)) {
-          officialData.mockupPresets.forEach((p: any) => {
-            allOfficialPresets.push({
-              ...p,
-              referenceImageUrl: p.referenceImageUrl || '',
-              presetType: 'mockup',
-            });
-          });
-        }
-
-        // Angle presets
-        if (officialData.anglePresets && Array.isArray(officialData.anglePresets)) {
-          officialData.anglePresets.forEach((p: any) => {
-            allOfficialPresets.push({
-              ...p,
-              referenceImageUrl: p.referenceImageUrl || '',
-              presetType: 'angle',
-            });
-          });
-        }
-
-        // Texture presets
-        if (officialData.texturePresets && Array.isArray(officialData.texturePresets)) {
-          officialData.texturePresets.forEach((p: any) => {
-            allOfficialPresets.push({
-              ...p,
-              referenceImageUrl: p.referenceImageUrl || '',
-              presetType: 'texture',
-            });
-          });
-        }
-
-        // Ambience presets
-        if (officialData.ambiencePresets && Array.isArray(officialData.ambiencePresets)) {
-          officialData.ambiencePresets.forEach((p: any) => {
-            allOfficialPresets.push({
-              ...p,
-              referenceImageUrl: p.referenceImageUrl || '',
-              presetType: 'ambience',
-            });
-          });
-        }
-
-        // Luminance presets
-        if (officialData.luminancePresets && Array.isArray(officialData.luminancePresets)) {
-          officialData.luminancePresets.forEach((p: any) => {
-            allOfficialPresets.push({
-              ...p,
-              referenceImageUrl: p.referenceImageUrl || '',
-              presetType: 'luminance',
-            });
-          });
-        }
+        const allOfficialPresets: any[] = [
+          ...processPresetType(officialData.mockupPresets, 'mockup'),
+          ...processPresetType(officialData.anglePresets, 'angle'),
+          ...processPresetType(officialData.texturePresets, 'texture'),
+          ...processPresetType(officialData.ambiencePresets, 'ambience'),
+          ...processPresetType(officialData.luminancePresets, 'luminance'),
+        ];
 
         setOfficialPresets(allOfficialPresets);
 
@@ -230,8 +193,8 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
       referenceImageUrl: preset.referenceImageUrl,
       aspectRatio: preset.aspectRatio,
       isApproved: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: preset.createdAt || new Date().toISOString(),
+      updatedAt: preset.updatedAt || new Date().toISOString(),
       isOfficial: true,
     }));
 
@@ -271,15 +234,20 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
   }, [allUnifiedPresets, activeFilter]);
 
   // Count presets by type
+  // Optimized: single pass reduce instead of multiple filter calls
   const presetCounts = React.useMemo(() => {
-    const counts: Record<PresetFilterType, number> = {
-      all: allUnifiedPresets.length,
-      mockup: allUnifiedPresets.filter(p => p.presetType === 'mockup').length,
-      texture: allUnifiedPresets.filter(p => p.presetType === 'texture').length,
-      angle: allUnifiedPresets.filter(p => p.presetType === 'angle').length,
-      ambience: allUnifiedPresets.filter(p => p.presetType === 'ambience').length,
-      luminance: allUnifiedPresets.filter(p => p.presetType === 'luminance').length,
+    const initialCounts: Record<PresetFilterType, number> = {
+      all: 0, mockup: 0, texture: 0, angle: 0, ambience: 0, luminance: 0,
     };
+
+    const counts = allUnifiedPresets.reduce((acc, p) => {
+      acc.all++;
+      if (p.presetType && Object.prototype.hasOwnProperty.call(acc, p.presetType)) {
+        acc[p.presetType as PresetFilterType]++;
+      }
+      return acc;
+    }, initialCounts);
+
     return counts;
   }, [allUnifiedPresets]);
 
