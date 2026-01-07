@@ -140,6 +140,16 @@ export const mockupApi = {
     }
   },
 
+  async getUploadUrl(contentType: string): Promise<{ presignedUrl: string; finalUrl: string; key: string }> {
+    const response = await fetch(`${API_BASE_URL}/mockups/upload-url`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ contentType }),
+    });
+    if (!response.ok) throw new Error('Failed to get upload URL');
+    return response.json();
+  },
+
   async getById(id: string): Promise<Mockup> {
     const response = await fetch(`${API_BASE_URL}/mockups/${id}`, {
       headers: getAuthHeaders(),
@@ -310,6 +320,59 @@ export const mockupApi = {
       console.warn('[mockupApi.generate] Failed to check user API key:', error);
     }
 
+    // Helper to upload image if it's too large for the payload
+    const uploadIfNecessary = async (img: { base64: string; mimeType: string }) => {
+      // Threshold: 1MB (base64 is ~1.33x original size)
+      // Vercel limit is 4.5MB. Let's use 1.5MB as threshold for base64 size
+      const SIZE_THRESHOLD = 1.5 * 1024 * 1024;
+
+      if (img.base64.length > SIZE_THRESHOLD) {
+        try {
+          console.log('[CREDIT] [mockupApi.generate] Image is large, uploading to R2 first');
+          const { presignedUrl, finalUrl } = await this.getUploadUrl(img.mimeType);
+
+          // Convert base64 to blob, removing data URL prefix if present
+          const base64Data = img.base64.replace(/^data:image\/\w+;base64,/, '');
+          const byteCharacters = atob(base64Data);
+          const byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          const blob = new Blob([byteArray], { type: img.mimeType });
+
+          // Upload to R2
+          const uploadRes = await fetch(presignedUrl, {
+            method: 'PUT',
+            body: blob,
+            headers: {
+              'Content-Type': img.mimeType,
+            },
+          });
+
+          if (!uploadRes.ok) throw new Error('Failed to upload image to R2');
+
+          console.log('[CREDIT] [mockupApi.generate] Image uploaded successfully:', finalUrl);
+          return { url: finalUrl, mimeType: img.mimeType };
+        } catch (error) {
+          console.error('[CREDIT] [mockupApi.generate] Error uploading image to R2, falling back to base64:', error);
+          return img; // Fallback to base64 if upload fails
+        }
+      }
+      return img;
+    };
+
+    // Prepare parameters, uploading images if necessary
+    const processedParams = { ...params };
+    if (params.baseImage) {
+      processedParams.baseImage = await uploadIfNecessary(params.baseImage) as any;
+    }
+    if (params.referenceImages && params.referenceImages.length > 0) {
+      processedParams.referenceImages = await Promise.all(
+        params.referenceImages.map(img => uploadIfNecessary(img))
+      ) as any;
+    }
+
 
 
     // Create the request promise
@@ -323,7 +386,7 @@ export const mockupApi = {
         const response = await fetch(`${API_BASE_URL}/mockups/generate`, {
           method: 'POST',
           headers,
-          body: JSON.stringify(params),
+          body: JSON.stringify(processedParams),
         });
 
         if (!response.ok) {

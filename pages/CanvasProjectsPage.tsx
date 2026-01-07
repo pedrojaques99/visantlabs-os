@@ -9,7 +9,7 @@ import { AuthModal } from '../components/AuthModal';
 import { ConfirmationModal } from '../components/ConfirmationModal';
 import { BreadcrumbWithBack, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '../components/ui/BreadcrumbWithBack';
 import { toast } from 'sonner';
-import { FolderKanban, Calendar, Eye, Trash2, Plus, Pickaxe } from 'lucide-react';
+import { FolderKanban, Calendar, Eye, Trash2, Plus, Pickaxe, FolderOpen } from 'lucide-react';
 import { SEO } from '../components/SEO';
 import { useTranslation } from '../hooks/useTranslation';
 import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
@@ -17,6 +17,8 @@ import type { Node } from '@xyflow/react';
 import type { FlowNodeData, OutputNodeData, ImageNodeData } from '../types/reactFlow';
 import { getImageUrl } from '../utils/imageUtils';
 import { isLocalDevelopment } from '../utils/env';
+import { WorkflowLibraryModal } from '../components/WorkflowLibraryModal';
+import { workflowApi, type CanvasWorkflow } from '../services/workflowApi';
 
 // Helper function to get project thumbnail
 const getProjectThumbnail = (project: CanvasProject): string | null => {
@@ -81,7 +83,34 @@ export const CanvasProjectsPage: React.FC = () => {
   const [editingName, setEditingName] = useState<string>('');
   const editingInputRef = useRef<HTMLInputElement>(null);
   const hasLoadedProjectsRef = useRef(false);
+
   const isLoadingRef = useRef(false);
+  const [showWorkflowLibrary, setShowWorkflowLibrary] = useState(false);
+
+  // Placeholder/Check for admin status if needed, or pass false
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  const handleLoadWorkflow = async (workflow: CanvasWorkflow) => {
+    try {
+      if (!isAuthenticated) {
+        toast.error(t('workflows.errors.mustBeAuthenticated') || 'You must be logged in');
+        return;
+      }
+
+      // Create a new project from this workflow
+      const newProject = await canvasApi.save(
+        workflow.name,
+        workflow.nodes,
+        workflow.edges
+      );
+
+      toast.success(t('workflows.messages.loaded', { name: workflow.name }) || `Workflow loaded: ${workflow.name}`);
+      navigate(`/canvas/${newProject._id}`);
+    } catch (error) {
+      console.error('Failed to load workflow:', error);
+      toast.error(t('workflows.errors.failedToLoad') || 'Failed to load workflow');
+    }
+  };
 
   // Redirect to waitlist if user doesn't have premium access
   useEffect(() => {
@@ -133,7 +162,7 @@ export const CanvasProjectsPage: React.FC = () => {
   // or an empty state while the backend is still warming up.
   const handleAuthAction = useDebouncedCallback((auth: boolean | null) => {
     if (auth === null) return;
-    
+
     // Skip if already loaded or currently loading
     if (hasLoadedProjectsRef.current || isLoadingRef.current) {
       return;
@@ -166,7 +195,7 @@ export const CanvasProjectsPage: React.FC = () => {
         timestamp: new Date().toISOString()
       });
     }
-    
+
     if (project._id && project._id.trim() !== '') {
       if (isLocalDevelopment()) {
         console.log('[CanvasProjects] 🚀 Navigating to canvas page:', {
@@ -424,6 +453,13 @@ export const CanvasProjectsPage: React.FC = () => {
               <Plus className="h-4 w-4" />
               {t('canvas.newProject') || 'New Project'}
             </button>
+            <button
+              onClick={() => setShowWorkflowLibrary(true)}
+              className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 hover:border-zinc-600 font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 flex-shrink-0"
+            >
+              <FolderOpen className="h-4 w-4" />
+              {t('workflows.loadWorkflow') || 'Import'}
+            </button>
           </div>
 
           {/* Projects Grid */}
@@ -574,6 +610,15 @@ export const CanvasProjectsPage: React.FC = () => {
         confirmText={t('canvas.delete') || 'Delete'}
         cancelText={t('common.cancel') || 'Cancel'}
         variant="danger"
+      />
+
+      <WorkflowLibraryModal
+        isOpen={showWorkflowLibrary}
+        onClose={() => setShowWorkflowLibrary(false)}
+        onLoadWorkflow={handleLoadWorkflow}
+        isAuthenticated={isAuthenticated === true}
+        isAdmin={isAdmin}
+        t={t}
       />
     </>
   );

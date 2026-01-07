@@ -1,6 +1,6 @@
 import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
 import { Handle, Position, type NodeProps, useReactFlow, NodeResizer } from '@xyflow/react';
-import { Pickaxe, Image as ImageIcon, Wand2 } from 'lucide-react';
+import { Pickaxe, Image as ImageIcon, Wand2, Save, BookOpen } from 'lucide-react';
 import { GlitchLoader } from '../ui/GlitchLoader';
 import type { PromptNodeData } from '../../types/reactFlow';
 import type { GeminiModel, AspectRatio, Resolution } from '../../types';
@@ -20,6 +20,11 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { getCreditsRequired } from '../../utils/creditCalculator';
 import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
 import { useNodeResize } from '../../hooks/canvas/useNodeResize';
+import { PromptContextMenu } from './contextmenu/PromptContextMenu';
+import { SavePromptModal } from './SavePromptModal';
+import { MockupPresetModal } from '../MockupPresetModal';
+import { getAllPresetsAsync } from '../../services/mockupPresetsService';
+
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -37,6 +42,27 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   const [connectedImage4, setConnectedImage4] = useState<string | undefined>(nodeData.connectedImage4);
   const [pdfPageReference, setPdfPageReference] = useState<string>(nodeData.pdfPageReference || '');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Context Menu state
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [isPresetModalOpen, setIsPresetModalOpen] = useState(false);
+
+  // Preset Selection Handler
+  const handlePresetSelect = async (presetId: string) => {
+    try {
+      const allPresets = await getAllPresetsAsync();
+      const preset = allPresets.find(p => p.id === presetId);
+      if (preset && preset.prompt) {
+        setPrompt(preset.prompt);
+        debouncedUpdateData({ prompt: preset.prompt });
+      }
+    } catch (error) {
+      console.error('Failed to load preset:', error);
+    }
+    setIsPresetModalOpen(false);
+  };
+
 
   // BrandCore connection data
   const connectedLogo = nodeData.connectedLogo;
@@ -304,6 +330,23 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     handleResizeWithDebounce(id, width, height, nodeData.onResize);
   }, [id, nodeData.onResize, handleResizeWithDebounce]);
 
+  const handleDuplicate = () => {
+    // ReactFlow handle duplication through the internal state
+    // but we can trigger it via a helper if available or by creating a new node
+    // Simple way: if nodeData has onDuplicate, use it
+    if (nodeData.onDuplicate) {
+      nodeData.onDuplicate(id);
+    }
+  };
+
+  const handleDelete = () => {
+    if (nodeData.onDelete) {
+      nodeData.onDelete(id);
+    } else {
+      setNodes((nodes) => nodes.filter((node) => node.id !== id));
+    }
+  };
+
   return (
     <NodeContainer
       selected={selected}
@@ -311,7 +354,9 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       warning={nodeData.oversizedWarning}
       className="p-5 min-w-[320px]"
       onContextMenu={(e) => {
-        // Allow ReactFlow to handle the context menu event
+        e.preventDefault();
+        e.stopPropagation();
+        setContextMenu({ x: e.clientX, y: e.clientY });
       }}
     >
       {selected && !dragging && (
@@ -456,6 +501,57 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
             <span>{t('canvasNodes.promptNode.connectedToTextNode')}</span>
           </div>
         )}
+
+        {/* Prompt Functions Toolbar */}
+        <div className="flex items-center justify-between mb-1.5 px-0.5">
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                setIsPresetModalOpen(true);
+              }}
+              disabled={isLoading}
+              className={cn(
+                'flex items-center gap-1.5 px-2 py-1 rounded-md border text-[10px] font-mono transition-all',
+                'bg-zinc-800/50 border-zinc-700/50 hover:bg-zinc-700/50 hover:border-[#52ddeb]/30',
+                'text-zinc-400 hover:text-brand-cyan',
+                'node-interactive'
+              )}
+              title={t('canvasNodes.promptNode.loadPreset') || 'Load Preset'}
+              onMouseDown={(e) => e.stopPropagation()}
+            >
+              <BookOpen size={14} />
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              if (nodeData.onSavePrompt) {
+                nodeData.onSavePrompt(prompt);
+              } else {
+                setIsSaveModalOpen(true); // Fallback if handler not connected
+              }
+            }}
+            disabled={isLoading || !prompt.trim()}
+            className={cn(
+              'flex items-center gap-1.5 px-2 py-1 rounded-md border text-[10px] font-mono transition-all',
+              'bg-zinc-800/50 border-zinc-700/50 hover:bg-zinc-700/50 hover:border-[#52ddeb]/30',
+              'text-zinc-400 hover:text-brand-cyan',
+              'disabled:opacity-50 disabled:cursor-not-allowed',
+              'node-interactive'
+            )}
+            title={t('canvasNodes.promptNode.savePrompt') || 'Save Prompt'}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <Save size={14} />
+          </button>
+        </div>
+
         <div className="relative">
           <PromptInput
             value={prompt}
@@ -722,6 +818,36 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         label={t('canvasNodes.promptNode.output')}
         handleType="image"
         style={{ top: '50%' }}
+      />
+
+      {/* Context Menu */}
+      {contextMenu && (
+        <PromptContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          onClose={() => setContextMenu(null)}
+          prompt={prompt}
+          nodeId={id}
+          nodeData={nodeData}
+          onSavePrompt={() => setIsSaveModalOpen(true)}
+        />
+      )}
+
+      <MockupPresetModal
+        isOpen={isPresetModalOpen}
+        selectedPresetId=""
+        onClose={() => setIsPresetModalOpen(false)}
+        onSelectPreset={handlePresetSelect}
+      />
+
+      {/* Save Prompt Modal */}
+      <SavePromptModal
+        isOpen={isSaveModalOpen}
+        onClose={() => setIsSaveModalOpen(false)}
+        prompt={prompt}
+        initialData={{
+          name: t('canvasNodes.promptNode.savedPromptName') || 'Novo Prompt',
+        }}
       />
     </NodeContainer>
   );

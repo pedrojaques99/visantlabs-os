@@ -43,6 +43,10 @@ interface CanvasHeaderContextValue {
   setOnSaveWorkflow: (handler: (() => void) | undefined) => void;
   onLoadWorkflow?: () => void;
   setOnLoadWorkflow: (handler: (() => void) | undefined) => void;
+  onExportImagesRequest?: () => void;
+  setOnExportImagesRequest: (handler: (() => void) | undefined) => void;
+  onExportAllImagesRequest?: () => void;
+  setOnExportAllImagesRequest: (handler: (() => void) | undefined) => void;
 }
 
 const CanvasHeaderContext = createContext<CanvasHeaderContextValue | null>(null);
@@ -94,6 +98,8 @@ export const CanvasHeaderProvider: React.FC<CanvasHeaderProviderProps> = ({ chil
   const [onProjectNameChange, setOnProjectNameChange] = useState<((name: string) => void) | undefined>(undefined);
   const [onSaveWorkflow, setOnSaveWorkflow] = useState<(() => void) | undefined>(undefined);
   const [onLoadWorkflow, setOnLoadWorkflow] = useState<(() => void) | undefined>(undefined);
+  const [onExportImagesRequest, setOnExportImagesRequest] = useState<(() => void) | undefined>(undefined);
+  const [onExportAllImagesRequest, setOnExportAllImagesRequest] = useState<(() => void) | undefined>(undefined);
 
   const [backgroundColor, setBackgroundColor] = useLocalStorage('canvasBackgroundColor', '#121212');
   const [gridColor, setGridColor] = useLocalStorage('canvasGridColor', 'rgba(255, 255, 255, 0.1)');
@@ -149,6 +155,10 @@ export const CanvasHeaderProvider: React.FC<CanvasHeaderProviderProps> = ({ chil
     setOnSaveWorkflow,
     onLoadWorkflow,
     setOnLoadWorkflow,
+    onExportImagesRequest,
+    setOnExportImagesRequest,
+    onExportAllImagesRequest,
+    setOnExportAllImagesRequest,
   }), [
     projectName,
     selectedNodesCount,
@@ -170,6 +180,8 @@ export const CanvasHeaderProvider: React.FC<CanvasHeaderProviderProps> = ({ chil
     onProjectNameChange,
     onSaveWorkflow,
     onLoadWorkflow,
+    onExportImagesRequest,
+    onExportAllImagesRequest,
   ]);
 
   return (

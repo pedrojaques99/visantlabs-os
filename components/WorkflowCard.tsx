@@ -155,10 +155,10 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
                         {categoryConfig.label}
                     </span>
                     <span className="px-2 py-0.5 bg-zinc-800/40 rounded border border-zinc-700/30 text-zinc-500 font-mono text-xs flex-shrink-0 whitespace-nowrap">
-                        {nodeCount} nodes
+                        {t('workflows.stats.nodes') ? t('workflows.stats.nodes').replace('{count}', String(nodeCount)) : `${nodeCount} nodes`}
                     </span>
                     <span className="px-2 py-0.5 bg-zinc-800/40 rounded border border-zinc-700/30 text-zinc-500 font-mono text-xs flex-shrink-0 whitespace-nowrap">
-                        {edgeCount} edges
+                        {t('workflows.stats.edges') ? t('workflows.stats.edges').replace('{count}', String(edgeCount)) : `${edgeCount} edges`}
                     </span>
                     {usageCount > 0 && (
                         <span className="px-2 py-0.5 bg-zinc-800/40 rounded border border-zinc-700/30 text-zinc-500 font-mono text-xs flex-shrink-0 whitespace-nowrap flex items-center gap-1">
@@ -173,8 +173,8 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
                                 onToggleLike();
                             }}
                             className={`flex items-center gap-1 px-2 py-0.5 rounded-md transition-all text-xs font-mono flex-shrink-0 whitespace-nowrap ${isLiked
-                                    ? 'bg-zinc-800/50 text-zinc-300 hover:bg-zinc-700/50'
-                                    : 'bg-zinc-900/40 text-zinc-500 hover:bg-zinc-800/50 hover:text-zinc-400'
+                                ? 'bg-zinc-800/50 text-zinc-300 hover:bg-zinc-700/50'
+                                : 'bg-zinc-900/40 text-zinc-500 hover:bg-zinc-800/50 hover:text-zinc-400'
                                 }`}
                             title={isLiked ? t('workflows.actions.unlike') || 'Unlike' : t('workflows.actions.like') || 'Like'}
                         >

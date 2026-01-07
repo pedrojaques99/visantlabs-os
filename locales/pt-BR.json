@@ -468,6 +468,18 @@
     "experimentalMode": "Modo Experimental",
     "experimentalModeDesc": "Mostrar nodes de preview como Shader, Strategy, etc."
   },
+  "canvasNodes": {
+    "promptNode": {
+      "presets": "Presets",
+      "loadPreset": "Carregar Preset",
+      "save": "Salvar",
+      "savePrompt": "Salvar Prompt",
+      "promptPlaceholder": "Digite seu prompt aqui...",
+      "suggestPrompts": "Sugerir Prompts",
+      "connectedToTextNode": "Conectado ao Node de Texto",
+      "savedPromptName": "Prompt Salvo"
+    }
+  },
   "canvasLoading": {
     "Project": "Carregando Projeto..."
   },
@@ -2265,7 +2277,8 @@
       "credits": "créditos",
       "suggestions": "Sugestões",
       "aiSuggestions": "Sugestões de IA",
-      "suggestPrompts": "Obter sugestões de prompt"
+      "suggestPrompts": "Obter sugestões de prompt",
+      "savedPromptName": "Prompt Salvo"
     },
     "videoNode": {
       "title": "Gerador de Vídeo",
@@ -2501,7 +2514,8 @@
     "nodeContextMenu": {
       "title": "Ações do Node",
       "duplicate": "Duplicar",
-      "delete": "Excluir"
+      "delete": "Excluir",
+      "savePrompt": "Salvar Prompt"
     },
     "shared": {
       "imageDownloaded": "Imagem baixada!"
@@ -3130,6 +3144,121 @@
       "exampleTitle": "Modal de Exemplo",
       "exampleMessage": "Este é um exemplo do componente ConfirmationModal.",
       "confirmed": "Confirmado!"
+    },
+    "workflows": {
+      "library": {
+        "title": "Biblioteca de Workflows",
+        "description": "Navegue e carregue modelos de workflow reutilizáveis",
+        "search": "Buscar workflows...",
+        "noResults": "Nenhum workflow encontrado",
+        "noWorkflows": "Nenhum workflow ainda",
+        "noCommunityWorkflows": "Nenhum workflow da comunidade disponível",
+        "tabs": {
+          "my": "Meus Workflows",
+          "community": "Comunidade",
+          "all": "Todos"
+        }
+      },
+      "stats": {
+        "nodes": "{count} nós",
+        "edges": "{count} conexões"
+      },
+      "actions": {
+        "duplicate": "Duplicar",
+        "addToLibrary": "Adicionar à Biblioteca",
+        "edit": "Editar",
+        "delete": "Excluir",
+        "like": "Curtir",
+        "unlike": "Descurtir"
+      },
+      "messages": {
+        "liked": "Workflow curtido!",
+        "unliked": "Workflow descurtido",
+        "duplicated": "Workflow adicionado à sua biblioteca!",
+        "deleted": "Workflow excluído",
+        "saved": "Workflow salvo com sucesso!",
+        "loaded": "Workflow carregado: {name}"
+      },
+      "errors": {
+        "failedToLoad": "Falha ao carregar workflows",
+        "mustBeAuthenticated": "Você deve estar logado para curtir workflows",
+        "failedToToggleLike": "Falha ao alternar curtida",
+        "failedToDuplicate": "Falha ao duplicar workflow",
+        "failedToDelete": "Falha ao excluir workflow",
+        "failedToSave": "Falha ao salvar workflow"
+      },
+      "deleteConfirmation": {
+        "title": "Excluir Workflow",
+        "message": "Tem certeza que deseja excluir '{workflowName}'? Esta ação não pode ser desfeita.",
+        "confirm": "Excluir",
+        "cancel": "Cancelar"
+      },
+      "saveWorkflow": "Salvar Workflow",
+      "loadWorkflow": "Carregar Workflow"
+    }
+  },
+  "workflows": {
+    "library": {
+      "title": "Biblioteca de Workflows",
+      "description": "Navegue e carregue modelos de workflow reutilizáveis",
+      "tabs": {
+        "my": "Meus Workflows",
+        "community": "Comunidade",
+        "all": "Todos"
+      },
+      "search": "Buscar workflows...",
+      "noResults": "Nenhum workflow encontrado",
+      "noWorkflows": "Nenhum workflow criado ainda",
+      "noCommunityWorkflows": "Nenhum workflow da comunidade disponível"
+    },
+    "saveDialog": {
+      "title": "Salvar Workflow",
+      "description": "Salve seu canvas como um modelo de workflow reutilizável",
+      "name": "Nome do Workflow",
+      "namePlaceholder": "ex: Workflow de Identidade Visual",
+      "descriptionPlaceholder": "Descreva o que este workflow faz...",
+      "category": "Categoria",
+      "tags": "Tags",
+      "tagsPlaceholder": "ex: branding, logo, identidade (separados por vírgula)",
+      "tagsHint": "Separe as tags com vírgulas",
+      "makePublic": "Tornar Público",
+      "makePublicHint": "Compartilhe este workflow com a comunidade (requer aprovação)",
+      "save": "Salvar Workflow",
+      "saving": "Salvando...",
+      "cancel": "Cancelar"
+    },
+    "actions": {
+      "duplicate": "Duplicar",
+      "addToLibrary": "Adicionar à Biblioteca",
+      "edit": "Editar",
+      "delete": "Excluir",
+      "like": "Curtir",
+      "unlike": "Descurtir"
+    },
+    "stats": {
+      "nodes": "{count} nodes",
+      "edges": "{count} conexões"
+    },
+    "deleteConfirmation": {
+      "title": "Excluir Workflow",
+      "message": "Tem certeza que deseja excluir este workflow? Esta ação não pode ser desfeita.",
+      "confirm": "Excluir",
+      "cancel": "Cancelar"
+    },
+    "messages": {
+      "liked": "Workflow curtido!",
+      "unliked": "Workflow descurtido",
+      "duplicated": "Workflow adicionado à sua biblioteca!",
+      "deleted": "Workflow excluído",
+      "saved": "Workflow salvo com sucesso!"
+    },
+    "errors": {
+      "failedToLoad": "Falha ao carregar workflows",
+      "mustBeAuthenticated": "Você deve estar logado para realizar esta ação",
+      "failedToToggleLike": "Falha ao atualizar curtida",
+      "failedToDuplicate": "Falha ao duplicar workflow",
+      "failedToDelete": "Falha ao excluir workflow",
+      "failedToSave": "Falha ao salvar workflow"
     }
   }
 }

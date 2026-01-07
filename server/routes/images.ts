@@ -133,19 +133,19 @@ router.get('/video-proxy', async (req, res) => {
 
     // Get Google API key for authentication
     const apiKey = getGoogleApiKey();
-    
+
     // Fetch the video from the URL with authentication if it's a Google Cloud Storage URL
     let response: Response;
     try {
       const headers: Record<string, string> = {
         'User-Agent': 'VSN-Mockup-Machine/1.0',
       };
-      
+
       // Add API key if available (for Google Cloud Storage)
       if (apiKey && (videoUrl.hostname.includes('googleapis.com') || videoUrl.hostname.includes('storage.googleapis.com'))) {
         headers['x-goog-api-key'] = apiKey;
       }
-      
+
       response = await fetch(url, {
         method: 'GET',
         headers,
@@ -179,20 +179,20 @@ router.get('/video-proxy', async (req, res) => {
     res.setHeader('Content-Type', contentType);
     res.setHeader('Content-Length', response.headers.get('content-length') || '');
     res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
-    
+
     // Pipe the video data to response
     const arrayBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    
+
     if (buffer.length === 0) {
       return res.status(400).json({
         error: 'Video file is empty',
       });
     }
-    
+
     // Send as base64 for client compatibility
     const base64 = buffer.toString('base64');
-    
+
     res.json({
       base64,
       mimeType: contentType,
@@ -207,4 +207,76 @@ router.get('/video-proxy', async (req, res) => {
 });
 
 export default router;
+
+/**
+ * Stream proxy endpoint to fetch images from R2 and stream them directly
+ * This is used for <img src="..." /> tags where we need CORS headers
+ * GET /api/images/stream?url=<encoded-r2-url>
+ */
+router.get('/stream', async (req, res) => {
+  try {
+    const { url } = req.query;
+
+    if (!url || typeof url !== 'string') {
+      return res.status(400).send('Missing using url parameter');
+    }
+
+    // Validate URL format
+    let imageUrl: URL;
+    try {
+      imageUrl = new URL(url);
+    } catch (error) {
+      return res.status(400).send('Invalid URL format');
+    }
+
+    // Only allow http/https protocols
+    if (imageUrl.protocol !== 'http:' && imageUrl.protocol !== 'https:') {
+      return res.status(400).send('Invalid URL protocol');
+    }
+
+    // Fetch the image from the URL
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'User-Agent': 'VSN-Mockup-Machine/1.0',
+      },
+    });
+
+    if (!response.ok) {
+      return res.status(response.status).send(`Failed to fetch image: ${response.statusText}`);
+    }
+
+    // Check content type
+    const contentType = response.headers.get('content-type');
+    if (contentType) {
+      res.setHeader('Content-Type', contentType);
+    }
+
+    // Set CORS headers to allow canvas usage
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
+
+    // Stream the body
+    if (response.body) {
+      // @ts-ignore - ReadableStream/Node stream mismatch
+      const reader = response.body.getReader();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        res.write(value);
+      }
+      res.end();
+    } else {
+      res.end();
+    }
+
+  } catch (error: any) {
+    console.error('Error in image stream proxy:', error);
+    if (!res.headersSent) {
+      res.status(500).send('Internal server error');
+    }
+  }
+});
 
