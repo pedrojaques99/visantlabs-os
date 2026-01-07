@@ -107,7 +107,7 @@ export const CanvasHeaderProvider: React.FC<CanvasHeaderProviderProps> = ({ chil
   const [showMinimap, setShowMinimap] = useLocalStorage('canvasShowMinimap', true);
   const [showControls, setShowControls] = useLocalStorage('canvasShowControls', true);
   const [cursorColor, setCursorColor] = useLocalStorage('canvasCursorColor', '#FFFFFF');
-  const [brandCyan, setBrandCyan] = useLocalStorage('canvasBrandCyan', '#brand-cyan');
+  const [brandCyan, setBrandCyan] = useLocalStorage('canvasBrandCyan', 'brand-cyan');
   const [experimentalMode, setExperimentalMode] = useLocalStorage('canvasExperimentalMode', false);
 
   const setProjectName = useCallback((name: string) => {

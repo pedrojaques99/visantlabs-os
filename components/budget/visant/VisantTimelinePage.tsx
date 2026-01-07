@@ -13,7 +13,7 @@ export const VisantTimelinePage: React.FC<VisantTimelinePageProps> = ({
   editable = false,
   onDataChange,
 }) => {
-  const accentColor = data.brandAccentColor || data.brandColors[0] || '#brand-cyan';
+  const accentColor = data.brandAccentColor || data.brandColors[0] || 'brand-cyan';
   const bgColor = '#151515';
   const textColor = '#f3f3f3';
 

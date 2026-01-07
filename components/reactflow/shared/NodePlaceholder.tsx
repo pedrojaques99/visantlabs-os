@@ -55,7 +55,7 @@ export const NodePlaceholder: React.FC<NodePlaceholderProps> = ({
 
           {/* Linha 2: Glitch */}
           <div className="h-4 flex items-center justify-center">
-            <GlitchLoader size={14} color="#brand-cyan" />
+            <GlitchLoader size={14} color="brand-cyan" />
           </div>
 
           {/* Linha 3: Labels */}

@@ -379,7 +379,7 @@ export const CommunityProfilePage: React.FC = () => {
                         href={profile.instagram}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-2 bg-zinc-900/50 border border-zinc-800/60 rounded-md hover:border-[#brand-cyan]/50 hover:bg-zinc-900/80 transition-colors"
+                        className="p-2 bg-zinc-900/50 border border-zinc-800/60 rounded-md hover:border-[brand-cyan]/50 hover:bg-zinc-900/80 transition-colors"
                         title={t('community.instagram')}
                       >
                         <Instagram size={18} className="text-zinc-400 hover:text-brand-cyan transition-colors" />
@@ -390,7 +390,7 @@ export const CommunityProfilePage: React.FC = () => {
                         href={profile.youtube}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-2 bg-zinc-900/50 border border-zinc-800/60 rounded-md hover:border-[#brand-cyan]/50 hover:bg-zinc-900/80 transition-colors"
+                        className="p-2 bg-zinc-900/50 border border-zinc-800/60 rounded-md hover:border-[brand-cyan]/50 hover:bg-zinc-900/80 transition-colors"
                         title={t('community.youtube')}
                       >
                         <Youtube size={18} className="text-zinc-400 hover:text-brand-cyan transition-colors" />
@@ -401,7 +401,7 @@ export const CommunityProfilePage: React.FC = () => {
                         href={profile.x}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-2 bg-zinc-900/50 border border-zinc-800/60 rounded-md hover:border-[#brand-cyan]/50 hover:bg-zinc-900/80 transition-colors"
+                        className="p-2 bg-zinc-900/50 border border-zinc-800/60 rounded-md hover:border-[brand-cyan]/50 hover:bg-zinc-900/80 transition-colors"
                         title={t('community.twitter')}
                       >
                         <Twitter size={18} className="text-zinc-400 hover:text-brand-cyan transition-colors" />
@@ -412,7 +412,7 @@ export const CommunityProfilePage: React.FC = () => {
                         href={profile.website}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-2 bg-zinc-900/50 border border-zinc-800/60 rounded-md hover:border-[#brand-cyan]/50 hover:bg-zinc-900/80 transition-colors"
+                        className="p-2 bg-zinc-900/50 border border-zinc-800/60 rounded-md hover:border-[brand-cyan]/50 hover:bg-zinc-900/80 transition-colors"
                         title={t('community.website')}
                       >
                         <Globe size={18} className="text-zinc-400 hover:text-brand-cyan transition-colors" />
@@ -425,7 +425,7 @@ export const CommunityProfilePage: React.FC = () => {
                 {isOwnProfile && (
                   <button
                     onClick={() => setIsEditModalOpen(true)}
-                    className="px-4 py-2 bg-brand-cyan/15 text-brand-cyan border border-[#brand-cyan]/40 hover:bg-brand-cyan/25 rounded-xl text-sm font-mono transition flex items-center gap-2"
+                    className="px-4 py-2 bg-brand-cyan/15 text-brand-cyan border border-[brand-cyan]/40 hover:bg-brand-cyan/25 rounded-xl text-sm font-mono transition flex items-center gap-2"
                   >
                     <Edit size={16} />
                     Edit Profile
@@ -464,8 +464,8 @@ export const CommunityProfilePage: React.FC = () => {
               <button
                 onClick={() => setActiveTab('mockups')}
                 className={`px-4 py-2 font-mono text-sm transition-colors border-b-2 ${activeTab === 'mockups'
-                    ? 'text-brand-cyan border-[#brand-cyan]'
-                    : 'text-zinc-500 border-transparent hover:text-zinc-400'
+                  ? 'text-brand-cyan border-[brand-cyan]'
+                  : 'text-zinc-500 border-transparent hover:text-zinc-400'
                   }`}
               >
                 Mockups ({mockups.length})
@@ -473,8 +473,8 @@ export const CommunityProfilePage: React.FC = () => {
               <button
                 onClick={() => setActiveTab('presets')}
                 className={`px-4 py-2 font-mono text-sm transition-colors border-b-2 ${activeTab === 'presets'
-                    ? 'text-brand-cyan border-[#brand-cyan]'
-                    : 'text-zinc-500 border-transparent hover:text-zinc-400'
+                  ? 'text-brand-cyan border-[brand-cyan]'
+                  : 'text-zinc-500 border-transparent hover:text-zinc-400'
                   }`}
               >
                 Presets ({allPresets.length})
@@ -536,7 +536,7 @@ export const CommunityProfilePage: React.FC = () => {
                     return (
                       <div
                         key={mockup._id}
-                        className="group relative bg-black/30 backdrop-blur-sm border border-zinc-800/60 rounded-md overflow-hidden hover:border-[#brand-cyan]/50 transition-all duration-300"
+                        className="group relative bg-black/30 backdrop-blur-sm border border-zinc-800/60 rounded-md overflow-hidden hover:border-[brand-cyan]/50 transition-all duration-300"
                       >
                         <div
                           className="aspect-square relative overflow-hidden bg-zinc-900/50 cursor-pointer"
@@ -576,7 +576,7 @@ export const CommunityProfilePage: React.FC = () => {
                     <button
                       key={preset._id || preset.id}
                       onClick={() => handlePresetClick(preset)}
-                      className="group relative bg-black/30 backdrop-blur-sm border border-zinc-800/60 rounded-md overflow-hidden hover:border-[#brand-cyan]/50 transition-all duration-300 p-4 cursor-pointer text-left w-full"
+                      className="group relative bg-black/30 backdrop-blur-sm border border-zinc-800/60 rounded-md overflow-hidden hover:border-[brand-cyan]/50 transition-all duration-300 p-4 cursor-pointer text-left w-full"
                       aria-label={`Open ${preset.name} preset`}
                     >
                       <div className="flex flex-col gap-2">

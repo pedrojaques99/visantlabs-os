@@ -127,7 +127,7 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
             placeholder={t('canvasNodes.brandingProjectSelectModal.searchProjectsPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-700/30 rounded text-sm text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-[#brand-cyan]/50 transition-colors"
+            className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-700/30 rounded text-sm text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-[brand-cyan]/50 transition-colors"
             autoFocus
           />
         </div>
@@ -137,7 +137,7 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
-                <GlitchLoader size={20} color="#brand-cyan" />
+                <GlitchLoader size={20} color="brand-cyan" />
                 <span className="ml-2 text-sm text-zinc-400">Loading projects...</span>
               </div>
             ) : filteredProjects.length > 0 ? (
@@ -147,7 +147,7 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
                   <button
                     key={projectId}
                     onClick={() => handleSelectProject(project)}
-                    className="w-full px-4 py-3 text-left border rounded-md transition-all bg-zinc-900/50 border-zinc-700/30 text-zinc-300 hover:border-[#brand-cyan]/50 hover:bg-zinc-800/50 group"
+                    className="w-full px-4 py-3 text-left border rounded-md transition-all bg-zinc-900/50 border-zinc-700/30 text-zinc-300 hover:border-[brand-cyan]/50 hover:bg-zinc-800/50 group"
                   >
                     <div className="flex items-start gap-3">
                       <FolderOpen size={16} className="text-brand-cyan flex-shrink-0 mt-0.5" />

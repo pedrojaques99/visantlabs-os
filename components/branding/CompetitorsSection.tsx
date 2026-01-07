@@ -110,9 +110,9 @@ export const CompetitorsSection: React.FC<CompetitorsSectionProps> = ({
           {localCompetitors.map((competitor, index) => (
             <div
               key={index}
-              className={`border rounded-xl p-4 hover:border-[#brand-cyan]/50 transition-colors relative ${theme === 'dark'
-                  ? 'bg-black/40 border-zinc-800/60'
-                  : 'bg-zinc-100 border-zinc-300'
+              className={`border rounded-xl p-4 hover:border-[brand-cyan]/50 transition-colors relative ${theme === 'dark'
+                ? 'bg-black/40 border-zinc-800/60'
+                : 'bg-zinc-100 border-zinc-300'
                 }`}
             >
               <div className="space-y-3">
@@ -126,8 +126,8 @@ export const CompetitorsSection: React.FC<CompetitorsSectionProps> = ({
                     onChange={(e) => handleNameChange(index, e.target.value)}
                     placeholder="Nome do concorrente"
                     className={`bg-transparent font-manrope text-sm border ${theme === 'dark'
-                        ? 'border-zinc-700/50 text-zinc-300'
-                        : 'border-zinc-400/50 text-zinc-800'
+                      ? 'border-zinc-700/50 text-zinc-300'
+                      : 'border-zinc-400/50 text-zinc-800'
                       }`}
                   />
                 </div>
@@ -141,8 +141,8 @@ export const CompetitorsSection: React.FC<CompetitorsSectionProps> = ({
                     onChange={(e) => handleUrlChange(index, e.target.value)}
                     placeholder="https://exemplo.com"
                     className={`bg-transparent font-manrope text-sm border ${theme === 'dark'
-                        ? 'border-zinc-700/50 text-zinc-300'
-                        : 'border-zinc-400/50 text-zinc-800'
+                      ? 'border-zinc-700/50 text-zinc-300'
+                      : 'border-zinc-400/50 text-zinc-800'
                       }`}
                   />
                 </div>
@@ -160,9 +160,9 @@ export const CompetitorsSection: React.FC<CompetitorsSectionProps> = ({
         </div>
         <button
           onClick={handleAddCompetitor}
-          className={`flex items-center gap-2 px-4 py-2 border hover:border-[#brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-all duration-300 ${theme === 'dark'
-              ? 'bg-black/40 border-zinc-800/60 text-zinc-300'
-              : 'bg-zinc-100 border-zinc-300 text-zinc-800'
+          className={`flex items-center gap-2 px-4 py-2 border hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-all duration-300 ${theme === 'dark'
+            ? 'bg-black/40 border-zinc-800/60 text-zinc-300'
+            : 'bg-zinc-100 border-zinc-300 text-zinc-800'
             }`}
         >
           <Plus className="h-4 w-4" />
@@ -178,8 +178,8 @@ export const CompetitorsSection: React.FC<CompetitorsSectionProps> = ({
         <div
           key={index}
           className={`border rounded-xl p-4 transition-colors group overflow-hidden ${theme === 'dark'
-              ? 'bg-black/40 border-zinc-800/60 hover:border-zinc-700/60'
-              : 'bg-zinc-100 border-zinc-300 hover:border-zinc-400'
+            ? 'bg-black/40 border-zinc-800/60 hover:border-zinc-700/60'
+            : 'bg-zinc-100 border-zinc-300 hover:border-zinc-400'
             }`}
         >
           <div className="flex items-start justify-between gap-2">
@@ -194,8 +194,8 @@ export const CompetitorsSection: React.FC<CompetitorsSectionProps> = ({
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`flex items-center gap-1 mt-2 w-full min-w-0 text-xs font-mono transition-colors ${theme === 'dark'
-                      ? 'text-brand-cyan hover:text-brand-cyan/80'
-                      : 'text-blue-600 hover:text-blue-700'
+                    ? 'text-brand-cyan hover:text-brand-cyan/80'
+                    : 'text-blue-600 hover:text-blue-700'
                     }`}
                   onClick={(e) => e.stopPropagation()}
                 >

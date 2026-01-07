@@ -165,7 +165,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
             onChange={(e) => updateField('clientName', e.target.value)}
             placeholder={t('budget.placeholders.clientName')}
             required
-            className={focusedFieldId === 'clientName' ? 'ring-2 ring-[#brand-cyan] ring-offset-2 ring-offset-[#1A1A1A]' : ''}
+            className={focusedFieldId === 'clientName' ? 'ring-2 ring-[brand-cyan] ring-offset-2 ring-offset-[#1A1A1A]' : ''}
           />
         </div>
 
@@ -179,7 +179,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
             onChange={(e) => updateField('projectName', e.target.value)}
             placeholder={t('budget.placeholders.projectName')}
             required
-            className={focusedFieldId === 'projectName' ? 'ring-2 ring-[#brand-cyan] ring-offset-2 ring-offset-[#1A1A1A]' : ''}
+            className={focusedFieldId === 'projectName' ? 'ring-2 ring-[brand-cyan] ring-offset-2 ring-offset-[#1A1A1A]' : ''}
           />
         </div>
 
@@ -194,7 +194,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
             placeholder={t('budget.placeholders.projectDescription')}
             rows={4}
             required
-            className={focusedFieldId === 'projectDescription' ? 'ring-2 ring-[#brand-cyan] ring-offset-2 ring-offset-[#1A1A1A]' : ''}
+            className={focusedFieldId === 'projectDescription' ? 'ring-2 ring-[brand-cyan] ring-offset-2 ring-offset-[#1A1A1A]' : ''}
           />
         </div>
 
@@ -225,7 +225,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
           onChange={(e) => updateField('observations', e.target.value)}
           placeholder={t('budget.placeholders.observations')}
           rows={4}
-          className={focusedFieldId === 'observations' ? 'ring-2 ring-[#brand-cyan] ring-offset-2 ring-offset-[#1A1A1A]' : ''}
+          className={focusedFieldId === 'observations' ? 'ring-2 ring-[brand-cyan] ring-offset-2 ring-offset-[#1A1A1A]' : ''}
         />
       </div>
 

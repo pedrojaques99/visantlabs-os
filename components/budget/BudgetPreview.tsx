@@ -294,7 +294,7 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
     });
   };
 
-  const primaryColor = data.brandColors[0] || '#brand-cyan';
+  const primaryColor = data.brandColors[0] || 'brand-cyan';
   const secondaryColor = data.brandColors[1] || '#34d399';
 
   return (

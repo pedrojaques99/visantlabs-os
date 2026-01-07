@@ -223,8 +223,8 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                 <button
                   onClick={() => setActiveTab('buy')}
                   className={`px-4 py-2 text-xs font-mono uppercase tracking-wider transition-colors border-b-2 ${activeTab === 'buy'
-                      ? 'text-brand-cyan border-[#brand-cyan]'
-                      : 'text-zinc-500 border-transparent hover:text-zinc-400'
+                    ? 'text-brand-cyan border-[brand-cyan]'
+                    : 'text-zinc-500 border-transparent hover:text-zinc-400'
                     }`}
                 >
                   {t('creditsPackages.buy') || 'Buy'}
@@ -233,8 +233,8 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                   <button
                     onClick={() => setActiveTab('credits')}
                     className={`px-4 py-2 text-xs font-mono uppercase tracking-wider transition-colors border-b-2 ${activeTab === 'credits'
-                        ? 'text-brand-cyan border-[#brand-cyan]'
-                        : 'text-zinc-500 border-transparent hover:text-zinc-400'
+                      ? 'text-brand-cyan border-[brand-cyan]'
+                      : 'text-zinc-500 border-transparent hover:text-zinc-400'
                       }`}
                   >
                     {t('credits.title') || 'Credits'}
@@ -259,8 +259,8 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 onClick={handlePrevious}
                                 disabled={selectedIndex === 0}
                                 className={`p-2 md:p-2.5 transition-all duration-200 rounded-md active:scale-[0.95] ${selectedIndex === 0
-                                    ? 'text-zinc-600 cursor-not-allowed opacity-50'
-                                    : 'text-zinc-400 hover:text-brand-cyan hover:bg-zinc-800/50 hover:scale-110 cursor-pointer'
+                                  ? 'text-zinc-600 cursor-not-allowed opacity-50'
+                                  : 'text-zinc-400 hover:text-brand-cyan hover:bg-zinc-800/50 hover:scale-110 cursor-pointer'
                                   }`}
                                 aria-label="Previous package"
                               >
@@ -277,8 +277,8 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 onClick={handleNext}
                                 disabled={selectedIndex === CREDIT_PACKAGES.length - 1}
                                 className={`p-2 md:p-2.5 transition-all duration-200 rounded-md active:scale-[0.95] ${selectedIndex === CREDIT_PACKAGES.length - 1
-                                    ? 'text-zinc-600 cursor-not-allowed opacity-50'
-                                    : 'text-zinc-400 hover:text-brand-cyan hover:bg-zinc-800/50 hover:scale-110 cursor-pointer'
+                                  ? 'text-zinc-600 cursor-not-allowed opacity-50'
+                                  : 'text-zinc-400 hover:text-brand-cyan hover:bg-zinc-800/50 hover:scale-110 cursor-pointer'
                                   }`}
                                 aria-label="Next package"
                               >
@@ -322,7 +322,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                           <div className="flex flex-col gap-2 mt-6">
                             <button
                               onClick={handleBuyCredits}
-                              className="w-full px-6 py-3 bg-brand-cyan/80 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-[#brand-cyan]/20"
+                              className="w-full px-6 py-3 bg-brand-cyan/80 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-[brand-cyan]/20"
                             >
                               <CreditCard size={16} />
                               {t('creditsPackages.buy') || 'Buy'}
@@ -348,8 +348,8 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                           key={index}
                           onClick={() => setSelectedIndex(index)}
                           className={`h-2 rounded-md transition-all duration-300 ease-out ${index === selectedIndex
-                              ? 'bg-brand-cyan w-8 shadow-[0_0_8px_rgba(82,221,235,0.4)]'
-                              : 'bg-zinc-600 hover:bg-zinc-500 w-2 hover:scale-125'
+                            ? 'bg-brand-cyan w-8 shadow-[0_0_8px_rgba(82,221,235,0.4)]'
+                            : 'bg-zinc-600 hover:bg-zinc-500 w-2 hover:scale-125'
                             }`}
                           aria-label={`Select ${CREDIT_PACKAGES[index].credits} credits package`}
                         />
@@ -442,7 +442,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                             </button>
                             <button
                               onClick={() => setActiveTab('buy')}
-                              className="w-full px-6 py-3 bg-brand-cyan/80 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-[#brand-cyan]/20"
+                              className="w-full px-6 py-3 bg-brand-cyan/80 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-[brand-cyan]/20"
                             >
                               <CreditCard size={16} />
                               {t('credits.buyCredits')}

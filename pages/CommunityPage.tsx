@@ -335,13 +335,13 @@ export const CommunityPage: React.FC = () => {
         {/* Hero Section */}
         <ClubHero3D
           className="mb-16 rounded-3xl border border-zinc-800/50 min-h-[400px] h-auto"
-          color="#brand-cyan"
-          starColor="#brand-cyan"
+          color="brand-cyan"
+          starColor="brand-cyan"
         >
           <div className="relative z-10 p-6 md:p-8 h-full flex flex-col justify-between">
             <div className="relative z-10 max-w-2xl pointer-events-auto">
               <div className="flex items-center gap-2 mb-3">
-                <span className="px-3 py-1 bg-brand-cyan/10 text-brand-cyan text-xs font-mono rounded-full border border-[#brand-cyan]/20">
+                <span className="px-3 py-1 bg-brand-cyan/10 text-brand-cyan text-xs font-mono rounded-full border border-[brand-cyan]/20">
                   COMUNIDADE ATIVA
                 </span>
               </div>
@@ -355,7 +355,7 @@ export const CommunityPage: React.FC = () => {
               <div className="flex flex-wrap gap-3">
                 <button
                   onClick={() => setIsCreateModalOpen(true)}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-brand-cyan hover:bg-brand-cyan/90 text-black font-semibold rounded-xl transition-all hover:scale-105 active:scale-95 shadow-lg shadow-[#brand-cyan]/20"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-brand-cyan hover:bg-brand-cyan/90 text-black font-semibold rounded-xl transition-all hover:scale-105 active:scale-95 shadow-lg shadow-[brand-cyan]/20"
                 >
                   <Plus size={18} />
                   <span className="font-mono uppercase tracking-wider text-sm">Criar um novo prompt</span>
@@ -379,7 +379,7 @@ export const CommunityPage: React.FC = () => {
 
             {/* Global Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 relative z-10 pointer-events-auto">
-              <div className="bg-black/40 backdrop-blur-sm border border-zinc-800/50 rounded-xl p-4 transition-all hover:border-[#brand-cyan]/30 group hover:bg-black/60">
+              <div className="bg-black/40 backdrop-blur-sm border border-zinc-800/50 rounded-xl p-4 transition-all hover:border-[brand-cyan]/30 group hover:bg-black/60">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-zinc-500 font-mono text-xs uppercase tracking-widest">Usuários</span>
                   <TrendingUp size={14} className="text-brand-cyan" />
@@ -388,7 +388,7 @@ export const CommunityPage: React.FC = () => {
                   {isLoading ? '...' : globalCommunityStats.totalUsers}
                 </p>
               </div>
-              <div className="bg-black/40 backdrop-blur-sm border border-zinc-800/50 rounded-xl p-4 transition-all hover:border-[#brand-cyan]/30 group hover:bg-black/60">
+              <div className="bg-black/40 backdrop-blur-sm border border-zinc-800/50 rounded-xl p-4 transition-all hover:border-[brand-cyan]/30 group hover:bg-black/60">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-zinc-500 font-mono text-xs uppercase tracking-widest">Presets Criados</span>
                   <Sparkles size={14} className="text-brand-cyan" />
@@ -397,7 +397,7 @@ export const CommunityPage: React.FC = () => {
                   {isLoading ? '...' : globalCommunityStats.totalPresets}
                 </p>
               </div>
-              <div className="bg-black/40 backdrop-blur-sm border border-zinc-800/50 rounded-xl p-4 transition-all hover:border-[#brand-cyan]/30 group hover:bg-black/60">
+              <div className="bg-black/40 backdrop-blur-sm border border-zinc-800/50 rounded-xl p-4 transition-all hover:border-[brand-cyan]/30 group hover:bg-black/60">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-zinc-500 font-mono text-xs uppercase tracking-widest">Public Mockups</span>
                   <ImageIcon size={14} className="text-brand-cyan" />
@@ -438,7 +438,7 @@ export const CommunityPage: React.FC = () => {
                   <button
                     key={category.type}
                     onClick={() => navigate(`/community/presets?type=${category.type}`)}
-                    className="group relative bg-[#141414] border border-zinc-800/50 rounded-2xl p-6 flex flex-col h-full hover:border-[#brand-cyan]/40 transition-all hover:-translate-y-1 active:translate-y-0"
+                    className="group relative bg-[#141414] border border-zinc-800/50 rounded-2xl p-6 flex flex-col h-full hover:border-[brand-cyan]/40 transition-all hover:-translate-y-1 active:translate-y-0"
                   >
                     <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-10 transition-opacity">
                       <category.icon size={64} className="text-brand-cyan" />
@@ -521,7 +521,7 @@ export const CommunityPage: React.FC = () => {
                       <button
                         key={workflow._id}
                         onClick={() => navigate('/canvas')}
-                        className="group relative bg-[#141414] border border-zinc-800/50 rounded-2xl p-6 flex flex-col h-full hover:border-[#brand-cyan]/40 transition-all hover:-translate-y-1 active:translate-y-0 text-left"
+                        className="group relative bg-[#141414] border border-zinc-800/50 rounded-2xl p-6 flex flex-col h-full hover:border-[brand-cyan]/40 transition-all hover:-translate-y-1 active:translate-y-0 text-left"
                       >
                         {workflow.thumbnailUrl ? (
                           <div className="aspect-video rounded-lg overflow-hidden border border-zinc-700/30 bg-zinc-900/30 mb-4">
@@ -622,7 +622,7 @@ export const CommunityPage: React.FC = () => {
                     <Link
                       key={mockup._id}
                       to="/mockups"
-                      className="group relative aspect-square bg-[#141414] rounded-2xl overflow-hidden border border-zinc-800/50 hover:border-[#brand-cyan]/50 transition-all hover:shadow-2xl hover:shadow-[#brand-cyan]/5"
+                      className="group relative aspect-square bg-[#141414] rounded-2xl overflow-hidden border border-zinc-800/50 hover:border-[brand-cyan]/50 transition-all hover:shadow-2xl hover:shadow-[brand-cyan]/5"
                     >
                       {mockup.imageUrl || mockup.imageBase64 ? (
                         <img
@@ -681,7 +681,7 @@ export const CommunityPage: React.FC = () => {
 
             {/* GitHub Ecosystem CTA */}
             <section className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-[#brand-cyan]/5 to-transparent rounded-3xl" />
+              <div className="absolute inset-0 bg-gradient-to-r from-[brand-cyan]/5 to-transparent rounded-3xl" />
               <div className="relative z-10 p-8 md:p-12 rounded-3xl border border-zinc-800/50 bg-[#141414] overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
                 <div className="max-w-xl space-y-4 text-center md:text-left">
                   <div className="flex items-center justify-center md:justify-start gap-3 text-brand-cyan">

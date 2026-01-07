@@ -502,7 +502,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
     >
       {selected && !dragging && (
         <NodeResizer
-          color="#brand-cyan"
+          color="brand-cyan"
           isVisible={selected}
           minWidth={320}
           minHeight={200}
@@ -534,7 +534,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
             <ImageIcon size={14} />
             {t('canvasNodes.shaderNode.connectImage') || 'Connect an image or video'}
           </div>
-          <label className="w-full px-3 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-[#brand-cyan]/30 hover:border-[#brand-cyan]/50 rounded text-xs font-mono text-brand-cyan flex items-center justify-center gap-2 cursor-pointer transition-all">
+          <label className="w-full px-3 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-[brand-cyan]/30 hover:border-[brand-cyan]/50 rounded text-xs font-mono text-brand-cyan flex items-center justify-center gap-2 cursor-pointer transition-all">
             <Upload size={14} />
             {t('canvasNodes.shaderNode.uploadImageOrVideo') || 'Upload Image or Video'}
             <input
@@ -643,8 +643,8 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
           {/* Floating Processing Indicator - subtle icon button */}
           {isLoading && (
             <div className="absolute top-3 left-3 z-20">
-              <div className="p-1.5 rounded-md bg-black/60 backdrop-blur-sm border border-[#brand-cyan]/30 shadow-lg">
-                <GlitchLoader size={14} color="#brand-cyan" />
+              <div className="p-1.5 rounded-md bg-black/60 backdrop-blur-sm border border-[brand-cyan]/30 shadow-lg">
+                <GlitchLoader size={14} color="brand-cyan" />
               </div>
             </div>
           )}

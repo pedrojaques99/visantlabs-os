@@ -35,7 +35,7 @@ export const ZoomControls: React.FC<ZoomControlsProps> = ({
           step={0.01}
           value={viewportScale}
           onChange={onZoomSliderChange}
-          className="w-20 accent-[#brand-cyan]/50"
+          className="w-20 accent-[brand-cyan]/50"
           title={`Zoom: ${Math.round(viewportScale * 100)}%`}
         />
         <button

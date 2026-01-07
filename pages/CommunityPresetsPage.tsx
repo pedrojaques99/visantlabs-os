@@ -886,7 +886,7 @@ export const CommunityPresetsPage: React.FC = () => {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder={t('communityPresets.search.placeholder') || 'Search presets...'}
-                    className="bg-black/40 backdrop-blur-sm border border-zinc-700/30 rounded-md pl-8 pr-8 py-2 w-48 md:w-64 focus:outline-none focus:border-[#brand-cyan]/50 text-xs text-zinc-300 font-mono"
+                    className="bg-black/40 backdrop-blur-sm border border-zinc-700/30 rounded-md pl-8 pr-8 py-2 w-48 md:w-64 focus:outline-none focus:border-[brand-cyan]/50 text-xs text-zinc-300 font-mono"
                   />
                   <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-zinc-500" size={14} />
                   {searchQuery && (

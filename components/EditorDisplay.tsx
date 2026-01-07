@@ -105,7 +105,7 @@ export const EditorDisplay: React.FC<EditorDisplayProps> = ({
               </div>
               <button
                 onClick={(e) => { e.stopPropagation(); onNewBackground(); }}
-                className="p-3 bg-zinc-900/50 rounded-md text-zinc-300 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-all transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-[#brand-cyan]/50 focus:ring-offset-2 focus:ring-offset-black/70"
+                className="p-3 bg-zinc-900/50 rounded-md text-zinc-300 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-all transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 focus:ring-offset-2 focus:ring-offset-black/70"
                 title="New Background (Change environment)"
                 aria-label="Generate new background"
               >
@@ -113,7 +113,7 @@ export const EditorDisplay: React.FC<EditorDisplayProps> = ({
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); onZoomIn(); }}
-                className="p-3 bg-zinc-900/50 rounded-md text-zinc-300 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-all transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-[#brand-cyan]/50 focus:ring-offset-2 focus:ring-offset-black/70"
+                className="p-3 bg-zinc-900/50 rounded-md text-zinc-300 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-all transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 focus:ring-offset-2 focus:ring-offset-black/70"
                 title="Zoom In (Move camera closer)"
                 aria-label="Zoom in"
               >
@@ -121,7 +121,7 @@ export const EditorDisplay: React.FC<EditorDisplayProps> = ({
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); onZoomOut(); }}
-                className="p-3 bg-zinc-900/50 rounded-md text-zinc-300 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-all transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-[#brand-cyan]/50 focus:ring-offset-2 focus:ring-offset-black/70"
+                className="p-3 bg-zinc-900/50 rounded-md text-zinc-300 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-all transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 focus:ring-offset-2 focus:ring-offset-black/70"
                 title="Zoom Out (Move camera further)"
                 aria-label="Zoom out"
               >

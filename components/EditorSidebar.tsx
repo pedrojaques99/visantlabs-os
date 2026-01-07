@@ -229,7 +229,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
               </div>
               <button
                 onClick={onStartOver}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-zinc-800/50 rounded border border-zinc-700/50 text-zinc-400 hover:bg-brand-cyan/20 hover:text-brand-cyan hover:border-[#brand-cyan]/30 transition-colors text-xs font-mono"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-zinc-800/50 rounded border border-zinc-700/50 text-zinc-400 hover:bg-brand-cyan/20 hover:text-brand-cyan hover:border-[brand-cyan]/30 transition-colors text-xs font-mono"
                 title="Start Over"
               >
                 <RotateCcw size={14} />
@@ -260,7 +260,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                     <button
                       onClick={onZoomIn}
                       disabled={isProcessing}
-                      className="flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 bg-zinc-800/50 text-zinc-400 rounded border border-zinc-700/50 hover:border-[#brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono"
+                      className="flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 bg-zinc-800/50 text-zinc-400 rounded border border-zinc-700/50 hover:border-[brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono"
                     >
                       <div className="flex items-center gap-1.5">
                         <ZoomIn size={14} />
@@ -271,7 +271,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                     <button
                       onClick={onZoomOut}
                       disabled={isProcessing}
-                      className="flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 bg-zinc-800/50 text-zinc-400 rounded border border-zinc-700/50 hover:border-[#brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono"
+                      className="flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 bg-zinc-800/50 text-zinc-400 rounded border border-zinc-700/50 hover:border-[brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono"
                     >
                       <div className="flex items-center gap-1.5">
                         <ZoomOut size={14} />
@@ -285,7 +285,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                         onNewAngle(randomAngle);
                       }}
                       disabled={isProcessing}
-                      className="flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 bg-zinc-800/50 text-zinc-400 rounded border border-zinc-700/50 hover:border-[#brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono"
+                      className="flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 bg-zinc-800/50 text-zinc-400 rounded border border-zinc-700/50 hover:border-[brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono"
                       title="Generate a random new camera angle"
                     >
                       <div className="flex items-center gap-1.5">
@@ -297,7 +297,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                     <button
                       onClick={onNewBackground}
                       disabled={isProcessing}
-                      className="flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 bg-zinc-800/50 text-zinc-400 rounded border border-zinc-700/50 hover:border-[#brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono"
+                      className="flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 bg-zinc-800/50 text-zinc-400 rounded border border-zinc-700/50 hover:border-[brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono"
                     >
                       <div className="flex items-center gap-1.5">
                         <MapPin size={14} />
@@ -330,7 +330,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                     onChange={(e) => setCustomPrompt(e.target.value)}
                     placeholder="Enter your edit prompt here..."
                     disabled={isProcessing}
-                    className="w-full bg-black/40 p-2.5 rounded border border-zinc-700/50 focus:outline-none focus:border-[#brand-cyan]/50 focus:ring-0 text-xs text-zinc-400 font-mono resize-none min-h-[80px] disabled:opacity-50"
+                    className="w-full bg-black/40 p-2.5 rounded border border-zinc-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs text-zinc-400 font-mono resize-none min-h-[80px] disabled:opacity-50"
                     rows={3}
                   />
                   <button
@@ -341,7 +341,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                       }
                     }}
                     disabled={isProcessing || !customPrompt.trim()}
-                    className="w-full mt-2 px-3 py-1.5 bg-brand-cyan/20 text-brand-cyan rounded border border-[#brand-cyan]/30 hover:bg-brand-cyan/30 hover:border-[#brand-cyan]/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono font-semibold"
+                    className="w-full mt-2 px-3 py-1.5 bg-brand-cyan/20 text-brand-cyan rounded border border-[brand-cyan]/30 hover:bg-brand-cyan/30 hover:border-[brand-cyan]/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono font-semibold"
                   >
                     {isProcessing ? 'GENERATING...' : 'GENERATE (1 credit)'}
                   </button>
@@ -382,7 +382,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                         }
                       }}
                       placeholder="Custom object..."
-                      className="w-full bg-black/40 p-2 rounded border border-zinc-700/50 focus:outline-none focus:border-[#brand-cyan]/50 focus:ring-0 text-xs text-zinc-400 font-mono disabled:opacity-50"
+                      className="w-full bg-black/40 p-2 rounded border border-zinc-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs text-zinc-400 font-mono disabled:opacity-50"
                       disabled={!!selectedObject}
                     />
                     <button
@@ -397,7 +397,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                     <button
                       onClick={onChangeObject}
                       disabled={isChangingObject || isProcessing}
-                      className="w-full mt-2 px-3 py-1.5 bg-brand-cyan/20 text-brand-cyan rounded border border-[#brand-cyan]/30 hover:bg-brand-cyan/30 hover:border-[#brand-cyan]/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono font-semibold"
+                      className="w-full mt-2 px-3 py-1.5 bg-brand-cyan/20 text-brand-cyan rounded border border-[brand-cyan]/30 hover:bg-brand-cyan/30 hover:border-[brand-cyan]/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono font-semibold"
                     >
                       {isChangingObject ? 'CHANGING OBJECT...' : 'CHANGE OBJECT (1 credit)'}
                     </button>
@@ -439,7 +439,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                         }
                       }}
                       placeholder="Custom theme..."
-                      className="w-full bg-black/40 p-2 rounded border border-zinc-700/50 focus:outline-none focus:border-[#brand-cyan]/50 focus:ring-0 text-xs text-zinc-400 font-mono disabled:opacity-50"
+                      className="w-full bg-black/40 p-2 rounded border border-zinc-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs text-zinc-400 font-mono disabled:opacity-50"
                       disabled={selectedThemes.length >= 3}
                     />
                     <button
@@ -454,7 +454,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                     <button
                       onClick={onApplyThemes}
                       disabled={isApplyingThemes || isProcessing}
-                      className="w-full mt-2 px-3 py-1.5 bg-brand-cyan/20 text-brand-cyan rounded border border-[#brand-cyan]/30 hover:bg-brand-cyan/30 hover:border-[#brand-cyan]/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono font-semibold"
+                      className="w-full mt-2 px-3 py-1.5 bg-brand-cyan/20 text-brand-cyan rounded border border-[brand-cyan]/30 hover:bg-brand-cyan/30 hover:border-[brand-cyan]/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono font-semibold"
                     >
                       {isApplyingThemes ? 'APPLYING THEMES...' : 'APPLY THEMES (1 credit)'}
                     </button>
@@ -487,7 +487,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                           key={preset.id || preset._id}
                           onClick={() => handlePresetClick(preset)}
                           disabled={isProcessing}
-                          className="px-2 py-1.5 bg-zinc-800/50 text-zinc-400 rounded border border-zinc-700/50 hover:border-[#brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono text-left truncate"
+                          className="px-2 py-1.5 bg-zinc-800/50 text-zinc-400 rounded border border-zinc-700/50 hover:border-[brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono text-left truncate"
                           title={preset.description || preset.name}
                         >
                           <Camera size={12} className="inline mr-1.5" />
@@ -527,7 +527,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                           key={preset.id || preset._id}
                           onClick={() => handlePresetClick(preset)}
                           disabled={isProcessing}
-                          className="px-2 py-1.5 bg-zinc-800/50 text-zinc-400 rounded border border-zinc-700/50 hover:border-[#brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono text-left truncate"
+                          className="px-2 py-1.5 bg-zinc-800/50 text-zinc-400 rounded border border-zinc-700/50 hover:border-[brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono text-left truncate"
                           title={preset.description || preset.name}
                         >
                           <Layers size={12} className="inline mr-1.5" />
@@ -567,7 +567,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                           key={preset.id || preset._id}
                           onClick={() => handlePresetClick(preset)}
                           disabled={isProcessing}
-                          className="px-2 py-1.5 bg-zinc-800/50 text-zinc-400 rounded border border-zinc-700/50 hover:border-[#brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono text-left truncate"
+                          className="px-2 py-1.5 bg-zinc-800/50 text-zinc-400 rounded border border-zinc-700/50 hover:border-[brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono text-left truncate"
                           title={preset.description || preset.name}
                         >
                           <MapPin size={12} className="inline mr-1.5" />
@@ -607,7 +607,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                           key={preset.id || preset._id}
                           onClick={() => handlePresetClick(preset)}
                           disabled={isProcessing}
-                          className="px-2 py-1.5 bg-zinc-800/50 text-zinc-400 rounded border border-zinc-700/50 hover:border-[#brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono text-left truncate"
+                          className="px-2 py-1.5 bg-zinc-800/50 text-zinc-400 rounded border border-zinc-700/50 hover:border-[brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono text-left truncate"
                           title={preset.description || preset.name}
                         >
                           <Sun size={12} className="inline mr-1.5" />
@@ -641,7 +641,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                   <a
                     href={`data:image/png;base64,${editorMockup}`}
                     download={`mockup-${Date.now()}.png`}
-                    className="flex items-center justify-center gap-2 w-full px-3 py-1.5 bg-zinc-800/50 text-zinc-400 rounded border border-zinc-700/50 hover:border-[#brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors text-xs font-mono"
+                    className="flex items-center justify-center gap-2 w-full px-3 py-1.5 bg-zinc-800/50 text-zinc-400 rounded border border-zinc-700/50 hover:border-[brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors text-xs font-mono"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <Download size={14} />

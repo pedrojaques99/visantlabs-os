@@ -22,7 +22,7 @@ const getVariableValue = (data: BudgetData, variable?: string): string => {
     projectName: data.projectName,
     clientName: data.clientName,
     projectDescription: data.projectDescription,
-    accentColor: data.brandAccentColor || data.brandColors[0] || '#brand-cyan',
+    accentColor: data.brandAccentColor || data.brandColors[0] || 'brand-cyan',
     bgColor: data.brandBackgroundColor || '#151515',
     textColor: data.brandBackgroundColor !== '#ffffff' && data.brandBackgroundColor !== '#fff' && data.brandBackgroundColor !== 'white' ? '#ffffff' : '#000000',
   };

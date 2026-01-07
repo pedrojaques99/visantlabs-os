@@ -168,7 +168,7 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
             isSaving
               ? "bg-black/40 text-zinc-500 cursor-wait border border-zinc-700/30"
               : isLiked
-                ? "bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30 border border-[#brand-cyan]/20"
+                ? "bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30 border border-[brand-cyan]/20"
                 : "bg-black/40 hover:bg-black/60 text-zinc-400 hover:text-zinc-200 border border-zinc-700/30 hover:border-zinc-600/50"
           )}
           title={

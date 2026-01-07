@@ -118,8 +118,8 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
       : "w-full px-3 py-2.5 bg-zinc-800 border border-zinc-800 rounded-xl text-zinc-200 text-sm font-mono z-[100]";
 
     const focusStyles = variant === 'node'
-      ? "focus:outline-none focus:border-[#brand-cyan]/50 z-[100]"
-      : "focus:outline-none focus:border-[#brand-cyan]/70 focus:ring-2 focus:ring-[#brand-cyan]/20 z-[100]";
+      ? "focus:outline-none focus:border-[brand-cyan]/50 z-[100]"
+      : "focus:outline-none focus:border-[brand-cyan]/70 focus:ring-2 focus:ring-[brand-cyan]/20 z-[100]";
 
     return (
       <div ref={containerRef} className={cn("relative w-full", isOpen && "z-[99999]")}>
@@ -135,7 +135,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
             "flex items-center justify-between gap-2",
             "hover:border-zinc-600/50",
             "disabled:cursor-not-allowed disabled:opacity-50",
-            isOpen && "border-[#brand-cyan]/50",
+            isOpen && "border-[brand-cyan]/50",
             variant === 'node' ? "node-interactive z-[99999]" : "",
             className
           )}
@@ -198,7 +198,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
                       "flex items-center justify-between gap-2",
                       "border-l-2 border-transparent", // Marker for hover
                       isFocused && "bg-zinc-800/60 border-zinc-600", // Focused state
-                      isSelected && "bg-brand-cyan/10 text-brand-cyan border-[#brand-cyan]", // Selected state
+                      isSelected && "bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]", // Selected state
                       !isSelected && !isFocused && "text-zinc-400 hover:bg-zinc-800/40 hover:text-zinc-200 hover:border-zinc-700" // Subtle hover
                     )}
                   >

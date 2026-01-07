@@ -46,12 +46,12 @@ const NodeSlider = React.forwardRef<HTMLInputElement, NodeSliderProps>(
           onChange={handleChange}
           onMouseDown={handleMouseDown}
           className={cn(
-            "w-full h-1.5 bg-zinc-800 rounded-md appearance-none cursor-pointer accent-[#brand-cyan]",
+            "w-full h-1.5 bg-zinc-800 rounded-md appearance-none cursor-pointer accent-[brand-cyan]",
             "transition-all duration-150",
             className
           )}
           style={{
-            background: `linear-gradient(to right, #brand-cyan 0%, #brand-cyan ${percentage}%, #3f3f46 ${percentage}%, #3f3f46 100%)`
+            background: `linear-gradient(to right, brand-cyan 0%, brand-cyan ${percentage}%, #3f3f46 ${percentage}%, #3f3f46 100%)`
           }}
           {...props}
         />

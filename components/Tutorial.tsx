@@ -111,8 +111,8 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
                   {/* Video or Image */}
                   <div
                     className={`tutorial-bento-image flex-shrink-0 w-full rounded-md overflow-hidden mb-4 sm:mb-5 md:mb-6 ${step.isVideo && step.videoId
-                        ? 'aspect-video'
-                        : 'h-[160px] sm:h-[200px] md:h-[240px] flex items-center justify-center'
+                      ? 'aspect-video'
+                      : 'h-[160px] sm:h-[200px] md:h-[240px] flex items-center justify-center'
                       }`}
                     style={{ backgroundColor: cardBg }}
                   >
@@ -183,8 +183,8 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
                 onClose();
               }}
               className={`inline-flex items-center gap-3 px-6 py-3 sm:px-8 sm:py-4 rounded-md transition-all duration-300 font-mono text-sm sm:text-base font-semibold cursor-pointer ${theme === 'dark'
-                  ? 'bg-brand-cyan hover:bg-brand-cyan/90 text-black shadow-lg shadow-[#brand-cyan]/30'
-                  : 'bg-brand-cyan hover:bg-brand-cyan/90 text-black shadow-lg shadow-[#brand-cyan]/30'
+                ? 'bg-brand-cyan hover:bg-brand-cyan/90 text-black shadow-lg shadow-[brand-cyan]/30'
+                : 'bg-brand-cyan hover:bg-brand-cyan/90 text-black shadow-lg shadow-[brand-cyan]/30'
                 }`}
             >
               <span>{t('tutorial.createMockup')}</span>

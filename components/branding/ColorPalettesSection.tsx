@@ -87,9 +87,9 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
         {localPalettes.map((palette, index) => (
           <div
             key={index}
-            className={`border rounded-xl p-5 hover:border-[#brand-cyan]/50 transition-colors relative ${theme === 'dark'
-                ? 'border-zinc-800/60 bg-black/40'
-                : 'border-zinc-300 bg-zinc-100'
+            className={`border rounded-xl p-5 hover:border-[brand-cyan]/50 transition-colors relative ${theme === 'dark'
+              ? 'border-zinc-800/60 bg-black/40'
+              : 'border-zinc-300 bg-zinc-100'
               }`}
           >
             {isEditing && onContentChange && (
@@ -109,9 +109,9 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
                 value={palette.name}
                 onChange={(e) => handleNameChange(index, e.target.value)}
                 placeholder="Nome da paleta"
-                className={`font-semibold mb-4 font-manrope text-lg bg-transparent border-b-2 focus:border-[#brand-cyan] focus:outline-none pb-1 w-full ${theme === 'dark'
-                    ? 'text-zinc-200 border-zinc-700/50'
-                    : 'text-zinc-800 border-zinc-400/50'
+                className={`font-semibold mb-4 font-manrope text-lg bg-transparent border-b-2 focus:border-[brand-cyan] focus:outline-none pb-1 w-full ${theme === 'dark'
+                  ? 'text-zinc-200 border-zinc-700/50'
+                  : 'text-zinc-800 border-zinc-400/50'
                   }`}
               />
             ) : (
@@ -140,8 +140,8 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
                         onChange={(e) => handleColorChange(index, colorIndex, e.target.value)}
                         placeholder="#000000"
                         className={`text-xs font-mono font-medium bg-transparent border rounded px-1 w-full text-center ${theme === 'dark'
-                            ? 'text-zinc-500 border-zinc-700/50'
-                            : 'text-zinc-600 border-zinc-400/50'
+                          ? 'text-zinc-500 border-zinc-700/50'
+                          : 'text-zinc-600 border-zinc-400/50'
                           }`}
                       />
                       <button
@@ -156,7 +156,7 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
                   ) : (
                     <>
                       <div
-                        className={`w-full aspect-square rounded-md border transition-all duration-300 hover:scale-[1.05] hover:shadow-lg hover:shadow-[#brand-cyan]/20 mb-2 ${theme === 'dark' ? 'border-zinc-800/60' : 'border-zinc-300'
+                        className={`w-full aspect-square rounded-md border transition-all duration-300 hover:scale-[1.05] hover:shadow-lg hover:shadow-[brand-cyan]/20 mb-2 ${theme === 'dark' ? 'border-zinc-800/60' : 'border-zinc-300'
                           }`}
                         style={{ backgroundColor: color }}
                         title={color}
@@ -172,9 +172,9 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
               {isEditing && onContentChange && (
                 <button
                   onClick={() => handleAddColor(index)}
-                  className={`flex flex-col items-center justify-center aspect-square border-2 border-dashed rounded-md transition-colors hover:border-[#brand-cyan]/50 hover:text-brand-cyan ${theme === 'dark'
-                      ? 'border-zinc-700/50 text-zinc-400'
-                      : 'border-zinc-400/50 text-zinc-500'
+                  className={`flex flex-col items-center justify-center aspect-square border-2 border-dashed rounded-md transition-colors hover:border-[brand-cyan]/50 hover:text-brand-cyan ${theme === 'dark'
+                    ? 'border-zinc-700/50 text-zinc-400'
+                    : 'border-zinc-400/50 text-zinc-500'
                     }`}
                   title="Adicionar cor"
                 >
@@ -192,8 +192,8 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
                   onChange={(e) => handlePsychologyChange(index, e.target.value)}
                   placeholder="Descrição da psicologia da paleta..."
                   className={`bg-transparent font-manrope text-sm min-h-[80px] ${theme === 'dark'
-                      ? 'border-zinc-700/50 text-zinc-400'
-                      : 'border-zinc-400/50 text-zinc-600'
+                    ? 'border-zinc-700/50 text-zinc-400'
+                    : 'border-zinc-400/50 text-zinc-600'
                     }`}
                 />
               ) : (
@@ -209,9 +209,9 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
       {isEditing && onContentChange && (
         <button
           onClick={handleAddPalette}
-          className={`flex items-center gap-2 px-4 py-2 border hover:border-[#brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-all duration-300 ${theme === 'dark'
-              ? 'bg-black/40 border-zinc-800/60 text-zinc-300'
-              : 'bg-zinc-100 border-zinc-300 text-zinc-800'
+          className={`flex items-center gap-2 px-4 py-2 border hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-all duration-300 ${theme === 'dark'
+            ? 'bg-black/40 border-zinc-800/60 text-zinc-300'
+            : 'bg-zinc-100 border-zinc-300 text-zinc-800'
             }`}
         >
           <Plus className="h-4 w-4" />

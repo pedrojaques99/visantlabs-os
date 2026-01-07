@@ -21,9 +21,9 @@ export const BrandingCompactCard: React.FC<BrandingCompactCardProps> = ({
   return (
     <div
       onClick={onClick}
-      className={`aspect-square border rounded-xl p-3 md:p-4 hover:border-[#brand-cyan]/50 transition-all duration-200 cursor-pointer group relative animate-fade-in-down flex flex-col items-center justify-center w-1/2 md:max-w-[150px] ${theme === 'dark'
-          ? 'bg-[#141414] border-zinc-800/60'
-          : 'bg-white border-zinc-300'
+      className={`aspect-square border rounded-xl p-3 md:p-4 hover:border-[brand-cyan]/50 transition-all duration-200 cursor-pointer group relative animate-fade-in-down flex flex-col items-center justify-center w-1/2 md:max-w-[150px] ${theme === 'dark'
+        ? 'bg-[#141414] border-zinc-800/60'
+        : 'bg-white border-zinc-300'
         }`}
     >
       <div className="text-2xl md:text-3xl mb-2 transition-transform duration-200">

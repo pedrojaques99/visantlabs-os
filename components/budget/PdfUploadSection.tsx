@@ -167,7 +167,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
               value={presetName}
               onChange={(e) => setPresetName(e.target.value)}
               placeholder="Nome do preset"
-              className="w-full px-4 py-2 bg-black/20 border border-zinc-800 rounded-md text-zinc-200 font-mono mb-4 focus:outline-none focus:border-[#brand-cyan]"
+              className="w-full px-4 py-2 bg-black/20 border border-zinc-800 rounded-md text-zinc-200 font-mono mb-4 focus:outline-none focus:border-[brand-cyan]"
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   handleSavePreset();
@@ -183,7 +183,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
               <Button
                 onClick={handleSavePreset}
                 disabled={isSavingPreset || !presetName.trim()}
-                className="flex-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#brand-cyan]/50 text-brand-cyan"
+                className="flex-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 text-brand-cyan"
               >
                 {isSavingPreset ? (
                   <GlitchLoader size={16} />
@@ -208,7 +208,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
 
       {isUploading || isSavingPreset ? (
         <div className="flex items-center gap-2 p-4 border border-zinc-800 rounded-xl bg-black/20">
-          <GlitchLoader size={16} color="#brand-cyan" />
+          <GlitchLoader size={16} color="brand-cyan" />
           <span className="text-sm text-zinc-400 font-mono">
             {isSavingPreset ? 'Salvando preset...' : 'Enviando PDF...'}
           </span>

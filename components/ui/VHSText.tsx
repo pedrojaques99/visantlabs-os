@@ -24,7 +24,7 @@ export const VHSText: React.FC<VHSTextProps> = ({
   children,
   className = '',
   fontSize = 'text-8xl md:text-[10rem] lg:text-[12rem]',
-  color = '#brand-cyan',
+  color = 'brand-cyan',
   theme = 'dark',
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);

@@ -2224,7 +2224,7 @@
       "brandName": "Your Brand Name",
       "color": "#000000",
       "brandBackgroundColor": "#000000",
-      "brandAccentColor": "#brand-cyan"
+      "brandAccentColor": "brand-cyan"
     }
   },
   "pix": {
@@ -2448,7 +2448,7 @@
       "logoRequired": "Logo is required. Connect BrandCore Logo or Image node.",
       "logoFromBrandCore": "Logo (from BrandCore) - Primary Focus",
       "inputImage": "Input Image",
-      "colorPlaceholder": "#brand-cyan",
+      "colorPlaceholder": "brand-cyan",
       "addAnotherMockupNode": "Add another mockup node",
       "missingInput": "Missing Input",
       "missingInputConnectLogo": "• Connect BrandCore Logo (required, primary focus)",

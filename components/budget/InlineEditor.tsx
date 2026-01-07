@@ -107,7 +107,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
   }
 
   if (isEditing) {
-    const inputClassName = `outline-none border-2 border-[#brand-cyan] rounded px-2 py-1 bg-white text-zinc-900 ${className}`;
+    const inputClassName = `outline-none border-2 border-[brand-cyan] rounded px-2 py-1 bg-white text-zinc-900 ${className}`;
 
     if (type === 'textarea' || multiline) {
       // Calculate rows based on content
@@ -154,7 +154,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
   const getStatusIcon = () => {
     switch (saveStatus) {
       case 'saving':
-        return <GlitchLoader size={12} color="#brand-cyan" className="inline-block ml-1" />;
+        return <GlitchLoader size={12} color="brand-cyan" className="inline-block ml-1" />;
       case 'saved':
         return <Check size={12} className="inline-block ml-1 text-green-500" />;
       case 'error':

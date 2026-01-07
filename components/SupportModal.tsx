@@ -168,7 +168,7 @@ ${message}
                 type="button"
                 onClick={() => setContactType('customerService')}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md border transition-all text-sm font-mono ${contactType === 'customerService'
-                  ? 'bg-brand-cyan/20 border-[#brand-cyan]/50 text-brand-cyan'
+                  ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
                   : 'bg-black/40 border-zinc-700/50 text-zinc-400 hover:border-zinc-600'
                   }`}
               >
@@ -179,7 +179,7 @@ ${message}
                 type="button"
                 onClick={() => setContactType('reportBug')}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md border transition-all text-sm font-mono ${contactType === 'reportBug'
-                  ? 'bg-brand-cyan/20 border-[#brand-cyan]/50 text-brand-cyan'
+                  ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
                   : 'bg-black/40 border-zinc-700/50 text-zinc-400 hover:border-zinc-600'
                   }`}
               >
@@ -198,7 +198,7 @@ ${message}
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full bg-black/40 p-2 rounded-md border border-zinc-700/50 focus:outline-none focus:border-[#brand-cyan]/50 focus:ring-0 text-sm text-zinc-300 font-mono"
+              className="w-full bg-black/40 p-2 rounded-md border border-zinc-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-zinc-300 font-mono"
               placeholder={t('support.namePlaceholder') || 'Your name'}
             />
           </div>
@@ -212,7 +212,7 @@ ${message}
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-black/40 p-2 rounded-md border border-zinc-700/50 focus:outline-none focus:border-[#brand-cyan]/50 focus:ring-0 text-sm text-zinc-300 font-mono"
+              className="w-full bg-black/40 p-2 rounded-md border border-zinc-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-zinc-300 font-mono"
               placeholder={t('support.emailPlaceholder') || 'your@email.com'}
             />
           </div>
@@ -227,7 +227,7 @@ ${message}
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               required
-              className="w-full bg-black/40 p-2 rounded-md border border-zinc-700/50 focus:outline-none focus:border-[#brand-cyan]/50 focus:ring-0 text-sm text-zinc-300 font-mono"
+              className="w-full bg-black/40 p-2 rounded-md border border-zinc-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-zinc-300 font-mono"
               placeholder={t('support.subjectPlaceholder') || 'Brief description'}
             />
           </div>
@@ -242,7 +242,7 @@ ${message}
               onChange={(e) => setMessage(e.target.value)}
               required
               rows={6}
-              className="w-full bg-black/40 p-2 rounded-md border border-zinc-700/50 focus:outline-none focus:border-[#brand-cyan]/50 focus:ring-0 text-sm text-zinc-300 font-mono resize-none"
+              className="w-full bg-black/40 p-2 rounded-md border border-zinc-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-zinc-300 font-mono resize-none"
               placeholder={t('support.messagePlaceholder') || 'Describe your issue or question...'}
             />
           </div>

@@ -197,7 +197,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                 <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800/50">
                     <div>
                         <h2 className="text-lg font-semibold text-zinc-100 font-mono flex items-center gap-2">
-                            <Download size={20} className="text-[#brand-cyan]" />
+                            <Download size={20} className="text-[brand-cyan]" />
                             Export Images
                         </h2>
                         <p className="text-xs text-zinc-500 font-mono mt-1">
@@ -222,7 +222,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                                 placeholder="Search images..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-9 pr-4 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-xs text-zinc-300 font-mono focus:outline-none focus:ring-1 focus:ring-[#brand-cyan]/50 transition-all"
+                                className="w-full pl-9 pr-4 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-xs text-zinc-300 font-mono focus:outline-none focus:ring-1 focus:ring-[brand-cyan]/50 transition-all"
                             />
                         </div>
 
@@ -231,7 +231,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                             className="flex items-center gap-2 px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-xs text-zinc-300 font-mono hover:bg-zinc-700/50 transition-all whitespace-nowrap"
                         >
                             {selectedImages.size === filteredImages.length && filteredImages.length > 0 ? (
-                                <CheckSquare size={14} className="text-[#brand-cyan]" />
+                                <CheckSquare size={14} className="text-[brand-cyan]" />
                             ) : (
                                 <Square size={14} />
                             )}
@@ -248,7 +248,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                                     className={cn(
                                         "px-3 py-1 text-[10px] font-mono rounded transition-all",
                                         exportFormat === format
-                                            ? "bg-[#brand-cyan]/20 text-[#brand-cyan] border border-[#brand-cyan]/30"
+                                            ? "bg-[brand-cyan]/20 text-[brand-cyan] border border-[brand-cyan]/30"
                                             : "text-zinc-500 hover:text-zinc-300"
                                     )}
                                 >
@@ -270,7 +270,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                                     className={cn(
                                         "group relative aspect-square rounded-xl border transition-all cursor-pointer overflow-hidden",
                                         selectedImages.has(img.id)
-                                            ? "border-[#brand-cyan] ring-1 ring-[#brand-cyan]/20"
+                                            ? "border-[brand-cyan] ring-1 ring-[brand-cyan]/20"
                                             : "border-zinc-800 hover:border-zinc-700 bg-zinc-900/50"
                                     )}
                                 >
@@ -287,14 +287,14 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                                     <div className={cn(
                                         "absolute inset-0 transition-opacity flex flex-col justify-between p-2",
                                         selectedImages.has(img.id)
-                                            ? "bg-[#brand-cyan]/10"
+                                            ? "bg-[brand-cyan]/10"
                                             : "bg-black/0 group-hover:bg-black/40 opacity-0 group-hover:opacity-100"
                                     )}>
                                         <div className="flex justify-end">
                                             <div className={cn(
                                                 "w-5 h-5 rounded-full flex items-center justify-center border transition-all",
                                                 selectedImages.has(img.id)
-                                                    ? "bg-[#brand-cyan] border-[#brand-cyan] text-black"
+                                                    ? "bg-[brand-cyan] border-[brand-cyan] text-black"
                                                     : "bg-black/40 border-white/20 text-transparent"
                                             )}>
                                                 <Check size={12} strokeWidth={3} />
@@ -305,7 +305,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                                             <p className="text-[10px] text-zinc-200 font-mono truncate" title={img.name}>
                                                 {img.name}
                                             </p>
-                                            <p className="text-[8px] text-[#brand-cyan] font-mono uppercase mt-0.5">
+                                            <p className="text-[8px] text-[brand-cyan] font-mono uppercase mt-0.5">
                                                 {img.type}
                                             </p>
                                         </div>
@@ -342,7 +342,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                             onClick={handleExport}
                             disabled={selectedImages.size === 0 || isExporting}
                             className={cn(
-                                "px-6 py-2 bg-[#brand-cyan] hover:bg-[#45c3d1] disabled:bg-zinc-800 disabled:text-zinc-500 text-black font-semibold rounded-lg text-xs font-mono transition-all flex items-center gap-2 shadow-lg shadow-[#brand-cyan]/10",
+                                "px-6 py-2 bg-[brand-cyan] hover:bg-[#45c3d1] disabled:bg-zinc-800 disabled:text-zinc-500 text-black font-semibold rounded-lg text-xs font-mono transition-all flex items-center gap-2 shadow-lg shadow-[brand-cyan]/10",
                                 isExporting && "animate-pulse"
                             )}
                         >
