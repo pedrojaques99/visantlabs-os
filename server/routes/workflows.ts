@@ -1,5 +1,6 @@
 import express from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
+import { getUserIdFromToken } from '../utils/auth.js';
 import { prisma } from '../db/prisma.js';
 import { InputJsonValue } from '@prisma/client/runtime/library';
 
@@ -54,20 +55,7 @@ router.get('/public', async (req, res) => {
         });
 
         // Check if user has liked each workflow (if authenticated)
-        const token = req.headers.authorization?.replace('Bearer ', '');
-        let userId: string | null = null;
-
-        if (token) {
-            try {
-                const { JWT_SECRET } = await import('../utils/jwtSecret.js');
-                const jwt = (await import('jsonwebtoken')).default;
-
-                const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
-                userId = decoded.userId;
-            } catch (err) {
-                // Not authenticated, continue without user data
-            }
-        }
+        const userId = getUserIdFromToken(req.headers.authorization);
 
         let workflowsWithLikes = workflows;
 
@@ -108,20 +96,7 @@ router.get('/:id', async (req, res) => {
         }
 
         // Check if user has access (public or owner)
-        const token = req.headers.authorization?.replace('Bearer ', '');
-        let userId: string | null = null;
-
-        if (token) {
-            try {
-                const { JWT_SECRET } = await import('../utils/jwtSecret.js');
-                const jwt = (await import('jsonwebtoken')).default;
-
-                const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
-                userId = decoded.userId;
-            } catch (err) {
-                // Not authenticated
-            }
-        }
+        const userId = getUserIdFromToken(req.headers.authorization);
 
         if (!workflow.isPublic && workflow.userId !== userId) {
             return res.status(403).json({ error: 'Access denied' });

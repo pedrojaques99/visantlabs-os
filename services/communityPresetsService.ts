@@ -73,7 +73,7 @@ export async function getPromptsByCategory(category: PromptCategory): Promise<an
   const presets = await loadPresetsFromAPI();
   if (category === 'all') {
     // Retornar todos, incluindo categorias antigas e novas
-    return [
+    const allPresets = [
       ...(presets['3d'] || []),
       ...(presets['presets'] || []),
       ...(presets['aesthetics'] || []),
@@ -84,6 +84,17 @@ export async function getPromptsByCategory(category: PromptCategory): Promise<an
       ...(presets['ambience'] || []),
       ...(presets['luminance'] || []),
     ];
+
+    // Remove overlapping duplicates
+    const uniqueMap = new Map<string, any>();
+    allPresets.forEach((preset) => {
+      const id = preset._id || preset.id;
+      if (id && !uniqueMap.has(id)) {
+        uniqueMap.set(id, preset);
+      }
+    });
+
+    return Array.from(uniqueMap.values());
   }
   return presets[category] || [];
 }

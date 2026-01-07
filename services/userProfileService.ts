@@ -143,6 +143,39 @@ export const userProfileService = {
   },
 
   /**
+   * Get user's public workflows
+   */
+  async getUserWorkflows(identifier: string) {
+    const response = await fetch(`${API_BASE_URL}/users/${encodeURIComponent(identifier)}/workflows`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeaders(), // Include auth headers for liking status
+      },
+    });
+
+    if (!response.ok) {
+      // Similar error handling as other methods
+      const errorText = await response.text();
+      let errorMessage = `Failed to fetch user workflows: ${response.status} ${response.statusText}`;
+
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.error || errorData.message || errorMessage;
+      } catch {
+        if (errorText) {
+          errorMessage = errorText;
+        }
+      }
+
+      const error = new Error(errorMessage);
+      (error as any).status = response.status;
+      throw error;
+    }
+
+    return response.json();
+  },
+
+  /**
    * Update own profile
    */
   async updateProfile(data: UpdateProfileData) {
