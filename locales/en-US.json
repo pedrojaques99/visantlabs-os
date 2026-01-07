@@ -500,7 +500,10 @@
     "instagram": "Instagram",
     "youtube": "YouTube",
     "twitter": "X (Twitter)",
-    "website": "Website"
+    "website": "Website",
+    "workflowDuplicated": "Workflow duplicated to your library",
+    "failedToDuplicateWorkflow": "Failed to duplicate workflow",
+    "failedToUpdateLike": "Failed to update like"
   },
   "usageHistory": {
     "title": "Usage History",
@@ -3290,5 +3293,8 @@
       "failedToDelete": "Failed to delete workflow",
       "failedToSave": "Failed to save workflow"
     }
+  },
+  "auth": {
+    "loginRequired": "Please login to like workflows"
   }
 }

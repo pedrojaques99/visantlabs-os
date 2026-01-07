@@ -955,7 +955,7 @@ router.post('/generate', authenticate, checkSubscription, async (req: Subscripti
         req.userId!,
         actualImagesCount, // Always 1 for this endpoint
         model,
-        !!baseImageObj,
+        !!baseImage,
         promptText.length,
         resolution as Resolution | undefined,
         (feature || 'mockupmachine') as 'mockupmachine' | 'canvas',
