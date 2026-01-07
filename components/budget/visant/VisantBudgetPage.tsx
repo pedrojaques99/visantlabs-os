@@ -15,7 +15,7 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
   onDataChange,
   saveStatus = 'idle',
 }) => {
-  const accentColor = data.brandAccentColor || data.brandColors[0] || '#52ddeb';
+  const accentColor = data.brandAccentColor || data.brandColors[0] || '#brand-cyan';
   const bgColor = data.brandBackgroundColor || '#ffffff';
   const isDarkBg = bgColor !== '#ffffff' && bgColor !== '#fff' && bgColor !== 'white';
   const textColor = isDarkBg ? '#ffffff' : '#020202';
@@ -59,9 +59,9 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
   const contentHeight = data.contentHeight;
 
   return (
-    <div 
+    <div
       className="w-full h-full min-h-full overflow-visible"
-      style={{ 
+      style={{
         backgroundColor: bgColor,
         color: textColor,
         fontFamily: "'Manrope', sans-serif",
@@ -120,10 +120,10 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
         `}
       </style>
 
-      <div 
-        className="visant-budget-page mx-auto relative" 
-        style={{ 
-          height: contentHeight ? `${contentHeight}px` : 'auto', 
+      <div
+        className="visant-budget-page mx-auto relative"
+        style={{
+          height: contentHeight ? `${contentHeight}px` : 'auto',
           minHeight: contentHeight ? `${contentHeight}px` : '100%',
           width: '100%',
           maxWidth: `${contentWidth}px`,
@@ -134,9 +134,9 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
         {/* Header with Orçamento + Arrow + Brand Name */}
         <div className="flex items-center justify-between mb-6" style={{ marginTop: '60px' }}>
           <div className="flex items-center gap-3">
-            <span 
+            <span
               className="font-bold"
-              style={{ 
+              style={{
                 fontSize: '18.07px',
                 color: textColor,
                 fontFamily: "'Manrope', sans-serif",
@@ -144,7 +144,7 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
             >
               <InlineEditor
                 value="Orçamento"
-                onChange={() => {}}
+                onChange={() => { }}
                 editable={false}
                 style={{ fontSize: '18.07px', fontWeight: 'bold' }}
                 saveStatus={saveStatus}
@@ -156,7 +156,7 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
           </div>
           <div
             className="px-4 py-2 border-2 rounded-md"
-            style={{ 
+            style={{
               borderColor: accentColor,
               color: textColor,
               fontSize: '17.018px',
@@ -175,9 +175,9 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
         </div>
 
         {/* Project Title */}
-        <div 
+        <div
           className="mb-6 text-center"
-          style={{ 
+          style={{
             fontSize: '16px',
             color: textColor,
             fontFamily: "'Manrope', sans-serif",
@@ -213,9 +213,9 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                 padding: '12px 24px',
               }}
             >
-              <h3 
+              <h3
                 className="font-bold text-white"
-                style={{ 
+                style={{
                   fontSize: '21px',
                   fontFamily: "'Manrope', sans-serif",
                 }}
@@ -223,8 +223,8 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                 Serviços
               </h3>
             </div>
-            <span 
-              style={{ 
+            <span
+              style={{
                 fontSize: '17px',
                 fontFamily: "'Manrope', sans-serif",
                 fontWeight: '300',
@@ -238,10 +238,10 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
           {/* Services List */}
           <div className="space-y-0" style={{ borderTop: `1px solid ${secondaryTextColor}` }}>
             {data.deliverables.map((deliverable, index) => (
-              <div 
-                key={index} 
+              <div
+                key={index}
                 className="flex items-start justify-between"
-                style={{ 
+                style={{
                   borderBottom: `1px solid ${secondaryTextColor}`,
                   paddingTop: '20px',
                   paddingBottom: '20px',
@@ -249,9 +249,9 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
               >
                 <div className="flex items-start" style={{ flex: 1, gap: '12px' }}>
                   {/* Large Number */}
-                  <span 
+                  <span
                     className="service-number font-bold"
-                    style={{ 
+                    style={{
                       fontSize: '29px',
                       color: textColor,
                       fontFamily: "'Manrope', sans-serif",
@@ -264,9 +264,9 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                   </span>
                   {/* Service Name and Description */}
                   <div className="flex-1 min-w-0">
-                    <h4 
+                    <h4
                       className="service-name font-bold mb-1"
-                      style={{ 
+                      style={{
                         fontSize: '16px',
                         color: textColor,
                         fontFamily: "'Manrope', sans-serif",
@@ -286,9 +286,9 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                       />
                     </h4>
                     {deliverable.description && (
-                      <p 
+                      <p
                         className="service-description"
-                        style={{ 
+                        style={{
                           fontSize: '11.5px',
                           color: textColor,
                           fontFamily: "'Manrope', sans-serif",
@@ -315,9 +315,9 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                 </div>
                 {/* Quantity */}
                 <div style={{ textAlign: 'right', minWidth: '58px', flexShrink: 0 }}>
-                  <span 
+                  <span
                     className="font-bold"
-                    style={{ 
+                    style={{
                       fontSize: '18px',
                       color: textColor,
                       fontFamily: "'Manrope', sans-serif",
@@ -346,15 +346,15 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
 
           {/* Total Hours */}
           {totalHours > 0 && (
-            <div 
-              style={{ 
+            <div
+              style={{
                 marginTop: '20px',
                 textAlign: 'right',
                 paddingRight: '45px',
               }}
             >
-              <p 
-                style={{ 
+              <p
+                style={{
                   fontSize: '15px',
                   color: textColor,
                   fontFamily: "'Manrope', sans-serif",
@@ -387,8 +387,8 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
 
           {/* Observations */}
           {data.observations && (
-            <div 
-              style={{ 
+            <div
+              style={{
                 marginTop: '20px',
                 fontSize: '11px',
                 color: textColor,
@@ -413,9 +413,9 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
         </div>
 
         {/* Footer with Investment, Total, Signatures, and Payment Info */}
-        <div 
+        <div
           className="mt-12 pt-8"
-          style={{ 
+          style={{
             borderTop: `2px solid ${secondaryTextColor}`,
             marginTop: '80px',
             paddingTop: '48px',
@@ -441,16 +441,16 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                           saveStatus={saveStatus}
                         />
                       </div>
-                      <div 
+                      <div
                         className="mt-8 mb-2"
-                        style={{ 
+                        style={{
                           borderTop: `1px solid ${secondaryTextColor}`,
                           marginTop: '48px',
                           marginBottom: '12px',
                         }}
                       />
-                      <p 
-                        style={{ 
+                      <p
+                        style={{
                           fontSize: '11px',
                           color: textColor,
                           fontFamily: "'Manrope', sans-serif",
@@ -478,9 +478,9 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
               ) : (
                 <div className="grid grid-cols-2 gap-8">
                   <div>
-                    <p 
+                    <p
                       className="mb-1"
-                      style={{ 
+                      style={{
                         fontSize: '30px',
                         color: textColor,
                         fontFamily: "'Dancing Script', cursive",
@@ -491,16 +491,16 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                     >
                       Pedro Xavier
                     </p>
-                    <div 
+                    <div
                       className="mt-8 mb-2"
-                      style={{ 
+                      style={{
                         borderTop: `1px solid ${secondaryTextColor}`,
                         marginTop: '48px',
                         marginBottom: '12px',
                       }}
                     />
-                    <p 
-                      style={{ 
+                    <p
+                      style={{
                         fontSize: '11px',
                         color: textColor,
                         fontFamily: "'Manrope', sans-serif",
@@ -514,9 +514,9 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                     </p>
                   </div>
                   <div>
-                    <p 
+                    <p
                       className="mb-1"
-                      style={{ 
+                      style={{
                         fontSize: '30px',
                         color: textColor,
                         fontFamily: "'Dancing Script', cursive",
@@ -527,16 +527,16 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                     >
                       Pedro Jaques
                     </p>
-                    <div 
+                    <div
                       className="mt-8 mb-2"
-                      style={{ 
+                      style={{
                         borderTop: `1px solid ${secondaryTextColor}`,
                         marginTop: '48px',
                         marginBottom: '12px',
                       }}
                     />
-                    <p 
-                      style={{ 
+                    <p
+                      style={{
                         fontSize: '11px',
                         color: textColor,
                         fontFamily: "'Manrope', sans-serif",
@@ -557,8 +557,8 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
             <div className="investment-section text-right">
               {totalHours > 0 && hourlyRate > 0 && (
                 <div className="mb-4">
-                  <p 
-                    style={{ 
+                  <p
+                    style={{
                       fontSize: '16px',
                       color: textColor,
                       fontFamily: "'Manrope', sans-serif",
@@ -568,8 +568,8 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                   >
                     Investimento:
                   </p>
-                  <div 
-                    style={{ 
+                  <div
+                    style={{
                       fontSize: '16px',
                       color: textColor,
                       fontFamily: "'Manrope', sans-serif",
@@ -653,9 +653,9 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
               }}
             >
               <div className="flex items-center gap-2">
-                <p 
+                <p
                   className="font-bold text-white"
-                  style={{ 
+                  style={{
                     fontSize: '16.069px',
                     fontFamily: "'Manrope', sans-serif",
                     lineHeight: '1.56',
@@ -671,9 +671,9 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
           </div>
 
           {/* Payment Terms */}
-          <div 
+          <div
             className="mt-8"
-            style={{ 
+            style={{
               marginTop: '40px',
               textAlign: 'right',
               paddingLeft: '45px',
@@ -705,9 +705,9 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
         </div>
 
         {/* Footer with PIX and Discount */}
-        <div 
+        <div
           className="mt-12 pt-6"
-          style={{ 
+          style={{
             borderTop: `1px solid ${secondaryTextColor}`,
             marginTop: '48px',
             paddingTop: '24px',
@@ -715,8 +715,8 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
         >
           <div className="footer-grid grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div style={{ textAlign: 'center' }}>
-              <p 
-                style={{ 
+              <p
+                style={{
                   fontSize: '16px',
                   color: textColor,
                   fontFamily: "'Manrope', sans-serif",
@@ -734,15 +734,15 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
                     });
                   }}
                   editable={editable}
-                  style={{ fontSize: '16px', fontWeight: 'bold', textAlign: 'center' , letterSpacing: '0.16px', fontFamily: "'Manrope', sans-serif"}}
+                  style={{ fontSize: '16px', fontWeight: 'bold', textAlign: 'center', letterSpacing: '0.16px', fontFamily: "'Manrope', sans-serif" }}
                   saveStatus={saveStatus}
                 />
               </p>
             </div>
             <div className="text-right">
               {discountPercent > 0 && (
-                <p 
-                  style={{ 
+                <p
+                  style={{
                     fontSize: '16px',
                     color: textColor,
                     fontFamily: "'Manrope', sans-serif",
@@ -765,8 +765,8 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
         </div>
 
         {/* Bottom Line */}
-        <div 
-          style={{ 
+        <div
+          style={{
             position: 'relative',
             marginTop: '40px',
           }}

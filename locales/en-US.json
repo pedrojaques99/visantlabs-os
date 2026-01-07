@@ -2224,7 +2224,7 @@
       "brandName": "Your Brand Name",
       "color": "#000000",
       "brandBackgroundColor": "#000000",
-      "brandAccentColor": "#52ddeb"
+      "brandAccentColor": "#brand-cyan"
     }
   },
   "pix": {
@@ -2448,7 +2448,7 @@
       "logoRequired": "Logo is required. Connect BrandCore Logo or Image node.",
       "logoFromBrandCore": "Logo (from BrandCore) - Primary Focus",
       "inputImage": "Input Image",
-      "colorPlaceholder": "#52ddeb",
+      "colorPlaceholder": "#brand-cyan",
       "addAnotherMockupNode": "Add another mockup node",
       "missingInput": "Missing Input",
       "missingInputConnectLogo": "• Connect BrandCore Logo (required, primary focus)",
@@ -2502,7 +2502,16 @@
     },
     "textNode": {
       "title": "Text Node",
-      "placeholder": "Enter text here..."
+      "placeholder": "Enter text here...",
+      "copy": "Copy text",
+      "copied": "Text copied!",
+      "copyFailed": "Failed to copy text",
+      "characters": "chars",
+      "aiHint": "Click the wand to enhance with AI",
+      "improvePrompt": "Improve with AI",
+      "improvingPrompt": "Improving prompt...",
+      "promptImproved": "Prompt improved!",
+      "errorImprovingPrompt": "Failed to improve prompt"
     },
     "drawingNode": {
       "freehand": "Freehand",

@@ -64,7 +64,7 @@ export const PdfThumbnail: React.FC<PdfThumbnailProps> = ({
     <div
       className={cn(
         'relative group aspect-square bg-zinc-900/50 border border-zinc-700/30 rounded overflow-hidden',
-        onClick && 'cursor-pointer hover:border-[#52ddeb]/50 transition-colors',
+        onClick && 'cursor-pointer hover:border-[#brand-cyan]/50 transition-colors',
         className
       )}
       onClick={onClick}
@@ -86,7 +86,7 @@ export const PdfThumbnail: React.FC<PdfThumbnailProps> = ({
             onLoadError={onDocumentLoadError}
             loading={
               <div className="w-full h-full flex items-center justify-center">
-                <div className="w-8 h-8 border-2 border-[#52ddeb] border-t-transparent rounded-md animate-spin" />
+                <div className="w-8 h-8 border-2 border-[#brand-cyan] border-t-transparent rounded-md animate-spin" />
               </div>
             }
             className="w-full h-full flex items-center justify-center"

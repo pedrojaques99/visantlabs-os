@@ -203,11 +203,11 @@ export const CreditRechargeSuccessPage: React.FC = () => {
 
           {isCheckingAuth || isLoading ? (
             <div className="flex items-center justify-center gap-2 mt-4">
-              <GlitchLoader size={20} color="#52ddeb" />
+              <GlitchLoader size={20} color="#brand-cyan" />
             </div>
           ) : isVerifyingCredits ? (
             <div className="flex items-center justify-center gap-2 mt-4">
-              <GlitchLoader size={20} color="#52ddeb" />
+              <GlitchLoader size={20} color="#brand-cyan" />
               <span className="text-zinc-500 text-sm font-mono">
                 {t('creditRechargeSuccess.verifying')}
               </span>
@@ -226,7 +226,7 @@ export const CreditRechargeSuccessPage: React.FC = () => {
 
             {creditsPurchased && creditsConfirmed && (
               <div className="mb-6">
-                <div className="text-center py-4 bg-brand-cyan/10 border border-[#52ddeb]/30 rounded-md">
+                <div className="text-center py-4 bg-brand-cyan/10 border border-[#brand-cyan]/30 rounded-md">
                   <div className="text-5xl font-bold font-mono text-brand-cyan mb-2">
                     +{animatedCreditsPurchased}
                   </div>
@@ -258,7 +258,7 @@ export const CreditRechargeSuccessPage: React.FC = () => {
               )}
 
               {/* Total Credits */}
-              <div className="flex items-center justify-between p-3 bg-brand-cyan/5 border border-[#52ddeb]/20 rounded-md">
+              <div className="flex items-center justify-between p-3 bg-brand-cyan/5 border border-[#brand-cyan]/20 rounded-md">
                 <span className="text-zinc-300 font-mono text-sm font-semibold">
                   {t('creditRechargeSuccess.totalCredits')}
                 </span>

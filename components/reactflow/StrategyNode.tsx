@@ -968,7 +968,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
     >
       {selected && !dragging && (
         <NodeResizer
-          color="#52ddeb"
+          color="#brand-cyan"
           isVisible={selected}
           minWidth={400}
           minHeight={800}
@@ -1150,7 +1150,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                   <span>{t('canvasNodes.strategyNode.cancel')}</span>
                 </NodeButton>
                 <div className="flex-1 px-3 py-2.5 bg-brand-cyan/20 border border-brand-cyan/40 rounded-md flex items-center justify-center gap-3 backdrop-blur-sm shadow-sm">
-                  <GlitchLoader size={14} color="#52ddeb" />
+                  <GlitchLoader size={14} color="#brand-cyan" />
                   <span className="text-xs font-mono text-brand-cyan font-medium">{t('canvasNodes.strategyNode.analyzing')}</span>
                 </div>
               </div>
@@ -1294,7 +1294,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
         {isGenerating && (generatingStep || generatingSteps.length > 0) && (
           <div className="mb-5 px-3 py-2.5 bg-brand-cyan/10 border border-brand-cyan/40 rounded-md flex items-center justify-between gap-3 backdrop-blur-sm shadow-sm">
             <div className="flex items-center gap-3">
-              <GlitchLoader size={12} color="#52ddeb" />
+              <GlitchLoader size={12} color="#brand-cyan" />
               <span className="text-xs font-mono text-brand-cyan font-medium">
                 {generatingStep === 'all'
                   ? t('canvasNodes.strategyNode.generatingAllSections') || 'Generating all sections...'

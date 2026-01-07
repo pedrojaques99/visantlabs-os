@@ -254,8 +254,8 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
               "transition-colors duration-150",
               "cursor-grab active:cursor-grabbing",
               isActive
-                ? "border-[#52ddeb] text-brand-cyan bg-brand-cyan/10"
-                : "border-zinc-800/40 text-zinc-400 hover:text-brand-cyan hover:border-[#52ddeb]/40 hover:bg-zinc-800/50"
+                ? "border-[#brand-cyan] text-brand-cyan bg-brand-cyan/10"
+                : "border-zinc-800/40 text-zinc-400 hover:text-brand-cyan hover:border-[#brand-cyan]/40 hover:bg-zinc-800/50"
             )}
             aria-label={tool.label}
           >
@@ -278,8 +278,8 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
             "transition-colors duration-150",
             "flex items-center gap-2 cursor-grab active:cursor-grabbing",
             isActive
-              ? "border-[#52ddeb] text-brand-cyan bg-brand-cyan/10"
-              : "border-zinc-800/40 text-zinc-400 hover:text-brand-cyan hover:border-[#52ddeb]/40 hover:bg-zinc-800/50"
+              ? "border-[#brand-cyan] text-brand-cyan bg-brand-cyan/10"
+              : "border-zinc-800/40 text-zinc-400 hover:text-brand-cyan hover:border-[#brand-cyan]/40 hover:bg-zinc-800/50"
           )}
           aria-label={tool.label}
         >
@@ -350,68 +350,68 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
     >
       {/* Expanded State - Full Content with Sections */}
       <div className="w-full flex flex-col h-full overflow-hidden">
-          {/* Scrollable Content */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-zinc-400 dark:scrollbar-thumb-zinc-700 scrollbar-track-transparent">
-            <div className="flex flex-col p-2 gap-2">
-              {/* Header */}
-              <div className="flex items-center gap-1.5 px-1 py-1.5 border-b border-zinc-800/30 flex-shrink-0 relative">
-                <h2 className="text-xs font-semibold text-zinc-300 tracking-wide">
-                  {t('canvasToolbar.title')}
-                </h2>
-                {/* Toggle Button - Only visible when expanded */}
-                <button
-                  onClick={() => setIsCollapsed(true)}
-                  className={cn(
-                    "absolute -right-3 z-50",
-                    "w-5 h-5 rounded-md",
-                    "bg-zinc-800/60 border border-zinc-700/30",
-                    "flex items-center justify-center",
-                    "text-zinc-500 hover:text-zinc-400",
-                    "hover:bg-zinc-700/60 hover:border-zinc-600/40",
-                    "transition-all duration-200",
-                    "shadow-md backdrop-blur-sm"
-                  )}
-                  style={{
-                    top: '8px',
-                  }}
-                  title={t('canvasToolbar.collapseToolbar')}
-                >
-                  <Plus
-                    size={12}
-                    className="rotate-45 transition-transform duration-200"
-                  />
-                </button>
-              </div>
-
-              {/* Core Tools */}
-              {coreTools.length > 0 && (
-                <Section
-                  title={t('canvasToolbar.categories.core')}
-                  tools={coreTools}
-                  icon={<Wand2 size={12} />}
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-zinc-400 dark:scrollbar-thumb-zinc-700 scrollbar-track-transparent">
+          <div className="flex flex-col p-2 gap-2">
+            {/* Header */}
+            <div className="flex items-center gap-1.5 px-1 py-1.5 border-b border-zinc-800/30 flex-shrink-0 relative">
+              <h2 className="text-xs font-semibold text-zinc-300 tracking-wide">
+                {t('canvasToolbar.title')}
+              </h2>
+              {/* Toggle Button - Only visible when expanded */}
+              <button
+                onClick={() => setIsCollapsed(true)}
+                className={cn(
+                  "absolute -right-3 z-50",
+                  "w-5 h-5 rounded-md",
+                  "bg-zinc-800/60 border border-zinc-700/30",
+                  "flex items-center justify-center",
+                  "text-zinc-500 hover:text-zinc-400",
+                  "hover:bg-zinc-700/60 hover:border-zinc-600/40",
+                  "transition-all duration-200",
+                  "shadow-md backdrop-blur-sm"
+                )}
+                style={{
+                  top: '8px',
+                }}
+                title={t('canvasToolbar.collapseToolbar')}
+              >
+                <Plus
+                  size={12}
+                  className="rotate-45 transition-transform duration-200"
                 />
-              )}
-
-              {/* Composition Tools */}
-              {compositionTools.length > 0 && (
-                <Section
-                  title={t('canvasToolbar.categories.composition')}
-                  tools={compositionTools}
-                  icon={<Layers size={12} />}
-                />
-              )}
-
-              {/* Branding Tools */}
-              {brandingTools.length > 0 && (
-                <Section
-                  title={t('canvasToolbar.categories.branding')}
-                  tools={brandingTools}
-                  icon={<Building2 size={12} />}
-                />
-              )}
+              </button>
             </div>
+
+            {/* Core Tools */}
+            {coreTools.length > 0 && (
+              <Section
+                title={t('canvasToolbar.categories.core')}
+                tools={coreTools}
+                icon={<Wand2 size={12} />}
+              />
+            )}
+
+            {/* Composition Tools */}
+            {compositionTools.length > 0 && (
+              <Section
+                title={t('canvasToolbar.categories.composition')}
+                tools={compositionTools}
+                icon={<Layers size={12} />}
+              />
+            )}
+
+            {/* Branding Tools */}
+            {brandingTools.length > 0 && (
+              <Section
+                title={t('canvasToolbar.categories.branding')}
+                tools={brandingTools}
+                icon={<Building2 size={12} />}
+              />
+            )}
           </div>
         </div>
+      </div>
     </aside>
   );
 };

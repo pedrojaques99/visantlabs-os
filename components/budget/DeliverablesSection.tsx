@@ -56,7 +56,7 @@ export const DeliverablesSection: React.FC<DeliverablesSectionProps> = ({
         </h3>
         <button
           onClick={addDeliverable}
-          className="p-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#52ddeb]/50 rounded-xl text-brand-cyan transition-all duration-300 flex items-center justify-center"
+          className="p-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#brand-cyan]/50 rounded-xl text-brand-cyan transition-all duration-300 flex items-center justify-center"
           title={t('budget.addDeliverable') || 'Adicionar Entregável'}
         >
           <Plus size={18} />

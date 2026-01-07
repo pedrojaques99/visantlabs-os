@@ -154,7 +154,7 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
             >
                 {selected && !dragging && (
                     <NodeResizer
-                        color="#52ddeb"
+                        color="#brand-cyan"
                         isVisible={selected}
                         minWidth={320}
                         minHeight={200}
@@ -187,7 +187,7 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                         disabled={isLoading}
                         className={cn(
                             'w-full flex items-center gap-3 p-1.5 rounded border transition-all text-left node-interactive',
-                            'bg-brand-cyan/10 border-[#52ddeb]/50 hover:bg-brand-cyan/15',
+                            'bg-brand-cyan/10 border-[#brand-cyan]/50 hover:bg-brand-cyan/15',
                             isLoading && 'opacity-50 cursor-not-allowed'
                         )}
                     >
@@ -235,13 +235,13 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                     }}
                     disabled={isLoading || !hasConnectedImage}
                     className={cn(
-                        'w-full px-2 py-1.5 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#52ddeb]/30 rounded text-xs font-mono text-brand-cyan transition-colors flex items-center justify-center gap-3 node-interactive',
+                        'w-full px-2 py-1.5 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#brand-cyan]/30 rounded text-xs font-mono text-brand-cyan transition-colors flex items-center justify-center gap-3 node-interactive',
                         (isLoading || !hasConnectedImage) ? 'opacity-50 node-button-disabled' : 'node-button-enabled'
                     )}
                 >
                     {isLoading ? (
                         <>
-                            <GlitchLoader size={14} className="mr-1" color="#52ddeb" />
+                            <GlitchLoader size={14} className="mr-1" color="#brand-cyan" />
                             {t(config.translationKeys.generating) || 'Generating...'}
                         </>
                     ) : (

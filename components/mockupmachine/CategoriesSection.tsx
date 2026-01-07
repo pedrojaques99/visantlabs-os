@@ -50,7 +50,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
     if (isEditingCustom && inputRef.current) {
       inputRef.current.focus();
     }
-    
+
     return () => {
       if (blurTimeoutRef.current) {
         clearTimeout(blurTimeoutRef.current);
@@ -101,12 +101,12 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
 
   // Merge available tags with suggested tags (default tags first, then AI suggested tags)
   const mergedTags = [...new Set([...availableTags, ...displaySuggestedTags])];
-  
+
   // Organize tags by group
   const organizedTags = useMemo(() => {
     return organizeTagsByGroup(mergedTags);
   }, [mergedTags]);
-  
+
   // Filter out empty groups and maintain order, separating drinkware and other for special layout
   const groupsToDisplay = useMemo(() => {
     return CATEGORY_GROUPS.filter(group => {
@@ -127,13 +127,13 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
     const isSuggested = displaySuggestedTags.includes(tag);
     const hasSelection = selectedTags.length > 0;
     const unselectedClass = theme === 'dark'
-      ? isSuggested 
-        ? 'bg-zinc-800/50 text-zinc-300 border-[#52ddeb]/50 hover:border-[#52ddeb]/70 hover:text-white'
+      ? isSuggested
+        ? 'bg-zinc-800/50 text-zinc-300 border-[#brand-cyan]/50 hover:border-[#brand-cyan]/70 hover:text-white'
         : 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
       : isSuggested
         ? 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'
         : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900';
-    
+
     return (
       <Button
         key={tag}
@@ -142,10 +142,10 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
         size="sm"
         className={cn(
           "text-xs font-medium transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0",
-          isSelected 
+          isSelected
             ? theme === 'dark'
-              ? 'bg-brand-cyan/20 text-brand-cyan border-[#52ddeb]/30 shadow-sm shadow-[#52ddeb]/10'
-              : 'bg-brand-cyan/20 text-zinc-800 border-[#52ddeb]/30 shadow-sm shadow-[#52ddeb]/10'
+              ? 'bg-brand-cyan/20 text-brand-cyan border-[#brand-cyan]/30 shadow-sm shadow-[#brand-cyan]/10'
+              : 'bg-brand-cyan/20 text-zinc-800 border-[#brand-cyan]/30 shadow-sm shadow-[#brand-cyan]/10'
             : unselectedClass,
           hasSelection && !isSelected && 'opacity-40'
         )}
@@ -171,7 +171,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
           {groupsToDisplay.map((group) => {
             const groupTags = organizedTags.get(group.id) || [];
             if (groupTags.length === 0) return null;
-            
+
             return (
               <div key={group.id} className="space-y-2">
                 {/* Subtle group label */}
@@ -181,7 +181,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                   </span>
                   <div className="flex-1 h-px bg-zinc-800/30"></div>
                 </div>
-                
+
                 {/* Tags in this group */}
                 <div className="flex flex-wrap gap-2 cursor-pointer">
                   {groupTags.map(tag => renderTagButton(tag))}
@@ -189,7 +189,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
               </div>
             );
           })}
-          
+
           {/* Final section: Drinkware + Other + Custom - full width */}
           {hasFinalSection && (
             <div className="col-span-2 space-y-2 mt-3">
@@ -219,12 +219,12 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                 )}
                 <div className="flex-1 h-px bg-zinc-800/30"></div>
               </div>
-              
+
               {/* Tags: drinkware + other + custom */}
               <div className="flex flex-wrap gap-2 cursor-pointer">
                 {drinkwareTags.map(tag => renderTagButton(tag))}
                 {otherTags.map(tag => renderTagButton(tag))}
-                
+
                 {/* Custom category input - inline with other tags */}
                 {!isComplete && (
                   <>
@@ -253,7 +253,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                         onBlur={handleBlur}
                         placeholder={t('mockup.customCategoryPlaceholder')}
                         className={cn(
-                          "px-3 py-1.5 text-xs font-medium transition-all duration-200 border-[#52ddeb]/30 focus:ring-0 min-w-[120px] font-mono",
+                          "px-3 py-1.5 text-xs font-medium transition-all duration-200 border-[#brand-cyan]/30 focus:ring-0 min-w-[120px] font-mono",
                           theme === 'dark'
                             ? 'bg-brand-cyan/20 text-brand-cyan'
                             : 'bg-brand-cyan/20 text-zinc-800'
@@ -266,18 +266,17 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
               </div>
             </div>
           )}
-          
+
           {/* Fallback: if no drinkware/other but custom exists */}
           {!hasFinalSection && !isComplete && (
             <div className="col-span-2 flex flex-wrap gap-2 mt-3">
               {!isEditingCustom ? (
                 <button
                   onClick={handleCustomTagClick}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border transform hover:-translate-y-0.5 active:translate-y-0 inline-flex items-center gap-1 cursor-pointer ${
-                    theme === 'dark'
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border transform hover:-translate-y-0.5 active:translate-y-0 inline-flex items-center gap-1 cursor-pointer ${theme === 'dark'
                       ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
                       : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'
-                  }`}
+                    }`}
                 >
                   <Plus size={14} />
                   <span>{t('mockup.customCategoryLabel')}</span>
@@ -291,11 +290,10 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                   onKeyDown={handleKeyDown}
                   onBlur={handleBlur}
                   placeholder={t('mockup.customCategoryPlaceholder')}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border border-[#52ddeb]/30 focus:outline-none focus:ring-0 min-w-[120px] font-mono ${
-                    theme === 'dark'
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border border-[#brand-cyan]/30 focus:outline-none focus:ring-0 min-w-[120px] font-mono ${theme === 'dark'
                       ? 'bg-brand-cyan/20 text-brand-cyan'
                       : 'bg-brand-cyan/20 text-zinc-800'
-                  }`}
+                    }`}
                   autoFocus
                 />
               )}

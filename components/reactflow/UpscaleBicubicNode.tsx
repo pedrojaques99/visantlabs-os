@@ -426,7 +426,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
     >
       {selected && !dragging && (
         <NodeResizer
-          color="#52ddeb"
+          color="#brand-cyan"
           isVisible={selected}
           minWidth={320}
           minHeight={200}
@@ -492,8 +492,8 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
       {/* Floating Processing Indicator */}
       {isLoading && !hasResult && hasConnectedImage && (
         <div className="relative mt-2 min-h-[200px] flex items-center justify-center bg-black/10 rounded-md border border-zinc-700/30">
-          <div className="p-2 rounded-md bg-black/60 backdrop-blur-sm border border-[#52ddeb]/30 shadow-lg">
-            <GlitchLoader size={14} color="#52ddeb" />
+          <div className="p-2 rounded-md bg-black/60 backdrop-blur-sm border border-[#brand-cyan]/30 shadow-lg">
+            <GlitchLoader size={14} color="#brand-cyan" />
           </div>
         </div>
       )}
@@ -504,7 +504,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
             <Maximize2 size={14} />
             Connect an image or video
           </div>
-          <label className="w-full px-3 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-[#52ddeb]/30 hover:border-[#52ddeb]/50 rounded text-xs font-mono text-brand-cyan flex items-center justify-center gap-2 cursor-pointer transition-all">
+          <label className="w-full px-3 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-[#brand-cyan]/30 hover:border-[#brand-cyan]/50 rounded text-xs font-mono text-brand-cyan flex items-center justify-center gap-2 cursor-pointer transition-all">
             <Upload size={14} />
             Upload Image
             <input
@@ -609,7 +609,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
               isSaving
                 ? "bg-black/40 text-zinc-500 cursor-wait border border-zinc-700/30"
                 : isLiked
-                  ? "bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30 border border-[#52ddeb]/20"
+                  ? "bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30 border border-[#brand-cyan]/20"
                   : "bg-black/40 hover:bg-black/60 text-zinc-400 hover:text-zinc-200 border border-zinc-700/30"
             )}
             title={isLiked ? t('canvasNodes.outputNode.removeFromFavorites') : t('canvasNodes.outputNode.saveToCollection')}

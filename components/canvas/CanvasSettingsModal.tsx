@@ -38,7 +38,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
   onShowControlsChange,
   cursorColor = '#FFFFFF',
   onCursorColorChange,
-  brandCyan = '#52ddeb',
+  brandCyan = '#brand-cyan',
   onBrandCyanChange,
   experimentalMode = false,
   onExperimentalModeChange,
@@ -238,7 +238,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
                   setBgColor(newColor);
                   onBackgroundColorChange?.(newColor);
                 }}
-                className="flex-1 px-2 py-1.5 bg-black/40 border border-zinc-700/50 rounded text-xs text-zinc-300 font-mono focus:outline-none focus:border-[#52ddeb]/50"
+                className="flex-1 px-2 py-1.5 bg-black/40 border border-zinc-700/50 rounded text-xs text-zinc-300 font-mono focus:outline-none focus:border-[#brand-cyan]/50"
                 placeholder="#121212"
               />
             </div>
@@ -277,7 +277,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
                   setGridCol(newColor);
                   onGridColorChange?.(newColor);
                 }}
-                className="flex-1 px-2 py-1.5 bg-black/40 border border-zinc-700/50 rounded text-xs text-zinc-300 font-mono focus:outline-none focus:border-[#52ddeb]/50"
+                className="flex-1 px-2 py-1.5 bg-black/40 border border-zinc-700/50 rounded text-xs text-zinc-300 font-mono focus:outline-none focus:border-[#brand-cyan]/50"
                 placeholder="rgba(255, 255, 255, 0.1)"
               />
             </div>
@@ -303,7 +303,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
                 type="text"
                 value={curColor}
                 onChange={(e) => handleCursorColorChange(e.target.value)}
-                className="flex-1 px-2 py-1.5 bg-black/40 border border-zinc-700/50 rounded text-xs text-zinc-300 font-mono focus:outline-none focus:border-[#52ddeb]/50"
+                className="flex-1 px-2 py-1.5 bg-black/40 border border-zinc-700/50 rounded text-xs text-zinc-300 font-mono focus:outline-none focus:border-[#brand-cyan]/50"
                 placeholder="#FFFFFF"
               />
             </div>
@@ -329,8 +329,8 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
                 type="text"
                 value={brandCyanColor}
                 onChange={(e) => handleBrandCyanChange(e.target.value)}
-                className="flex-1 px-2 py-1.5 bg-black/40 border border-zinc-700/50 rounded text-xs text-zinc-300 font-mono focus:outline-none focus:border-[#52ddeb]/50"
-                placeholder="#52ddeb"
+                className="flex-1 px-2 py-1.5 bg-black/40 border border-zinc-700/50 rounded text-xs text-zinc-300 font-mono focus:outline-none focus:border-[#brand-cyan]/50"
+                placeholder="#brand-cyan"
               />
             </div>
           </div>
@@ -339,7 +339,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
         <div className="mt-4 pt-3 border-t border-zinc-800/50">
           <button
             onClick={onClose}
-            className="w-full px-3 py-1.5 bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-[#52ddeb]/30 hover:border-[#52ddeb]/50 rounded-md transition-all text-xs font-mono cursor-pointer"
+            className="w-full px-3 py-1.5 bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-[#brand-cyan]/30 hover:border-[#brand-cyan]/50 rounded-md transition-all text-xs font-mono cursor-pointer"
           >
             {t('common.close') || 'Close'}
           </button>

@@ -243,8 +243,8 @@ export const PricingPage: React.FC = () => {
                             onClick={handlePreviousCredit}
                             disabled={selectedCreditIndex === 0}
                             className={`p-2 md:p-2.5 transition-all duration-200 rounded-md active:scale-[0.95] ${selectedCreditIndex === 0
-                                ? 'text-zinc-600 cursor-not-allowed opacity-50'
-                                : 'text-zinc-400 hover:text-brand-cyan hover:bg-zinc-800/50 hover:scale-110 cursor-pointer'
+                              ? 'text-zinc-600 cursor-not-allowed opacity-50'
+                              : 'text-zinc-400 hover:text-brand-cyan hover:bg-zinc-800/50 hover:scale-110 cursor-pointer'
                               }`}
                             aria-label="Previous package"
                           >
@@ -261,8 +261,8 @@ export const PricingPage: React.FC = () => {
                             onClick={handleNextCredit}
                             disabled={selectedCreditIndex === CREDIT_PACKAGES.length - 1}
                             className={`p-2 md:p-2.5 transition-all duration-200 rounded-md active:scale-[0.95] ${selectedCreditIndex === CREDIT_PACKAGES.length - 1
-                                ? 'text-zinc-600 cursor-not-allowed opacity-50'
-                                : 'text-zinc-400 hover:text-brand-cyan hover:bg-zinc-800/50 hover:scale-110 cursor-pointer'
+                              ? 'text-zinc-600 cursor-not-allowed opacity-50'
+                              : 'text-zinc-400 hover:text-brand-cyan hover:bg-zinc-800/50 hover:scale-110 cursor-pointer'
                               }`}
                             aria-label="Next package"
                           >
@@ -293,7 +293,7 @@ export const PricingPage: React.FC = () => {
                       <div className="flex flex-col gap-2 mt-6">
                         <button
                           onClick={handleBuyCredits}
-                          className="w-full px-6 py-3 bg-brand-cyan/80 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-[#52ddeb]/20 cursor-pointer"
+                          className="w-full px-6 py-3 bg-brand-cyan/80 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-[#brand-cyan]/20 cursor-pointer"
                         >
                           <CreditCard size={16} />
                           {t('pricing.buyCredits') || 'Buy'}
@@ -319,8 +319,8 @@ export const PricingPage: React.FC = () => {
                       key={index}
                       onClick={() => setSelectedCreditIndex(index)}
                       className={`h-2 rounded-md transition-all duration-300 ease-out cursor-pointer ${index === selectedCreditIndex
-                          ? 'bg-brand-cyan w-8 shadow-[0_0_8px_rgba(82,221,235,0.4)]'
-                          : 'bg-zinc-600 hover:bg-zinc-500 w-2 hover:scale-125'
+                        ? 'bg-brand-cyan w-8 shadow-[0_0_8px_rgba(82,221,235,0.4)]'
+                        : 'bg-zinc-600 hover:bg-zinc-500 w-2 hover:scale-125'
                         }`}
                       aria-label={`Select ${CREDIT_PACKAGES[index].credits} credits package`}
                     />

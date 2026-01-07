@@ -35,7 +35,7 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
   const isProModel = selectedModel === 'gemini-3-pro-image-preview';
   const { t } = useTranslation();
   const { theme } = useTheme();
-  
+
   return (
     <section>
       <h2 className={`text-sm font-semibold font-mono uppercase tracking-widest mb-3 ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'}`}>{t('mockup.outputConfig')}</h2>
@@ -48,13 +48,12 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
                 <button
                   key={res}
                   onClick={() => onResolutionChange(res)}
-                  className={`flex-1 flex items-center justify-center gap-1 py-2 text-xs font-mono rounded-md transition-all duration-200 border cursor-pointer ${
-                    resolution === res 
-                      ? 'bg-brand-cyan/20 text-brand-cyan border-[#52ddeb]/30' 
+                  className={`flex-1 flex items-center justify-center gap-1 py-2 text-xs font-mono rounded-md transition-all duration-200 border cursor-pointer ${resolution === res
+                      ? 'bg-brand-cyan/20 text-brand-cyan border-[#brand-cyan]/30'
                       : theme === 'dark'
                         ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600'
                         : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400'
-                  }`}
+                    }`}
                 >
                   {res}
                 </button>
@@ -69,13 +68,12 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
               <button
                 key={count}
                 onClick={() => onMockupCountChange(count)}
-                className={`flex-1 flex items-center justify-center gap-1 py-2 text-xs font-mono rounded-md transition-all duration-200 border cursor-pointer ${
-                  mockupCount === count 
-                    ? 'bg-brand-cyan/20 text-brand-cyan border-[#52ddeb]/30' 
+                className={`flex-1 flex items-center justify-center gap-1 py-2 text-xs font-mono rounded-md transition-all duration-200 border cursor-pointer ${mockupCount === count
+                    ? 'bg-brand-cyan/20 text-brand-cyan border-[#brand-cyan]/30'
                     : theme === 'dark'
                       ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600'
                       : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400'
-                }`}
+                  }`}
               >
                 {count}
               </button>
@@ -84,13 +82,12 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
         </div>
         <div className="flex gap-2">
           {designType !== 'blank' && (
-            <div 
+            <div
               className={`flex-1 flex items-center p-2.5 rounded-md cursor-pointer border ${theme === 'dark' ? 'bg-zinc-800/50 border-zinc-700/50' : 'bg-zinc-100 border-zinc-300'}`}
               onClick={() => onGenerateTextChange(!generateText)}
             >
-              <div className={`w-4 h-4 rounded-md flex items-center justify-center border transition-all duration-200 ${
-                generateText ? 'bg-brand-cyan/80 border-[#52ddeb]' : theme === 'dark' ? 'bg-zinc-700 border-zinc-600' : 'bg-white border-zinc-400'
-              }`}>
+              <div className={`w-4 h-4 rounded-md flex items-center justify-center border transition-all duration-200 ${generateText ? 'bg-brand-cyan/80 border-[#brand-cyan]' : theme === 'dark' ? 'bg-zinc-700 border-zinc-600' : 'bg-white border-zinc-400'
+                }`}>
                 {generateText && (
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
@@ -100,13 +97,12 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
               <label className={`ml-3 text-xs select-none cursor-pointer ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-700'}`}>{t('mockup.generateContextualText')}</label>
             </div>
           )}
-          <div 
+          <div
             className={`flex items-center p-2.5 rounded-md cursor-pointer border ${designType !== 'blank' ? 'flex-1' : 'w-full'} ${theme === 'dark' ? 'bg-zinc-800/50 border-zinc-700/50' : 'bg-zinc-100 border-zinc-300'}`}
             onClick={() => onWithHumanChange(!withHuman)}
           >
-            <div className={`w-4 h-4 rounded-md flex items-center justify-center border transition-all duration-200 ${
-              withHuman ? 'bg-brand-cyan/80 border-[#52ddeb]' : theme === 'dark' ? 'bg-zinc-700 border-zinc-600' : 'bg-white border-zinc-400'
-            }`}>
+            <div className={`w-4 h-4 rounded-md flex items-center justify-center border transition-all duration-200 ${withHuman ? 'bg-brand-cyan/80 border-[#brand-cyan]' : theme === 'dark' ? 'bg-zinc-700 border-zinc-600' : 'bg-white border-zinc-400'
+              }`}>
               {withHuman && (
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
@@ -115,13 +111,12 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
             </div>
             <label className={`ml-3 text-xs select-none cursor-pointer ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-700'}`}>{t('mockup.includeHumanInteraction')}</label>
           </div>
-          <div 
+          <div
             className={`flex items-center p-2.5 rounded-md cursor-pointer border ${designType !== 'blank' ? 'flex-1' : 'w-full'} ${theme === 'dark' ? 'bg-zinc-800/50 border-zinc-700/50' : 'bg-zinc-100 border-zinc-300'}`}
             onClick={() => onEnhanceTextureChange(!enhanceTexture)}
           >
-            <div className={`w-4 h-4 rounded-md flex items-center justify-center border transition-all duration-200 ${
-              enhanceTexture ? 'bg-brand-cyan/80 border-[#52ddeb]' : theme === 'dark' ? 'bg-zinc-700 border-zinc-600' : 'bg-white border-zinc-400'
-            }`}>
+            <div className={`w-4 h-4 rounded-md flex items-center justify-center border transition-all duration-200 ${enhanceTexture ? 'bg-brand-cyan/80 border-[#brand-cyan]' : theme === 'dark' ? 'bg-zinc-700 border-zinc-600' : 'bg-white border-zinc-400'
+              }`}>
               {enhanceTexture && (
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />

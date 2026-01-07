@@ -257,7 +257,7 @@ export const MyBudgetsPage: React.FC = () => {
               {isLoadingPresets ? (
                 <div className="flex items-center justify-center py-8">
                   <div className="flex items-center gap-2">
-                    <div className="h-4 w-4 border-2 border-[#52ddeb] border-t-transparent rounded-md animate-spin" />
+                    <div className="h-4 w-4 border-2 border-[#brand-cyan] border-t-transparent rounded-md animate-spin" />
                     <span className="text-sm text-zinc-400 font-mono">Carregando presets...</span>
                   </div>
                 </div>
@@ -367,7 +367,7 @@ export const MyBudgetsPage: React.FC = () => {
                         e.stopPropagation();
                         handleView(budget);
                       }}
-                      className="flex-1 px-4 py-2 bg-black/40 border border-zinc-800/60 hover:border-[#52ddeb]/50 hover:text-brand-cyan rounded-xl text-sm font-mono text-zinc-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+                      className="flex-1 px-4 py-2 bg-black/40 border border-zinc-800/60 hover:border-[#brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono text-zinc-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Eye className="h-4 w-4" />
                       {t('budget.view') || 'View'}

@@ -119,12 +119,12 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
   };
 
   // Calcular cor de texto baseado no contraste
-  const textColor = brandBackgroundColor 
+  const textColor = brandBackgroundColor
     ? getContrastColor(brandBackgroundColor) === 'white' ? 'text-white' : 'text-black'
     : 'text-zinc-200';
 
   return (
-    <div 
+    <div
       className="space-y-6 rounded-xl p-6 transition-colors"
       style={{
         backgroundColor: brandBackgroundColor || undefined,
@@ -152,7 +152,7 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
         </label>
         {isUploadingLogo ? (
           <div className="flex items-center gap-2 p-4 border border-zinc-800 rounded-xl bg-black/20">
-            <GlitchLoader size={16} color="#52ddeb" />
+            <GlitchLoader size={16} color="#brand-cyan" />
             <span className="text-sm text-zinc-400 font-mono">
               {t('budget.uploadingLogo') || 'Uploading logo...'}
             </span>
@@ -235,7 +235,7 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
         <div className="flex gap-2">
           <FormInput
             type="color"
-            value={brandAccentColor || '#52ddeb'}
+            value={brandAccentColor || '#brand-cyan'}
             onChange={(e) => onBrandAccentColorChange(e.target.value || undefined)}
             className="w-20 h-10 cursor-pointer"
           />

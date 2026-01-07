@@ -35,7 +35,7 @@ export const ImageThumbnail: React.FC<ImageThumbnailProps> = ({
     <div
       className={cn(
         'relative group aspect-square bg-zinc-900/50 border border-zinc-700/30 rounded overflow-hidden',
-        onClick && 'cursor-pointer hover:border-[#52ddeb]/50 transition-colors',
+        onClick && 'cursor-pointer hover:border-[#brand-cyan]/50 transition-colors',
         className
       )}
       onClick={onClick}

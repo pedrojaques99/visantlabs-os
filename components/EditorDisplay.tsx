@@ -16,20 +16,20 @@ interface EditorDisplayProps {
   availableAngles?: string[];
 }
 
-export const EditorDisplay: React.FC<EditorDisplayProps> = ({ 
-  base64Image, 
-  isLoading, 
-  onView, 
-  onNewAngle, 
-  onNewBackground, 
-  onZoomIn, 
-  onZoomOut, 
+export const EditorDisplay: React.FC<EditorDisplayProps> = ({
+  base64Image,
+  isLoading,
+  onView,
+  onNewAngle,
+  onNewBackground,
+  onZoomIn,
+  onZoomOut,
   aspectRatio,
   availableAngles = ["Eye-Level", "High Angle", "Low Angle", "Top-Down (Flat Lay)", "Dutch Angle", "Worm's-Eye View"]
 }) => {
   const imageUrl = base64Image ? `data:image/png;base64,${base64Image}` : '';
   const canInteract = !isLoading && base64Image;
-  
+
   const aspectRatioClasses: Partial<Record<AspectRatio, string>> = {
     '16:9': 'aspect-[16/9]',
     '4:3': 'aspect-[4/3]',
@@ -61,14 +61,14 @@ export const EditorDisplay: React.FC<EditorDisplayProps> = ({
           onClick={canInteract ? onView : undefined}
         >
           {base64Image && (
-            <img 
-              src={imageUrl} 
-              alt="Edited mockup" 
+            <img
+              src={imageUrl}
+              alt="Edited mockup"
               loading="lazy"
-              className={`w-full h-full object-cover ${isLoading ? 'filter blur-sm scale-105' : ''}`} 
+              className={`w-full h-full object-cover ${isLoading ? 'filter blur-sm scale-105' : ''}`}
             />
           )}
-          
+
           {isLoading && (
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
               <GlitchLoader size={32} color="rgba(255, 255, 255, 0.8)" />
@@ -105,7 +105,7 @@ export const EditorDisplay: React.FC<EditorDisplayProps> = ({
               </div>
               <button
                 onClick={(e) => { e.stopPropagation(); onNewBackground(); }}
-                className="p-3 bg-zinc-900/50 rounded-md text-zinc-300 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-all transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50 focus:ring-offset-2 focus:ring-offset-black/70"
+                className="p-3 bg-zinc-900/50 rounded-md text-zinc-300 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-all transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-[#brand-cyan]/50 focus:ring-offset-2 focus:ring-offset-black/70"
                 title="New Background (Change environment)"
                 aria-label="Generate new background"
               >
@@ -113,7 +113,7 @@ export const EditorDisplay: React.FC<EditorDisplayProps> = ({
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); onZoomIn(); }}
-                className="p-3 bg-zinc-900/50 rounded-md text-zinc-300 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-all transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50 focus:ring-offset-2 focus:ring-offset-black/70"
+                className="p-3 bg-zinc-900/50 rounded-md text-zinc-300 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-all transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-[#brand-cyan]/50 focus:ring-offset-2 focus:ring-offset-black/70"
                 title="Zoom In (Move camera closer)"
                 aria-label="Zoom in"
               >
@@ -121,7 +121,7 @@ export const EditorDisplay: React.FC<EditorDisplayProps> = ({
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); onZoomOut(); }}
-                className="p-3 bg-zinc-900/50 rounded-md text-zinc-300 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-all transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50 focus:ring-offset-2 focus:ring-offset-black/70"
+                className="p-3 bg-zinc-900/50 rounded-md text-zinc-300 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-all transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-[#brand-cyan]/50 focus:ring-offset-2 focus:ring-offset-black/70"
                 title="Zoom Out (Move camera further)"
                 aria-label="Zoom out"
               >

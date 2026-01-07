@@ -61,9 +61,9 @@ const getFieldValue = (data: BudgetData, mapping: PdfFieldMapping): string => {
   if (mapping.customValue !== undefined && mapping.customValue !== null) {
     return mapping.customValue;
   }
-  
+
   const fieldId = mapping.fieldId;
-  
+
   switch (fieldId) {
     case 'clientName':
       return data.clientName;
@@ -150,62 +150,62 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
   const [internalPendingFieldPosition, setInternalPendingFieldPosition] = useState<{ pageNum: number; x: number; y: number } | null>(null);
   const [fieldPositions, setFieldPositions] = useState<Map<string, { x: number; y: number }>>(new Map());
   const pageRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
-  
+
   // Update field positions when scroll or zoom changes
   useEffect(() => {
     const updateFieldPositions = () => {
       const container = document.getElementById('pdf-preview-container');
       if (!container) return;
-      
+
       const newPositions = new Map<string, { x: number; y: number }>();
-      
+
       fieldMappings.forEach((mapping) => {
         const instanceId = mapping.id || mapping.fieldId;
         const pageNum = mapping.page || 1;
         const pageElement = pageRefs.current[pageNum];
-        
+
         if (!pageElement) return;
-        
+
         const containerRect = container.getBoundingClientRect();
         const pageRect = pageElement.getBoundingClientRect();
-        
+
         const pageOffsetX = pageRect.left - containerRect.left + container.scrollLeft;
         const pageOffsetY = pageRect.top - containerRect.top + container.scrollTop;
-        
+
         const fieldX = pageOffsetX + pointsToPixels(mapping.x, pageScale);
         const fieldY = pageOffsetY + pointsToPixels(mapping.y, pageScale);
-        
+
         newPositions.set(instanceId, { x: fieldX, y: fieldY });
       });
-      
+
       setFieldPositions(newPositions);
     };
-    
+
     updateFieldPositions();
-    
+
     const container = document.getElementById('pdf-preview-container');
     if (container) {
       container.addEventListener('scroll', updateFieldPositions);
       window.addEventListener('resize', updateFieldPositions);
-      
+
       return () => {
         container.removeEventListener('scroll', updateFieldPositions);
         window.removeEventListener('resize', updateFieldPositions);
       };
     }
   }, [fieldMappings, zoomLevel, numPages]);
-  
+
   // Unified state management helpers
   const activeId = externalActiveId !== undefined ? externalActiveId : internalActiveId;
   const pendingFieldPosition = externalPendingFieldPosition !== undefined ? externalPendingFieldPosition : internalPendingFieldPosition;
-  
+
   const setActiveId = useCallback((id: string | null) => {
     if (externalActiveId === undefined) {
       setInternalActiveId(id);
     }
     // If external, parent manages it
   }, [externalActiveId]);
-  
+
   const setPendingFieldPosition = useCallback((position: { pageNum: number; x: number; y: number } | null) => {
     if (onPendingFieldPositionChange) {
       onPendingFieldPositionChange(position);
@@ -255,7 +255,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
     if (externalOnDragStart) {
       externalOnDragStart(event);
     }
-    
+
     // If dragging a variable, create temporary field for preview
     if (activeIdStr.startsWith('variable-')) {
       const fieldId = activeIdStr.replace('variable-', '');
@@ -334,11 +334,11 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
 
         // Get mouse position relative to page
         const pageRect = pageElement.getBoundingClientRect();
-        
+
         // Calculate drop position based on the center of the over rect
         const dropX = over.rect.left + over.rect.width / 2;
         const dropY = over.rect.top + over.rect.height / 2;
-        
+
         const relativeX = dropX - pageRect.left + container.scrollLeft;
         const relativeY = dropY - pageRect.top + container.scrollTop;
 
@@ -409,7 +409,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
     // Convert back to PDF points
     const newX = Math.max(0, pixelsToPoints(newXPixels, pageScale));
     const newY = Math.max(0, pixelsToPoints(newYPixels, pageScale));
-    
+
     const mappingId = mapping.id || mapping.fieldId;
     const updatedMappings = fieldMappings.map(m =>
       (m.id || m.fieldId) === mappingId
@@ -434,7 +434,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLDivElement>, pageNum: number) => {
     if (!editable) return;
-    
+
     // Don't handle clicks on fields
     const target = e.target as HTMLElement;
     if (target.closest('[data-field-id]')) {
@@ -466,7 +466,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
       // Find the most recently added instance of this field (the one we're positioning)
       const instancesToPosition = fieldMappings.filter(m => m.fieldId === positioningFieldId);
       const instanceToUpdate = instancesToPosition[instancesToPosition.length - 1];
-      
+
       if (instanceToUpdate) {
         const instanceId = instanceToUpdate.id || instanceToUpdate.fieldId;
         const updatedMappings = fieldMappings.map(m =>
@@ -475,7 +475,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
             : m
         );
         onFieldMappingsChange(updatedMappings);
-        
+
         // Exit positioning mode and select the field instance
         if (onPositioningModeChange) {
           onPositioningModeChange(null);
@@ -488,7 +488,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
       }
       return;
     }
-    
+
     // Priority 2: If in "add field" mode (from variable menu), show selection menu
     if (isAddingField) {
       // Use viewport coordinates for fixed positioning
@@ -496,15 +496,15 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
       setClickedPage(pageNum);
       return;
     }
-    
+
     // Priority 3: Default behavior - set pending position for adding field from form
     // This allows user to click on PDF, then click on a form field to add it
     const position = calculateClickPosition();
     if (position) {
-      setPendingFieldPosition({ 
-        pageNum: position.pageNum, 
-        x: Math.max(0, position.x), 
-        y: Math.max(0, position.y) 
+      setPendingFieldPosition({
+        pageNum: position.pageNum,
+        x: Math.max(0, position.x),
+        y: Math.max(0, position.y)
       });
     }
   };
@@ -532,7 +532,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
         setIsVisible(false);
       }
     };
-    
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
@@ -549,7 +549,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
     // Get container and page positions
     const containerRect = container.getBoundingClientRect();
     const pageRect = pageElement.getBoundingClientRect();
-    
+
     // Calculate position relative to the page
     // menuPosition uses viewport coordinates, need to convert to page-relative
     const relativeX = menuPosition.x - pageRect.left + container.scrollLeft;
@@ -631,20 +631,20 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
       // Find which page the mouse is over
       let currentPage = 1;
       let minDistance = Infinity;
-      
+
       for (let pageNum = 1; pageNum <= numPages; pageNum++) {
         const pageElement = pageRefs.current[pageNum];
         if (!pageElement) continue;
-        
+
         const pageRect = pageElement.getBoundingClientRect();
         const mouseX = e.clientX;
         const mouseY = e.clientY;
-        
+
         // Check if mouse is over this page
         if (mouseX >= pageRect.left && mouseX <= pageRect.right &&
-            mouseY >= pageRect.top && mouseY <= pageRect.bottom) {
+          mouseY >= pageRect.top && mouseY <= pageRect.bottom) {
           const distance = Math.abs(mouseX - (pageRect.left + pageRect.width / 2)) +
-                          Math.abs(mouseY - (pageRect.top + pageRect.height / 2));
+            Math.abs(mouseY - (pageRect.top + pageRect.height / 2));
           if (distance < minDistance) {
             minDistance = distance;
             currentPage = pageNum;
@@ -787,124 +787,124 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
 
   return (
     <div className="w-full h-full flex">
-        <div 
-          id="pdf-preview-container" 
-          className="flex-1 overflow-auto bg-zinc-200 px-4 py-4 relative"
-          style={{ cursor: (isAddingField || isPositioningMode) ? 'crosshair' : 'default' }}
-        >
-      {/* Zoom controls - top right */}
-      <div className="sticky top-0 z-40 mb-4 flex justify-end">
-        <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm border border-zinc-300/50 rounded-md px-2 py-1.5 shadow-sm">
-          <button
-            onClick={handleZoomOut}
-            disabled={zoomLevel <= 0.5}
-            className="p-1.5 hover:bg-zinc-200/50 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-            title="Diminuir zoom"
-          >
-            <ZoomOut size={16} className="text-zinc-700" />
-          </button>
-          <span className="text-xs font-mono text-zinc-700 px-2 min-w-[3rem] text-center">
-            {Math.round(zoomLevel * 100)}%
-          </span>
-          <button
-            onClick={handleZoomIn}
-            disabled={zoomLevel >= 3.0}
-            className="p-1.5 hover:bg-zinc-200/50 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-            title="Aumentar zoom"
-          >
-            <ZoomIn size={16} className="text-zinc-700" />
-          </button>
-          <div className="w-px h-4 bg-zinc-300 mx-1" />
-          <button
-            onClick={handleZoomReset}
-            className="text-xs font-mono text-zinc-700 px-2 py-1 hover:bg-zinc-200/50 rounded transition-colors"
-            title="Resetar zoom"
-          >
-            Reset
-          </button>
-        </div>
-      </div>
-
-      {/* Pending field position indicator - top */}
-      {pendingFieldPosition && editable && (
-        <div className="sticky top-0 z-40 mb-4">
-          <div className="px-4 py-2 bg-brand-cyan/20 border border-[#52ddeb]/50 rounded-md max-w-4xl mx-auto flex items-center gap-3">
-            <p className="text-sm font-mono text-brand-cyan flex items-center gap-2 flex-1">
-              <MapPin size={16} />
-              Posição selecionada! Clique em um campo preenchido do formulário para adicioná-lo aqui.
-            </p>
+      <div
+        id="pdf-preview-container"
+        className="flex-1 overflow-auto bg-zinc-200 px-4 py-4 relative"
+        style={{ cursor: (isAddingField || isPositioningMode) ? 'crosshair' : 'default' }}
+      >
+        {/* Zoom controls - top right */}
+        <div className="sticky top-0 z-40 mb-4 flex justify-end">
+          <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm border border-zinc-300/50 rounded-md px-2 py-1.5 shadow-sm">
             <button
-              onClick={() => setPendingFieldPosition(null)}
-              className="p-1.5 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-md text-red-400 transition-colors"
-              title="Cancelar"
+              onClick={handleZoomOut}
+              disabled={zoomLevel <= 0.5}
+              className="p-1.5 hover:bg-zinc-200/50 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              title="Diminuir zoom"
             >
-              <XCircle size={16} />
+              <ZoomOut size={16} className="text-zinc-700" />
+            </button>
+            <span className="text-xs font-mono text-zinc-700 px-2 min-w-[3rem] text-center">
+              {Math.round(zoomLevel * 100)}%
+            </span>
+            <button
+              onClick={handleZoomIn}
+              disabled={zoomLevel >= 3.0}
+              className="p-1.5 hover:bg-zinc-200/50 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              title="Aumentar zoom"
+            >
+              <ZoomIn size={16} className="text-zinc-700" />
+            </button>
+            <div className="w-px h-4 bg-zinc-300 mx-1" />
+            <button
+              onClick={handleZoomReset}
+              className="text-xs font-mono text-zinc-700 px-2 py-1 hover:bg-zinc-200/50 rounded transition-colors"
+              title="Resetar zoom"
+            >
+              Reset
             </button>
           </div>
         </div>
-      )}
 
-      {/* Positioning mode indicator - top */}
-      {isPositioningMode && editable && positioningFieldId && (
-        <div className="sticky top-0 z-40 mb-4">
-          <div className="px-4 py-2 bg-brand-cyan/20 border border-[#52ddeb]/50 rounded-md max-w-4xl mx-auto flex items-center gap-3">
-            <p className="text-sm font-mono text-brand-cyan flex items-center gap-2 flex-1">
-              <MapPin size={16} />
-              Clique no PDF para posicionar: {AVAILABLE_FIELDS.find(f => f.id === positioningFieldId)?.label || positioningFieldId}
-            </p>
-            <div className="flex items-center gap-2">
+        {/* Pending field position indicator - top */}
+        {pendingFieldPosition && editable && (
+          <div className="sticky top-0 z-40 mb-4">
+            <div className="px-4 py-2 bg-brand-cyan/20 border border-[#brand-cyan]/50 rounded-md max-w-4xl mx-auto flex items-center gap-3">
+              <p className="text-sm font-mono text-brand-cyan flex items-center gap-2 flex-1">
+                <MapPin size={16} />
+                Posição selecionada! Clique em um campo preenchido do formulário para adicioná-lo aqui.
+              </p>
               <button
-                onClick={() => {
-                  if (onPositioningModeChange) {
-                    onPositioningModeChange(null);
-                  }
-                  if (onFieldSelect) {
-                    onFieldSelect(null);
-                  } else {
-                    setInternalSelectedFieldId(null);
-                  }
-                }}
+                onClick={() => setPendingFieldPosition(null)}
                 className="p-1.5 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-md text-red-400 transition-colors"
                 title="Cancelar"
               >
                 <XCircle size={16} />
               </button>
-              <button
-                onClick={() => {
-                  if (onPositioningModeChange) {
-                    onPositioningModeChange(null);
-                  }
-                  if (onFieldSelect && positioningFieldId) {
-                    onFieldSelect(positioningFieldId);
-                  } else if (positioningFieldId) {
-                    setInternalSelectedFieldId(positioningFieldId);
-                  }
-                }}
-                className="p-1.5 bg-green-500/20 hover:bg-green-500/30 border border-green-500/50 rounded-md text-green-400 transition-colors"
-                title="Aceitar"
-              >
-                <Check size={16} />
-              </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Field selection menu */}
-      {menuPosition && editable && (
-        <FieldSelectionMenu
-          fields={getAvailableFields()}
-          position={menuPosition}
-          onSelect={handleAddField}
-          onClose={() => {
-            setMenuPosition(null);
-            setIsAddingField(false);
-          }}
-        />
-      )}
+        {/* Positioning mode indicator - top */}
+        {isPositioningMode && editable && positioningFieldId && (
+          <div className="sticky top-0 z-40 mb-4">
+            <div className="px-4 py-2 bg-brand-cyan/20 border border-[#brand-cyan]/50 rounded-md max-w-4xl mx-auto flex items-center gap-3">
+              <p className="text-sm font-mono text-brand-cyan flex items-center gap-2 flex-1">
+                <MapPin size={16} />
+                Clique no PDF para posicionar: {AVAILABLE_FIELDS.find(f => f.id === positioningFieldId)?.label || positioningFieldId}
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    if (onPositioningModeChange) {
+                      onPositioningModeChange(null);
+                    }
+                    if (onFieldSelect) {
+                      onFieldSelect(null);
+                    } else {
+                      setInternalSelectedFieldId(null);
+                    }
+                  }}
+                  className="p-1.5 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-md text-red-400 transition-colors"
+                  title="Cancelar"
+                >
+                  <XCircle size={16} />
+                </button>
+                <button
+                  onClick={() => {
+                    if (onPositioningModeChange) {
+                      onPositioningModeChange(null);
+                    }
+                    if (onFieldSelect && positioningFieldId) {
+                      onFieldSelect(positioningFieldId);
+                    } else if (positioningFieldId) {
+                      setInternalSelectedFieldId(positioningFieldId);
+                    }
+                  }}
+                  className="p-1.5 bg-green-500/20 hover:bg-green-500/30 border border-green-500/50 rounded-md text-green-400 transition-colors"
+                  title="Aceitar"
+                >
+                  <Check size={16} />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
-      <div className="flex flex-col items-center" style={{ minHeight: 0, fontSize: 0, paddingTop: '16px', paddingBottom: '16px' }}>
-        <style>{`
+        {/* Field selection menu */}
+        {menuPosition && editable && (
+          <FieldSelectionMenu
+            fields={getAvailableFields()}
+            position={menuPosition}
+            onSelect={handleAddField}
+            onClose={() => {
+              setMenuPosition(null);
+              setIsAddingField(false);
+            }}
+          />
+        )}
+
+        <div className="flex flex-col items-center" style={{ minHeight: 0, fontSize: 0, paddingTop: '16px', paddingBottom: '16px' }}>
+          <style>{`
           .react-pdf__Document {
             display: flex !important;
             flex-direction: column !important;
@@ -964,66 +964,216 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
             display: block !important;
           }
         `}</style>
-        {/* PDF Document */}
-        {(isReloading || !isVisible) && (
-          <div className="absolute inset-0 flex items-center justify-center bg-zinc-200/80 z-30">
-            <div className="text-center">
-              <div className="text-zinc-600 font-mono text-sm mb-2">Recarregando PDF...</div>
-              <div className="w-8 h-8 border-2 border-[#52ddeb] border-t-transparent rounded-md animate-spin mx-auto"></div>
+          {/* PDF Document */}
+          {(isReloading || !isVisible) && (
+            <div className="absolute inset-0 flex items-center justify-center bg-zinc-200/80 z-30">
+              <div className="text-center">
+                <div className="text-zinc-600 font-mono text-sm mb-2">Recarregando PDF...</div>
+                <div className="w-8 h-8 border-2 border-[#brand-cyan] border-t-transparent rounded-md animate-spin mx-auto"></div>
+              </div>
             </div>
-          </div>
-        )}
-        <Document
-          key={documentKey}
-          file={pdfUrl}
-          onLoadSuccess={onDocumentLoadSuccess}
-          loading={<div className="text-zinc-600">Carregando PDF...</div>}
-          error={<div className="text-red-600">Erro ao carregar PDF</div>}
-        >
-          {numPages > 0 && Array.from({ length: numPages }, (_, i) => i + 1).map((pageNum) => (
-            <DroppablePage
-              key={`page_${pageNum}`}
-              pageNum={pageNum}
-              totalPages={numPages}
-              pageRefs={pageRefs}
-              onClick={(e) => handleCanvasClick(e, pageNum)}
-              isAddingField={isAddingField}
-              isPositioningMode={isPositioningMode}
-            >
-              <Page
-                pageNumber={pageNum}
-                height={containerHeight * zoomLevel}
-                renderTextLayer={false}
-                renderAnnotationLayer={false}
-                className="[&>canvas]:block"
-              />
-            </DroppablePage>
-          ))}
-        </Document>
+          )}
+          <Document
+            key={documentKey}
+            file={pdfUrl}
+            onLoadSuccess={onDocumentLoadSuccess}
+            loading={<div className="text-zinc-600">Carregando PDF...</div>}
+            error={<div className="text-red-600">Erro ao carregar PDF</div>}
+          >
+            {numPages > 0 && Array.from({ length: numPages }, (_, i) => i + 1).map((pageNum) => (
+              <DroppablePage
+                key={`page_${pageNum}`}
+                pageNum={pageNum}
+                totalPages={numPages}
+                pageRefs={pageRefs}
+                onClick={(e) => handleCanvasClick(e, pageNum)}
+                isAddingField={isAddingField}
+                isPositioningMode={isPositioningMode}
+              >
+                <Page
+                  pageNumber={pageNum}
+                  height={containerHeight * zoomLevel}
+                  renderTextLayer={false}
+                  renderAnnotationLayer={false}
+                  className="[&>canvas]:block"
+                />
+              </DroppablePage>
+            ))}
+          </Document>
 
-        {/* Fields Overlay - renders all fields above all pages */}
-        <div 
-          className="absolute inset-0"
-          style={{ zIndex: 100 }}
-        >
-          {numPages > 0 && fieldMappings.map((mapping) => {
-            const instanceId = mapping.id || mapping.fieldId;
-            const position = fieldPositions.get(instanceId);
-            
-            if (!position) return null;
-            
-            return (
-              <DraggableField
-                key={instanceId}
-                mapping={mapping}
-                data={data}
-                pageScale={pageScale}
-                editable={editable && !isAddingField && !isPositioningMode}
-                isPositioning={positioningFieldId === mapping.fieldId}
-                isSelected={selectedFieldId === instanceId}
-                onSelect={handleFieldClick}
-                onDelete={() => {
-                  const updatedMappings = fieldMappings.filter(m => (m.id || m.fieldId) !== instanceId);
+          {/* Fields Overlay - renders all fields above all pages */}
+          <div
+            className="absolute inset-0"
+            style={{ zIndex: 100 }}
+          >
+            {numPages > 0 && fieldMappings.map((mapping) => {
+              const instanceId = mapping.id || mapping.fieldId;
+              const position = fieldPositions.get(instanceId);
+
+              if (!position) return null;
+
+              return (
+                <DraggableField
+                  key={instanceId}
+                  mapping={mapping}
+                  data={data}
+                  pageScale={pageScale}
+                  editable={editable && !isAddingField && !isPositioningMode}
+                  isPositioning={positioningFieldId === mapping.fieldId}
+                  isSelected={selectedFieldId === instanceId}
+                  onSelect={handleFieldClick}
+                  onDelete={() => {
+                    const updatedMappings = fieldMappings.filter(m => (m.id || m.fieldId) !== instanceId);
+                    onFieldMappingsChange(updatedMappings);
+                    if (onFieldSelect) {
+                      onFieldSelect(null);
+                    } else {
+                      setInternalSelectedFieldId(null);
+                    }
+                  }}
+                  pointsToPixels={pointsToPixels}
+                  getFieldValue={getFieldValue}
+                  AVAILABLE_FIELDS={AVAILABLE_FIELDS}
+                  absolutePosition={position}
+                />
+              );
+            })}
+
+            {/* Temporary field preview while dragging */}
+            {draggingVariable && (() => {
+              const pageElement = pageRefs.current[draggingVariable.pageNum];
+              if (!pageElement) return null;
+
+              const container = document.getElementById('pdf-preview-container');
+              if (!container) return null;
+
+              const containerRect = container.getBoundingClientRect();
+              const pageRect = pageElement.getBoundingClientRect();
+
+              const pageOffsetX = pageRect.left - containerRect.left + container.scrollLeft;
+              const pageOffsetY = pageRect.top - containerRect.top + container.scrollTop;
+
+              const fieldX = pageOffsetX + pointsToPixels(draggingVariable.x, pageScale);
+              const fieldY = pageOffsetY + pointsToPixels(draggingVariable.y, pageScale);
+
+              return (
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: `${fieldX}px`,
+                    top: `${fieldY}px`,
+                    fontSize: `${12 * pageScale}px`,
+                    color: '#000000',
+                    backgroundColor: 'rgba(82, 221, 235, 0.2)',
+                    border: '2px dashed #brand-cyan',
+                    padding: '4px 8px',
+                    borderRadius: 'var(--radius)',
+                    pointerEvents: 'none',
+                    zIndex: 150,
+                    opacity: 0.8,
+                  }}
+                >
+                  {draggingVariable.label}
+                </div>
+              );
+            })()}
+
+            {/* Pending position indicator */}
+            {pendingFieldPosition && (() => {
+              const pageElement = pageRefs.current[pendingFieldPosition.pageNum];
+              if (!pageElement) return null;
+
+              const container = document.getElementById('pdf-preview-container');
+              if (!container) return null;
+
+              const containerRect = container.getBoundingClientRect();
+              const pageRect = pageElement.getBoundingClientRect();
+
+              const pageOffsetX = pageRect.left - containerRect.left + container.scrollLeft;
+              const pageOffsetY = pageRect.top - containerRect.top + container.scrollTop;
+
+              const fieldX = pageOffsetX + pointsToPixels(pendingFieldPosition.x, pageScale);
+              const fieldY = pageOffsetY + pointsToPixels(pendingFieldPosition.y, pageScale);
+
+              return (
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: `${fieldX}px`,
+                    top: `${fieldY}px`,
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    backgroundColor: '#brand-cyan',
+                    border: '2px solid #ffffff',
+                    boxShadow: '0 0 0 2px rgba(82, 221, 235, 0.5)',
+                    pointerEvents: 'none',
+                    zIndex: 150,
+                    transform: 'translate(-50%, -50%)',
+                  }}
+                />
+              );
+            })()}
+          </div>
+
+        </div>
+
+        {/* Field Properties Panel - positioned below selected field with smart positioning */}
+        {selectedMapping && editable && (() => {
+          const panelX = pointsToPixels(selectedMapping.x, pageScale);
+          const panelY = pointsToPixels(selectedMapping.y, pageScale) + (selectedMapping.fontSize || 12) * pageScale + 10;
+          const container = document.getElementById('pdf-preview-container');
+          const containerRect = container?.getBoundingClientRect();
+
+          // Calculate if panel would go off-screen
+          const panelWidth = 350; // Approximate panel width
+          const panelHeight = 400; // Approximate panel height
+          const viewportWidth = containerRect?.width || window.innerWidth;
+          const viewportHeight = containerRect?.height || window.innerHeight;
+          const scrollLeft = container?.scrollLeft || 0;
+          const scrollTop = container?.scrollTop || 0;
+
+          // Adjust position to keep panel in viewport
+          let adjustedX = panelX;
+          let adjustedY = panelY;
+
+          if (panelX + panelWidth > viewportWidth + scrollLeft) {
+            adjustedX = Math.max(0, viewportWidth + scrollLeft - panelWidth - 10);
+          }
+          if (panelY + panelHeight > viewportHeight + scrollTop) {
+            adjustedY = Math.max(0, panelY - panelHeight - (selectedMapping.fontSize || 12) * pageScale - 20);
+          }
+          if (adjustedX < scrollLeft) {
+            adjustedX = scrollLeft + 10;
+          }
+          if (adjustedY < scrollTop) {
+            adjustedY = scrollTop + 10;
+          }
+
+          return (
+            <div
+              style={{
+                position: 'absolute',
+                left: `${adjustedX}px`,
+                top: `${adjustedY}px`,
+                zIndex: 200,
+                minWidth: '300px',
+                maxWidth: '400px',
+              }}
+              className="bg-zinc-900 border border-zinc-800 rounded-md shadow-xl"
+              role="dialog"
+              aria-label="Painel de propriedades do campo"
+            >
+              <FieldPropertiesPanel
+                mapping={selectedMapping}
+                onUpdate={(updates) => {
+                  const updatedMappings = fieldMappings.map(m =>
+                    (m.id || m.fieldId) === selectedFieldId ? { ...m, ...updates } : m
+                  );
+                  onFieldMappingsChange(updatedMappings);
+                }}
+                onRemove={() => {
+                  const updatedMappings = fieldMappings.filter(m => (m.id || m.fieldId) !== selectedFieldId);
                   onFieldMappingsChange(updatedMappings);
                   if (onFieldSelect) {
                     onFieldSelect(null);
@@ -1031,170 +1181,20 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
                     setInternalSelectedFieldId(null);
                   }
                 }}
-                pointsToPixels={pointsToPixels}
-                getFieldValue={getFieldValue}
-                AVAILABLE_FIELDS={AVAILABLE_FIELDS}
-                absolutePosition={position}
-              />
-            );
-          })}
-          
-          {/* Temporary field preview while dragging */}
-          {draggingVariable && (() => {
-            const pageElement = pageRefs.current[draggingVariable.pageNum];
-            if (!pageElement) return null;
-            
-            const container = document.getElementById('pdf-preview-container');
-            if (!container) return null;
-            
-            const containerRect = container.getBoundingClientRect();
-            const pageRect = pageElement.getBoundingClientRect();
-            
-            const pageOffsetX = pageRect.left - containerRect.left + container.scrollLeft;
-            const pageOffsetY = pageRect.top - containerRect.top + container.scrollTop;
-            
-            const fieldX = pageOffsetX + pointsToPixels(draggingVariable.x, pageScale);
-            const fieldY = pageOffsetY + pointsToPixels(draggingVariable.y, pageScale);
-            
-            return (
-              <div
-                style={{
-                  position: 'absolute',
-                  left: `${fieldX}px`,
-                  top: `${fieldY}px`,
-                  fontSize: `${12 * pageScale}px`,
-                  color: '#000000',
-                  backgroundColor: 'rgba(82, 221, 235, 0.2)',
-                  border: '2px dashed #52ddeb',
-                  padding: '4px 8px',
-                  borderRadius: 'var(--radius)',
-                  pointerEvents: 'none',
-                  zIndex: 150,
-                  opacity: 0.8,
+                onClose={() => {
+                  if (onFieldSelect) {
+                    onFieldSelect(null);
+                  } else {
+                    setInternalSelectedFieldId(null);
+                  }
                 }}
-              >
-                {draggingVariable.label}
-              </div>
-            );
-          })()}
-          
-          {/* Pending position indicator */}
-          {pendingFieldPosition && (() => {
-            const pageElement = pageRefs.current[pendingFieldPosition.pageNum];
-            if (!pageElement) return null;
-            
-            const container = document.getElementById('pdf-preview-container');
-            if (!container) return null;
-            
-            const containerRect = container.getBoundingClientRect();
-            const pageRect = pageElement.getBoundingClientRect();
-            
-            const pageOffsetX = pageRect.left - containerRect.left + container.scrollLeft;
-            const pageOffsetY = pageRect.top - containerRect.top + container.scrollTop;
-            
-            const fieldX = pageOffsetX + pointsToPixels(pendingFieldPosition.x, pageScale);
-            const fieldY = pageOffsetY + pointsToPixels(pendingFieldPosition.y, pageScale);
-            
-            return (
-              <div
-                style={{
-                  position: 'absolute',
-                  left: `${fieldX}px`,
-                  top: `${fieldY}px`,
-                  width: '8px',
-                  height: '8px',
-                  borderRadius: '50%',
-                  backgroundColor: '#52ddeb',
-                  border: '2px solid #ffffff',
-                  boxShadow: '0 0 0 2px rgba(82, 221, 235, 0.5)',
-                  pointerEvents: 'none',
-                  zIndex: 150,
-                  transform: 'translate(-50%, -50%)',
-                }}
+                currentPage={selectedMapping.page || 1}
+                totalPages={numPages}
               />
-            );
-          })()}
-        </div>
-
+            </div>
+          );
+        })()}
       </div>
-      
-      {/* Field Properties Panel - positioned below selected field with smart positioning */}
-      {selectedMapping && editable && (() => {
-        const panelX = pointsToPixels(selectedMapping.x, pageScale);
-        const panelY = pointsToPixels(selectedMapping.y, pageScale) + (selectedMapping.fontSize || 12) * pageScale + 10;
-        const container = document.getElementById('pdf-preview-container');
-        const containerRect = container?.getBoundingClientRect();
-        
-        // Calculate if panel would go off-screen
-        const panelWidth = 350; // Approximate panel width
-        const panelHeight = 400; // Approximate panel height
-        const viewportWidth = containerRect?.width || window.innerWidth;
-        const viewportHeight = containerRect?.height || window.innerHeight;
-        const scrollLeft = container?.scrollLeft || 0;
-        const scrollTop = container?.scrollTop || 0;
-        
-        // Adjust position to keep panel in viewport
-        let adjustedX = panelX;
-        let adjustedY = panelY;
-        
-        if (panelX + panelWidth > viewportWidth + scrollLeft) {
-          adjustedX = Math.max(0, viewportWidth + scrollLeft - panelWidth - 10);
-        }
-        if (panelY + panelHeight > viewportHeight + scrollTop) {
-          adjustedY = Math.max(0, panelY - panelHeight - (selectedMapping.fontSize || 12) * pageScale - 20);
-        }
-        if (adjustedX < scrollLeft) {
-          adjustedX = scrollLeft + 10;
-        }
-        if (adjustedY < scrollTop) {
-          adjustedY = scrollTop + 10;
-        }
-        
-        return (
-          <div
-            style={{
-              position: 'absolute',
-              left: `${adjustedX}px`,
-              top: `${adjustedY}px`,
-              zIndex: 200,
-              minWidth: '300px',
-              maxWidth: '400px',
-            }}
-            className="bg-zinc-900 border border-zinc-800 rounded-md shadow-xl"
-            role="dialog"
-            aria-label="Painel de propriedades do campo"
-          >
-          <FieldPropertiesPanel
-            mapping={selectedMapping}
-            onUpdate={(updates) => {
-              const updatedMappings = fieldMappings.map(m =>
-                (m.id || m.fieldId) === selectedFieldId ? { ...m, ...updates } : m
-              );
-              onFieldMappingsChange(updatedMappings);
-            }}
-            onRemove={() => {
-              const updatedMappings = fieldMappings.filter(m => (m.id || m.fieldId) !== selectedFieldId);
-              onFieldMappingsChange(updatedMappings);
-              if (onFieldSelect) {
-                onFieldSelect(null);
-              } else {
-                setInternalSelectedFieldId(null);
-              }
-            }}
-            onClose={() => {
-              if (onFieldSelect) {
-                onFieldSelect(null);
-              } else {
-                setInternalSelectedFieldId(null);
-              }
-            }}
-            currentPage={selectedMapping.page || 1}
-            totalPages={numPages}
-          />
-        </div>
-        );
-      })()}
-        </div>
 
     </div>
   );
@@ -1235,7 +1235,7 @@ const DroppablePage: React.FC<DroppablePageProps> = ({
       data-page={pageNum}
       className="relative"
       onClick={onClick}
-      style={{ 
+      style={{
         cursor: (isAddingField || isPositioningMode) ? 'crosshair' : 'default',
         lineHeight: 0,
         display: 'block',
@@ -1320,7 +1320,7 @@ const DraggableField: React.FC<DraggableFieldProps> = ({
   // Combine transform for translate and scale
   const translateTransform = CSS.Translate.toString(transform);
   const scaleValue = isDragging ? 1.05 : isPositioning ? 1.1 : 1;
-  const combinedTransform = translateTransform 
+  const combinedTransform = translateTransform
     ? `${translateTransform} scale(${scaleValue})`
     : `scale(${scaleValue})`;
 
@@ -1338,24 +1338,24 @@ const DraggableField: React.FC<DraggableFieldProps> = ({
         ? 'rgba(82, 221, 235, 0.15)'
         : 'rgba(82, 221, 235, 0.08)'
       : editable && isDragging
-      ? 'rgba(82, 221, 235, 0.2)'
-      : 'transparent',
+        ? 'rgba(82, 221, 235, 0.2)'
+        : 'transparent',
     border: editable
       ? isDragging
-        ? '2px solid #52ddeb'
+        ? '2px solid #brand-cyan'
         : isSelected
-        ? '2px solid #52ddeb'
-        : '1px solid rgba(82, 221, 235, 0.4)'
+          ? '2px solid #brand-cyan'
+          : '1px solid rgba(82, 221, 235, 0.4)'
       : 'none',
     padding: editable ? '3px 6px' : '0',
     borderRadius: editable ? 'var(--radius)' : '0',
     boxShadow: editable && isDragging
       ? '0 8px 16px rgba(82, 221, 235, 0.4)'
       : editable && isSelected
-      ? '0 4px 12px rgba(82, 221, 235, 0.3)'
-      : editable
-      ? '0 2px 4px rgba(0, 0, 0, 0.1)'
-      : 'none',
+        ? '0 4px 12px rgba(82, 221, 235, 0.3)'
+        : editable
+          ? '0 2px 4px rgba(0, 0, 0, 0.1)'
+          : 'none',
     opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 200 : isPositioning ? 200 : isSelected ? 150 : 100,
     transition: isDragging ? 'none' : 'all 0.2s ease',
@@ -1367,7 +1367,7 @@ const DraggableField: React.FC<DraggableFieldProps> = ({
     <div
       ref={setNodeRef}
       data-field-id={instanceId}
-      className={`absolute ${isPositioning ? 'ring-2 ring-[#52ddeb]' : ''} ${isSelected ? 'ring-2 ring-[#52ddeb]' : ''} ${fontFamilyClass}`}
+      className={`absolute ${isPositioning ? 'ring-2 ring-[#brand-cyan]' : ''} ${isSelected ? 'ring-2 ring-[#brand-cyan]' : ''} ${fontFamilyClass}`}
       style={style}
       onClick={(e) => {
         e.stopPropagation();
@@ -1449,7 +1449,7 @@ const DraggableFieldOverlay: React.FC<DraggableFieldOverlayProps> = ({
         textAlign: mapping.align || 'left',
         fontWeight: mapping.bold ? 'bold' : 'normal',
         backgroundColor: 'rgba(82, 221, 235, 0.25)',
-        border: '2px solid #52ddeb',
+        border: '2px solid #brand-cyan',
         padding: '3px 6px',
         borderRadius: 'var(--radius)',
         boxShadow: '0 8px 24px rgba(82, 221, 235, 0.5)',

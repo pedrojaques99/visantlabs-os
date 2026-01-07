@@ -13,7 +13,7 @@ export const VisantTimelinePage: React.FC<VisantTimelinePageProps> = ({
   editable = false,
   onDataChange,
 }) => {
-  const accentColor = data.brandAccentColor || data.brandColors[0] || '#52ddeb';
+  const accentColor = data.brandAccentColor || data.brandColors[0] || '#brand-cyan';
   const bgColor = '#151515';
   const textColor = '#f3f3f3';
 
@@ -51,8 +51,8 @@ export const VisantTimelinePage: React.FC<VisantTimelinePageProps> = ({
     },
   ];
 
-  const timeline = data.timeline && data.timeline.length > 0 
-    ? data.timeline 
+  const timeline = data.timeline && data.timeline.length > 0
+    ? data.timeline
     : defaultTimeline;
 
   // Diamond icon SVG
@@ -69,7 +69,7 @@ export const VisantTimelinePage: React.FC<VisantTimelinePageProps> = ({
   // Timeline node component with different fill states
   const TimelineNode: React.FC<{ day: number; index: number; total: number }> = ({ day, index, total }) => {
     const fillProgress = (index + 1) / total; // 0 to 1
-    
+
     // Different node styles based on progress
     const getNodeStyle = () => {
       if (index === 0) {
@@ -118,7 +118,7 @@ export const VisantTimelinePage: React.FC<VisantTimelinePageProps> = ({
     };
 
     const nodeStyle = getNodeStyle();
-    
+
     return (
       <div
         style={{
@@ -169,7 +169,7 @@ export const VisantTimelinePage: React.FC<VisantTimelinePageProps> = ({
           >
             <InlineEditor
               value="TIMELINE DO PROJETO"
-              onChange={() => {}}
+              onChange={() => { }}
               editable={false}
               style={{
                 fontSize: '17.517px',
@@ -184,7 +184,7 @@ export const VisantTimelinePage: React.FC<VisantTimelinePageProps> = ({
       </div>
 
       {/* Timeline */}
-      <div className="flex-1 relative flex items-center" style={{ paddingLeft: '98px', minHeight: '850px',  }}>
+      <div className="flex-1 relative flex items-center" style={{ paddingLeft: '98px', minHeight: '850px', }}>
         {/* Vertical line */}
         <div
           style={{
@@ -209,7 +209,7 @@ export const VisantTimelinePage: React.FC<VisantTimelinePageProps> = ({
               <div
                 key={index}
                 className="flex items-start gap-6"
-                style={{ 
+                style={{
                   position: 'absolute',
                   left: '0',
                   top: `${topPosition}px`,

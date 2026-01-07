@@ -126,7 +126,7 @@ export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<
       {/* Output Handle */}
       {selected && !dragging && (
         <NodeResizer
-          color="#52ddeb"
+          color="#brand-cyan"
           isVisible={selected}
           minWidth={320}
           minHeight={200}
@@ -180,7 +180,7 @@ export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<
               autoPlay
               muted
               loop
-              className="w-full h-auto min-h-[128px] object-contain rounded border border-[#52ddeb]/30"
+              className="w-full h-auto min-h-[128px] object-contain rounded border border-[#brand-cyan]/30"
               onLoadedMetadata={(e) => {
                 const video = e.target as HTMLVideoElement;
                 if (video.videoWidth > 0 && video.videoHeight > 0) {
@@ -222,14 +222,14 @@ export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<
   // Custom comparison - re-render if important data changes
   const prevData = prevProps.data as VideoInputNodeData;
   const nextData = nextProps.data as VideoInputNodeData;
-  
+
   if (prevData.uploadedVideo !== nextData.uploadedVideo ||
-      prevData.uploadedVideoUrl !== nextData.uploadedVideoUrl ||
-      prevProps.selected !== nextProps.selected ||
-      prevProps.dragging !== nextProps.dragging) {
+    prevData.uploadedVideoUrl !== nextData.uploadedVideoUrl ||
+    prevProps.selected !== nextProps.selected ||
+    prevProps.dragging !== nextProps.dragging) {
     return false; // Re-render
   }
-  
+
   return true; // Skip re-render
 });
 

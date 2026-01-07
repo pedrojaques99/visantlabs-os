@@ -294,7 +294,7 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
     });
   };
 
-  const primaryColor = data.brandColors[0] || '#52ddeb';
+  const primaryColor = data.brandColors[0] || '#brand-cyan';
   const secondaryColor = data.brandColors[1] || '#34d399';
 
   return (
@@ -306,7 +306,7 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
           }
         `}
       </style>
-      
+
       {/* Header with Logo and Brand */}
       <div className="mb-8 pb-6 border-b-2" style={{ borderColor: primaryColor }}>
         <div className="flex items-center justify-between mb-4">
