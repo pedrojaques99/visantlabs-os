@@ -297,7 +297,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                     confirmText={t('workflows.deleteConfirmation.confirm') || 'Delete'}
                     cancelText={t('workflows.deleteConfirmation.cancel') || 'Cancel'}
                     onConfirm={() => handleDelete(deleteConfirmation.workflowId)}
-                    onCancel={() => setDeleteConfirmation(null)}
+                    onClose={() => setDeleteConfirmation(null)}
                     variant="danger"
                 />
             )}

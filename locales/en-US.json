@@ -487,6 +487,18 @@
     "experimentalMode": "Experimental Mode",
     "experimentalModeDesc": "Show preview nodes like Shader, Strategy, etc."
   },
+  "canvasNodes": {
+    "promptNode": {
+      "presets": "Presets",
+      "loadPreset": "Load Preset",
+      "save": "Save",
+      "savePrompt": "Save Prompt",
+      "promptPlaceholder": "Enter your prompt here...",
+      "suggestPrompts": "Suggest Prompts",
+      "connectedToTextNode": "Connected to Text Node",
+      "savedPromptName": "Saved Prompt"
+    }
+  },
   "canvasLoading": {
     "Project": "Loading Project..."
   },
@@ -2281,7 +2293,8 @@
       "credits": "credits",
       "suggestions": "Suggestions",
       "aiSuggestions": "AI Suggestions",
-      "suggestPrompts": "Get prompt suggestions"
+      "suggestPrompts": "Get prompt suggestions",
+      "savedPromptName": "Saved Prompt"
     },
     "videoNode": {
       "title": "Video Generator",
@@ -2524,7 +2537,8 @@
     "nodeContextMenu": {
       "title": "Node Actions",
       "duplicate": "Duplicate",
-      "delete": "Delete"
+      "delete": "Delete",
+      "savePrompt": "Save Prompt"
     },
     "shared": {
       "imageDownloaded": "Image downloaded!"
@@ -3134,6 +3148,121 @@
       "exampleTitle": "Example Modal",
       "exampleMessage": "This is an example of the ConfirmationModal component.",
       "confirmed": "Confirmed!"
+    },
+    "workflows": {
+      "library": {
+        "title": "Workflow Library",
+        "description": "Browse and load reusable workflow templates",
+        "search": "Search workflows...",
+        "noResults": "No workflows found",
+        "noWorkflows": "No workflows yet",
+        "noCommunityWorkflows": "No community workflows available",
+        "tabs": {
+          "my": "My Workflows",
+          "community": "Community",
+          "all": "All"
+        }
+      },
+      "stats": {
+        "nodes": "{count} nodes",
+        "edges": "{count} edges"
+      },
+      "actions": {
+        "duplicate": "Duplicate",
+        "addToLibrary": "Add to Library",
+        "edit": "Edit",
+        "delete": "Delete",
+        "like": "Like",
+        "unlike": "Unlike"
+      },
+      "messages": {
+        "liked": "Workflow liked!",
+        "unliked": "Workflow unliked",
+        "duplicated": "Workflow added to your library!",
+        "deleted": "Workflow deleted",
+        "saved": "Workflow saved successfully!",
+        "loaded": "Workflow loaded: {name}"
+      },
+      "errors": {
+        "failedToLoad": "Failed to load workflows",
+        "mustBeAuthenticated": "You must be logged in to like workflows",
+        "failedToToggleLike": "Failed to toggle like",
+        "failedToDuplicate": "Failed to duplicate workflow",
+        "failedToDelete": "Failed to delete workflow",
+        "failedToSave": "Failed to save workflow"
+      },
+      "deleteConfirmation": {
+        "title": "Delete Workflow",
+        "message": "Are you sure you want to delete '{workflowName}'? This action cannot be undone.",
+        "confirm": "Delete",
+        "cancel": "Cancel"
+      },
+      "saveWorkflow": "Save Workflow",
+      "loadWorkflow": "Load Workflow"
+    }
+  },
+  "workflows": {
+    "library": {
+      "title": "Workflow Library",
+      "description": "Browse and load reusable workflow templates",
+      "tabs": {
+        "my": "My Workflows",
+        "community": "Community",
+        "all": "All"
+      },
+      "search": "Search workflows...",
+      "noResults": "No workflows found",
+      "noWorkflows": "No workflows yet",
+      "noCommunityWorkflows": "No community workflows available"
+    },
+    "saveDialog": {
+      "title": "Save Workflow",
+      "description": "Save your canvas as a reusable workflow template",
+      "name": "Workflow Name",
+      "namePlaceholder": "e.g., Brand Identity Workflow",
+      "descriptionPlaceholder": "Describe what this workflow does...",
+      "category": "Category",
+      "tags": "Tags",
+      "tagsPlaceholder": "e.g., branding, logo, identity (comma-separated)",
+      "tagsHint": "Separate tags with commas",
+      "makePublic": "Make Public",
+      "makePublicHint": "Share this workflow with the community (requires approval)",
+      "save": "Save Workflow",
+      "saving": "Saving...",
+      "cancel": "Cancel"
+    },
+    "actions": {
+      "duplicate": "Duplicate",
+      "addToLibrary": "Add to Library",
+      "edit": "Edit",
+      "delete": "Delete",
+      "like": "Like",
+      "unlike": "Unlike"
+    },
+    "stats": {
+      "nodes": "{count} nodes",
+      "edges": "{count} connections"
+    },
+    "deleteConfirmation": {
+      "title": "Delete Workflow",
+      "message": "Are you sure you want to delete this workflow? This action cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    },
+    "messages": {
+      "liked": "Workflow liked!",
+      "unliked": "Workflow unliked",
+      "duplicated": "Workflow added to your library!",
+      "deleted": "Workflow deleted",
+      "saved": "Workflow saved successfully!"
+    },
+    "errors": {
+      "failedToLoad": "Failed to load workflows",
+      "mustBeAuthenticated": "You must be logged in to perform this action",
+      "failedToToggleLike": "Failed to toggle like",
+      "failedToDuplicate": "Failed to duplicate workflow",
+      "failedToDelete": "Failed to delete workflow",
+      "failedToSave": "Failed to save workflow"
     }
   }
 }

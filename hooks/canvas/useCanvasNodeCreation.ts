@@ -226,6 +226,7 @@ export const useCanvasNodeCreation = (
         model: initialData?.model || 'gemini-2.5-flash-image',
         onGenerate: handlersRef.current?.handlePromptGenerate || (() => Promise.resolve()),
         onSuggestPrompts: handlersRef.current?.handlePromptSuggestPrompts || (() => Promise.resolve()),
+        onSavePrompt: handlersRef.current?.handleSavePrompt || (() => { }),
         onUpdateData: handlersRef.current?.handlePromptNodeDataUpdate || (() => { }),
       } as PromptNodeData,
     };

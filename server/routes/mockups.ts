@@ -614,6 +614,24 @@ router.get('/:id', authenticate, async (req: AuthRequest, res, next) => {
   }
 });
 
+// Get presigned URL for direct mockup image upload
+router.post('/upload-url', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const { contentType } = req.body;
+    const { generateMockupImageUploadUrl } = await import('../../services/r2Service.js');
+
+    if (!req.userId) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
+
+    const result = await generateMockupImageUploadUrl(req.userId, contentType);
+    res.json(result);
+  } catch (error: any) {
+    console.error('Error generating upload URL for mockup:', error);
+    res.status(500).json({ error: 'Failed to generate upload URL' });
+  }
+});
+
 // Generate mockup image (NEW: validates and deducts credits BEFORE generation)
 // CRITICAL: This endpoint validates and deducts credits atomically before calling Gemini API
 router.post('/generate', authenticate, checkSubscription, async (req: SubscriptionRequest, res, next) => {
@@ -639,6 +657,45 @@ router.post('/generate', authenticate, checkSubscription, async (req: Subscripti
       referenceImages,
       feature, // Optional: 'mockupmachine' | 'canvas'
     } = req.body;
+
+    // Helper to download image from URL if base64 is not provided
+    const processImageInput = async (img: any) => {
+      if (!img) return null;
+      if (img.base64) return img;
+      if (img.url) {
+        try {
+          console.log(`${logPrefix} [IMAGE PROCESSING] Downloading image from URL:`, img.url.substring(0, 100));
+          const response = await fetch(img.url);
+          if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
+          const arrayBuffer = await response.arrayBuffer();
+          const buffer = Buffer.from(arrayBuffer);
+          return {
+            base64: buffer.toString('base64'),
+            mimeType: img.mimeType || response.headers.get('content-type') || 'image/png'
+          };
+        } catch (error: any) {
+          console.error(`${logPrefix} [IMAGE PROCESSING] Error downloading image:`, error);
+          throw new Error(`Failed to process image URL: ${error.message}`);
+        }
+      }
+      return null;
+    };
+
+    // Process base image and reference images to ensure we have base64 for Gemini
+    console.log(`${logPrefix} [IMAGE PROCESSING] Processing image inputs`, {
+      hasBaseImage: !!baseImage,
+      hasBaseImageUrl: !!baseImage?.url,
+      referenceImagesCount: referenceImages?.length || 0
+    });
+
+    const processedBaseImage = await processImageInput(baseImage);
+    const processedReferenceImages = referenceImages ?
+      await Promise.all(referenceImages.map((img: any) => processImageInput(img))) :
+      undefined;
+
+    // Replace original images with processed ones (now containing base64)
+    const finalBaseImage = processedBaseImage;
+    const finalReferenceImages = processedReferenceImages?.filter(img => img !== null);
 
     // CRITICAL: Check for duplicate recent requests to prevent multiple credit deductions
     // Use a distributed lock mechanism to prevent concurrent requests from deducting credits
@@ -857,33 +914,17 @@ router.post('/generate', authenticate, checkSubscription, async (req: Subscripti
       }
     }
 
-    // Prepare images for generation
-    const baseImageObj: UploadedImage | undefined = baseImage ? {
-      base64: baseImage.base64,
-      mimeType: baseImage.mimeType || 'image/png'
-    } : undefined;
-
-    const referenceImagesObj: UploadedImage[] | undefined = referenceImages?.map((img: any) => ({
-      base64: img.base64,
-      mimeType: img.mimeType || 'image/png'
-    }));
-
-    // User's API key is already determined above (userApiKey)
-    if (!userApiKey) {
-      console.log('Using system API key for generation');
-    }
-
     // Generate mockup image using Gemini API
-    // Note: We only generate one image per request, but track usage for imagesCount
+    // Note: We only generate one image per request
     const imageBase64 = await generateMockup(
       promptText,
-      baseImageObj,
-      model as GeminiModel,
-      resolution as Resolution | undefined,
-      aspectRatio as AspectRatio | undefined,
-      referenceImagesObj,
-      undefined, // onRetry callback - could be added if needed
-      userApiKey // User's API key if available
+      finalBaseImage as any,
+      model as any,
+      resolution as any,
+      aspectRatio as any,
+      finalReferenceImages as any,
+      undefined,
+      userApiKey
     );
 
     // Try to upload to R2 if configured to avoid large payloads

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Globe, Sparkles, TrendingUp, Plus, Image as ImageIcon, Camera, Layers, MapPin, Sun, ArrowRight, ChevronDown, ChevronUp, Box, Settings, Palette } from 'lucide-react';
+import { Globe, Sparkles, TrendingUp, Plus, Image as ImageIcon, Camera, Layers, MapPin, Sun, ArrowRight, ChevronDown, ChevronUp, Box, Settings, Palette, FolderOpen } from 'lucide-react';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { BreadcrumbWithBack, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '../components/ui/BreadcrumbWithBack';
 import { useLayout } from '../hooks/useLayout';
@@ -12,6 +12,8 @@ import { Github } from 'lucide-react';
 import { getGithubUrl } from '../config/branding';
 import ClubHero3D from '../components/3d/club-hero3d';
 import { CommunityPresetModal } from '../components/CommunityPresetModal';
+import { WorkflowLibraryModal } from '../components/WorkflowLibraryModal';
+import { canvasApi } from '../services/canvasApi';
 import { authService } from '../services/authService';
 import { toast } from 'sonner';
 import { workflowApi } from '../services/workflowApi';
@@ -92,6 +94,33 @@ export const CommunityPage: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [workflows, setWorkflows] = useState<CanvasWorkflow[]>([]);
   const [workflowsLoading, setWorkflowsLoading] = useState(true);
+  const [showWorkflowLibrary, setShowWorkflowLibrary] = useState(false);
+
+  // Check if user is admin (you might need to fetch user details or get from context if available)
+  const [isAdmin, setIsAdmin] = useState(false); // Placeholder, ideally get from authService/context
+
+  const handleLoadWorkflow = async (workflow: CanvasWorkflow) => {
+    try {
+      if (!isAuthenticated) {
+        toast.error(t('workflows.errors.mustBeAuthenticated') || 'You must be logged in');
+        return;
+      }
+
+      // Create a new project from this workflow
+      // Ensure nodes/edges are properly typed/formatted if needed
+      const newProject = await canvasApi.save(
+        workflow.name,
+        workflow.nodes,
+        workflow.edges
+      );
+
+      toast.success(t('workflows.messages.loaded', { name: workflow.name }) || `Workflow loaded: ${workflow.name}`);
+      navigate(`/canvas/${newProject._id}`);
+    } catch (error) {
+      console.error('Failed to load workflow:', error);
+      toast.error(t('workflows.errors.failedToLoad') || 'Failed to load workflow');
+    }
+  };
 
   useEffect(() => {
     const loadStats = async () => {
@@ -337,6 +366,13 @@ export const CommunityPage: React.FC = () => {
                 >
                   <Globe size={18} />
                   <span className="font-mono uppercase tracking-wider text-sm">Ver Tudo</span>
+                </button>
+                <button
+                  onClick={() => setShowWorkflowLibrary(true)}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-zinc-800/50 hover:bg-zinc-800 text-white font-semibold rounded-xl border border-zinc-700/50 transition-all hover:scale-105 active:scale-95 backdrop-blur-sm"
+                >
+                  <FolderOpen size={18} />
+                  <span className="font-mono uppercase tracking-wider text-sm">{t('workflows.library.title') || 'Biblioteca'}</span>
                 </button>
               </div>
             </div>
@@ -685,6 +721,15 @@ export const CommunityPage: React.FC = () => {
           onClose={() => setIsCreateModalOpen(false)}
           onSave={handleSavePreset}
           isCreating={true}
+        />
+
+        <WorkflowLibraryModal
+          isOpen={showWorkflowLibrary}
+          onClose={() => setShowWorkflowLibrary(false)}
+          onLoadWorkflow={handleLoadWorkflow}
+          isAuthenticated={isAuthenticated}
+          isAdmin={isAdmin}
+          t={t}
         />
       </div>
     </div>
