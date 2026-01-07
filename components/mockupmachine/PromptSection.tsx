@@ -52,7 +52,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
   const { t, locale } = useTranslation();
   const { theme } = useTheme();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  
+
   const statusMessages = useMemo(() => {
     const translations = getTranslations(locale);
     return translations.mockup?.promptStatusMessages ?? [
@@ -116,47 +116,45 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
     <section id="prompt-section" className={`p-3 rounded-md border ${theme === 'dark' ? 'bg-black/20 border-zinc-700/50' : 'bg-zinc-50 border-zinc-300'}`}>
       <div className="flex items-center justify-between mb-2">
         <h4 className={`flex items-center gap-2 text-xs font-mono ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-600'}`}>
-          <Info size={14}/> {t('mockup.prompt')}
+          <Info size={14} /> {t('mockup.prompt')}
         </h4>
         <div className="flex items-center gap-3">
           {/* Hide suggest button when prompt is empty */}
           {promptPreview.trim() && (
             <Tooltip content={t('mockup.suggestTooltip')} position="top">
-            <button
-              onClick={onSuggestPrompts}
-              disabled={isSuggestingPrompts || !promptPreview.trim() || isGeneratingPrompt}
-                className={`text-xs font-mono hover:text-brand-cyan transition-colors disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 ${
-                theme === 'dark' ? 'text-zinc-500 disabled:text-zinc-600' : 'text-zinc-600 disabled:text-zinc-400'
-              }`}
-            >
-              {isSuggestingPrompts ? <GlitchLoader size={12} /> : <Pickaxe size={12} />}
-              <span>{t('mockup.suggest')}</span>
-            </button>
+              <button
+                onClick={onSuggestPrompts}
+                disabled={isSuggestingPrompts || !promptPreview.trim() || isGeneratingPrompt}
+                className={`text-xs font-mono hover:text-brand-cyan transition-colors disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 ${theme === 'dark' ? 'text-zinc-500 disabled:text-zinc-600' : 'text-zinc-600 disabled:text-zinc-400'
+                  }`}
+              >
+                {isSuggestingPrompts ? <GlitchLoader size={12} /> : <Pickaxe size={12} />}
+                <span>{t('mockup.suggest')}</span>
+              </button>
             </Tooltip>
           )}
           {(!hasGenerated || !mockups.some(m => m !== null)) && (
             <Tooltip content={isGenerateDisabled ? t('mockup.insufficientCredits') || "Insufficient credits to generate" : t('mockup.generateSmartPromptTooltip')} position="top">
-            <button
-              onClick={onGenerateSmartPrompt}
-              disabled={isGeneratingPrompt || isSuggestingPrompts || isGenerateDisabled}
-                className={`text-xs font-mono hover:text-brand-cyan transition-colors disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 ${
-              theme === 'dark' ? 'text-zinc-500 disabled:text-zinc-600' : 'text-zinc-600 disabled:text-zinc-400'
-            }`}
-            >
-              {isGeneratingPrompt ? <GlitchLoader size={12} /> : <Wand2 size={12} />}
-            </button>
+              <button
+                onClick={onGenerateSmartPrompt}
+                disabled={isGeneratingPrompt || isSuggestingPrompts || isGenerateDisabled}
+                className={`text-xs font-mono hover:text-brand-cyan transition-colors disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 ${theme === 'dark' ? 'text-zinc-500 disabled:text-zinc-600' : 'text-zinc-600 disabled:text-zinc-400'
+                  }`}
+              >
+                {isGeneratingPrompt ? <GlitchLoader size={12} /> : <Wand2 size={12} />}
+              </button>
             </Tooltip>
           )}
           {/* Hide simplify button when prompt is empty */}
           {promptPreview.trim() && (
             <Tooltip content={t('mockup.simplifyTooltip')} position="top">
-            <button 
-              onClick={onSimplify}
+              <button
+                onClick={onSimplify}
                 className="text-xs font-mono text-zinc-500 hover:text-brand-cyan transition-colors cursor-pointer flex items-center gap-1"
-            >
-              <ArrowLeftRight size={12} />
-              <span>{t('mockup.simplify')}</span>
-            </button>
+              >
+                <ArrowLeftRight size={12} />
+                <span>{t('mockup.simplify')}</span>
+              </button>
             </Tooltip>
           )}
         </div>
@@ -167,19 +165,17 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
           value={promptPreview}
           onChange={handleChange}
           rows={1}
-          className={`w-full p-2 rounded-md border focus:outline-none focus:border-[#52ddeb]/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y ${
-            theme === 'dark'
+          className={`w-full p-2 rounded-md border focus:outline-none focus:border-[#brand-cyan]/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y ${theme === 'dark'
               ? 'bg-black/40 border-zinc-700/50 text-zinc-400'
               : 'bg-white border-zinc-300 text-zinc-700'
-          } ${isGeneratingPrompt ? 'opacity-50' : ''}`}
+            } ${isGeneratingPrompt ? 'opacity-50' : ''}`}
           placeholder={t('mockup.promptPlaceholder')}
           style={{ minHeight: '48px', maxHeight: '600px' }}
           disabled={isGeneratingPrompt}
         />
         {isGeneratingPrompt && (
-          <div className={`absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-md ${
-            theme === 'dark' ? 'bg-black/60' : 'bg-white/60'
-          } backdrop-blur-sm`}>
+          <div className={`absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-md ${theme === 'dark' ? 'bg-black/60' : 'bg-white/60'
+            } backdrop-blur-sm`}>
             <GlitchLoader size={16} />
             <span className="text-xs font-mono font-semibold text-brand-cyan uppercase tracking-wider">
               GENERATING PROMPT...
@@ -201,21 +197,18 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
           {promptSuggestions.map((suggestion, index) => (
             <div
               key={index}
-              className={`flex flex-col gap-2 p-2 rounded-md border ${
-                theme === 'dark' ? 'bg-zinc-900/50 border-zinc-700/50' : 'bg-zinc-100 border-zinc-300'
-              }`}
+              className={`flex flex-col gap-2 p-2 rounded-md border ${theme === 'dark' ? 'bg-zinc-900/50 border-zinc-700/50' : 'bg-zinc-100 border-zinc-300'
+                }`}
             >
               <button
                 onClick={() => onSuggestionClick(suggestion)}
-                className={`w-full text-left text-xs font-mono transition-colors cursor-pointer ${
-                  theme === 'dark' ? 'text-zinc-400 hover:text-zinc-300' : 'text-zinc-700 hover:text-zinc-900'
-                }`}
+                className={`w-full text-left text-xs font-mono transition-colors cursor-pointer ${theme === 'dark' ? 'text-zinc-400 hover:text-zinc-300' : 'text-zinc-700 hover:text-zinc-900'
+                  }`}
               >
                 {suggestion}
               </button>
               {onGenerateSuggestion && (
-                  <div className={`flex items-center justify-between gap-2 pt-2 border-t ${
-                    theme === 'dark' ? 'border-zinc-700/50' : 'border-zinc-300'
+                <div className={`flex items-center justify-between gap-2 pt-2 border-t ${theme === 'dark' ? 'border-zinc-700/50' : 'border-zinc-300'
                   }`}>
                   {isGenerateDisabled ? (
                     <Tooltip content={t('mockup.insufficientCredits') || "Insufficient credits to generate"} position="top">
@@ -225,7 +218,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
                           onGenerateSuggestion(suggestion);
                         }}
                         disabled={isGenerating || !suggestion.trim() || isGenerateDisabled}
-                        className="flex-1 flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-semibold py-2 px-3 rounded-md transition-all duration-300 text-xs transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50"
+                        className="flex-1 flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-semibold py-2 px-3 rounded-md transition-all duration-300 text-xs transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#brand-cyan]/50"
                       >
                         {isGenerating ? (
                           <>
@@ -241,31 +234,30 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
                       </button>
                     </Tooltip>
                   ) : (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onGenerateSuggestion(suggestion);
-                    }}
-                    disabled={isGenerating || !suggestion.trim() || isGenerateDisabled}
-                    className="flex-1 flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-semibold py-2 px-3 rounded-md transition-all duration-300 text-xs transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50"
-                  >
-                    {isGenerating ? (
-                      <>
-                        <GlitchLoader size={12} />
-                        <span>{t('mockup.generatingOutputs')}</span>
-                      </>
-                    ) : (
-                      <>
-                        <Pickaxe size={12} />
-                        <span>{t('mockup.generateOutputs')}</span>
-                      </>
-                    )}
-                  </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onGenerateSuggestion(suggestion);
+                      }}
+                      disabled={isGenerating || !suggestion.trim() || isGenerateDisabled}
+                      className="flex-1 flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-semibold py-2 px-3 rounded-md transition-all duration-300 text-xs transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#brand-cyan]/50"
+                    >
+                      {isGenerating ? (
+                        <>
+                          <GlitchLoader size={12} />
+                          <span>{t('mockup.generatingOutputs')}</span>
+                        </>
+                      ) : (
+                        <>
+                          <Pickaxe size={12} />
+                          <span>{t('mockup.generateOutputs')}</span>
+                        </>
+                      )}
+                    </button>
                   )}
                   {creditsPerGeneration !== undefined && creditsPerGeneration > 0 && (
-                    <span className={`text-xs font-mono whitespace-nowrap ${
-                      theme === 'dark' ? 'text-zinc-500' : 'text-zinc-600'
-                    }`}>
+                    <span className={`text-xs font-mono whitespace-nowrap ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-600'
+                      }`}>
                       {creditsPerGeneration} {creditsPerGeneration === 1 ? t('mockup.creditUnitSingular') : t('mockup.creditUnitPlural')}
                     </span>
                   )}

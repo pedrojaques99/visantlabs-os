@@ -1,34 +1,26 @@
 import { Layers } from 'lucide-react';
 import type { TextureNodeData } from '../../types/reactFlow';
-import type { TexturePresetType } from '../../types/texturePresets';
 import { getAllTexturePresets, getTexturePreset } from '../../services/texturePresetsService';
 import { TexturePresetModal } from '../TexturePresetModal';
-import { createGenericPresetNode } from './shared/GenericPresetNode';
+import { createUniversalPresetNode } from './shared/UniversalPresetNode';
 
-export const TextureNode = createGenericPresetNode<TexturePresetType, TextureNodeData>({
+export const TextureNode = createUniversalPresetNode<TextureNodeData>({
   icon: Layers,
-  title: 'Texture Preset',
+  title: 'Texture',
   defaultPresetId: 'wood-grain',
 
   getAllPresets: getAllTexturePresets,
   getPreset: getTexturePreset,
   PresetModal: TexturePresetModal,
-
-  getSelectedPreset: (data) => data.selectedPreset,
-  getConnectedImage: (data) => data.connectedImage,
-  getResultImageUrl: (data) => data.resultImageUrl,
-  getResultImageBase64: (data) => data.resultImageBase64,
-  getIsLoading: (data) => data.isLoading,
-  getOnGenerate: (data) => data.onGenerate,
-  getOnUpdateData: (data) => data.onUpdateData,
+  communityPresetType: 'texture',
 
   translationKeys: {
     title: 'canvasNodes.textureNode.title',
-    selectPreset: 'canvasNodes.textureNode.selectTexture',
+    selectPreset: 'canvasNodes.textureNode.selectPreset',
     inputImage: 'canvasNodes.textureNode.inputImage',
     connectImageNode: 'canvasNodes.textureNode.connectImageNode',
+    generateButton: 'canvasNodes.textureNode.generateButton',
     generating: 'canvasNodes.textureNode.generating',
-    generateButton: 'canvasNodes.textureNode.generateTexture',
     result: 'canvasNodes.textureNode.result',
   },
 

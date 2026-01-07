@@ -23,22 +23,22 @@ export const FieldSelectionMenu: React.FC<FieldSelectionMenuProps> = ({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
-  
+
   // Filter fields based on search query
   const filteredFields = useMemo(() => {
     if (!searchQuery.trim()) return fields;
     const query = searchQuery.toLowerCase();
-    return fields.filter(field => 
-      field.label.toLowerCase().includes(query) || 
+    return fields.filter(field =>
+      field.label.toLowerCase().includes(query) ||
       field.id.toLowerCase().includes(query)
     );
   }, [fields, searchQuery]);
-  
+
   // Reset selected index when filtered fields change
   useEffect(() => {
     setSelectedIndex(0);
   }, [filteredFields.length]);
-  
+
   // Focus search input on mount
   useEffect(() => {
     if (searchInputRef.current) {
@@ -58,19 +58,19 @@ export const FieldSelectionMenu: React.FC<FieldSelectionMenuProps> = ({
         onClose();
         return;
       }
-      
+
       if (event.key === 'ArrowDown') {
         event.preventDefault();
         setSelectedIndex(prev => Math.min(prev + 1, filteredFields.length - 1));
         return;
       }
-      
+
       if (event.key === 'ArrowUp') {
         event.preventDefault();
         setSelectedIndex(prev => Math.max(prev - 1, 0));
         return;
       }
-      
+
       if (event.key === 'Enter') {
         event.preventDefault();
         if (filteredFields[selectedIndex]) {
@@ -115,7 +115,7 @@ export const FieldSelectionMenu: React.FC<FieldSelectionMenuProps> = ({
           <X size={14} />
         </button>
       </div>
-      
+
       {/* Search input */}
       <div className="px-3 py-2 border-b border-zinc-800">
         <div className="relative">
@@ -126,12 +126,12 @@ export const FieldSelectionMenu: React.FC<FieldSelectionMenuProps> = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar campo..."
-            className="w-full pl-8 pr-3 py-1.5 bg-black/40 border border-zinc-800 rounded text-sm font-mono text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-[#52ddeb]/50"
+            className="w-full pl-8 pr-3 py-1.5 bg-black/40 border border-zinc-800 rounded text-sm font-mono text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-[#brand-cyan]/50"
             aria-label="Buscar campo"
           />
         </div>
       </div>
-      
+
       <div className="max-h-[300px] overflow-y-auto">
         {filteredFields.length === 0 ? (
           <div className="px-3 py-4 text-center text-xs text-zinc-500 font-mono">
@@ -146,11 +146,10 @@ export const FieldSelectionMenu: React.FC<FieldSelectionMenuProps> = ({
                 onClose();
               }}
               onMouseEnter={() => setSelectedIndex(index)}
-              className={`w-full px-3 py-2.5 text-left text-sm font-mono transition-colors border-b border-zinc-800/50 last:border-b-0 ${
-                index === selectedIndex
+              className={`w-full px-3 py-2.5 text-left text-sm font-mono transition-colors border-b border-zinc-800/50 last:border-b-0 ${index === selectedIndex
                   ? 'bg-brand-cyan/20 text-brand-cyan'
                   : 'text-zinc-300 hover:bg-brand-cyan/10 hover:text-brand-cyan'
-              }`}
+                }`}
               role="menuitem"
               aria-label={`Adicionar campo ${field.label}`}
             >

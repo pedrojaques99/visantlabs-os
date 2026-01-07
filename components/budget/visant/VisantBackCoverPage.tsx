@@ -14,7 +14,7 @@ export const VisantBackCoverPage: React.FC<VisantBackCoverPageProps> = ({
   editable = false,
   onDataChange,
 }) => {
-  const accentColor = data.brandAccentColor || data.brandColors[0] || '#52ddeb';
+  const accentColor = data.brandAccentColor || data.brandColors[0] || '#brand-cyan';
   const bgColor = '#151515';
   const textColor = '#f3f3f3';
   const year = data.year || '2025';
@@ -59,7 +59,7 @@ export const VisantBackCoverPage: React.FC<VisantBackCoverPageProps> = ({
 
 
       {/* Top section - Logo and title */}
-      <div 
+      <div
         className="flex items-start justify-between flex-shrink-0 relative z-10"
       >
         <div className="flex flex-col gap-2">

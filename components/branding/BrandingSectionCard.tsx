@@ -144,15 +144,13 @@ export const BrandingSectionCard: React.FC<BrandingSectionCardProps> = ({
   return (
     <div
       ref={cardRef}
-      className={`${colSpan} border rounded-2xl p-6 md:p-8 transition-all duration-200 group relative animate-fade-in-down ${
-        theme === 'dark' ? 'bg-[#141414]' : 'bg-white'
-      } ${
-        isEditing
-          ? 'border-[#52ddeb]/50 shadow-[0_0_0_1px_rgba(82,221,235,0.1)]'
+      className={`${colSpan} border rounded-2xl p-6 md:p-8 transition-all duration-200 group relative animate-fade-in-down ${theme === 'dark' ? 'bg-[#141414]' : 'bg-white'
+        } ${isEditing
+          ? 'border-[#brand-cyan]/50 shadow-[0_0_0_1px_rgba(82,221,235,0.1)]'
           : theme === 'dark'
             ? 'border-zinc-800/60 hover:border-zinc-700/60'
             : 'border-zinc-300 hover:border-zinc-400'
-      } ${isDragging ? 'opacity-50' : ''} ${isResizing ? 'cursor-ns-resize' : ''}`}
+        } ${isDragging ? 'opacity-50' : ''} ${isResizing ? 'cursor-ns-resize' : ''}`}
       style={{
         animation: 'expandSection 0.25s ease-out',
         height: customHeight ? `${customHeight}px` : undefined,
@@ -165,8 +163,8 @@ export const BrandingSectionCard: React.FC<BrandingSectionCardProps> = ({
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
           className={`flex-1 ${isDraggable ? 'cursor-grab active:cursor-grabbing' : ''} ${isDragging ? 'cursor-grabbing' : ''} select-none`}
-          style={{ 
-            WebkitUserSelect: 'none', 
+          style={{
+            WebkitUserSelect: 'none',
             userSelect: 'none',
             touchAction: 'none',
           }}
@@ -174,9 +172,8 @@ export const BrandingSectionCard: React.FC<BrandingSectionCardProps> = ({
           <div className="flex items-center gap-2 mb-2">
             {isDraggable && (
               <div
-                className={`transition-colors opacity-60 group-hover:opacity-100 pointer-events-none ${
-                  theme === 'dark' ? 'text-zinc-500 hover:text-zinc-400' : 'text-zinc-400 hover:text-zinc-500'
-                }`}
+                className={`transition-colors opacity-60 group-hover:opacity-100 pointer-events-none ${theme === 'dark' ? 'text-zinc-500 hover:text-zinc-400' : 'text-zinc-400 hover:text-zinc-500'
+                  }`}
                 title={t('branding.dragToReorder') || 'Drag to reorder'}
               >
                 <GripVertical className="h-4 w-4" />
@@ -223,22 +220,19 @@ export const BrandingSectionCard: React.FC<BrandingSectionCardProps> = ({
                 onToggleCompact();
               }}
               onMouseDown={(e) => e.stopPropagation()}
-              className={`p-1 rounded transition-colors cursor-pointer ${
-                theme === 'dark' ? 'hover:bg-black/40' : 'hover:bg-zinc-200'
-              }`}
+              className={`p-1 rounded transition-colors cursor-pointer ${theme === 'dark' ? 'hover:bg-black/40' : 'hover:bg-zinc-200'
+                }`}
               title={t('branding.collapse') || 'Collapse to compact'}
             >
-              <X className={`h-4 w-4 ${
-                theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'
-              }`} />
+              <X className={`h-4 w-4 ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'
+                }`} />
             </button>
           )}
         </div>
       </div>
       {!isCollapsed && (
-        <div className={`relative ${
-          theme === 'dark' ? 'text-zinc-300' : 'text-zinc-800'
-        }`} style={{ height: customHeight ? 'calc(100% - 80px)' : undefined }}>
+        <div className={`relative ${theme === 'dark' ? 'text-zinc-300' : 'text-zinc-800'
+          }`} style={{ height: customHeight ? 'calc(100% - 80px)' : undefined }}>
           <SectionContentRenderer
             stepNumber={stepNumber}
             content={content}
@@ -255,14 +249,12 @@ export const BrandingSectionCard: React.FC<BrandingSectionCardProps> = ({
         <div
           ref={resizeRef}
           onMouseDown={handleResizeStart}
-          className={`absolute bottom-0 right-0 w-8 h-8 cursor-ns-resize flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-tl-lg ${
-            theme === 'dark' ? 'hover:bg-black/20' : 'hover:bg-zinc-200'
-          }`}
+          className={`absolute bottom-0 right-0 w-8 h-8 cursor-ns-resize flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-tl-lg ${theme === 'dark' ? 'hover:bg-black/20' : 'hover:bg-zinc-200'
+            }`}
           title={t('branding.resize') || 'Resize'}
         >
-          <Minus className={`h-4 w-4 rotate-90 ${
-            theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'
-          }`} />
+          <Minus className={`h-4 w-4 rotate-90 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'
+            }`} />
         </div>
       )}
     </div>

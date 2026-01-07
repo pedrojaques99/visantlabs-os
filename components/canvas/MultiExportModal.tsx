@@ -34,7 +34,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
     const [searchQuery, setSearchQuery] = useState('');
     const [isExporting, setIsExporting] = useState(false);
 
-    // Extract all exportable images from nodes
+    // Extract all exportable images from nodes (Strict filtering for outputs)
     const exportableImages = useMemo(() => {
         const images: ExportableImage[] = [];
 
@@ -42,16 +42,18 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
             let url: string | null = null;
             let name = node.data.label || `${node.type}-${node.id.substring(0, 4)}`;
 
-            if (node.type === 'image') {
-                const data = node.data as any;
-                url = getImageUrl(data.mockup) || null;
-                name = data.mockup.prompt || name;
-            } else if (['merge', 'edit', 'upscale', 'upscaleBicubic', 'mockup', 'angle', 'prompt', 'output', 'shader'].includes(node.type as string)) {
-                const data = node.data as any;
+            // Strict Filter: Only select nodes with explicit result data (Output nodes and processing nodes)
+            // This excludes standard ImageNode (inputs), LogoNode, etc.
+            const data = node.data as any;
+            if (data.resultImageUrl || data.resultImageBase64) {
                 url = data.resultImageUrl || (data.resultImageBase64 ? (data.resultImageBase64.startsWith('data:') ? data.resultImageBase64 : `data:image/png;base64,${data.resultImageBase64}`) : null);
-            } else if (node.type === 'logo') {
-                const data = node.data as any;
-                url = data.logoImageUrl || (data.logoBase64 ? (data.logoBase64.startsWith('data:') ? data.logoBase64 : `data:image/png;base64,${data.logoBase64}`) : null);
+            }
+            // Explicitly handle 'output' type if it relies on other fields, but OutputNodeData uses resultImageUrl too.
+            // If there's any edge case where OutputNode doesn't have result* but should be exported (e.g. connected image), we might need to handle it, but usually it has result data.
+
+            // Name fallback for OutputNode
+            if (node.type === 'output' && data.label) {
+                name = data.label;
             }
 
             if (url) {
@@ -103,6 +105,59 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
         const selectedList = exportableImages.filter(img => selectedImages.has(img.id));
 
         try {
+            // Try using File System Access API for folder selection
+            if ('showDirectoryPicker' in window) {
+                try {
+                    const dirHandle = await window.showDirectoryPicker();
+                    const usedNames = new Set<string>();
+
+                    for (const img of selectedList) {
+                        try {
+                            // For now we trust the URL is accessible (CORS might be tricky if external, but usually these are internal/R2)
+                            // Use helper or fetch directly
+                            const response = await fetch(img.url);
+                            const blob = await response.blob();
+
+                            // Handle filename uniqueness
+                            const safeName = img.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                            let baseFilename = safeName || 'image';
+                            const extension = exportFormat.toLowerCase();
+                            let filename = `${baseFilename}.${extension}`;
+
+                            let counter = 1;
+                            while (usedNames.has(filename)) {
+                                filename = `${baseFilename}_${counter}.${extension}`;
+                                counter++;
+                            }
+                            usedNames.add(filename);
+
+                            const fileHandle = await dirHandle.getFileHandle(filename, { create: true });
+                            const writable = await fileHandle.createWritable();
+                            await writable.write(blob);
+                            await writable.close();
+
+                        } catch (err) {
+                            console.error(`Failed to save ${img.name}:`, err);
+                            toast.error(`Failed to save ${img.name}`);
+                        }
+                    }
+                    toast.success(`${selectedImages.size} image(s) exported successfully!`);
+                    onClose();
+                    return;
+
+                } catch (err: any) {
+                    if (err.name !== 'AbortError') {
+                        console.error('Directory selection failed:', err);
+                        toast.error('Failed to access folder, falling back to individual downloads');
+                    } else {
+                        // User cancelled
+                        setIsExporting(false);
+                        return;
+                    }
+                }
+            }
+
+            // Fallback to individual downloads
             const promises = selectedList.map((img, index) => {
                 // Add a small delay between downloads to prevent browser blocking
                 return new Promise<void>((resolve) => {
@@ -142,7 +197,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                 <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800/50">
                     <div>
                         <h2 className="text-lg font-semibold text-zinc-100 font-mono flex items-center gap-2">
-                            <Download size={20} className="text-[#52ddeb]" />
+                            <Download size={20} className="text-[#brand-cyan]" />
                             Export Images
                         </h2>
                         <p className="text-xs text-zinc-500 font-mono mt-1">
@@ -167,7 +222,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                                 placeholder="Search images..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-9 pr-4 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-xs text-zinc-300 font-mono focus:outline-none focus:ring-1 focus:ring-[#52ddeb]/50 transition-all"
+                                className="w-full pl-9 pr-4 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-xs text-zinc-300 font-mono focus:outline-none focus:ring-1 focus:ring-[#brand-cyan]/50 transition-all"
                             />
                         </div>
 
@@ -176,7 +231,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                             className="flex items-center gap-2 px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-xs text-zinc-300 font-mono hover:bg-zinc-700/50 transition-all whitespace-nowrap"
                         >
                             {selectedImages.size === filteredImages.length && filteredImages.length > 0 ? (
-                                <CheckSquare size={14} className="text-[#52ddeb]" />
+                                <CheckSquare size={14} className="text-[#brand-cyan]" />
                             ) : (
                                 <Square size={14} />
                             )}
@@ -193,7 +248,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                                     className={cn(
                                         "px-3 py-1 text-[10px] font-mono rounded transition-all",
                                         exportFormat === format
-                                            ? "bg-[#52ddeb]/20 text-[#52ddeb] border border-[#52ddeb]/30"
+                                            ? "bg-[#brand-cyan]/20 text-[#brand-cyan] border border-[#brand-cyan]/30"
                                             : "text-zinc-500 hover:text-zinc-300"
                                     )}
                                 >
@@ -215,7 +270,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                                     className={cn(
                                         "group relative aspect-square rounded-xl border transition-all cursor-pointer overflow-hidden",
                                         selectedImages.has(img.id)
-                                            ? "border-[#52ddeb] ring-1 ring-[#52ddeb]/20"
+                                            ? "border-[#brand-cyan] ring-1 ring-[#brand-cyan]/20"
                                             : "border-zinc-800 hover:border-zinc-700 bg-zinc-900/50"
                                     )}
                                 >
@@ -232,14 +287,14 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                                     <div className={cn(
                                         "absolute inset-0 transition-opacity flex flex-col justify-between p-2",
                                         selectedImages.has(img.id)
-                                            ? "bg-[#52ddeb]/10"
+                                            ? "bg-[#brand-cyan]/10"
                                             : "bg-black/0 group-hover:bg-black/40 opacity-0 group-hover:opacity-100"
                                     )}>
                                         <div className="flex justify-end">
                                             <div className={cn(
                                                 "w-5 h-5 rounded-full flex items-center justify-center border transition-all",
                                                 selectedImages.has(img.id)
-                                                    ? "bg-[#52ddeb] border-[#52ddeb] text-black"
+                                                    ? "bg-[#brand-cyan] border-[#brand-cyan] text-black"
                                                     : "bg-black/40 border-white/20 text-transparent"
                                             )}>
                                                 <Check size={12} strokeWidth={3} />
@@ -250,7 +305,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                                             <p className="text-[10px] text-zinc-200 font-mono truncate" title={img.name}>
                                                 {img.name}
                                             </p>
-                                            <p className="text-[8px] text-[#52ddeb] font-mono uppercase mt-0.5">
+                                            <p className="text-[8px] text-[#brand-cyan] font-mono uppercase mt-0.5">
                                                 {img.type}
                                             </p>
                                         </div>
@@ -287,7 +342,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                             onClick={handleExport}
                             disabled={selectedImages.size === 0 || isExporting}
                             className={cn(
-                                "px-6 py-2 bg-[#52ddeb] hover:bg-[#45c3d1] disabled:bg-zinc-800 disabled:text-zinc-500 text-black font-semibold rounded-lg text-xs font-mono transition-all flex items-center gap-2 shadow-lg shadow-[#52ddeb]/10",
+                                "px-6 py-2 bg-[#brand-cyan] hover:bg-[#45c3d1] disabled:bg-zinc-800 disabled:text-zinc-500 text-black font-semibold rounded-lg text-xs font-mono transition-all flex items-center gap-2 shadow-lg shadow-[#brand-cyan]/10",
                                 isExporting && "animate-pulse"
                             )}
                         >

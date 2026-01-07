@@ -79,7 +79,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
 
   const handleCopyLink = async () => {
     if (!shareUrl) return;
-    
+
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
@@ -153,16 +153,16 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
     return null;
   }
 
-  const hasChanges = 
+  const hasChanges =
     JSON.stringify(editUsers) !== JSON.stringify(canEdit) ||
     JSON.stringify(viewUsers) !== JSON.stringify(canView);
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-black/50 backdrop-blur-sm overflow-y-auto"
       onClick={onClose}
     >
-      <div 
+      <div
         className="bg-zinc-900 border border-zinc-800/50 rounded-md p-6 w-full max-w-2xl mx-4 shadow-xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
@@ -197,7 +197,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
               />
               <button
                 onClick={handleCopyLink}
-                className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-[#52ddeb]/30 hover:border-[#52ddeb]/50 rounded-md transition-all flex items-center gap-2"
+                className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-[#brand-cyan]/30 hover:border-[#brand-cyan]/50 rounded-md transition-all flex items-center gap-2"
               >
                 {copied ? (
                   <>
@@ -216,7 +216,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
             <button
               onClick={handleGenerateShare}
               disabled={isGenerating}
-              className="w-full px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-[#52ddeb]/30 hover:border-[#52ddeb]/50 rounded-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-[#brand-cyan]/30 hover:border-[#brand-cyan]/50 rounded-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isGenerating ? (
                 <>
@@ -351,7 +351,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
               <button
                 onClick={handleUpdatePermissions}
                 disabled={isLoading}
-                className="px-4 py-2 text-xs font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-[#52ddeb]/30 hover:border-[#52ddeb]/50 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-4 py-2 text-xs font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-[#brand-cyan]/30 hover:border-[#brand-cyan]/50 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {isLoading ? (
                   <>

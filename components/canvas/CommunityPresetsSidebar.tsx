@@ -98,7 +98,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                                 navigate(`/community/presets?type=${activeTab}&view=my&create=true`);
                                 onClose();
                             }}
-                            className="flex items-center gap-2 px-3 py-2 rounded-md text-xs font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#52ddeb]/30 text-brand-cyan transition-all"
+                            className="flex items-center gap-2 px-3 py-2 rounded-md text-xs font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#brand-cyan]/30 text-brand-cyan transition-all"
                             title={t('communityPresets.createNew') || 'Create New Preset'}
                         >
                             <Plus size={14} />
@@ -121,7 +121,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                                 className={cn(
                                     'px-4 py-2 rounded-md text-xs font-mono transition-all flex items-center gap-2',
                                     activeTab === type
-                                        ? 'bg-brand-cyan/20 text-brand-cyan border border-[#52ddeb]/30'
+                                        ? 'bg-brand-cyan/20 text-brand-cyan border border-[#brand-cyan]/30'
                                         : 'bg-zinc-900/50 border border-zinc-700/50 text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-300'
                                 )}
                             >
@@ -136,7 +136,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                 <div className="space-y-4">
                     {isLoading && (
                         <div className="flex items-center justify-center py-16">
-                            <GlitchLoader size={24} color="#52ddeb" />
+                            <GlitchLoader size={24} color="#brand-cyan" />
                         </div>
                     )}
 
@@ -159,7 +159,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                                 onImportPreset(preset, activeTab);
                                 onClose();
                             }}
-                            className="w-full p-4 rounded-md border border-zinc-700/50 bg-zinc-900/30 hover:bg-zinc-800/50 hover:border-[#52ddeb]/30 transition-all text-left group"
+                            className="w-full p-4 rounded-md border border-zinc-700/50 bg-zinc-900/30 hover:bg-zinc-800/50 hover:border-[#brand-cyan]/30 transition-all text-left group"
                         >
                             <div className="flex gap-4">
                                 {/* Thumbnail */}

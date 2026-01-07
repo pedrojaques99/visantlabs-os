@@ -20,7 +20,7 @@ interface RichTextEditorProps {
 }
 
 const COLOR_PRESETS = [
-  '#52ddeb', // Primary cyan
+  '#brand-cyan', // Primary cyan
   '#ffffff', // White
   '#fbbf24', // Yellow
   '#f87171', // Red
@@ -88,15 +88,15 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       const currentValue = textarea.value;
       const start = textarea.selectionStart;
       const end = textarea.selectionEnd;
-      
+
       const result = formatFn(currentValue, start, end, ...formatArgs);
-      
+
       // Store cursor position to restore after React update
       pendingCursorPos.current = {
         start: result.newStart,
         end: result.newEnd,
       };
-      
+
       onChange(result.newValue);
     },
     [onChange]
@@ -112,13 +112,13 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const result = applyTextColor(textarea.value, start, end, color);
-    
+
     // Store cursor position to restore after React update
     pendingCursorPos.current = {
       start: result.newStart,
       end: result.newEnd,
     };
-    
+
     onChange(result.newValue);
     setShowColorPicker(false);
   };
@@ -139,19 +139,17 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   return (
     <div className={`relative ${className}`}>
       {/* Toolbar */}
-      <div className={`flex items-center gap-1 p-2 border rounded-t-xl border-b-0 ${
-        theme === 'dark'
+      <div className={`flex items-center gap-1 p-2 border rounded-t-xl border-b-0 ${theme === 'dark'
           ? 'bg-zinc-900 border-zinc-800/60'
           : 'bg-zinc-100 border-zinc-300'
-      }`}>
+        }`}>
         <button
           type="button"
           onClick={handleBold}
-          className={`p-2 rounded transition-colors hover:text-brand-cyan ${
-            theme === 'dark'
+          className={`p-2 rounded transition-colors hover:text-brand-cyan ${theme === 'dark'
               ? 'hover:bg-black/40 text-zinc-300'
               : 'hover:bg-zinc-200 text-zinc-700'
-          }`}
+            }`}
           title="Negrito (Ctrl+B)"
         >
           <Bold className="h-4 w-4" />
@@ -159,11 +157,10 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <button
           type="button"
           onClick={handleItalic}
-          className={`p-2 rounded transition-colors hover:text-brand-cyan ${
-            theme === 'dark'
+          className={`p-2 rounded transition-colors hover:text-brand-cyan ${theme === 'dark'
               ? 'hover:bg-black/40 text-zinc-300'
               : 'hover:bg-zinc-200 text-zinc-700'
-          }`}
+            }`}
           title="Itálico (Ctrl+I)"
         >
           <Italic className="h-4 w-4" />
@@ -171,11 +168,10 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <button
           type="button"
           onClick={handleBullet}
-          className={`p-2 rounded transition-colors hover:text-brand-cyan ${
-            theme === 'dark'
+          className={`p-2 rounded transition-colors hover:text-brand-cyan ${theme === 'dark'
               ? 'hover:bg-black/40 text-zinc-300'
               : 'hover:bg-zinc-200 text-zinc-700'
-          }`}
+            }`}
           title="Lista com marcadores"
         >
           <List className="h-4 w-4" />
@@ -184,11 +180,10 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           <button
             type="button"
             onClick={() => setShowColorPicker(!showColorPicker)}
-            className={`p-2 rounded transition-colors hover:text-brand-cyan ${
-              theme === 'dark'
+            className={`p-2 rounded transition-colors hover:text-brand-cyan ${theme === 'dark'
                 ? 'hover:bg-black/40 text-zinc-300'
                 : 'hover:bg-zinc-200 text-zinc-700'
-            }`}
+              }`}
             title="Cor do texto"
           >
             <Palette className="h-4 w-4" />
@@ -199,28 +194,25 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
                 className="fixed inset-0 z-10"
                 onClick={() => setShowColorPicker(false)}
               />
-              <div className={`absolute top-full left-0 mt-1 p-2 border rounded-md shadow-lg z-20 ${
-                theme === 'dark'
+              <div className={`absolute top-full left-0 mt-1 p-2 border rounded-md shadow-lg z-20 ${theme === 'dark'
                   ? 'bg-zinc-900 border-zinc-800/60'
                   : 'bg-white border-zinc-300'
-              }`}>
+                }`}>
                 <div className="grid grid-cols-4 gap-2">
                   {COLOR_PRESETS.map((color) => (
                     <button
                       key={color}
                       type="button"
                       onClick={() => handleColorSelect(color)}
-                      className={`w-8 h-8 rounded border hover:border-[#52ddeb] transition-colors ${
-                        theme === 'dark' ? 'border-zinc-700' : 'border-zinc-400'
-                      }`}
+                      className={`w-8 h-8 rounded border hover:border-[#brand-cyan] transition-colors ${theme === 'dark' ? 'border-zinc-700' : 'border-zinc-400'
+                        }`}
                       style={{ backgroundColor: color }}
                       title={color}
                     />
                   ))}
                 </div>
-                <div className={`mt-2 pt-2 border-t ${
-                  theme === 'dark' ? 'border-zinc-800' : 'border-zinc-300'
-                }`}>
+                <div className={`mt-2 pt-2 border-t ${theme === 'dark' ? 'border-zinc-800' : 'border-zinc-300'
+                  }`}>
                   <input
                     type="color"
                     onChange={(e) => handleColorSelect(e.target.value)}
@@ -237,11 +229,10 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       {/* Editor container with overlay */}
       <div
         ref={containerRef}
-        className={`relative rounded-t-none border-t-0 border overflow-hidden ${
-          theme === 'dark'
+        className={`relative rounded-t-none border-t-0 border overflow-hidden ${theme === 'dark'
             ? 'border-zinc-800/60 bg-[#141414]'
             : 'border-zinc-300 bg-white'
-        }`}
+          }`}
         style={{ minHeight }}
       >
         {/* Transparent textarea for input - must be first for proper z-index */}
@@ -252,7 +243,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           onKeyDown={handleKeyDown}
           onScroll={handleScroll}
           placeholder=""
-          className="font-geist rounded-t-none border-0 bg-transparent text-transparent caret-[#52ddeb] resize-none relative z-10"
+          className="font-geist rounded-t-none border-0 bg-transparent text-transparent caret-[#brand-cyan] resize-none relative z-10"
           style={{
             minHeight,
             color: 'transparent',
@@ -279,15 +270,13 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           }}
         >
           {value ? (
-            <div className={`text-sm font-manrope leading-relaxed ${
-              theme === 'dark' ? 'text-zinc-300' : 'text-zinc-800'
-            }`}>
+            <div className={`text-sm font-manrope leading-relaxed ${theme === 'dark' ? 'text-zinc-300' : 'text-zinc-800'
+              }`}>
               {renderMarkdownWithLines(value)}
             </div>
           ) : (
-            <span className={`font-manrope ${
-              theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'
-            }`}>{placeholder}</span>
+            <span className={`font-manrope ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'
+              }`}>{placeholder}</span>
           )}
         </div>
       </div>

@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback, memo, useEffect } from 'react';
-import { type NodeProps, useNodes, useEdges, useReactFlow, NodeResizer } from '@xyflow/react';
+import { type NodeProps, useNodes, useEdges, useReactFlow, NodeResizer, useViewport } from '@xyflow/react';
 import { Edit } from 'lucide-react';
 import type { OutputNodeData, FlowNodeData } from '../../types/reactFlow';
 import { cn } from '../../lib/utils';
@@ -28,9 +28,9 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   const { t } = useTranslation();
   const nodes = useNodes();
   const edges = useEdges();
-  const { getZoom, setNodes, getNode } = useReactFlow();
+  const { setNodes, getNode, getZoom } = useReactFlow();
   const nodeData = data as OutputNodeData;
-  const { handleResize: handleResizeWithDebounce } = useNodeResize();
+  const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
@@ -52,8 +52,8 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   const resultImageBase64 = nodeData.resultImageBase64;
   const resultVideoUrl = nodeData.resultVideoUrl;
   const resultVideoBase64 = nodeData.resultVideoBase64;
-  const savedMockupIdFromData = (nodeData as any).savedMockupId;
-  const isLikedFromData = (nodeData as any).isLiked;
+  const savedMockupIdFromData = nodeData.savedMockupId;
+  const isLikedFromData = nodeData.isLiked;
   const isLoading = nodeData.isLoading || false;
 
   // Sync state with nodeData
@@ -121,11 +121,9 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     isLiked,
     onLikeStateChange: (newIsLiked) => {
       setIsLiked(newIsLiked);
-      if (nodeData.onUpdateData) {
-        nodeData.onUpdateData(String(id), {
-          isLiked: newIsLiked,
-        } as any);
-      }
+      nodeData.onUpdateData(String(id), {
+        isLiked: newIsLiked,
+      });
     },
     translationKeyPrefix: 'canvas',
   });
@@ -300,7 +298,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         nodeData.onUpdateData(String(id), {
           savedMockupId: mockupId,
           isLiked: true,
-        } as any);
+        });
       }
 
       toast.success(t('canvasNodes.outputNode.imageSavedToFavorites'), { duration: 3000 });
@@ -325,8 +323,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     let imageInput: string | { base64: string; mimeType: string };
 
     // Check for base64 fallback first (from resultImageBase64)
-    const outputData = nodeData as any;
-    const base64Fallback = outputData.resultImageBase64;
+    const base64Fallback = nodeData.resultImageBase64;
 
     if (imageUrl && typeof imageUrl === 'string' && imageUrl.startsWith('data:')) {
       // Already a data URL, use directly
@@ -435,12 +432,38 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     handleResizeWithDebounce(id, width, height);
   }, [id, handleResizeWithDebounce]);
 
+  const handleDuplicate = () => {
+    if (nodeData.onDuplicate) {
+      nodeData.onDuplicate(id);
+    }
+  };
+
+  const handleFitToContent = useCallback(() => {
+    const width = nodeData.imageWidth as number;
+    const height = nodeData.imageHeight as number;
+    if (width && height) {
+      // Calculate a reasonable size if image is too large
+      let targetWidth = width;
+      let targetHeight = height;
+      const MAX_FIT_WIDTH = 1200;
+
+      if (targetWidth > MAX_FIT_WIDTH) {
+        const ratio = MAX_FIT_WIDTH / targetWidth;
+        targetWidth = MAX_FIT_WIDTH;
+        targetHeight = targetHeight * ratio;
+      }
+
+      fitToContent(id, Math.round(targetWidth), Math.round(targetHeight), nodeData.onResize);
+    }
+  }, [id, nodeData.imageWidth, nodeData.imageHeight, nodeData.onResize, fitToContent]);
+
   return (
     <NodeContainer
       selected={selected}
       dragging={dragging}
       containerRef={containerRef}
       warning={nodeData.oversizedWarning}
+      onFitToContent={handleFitToContent}
       className={cn(
         'group node-wrapper min-w-[400px]',
         dragging ? 'node-dragging' : 'node-dragging-static'
@@ -451,12 +474,13 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     >
       {selected && !dragging && (
         <NodeResizer
-          color="#52ddeb"
+          color="#brand-cyan"
           isVisible={selected}
           minWidth={400}
           minHeight={300}
           maxWidth={2000}
           maxHeight={2000}
+          keepAspectRatio={true}
           onResize={handleResize}
         />
       )}
@@ -478,6 +502,17 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               }}
               onContextMenu={(e) => {
                 // Allow ReactFlow to handle the context menu event
+              }}
+              onLoadedMetadata={(e) => {
+                const video = e.target as HTMLVideoElement;
+                if (video.videoWidth > 0 && video.videoHeight > 0) {
+                  if (nodeData.onUpdateData) {
+                    nodeData.onUpdateData(String(id), {
+                      imageWidth: video.videoWidth,
+                      imageHeight: video.videoHeight,
+                    });
+                  }
+                }
               }}
               onMouseDown={(e) => e.stopPropagation()}
               onClick={(e) => e.stopPropagation()}
@@ -508,6 +543,17 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               draggable={false}
               onContextMenu={(e) => {
                 // Allow ReactFlow to handle the context menu event
+              }}
+              onLoad={(e) => {
+                const img = e.target as HTMLImageElement;
+                if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+                  if (nodeData.onUpdateData) {
+                    nodeData.onUpdateData(String(id), {
+                      imageWidth: img.naturalWidth,
+                      imageHeight: img.naturalHeight,
+                    });
+                  }
+                }
               }}
               onError={(e) => {
                 const target = e.target as HTMLImageElement;

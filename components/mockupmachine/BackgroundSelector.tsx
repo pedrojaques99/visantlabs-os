@@ -61,9 +61,8 @@ export const BackgroundSelector: React.FC<BackgroundSelectorProps> = ({
       <button
         onClick={handleToggle}
         disabled={disabled}
-        className={`w-full flex items-center gap-2 px-4 py-2 bg-black/30 backdrop-blur-sm text-zinc-300 rounded-md border border-white/10 hover:border-white/20 hover:bg-white/5 hover:text-white transition-all duration-200 ${
-          disabled ? 'opacity-50 cursor-not-allowed' : ''
-        } ${buttonClassName}`}
+        className={`w-full flex items-center gap-2 px-4 py-2 bg-black/30 backdrop-blur-sm text-zinc-300 rounded-md border border-white/10 hover:border-white/20 hover:bg-white/5 hover:text-white transition-all duration-200 ${disabled ? 'opacity-50 cursor-not-allowed' : ''
+          } ${buttonClassName}`}
         title="New Background"
         aria-label="Select background environment"
         aria-expanded={isExpanded}
@@ -92,7 +91,7 @@ export const BackgroundSelector: React.FC<BackgroundSelectorProps> = ({
               <button
                 key={background}
                 onClick={(e) => handleBackgroundClick(background, e)}
-                className="px-3 py-2 text-xs font-medium text-zinc-300 bg-black/30 hover:bg-brand-cyan/20 hover:text-brand-cyan rounded-md border border-white/5 hover:border-[#52ddeb]/30 transition-all duration-200 text-left"
+                className="px-3 py-2 text-xs font-medium text-zinc-300 bg-black/30 hover:bg-brand-cyan/20 hover:text-brand-cyan rounded-md border border-white/5 hover:border-[#brand-cyan]/30 transition-all duration-200 text-left"
                 title={`Change to ${background}`}
               >
                 {background}

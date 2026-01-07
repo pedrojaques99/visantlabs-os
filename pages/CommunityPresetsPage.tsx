@@ -32,15 +32,15 @@ import { migrateLegacyPreset } from '../types/communityPrompts';
 const COMMUNITY_API = '/api/community/presets';
 const PRESET_TYPES = ['all', 'mockup', 'angle', 'texture', 'ambience', 'luminance'] as const;
 const PROMPT_CATEGORIES: PromptCategory[] = [
-  'all', 
-  '3d', 
-  'presets', 
-  'aesthetics', 
+  'all',
+  '3d',
+  'presets',
+  'aesthetics',
   'themes',
-  'mockup', 
-  'angle', 
-  'texture', 
-  'ambience', 
+  'mockup',
+  'angle',
+  'texture',
+  'ambience',
   'luminance'
 ];
 
@@ -368,7 +368,7 @@ export const CommunityPresetsPage: React.FC = () => {
       }
 
       // Adicionar referenceImageUrl se necessário
-      const needsReferenceImage = (data.category === 'presets' && data.presetType === 'mockup') 
+      const needsReferenceImage = (data.category === 'presets' && data.presetType === 'mockup')
         || (data.category !== 'presets' && data.referenceImageUrl);
       if (needsReferenceImage && data.referenceImageUrl !== undefined) {
         body.referenceImageUrl = data.referenceImageUrl;
@@ -492,7 +492,7 @@ export const CommunityPresetsPage: React.FC = () => {
       }
 
       // Adicionar referenceImageUrl se necessário
-      const needsReferenceImage = (migrated.category === 'presets' && migrated.presetType === 'mockup') 
+      const needsReferenceImage = (migrated.category === 'presets' && migrated.presetType === 'mockup')
         || (migrated.category !== 'presets' && migrated.referenceImageUrl);
       if (needsReferenceImage && migrated.referenceImageUrl) {
         body.referenceImageUrl = migrated.referenceImageUrl;
@@ -654,7 +654,7 @@ export const CommunityPresetsPage: React.FC = () => {
   const allTags = useMemo(() => {
     const sourcePresets = viewMode === 'my' ? presets : allPresets;
     let currentPresets = sourcePresets;
-    
+
     // Filtrar por categoria
     if (activeTab !== 'all') {
       if (activeTab === 'presets') {
@@ -664,7 +664,7 @@ export const CommunityPresetsPage: React.FC = () => {
         currentPresets = sourcePresets.filter(p => p.category === activeTab);
       }
     }
-    
+
     const tags = new Set<string>();
     currentPresets.forEach(preset => {
       if (preset.tags && Array.isArray(preset.tags)) {
@@ -682,7 +682,7 @@ export const CommunityPresetsPage: React.FC = () => {
   const currentPresets = useMemo(() => {
     const sourcePresets = viewMode === 'my' ? presets : allPresets;
     let filtered = sourcePresets;
-    
+
     // Filtrar por categoria
     if (activeTab !== 'all') {
       if (activeTab === 'presets') {
@@ -691,14 +691,14 @@ export const CommunityPresetsPage: React.FC = () => {
         filtered = sourcePresets.filter(p => p.category === activeTab);
       }
     }
-    
+
     // Filtrar por tag
     if (filterTag) {
       filtered = filtered.filter(p =>
         p.tags && Array.isArray(p.tags) && p.tags.includes(filterTag)
       );
     }
-    
+
     // Filtrar por busca
     if (searchQuery && searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
@@ -708,7 +708,7 @@ export const CommunityPresetsPage: React.FC = () => {
         const description = migrated.description?.toLowerCase() || '';
         const prompt = migrated.prompt?.toLowerCase() || '';
         const tags = migrated.tags || [];
-        
+
         return (
           name.includes(query) ||
           description.includes(query) ||
@@ -717,14 +717,14 @@ export const CommunityPresetsPage: React.FC = () => {
         );
       });
     }
-    
+
     return filtered;
   }, [presets, allPresets, activeTab, filterTag, searchQuery, viewMode]);
 
   // Ordenar categorias por quantidade de presets
   const sortedCategories = useMemo(() => {
     const sourcePresets = viewMode === 'my' ? presets : allPresets;
-    
+
     // Calcular quantidade por categoria
     const categoryCounts = PROMPT_CATEGORIES.reduce((acc, category) => {
       if (category === 'all') {
@@ -758,7 +758,7 @@ export const CommunityPresetsPage: React.FC = () => {
       <div className="fixed inset-0 z-0">
         <GridDotsBackground />
       </div>
-      
+
       <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
         <div className="mb-6">
           <Breadcrumb>
@@ -834,82 +834,82 @@ export const CommunityPresetsPage: React.FC = () => {
 
         {!isCheckingAuth && (viewMode === 'all' || isAuthenticated) && (
           <div className="space-y-6">
-              {/* Sidebar */}
-              <CommunityPresetsSidebar
-                isCollapsed={isSidebarCollapsed}
-                onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                activeCategory={activeTab}
-                onCategoryChange={handleTabChange}
-                allTags={allTags}
-                filterTag={filterTag}
-                onFilterTagChange={setFilterTag}
-                currentPresetsCount={currentPresets.length}
-                categories={sortedCategories}
-                t={t}
-              />
+            {/* Sidebar */}
+            <CommunityPresetsSidebar
+              isCollapsed={isSidebarCollapsed}
+              onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+              activeCategory={activeTab}
+              onCategoryChange={handleTabChange}
+              allTags={allTags}
+              filterTag={filterTag}
+              onFilterTagChange={setFilterTag}
+              currentPresetsCount={currentPresets.length}
+              categories={sortedCategories}
+              t={t}
+            />
 
-              {/* View Mode (All/My) - Sub Hierarchy Tabs */}
-              <div className="flex items-center justify-between mb-[-0.5px] mt-[-20px] border-zinc-800/30">
-                <div className="flex p-1 rounded-lg border border-zinc-800/50">
-                  <button
-                    onClick={() => handleViewModeChange('all')}
-                    className={cn(
-                      "px-6 py-2 rounded-md text-xs font-mono transition-all flex items-center gap-2",
-                      viewMode === 'all'
-                        ? 'bg-zinc-800 text-brand-cyan shadow-sm'
-                        : 'text-zinc-500 hover:text-zinc-300'
-                    )}
-                  >
-                    <Globe className="h-3.5 w-3.5" />
-                    {t('communityPresets.viewAll')}
-                  </button>
-                  <button
-                    onClick={() => handleViewModeChange('my')}
-                    className={cn(
-                      "px-6 rounded-md text-xs font-mono transition-all flex items-center gap-2",
-                      viewMode === 'my'
-                        ? 'bg-zinc-800 text-indigo-400 shadow-sm'
-                        : 'text-zinc-500 hover:text-zinc-300'
-                    )}
-                    disabled={!isAuthenticated}
-                  >
-                    <User className="h-3.5 w-3.5" />
-                    {t('communityPresets.viewMy')}
-                  </button>
-                </div>
+            {/* View Mode (All/My) - Sub Hierarchy Tabs */}
+            <div className="flex items-center justify-between mb-[-0.5px] mt-[-20px] border-zinc-800/30">
+              <div className="flex p-1 rounded-lg border border-zinc-800/50">
+                <button
+                  onClick={() => handleViewModeChange('all')}
+                  className={cn(
+                    "px-6 py-2 rounded-md text-xs font-mono transition-all flex items-center gap-2",
+                    viewMode === 'all'
+                      ? 'bg-zinc-800 text-brand-cyan shadow-sm'
+                      : 'text-zinc-500 hover:text-zinc-300'
+                  )}
+                >
+                  <Globe className="h-3.5 w-3.5" />
+                  {t('communityPresets.viewAll')}
+                </button>
+                <button
+                  onClick={() => handleViewModeChange('my')}
+                  className={cn(
+                    "px-6 rounded-md text-xs font-mono transition-all flex items-center gap-2",
+                    viewMode === 'my'
+                      ? 'bg-zinc-800 text-indigo-400 shadow-sm'
+                      : 'text-zinc-500 hover:text-zinc-300'
+                  )}
+                  disabled={!isAuthenticated}
+                >
+                  <User className="h-3.5 w-3.5" />
+                  {t('communityPresets.viewMy')}
+                </button>
+              </div>
 
-                <div className="flex items-center gap-2">
-                  {/* Search Bar */}
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder={t('communityPresets.search.placeholder') || 'Search presets...'}
-                      className="bg-black/40 backdrop-blur-sm border border-zinc-700/30 rounded-md pl-8 pr-8 py-2 w-48 md:w-64 focus:outline-none focus:border-[#52ddeb]/50 text-xs text-zinc-300 font-mono"
-                    />
-                    <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-zinc-500" size={14} />
-                    {searchQuery && (
-                      <button
-                        onClick={() => setSearchQuery('')}
-                        className="absolute right-2.5 top-1/2 transform -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
-                      >
-                        <X size={14} />
-                      </button>
-                    )}
-                  </div>
-                  
-                  {!isEditing && isAuthenticated && (
+              <div className="flex items-center gap-2">
+                {/* Search Bar */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder={t('communityPresets.search.placeholder') || 'Search presets...'}
+                    className="bg-black/40 backdrop-blur-sm border border-zinc-700/30 rounded-md pl-8 pr-8 py-2 w-48 md:w-64 focus:outline-none focus:border-[#brand-cyan]/50 text-xs text-zinc-300 font-mono"
+                  />
+                  <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-zinc-500" size={14} />
+                  {searchQuery && (
                     <button
-                      onClick={handleCreate}
-                      className="flex items-center gap-2 px-4 py-2 bg-zinc-950/70 hover:bg-zinc-800/50 border border-zinc-800/50 text-zinc-300 font-medium rounded-md text-sm font-mono transition-colors"
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-2.5 top-1/2 transform -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
                     >
-                      <Plus className="h-4 w-4" />
-                      {t('communityPresets.createNew')}
+                      <X size={14} />
                     </button>
                   )}
                 </div>
+
+                {!isEditing && isAuthenticated && (
+                  <button
+                    onClick={handleCreate}
+                    className="flex items-center gap-2 px-4 py-2 bg-zinc-950/70 hover:bg-zinc-800/50 border border-zinc-800/50 text-zinc-300 font-medium rounded-md text-sm font-mono transition-colors"
+                  >
+                    <Plus className="h-4 w-4" />
+                    {t('communityPresets.createNew')}
+                  </button>
+                )}
               </div>
+            </div>
             <div className="bg-zinc-900 border border-zinc-800/50 rounded-md p-4 md:p-6">
               {error && (
                 <div className="mb-4 bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-sm text-red-400 font-mono">
@@ -923,7 +923,7 @@ export const CommunityPresetsPage: React.FC = () => {
                 {currentPresets.length === 0 ? (
                   <div key="empty" className="bg-zinc-900 border border-zinc-800/50 rounded-xl p-12 text-center tab-content-active">
                     <p className="text-zinc-500 font-mono">
-                      {searchQuery.trim() 
+                      {searchQuery.trim()
                         ? (t('communityPresets.search.noResults') || `No presets found for "${searchQuery}"`)
                         : t('communityPresets.table.noPresets')
                       }
@@ -1086,7 +1086,7 @@ const PresetDetailModal: React.FC<{
     if (isCopying) {
       const glitchChars = '*•□./-®'
       const glitchInterval = setInterval(() => {
-        const randomGlitch = Array.from({ length: 4 }, () => 
+        const randomGlitch = Array.from({ length: 4 }, () =>
           glitchChars[Math.floor(Math.random() * glitchChars.length)]
         ).join('')
         setGlitchText(randomGlitch)
@@ -1218,20 +1218,20 @@ const PresetDetailModal: React.FC<{
             <div className="flex-1 space-y-4 min-w-0">
               {/* Details */}
               <div className="grid grid-cols-2 gap-3">
-            <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-4">
-              <label className="block text-xs font-semibold text-zinc-400 font-mono mb-2 uppercase">
-                Category
-              </label>
-              <p className="text-sm text-zinc-200 font-mono">{t(`communityPresets.categories.${migrated.category}`)}</p>
-            </div>
-            {migrated.category === 'presets' && migrated.presetType && (
-              <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-4">
-                <label className="block text-xs font-semibold text-zinc-400 font-mono mb-2 uppercase">
-                  Preset Type
-                </label>
-                <p className="text-sm text-zinc-200 font-mono uppercase">{migrated.presetType}</p>
-              </div>
-            )}
+                <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-4">
+                  <label className="block text-xs font-semibold text-zinc-400 font-mono mb-2 uppercase">
+                    Category
+                  </label>
+                  <p className="text-sm text-zinc-200 font-mono">{t(`communityPresets.categories.${migrated.category}`)}</p>
+                </div>
+                {migrated.category === 'presets' && migrated.presetType && (
+                  <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-4">
+                    <label className="block text-xs font-semibold text-zinc-400 font-mono mb-2 uppercase">
+                      Preset Type
+                    </label>
+                    <p className="text-sm text-zinc-200 font-mono uppercase">{migrated.presetType}</p>
+                  </div>
+                )}
                 <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-3">
                   <label className="block text-xs font-semibold text-zinc-400 font-mono mb-1.5 uppercase">
                     Aspect Ratio

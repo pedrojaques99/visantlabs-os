@@ -46,7 +46,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   static getDerivedStateFromError(error: Error): Partial<State> {
-    const isChunkError = 
+    const isChunkError =
       error?.message?.includes('Failed to fetch dynamically imported module') ||
       error?.message?.includes('Loading chunk') ||
       error?.message?.includes('Loading CSS chunk') ||
@@ -64,7 +64,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    const isChunkError = 
+    const isChunkError =
       error?.message?.includes('Failed to fetch dynamically imported module') ||
       error?.message?.includes('Loading chunk') ||
       error?.message?.includes('Loading CSS chunk') ||
@@ -72,10 +72,10 @@ export class ErrorBoundary extends Component<Props, State> {
       (error as any)?.code === 'CHUNK_LOAD_ERROR';
 
     console.error('ErrorBoundary caught an error:', error, errorInfo);
-    
+
     this.setState((prevState) => {
       const currentRetryCount = prevState.retryCount || 0;
-      
+
       // Auto-retry chunk errors up to 2 times before showing error
       if (isChunkError && currentRetryCount < 2) {
         // Use setTimeout to call attemptChunkRetry after state is set
@@ -114,7 +114,7 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       const currentRetryCount = prevState.retryCount || 0;
-      
+
       // Wait a bit before retrying
       this.retryTimeout = setTimeout(() => {
         this.setState({
@@ -256,7 +256,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 <>
                   <button
                     onClick={this.handleRetryChunk}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#52ddeb]/30 hover:border-[#52ddeb]/50 text-brand-cyan rounded-md transition-colors font-mono text-sm"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#brand-cyan]/30 hover:border-[#brand-cyan]/50 text-brand-cyan rounded-md transition-colors font-mono text-sm"
                   >
                     <RefreshCw className="h-4 w-4" />
                     {translations.reloadPage || 'Reload Page'}
@@ -273,7 +273,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 <>
                   <button
                     onClick={this.handleReset}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#52ddeb]/30 hover:border-[#52ddeb]/50 text-brand-cyan rounded-md transition-colors font-mono text-sm"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#brand-cyan]/30 hover:border-[#brand-cyan]/50 text-brand-cyan rounded-md transition-colors font-mono text-sm"
                   >
                     <RefreshCw className="h-4 w-4" />
                     {translations.tryAgain || 'Try Again'}

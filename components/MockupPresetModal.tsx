@@ -1,26 +1,34 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { X, Image as ImageIcon, ChevronDown, ChevronUp, Check, Users, Layers, Camera, MapPin, Sun, Grid, Plus } from 'lucide-react';
+import { X, Image as ImageIcon, Plus, Crown } from 'lucide-react';
 import type { MockupPresetType, MockupPreset } from '../types/mockupPresets';
 import type { Mockup } from '../services/mockupApi';
 import { getImageUrl } from '../utils/imageUtils';
 import { cn } from '../lib/utils';
 import { updatePresetsCache } from '../services/mockupPresetsService';
 import { getAllCommunityPresets } from '../services/communityPresetsService';
+import { PresetCard, CATEGORY_CONFIG } from './PresetCard';
+import type { CommunityPrompt } from '../types/communityPrompts';
+import { useTranslation } from '../hooks/useTranslation';
+import { fetchAllOfficialPresets } from '../services/unifiedPresetService';
 
 interface MockupPresetModalProps {
   isOpen: boolean;
   selectedPresetId: MockupPresetType | string;
   onClose: () => void;
   onSelectPreset?: (presetId: MockupPresetType | string) => void;
-  onSelectPresets?: (presetIds: string[]) => void; // New callback for multiple selection
+  onSelectPresets?: (presetIds: string[]) => void;
   userMockups?: Mockup[];
   isLoading?: boolean;
-  multiSelect?: boolean; // Enable multi-select mode
-  maxSelections?: number; // Maximum number of selections (default 5)
+  multiSelect?: boolean;
+  maxSelections?: number;
 }
 
-type CommunityPresetType = 'all' | 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance';
+type PresetFilterType = 'all' | 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance';
+
+interface UnifiedPreset extends CommunityPrompt {
+  isOfficial?: boolean;
+}
 
 export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
   isOpen,
@@ -33,119 +41,94 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
   multiSelect = false,
   maxSelections = 5,
 }) => {
-  const [presets, setPresets] = React.useState<MockupPreset[]>([]);
+  const { t } = useTranslation();
+  const [officialPresets, setOfficialPresets] = React.useState<MockupPreset[]>([]);
   const [communityPresets, setCommunityPresets] = React.useState<any[]>([]);
   const [isLoadingPresets, setIsLoadingPresets] = React.useState(false);
-  const [isLoadingCommunityPresets, setIsLoadingCommunityPresets] = React.useState(false);
-  const [expandedPrompts, setExpandedPrompts] = React.useState<Set<string>>(new Set());
-  const [failedImages, setFailedImages] = React.useState<Set<string>>(new Set());
-  const [failedUserMockupImages, setFailedUserMockupImages] = React.useState<Set<string>>(new Set());
   const [selectedPresetIds, setSelectedPresetIds] = React.useState<Set<string>>(new Set());
-  const [activeTab, setActiveTab] = React.useState<'official' | 'community' | 'custom'>('official');
-  const [communityFilter, setCommunityFilter] = React.useState<CommunityPresetType>('all');
+  const [activeFilter, setActiveFilter] = React.useState<PresetFilterType>('all');
 
-  const togglePrompt = (presetId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setExpandedPrompts((prev) => {
-      const next = new Set(prev);
-      if (next.has(presetId)) {
-        next.delete(presetId);
-      } else {
-        next.add(presetId);
-      }
-      return next;
-    });
-  };
-
-  const handleImageError = (presetId: string) => {
-    setFailedImages((prev) => new Set(prev).add(presetId));
-  };
-
-  const handleUserMockupImageError = (mockupId: string) => {
-    setFailedUserMockupImages((prev) => new Set(prev).add(mockupId));
-  };
-
-  // Fetch presets from MongoDB when modal opens
+  // Fetch all presets
   React.useEffect(() => {
     if (!isOpen) {
-      // Clear presets when modal closes to ensure fresh data on next open
-      setPresets([]);
+      setOfficialPresets([]);
       setCommunityPresets([]);
       return;
     }
 
-    const fetchPresets = async () => {
+    const fetchAllPresets = async () => {
       setIsLoadingPresets(true);
       try {
-        const response = await fetch('/api/admin/presets/public');
-        if (response.ok) {
-          const data = await response.json();
-          if (data.mockupPresets && Array.isArray(data.mockupPresets)) {
-            // Normalize presets to ensure referenceImageUrl is always a string
-            const normalizedPresets = data.mockupPresets.map((p: any) => ({
-              ...p,
-              referenceImageUrl: p.referenceImageUrl || '',
-            }));
-            setPresets(normalizedPresets);
-            // Update the service cache so other parts of the app can use it
-            updatePresetsCache(normalizedPresets);
-          }
-        }
-      } catch (error) {
-        console.error('Failed to load presets from MongoDB:', error);
-        setPresets([]);
-      } finally {
-        setIsLoadingPresets(false);
-      }
-    };
+        // Fetch ALL official presets (mockup, angle, texture, ambience, luminance)
+        const officialData = await fetchAllOfficialPresets();
 
-    const fetchCommunityPresets = async () => {
-      setIsLoadingCommunityPresets(true);
-      try {
-        const allPresets = await getAllCommunityPresets();
-        // Flatten and normalize
+        // Helper function to process presets by type (reduces code duplication)
+        const processPresetType = (presets: any[] | undefined, presetType: string): any[] => {
+          if (!presets || !Array.isArray(presets)) {
+            return [];
+          }
+          return presets.map((p: any) => ({
+            ...p,
+            referenceImageUrl: p.referenceImageUrl || '',
+            presetType,
+          }));
+        };
+
+        // Combine all official presets with their correct presetType
+        const allOfficialPresets: any[] = [
+          ...processPresetType(officialData.mockupPresets, 'mockup'),
+          ...processPresetType(officialData.anglePresets, 'angle'),
+          ...processPresetType(officialData.texturePresets, 'texture'),
+          ...processPresetType(officialData.ambiencePresets, 'ambience'),
+          ...processPresetType(officialData.luminancePresets, 'luminance'),
+        ];
+
+        setOfficialPresets(allOfficialPresets);
+
+        // Update mockup cache only with mockup presets
+        const mockupOnly = allOfficialPresets.filter(p => p.presetType === 'mockup');
+        if (mockupOnly.length > 0) {
+          updatePresetsCache(mockupOnly);
+        }
+
+        // Fetch community presets
+        const allCommunity = await getAllCommunityPresets();
         const flattened: any[] = [];
-        Object.entries(allPresets).forEach(([type, list]) => {
+        Object.entries(allCommunity).forEach(([type, list]) => {
           if (Array.isArray(list)) {
             list.forEach(p => {
               flattened.push({
                 ...p,
                 referenceImageUrl: p.referenceImageUrl || '',
-                bgType: type // Add type for filtering if not present
+                presetType: type,
               });
             });
           }
         });
         setCommunityPresets(flattened);
       } catch (error) {
-        console.error('Failed to load community presets:', error);
+        console.error('Failed to load presets:', error);
+        setOfficialPresets([]);
         setCommunityPresets([]);
       } finally {
-        setIsLoadingCommunityPresets(false);
+        setIsLoadingPresets(false);
       }
     };
 
-    fetchPresets();
-    fetchCommunityPresets();
+    fetchAllPresets();
   }, [isOpen]);
 
+  // Event Listeners
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose();
-      }
+      if (event.key === 'Escape') onClose();
     };
 
     if (isOpen) {
-      // Prevent body scroll when modal is open
       document.body.style.overflow = 'hidden';
       window.addEventListener('keydown', handleKeyDown);
-
-      // Focus the modal container
       const modalElement = document.getElementById('mockup-preset-modal');
-      if (modalElement) {
-        modalElement.focus();
-      }
+      if (modalElement) modalElement.focus();
 
       return () => {
         document.body.style.overflow = '';
@@ -154,7 +137,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
     }
   }, [isOpen, onClose]);
 
-  // Reset selections when modal opens/closes
+  // Reset selections
   React.useEffect(() => {
     if (isOpen && !multiSelect) {
       setSelectedPresetIds(new Set());
@@ -165,7 +148,6 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
     if (isLoading) return;
 
     if (multiSelect) {
-      // Toggle selection in multi-select mode
       setSelectedPresetIds((prev) => {
         const next = new Set(prev);
         if (next.has(presetId)) {
@@ -176,7 +158,6 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
         return next;
       });
     } else {
-      // Single select mode - close modal and call callback
       onSelectPreset?.(presetId);
       onClose();
     }
@@ -193,24 +174,82 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
     return multiSelect ? selectedPresetIds.has(presetId) : presetId === selectedPresetId;
   };
 
-  const canSelectMore = selectedPresetIds.size < maxSelections;
-
-  // Filter community presets
-  const filteredCommunityPresets = React.useMemo(() => {
-    if (communityFilter === 'all') return communityPresets;
-    return communityPresets.filter(p => p.presetType === communityFilter || p.bgType === communityFilter);
-  }, [communityPresets, communityFilter]);
-
-  const getFilterIcon = (type: CommunityPresetType) => {
-    switch (type) {
-      case 'mockup': return ImageIcon;
-      case 'angle': return Camera;
-      case 'texture': return Layers;
-      case 'ambience': return MapPin;
-      case 'luminance': return Sun;
-      default: return Grid;
-    }
+  const getSelectionIndex = (presetId: string) => {
+    if (!multiSelect || !selectedPresetIds.has(presetId)) return undefined;
+    return Array.from(selectedPresetIds).indexOf(presetId) + 1;
   };
+
+  // Combine and filter all presets
+  const allUnifiedPresets = React.useMemo(() => {
+    // Convert official presets to unified format (presetType already set during fetch)
+    const officialUnified: UnifiedPreset[] = officialPresets.map((preset: any) => ({
+      id: preset.id,
+      userId: 'system',
+      category: preset.presetType || 'presets',
+      presetType: preset.presetType || 'mockup',
+      name: preset.name,
+      description: preset.description,
+      prompt: preset.prompt,
+      referenceImageUrl: preset.referenceImageUrl,
+      aspectRatio: preset.aspectRatio,
+      isApproved: true,
+      createdAt: preset.createdAt || new Date().toISOString(),
+      updatedAt: preset.updatedAt || new Date().toISOString(),
+      isOfficial: true,
+    }));
+
+    // Convert community presets to unified format (presetType already set during fetch)
+    const communityUnified: UnifiedPreset[] = communityPresets.map((preset: any) => ({
+      ...preset,
+      category: preset.category || preset.presetType || 'presets',
+      presetType: preset.presetType,
+      isOfficial: false,
+    }));
+
+    // Convert user mockups to unified format
+    const userUnified: UnifiedPreset[] = userMockups.map((mockup) => ({
+      id: mockup._id || '',
+      userId: 'user',
+      category: 'mockup',
+      presetType: 'mockup',
+      name: mockup.prompt?.substring(0, 30) || 'Custom Mockup',
+      description: mockup.prompt || '',
+      prompt: mockup.prompt || '',
+      referenceImageUrl: getImageUrl(mockup),
+      aspectRatio: '16:9',
+      isApproved: true,
+      createdAt: mockup.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      isOfficial: false,
+    }));
+
+    // Combine all: official first, then community, then user
+    return [...officialUnified, ...communityUnified, ...userUnified];
+  }, [officialPresets, communityPresets, userMockups]);
+
+  // Filter presets by type
+  const filteredPresets = React.useMemo(() => {
+    if (activeFilter === 'all') return allUnifiedPresets;
+    return allUnifiedPresets.filter(p => p.presetType === activeFilter);
+  }, [allUnifiedPresets, activeFilter]);
+
+  // Count presets by type
+  // Optimized: single pass reduce instead of multiple filter calls
+  const presetCounts = React.useMemo(() => {
+    const initialCounts: Record<PresetFilterType, number> = {
+      all: 0, mockup: 0, texture: 0, angle: 0, ambience: 0, luminance: 0,
+    };
+
+    const counts = allUnifiedPresets.reduce((acc, p) => {
+      acc.all++;
+      if (p.presetType && Object.prototype.hasOwnProperty.call(acc, p.presetType)) {
+        acc[p.presetType as PresetFilterType]++;
+      }
+      return acc;
+    }, initialCounts);
+
+    return counts;
+  }, [allUnifiedPresets]);
 
   if (!isOpen) return null;
 
@@ -230,457 +269,124 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-zinc-800/50">
+        <div className="flex items-center justify-between p-4 border-b border-zinc-800/50 bg-zinc-900/20">
           <div className="flex items-center gap-2">
             <ImageIcon size={20} className="text-brand-cyan" />
-            <h2 id="mockup-preset-modal-title" className="text-sm font-mono text-zinc-300 uppercase">
-              {multiSelect ? `Select Mockup Presets (${selectedPresetIds.size}/${maxSelections})` : 'Select Mockup Preset'}
+            <h2 id="mockup-preset-modal-title" className="text-sm font-mono text-zinc-300 uppercase tracking-wider">
+              {multiSelect
+                ? t('canvasNodes.promptNode.presetModal.titleMulti')
+                  .replace('{selected}', selectedPresetIds.size.toString())
+                  .replace('{max}', maxSelections.toString())
+                : t('canvasNodes.promptNode.presetModal.title')}
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-zinc-500 hover:text-white transition-colors"
+            className="p-2 text-zinc-500 hover:text-white transition-colors hover:bg-zinc-800/50 rounded-full"
             title="Close (Esc)"
           >
             <X size={20} />
           </button>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-2 px-4 pt-4 border-b border-zinc-800/50">
+        {/* Type Filters */}
+        <div className="px-4 py-3 border-b border-zinc-800/50 flex gap-2 overflow-x-auto bg-zinc-900/10">
+          {(['all', 'mockup', 'texture', 'angle', 'ambience', 'luminance'] as PresetFilterType[]).map((type) => {
+            const config = CATEGORY_CONFIG[type as keyof typeof CATEGORY_CONFIG];
+            const Icon = config ? config.icon : ImageIcon;
+            const count = presetCounts[type];
+
+            return (
+              <button
+                key={type}
+                onClick={() => setActiveFilter(type)}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-mono uppercase transition-all whitespace-nowrap border',
+                  activeFilter === type
+                    ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
+                    : 'bg-zinc-900/50 text-zinc-400 border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700'
+                )}
+              >
+                <Icon size={12} />
+                <span>{t(`communityPresets.tabs.${type}`) || type}</span>
+                <span className="ml-1 text-[9px] opacity-60">({count})</span>
+              </button>
+            );
+          })}
+
+          {/* Create New Button */}
           <button
-            onClick={() => setActiveTab('official')}
-            className={cn(
-              'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 relative',
-              activeTab === 'official'
-                ? 'text-brand-cyan border-[#52ddeb]'
-                : 'text-zinc-400 border-transparent hover:text-zinc-300 hover:border-zinc-600/50'
-            )}
+            onClick={(e) => {
+              e.stopPropagation();
+              window.location.href = '/canvas';
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 ml-auto bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/30 rounded-full text-[10px] font-mono text-brand-cyan transition-all hover:scale-105 whitespace-nowrap"
           >
-            Official ({presets.length})
+            <Plus size={12} />
+            <span>{t('canvasNodes.promptNode.presetModal.createNew')}</span>
           </button>
-          <button
-            onClick={() => setActiveTab('community')}
-            className={cn(
-              'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 flex items-center gap-1.5 relative',
-              activeTab === 'community'
-                ? 'text-brand-cyan border-[#52ddeb]'
-                : 'text-zinc-400 border-transparent hover:text-zinc-300 hover:border-zinc-600/50'
-            )}
-          >
-            <Users size={12} />
-            Community ({communityPresets.length})
-          </button>
-          {userMockups && userMockups.length > 0 && (
-            <button
-              onClick={() => setActiveTab('custom')}
-              className={cn(
-                'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 relative',
-                activeTab === 'custom'
-                  ? 'text-brand-cyan border-[#52ddeb]'
-                  : 'text-zinc-400 border-transparent hover:text-zinc-300 hover:border-zinc-600/50'
-              )}
-            >
-              Custom ({userMockups.length})
-            </button>
-          )}
         </div>
 
-        {/* Community Filters */}
-        {activeTab === 'community' && (
-          <div className="px-4 py-2 border-b border-zinc-800/50 flex gap-2 overflow-x-auto">
-            {(['all', 'mockup', 'texture', 'angle', 'ambience', 'luminance'] as CommunityPresetType[]).map((type) => {
-              const Icon = getFilterIcon(type);
-              return (
-                <button
-                  key={type}
-                  onClick={() => setCommunityFilter(type)}
-                  className={cn(
-                    'flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[10px] font-mono uppercase transition-all whitespace-nowrap',
-                    communityFilter === type
-                      ? 'bg-brand-cyan/20 text-brand-cyan border border-[#52ddeb]/30'
-                      : 'bg-zinc-900/50 text-zinc-400 border border-zinc-700/50 hover:bg-zinc-800/50'
-                  )}
-                >
-                  <Icon size={12} />
-                  {type}
-                </button>
-              );
-            })}
-          </div>
-        )}
-
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4 relative">
-          {/* Official Presets Tab */}
-          <div
-            className={cn(
-              'transition-all duration-300 ease-in-out',
-              activeTab === 'official'
-                ? 'opacity-100 translate-y-0'
-                : 'opacity-0 translate-y-2 absolute inset-0 pointer-events-none'
-            )}
-          >
-            <div>
-              <h3 className="text-xs font-mono text-zinc-400 uppercase mb-4">Presets</h3>
-              {isLoadingPresets ? (
-                <div className="flex items-center justify-center py-12">
-                  <p className="text-sm font-mono text-zinc-400">Carregando presets...</p>
-                </div>
-              ) : presets.length === 0 ? (
-                <div className="flex items-center justify-center py-12">
-                  <p className="text-sm font-mono text-zinc-400">Nenhum preset encontrado</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                  {presets.map((preset) => {
-                    const presetImageUrl = preset.referenceImageUrl;
-                    const isSelected = isPresetSelected(preset.id);
-                    const isPromptExpanded = expandedPrompts.has(preset.id);
-                    const hasImage = presetImageUrl && !failedImages.has(preset.id);
-                    const isDisabled = multiSelect && !isSelected && !canSelectMore;
-
-                    return (
-                      <div
-                        key={`preset-${preset.id}`}
-                        className={cn(
-                          'flex flex-col rounded-md border transition-all overflow-hidden group',
-                          isSelected
-                            ? 'bg-brand-cyan/10 border-[#52ddeb]/50 hover:bg-brand-cyan/15'
-                            : 'bg-zinc-900/30 border-zinc-700/30 hover:bg-zinc-900/50 hover:border-zinc-600/50',
-                          (isLoading || isDisabled) && 'opacity-50 cursor-not-allowed'
-                        )}
-                      >
-                        {/* Thumbnail */}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (!isLoading && !isDisabled) {
-                              handlePresetClick(preset.id);
-                            }
-                          }}
-                          disabled={isLoading || isDisabled}
-                          className="relative w-full aspect-square bg-zinc-900/30 border-b border-zinc-700/30 overflow-hidden flex-shrink-0"
-                        >
-                          {hasImage ? (
-                            <img
-                              src={presetImageUrl}
-                              alt={preset.name}
-                              className="w-full h-full object-contain bg-zinc-900/50 group-hover:scale-105 transition-transform duration-300"
-                              onError={() => handleImageError(preset.id)}
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-zinc-900/50">
-                              <ImageIcon size={40} className="text-zinc-500" />
-                            </div>
-                          )}
-                          {/* Selection Indicator */}
-                          {isSelected && (
-                            <div className="absolute top-2 right-2 w-6 h-6 bg-brand-cyan rounded-md border-2 border-black flex items-center justify-center">
-                              {multiSelect ? (
-                                <span className="text-[10px] font-mono font-bold text-black">
-                                  {Array.from(selectedPresetIds).indexOf(preset.id) + 1}
-                                </span>
-                              ) : (
-                                <Check size={12} className="text-black" strokeWidth={3} />
-                              )}
-                            </div>
-                          )}
-                        </button>
-
-                        {/* Name and Prompt Section */}
-                        <div className="flex flex-col p-3 min-h-[80px]">
-                          {/* Name */}
-                          <div className={cn(
-                            'text-sm font-mono font-semibold mb-2 line-clamp-2 leading-tight',
-                            isSelected ? 'text-brand-cyan' : 'text-zinc-200'
-                          )}>
-                            {preset.name}
-                          </div>
-
-                          {/* Collapsible Prompt */}
-                          {preset.prompt && (
-                            <div className="flex-1 flex flex-col min-h-0">
-                              <button
-                                onClick={(e) => togglePrompt(preset.id, e)}
-                                className="flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-300 transition-colors mb-1"
-                                aria-expanded={isPromptExpanded}
-                              >
-                                <span className="text-[10px] uppercase font-mono">Prompt</span>
-                                {isPromptExpanded ? (
-                                  <ChevronUp size={12} className="flex-shrink-0" />
-                                ) : (
-                                  <ChevronDown size={12} className="flex-shrink-0" />
-                                )}
-                              </button>
-                              {isPromptExpanded && (
-                                <div className="text-[10px] text-zinc-500 font-mono leading-relaxed overflow-y-auto max-h-24">
-                                  {preset.prompt}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 custom-scrollbar bg-black/50">
+          {isLoadingPresets ? (
+            <div className="flex flex-col items-center justify-center py-20 text-zinc-500 gap-2">
+              <div className="w-6 h-6 border-2 border-brand-cyan/30 border-t-brand-cyan rounded-full animate-spin"></div>
+              <p className="text-xs font-mono">{t('canvasNodes.promptNode.presetModal.loading')}</p>
             </div>
-          </div>
-
-          {/* Community Presets Tab */}
-          <div
-            className={cn(
-              'transition-all duration-300 ease-in-out',
-              activeTab === 'community'
-                ? 'opacity-100 translate-y-0'
-                : 'opacity-0 translate-y-2 absolute inset-0 pointer-events-none'
-            )}
-          >
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <Users size={14} className="text-brand-cyan" />
-                  <h3 className="text-xs font-mono text-zinc-400 uppercase">Community Presets</h3>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="text-[10px] font-mono text-zinc-500">
-                    {filteredCommunityPresets.length} items
-                  </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      window.location.href = '/canvas';
-                    }}
-                    className="flex items-center gap-1 px-2 py-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#52ddeb]/30 rounded text-[10px] font-mono text-brand-cyan transition-all hover:scale-105"
-                    title="Create new community preset"
-                  >
-                    <Plus size={10} />
-                    <span>New</span>
-                  </button>
-                </div>
-              </div>
-
-              {isLoadingCommunityPresets ? (
-                <div className="flex items-center justify-center py-12">
-                  <p className="text-sm font-mono text-zinc-400">Loading community presets...</p>
-                </div>
-              ) : filteredCommunityPresets.length === 0 ? (
-                <div className="flex items-center justify-center py-12">
-                  <p className="text-sm font-mono text-zinc-400">Nenhum preset encontrado</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                  {filteredCommunityPresets.map((preset: any) => {
-                    const presetImageUrl = preset.referenceImageUrl;
-                    const isSelected = isPresetSelected(preset.id);
-                    const isPromptExpanded = expandedPrompts.has(preset.id);
-                    const hasImage = presetImageUrl && !failedImages.has(preset.id);
-                    const isDisabled = multiSelect && !isSelected && !canSelectMore;
-                    const type = preset.presetType || preset.bgType || 'mockup';
-
-                    return (
-                      <div
-                        key={`community-preset-${preset.id}`}
-                        className={cn(
-                          'flex flex-col rounded-md border transition-all overflow-hidden group',
-                          isSelected
-                            ? 'bg-brand-cyan/10 border-[#52ddeb]/50 hover:bg-brand-cyan/15'
-                            : 'bg-zinc-900/30 border-zinc-700/30 hover:bg-zinc-900/50 hover:border-zinc-600/50',
-                          (isLoading || isDisabled) && 'opacity-50 cursor-not-allowed'
-                        )}
-                      >
-                        {/* Thumbnail */}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (!isLoading && !isDisabled) {
-                              handlePresetClick(preset.id);
-                            }
-                          }}
-                          disabled={isLoading || isDisabled}
-                          className="relative w-full aspect-square bg-zinc-900/30 border-b border-zinc-700/30 overflow-hidden flex-shrink-0"
-                        >
-                          {hasImage ? (
-                            <img
-                              src={presetImageUrl}
-                              alt={preset.name}
-                              className="w-full h-full object-contain bg-zinc-900/50 group-hover:scale-105 transition-transform duration-300"
-                              onError={() => handleImageError(preset.id)}
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-zinc-900/50">
-                              <ImageIcon size={40} className="text-zinc-500" />
-                            </div>
-                          )}
-                          {/* Selection Indicator */}
-                          {isSelected && (
-                            <div className="absolute top-2 right-2 w-6 h-6 bg-brand-cyan rounded-md border-2 border-[#1A1A1A] flex items-center justify-center">
-                              {multiSelect ? (
-                                <span className="text-[10px] font-mono font-bold text-[#1A1A1A]">
-                                  {Array.from(selectedPresetIds).indexOf(preset.id) + 1}
-                                </span>
-                              ) : (
-                                <Check size={12} className="text-[#1A1A1A]" strokeWidth={3} />
-                              )}
-                            </div>
-                          )}
-                          {/* Community Badge */}
-                          <div className="absolute top-2 left-2 flex gap-1">
-                            <div className="px-1.5 py-0.5 bg-brand-cyan/20 border border-[#52ddeb]/30 rounded text-[8px] font-mono text-brand-cyan">
-                              Comm.
-                            </div>
-                            <div className="px-1.5 py-0.5 bg-zinc-800/80 border border-zinc-700/50 rounded text-[8px] font-mono text-zinc-400 capitalize">
-                              {type}
-                            </div>
-                          </div>
-                        </button>
-
-                        {/* Name and Prompt Section */}
-                        <div className="flex flex-col p-3 min-h-[80px]">
-                          {/* Name */}
-                          <div className={cn(
-                            'text-sm font-mono font-semibold mb-2 line-clamp-2 leading-tight',
-                            isSelected ? 'text-brand-cyan' : 'text-zinc-200'
-                          )}>
-                            {preset.name}
-                          </div>
-
-                          {/* Collapsible Prompt */}
-                          {preset.prompt && (
-                            <div className="flex-1 flex flex-col min-h-0">
-                              <button
-                                onClick={(e) => togglePrompt(preset.id, e)}
-                                className="flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-300 transition-colors mb-1"
-                                aria-expanded={isPromptExpanded}
-                              >
-                                <span className="text-[10px] uppercase font-mono">Prompt</span>
-                                {isPromptExpanded ? (
-                                  <ChevronUp size={12} className="flex-shrink-0" />
-                                ) : (
-                                  <ChevronDown size={12} className="flex-shrink-0" />
-                                )}
-                              </button>
-                              {isPromptExpanded && (
-                                <div className="text-[10px] text-zinc-500 font-mono leading-relaxed overflow-y-auto max-h-24">
-                                  {preset.prompt}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+          ) : filteredPresets.length === 0 ? (
+            <div className="flex items-center justify-center py-20">
+              <p className="text-sm font-mono text-zinc-500">{t('canvasNodes.promptNode.presetModal.noCommunity')}</p>
             </div>
-          </div>
-
-          {/* Custom Mockups Tab */}
-          {userMockups && userMockups.length > 0 && (
+          ) : (
             <div
-              className={cn(
-                'transition-all duration-300 ease-in-out',
-                activeTab === 'custom'
-                  ? 'opacity-100 translate-y-0'
-                  : 'opacity-0 translate-y-2 absolute inset-0 pointer-events-none'
-              )}
+              className="grid gap-4"
+              style={{
+                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))'
+              }}
             >
-              <div>
-                <h3 className="text-xs font-mono text-zinc-400 uppercase mb-4">Custom Mockups</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                  {userMockups.map((mockup) => {
-                    const mockupId = mockup._id || '';
-                    const mockupImageUrl = getImageUrl(mockup);
-                    const isSelected = isPresetSelected(mockupId);
-                    const hasImage = mockupImageUrl && !failedUserMockupImages.has(mockupId);
-                    const isDisabled = multiSelect && !isSelected && !canSelectMore;
-
-                    return (
-                      <div
-                        key={`usermockup-${mockupId}`}
-                        className={cn(
-                          'flex flex-col rounded-md border transition-all overflow-hidden group',
-                          isSelected
-                            ? 'bg-brand-cyan/10 border-[#52ddeb]/50 hover:bg-brand-cyan/15'
-                            : 'bg-zinc-900/30 border-zinc-700/30 hover:bg-zinc-900/50 hover:border-zinc-600/50',
-                          (isLoading || isDisabled) && 'opacity-50 cursor-not-allowed'
-                        )}
-                      >
-                        {/* Thumbnail */}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (!isLoading && !isDisabled) {
-                              handlePresetClick(mockupId);
-                            }
-                          }}
-                          disabled={isLoading || isDisabled}
-                          className="relative w-full aspect-square bg-zinc-900/30 border-b border-zinc-700/30 overflow-hidden flex-shrink-0"
-                        >
-                          {hasImage ? (
-                            <img
-                              src={mockupImageUrl}
-                              alt={mockup.prompt || 'Custom Mockup'}
-                              className="w-full h-full object-contain bg-zinc-900/50 group-hover:scale-105 transition-transform duration-300"
-                              onError={() => handleUserMockupImageError(mockupId)}
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-zinc-900/50">
-                              <ImageIcon size={40} className="text-zinc-500" />
-                            </div>
-                          )}
-                          {/* Selection Indicator */}
-                          {isSelected && (
-                            <div className="absolute top-2 right-2 w-6 h-6 bg-brand-cyan rounded-md border-2 border-black flex items-center justify-center">
-                              {multiSelect ? (
-                                <span className="text-[10px] font-mono font-bold text-black">
-                                  {Array.from(selectedPresetIds).indexOf(mockupId) + 1}
-                                </span>
-                              ) : (
-                                <Check size={12} className="text-black" strokeWidth={3} />
-                              )}
-                            </div>
-                          )}
-                        </button>
-
-                        {/* Name Section */}
-                        <div className="flex flex-col p-3 min-h-[80px]">
-                          <div className={cn(
-                            'text-sm font-mono font-semibold mb-2 line-clamp-2 leading-tight',
-                            isSelected ? 'text-brand-cyan' : 'text-zinc-200'
-                          )}>
-                            {mockup.prompt?.substring(0, 30) || 'Custom Mockup'}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+              {filteredPresets.map((preset) => (
+                <div key={preset.id} className="relative">
+                  {preset.isOfficial && (
+                    <div className="absolute top-2 left-2 z-10 flex items-center gap-1 px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/40 rounded text-[8px] font-mono text-amber-400 uppercase backdrop-blur-sm">
+                      <Crown size={8} />
+                      <span>{t('canvasNodes.promptNode.presetModal.official') || 'Official'}</span>
+                    </div>
+                  )}
+                  <PresetCard
+                    preset={preset}
+                    onClick={() => handlePresetClick(preset.id)}
+                    isAuthenticated={true}
+                    canEdit={false}
+                    t={t}
+                    selected={isPresetSelected(preset.id)}
+                    selectionIndex={getSelectionIndex(preset.id)}
+                  />
                 </div>
-              </div>
+              ))}
             </div>
           )}
         </div>
 
         {/* Footer with Select Mockups button (multi-select mode only) */}
         {multiSelect && (
-          <div className="border-t border-zinc-800/50 p-4 flex items-center justify-between">
+          <div className="border-t border-zinc-800/50 p-4 flex items-center justify-between bg-zinc-900/50 backdrop-blur-md">
             <div className="text-xs font-mono text-zinc-400">
               {selectedPresetIds.size === 0
-                ? 'Select up to 5 presets'
-                : `${selectedPresetIds.size} of ${maxSelections} presets selected`}
+                ? t('canvasNodes.promptNode.presetModal.multiSelectMessageEmpty').replace('{max}', maxSelections.toString())
+                : t('canvasNodes.promptNode.presetModal.multiSelectMessage')
+                  .replace('{selected}', selectedPresetIds.size.toString())
+                  .replace('{max}', maxSelections.toString())}
             </div>
             <button
               onClick={handleSelectMockups}
               disabled={selectedPresetIds.size === 0 || isLoading}
               className={cn(
-                'px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#52ddeb]/30 rounded text-xs font-mono text-brand-cyan transition-colors',
-                (selectedPresetIds.size === 0 || isLoading) && 'opacity-50 cursor-not-allowed'
+                'px-6 py-2.5 bg-brand-cyan text-black font-semibold rounded-md text-xs font-mono transition-all hover:bg-brand-cyan/90 hover:shadow-lg hover:shadow-brand-cyan/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed',
+                selectedPresetIds.size > 0 && 'animate-pulse-subtle'
               )}
             >
-              Select Mockups
+              {t('canvasNodes.promptNode.presetModal.confirmSelection')}
             </button>
           </div>
         )}
@@ -688,6 +394,5 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
     </div>
   );
 
-  // Render modal using portal to body
   return createPortal(modalContent, document.body);
 };

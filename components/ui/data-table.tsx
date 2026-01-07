@@ -86,7 +86,7 @@ export function DataTable<TData, TValue>({
                 onChange={(event) =>
                   table.getColumn(searchKey)?.setFilterValue(event.target.value)
                 }
-                className="pl-10 bg-black/40 border-zinc-800/50 text-zinc-300 placeholder:text-zinc-500 focus:ring-[#52ddeb]/30 focus:border-[#52ddeb]/50"
+                className="pl-10 bg-black/40 border-zinc-800/50 text-zinc-300 placeholder:text-zinc-500 focus:ring-[#brand-cyan]/30 focus:border-[#brand-cyan]/50"
               />
             </div>
           )}
@@ -94,94 +94,94 @@ export function DataTable<TData, TValue>({
       )}
       <div className={cn("rounded-md border border-zinc-800/50", className)}>
         <Table style={{ width: table.getTotalSize(), minWidth: '100%', tableLayout: 'fixed' }}>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="hover:bg-transparent border-zinc-800/50">
-              {headerGroup.headers.map((header) => {
-                return (
-                  <TableHead
-                    key={header.id}
-                    style={{ width: header.getSize() }}
-                    className="relative group p-0"
-                  >
-                    <div 
-                      className={cn(
-                        "px-4 py-2 flex items-center gap-2 h-full",
-                        header.column.getCanSort() && "cursor-pointer select-none hover:text-zinc-200 transition-colors"
-                      )}
-                      onClick={header.column.getToggleSortingHandler()}
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id} className="hover:bg-transparent border-zinc-800/50">
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead
+                      key={header.id}
+                      style={{ width: header.getSize() }}
+                      className="relative group p-0"
                     >
-                    <div className="flex items-center gap-2 flex-1 overflow-hidden">
-                      <div className="flex-1 truncate">
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </div>
-                      {header.column.getCanSort() && (
-                        <div className="w-4 h-4 flex-shrink-0">
-                          {{
-                            asc: <ArrowUp className="h-3 w-3" />,
-                            desc: <ArrowDown className="h-3 w-3" />,
-                          }[header.column.getIsSorted() as string] ?? (
-                            <ArrowUpDown className="h-3 w-3 opacity-30 group-hover:opacity-100 transition-opacity" />
+                      <div
+                        className={cn(
+                          "px-4 py-2 flex items-center gap-2 h-full",
+                          header.column.getCanSort() && "cursor-pointer select-none hover:text-zinc-200 transition-colors"
+                        )}
+                        onClick={header.column.getToggleSortingHandler()}
+                      >
+                        <div className="flex items-center gap-2 flex-1 overflow-hidden">
+                          <div className="flex-1 truncate">
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                          </div>
+                          {header.column.getCanSort() && (
+                            <div className="w-4 h-4 flex-shrink-0">
+                              {{
+                                asc: <ArrowUp className="h-3 w-3" />,
+                                desc: <ArrowDown className="h-3 w-3" />,
+                              }[header.column.getIsSorted() as string] ?? (
+                                  <ArrowUpDown className="h-3 w-3 opacity-30 group-hover:opacity-100 transition-opacity" />
+                                )}
+                            </div>
                           )}
                         </div>
+                      </div>
+
+                      {/* Resize Handle */}
+                      {header.column.getCanResize() && (
+                        <div
+                          onMouseDown={header.getResizeHandler()}
+                          onTouchStart={header.getResizeHandler()}
+                          className={cn(
+                            "absolute right-0 top-0 h-full w-1 cursor-col-resize bg-zinc-700/50 opacity-0 group-hover:opacity-100 transition-opacity z-10",
+                            header.column.getIsResizing() && "bg-brand-cyan opacity-100 w-0.5"
+                          )}
+                        />
                       )}
-                    </div>
-                    </div>
-                    
-                    {/* Resize Handle */}
-                    {header.column.getCanResize() && (
-                      <div
-                        onMouseDown={header.getResizeHandler()}
-                        onTouchStart={header.getResizeHandler()}
-                        className={cn(
-                          "absolute right-0 top-0 h-full w-1 cursor-col-resize bg-zinc-700/50 opacity-0 group-hover:opacity-100 transition-opacity z-10",
-                          header.column.getIsResizing() && "bg-brand-cyan opacity-100 w-0.5"
-                        )}
-                      />
-                    )}
-                  </TableHead>
-                )
-              })}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && "selected"}
-                className="border-zinc-800/30 hover:bg-black/20 transition-colors"
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell 
-                    key={cell.id}
-                    style={{ width: cell.column.getSize() }}
-                    className="px-4 py-3 overflow-hidden"
-                  >
-                    <div className="truncate">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </div>
-                  </TableCell>
-                ))}
+                    </TableHead>
+                  )
+                })}
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center text-zinc-500 font-mono">
-                No results.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                  className="border-zinc-800/30 hover:bg-black/20 transition-colors"
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell
+                      key={cell.id}
+                      style={{ width: cell.column.getSize() }}
+                      className="px-4 py-3 overflow-hidden"
+                    >
+                      <div className="truncate">
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </div>
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 text-center text-zinc-500 font-mono">
+                  No results.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
-  </div>
-)
+  )
 }
 

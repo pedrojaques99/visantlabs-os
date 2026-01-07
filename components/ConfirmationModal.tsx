@@ -58,18 +58,18 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     },
     info: {
       icon: 'text-brand-cyan',
-      button: 'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border-[#52ddeb]/30 hover:border-[#52ddeb]/50'
+      button: 'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border-[#brand-cyan]/30 hover:border-[#brand-cyan]/50'
     }
   };
 
   const styles = variantStyles[variant];
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-black/50 backdrop-blur-sm overflow-y-auto"
       onClick={onClose}
     >
-      <div 
+      <div
         className="bg-black/95 backdrop-blur-xl border border-zinc-800/50 rounded-md p-6 w-full max-w-lg mx-4 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
@@ -93,7 +93,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             <X size={20} />
           </button>
         </div>
-        
+
         <div className="flex items-center justify-between gap-3 mt-6">
           <div className="flex items-center gap-3">
             <button
@@ -126,7 +126,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                 }
               }}
               disabled={isSaving}
-              className="flex items-center gap-2 px-4 py-2 text-xs font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-[#52ddeb]/30 hover:border-[#52ddeb]/50 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-4 py-2 text-xs font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-[#brand-cyan]/30 hover:border-[#brand-cyan]/50 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSaving ? (
                 <>

@@ -30,7 +30,7 @@ export const VisantBudgetForm: React.FC<VisantBudgetFormProps> = ({
       {/* Basic Info */}
       <div className="space-y-4">
         <h3 className="text-base sm:text-lg font-semibold text-zinc-200 font-mono">Informações Básicas</h3>
-        
+
         <div className="w-full">
           <label className="block text-xs sm:text-sm text-zinc-400 mb-2 font-mono">
             {t('budget.clientName')} *
@@ -166,7 +166,7 @@ export const VisantBudgetForm: React.FC<VisantBudgetFormProps> = ({
               <div className="flex gap-2 items-center">
                 <FormInput
                   type="color"
-                  value={data.brandAccentColor || '#52ddeb'}
+                  value={data.brandAccentColor || '#brand-cyan'}
                   onChange={(e) => updateField('brandAccentColor', e.target.value || undefined)}
                   className="w-10 h-10 cursor-pointer flex-shrink-0"
                 />
