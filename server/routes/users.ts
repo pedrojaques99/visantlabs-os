@@ -2,6 +2,7 @@ import express from 'express';
 import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { ObjectId } from 'mongodb';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
+import { getUserIdFromToken } from '../utils/auth.js';
 import { prisma } from '../db/prisma.js';
 
 const router = express.Router();
@@ -242,23 +243,15 @@ router.get('/:identifier/workflows', async (req, res) => {
     });
 
     // Check if current user has liked
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    let currentUserId: string | null = null;
-    if (token) {
-      try {
-        const { JWT_SECRET } = await import('../utils/jwtSecret.js');
-        const jwt = (await import('jsonwebtoken')).default;
-        const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
-        currentUserId = decoded.userId;
-      } catch (err) {
-        // Not authenticated, ignore
-      }
-    }
+    const currentUserId = getUserIdFromToken(req.headers.authorization);
 
-    const formattedWorkflows = workflows.map(workflow => ({
-      ...workflow,
-      isLikedByUser: currentUserId ? workflow.likes.some(like => like.userId === currentUserId) : false,
-    }));
+    const formattedWorkflows = workflows.map(workflow => {
+      const { likes, ...rest } = workflow;
+      return {
+        ...rest,
+        isLikedByUser: currentUserId ? likes.some(like => like.userId === currentUserId) : false,
+      };
+    });
 
     res.json(formattedWorkflows);
   } catch (error: any) {
