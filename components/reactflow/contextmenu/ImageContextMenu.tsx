@@ -2,6 +2,7 @@ import React from 'react';
 import { Heart, Download, Maximize2, Copy, Wand2, X, Trash2, Copy as CopyIcon, FileText, Upload, ExternalLink } from 'lucide-react';
 import { GlitchLoader } from '../../ui/GlitchLoader';
 import { cn } from '../../../lib/utils';
+import { downloadImage } from '../../../utils/imageUtils';
 
 interface ImageContextMenuProps {
   x: number;
@@ -44,63 +45,20 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
   const handleDownload = async () => {
     setIsDownloading(true);
     try {
-      if (imageUrl) {
+      // If an external onDownload handler is provided, use it primarily
+      // This prevents duplicate downloads when the parent component already handles the download logic
+      if (onDownload) {
         try {
-          const response = await fetch(imageUrl);
-          const blob = await response.blob();
-          const url = window.URL.createObjectURL(blob);
-
-          // Determine extension from content-type or url
-          let extension = '.png';
-          const contentType = response.headers.get('content-type');
-          if (contentType) {
-            if (contentType.includes('video/mp4')) extension = '.mp4';
-            else if (contentType.includes('image/jpeg')) extension = '.jpg';
-            else if (contentType.includes('image/webp')) extension = '.webp';
-            else if (contentType.includes('image/gif')) extension = '.gif';
-            else if (contentType.includes('image/png')) extension = '.png';
-          } else {
-            // Fallback to URL extension
-            const urlExt = imageUrl.split('.').pop()?.split('?')[0];
-            if (urlExt && ['mp4', 'jpg', 'jpeg', 'png', 'webp', 'gif'].includes(urlExt.toLowerCase())) {
-              extension = `.${urlExt}`;
-            }
-          }
-
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `image-${Date.now()}${extension}`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          window.URL.revokeObjectURL(url);
-        } catch (fetchError) {
-          console.error('Fetch download failed, falling back to direct link:', fetchError);
-          // Fallback: try to download directly if fetch fails
-          const link = document.createElement('a');
-          link.href = imageUrl;
-
-          // Attempt to guess extension for fallback
-          let extension = '.png';
-          const urlExt = imageUrl.split('.').pop()?.split('?')[0];
-          if (urlExt && ['mp4', 'jpg', 'jpeg', 'png', 'webp', 'gif'].includes(urlExt.toLowerCase())) {
-            extension = `.${urlExt}`;
-          }
-
-          link.download = `image-${Date.now()}${extension}`;
-          // link.target = '_blank'; // Removed to avoid opening in new tab if possible
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
+          await onDownload();
+        } catch (e) {
+          console.error('onDownload callback error:', e);
         }
+        return; // Exit early to avoid double download
       }
 
-      // Execute the provided onDownload callback if it exists, for any additional side effects
-      // We wrap it in a try-catch to ensure it doesn't break the flow if it fails
-      try {
-        if (onDownload) onDownload();
-      } catch (e) {
-        console.error('onDownload callback error:', e);
+      // Fallback: Internal download logic if no onDownload handler is provided
+      if (imageUrl) {
+        await downloadImage(imageUrl);
       }
 
     } catch (error) {

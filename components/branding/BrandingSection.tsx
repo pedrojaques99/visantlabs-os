@@ -37,7 +37,7 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
     if (isEditingCustom && inputRef.current) {
       inputRef.current.focus();
     }
-    
+
     return () => {
       if (blurTimeoutRef.current) {
         clearTimeout(blurTimeoutRef.current);
@@ -102,7 +102,7 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
             const isSelected = selectedTags.includes(tag);
             const limitReached = selectedTags.length >= 3;
             const isDisabled = limitReached && !isSelected;
-            
+
             return (
               <Button
                 key={tag}
@@ -112,10 +112,10 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
                 size="sm"
                 className={cn(
                   "text-xs font-medium transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0",
-                  isSelected 
+                  isSelected
                     ? theme === 'dark'
-                      ? 'bg-brand-cyan/20 text-brand-cyan border-[#52ddeb]/30 shadow-sm shadow-[#52ddeb]/10'
-                      : 'bg-brand-cyan/20 text-zinc-800 border-[#52ddeb]/30 shadow-sm shadow-[#52ddeb]/10'
+                      ? 'bg-brand-cyan/20 text-brand-cyan border-[#brand-cyan]/30 shadow-sm shadow-[#brand-cyan]/10'
+                      : 'bg-brand-cyan/20 text-zinc-800 border-[#brand-cyan]/30 shadow-sm shadow-[#brand-cyan]/10'
                     : theme === 'dark'
                       ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
                       : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'
@@ -156,7 +156,7 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
                 onBlur={handleBlur}
                 placeholder={t('mockup.customStylePlaceholder')}
                 className={cn(
-                  "px-3 py-1.5 text-xs font-medium transition-all duration-200 border-[#52ddeb]/30 focus:ring-0 min-w-[120px] font-mono",
+                  "px-3 py-1.5 text-xs font-medium transition-all duration-200 border-[#brand-cyan]/30 focus:ring-0 min-w-[120px] font-mono",
                   theme === 'dark'
                     ? 'bg-brand-cyan/20 text-brand-cyan'
                     : 'bg-brand-cyan/20 text-zinc-800'

@@ -487,18 +487,6 @@
     "experimentalMode": "Experimental Mode",
     "experimentalModeDesc": "Show preview nodes like Shader, Strategy, etc."
   },
-  "canvasNodes": {
-    "promptNode": {
-      "presets": "Presets",
-      "loadPreset": "Load Preset",
-      "save": "Save",
-      "savePrompt": "Save Prompt",
-      "promptPlaceholder": "Enter your prompt here...",
-      "suggestPrompts": "Suggest Prompts",
-      "connectedToTextNode": "Connected to Text Node",
-      "savedPromptName": "Saved Prompt"
-    }
-  },
   "canvasLoading": {
     "Project": "Loading Project..."
   },
@@ -2236,7 +2224,7 @@
       "brandName": "Your Brand Name",
       "color": "#000000",
       "brandBackgroundColor": "#000000",
-      "brandAccentColor": "#52ddeb"
+      "brandAccentColor": "#brand-cyan"
     }
   },
   "pix": {
@@ -2272,6 +2260,35 @@
   "canvasNodes": {
     "promptNode": {
       "title": "Prompt Node",
+      "presets": "Presets",
+      "loadPreset": "Load Preset",
+      "save": "Save",
+      "savePrompt": "Save Prompt",
+      "presetModal": {
+        "title": "Select Mockup Preset",
+        "titleMulti": "Select Mockup Presets ({selected}/{max})",
+        "tabs": {
+          "official": "Official ({count})",
+          "community": "Community ({count})",
+          "custom": "Custom ({count})"
+        },
+        "loading": "Loading presets...",
+        "loadingCommunity": "Loading community presets...",
+        "noOfficial": "No official presets found",
+        "noCommunity": "No community presets found",
+        "noCustom": "No custom mockups found",
+        "createNew": "Create New",
+        "multiSelectMessage": "{selected} of {max} presets selected",
+        "multiSelectMessageEmpty": "Select up to {max} presets",
+        "confirmSelection": "Confirm Selection",
+        "official": "Official"
+      },
+      "presetCard": {
+        "copied": "Prompt copied to clipboard",
+        "copyFailed": "Failed to copy prompt",
+        "viewMore": "View more",
+        "promptLabel": "Prompt:"
+      },
       "referenceImages": "Reference Images",
       "logoFromBrandCore": "Logo (from BrandCore) - Primary Focus",
       "identityFromBrandCore": "Identity (from BrandCore) - Context/Colors/Vibe",
@@ -2431,7 +2448,7 @@
       "logoRequired": "Logo is required. Connect BrandCore Logo or Image node.",
       "logoFromBrandCore": "Logo (from BrandCore) - Primary Focus",
       "inputImage": "Input Image",
-      "colorPlaceholder": "#52ddeb",
+      "colorPlaceholder": "#brand-cyan",
       "addAnotherMockupNode": "Add another mockup node",
       "missingInput": "Missing Input",
       "missingInputConnectLogo": "• Connect BrandCore Logo (required, primary focus)",
@@ -2485,7 +2502,16 @@
     },
     "textNode": {
       "title": "Text Node",
-      "placeholder": "Enter text here..."
+      "placeholder": "Enter text here...",
+      "copy": "Copy text",
+      "copied": "Text copied!",
+      "copyFailed": "Failed to copy text",
+      "characters": "chars",
+      "aiHint": "Click the wand to enhance with AI",
+      "improvePrompt": "Improve with AI",
+      "improvingPrompt": "Improving prompt...",
+      "promptImproved": "Prompt improved!",
+      "errorImprovingPrompt": "Failed to improve prompt"
     },
     "drawingNode": {
       "freehand": "Freehand",

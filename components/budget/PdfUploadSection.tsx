@@ -60,13 +60,13 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
     setIsUploading(true);
     try {
       const base64Data = await fileToBase64(file);
-      
+
       // Se for substituição, apenas substituir sem perguntar sobre preset
       if (isReplace && customPdfUrl) {
         await handlePdfUpload(base64Data, false);
         return;
       }
-      
+
       // Para novo upload, perguntar se quer salvar como preset
       setPendingPdfBase64(base64Data);
       setShowSavePresetModal(true);
@@ -85,7 +85,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
     // Upload para R2 (sempre, mesmo sem budgetId)
     try {
       let pdfUrl: string;
-      
+
       if (saveAsPreset) {
         // Upload como preset
         if (!presetName.trim()) {
@@ -93,7 +93,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
           setShowSavePresetModal(true);
           return;
         }
-        
+
         setIsSavingPreset(true);
         const preset = await budgetApi.createPdfPreset(base64Data, presetName.trim());
         pdfUrl = preset.pdfUrl;
@@ -112,7 +112,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
         }
         toast.success('PDF enviado com sucesso');
       }
-      
+
       onPdfUrlChange(pdfUrl);
       setPendingPdfBase64(null);
     } catch (error: any) {
@@ -167,7 +167,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
               value={presetName}
               onChange={(e) => setPresetName(e.target.value)}
               placeholder="Nome do preset"
-              className="w-full px-4 py-2 bg-black/20 border border-zinc-800 rounded-md text-zinc-200 font-mono mb-4 focus:outline-none focus:border-[#52ddeb]"
+              className="w-full px-4 py-2 bg-black/20 border border-zinc-800 rounded-md text-zinc-200 font-mono mb-4 focus:outline-none focus:border-[#brand-cyan]"
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   handleSavePreset();
@@ -183,7 +183,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
               <Button
                 onClick={handleSavePreset}
                 disabled={isSavingPreset || !presetName.trim()}
-                className="flex-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#52ddeb]/50 text-brand-cyan"
+                className="flex-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#brand-cyan]/50 text-brand-cyan"
               >
                 {isSavingPreset ? (
                   <GlitchLoader size={16} />
@@ -208,7 +208,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
 
       {isUploading || isSavingPreset ? (
         <div className="flex items-center gap-2 p-4 border border-zinc-800 rounded-xl bg-black/20">
-          <GlitchLoader size={16} color="#52ddeb" />
+          <GlitchLoader size={16} color="#brand-cyan" />
           <span className="text-sm text-zinc-400 font-mono">
             {isSavingPreset ? 'Salvando preset...' : 'Enviando PDF...'}
           </span>

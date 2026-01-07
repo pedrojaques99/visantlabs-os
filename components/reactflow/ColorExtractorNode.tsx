@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, memo, useEffect } from 'react';
-import { Handle, Position, type NodeProps, useReactFlow } from '@xyflow/react';
+import { Handle, Position, NodeResizer, type NodeProps, useReactFlow } from '@xyflow/react';
 import { UploadCloud, Palette, X, Copy, RefreshCw } from 'lucide-react';
 import { GlitchLoader } from '../ui/GlitchLoader';
 import type { ColorExtractorNodeData } from '../../types/reactFlow';
@@ -14,11 +14,13 @@ import { NodeButton } from './shared/node-button';
 import { NodeActionBar } from './shared/NodeActionBar';
 import { LabeledHandle } from './shared/LabeledHandle';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useNodeResize } from '../../hooks/canvas/useNodeResize';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
   const { t } = useTranslation();
-  const { getZoom } = useReactFlow();
+  const { setNodes, getNode, getZoom } = useReactFlow();
+  const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
   const nodeData = data as ColorExtractorNodeData;
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [glitchText, setGlitchText] = useState('');
@@ -149,23 +151,63 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
   const handleRegenerateOne = useCallback(async (index: number) => {
     if (!nodeData.onRegenerateOne || !imageBase64) return;
     try {
-      // Small animation or feedback could be added here
       await nodeData.onRegenerateOne(id, imageBase64, index);
     } catch (error) {
       console.error('Failed to regenerate color:', error);
     }
   }, [nodeData, id, imageBase64]);
 
+  const handleFitToContent = useCallback(() => {
+    const width = nodeData.imageWidth;
+    const height = nodeData.imageHeight;
+
+    if (width && height) {
+      // Calculate a reasonable size if image is too large
+      let targetWidth = width;
+      let targetHeight = height;
+      const MAX_FIT_WIDTH = 1000;
+
+      if (targetWidth > MAX_FIT_WIDTH) {
+        const ratio = MAX_FIT_WIDTH / targetWidth;
+        targetWidth = MAX_FIT_WIDTH;
+        targetHeight = targetHeight * ratio;
+      }
+
+      fitToContent(id, Math.round(targetWidth), Math.round(targetHeight), nodeData.onResize);
+    } else {
+      // For nodes without extracted colors yet, reset to 'auto' height
+      fitToContent(id, 320, 'auto', nodeData.onResize);
+    }
+  }, [id, nodeData.imageWidth, nodeData.imageHeight, nodeData.onResize, fitToContent]);
+
+  const handleResize = useCallback((_: any, params: { width: number; height: number }) => {
+    const { width, height } = params;
+    handleResizeWithDebounce(id, width, height, nodeData.onResize as any);
+  }, [id, nodeData.onResize, handleResizeWithDebounce]);
+
   return (
     <NodeContainer
       selected={selected}
       dragging={dragging}
+      onFitToContent={handleFitToContent}
       className="p-5 min-w-[320px] max-w-[400px]"
       onContextMenu={(e) => {
         // Allow ReactFlow to handle the context menu event
       }}
     >
       {/* Input Handle - accepts image connections from ImageNode and OutputNode */}
+      {selected && !dragging && (
+        <NodeResizer
+          color="#brand-cyan"
+          isVisible={selected}
+          minWidth={280}
+          minHeight={200}
+          maxWidth={2000}
+          maxHeight={2000}
+          keepAspectRatio={!!imageUrl}
+          onResize={handleResize}
+        />
+      )}
       <LabeledHandle
         type="target"
         position={Position.Left}
@@ -192,11 +234,22 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
         </NodeLabel>
         {imageUrl ? (
           <div className="relative">
-            <div className="relative w-full h-24 bg-zinc-900/50 rounded border border-zinc-700/30 overflow-hidden">
+            <div className="relative w-full h-auto min-h-[128px] bg-zinc-900/50 rounded border border-zinc-700/30 overflow-hidden">
               <img
                 src={imageUrl}
-                alt="Source image"
+                alt="Image to extract colors from"
                 className="w-full h-full object-contain p-2"
+                onLoad={(e) => {
+                  const img = e.target as HTMLImageElement;
+                  if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+                    if (nodeData.onUpdateData) {
+                      nodeData.onUpdateData(id, {
+                        imageWidth: img.naturalWidth,
+                        imageHeight: img.naturalHeight,
+                      });
+                    }
+                  }
+                }}
               />
             </div>
           </div>
@@ -257,7 +310,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
             {extractedColors.map((color, index) => (
               <div
                 key={`${color}-${index}`}
-                className="flex items-center gap-2 p-2 bg-zinc-900/50 rounded border border-zinc-700/30 hover:border-[#52ddeb]/50 transition-colors group/color cursor-pointer hover:bg-zinc-800/50 opacity-0 animate-[fadeInScale_0.4s_cubic-bezier(0.34,1.56,0.64,1)_forwards] relative"
+                className="flex items-center gap-2 p-2 bg-zinc-900/50 rounded border border-zinc-700/30 hover:border-[#brand-cyan]/50 transition-colors group/color cursor-pointer hover:bg-zinc-800/50 opacity-0 animate-[fadeInScale_0.4s_cubic-bezier(0.34,1.56,0.64,1)_forwards] relative"
                 style={{ animationDelay: `${index * 50}ms` }}
                 onClick={() => handleCopyColor(color)}
                 title="Click to copy hex code"

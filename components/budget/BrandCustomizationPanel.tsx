@@ -161,7 +161,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
             p-2
             bg-zinc-900 border border-zinc-800 rounded-xl
             text-zinc-200 hover:text-brand-cyan
-            hover:bg-zinc-900/90 hover:border-[#52ddeb]/50
+            hover:bg-zinc-900/90 hover:border-[#brand-cyan]/50
             transition-all duration-300
             shadow-lg
             ${isOpen ? 'hidden' : ''}
@@ -204,182 +204,178 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
           </div>
 
           <div className="p-6">
-          <BrandCustomizationSection
-            brandName={data.brandName}
-            brandColors={data.brandColors}
-            brandLogo={data.brandLogo}
-            brandBackgroundColor={data.brandBackgroundColor}
-            brandAccentColor={data.brandAccentColor}
-            budgetId={budgetId}
-            onBrandNameChange={handleBrandNameChange}
-            onBrandColorsChange={handleBrandColorsChange}
-            onBrandLogoChange={handleBrandLogoChange}
-            onBrandBackgroundColorChange={handleBrandBackgroundColorChange}
-            onBrandAccentColorChange={handleBrandAccentColorChange}
-          />
-          
-          {/* Content Dimensions Control */}
-          <div className="mt-6 pt-6 border-t border-zinc-800">
-            <label className="block text-sm font-medium text-zinc-300 mb-4 font-mono">
-              Dimensões do Conteúdo
-            </label>
-            
-            {/* Width Control - Document Formats */}
-            <div className="space-y-3 mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-xs text-zinc-400 font-mono">Formato do Documento</label>
-                <span className="font-mono text-brand-cyan font-semibold text-xs">
-                  {data.contentWidth || 800}px
-                </span>
-              </div>
-              <div className="grid grid-cols-4 gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleContentWidthChange(595)}
-                  className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${
-                    data.contentWidth === 595
-                      ? 'bg-brand-cyan/20 border-[#52ddeb] text-brand-cyan'
-                      : 'bg-black/40 border-zinc-800 text-zinc-300 hover:border-zinc-700'
-                  }`}
-                >
-                  A4
-                  <div className="text-[10px] text-zinc-500 mt-0.5">595px</div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleContentWidthChange(842)}
-                  className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${
-                    data.contentWidth === 842
-                      ? 'bg-brand-cyan/20 border-[#52ddeb] text-brand-cyan'
-                      : 'bg-black/40 border-zinc-800 text-zinc-300 hover:border-zinc-700'
-                  }`}
-                >
-                  A3
-                  <div className="text-[10px] text-zinc-500 mt-0.5">842px</div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleContentWidthChange(612)}
-                  className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${
-                    data.contentWidth === 612
-                      ? 'bg-brand-cyan/20 border-[#52ddeb] text-brand-cyan'
-                      : 'bg-black/40 border-zinc-800 text-zinc-300 hover:border-zinc-700'
-                  }`}
-                >
-                  Letter
-                  <div className="text-[10px] text-zinc-500 mt-0.5">612px</div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleContentWidthChange(800)}
-                  className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${
-                    (data.contentWidth === 800 || !data.contentWidth)
-                      ? 'bg-brand-cyan/20 border-[#52ddeb] text-brand-cyan'
-                      : 'bg-black/40 border-zinc-800 text-zinc-300 hover:border-zinc-700'
-                  }`}
-                >
-                  Custom
-                  <div className="text-[10px] text-zinc-500 mt-0.5">800px</div>
-                </button>
-              </div>
-              {/* Custom width input if not a standard format */}
-              {data.contentWidth && ![595, 842, 612, 800].includes(data.contentWidth) && (
-                <div className="mt-2">
-                  <input
-                    type="number"
-                    min="400"
-                    max="1200"
-                    step="10"
-                    value={data.contentWidth}
-                    onChange={(e) => handleContentWidthChange(Number(e.target.value))}
-                    placeholder="Largura customizada"
-                    className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-xs text-zinc-200 font-mono focus:outline-none focus:border-[#52ddeb]"
-                  />
-                </div>
-              )}
-            </div>
+            <BrandCustomizationSection
+              brandName={data.brandName}
+              brandColors={data.brandColors}
+              brandLogo={data.brandLogo}
+              brandBackgroundColor={data.brandBackgroundColor}
+              brandAccentColor={data.brandAccentColor}
+              budgetId={budgetId}
+              onBrandNameChange={handleBrandNameChange}
+              onBrandColorsChange={handleBrandColorsChange}
+              onBrandLogoChange={handleBrandLogoChange}
+              onBrandBackgroundColorChange={handleBrandBackgroundColorChange}
+              onBrandAccentColorChange={handleBrandAccentColorChange}
+            />
 
-            {/* Height Control */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-xs text-zinc-400 font-mono">Altura</label>
-                <div className="flex items-center gap-2">
+            {/* Content Dimensions Control */}
+            <div className="mt-6 pt-6 border-t border-zinc-800">
+              <label className="block text-sm font-medium text-zinc-300 mb-4 font-mono">
+                Dimensões do Conteúdo
+              </label>
+
+              {/* Width Control - Document Formats */}
+              <div className="space-y-3 mb-6">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs text-zinc-400 font-mono">Formato do Documento</label>
+                  <span className="font-mono text-brand-cyan font-semibold text-xs">
+                    {data.contentWidth || 800}px
+                  </span>
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleContentWidthChange(595)}
+                    className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${data.contentWidth === 595
+                        ? 'bg-brand-cyan/20 border-[#brand-cyan] text-brand-cyan'
+                        : 'bg-black/40 border-zinc-800 text-zinc-300 hover:border-zinc-700'
+                      }`}
+                  >
+                    A4
+                    <div className="text-[10px] text-zinc-500 mt-0.5">595px</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleContentWidthChange(842)}
+                    className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${data.contentWidth === 842
+                        ? 'bg-brand-cyan/20 border-[#brand-cyan] text-brand-cyan'
+                        : 'bg-black/40 border-zinc-800 text-zinc-300 hover:border-zinc-700'
+                      }`}
+                  >
+                    A3
+                    <div className="text-[10px] text-zinc-500 mt-0.5">842px</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleContentWidthChange(612)}
+                    className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${data.contentWidth === 612
+                        ? 'bg-brand-cyan/20 border-[#brand-cyan] text-brand-cyan'
+                        : 'bg-black/40 border-zinc-800 text-zinc-300 hover:border-zinc-700'
+                      }`}
+                  >
+                    Letter
+                    <div className="text-[10px] text-zinc-500 mt-0.5">612px</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleContentWidthChange(800)}
+                    className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${(data.contentWidth === 800 || !data.contentWidth)
+                        ? 'bg-brand-cyan/20 border-[#brand-cyan] text-brand-cyan'
+                        : 'bg-black/40 border-zinc-800 text-zinc-300 hover:border-zinc-700'
+                      }`}
+                  >
+                    Custom
+                    <div className="text-[10px] text-zinc-500 mt-0.5">800px</div>
+                  </button>
+                </div>
+                {/* Custom width input if not a standard format */}
+                {data.contentWidth && ![595, 842, 612, 800].includes(data.contentWidth) && (
+                  <div className="mt-2">
+                    <input
+                      type="number"
+                      min="400"
+                      max="1200"
+                      step="10"
+                      value={data.contentWidth}
+                      onChange={(e) => handleContentWidthChange(Number(e.target.value))}
+                      placeholder="Largura customizada"
+                      className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-xs text-zinc-200 font-mono focus:outline-none focus:border-[#brand-cyan]"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Height Control */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs text-zinc-400 font-mono">Altura</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min="0"
+                      step="50"
+                      value={data.contentHeight || ''}
+                      onChange={(e) => {
+                        const value = e.target.value === '' ? 0 : Number(e.target.value);
+                        handleContentHeightChange(value);
+                      }}
+                      onBlur={(e) => {
+                        if (e.target.value === '' || Number(e.target.value) <= 0) {
+                          handleContentHeightChange(0);
+                        }
+                      }}
+                      placeholder="Auto"
+                      className="w-20 px-2 py-1 bg-black/40 border border-zinc-800 rounded-xl text-xs text-zinc-200 font-mono focus:outline-none focus:border-[#brand-cyan]/70 transition-all duration-300"
+                    />
+                    <span className="text-xs text-zinc-500">px</span>
+                    {data.contentHeight && (
+                      <button
+                        onClick={() => handleContentHeightChange(0)}
+                        className="px-2 py-1 text-xs text-red-400 hover:text-red-300"
+                        title="Remover altura fixa"
+                      >
+                        Auto
+                      </button>
+                    )}
+                  </div>
+                </div>
+                {data.contentHeight ? (
                   <input
-                    type="number"
-                    min="0"
+                    type="range"
+                    min="500"
+                    max="2000"
                     step="50"
-                    value={data.contentHeight || ''}
-                    onChange={(e) => {
-                      const value = e.target.value === '' ? 0 : Number(e.target.value);
-                      handleContentHeightChange(value);
-                    }}
-                    onBlur={(e) => {
-                      if (e.target.value === '' || Number(e.target.value) <= 0) {
-                        handleContentHeightChange(0);
-                      }
-                    }}
-                    placeholder="Auto"
-                    className="w-20 px-2 py-1 bg-black/40 border border-zinc-800 rounded-xl text-xs text-zinc-200 font-mono focus:outline-none focus:border-[#52ddeb]/70 transition-all duration-300"
+                    value={data.contentHeight}
+                    onChange={(e) => handleContentHeightChange(Number(e.target.value))}
+                    className="w-full h-2 bg-zinc-800 rounded-md appearance-none cursor-pointer accent-[#brand-cyan]"
                   />
-                  <span className="text-xs text-zinc-500">px</span>
-                  {data.contentHeight && (
-                    <button
-                      onClick={() => handleContentHeightChange(0)}
-                      className="px-2 py-1 text-xs text-red-400 hover:text-red-300"
-                      title="Remover altura fixa"
-                    >
-                      Auto
-                    </button>
-                  )}
-                </div>
+                ) : (
+                  <p className="text-xs text-zinc-500 italic">Altura automática (baseada no conteúdo)</p>
+                )}
+                {data.contentHeight && (
+                  <div className="flex items-center justify-between text-xs text-zinc-500">
+                    <span>500px</span>
+                    <span>{data.contentHeight}px</span>
+                    <span>2000px</span>
+                  </div>
+                )}
               </div>
-              {data.contentHeight ? (
-                <input
-                  type="range"
-                  min="500"
-                  max="2000"
-                  step="50"
-                  value={data.contentHeight}
-                  onChange={(e) => handleContentHeightChange(Number(e.target.value))}
-                  className="w-full h-2 bg-zinc-800 rounded-md appearance-none cursor-pointer accent-[#52ddeb]"
-                />
-              ) : (
-                <p className="text-xs text-zinc-500 italic">Altura automática (baseada no conteúdo)</p>
-              )}
-              {data.contentHeight && (
-                <div className="flex items-center justify-between text-xs text-zinc-500">
-                  <span>500px</span>
-                  <span>{data.contentHeight}px</span>
-                  <span>2000px</span>
-                </div>
-              )}
+
+              <p className="text-xs text-zinc-500 mt-4 pt-4 border-t border-zinc-800">
+                As dimensões serão aplicadas no preview e no PDF exportado
+              </p>
             </div>
 
-            <p className="text-xs text-zinc-500 mt-4 pt-4 border-t border-zinc-800">
-              As dimensões serão aplicadas no preview e no PDF exportado
-            </p>
-          </div>
-
-          {/* Template Actions */}
-          <div className="mt-6 pt-6 border-t border-zinc-800 space-y-3 mb-[40px]">
-            <div className="flex gap-2">
-              <button
-                onClick={() => setShowSaveModal(true)}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-[#52ddeb]/30 rounded-md text-brand-cyan text-sm font-mono transition-all"
-              >
-                <Save size={16} />
-                Salvar como Template
-              </button>
-              <button
-                onClick={() => setShowLoadModal(true)}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-md text-zinc-300 text-sm font-mono transition-all"
-                disabled={templates.length === 0}
-              >
-                <FolderOpen size={16} />
-                Carregar Template
-              </button>
+            {/* Template Actions */}
+            <div className="mt-6 pt-6 border-t border-zinc-800 space-y-3 mb-[40px]">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowSaveModal(true)}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-[#brand-cyan]/30 rounded-md text-brand-cyan text-sm font-mono transition-all"
+                >
+                  <Save size={16} />
+                  Salvar como Template
+                </button>
+                <button
+                  onClick={() => setShowLoadModal(true)}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-md text-zinc-300 text-sm font-mono transition-all"
+                  disabled={templates.length === 0}
+                >
+                  <FolderOpen size={16} />
+                  Carregar Template
+                </button>
+              </div>
             </div>
-          </div>
           </div>
         </div>
       </div>
@@ -396,7 +392,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
               value={templateName}
               onChange={(e) => setTemplateName(e.target.value)}
               placeholder="Nome do template"
-              className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-zinc-200 font-mono focus:outline-none focus:border-[#52ddeb] mb-4"
+              className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-zinc-200 font-mono focus:outline-none focus:border-[#brand-cyan] mb-4"
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {

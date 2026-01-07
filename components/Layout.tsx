@@ -20,6 +20,7 @@ import { useTheme } from '../hooks/useTheme';
 import { CanvasHeader } from './canvas/CanvasHeader';
 import { useCanvasHeader } from './canvas/CanvasHeaderContext';
 
+
 // Export context values for child components
 export type LayoutContextValue = {
   subscriptionStatus: SubscriptionStatus | null;

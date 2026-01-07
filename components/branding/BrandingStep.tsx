@@ -30,7 +30,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
     if (isGenerating) {
       return (
         <div className="flex items-center justify-center py-12">
-          <GlitchLoader size={32} color="#52ddeb" />
+          <GlitchLoader size={32} color="#brand-cyan" />
           <span className="ml-3 text-muted-foreground">{t('branding.generating')} {title}...</span>
         </div>
       );
@@ -85,7 +85,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
 
         lines.forEach((line, index) => {
           const trimmed = line.trim();
-          
+
           // Headers
           if (trimmed.startsWith('#### ')) {
             flushParagraph();
@@ -281,7 +281,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
               const paletteName = palette.name || 'Unnamed Palette';
               const paletteColors = Array.isArray(palette.colors) ? palette.colors : [];
               const palettePsychology = palette.psychology || '';
-              
+
               return (
                 <div key={index} className="border border-border rounded-md p-4 bg-card/50 animate-fade-in">
                   <h4 className="font-semibold mb-2 text-foreground normal-case">{String(paletteName)}</h4>
@@ -304,14 +304,14 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
           </div>
         );
       }
-      
+
       // Handle single Color Palette object (not in array)
       if (typeof content === 'object' && content !== null && !Array.isArray(content) && content.colors) {
         const palette = content as any;
         const paletteName = palette.name || 'Unnamed Palette';
         const paletteColors = Array.isArray(palette.colors) ? palette.colors : [];
         const palettePsychology = palette.psychology || '';
-        
+
         return (
           <div className="border border-border rounded-md p-4 bg-card/50 animate-fade-in">
             <h4 className="font-semibold mb-2 text-foreground normal-case">{String(paletteName)}</h4>
@@ -355,7 +355,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
               </span>
             </div>
           </div>
-          
+
           <div className="min-h-[200px]">
             {renderContent()}
           </div>

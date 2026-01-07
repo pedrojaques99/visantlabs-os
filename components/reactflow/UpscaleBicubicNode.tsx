@@ -22,7 +22,7 @@ import { useNodeResize } from '../../hooks/canvas/useNodeResize';
 export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>>> = memo(({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
   const { setNodes, getZoom, getNode } = useReactFlow();
-  const { handleResize: handleResizeWithDebounce } = useNodeResize();
+  const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
   const isLoading = data.isLoading || false;
   const hasResult = !!(data.resultImageUrl || data.resultImageBase64 || data.resultVideoUrl || data.resultVideoBase64);
   const hasVideoResult = !!(data.resultVideoUrl || data.resultVideoBase64);
@@ -382,17 +382,43 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
     await data.onApply(id, connectedImageFromData);
   };
 
+  const handleFitToContent = useCallback(() => {
+    const width = data.imageWidth as number;
+    const height = data.imageHeight as number;
+    if (width && height) {
+      // Calculate a reasonable size if image is too large
+      let targetWidth = width;
+      let targetHeight = height;
+      const MAX_FIT_WIDTH = 1200;
+
+      if (targetWidth > MAX_FIT_WIDTH) {
+        const ratio = MAX_FIT_WIDTH / targetWidth;
+        targetWidth = MAX_FIT_WIDTH;
+        targetHeight = targetHeight * ratio;
+      }
+
+      fitToContent(id, Math.round(targetWidth), Math.round(targetHeight), data.onResize);
+    }
+  }, [id, data.imageWidth, data.imageHeight, data.onResize, fitToContent]);
+
   // Handle resize from NodeResizer (com debounce - aplica apenas quando soltar o mouse)
   const handleResize = useCallback((_: any, params: { width: number; height: number }) => {
     const { width, height } = params;
     handleResizeWithDebounce(id, width, height);
   }, [id, handleResizeWithDebounce]);
 
+  const handleDuplicate = () => {
+    if (data.onDuplicate) {
+      data.onDuplicate(id);
+    }
+  };
+
   return (
     <NodeContainer
       selected={selected}
       dragging={dragging}
       warning={data.oversizedWarning}
+      onFitToContent={handleFitToContent}
       className="p-5 min-w-[320px] w-full h-full flex flex-col"
       onContextMenu={(e) => {
         // Allow ReactFlow to handle the context menu event
@@ -400,12 +426,13 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
     >
       {selected && !dragging && (
         <NodeResizer
-          color="#52ddeb"
+          color="#brand-cyan"
           isVisible={selected}
           minWidth={320}
           minHeight={200}
           maxWidth={2000}
           maxHeight={2000}
+          keepAspectRatio={true}
           onResize={handleResize}
         />
       )}
@@ -465,8 +492,8 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
       {/* Floating Processing Indicator */}
       {isLoading && !hasResult && hasConnectedImage && (
         <div className="relative mt-2 min-h-[200px] flex items-center justify-center bg-black/10 rounded-md border border-zinc-700/30">
-          <div className="p-2 rounded-md bg-black/60 backdrop-blur-sm border border-[#52ddeb]/30 shadow-lg">
-            <GlitchLoader size={14} color="#52ddeb" />
+          <div className="p-2 rounded-md bg-black/60 backdrop-blur-sm border border-[#brand-cyan]/30 shadow-lg">
+            <GlitchLoader size={14} color="#brand-cyan" />
           </div>
         </div>
       )}
@@ -477,7 +504,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
             <Maximize2 size={14} />
             Connect an image or video
           </div>
-          <label className="w-full px-3 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-[#52ddeb]/30 hover:border-[#52ddeb]/50 rounded text-xs font-mono text-brand-cyan flex items-center justify-center gap-2 cursor-pointer transition-all">
+          <label className="w-full px-3 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-[#brand-cyan]/30 hover:border-[#brand-cyan]/50 rounded text-xs font-mono text-brand-cyan flex items-center justify-center gap-2 cursor-pointer transition-all">
             <Upload size={14} />
             Upload Image
             <input
@@ -499,6 +526,17 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
                 src={resultVideoUrl || undefined}
                 controls
                 className="w-full h-full object-contain"
+                onLoadedMetadata={(e) => {
+                  const video = e.target as HTMLVideoElement;
+                  if (video.videoWidth > 0 && video.videoHeight > 0) {
+                    if (data.onUpdateData) {
+                      data.onUpdateData(String(id), {
+                        imageWidth: video.videoWidth,
+                        imageHeight: video.videoHeight,
+                      });
+                    }
+                  }
+                }}
                 onError={(e) => {
                   console.error('Video load error:', e);
                 }}
@@ -514,6 +552,17 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
                   display: 'block',
                   imageRendering: 'auto', // Use browser's best quality rendering
                   ['WebkitImageSmoothing' as any]: 'high',
+                }}
+                onLoad={(e) => {
+                  const img = e.target as HTMLImageElement;
+                  if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+                    if (data.onUpdateData) {
+                      data.onUpdateData(String(id), {
+                        imageWidth: img.naturalWidth,
+                        imageHeight: img.naturalHeight,
+                      });
+                    }
+                  }
                 }}
                 loading="eager"
                 decoding="sync"
@@ -560,7 +609,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
               isSaving
                 ? "bg-black/40 text-zinc-500 cursor-wait border border-zinc-700/30"
                 : isLiked
-                  ? "bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30 border border-[#52ddeb]/20"
+                  ? "bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30 border border-[#brand-cyan]/20"
                   : "bg-black/40 hover:bg-black/60 text-zinc-400 hover:text-zinc-200 border border-zinc-700/30"
             )}
             title={isLiked ? t('canvasNodes.outputNode.removeFromFavorites') : t('canvasNodes.outputNode.saveToCollection')}

@@ -282,7 +282,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
   if (isCheckingAuth || isLoading) {
     return (
       <div className="px-3 py-2 flex items-center gap-2 text-xs text-zinc-500 font-mono">
-        <GlitchLoader size={12} color="#52ddeb" />
+        <GlitchLoader size={12} color="#brand-cyan" />
       </div>
     );
   }
@@ -304,7 +304,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
         {propSubscriptionStatus || subscriptionStatus ? (
           <button
             onClick={onCreditsClick}
-            className="flex items-center gap-1.5 px-2.5 md:px-3 py-1 md:py-1.5 text-[11px] md:text-xs font-mono text-brand-cyan hover:text-brand-cyan/80 transition-all rounded border border-[#52ddeb]/30 hover:border-[#52ddeb]/50 hover:bg-brand-cyan/10 focus:outline-none focus:ring-2 focus:ring-[#52ddeb]/50 focus:ring-offset-2 focus:ring-offset-[#0a0a0a] cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 md:px-3 py-1 md:py-1.5 text-[11px] md:text-xs font-mono text-brand-cyan hover:text-brand-cyan/80 transition-all rounded border border-[#brand-cyan]/30 hover:border-[#brand-cyan]/50 hover:bg-brand-cyan/10 focus:outline-none focus:ring-2 focus:ring-[#brand-cyan]/50 focus:ring-offset-2 focus:ring-offset-[#0a0a0a] cursor-pointer"
             aria-label={t('auth.availableCredits', { count: availableCredits })}
             title={t('auth.creditsAvailable', { count: availableCredits })}
           >
@@ -496,7 +496,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-black/40 p-2 rounded-md border border-zinc-700/50 focus:outline-none focus:border-[#52ddeb]/50 focus:ring-0 text-sm text-zinc-300 font-mono"
+                    className="w-full bg-black/40 p-2 rounded-md border border-zinc-700/50 focus:outline-none focus:border-[#brand-cyan]/50 focus:ring-0 text-sm text-zinc-300 font-mono"
                     placeholder={t('auth.namePlaceholder')}
                   />
                 </div>
@@ -511,7 +511,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full bg-black/40 p-2 rounded-md border border-zinc-700/50 focus:outline-none focus:border-[#52ddeb]/50 focus:ring-0 text-sm text-zinc-300 font-mono"
+                  className="w-full bg-black/40 p-2 rounded-md border border-zinc-700/50 focus:outline-none focus:border-[#brand-cyan]/50 focus:ring-0 text-sm text-zinc-300 font-mono"
                   placeholder={t('auth.emailPlaceholder')}
                 />
               </div>
@@ -526,7 +526,7 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="w-full bg-black/40 p-2 rounded-md border border-zinc-700/50 focus:outline-none focus:border-[#52ddeb]/50 focus:ring-0 text-sm text-zinc-300 font-mono"
+                  className="w-full bg-black/40 p-2 rounded-md border border-zinc-700/50 focus:outline-none focus:border-[#brand-cyan]/50 focus:ring-0 text-sm text-zinc-300 font-mono"
                   placeholder={t('auth.passwordPlaceholder')}
                 />
                 {isSignUp && (

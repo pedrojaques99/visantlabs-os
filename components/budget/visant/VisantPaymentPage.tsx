@@ -14,7 +14,7 @@ export const VisantPaymentPage: React.FC<VisantPaymentPageProps> = ({
   editable = false,
   onDataChange,
 }) => {
-  const accentColor = data.brandAccentColor || data.brandColors[0] || '#52ddeb';
+  const accentColor = data.brandAccentColor || data.brandColors[0] || '#brand-cyan';
   const bgColor = '#fdfdfd';
   const textColor = '#000000';
   const secondaryTextColor = '#0d0d0d';
@@ -200,7 +200,7 @@ export const VisantPaymentPage: React.FC<VisantPaymentPageProps> = ({
         >
           <InlineEditor
             value="Métodos de pagamento"
-            onChange={() => {}}
+            onChange={() => { }}
             editable={false}
             style={{ fontSize: '16px', fontWeight: 'bold' }}
           />

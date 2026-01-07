@@ -121,7 +121,81 @@ export function getImageUrl(mockup: Mockup): string {
  * @param mockup - Mockup object
  * @returns true if image is from R2, false if Base64
  */
+
 export function isImageFromR2(mockup: Mockup): boolean {
   return !!(mockup.imageUrl && typeof mockup.imageUrl === 'string' && mockup.imageUrl.length > 0 && isSafeUrl(mockup.imageUrl));
 }
+
+/**
+ * Downloads an image from a URL by creating a temporary link element.
+ * Handles both blob downloads (via fetch) and direct link fallbacks.
+ * 
+ * @param imageUrl - The URL of the image to download
+ * @param filenamePrefix - The prefix for the downloaded filename
+ */
+export async function downloadImage(imageUrl: string, filenamePrefix: string = 'image'): Promise<void> {
+  if (!imageUrl) return;
+
+  try {
+    const response = await fetch(imageUrl);
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    // Determine extension from content-type or url
+    let extension = '.png';
+    const contentType = response.headers.get('content-type');
+    if (contentType) {
+      if (contentType.includes('video/mp4')) extension = '.mp4';
+      else if (contentType.includes('image/jpeg')) extension = '.jpg';
+      else if (contentType.includes('image/webp')) extension = '.webp';
+      else if (contentType.includes('image/gif')) extension = '.gif';
+      else if (contentType.includes('image/png')) extension = '.png';
+    } else {
+      // Fallback to URL extension
+      const urlExt = imageUrl.split('.').pop()?.split('?')[0];
+      if (urlExt && ['mp4', 'jpg', 'jpeg', 'png', 'webp', 'gif'].includes(urlExt.toLowerCase())) {
+        extension = `.${urlExt}`;
+      }
+    }
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${filenamePrefix}-${Date.now()}${extension}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Fetch download failed, falling back to direct link:', error);
+    // Fallback: try to download directly if fetch fails
+    const link = document.createElement('a');
+    link.href = imageUrl;
+
+    // Attempt to guess extension for fallback
+    let extension = '.png';
+
+    if (imageUrl.startsWith('data:')) {
+      // Extract mime type from data URL
+      const mime = imageUrl.split(';')[0].split(':')[1];
+      if (mime) {
+        if (mime.includes('video/mp4')) extension = '.mp4';
+        else if (mime.includes('video/webm')) extension = '.webm';
+        else if (mime.includes('image/jpeg')) extension = '.jpg';
+        else if (mime.includes('image/webp')) extension = '.webp';
+        else if (mime.includes('image/gif')) extension = '.gif';
+      }
+    } else {
+      const urlExt = imageUrl.split('.').pop()?.split('?')[0];
+      if (urlExt && ['mp4', 'jpg', 'jpeg', 'png', 'webp', 'gif'].includes(urlExt.toLowerCase())) {
+        extension = `.${urlExt}`;
+      }
+    }
+
+    link.download = `${filenamePrefix}-${Date.now()}${extension}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+}
+
 

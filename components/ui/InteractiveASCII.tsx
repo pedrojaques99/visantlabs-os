@@ -29,8 +29,8 @@ interface InteractiveASCIIProps {
   color?: string
 }
 
-export const InteractiveASCII = ({ 
-  isDarkMode, 
+export const InteractiveASCII = ({
+  isDarkMode,
   asciiArt = `                                                                                                                                          *********                
                                                                                                        ****                             ****** *****               
                                                                                                  ************                           **** **** ***              
@@ -81,7 +81,7 @@ export const InteractiveASCII = ({
   characterSpacing = 0,
   fullHeight = false,
   className = "",
-  color = "#52ddeb"
+  color = "#brand-cyan"
 }: InteractiveASCIIProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number | undefined>(undefined)
@@ -123,10 +123,10 @@ export const InteractiveASCII = ({
     const baseLineHeight = 16
     const charSize = baseCharSize + (scrollProgress * 40) // Grows from 26 to 46
     const lineHeight = baseLineHeight + (scrollProgress * 40) // Grows from 26 to 46
-    
+
     const totalWidth = Math.max(...lines.map(line => line.length)) * charSize * 0.6
     const totalHeight = lines.length * lineHeight
-    
+
     const startX = (canvas.width - totalWidth) / 2
     const startY = (canvas.height - totalHeight) / 2
 
@@ -136,7 +136,7 @@ export const InteractiveASCII = ({
         if (char !== ' ') {
           const x = startX + charIndex * charSize * 0.6
           const y = startY + lineIndex * lineHeight
-          
+
           points.push({
             x,
             y,
@@ -167,40 +167,40 @@ export const InteractiveASCII = ({
     const dx = point.originalX - mousePos.x
     const dy = point.originalY - mousePos.y
     const distance = Math.sqrt(dx * dx + dy * dy)
-    
+
     let targetX = point.originalX + (characterSpacing * 5)
     let targetY = point.originalY
     let targetOpacity = 0.5
     let targetScale = 0.5
     let glow = 0
-    
+
     const cursorRadius = 300
     const glowRadius = 10
-    
+
     if (distance <= cursorRadius) {
       const dirX = dx / distance
       const dirY = dy / distance
-      
+
       const tangX = -dirY
       const tangY = dirX
-      
+
       const vortexIntensity = 0.15
       const falloff = Math.max(0, 2 - distance / cursorRadius)
       const attract = 0.1
-      
+
       const tangentialForce = vortexIntensity * falloff
       const attractionForce = attract * falloff
-      
+
       targetX = point.originalX + tangX * tangentialForce * 100 - dirX * attractionForce * 1
       targetY = point.originalY + tangY * tangentialForce * 100 - dirY * attractionForce * 1000
-      
+
       const timeOffset = Date.now() * 1
       const subtleX = Math.sin(timeOffset + point.originalX * 1) * 0.3
       const subtleY = Math.cos(timeOffset + point.originalY * 1) * 0.3
-      
+
       targetX += subtleX
       targetY += subtleY
-      
+
       if (distance <= glowRadius) {
         const glowFalloff = Math.max(0, 1 - distance / glowRadius)
         glow = glowFalloff * 10
@@ -208,27 +208,27 @@ export const InteractiveASCII = ({
         targetScale = 1 + glowFalloff * 0.15
       }
     }
-    
+
     targetScale += Math.sin(Date.now() * 1 + point.originalX * 1) * 0.02
-    
+
     // Slow motion return - lerp current position towards target
     const returnSpeed = 0.05 // Slow motion factor (0.05 = very slow return)
     const currentX = point.currentX ?? point.originalX
     const currentY = point.currentY ?? point.originalY
     const currentOpacity = point.currentOpacity ?? 0.5
     const currentScale = point.currentScale ?? 0.5
-    
+
     const newX = lerp(currentX, targetX, returnSpeed)
     const newY = lerp(currentY, targetY, returnSpeed)
     const newOpacity = lerp(currentOpacity, targetOpacity, 0.1)
     const newScale = lerp(currentScale, targetScale, 0.1)
-    
+
     // Update current position in point
     point.currentX = newX
     point.currentY = newY
     point.currentOpacity = newOpacity
     point.currentScale = newScale
-    
+
     return {
       x: newX,
       y: newY,
@@ -243,7 +243,7 @@ export const InteractiveASCII = ({
   const render = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-    
+
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
@@ -258,11 +258,11 @@ export const InteractiveASCII = ({
 
     wavePoints.forEach(point => {
       const calculated = calculatePointPosition(point)
-      
+
       ctx.save()
       // Increase base opacity for better visibility
       ctx.globalAlpha = Math.min(1, calculated.opacity * 0.8)
-      
+
       if (calculated.glow > 0) {
         ctx.shadowColor = getAccentColor()
         ctx.shadowBlur = 10 + calculated.glow * 100
@@ -271,10 +271,10 @@ export const InteractiveASCII = ({
         ctx.shadowBlur = 1
         ctx.fillStyle = getMutedColor()
       }
-      
+
       ctx.translate(calculated.x, calculated.y)
       ctx.scale(calculated.scale, calculated.scale)
-      
+
       ctx.fillText(calculated.char, 0, 0)
       ctx.restore()
     })
@@ -320,7 +320,7 @@ export const InteractiveASCII = ({
     // Listen on both canvas and window for better coverage
     window.addEventListener('mousemove', handleMouseMove)
     canvas.addEventListener('mousemove', handleMouseMove)
-    
+
     return () => {
       window.removeEventListener('mousemove', handleMouseMove)
       canvas.removeEventListener('mousemove', handleMouseMove)
@@ -349,25 +349,24 @@ export const InteractiveASCII = ({
       {/* Avatar overlay */}
       {avatarSrc && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div 
+          <div
             className="relative"
-                     style={{
-                       transform: `rotate(${avatarRotation + (scrollProgress * 180)}deg) scale(${1 - (scrollProgress * 1)}) translateY(${-scrollProgress * 100}px)`,
-                       transition: 'transform 200ms ease-out'
-                     }}
+            style={{
+              transform: `rotate(${avatarRotation + (scrollProgress * 180)}deg) scale(${1 - (scrollProgress * 1)}) translateY(${-scrollProgress * 100}px)`,
+              transition: 'transform 200ms ease-out'
+            }}
           >
-            <img 
-              src={avatarSrc} 
+            <img
+              src={avatarSrc}
               alt={avatarAlt}
-              className={`w-16 h-16 rounded-md border opacity-90 hover:opacity-100 transition-opacity duration-300 ${
-                isDarkMode ? '' : 'invert'
-              }`}
+              className={`w-16 h-16 rounded-md border opacity-90 hover:opacity-100 transition-opacity duration-300 ${isDarkMode ? '' : 'invert'
+                }`}
               style={{
                 borderColor: isDarkMode ? hexToRgba(color, 0.2) : hexToRgba(color, 0.3)
               }}
             />
-            {/* Glow effect */} 
-            <div 
+            {/* Glow effect */}
+            <div
               className="absolute inset-0 w-20 h-20 rounded-md animate-pulse blur-sm"
               style={{
                 backgroundColor: isDarkMode ? hexToRgba(color, 0.02) : hexToRgba(color, 0.06)

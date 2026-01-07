@@ -41,7 +41,7 @@ export const VisantGiftsPage: React.FC<VisantGiftsPageProps> = ({
 }) => {
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const accentColor = data.brandAccentColor || data.brandColors[0] || '#52ddeb';
+  const accentColor = data.brandAccentColor || data.brandColors[0] || '#brand-cyan';
   const bgColor = '#fdfdfd';
   const textColor = '#000000';
 
@@ -61,8 +61,8 @@ export const VisantGiftsPage: React.FC<VisantGiftsPageProps> = ({
     },
   ];
 
-  const gifts = data.giftOptions && data.giftOptions.length > 0 
-    ? data.giftOptions 
+  const gifts = data.giftOptions && data.giftOptions.length > 0
+    ? data.giftOptions
     : defaultGifts;
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, giftIndex: number) => {
@@ -85,11 +85,11 @@ export const VisantGiftsPage: React.FC<VisantGiftsPageProps> = ({
     setUploadingIndex(giftIndex);
     try {
       const imageData = await fileToBase64(file);
-      
+
       if (budgetId) {
         // Upload to R2
         const imageUrl = await budgetApi.uploadGiftImage(budgetId, imageData.base64, giftIndex);
-        
+
         // Update gift with image URL
         const updatedGifts = [...gifts];
         updatedGifts[giftIndex] = { ...updatedGifts[giftIndex], imageUrl };
@@ -98,9 +98,9 @@ export const VisantGiftsPage: React.FC<VisantGiftsPageProps> = ({
       } else {
         // Save as base64 temporarily if no budgetId
         const updatedGifts = [...gifts];
-        updatedGifts[giftIndex] = { 
-          ...updatedGifts[giftIndex], 
-          imageUrl: `data:${imageData.mimeType};base64,${imageData.base64}` 
+        updatedGifts[giftIndex] = {
+          ...updatedGifts[giftIndex],
+          imageUrl: `data:${imageData.mimeType};base64,${imageData.base64}`
         };
         onDataChange?.({ giftOptions: updatedGifts });
         toast.success('Imagem carregada!');
@@ -126,7 +126,7 @@ export const VisantGiftsPage: React.FC<VisantGiftsPageProps> = ({
     placeholderStyle = 'default',
   }) => {
     const isUploading = uploadingIndex === giftIndex;
-    
+
     const renderPlaceholder = () => {
       if (placeholderStyle === '3d') {
         // Special placeholder for 3D Animation card
@@ -175,7 +175,7 @@ export const VisantGiftsPage: React.FC<VisantGiftsPageProps> = ({
         </div>
       );
     };
-    
+
     return (
       <div className="relative w-full h-full flex items-center justify-center">
         {imageUrl ? (
@@ -264,7 +264,7 @@ export const VisantGiftsPage: React.FC<VisantGiftsPageProps> = ({
         >
           <InlineEditor
             value="Escolha o seu brinde!"
-            onChange={() => {}}
+            onChange={() => { }}
             editable={false}
             style={{ fontSize: '22.3px', fontWeight: 'bold' }}
           />

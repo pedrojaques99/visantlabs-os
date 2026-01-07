@@ -52,7 +52,7 @@ export const QuickActionsBar: React.FC<QuickActionsBarProps> = ({
             onClick={handleClick}
             disabled={isGenerating || isGeneratingPrompt}
             data-tutorial-target="surprise-me"
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-md border hover:border-[#52ddeb]/30 hover:bg-brand-cyan/10 hover:text-brand-cyan transition-all text-sm font-mono transform hover:scale-[1.02] active:scale-100 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg hover:shadow-[#52ddeb]/10 cursor-pointer ${isAnimating ? 'dice-button-clicked' : ''} ${theme === 'dark'
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-md border hover:border-[#brand-cyan]/30 hover:bg-brand-cyan/10 hover:text-brand-cyan transition-all text-sm font-mono transform hover:scale-[1.02] active:scale-100 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg hover:shadow-[#brand-cyan]/10 cursor-pointer ${isAnimating ? 'dice-button-clicked' : ''} ${theme === 'dark'
               ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 shadow-black/20'
               : 'bg-zinc-100 text-zinc-700 border-zinc-300 shadow-zinc-200/20'
               }`}
@@ -72,7 +72,7 @@ export const QuickActionsBar: React.FC<QuickActionsBarProps> = ({
               onClick={() => onAutoGenerateChange(!autoGenerate)}
             >
               <div className={`w-3 h-3 rounded-md flex items-center justify-center border transition-all duration-200 ${autoGenerate
-                ? 'bg-brand-cyan/80 border-[#52ddeb] opacity-100'
+                ? 'bg-brand-cyan/80 border-[#brand-cyan] opacity-100'
                 : theme === 'dark'
                   ? 'bg-zinc-700/50 border-zinc-600/50 group-hover:border-zinc-500 group-hover:bg-zinc-700'
                   : 'bg-white/50 border-zinc-400/50 group-hover:border-zinc-400 group-hover:bg-white'

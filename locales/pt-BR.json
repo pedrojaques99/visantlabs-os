@@ -468,18 +468,6 @@
     "experimentalMode": "Modo Experimental",
     "experimentalModeDesc": "Mostrar nodes de preview como Shader, Strategy, etc."
   },
-  "canvasNodes": {
-    "promptNode": {
-      "presets": "Presets",
-      "loadPreset": "Carregar Preset",
-      "save": "Salvar",
-      "savePrompt": "Salvar Prompt",
-      "promptPlaceholder": "Digite seu prompt aqui...",
-      "suggestPrompts": "Sugerir Prompts",
-      "connectedToTextNode": "Conectado ao Node de Texto",
-      "savedPromptName": "Prompt Salvo"
-    }
-  },
   "canvasLoading": {
     "Project": "Carregando Projeto..."
   },
@@ -2220,7 +2208,7 @@
       "brandName": "Nome da Sua Marca",
       "color": "#000000",
       "brandBackgroundColor": "#000000",
-      "brandAccentColor": "#52ddeb"
+      "brandAccentColor": "#brand-cyan"
     }
   },
   "pix": {
@@ -2256,6 +2244,35 @@
   "canvasNodes": {
     "promptNode": {
       "title": "Prompt Node",
+      "presets": "Presets",
+      "loadPreset": "Carregar Preset",
+      "save": "Salvar",
+      "savePrompt": "Salvar Prompt",
+      "presetModal": {
+        "title": "Selecionar Preset de Mockup",
+        "titleMulti": "Selecionar Presets ({selected}/{max})",
+        "tabs": {
+          "official": "Oficiais ({count})",
+          "community": "Comunidade ({count})",
+          "custom": "Personalizados ({count})"
+        },
+        "loading": "Carregando presets...",
+        "loadingCommunity": "Carregando presets da comunidade...",
+        "noOfficial": "Nenhum preset oficial encontrado",
+        "noCommunity": "Nenhum preset da comunidade encontrado",
+        "noCustom": "Nenhum mockup personalizado encontrado",
+        "createNew": "Criar Novo",
+        "multiSelectMessage": "{selected} de {max} presets selecionados",
+        "multiSelectMessageEmpty": "Selecione até {max} presets",
+        "confirmSelection": "Confirmar Seleção",
+        "official": "Oficial"
+      },
+      "presetCard": {
+        "copied": "Prompt copiado para a área de transferência",
+        "copyFailed": "Falha ao copiar prompt",
+        "viewMore": "Ver mais",
+        "promptLabel": "Prompt:"
+      },
       "referenceImages": "Imagens de Referência",
       "logoFromBrandCore": "Logo da Marca",
       "identityFromBrandCore": "Identidade da Marca",
@@ -2413,7 +2430,7 @@
       "logoRequired": "Logo é obrigatório. Conecte o Logo do Brand Core ou um Image Node.",
       "logoFromBrandCore": "Logo (do Núcleo da Marca) - Foco Principal",
       "inputImage": "Imagem de Entrada",
-      "colorPlaceholder": "#52ddeb",
+      "colorPlaceholder": "#brand-cyan",
       "addAnotherMockupNode": "Adicionar outro Mockup Node",
       "missingInput": "Entrada Ausente",
       "missingInputConnectLogo": "• Conecte Logo do BrandCore (obrigatório, foco principal)",
@@ -2465,7 +2482,16 @@
     },
     "textNode": {
       "title": "Text Node",
-      "placeholder": "Digite o texto aqui..."
+      "placeholder": "Digite o texto aqui...",
+      "copy": "Copiar texto",
+      "copied": "Texto copiado!",
+      "copyFailed": "Falha ao copiar texto",
+      "characters": "caracteres",
+      "aiHint": "Clique na varinha para melhorar com IA",
+      "improvePrompt": "Melhorar com IA",
+      "improvingPrompt": "Melhorando prompt...",
+      "promptImproved": "Prompt melhorado!",
+      "errorImprovingPrompt": "Falha ao melhorar prompt"
     },
     "drawingNode": {
       "freehand": "Desenho Livre",

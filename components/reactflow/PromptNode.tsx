@@ -21,17 +21,16 @@ import { getCreditsRequired } from '../../utils/creditCalculator';
 import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
 import { useNodeResize } from '../../hooks/canvas/useNodeResize';
 import { PromptContextMenu } from './contextmenu/PromptContextMenu';
-import { SavePromptModal } from './SavePromptModal';
 import { MockupPresetModal } from '../MockupPresetModal';
-import { getAllPresetsAsync } from '../../services/mockupPresetsService';
+import { getPresetByIdSync } from '../../services/unifiedPresetService';
 
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
   const { t } = useTranslation();
-  const { setNodes } = useReactFlow();
+  const { setNodes, getNode, getZoom } = useReactFlow();
   const nodeData = data as PromptNodeData;
-  const { handleResize: handleResizeWithDebounce } = useNodeResize();
+  const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
   const [prompt, setPrompt] = useState(nodeData.prompt || '');
   const [model, setModel] = useState<GeminiModel>(nodeData.model || 'gemini-2.5-flash-image');
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>(nodeData.aspectRatio || '16:9');
@@ -45,20 +44,14 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
 
   // Context Menu state
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
-  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const [isPresetModalOpen, setIsPresetModalOpen] = useState(false);
 
   // Preset Selection Handler
-  const handlePresetSelect = async (presetId: string) => {
-    try {
-      const allPresets = await getAllPresetsAsync();
-      const preset = allPresets.find(p => p.id === presetId);
-      if (preset && preset.prompt) {
-        setPrompt(preset.prompt);
-        debouncedUpdateData({ prompt: preset.prompt });
-      }
-    } catch (error) {
-      console.error('Failed to load preset:', error);
+  const handlePresetSelect = (presetId: string) => {
+    const preset = getPresetByIdSync('mockup', presetId);
+    if (preset && preset.prompt) {
+      setPrompt(preset.prompt);
+      debouncedUpdateData({ prompt: preset.prompt });
     }
     setIsPresetModalOpen(false);
   };
@@ -330,6 +323,11 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     handleResizeWithDebounce(id, width, height, nodeData.onResize);
   }, [id, nodeData.onResize, handleResizeWithDebounce]);
 
+  const handleFitToContent = useCallback(() => {
+    // For prompt nodes, we set height to auto to let it grow based on prompt length
+    fitToContent(id, 'auto', 'auto', nodeData.onResize);
+  }, [id, nodeData.onResize, fitToContent]);
+
   const handleDuplicate = () => {
     // ReactFlow handle duplication through the internal state
     // but we can trigger it via a helper if available or by creating a new node
@@ -352,6 +350,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       selected={selected}
       dragging={dragging}
       warning={nodeData.oversizedWarning}
+      onFitToContent={handleFitToContent}
       className="p-5 min-w-[320px]"
       onContextMenu={(e) => {
         e.preventDefault();
@@ -361,7 +360,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     >
       {selected && !dragging && (
         <NodeResizer
-          color="#52ddeb"
+          color="#brand-cyan"
           isVisible={selected}
           minWidth={280}
           minHeight={350}
@@ -458,7 +457,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
             />
           )}
           {connectedTextDirection && (
-            <div className="p-2 rounded border border-[#52ddeb]/30 bg-brand-cyan/5">
+            <div className="p-2 rounded border border-[#brand-cyan]/30 bg-brand-cyan/5">
               <div className="text-xs font-mono text-brand-cyan mb-1">{t('canvasNodes.promptNode.textDirectionFromBrandCore')}</div>
               <div className="text-xs text-zinc-400 line-clamp-3">{connectedTextDirection}</div>
             </div>
@@ -515,7 +514,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               disabled={isLoading}
               className={cn(
                 'flex items-center gap-1.5 px-2 py-1 rounded-md border text-[10px] font-mono transition-all',
-                'bg-zinc-800/50 border-zinc-700/50 hover:bg-zinc-700/50 hover:border-[#52ddeb]/30',
+                'bg-zinc-800/50 border-zinc-700/50 hover:bg-zinc-700/50 hover:border-[#brand-cyan]/30',
                 'text-zinc-400 hover:text-brand-cyan',
                 'node-interactive'
               )}
@@ -533,14 +532,12 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               e.preventDefault();
               if (nodeData.onSavePrompt) {
                 nodeData.onSavePrompt(prompt);
-              } else {
-                setIsSaveModalOpen(true); // Fallback if handler not connected
               }
             }}
             disabled={isLoading || !prompt.trim()}
             className={cn(
               'flex items-center gap-1.5 px-2 py-1 rounded-md border text-[10px] font-mono transition-all',
-              'bg-zinc-800/50 border-zinc-700/50 hover:bg-zinc-700/50 hover:border-[#52ddeb]/30',
+              'bg-zinc-800/50 border-zinc-700/50 hover:bg-zinc-700/50 hover:border-[#brand-cyan]/30',
               'text-zinc-400 hover:text-brand-cyan',
               'disabled:opacity-50 disabled:cursor-not-allowed',
               'node-interactive'
@@ -576,7 +573,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               disabled={isLoading || isSuggestingPrompts || !prompt.trim()}
               className={cn(
                 'absolute top-2 right-2 p-1.5 rounded border transition-all',
-                'bg-zinc-800/50 hover:bg-zinc-700/50 border-zinc-700/50 hover:border-[#52ddeb]/40',
+                'bg-zinc-800/50 hover:bg-zinc-700/50 border-zinc-700/50 hover:border-[#brand-cyan]/40',
                 'text-zinc-400 hover:text-brand-cyan',
                 'disabled:opacity-50 disabled:cursor-not-allowed',
                 'node-interactive'
@@ -613,7 +610,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
                 }}
                 className={cn(
                   'w-full text-left p-1.5 text-[11px] font-mono rounded border transition-all',
-                  'bg-zinc-800/30 hover:bg-zinc-800/50 border-zinc-700/30 hover:border-[#52ddeb]/40',
+                  'bg-zinc-800/30 hover:bg-zinc-800/50 border-zinc-700/30 hover:border-[#brand-cyan]/40',
                   'text-zinc-300 hover:text-brand-cyan',
                   'node-interactive'
                 )}
@@ -676,7 +673,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               className={cn(
                 'p-2 rounded border transition-all text-left node-interactive',
                 model === 'gemini-2.5-flash-image'
-                  ? 'bg-brand-cyan/20 border-[#52ddeb]/50 text-brand-cyan'
+                  ? 'bg-brand-cyan/20 border-[#brand-cyan]/50 text-brand-cyan'
                   : 'bg-zinc-900/50 border-zinc-700/50 text-zinc-400 hover:bg-zinc-800/50 hover:border-zinc-600/50',
                 isLoading && 'opacity-50 cursor-not-allowed'
               )}
@@ -717,7 +714,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               className={cn(
                 'p-2 rounded border transition-all text-left node-interactive',
                 model === 'gemini-3-pro-image-preview'
-                  ? 'bg-brand-cyan/20 border-[#52ddeb]/50 text-brand-cyan'
+                  ? 'bg-brand-cyan/20 border-[#brand-cyan]/50 text-brand-cyan'
                   : 'bg-zinc-900/50 border-zinc-700/50 text-zinc-400 hover:bg-zinc-800/50 hover:border-zinc-600/50',
                 isLoading && 'opacity-50 cursor-not-allowed'
               )}
@@ -791,13 +788,13 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         }}
         disabled={isLoading || !prompt.trim()}
         className={cn(
-          'w-full px-3 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#52ddeb]/30 rounded text-xs font-mono text-brand-cyan transition-colors flex items-center justify-center gap-3 node-interactive',
+          'w-full px-3 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#brand-cyan]/30 rounded text-xs font-mono text-brand-cyan transition-colors flex items-center justify-center gap-3 node-interactive',
           (isLoading || !prompt.trim()) ? 'opacity-50 node-button-disabled' : 'node-button-enabled'
         )}
       >
         {isLoading ? (
           <>
-            <GlitchLoader size={14} className="mr-1" color="#52ddeb" />
+            <GlitchLoader size={14} className="mr-1" color="#brand-cyan" />
             <span>{t('canvasNodes.promptNode.generating')}</span>
           </>
         ) : (
@@ -826,10 +823,13 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           x={contextMenu.x}
           y={contextMenu.y}
           onClose={() => setContextMenu(null)}
-          prompt={prompt}
-          nodeId={id}
-          nodeData={nodeData}
-          onSavePrompt={() => setIsSaveModalOpen(true)}
+          onDuplicate={handleDuplicate}
+          onDelete={handleDelete}
+          onSavePrompt={() => {
+            if (nodeData.onSavePrompt) {
+              nodeData.onSavePrompt(prompt);
+            }
+          }}
         />
       )}
 
@@ -838,16 +838,6 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         selectedPresetId=""
         onClose={() => setIsPresetModalOpen(false)}
         onSelectPreset={handlePresetSelect}
-      />
-
-      {/* Save Prompt Modal */}
-      <SavePromptModal
-        isOpen={isSaveModalOpen}
-        onClose={() => setIsSaveModalOpen(false)}
-        prompt={prompt}
-        initialData={{
-          name: t('canvasNodes.promptNode.savedPromptName') || 'Novo Prompt',
-        }}
       />
     </NodeContainer>
   );

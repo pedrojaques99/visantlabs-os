@@ -76,7 +76,7 @@ export const BudgetSharedPage: React.FC = () => {
         observations: budget.observations || '',
         links: budget.links || {},
         faq: Array.isArray(budget.faq) ? budget.faq : [],
-        brandColors: budget.brandColors || ['#52ddeb'],
+        brandColors: budget.brandColors || ['#brand-cyan'],
         brandName: budget.brandName,
         brandLogo: budget.brandLogo || undefined,
         customPdfUrl: (budget as any).data?.customPdfUrl || (budget as any).customPdfUrl || undefined,
@@ -148,7 +148,7 @@ export const BudgetSharedPage: React.FC = () => {
     observations: budget.observations || '',
     links: budget.links || {},
     faq: Array.isArray(budget.faq) ? budget.faq : [],
-    brandColors: budget.brandColors || ['#52ddeb'],
+    brandColors: budget.brandColors || ['#brand-cyan'],
     brandName: budget.brandName,
     brandLogo: budget.brandLogo || undefined,
     contentWidth: (budget as any).data?.contentWidth || undefined,
@@ -190,7 +190,7 @@ const BudgetSharedContent: React.FC<{
 }> = ({ budgetData, budgetName, onDownloadPDF, t }) => {
   const { activeTemplate, isLoading } = useVisantTemplate();
   const { theme } = useTheme();
-  
+
   // Refs for each page component
   const pageRefs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -203,10 +203,10 @@ const BudgetSharedContent: React.FC<{
 
     try {
       toast.loading(t('budget.shared.generatingPDF'), { id: 'pdf-generation' });
-      
+
       const pageWidth = budgetData.contentWidth || 800;
       const pageHeight = budgetData.contentHeight || 1131;
-      
+
       // Convert px to mm (1px ≈ 0.264583mm at 96dpi)
       const pxToMm = 0.264583;
       const pageWidthMm = pageWidth * pxToMm;
@@ -220,10 +220,10 @@ const BudgetSharedContent: React.FC<{
 
       // Define the order of pages to capture
       const pageOrder = ['cover', 'timeline', 'introduction', 'budget', 'gifts', 'payment', 'backCover'];
-      
+
       // Get all page containers (they have data-page attribute)
       const allPageContainers = Array.from(document.querySelectorAll('[data-page]')) as HTMLElement[];
-      
+
       if (allPageContainers.length === 0) {
         // Fallback: use the original PDF generation
         onDownloadPDF();
@@ -241,9 +241,9 @@ const BudgetSharedContent: React.FC<{
       for (let i = 0; i < sortedPageContainers.length; i++) {
         const wrapper = sortedPageContainers[i] as HTMLElement;
         const pageName = wrapper.getAttribute('data-page');
-        
+
         console.log(`Capturing page ${i + 1}/${sortedPageContainers.length}: ${pageName}`);
-        
+
         // Scroll into view to ensure it's fully rendered
         wrapper.scrollIntoView({ behavior: 'instant', block: 'start' });
         await new Promise((resolve) => setTimeout(resolve, 800));
@@ -252,10 +252,10 @@ const BudgetSharedContent: React.FC<{
         const rect = wrapper.getBoundingClientRect();
         const actualWidth = pageWidth; // Use configured width in px
         const actualHeight = pageHeight; // Use configured height in px
-        
+
         // Find the inner content div that contains the actual page
         const innerContent = wrapper.querySelector('div[style*="maxWidth"]') || wrapper.firstElementChild || wrapper;
-        
+
         console.log(`Page ${pageName} dimensions: ${actualWidth}x${actualHeight}`);
 
         // Capture as canvas with error handling for unsupported CSS colors
@@ -316,10 +316,10 @@ const BudgetSharedContent: React.FC<{
             // Restore original console.warn
             console.warn = originalWarn;
           });
-          
+
           // Convert to image
           const imgData = canvas.toDataURL('image/png', 1.0);
-          
+
           console.log(`Canvas captured for ${pageName}: ${canvas.width}x${canvas.height}`);
 
           // Add new page if not the first one
@@ -327,14 +327,14 @@ const BudgetSharedContent: React.FC<{
             doc.addPage();
             console.log(`Added new page ${i + 1} to PDF document`);
           }
-          
+
           // Get current page number (jsPDF is 1-indexed)
           const currentPageNum = doc.getNumberOfPages();
           console.log(`Current page number: ${currentPageNum}, adding ${pageName}`);
-          
+
           // Ensure we're on the correct page
           doc.setPage(currentPageNum);
-          
+
           // Set white background for each page
           doc.setFillColor(255, 255, 255);
           doc.rect(0, 0, pageWidthMm, pageHeightMm, 'F');
@@ -342,12 +342,12 @@ const BudgetSharedContent: React.FC<{
           // Calculate scaling - always fit to page dimensions exactly
           const imgWidth = pageWidthMm;
           const imgHeight = pageHeightMm;
-          
+
           console.log(`Adding image to page ${currentPageNum} at size ${imgWidth}mm x ${imgHeight}mm`);
 
           // Add image to PDF, filling the entire page
           doc.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight, undefined, 'FAST');
-          
+
           // Verify page count
           const totalPages = doc.getNumberOfPages();
           console.log(`✓ Page ${i + 1}/${sortedPageContainers.length} (${pageName}) added to PDF. Total pages: ${totalPages}`);
@@ -363,7 +363,7 @@ const BudgetSharedContent: React.FC<{
       console.log(`\n📄 PDF Generation Complete!`);
       console.log(`Total pages in document: ${finalPageCount}`);
       console.log(`Expected pages: ${sortedPageContainers.length}`);
-      
+
       if (finalPageCount !== sortedPageContainers.length) {
         console.warn(`⚠️ WARNING: Page count mismatch! Expected ${sortedPageContainers.length}, got ${finalPageCount}`);
       }
@@ -376,7 +376,7 @@ const BudgetSharedContent: React.FC<{
     } catch (error: any) {
       console.error('Error generating PDF from components:', error);
       toast.error(error.message || t('budget.errors.failedToGeneratePDF'), { id: 'pdf-generation' });
-      
+
       // Fallback to original method
       onDownloadPDF();
     }

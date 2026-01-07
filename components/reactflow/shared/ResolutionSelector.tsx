@@ -20,7 +20,7 @@ export const ResolutionSelector: React.FC<ResolutionSelectorProps> = ({
   compact = false
 }) => {
   const resolutions: Resolution[] = ['1K', '2K', '4K'];
-  
+
   if (compact) {
     // Compact version for nodes
     return (
@@ -28,7 +28,7 @@ export const ResolutionSelector: React.FC<ResolutionSelectorProps> = ({
         {resolutions.map((res) => {
           const isSelected = value === res;
           const credits = getCreditsRequired(model, res);
-          
+
           return (
             <button
               key={res}
@@ -37,7 +37,7 @@ export const ResolutionSelector: React.FC<ResolutionSelectorProps> = ({
               className={cn(
                 'flex-1 flex items-center justify-center gap-1 py-1.5 px-2 text-xs font-mono rounded border transition-all',
                 isSelected
-                  ? 'bg-brand-cyan/10 text-brand-cyan border-[#52ddeb]/40'
+                  ? 'bg-brand-cyan/10 text-brand-cyan border-[#brand-cyan]/40'
                   : 'bg-zinc-800/30 text-zinc-500 border-zinc-700/30 hover:border-zinc-600/50 hover:text-zinc-400',
                 disabled && 'opacity-50 cursor-not-allowed'
               )}
@@ -58,7 +58,7 @@ export const ResolutionSelector: React.FC<ResolutionSelectorProps> = ({
       {resolutions.map((res) => {
         const isSelected = value === res;
         const credits = getCreditsRequired(model, res);
-        
+
         return (
           <button
             key={res}
@@ -67,7 +67,7 @@ export const ResolutionSelector: React.FC<ResolutionSelectorProps> = ({
             className={cn(
               'flex-1 flex items-center justify-center gap-1 py-2 text-xs font-mono rounded-md transition-all duration-200 border cursor-pointer',
               isSelected
-                ? 'bg-brand-cyan/20 text-brand-cyan border-[#52ddeb]/30'
+                ? 'bg-brand-cyan/20 text-brand-cyan border-[#brand-cyan]/30'
                 : 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600',
               disabled && 'opacity-50 cursor-not-allowed'
             )}

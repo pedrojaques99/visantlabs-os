@@ -20,7 +20,7 @@ const AutoResizeTextarea = React.forwardRef<HTMLTextAreaElement, React.TextareaH
   onWheel?: (e: React.WheelEvent<HTMLTextAreaElement>) => void;
 }>(({ onChange, minHeight = 40, maxHeight = 400, onWheel, ...props }, ref) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  
+
   const combinedRef = useCallback((node: HTMLTextAreaElement | null) => {
     textareaRef.current = node;
     if (typeof ref === 'function') {
@@ -69,7 +69,7 @@ AutoResizeTextarea.displayName = 'AutoResizeTextarea';
 export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
   const { t } = useTranslation();
   const nodeData = data as StrategyNodeData;
-  const { handleResize: handleResizeWithDebounce } = useNodeResize();
+  const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>(
     nodeData.expandedSections || {}
   );
@@ -78,7 +78,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
   const [editedSections, setEditedSections] = useState<Record<string, string>>({});
   const [isCreatingNew, setIsCreatingNew] = useState(false);
   const [showProjectSelector, setShowProjectSelector] = useState(!nodeData.prompt && !nodeData.strategyData);
-  
+
   const strategyType = nodeData.strategyType || 'all';
   const strategyData = nodeData.strategyData;
   const isGenerating = nodeData.isGenerating || false;
@@ -96,16 +96,16 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
   const lastDraggingLogRef = useRef<string>('');
   const devLogDebounced = useCallback((message: string, data?: any) => {
     if (!import.meta.env.DEV) return;
-    
+
     // Clear existing timeout
     if (draggingLogTimeoutRef.current) {
       clearTimeout(draggingLogTimeoutRef.current);
     }
-    
+
     // Store the message and data
     const logKey = `${message}-${JSON.stringify(data || {})}`;
     lastDraggingLogRef.current = logKey;
-    
+
     // Debounce: only log after 500ms of no new logs
     draggingLogTimeoutRef.current = setTimeout(() => {
       if (lastDraggingLogRef.current === logKey) {
@@ -169,7 +169,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
   const checkDependencies = useCallback((sectionType: string): string[] => {
     if (!strategyData) return [];
     const missing: string[] = [];
-    
+
     switch (sectionType) {
       case 'marketResearch':
         // No dependencies
@@ -229,7 +229,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
         // No strict dependencies
         break;
     }
-    
+
     return missing;
   }, [strategyData, hasSectionData]);
 
@@ -246,16 +246,16 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
         hasMarketResearch = !!(mrObj.mercadoNicho?.trim() || mrObj.publicoAlvo?.trim() || mrObj.posicionamento?.trim() || mrObj.insights?.trim());
       }
     }
-    return !!(hasMarketResearch || strategyData.persona || strategyData.archetypes || 
-              strategyData.competitors || strategyData.references || strategyData.swot ||
-              strategyData.colorPalettes || strategyData.visualElements || strategyData.mockupIdeas);
+    return !!(hasMarketResearch || strategyData.persona || strategyData.archetypes ||
+      strategyData.competitors || strategyData.references || strategyData.swot ||
+      strategyData.colorPalettes || strategyData.visualElements || strategyData.mockupIdeas);
   }, [strategyData]);
 
   const prevStrategyDataRef = useRef(strategyData);
   useEffect(() => {
     // Use debounced log when dragging, regular log otherwise
     const logFn = dragging ? devLogDebounced : devLog;
-    
+
     if (import.meta.env.DEV) {
       const sectionsWithData = sections.filter(s => hasSectionData(s.type)).map(s => s.type);
       logFn('🔄 Generation state', {
@@ -267,7 +267,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
         sectionsCount: `${sectionsWithData.length}/${sections.length}`,
         dragging
       });
-      
+
       if (strategyData && strategyData !== prevStrategyDataRef.current) {
         const completedSections = sections.filter(s => hasSectionData(s.type)).map(s => ({ type: s.type, label: s.label }));
         if (completedSections.length > 0) {
@@ -301,9 +301,9 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
 
     // Prevent generating multiple sections at once
     if (generatingSteps.length > 0) {
-      devLog('❌ Section generation blocked - already generating', { 
+      devLog('❌ Section generation blocked - already generating', {
         currentSteps: generatingSteps,
-        requestedSection: sectionType 
+        requestedSection: sectionType
       });
       toast.error(t('canvasNodes.strategyNode.pleaseWaitForSection'), { duration: 3000 });
       return;
@@ -315,20 +315,20 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
     }
 
     const sectionLabel = sections.find(s => s.type === sectionType)?.label || sectionType;
-    devLog('🚀 Starting section generation', { 
-      sectionType, 
+    devLog('🚀 Starting section generation', {
+      sectionType,
       sectionLabel,
-      promptLength: prompt.length 
+      promptLength: prompt.length
     });
 
     try {
       await nodeData.onGenerateSection(id, sectionType);
       devLog('✅ Section generation initiated', { sectionType, sectionLabel });
     } catch (error: any) {
-      devLog('❌ Section generation failed', { 
-        sectionType, 
+      devLog('❌ Section generation failed', {
+        sectionType,
         sectionLabel,
-        error: error?.message || error 
+        error: error?.message || error
       });
       toast.error(error?.message || t('canvasNodes.strategyNode.failedToGenerateSection', { section: sectionLabel }), { duration: 5000 });
     }
@@ -346,21 +346,21 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
     }
 
     const sectionsToGenerate = sections.filter(s => !hasSectionData(s.type));
-    devLog('🚀 Starting generation of all sections', { 
+    devLog('🚀 Starting generation of all sections', {
       totalSections: sections.length,
       sectionsToGenerate: sectionsToGenerate.length,
       sectionsList: sectionsToGenerate.map(s => s.type),
-      promptLength: prompt.length 
+      promptLength: prompt.length
     });
 
     try {
       await nodeData.onGenerateAll(id);
-      devLog('✅ All sections generation initiated', { 
-        sectionsCount: sectionsToGenerate.length 
+      devLog('✅ All sections generation initiated', {
+        sectionsCount: sectionsToGenerate.length
       });
     } catch (error: any) {
-      devLog('❌ All sections generation failed', { 
-        error: error?.message || error 
+      devLog('❌ All sections generation failed', {
+        error: error?.message || error
       });
       toast.error(error?.message || t('canvasNodes.strategyNode.failedToGenerateAllSections'), { duration: 5000 });
     }
@@ -390,12 +390,12 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
   const handleOpenInNewTab = useCallback(async () => {
     try {
       let projectId = nodeData.projectId;
-      
+
       // If no projectId, save first to get one
       if (!projectId && nodeData.onSave) {
         projectId = await handleSave();
       }
-      
+
       if (projectId) {
         const url = `/branding-machine?projectId=${projectId}`;
         window.open(url, '_blank');
@@ -427,14 +427,14 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
     });
 
     nodeData.onUpdateData(id, { strategyData: currentData });
-    toast.success(t('canvasNodes.strategyNode.sectionDeleted', { 
+    toast.success(t('canvasNodes.strategyNode.sectionDeleted', {
       section: sections.find(s => s.type === sectionType)?.label || t('canvasNodes.strategyNode.section')
     }));
   }, [id, nodeData, strategyData, sections, t]);
 
   const saveTimeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
   const latestRefs = useRef({ strategyData, nodeData, id });
-  
+
   useEffect(() => {
     latestRefs.current = { strategyData, nodeData, id };
   }, [strategyData, nodeData, id]);
@@ -453,7 +453,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
 
     // Capture newContent at the time the timeout is set
     const contentToSave = newContent;
-    
+
     saveTimeoutRef.current[sectionType] = setTimeout(() => {
       const { strategyData: latestStrategyData, nodeData: latestNodeData, id: latestId } = latestRefs.current;
       if (latestNodeData.onUpdateData && latestStrategyData) {
@@ -473,9 +473,9 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
     if (editedSections[sectionType] !== undefined) {
       return editedSections[sectionType];
     }
-    
+
     if (!strategyData) return '';
-    
+
     switch (sectionType) {
       case 'marketResearch': {
         const mr = strategyData.marketResearch;
@@ -571,17 +571,17 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
         setOriginalPrompt(nodeData.prompt);
       }
     }
-    
+
     // Sync project name
     if (nodeData.name !== undefined && nodeData.name !== projectName) {
       setProjectName(nodeData.name);
     }
-    
+
     // Check if strategyData has changed
     const currentStrategyDataKeys = strategyData ? Object.keys(strategyData).sort().join(',') : '';
     const newStrategyDataKeys = nodeData.strategyData ? Object.keys(nodeData.strategyData).sort().join(',') : '';
     const strategyDataChanged = currentStrategyDataKeys !== newStrategyDataKeys;
-    
+
     if (strategyDataChanged && nodeData.strategyData) {
       devLog('🔄 Strategy data updated from nodeData', {
         oldKeys: currentStrategyDataKeys,
@@ -590,12 +590,12 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
         newDataCount: Object.keys(nodeData.strategyData).length
       });
     }
-    
+
     // Update showProjectSelector based on actual data
     const hasPrompt = !!nodeData.prompt;
     const hasStrategyData = !!nodeData.strategyData && Object.keys(nodeData.strategyData).length > 0;
     const shouldShowSelector = !hasPrompt && !hasStrategyData;
-    
+
     if (shouldShowSelector !== showProjectSelector) {
       devLog('🔄 Updating showProjectSelector', {
         shouldShowSelector,
@@ -607,7 +607,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
       });
       setShowProjectSelector(shouldShowSelector);
     }
-    
+
     // If we have data, hide the selector and create new form
     if (hasStrategyData) {
       if (showProjectSelector) {
@@ -630,12 +630,12 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
   const handlePromptChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newPrompt = e.target.value;
     setPrompt(newPrompt);
-    
+
     // Debounce external updates to prevent loops
     if (promptUpdateTimeoutRef.current) {
       clearTimeout(promptUpdateTimeoutRef.current);
     }
-    
+
     promptUpdateTimeoutRef.current = setTimeout(() => {
       if (nodeData.onUpdateData && newPrompt !== promptRef.current) {
         promptRef.current = newPrompt;
@@ -648,12 +648,12 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
   const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newName = e.target.value;
     setProjectName(newName);
-    
+
     // Debounce external updates to prevent loops
     if (nameUpdateTimeoutRef.current) {
       clearTimeout(nameUpdateTimeoutRef.current);
     }
-    
+
     nameUpdateTimeoutRef.current = setTimeout(() => {
       if (nodeData.onUpdateData) {
         nodeData.onUpdateData(id, { name: newName });
@@ -666,14 +666,14 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
     try {
       const { brandingApi } = await import('../../services/brandingApi');
       const project = await brandingApi.getById(projectId);
-      
+
       if (!project || !project.data) {
         devLog('❌ Invalid project data', { projectId, project });
         toast.error(t('canvas.failedToLoadProject'), { duration: 3000 });
         return;
       }
-      
-      devLog('📦 Project loaded from API', { 
+
+      devLog('📦 Project loaded from API', {
         projectId,
         projectName: project.name,
         hasPrompt: !!project.prompt,
@@ -693,9 +693,9 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
           return acc;
         }, {} as Record<string, string>)
       });
-      
+
       const convertedStrategyData: any = {};
-      
+
       // Handle marketResearch - support multiple formats
       if (typeof project.data.marketResearch === 'string' && project.data.marketResearch.trim()) {
         // New format: marketResearch is a string (benchmarking paragraph)
@@ -712,21 +712,21 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
           insights: project.data.insights || '',
         };
       }
-      
+
       // Convert persona
       if (project.data.persona) {
         if (typeof project.data.persona === 'object' && project.data.persona !== null) {
           convertedStrategyData.persona = project.data.persona;
         }
       }
-      
+
       // Convert archetypes
       if (project.data.archetypes) {
         if (typeof project.data.archetypes === 'object' && project.data.archetypes !== null) {
           convertedStrategyData.archetypes = project.data.archetypes;
         }
       }
-      
+
       // Convert array sections
       const arraySections = ['competitors', 'references', 'colorPalettes', 'visualElements', 'mockupIdeas'] as const;
       arraySections.forEach(key => {
@@ -738,7 +738,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
           }
         }
       });
-      
+
       // Convert object sections
       const objectSections = ['swot', 'moodboard'] as const;
       objectSections.forEach(key => {
@@ -765,7 +765,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
           strategyData: convertedStrategyData,
           projectId: project._id || (project as any).id,
         });
-        
+
         devLog('✅ Data update called', {
           projectId,
           nodeId: id,
@@ -777,11 +777,11 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
       } else {
         devLog('❌ onUpdateData not available', { projectId, nodeId: id });
       }
-      
+
       setPrompt(project.prompt || '');
       setProjectName(project.name || '');
       setShowProjectSelector(false);
-      
+
       devLog('✅ Project loaded successfully', {
         projectId,
         projectName: project.name,
@@ -789,7 +789,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
         hasData: convertedKeys.length > 0,
         convertedSections: convertedKeys
       });
-      
+
       toast.success(t('canvas.projectLoadedSuccessfully'));
     } catch (error: any) {
       devLog('❌ Failed to load project', {
@@ -822,10 +822,10 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
   const hasLoadedProjectRef = useRef<string | null>(null);
   const isLoadingRef = useRef(false);
   const hasLoadedDataForProjectRef = useRef<Set<string>>(new Set());
-  
+
   useEffect(() => {
     const projectId = nodeData.projectId;
-    
+
     // Only proceed if we have a projectId and we're not already loading
     if (!projectId || isLoadingRef.current) {
       if (!projectId) {
@@ -834,13 +834,13 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
       }
       return;
     }
-    
+
     // Check if this is a different project
     const isDifferentProject = projectId !== hasLoadedProjectRef.current;
-    
+
     // Check if we've already loaded data for this project
     const hasLoadedData = hasLoadedDataForProjectRef.current.has(projectId);
-    
+
     // Only load if it's a different project OR we haven't loaded data for this project yet
     if (isDifferentProject || !hasLoadedData) {
       // Prevent multiple simultaneous loads
@@ -848,10 +848,10 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
         devLog('⏳ Already loading project, skipping', { projectId });
         return;
       }
-      
+
       isLoadingRef.current = true;
       hasLoadedProjectRef.current = projectId;
-      
+
       devLog('🔄 Auto-loading project', {
         projectId,
         isDifferentProject,
@@ -860,7 +860,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
         strategyDataKeys: strategyData ? Object.keys(strategyData) : [],
         hasData
       });
-      
+
       handleLoadProject(projectId)
         .then(() => {
           isLoadingRef.current = false;
@@ -932,14 +932,14 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
   const toggleAllSections = useCallback(() => {
     const sectionsWithData = sections.filter(section => hasSectionData(section.type));
     if (sectionsWithData.length === 0) return;
-    
+
     const allExpanded = sectionsWithData.every(section => expandedSections[section.type] !== false);
-    
+
     const newState: Record<string, boolean> = {};
     sectionsWithData.forEach(section => {
       newState[section.type] = !allExpanded;
     });
-    
+
     const finalState = { ...expandedSections, ...newState };
     setExpandedSections(finalState);
     // Persist immediately
@@ -952,10 +952,15 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
     handleResizeWithDebounce(id, width, height, nodeData.onResize);
   }, [id, nodeData.onResize, handleResizeWithDebounce]);
 
+  const handleFitToContent = useCallback(() => {
+    fitToContent(id, 500, 'auto', nodeData.onResize);
+  }, [id, nodeData.onResize, fitToContent]);
+
   return (
     <NodeContainer
       selected={selected}
       dragging={dragging}
+      onFitToContent={handleFitToContent}
       className="p-5 min-w-[500px] flex flex-col"
       onContextMenu={(e) => {
         // Allow ReactFlow to handle the context menu event
@@ -963,7 +968,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
     >
       {selected && !dragging && (
         <NodeResizer
-          color="#52ddeb"
+          color="#brand-cyan"
           isVisible={selected}
           minWidth={400}
           minHeight={800}
@@ -986,459 +991,459 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
       />
 
       <div className="flex flex-col h-full min-h-0">
-      {/* Header with action buttons */}
-      <div className="flex items-center justify-between mb-5 pb-4 border-b border-zinc-700/30 bg-gradient-to-r from-zinc-900/40 to-zinc-900/20 backdrop-blur-sm -mx-5 px-5 pt-0">
-        <div className="flex items-center gap-2.5">
-          <div className="p-1.5 rounded-md bg-brand-cyan/10 border border-brand-cyan/20">
-            <Target size={16} className="text-brand-cyan" />
+        {/* Header with action buttons */}
+        <div className="flex items-center justify-between mb-5 pb-4 border-b border-zinc-700/30 bg-gradient-to-r from-zinc-900/40 to-zinc-900/20 backdrop-blur-sm -mx-5 px-5 pt-0">
+          <div className="flex items-center gap-2.5">
+            <div className="p-1.5 rounded-md bg-brand-cyan/10 border border-brand-cyan/20">
+              <Target size={16} className="text-brand-cyan" />
+            </div>
+            <div className="flex flex-col">
+              <h3 className="text-sm font-semibold text-zinc-200 font-mono tracking-tight">{t('canvasNodes.strategyNode.title') || 'Strategy Node'}</h3>
+              {projectName && (
+                <span className="text-[10px] text-zinc-400 font-mono mt-0.5 truncate max-w-[200px]" title={projectName}>{projectName}</span>
+              )}
+            </div>
           </div>
-          <div className="flex flex-col">
-            <h3 className="text-sm font-semibold text-zinc-200 font-mono tracking-tight">{t('canvasNodes.strategyNode.title') || 'Strategy Node'}</h3>
-            {projectName && (
-              <span className="text-[10px] text-zinc-400 font-mono mt-0.5 truncate max-w-[200px]" title={projectName}>{projectName}</span>
+          <div className="flex items-center gap-1.5">
+            {hasData && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleOpenInNewTab();
+                }}
+                disabled={!hasData || isGenerating}
+                className={cn(
+                  "p-2 rounded-md border transition-all nodrag nopan",
+                  "bg-zinc-900/60 border-zinc-700/40 text-zinc-300 hover:border-zinc-600/60",
+                  "disabled:opacity-50 disabled:cursor-not-allowed",
+                  "hover:bg-zinc-800/70 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
+                )}
+                title={t('canvasNodes.strategyNode.openInNewTab')}
+              >
+                <ExternalLink size={14} />
+              </button>
+            )}
+            {nodeData.onGeneratePDF && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleGeneratePDF();
+                }}
+                disabled={!hasData}
+                className={cn(
+                  "p-2 rounded-md border transition-all nodrag nopan",
+                  "bg-zinc-900/60 border-zinc-700/40 text-zinc-300 hover:border-zinc-600/60",
+                  "disabled:opacity-50 disabled:cursor-not-allowed",
+                  "hover:bg-zinc-800/70 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
+                )}
+                title={t('canvasNodes.strategyNode.downloadPDF')}
+              >
+                <Download size={14} />
+              </button>
+            )}
+            {nodeData.onSave && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSave();
+                }}
+                disabled={!hasData || isGenerating}
+                className={cn(
+                  "p-2 rounded-md border transition-all nodrag nopan",
+                  "bg-brand-cyan/20 hover:bg-brand-cyan/30 border-brand-cyan/40 text-brand-cyan font-semibold",
+                  "disabled:opacity-50 disabled:cursor-not-allowed",
+                  "backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
+                )}
+                title={t('canvasNodes.strategyNode.save')}
+              >
+                <Save size={14} />
+              </button>
             )}
           </div>
         </div>
-        <div className="flex items-center gap-1.5">
-          {hasData && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleOpenInNewTab();
-              }}
-              disabled={!hasData || isGenerating}
-              className={cn(
-                "p-2 rounded-md border transition-all nodrag nopan",
-                "bg-zinc-900/60 border-zinc-700/40 text-zinc-300 hover:border-zinc-600/60",
-                "disabled:opacity-50 disabled:cursor-not-allowed",
-                "hover:bg-zinc-800/70 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
-              )}
-              title={t('canvasNodes.strategyNode.openInNewTab')}
-            >
-              <ExternalLink size={14} />
-            </button>
-          )}
-          {nodeData.onGeneratePDF && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleGeneratePDF();
-              }}
-              disabled={!hasData}
-              className={cn(
-                "p-2 rounded-md border transition-all nodrag nopan",
-                "bg-zinc-900/60 border-zinc-700/40 text-zinc-300 hover:border-zinc-600/60",
-                "disabled:opacity-50 disabled:cursor-not-allowed",
-                "hover:bg-zinc-800/70 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
-              )}
-              title={t('canvasNodes.strategyNode.downloadPDF')}
-            >
-              <Download size={14} />
-            </button>
-          )}
-          {nodeData.onSave && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSave();
-              }}
-              disabled={!hasData || isGenerating}
-              className={cn(
-                "p-2 rounded-md border transition-all nodrag nopan",
-                "bg-brand-cyan/20 hover:bg-brand-cyan/30 border-brand-cyan/40 text-brand-cyan font-semibold",
-                "disabled:opacity-50 disabled:cursor-not-allowed",
-                "backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
-              )}
-              title={t('canvasNodes.strategyNode.save')}
-            >
-              <Save size={14} />
-            </button>
-          )}
-        </div>
-      </div>
 
-      {/* Initial State - Project Selector or Create New */}
-      {showProjectSelector && !isCreatingNew && (
-        <div className="mb-5 space-y-4">
-          <NodeLabel className="text-zinc-300 font-medium">{t('canvasNodes.strategyNode.chooseOption')}</NodeLabel>
-          
-          {/* Load Existing Projects */}
-          <div className="space-y-2.5">
-            <NodeButton
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (nodeData.onOpenProjectModal) {
-                  nodeData.onOpenProjectModal(id);
-                }
-              }}
-              variant="default"
-              className="w-full px-3 py-2.5 gap-3 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
-            >
-              <FolderOpen size={14} />
-              <span>{t('canvasNodes.strategyNode.selectExistingProject')}</span>
-            </NodeButton>
-          </div>
+        {/* Initial State - Project Selector or Create New */}
+        {showProjectSelector && !isCreatingNew && (
+          <div className="mb-5 space-y-4">
+            <NodeLabel className="text-zinc-300 font-medium">{t('canvasNodes.strategyNode.chooseOption')}</NodeLabel>
 
-          {/* Create New Project */}
-          <div className="pt-3 border-t border-zinc-700/30">
-            <NodeButton
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsCreatingNew(true);
-              }}
-              variant="primary"
-              className="w-full px-3 py-2.5 gap-3 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
-            >
-              <Plus size={14} />
-              <span>{t('canvasNodes.strategyNode.createNewProject')}</span>
-            </NodeButton>
-          </div>
-        </div>
-      )}
+            {/* Load Existing Projects */}
+            <div className="space-y-2.5">
+              <NodeButton
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (nodeData.onOpenProjectModal) {
+                    nodeData.onOpenProjectModal(id);
+                  }
+                }}
+                variant="default"
+                className="w-full px-3 py-2.5 gap-3 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
+              >
+                <FolderOpen size={14} />
+                <span>{t('canvasNodes.strategyNode.selectExistingProject')}</span>
+              </NodeButton>
+            </div>
 
-      {/* Name Input - Show when creating new */}
-      {isCreatingNew && (
-        <div className="mb-5">
-          <NodeLabel className="text-zinc-300 font-medium">{t('canvasNodes.strategyNode.projectName') || 'Project Name'}</NodeLabel>
-          <NodeInput
-            type="text"
-            value={projectName}
-            onChange={handleNameChange}
-            placeholder={t('canvasNodes.strategyNode.projectNamePlaceholder') || 'Enter project name...'}
-            onMouseDown={(e) => e.stopPropagation()}
-            onClick={(e) => e.stopPropagation()}
-            disabled={isGenerating}
-          />
-        </div>
-      )}
-
-      {/* Prompt Input - Show when creating new or when has data */}
-      {(!showProjectSelector || isCreatingNew || hasData) && (
-        <div className="mb-5">
-          <NodeLabel className="text-zinc-300 font-medium">{t('canvasNodes.strategyNode.brandDescription')}</NodeLabel>
-          <Textarea
-            value={prompt}
-            onChange={handlePromptChange}
-            placeholder={t('canvasNodes.strategyNode.brandDescriptionPlaceholder')}
-            className="text-xs resize-none nodrag nopan bg-zinc-900/60 border-zinc-700/40 focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 backdrop-blur-sm"
-            rows={3}
-            disabled={isGenerating}
-          />
-        </div>
-      )}
-
-      {/* Analyze Button - Before Generate Sections */}
-      {nodeData.onInitialAnalysis && (isCreatingNew || !hasData || promptHasChanged) && (
-        <div className="mb-5">
-          {isGenerating && generatingStep === 'marketResearch' ? (
-            <div className="flex gap-3">
+            {/* Create New Project */}
+            <div className="pt-3 border-t border-zinc-700/30">
               <NodeButton
                 onClick={(e) => {
                   e.stopPropagation();
-                  nodeData.onCancelGeneration?.(id);
+                  setIsCreatingNew(true);
                 }}
-                variant="default"
-                className="flex-1 px-3 py-2.5 gap-3 border-red-500/50 text-red-400 hover:bg-red-500/20 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all nodrag nopan"
+                variant="primary"
+                className="w-full px-3 py-2.5 gap-3 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
-                <XCircle size={14} />
-                <span>{t('canvasNodes.strategyNode.cancel')}</span>
+                <Plus size={14} />
+                <span>{t('canvasNodes.strategyNode.createNewProject')}</span>
               </NodeButton>
-              <div className="flex-1 px-3 py-2.5 bg-brand-cyan/20 border border-brand-cyan/40 rounded-md flex items-center justify-center gap-3 backdrop-blur-sm shadow-sm">
-                <GlitchLoader size={14} color="#52ddeb" />
-                <span className="text-xs font-mono text-brand-cyan font-medium">{t('canvasNodes.strategyNode.analyzing')}</span>
-              </div>
             </div>
-          ) : (
-            <NodeButton
-              onClick={async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (!nodeData.onInitialAnalysis) {
-                  return;
-                }
-                
-                // Validate prompt before proceeding
-                if (!prompt.trim()) {
-                  toast.error(t('canvasNodes.strategyNode.pleaseEnterBrandDescription') || 'Please enter a brand description', { duration: 3000 });
-                  return;
-                }
-                
-                // Ensure name and prompt are saved before analysis (flush debounced updates)
-                if (nameUpdateTimeoutRef.current) {
-                  clearTimeout(nameUpdateTimeoutRef.current);
-                  nameUpdateTimeoutRef.current = undefined;
-                  if (nodeData.onUpdateData) {
-                    nodeData.onUpdateData(id, { name: projectName });
-                  }
-                }
-                
-                if (promptUpdateTimeoutRef.current) {
-                  clearTimeout(promptUpdateTimeoutRef.current);
-                  promptUpdateTimeoutRef.current = undefined;
-                }
-                
-                // Force update prompt immediately (don't wait for debounce)
-                if (nodeData.onUpdateData) {
-                  promptRef.current = prompt;
-                  nodeData.onUpdateData(id, { prompt });
-                }
-                
-                devLog('🔍 Starting initial analysis', { 
-                  promptLength: prompt.length,
-                  promptPreview: prompt.substring(0, 50),
-                  projectName: projectName || 'none',
-                  isReanalyze: promptHasChanged && hasData,
-                  hasData: !!hasData 
-                });
-                try {
-                  // Pass prompt directly to avoid race condition with nodesRef update
-                  await nodeData.onInitialAnalysis(id, prompt);
-                  devLog('✅ Initial analysis initiated');
-                } catch (error: any) {
-                  devLog('❌ Initial analysis failed', { 
-                    error: error?.message || error 
-                  });
-                  toast.error(error?.message || 'Failed to analyze', { duration: 5000 });
-                }
-              }}
-              disabled={!prompt.trim() || isGenerating}
-              variant="primary"
-              className="w-full px-3 py-2.5 gap-3 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
-            >
-              <Target size={14} />
-              <span>{promptHasChanged && hasData ? t('canvasNodes.strategyNode.reAnalyze') || 'Re-analyze' : t('canvasNodes.strategyNode.analyze') || 'Analyze'}</span>
-            </NodeButton>
-          )}
-        </div>
-      )}
+          </div>
+        )}
 
-      {/* Section Buttons Grid - Only show after initial analysis */}
-      {hasData && (
-        <div className="mb-5">
-        <div className="flex items-center justify-between mb-3">
-          <NodeLabel className="mb-0 text-zinc-300 font-medium">{t('canvasNodes.strategyNode.generateSections')}</NodeLabel>
-          {nodeData.onGenerateAll && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleGenerateAll();
-              }}
-              disabled={!prompt.trim() || isGenerating}
-              className={cn(
-                'px-2.5 py-1.5 text-[10px] font-mono border rounded-md transition-all nodrag nopan',
-                'bg-zinc-900/60 border-zinc-700/40 text-zinc-400 hover:border-zinc-600/60 hover:text-zinc-300',
-                'disabled:opacity-50 disabled:cursor-not-allowed',
-                'backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95'
-              )}
-              title={t('canvasNodes.strategyNode.generateAllSections')}
-            >
-              {t('canvasNodes.strategyNode.generateAll')}
-            </button>
-          )}
-        </div>
-        <div 
-          className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto"
-          onWheel={(e) => e.stopPropagation()}
-        >
-          {sections
-            .filter((section) => !hasSectionData(section.type)) // Hide sections that already have data
-            .map((section) => {
-              const isGeneratingSection = generatingSteps.includes(section.type) || generatingStep === section.type || (isGenerating && generatingStep === 'all');
-              const missingDeps = checkDependencies(section.type);
-              const isBlocked = missingDeps.length > 0;
-              
-              // Get labels for missing dependencies
-              const missingDepsLabels = missingDeps.map(depType => {
-                const depSection = sections.find(s => s.type === depType);
-                return depSection?.label || depType;
-              }).join(', ');
-              
-              return (
-                <button
-                  key={section.type}
+        {/* Name Input - Show when creating new */}
+        {isCreatingNew && (
+          <div className="mb-5">
+            <NodeLabel className="text-zinc-300 font-medium">{t('canvasNodes.strategyNode.projectName') || 'Project Name'}</NodeLabel>
+            <NodeInput
+              type="text"
+              value={projectName}
+              onChange={handleNameChange}
+              placeholder={t('canvasNodes.strategyNode.projectNamePlaceholder') || 'Enter project name...'}
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
+              disabled={isGenerating}
+            />
+          </div>
+        )}
+
+        {/* Prompt Input - Show when creating new or when has data */}
+        {(!showProjectSelector || isCreatingNew || hasData) && (
+          <div className="mb-5">
+            <NodeLabel className="text-zinc-300 font-medium">{t('canvasNodes.strategyNode.brandDescription')}</NodeLabel>
+            <Textarea
+              value={prompt}
+              onChange={handlePromptChange}
+              placeholder={t('canvasNodes.strategyNode.brandDescriptionPlaceholder')}
+              className="text-xs resize-none nodrag nopan bg-zinc-900/60 border-zinc-700/40 focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 backdrop-blur-sm"
+              rows={3}
+              disabled={isGenerating}
+            />
+          </div>
+        )}
+
+        {/* Analyze Button - Before Generate Sections */}
+        {nodeData.onInitialAnalysis && (isCreatingNew || !hasData || promptHasChanged) && (
+          <div className="mb-5">
+            {isGenerating && generatingStep === 'marketResearch' ? (
+              <div className="flex gap-3">
+                <NodeButton
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (!isBlocked) {
-                      handleGenerateSection(section.type);
-                    }
+                    nodeData.onCancelGeneration?.(id);
                   }}
-                  disabled={!prompt.trim() || isGeneratingSection || (isGenerating && generatingStep === 'all') || generatingSteps.length > 0 || isBlocked}
-                  className={cn(
-                    'px-2.5 py-2 border rounded-md text-xs font-mono transition-all flex items-center gap-1.5 justify-center nodrag nopan relative',
-                    isBlocked
-                      ? 'bg-zinc-900/30 border-zinc-700/30 text-zinc-500 cursor-not-allowed opacity-60'
-                      : 'bg-zinc-900/60 border-zinc-700/40 text-zinc-300 hover:border-zinc-600/60 cursor-pointer backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98]',
-                    (!prompt.trim() || isGeneratingSection || (isGenerating && generatingStep === 'all') || generatingSteps.length > 0) && !isBlocked && 'opacity-50 cursor-not-allowed'
-                  )}
-                  title={isBlocked ? `Bloqueado: requer ${missingDepsLabels}` : section.label}
+                  variant="default"
+                  className="flex-1 px-3 py-2.5 gap-3 border-red-500/50 text-red-400 hover:bg-red-500/20 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all nodrag nopan"
                 >
-                  {isBlocked && (
-                    <Lock size={12} className="absolute top-1 right-1 text-red-400" />
-                  )}
-                  <span className={cn('text-xs', isBlocked && 'opacity-50')}>{section.emoji}</span>
-                  <span className={cn('truncate', isBlocked && 'opacity-50')}>{section.label}</span>
-                </button>
-              );
-            })}
-        </div>
-        </div>
-      )}
-
-      {/* Single Generation Status - Shows when any section is generating */}
-      {isGenerating && (generatingStep || generatingSteps.length > 0) && (
-        <div className="mb-5 px-3 py-2.5 bg-brand-cyan/10 border border-brand-cyan/40 rounded-md flex items-center justify-between gap-3 backdrop-blur-sm shadow-sm">
-          <div className="flex items-center gap-3">
-            <GlitchLoader size={12} color="#52ddeb" />
-            <span className="text-xs font-mono text-brand-cyan font-medium">
-              {generatingStep === 'all' 
-                ? t('canvasNodes.strategyNode.generatingAllSections') || 'Generating all sections...'
-                : generatingStep === 'marketResearch'
-                ? t('canvasNodes.strategyNode.analyzing') || 'Analyzing...'
-                : generatingSteps.length > 0
-                ? t('canvasNodes.strategyNode.generatingSection', { 
-                    section: sections.find(s => s.type === generatingSteps[0])?.label || generatingSteps[0]
-                  }) || `Generating ${generatingSteps[0]}...`
-                : generatingStep
-                ? t('canvasNodes.strategyNode.generatingSection', { 
-                    section: sections.find(s => s.type === generatingStep)?.label || generatingStep
-                  }) || `Generating ${generatingStep}...`
-                : t('canvasNodes.strategyNode.generating') || 'Generating...'}
-            </span>
-          </div>
-          {nodeData.onCancelGeneration && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (generatingStep === 'all') {
-                  nodeData.onCancelGeneration?.(id);
-                } else if (generatingSteps.length > 0) {
-                  nodeData.onCancelGeneration?.(id, generatingSteps[0]);
-                } else if (generatingStep) {
-                  nodeData.onCancelGeneration?.(id, generatingStep);
-                }
-              }}
-              className="p-1.5 hover:bg-red-500/20 rounded-md transition-all nodrag nopan"
-              title={t('canvasNodes.strategyNode.cancelGeneration')}
-            >
-              <XCircle size={12} className="text-red-400 hover:text-red-300" />
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* Generated Sections Display */}
-      {hasData && (
-        <div className="border-t border-zinc-700/30 pt-4 flex flex-col flex-1 min-h-0">
-          <div className="flex items-center justify-between mb-4 shrink-0 px-1">
-            <span className="text-xs font-mono text-zinc-300 font-medium">
-              {t('canvasNodes.strategyNode.generatedSections')} <span className="text-brand-cyan">({sections.filter(s => hasSectionData(s.type)).length}/{sections.length})</span>
-            </span>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleAllSections();
-              }}
-              className="text-xs font-mono text-zinc-400 hover:text-zinc-300 flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-zinc-800/50 transition-all backdrop-blur-sm nodrag nopan"
-            >
-              {sections.every(s => !hasSectionData(s.type) || expandedSections[s.type]) ? (
-                <>
-                  <ChevronUp size={12} />
-                  <span>{t('canvasNodes.strategyNode.collapseAll')}</span>
-                </>
-              ) : (
-                <>
-                  <ChevronDown size={12} />
-                  <span>{t('canvasNodes.strategyNode.expandAll')}</span>
-                </>
-              )}
-            </button>
-          </div>
-          
-          <div 
-            className="space-y-3 flex-1 overflow-y-auto min-h-0"
-            onWheel={(e) => e.stopPropagation()}
-          >
-            {sections.map((section) => {
-              const sectionHasData = hasSectionData(section.type);
-              const isGeneratingSection = generatingSteps.includes(section.type) || generatingStep === section.type;
-              const isGeneratingAll = isGenerating && generatingStep === 'all';
-              if (!sectionHasData && !isGeneratingSection && !isGeneratingAll) return null;
-
-              const content = formatSectionContent(section.type);
-              const isSectionExpanded = expandedSections[section.type] ?? true; // Default to expanded
-
-              return (
-                <div
-                  key={section.type}
-                  className="border border-zinc-700/40 rounded-lg overflow-hidden group bg-zinc-900/30 backdrop-blur-sm shadow-sm hover:shadow-md transition-all"
-                >
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleSection(section.type);
-                    }}
-                    className="w-full flex items-center justify-between px-3.5 py-2.5 bg-zinc-900/40 hover:bg-zinc-900/60 transition-all nodrag nopan"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      {sectionHasData && !isGeneratingSection && (
-                        <div
-                          onClick={(e) => handleDeleteSection(section.type, e)}
-                          className="p-1 hover:bg-red-500/20 rounded-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
-                          title={t('canvasNodes.strategyNode.deleteSection', { section: section.label })}
-                          role="button"
-                          tabIndex={0}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault();
-                              handleDeleteSection(section.type, e as any);
-                            }
-                          }}
-                        >
-                          <X size={12} className="text-red-400 hover:text-red-300" />
-                        </div>
-                      )}
-                      <span className="text-sm">{section.emoji}</span>
-                      <NodeLabel className="mb-0 text-zinc-200">
-                        {section.label}
-                        {sectionHasData && !isGeneratingSection && (
-                          <span className="ml-2 text-brand-cyan text-[10px]">✓</span>
-                        )}
-                      </NodeLabel>
-                    </div>
-                    {isSectionExpanded ? <ChevronUp size={14} className="text-zinc-400" /> : <ChevronDown size={14} className="text-zinc-400" />}
-                  </button>
-                  
-                  {isSectionExpanded && (
-                    <div 
-                      className="p-3.5 bg-zinc-900/20 border-t border-zinc-700/20"
-                      onWheel={(e) => e.stopPropagation()}
-                    >
-                      {sectionHasData && content && (
-                        <AutoResizeTextarea
-                          value={content}
-                          onChange={(e) => handleSectionContentChange(section.type, e.target.value)}
-                          className="text-xs resize-none nodrag nopan w-full bg-zinc-900/60 border-zinc-700/40 focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 backdrop-blur-sm"
-                          minHeight={40}
-                          maxHeight={400}
-                          onWheel={(e) => {
-                            const target = e.currentTarget;
-                            const isScrollable = target.scrollHeight > target.clientHeight;
-                            // Only prevent zoom if textarea is scrollable and we're scrolling within it
-                            if (isScrollable) {
-                              e.stopPropagation();
-                            }
-                          }}
-                        />
-                      )}
-                    </div>
-                  )}
+                  <XCircle size={14} />
+                  <span>{t('canvasNodes.strategyNode.cancel')}</span>
+                </NodeButton>
+                <div className="flex-1 px-3 py-2.5 bg-brand-cyan/20 border border-brand-cyan/40 rounded-md flex items-center justify-center gap-3 backdrop-blur-sm shadow-sm">
+                  <GlitchLoader size={14} color="#brand-cyan" />
+                  <span className="text-xs font-mono text-brand-cyan font-medium">{t('canvasNodes.strategyNode.analyzing')}</span>
                 </div>
-              );
-            })}
+              </div>
+            ) : (
+              <NodeButton
+                onClick={async (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (!nodeData.onInitialAnalysis) {
+                    return;
+                  }
+
+                  // Validate prompt before proceeding
+                  if (!prompt.trim()) {
+                    toast.error(t('canvasNodes.strategyNode.pleaseEnterBrandDescription') || 'Please enter a brand description', { duration: 3000 });
+                    return;
+                  }
+
+                  // Ensure name and prompt are saved before analysis (flush debounced updates)
+                  if (nameUpdateTimeoutRef.current) {
+                    clearTimeout(nameUpdateTimeoutRef.current);
+                    nameUpdateTimeoutRef.current = undefined;
+                    if (nodeData.onUpdateData) {
+                      nodeData.onUpdateData(id, { name: projectName });
+                    }
+                  }
+
+                  if (promptUpdateTimeoutRef.current) {
+                    clearTimeout(promptUpdateTimeoutRef.current);
+                    promptUpdateTimeoutRef.current = undefined;
+                  }
+
+                  // Force update prompt immediately (don't wait for debounce)
+                  if (nodeData.onUpdateData) {
+                    promptRef.current = prompt;
+                    nodeData.onUpdateData(id, { prompt });
+                  }
+
+                  devLog('🔍 Starting initial analysis', {
+                    promptLength: prompt.length,
+                    promptPreview: prompt.substring(0, 50),
+                    projectName: projectName || 'none',
+                    isReanalyze: promptHasChanged && hasData,
+                    hasData: !!hasData
+                  });
+                  try {
+                    // Pass prompt directly to avoid race condition with nodesRef update
+                    await nodeData.onInitialAnalysis(id, prompt);
+                    devLog('✅ Initial analysis initiated');
+                  } catch (error: any) {
+                    devLog('❌ Initial analysis failed', {
+                      error: error?.message || error
+                    });
+                    toast.error(error?.message || 'Failed to analyze', { duration: 5000 });
+                  }
+                }}
+                disabled={!prompt.trim() || isGenerating}
+                variant="primary"
+                className="w-full px-3 py-2.5 gap-3 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
+              >
+                <Target size={14} />
+                <span>{promptHasChanged && hasData ? t('canvasNodes.strategyNode.reAnalyze') || 'Re-analyze' : t('canvasNodes.strategyNode.analyze') || 'Analyze'}</span>
+              </NodeButton>
+            )}
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Section Buttons Grid - Only show after initial analysis */}
+        {hasData && (
+          <div className="mb-5">
+            <div className="flex items-center justify-between mb-3">
+              <NodeLabel className="mb-0 text-zinc-300 font-medium">{t('canvasNodes.strategyNode.generateSections')}</NodeLabel>
+              {nodeData.onGenerateAll && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleGenerateAll();
+                  }}
+                  disabled={!prompt.trim() || isGenerating}
+                  className={cn(
+                    'px-2.5 py-1.5 text-[10px] font-mono border rounded-md transition-all nodrag nopan',
+                    'bg-zinc-900/60 border-zinc-700/40 text-zinc-400 hover:border-zinc-600/60 hover:text-zinc-300',
+                    'disabled:opacity-50 disabled:cursor-not-allowed',
+                    'backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95'
+                  )}
+                  title={t('canvasNodes.strategyNode.generateAllSections')}
+                >
+                  {t('canvasNodes.strategyNode.generateAll')}
+                </button>
+              )}
+            </div>
+            <div
+              className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto"
+              onWheel={(e) => e.stopPropagation()}
+            >
+              {sections
+                .filter((section) => !hasSectionData(section.type)) // Hide sections that already have data
+                .map((section) => {
+                  const isGeneratingSection = generatingSteps.includes(section.type) || generatingStep === section.type || (isGenerating && generatingStep === 'all');
+                  const missingDeps = checkDependencies(section.type);
+                  const isBlocked = missingDeps.length > 0;
+
+                  // Get labels for missing dependencies
+                  const missingDepsLabels = missingDeps.map(depType => {
+                    const depSection = sections.find(s => s.type === depType);
+                    return depSection?.label || depType;
+                  }).join(', ');
+
+                  return (
+                    <button
+                      key={section.type}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!isBlocked) {
+                          handleGenerateSection(section.type);
+                        }
+                      }}
+                      disabled={!prompt.trim() || isGeneratingSection || (isGenerating && generatingStep === 'all') || generatingSteps.length > 0 || isBlocked}
+                      className={cn(
+                        'px-2.5 py-2 border rounded-md text-xs font-mono transition-all flex items-center gap-1.5 justify-center nodrag nopan relative',
+                        isBlocked
+                          ? 'bg-zinc-900/30 border-zinc-700/30 text-zinc-500 cursor-not-allowed opacity-60'
+                          : 'bg-zinc-900/60 border-zinc-700/40 text-zinc-300 hover:border-zinc-600/60 cursor-pointer backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98]',
+                        (!prompt.trim() || isGeneratingSection || (isGenerating && generatingStep === 'all') || generatingSteps.length > 0) && !isBlocked && 'opacity-50 cursor-not-allowed'
+                      )}
+                      title={isBlocked ? `Bloqueado: requer ${missingDepsLabels}` : section.label}
+                    >
+                      {isBlocked && (
+                        <Lock size={12} className="absolute top-1 right-1 text-red-400" />
+                      )}
+                      <span className={cn('text-xs', isBlocked && 'opacity-50')}>{section.emoji}</span>
+                      <span className={cn('truncate', isBlocked && 'opacity-50')}>{section.label}</span>
+                    </button>
+                  );
+                })}
+            </div>
+          </div>
+        )}
+
+        {/* Single Generation Status - Shows when any section is generating */}
+        {isGenerating && (generatingStep || generatingSteps.length > 0) && (
+          <div className="mb-5 px-3 py-2.5 bg-brand-cyan/10 border border-brand-cyan/40 rounded-md flex items-center justify-between gap-3 backdrop-blur-sm shadow-sm">
+            <div className="flex items-center gap-3">
+              <GlitchLoader size={12} color="#brand-cyan" />
+              <span className="text-xs font-mono text-brand-cyan font-medium">
+                {generatingStep === 'all'
+                  ? t('canvasNodes.strategyNode.generatingAllSections') || 'Generating all sections...'
+                  : generatingStep === 'marketResearch'
+                    ? t('canvasNodes.strategyNode.analyzing') || 'Analyzing...'
+                    : generatingSteps.length > 0
+                      ? t('canvasNodes.strategyNode.generatingSection', {
+                        section: sections.find(s => s.type === generatingSteps[0])?.label || generatingSteps[0]
+                      }) || `Generating ${generatingSteps[0]}...`
+                      : generatingStep
+                        ? t('canvasNodes.strategyNode.generatingSection', {
+                          section: sections.find(s => s.type === generatingStep)?.label || generatingStep
+                        }) || `Generating ${generatingStep}...`
+                        : t('canvasNodes.strategyNode.generating') || 'Generating...'}
+              </span>
+            </div>
+            {nodeData.onCancelGeneration && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (generatingStep === 'all') {
+                    nodeData.onCancelGeneration?.(id);
+                  } else if (generatingSteps.length > 0) {
+                    nodeData.onCancelGeneration?.(id, generatingSteps[0]);
+                  } else if (generatingStep) {
+                    nodeData.onCancelGeneration?.(id, generatingStep);
+                  }
+                }}
+                className="p-1.5 hover:bg-red-500/20 rounded-md transition-all nodrag nopan"
+                title={t('canvasNodes.strategyNode.cancelGeneration')}
+              >
+                <XCircle size={12} className="text-red-400 hover:text-red-300" />
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Generated Sections Display */}
+        {hasData && (
+          <div className="border-t border-zinc-700/30 pt-4 flex flex-col flex-1 min-h-0">
+            <div className="flex items-center justify-between mb-4 shrink-0 px-1">
+              <span className="text-xs font-mono text-zinc-300 font-medium">
+                {t('canvasNodes.strategyNode.generatedSections')} <span className="text-brand-cyan">({sections.filter(s => hasSectionData(s.type)).length}/{sections.length})</span>
+              </span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleAllSections();
+                }}
+                className="text-xs font-mono text-zinc-400 hover:text-zinc-300 flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-zinc-800/50 transition-all backdrop-blur-sm nodrag nopan"
+              >
+                {sections.every(s => !hasSectionData(s.type) || expandedSections[s.type]) ? (
+                  <>
+                    <ChevronUp size={12} />
+                    <span>{t('canvasNodes.strategyNode.collapseAll')}</span>
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown size={12} />
+                    <span>{t('canvasNodes.strategyNode.expandAll')}</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            <div
+              className="space-y-3 flex-1 overflow-y-auto min-h-0"
+              onWheel={(e) => e.stopPropagation()}
+            >
+              {sections.map((section) => {
+                const sectionHasData = hasSectionData(section.type);
+                const isGeneratingSection = generatingSteps.includes(section.type) || generatingStep === section.type;
+                const isGeneratingAll = isGenerating && generatingStep === 'all';
+                if (!sectionHasData && !isGeneratingSection && !isGeneratingAll) return null;
+
+                const content = formatSectionContent(section.type);
+                const isSectionExpanded = expandedSections[section.type] ?? true; // Default to expanded
+
+                return (
+                  <div
+                    key={section.type}
+                    className="border border-zinc-700/40 rounded-lg overflow-hidden group bg-zinc-900/30 backdrop-blur-sm shadow-sm hover:shadow-md transition-all"
+                  >
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleSection(section.type);
+                      }}
+                      className="w-full flex items-center justify-between px-3.5 py-2.5 bg-zinc-900/40 hover:bg-zinc-900/60 transition-all nodrag nopan"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        {sectionHasData && !isGeneratingSection && (
+                          <div
+                            onClick={(e) => handleDeleteSection(section.type, e)}
+                            className="p-1 hover:bg-red-500/20 rounded-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                            title={t('canvasNodes.strategyNode.deleteSection', { section: section.label })}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                handleDeleteSection(section.type, e as any);
+                              }
+                            }}
+                          >
+                            <X size={12} className="text-red-400 hover:text-red-300" />
+                          </div>
+                        )}
+                        <span className="text-sm">{section.emoji}</span>
+                        <NodeLabel className="mb-0 text-zinc-200">
+                          {section.label}
+                          {sectionHasData && !isGeneratingSection && (
+                            <span className="ml-2 text-brand-cyan text-[10px]">✓</span>
+                          )}
+                        </NodeLabel>
+                      </div>
+                      {isSectionExpanded ? <ChevronUp size={14} className="text-zinc-400" /> : <ChevronDown size={14} className="text-zinc-400" />}
+                    </button>
+
+                    {isSectionExpanded && (
+                      <div
+                        className="p-3.5 bg-zinc-900/20 border-t border-zinc-700/20"
+                        onWheel={(e) => e.stopPropagation()}
+                      >
+                        {sectionHasData && content && (
+                          <AutoResizeTextarea
+                            value={content}
+                            onChange={(e) => handleSectionContentChange(section.type, e.target.value)}
+                            className="text-xs resize-none nodrag nopan w-full bg-zinc-900/60 border-zinc-700/40 focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 backdrop-blur-sm"
+                            minHeight={40}
+                            maxHeight={400}
+                            onWheel={(e) => {
+                              const target = e.currentTarget;
+                              const isScrollable = target.scrollHeight > target.clientHeight;
+                              // Only prevent zoom if textarea is scrollable and we're scrolling within it
+                              if (isScrollable) {
+                                e.stopPropagation();
+                              }
+                            }}
+                          />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </NodeContainer>
   );

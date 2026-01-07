@@ -1,10 +1,11 @@
 import express from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../db/prisma.js';
-
+import { InputJsonValue } from '@prisma/client/runtime/library';
 
 
 const router = express.Router();
+
 
 // List user's workflows
 router.get('/', authenticate, async (req: AuthRequest, res) => {
@@ -376,8 +377,8 @@ router.post('/:id/duplicate', authenticate, async (req: AuthRequest, res) => {
                 description: originalWorkflow.description,
                 category: originalWorkflow.category,
                 tags: originalWorkflow.tags,
-                nodes: originalWorkflow.nodes,
-                edges: originalWorkflow.edges,
+                nodes: originalWorkflow.nodes as InputJsonValue,
+                edges: originalWorkflow.edges as InputJsonValue,
                 thumbnailUrl: originalWorkflow.thumbnailUrl,
                 isPublic: false, // Duplicates are private by default
                 isApproved: false,

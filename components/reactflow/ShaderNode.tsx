@@ -20,7 +20,7 @@ import { useNodeResize } from '../../hooks/canvas/useNodeResize';
 const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
   const { setNodes } = useReactFlow();
-  const { handleResize: handleResizeWithDebounce } = useNodeResize();
+  const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
   const { id: canvasId } = useParams<{ id: string }>();
   const isLoading = data.isLoading || false;
   const hasResult = !!(data.resultImageUrl || data.resultImageBase64 || data.resultVideoUrl || data.resultVideoBase64);
@@ -412,6 +412,25 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
     await data.onApply(id, connectedImageFromData);
   };
 
+  const handleFitToContent = useCallback(() => {
+    const width = data.imageWidth as number;
+    const height = data.imageHeight as number;
+    if (width && height) {
+      // Calculate a reasonable size if image is too large
+      let targetWidth = width;
+      let targetHeight = height;
+      const MAX_FIT_WIDTH = 1200;
+
+      if (targetWidth > MAX_FIT_WIDTH) {
+        const ratio = MAX_FIT_WIDTH / targetWidth;
+        targetWidth = MAX_FIT_WIDTH;
+        targetHeight = targetHeight * ratio;
+      }
+
+      fitToContent(id, Math.round(targetWidth), Math.round(targetHeight), data.onResize);
+    }
+  }, [id, data.imageWidth, data.imageHeight, data.onResize, fitToContent]);
+
   // Handle resize from NodeResizer (com debounce - aplica apenas quando soltar o mouse)
   const handleResize = useCallback((_: any, params: { width: number; height: number }) => {
     const { width, height } = params;
@@ -475,6 +494,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
       selected={selected}
       dragging={dragging}
       warning={data.oversizedWarning}
+      onFitToContent={handleFitToContent}
       className="p-6 min-w-[320px] w-full h-full"
       onContextMenu={(e) => {
         // Allow ReactFlow to handle the context menu event
@@ -482,12 +502,13 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
     >
       {selected && !dragging && (
         <NodeResizer
-          color="#52ddeb"
+          color="#brand-cyan"
           isVisible={selected}
           minWidth={320}
           minHeight={200}
           maxWidth={2000}
           maxHeight={2000}
+          keepAspectRatio={true}
           onResize={handleResize}
         />
       )}
@@ -513,7 +534,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
             <ImageIcon size={14} />
             {t('canvasNodes.shaderNode.connectImage') || 'Connect an image or video'}
           </div>
-          <label className="w-full px-3 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-[#52ddeb]/30 hover:border-[#52ddeb]/50 rounded text-xs font-mono text-brand-cyan flex items-center justify-center gap-2 cursor-pointer transition-all">
+          <label className="w-full px-3 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-[#brand-cyan]/30 hover:border-[#brand-cyan]/50 rounded text-xs font-mono text-brand-cyan flex items-center justify-center gap-2 cursor-pointer transition-all">
             <Upload size={14} />
             {t('canvasNodes.shaderNode.uploadImageOrVideo') || 'Upload Image or Video'}
             <input
@@ -581,6 +602,17 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
                 muted={!isHovered}
                 playsInline
                 className="w-full h-full object-contain rounded"
+                onLoadedMetadata={(e) => {
+                  const video = e.target as HTMLVideoElement;
+                  if (video.videoWidth > 0 && video.videoHeight > 0) {
+                    if (data.onUpdateData) {
+                      data.onUpdateData(String(id), {
+                        imageWidth: video.videoWidth,
+                        imageHeight: video.videoHeight,
+                      });
+                    }
+                  }
+                }}
                 onError={(e) => {
                   const target = e.target as HTMLVideoElement;
                   target.style.display = 'none';
@@ -593,6 +625,17 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
                 src={resultImageUrl || undefined}
                 alt={t('common.shaderResult')}
                 className="w-full h-full object-contain rounded"
+                onLoad={(e) => {
+                  const img = e.target as HTMLImageElement;
+                  if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+                    if (data.onUpdateData) {
+                      data.onUpdateData(String(id), {
+                        imageWidth: img.naturalWidth,
+                        imageHeight: img.naturalHeight,
+                      });
+                    }
+                  }
+                }}
               />
             </div>
           )}
@@ -600,8 +643,8 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
           {/* Floating Processing Indicator - subtle icon button */}
           {isLoading && (
             <div className="absolute top-3 left-3 z-20">
-              <div className="p-1.5 rounded-md bg-black/60 backdrop-blur-sm border border-[#52ddeb]/30 shadow-lg">
-                <GlitchLoader size={14} color="#52ddeb" />
+              <div className="p-1.5 rounded-md bg-black/60 backdrop-blur-sm border border-[#brand-cyan]/30 shadow-lg">
+                <GlitchLoader size={14} color="#brand-cyan" />
               </div>
             </div>
           )}

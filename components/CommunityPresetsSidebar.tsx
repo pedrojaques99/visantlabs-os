@@ -56,7 +56,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
             const config = CATEGORY_CONFIG[category];
             const Icon = config?.icon;
             const isActive = activeCategory === category;
-            
+
             return (
               <button
                 key={category}
@@ -76,12 +76,12 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
             );
           })}
           <button
-          onClick={onToggleCollapse}
-          className="p-1 text-zinc-500 hover:text-zinc-400 transition-colors flex-shrink-0 ml-auto transition-all duration-300"
-          title={isCollapsed ? (t('communityPresets.filters.show') || 'Show filters') : (t('communityPresets.filters.collapse') || 'Collapse')}
-        >
-          {isCollapsed ? <Menu size={14} /> : <ChevronUp size={14} />}
-        </button>
+            onClick={onToggleCollapse}
+            className="p-1 text-zinc-500 hover:text-zinc-400 transition-colors flex-shrink-0 ml-auto transition-all duration-300"
+            title={isCollapsed ? (t('communityPresets.filters.show') || 'Show filters') : (t('communityPresets.filters.collapse') || 'Collapse')}
+          >
+            {isCollapsed ? <Menu size={14} /> : <ChevronUp size={14} />}
+          </button>
         </div>
       </div>
 
@@ -97,7 +97,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
               className={cn(
                 "px-2.5 py-1 rounded-md text-xs font-mono border transition-all whitespace-nowrap",
                 filterTag === null
-                  ? 'text-brand-cyan border-[#52ddeb]/30 bg-brand-cyan/10'
+                  ? 'text-brand-cyan border-[#brand-cyan]/30 bg-brand-cyan/10'
                   : 'text-zinc-500 border-zinc-700/20 hover:border-zinc-600/30 hover:bg-zinc-800/30'
               )}
             >
@@ -110,7 +110,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                 className={cn(
                   "px-2.5 py-1 rounded-md text-xs font-mono border transition-all whitespace-nowrap",
                   filterTag === tag
-                    ? 'text-brand-cyan border-[#52ddeb]/30 bg-brand-cyan/10'
+                    ? 'text-brand-cyan border-[#brand-cyan]/30 bg-brand-cyan/10'
                     : 'text-zinc-500 border-zinc-700/20 hover:border-zinc-600/30 hover:bg-zinc-800/30'
                 )}
               >

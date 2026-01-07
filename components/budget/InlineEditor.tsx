@@ -107,13 +107,13 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
   }
 
   if (isEditing) {
-    const inputClassName = `outline-none border-2 border-[#52ddeb] rounded px-2 py-1 bg-white text-zinc-900 ${className}`;
-    
+    const inputClassName = `outline-none border-2 border-[#brand-cyan] rounded px-2 py-1 bg-white text-zinc-900 ${className}`;
+
     if (type === 'textarea' || multiline) {
       // Calculate rows based on content
       const lineCount = editValue.split('\n').length;
       const rows = Math.max(3, Math.min(lineCount + 1, 10));
-      
+
       return (
         <textarea
           ref={inputRef as React.RefObject<HTMLTextAreaElement>}
@@ -154,7 +154,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
   const getStatusIcon = () => {
     switch (saveStatus) {
       case 'saving':
-        return <GlitchLoader size={12} color="#52ddeb" className="inline-block ml-1" />;
+        return <GlitchLoader size={12} color="#brand-cyan" className="inline-block ml-1" />;
       case 'saved':
         return <Check size={12} className="inline-block ml-1 text-green-500" />;
       case 'error':

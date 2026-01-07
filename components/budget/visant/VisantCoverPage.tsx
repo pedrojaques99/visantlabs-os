@@ -13,7 +13,7 @@ export const VisantCoverPage: React.FC<VisantCoverPageProps> = ({
   editable = false,
   onDataChange,
 }) => {
-  const accentColor = data.brandAccentColor || data.brandColors[0] || '#52ddeb';
+  const accentColor = data.brandAccentColor || data.brandColors[0] || '#brand-cyan';
   const bgColor = data.coverBackgroundColor || '#151515';
   const textColor = data.coverTextColor || '#f9f9f9';
   const year = data.year || '2025';
@@ -30,7 +30,7 @@ export const VisantCoverPage: React.FC<VisantCoverPageProps> = ({
       }}
     >
       {/* Top section - Logo and title */}
-      <div 
+      <div
         className="flex items-center justify-center flex-shrink-0"
         style={{ paddingBottom: '40px' }}
       >
@@ -144,13 +144,13 @@ export const VisantCoverPage: React.FC<VisantCoverPageProps> = ({
           >
             <InlineEditor
               value="Branding "
-              onChange={() => {}}
+              onChange={() => { }}
               editable={false}
               style={{ fontSize: '21px', fontWeight: 800 }}
             />
             <InlineEditor
               value="COMPLETO+"
-              onChange={() => {}}
+              onChange={() => { }}
               editable={false}
               style={{
                 fontSize: '21px',

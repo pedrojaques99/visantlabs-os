@@ -86,7 +86,7 @@ const getActionIcon = (type: DetectedAction['type']) => {
 const getActionColor = (type: DetectedAction['type']) => {
   switch (type) {
     case 'prompt': return 'text-purple-400 border-purple-400/30 bg-purple-400/10 hover:bg-purple-400/20';
-    case 'mockup': return 'text-brand-cyan border-[#52ddeb]/30 bg-brand-cyan/10 hover:bg-brand-cyan/20';
+    case 'mockup': return 'text-brand-cyan border-[#brand-cyan]/30 bg-brand-cyan/10 hover:bg-brand-cyan/20';
     case 'strategy': return 'text-amber-400 border-amber-400/30 bg-amber-400/10 hover:bg-amber-400/20';
     case 'text': return 'text-green-400 border-green-400/30 bg-green-400/10 hover:bg-green-400/20';
     default: return 'text-zinc-400 border-zinc-400/30 bg-zinc-400/10 hover:bg-zinc-400/20';
@@ -97,13 +97,13 @@ const getActionColor = (type: DetectedAction['type']) => {
  * Component to detect and display actionable suggestions from AI messages
  * Uses the new structured action format from the system prompt
  */
-const ActionDetector = ({ 
-  content, 
-  onAddPrompt, 
+const ActionDetector = ({
+  content,
+  onAddPrompt,
   onCreateNode,
-  nodeId, 
-  t 
-}: { 
+  nodeId,
+  t
+}: {
   content: string;
   onAddPrompt?: (nodeId: string, prompt: string) => void;
   onCreateNode?: (chatNodeId: string, nodeType: FlowNodeType, initialData?: any, connectToChat?: boolean) => string | undefined;
@@ -112,17 +112,17 @@ const ActionDetector = ({
 }) => {
   const actions = useMemo(() => {
     if (!content) return [];
-    
+
     // First try to parse structured actions
     const structuredActions = parseActionsFromResponse(content);
     if (structuredActions.length > 0) {
       return structuredActions;
     }
-    
+
     // Fallback to legacy detection for backwards compatibility
     const lines = content.split('\n');
     const results: DetectedAction[] = [];
-    
+
     lines.forEach(line => {
       // Matches format like: "**Title**: Description" or "* **Title**: Description" or "1. Title: Description"
       const match = line.match(/^[-*•\d.]*\s*(?:\*\*)?([^*:]+)(?:\*\*)?:\s*(.+)$/i);
@@ -131,9 +131,9 @@ const ActionDetector = ({
         const description = match[2].trim();
         // Heuristic to detect mockup suggestions
         if (title.length > 3 && (
-            title.toLowerCase().includes('mockup') || 
-            description.toLowerCase().includes('mockup') || 
-            (description.length > 30 && title.length < 50)
+          title.toLowerCase().includes('mockup') ||
+          description.toLowerCase().includes('mockup') ||
+          (description.length > 30 && title.length < 50)
         )) {
           results.push({
             type: 'prompt',
@@ -151,11 +151,11 @@ const ActionDetector = ({
     if (action.type === 'prompt' && onAddPrompt) {
       onAddPrompt(nodeId, action.fullPrompt);
     } else if (onCreateNode) {
-      const initialData = action.type === 'prompt' 
+      const initialData = action.type === 'prompt'
         ? { prompt: action.fullPrompt }
         : action.type === 'text'
-        ? { text: action.fullPrompt }
-        : undefined;
+          ? { text: action.fullPrompt }
+          : undefined;
       onCreateNode(nodeId, action.type, initialData, true);
     }
   }, [nodeId, onAddPrompt, onCreateNode]);
@@ -197,13 +197,13 @@ const ActionDetector = ({
 /**
  * Quick Actions panel for common node creation tasks
  */
-const QuickActionsPanel = ({ 
-  nodeId, 
-  onCreateNode, 
+const QuickActionsPanel = ({
+  nodeId,
+  onCreateNode,
   onAddPrompt,
   isLoading,
-  t 
-}: { 
+  t
+}: {
   nodeId: string;
   onCreateNode?: (chatNodeId: string, nodeType: FlowNodeType, initialData?: any, connectToChat?: boolean) => string | undefined;
   onAddPrompt?: (nodeId: string, prompt: string) => void;
@@ -346,10 +346,10 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
 
   const handleSuggestMockups = useCallback(() => {
     if (isLoading || !nodeData.onSendMessage) return;
-    
+
     const message = "Suggest 5 creative and specific mockups for this brand based on the context. For each mockup, create a detailed prompt following this structure: camera positioning, main object, screen content (if applicable), textures and materials, color palette and aesthetics, lighting and environment, and photographic style. Use the format **[ACTION:prompt]** with detailed descriptions in a single continuous paragraph.";
     setInputMessage(message);
-    
+
     // We need to use the current state values because setInputMessage is async
     const context = {
       images: connectedImages.length > 0 ? connectedImages : undefined,
@@ -448,7 +448,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
 
     try {
       const imageData = await fileToBase64(file);
-      
+
       if (nodeData.onAttachMedia) {
         // Use dedicated attach media callback
         const newNodeId = nodeData.onAttachMedia(nodeId, imageData.base64, imageData.mimeType);
@@ -727,12 +727,12 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                       )}
                     </div>
                     {msg.role === 'assistant' && (nodeData.onAddPromptNode || nodeData.onCreateNode) && (
-                      <ActionDetector 
-                        content={msg.content} 
-                        nodeId={nodeId} 
+                      <ActionDetector
+                        content={msg.content}
+                        nodeId={nodeId}
                         onAddPrompt={nodeData.onAddPromptNode}
                         onCreateNode={nodeData.onCreateNode}
-                        t={t} 
+                        t={t}
                       />
                     )}
                   </CardContent>
@@ -761,21 +761,21 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                   <CheckCircle2 size={11} className="text-brand-cyan" />
                   <span className="font-medium">{t('canvasNodes.chatNode.context')}</span>
                 </div>
-                
+
                 {connectedImages.length > 0 && (
                   <div className="flex items-center gap-1.5 px-2.5 py-1 bg-brand-cyan/10 border border-brand-cyan/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm">
                     <ImageIcon size={11} className="text-brand-cyan" />
                     <span className="text-[10px] text-brand-cyan font-mono font-bold">{connectedImages.length}</span>
                   </div>
                 )}
-                
+
                 {connectedText && (
                   <div className="flex items-center gap-1.5 px-2.5 py-1 bg-purple-500/10 border border-purple-500/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm">
                     <FileText size={11} className="text-purple-400" />
                     <span className="text-[10px] text-purple-400 font-mono font-bold">{connectedText.length}</span>
                   </div>
                 )}
-                
+
                 {connectedStrategyData && (
                   <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm">
                     <Target size={11} className="text-amber-400" />
@@ -793,7 +793,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                   <Sparkles size={11} />
                   <span>{t('canvasNodes.chatNode.suggestMockups')}</span>
                 </button>
-                
+
                 <button
                   onClick={() => setExpandedStrategy(!expandedStrategy)}
                   className="p-1.5 text-zinc-500 hover:text-zinc-300 transition-all rounded-md hover:bg-zinc-800/50 nodrag"
@@ -819,7 +819,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                     />
                   </div>
                 )}
-                
+
                 {/* Text & Strategy simplified list */}
                 <div className="flex flex-col gap-2">
                   {connectedText && (
@@ -891,7 +891,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
 
       {isSelected && !isDragging && (
         <NodeResizer
-          color="#52ddeb"
+          color="#brand-cyan"
           isVisible={isSelected}
           minWidth={500}
           minHeight={600}
