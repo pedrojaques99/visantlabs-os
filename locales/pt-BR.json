@@ -2264,7 +2264,8 @@
         "createNew": "Criar Novo",
         "multiSelectMessage": "{selected} de {max} presets selecionados",
         "multiSelectMessageEmpty": "Selecione até {max} presets",
-        "confirmSelection": "Confirmar Seleção"
+        "confirmSelection": "Confirmar Seleção",
+        "official": "Oficial"
       },
       "presetCard": {
         "copied": "Prompt copiado para a área de transferência",

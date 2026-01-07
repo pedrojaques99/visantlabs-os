@@ -1,6 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { X, Image as ImageIcon, Users, Plus, Check } from 'lucide-react';
+import { X, Image as ImageIcon, Plus, Crown } from 'lucide-react';
 import type { MockupPresetType, MockupPreset } from '../types/mockupPresets';
 import type { Mockup } from '../services/mockupApi';
 import { getImageUrl } from '../utils/imageUtils';
@@ -24,7 +24,11 @@ interface MockupPresetModalProps {
   maxSelections?: number;
 }
 
-type CommunityPresetType = 'all' | 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance';
+type PresetFilterType = 'all' | 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance';
+
+interface UnifiedPreset extends CommunityPrompt {
+  isOfficial?: boolean;
+}
 
 export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
   isOpen,
@@ -38,69 +42,117 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
   maxSelections = 5,
 }) => {
   const { t } = useTranslation();
-  const [presets, setPresets] = React.useState<MockupPreset[]>([]);
+  const [officialPresets, setOfficialPresets] = React.useState<MockupPreset[]>([]);
   const [communityPresets, setCommunityPresets] = React.useState<any[]>([]);
   const [isLoadingPresets, setIsLoadingPresets] = React.useState(false);
-  const [isLoadingCommunityPresets, setIsLoadingCommunityPresets] = React.useState(false);
   const [selectedPresetIds, setSelectedPresetIds] = React.useState<Set<string>>(new Set());
-  const [activeTab, setActiveTab] = React.useState<'official' | 'community' | 'custom'>('official');
-  const [communityFilter, setCommunityFilter] = React.useState<CommunityPresetType>('all');
+  const [activeFilter, setActiveFilter] = React.useState<PresetFilterType>('all');
 
-  // Fetch presets logic remains same
+  // Fetch all presets
   React.useEffect(() => {
     if (!isOpen) {
-      setPresets([]);
+      setOfficialPresets([]);
       setCommunityPresets([]);
       return;
     }
 
-    const fetchPresets = async () => {
+    const fetchAllPresets = async () => {
       setIsLoadingPresets(true);
       try {
-        const data = await fetchAllOfficialPresets();
-        if (data.mockupPresets && Array.isArray(data.mockupPresets)) {
-          const normalizedPresets = data.mockupPresets.map((p: any) => ({
-            ...p,
-            referenceImageUrl: p.referenceImageUrl || '',
-          }));
-          setPresets(normalizedPresets);
-          updatePresetsCache(normalizedPresets);
-        }
-      } catch (error) {
-        console.error('Failed to load presets from Unified Service:', error);
-        setPresets([]);
-      } finally {
-        setIsLoadingPresets(false);
-      }
-    };
+        // Fetch ALL official presets (mockup, angle, texture, ambience, luminance)
+        const officialData = await fetchAllOfficialPresets();
 
-    const fetchCommunityPresets = async () => {
-      setIsLoadingCommunityPresets(true);
-      try {
-        const allPresets = await getAllCommunityPresets();
+        // Combine all official presets with their correct presetType
+        const allOfficialPresets: any[] = [];
+
+        // Mockup presets
+        if (officialData.mockupPresets && Array.isArray(officialData.mockupPresets)) {
+          officialData.mockupPresets.forEach((p: any) => {
+            allOfficialPresets.push({
+              ...p,
+              referenceImageUrl: p.referenceImageUrl || '',
+              presetType: 'mockup',
+            });
+          });
+        }
+
+        // Angle presets
+        if (officialData.anglePresets && Array.isArray(officialData.anglePresets)) {
+          officialData.anglePresets.forEach((p: any) => {
+            allOfficialPresets.push({
+              ...p,
+              referenceImageUrl: p.referenceImageUrl || '',
+              presetType: 'angle',
+            });
+          });
+        }
+
+        // Texture presets
+        if (officialData.texturePresets && Array.isArray(officialData.texturePresets)) {
+          officialData.texturePresets.forEach((p: any) => {
+            allOfficialPresets.push({
+              ...p,
+              referenceImageUrl: p.referenceImageUrl || '',
+              presetType: 'texture',
+            });
+          });
+        }
+
+        // Ambience presets
+        if (officialData.ambiencePresets && Array.isArray(officialData.ambiencePresets)) {
+          officialData.ambiencePresets.forEach((p: any) => {
+            allOfficialPresets.push({
+              ...p,
+              referenceImageUrl: p.referenceImageUrl || '',
+              presetType: 'ambience',
+            });
+          });
+        }
+
+        // Luminance presets
+        if (officialData.luminancePresets && Array.isArray(officialData.luminancePresets)) {
+          officialData.luminancePresets.forEach((p: any) => {
+            allOfficialPresets.push({
+              ...p,
+              referenceImageUrl: p.referenceImageUrl || '',
+              presetType: 'luminance',
+            });
+          });
+        }
+
+        setOfficialPresets(allOfficialPresets);
+
+        // Update mockup cache only with mockup presets
+        const mockupOnly = allOfficialPresets.filter(p => p.presetType === 'mockup');
+        if (mockupOnly.length > 0) {
+          updatePresetsCache(mockupOnly);
+        }
+
+        // Fetch community presets
+        const allCommunity = await getAllCommunityPresets();
         const flattened: any[] = [];
-        Object.entries(allPresets).forEach(([type, list]) => {
+        Object.entries(allCommunity).forEach(([type, list]) => {
           if (Array.isArray(list)) {
             list.forEach(p => {
               flattened.push({
                 ...p,
                 referenceImageUrl: p.referenceImageUrl || '',
-                bgType: type
+                presetType: type,
               });
             });
           }
         });
         setCommunityPresets(flattened);
       } catch (error) {
-        console.error('Failed to load community presets:', error);
+        console.error('Failed to load presets:', error);
+        setOfficialPresets([]);
         setCommunityPresets([]);
       } finally {
-        setIsLoadingCommunityPresets(false);
+        setIsLoadingPresets(false);
       }
     };
 
-    fetchPresets();
-    fetchCommunityPresets();
+    fetchAllPresets();
   }, [isOpen]);
 
   // Event Listeners
@@ -164,10 +216,72 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
     return Array.from(selectedPresetIds).indexOf(presetId) + 1;
   };
 
-  const filteredCommunityPresets = React.useMemo(() => {
-    if (communityFilter === 'all') return communityPresets;
-    return communityPresets.filter(p => p.presetType === communityFilter || p.bgType === communityFilter);
-  }, [communityPresets, communityFilter]);
+  // Combine and filter all presets
+  const allUnifiedPresets = React.useMemo(() => {
+    // Convert official presets to unified format (presetType already set during fetch)
+    const officialUnified: UnifiedPreset[] = officialPresets.map((preset: any) => ({
+      id: preset.id,
+      userId: 'system',
+      category: preset.presetType || 'presets',
+      presetType: preset.presetType || 'mockup',
+      name: preset.name,
+      description: preset.description,
+      prompt: preset.prompt,
+      referenceImageUrl: preset.referenceImageUrl,
+      aspectRatio: preset.aspectRatio,
+      isApproved: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      isOfficial: true,
+    }));
+
+    // Convert community presets to unified format (presetType already set during fetch)
+    const communityUnified: UnifiedPreset[] = communityPresets.map((preset: any) => ({
+      ...preset,
+      category: preset.category || preset.presetType || 'presets',
+      presetType: preset.presetType,
+      isOfficial: false,
+    }));
+
+    // Convert user mockups to unified format
+    const userUnified: UnifiedPreset[] = userMockups.map((mockup) => ({
+      id: mockup._id || '',
+      userId: 'user',
+      category: 'mockup',
+      presetType: 'mockup',
+      name: mockup.prompt?.substring(0, 30) || 'Custom Mockup',
+      description: mockup.prompt || '',
+      prompt: mockup.prompt || '',
+      referenceImageUrl: getImageUrl(mockup),
+      aspectRatio: '16:9',
+      isApproved: true,
+      createdAt: mockup.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      isOfficial: false,
+    }));
+
+    // Combine all: official first, then community, then user
+    return [...officialUnified, ...communityUnified, ...userUnified];
+  }, [officialPresets, communityPresets, userMockups]);
+
+  // Filter presets by type
+  const filteredPresets = React.useMemo(() => {
+    if (activeFilter === 'all') return allUnifiedPresets;
+    return allUnifiedPresets.filter(p => p.presetType === activeFilter);
+  }, [allUnifiedPresets, activeFilter]);
+
+  // Count presets by type
+  const presetCounts = React.useMemo(() => {
+    const counts: Record<PresetFilterType, number> = {
+      all: allUnifiedPresets.length,
+      mockup: allUnifiedPresets.filter(p => p.presetType === 'mockup').length,
+      texture: allUnifiedPresets.filter(p => p.presetType === 'texture').length,
+      angle: allUnifiedPresets.filter(p => p.presetType === 'angle').length,
+      ambience: allUnifiedPresets.filter(p => p.presetType === 'ambience').length,
+      luminance: allUnifiedPresets.filter(p => p.presetType === 'luminance').length,
+    };
+    return counts;
+  }, [allUnifiedPresets]);
 
   if (!isOpen) return null;
 
@@ -207,219 +321,83 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
           </button>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-1 px-4 pt-4 border-b border-zinc-800/50 bg-zinc-900/10">
+        {/* Type Filters */}
+        <div className="px-4 py-3 border-b border-zinc-800/50 flex gap-2 overflow-x-auto bg-zinc-900/10">
+          {(['all', 'mockup', 'texture', 'angle', 'ambience', 'luminance'] as PresetFilterType[]).map((type) => {
+            const config = CATEGORY_CONFIG[type as keyof typeof CATEGORY_CONFIG];
+            const Icon = config ? config.icon : ImageIcon;
+            const count = presetCounts[type];
+
+            return (
+              <button
+                key={type}
+                onClick={() => setActiveFilter(type)}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-mono uppercase transition-all whitespace-nowrap border',
+                  activeFilter === type
+                    ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
+                    : 'bg-zinc-900/50 text-zinc-400 border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700'
+                )}
+              >
+                <Icon size={12} />
+                <span>{t(`communityPresets.tabs.${type}`) || type}</span>
+                <span className="ml-1 text-[9px] opacity-60">({count})</span>
+              </button>
+            );
+          })}
+
+          {/* Create New Button */}
           <button
-            onClick={() => setActiveTab('official')}
-            className={cn(
-              'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 relative rounded-t-md',
-              activeTab === 'official'
-                ? 'text-brand-cyan border-[#52ddeb] bg-brand-cyan/5'
-                : 'text-zinc-400 border-transparent hover:text-zinc-300 hover:bg-zinc-800/30'
-            )}
+            onClick={(e) => {
+              e.stopPropagation();
+              window.location.href = '/canvas';
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 ml-auto bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/30 rounded-full text-[10px] font-mono text-brand-cyan transition-all hover:scale-105 whitespace-nowrap"
           >
-            {t('canvasNodes.promptNode.presetModal.tabs.official').replace('{count}', presets.length.toString())}
+            <Plus size={12} />
+            <span>{t('canvasNodes.promptNode.presetModal.createNew')}</span>
           </button>
-          <button
-            onClick={() => setActiveTab('community')}
-            className={cn(
-              'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 flex items-center gap-1.5 relative rounded-t-md',
-              activeTab === 'community'
-                ? 'text-brand-cyan border-[#52ddeb] bg-brand-cyan/5'
-                : 'text-zinc-400 border-transparent hover:text-zinc-300 hover:bg-zinc-800/30'
-            )}
-          >
-            <Users size={12} />
-            {t('canvasNodes.promptNode.presetModal.tabs.community').replace('{count}', communityPresets.length.toString())}
-          </button>
-          {userMockups && userMockups.length > 0 && (
-            <button
-              onClick={() => setActiveTab('custom')}
-              className={cn(
-                'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 relative rounded-t-md',
-                activeTab === 'custom'
-                  ? 'text-brand-cyan border-[#52ddeb] bg-brand-cyan/5'
-                  : 'text-zinc-400 border-transparent hover:text-zinc-300 hover:bg-zinc-800/30'
-              )}
-            >
-              {t('canvasNodes.promptNode.presetModal.tabs.custom').replace('{count}', userMockups.length.toString())}
-            </button>
-          )}
         </div>
 
-        {/* Community Filters */}
-        {activeTab === 'community' && (
-          <div className="px-4 py-2 border-b border-zinc-800/50 flex gap-2 overflow-x-auto bg-zinc-900/5">
-            {(['all', 'mockup', 'texture', 'angle', 'ambience', 'luminance'] as CommunityPresetType[]).map((type) => {
-              const config = CATEGORY_CONFIG[type as keyof typeof CATEGORY_CONFIG];
-              const Icon = config ? config.icon : ImageIcon;
-              return (
-                <button
-                  key={type}
-                  onClick={() => setCommunityFilter(type)}
-                  className={cn(
-                    'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-mono uppercase transition-all whitespace-nowrap border',
-                    communityFilter === type
-                      ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
-                      : 'bg-zinc-900/50 text-zinc-400 border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700'
-                  )}
-                >
-                  <Icon size={12} />
-                  {t(`communityPresets.tabs.${type}`) || type}
-                </button>
-              );
-            })}
-          </div>
-        )}
-
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4 relative custom-scrollbar bg-black/50">
-          {/* Official Presets Tab */}
-          <div className={cn(
-            'transition-all duration-300 ease-in-out',
-            activeTab === 'official' ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 absolute inset-0 pointer-events-none'
-          )}>
-            <div>
-              {isLoadingPresets ? (
-                <div className="flex flex-col items-center justify-center py-20 text-zinc-500 gap-2">
-                  <div className="w-6 h-6 border-2 border-brand-cyan/30 border-t-brand-cyan rounded-full animate-spin"></div>
-                  <p className="text-xs font-mono">{t('canvasNodes.promptNode.presetModal.loading')}</p>
-                </div>
-              ) : presets.length === 0 ? (
-                <div className="flex items-center justify-center py-20">
-                  <p className="text-sm font-mono text-zinc-500">{t('canvasNodes.promptNode.presetModal.noOfficial')}</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                  {presets.map((preset) => {
-                    const presetItem: CommunityPrompt = {
-                      id: preset.id,
-                      userId: 'system',
-                      category: 'presets',
-                      presetType: 'mockup',
-                      name: preset.name,
-                      description: preset.description,
-                      prompt: preset.prompt,
-                      referenceImageUrl: preset.referenceImageUrl,
-                      aspectRatio: preset.aspectRatio,
-                      isApproved: true,
-                      createdAt: new Date().toISOString(),
-                      updatedAt: new Date().toISOString(),
-                    };
-                    return (
-                      <PresetCard
-                        key={`preset-${preset.id}`}
-                        preset={presetItem}
-                        onClick={() => handlePresetClick(preset.id)}
-                        isAuthenticated={true}
-                        canEdit={false}
-                        t={t}
-                        selected={isPresetSelected(preset.id)}
-                        selectionIndex={getSelectionIndex(preset.id)}
-                      />
-                    );
-                  })}
-                </div>
-              )}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 custom-scrollbar bg-black/50">
+          {isLoadingPresets ? (
+            <div className="flex flex-col items-center justify-center py-20 text-zinc-500 gap-2">
+              <div className="w-6 h-6 border-2 border-brand-cyan/30 border-t-brand-cyan rounded-full animate-spin"></div>
+              <p className="text-xs font-mono">{t('canvasNodes.promptNode.presetModal.loading')}</p>
             </div>
-          </div>
-
-          {/* Community Presets Tab */}
-          <div className={cn(
-            'transition-all duration-300 ease-in-out',
-            activeTab === 'community' ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 absolute inset-0 pointer-events-none'
-          )}>
-            <div>
-              <div className="flex items-center justify-end mb-4">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    window.location.href = '/canvas';
-                  }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/30 rounded-md text-[10px] font-mono text-brand-cyan transition-all hover:scale-105"
-                >
-                  <Plus size={12} />
-                  <span>{t('canvasNodes.promptNode.presetModal.createNew')}</span>
-                </button>
-              </div>
-
-              {isLoadingCommunityPresets ? (
-                <div className="flex flex-col items-center justify-center py-20 text-zinc-500 gap-2">
-                  <div className="w-6 h-6 border-2 border-brand-cyan/30 border-t-brand-cyan rounded-full animate-spin"></div>
-                  <p className="text-xs font-mono">{t('canvasNodes.promptNode.presetModal.loadingCommunity')}</p>
-                </div>
-              ) : filteredCommunityPresets.length === 0 ? (
-                <div className="flex items-center justify-center py-20">
-                  <p className="text-sm font-mono text-zinc-500">{t('canvasNodes.promptNode.presetModal.noCommunity')}</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                  {filteredCommunityPresets.map((preset: any) => (
-                    <PresetCard
-                      key={`community-preset-${preset.id}`}
-                      preset={{
-                        ...preset,
-                        category: preset.category || preset.bgType || 'presets', // Ensure category is set
-                      }}
-                      onClick={() => handlePresetClick(preset.id)}
-                      isAuthenticated={true}
-                      canEdit={false} // Modal view usually doesn't allow editing
-                      t={t}
-                      selected={isPresetSelected(preset.id)}
-                      selectionIndex={getSelectionIndex(preset.id)}
-                    />
-                  ))}
-                </div>
-              )}
+          ) : filteredPresets.length === 0 ? (
+            <div className="flex items-center justify-center py-20">
+              <p className="text-sm font-mono text-zinc-500">{t('canvasNodes.promptNode.presetModal.noCommunity')}</p>
             </div>
-          </div>
-
-          {/* Custom Mockups Tab */}
-          <div className={cn(
-            'transition-all duration-300 ease-in-out',
-            activeTab === 'custom' ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 absolute inset-0 pointer-events-none'
-          )}>
-            <div>
-              {userMockups && userMockups.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                  {userMockups.map((mockup) => {
-                    const mockupId = mockup._id || '';
-                    // Mockup to CommunityPrompt conversion
-                    const mockupItem: CommunityPrompt = {
-                      id: mockupId,
-                      userId: 'user', // Assuming current user own this
-                      category: 'mockup',
-                      name: mockup.prompt?.substring(0, 30) || 'Custom Mockup',
-                      description: mockup.prompt || '',
-                      prompt: mockup.prompt || '',
-                      referenceImageUrl: getImageUrl(mockup),
-                      aspectRatio: '16:9', // Default or actual
-                      isApproved: true,
-                      createdAt: mockup.createdAt || new Date().toISOString(),
-                      updatedAt: new Date().toISOString(),
-                    };
-
-                    return (
-                      <PresetCard
-                        key={`usermockup-${mockupId}`}
-                        preset={mockupItem}
-                        onClick={() => handlePresetClick(mockupId)}
-                        isAuthenticated={true}
-                        canEdit={false}
-                        t={t}
-                        selected={isPresetSelected(mockupId)}
-                        selectionIndex={getSelectionIndex(mockupId)}
-                      />
-                    );
-                  })}
+          ) : (
+            <div
+              className="grid gap-4"
+              style={{
+                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))'
+              }}
+            >
+              {filteredPresets.map((preset) => (
+                <div key={preset.id} className="relative">
+                  {preset.isOfficial && (
+                    <div className="absolute top-2 left-2 z-10 flex items-center gap-1 px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/40 rounded text-[8px] font-mono text-amber-400 uppercase backdrop-blur-sm">
+                      <Crown size={8} />
+                      <span>{t('canvasNodes.promptNode.presetModal.official') || 'Official'}</span>
+                    </div>
+                  )}
+                  <PresetCard
+                    preset={preset}
+                    onClick={() => handlePresetClick(preset.id)}
+                    isAuthenticated={true}
+                    canEdit={false}
+                    t={t}
+                    selected={isPresetSelected(preset.id)}
+                    selectionIndex={getSelectionIndex(preset.id)}
+                  />
                 </div>
-              ) : (
-                <div className="flex items-center justify-center py-20">
-                  <p className="text-sm font-mono text-zinc-500">{t('canvasNodes.promptNode.presetModal.noCustom')}</p>
-                </div>
-              )}
+              ))}
             </div>
-          </div>
+          )}
         </div>
 
         {/* Footer with Select Mockups button (multi-select mode only) */}
