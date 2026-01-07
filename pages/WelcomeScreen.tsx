@@ -382,7 +382,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
     >
       <div className="absolute inset-0 z-0">
         <GridDotsBackground opacity={theme === 'dark' ? 0.02 : 0.05} />
-        <InteractiveASCII isDarkMode={theme === 'dark'} fullHeight={true} color="brand-cyan" className="welcome-ascii-bg" />
+        <InteractiveASCII isDarkMode={theme === 'dark'} fullHeight={true} color="#52ddeb" className="welcome-ascii-bg" />
       </div>
       <div className="relative z-10 max-w-2xl w-full text-center space-y-8 animate-fade-in">
         <div className="space-y-4">
