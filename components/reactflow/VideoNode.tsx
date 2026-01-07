@@ -22,7 +22,7 @@ import { useNodeResize } from '../../hooks/canvas/useNodeResize';
 const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
   const { setNodes } = useReactFlow();
-  const { handleResize: handleResizeWithDebounce } = useNodeResize();
+  const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
 
   // State initialization
   const [prompt, setPrompt] = useState(data.prompt || '');
@@ -107,11 +107,29 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
 
   // Resize handler (com debounce - aplica apenas quando soltar o mouse)
   const handleResize = useCallback((width: number, height: number) => {
-    const onResize = typeof data.onResize === 'function' 
-      ? data.onResize as (nodeId: string, width: number, height: number) => void
-      : undefined;
-    handleResizeWithDebounce(id, width, height, onResize);
+    handleResizeWithDebounce(id, width, height, data.onResize);
   }, [id, data.onResize, handleResizeWithDebounce]);
+
+  const handleFitToContent = useCallback(() => {
+    // Check if we have dimensions in data
+    const width = data.imageWidth;
+    const height = data.imageHeight;
+
+    if (width && height) {
+      // Calculate a reasonable size if video is too large
+      let targetWidth = width;
+      let targetHeight = height;
+      const MAX_FIT_WIDTH = 1200;
+
+      if (targetWidth > MAX_FIT_WIDTH) {
+        const ratio = MAX_FIT_WIDTH / targetWidth;
+        targetWidth = MAX_FIT_WIDTH;
+        targetHeight = targetHeight * ratio;
+      }
+
+      fitToContent(id, Math.round(targetWidth), Math.round(targetHeight), data.onResize);
+    }
+  }, [id, (data as any).imageWidth, (data as any).imageHeight, data.onResize, fitToContent]);
 
   // Derived states
   const isLoading = data.isLoading || false;
@@ -149,6 +167,7 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
     <NodeContainer
       selected={selected}
       dragging={dragging}
+      onFitToContent={handleFitToContent}
       className="p-0 min-w-[320px] max-w-[400px] overflow-visible"
     >
       {selected && !dragging && (
@@ -157,6 +176,7 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
           isVisible={selected}
           minWidth={320}
           minHeight={300}
+          keepAspectRatio={true}
           onResize={(_, { width, height }) => handleResize(width, height)}
         />
       )}
@@ -380,6 +400,17 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
               className="w-full h-auto max-h-[200px] object-contain"
               controls
               loop={isLooping}
+              onLoadedMetadata={(e) => {
+                const video = e.target as HTMLVideoElement;
+                if (video.videoWidth > 0 && video.videoHeight > 0) {
+                  if (data.onUpdateData) {
+                    data.onUpdateData(String(id), {
+                      imageWidth: video.videoWidth,
+                      imageHeight: video.videoHeight,
+                    });
+                  }
+                }
+              }}
             />
           </div>
         )}

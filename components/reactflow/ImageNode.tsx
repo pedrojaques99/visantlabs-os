@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback, memo, useEffect } from 'react';
-import { type NodeProps, useNodes, useEdges, useReactFlow, NodeResizer } from '@xyflow/react';
+import { type NodeProps, useNodes, useEdges, useReactFlow, NodeResizer, useViewport } from '@xyflow/react';
 import { Upload, UploadCloud, Copy, X } from 'lucide-react';
 import { GlitchLoader } from '../ui/GlitchLoader';
 import type { ImageNodeData } from '../../types/reactFlow';
@@ -31,8 +31,9 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
   const { t } = useTranslation();
   const nodes = useNodes();
   const edges = useEdges();
-  const { setNodes, getZoom, getNode } = useReactFlow();
+  const { setNodes, getNode, getZoom } = useReactFlow();
   const nodeData = data as ImageNodeData;
+  const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
   const imageUrl = getImageUrl(nodeData.mockup);
   const mockupId = nodeData.mockup._id || '';
   const nodeRef = useRef<HTMLDivElement>(null);
@@ -51,7 +52,6 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
   const isDescribing = nodeData.isDescribing || false;
   const description = nodeData.description || localDescription;
   const { handleDownload, isDownloading } = useNodeDownload(imageUrl, 'generated-image');
-  const { handleResize: handleResizeWithDebounce } = useNodeResize();
 
   // Use centralized like hook
   const { toggleLike: handleToggleLike } = useMockupLike({
@@ -173,6 +173,25 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
   const handleResize = useCallback((width: number, height: number) => {
     handleResizeWithDebounce(id, width, height, nodeData.onResize);
   }, [id, nodeData.onResize, handleResizeWithDebounce]);
+
+  const handleFitToContent = useCallback(() => {
+    const width = nodeData.imageWidth;
+    const height = nodeData.imageHeight;
+    if (width && height) {
+      // Calculate a reasonable size if image is too large
+      let targetWidth = width;
+      let targetHeight = height;
+      const MAX_FIT_WIDTH = 1200;
+
+      if (targetWidth > MAX_FIT_WIDTH) {
+        const ratio = MAX_FIT_WIDTH / targetWidth;
+        targetWidth = MAX_FIT_WIDTH;
+        targetHeight = targetHeight * ratio;
+      }
+
+      fitToContent(id, Math.round(targetWidth), Math.round(targetHeight), nodeData.onResize);
+    }
+  }, [id, nodeData.imageWidth, nodeData.imageHeight, nodeData.onResize, fitToContent]);
 
   // Check if this image was generated (connected from a generating node)
   // Compute directly without state/useEffect to avoid infinite loops
@@ -375,6 +394,12 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
     }
   }, [nodeData, id]);
 
+  const handleDuplicate = useCallback(() => {
+    if (nodeData.onDuplicate) {
+      nodeData.onDuplicate(id);
+    }
+  }, [id, nodeData.onDuplicate]);
+
   // Handle image upload
   const handleUploadClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -422,6 +447,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       dragging={dragging}
       containerRef={containerRef}
       warning={nodeData.oversizedWarning}
+      onFitToContent={handleFitToContent}
       className={cn(
         'group node-wrapper',
         dragging ? 'node-dragging' : 'node-dragging-static',
@@ -445,6 +471,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
           minHeight={150}
           maxWidth={2000}
           maxHeight={2000}
+          keepAspectRatio={true}
           onResize={(_, { width, height }) => {
             handleResize(width, height);
           }}

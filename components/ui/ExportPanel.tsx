@@ -11,6 +11,7 @@ interface ExportPanelProps {
   nodeName: string;
   imageUrl: string | null;
   nodeType: string;
+  embedded?: boolean;
 }
 
 const SCALE_OPTIONS = [0.5, 1, 1.5, 2];
@@ -23,7 +24,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({
   nodeId,
   nodeName,
   imageUrl,
-  nodeType,
+  embedded = false,
 }) => {
   const [selectedScale, setSelectedScale] = useState<number>(1.5);
   const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('PNG');
@@ -80,27 +81,30 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed right-0 top-0 h-full w-80 bg-[#2a2a2a] border-l border-zinc-700/30 z-50 flex flex-col shadow-2xl">
+    <div className={cn(
+      embedded ? "w-full h-full bg-transparent border-none shadow-none flex flex-col" : "fixed right-0 top-0 h-full w-80 bg-[#2a2a2a] border-l border-zinc-700/30 z-50 flex flex-col shadow-2xl"
+    )}>
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-700/30">
+      {/* Header - Only hide in embedded mode if we want to rely on parent header, but keeping it for now serves as title */}
+      {!embedded && <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-700/30">
         <h2 className="text-sm font-semibold text-zinc-200 font-mono">Export</h2>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => {}}
+            onClick={() => { }}
             className="p-1 text-zinc-400 hover:text-zinc-300 transition-colors"
             title="Add preset"
           >
             <Plus size={14} />
           </button>
           <button
-            onClick={() => {}}
+            onClick={() => { }}
             className="p-1 text-zinc-400 hover:text-zinc-300 transition-colors"
             title="More options"
           >
             <MoreHorizontal size={14} />
           </button>
           <button
-            onClick={() => {}}
+            onClick={() => { }}
             className="p-1 text-zinc-400 hover:text-zinc-300 transition-colors"
             title="Remove preset"
           >
@@ -115,6 +119,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({
           </button>
         </div>
       </div>
+      }
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
@@ -203,14 +208,14 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({
       {/* Footer - Help Button */}
       <div className="px-4 py-3 border-t border-zinc-700/30 flex justify-end">
         <button
-          onClick={() => {}}
+          onClick={() => { }}
           className="w-8 h-8 rounded-md bg-zinc-900/50 hover:bg-zinc-900/70 border border-zinc-700/30 flex items-center justify-center text-zinc-400 hover:text-zinc-300 transition-colors"
           title="Help"
         >
           <HelpCircle size={16} />
         </button>
       </div>
-    </div>
+    </div >
   );
 };
 

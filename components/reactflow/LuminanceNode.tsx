@@ -1,37 +1,26 @@
 import { Sun } from 'lucide-react';
 import type { LuminanceNodeData } from '../../types/reactFlow';
-import type { LuminancePresetType } from '../../types/luminancePresets';
 import { getAllLuminancePresets, getLuminancePreset } from '../../services/luminancePresetsService';
 import { LuminancePresetModal } from '../LuminancePresetModal';
-import { createGenericPresetNode } from './shared/GenericPresetNode';
+import { createUniversalPresetNode } from './shared/UniversalPresetNode';
 
-export const LuminanceNode = createGenericPresetNode<LuminancePresetType, LuminanceNodeData>({
+export const LuminanceNode = createUniversalPresetNode<LuminanceNodeData>({
   icon: Sun,
-  title: 'Luminance Preset',
+  title: 'Luminance',
   defaultPresetId: 'natural-light',
-
   getAllPresets: getAllLuminancePresets,
   getPreset: getLuminancePreset,
   PresetModal: LuminancePresetModal,
-
-  getSelectedPreset: (data) => data.selectedPreset,
-  getConnectedImage: (data) => data.connectedImage,
-  getResultImageUrl: (data) => data.resultImageUrl,
-  getResultImageBase64: (data) => data.resultImageBase64,
-  getIsLoading: (data) => data.isLoading,
-  getOnGenerate: (data) => data.onGenerate,
-  getOnUpdateData: (data) => data.onUpdateData,
-
+  communityPresetType: 'luminance',
   translationKeys: {
     title: 'canvasNodes.luminanceNode.title',
-    selectPreset: 'canvasNodes.luminanceNode.selectLuminance',
+    selectPreset: 'canvasNodes.luminanceNode.selectPreset',
     inputImage: 'canvasNodes.luminanceNode.inputImage',
     connectImageNode: 'canvasNodes.luminanceNode.connectImageNode',
+    generateButton: 'canvasNodes.luminanceNode.generateButton',
     generating: 'canvasNodes.luminanceNode.generating',
-    generateButton: 'canvasNodes.luminanceNode.generateLuminance',
     result: 'canvasNodes.luminanceNode.result',
   },
-
   nodeName: 'LuminanceNode',
 });
 

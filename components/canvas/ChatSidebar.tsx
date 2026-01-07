@@ -20,7 +20,7 @@ interface ChatSidebarProps {
   nodeData: ChatNodeData;
   nodeId: string;
   onUpdateData?: (nodeId: string, newData: Partial<ChatNodeData>) => void;
-  variant?: 'standalone' | 'stacked';
+  variant?: 'standalone' | 'stacked' | 'embedded';
   sidebarWidth?: number;
   onSidebarWidthChange?: (width: number) => void;
   sidebarRef?: React.RefObject<HTMLElement>;
@@ -109,13 +109,13 @@ const getActionColor = (type: DetectedAction['type']) => {
 /**
  * Component to detect and display actionable suggestions from AI messages
  */
-const ActionDetector = ({ 
-  content, 
-  onAddPrompt, 
+const ActionDetector = ({
+  content,
+  onAddPrompt,
   onCreateNode,
-  nodeId, 
-  t 
-}: { 
+  nodeId,
+  t
+}: {
   content: string;
   onAddPrompt?: (nodeId: string, prompt: string) => void;
   onCreateNode?: (chatNodeId: string, nodeType: FlowNodeType, initialData?: any, connectToChat?: boolean) => string | undefined;
@@ -124,26 +124,26 @@ const ActionDetector = ({
 }) => {
   const actions = useMemo(() => {
     if (!content) return [];
-    
+
     // First try to parse structured actions
     const structuredActions = parseActionsFromResponse(content);
     if (structuredActions.length > 0) {
       return structuredActions;
     }
-    
+
     // Fallback to legacy detection for backwards compatibility
     const lines = content.split('\n');
     const results: DetectedAction[] = [];
-    
+
     lines.forEach(line => {
       const match = line.match(/^[-*•\d.]*\s*(?:\*\*)?([^*:]+)(?:\*\*)?:\s*(.+)$/i);
       if (match) {
         const title = match[1].trim();
         const description = match[2].trim();
         if (title.length > 3 && (
-            title.toLowerCase().includes('mockup') || 
-            description.toLowerCase().includes('mockup') || 
-            (description.length > 30 && title.length < 50)
+          title.toLowerCase().includes('mockup') ||
+          description.toLowerCase().includes('mockup') ||
+          (description.length > 30 && title.length < 50)
         )) {
           results.push({
             type: 'prompt',
@@ -161,11 +161,11 @@ const ActionDetector = ({
     if (action.type === 'prompt' && onAddPrompt) {
       onAddPrompt(nodeId, action.fullPrompt);
     } else if (onCreateNode) {
-      const initialData = action.type === 'prompt' 
+      const initialData = action.type === 'prompt'
         ? { prompt: action.fullPrompt }
         : action.type === 'text'
-        ? { text: action.fullPrompt }
-        : undefined;
+          ? { text: action.fullPrompt }
+          : undefined;
       onCreateNode(nodeId, action.type, initialData, true);
     }
   }, [nodeId, onAddPrompt, onCreateNode]);
@@ -207,13 +207,13 @@ const ActionDetector = ({
 /**
  * Quick Actions panel for common node creation tasks
  */
-const QuickActionsPanel = ({ 
-  nodeId, 
-  onCreateNode, 
+const QuickActionsPanel = ({
+  nodeId,
+  onCreateNode,
   onAddPrompt,
   isLoading,
-  t 
-}: { 
+  t
+}: {
   nodeId: string;
   onCreateNode?: (chatNodeId: string, nodeType: FlowNodeType, initialData?: any, connectToChat?: boolean) => string | undefined;
   onAddPrompt?: (nodeId: string, prompt: string) => void;
@@ -256,7 +256,7 @@ const QuickActionsPanel = ({
   );
 };
 
-export const ChatSidebar: React.FC<ChatSidebarProps> = ({
+export const ChatSidebar: React.FC<ChatSidebarProps & { width?: number }> = ({
   isCollapsed,
   onToggleCollapse,
   nodeData,
@@ -266,6 +266,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   sidebarWidth = SIDEBAR_WIDTH,
   onSidebarWidthChange,
   sidebarRef,
+  width,
 }) => {
   const { t } = useTranslation();
   const [inputMessage, setInputMessage] = useState('');
@@ -279,7 +280,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   const resizerRef = useRef<HTMLDivElement>(null);
   const internalSidebarRef = useRef<HTMLElement>(null);
   const actualSidebarRef = sidebarRef || internalSidebarRef;
-  
+
   const isLoading = nodeData.isLoading || false;
   const model = nodeData.model || 'gemini-2.5-flash';
   const userMessageCount = nodeData.userMessageCount || 0;
@@ -416,10 +417,10 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
   const handleSuggestMockups = useCallback(() => {
     if (isLoading || !nodeData.onSendMessage) return;
-    
+
     const message = "Suggest 5 creative and specific mockups for this brand based on the context. For each mockup, create a detailed prompt following this structure: camera positioning, main object, screen content (if applicable), textures and materials, color palette and aesthetics, lighting and environment, and photographic style. Use the format **[ACTION:prompt]** with detailed descriptions in a single continuous paragraph.";
     setInputMessage(message);
-    
+
     const context = {
       images: connectedImages.length > 0 ? connectedImages : undefined,
       text: connectedText,
@@ -512,7 +513,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
 
     try {
       const imageData = await fileToBase64(file);
-      
+
       if (nodeData.onAttachMedia) {
         const newNodeId = nodeData.onAttachMedia(nodeId, imageData.base64, imageData.mimeType);
         if (newNodeId) {
@@ -537,7 +538,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
     }
   }, [nodeId, nodeData, t]);
 
-  const currentWidth = isCollapsed ? COLLAPSED_WIDTH : sidebarWidth;
+  const currentWidth = isCollapsed ? COLLAPSED_WIDTH : (variant === 'embedded' && width ? width : sidebarWidth);
 
   return (
     <aside
@@ -545,19 +546,16 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
       data-chat-sidebar="true"
       className={cn(
         "relative",
-        "z-50",
-        "backdrop-blur-xl border-l border-zinc-800/50",
-        "shadow-2xl",
+        variant === 'embedded' ? "border-none shadow-none bg-transparent" : "z-50 backdrop-blur-xl border-l border-zinc-800/50 shadow-2xl bg-black/40",
         "transition-all duration-300 ease-out",
         "flex flex-col",
-        "bg-black/40",
         "flex-shrink-0",
-        isCollapsed ? "w-[56px]" : ""
+        isCollapsed ? "w-[56px]" : "w-full"
       )}
       style={{
-        width: `${currentWidth}px`,
+        width: variant === 'embedded' ? '100%' : `${currentWidth}px`,
         height: '100%',
-        backgroundColor: 'var(--sidebar)',
+        backgroundColor: variant === 'embedded' ? 'transparent' : 'var(--sidebar)',
       }}
     >
       {/* Resizer - only show on large screens when expanded, positioned on left edge */}
@@ -760,12 +758,12 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                         )}
                       </div>
                       {msg.role === 'assistant' && (nodeData.onAddPromptNode || nodeData.onCreateNode) && (
-                        <ActionDetector 
-                          content={msg.content} 
-                          nodeId={nodeId} 
+                        <ActionDetector
+                          content={msg.content}
+                          nodeId={nodeId}
                           onAddPrompt={nodeData.onAddPromptNode}
                           onCreateNode={nodeData.onCreateNode}
-                          t={t} 
+                          t={t}
                         />
                       )}
                     </CardContent>
@@ -794,21 +792,21 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                     <CheckCircle2 size={11} className="text-brand-cyan" />
                     <span className="font-medium">{t('canvasNodes.chatNode.context')}</span>
                   </div>
-                  
+
                   {connectedImages.length > 0 && (
                     <div className="flex items-center gap-1.5 px-2.5 py-1 bg-brand-cyan/10 border border-brand-cyan/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm">
                       <ImageIcon size={11} className="text-brand-cyan" />
                       <span className="text-[10px] text-brand-cyan font-mono font-bold">{connectedImages.length}</span>
                     </div>
                   )}
-                  
+
                   {connectedText && (
                     <div className="flex items-center gap-1.5 px-2.5 py-1 bg-purple-500/10 border border-purple-500/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm">
                       <FileText size={11} className="text-purple-400" />
                       <span className="text-[10px] text-purple-400 font-mono font-bold">{connectedText.length}</span>
                     </div>
                   )}
-                  
+
                   {connectedStrategyData && (
                     <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm">
                       <Target size={11} className="text-amber-400" />
@@ -826,7 +824,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                     <Sparkles size={11} />
                     <span>{t('canvasNodes.chatNode.suggestMockups')}</span>
                   </button>
-                  
+
                   <button
                     onClick={() => setExpandedStrategy(!expandedStrategy)}
                     className="p-1.5 text-zinc-500 hover:text-zinc-300 transition-all rounded-md hover:bg-zinc-800/50"
@@ -851,7 +849,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                       />
                     </div>
                   )}
-                  
+
                   <div className="flex flex-col gap-2">
                     {connectedText && (
                       <div className="text-[10px] text-zinc-300 font-mono line-clamp-2 bg-purple-500/10 p-2 rounded-md border border-purple-500/20 backdrop-blur-sm">

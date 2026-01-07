@@ -21,6 +21,8 @@ interface NodeContainerProps {
   containerRef?: React.RefObject<HTMLDivElement>;
   /** Warning message to display on the node (e.g., oversized content) */
   warning?: string;
+  /** Callback for double-click on resize handles to fit content */
+  onFitToContent?: () => void;
 }
 
 export const NodeContainer: React.FC<NodeContainerProps> = ({
@@ -32,10 +34,26 @@ export const NodeContainer: React.FC<NodeContainerProps> = ({
   onContextMenu,
   containerRef,
   warning,
+  onFitToContent,
 }) => {
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    // Check if the target is a resize handle
+    const target = e.target as HTMLElement;
+    const isResizeHandle =
+      target.classList.contains('react-flow__resize-control') ||
+      target.classList.contains('react-flow__handle-resize') ||
+      target.closest('.react-flow__resize-control') !== null;
+
+    if (isResizeHandle && onFitToContent) {
+      e.stopPropagation();
+      onFitToContent();
+    }
+  };
+
   return (
     <div
       ref={containerRef}
+      onDoubleClick={handleDoubleClick}
       className={cn(
         dragging ? 'bg-[#0A0A0A]' : 'bg-[#0A0A0A]/80',
         // Keep all visual styles consistent during dragging

@@ -97,6 +97,11 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
         return;
       }
 
+      // Ignore shortcuts if modifier keys are pressed (e.g. Ctrl+D for duplicate)
+      if (event.ctrlKey || event.metaKey || event.altKey) {
+        return;
+      }
+
       switch (event.key.toLowerCase()) {
         case 'v':
           event.preventDefault();
@@ -462,15 +467,15 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
             </Tooltip>
           );
         })}
-        
+
         {/* Toolbar Toggle Button */}
         {onToggleToolbar && (
           <div className="relative ml-1 pl-1 border-l border-zinc-800/50">
-            <Tooltip 
-              content={isToolbarCollapsed 
+            <Tooltip
+              content={isToolbarCollapsed
                 ? (t('canvasToolbar.expandToolbar') || 'Expand Toolbar')
                 : (t('canvasToolbar.collapseToolbar') || 'Collapse Toolbar')
-              } 
+              }
               position="top"
             >
               <button
@@ -484,8 +489,8 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                 )}
                 aria-label={isToolbarCollapsed ? 'Expand Toolbar' : 'Collapse Toolbar'}
               >
-                <Plus 
-                  size={18} 
+                <Plus
+                  size={18}
                   strokeWidth={2}
                   className={cn(
                     'transition-transform duration-150',

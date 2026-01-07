@@ -468,18 +468,6 @@
     "experimentalMode": "Modo Experimental",
     "experimentalModeDesc": "Mostrar nodes de preview como Shader, Strategy, etc."
   },
-  "canvasNodes": {
-    "promptNode": {
-      "presets": "Presets",
-      "loadPreset": "Carregar Preset",
-      "save": "Salvar",
-      "savePrompt": "Salvar Prompt",
-      "promptPlaceholder": "Digite seu prompt aqui...",
-      "suggestPrompts": "Sugerir Prompts",
-      "connectedToTextNode": "Conectado ao Node de Texto",
-      "savedPromptName": "Prompt Salvo"
-    }
-  },
   "canvasLoading": {
     "Project": "Carregando Projeto..."
   },
@@ -2256,6 +2244,34 @@
   "canvasNodes": {
     "promptNode": {
       "title": "Prompt Node",
+      "presets": "Presets",
+      "loadPreset": "Carregar Preset",
+      "save": "Salvar",
+      "savePrompt": "Salvar Prompt",
+      "presetModal": {
+        "title": "Selecionar Preset de Mockup",
+        "titleMulti": "Selecionar Presets ({selected}/{max})",
+        "tabs": {
+          "official": "Oficiais ({count})",
+          "community": "Comunidade ({count})",
+          "custom": "Personalizados ({count})"
+        },
+        "loading": "Carregando presets...",
+        "loadingCommunity": "Carregando presets da comunidade...",
+        "noOfficial": "Nenhum preset oficial encontrado",
+        "noCommunity": "Nenhum preset da comunidade encontrado",
+        "noCustom": "Nenhum mockup personalizado encontrado",
+        "createNew": "Criar Novo",
+        "multiSelectMessage": "{selected} de {max} presets selecionados",
+        "multiSelectMessageEmpty": "Selecione até {max} presets",
+        "confirmSelection": "Confirmar Seleção"
+      },
+      "presetCard": {
+        "copied": "Prompt copiado para a área de transferência",
+        "copyFailed": "Falha ao copiar prompt",
+        "viewMore": "Ver mais",
+        "promptLabel": "Prompt:"
+      },
       "referenceImages": "Imagens de Referência",
       "logoFromBrandCore": "Logo da Marca",
       "identityFromBrandCore": "Identidade da Marca",

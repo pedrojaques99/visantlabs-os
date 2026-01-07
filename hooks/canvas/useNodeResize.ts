@@ -88,6 +88,41 @@ export function useNodeResize() {
     []
   );
 
-  return { handleResize };
+  /**
+   * Ajusta o tamanho do node para "abraçar" o conteúdo.
+   */
+  const fitToContent = useCallback(
+    (nodeId: string, width: number | 'auto', height: number | 'auto', onResize?: (nodeId: string, width: number, height: number) => void) => {
+      setNodes((nds: Node[]) => {
+        return nds.map((n) => {
+          if (n.id === nodeId) {
+            return {
+              ...n,
+              style: {
+                ...n.style,
+                width,
+                height,
+              },
+            };
+          }
+          return n;
+        });
+      });
+
+      // Cleanup any pending resize
+      if (pendingResizeRef.current?.nodeId === nodeId) {
+        pendingResizeRef.current = null;
+        isResizingRef.current = false;
+      }
+
+      // If dimensions are numeric, call onResize callback
+      if (onResize && typeof width === 'number' && typeof height === 'number') {
+        onResize(nodeId, width, height);
+      }
+    },
+    [setNodes]
+  );
+
+  return { handleResize, fitToContent };
 }
 

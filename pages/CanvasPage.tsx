@@ -52,11 +52,9 @@ import { useCanvasKeyboard } from '../hooks/canvas/useCanvasKeyboard';
 import { CanvasToolbar } from '../components/canvas/CanvasNodeToolbar';
 import { useCanvasHeader } from '../components/canvas/CanvasHeaderContext';
 import { CanvasFlow } from '../components/canvas/CanvasFlow';
-import { ShaderControlsSidebar } from '../components/canvas/ShaderControlsSidebar';
-import { ChatSidebar } from '../components/canvas/ChatSidebar';
+import { UniversalSidePanel } from '../components/canvas/UniversalSidePanel';
 import { cleanEdgeHandles, mockupArraysEqual, arraysEqual, getConnectedBrandIdentity, generateNodeId, getImageFromSourceNode, syncConnectedImage, getMediaFromNodeForCopy } from '../utils/canvas/canvasNodeUtils';
 import { SEO } from '../components/SEO';
-import { ExportPanel } from '../components/ui/ExportPanel';
 import { toast } from 'sonner';
 import type { ReactFlowInstance } from '../types/reactflow-instance';
 import { canvasApi } from '../services/canvasApi';
@@ -82,6 +80,7 @@ import { workflowApi } from '../services/workflowApi';
 import type { CanvasWorkflow } from '../services/workflowApi';
 
 import { isLocalDevelopment } from '../utils/env';
+import { ExportPanel } from '@/components/ui/ExportPanel';
 
 // Node types
 const nodeTypes = {
@@ -138,10 +137,9 @@ export const CanvasPage: React.FC = () => {
   const showControls = canvasHeader.showControls;
   const cursorColor = canvasHeader.cursorColor;
   const brandCyan = canvasHeader.brandCyan;
-  const [isShaderSidebarCollapsed, setIsShaderSidebarCollapsed] = useState(false);
-  const [isChatSidebarCollapsed, setIsChatSidebarCollapsed] = useState(false);
+  // Universal Panel State
+  const [isUniversalPanelOpen, setIsUniversalPanelOpen] = useState(false);
   const [openChatNodeId, setOpenChatNodeId] = useState<string | null>(null);
-  const [chatSidebarWidth, setChatSidebarWidth] = useState(400);
   const chatSidebarRef = useRef<HTMLElement>(null);
   const [isLargeScreen, setIsLargeScreen] = useState(false);
 
@@ -175,6 +173,16 @@ export const CanvasPage: React.FC = () => {
 
   const [showSaveWorkflow, setShowSaveWorkflow] = useState(false);
   const [showMultiExportModal, setShowMultiExportModal] = useState(false);
+
+  // Save Prompt Modal State
+  const [savePromptModalState, setSavePromptModalState] = useState<{
+    isOpen: boolean;
+    prompt: string;
+    initialData?: { name?: string; description?: string };
+  }>({
+    isOpen: false,
+    prompt: '',
+  });
 
   // Load user settings from backend and update context
   useEffect(() => {
@@ -244,11 +252,29 @@ export const CanvasPage: React.FC = () => {
   // React Flow state
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<FlowNodeData>>([]);
 
-  // Sync selected nodes count with header context
+  // Sync selected nodes count and handle Auto-Open Logic
   const setSelectedNodesCountInContext = canvasHeader.setSelectedNodesCount;
+
+  // Track previous selection to avoid unnecessary effect runs
+  const prevSelectedNodeIdsRef = useRef<string>('');
+
   useEffect(() => {
-    const count = nodes.filter(n => n.selected).length;
-    setSelectedNodesCountInContext(count);
+    const selected = nodes.filter(n => n.selected);
+    const selectedIds = selected.map(n => n.id).sort().join(',');
+
+    // Always update count
+    setSelectedNodesCountInContext(selected.length);
+
+    // Only run auto-open logic if selection actually touched/changed
+    if (selectedIds !== prevSelectedNodeIdsRef.current) {
+      prevSelectedNodeIdsRef.current = selectedIds;
+
+      // Auto-open panel if a shader node is newly selected
+      const hasShader = selected.some(n => n.type === 'shader');
+      if (hasShader) {
+        setIsUniversalPanelOpen(true);
+      }
+    }
   }, [nodes, setSelectedNodesCountInContext]);
 
   // Persist settings to backend (localStorage is handled by context)
@@ -300,7 +326,15 @@ export const CanvasPage: React.FC = () => {
       aspectRatio: '16:9',
     };
     setSelectedMockup(tempMockup);
-  }, []);
+  }, [t]);
+
+  const handleSavePrompt = useCallback((prompt: string) => {
+    setSavePromptModalState({
+      isOpen: true,
+      prompt,
+      initialData: { name: t('canvasNodes.promptNode.savedPromptName') || 'New Prompt' }
+    });
+  }, [t]);
 
   const handleEdit = useCallback((mockup: Mockup) => {
     const imageUrl = getImageUrl(mockup);
@@ -354,7 +388,60 @@ export const CanvasPage: React.FC = () => {
         console.error('Failed to delete mockup:', err);
       }
     }
-  }, [isAuthenticated, setNodes, nodes, edges, addToHistory]);
+  }, [isAuthenticated, setNodes, nodes, edges, addToHistory, t]);
+
+  const handleDuplicateNodes = useCallback((nodeIds: string[]) => {
+    if (!reactFlowInstance || nodeIds.length === 0) return;
+
+    const nodesToDuplicate = nodes.filter(n => nodeIds.includes(n.id));
+    if (nodesToDuplicate.length === 0) return;
+
+    addToHistory(nodes, edges, drawing.drawings);
+
+    const duplicatedNodes: Node<FlowNodeData>[] = nodesToDuplicate.map((node, index) => {
+      const newPosition = {
+        x: node.position.x + 50 + (index * 10),
+        y: node.position.y + 50 + (index * 10),
+      };
+
+      return {
+        ...node,
+        id: generateNodeId(node.type || 'node'),
+        position: newPosition,
+        selected: false,
+        data: {
+          ...node.data,
+          // Reset loading states
+          isLoading: false,
+          isGenerating: false,
+          isDescribing: false,
+          isAnalyzing: false,
+          isGeneratingPrompt: false,
+          isSuggestingPrompts: false,
+          // Clear result images for flow nodes
+          resultImageBase64: undefined,
+          resultImageUrl: undefined,
+        } as FlowNodeData,
+      };
+    });
+
+    setNodes((nds: Node<FlowNodeData>[]) => {
+      const newNodes = [...nds, ...duplicatedNodes];
+      setTimeout(() => {
+        addToHistory(newNodes, edges, drawing.drawings);
+      }, 0);
+      return newNodes;
+    });
+
+    toast.success(t('canvas.nodeDuplicated', {
+      count: duplicatedNodes.length,
+      plural: duplicatedNodes.length > 1 ? 's' : ''
+    }), { duration: 2000 });
+  }, [nodes, edges, reactFlowInstance, setNodes, addToHistory, t]);
+
+  const handleDuplicate = useCallback((id: string) => {
+    handleDuplicateNodes([id]);
+  }, [handleDuplicateNodes]);
 
   const handleCloseViewer = () => {
     setSelectedMockup(null);
@@ -400,6 +487,8 @@ export const CanvasPage: React.FC = () => {
       imageUrl,
       nodeType: node.type || 'unknown',
     });
+    // Open the universal panel when export is triggered
+    setIsUniversalPanelOpen(true);
   }, [contextMenu, nodes]);
 
   const {
@@ -553,23 +642,24 @@ export const CanvasPage: React.FC = () => {
   }, []);
 
   const handleExportAllImagesRequest = useCallback(async () => {
-    // Collect all images from the canvas
+    // Collect output images from the canvas
     const imagesToExport: Array<{ url: string; name: string }> = [];
 
     nodes.forEach(node => {
       let url: string | null = null;
       let name = node.data.label || `${node.type}-${node.id.substring(0, 4)}`;
 
-      if (node.type === 'image') {
-        const data = node.data as ImageNodeData;
-        url = getImageUrl(data.mockup) || null;
-        name = data.mockup.prompt || name;
-      } else if (['merge', 'edit', 'upscale', 'upscaleBicubic', 'mockup', 'angle', 'prompt', 'output', 'shader'].includes(node.type)) {
+      // Filter: Only select 'output' nodes or nodes with explicit result data
+      if (node.type === 'output') {
         const data = node.data as any;
         url = data.resultImageUrl || (data.resultImageBase64 ? (data.resultImageBase64.startsWith('data:') ? data.resultImageBase64 : `data:image/png;base64,${data.resultImageBase64}`) : null);
-      } else if (node.type === 'logo') {
+        name = data.label || name;
+      } else if (['merge', 'edit', 'upscale', 'upscaleBicubic', 'mockup', 'angle', 'prompt', 'shader'].includes(node.type)) {
+        // Only include if it has explicit result data
         const data = node.data as any;
-        url = data.logoImageUrl || (data.logoBase64 ? (data.logoBase64.startsWith('data:') ? data.logoBase64 : `data:image/png;base64,${data.logoBase64}`) : null);
+        if (data.resultImageUrl || data.resultImageBase64) {
+          url = data.resultImageUrl || (data.resultImageBase64 ? (data.resultImageBase64.startsWith('data:') ? data.resultImageBase64 : `data:image/png;base64,${data.resultImageBase64}`) : null);
+        }
       }
 
       if (url) {
@@ -578,25 +668,86 @@ export const CanvasPage: React.FC = () => {
     });
 
     if (imagesToExport.length === 0) {
-      toast.error(t('canvas.noImagesToExport') || 'No images found to export');
+      toast.error(t('canvas.noImagesToExport') || 'No output images found to export');
       return;
     }
 
-    toast.info((t('canvas.exportingImages') || 'Exporting images...') + ` (${imagesToExport.length})`);
+    // Try using File System Access API for folder selection
+    if ('showDirectoryPicker' in window) {
+      try {
+        // @ts-ignore - showDirectoryPicker is not yet in standard types
+        const dirHandle = await window.showDirectoryPicker();
 
-    // Trigger serial downloads with small delay
-    for (let i = 0; i < imagesToExport.length; i++) {
-      const img = imagesToExport[i];
-      setTimeout(async () => {
-        try {
-          await exportImageWithScale(img.url, 'png', 1.5, img.name);
-          if (i === imagesToExport.length - 1) {
-            toast.success(t('canvas.exportComplete') || 'Export complete!');
+        toast.info((t('canvas.exportingImages') || 'Exporting images...') + ` (${imagesToExport.length})`);
+
+        let savedCount = 0;
+        let errorCount = 0;
+
+        const usedNames = new Set<string>();
+
+        for (const img of imagesToExport) {
+          try {
+            // Fetch blob
+            const response = await fetch(img.url);
+            const blob = await response.blob();
+
+            // Prepare unique filename
+            const safeName = img.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            let baseFilename = safeName || 'image';
+            let filename = `${baseFilename}.png`;
+
+            // Handle duplicates
+            let counter = 1;
+            while (usedNames.has(filename)) {
+              filename = `${baseFilename}_${counter}.png`;
+              counter++;
+            }
+            usedNames.add(filename);
+
+            // Create/Get file handle
+            const fileHandle = await dirHandle.getFileHandle(filename, { create: true });
+            const writable = await fileHandle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+
+            savedCount++;
+          } catch (err) {
+            console.error(`Failed to save ${img.name}:`, err);
+            errorCount++;
           }
-        } catch (err) {
-          console.error(`Failed to export ${img.name}:`, err);
         }
-      }, i * 300);
+
+        if (savedCount > 0) {
+          toast.success((t('canvas.exportComplete') || 'Export complete!') + ` ${savedCount} saved.`);
+        }
+        if (errorCount > 0) {
+          toast.warning(`${errorCount} images failed to save.`);
+        }
+
+      } catch (err: any) {
+        // User cancelled or API error
+        if (err.name !== 'AbortError') {
+          console.error('Directory selection failed:', err);
+          toast.error(t('canvas.exportFailed') || 'Failed to access folder');
+        }
+      }
+    } else {
+      // Fallback to serial download for unsupported browsers
+      toast.info((t('canvas.exportingImages') || 'Exporting images...') + ` (${imagesToExport.length})`);
+
+      for (let i = 0; i < imagesToExport.length; i++) {
+        const img = imagesToExport[i];
+        setTimeout(async () => {
+          try {
+            await exportImageWithScale(img.url, 'png', 1.5, img.name);
+            if (i === imagesToExport.length - 1) {
+              toast.success(t('canvas.exportComplete') || 'Export complete!');
+            }
+          } catch (err) {
+            console.error(`Failed to export ${img.name}:`, err);
+          }
+        }, i * 300);
+      }
     }
   }, [nodes, t]);
 
@@ -721,7 +872,8 @@ export const CanvasPage: React.FC = () => {
     handleDelete,
     addToHistory,
     projectId,
-    saveImmediately
+    saveImmediately,
+    handleSavePrompt
   );
 
   // Upload imediato de base64 para R2
@@ -887,6 +1039,7 @@ export const CanvasPage: React.FC = () => {
     handleView,
     handleEdit,
     handleDelete,
+    handleDuplicate,
     handlersRef,
     subscriptionStatus,
     nodesRef,
@@ -895,23 +1048,7 @@ export const CanvasPage: React.FC = () => {
     projectId
   );
 
-  // Save Prompt Modal State and Handler
-  const [savePromptModalState, setSavePromptModalState] = useState<{
-    isOpen: boolean;
-    prompt: string;
-    initialData?: { name?: string; description?: string };
-  }>({
-    isOpen: false,
-    prompt: '',
-  });
 
-  const handleSavePrompt = useCallback((prompt: string) => {
-    setSavePromptModalState({
-      isOpen: true,
-      prompt,
-      initialData: { name: t('canvasNodes.promptNode.savedPromptName') || 'Novo Prompt' }
-    });
-  }, [t]);
 
   // Register handleSavePrompt in handlersRef for new nodes
   useEffect(() => {
@@ -990,55 +1127,7 @@ export const CanvasPage: React.FC = () => {
     onNodeDragStopOriginal();
   }, [onNodeDragStopOriginal]);
 
-  // Duplicate multiple nodes
-  const handleDuplicateNodes = useCallback((nodeIds: string[]) => {
-    if (!reactFlowInstance || nodeIds.length === 0) return;
-
-    const nodesToDuplicate = nodes.filter(n => nodeIds.includes(n.id));
-    if (nodesToDuplicate.length === 0) return;
-
-    addToHistory(nodes, edges, drawing.drawings);
-
-    const duplicatedNodes: Node<FlowNodeData>[] = nodesToDuplicate.map((node, index) => {
-      const newPosition = {
-        x: node.position.x + 50 + (index * 10),
-        y: node.position.y + 50 + (index * 10),
-      };
-
-      return {
-        ...node,
-        id: generateNodeId(node.type || 'node'),
-        position: newPosition,
-        selected: false,
-        data: {
-          ...node.data,
-          // Reset loading states
-          isLoading: false,
-          isGenerating: false,
-          isDescribing: false,
-          isAnalyzing: false,
-          isGeneratingPrompt: false,
-          isSuggestingPrompts: false,
-          // Clear result images for flow nodes
-          resultImageBase64: undefined,
-          resultImageUrl: undefined,
-        } as FlowNodeData,
-      };
-    });
-
-    setNodes((nds: Node<FlowNodeData>[]) => {
-      const newNodes = [...nds, ...duplicatedNodes];
-      setTimeout(() => {
-        addToHistory(newNodes, edges, drawing.drawings);
-      }, 0);
-      return newNodes;
-    });
-
-    toast.success(t('canvas.nodeDuplicated', {
-      count: duplicatedNodes.length,
-      plural: duplicatedNodes.length > 1 ? 's' : ''
-    }), { duration: 2000 });
-  }, [nodes, edges, reactFlowInstance, setNodes, addToHistory]);
+  // Duplicate multiple nodes deleted from here since it was moved up
 
   useCanvasKeyboard(
     nodes,
@@ -1329,7 +1418,7 @@ export const CanvasPage: React.FC = () => {
     handleCopyPNG,
     handleEditWithPrompt,
     handleDelete: handleImageNodeDelete,
-    handleDuplicate,
+    handleDuplicate: handleImageNodeDuplicate,
     handleImageLike,
     handleImageDescribe,
     handleOutputLike,
@@ -3098,11 +3187,7 @@ export const CanvasPage: React.FC = () => {
           <div
             className="flex-1 transition-all duration-300 ease-out relative"
             style={{
-              width: openChatNodeId && !isChatSidebarCollapsed
-                ? `calc(100% - ${chatSidebarWidth}px)`
-                : openChatNodeId && isChatSidebarCollapsed
-                  ? `calc(100% - ${CHAT_SIDEBAR_COLLAPSED_WIDTH}px)`
-                  : '100%',
+              width: '100%',
             }}
           >
             {isCollaborative && projectId && isAuthenticated && authService.getToken() ? (
@@ -3272,25 +3357,7 @@ export const CanvasPage: React.FC = () => {
           </div>
 
           {/* Chat Sidebar - Positioned absolutely within flex container */}
-          {(() => {
-            const chatNode = openChatNodeId
-              ? nodes.find((node) => node.id === openChatNodeId && node.type === 'chat') as Node<ChatNodeData> | undefined
-              : undefined;
 
-            return chatNode ? (
-              <ChatSidebar
-                isCollapsed={isChatSidebarCollapsed}
-                onToggleCollapse={() => setIsChatSidebarCollapsed(!isChatSidebarCollapsed)}
-                nodeData={chatNode.data}
-                nodeId={chatNode.id}
-                onUpdateData={chatNode.data.onUpdateData}
-                variant="stacked"
-                sidebarWidth={chatSidebarWidth}
-                onSidebarWidthChange={setChatSidebarWidth}
-                sidebarRef={chatSidebarRef}
-              />
-            ) : null;
-          })()}
         </div>
 
         {/* Bottom Toolbar */}
@@ -4187,26 +4254,33 @@ export const CanvasPage: React.FC = () => {
         </div>
       )}
 
-      {/* Shader Controls Sidebar - Only show when a ShaderNode is selected */}
-      {(() => {
-        const selectedShaderNode = nodes.find(
-          (node) => node.type === 'shader' && node.selected === true
-        ) as Node<ShaderNodeData> | undefined;
+      {/* Universal Side Panel */}
+      <UniversalSidePanel
+        selectedNodes={nodes.filter(n => n.selected)}
+        isOpen={isUniversalPanelOpen}
+        onClose={() => {
+          setIsUniversalPanelOpen(false);
+          setExportPanel(null);
+        }}
+        onUpdateNode={updateNodeData}
+        overridePanel={exportPanel ? {
+          type: 'export',
+          data: exportPanel,
+          onClose: () => {
+            setExportPanel(null);
+            // If no nodes selected, close panel too. If nodes selected, go back to tabs?
+            // For simplified UX, if export was open via override, closing it goes back to default state.
+          }
+        } : null}
+      />
 
-        return selectedShaderNode ? (
-          <div className="fixed right-4 top-[81px] z-40 flex flex-col gap-2">
-            <ShaderControlsSidebar
-              isCollapsed={isShaderSidebarCollapsed}
-              onToggleCollapse={() => setIsShaderSidebarCollapsed(!isShaderSidebarCollapsed)}
-              nodeData={selectedShaderNode.data}
-              nodeId={selectedShaderNode.id}
-              onUpdateData={selectedShaderNode.data.onUpdateData}
-              variant="stacked"
-            />
-          </div>
-        ) : null;
-      })()}
-
+      {/* Save Prompt Modal */}
+      <SavePromptModal
+        isOpen={savePromptModalState.isOpen}
+        onClose={() => setSavePromptModalState(prev => ({ ...prev, isOpen: false }))}
+        prompt={savePromptModalState.prompt}
+        initialData={savePromptModalState.initialData}
+      />
 
       {/* Canvas Toolbar - Always visible, independent from ShaderControlsSidebar */}
       <div className="fixed left-4 top-[81px] z-40">

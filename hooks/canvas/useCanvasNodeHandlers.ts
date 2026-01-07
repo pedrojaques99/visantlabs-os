@@ -75,7 +75,8 @@ export const useCanvasNodeHandlers = (
   handleDelete: (id: string) => Promise<void>,
   addToHistory: (nodes: Node<FlowNodeData>[], edges: Edge[]) => void,
   canvasId?: string,
-  saveImmediately?: () => Promise<void>
+  saveImmediately?: () => Promise<void>,
+  handleSavePrompt?: (prompt: string) => void
 ) => {
   // ========== CONFIGURAÇÃO INICIAL - Refs e Estado ==========
 
@@ -172,7 +173,7 @@ export const useCanvasNodeHandlers = (
             ...(n.data as T),
             ...newData,
           } as T;
-          
+
           // For strategy nodes, ensure strategyData is properly merged if it's an object
           if (n.type === 'strategy' && newData.strategyData && typeof newData.strategyData === 'object') {
             const currentStrategyData = (n.data as any).strategyData;
@@ -184,7 +185,7 @@ export const useCanvasNodeHandlers = (
               } as any;
             }
           }
-          
+
           if (isLocalDevelopment() && n.type === 'strategy' && newData.strategyData) {
             console.log(`[updateNodeData] Updating strategy node`, {
               nodeId,
@@ -194,7 +195,7 @@ export const useCanvasNodeHandlers = (
               updatedStrategyDataCount: updatedData.strategyData ? Object.keys(updatedData.strategyData as any).length : 0
             });
           }
-          
+
           return {
             ...n,
             data: updatedData,
@@ -1929,6 +1930,7 @@ export const useCanvasNodeHandlers = (
       handleShaderNodeDataUpdate,
       handleUpscaleBicubicApply,
       handleUpscaleBicubicNodeDataUpdate,
+      handleSavePrompt,
     };
     handleUploadImageRef.current = handleUploadImage;
   }, [handleMergeGenerate,
@@ -1965,7 +1967,8 @@ export const useCanvasNodeHandlers = (
     handleShaderApply,
     handleShaderNodeDataUpdate,
     handleUpscaleBicubicApply,
-    handleUpscaleBicubicNodeDataUpdate]);
+    handleUpscaleBicubicNodeDataUpdate,
+    handleSavePrompt]);
 
   // ========== USEEFFECT - Sincronização de Imagens com Edges ==========
   // Sincroniza automaticamente imagens conectadas quando edges mudam
@@ -2184,6 +2187,7 @@ export const useCanvasNodeHandlers = (
       handleBrandCoreGenerateStrategicPrompts,
       handleBrandCoreDataUpdate,
       handleBrandCoreUploadPdfToR2,
+      handleSavePrompt,
     };
   }, [
     handleLogoNodeUpload,
@@ -2196,6 +2200,7 @@ export const useCanvasNodeHandlers = (
     handleBrandCoreGenerateStrategicPrompts,
     handleBrandCoreDataUpdate,
     handleBrandCoreUploadPdfToR2,
+    handleSavePrompt,
   ]);
 
   // ========== RETORNO DO HOOK ==========
@@ -2241,6 +2246,7 @@ export const useCanvasNodeHandlers = (
     handleBrandCoreGenerateVisualPrompts,
     handleBrandCoreGenerateStrategicPrompts,
     handleBrandCoreDataUpdate,
+    handleSavePrompt,
     handlersRef,
     nodesRef,
     updateNodeData,
