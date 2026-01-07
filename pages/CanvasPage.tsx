@@ -3867,7 +3867,7 @@ export const CanvasPage: React.FC = () => {
           const onCopyPNG = handleCopyPNG;
           const onEditWithPrompt = handleEditWithPrompt;
           const onDelete = handleImageNodeDelete;
-          const onDuplicate = handleDuplicate;
+          const onDuplicate = () => handleDuplicate(imageContextMenu.nodeId);
           const onDescribe = isOutputNode ? undefined : handleImageDescribe;
 
           return (
