@@ -21,19 +21,19 @@ function formatMockup(mockup: any) {
 // Helper function to find user by identifier (username or ID)
 async function findUserByIdentifier(identifier: string) {
   await connectToMongoDB();
-  
+
   // Try to find by username first (username is stored in lowercase)
   let user = await prisma.user.findUnique({
     where: { username: identifier.toLowerCase() },
   });
-  
+
   // If not found by username, try by ID
   if (!user && ObjectId.isValid(identifier)) {
     user = await prisma.user.findUnique({
       where: { id: identifier },
     });
   }
-  
+
   return user;
 }
 
@@ -53,29 +53,29 @@ router.get('/:identifier', async (req, res) => {
   try {
     await connectToMongoDB();
     const { identifier } = req.params;
-    
+
     const user = await findUserByIdentifier(identifier);
-    
+
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-    
+
     // Get stats
     const db = getDb();
     const userObjectId = getUserObjectId(user.id);
-    
+
     // Count mockups (only blank mockups for public display)
     const mockupCount = await db.collection('mockups').countDocuments({
       userId: userObjectId,
       designType: 'blank',
     });
-    
+
     // Count approved community presets
     const presetCount = await db.collection('community_presets').countDocuments({
       userId: userObjectId,
       isApproved: true,
     });
-    
+
     // Return public profile data
     res.json({
       id: user.id,
@@ -105,16 +105,16 @@ router.get('/:identifier/mockups', async (req, res) => {
   try {
     await connectToMongoDB();
     const { identifier } = req.params;
-    
+
     const user = await findUserByIdentifier(identifier);
-    
+
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-    
+
     const db = getDb();
     const userObjectId = getUserObjectId(user.id);
-    
+
     // Get only blank mockups (public)
     const mockups = await db.collection('mockups')
       .find({
@@ -123,9 +123,9 @@ router.get('/:identifier/mockups', async (req, res) => {
       })
       .sort({ createdAt: -1 })
       .toArray();
-    
+
     const formattedMockups = mockups.map(formatMockup);
-    
+
     res.json(formattedMockups);
   } catch (error: any) {
     console.error('Failed to get user mockups:', error);
@@ -138,25 +138,25 @@ router.get('/:identifier/presets', async (req, res) => {
   try {
     await connectToMongoDB();
     const { identifier } = req.params;
-    
+
     if (!identifier || identifier.trim() === '') {
       return res.status(400).json({ error: 'Invalid identifier' });
     }
-    
+
     const user = await findUserByIdentifier(identifier);
-    
+
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-    
+
     if (!user.id) {
       console.error('User found but missing id:', { identifier, user });
       return res.status(500).json({ error: 'User data is invalid' });
     }
-    
+
     const db = getDb();
     let userObjectId: ObjectId;
-    
+
     try {
       userObjectId = getUserObjectId(user.id);
     } catch (idError: any) {
@@ -165,12 +165,12 @@ router.get('/:identifier/presets', async (req, res) => {
         userId: user.id,
         identifier: req.params.identifier,
       });
-      return res.status(500).json({ 
-        error: 'Failed to load presets', 
+      return res.status(500).json({
+        error: 'Failed to load presets',
         message: 'Invalid user ID format'
       });
     }
-    
+
     // Get approved community presets
     const presets = await db.collection('community_presets')
       .find({
@@ -179,7 +179,7 @@ router.get('/:identifier/presets', async (req, res) => {
       })
       .sort({ createdAt: -1 })
       .toArray();
-    
+
     // Group by presetType
     const grouped: Record<string, any[]> = {
       mockup: [],
@@ -188,7 +188,7 @@ router.get('/:identifier/presets', async (req, res) => {
       ambience: [],
       luminance: [],
     };
-    
+
     presets.forEach((preset) => {
       if (preset.presetType && grouped[preset.presetType]) {
         grouped[preset.presetType].push({
@@ -200,7 +200,7 @@ router.get('/:identifier/presets', async (req, res) => {
         });
       }
     });
-    
+
     res.json(grouped);
   } catch (error: any) {
     console.error('Failed to get user presets:', {
@@ -208,10 +208,62 @@ router.get('/:identifier/presets', async (req, res) => {
       stack: error.stack,
       identifier: req.params.identifier,
     });
-    res.status(500).json({ 
-      error: 'Failed to load presets', 
+    res.status(500).json({
+      error: 'Failed to load presets',
       message: error.message || 'An unexpected error occurred'
     });
+  }
+});
+
+// Get user's public workflows
+router.get('/:identifier/workflows', async (req, res) => {
+  try {
+    await connectToMongoDB();
+    const { identifier } = req.params;
+
+    const user = await findUserByIdentifier(identifier);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const workflows = await prisma.canvasWorkflow.findMany({
+      where: {
+        userId: user.id,
+        isPublic: true,
+        isApproved: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: {
+        likes: true,
+      },
+    });
+
+    // Check if current user has liked
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    let currentUserId: string | null = null;
+    if (token) {
+      try {
+        const { JWT_SECRET } = await import('../utils/jwtSecret.js');
+        const jwt = (await import('jsonwebtoken')).default;
+        const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+        currentUserId = decoded.userId;
+      } catch (err) {
+        // Not authenticated, ignore
+      }
+    }
+
+    const formattedWorkflows = workflows.map(workflow => ({
+      ...workflow,
+      isLikedByUser: currentUserId ? workflow.likes.some(like => like.userId === currentUserId) : false,
+    }));
+
+    res.json(formattedWorkflows);
+  } catch (error: any) {
+    console.error('Failed to get user workflows:', error);
+    res.status(500).json({ error: 'Failed to load workflows', message: error.message });
   }
 });
 
@@ -219,11 +271,11 @@ router.get('/:identifier/presets', async (req, res) => {
 router.put('/profile', authenticate, async (req: AuthRequest, res) => {
   try {
     const userId = req.userId!;
-    
+
     if (!userId) {
       return res.status(401).json({ error: 'Authentication required' });
     }
-    
+
     const {
       username,
       bio,
@@ -233,19 +285,19 @@ router.put('/profile', authenticate, async (req: AuthRequest, res) => {
       website,
       coverImageBase64,
     } = req.body;
-    
+
     // Get current user
     const currentUser = await prisma.user.findUnique({
       where: { id: userId },
     });
-    
+
     if (!currentUser) {
       return res.status(404).json({ error: 'User not found' });
     }
-    
+
     // Prepare update data
     const updateData: any = {};
-    
+
     // Validate and update username
     if (username !== undefined) {
       if (username === '') {
@@ -259,28 +311,28 @@ router.put('/profile', authenticate, async (req: AuthRequest, res) => {
             details: 'Username must be 3-20 characters and contain only letters, numbers, underscores, and hyphens',
           });
         }
-        
+
         // Check if username is already taken by another user
         const existingUser = await prisma.user.findUnique({
           where: { username: username.toLowerCase() },
         });
-        
+
         if (existingUser && existingUser.id !== userId) {
           return res.status(400).json({ error: 'Username already taken' });
         }
-        
+
         updateData.username = username.toLowerCase();
       }
     }
-    
+
     // Update bio
     if (bio !== undefined) {
       updateData.bio = bio || null;
     }
-    
+
     // Validate and update social media links
     const urlRegex = /^https?:\/\/.+/;
-    
+
     if (instagram !== undefined) {
       if (instagram === '') {
         updateData.instagram = null;
@@ -290,7 +342,7 @@ router.put('/profile', authenticate, async (req: AuthRequest, res) => {
         updateData.instagram = instagram;
       }
     }
-    
+
     if (youtube !== undefined) {
       if (youtube === '') {
         updateData.youtube = null;
@@ -300,7 +352,7 @@ router.put('/profile', authenticate, async (req: AuthRequest, res) => {
         updateData.youtube = youtube;
       }
     }
-    
+
     if (x !== undefined) {
       if (x === '') {
         updateData.x = null;
@@ -310,7 +362,7 @@ router.put('/profile', authenticate, async (req: AuthRequest, res) => {
         updateData.x = x;
       }
     }
-    
+
     if (website !== undefined) {
       if (website === '') {
         updateData.website = null;
@@ -320,18 +372,18 @@ router.put('/profile', authenticate, async (req: AuthRequest, res) => {
         updateData.website = website;
       }
     }
-    
+
     // Handle cover image upload
     if (coverImageBase64) {
       const r2Service = await import('../../services/r2Service.js');
-      
+
       if (!r2Service.isR2Configured()) {
         return res.status(500).json({
           error: 'R2 storage is not configured',
           details: 'Please configure R2 environment variables.',
         });
       }
-      
+
       try {
         // Get user info for storage limit check
         await connectToMongoDB();
@@ -339,7 +391,7 @@ router.put('/profile', authenticate, async (req: AuthRequest, res) => {
         const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
         const subscriptionTier = user?.subscriptionTier || 'free';
         const isAdmin = user?.isAdmin || false;
-        
+
         const coverImageUrl = await r2Service.uploadCoverImage(coverImageBase64, userId, subscriptionTier, isAdmin);
         updateData.coverImageUrl = coverImageUrl;
       } catch (uploadError: any) {
@@ -350,13 +402,13 @@ router.put('/profile', authenticate, async (req: AuthRequest, res) => {
         });
       }
     }
-    
+
     // Update user
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: updateData,
     });
-    
+
     res.json({
       user: {
         id: updatedUser.id,
@@ -382,36 +434,36 @@ router.put('/profile', authenticate, async (req: AuthRequest, res) => {
 router.put('/settings/gemini-api-key', authenticate, async (req: AuthRequest, res) => {
   try {
     const userId = req.userId!;
-    
+
     if (!userId) {
       return res.status(401).json({ error: 'Authentication required' });
     }
-    
+
     const { apiKey } = req.body;
-    
+
     if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length === 0) {
       return res.status(400).json({ error: 'API key is required' });
     }
-    
+
     // Basic validation: Gemini API keys are typically long strings
     // They should be at least 20 characters and contain alphanumeric characters
     const trimmedKey = apiKey.trim();
     if (trimmedKey.length < 20) {
       return res.status(400).json({ error: 'Invalid API key format' });
     }
-    
+
     // Check if encryption is configured
     if (!process.env.API_KEY_ENCRYPTION_KEY) {
-      return res.status(500).json({ 
+      return res.status(500).json({
         error: 'API key encryption is not configured',
         details: 'Please contact support or configure API_KEY_ENCRYPTION_KEY environment variable.'
       });
     }
-    
+
     // Encrypt the API key
     const { encryptApiKey } = await import('../utils/encryption.js');
     const encryptedKey = encryptApiKey(trimmedKey);
-    
+
     // Update user with encrypted key
     await prisma.user.update({
       where: { id: userId },
@@ -419,25 +471,25 @@ router.put('/settings/gemini-api-key', authenticate, async (req: AuthRequest, re
         encryptedGeminiApiKey: encryptedKey,
       },
     });
-    
-    res.json({ 
+
+    res.json({
       success: true,
       message: 'API key saved successfully'
     });
   } catch (error: any) {
     console.error('Failed to save API key:', error);
-    
+
     // Don't leak encryption errors to client
     if (error.message.includes('encrypt') || error.message.includes('decrypt')) {
-      return res.status(500).json({ 
+      return res.status(500).json({
         error: 'Failed to save API key',
         message: 'An encryption error occurred. Please try again.'
       });
     }
-    
-    res.status(500).json({ 
-      error: 'Failed to save API key', 
-      message: error.message 
+
+    res.status(500).json({
+      error: 'Failed to save API key',
+      message: error.message
     });
   }
 });
@@ -446,11 +498,11 @@ router.put('/settings/gemini-api-key', authenticate, async (req: AuthRequest, re
 router.delete('/settings/gemini-api-key', authenticate, async (req: AuthRequest, res) => {
   try {
     const userId = req.userId!;
-    
+
     if (!userId) {
       return res.status(401).json({ error: 'Authentication required' });
     }
-    
+
     // Remove the encrypted key
     await prisma.user.update({
       where: { id: userId },
@@ -458,16 +510,16 @@ router.delete('/settings/gemini-api-key', authenticate, async (req: AuthRequest,
         encryptedGeminiApiKey: null,
       },
     });
-    
-    res.json({ 
+
+    res.json({
       success: true,
       message: 'API key deleted successfully'
     });
   } catch (error: any) {
     console.error('Failed to delete API key:', error);
-    res.status(500).json({ 
-      error: 'Failed to delete API key', 
-      message: error.message 
+    res.status(500).json({
+      error: 'Failed to delete API key',
+      message: error.message
     });
   }
 });
@@ -476,30 +528,30 @@ router.delete('/settings/gemini-api-key', authenticate, async (req: AuthRequest,
 router.get('/settings/gemini-api-key', authenticate, async (req: AuthRequest, res) => {
   try {
     const userId = req.userId!;
-    
+
     if (!userId) {
       return res.status(401).json({ error: 'Authentication required' });
     }
-    
+
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
         encryptedGeminiApiKey: true,
       },
     });
-    
+
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-    
-    res.json({ 
+
+    res.json({
       hasApiKey: !!user.encryptedGeminiApiKey
     });
   } catch (error: any) {
     console.error('Failed to check API key:', error);
-    res.status(500).json({ 
-      error: 'Failed to check API key', 
-      message: error.message 
+    res.status(500).json({
+      error: 'Failed to check API key',
+      message: error.message
     });
   }
 });
@@ -508,28 +560,28 @@ router.get('/settings/gemini-api-key', authenticate, async (req: AuthRequest, re
 router.get('/settings/canvas', authenticate, async (req: AuthRequest, res) => {
   try {
     const userId = req.userId!;
-    
+
     if (!userId) {
       return res.status(401).json({ error: 'Authentication required' });
     }
-    
+
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
         canvasSettings: true,
       },
     });
-    
+
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-    
+
     res.json(user.canvasSettings || {});
   } catch (error: any) {
     console.error('Failed to get canvas settings:', error);
-    res.status(500).json({ 
-      error: 'Failed to get canvas settings', 
-      message: error.message 
+    res.status(500).json({
+      error: 'Failed to get canvas settings',
+      message: error.message
     });
   }
 });
@@ -538,21 +590,21 @@ router.get('/settings/canvas', authenticate, async (req: AuthRequest, res) => {
 router.put('/settings/canvas', authenticate, async (req: AuthRequest, res) => {
   try {
     const userId = req.userId!;
-    
+
     if (!userId) {
       return res.status(401).json({ error: 'Authentication required' });
     }
-    
+
     const settings = req.body;
-    
+
     // Validate settings is an object
     if (!settings || typeof settings !== 'object' || Array.isArray(settings)) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Invalid settings format',
         message: 'Settings must be a valid JSON object'
       });
     }
-    
+
     // Update user with new settings
     await prisma.user.update({
       where: { id: userId },
@@ -560,25 +612,25 @@ router.put('/settings/canvas', authenticate, async (req: AuthRequest, res) => {
         canvasSettings: settings,
       },
     });
-    
-    res.json({ 
+
+    res.json({
       success: true,
       message: 'Canvas settings updated successfully'
     });
   } catch (error: any) {
     console.error('[Canvas Settings] Failed to update:', error);
     console.error('[Canvas Settings] Error stack:', error?.stack);
-    
+
     // Handle Prisma-specific errors
     if (error.code === 'P2025') {
-      return res.status(404).json({ 
+      return res.status(404).json({
         error: 'User not found',
         message: 'User does not exist'
       });
     }
-    
-    res.status(500).json({ 
-      error: 'Failed to update canvas settings', 
+
+    res.status(500).json({
+      error: 'Failed to update canvas settings',
       message: error.message || 'An error occurred'
     });
   }
