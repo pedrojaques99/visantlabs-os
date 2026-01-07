@@ -17,6 +17,7 @@ import { AmbienceNode } from '../components/reactflow/AmbienceNode';
 import { LuminanceNode } from '../components/reactflow/LuminanceNode';
 import { ShaderNode } from '../components/reactflow/ShaderNode';
 import { PromptNode } from '../components/reactflow/PromptNode';
+import { SavePromptModal } from '../components/reactflow/SavePromptModal';
 import { OutputNode } from '../components/reactflow/OutputNode';
 import { BrandNode } from '../components/reactflow/BrandNode';
 import { LogoNode } from '../components/reactflow/LogoNode';
@@ -59,6 +60,8 @@ import { ExportPanel } from '../components/ui/ExportPanel';
 import { toast } from 'sonner';
 import type { ReactFlowInstance } from '../types/reactflow-instance';
 import { canvasApi } from '../services/canvasApi';
+import { MultiExportModal } from '../components/canvas/MultiExportModal';
+import { exportImageWithScale } from '../utils/exportUtils';
 import { RoomProvider } from '../config/liveblocks';
 import { LiveList } from '@liveblocks/client';
 import { useCanvasCollaboration } from '../hooks/canvas/useCanvasCollaboration';
@@ -73,7 +76,7 @@ import { collectR2UrlsForDeletion } from '../hooks/canvas/utils/r2UploadHelpers'
 import { useDebouncedCallback } from '../hooks/useDebouncedCallback';
 import { useCanvasDrawing } from '../hooks/canvas/useCanvasDrawing';
 import type { UploadedImage } from '../types';
-import { WorkflowLibraryModal } from '../components/WorkflowLibraryModal';
+
 import { SaveWorkflowDialog } from '../components/SaveWorkflowDialog';
 import { workflowApi } from '../services/workflowApi';
 import type { CanvasWorkflow } from '../services/workflowApi';
@@ -169,8 +172,9 @@ export const CanvasPage: React.FC = () => {
   const [isSettingsLoaded, setIsSettingsLoaded] = useState(false);
 
   // Workflow state
-  const [showWorkflowLibrary, setShowWorkflowLibrary] = useState(false);
+
   const [showSaveWorkflow, setShowSaveWorkflow] = useState(false);
+  const [showMultiExportModal, setShowMultiExportModal] = useState(false);
 
   // Load user settings from backend and update context
   useEffect(() => {
@@ -540,9 +544,73 @@ export const CanvasPage: React.FC = () => {
   }, [setProjectName, t, projectId, saveImmediately]);
 
   const setOnProjectNameChangeInContext = canvasHeader.setOnProjectNameChange;
+  const setOnExportImagesRequestInContext = canvasHeader.setOnExportImagesRequest;
+  const setOnExportAllImagesRequestInContext = canvasHeader.setOnExportAllImagesRequest;
+
+  // Handle multi-export requests
+  const handleExportImagesRequest = useCallback(() => {
+    setShowMultiExportModal(true);
+  }, []);
+
+  const handleExportAllImagesRequest = useCallback(async () => {
+    // Collect all images from the canvas
+    const imagesToExport: Array<{ url: string; name: string }> = [];
+
+    nodes.forEach(node => {
+      let url: string | null = null;
+      let name = node.data.label || `${node.type}-${node.id.substring(0, 4)}`;
+
+      if (node.type === 'image') {
+        const data = node.data as ImageNodeData;
+        url = getImageUrl(data.mockup) || null;
+        name = data.mockup.prompt || name;
+      } else if (['merge', 'edit', 'upscale', 'upscaleBicubic', 'mockup', 'angle', 'prompt', 'output', 'shader'].includes(node.type)) {
+        const data = node.data as any;
+        url = data.resultImageUrl || (data.resultImageBase64 ? (data.resultImageBase64.startsWith('data:') ? data.resultImageBase64 : `data:image/png;base64,${data.resultImageBase64}`) : null);
+      } else if (node.type === 'logo') {
+        const data = node.data as any;
+        url = data.logoImageUrl || (data.logoBase64 ? (data.logoBase64.startsWith('data:') ? data.logoBase64 : `data:image/png;base64,${data.logoBase64}`) : null);
+      }
+
+      if (url) {
+        imagesToExport.push({ url, name });
+      }
+    });
+
+    if (imagesToExport.length === 0) {
+      toast.error(t('canvas.noImagesToExport') || 'No images found to export');
+      return;
+    }
+
+    toast.info((t('canvas.exportingImages') || 'Exporting images...') + ` (${imagesToExport.length})`);
+
+    // Trigger serial downloads with small delay
+    for (let i = 0; i < imagesToExport.length; i++) {
+      const img = imagesToExport[i];
+      setTimeout(async () => {
+        try {
+          await exportImageWithScale(img.url, 'png', 1.5, img.name);
+          if (i === imagesToExport.length - 1) {
+            toast.success(t('canvas.exportComplete') || 'Export complete!');
+          }
+        } catch (err) {
+          console.error(`Failed to export ${img.name}:`, err);
+        }
+      }, i * 300);
+    }
+  }, [nodes, t]);
+
   useEffect(() => {
-    setOnProjectNameChangeInContext(handleProjectNameChange);
+    setOnProjectNameChangeInContext(() => handleProjectNameChange);
   }, [handleProjectNameChange, setOnProjectNameChangeInContext]);
+
+  useEffect(() => {
+    setOnExportImagesRequestInContext(() => handleExportImagesRequest);
+  }, [handleExportImagesRequest, setOnExportImagesRequestInContext]);
+
+  useEffect(() => {
+    setOnExportAllImagesRequestInContext(() => handleExportAllImagesRequest);
+  }, [handleExportAllImagesRequest, setOnExportAllImagesRequestInContext]);
 
   // Sync project sharing data to context
   const setProjectIdInContext = canvasHeader.setProjectId;
@@ -575,6 +643,9 @@ export const CanvasPage: React.FC = () => {
   useEffect(() => {
     setOthersCountInContext(othersCount);
   }, [othersCount, setOthersCountInContext]);
+
+
+
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [projectModalNodeId, setProjectModalNodeId] = useState<string | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -824,6 +895,59 @@ export const CanvasPage: React.FC = () => {
     projectId
   );
 
+  // Save Prompt Modal State and Handler
+  const [savePromptModalState, setSavePromptModalState] = useState<{
+    isOpen: boolean;
+    prompt: string;
+    initialData?: { name?: string; description?: string };
+  }>({
+    isOpen: false,
+    prompt: '',
+  });
+
+  const handleSavePrompt = useCallback((prompt: string) => {
+    setSavePromptModalState({
+      isOpen: true,
+      prompt,
+      initialData: { name: t('canvasNodes.promptNode.savedPromptName') || 'Novo Prompt' }
+    });
+  }, [t]);
+
+  // Register handleSavePrompt in handlersRef for new nodes
+  useEffect(() => {
+    if (handlersRef.current) {
+      handlersRef.current.handleSavePrompt = handleSavePrompt;
+    }
+  }, [handleSavePrompt, handlersRef]);
+
+  // Inject handleSavePrompt into existing nodes (e.g. on load)
+  useEffect(() => {
+    const hasPromptNodes = nodes.some(n => n.type === 'prompt');
+    if (!hasPromptNodes) return;
+
+    let needsUpdate = false;
+    const updatedNodes = nodes.map(node => {
+      if (node.type === 'prompt') {
+        const promptData = node.data as PromptNodeData;
+        if (promptData.onSavePrompt !== handleSavePrompt) {
+          needsUpdate = true;
+          return {
+            ...node,
+            data: {
+              ...promptData,
+              onSavePrompt: handleSavePrompt
+            }
+          };
+        }
+      }
+      return node;
+    });
+
+    if (needsUpdate) {
+      setNodes(updatedNodes);
+    }
+  }, [nodes, handleSavePrompt, setNodes]);
+
   const {
     onConnect,
     onConnectStart,
@@ -996,11 +1120,7 @@ export const CanvasPage: React.FC = () => {
     }
   }, [setOnSaveWorkflow]);
 
-  useEffect(() => {
-    if (setOnLoadWorkflow) {
-      setOnLoadWorkflow(() => () => setShowWorkflowLibrary(true));
-    }
-  }, [setOnLoadWorkflow]);
+
 
   // Handle drop of images onto canvas
   const handleDropImage = useCallback((image: UploadedImage, position: { x: number; y: number }) => {
@@ -2948,6 +3068,14 @@ export const CanvasPage: React.FC = () => {
             isSignUp={false}
           />
         )}
+
+        {/* Save Prompt Modal (Moved outside ReactFlow) */}
+        <SavePromptModal
+          isOpen={savePromptModalState.isOpen}
+          onClose={() => setSavePromptModalState(prev => ({ ...prev, isOpen: false }))}
+          prompt={savePromptModalState.prompt}
+          initialData={savePromptModalState.initialData}
+        />
       </div>
     );
   }
@@ -3752,15 +3880,6 @@ export const CanvasPage: React.FC = () => {
         )}
 
         {/* Workflow Modals */}
-        <WorkflowLibraryModal
-          isOpen={showWorkflowLibrary}
-          onClose={() => setShowWorkflowLibrary(false)}
-          onLoadWorkflow={handleLoadWorkflow}
-          isAuthenticated={isAuthenticated === true}
-          isAdmin={isAdminOrPremium}
-          t={t}
-        />
-
         <SaveWorkflowDialog
           isOpen={showSaveWorkflow}
           onClose={() => setShowSaveWorkflow(false)}
@@ -3768,6 +3887,13 @@ export const CanvasPage: React.FC = () => {
           nodes={nodes}
           edges={edges}
           t={t}
+        />
+
+        <MultiExportModal
+          isOpen={showMultiExportModal}
+          onClose={() => setShowMultiExportModal(false)}
+          nodes={nodes}
+          projectName={projectName}
         />
       </div>
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BackButton } from '../ui/BackButton';
-import { Share2, ChevronRight, Settings, Users, Save, FolderOpen } from 'lucide-react';
+import { Share2, ChevronRight, Settings, Users, Save, FolderOpen, Download, Check } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useLayout } from '../../hooks/useLayout';
 import { AuthButton } from '../AuthButton';
@@ -51,6 +51,8 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
     onImportCommunityPreset,
     onSaveWorkflow,
     onLoadWorkflow,
+    onExportImagesRequest,
+    onExportAllImagesRequest,
   } = useCanvasHeader();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -216,6 +218,32 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
               <Save size={14} />
             </button>
           )}
+
+          {/* Download Dropdown */}
+          <div className="relative group">
+            <button
+              className="p-1.5 border rounded-md transition-all flex items-center justify-center bg-zinc-800/50 hover:bg-zinc-700/50 text-zinc-300 border-zinc-700/50 hover:border-zinc-600 cursor-pointer"
+              title={t('canvas.download') || 'Download'}
+            >
+              <Download size={14} />
+            </button>
+            <div className="absolute right-0 top-full mt-1 w-48 bg-[#1a1a1a] border border-zinc-800/50 rounded-lg shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60] py-1 backdrop-blur-md">
+              <button
+                onClick={() => onExportImagesRequest?.()}
+                className="w-full text-left px-3 py-2 text-xs text-zinc-300 hover:bg-zinc-800/80 transition-colors flex items-center gap-2 font-mono"
+              >
+                <Download size={12} className="text-[#52ddeb]" />
+                Exportar imagens...
+              </button>
+              <button
+                onClick={() => onExportAllImagesRequest?.()}
+                className="w-full text-left px-3 py-2 text-xs text-zinc-300 hover:bg-zinc-800/80 transition-colors flex items-center gap-2 font-mono"
+              >
+                <Check size={12} className="text-[#52ddeb]" />
+                Exportar todas (PNG)
+              </button>
+            </div>
+          </div>
           <AuthButton
             subscriptionStatus={contextSubscriptionStatus}
             onCreditsClick={() => onCreditPackagesModalOpen?.()}

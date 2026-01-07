@@ -33,19 +33,19 @@ async function checkPresetIdExists(id: string): Promise<boolean> {
 // Helper to normalize and validate category/presetType
 function normalizeCategoryAndPresetType(body: any): { category: string; presetType?: string; error?: string } {
   const { category, presetType } = body;
-  
+
   // Se tem category, usar ela
   if (category) {
     const validCategories = ['3d', 'presets', 'aesthetics', 'themes', 'mockup', 'angle', 'texture', 'ambience', 'luminance'];
     if (!validCategories.includes(category)) {
       return { category: '', error: 'Invalid category' };
     }
-    
+
     // Se category é uma das antigas (mockup, angle, etc), não precisa de presetType
     if (['mockup', 'angle', 'texture', 'ambience', 'luminance'].includes(category)) {
       return { category };
     }
-    
+
     // Se category é 'presets', presetType é obrigatório
     if (category === 'presets') {
       const validPresetTypes = ['mockup', 'angle', 'texture', 'ambience', 'luminance'];
@@ -54,11 +54,11 @@ function normalizeCategoryAndPresetType(body: any): { category: string; presetTy
       }
       return { category, presetType };
     }
-    
+
     // Para outras categorias, não retornar presetType
     return { category };
   }
-  
+
   // Compatibilidade: se não tem category mas tem presetType, inferir category = 'presets'
   if (presetType) {
     const validPresetTypes = ['mockup', 'angle', 'texture', 'ambience', 'luminance'];
@@ -67,7 +67,7 @@ function normalizeCategoryAndPresetType(body: any): { category: string; presetTy
     }
     return { category: 'presets', presetType };
   }
-  
+
   return { category: '', error: 'Either category or presetType is required' };
 }
 
@@ -122,7 +122,7 @@ router.post('/presets', authenticate, async (req: AuthRequest, res) => {
       : undefined;
 
     // Determinar se precisa de referenceImageUrl
-    const needsReferenceImage = (categoryData.category === 'presets' && categoryData.presetType === 'mockup') 
+    const needsReferenceImage = (categoryData.category === 'presets' && categoryData.presetType === 'mockup')
       || (categoryData.category !== 'presets' && referenceImageUrl);
 
     const preset: any = {
@@ -135,7 +135,7 @@ router.post('/presets', authenticate, async (req: AuthRequest, res) => {
       aspectRatio,
       model: model || undefined,
       tags: normalizedTags.length > 0 ? normalizedTags : undefined,
-      isApproved: true, // Auto-approval
+      isApproved: req.body.isApproved !== undefined ? req.body.isApproved : true, // Respect flag or auto-approval
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -224,7 +224,7 @@ router.get('/presets/public', async (req, res) => {
     presets.forEach((preset) => {
       // Migrar se necessário
       const migrated = migratePresetIfNeeded(preset);
-      
+
       // Adicionar likes data
       const likesData = likesMap.get(migrated.id) || { likesCount: 0, isLikedByUser: false };
       const presetWithLikes = {
@@ -405,13 +405,13 @@ router.put('/presets/:id', authenticate, async (req: AuthRequest, res) => {
     if (normalizedTags !== undefined) {
       update.tags = normalizedTags.length > 0 ? normalizedTags : undefined;
     }
-    
+
     // Determinar se precisa de referenceImageUrl
     const currentCategory = category || preset.category || (preset.presetType ? 'presets' : undefined);
     const currentPresetType = presetType || preset.presetType;
-    const needsReferenceImage = (currentCategory === 'presets' && currentPresetType === 'mockup') 
+    const needsReferenceImage = (currentCategory === 'presets' && currentPresetType === 'mockup')
       || (currentCategory && currentCategory !== 'presets' && referenceImageUrl);
-    
+
     if (needsReferenceImage && referenceImageUrl !== undefined) {
       update.referenceImageUrl = referenceImageUrl;
     }
@@ -602,9 +602,9 @@ router.post('/presets/:id/upload-image', authenticate, async (req: AuthRequest, 
 
     // Verificar se pode ter referenceImageUrl
     const migrated = migratePresetIfNeeded(preset);
-    const canHaveImage = (migrated.category === 'presets' && migrated.presetType === 'mockup') 
+    const canHaveImage = (migrated.category === 'presets' && migrated.presetType === 'mockup')
       || (migrated.category && migrated.category !== 'presets');
-    
+
     if (!canHaveImage) {
       return res.status(400).json({ error: 'Reference images are only supported for mockup presets or non-preset categories' });
     }

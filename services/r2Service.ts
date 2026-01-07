@@ -89,7 +89,7 @@ export async function uploadImage(
 
   // Remove data URL prefix if present
   const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
-  
+
   // Convert base64 to buffer
   const buffer = Buffer.from(base64Data, 'base64');
 
@@ -124,13 +124,13 @@ export async function uploadImage(
     return `${publicUrl}/${key}`;
   } catch (error: any) {
     console.error('Error uploading to R2:', error);
-    
+
     // Enhanced error logging for signature errors
     if (error.message?.includes('signature') || error.name === 'SignatureDoesNotMatch') {
       const accountId = process.env.R2_ACCOUNT_ID?.trim() || '';
       const accessKeyId = process.env.R2_ACCESS_KEY_ID?.trim() || '';
       const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY?.trim() || '';
-      
+
       console.error('R2 Signature Error Details:');
       console.error('  - Bucket:', bucketName);
       console.error('  - Key:', key);
@@ -142,7 +142,7 @@ export async function uploadImage(
       console.error('  - Access Key ID prefix:', accessKeyId.substring(0, 8) + '...');
       console.error('  - Error Code:', error.Code || error.code || 'N/A');
       console.error('  - Request ID:', error.requestId || 'N/A');
-      
+
       // Provide helpful troubleshooting tips
       const troubleshootingTips = [
         '1. Verifique se copiou o Access Key ID e Secret Access Key corretamente',
@@ -152,10 +152,10 @@ export async function uploadImage(
         '5. Tente criar um novo Account API Token no Cloudflare Dashboard',
         '6. Certifique-se de que as credenciais correspondem ao mesmo token',
       ];
-      
+
       console.error('\nTroubleshooting Tips:');
       troubleshootingTips.forEach(tip => console.error('  ', tip));
-      
+
       throw new Error(
         `Failed to upload image to R2: Signature mismatch. ` +
         `Please verify your R2 credentials are correct. ` +
@@ -163,7 +163,7 @@ export async function uploadImage(
         `and that there are no extra spaces. Error: ${error.message || error}`
       );
     }
-    
+
     throw new Error(`Failed to upload image to R2: ${error.message || error}`);
   }
 }
@@ -211,7 +211,7 @@ export async function deleteImage(imageUrl: string): Promise<void> {
       // Only log warnings for unexpected errors (not 404s)
       const errorCode = headError?.$metadata?.httpStatusCode || headError?.code;
       const errorMessage = headError?.message || headError?.name || 'Unknown error';
-      
+
       // Don't log warnings for 404 (Not Found) - this is expected when file doesn't exist
       if (errorCode !== 404 && errorCode !== 'NotFound') {
         console.warn(`Could not get file size before delete for key "${key}":`, errorMessage);
@@ -224,14 +224,14 @@ export async function deleteImage(imageUrl: string): Promise<void> {
         Key: key,
       })
     );
-    
+
     // Decrement storage counter if we got the file size
     if (fileSize > 0) {
       // Extract userId from key
       // Key format: userId/... or prefix/userId/...
       const keyParts = key.split('/');
       let userId: string | null = null;
-      
+
       if (keyParts.length === 1) {
         // Direct userId/ format
         userId = keyParts[0];
@@ -245,7 +245,7 @@ export async function deleteImage(imageUrl: string): Promise<void> {
           userId = keyParts[0];
         }
       }
-      
+
       if (userId) {
         await decrementUserStorage(userId, fileSize);
       }
@@ -282,7 +282,7 @@ export async function uploadProfilePicture(
 
   // Remove data URL prefix if present
   const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
-  
+
   // Convert base64 to buffer
   const buffer = Buffer.from(base64Data, 'base64');
 
@@ -343,7 +343,7 @@ export async function uploadBrandLogo(
 
   // Remove data URL prefix if present
   const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
-  
+
   // Convert base64 to buffer
   const buffer = Buffer.from(base64Data, 'base64');
 
@@ -352,7 +352,7 @@ export async function uploadBrandLogo(
 
   // Generate file path: brands/userId/logo-timestamp.png or brands/userId/budgetId-logo-timestamp.png
   const timestamp = Date.now();
-  const key = budgetId 
+  const key = budgetId
     ? `brands/${userId}/${budgetId}-logo-${timestamp}.png`
     : `brands/${userId}/logo-${timestamp}.png`;
 
@@ -408,7 +408,7 @@ export async function uploadGiftImage(
 
   // Remove data URL prefix if present
   const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
-  
+
   // Convert base64 to buffer
   const buffer = Buffer.from(base64Data, 'base64');
 
@@ -418,7 +418,7 @@ export async function uploadGiftImage(
   // Generate file path: gifts/userId/budgetId-gift-index-timestamp.png or gifts/userId/gift-timestamp.png
   const timestamp = Date.now();
   const giftIndexStr = giftIndex !== undefined ? `-gift${giftIndex}` : '';
-  const key = budgetId 
+  const key = budgetId
     ? `gifts/${userId}/${budgetId}${giftIndexStr}-${timestamp}.png`
     : `gifts/${userId}/gift${giftIndexStr}-${timestamp}.png`;
 
@@ -472,7 +472,7 @@ export async function uploadBudgetPdf(
 
   // Remove data URL prefix if present
   const base64Data = pdfBase64.replace(/^data:application\/pdf;base64,/, '');
-  
+
   // Convert base64 to buffer
   const buffer = Buffer.from(base64Data, 'base64');
 
@@ -481,7 +481,7 @@ export async function uploadBudgetPdf(
 
   // Generate file path: budgets/userId/budgetId-pdf-timestamp.pdf or budgets/userId/pdf-timestamp.pdf
   const timestamp = Date.now();
-  const key = budgetId 
+  const key = budgetId
     ? `budgets/${userId}/${budgetId}-pdf-${timestamp}.pdf`
     : `budgets/${userId}/pdf-${timestamp}.pdf`;
 
@@ -535,7 +535,7 @@ export async function uploadCustomPdfPreset(
 
   // Remove data URL prefix if present
   const base64Data = pdfBase64.replace(/^data:application\/pdf;base64,/, '');
-  
+
   // Convert base64 to buffer
   const buffer = Buffer.from(base64Data, 'base64');
 
@@ -578,7 +578,7 @@ export function isR2Configured(): boolean {
   const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY?.trim();
   const bucketName = process.env.R2_BUCKET_NAME?.trim();
   const publicUrl = process.env.R2_PUBLIC_URL?.trim();
-  
+
   const configured = !!(
     accountId &&
     accessKeyId &&
@@ -586,7 +586,7 @@ export function isR2Configured(): boolean {
     bucketName &&
     publicUrl
   );
-  
+
   if (!configured) {
     console.warn('R2 not fully configured:', {
       hasAccountId: !!accountId,
@@ -596,7 +596,7 @@ export function isR2Configured(): boolean {
       hasPublicUrl: !!publicUrl,
     });
   }
-  
+
   return configured;
 }
 
@@ -636,7 +636,7 @@ export async function generateCanvasImageUploadUrl(
   } else if (contentType.includes('gif')) {
     extension = 'gif';
   }
-  
+
   const timestamp = Date.now();
   const nodeIdOrImage = nodeId ? `node-${nodeId}` : 'image';
   const key = `canvas/${userId}/${canvasId}/${nodeIdOrImage}-${timestamp}.${extension}`;
@@ -659,6 +659,64 @@ export async function generateCanvasImageUploadUrl(
     };
   } catch (error: any) {
     console.error('Error generating presigned URL for canvas image:', error);
+    throw new Error(`Failed to generate presigned URL: ${error.message || error}`);
+  }
+}
+
+/**
+ * Generate presigned URL for direct mockup image upload to R2
+ * This allows large images to bypass Vercel's 4.5MB limit by uploading directly to R2
+ * 
+ * @param userId - User ID
+ * @param contentType - Content type (default: image/png)
+ * @param expiresIn - URL expiration time in seconds (default: 3600 = 1 hour)
+ * @returns Object with presignedUrl and finalUrl (public URL after upload)
+ */
+export async function generateMockupImageUploadUrl(
+  userId: string,
+  contentType: string = 'image/png',
+  expiresIn: number = 3600
+): Promise<{ presignedUrl: string; finalUrl: string; key: string }> {
+  const bucketName = process.env.R2_BUCKET_NAME;
+  if (!bucketName) {
+    throw new Error('R2_BUCKET_NAME environment variable is not set.');
+  }
+
+  const publicUrl = process.env.R2_PUBLIC_URL;
+  if (!publicUrl) {
+    throw new Error('R2_PUBLIC_URL environment variable is not set.');
+  }
+
+  // Generate file path: mockups/inputs/userId/image-timestamp.{ext}
+  let extension = 'png';
+  if (contentType.includes('jpeg') || contentType.includes('jpg')) {
+    extension = 'jpg';
+  } else if (contentType.includes('webp')) {
+    extension = 'webp';
+  }
+
+  const timestamp = Date.now();
+  const randomSuffix = Math.random().toString(36).substring(2, 8);
+  const key = `mockups/inputs/${userId}/input-${timestamp}-${randomSuffix}.${extension}`;
+
+  const client = getR2Client();
+
+  try {
+    const command = new PutObjectCommand({
+      Bucket: bucketName,
+      Key: key,
+      ContentType: contentType,
+    });
+
+    const presignedUrl = await getSignedUrl(client, command, { expiresIn });
+
+    return {
+      presignedUrl,
+      finalUrl: `${publicUrl}/${key}`,
+      key,
+    };
+  } catch (error: any) {
+    console.error('Error generating presigned URL for mockup image:', error);
     throw new Error(`Failed to generate presigned URL: ${error.message || error}`);
   }
 }
@@ -702,7 +760,7 @@ export async function generateCanvasVideoUploadUrl(
   } else if (contentType.includes('quicktime')) {
     extension = 'mov';
   }
-  
+
   const timestamp = Date.now();
   const nodeIdOrVideo = nodeId ? `video-${nodeId}` : 'video';
   const key = `canvas/${userId}/${canvasId}/${nodeIdOrVideo}-${timestamp}.${extension}`;
@@ -759,7 +817,7 @@ export async function uploadCanvasImage(
 
   // Remove data URL prefix if present
   const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
-  
+
   // Convert base64 to buffer
   const buffer = Buffer.from(base64Data, 'base64');
 
@@ -819,7 +877,7 @@ export async function uploadCoverImage(
 
   // Remove data URL prefix if present
   const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
-  
+
   // Convert base64 to buffer
   const buffer = Buffer.from(base64Data, 'base64');
 
@@ -874,7 +932,7 @@ export async function uploadMockupPresetReference(
 
   // Remove data URL prefix if present
   const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
-  
+
   // Convert base64 to buffer
   const buffer = Buffer.from(base64Data, 'base64');
 
@@ -930,7 +988,7 @@ export async function uploadCanvasPdf(
 
   // Remove data URL prefix if present
   const base64Data = pdfBase64.replace(/^data:application\/pdf;base64,/, '');
-  
+
   // Convert base64 to buffer
   const buffer = Buffer.from(base64Data, 'base64');
 
@@ -999,7 +1057,7 @@ export async function uploadCanvasVideo(
   // Remove data URL prefix if present (supports various video formats)
   // NO COMPRESSION - preserving original video quality
   const base64Data = videoBase64.replace(/^data:video\/\w+;base64,/, '');
-  
+
   // Convert base64 to buffer - direct conversion, no quality loss
   const buffer = Buffer.from(base64Data, 'base64');
 
@@ -1087,11 +1145,11 @@ export class StorageLimitExceededError extends Error {
     const limitMB = (limit / 1024 / 1024).toFixed(2);
     const fileSizeMB = (fileSize / 1024 / 1024).toFixed(2);
     const limitGB = (limit / 1024 / 1024 / 1024).toFixed(2);
-    
+
     const message = limit >= 1024 * 1024 * 1024
       ? `Storage limit exceeded. You are using ${usedMB} MB of ${limitGB} GB. This file (${fileSizeMB} MB) would exceed your limit.`
       : `Storage limit exceeded. You are using ${usedMB} MB of ${limitMB} MB. This file (${fileSizeMB} MB) would exceed your limit.`;
-    
+
     super(message);
     this.name = 'StorageLimitExceededError';
   }
@@ -1105,7 +1163,7 @@ export class StorageLimitExceededError extends Error {
  * @returns Storage limit in bytes
  */
 export function getUserStorageLimit(
-  subscriptionTier?: string, 
+  subscriptionTier?: string,
   isAdmin?: boolean,
   customLimitBytes?: number | null
 ): number {
@@ -1113,18 +1171,18 @@ export function getUserStorageLimit(
   if (customLimitBytes !== undefined && customLimitBytes !== null) {
     return customLimitBytes;
   }
-  
+
   if (isAdmin) {
     return STORAGE_LIMIT_ADMIN;
   }
-  
+
   const tier = subscriptionTier?.toLowerCase() || 'free';
-  
+
   // Premium or active subscription gets 1GB
   if (tier === 'premium' || tier === 'active') {
     return STORAGE_LIMIT_PREMIUM;
   }
-  
+
   // Free tier gets 100MB
   return STORAGE_LIMIT_FREE;
 }
@@ -1200,14 +1258,14 @@ export async function decrementUserStorage(userId: string, bytes: number): Promi
 export async function syncUserStorage(userId: string): Promise<number> {
   try {
     const actualStorage = await calculateUserStorage(userId);
-    
+
     await prisma.user.update({
       where: { id: userId },
       data: {
         storageUsedBytes: actualStorage,
       },
     });
-    
+
     console.log(`[Storage Sync] Synced storage for user ${userId}: ${actualStorage} bytes`);
     return actualStorage;
   } catch (error: any) {
@@ -1254,7 +1312,7 @@ export async function calculateUserStorage(userId: string): Promise<number> {
     // List objects for each prefix
     for (const prefix of userPrefixes) {
       let continuationToken: string | undefined;
-      
+
       do {
         const command = new ListObjectsV2Command({
           Bucket: bucketName,
@@ -1263,7 +1321,7 @@ export async function calculateUserStorage(userId: string): Promise<number> {
         });
 
         const response = await client.send(command);
-        
+
         if (response.Contents) {
           for (const object of response.Contents) {
             if (object.Size !== undefined) {
