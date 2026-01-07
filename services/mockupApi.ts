@@ -66,6 +66,7 @@ export interface Mockup {
   brandingTags: string[];
   aspectRatio: string;
   isLiked?: boolean; // User's like status for this mockup
+  likesCount?: number; // Total number of likes
   createdAt?: string;
   updatedAt?: string;
 }
