@@ -2,6 +2,8 @@ import express from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../db/prisma.js';
 
+
+
 const router = express.Router();
 
 // List user's workflows
@@ -56,9 +58,11 @@ router.get('/public', async (req, res) => {
 
         if (token) {
             try {
-                const { authService } = await import('../../services/authService.js');
-                const user = await authService.verifyToken(token);
-                userId = user?.id || null;
+                const { JWT_SECRET } = await import('../utils/jwtSecret.js');
+                const jwt = (await import('jsonwebtoken')).default;
+
+                const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+                userId = decoded.userId;
             } catch (err) {
                 // Not authenticated, continue without user data
             }
@@ -108,9 +112,11 @@ router.get('/:id', async (req, res) => {
 
         if (token) {
             try {
-                const { authService } = await import('../../services/authService.js');
-                const user = await authService.verifyToken(token);
-                userId = user?.id || null;
+                const { JWT_SECRET } = await import('../utils/jwtSecret.js');
+                const jwt = (await import('jsonwebtoken')).default;
+
+                const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+                userId = decoded.userId;
             } catch (err) {
                 // Not authenticated
             }

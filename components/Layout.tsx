@@ -39,14 +39,7 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
-const CanvasHeaderWrapper: React.FC<{ navigate: (path: string) => void }> = ({ navigate }) => {
-  try {
-    useCanvasHeader(); // Verify context is available
-    return <CanvasHeader onBack={() => navigate('/canvas')} />;
-  } catch {
-    return null;
-  }
-};
+
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { t } = useTranslation();
@@ -568,8 +561,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             onMyBrandingsClick={() => navigate('/my-brandings')}
           />
         )}
-        
-        {location.pathname.startsWith('/canvas/') && <CanvasHeaderWrapper navigate={navigate} />}
+
+        {location.pathname.startsWith('/canvas/') && <CanvasHeader onBack={() => navigate('/canvas')} />}
 
         <SubscriptionModal
           isOpen={isSubscriptionModalOpen}

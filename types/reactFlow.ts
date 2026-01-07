@@ -301,6 +301,7 @@ export interface PromptNodeData extends BaseNodeData {
   isSuggestingPrompts?: boolean; // Loading state for prompt suggestions
   onGenerate?: (nodeId: string, prompt: string, connectedImages?: string[], model?: GeminiModel) => Promise<void>;
   onSuggestPrompts?: (nodeId: string, prompt: string) => Promise<void>; // Generate prompt suggestions
+  onSavePrompt?: (prompt: string) => void; // Opens save prompt modal
   onUpdateData?: (nodeId: string, newData: Partial<PromptNodeData>) => void;
   onRemoveEdge?: (nodeId: string, targetHandle: 'input-1' | 'input-2' | 'input-3' | 'input-4') => void;
   onResize?: (nodeId: string, width: number, height: number) => void;
@@ -655,7 +656,7 @@ export interface ChatNodeData extends BaseNodeData {
   onRemoveEdge?: (nodeId: string, targetHandle: 'input-1' | 'input-2' | 'input-3' | 'input-4' | 'text-input' | 'strategy-input') => void;
   onResize?: (nodeId: string, width: number, height: number) => void;
   onOpenSidebar?: (nodeId: string) => void;
-  
+
   // Advanced node creation and editing callbacks
   onCreateNode?: (
     chatNodeId: string,
@@ -663,19 +664,19 @@ export interface ChatNodeData extends BaseNodeData {
     initialData?: Partial<FlowNodeData>,
     connectToChat?: boolean
   ) => string | undefined;
-  
+
   onEditConnectedNode?: (
     targetNodeId: string,
     updates: Partial<FlowNodeData>
   ) => void;
-  
+
   // Callback to create an ImageNode with uploaded media
   onAttachMedia?: (
     chatNodeId: string,
     imageBase64: string,
     mimeType: string
   ) => string | undefined;
-  
+
   // Get list of connected node IDs for editing
   connectedNodeIds?: string[];
 }

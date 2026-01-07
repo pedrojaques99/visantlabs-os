@@ -17,7 +17,7 @@ export const authenticate = async (
 ) => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
-    
+
     if (!token) {
       if (isDev) {
         console.log('[authenticate] ❌ No token provided', {
@@ -29,7 +29,7 @@ export const authenticate = async (
     }
 
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; email: string };
-    
+
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
     });
@@ -46,7 +46,7 @@ export const authenticate = async (
 
     req.userId = decoded.userId;
     req.userEmail = decoded.email;
-    
+
     next();
   } catch (error: any) {
     if (isDev) {
