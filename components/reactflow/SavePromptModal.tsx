@@ -88,10 +88,12 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
 
         try {
             const id = generateSlug(name) + '-' + Date.now();
+            // Garantir que description nunca seja vazia (backend exige esse campo)
+            const finalDescription = description.trim() || `Prompt: ${name}`;
             const body = {
                 id,
-                name,
-                description,
+                name: name.trim(),
+                description: finalDescription,
                 prompt,
                 isPublic,
                 category: 'presets',

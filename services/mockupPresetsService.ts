@@ -18,6 +18,10 @@ const ALL_STATIC_PRESETS: MockupPreset[] = [
 
 import { fetchAllOfficialPresets, clearPresetsCache as clearUnifiedCache } from './unifiedPresetService';
 
+// Cache for loaded presets
+let cachedPresets: MockupPreset[] | null = null;
+let isLoadingPresets = false;
+
 /**
  * Load presets from MongoDB API and merge with TypeScript defaults
  * MongoDB presets take priority over defaults with same ID

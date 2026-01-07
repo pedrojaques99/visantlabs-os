@@ -1235,6 +1235,7 @@ export const CanvasPage: React.FC = () => {
         onView: handleView,
         onEdit: handleEdit,
         onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
         onUpload: handlersRef.current?.handleUploadImage || (() => { }),
         onResize: handlersRef.current?.handleImageNodeResize || (() => { }),
         addTextNode: addTextNode,
@@ -1253,7 +1254,7 @@ export const CanvasPage: React.FC = () => {
 
     // Upload para R2 será feito automaticamente pelo hook useImmediateR2Upload
     toast.success(t('canvas.imageDropped'), { duration: 2000 });
-  }, [reactFlowInstance, handleView, handleEdit, handleDelete, nodes, edges, addToHistory, setNodes, handlersRef, addTextNode, t]);
+  }, [reactFlowInstance, handleView, handleEdit, handleDelete, handleDuplicate, nodes, edges, addToHistory, setNodes, handlersRef, addTextNode, t]);
 
   // Handle drop of toolbar nodes onto canvas
   const handleDropNode = useCallback((nodeType: string, position: { x: number; y: number }) => {

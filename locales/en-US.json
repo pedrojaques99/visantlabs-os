@@ -2280,7 +2280,8 @@
         "createNew": "Create New",
         "multiSelectMessage": "{selected} of {max} presets selected",
         "multiSelectMessageEmpty": "Select up to {max} presets",
-        "confirmSelection": "Confirm Selection"
+        "confirmSelection": "Confirm Selection",
+        "official": "Official"
       },
       "presetCard": {
         "copied": "Prompt copied to clipboard",
