@@ -39,7 +39,7 @@ export const GeneratingPromptOverlay: React.FC<GeneratingPromptOverlayProps> = (
   return (
     <div className={`fixed inset-0 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in ${theme === 'dark' ? 'bg-black/80' : 'bg-white/80'
       }`}>
-      <div className={`border border-[#brand-cyan]/20 rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 backdrop-blur-md animate-fade-in ${theme === 'dark' ? 'bg-zinc-900/95' : 'bg-white/95'
+      <div className={`border border-[brand-cyan]/20 rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 backdrop-blur-md animate-fade-in ${theme === 'dark' ? 'bg-zinc-900/95' : 'bg-white/95'
         }`}>
         <div className="flex flex-col items-center justify-center gap-4">
           <GlitchLoader size={24} />

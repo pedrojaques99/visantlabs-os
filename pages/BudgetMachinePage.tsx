@@ -583,7 +583,7 @@ export const BudgetMachinePage: React.FC = () => {
                 <div className="absolute top-2 right-2 z-10 flex items-center gap-2 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-md shadow-sm border border-zinc-200">
                   {saveStatus === 'saving' && (
                     <>
-                      <GlitchLoader size={14} color="#brand-cyan" />
+                      <GlitchLoader size={14} color="brand-cyan" />
                       <span className="text-xs text-zinc-600">Salvando...</span>
                     </>
                   )}

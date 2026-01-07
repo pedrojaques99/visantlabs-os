@@ -23,7 +23,7 @@ export const SubscriptionBanner: React.FC<SubscriptionBannerProps> = ({
 
   if (freeGenerationsRemaining > 0) {
     return (
-      <div className="bg-brand-cyan/10 border border-[#brand-cyan]/30 rounded-md p-4 mb-4 relative">
+      <div className="bg-brand-cyan/10 border border-[brand-cyan]/30 rounded-md p-4 mb-4 relative">
         {onDismiss && (
           <button
             onClick={onDismiss}

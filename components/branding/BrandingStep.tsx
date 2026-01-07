@@ -30,7 +30,7 @@ export const BrandingStep: React.FC<BrandingStepProps> = ({
     if (isGenerating) {
       return (
         <div className="flex items-center justify-center py-12">
-          <GlitchLoader size={32} color="#brand-cyan" />
+          <GlitchLoader size={32} color="brand-cyan" />
           <span className="ml-3 text-muted-foreground">{t('branding.generating')} {title}...</span>
         </div>
       );

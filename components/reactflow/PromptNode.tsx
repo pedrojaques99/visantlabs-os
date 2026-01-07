@@ -360,7 +360,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     >
       {selected && !dragging && (
         <NodeResizer
-          color="#brand-cyan"
+          color="brand-cyan"
           isVisible={selected}
           minWidth={280}
           minHeight={350}
@@ -457,7 +457,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
             />
           )}
           {connectedTextDirection && (
-            <div className="p-2 rounded border border-[#brand-cyan]/30 bg-brand-cyan/5">
+            <div className="p-2 rounded border border-[brand-cyan]/30 bg-brand-cyan/5">
               <div className="text-xs font-mono text-brand-cyan mb-1">{t('canvasNodes.promptNode.textDirectionFromBrandCore')}</div>
               <div className="text-xs text-zinc-400 line-clamp-3">{connectedTextDirection}</div>
             </div>
@@ -514,7 +514,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               disabled={isLoading}
               className={cn(
                 'flex items-center gap-1.5 px-2 py-1 rounded-md border text-[10px] font-mono transition-all',
-                'bg-zinc-800/50 border-zinc-700/50 hover:bg-zinc-700/50 hover:border-[#brand-cyan]/30',
+                'bg-zinc-800/50 border-zinc-700/50 hover:bg-zinc-700/50 hover:border-[brand-cyan]/30',
                 'text-zinc-400 hover:text-brand-cyan',
                 'node-interactive'
               )}
@@ -537,7 +537,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
             disabled={isLoading || !prompt.trim()}
             className={cn(
               'flex items-center gap-1.5 px-2 py-1 rounded-md border text-[10px] font-mono transition-all',
-              'bg-zinc-800/50 border-zinc-700/50 hover:bg-zinc-700/50 hover:border-[#brand-cyan]/30',
+              'bg-zinc-800/50 border-zinc-700/50 hover:bg-zinc-700/50 hover:border-[brand-cyan]/30',
               'text-zinc-400 hover:text-brand-cyan',
               'disabled:opacity-50 disabled:cursor-not-allowed',
               'node-interactive'
@@ -573,7 +573,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               disabled={isLoading || isSuggestingPrompts || !prompt.trim()}
               className={cn(
                 'absolute top-2 right-2 p-1.5 rounded border transition-all',
-                'bg-zinc-800/50 hover:bg-zinc-700/50 border-zinc-700/50 hover:border-[#brand-cyan]/40',
+                'bg-zinc-800/50 hover:bg-zinc-700/50 border-zinc-700/50 hover:border-[brand-cyan]/40',
                 'text-zinc-400 hover:text-brand-cyan',
                 'disabled:opacity-50 disabled:cursor-not-allowed',
                 'node-interactive'
@@ -610,7 +610,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
                 }}
                 className={cn(
                   'w-full text-left p-1.5 text-[11px] font-mono rounded border transition-all',
-                  'bg-zinc-800/30 hover:bg-zinc-800/50 border-zinc-700/30 hover:border-[#brand-cyan]/40',
+                  'bg-zinc-800/30 hover:bg-zinc-800/50 border-zinc-700/30 hover:border-[brand-cyan]/40',
                   'text-zinc-300 hover:text-brand-cyan',
                   'node-interactive'
                 )}
@@ -673,7 +673,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               className={cn(
                 'p-2 rounded border transition-all text-left node-interactive',
                 model === 'gemini-2.5-flash-image'
-                  ? 'bg-brand-cyan/20 border-[#brand-cyan]/50 text-brand-cyan'
+                  ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
                   : 'bg-zinc-900/50 border-zinc-700/50 text-zinc-400 hover:bg-zinc-800/50 hover:border-zinc-600/50',
                 isLoading && 'opacity-50 cursor-not-allowed'
               )}
@@ -714,7 +714,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               className={cn(
                 'p-2 rounded border transition-all text-left node-interactive',
                 model === 'gemini-3-pro-image-preview'
-                  ? 'bg-brand-cyan/20 border-[#brand-cyan]/50 text-brand-cyan'
+                  ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
                   : 'bg-zinc-900/50 border-zinc-700/50 text-zinc-400 hover:bg-zinc-800/50 hover:border-zinc-600/50',
                 isLoading && 'opacity-50 cursor-not-allowed'
               )}
@@ -788,13 +788,13 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         }}
         disabled={isLoading || !prompt.trim()}
         className={cn(
-          'w-full px-3 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#brand-cyan]/30 rounded text-xs font-mono text-brand-cyan transition-colors flex items-center justify-center gap-3 node-interactive',
+          'w-full px-3 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 rounded text-xs font-mono text-brand-cyan transition-colors flex items-center justify-center gap-3 node-interactive',
           (isLoading || !prompt.trim()) ? 'opacity-50 node-button-disabled' : 'node-button-enabled'
         )}
       >
         {isLoading ? (
           <>
-            <GlitchLoader size={14} className="mr-1" color="#brand-cyan" />
+            <GlitchLoader size={14} className="mr-1" color="brand-cyan" />
             <span>{t('canvasNodes.promptNode.generating')}</span>
           </>
         ) : (

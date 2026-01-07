@@ -13,7 +13,7 @@ export const VisantIntroductionPage: React.FC<VisantIntroductionPageProps> = ({
   editable = false,
   onDataChange,
 }) => {
-  const accentColor = data.brandAccentColor || data.brandColors[0] || '#brand-cyan';
+  const accentColor = data.brandAccentColor || data.brandColors[0] || 'brand-cyan';
   const bgColor = '#151515';
   const textColor = '#f9f9f9';
 

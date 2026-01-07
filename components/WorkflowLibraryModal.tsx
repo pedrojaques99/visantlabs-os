@@ -213,7 +213,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                             className={cn(
                                 'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 flex items-center gap-1.5 relative rounded-t-md',
                                 activeTab === 'community'
-                                    ? 'text-brand-cyan border-[#brand-cyan] bg-brand-cyan/5'
+                                    ? 'text-brand-cyan border-[brand-cyan] bg-brand-cyan/5'
                                     : 'text-zinc-400 border-transparent hover:text-zinc-300 hover:bg-zinc-800/30'
                             )}
                         >
@@ -226,7 +226,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                             className={cn(
                                 'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 flex items-center gap-1.5 relative rounded-t-md',
                                 activeTab === 'all'
-                                    ? 'text-brand-cyan border-[#brand-cyan] bg-brand-cyan/5'
+                                    ? 'text-brand-cyan border-[brand-cyan] bg-brand-cyan/5'
                                     : 'text-zinc-400 border-transparent hover:text-zinc-300 hover:bg-zinc-800/30'
                             )}
                         >
@@ -240,7 +240,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                                 className={cn(
                                     'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 flex items-center gap-1.5 relative rounded-t-md',
                                     activeTab === 'my'
-                                        ? 'text-brand-cyan border-[#brand-cyan] bg-brand-cyan/5'
+                                        ? 'text-brand-cyan border-[brand-cyan] bg-brand-cyan/5'
                                         : 'text-zinc-400 border-transparent hover:text-zinc-300 hover:bg-zinc-800/30'
                                 )}
                             >

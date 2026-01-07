@@ -293,7 +293,7 @@ export const PricingPage: React.FC = () => {
                       <div className="flex flex-col gap-2 mt-6">
                         <button
                           onClick={handleBuyCredits}
-                          className="w-full px-6 py-3 bg-brand-cyan/80 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-[#brand-cyan]/20 cursor-pointer"
+                          className="w-full px-6 py-3 bg-brand-cyan/80 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-[brand-cyan]/20 cursor-pointer"
                         >
                           <CreditCard size={16} />
                           {t('pricing.buyCredits') || 'Buy'}

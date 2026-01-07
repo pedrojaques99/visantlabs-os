@@ -13,7 +13,7 @@ export const VisantCoverPage: React.FC<VisantCoverPageProps> = ({
   editable = false,
   onDataChange,
 }) => {
-  const accentColor = data.brandAccentColor || data.brandColors[0] || '#brand-cyan';
+  const accentColor = data.brandAccentColor || data.brandColors[0] || 'brand-cyan';
   const bgColor = data.coverBackgroundColor || '#151515';
   const textColor = data.coverTextColor || '#f9f9f9';
   const year = data.year || '2025';

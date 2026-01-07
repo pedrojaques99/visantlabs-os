@@ -537,9 +537,9 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
       {/* Analysis Status */}
       {isAnalyzing && (
-        <div className="mb-4 px-3 py-2 bg-brand-cyan/20 border border-[#brand-cyan]/30 rounded flex items-center justify-between gap-3">
+        <div className="mb-4 px-3 py-2 bg-brand-cyan/20 border border-[brand-cyan]/30 rounded flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <GlitchLoader size={14} color="#brand-cyan" />
+            <GlitchLoader size={14} color="brand-cyan" />
             <span className="text-xs font-mono text-brand-cyan">Analyzing brand identity...</span>
           </div>
           {nodeData.onCancelAnalyze && (
@@ -904,8 +904,8 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
       {/* Generating Prompts Status */}
       {isGeneratingPrompts && (
-        <div className="mt-4 px-3 py-2 bg-brand-cyan/20 border border-[#brand-cyan]/30 rounded flex items-center gap-3">
-          <GlitchLoader size={14} color="#brand-cyan" />
+        <div className="mt-4 px-3 py-2 bg-brand-cyan/20 border border-[brand-cyan]/30 rounded flex items-center gap-3">
+          <GlitchLoader size={14} color="brand-cyan" />
           <span className="text-xs font-mono text-brand-cyan">Generating prompts...</span>
         </div>
       )}

@@ -336,7 +336,7 @@ const generateVisantPDF = (data: BudgetData, t: (key: string) => string) => {
   const maxWidth = contentWidthPoints;
   let yPosition = margin;
 
-  const accentColor = data.brandAccentColor || data.brandColors[0] || '#brand-cyan';
+  const accentColor = data.brandAccentColor || data.brandColors[0] || 'brand-cyan';
   const bgColor = data.brandBackgroundColor || '#ffffff';
   const accentRgb = hexToRgb(accentColor);
   const bgRgb = hexToRgb(bgColor);

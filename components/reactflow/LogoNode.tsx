@@ -124,7 +124,7 @@ export const LogoNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
     >
       {selected && !dragging && (
         <NodeResizer
-          color="#brand-cyan"
+          color="brand-cyan"
           isVisible={selected}
           minWidth={100}
           minHeight={100}

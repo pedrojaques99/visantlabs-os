@@ -162,7 +162,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
                 onChange={(e) => setLocalName(e.target.value)}
                 onBlur={handleSaveProjectName}
                 onKeyDown={handleKeyDown}
-                className="text-xs font-mono text-zinc-300 bg-transparent border-b border-zinc-600 focus:border-[#brand-cyan] focus:outline-none px-1 min-w-[80px] sm:min-w-[100px] max-w-[200px] sm:max-w-none"
+                className="text-xs font-mono text-zinc-300 bg-transparent border-b border-zinc-600 focus:border-[brand-cyan] focus:outline-none px-1 min-w-[80px] sm:min-w-[100px] max-w-[200px] sm:max-w-none"
               />
             ) : (
               <span
@@ -184,7 +184,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
                 handleShareClick();
               }}
               className={`p-1.5 border rounded-md transition-all flex items-center justify-center ${isCollaborative
-                ? 'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border-[#brand-cyan]/30 hover:border-[#brand-cyan]/50'
+                ? 'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border-[brand-cyan]/30 hover:border-[brand-cyan]/50'
                 : 'bg-zinc-800/50 hover:bg-zinc-700/50 text-zinc-300 border-zinc-700/50 hover:border-zinc-600'
                 }`}
               title={t('canvas.share')}
@@ -232,14 +232,14 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
                 onClick={() => onExportImagesRequest?.()}
                 className="w-full text-left px-3 py-2 text-xs text-zinc-300 hover:bg-zinc-800/80 transition-colors flex items-center gap-2 font-mono"
               >
-                <Download size={12} className="text-[#brand-cyan]" />
+                <Download size={12} className="text-[brand-cyan]" />
                 Exportar imagens...
               </button>
               <button
                 onClick={() => onExportAllImagesRequest?.()}
                 className="w-full text-left px-3 py-2 text-xs text-zinc-300 hover:bg-zinc-800/80 transition-colors flex items-center gap-2 font-mono"
               >
-                <Check size={12} className="text-[#brand-cyan]" />
+                <Check size={12} className="text-[brand-cyan]" />
                 Exportar todas (PNG)
               </button>
             </div>

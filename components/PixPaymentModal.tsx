@@ -323,7 +323,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
 
           {isCheckingUserTaxId && (
             <div className="flex flex-col items-center justify-center py-8">
-              <GlitchLoader size={32} color="#brand-cyan" className="mb-4" />
+              <GlitchLoader size={32} color="brand-cyan" className="mb-4" />
               <p className="text-zinc-400 font-mono text-sm">
                 {t('pix.checking') || 'Verificando dados...'}
               </p>
@@ -346,7 +346,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                       setError(null);
                     }}
                     placeholder={t('pix.taxIdPlaceholder') || 'Digite seu CPF ou CNPJ'}
-                    className="w-full bg-black/40 backdrop-blur-sm border border-zinc-700/50 rounded-md p-3 font-mono text-sm text-zinc-200 focus:outline-none focus:border-[#brand-cyan] focus:ring-1 focus:ring-[#brand-cyan] transition-all"
+                    className="w-full bg-black/40 backdrop-blur-sm border border-zinc-700/50 rounded-md p-3 font-mono text-sm text-zinc-200 focus:outline-none focus:border-[brand-cyan] focus:ring-1 focus:ring-[brand-cyan] transition-all"
                     maxLength={18}
                     required
                   />
@@ -356,7 +356,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                 </div>
                 <button
                   type="submit"
-                  className="w-full px-4 py-3 bg-brand-cyan hover:bg-brand-cyan/90 text-zinc-900 font-mono font-semibold rounded-md transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[#brand-cyan]/20"
+                  className="w-full px-4 py-3 bg-brand-cyan hover:bg-brand-cyan/90 text-zinc-900 font-mono font-semibold rounded-md transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[brand-cyan]/20"
                 >
                   {t('pix.continue') || 'Continuar'}
                 </button>
@@ -366,7 +366,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
 
           {isLoading && (
             <div className="flex flex-col items-center justify-center py-8">
-              <GlitchLoader size={32} color="#brand-cyan" className="mb-4" />
+              <GlitchLoader size={32} color="brand-cyan" className="mb-4" />
               <p className="text-zinc-400 font-mono text-sm">
                 {t('pix.creating') || 'Criando pagamento PIX...'}
               </p>
@@ -385,7 +385,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                         href={paymentUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-1 px-6 py-3 bg-brand-cyan hover:bg-brand-cyan/90 text-zinc-900 font-mono font-semibold rounded-md transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[#brand-cyan]/20 flex items-center justify-center gap-2"
+                        className="flex-1 px-6 py-3 bg-brand-cyan hover:bg-brand-cyan/90 text-zinc-900 font-mono font-semibold rounded-md transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[brand-cyan]/20 flex items-center justify-center gap-2"
                       >
                         {t('pix.openPaymentLink') || 'Abrir link de pagamento'}
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -397,7 +397,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                       {(qrCode || pixCode) && (
                         <button
                           onClick={() => setShowQrCodeModal(true)}
-                          className="p-3 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#brand-cyan]/30 rounded-md transition-all hover:scale-105 active:scale-95 flex-shrink-0"
+                          className="p-3 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 rounded-md transition-all hover:scale-105 active:scale-95 flex-shrink-0"
                           title={t('pix.showQrCode') || 'Mostrar QR Code'}
                           aria-label={t('pix.showQrCode') || 'Mostrar QR Code'}
                         >
@@ -410,7 +410,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                     (qrCode || pixCode) && (
                       <button
                         onClick={() => setShowQrCodeModal(true)}
-                        className="w-full px-6 py-3 bg-brand-cyan hover:bg-brand-cyan/90 text-zinc-900 font-mono font-semibold rounded-md transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[#brand-cyan]/20 flex items-center justify-center gap-2"
+                        className="w-full px-6 py-3 bg-brand-cyan hover:bg-brand-cyan/90 text-zinc-900 font-mono font-semibold rounded-md transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[brand-cyan]/20 flex items-center justify-center gap-2"
                         title={t('pix.showQrCode') || 'Mostrar QR Code'}
                       >
                         <QrCode size={20} />
@@ -457,7 +457,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                     </div>
                   ) : (
                     <div className="bg-zinc-900/50 border border-zinc-700/50 rounded-xl p-8 text-center">
-                      <GlitchLoader size={32} color="#brand-cyan" className="mx-auto mb-4" />
+                      <GlitchLoader size={32} color="brand-cyan" className="mx-auto mb-4" />
                       <p className="text-zinc-400 font-mono text-sm">
                         {t('pix.generatingQrCode') || 'Gerando QR Code...'}
                       </p>
@@ -469,7 +469,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                     <div className="w-full flex justify-center">
                       <button
                         onClick={handleCopyCode}
-                        className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#brand-cyan]/30 rounded-md transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
+                        className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 rounded-md transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
                         title={t('pix.copy') || 'Copiar código PIX'}
                         aria-label={t('pix.copy') || 'Copiar código PIX'}
                       >

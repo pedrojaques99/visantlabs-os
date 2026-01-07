@@ -151,7 +151,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload, onP
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         data-tutorial-target="upload-image"
-        className={`relative block w-full p-4 bg-black/95 backdrop-blur-xl border rounded-md cursor-pointer transition-all duration-300 group ${isDragging ? 'border-dashed border-2 border-[#brand-cyan]/40 bg-brand-cyan/10 shadow-2xl shadow-[#brand-cyan]/10' : 'border-zinc-800/10 hover:border-zinc-800/20 hover:text-zinc-300'
+        className={`relative block w-full p-4 bg-black/95 backdrop-blur-xl border rounded-md cursor-pointer transition-all duration-300 group ${isDragging ? 'border-dashed border-2 border-[brand-cyan]/40 bg-brand-cyan/10 shadow-2xl shadow-[brand-cyan]/10' : 'border-zinc-800/10 hover:border-zinc-800/20 hover:text-zinc-300'
           } ${isProcessing ? 'cursor-wait' : ''}`}
       >
         <input
@@ -164,11 +164,11 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload, onP
         />
         <div className="flex items-center justify-center gap-4">
           {(isCheckingAuth || isVerifyingAuth) && (
-            <GlitchLoader size={24} color="#brand-cyan" />
+            <GlitchLoader size={24} color="brand-cyan" />
           )}
           {isProcessing && !isCheckingAuth && !isVerifyingAuth && (
             <>
-              <GlitchLoader size={24} color="#brand-cyan" />
+              <GlitchLoader size={24} color="brand-cyan" />
               <div className="text-left min-w-0">
                 <p className="text-md font-semibold text-zinc-400">{t('upload.processingImage')}</p>
                 <p className="text-xs font-mono tracking-wider text-zinc-500">{t('upload.pleaseWait')}</p>

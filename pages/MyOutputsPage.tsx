@@ -459,7 +459,7 @@ export const MyOutputsPage: React.FC = () => {
                 return (
                   <div
                     key={mockup._id}
-                    className="group relative bg-black/30 backdrop-blur-sm border border-zinc-800/60 rounded-md overflow-hidden hover:border-[#brand-cyan]/50 transition-all duration-300"
+                    className="group relative bg-black/30 backdrop-blur-sm border border-zinc-800/60 rounded-md overflow-hidden hover:border-[brand-cyan]/50 transition-all duration-300"
                   >
                     {/* Image */}
                     <div

@@ -254,8 +254,8 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
               "transition-colors duration-150",
               "cursor-grab active:cursor-grabbing",
               isActive
-                ? "border-[#brand-cyan] text-brand-cyan bg-brand-cyan/10"
-                : "border-zinc-800/40 text-zinc-400 hover:text-brand-cyan hover:border-[#brand-cyan]/40 hover:bg-zinc-800/50"
+                ? "border-[brand-cyan] text-brand-cyan bg-brand-cyan/10"
+                : "border-zinc-800/40 text-zinc-400 hover:text-brand-cyan hover:border-[brand-cyan]/40 hover:bg-zinc-800/50"
             )}
             aria-label={tool.label}
           >
@@ -278,8 +278,8 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
             "transition-colors duration-150",
             "flex items-center gap-2 cursor-grab active:cursor-grabbing",
             isActive
-              ? "border-[#brand-cyan] text-brand-cyan bg-brand-cyan/10"
-              : "border-zinc-800/40 text-zinc-400 hover:text-brand-cyan hover:border-[#brand-cyan]/40 hover:bg-zinc-800/50"
+              ? "border-[brand-cyan] text-brand-cyan bg-brand-cyan/10"
+              : "border-zinc-800/40 text-zinc-400 hover:text-brand-cyan hover:border-[brand-cyan]/40 hover:bg-zinc-800/50"
           )}
           aria-label={tool.label}
         >
