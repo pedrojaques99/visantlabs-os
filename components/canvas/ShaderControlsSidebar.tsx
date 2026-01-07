@@ -382,7 +382,7 @@ export const ShaderControlsSidebar: React.FC<ShaderControlsSidebarProps & { widt
                       "border transition-all",
                       "hover:bg-zinc-800/30",
                       halftoneInvert > 0.5
-                        ? "border-[#52ddeb]/40 bg-brand-cyan/10 text-brand-cyan"
+                        ? "border-[#brand-cyan]/40 bg-brand-cyan/10 text-brand-cyan"
                         : "border-zinc-700/30 bg-transparent text-zinc-500 hover:text-zinc-400 hover:border-zinc-600/40"
                     )}
                     title={t('shaderControls.labels.invert')}
@@ -410,7 +410,7 @@ export const ShaderControlsSidebar: React.FC<ShaderControlsSidebarProps & { widt
                         "border transition-all",
                         "text-xs font-mono uppercase tracking-wider",
                         isAnimating
-                          ? "bg-brand-cyan/20 border-[#52ddeb]/50 text-brand-cyan hover:bg-brand-cyan/30"
+                          ? "bg-brand-cyan/20 border-[#brand-cyan]/50 text-brand-cyan hover:bg-brand-cyan/30"
                           : "bg-zinc-800/50 border-zinc-700/50 text-zinc-400 hover:bg-zinc-700/50 hover:border-zinc-600/50"
                       )}
                       title={isAnimating ? t('shaderControls.tooltips.stopAnimation') : t('shaderControls.tooltips.startAnimation')}
@@ -582,7 +582,7 @@ export const ShaderControlsSidebar: React.FC<ShaderControlsSidebarProps & { widt
                       className={cn(
                         "px-3 py-1.5 rounded border transition-all text-xs font-mono uppercase tracking-wider",
                         asciiColored > 0.5
-                          ? "bg-brand-cyan/20 border-[#52ddeb]/50 text-brand-cyan"
+                          ? "bg-brand-cyan/20 border-[#brand-cyan]/50 text-brand-cyan"
                           : "bg-zinc-800/50 border-zinc-700/50 text-zinc-400"
                       )}
                     >
@@ -603,7 +603,7 @@ export const ShaderControlsSidebar: React.FC<ShaderControlsSidebarProps & { widt
                       className={cn(
                         "px-3 py-1.5 rounded border transition-all text-xs font-mono uppercase tracking-wider",
                         asciiInvert > 0.5
-                          ? "bg-brand-cyan/20 border-[#52ddeb]/50 text-brand-cyan"
+                          ? "bg-brand-cyan/20 border-[#brand-cyan]/50 text-brand-cyan"
                           : "bg-zinc-800/50 border-zinc-700/50 text-zinc-400"
                       )}
                     >

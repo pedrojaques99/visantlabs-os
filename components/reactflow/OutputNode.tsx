@@ -474,7 +474,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     >
       {selected && !dragging && (
         <NodeResizer
-          color="#52ddeb"
+          color="#brand-cyan"
           isVisible={selected}
           minWidth={400}
           minHeight={300}

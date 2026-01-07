@@ -114,7 +114,7 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
                     value={searchQuery}
                     onChange={(e) => onSearchChange?.(e.target.value)}
                     placeholder="Search..."
-                    className="bg-black/40 backdrop-blur-sm border border-zinc-700/30 rounded-md pl-7 pr-7 py-1.5 w-40 focus:outline-none focus:border-[#52ddeb]/50 text-xs text-zinc-300 font-mono"
+                    className="bg-black/40 backdrop-blur-sm border border-zinc-700/30 rounded-md pl-7 pr-7 py-1.5 w-40 focus:outline-none focus:border-[#brand-cyan]/50 text-xs text-zinc-300 font-mono"
                     autoFocus
                   />
                   <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-zinc-500" size={12} />
@@ -147,10 +147,10 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
           </button>
         </div>
       </div>
-      
+
       {/* Tags List - Horizontal Scroll */}
       {allTags.length > 0 && (
-        <div 
+        <div
           ref={scrollContainerRef}
           className={`flex gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-zinc-400 dark:scrollbar-thumb-zinc-700 scrollbar-track-transparent pb-0.5 -mx-1 px-1 cursor-pointer select-none`}
           onMouseDown={handleMouseDown}
@@ -160,11 +160,10 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
         >
           <button
             onClick={(e) => handleTagClick(null, e)}
-            className={`px-2.5 py-1 rounded-md text-xs font-mono border whitespace-nowrap flex-shrink-0 transition-all ${
-              filterTag === null
-                ? 'text-brand-cyan border-[#52ddeb]/30 bg-brand-cyan/10'
+            className={`px-2.5 py-1 rounded-md text-xs font-mono border whitespace-nowrap flex-shrink-0 transition-all ${filterTag === null
+                ? 'text-brand-cyan border-[#brand-cyan]/30 bg-brand-cyan/10'
                 : 'text-zinc-500 border-zinc-700/20 hover:border-zinc-600/30 hover:bg-zinc-800/30'
-            }`}
+              }`}
           >
             All
           </button>
@@ -172,11 +171,10 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
             <button
               key={tag}
               onClick={(e) => handleTagClick(tag, e)}
-              className={`px-2.5 py-1 rounded-md text-xs font-mono border whitespace-nowrap flex-shrink-0 transition-all ${
-                filterTag === tag
-                  ? 'text-brand-cyan border-[#52ddeb]/30 bg-brand-cyan/10'
+              className={`px-2.5 py-1 rounded-md text-xs font-mono border whitespace-nowrap flex-shrink-0 transition-all ${filterTag === tag
+                  ? 'text-brand-cyan border-[#brand-cyan]/30 bg-brand-cyan/10'
                   : 'text-zinc-500 border-zinc-700/20 hover:border-zinc-600/30 hover:bg-zinc-800/30'
-              }`}
+                }`}
             >
               {translateTag(tag)}
             </button>

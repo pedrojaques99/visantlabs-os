@@ -99,7 +99,7 @@ const getActionIcon = (type: DetectedAction['type']) => {
 const getActionColor = (type: DetectedAction['type']) => {
   switch (type) {
     case 'prompt': return 'text-purple-400 border-purple-400/30 bg-purple-400/10 hover:bg-purple-400/20';
-    case 'mockup': return 'text-brand-cyan border-[#52ddeb]/30 bg-brand-cyan/10 hover:bg-brand-cyan/20';
+    case 'mockup': return 'text-brand-cyan border-[#brand-cyan]/30 bg-brand-cyan/10 hover:bg-brand-cyan/20';
     case 'strategy': return 'text-amber-400 border-amber-400/30 bg-amber-400/10 hover:bg-amber-400/20';
     case 'text': return 'text-green-400 border-green-400/30 bg-green-400/10 hover:bg-green-400/20';
     default: return 'text-zinc-400 border-zinc-400/30 bg-zinc-400/10 hover:bg-zinc-400/20';

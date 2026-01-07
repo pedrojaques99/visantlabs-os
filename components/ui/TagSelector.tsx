@@ -19,10 +19,10 @@ export const TagSelector: React.FC<TagSelectorProps> = ({ tags, selectedTags, on
       {tags.map(tag => {
         const isSelected = selectedTags.includes(tag);
         const isDisabled = limitReached && !isSelected;
-        
+
         const unselectedClass = theme === 'dark'
-          ? highlight 
-            ? 'bg-zinc-800/50 text-zinc-300 border-[#52ddeb]/50 hover:border-[#52ddeb]/70 hover:text-white' 
+          ? highlight
+            ? 'bg-zinc-800/50 text-zinc-300 border-[#brand-cyan]/50 hover:border-[#brand-cyan]/70 hover:text-white'
             : 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
           : highlight
             ? 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'
@@ -33,13 +33,12 @@ export const TagSelector: React.FC<TagSelectorProps> = ({ tags, selectedTags, on
             key={tag}
             onClick={() => onTagToggle(tag)}
             disabled={isDisabled}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border transform hover:-translate-y-0.5 active:translate-y-0 ${
-              isSelected 
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border transform hover:-translate-y-0.5 active:translate-y-0 ${isSelected
                 ? theme === 'dark'
-                  ? 'bg-brand-cyan/20 text-brand-cyan border-[#52ddeb]/30 shadow-sm shadow-[#52ddeb]/10'
-                  : 'bg-brand-cyan/20 text-zinc-800 border-[#52ddeb]/30 shadow-sm shadow-[#52ddeb]/10'
+                  ? 'bg-brand-cyan/20 text-brand-cyan border-[#brand-cyan]/30 shadow-sm shadow-[#brand-cyan]/10'
+                  : 'bg-brand-cyan/20 text-zinc-800 border-[#brand-cyan]/30 shadow-sm shadow-[#brand-cyan]/10'
                 : unselectedClass
-            } ${isDisabled ? 'opacity-40 cursor-not-allowed' : ''}`}
+              } ${isDisabled ? 'opacity-40 cursor-not-allowed' : ''}`}
           >
             {translateTag(tag)}
           </button>

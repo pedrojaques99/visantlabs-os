@@ -2,7 +2,7 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 
 export interface FormInputProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {}
+  extends React.InputHTMLAttributes<HTMLInputElement> { }
 
 const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
   ({ className, type, ...props }, ref) => {
@@ -11,7 +11,7 @@ const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
         <input
           type={type}
           className={cn(
-            "w-full px-4 py-3 bg-black/40 border border-zinc-800 rounded-xl text-zinc-200 font-mono text-sm focus:outline-none focus:border-[#52ddeb]/70 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50 placeholder:text-zinc-500",
+            "w-full px-4 py-3 bg-black/40 border border-zinc-800 rounded-xl text-zinc-200 font-mono text-sm focus:outline-none focus:border-[#brand-cyan]/70 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50 placeholder:text-zinc-500",
             type === 'color' && "color-picker-square",
             className
           )}

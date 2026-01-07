@@ -198,7 +198,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
       {/* Input Handle - accepts image connections from ImageNode and OutputNode */}
       {selected && !dragging && (
         <NodeResizer
-          color="#52ddeb"
+          color="#brand-cyan"
           isVisible={selected}
           minWidth={280}
           minHeight={200}
@@ -310,7 +310,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
             {extractedColors.map((color, index) => (
               <div
                 key={`${color}-${index}`}
-                className="flex items-center gap-2 p-2 bg-zinc-900/50 rounded border border-zinc-700/30 hover:border-[#52ddeb]/50 transition-colors group/color cursor-pointer hover:bg-zinc-800/50 opacity-0 animate-[fadeInScale_0.4s_cubic-bezier(0.34,1.56,0.64,1)_forwards] relative"
+                className="flex items-center gap-2 p-2 bg-zinc-900/50 rounded border border-zinc-700/30 hover:border-[#brand-cyan]/50 transition-colors group/color cursor-pointer hover:bg-zinc-800/50 opacity-0 animate-[fadeInScale_0.4s_cubic-bezier(0.34,1.56,0.64,1)_forwards] relative"
                 style={{ animationDelay: `${index * 50}ms` }}
                 onClick={() => handleCopyColor(color)}
                 title="Click to copy hex code"

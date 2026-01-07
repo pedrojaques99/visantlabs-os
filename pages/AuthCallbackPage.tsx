@@ -23,10 +23,10 @@ export const AuthCallbackPage: React.FC = () => {
         try {
           // Set token and verify it
           authService.setToken(token);
-          
+
           // Verify token to get user data
           const user = await authService.verifyToken();
-          
+
           if (user) {
             toast.success(t('auth.signedInSuccess'), { duration: 2000 });
             // Clean URL and redirect to home
@@ -43,7 +43,7 @@ export const AuthCallbackPage: React.FC = () => {
       } else if (errorParam) {
         // Handle OAuth errors with user-friendly messages
         let errorMessage = t('auth.authenticationFailed');
-        
+
         switch (errorParam) {
           case 'no_code':
             errorMessage = t('auth.oauthError.noCode') || 'Authorization code not received. Please try again.';
@@ -57,7 +57,7 @@ export const AuthCallbackPage: React.FC = () => {
           default:
             errorMessage = t('auth.oauthError.generic') || 'Authentication error occurred. Please try again.';
         }
-        
+
         setError(errorMessage);
         setIsProcessing(false);
         // Clean URL without navigating to allow error UI to display
@@ -75,7 +75,7 @@ export const AuthCallbackPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-[#121212] flex items-center justify-center">
         <div className="text-center">
-          <GlitchLoader size={32} color="#52ddeb" className="mx-auto mb-4" />
+          <GlitchLoader size={32} color="#brand-cyan" className="mx-auto mb-4" />
           <p className="text-zinc-400 font-mono text-sm">{t('auth.processing') || 'Processing authentication...'}</p>
         </div>
       </div>
@@ -91,7 +91,7 @@ export const AuthCallbackPage: React.FC = () => {
             {t('auth.authenticationError') || 'Authentication Error'}
           </h2>
         </div>
-        
+
         {error && (
           <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-md mb-4">
             <p className="text-sm text-red-400 font-mono">{error}</p>

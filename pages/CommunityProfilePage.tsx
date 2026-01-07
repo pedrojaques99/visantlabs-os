@@ -33,7 +33,7 @@ export const CommunityProfilePage: React.FC = () => {
   const { identifier } = useParams<{ identifier: string }>();
   const navigate = useNavigate();
   const { isAuthenticated, subscriptionStatus } = useLayout();
-  
+
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [mockups, setMockups] = useState<Mockup[]>([]);
   const [presets, setPresets] = useState<Record<string, any[]>>({
@@ -56,7 +56,7 @@ export const CommunityProfilePage: React.FC = () => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [selectedPreset, setSelectedPreset] = useState<any | null>(null);
   const [openModalType, setOpenModalType] = useState<'mockup' | 'texture' | 'angle' | 'ambience' | 'luminance' | null>(null);
-  
+
   const abortControllerRef = useRef<AbortController | null>(null);
   const isLoadingRef = useRef(false);
   const lastIdentifierRef = useRef<string | null>(null);
@@ -127,23 +127,23 @@ export const CommunityProfilePage: React.FC = () => {
       isLoadingRef.current = true;
       setIsLoading(true);
       setError(null);
-      
+
       // Create new AbortController for this request
       const abortController = new AbortController();
       abortControllerRef.current = abortController;
-      
+
       try {
         const [profileData, mockupsData, presetsData] = await Promise.all([
           userProfileService.getUserProfile(identifier),
           userProfileService.getUserMockups(identifier),
           userProfileService.getUserPresets(identifier),
         ]);
-        
+
         // Check if request was aborted
         if (abortController.signal.aborted) {
           return;
         }
-        
+
         has404ErrorRef.current = false;
         setProfile(profileData);
         setMockups(mockupsData);
@@ -153,7 +153,7 @@ export const CommunityProfilePage: React.FC = () => {
         if (abortController.signal.aborted) {
           return;
         }
-        
+
         console.error('Failed to load profile:', err);
         if (err.status === 404) {
           has404ErrorRef.current = true;
@@ -238,14 +238,14 @@ export const CommunityProfilePage: React.FC = () => {
 
   const handleProfileUpdate = async () => {
     if (!identifier) return;
-    
+
     try {
       const [profileData, mockupsData, presetsData] = await Promise.all([
         userProfileService.getUserProfile(identifier),
         userProfileService.getUserMockups(identifier),
         userProfileService.getUserPresets(identifier),
       ]);
-      
+
       setProfile(profileData);
       setMockups(mockupsData);
       setPresets(presetsData);
@@ -371,7 +371,7 @@ export const CommunityProfilePage: React.FC = () => {
                       {profile.bio}
                     </p>
                   )}
-                  
+
                   {/* Social Links */}
                   <div className="flex items-center justify-center md:justify-start gap-3 flex-wrap">
                     {profile.instagram && (
@@ -379,7 +379,7 @@ export const CommunityProfilePage: React.FC = () => {
                         href={profile.instagram}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-2 bg-zinc-900/50 border border-zinc-800/60 rounded-md hover:border-[#52ddeb]/50 hover:bg-zinc-900/80 transition-colors"
+                        className="p-2 bg-zinc-900/50 border border-zinc-800/60 rounded-md hover:border-[#brand-cyan]/50 hover:bg-zinc-900/80 transition-colors"
                         title={t('community.instagram')}
                       >
                         <Instagram size={18} className="text-zinc-400 hover:text-brand-cyan transition-colors" />
@@ -390,7 +390,7 @@ export const CommunityProfilePage: React.FC = () => {
                         href={profile.youtube}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-2 bg-zinc-900/50 border border-zinc-800/60 rounded-md hover:border-[#52ddeb]/50 hover:bg-zinc-900/80 transition-colors"
+                        className="p-2 bg-zinc-900/50 border border-zinc-800/60 rounded-md hover:border-[#brand-cyan]/50 hover:bg-zinc-900/80 transition-colors"
                         title={t('community.youtube')}
                       >
                         <Youtube size={18} className="text-zinc-400 hover:text-brand-cyan transition-colors" />
@@ -401,7 +401,7 @@ export const CommunityProfilePage: React.FC = () => {
                         href={profile.x}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-2 bg-zinc-900/50 border border-zinc-800/60 rounded-md hover:border-[#52ddeb]/50 hover:bg-zinc-900/80 transition-colors"
+                        className="p-2 bg-zinc-900/50 border border-zinc-800/60 rounded-md hover:border-[#brand-cyan]/50 hover:bg-zinc-900/80 transition-colors"
                         title={t('community.twitter')}
                       >
                         <Twitter size={18} className="text-zinc-400 hover:text-brand-cyan transition-colors" />
@@ -412,7 +412,7 @@ export const CommunityProfilePage: React.FC = () => {
                         href={profile.website}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-2 bg-zinc-900/50 border border-zinc-800/60 rounded-md hover:border-[#52ddeb]/50 hover:bg-zinc-900/80 transition-colors"
+                        className="p-2 bg-zinc-900/50 border border-zinc-800/60 rounded-md hover:border-[#brand-cyan]/50 hover:bg-zinc-900/80 transition-colors"
                         title={t('community.website')}
                       >
                         <Globe size={18} className="text-zinc-400 hover:text-brand-cyan transition-colors" />
@@ -425,7 +425,7 @@ export const CommunityProfilePage: React.FC = () => {
                 {isOwnProfile && (
                   <button
                     onClick={() => setIsEditModalOpen(true)}
-                    className="px-4 py-2 bg-brand-cyan/15 text-brand-cyan border border-[#52ddeb]/40 hover:bg-brand-cyan/25 rounded-xl text-sm font-mono transition flex items-center gap-2"
+                    className="px-4 py-2 bg-brand-cyan/15 text-brand-cyan border border-[#brand-cyan]/40 hover:bg-brand-cyan/25 rounded-xl text-sm font-mono transition flex items-center gap-2"
                   >
                     <Edit size={16} />
                     Edit Profile
@@ -463,21 +463,19 @@ export const CommunityProfilePage: React.FC = () => {
             <div className="flex items-center gap-4 mb-6 border-b border-zinc-800/60">
               <button
                 onClick={() => setActiveTab('mockups')}
-                className={`px-4 py-2 font-mono text-sm transition-colors border-b-2 ${
-                  activeTab === 'mockups'
-                    ? 'text-brand-cyan border-[#52ddeb]'
+                className={`px-4 py-2 font-mono text-sm transition-colors border-b-2 ${activeTab === 'mockups'
+                    ? 'text-brand-cyan border-[#brand-cyan]'
                     : 'text-zinc-500 border-transparent hover:text-zinc-400'
-                }`}
+                  }`}
               >
                 Mockups ({mockups.length})
               </button>
               <button
                 onClick={() => setActiveTab('presets')}
-                className={`px-4 py-2 font-mono text-sm transition-colors border-b-2 ${
-                  activeTab === 'presets'
-                    ? 'text-brand-cyan border-[#52ddeb]'
+                className={`px-4 py-2 font-mono text-sm transition-colors border-b-2 ${activeTab === 'presets'
+                    ? 'text-brand-cyan border-[#brand-cyan]'
                     : 'text-zinc-500 border-transparent hover:text-zinc-400'
-                }`}
+                  }`}
               >
                 Presets ({allPresets.length})
               </button>
@@ -538,7 +536,7 @@ export const CommunityProfilePage: React.FC = () => {
                     return (
                       <div
                         key={mockup._id}
-                        className="group relative bg-black/30 backdrop-blur-sm border border-zinc-800/60 rounded-md overflow-hidden hover:border-[#52ddeb]/50 transition-all duration-300"
+                        className="group relative bg-black/30 backdrop-blur-sm border border-zinc-800/60 rounded-md overflow-hidden hover:border-[#brand-cyan]/50 transition-all duration-300"
                       >
                         <div
                           className="aspect-square relative overflow-hidden bg-zinc-900/50 cursor-pointer"
@@ -578,7 +576,7 @@ export const CommunityProfilePage: React.FC = () => {
                     <button
                       key={preset._id || preset.id}
                       onClick={() => handlePresetClick(preset)}
-                      className="group relative bg-black/30 backdrop-blur-sm border border-zinc-800/60 rounded-md overflow-hidden hover:border-[#52ddeb]/50 transition-all duration-300 p-4 cursor-pointer text-left w-full"
+                      className="group relative bg-black/30 backdrop-blur-sm border border-zinc-800/60 rounded-md overflow-hidden hover:border-[#brand-cyan]/50 transition-all duration-300 p-4 cursor-pointer text-left w-full"
                       aria-label={`Open ${preset.name} preset`}
                     >
                       <div className="flex flex-col gap-2">

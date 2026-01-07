@@ -42,7 +42,7 @@ export const PdfPresetSelector: React.FC<PdfPresetSelectorProps> = ({
 
   const handleDelete = async (presetId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    
+
     if (!confirm('Tem certeza que deseja deletar este preset?')) {
       return;
     }
@@ -51,15 +51,15 @@ export const PdfPresetSelector: React.FC<PdfPresetSelectorProps> = ({
       setDeletingId(presetId);
       await budgetApi.deletePdfPreset(presetId);
       setPresets(presets.filter(p => p._id !== presetId && p.id !== presetId));
-      
+
       if (selectedPresetId === presetId) {
         onPresetSelect(null);
       }
-      
+
       if (onPresetDelete) {
         onPresetDelete(presetId);
       }
-      
+
       toast.success('Preset deletado com sucesso');
     } catch (error: any) {
       console.error('Error deleting preset:', error);
@@ -72,7 +72,7 @@ export const PdfPresetSelector: React.FC<PdfPresetSelectorProps> = ({
   if (isLoading) {
     return (
       <div className="flex items-center gap-2 p-4 border border-zinc-800 rounded-xl bg-black/20">
-        <GlitchLoader size={16} color="#52ddeb" />
+        <GlitchLoader size={16} color="#brand-cyan" />
         <span className="text-sm text-zinc-400 font-mono">
           Carregando presets...
         </span>
@@ -93,15 +93,15 @@ export const PdfPresetSelector: React.FC<PdfPresetSelectorProps> = ({
         {presets.map((preset) => {
           const presetId = preset._id || preset.id;
           const isSelected = selectedPresetId === presetId;
-          
+
           return (
             <div
               key={presetId}
               onClick={() => onPresetSelect(preset)}
               className={`
                 relative p-3 border rounded-xl cursor-pointer transition-all
-                ${isSelected 
-                  ? 'border-[#52ddeb] bg-brand-cyan/10' 
+                ${isSelected
+                  ? 'border-[#brand-cyan] bg-brand-cyan/10'
                   : 'border-zinc-800 bg-black/20 hover:bg-black/30'
                 }
               `}

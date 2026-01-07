@@ -29,8 +29,8 @@ interface InteractiveASCIIProps {
   color?: string
 }
 
-export const InteractiveASCIICopy = ({ 
-  isDarkMode, 
+export const InteractiveASCIICopy = ({
+  isDarkMode,
   asciiArt = `                                                                                                                                     
                                                                  +~+~~~~~~~~~~~~~~~~~~~~~~~++                                                                 
                                                               ~~~~~~~~_[1(fxx~~~~~vx/1]~~~~~~~~~~                                                             
@@ -92,7 +92,7 @@ export const InteractiveASCIICopy = ({
   characterSpacing = 0,
   fullHeight = false,
   className = "",
-  color = "#52ddeb"
+  color = "#brand-cyan"
 }: InteractiveASCIIProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animationRef = useRef<number | undefined>(undefined)
@@ -131,33 +131,33 @@ export const InteractiveASCIICopy = ({
 
     const points: WavePoint[] = []
     const lines = asciiArt.trim().split('\n')
-    
+
     // Calculate dimensions to fill the entire screen
     const maxLineLength = Math.max(...lines.map(line => line.length))
     const numLines = lines.length
-    
+
     // Calculate optimal character size and spacing to fill the canvas
     // Use 90% of canvas to leave some padding
     const padding = 0.05
     const availableWidth = canvas.width * (1 - padding * 2)
     const availableHeight = canvas.height * (1 - padding * 2)
-    
+
     // Calculate character width and height to fill the screen
     // For monospace fonts, approximate width is about 0.6 of height
     const charWidth = availableWidth / maxLineLength
     const charHeight = availableHeight / numLines
-    
+
     // Use the smaller dimension to maintain aspect ratio
     const charSize = Math.min(charWidth / 0.6, charHeight)
     const lineHeight = charSize
-    
+
     // Calculate spacing between characters (horizontal)
     const charSpacing = charWidth
-    
+
     // Center the content
     const totalWidth = maxLineLength * charSpacing
     const totalHeight = numLines * lineHeight
-    
+
     const startX = (canvas.width - totalWidth) / 2
     const startY = (canvas.height - totalHeight) / 2
 
@@ -171,7 +171,7 @@ export const InteractiveASCIICopy = ({
         if (char !== ' ') {
           const x = startX + charIndex * charSpacing
           const y = startY + lineIndex * lineHeight
-          
+
           points.push({
             x,
             y,
@@ -203,35 +203,35 @@ export const InteractiveASCIICopy = ({
     const dy = point.originalY - mousePos.y
     const distanceSquared = dx * dx + dy * dy
     const cursorRadiusSquared = 150 * 150
-    
+
     let targetX = point.originalX
     let targetY = point.originalY
     let targetOpacity = 0.5
     let targetScale = 0.5
     let glow = 0
-    
+
     // Only calculate expensive operations if within cursor radius
     if (distanceSquared <= cursorRadiusSquared) {
       const distance = Math.sqrt(distanceSquared)
       const cursorRadius = 150
       const glowRadius = 5
-      
+
       const dirX = dx / distance
       const dirY = dy / distance
-      
+
       const tangX = -dirY
       const tangY = dirX
-      
+
       const vortexIntensity = 0.04
       const falloff = Math.max(0, 2 - distance / cursorRadius)
       const attract = 0.02
-      
+
       const tangentialForce = vortexIntensity * falloff
       const attractionForce = attract * falloff
-      
+
       targetX = point.originalX + tangX * tangentialForce * 20 - dirX * attractionForce * 1
       targetY = point.originalY + tangY * tangentialForce * 20 - dirY * attractionForce * 30
-      
+
       // Reduce subtle animation for performance
       if (distance <= glowRadius) {
         const glowFalloff = Math.max(0, 1 - distance / glowRadius)
@@ -240,28 +240,28 @@ export const InteractiveASCIICopy = ({
         targetScale = 1 + glowFalloff * 0.04
       }
     }
-    
+
     // Remove constant subtle animation to reduce calculations
     // targetScale += Math.sin(Date.now() * 1 + point.originalX * 1) * 0.008
-    
+
     // Faster return for better performance
     const returnSpeed = 0.25
     const currentX = point.currentX ?? point.originalX
     const currentY = point.currentY ?? point.originalY
     const currentOpacity = point.currentOpacity ?? 0.5
     const currentScale = point.currentScale ?? 0.5
-    
+
     const newX = lerp(currentX, targetX, returnSpeed)
     const newY = lerp(currentY, targetY, returnSpeed)
     const newOpacity = lerp(currentOpacity, targetOpacity, 0.15)
     const newScale = lerp(currentScale, targetScale, 0.15)
-    
+
     // Update current position in point
     point.currentX = newX
     point.currentY = newY
     point.currentOpacity = newOpacity
     point.currentScale = newScale
-    
+
     return {
       x: newX,
       y: newY,
@@ -276,7 +276,7 @@ export const InteractiveASCIICopy = ({
   const render = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-    
+
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
@@ -294,15 +294,15 @@ export const InteractiveASCIICopy = ({
     const lines = asciiArt.trim().split('\n')
     const maxLineLength = Math.max(...lines.map(line => line.length))
     const numLines = lines.length
-    
+
     const padding = 0.05
     const availableWidth = canvas.width * (1 - padding * 2)
     const availableHeight = canvas.height * (1 - padding * 2)
-    
+
     const charWidth = availableWidth / maxLineLength
     const charHeight = availableHeight / numLines
     const fontSize = Math.min(charWidth / 0.6, charHeight)
-    
+
     ctx.font = `${fontSize}px "Courier New", monospace`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
@@ -310,13 +310,13 @@ export const InteractiveASCIICopy = ({
     // Optimize rendering: batch operations
     const accentColor = getAccentColor()
     const mutedColor = getMutedColor()
-    
+
     wavePoints.forEach(point => {
       const calculated = calculatePointPosition(point)
-      
+
       ctx.save()
       ctx.globalAlpha = Math.min(1, calculated.opacity * 0.8)
-      
+
       if (calculated.glow > 0) {
         ctx.shadowColor = accentColor
         ctx.shadowBlur = 3 + calculated.glow * 15
@@ -325,10 +325,10 @@ export const InteractiveASCIICopy = ({
         ctx.shadowBlur = 0 // Disable shadow for better performance
         ctx.fillStyle = mutedColor
       }
-      
+
       ctx.translate(calculated.x, calculated.y)
       ctx.scale(calculated.scale, calculated.scale)
-      
+
       ctx.fillText(calculated.char, 0, 0)
       ctx.restore()
     })
@@ -368,7 +368,7 @@ export const InteractiveASCIICopy = ({
       // Throttle mouse updates to 60fps max (16ms)
       if (now - lastMouseUpdateRef.current < 16) return
       lastMouseUpdateRef.current = now
-      
+
       const rect = canvas.getBoundingClientRect()
       setMousePos({
         x: e.clientX - rect.left,
@@ -379,7 +379,7 @@ export const InteractiveASCIICopy = ({
     // Listen on both canvas and window for better coverage
     window.addEventListener('mousemove', handleMouseMove, { passive: true })
     canvas.addEventListener('mousemove', handleMouseMove, { passive: true })
-    
+
     return () => {
       window.removeEventListener('mousemove', handleMouseMove)
       canvas.removeEventListener('mousemove', handleMouseMove)
@@ -409,25 +409,24 @@ export const InteractiveASCIICopy = ({
       {/* Avatar overlay */}
       {avatarSrc && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div 
+          <div
             className="relative"
-                     style={{
-                       transform: `rotate(${avatarRotation + (scrollProgress * 180)}deg) scale(${1 - (scrollProgress * 1)}) translateY(${-scrollProgress * 100}px)`,
-                       transition: 'transform 200ms ease-out'
-                     }}
+            style={{
+              transform: `rotate(${avatarRotation + (scrollProgress * 180)}deg) scale(${1 - (scrollProgress * 1)}) translateY(${-scrollProgress * 100}px)`,
+              transition: 'transform 200ms ease-out'
+            }}
           >
-            <img 
-              src={avatarSrc} 
+            <img
+              src={avatarSrc}
               alt={avatarAlt}
-              className={`w-16 h-16 rounded-md border opacity-90 hover:opacity-100 transition-opacity duration-300 ${
-                isDarkMode ? '' : 'invert'
-              }`}
+              className={`w-16 h-16 rounded-md border opacity-90 hover:opacity-100 transition-opacity duration-300 ${isDarkMode ? '' : 'invert'
+                }`}
               style={{
                 borderColor: isDarkMode ? hexToRgba(color, 0.2) : hexToRgba(color, 0.3)
               }}
             />
-            {/* Glow effect */} 
-            <div 
+            {/* Glow effect */}
+            <div
               className="absolute inset-0 w-20 h-20 rounded-md animate-pulse blur-sm"
               style={{
                 backgroundColor: isDarkMode ? hexToRgba(color, 0.02) : hexToRgba(color, 0.06)

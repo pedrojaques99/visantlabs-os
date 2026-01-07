@@ -49,14 +49,14 @@ export interface DrawingState {
 const DEFAULT_STATE: DrawingState = {
   isDrawingMode: false,
   drawingType: 'freehand',
-  strokeColor: '#52ddeb',
+  strokeColor: '#brand-cyan',
   strokeSize: 2,
-  textColor: '#52ddeb',
+  textColor: '#brand-cyan',
   fontSize: 16,
   fontFamily: 'Manrope',
   shapeType: 'rectangle',
-  shapeColor: '#52ddeb',
-  shapeStrokeColor: '#52ddeb',
+  shapeColor: '#brand-cyan',
+  shapeStrokeColor: '#brand-cyan',
   shapeStrokeWidth: 2,
   shapeFill: false,
 };
@@ -72,7 +72,7 @@ export const useCanvasDrawing = (
   const [currentPosition, setCurrentPosition] = useState<{ x: number; y: number } | null>(null);
   const [selectedDrawingIds, setSelectedDrawingIds] = useState<Set<string>>(new Set());
   const [editingDrawingId, setEditingDrawingId] = useState<string | null>(null);
-  
+
   // Selection box state
   const [selectionBox, setSelectionBox] = useState<{
     start: { x: number; y: number };
@@ -95,7 +95,7 @@ export const useCanvasDrawing = (
       lastPathDataRef.current = '';
       return '';
     }
-    
+
     // Throttle pathData calculation during active drawing
     if (isDrawing) {
       const now = Date.now();
@@ -105,7 +105,7 @@ export const useCanvasDrawing = (
       }
       lastPathDataUpdateRef.current = now;
     }
-    
+
     const pathData = getSvgPathFromStroke(currentStroke, drawingState.strokeSize);
     lastPathDataRef.current = pathData;
     return pathData;
@@ -183,7 +183,7 @@ export const useCanvasDrawing = (
     // Reset refs and state
     strokePointsRef.current = [[position.x, position.y]];
     lastPathDataUpdateRef.current = Date.now();
-    
+
     // Cancel any pending RAF
     if (rafIdRef.current !== null) {
       cancelAnimationFrame(rafIdRef.current);
@@ -246,9 +246,9 @@ export const useCanvasDrawing = (
     }
 
     // Flush any remaining points from ref
-    const finalStroke = drawingState.drawingType === 'freehand' 
-      ? strokePointsRef.current.length > 0 
-        ? strokePointsRef.current 
+    const finalStroke = drawingState.drawingType === 'freehand'
+      ? strokePointsRef.current.length > 0
+        ? strokePointsRef.current
         : currentStroke
       : currentStroke;
 
@@ -424,7 +424,7 @@ export const useCanvasDrawing = (
     setDrawings((prev) => [...prev, newDrawing]);
     setEditingDrawingId(newDrawing.id);
     setSelectedDrawingIds(new Set([newDrawing.id]));
-    
+
     return newDrawing.id;
   }, [reactFlowInstance, drawingState]);
 

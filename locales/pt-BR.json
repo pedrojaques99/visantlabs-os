@@ -2208,7 +2208,7 @@
       "brandName": "Nome da Sua Marca",
       "color": "#000000",
       "brandBackgroundColor": "#000000",
-      "brandAccentColor": "#52ddeb"
+      "brandAccentColor": "#brand-cyan"
     }
   },
   "pix": {
@@ -2430,7 +2430,7 @@
       "logoRequired": "Logo é obrigatório. Conecte o Logo do Brand Core ou um Image Node.",
       "logoFromBrandCore": "Logo (do Núcleo da Marca) - Foco Principal",
       "inputImage": "Imagem de Entrada",
-      "colorPlaceholder": "#52ddeb",
+      "colorPlaceholder": "#brand-cyan",
       "addAnotherMockupNode": "Adicionar outro Mockup Node",
       "missingInput": "Entrada Ausente",
       "missingInputConnectLogo": "• Conecte Logo do BrandCore (obrigatório, foco principal)",
@@ -2482,7 +2482,16 @@
     },
     "textNode": {
       "title": "Text Node",
-      "placeholder": "Digite o texto aqui..."
+      "placeholder": "Digite o texto aqui...",
+      "copy": "Copiar texto",
+      "copied": "Texto copiado!",
+      "copyFailed": "Falha ao copiar texto",
+      "characters": "caracteres",
+      "aiHint": "Clique na varinha para melhorar com IA",
+      "improvePrompt": "Melhorar com IA",
+      "improvingPrompt": "Melhorando prompt...",
+      "promptImproved": "Prompt melhorado!",
+      "errorImprovingPrompt": "Falha ao melhorar prompt"
     },
     "drawingNode": {
       "freehand": "Desenho Livre",

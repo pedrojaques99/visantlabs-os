@@ -438,7 +438,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                   setShowReImaginePanel(true);
                 }}
                 disabled={editButtonsDisabled || isLoading}
-                className={`flex items-center gap-2 px-3 py-1.5 bg-black/10 backdrop-blur-sm text-brand-cyan border border-[#52ddeb]/20 hover:border-[#52ddeb]/40 hover:bg-brand-cyan/10 rounded-md transition-all duration-200 ${editButtonsDisabled || isLoading
+                className={`flex items-center gap-2 px-3 py-1.5 bg-black/10 backdrop-blur-sm text-brand-cyan border border-[#brand-cyan]/20 hover:border-[#brand-cyan]/40 hover:bg-brand-cyan/10 rounded-md transition-all duration-200 ${editButtonsDisabled || isLoading
                   ? 'opacity-50 cursor-not-allowed'
                   : ''
                   }`}

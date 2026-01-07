@@ -149,7 +149,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
     >
       {selected && !dragging && (
         <NodeResizer
-          color="#52ddeb"
+          color="#brand-cyan"
           isVisible={selected}
           minWidth={280}
           minHeight={200}
@@ -277,7 +277,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
       >
         {isLoading ? (
           <>
-            <GlitchLoader size={14} className="mr-1" color="#52ddeb" />
+            <GlitchLoader size={14} className="mr-1" color="#brand-cyan" />
             Generating Image...
           </>
         ) : (

@@ -41,7 +41,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
   isDrawingMode = false,
   drawingType = 'freehand',
   onDrawingTypeChange,
-  strokeColor = '#52ddeb',
+  strokeColor = '#brand-cyan',
   onColorChange,
   onShapeTypeChange,
   shapeType = 'rectangle',
@@ -141,7 +141,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
   // Organização moderna das cores por categorias
   const colorPalette = {
     primary: {
-      brand: '#52ddeb', // brand cyan - cor principal
+      brand: '#brand-cyan', // brand cyan - cor principal
       black: '#000000',
     },
     basic: [

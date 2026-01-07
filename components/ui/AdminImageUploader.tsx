@@ -13,9 +13,9 @@ const SUPPORTED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gi
 const MAX_IMAGE_SIZE_MB = 10;
 const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024;
 
-export const AdminImageUploader: React.FC<AdminImageUploaderProps> = ({ 
-  onImageUpload, 
-  disabled = false 
+export const AdminImageUploader: React.FC<AdminImageUploaderProps> = ({
+  onImageUpload,
+  disabled = false
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -62,13 +62,13 @@ export const AdminImageUploader: React.FC<AdminImageUploaderProps> = ({
   }, [processFile]);
 
   const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => e.preventDefault();
-  const handleDragEnter = (e: React.DragEvent<HTMLLabelElement>) => { 
-    e.preventDefault(); 
-    setIsDragging(true); 
+  const handleDragEnter = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    setIsDragging(true);
   };
-  const handleDragLeave = (e: React.DragEvent<HTMLLabelElement>) => { 
-    e.preventDefault(); 
-    setIsDragging(false); 
+  const handleDragLeave = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
   };
 
   return (
@@ -79,11 +79,10 @@ export const AdminImageUploader: React.FC<AdminImageUploaderProps> = ({
         onDragOver={handleDragOver}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
-        className={`relative block w-full p-4 bg-zinc-900 border rounded-md cursor-pointer transition-all duration-300 ${
-          isDragging 
-            ? 'border-dashed border-2 border-[#52ddeb]/40 bg-brand-cyan/10 shadow-2xl shadow-[#52ddeb]/10' 
+        className={`relative block w-full p-4 bg-zinc-900 border rounded-md cursor-pointer transition-all duration-300 ${isDragging
+            ? 'border-dashed border-2 border-[#brand-cyan]/40 bg-brand-cyan/10 shadow-2xl shadow-[#brand-cyan]/10'
             : 'border-zinc-800/10 hover:border-zinc-800/20'
-        } ${isProcessing || disabled ? 'cursor-wait opacity-50' : ''}`}
+          } ${isProcessing || disabled ? 'cursor-wait opacity-50' : ''}`}
       >
         <input
           id="admin-file-upload"
@@ -96,7 +95,7 @@ export const AdminImageUploader: React.FC<AdminImageUploaderProps> = ({
         <div className="flex items-center justify-center gap-4">
           {isProcessing && (
             <>
-              <GlitchLoader size={24} color="#52ddeb" />
+              <GlitchLoader size={24} color="#brand-cyan" />
               <div className="text-left min-w-0">
                 <p className="text-sm font-semibold text-zinc-400">Processando imagem...</p>
                 <p className="text-xs font-mono tracking-wider text-zinc-500">Aguarde</p>

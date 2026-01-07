@@ -14,7 +14,7 @@ interface VisantPageRendererProps {
 // Helper to get variable value from BudgetData
 const getVariableValue = (data: BudgetData, variable?: string): string => {
   if (!variable) return '';
-  
+
   const variableMap: Record<string, any> = {
     brandName: data.brandName,
     year: data.year || '2025',
@@ -22,7 +22,7 @@ const getVariableValue = (data: BudgetData, variable?: string): string => {
     projectName: data.projectName,
     clientName: data.clientName,
     projectDescription: data.projectDescription,
-    accentColor: data.brandAccentColor || data.brandColors[0] || '#52ddeb',
+    accentColor: data.brandAccentColor || data.brandColors[0] || '#brand-cyan',
     bgColor: data.brandBackgroundColor || '#151515',
     textColor: data.brandBackgroundColor !== '#ffffff' && data.brandBackgroundColor !== '#fff' && data.brandBackgroundColor !== 'white' ? '#ffffff' : '#000000',
   };
@@ -33,7 +33,7 @@ const getVariableValue = (data: BudgetData, variable?: string): string => {
 // Replace variables in content (e.g., {{brandName}})
 const replaceVariables = (content: string, data: BudgetData): string => {
   if (!content) return '';
-  
+
   return content.replace(/\{\{(\w+)\}\}/g, (match, varName) => {
     return getVariableValue(data, varName) || match;
   });
@@ -48,10 +48,10 @@ const renderElement = (
   depth: number = 0
 ): React.ReactNode => {
   const { id, type, content, variable, position, size, styles, editable: elementEditable, children } = element;
-  
+
   const isEditable = elementEditable !== false && editable;
   const elementContent = variable ? getVariableValue(data, variable) : replaceVariables(content || '', data);
-  
+
   const elementStyle: React.CSSProperties = {
     position: 'absolute',
     left: `${position.x}px`,

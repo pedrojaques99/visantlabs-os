@@ -127,7 +127,7 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
             placeholder={t('canvasNodes.brandingProjectSelectModal.searchProjectsPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-700/30 rounded text-sm text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-[#52ddeb]/50 transition-colors"
+            className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-700/30 rounded text-sm text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-[#brand-cyan]/50 transition-colors"
             autoFocus
           />
         </div>
@@ -135,48 +135,48 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
         {/* Projects List */}
         <div className="flex-1 overflow-y-auto p-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <GlitchLoader size={20} color="#52ddeb" />
-              <span className="ml-2 text-sm text-zinc-400">Loading projects...</span>
-            </div>
-          ) : filteredProjects.length > 0 ? (
-            filteredProjects.map((project) => {
-              const projectId = project._id || (project as any).id;
-              return (
-                <button
-                  key={projectId}
-                  onClick={() => handleSelectProject(project)}
-                  className="w-full px-4 py-3 text-left border rounded-md transition-all bg-zinc-900/50 border-zinc-700/30 text-zinc-300 hover:border-[#52ddeb]/50 hover:bg-zinc-800/50 group"
-                >
-                  <div className="flex items-start gap-3">
-                    <FolderOpen size={16} className="text-brand-cyan flex-shrink-0 mt-0.5" />
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-sm text-zinc-200 truncate">
-                        {project.name || 'Untitled'}
+            {isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <GlitchLoader size={20} color="#brand-cyan" />
+                <span className="ml-2 text-sm text-zinc-400">Loading projects...</span>
+              </div>
+            ) : filteredProjects.length > 0 ? (
+              filteredProjects.map((project) => {
+                const projectId = project._id || (project as any).id;
+                return (
+                  <button
+                    key={projectId}
+                    onClick={() => handleSelectProject(project)}
+                    className="w-full px-4 py-3 text-left border rounded-md transition-all bg-zinc-900/50 border-zinc-700/30 text-zinc-300 hover:border-[#brand-cyan]/50 hover:bg-zinc-800/50 group"
+                  >
+                    <div className="flex items-start gap-3">
+                      <FolderOpen size={16} className="text-brand-cyan flex-shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-sm text-zinc-200 truncate">
+                          {project.name || 'Untitled'}
+                        </div>
+                        {project.prompt && (
+                          <div className="text-xs text-zinc-500 mt-1 line-clamp-2">
+                            {project.prompt}
+                          </div>
+                        )}
+                        {project.createdAt && (
+                          <div className="text-[10px] text-zinc-600 mt-1">
+                            {formatDate(project.createdAt)}
+                          </div>
+                        )}
                       </div>
-                      {project.prompt && (
-                        <div className="text-xs text-zinc-500 mt-1 line-clamp-2">
-                          {project.prompt}
-                        </div>
-                      )}
-                      {project.createdAt && (
-                        <div className="text-[10px] text-zinc-600 mt-1">
-                          {formatDate(project.createdAt)}
-                        </div>
-                      )}
                     </div>
-                  </div>
-                </button>
-              );
-            })
-          ) : (
-            <div className="col-span-full text-center py-8">
-              <p className="text-sm text-zinc-500 font-mono">
-                {searchQuery ? 'No projects found matching your search' : 'No projects found'}
-              </p>
-            </div>
-          )}
+                  </button>
+                );
+              })
+            ) : (
+              <div className="col-span-full text-center py-8">
+                <p className="text-sm text-zinc-500 font-mono">
+                  {searchQuery ? 'No projects found matching your search' : 'No projects found'}
+                </p>
+              </div>
+            )}
           </div>
         </div>
 

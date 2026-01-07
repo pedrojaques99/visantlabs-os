@@ -254,7 +254,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           <Button
             onClick={onGenerateClick}
             disabled={isGenerateDisabled || (isPromptReady && isGenerating)}
-            className="w-full bg-brand-cyan hover:bg-brand-cyan/90 text-black font-semibold shadow-lg shadow-[#52ddeb]/20"
+            className="w-full bg-brand-cyan hover:bg-brand-cyan/90 text-black font-semibold shadow-lg shadow-[#brand-cyan]/20"
             size="lg"
           >
             {isGeneratingPrompt ? (

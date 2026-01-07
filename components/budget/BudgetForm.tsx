@@ -11,7 +11,7 @@ import { PaymentInfoSection } from './PaymentInfoSection';
 import { SignaturesSection } from './SignaturesSection';
 import { GiftOptionsSection } from './GiftOptionsSection';
 import { CustomContentSection } from './CustomContentSection';
-import { VisantBudgetForm } from './visant/VisantBudgetForm';   
+import { VisantBudgetForm } from './visant/VisantBudgetForm';
 import { PdfUploadSection } from './PdfUploadSection';
 import { PdfFieldEditor } from './PdfFieldEditor';
 import type { BudgetData } from '../../types';
@@ -154,7 +154,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
       {/* Basic Info */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-zinc-200 font-mono">Informações Básicas</h3>
-        
+
         <div>
           <label className="block text-xs text-zinc-400 mb-2 font-mono">
             {t('budget.clientName')} *
@@ -165,7 +165,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
             onChange={(e) => updateField('clientName', e.target.value)}
             placeholder={t('budget.placeholders.clientName')}
             required
-            className={focusedFieldId === 'clientName' ? 'ring-2 ring-[#52ddeb] ring-offset-2 ring-offset-[#1A1A1A]' : ''}
+            className={focusedFieldId === 'clientName' ? 'ring-2 ring-[#brand-cyan] ring-offset-2 ring-offset-[#1A1A1A]' : ''}
           />
         </div>
 
@@ -179,7 +179,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
             onChange={(e) => updateField('projectName', e.target.value)}
             placeholder={t('budget.placeholders.projectName')}
             required
-            className={focusedFieldId === 'projectName' ? 'ring-2 ring-[#52ddeb] ring-offset-2 ring-offset-[#1A1A1A]' : ''}
+            className={focusedFieldId === 'projectName' ? 'ring-2 ring-[#brand-cyan] ring-offset-2 ring-offset-[#1A1A1A]' : ''}
           />
         </div>
 
@@ -194,7 +194,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
             placeholder={t('budget.placeholders.projectDescription')}
             rows={4}
             required
-            className={focusedFieldId === 'projectDescription' ? 'ring-2 ring-[#52ddeb] ring-offset-2 ring-offset-[#1A1A1A]' : ''}
+            className={focusedFieldId === 'projectDescription' ? 'ring-2 ring-[#brand-cyan] ring-offset-2 ring-offset-[#1A1A1A]' : ''}
           />
         </div>
 
@@ -225,7 +225,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
           onChange={(e) => updateField('observations', e.target.value)}
           placeholder={t('budget.placeholders.observations')}
           rows={4}
-          className={focusedFieldId === 'observations' ? 'ring-2 ring-[#52ddeb] ring-offset-2 ring-offset-[#1A1A1A]' : ''}
+          className={focusedFieldId === 'observations' ? 'ring-2 ring-[#brand-cyan] ring-offset-2 ring-offset-[#1A1A1A]' : ''}
         />
       </div>
 

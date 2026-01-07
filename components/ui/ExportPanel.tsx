@@ -130,7 +130,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({
             <select
               value={selectedScale}
               onChange={(e) => setSelectedScale(Number(e.target.value))}
-              className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-700/30 rounded text-xs text-zinc-300 font-mono focus:outline-none focus:border-[#52ddeb]/50"
+              className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-700/30 rounded text-xs text-zinc-300 font-mono focus:outline-none focus:border-[#brand-cyan]/50"
             >
               {SCALE_OPTIONS.map((scale) => (
                 <option key={scale} value={scale}>
@@ -146,7 +146,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({
             <select
               value={selectedFormat}
               onChange={(e) => setSelectedFormat(e.target.value as ExportFormat)}
-              className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-700/30 rounded text-xs text-zinc-300 font-mono focus:outline-none focus:border-[#52ddeb]/50"
+              className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-700/30 rounded text-xs text-zinc-300 font-mono focus:outline-none focus:border-[#brand-cyan]/50"
             >
               {FORMAT_OPTIONS.map((format) => (
                 <option key={format} value={format}>
@@ -162,13 +162,13 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({
           onClick={handleExport}
           disabled={!imageUrl || isExporting}
           className={cn(
-            'w-full px-4 py-2.5 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#52ddeb]/30 rounded text-xs font-mono text-brand-cyan transition-colors flex items-center justify-center gap-2',
+            'w-full px-4 py-2.5 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#brand-cyan]/30 rounded text-xs font-mono text-brand-cyan transition-colors flex items-center justify-center gap-2',
             (!imageUrl || isExporting) && 'opacity-50 cursor-not-allowed'
           )}
         >
           {isExporting ? (
             <>
-              <div className="w-3 h-3 border-2 border-[#52ddeb] border-t-transparent rounded-md animate-spin" />
+              <div className="w-3 h-3 border-2 border-[#brand-cyan] border-t-transparent rounded-md animate-spin" />
               Exporting...
             </>
           ) : (

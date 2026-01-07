@@ -385,7 +385,7 @@ export const MockupsPage: React.FC = () => {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder={t('mockupsPage.searchPlaceholder')}
-                        className="w-full bg-transparent pl-7 pr-8 py-2 rounded-md border border-zinc-700/30 focus:outline-none focus:border-[#52ddeb]/50 text-sm text-zinc-300 font-mono"
+                        className="w-full bg-transparent pl-7 pr-8 py-2 rounded-md border border-zinc-700/30 focus:outline-none focus:border-[#brand-cyan]/50 text-sm text-zinc-300 font-mono"
                         autoFocus
                       />
                       <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-zinc-500" size={14} />
@@ -458,7 +458,7 @@ export const MockupsPage: React.FC = () => {
                 return (
                   <div
                     key={mockup._id}
-                    className="group relative bg-black/30 backdrop-blur-sm border border-zinc-800/60 rounded-md overflow-hidden hover:border-[#52ddeb]/50 transition-all duration-300"
+                    className="group relative bg-black/30 backdrop-blur-sm border border-zinc-800/60 rounded-md overflow-hidden hover:border-[#brand-cyan]/50 transition-all duration-300"
                   >
                     {/* Image */}
                     <div

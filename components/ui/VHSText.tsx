@@ -24,7 +24,7 @@ export const VHSText: React.FC<VHSTextProps> = ({
   children,
   className = '',
   fontSize = 'text-8xl md:text-[10rem] lg:text-[12rem]',
-  color = '#52ddeb',
+  color = '#brand-cyan',
   theme = 'dark',
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -37,7 +37,7 @@ export const VHSText: React.FC<VHSTextProps> = ({
   const textCanvasCacheRef = useRef<{ canvas: HTMLCanvasElement; width: number; height: number } | null>(null);
   const lastRenderTimeRef = useRef<number>(0);
   const dimensionsRef = useRef<{ width: number; height: number } | null>(null);
-  
+
   // Target FPS: 30fps for lighter loop (33ms per frame)
   const TARGET_FPS = 30;
   const FRAME_INTERVAL = 1000 / TARGET_FPS;
@@ -46,7 +46,7 @@ export const VHSText: React.FC<VHSTextProps> = ({
   useEffect(() => {
     rendererRef.current = getRenderer();
     startTimeRef.current = performance.now() / 1000;
-    
+
     return () => {
       // Clear cache on unmount
       textCanvasCacheRef.current = null;
@@ -62,9 +62,9 @@ export const VHSText: React.FC<VHSTextProps> = ({
   // Create text canvas with text rendered (cached when dimensions don't change)
   const getTextCanvas = useCallback((width: number, height: number): HTMLCanvasElement => {
     // Reuse cached canvas if dimensions match
-    if (textCanvasCacheRef.current && 
-        textCanvasCacheRef.current.width === width && 
-        textCanvasCacheRef.current.height === height) {
+    if (textCanvasCacheRef.current &&
+      textCanvasCacheRef.current.width === width &&
+      textCanvasCacheRef.current.height === height) {
       return textCanvasCacheRef.current.canvas;
     }
 
@@ -72,7 +72,7 @@ export const VHSText: React.FC<VHSTextProps> = ({
     textCanvas.width = width;
     textCanvas.height = height;
     const ctx = textCanvas.getContext('2d');
-    
+
     if (!ctx) return textCanvas;
 
     // Fill canvas with black background (required for shader to process correctly)
@@ -153,8 +153,8 @@ export const VHSText: React.FC<VHSTextProps> = ({
       const renderHeight = Math.min(1080, displayHeight);
 
       // Only resize canvas if dimensions changed
-      const dimensionsChanged = !dimensionsRef.current || 
-        dimensionsRef.current.width !== renderWidth || 
+      const dimensionsChanged = !dimensionsRef.current ||
+        dimensionsRef.current.width !== renderWidth ||
         dimensionsRef.current.height !== renderHeight;
 
       if (dimensionsChanged) {
@@ -199,24 +199,24 @@ export const VHSText: React.FC<VHSTextProps> = ({
           img.onload = () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(img, 0, 0);
-            
+
             // Get image data to process pixels
             const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             const data = imageData.data;
-            
+
             // Make black pixels transparent while preserving VHS effect on colored text
             for (let i = 0; i < data.length; i += 4) {
               const r = data[i];
               const g = data[i + 1];
               const b = data[i + 2];
-              
+
               // If pixel is very dark (almost black), make it transparent
               // Threshold: if all RGB values are below 30, make transparent
               if (r < 30 && g < 30 && b < 30) {
                 data[i + 3] = 0; // Set alpha to 0 (transparent)
               }
             }
-            
+
             ctx.putImageData(imageData, 0, 0);
             resolve();
           };
@@ -264,16 +264,16 @@ export const VHSText: React.FC<VHSTextProps> = ({
   }, [renderFrame]);
 
   // Determine drop shadow based on theme (reduced neon effect)
-  const dropShadowClass = theme === 'dark' 
-    ? 'drop-shadow-[0_0_15px_rgba(82,221,235,0.3)]' 
+  const dropShadowClass = theme === 'dark'
+    ? 'drop-shadow-[0_0_15px_rgba(82,221,235,0.3)]'
     : 'drop-shadow-[0_0_10px_rgba(82,221,235,0.2)]';
-  
+
   return (
-    <div 
+    <div
       ref={containerRef}
       className={`${fontSize} font-bold font-mono leading-none tracking-tight ${dropShadowClass} ${className}`}
-      style={{ 
-        width: '100%', 
+      style={{
+        width: '100%',
         height: isFullHeight ? '100%' : '179px',
         display: 'flex',
         alignItems: 'flex-start',
@@ -290,8 +290,8 @@ export const VHSText: React.FC<VHSTextProps> = ({
     >
       <canvas
         ref={canvasRef}
-        style={{ 
-          width: '550px', 
+        style={{
+          width: '550px',
           height: '232px',
           display: 'block',
           objectFit: 'contain',

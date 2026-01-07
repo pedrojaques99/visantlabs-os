@@ -86,9 +86,8 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
         {/* Close Button */}
         <button
           onClick={onClose}
-          className={`fixed top-4 right-4 sm:top-6 sm:right-6 md:top-8 md:right-8 z-20 transition-all duration-300 cursor-pointer rounded-md p-2 hover:bg-white/5 backdrop-blur-sm ${
-            theme === 'dark' ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-500 hover:text-zinc-700'
-          }`}
+          className={`fixed top-4 right-4 sm:top-6 sm:right-6 md:top-8 md:right-8 z-20 transition-all duration-300 cursor-pointer rounded-md p-2 hover:bg-white/5 backdrop-blur-sm ${theme === 'dark' ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-500 hover:text-zinc-700'
+            }`}
           aria-label={t('tutorial.close')}
         >
           <X className="size-4 sm:size-5" />
@@ -98,7 +97,7 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
         <div className="tutorial-bento-grid mt-6 sm:mt-8 md:mt-10">
           {steps.map((step, index) => {
             const isImageLeft = step.imagePosition === 'left';
-            
+
             return (
               <div
                 key={step.number}
@@ -111,11 +110,10 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
                 <div className="relative h-full flex flex-col p-6 sm:p-7 md:p-8">
                   {/* Video or Image */}
                   <div
-                    className={`tutorial-bento-image flex-shrink-0 w-full rounded-md overflow-hidden mb-4 sm:mb-5 md:mb-6 ${
-                      step.isVideo && step.videoId 
-                        ? 'aspect-video' 
+                    className={`tutorial-bento-image flex-shrink-0 w-full rounded-md overflow-hidden mb-4 sm:mb-5 md:mb-6 ${step.isVideo && step.videoId
+                        ? 'aspect-video'
                         : 'h-[160px] sm:h-[200px] md:h-[240px] flex items-center justify-center'
-                    }`}
+                      }`}
                     style={{ backgroundColor: cardBg }}
                   >
                     {step.isVideo && step.videoId ? (
@@ -161,9 +159,8 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
                         border: `1px solid ${theme === 'dark' ? 'rgba(82, 221, 235, 0.3)' : 'rgba(82, 221, 235, 0.2)'}`,
                       }}
                     >
-                      <p className={`font-mono font-medium leading-normal text-nowrap whitespace-pre text-xs sm:text-sm md:text-base ${
-                        theme === 'dark' ? 'text-cyan-300' : 'text-cyan-600'
-                      }`}>
+                      <p className={`font-mono font-medium leading-normal text-nowrap whitespace-pre text-xs sm:text-sm md:text-base ${theme === 'dark' ? 'text-cyan-300' : 'text-cyan-600'
+                        }`}>
                         {step.number}
                       </p>
                     </div>
@@ -185,11 +182,10 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
                 onCreateMockup();
                 onClose();
               }}
-              className={`inline-flex items-center gap-3 px-6 py-3 sm:px-8 sm:py-4 rounded-md transition-all duration-300 font-mono text-sm sm:text-base font-semibold cursor-pointer ${
-                theme === 'dark'
-                  ? 'bg-brand-cyan hover:bg-brand-cyan/90 text-black shadow-lg shadow-[#52ddeb]/30'
-                  : 'bg-brand-cyan hover:bg-brand-cyan/90 text-black shadow-lg shadow-[#52ddeb]/30'
-              }`}
+              className={`inline-flex items-center gap-3 px-6 py-3 sm:px-8 sm:py-4 rounded-md transition-all duration-300 font-mono text-sm sm:text-base font-semibold cursor-pointer ${theme === 'dark'
+                  ? 'bg-brand-cyan hover:bg-brand-cyan/90 text-black shadow-lg shadow-[#brand-cyan]/30'
+                  : 'bg-brand-cyan hover:bg-brand-cyan/90 text-black shadow-lg shadow-[#brand-cyan]/30'
+                }`}
             >
               <span>{t('tutorial.createMockup')}</span>
             </button>

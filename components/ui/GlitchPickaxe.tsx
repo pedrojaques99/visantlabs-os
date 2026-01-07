@@ -10,7 +10,7 @@ interface GlitchPickaxeProps {
 
 export function GlitchPickaxe({
     size = 20,
-    color = "#52ddeb",
+    color = "#brand-cyan",
     className
 }: GlitchPickaxeProps) {
     const [sparks, setSparks] = useState('');
