@@ -482,7 +482,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search nodes..."
-              className="w-full pl-8 pr-2.5 py-1.5 text-xs font-mono bg-zinc-900/50 border border-zinc-700/30 rounded-md text-zinc-300 placeholder-zinc-600 focus:outline-none focus:border-[#brand-cyan]/50 focus:ring-1 focus:ring-[#brand-cyan]/20 transition-all duration-200"
+              className="w-full pl-8 pr-2.5 py-1.5 text-xs font-mono bg-zinc-900/50 border border-zinc-700/30 rounded-md text-zinc-300 placeholder-zinc-600 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-1 focus:ring-[brand-cyan]/20 transition-all duration-200"
               aria-label="Search menu items"
               onMouseDown={(e) => e.stopPropagation()}
             />

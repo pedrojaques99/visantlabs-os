@@ -193,7 +193,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
               window.location.href = '/';
             }
           }}
-          className="p-1.5 md:px-3 md:py-1.5 text-zinc-500 hover:text-brand-cyan transition-colors rounded border border-zinc-800/50 hover:border-[#brand-cyan]/30 cursor-pointer"
+          className="p-1.5 md:px-3 md:py-1.5 text-zinc-500 hover:text-brand-cyan transition-colors rounded border border-zinc-800/50 hover:border-[brand-cyan]/30 cursor-pointer"
           title="Mockup Machine"
           aria-label="Go to Mockup Machine"
         >
@@ -205,7 +205,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
             onClick={handleNewMockupClick}
             variant="outline"
             size="sm"
-            className="text-[10px] md:text-xs font-mono text-zinc-400 hover:text-brand-cyan border-zinc-700/30 hover:border-[#brand-cyan]/50 hover:bg-zinc-800/30"
+            className="text-[10px] md:text-xs font-mono text-zinc-400 hover:text-brand-cyan border-zinc-700/30 hover:border-[brand-cyan]/50 hover:bg-zinc-800/30"
             title="New Mockup"
             aria-label="Create new mockup"
           >
@@ -221,7 +221,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
             const popStateEvent = new PopStateEvent('popstate', { state: {} });
             window.dispatchEvent(popStateEvent);
           }}
-          className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-mono text-zinc-400 hover:text-brand-cyan transition-colors rounded border border-zinc-700/30 hover:border-[#brand-cyan]/50 hover:bg-zinc-800/30 cursor-pointer"
+          className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-mono text-zinc-400 hover:text-brand-cyan transition-colors rounded border border-zinc-700/30 hover:border-[brand-cyan]/50 hover:bg-zinc-800/30 cursor-pointer"
           title="Explore Mockups"
           aria-label="Explore mockups"
         >
@@ -249,7 +249,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
               const popStateEvent = new PopStateEvent('popstate', { state: {} });
               window.dispatchEvent(popStateEvent);
             }}
-            className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-mono text-zinc-400 hover:text-brand-cyan transition-colors rounded border border-zinc-700/30 hover:border-[#brand-cyan]/50 hover:bg-zinc-800/30 cursor-pointer"
+            className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-mono text-zinc-400 hover:text-brand-cyan transition-colors rounded border border-zinc-700/30 hover:border-[brand-cyan]/50 hover:bg-zinc-800/30 cursor-pointer"
             title="About"
             aria-label="About"
           >
@@ -278,7 +278,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
         {isAuthenticated === false && (
           <button
             onClick={() => setShowRegisterModal(true)}
-            className="flex items-center gap-0.5 md:gap-1.5 p-1.5 md:px-3 md:py-1.5 bg-brand-cyan/20 text-brand-cyan rounded-md border border-[#brand-cyan]/30 hover:border-[#brand-cyan]/50 hover:bg-brand-cyan/30 text-[10px] md:text-xs font-mono transition-colors cursor-pointer"
+            className="flex items-center gap-0.5 md:gap-1.5 p-1.5 md:px-3 md:py-1.5 bg-brand-cyan/20 text-brand-cyan rounded-md border border-[brand-cyan]/30 hover:border-[brand-cyan]/50 hover:bg-brand-cyan/30 text-[10px] md:text-xs font-mono transition-colors cursor-pointer"
           >
             <UserPlus size={11} className="md:w-[14px] md:h-[14px]" />
             <span className="hidden sm:inline">Register</span>

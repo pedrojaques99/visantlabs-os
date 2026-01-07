@@ -197,7 +197,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
               />
               <button
                 onClick={handleCopyLink}
-                className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-[#brand-cyan]/30 hover:border-[#brand-cyan]/50 rounded-md transition-all flex items-center gap-2"
+                className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-[brand-cyan]/30 hover:border-[brand-cyan]/50 rounded-md transition-all flex items-center gap-2"
               >
                 {copied ? (
                   <>
@@ -216,7 +216,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
             <button
               onClick={handleGenerateShare}
               disabled={isGenerating}
-              className="w-full px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-[#brand-cyan]/30 hover:border-[#brand-cyan]/50 rounded-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-[brand-cyan]/30 hover:border-[brand-cyan]/50 rounded-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isGenerating ? (
                 <>
@@ -351,7 +351,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
               <button
                 onClick={handleUpdatePermissions}
                 disabled={isLoading}
-                className="px-4 py-2 text-xs font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-[#brand-cyan]/30 hover:border-[#brand-cyan]/50 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-4 py-2 text-xs font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-[brand-cyan]/30 hover:border-[brand-cyan]/50 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {isLoading ? (
                   <>

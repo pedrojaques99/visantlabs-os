@@ -194,7 +194,7 @@ export const VariableConfigModal: React.FC<VariableConfigModalProps> = ({
             <button
               onClick={handleConfirm}
               disabled={showCustomInput && !customValue.trim()}
-              className="flex-1 px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#brand-cyan]/50 rounded-md text-brand-cyan font-mono text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 rounded-md text-brand-cyan font-mono text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               OK - Posicionar no PDF
             </button>

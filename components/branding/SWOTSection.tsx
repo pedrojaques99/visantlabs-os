@@ -81,8 +81,8 @@ export const SWOTSection: React.FC<SWOTSectionProps> = ({
     return (
       <div
         className={`border rounded-xl p-4 ${hoverColorClass} transition-colors ${theme === 'dark'
-            ? 'bg-black/40 border-zinc-800/60'
-            : 'bg-zinc-100 border-zinc-300'
+          ? 'bg-black/40 border-zinc-800/60'
+          : 'bg-zinc-100 border-zinc-300'
           }`}
       >
         <h4 className={`font-semibold ${colorClass} mb-3 font-manrope text-base`}>{title}</h4>
@@ -96,8 +96,8 @@ export const SWOTSection: React.FC<SWOTSectionProps> = ({
                     onChange={(e) => handleItemChange(category, index, e.target.value)}
                     placeholder="Digite o item..."
                     className={`bg-transparent font-manrope text-sm min-h-[60px] pr-8 flex-1 ${theme === 'dark'
-                        ? 'border-zinc-700/50 text-zinc-300'
-                        : 'border-zinc-400/50 text-zinc-800'
+                      ? 'border-zinc-700/50 text-zinc-300'
+                      : 'border-zinc-400/50 text-zinc-800'
                       }`}
                   />
                   <button
@@ -118,9 +118,9 @@ export const SWOTSection: React.FC<SWOTSectionProps> = ({
           {isEditing && onContentChange && (
             <button
               onClick={() => handleAddItem(category)}
-              className={`flex items-center gap-2 px-3 py-2 border hover:border-[#brand-cyan]/50 hover:text-brand-cyan rounded-md text-xs font-mono transition-all duration-300 mt-2 ${theme === 'dark'
-                  ? 'bg-black/40 border-zinc-800/60 text-zinc-400'
-                  : 'bg-zinc-200 border-zinc-300 text-zinc-700'
+              className={`flex items-center gap-2 px-3 py-2 border hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-md text-xs font-mono transition-all duration-300 mt-2 ${theme === 'dark'
+                ? 'bg-black/40 border-zinc-800/60 text-zinc-400'
+                : 'bg-zinc-200 border-zinc-300 text-zinc-700'
                 }`}
             >
               <Plus className="h-3 w-3" />

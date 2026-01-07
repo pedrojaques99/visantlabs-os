@@ -41,7 +41,7 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({
         </h3>
         <button
           onClick={addMilestone}
-          className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#brand-cyan]/50 rounded-xl text-brand-cyan font-mono text-sm transition-all duration-300 flex items-center gap-2"
+          className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 rounded-xl text-brand-cyan font-mono text-sm transition-all duration-300 flex items-center gap-2"
         >
           <Plus size={16} />
           {t('budget.addMilestone') || 'Adicionar Milestone'}

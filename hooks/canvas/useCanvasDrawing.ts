@@ -49,14 +49,14 @@ export interface DrawingState {
 const DEFAULT_STATE: DrawingState = {
   isDrawingMode: false,
   drawingType: 'freehand',
-  strokeColor: '#brand-cyan',
+  strokeColor: 'brand-cyan',
   strokeSize: 2,
-  textColor: '#brand-cyan',
+  textColor: 'brand-cyan',
   fontSize: 16,
   fontFamily: 'Manrope',
   shapeType: 'rectangle',
-  shapeColor: '#brand-cyan',
-  shapeStrokeColor: '#brand-cyan',
+  shapeColor: 'brand-cyan',
+  shapeStrokeColor: 'brand-cyan',
   shapeStrokeWidth: 2,
   shapeFill: false,
 };

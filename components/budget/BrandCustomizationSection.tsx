@@ -152,7 +152,7 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
         </label>
         {isUploadingLogo ? (
           <div className="flex items-center gap-2 p-4 border border-zinc-800 rounded-xl bg-black/20">
-            <GlitchLoader size={16} color="#brand-cyan" />
+            <GlitchLoader size={16} color="brand-cyan" />
             <span className="text-sm text-zinc-400 font-mono">
               {t('budget.uploadingLogo') || 'Uploading logo...'}
             </span>
@@ -235,7 +235,7 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
         <div className="flex gap-2">
           <FormInput
             type="color"
-            value={brandAccentColor || '#brand-cyan'}
+            value={brandAccentColor || 'brand-cyan'}
             onChange={(e) => onBrandAccentColorChange(e.target.value || undefined)}
             className="w-20 h-10 cursor-pointer"
           />

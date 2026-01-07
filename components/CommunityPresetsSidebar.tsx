@@ -97,7 +97,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
               className={cn(
                 "px-2.5 py-1 rounded-md text-xs font-mono border transition-all whitespace-nowrap",
                 filterTag === null
-                  ? 'text-brand-cyan border-[#brand-cyan]/30 bg-brand-cyan/10'
+                  ? 'text-brand-cyan border-[brand-cyan]/30 bg-brand-cyan/10'
                   : 'text-zinc-500 border-zinc-700/20 hover:border-zinc-600/30 hover:bg-zinc-800/30'
               )}
             >
@@ -110,7 +110,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                 className={cn(
                   "px-2.5 py-1 rounded-md text-xs font-mono border transition-all whitespace-nowrap",
                   filterTag === tag
-                    ? 'text-brand-cyan border-[#brand-cyan]/30 bg-brand-cyan/10'
+                    ? 'text-brand-cyan border-[brand-cyan]/30 bg-brand-cyan/10'
                     : 'text-zinc-500 border-zinc-700/20 hover:border-zinc-600/30 hover:bg-zinc-800/30'
                 )}
               >

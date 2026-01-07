@@ -828,7 +828,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
         {/* Pending field position indicator - top */}
         {pendingFieldPosition && editable && (
           <div className="sticky top-0 z-40 mb-4">
-            <div className="px-4 py-2 bg-brand-cyan/20 border border-[#brand-cyan]/50 rounded-md max-w-4xl mx-auto flex items-center gap-3">
+            <div className="px-4 py-2 bg-brand-cyan/20 border border-[brand-cyan]/50 rounded-md max-w-4xl mx-auto flex items-center gap-3">
               <p className="text-sm font-mono text-brand-cyan flex items-center gap-2 flex-1">
                 <MapPin size={16} />
                 Posição selecionada! Clique em um campo preenchido do formulário para adicioná-lo aqui.
@@ -847,7 +847,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
         {/* Positioning mode indicator - top */}
         {isPositioningMode && editable && positioningFieldId && (
           <div className="sticky top-0 z-40 mb-4">
-            <div className="px-4 py-2 bg-brand-cyan/20 border border-[#brand-cyan]/50 rounded-md max-w-4xl mx-auto flex items-center gap-3">
+            <div className="px-4 py-2 bg-brand-cyan/20 border border-[brand-cyan]/50 rounded-md max-w-4xl mx-auto flex items-center gap-3">
               <p className="text-sm font-mono text-brand-cyan flex items-center gap-2 flex-1">
                 <MapPin size={16} />
                 Clique no PDF para posicionar: {AVAILABLE_FIELDS.find(f => f.id === positioningFieldId)?.label || positioningFieldId}
@@ -969,7 +969,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
             <div className="absolute inset-0 flex items-center justify-center bg-zinc-200/80 z-30">
               <div className="text-center">
                 <div className="text-zinc-600 font-mono text-sm mb-2">Recarregando PDF...</div>
-                <div className="w-8 h-8 border-2 border-[#brand-cyan] border-t-transparent rounded-md animate-spin mx-auto"></div>
+                <div className="w-8 h-8 border-2 border-[brand-cyan] border-t-transparent rounded-md animate-spin mx-auto"></div>
               </div>
             </div>
           )}
@@ -1065,7 +1065,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
                     fontSize: `${12 * pageScale}px`,
                     color: '#000000',
                     backgroundColor: 'rgba(82, 221, 235, 0.2)',
-                    border: '2px dashed #brand-cyan',
+                    border: '2px dashed brand-cyan',
                     padding: '4px 8px',
                     borderRadius: 'var(--radius)',
                     pointerEvents: 'none',
@@ -1104,7 +1104,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
                     width: '8px',
                     height: '8px',
                     borderRadius: '50%',
-                    backgroundColor: '#brand-cyan',
+                    backgroundColor: 'brand-cyan',
                     border: '2px solid #ffffff',
                     boxShadow: '0 0 0 2px rgba(82, 221, 235, 0.5)',
                     pointerEvents: 'none',
@@ -1342,9 +1342,9 @@ const DraggableField: React.FC<DraggableFieldProps> = ({
         : 'transparent',
     border: editable
       ? isDragging
-        ? '2px solid #brand-cyan'
+        ? '2px solid brand-cyan'
         : isSelected
-          ? '2px solid #brand-cyan'
+          ? '2px solid brand-cyan'
           : '1px solid rgba(82, 221, 235, 0.4)'
       : 'none',
     padding: editable ? '3px 6px' : '0',
@@ -1367,7 +1367,7 @@ const DraggableField: React.FC<DraggableFieldProps> = ({
     <div
       ref={setNodeRef}
       data-field-id={instanceId}
-      className={`absolute ${isPositioning ? 'ring-2 ring-[#brand-cyan]' : ''} ${isSelected ? 'ring-2 ring-[#brand-cyan]' : ''} ${fontFamilyClass}`}
+      className={`absolute ${isPositioning ? 'ring-2 ring-[brand-cyan]' : ''} ${isSelected ? 'ring-2 ring-[brand-cyan]' : ''} ${fontFamilyClass}`}
       style={style}
       onClick={(e) => {
         e.stopPropagation();
@@ -1449,7 +1449,7 @@ const DraggableFieldOverlay: React.FC<DraggableFieldOverlayProps> = ({
         textAlign: mapping.align || 'left',
         fontWeight: mapping.bold ? 'bold' : 'normal',
         backgroundColor: 'rgba(82, 221, 235, 0.25)',
-        border: '2px solid #brand-cyan',
+        border: '2px solid brand-cyan',
         padding: '3px 6px',
         borderRadius: 'var(--radius)',
         boxShadow: '0 8px 24px rgba(82, 221, 235, 0.5)',

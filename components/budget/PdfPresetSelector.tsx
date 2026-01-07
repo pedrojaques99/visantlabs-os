@@ -72,7 +72,7 @@ export const PdfPresetSelector: React.FC<PdfPresetSelectorProps> = ({
   if (isLoading) {
     return (
       <div className="flex items-center gap-2 p-4 border border-zinc-800 rounded-xl bg-black/20">
-        <GlitchLoader size={16} color="#brand-cyan" />
+        <GlitchLoader size={16} color="brand-cyan" />
         <span className="text-sm text-zinc-400 font-mono">
           Carregando presets...
         </span>
@@ -101,7 +101,7 @@ export const PdfPresetSelector: React.FC<PdfPresetSelectorProps> = ({
               className={`
                 relative p-3 border rounded-xl cursor-pointer transition-all
                 ${isSelected
-                  ? 'border-[#brand-cyan] bg-brand-cyan/10'
+                  ? 'border-[brand-cyan] bg-brand-cyan/10'
                   : 'border-zinc-800 bg-black/20 hover:bg-black/30'
                 }
               `}

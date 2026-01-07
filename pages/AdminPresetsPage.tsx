@@ -964,7 +964,7 @@ export const AdminPresetsPage: React.FC = () => {
 
             <div className="space-y-6">
               {/* Tabs and Actions Card */}
-              <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[#brand-cyan]/30 transition-all duration-300 shadow-lg">
+              <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300 shadow-lg">
                 <CardContent className="p-4 md:p-6">
                   <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
                     <div className="flex gap-2 flex-wrap">
@@ -975,8 +975,8 @@ export const AdminPresetsPage: React.FC = () => {
                         }}
                         variant={activeTab === 'mockup' ? 'default' : 'outline'}
                         className={`font-mono transition-all ${activeTab === 'mockup'
-                            ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
-                            : 'border-zinc-700/60 hover:border-[#brand-cyan]/30'
+                          ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
+                          : 'border-zinc-700/60 hover:border-[brand-cyan]/30'
                           }`}
                       >
                         Mockup Presets
@@ -988,8 +988,8 @@ export const AdminPresetsPage: React.FC = () => {
                         }}
                         variant={activeTab === 'angle' ? 'default' : 'outline'}
                         className={`font-mono transition-all ${activeTab === 'angle'
-                            ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
-                            : 'border-zinc-700/60 hover:border-[#brand-cyan]/30'
+                          ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
+                          : 'border-zinc-700/60 hover:border-[brand-cyan]/30'
                           }`}
                       >
                         Angle Presets
@@ -1001,8 +1001,8 @@ export const AdminPresetsPage: React.FC = () => {
                         }}
                         variant={activeTab === 'texture' ? 'default' : 'outline'}
                         className={`font-mono transition-all ${activeTab === 'texture'
-                            ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
-                            : 'border-zinc-700/60 hover:border-[#brand-cyan]/30'
+                          ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
+                          : 'border-zinc-700/60 hover:border-[brand-cyan]/30'
                           }`}
                       >
                         Texture Presets
@@ -1014,8 +1014,8 @@ export const AdminPresetsPage: React.FC = () => {
                         }}
                         variant={activeTab === 'ambience' ? 'default' : 'outline'}
                         className={`font-mono transition-all ${activeTab === 'ambience'
-                            ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
-                            : 'border-zinc-700/60 hover:border-[#brand-cyan]/30'
+                          ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
+                          : 'border-zinc-700/60 hover:border-[brand-cyan]/30'
                           }`}
                       >
                         Ambience Presets
@@ -1027,8 +1027,8 @@ export const AdminPresetsPage: React.FC = () => {
                         }}
                         variant={activeTab === 'luminance' ? 'default' : 'outline'}
                         className={`font-mono transition-all ${activeTab === 'luminance'
-                            ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
-                            : 'border-zinc-700/60 hover:border-[#brand-cyan]/30'
+                          ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
+                          : 'border-zinc-700/60 hover:border-[brand-cyan]/30'
                           }`}
                       >
                         Luminance Presets
@@ -1062,8 +1062,8 @@ export const AdminPresetsPage: React.FC = () => {
 
                   {batchResult && !isBatchModalOpen && (
                     <div className={`mb-4 border rounded-xl p-4 text-sm font-mono ${batchResult.created > 0
-                        ? 'bg-green-500/10 border-green-500/30 text-green-400'
-                        : 'bg-red-500/10 border-red-500/30 text-red-400'
+                      ? 'bg-green-500/10 border-green-500/30 text-green-400'
+                      : 'bg-red-500/10 border-red-500/30 text-red-400'
                       }`}>
                       <div className="mb-2">
                         <strong>Resultado da importação:</strong> {batchResult.created} criado(s), {batchResult.failed} falha(s)
@@ -1097,7 +1097,7 @@ export const AdminPresetsPage: React.FC = () => {
                     return (
                       <Card
                         key={preset.id}
-                        className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[#brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl"
+                        className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl"
                       >
                         <CardContent className="p-6">
                           {/* Image */}
@@ -1140,7 +1140,7 @@ export const AdminPresetsPage: React.FC = () => {
                           <div className="space-y-2 mb-4">
                             <div className="flex items-center gap-2 text-xs font-mono">
                               <span className="text-zinc-500">Aspect Ratio:</span>
-                              <Badge variant="outline" className="bg-brand-cyan/10 text-brand-cyan border-[#brand-cyan]/30 text-xs">
+                              <Badge variant="outline" className="bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/30 text-xs">
                                 {preset.aspectRatio}
                               </Badge>
                             </div>
@@ -1158,7 +1158,7 @@ export const AdminPresetsPage: React.FC = () => {
                               onClick={() => handleEdit(activeTab, preset)}
                               variant="outline"
                               size="sm"
-                              className="flex-1 border-[#brand-cyan]/30 text-brand-cyan hover:bg-brand-cyan/10 hover:border-[#brand-cyan]/50 font-mono"
+                              className="flex-1 border-[brand-cyan]/30 text-brand-cyan hover:bg-brand-cyan/10 hover:border-[brand-cyan]/50 font-mono"
                             >
                               <Edit2 className="h-4 w-4 mr-2" />
                               Editar
@@ -1210,7 +1210,7 @@ export const AdminPresetsPage: React.FC = () => {
                             setError(null);
                           }}
                           rows={12}
-                          className="w-full px-4 py-2 bg-black/40 border border-zinc-700/50 rounded-md text-zinc-300 font-mono text-sm focus:outline-none focus:border-[#brand-cyan]/50 resize-none"
+                          className="w-full px-4 py-2 bg-black/40 border border-zinc-700/50 rounded-md text-zinc-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50 resize-none"
                           placeholder={`[\n  {\n    "id": "preset-id-1",\n    "name": "Nome do Preset 1",\n    "description": "Descrição do preset 1",\n    "prompt": "Prompt completo...",\n    "referenceImageUrl": "",\n    "aspectRatio": "16:9",\n    "model": "gemini-2.5-flash-image"\n  }\n]`}
                         />
                       </div>
@@ -1223,8 +1223,8 @@ export const AdminPresetsPage: React.FC = () => {
 
                       {batchResult && (
                         <div className={`border rounded-md p-4 text-sm font-mono ${batchResult.created > 0
-                            ? 'bg-green-500/10 border-green-500/30 text-green-400'
-                            : 'bg-red-500/10 border-red-500/30 text-red-400'
+                          ? 'bg-green-500/10 border-green-500/30 text-green-400'
+                          : 'bg-red-500/10 border-red-500/30 text-red-400'
                           }`}>
                           <div className="mb-2">
                             <strong>Resultado:</strong> {batchResult.created} criado(s), {batchResult.failed} falha(s)
@@ -1248,7 +1248,7 @@ export const AdminPresetsPage: React.FC = () => {
                         onClick={handleValidateJson}
                         disabled={isLoading || !batchJson.trim()}
                         variant="outline"
-                        className="font-mono border-zinc-700/60 hover:border-[#brand-cyan]/30"
+                        className="font-mono border-zinc-700/60 hover:border-[brand-cyan]/30"
                       >
                         Validar JSON
                       </Button>
@@ -1263,7 +1263,7 @@ export const AdminPresetsPage: React.FC = () => {
                       <Button
                         onClick={handleCloseBatchModal}
                         variant="outline"
-                        className="font-mono border-zinc-700/60 hover:border-[#brand-cyan]/30"
+                        className="font-mono border-zinc-700/60 hover:border-[brand-cyan]/30"
                       >
                         Fechar
                       </Button>
@@ -1419,7 +1419,7 @@ export const AdminPresetsPage: React.FC = () => {
                                 setFormData({ ...formData, referenceImageUrl: e.target.value });
                                 setImageUploadError(null);
                               }}
-                              className="w-full px-4 py-2 bg-black/40 border border-zinc-700/50 rounded-md text-zinc-300 font-mono text-sm focus:outline-none focus:border-[#brand-cyan]/50"
+                              className="w-full px-4 py-2 bg-black/40 border border-zinc-700/50 rounded-md text-zinc-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
                               placeholder="https://..."
                             />
                           </div>
@@ -1433,7 +1433,7 @@ export const AdminPresetsPage: React.FC = () => {
                         <select
                           value={formData.aspectRatio}
                           onChange={(e) => setFormData({ ...formData, aspectRatio: e.target.value as AspectRatio })}
-                          className="w-full px-4 py-2 bg-black/40 border border-zinc-700/50 rounded-md text-zinc-300 font-mono text-sm focus:outline-none focus:border-[#brand-cyan]/50"
+                          className="w-full px-4 py-2 bg-black/40 border border-zinc-700/50 rounded-md text-zinc-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
                         >
                           {ASPECT_RATIOS.map((ratio) => (
                             <option key={ratio} value={ratio}>
@@ -1450,7 +1450,7 @@ export const AdminPresetsPage: React.FC = () => {
                         <select
                           value={formData.model || ''}
                           onChange={(e) => setFormData({ ...formData, model: e.target.value as GeminiModel || undefined })}
-                          className="w-full px-4 py-2 bg-black/40 border border-zinc-700/50 rounded-md text-zinc-300 font-mono text-sm focus:outline-none focus:border-[#brand-cyan]/50"
+                          className="w-full px-4 py-2 bg-black/40 border border-zinc-700/50 rounded-md text-zinc-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
                         >
                           <option value="">Nenhum</option>
                           {GEMINI_MODELS.map((model) => (
@@ -1485,7 +1485,7 @@ export const AdminPresetsPage: React.FC = () => {
                                 }
                               }}
                               placeholder="Digite uma tag e pressione Enter"
-                              className="flex-1 px-4 py-2 bg-black/40 border border-zinc-700/50 rounded-md text-zinc-300 font-mono text-sm focus:outline-none focus:border-[#brand-cyan]/50"
+                              className="flex-1 px-4 py-2 bg-black/40 border border-zinc-700/50 rounded-md text-zinc-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
                             />
                             <button
                               type="button"
@@ -1498,7 +1498,7 @@ export const AdminPresetsPage: React.FC = () => {
                                   setTagInput('');
                                 }
                               }}
-                              className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#brand-cyan]/30 rounded-md text-brand-cyan font-mono text-sm transition-colors"
+                              className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 rounded-md text-brand-cyan font-mono text-sm transition-colors"
                             >
                               Adicionar
                             </button>
@@ -1543,7 +1543,7 @@ export const AdminPresetsPage: React.FC = () => {
                       <Button
                         onClick={handleCancel}
                         variant="outline"
-                        className="font-mono border-zinc-700/60 hover:border-[#brand-cyan]/30"
+                        className="font-mono border-zinc-700/60 hover:border-[brand-cyan]/30"
                       >
                         Cancelar
                       </Button>

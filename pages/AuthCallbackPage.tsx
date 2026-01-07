@@ -75,7 +75,7 @@ export const AuthCallbackPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-[#121212] flex items-center justify-center">
         <div className="text-center">
-          <GlitchLoader size={32} color="#brand-cyan" className="mx-auto mb-4" />
+          <GlitchLoader size={32} color="brand-cyan" className="mx-auto mb-4" />
           <p className="text-zinc-400 font-mono text-sm">{t('auth.processing') || 'Processing authentication...'}</p>
         </div>
       </div>

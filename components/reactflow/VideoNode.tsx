@@ -172,7 +172,7 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
     >
       {selected && !dragging && (
         <NodeResizer
-          color="#brand-cyan"
+          color="brand-cyan"
           isVisible={selected}
           minWidth={320}
           minHeight={300}
@@ -352,7 +352,7 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
               <div>
                 <NodeLabel>{t('Negative Prompt')}</NodeLabel>
                 <input
-                  className="w-full bg-zinc-900 border border-zinc-700 rounded p-2 text-xs font-mono text-zinc-300 focus:border-[#brand-cyan] outline-none placeholder:text-zinc-600"
+                  className="w-full bg-zinc-900 border border-zinc-700 rounded p-2 text-xs font-mono text-zinc-300 focus:border-[brand-cyan] outline-none placeholder:text-zinc-600"
                   placeholder={t('What to avoid...')}
                   value={negativePrompt}
                   onChange={(e) => {
@@ -374,13 +374,13 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
           }}
           disabled={isLoading || (!prompt && !data.connectedText && !data.connectedImage1)} // Basic validation
           className={cn(
-            'w-full px-3 py-2.5 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#brand-cyan]/30 rounded text-xs font-mono text-brand-cyan transition-colors flex items-center justify-center gap-2 group',
+            'w-full px-3 py-2.5 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 rounded text-xs font-mono text-brand-cyan transition-colors flex items-center justify-center gap-2 group',
             (isLoading || (!prompt && !data.connectedText && !data.connectedImage1)) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
           )}
         >
           {isLoading ? (
             <>
-              <GlitchLoader size={16} color="#brand-cyan" />
+              <GlitchLoader size={16} color="brand-cyan" />
               <span>{t('Generating...')}</span>
             </>
           ) : (
