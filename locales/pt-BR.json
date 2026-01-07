@@ -2208,7 +2208,7 @@
       "brandName": "Nome da Sua Marca",
       "color": "#000000",
       "brandBackgroundColor": "#000000",
-      "brandAccentColor": "#brand-cyan"
+      "brandAccentColor": "brand-cyan"
     }
   },
   "pix": {
@@ -2430,7 +2430,7 @@
       "logoRequired": "Logo é obrigatório. Conecte o Logo do Brand Core ou um Image Node.",
       "logoFromBrandCore": "Logo (do Núcleo da Marca) - Foco Principal",
       "inputImage": "Imagem de Entrada",
-      "colorPlaceholder": "#brand-cyan",
+      "colorPlaceholder": "brand-cyan",
       "addAnotherMockupNode": "Adicionar outro Mockup Node",
       "missingInput": "Entrada Ausente",
       "missingInputConnectLogo": "• Conecte Logo do BrandCore (obrigatório, foco principal)",

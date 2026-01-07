@@ -117,7 +117,7 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
     >
       {selected && !dragging && (
         <NodeResizer
-          color="#brand-cyan"
+          color="brand-cyan"
           isVisible={selected}
           minWidth={280}
           minHeight={200}
@@ -211,7 +211,7 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                 "hover:scale-105 active:scale-95",
                 isImproving || !text.trim()
                   ? "bg-zinc-800/50 text-zinc-500 cursor-not-allowed"
-                  : "bg-gradient-to-br from-brand-cyan/20 to-brand-cyan/10 hover:from-brand-cyan/30 hover:to-brand-cyan/20 text-brand-cyan border border-[#brand-cyan]/30 hover:border-[#brand-cyan]/50"
+                  : "bg-gradient-to-br from-brand-cyan/20 to-brand-cyan/10 hover:from-brand-cyan/30 hover:to-brand-cyan/20 text-brand-cyan border border-[brand-cyan]/30 hover:border-[brand-cyan]/50"
               )}
               title={isImproving
                 ? (t('canvasNodes.textNode.improvingPrompt') || 'Improving prompt...')

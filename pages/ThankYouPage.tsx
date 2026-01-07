@@ -85,7 +85,7 @@ export const ThankYouPage: React.FC = () => {
 
           {isCheckingAuth || isLoading ? (
             <div className="flex items-center justify-center gap-2 mt-4">
-              <GlitchLoader size={20} color="#brand-cyan" />
+              <GlitchLoader size={20} color="brand-cyan" />
             </div>
           ) : subscriptionStatus?.hasActiveSubscription ? (
             <div className="mt-6 inline-block bg-brand-cyan/10 border border-brand-cyan/30 rounded-md px-4 py-2">

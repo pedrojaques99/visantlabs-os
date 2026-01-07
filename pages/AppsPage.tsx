@@ -31,7 +31,7 @@ export const AppsPage: React.FC = () => {
       description: t('apps.mockupMachine.description'),
       route: '/',
       icon: Pickaxe,
-      color: '#brand-cyan',
+      color: 'brand-cyan',
     },
     {
       id: 'branding',
@@ -39,7 +39,7 @@ export const AppsPage: React.FC = () => {
       description: t('apps.brandingMachine.description'),
       route: '/branding-machine',
       icon: Palette,
-      color: '#brand-cyan',
+      color: 'brand-cyan',
     },
     {
       id: 'budget',
@@ -47,7 +47,7 @@ export const AppsPage: React.FC = () => {
       description: t('apps.budgetMachine.description'),
       route: '/budget-machine',
       icon: FileText,
-      color: '#brand-cyan',
+      color: 'brand-cyan',
     },
     {
       id: 'canvas',
@@ -55,7 +55,7 @@ export const AppsPage: React.FC = () => {
       description: t('apps.canvas.description'),
       route: '/canvas',
       icon: Layers,
-      color: '#brand-cyan',
+      color: 'brand-cyan',
     },
   ];
 

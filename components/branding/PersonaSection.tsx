@@ -157,8 +157,8 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
                     <span
                       key={index}
                       className={`px-3 py-1.5 text-xs font-medium rounded-md border ${theme === 'dark'
-                          ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50'
-                          : 'bg-zinc-200 text-zinc-600 border-zinc-300'
+                        ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50'
+                        : 'bg-zinc-200 text-zinc-600 border-zinc-300'
                         }`}
                     >
                       {tag}
@@ -189,8 +189,8 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
                     onChange={(e) => handleDesireChange(index, e.target.value)}
                     placeholder="Digite um desejo..."
                     className={`font-manrope text-sm min-h-[60px] flex-1 ${theme === 'dark'
-                        ? 'bg-black/40 border-zinc-800/60 text-zinc-300'
-                        : 'bg-zinc-100 border-zinc-300 text-zinc-800'
+                      ? 'bg-black/40 border-zinc-800/60 text-zinc-300'
+                      : 'bg-zinc-100 border-zinc-300 text-zinc-800'
                       }`}
                   />
                   <button
@@ -205,9 +205,9 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
               ))}
               <button
                 onClick={handleAddDesire}
-                className={`flex items-center gap-2 px-4 py-2 border hover:border-[#brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-all duration-300 ${theme === 'dark'
-                    ? 'bg-black/40 border-zinc-800/60 text-zinc-300'
-                    : 'bg-zinc-100 border-zinc-300 text-zinc-800'
+                className={`flex items-center gap-2 px-4 py-2 border hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-all duration-300 ${theme === 'dark'
+                  ? 'bg-black/40 border-zinc-800/60 text-zinc-300'
+                  : 'bg-zinc-100 border-zinc-300 text-zinc-800'
                   }`}
               >
                 <Plus className="h-4 w-4" />
@@ -220,8 +220,8 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
                 <div
                   key={index}
                   className={`border rounded-xl p-4 transition-colors ${theme === 'dark'
-                      ? 'bg-black/40 border-zinc-800/60 hover:border-zinc-700/60'
-                      : 'bg-zinc-100 border-zinc-300 hover:border-zinc-400'
+                    ? 'bg-black/40 border-zinc-800/60 hover:border-zinc-700/60'
+                    : 'bg-zinc-100 border-zinc-300 hover:border-zinc-400'
                     }`}
                 >
                   <p className={`text-sm font-manrope leading-relaxed ${theme === 'dark' ? 'text-zinc-300' : 'text-zinc-800'
@@ -249,8 +249,8 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
                     onChange={(e) => handlePainChange(index, e.target.value)}
                     placeholder="Digite uma dor..."
                     className={`font-manrope text-sm min-h-[60px] flex-1 ${theme === 'dark'
-                        ? 'bg-black/40 border-zinc-800/60 text-zinc-300'
-                        : 'bg-zinc-100 border-zinc-300 text-zinc-800'
+                      ? 'bg-black/40 border-zinc-800/60 text-zinc-300'
+                      : 'bg-zinc-100 border-zinc-300 text-zinc-800'
                       }`}
                   />
                   <button
@@ -265,9 +265,9 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
               ))}
               <button
                 onClick={handleAddPain}
-                className={`flex items-center gap-2 px-4 py-2 border hover:border-[#brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-all duration-300 ${theme === 'dark'
-                    ? 'bg-black/40 border-zinc-800/60 text-zinc-300'
-                    : 'bg-zinc-100 border-zinc-300 text-zinc-800'
+                className={`flex items-center gap-2 px-4 py-2 border hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-all duration-300 ${theme === 'dark'
+                  ? 'bg-black/40 border-zinc-800/60 text-zinc-300'
+                  : 'bg-zinc-100 border-zinc-300 text-zinc-800'
                   }`}
               >
                 <Plus className="h-4 w-4" />
@@ -280,8 +280,8 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
                 <div
                   key={index}
                   className={`border rounded-xl p-4 transition-colors ${theme === 'dark'
-                      ? 'bg-black/40 border-zinc-800/60 hover:border-zinc-700/60'
-                      : 'bg-zinc-100 border-zinc-300 hover:border-zinc-400'
+                    ? 'bg-black/40 border-zinc-800/60 hover:border-zinc-700/60'
+                    : 'bg-zinc-100 border-zinc-300 hover:border-zinc-400'
                     }`}
                 >
                   <p className={`text-sm font-manrope leading-relaxed ${theme === 'dark' ? 'text-zinc-300' : 'text-zinc-800'

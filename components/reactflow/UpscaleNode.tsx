@@ -169,7 +169,7 @@ export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(({ d
         }}
         disabled={isLoading || !data.onUpscale}
         className={cn(
-          'w-full px-3 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#brand-cyan]/30 rounded text-xs font-mono text-brand-cyan transition-colors flex items-center justify-center gap-3 node-interactive-z',
+          'w-full px-3 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 rounded text-xs font-mono text-brand-cyan transition-colors flex items-center justify-center gap-3 node-interactive-z',
           (isLoading || !data.onUpscale) ? 'opacity-50 node-button-disabled' : 'node-button-enabled'
         )}
       >

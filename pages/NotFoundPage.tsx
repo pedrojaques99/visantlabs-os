@@ -53,7 +53,7 @@ export const NotFoundPage: React.FC = () => {
             <div className="space-y-6" style={{ verticalAlign: 'bottom', marginBottom: '16px', height: '193px' }}>
               <VHSText
                 fontSize="text-6xl md:text-7xl lg:text-8xl"
-                color="#brand-cyan"
+                color="brand-cyan"
                 theme={theme}
               >
                 404
@@ -77,8 +77,8 @@ export const NotFoundPage: React.FC = () => {
               <button
                 onClick={() => navigate('/')}
                 className={`px-8 py-3.5 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 shadow-lg cursor-pointer ${theme === 'dark'
-                  ? 'shadow-[#brand-cyan]/20'
-                  : 'shadow-[#brand-cyan]/30'
+                  ? 'shadow-[brand-cyan]/20'
+                  : 'shadow-[brand-cyan]/30'
                   }`}
               >
                 <Home className="h-4 w-4" />

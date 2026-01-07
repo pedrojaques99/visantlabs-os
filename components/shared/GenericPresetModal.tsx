@@ -115,7 +115,7 @@ export function GenericPresetModal<T extends string>({
                 className={cn(
                     'flex flex-col rounded-md border transition-all overflow-hidden group',
                     isSelected
-                        ? 'bg-brand-cyan/10 border-[#brand-cyan]/50 hover:bg-brand-cyan/15'
+                        ? 'bg-brand-cyan/10 border-[brand-cyan]/50 hover:bg-brand-cyan/15'
                         : 'bg-zinc-900/30 border-zinc-700/30 hover:bg-zinc-900/50 hover:border-zinc-600/50',
                     isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                 )}
@@ -144,7 +144,7 @@ export function GenericPresetModal<T extends string>({
                     )}
                     {/* Community Badge */}
                     {isCommunity && (
-                        <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-brand-cyan/20 border border-[#brand-cyan]/30 rounded text-[8px] font-mono text-brand-cyan">
+                        <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-brand-cyan/20 border border-[brand-cyan]/30 rounded text-[8px] font-mono text-brand-cyan">
                             Community
                         </div>
                     )}
@@ -231,7 +231,7 @@ export function GenericPresetModal<T extends string>({
                         className={cn(
                             'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 relative',
                             activeTab === 'official'
-                                ? 'text-brand-cyan border-[#brand-cyan]'
+                                ? 'text-brand-cyan border-[brand-cyan]'
                                 : 'text-zinc-400 border-transparent hover:text-zinc-300 hover:border-zinc-600/50'
                         )}
                     >
@@ -242,7 +242,7 @@ export function GenericPresetModal<T extends string>({
                         className={cn(
                             'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 flex items-center gap-1.5 relative',
                             activeTab === 'community'
-                                ? 'text-brand-cyan border-[#brand-cyan]'
+                                ? 'text-brand-cyan border-[brand-cyan]'
                                 : 'text-zinc-400 border-transparent hover:text-zinc-300 hover:border-zinc-600/50'
                         )}
                     >

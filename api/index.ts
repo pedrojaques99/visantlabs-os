@@ -23,6 +23,7 @@ import communityRoutes from '../server/routes/community.js';
 import usersRoutes from '../server/routes/users.js';
 import storageRoutes from '../server/routes/storage.js';
 import aiRoutes from '../server/routes/ai.js';
+import workflowRoutes from '../server/routes/workflows.js';
 import { errorHandler } from '../server/middleware/errorHandler.js';
 
 // Load environment variables
@@ -134,6 +135,8 @@ app.use('/storage', storageRoutes);
 if (isDev) console.log('✅ Storage routes registered at /storage');
 app.use('/ai', aiRoutes);
 if (isDev) console.log('✅ AI routes registered at /ai');
+app.use('/workflows', workflowRoutes);
+if (isDev) console.log('✅ Workflow routes registered at /workflows');
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'Server is running' });

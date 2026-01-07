@@ -6,7 +6,7 @@ interface BackPageBackgroundProps {
 }
 
 export const BackPageBackground: React.FC<BackPageBackgroundProps> = ({
-  accentColor = '#brand-cyan',
+  accentColor = 'brand-cyan',
   opacity = 0.3,
 }) => {
   return (

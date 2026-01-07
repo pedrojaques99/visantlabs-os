@@ -165,9 +165,9 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
           value={promptPreview}
           onChange={handleChange}
           rows={1}
-          className={`w-full p-2 rounded-md border focus:outline-none focus:border-[#brand-cyan]/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y ${theme === 'dark'
-              ? 'bg-black/40 border-zinc-700/50 text-zinc-400'
-              : 'bg-white border-zinc-300 text-zinc-700'
+          className={`w-full p-2 rounded-md border focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y ${theme === 'dark'
+            ? 'bg-black/40 border-zinc-700/50 text-zinc-400'
+            : 'bg-white border-zinc-300 text-zinc-700'
             } ${isGeneratingPrompt ? 'opacity-50' : ''}`}
           placeholder={t('mockup.promptPlaceholder')}
           style={{ minHeight: '48px', maxHeight: '600px' }}
@@ -218,7 +218,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
                           onGenerateSuggestion(suggestion);
                         }}
                         disabled={isGenerating || !suggestion.trim() || isGenerateDisabled}
-                        className="flex-1 flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-semibold py-2 px-3 rounded-md transition-all duration-300 text-xs transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#brand-cyan]/50"
+                        className="flex-1 flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-semibold py-2 px-3 rounded-md transition-all duration-300 text-xs transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50"
                       >
                         {isGenerating ? (
                           <>
@@ -240,7 +240,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
                         onGenerateSuggestion(suggestion);
                       }}
                       disabled={isGenerating || !suggestion.trim() || isGenerateDisabled}
-                      className="flex-1 flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-semibold py-2 px-3 rounded-md transition-all duration-300 text-xs transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#brand-cyan]/50"
+                      className="flex-1 flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-semibold py-2 px-3 rounded-md transition-all duration-300 text-xs transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50"
                     >
                       {isGenerating ? (
                         <>

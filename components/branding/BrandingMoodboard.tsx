@@ -240,8 +240,8 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
         <div className="max-w-[1800px] mx-auto px-4 md:px-6 py-4 md:py-6 space-y-3">
           {/* Header Section */}
           <section className={`border rounded-xl p-4 md:p-5 flex-shrink-0 ${theme === 'dark'
-              ? 'bg-[#141414] border-zinc-800/60'
-              : 'bg-white border-zinc-300'
+            ? 'bg-[#141414] border-zinc-800/60'
+            : 'bg-white border-zinc-300'
             }`}>
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
               <div className="flex-1 min-w-0">
@@ -254,15 +254,15 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                       onKeyDown={handleNameKeyDown}
                       onFocus={(e) => e.target.select()}
                       placeholder={t('branding.projectNamePlaceholder') || 'Nome do projeto'}
-                      className={`flex-1 text-xl md:text-2xl font-semibold font-manrope bg-transparent border-b-2 border-[#brand-cyan]/50 focus:border-[#brand-cyan] focus:outline-none pb-1 transition-colors ${theme === 'dark' ? 'text-zinc-200' : 'text-zinc-800'
+                      className={`flex-1 text-xl md:text-2xl font-semibold font-manrope bg-transparent border-b-2 border-[brand-cyan]/50 focus:border-[brand-cyan] focus:outline-none pb-1 transition-colors ${theme === 'dark' ? 'text-zinc-200' : 'text-zinc-800'
                         }`}
                       autoFocus
                     />
                     <button
                       onClick={handleNameAccept}
                       className={`p-1.5 rounded-md transition-colors ${theme === 'dark'
-                          ? 'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan'
-                          : 'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan'
+                        ? 'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan'
+                        : 'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan'
                         }`}
                       title="Salvar (Enter)"
                     >
@@ -271,8 +271,8 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                     <button
                       onClick={handleNameCancel}
                       className={`p-1.5 rounded-md transition-colors ${theme === 'dark'
-                          ? 'bg-zinc-800/60 hover:bg-zinc-800/80 text-zinc-400 hover:text-zinc-300'
-                          : 'bg-zinc-200 hover:bg-zinc-300 text-zinc-600 hover:text-zinc-700'
+                        ? 'bg-zinc-800/60 hover:bg-zinc-800/80 text-zinc-400 hover:text-zinc-300'
+                        : 'bg-zinc-200 hover:bg-zinc-300 text-zinc-600 hover:text-zinc-700'
                         }`}
                       title="Cancelar (ESC)"
                     >
@@ -318,9 +318,9 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                   <button
                     onClick={onGenerateAll}
                     disabled={generatingSteps.size > 0}
-                    className={`px-4 py-2 border rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 hover:border-[#brand-cyan]/50 hover:text-brand-cyan ${theme === 'dark'
-                        ? 'bg-black/40 border-zinc-800/60 text-zinc-300 disabled:border-zinc-800/30 disabled:text-zinc-600'
-                        : 'bg-zinc-100 border-zinc-300 text-zinc-800 disabled:border-zinc-200 disabled:text-zinc-400'
+                    className={`px-4 py-2 border rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 hover:border-[brand-cyan]/50 hover:text-brand-cyan ${theme === 'dark'
+                      ? 'bg-black/40 border-zinc-800/60 text-zinc-300 disabled:border-zinc-800/30 disabled:text-zinc-600'
+                      : 'bg-zinc-100 border-zinc-300 text-zinc-800 disabled:border-zinc-200 disabled:text-zinc-400'
                       }`}
                   >
                     <Zap className="h-4 w-4" />
@@ -329,9 +329,9 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                 )}
                 <button
                   onClick={handleGeneratePDF}
-                  className={`px-4 py-2 border rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 hover:border-[#brand-cyan]/50 hover:text-brand-cyan ${theme === 'dark'
-                      ? 'bg-black/40 border-zinc-800/60 text-zinc-300'
-                      : 'bg-zinc-100 border-zinc-300 text-zinc-800'
+                  className={`px-4 py-2 border rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 hover:border-[brand-cyan]/50 hover:text-brand-cyan ${theme === 'dark'
+                    ? 'bg-black/40 border-zinc-800/60 text-zinc-300'
+                    : 'bg-zinc-100 border-zinc-300 text-zinc-800'
                     }`}
                 >
                   <FileDown className="h-4 w-4" />
@@ -341,8 +341,8 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                   onClick={handleSave}
                   disabled={isSaving || !hasContent(1)}
                   className={`px-4 py-2 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${theme === 'dark'
-                      ? 'disabled:bg-zinc-700 disabled:text-zinc-500'
-                      : 'disabled:bg-zinc-300 disabled:text-zinc-400'
+                    ? 'disabled:bg-zinc-700 disabled:text-zinc-500'
+                    : 'disabled:bg-zinc-300 disabled:text-zinc-400'
                     }`}
                 >
                   <Save className="h-4 w-4" />

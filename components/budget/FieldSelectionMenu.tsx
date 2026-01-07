@@ -126,7 +126,7 @@ export const FieldSelectionMenu: React.FC<FieldSelectionMenuProps> = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar campo..."
-            className="w-full pl-8 pr-3 py-1.5 bg-black/40 border border-zinc-800 rounded text-sm font-mono text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-[#brand-cyan]/50"
+            className="w-full pl-8 pr-3 py-1.5 bg-black/40 border border-zinc-800 rounded text-sm font-mono text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-[brand-cyan]/50"
             aria-label="Buscar campo"
           />
         </div>
@@ -147,8 +147,8 @@ export const FieldSelectionMenu: React.FC<FieldSelectionMenuProps> = ({
               }}
               onMouseEnter={() => setSelectedIndex(index)}
               className={`w-full px-3 py-2.5 text-left text-sm font-mono transition-colors border-b border-zinc-800/50 last:border-b-0 ${index === selectedIndex
-                  ? 'bg-brand-cyan/20 text-brand-cyan'
-                  : 'text-zinc-300 hover:bg-brand-cyan/10 hover:text-brand-cyan'
+                ? 'bg-brand-cyan/20 text-brand-cyan'
+                : 'text-zinc-300 hover:bg-brand-cyan/10 hover:text-brand-cyan'
                 }`}
               role="menuitem"
               aria-label={`Adicionar campo ${field.label}`}

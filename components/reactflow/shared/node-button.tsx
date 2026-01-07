@@ -8,7 +8,7 @@ const nodeButtonVariants = cva(
     variants: {
       variant: {
         default: "bg-zinc-900/50 hover:bg-zinc-900/70 border border-zinc-700/30 text-zinc-400 hover:text-zinc-300",
-        primary: "bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[#brand-cyan]/30 text-brand-cyan",
+        primary: "bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 text-brand-cyan",
         purple: "bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30 text-purple-400",
         success: "bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 text-green-400",
       },

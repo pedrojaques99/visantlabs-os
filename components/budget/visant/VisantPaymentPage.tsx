@@ -14,7 +14,7 @@ export const VisantPaymentPage: React.FC<VisantPaymentPageProps> = ({
   editable = false,
   onDataChange,
 }) => {
-  const accentColor = data.brandAccentColor || data.brandColors[0] || '#brand-cyan';
+  const accentColor = data.brandAccentColor || data.brandColors[0] || 'brand-cyan';
   const bgColor = '#fdfdfd';
   const textColor = '#000000';
   const secondaryTextColor = '#0d0d0d';

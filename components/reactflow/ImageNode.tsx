@@ -465,7 +465,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
     >
       {selected && !dragging && (
         <NodeResizer
-          color="#brand-cyan"
+          color="brand-cyan"
           isVisible={selected}
           minWidth={150}
           minHeight={150}
@@ -564,7 +564,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                   e.stopPropagation();
                   handleCopyDescription();
                 }}
-                className="p-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan rounded transition-colors backdrop-blur-sm border border-[#brand-cyan]/20 hover:border-[#brand-cyan]/30"
+                className="p-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan rounded transition-colors backdrop-blur-sm border border-[brand-cyan]/20 hover:border-[brand-cyan]/30"
                 title={t('canvasNodes.imageNode.copyDescription')}
                 onMouseDown={(e) => e.stopPropagation()}
               >

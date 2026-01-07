@@ -128,7 +128,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
     const hasSelection = selectedTags.length > 0;
     const unselectedClass = theme === 'dark'
       ? isSuggested
-        ? 'bg-zinc-800/50 text-zinc-300 border-[#brand-cyan]/50 hover:border-[#brand-cyan]/70 hover:text-white'
+        ? 'bg-zinc-800/50 text-zinc-300 border-[brand-cyan]/50 hover:border-[brand-cyan]/70 hover:text-white'
         : 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
       : isSuggested
         ? 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'
@@ -144,8 +144,8 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
           "text-xs font-medium transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0",
           isSelected
             ? theme === 'dark'
-              ? 'bg-brand-cyan/20 text-brand-cyan border-[#brand-cyan]/30 shadow-sm shadow-[#brand-cyan]/10'
-              : 'bg-brand-cyan/20 text-zinc-800 border-[#brand-cyan]/30 shadow-sm shadow-[#brand-cyan]/10'
+              ? 'bg-brand-cyan/20 text-brand-cyan border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
+              : 'bg-brand-cyan/20 text-zinc-800 border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
             : unselectedClass,
           hasSelection && !isSelected && 'opacity-40'
         )}
@@ -253,7 +253,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                         onBlur={handleBlur}
                         placeholder={t('mockup.customCategoryPlaceholder')}
                         className={cn(
-                          "px-3 py-1.5 text-xs font-medium transition-all duration-200 border-[#brand-cyan]/30 focus:ring-0 min-w-[120px] font-mono",
+                          "px-3 py-1.5 text-xs font-medium transition-all duration-200 border-[brand-cyan]/30 focus:ring-0 min-w-[120px] font-mono",
                           theme === 'dark'
                             ? 'bg-brand-cyan/20 text-brand-cyan'
                             : 'bg-brand-cyan/20 text-zinc-800'
@@ -274,8 +274,8 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                 <button
                   onClick={handleCustomTagClick}
                   className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border transform hover:-translate-y-0.5 active:translate-y-0 inline-flex items-center gap-1 cursor-pointer ${theme === 'dark'
-                      ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
-                      : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'
+                    ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
+                    : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'
                     }`}
                 >
                   <Plus size={14} />
@@ -290,9 +290,9 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                   onKeyDown={handleKeyDown}
                   onBlur={handleBlur}
                   placeholder={t('mockup.customCategoryPlaceholder')}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border border-[#brand-cyan]/30 focus:outline-none focus:ring-0 min-w-[120px] font-mono ${theme === 'dark'
-                      ? 'bg-brand-cyan/20 text-brand-cyan'
-                      : 'bg-brand-cyan/20 text-zinc-800'
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border border-[brand-cyan]/30 focus:outline-none focus:ring-0 min-w-[120px] font-mono ${theme === 'dark'
+                    ? 'bg-brand-cyan/20 text-brand-cyan'
+                    : 'bg-brand-cyan/20 text-zinc-800'
                     }`}
                   autoFocus
                 />

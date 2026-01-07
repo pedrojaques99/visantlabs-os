@@ -255,7 +255,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="username"
-              className="w-full px-4 py-2 bg-black/40 border border-zinc-800/60 rounded-md text-zinc-200 font-mono text-sm focus:outline-none focus:border-[#brand-cyan]/50 transition-colors"
+              className="w-full px-4 py-2 bg-black/40 border border-zinc-800/60 rounded-md text-zinc-200 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50 transition-colors"
             />
             <p className="text-xs text-zinc-500 font-mono mt-1">
               3-20 characters, letters, numbers, underscores, and hyphens
@@ -272,7 +272,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
               onChange={(e) => setBio(e.target.value)}
               placeholder="Tell us about yourself..."
               rows={4}
-              className="w-full px-4 py-2 bg-black/40 border border-zinc-800/60 rounded-md text-zinc-200 font-mono text-sm focus:outline-none focus:border-[#brand-cyan]/50 transition-colors resize-none"
+              className="w-full px-4 py-2 bg-black/40 border border-zinc-800/60 rounded-md text-zinc-200 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50 transition-colors resize-none"
             />
           </div>
 
@@ -292,7 +292,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
                 value={instagram}
                 onChange={(e) => setInstagram(e.target.value)}
                 placeholder="https://instagram.com/username"
-                className="w-full px-4 py-2 bg-black/40 border border-zinc-800/60 rounded-md text-zinc-200 font-mono text-sm focus:outline-none focus:border-[#brand-cyan]/50 transition-colors"
+                className="w-full px-4 py-2 bg-black/40 border border-zinc-800/60 rounded-md text-zinc-200 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50 transition-colors"
               />
             </div>
 
@@ -306,7 +306,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
                 value={youtube}
                 onChange={(e) => setYoutube(e.target.value)}
                 placeholder="https://youtube.com/@channel"
-                className="w-full px-4 py-2 bg-black/40 border border-zinc-800/60 rounded-md text-zinc-200 font-mono text-sm focus:outline-none focus:border-[#brand-cyan]/50 transition-colors"
+                className="w-full px-4 py-2 bg-black/40 border border-zinc-800/60 rounded-md text-zinc-200 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50 transition-colors"
               />
             </div>
 
@@ -320,7 +320,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
                 value={x}
                 onChange={(e) => setX(e.target.value)}
                 placeholder="https://x.com/username"
-                className="w-full px-4 py-2 bg-black/40 border border-zinc-800/60 rounded-md text-zinc-200 font-mono text-sm focus:outline-none focus:border-[#brand-cyan]/50 transition-colors"
+                className="w-full px-4 py-2 bg-black/40 border border-zinc-800/60 rounded-md text-zinc-200 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50 transition-colors"
               />
             </div>
 
@@ -334,7 +334,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
                 value={website}
                 onChange={(e) => setWebsite(e.target.value)}
                 placeholder="https://yourwebsite.com"
-                className="w-full px-4 py-2 bg-black/40 border border-zinc-800/60 rounded-md text-zinc-200 font-mono text-sm focus:outline-none focus:border-[#brand-cyan]/50 transition-colors"
+                className="w-full px-4 py-2 bg-black/40 border border-zinc-800/60 rounded-md text-zinc-200 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50 transition-colors"
               />
             </div>
           </div>
@@ -351,7 +351,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
           <button
             onClick={handleSave}
             disabled={isSaving || isUploadingCover}
-            className="px-4 py-2 bg-brand-cyan/20 border border-[#brand-cyan]/40 text-brand-cyan hover:bg-brand-cyan/30 disabled:opacity-50 disabled:cursor-not-allowed rounded-md text-sm font-mono transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-brand-cyan/20 border border-[brand-cyan]/40 text-brand-cyan hover:bg-brand-cyan/30 disabled:opacity-50 disabled:cursor-not-allowed rounded-md text-sm font-mono transition-colors flex items-center gap-2"
           >
             {isSaving ? (
               <>

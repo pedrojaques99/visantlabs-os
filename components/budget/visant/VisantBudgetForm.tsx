@@ -166,7 +166,7 @@ export const VisantBudgetForm: React.FC<VisantBudgetFormProps> = ({
               <div className="flex gap-2 items-center">
                 <FormInput
                   type="color"
-                  value={data.brandAccentColor || '#brand-cyan'}
+                  value={data.brandAccentColor || 'brand-cyan'}
                   onChange={(e) => updateField('brandAccentColor', e.target.value || undefined)}
                   className="w-10 h-10 cursor-pointer flex-shrink-0"
                 />

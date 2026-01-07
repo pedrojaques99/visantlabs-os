@@ -143,8 +143,8 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
               onClick={() => onTagToggle(tag)}
               className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer ${isSelected
                 ? theme === 'dark'
-                  ? 'bg-brand-cyan/20 text-brand-cyan border-[#brand-cyan]/30 shadow-sm shadow-[#brand-cyan]/10'
-                  : 'bg-brand-cyan/20 text-zinc-800 border-[#brand-cyan]/30 shadow-sm shadow-[#brand-cyan]/10'
+                  ? 'bg-brand-cyan/20 text-brand-cyan border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
+                  : 'bg-brand-cyan/20 text-zinc-800 border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
                 : theme === 'dark'
                   ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
                   : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'
@@ -174,7 +174,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
             onKeyDown={handleKeyDown}
             onBlur={handleBlur}
             placeholder={t('mockup.customCategoryPlaceholder')}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border border-[#brand-cyan]/30 focus:outline-none focus:ring-0 min-w-[120px] font-mono ${theme === 'dark'
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border border-[brand-cyan]/30 focus:outline-none focus:ring-0 min-w-[120px] font-mono ${theme === 'dark'
               ? 'bg-brand-cyan/20 text-brand-cyan'
               : 'bg-brand-cyan/20 text-zinc-800'
               }`}
@@ -269,16 +269,16 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
                   onAddColor();
                 }
               }}
-              className={`w-full p-2 rounded-md border focus:outline-none focus:border-[#brand-cyan]/50 focus:ring-0 text-xs font-mono transition-colors duration-200 pl-8 ${theme === 'dark'
+              className={`w-full p-2 rounded-md border focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs font-mono transition-colors duration-200 pl-8 ${theme === 'dark'
                 ? 'bg-black/40 border-zinc-700/50 text-zinc-400'
                 : 'bg-zinc-50 border-zinc-300 text-zinc-700'
                 }`}
-              placeholder="#brand-cyan"
+              placeholder="brand-cyan"
             />
             {(isValidColor || !colorInput) && (
               <span
                 className="absolute left-2.5 w-4 h-4 rounded-md border border-zinc-600"
-                style={{ backgroundColor: isValidColor ? colorInput : '#brand-cyan' }}
+                style={{ backgroundColor: isValidColor ? colorInput : 'brand-cyan' }}
               ></span>
             )}
           </div>
@@ -368,7 +368,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
           value={negativePrompt}
           onChange={onNegativePromptChange}
           rows={2}
-          className={`w-full p-2 rounded-md border focus:outline-none focus:border-[#brand-cyan]/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y ${theme === 'dark'
+          className={`w-full p-2 rounded-md border focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y ${theme === 'dark'
             ? 'bg-black/40 border-zinc-700/50 text-zinc-400'
             : 'bg-zinc-50 border-zinc-300 text-zinc-700'
             }`}
@@ -381,7 +381,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
           value={additionalPrompt}
           onChange={onAdditionalPromptChange}
           rows={2}
-          className={`w-full p-2 rounded-md border focus:outline-none focus:border-[#brand-cyan]/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y ${theme === 'dark'
+          className={`w-full p-2 rounded-md border focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y ${theme === 'dark'
             ? 'bg-black/40 border-zinc-700/50 text-zinc-400'
             : 'bg-zinc-50 border-zinc-300 text-zinc-700'
             }`}

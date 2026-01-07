@@ -15,7 +15,7 @@ export const VisantBudgetPage: React.FC<VisantBudgetPageProps> = ({
   onDataChange,
   saveStatus = 'idle',
 }) => {
-  const accentColor = data.brandAccentColor || data.brandColors[0] || '#brand-cyan';
+  const accentColor = data.brandAccentColor || data.brandColors[0] || 'brand-cyan';
   const bgColor = data.brandBackgroundColor || '#ffffff';
   const isDarkBg = bgColor !== '#ffffff' && bgColor !== '#fff' && bgColor !== 'white';
   const textColor = isDarkBg ? '#ffffff' : '#020202';

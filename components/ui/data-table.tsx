@@ -86,7 +86,7 @@ export function DataTable<TData, TValue>({
                 onChange={(event) =>
                   table.getColumn(searchKey)?.setFilterValue(event.target.value)
                 }
-                className="pl-10 bg-black/40 border-zinc-800/50 text-zinc-300 placeholder:text-zinc-500 focus:ring-[#brand-cyan]/30 focus:border-[#brand-cyan]/50"
+                className="pl-10 bg-black/40 border-zinc-800/50 text-zinc-300 placeholder:text-zinc-500 focus:ring-[brand-cyan]/30 focus:border-[brand-cyan]/50"
               />
             </div>
           )}

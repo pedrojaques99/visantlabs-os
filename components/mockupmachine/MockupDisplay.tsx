@@ -323,7 +323,7 @@ const MockupCard: React.FC<{
                 <button
                   onClick={(e) => { e.stopPropagation(); setShowReImaginePanel(true); }}
                   disabled={editButtonsDisabled || isRedrawing}
-                  className={`p-2 rounded transition-colors duration-150 focus:outline-none focus:ring-1 focus:ring-[#brand-cyan]/50 flex items-center gap-1 ${editButtonsDisabled || isRedrawing
+                  className={`p-2 rounded transition-colors duration-150 focus:outline-none focus:ring-1 focus:ring-[brand-cyan]/50 flex items-center gap-1 ${editButtonsDisabled || isRedrawing
                     ? 'text-zinc-600 cursor-not-allowed opacity-50'
                     : 'text-brand-cyan hover:text-white hover:bg-brand-cyan/20'
                     }`}
