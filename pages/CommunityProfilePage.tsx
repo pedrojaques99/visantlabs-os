@@ -247,7 +247,7 @@ export const CommunityProfilePage: React.FC = () => {
     e.stopPropagation();
 
     if (!isAuthenticated) {
-      toast.error(t('auth.loginRequired') || 'Please login to like workflows');
+      toast.error(t('auth.loginRequired', 'Please login to like workflows'));
       return;
     }
 
@@ -267,7 +267,7 @@ export const CommunityProfilePage: React.FC = () => {
       }));
     } catch (err) {
       console.error('Failed to toggle like:', err);
-      toast.error('Failed to update like');
+      toast.error(t('community.failedToUpdateLike', 'Failed to update like'));
     }
   };
 
@@ -276,17 +276,17 @@ export const CommunityProfilePage: React.FC = () => {
     e.stopPropagation();
 
     if (!isAuthenticated) {
-      toast.error(t('auth.loginRequired') || 'Please login to duplicate workflows');
+      toast.error(t('auth.loginRequired', 'Please login to duplicate workflows'));
       return;
     }
 
     try {
       await workflowApi.duplicate(workflow._id);
-      toast.success('Workflow duplicated to your library');
+      toast.success(t('community.workflowDuplicated', 'Workflow duplicated to your library'));
       // Could redirect to canvas with new ID if desired
     } catch (err) {
       console.error('Failed to duplicate workflow:', err);
-      toast.error('Failed to duplicate workflow');
+      toast.error(t('community.failedToDuplicateWorkflow', 'Failed to duplicate workflow'));
     }
   };
 
