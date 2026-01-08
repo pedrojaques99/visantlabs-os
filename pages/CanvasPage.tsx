@@ -118,6 +118,10 @@ export const CanvasPage: React.FC = () => {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
 
+  // React Flow state
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node<FlowNodeData>>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+
   // Log when CanvasPage component mounts
   useEffect(() => {
     if (isLocalDevelopment()) {
@@ -129,6 +133,40 @@ export const CanvasPage: React.FC = () => {
       });
     }
   }, []);
+
+  // Handle node creation from URL params
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const action = params.get('action');
+    const type = params.get('type');
+    const presetId = params.get('presetId');
+
+    if (action === 'createNode' && type && presetId) {
+      const validTypes = ['mockup', 'angle', 'texture', 'ambience', 'luminance'];
+
+      if (validTypes.includes(type)) {
+        const newNode: Node<FlowNodeData> = {
+          id: generateNodeId(type),
+          type: type,
+          position: {
+            x: window.innerWidth / 2 - 160,
+            y: window.innerHeight / 2 - 100
+          },
+          data: {
+            selectedPreset: presetId,
+            isLoading: false,
+          } as any
+        };
+
+        setNodes((nds) => nds.concat(newNode));
+        toast.success(t('common.nodeCreated') || 'Node created from preset');
+
+        // Clear query params without reloading
+        navigate(window.location.pathname, { replace: true });
+      }
+    }
+  }, [navigate, setNodes, t]);
+
   // Use settings directly from context instead of duplicating state
   const backgroundColor = canvasHeader.backgroundColor;
   const gridColor = canvasHeader.gridColor;
@@ -249,8 +287,7 @@ export const CanvasPage: React.FC = () => {
     }
   }, [brandCyan]);
 
-  // React Flow state
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node<FlowNodeData>>([]);
+
 
   // Sync selected nodes count and handle Auto-Open Logic
   const setSelectedNodesCountInContext = canvasHeader.setSelectedNodesCount;
@@ -293,7 +330,7 @@ export const CanvasPage: React.FC = () => {
       });
     }
   }, [backgroundColor, gridColor, showGrid, showMinimap, showControls, cursorColor, brandCyan, experimentalMode, isAuthenticated, debouncedUpdateSettings]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+
 
   // Drawing hook - initialize before history so we can pass drawings to it
   const drawing = useCanvasDrawing(reactFlowInstance);
