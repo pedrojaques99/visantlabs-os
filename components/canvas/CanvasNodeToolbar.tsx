@@ -18,6 +18,7 @@ import {
   Plus,
   Grid3x3,
   Pickaxe,
+  X,
 } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Tooltip } from '../ui/Tooltip';
@@ -50,6 +51,7 @@ interface CanvasToolbarProps {
   position?: 'left' | 'right';
   isCollapsed?: boolean;
   onCollapseChange?: (collapsed: boolean) => void;
+  onClose?: () => void;
 }
 
 interface ToolItem {
@@ -61,6 +63,7 @@ interface ToolItem {
   category?: 'core' | 'composition' | 'branding';
 }
 
+// Export the component
 export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
   onAddMerge,
   onAddEdit,
@@ -88,6 +91,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
   position = 'right',
   isCollapsed: externalIsCollapsed,
   onCollapseChange,
+  onClose,
 }) => {
   const { t } = useTranslation();
   const [internalIsCollapsed, setInternalIsCollapsed] = useState(false);
@@ -279,7 +283,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
             "flex items-center gap-2 cursor-grab active:cursor-grabbing",
             isActive
               ? "border-[brand-cyan] text-brand-cyan bg-brand-cyan/10"
-              : "border-zinc-800/40 text-zinc-400 hover:text-brand-cyan hover:border-[brand-cyan]/40 hover:bg-zinc-800/50"
+              : "border-zinc-800/40 text-zinc-400 hover:text-zinc-200 hover:border-[brand-cyan]/40 hover:bg-zinc-800/50"
           )}
           aria-label={tool.label}
         >
@@ -350,38 +354,26 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
     >
       {/* Expanded State - Full Content with Sections */}
       <div className="w-full flex flex-col h-full overflow-hidden">
+        {/* Header with Close Button */}
+        <div className="flex items-center justify-between border-b border-zinc-800/30 relative bg-transparent rounded-t-2xl">
+          <div className="flex items-center gap-1.5 px-3 py-3">
+            <h2 className="text-xs font-semibold text-zinc-300 tracking-wide">
+              {t('canvasToolbar.title')}
+            </h2>
+          </div>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="p-3 text-zinc-500 hover:text-zinc-200 border-l border-zinc-800/50 hover:bg-zinc-800/50 transition-colors h-full rounded-tr-2xl"
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
+
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-zinc-400 dark:scrollbar-thumb-zinc-700 scrollbar-track-transparent">
           <div className="flex flex-col p-2 gap-2">
-            {/* Header */}
-            <div className="flex items-center gap-1.5 px-1 py-1.5 border-b border-zinc-800/30 flex-shrink-0 relative">
-              <h2 className="text-xs font-semibold text-zinc-300 tracking-wide">
-                {t('canvasToolbar.title')}
-              </h2>
-              {/* Toggle Button - Only visible when expanded */}
-              <button
-                onClick={() => setIsCollapsed(true)}
-                className={cn(
-                  "absolute -right-3 z-50",
-                  "w-5 h-5 rounded-md",
-                  "bg-zinc-800/60 border border-zinc-700/30",
-                  "flex items-center justify-center",
-                  "text-zinc-500 hover:text-zinc-400",
-                  "hover:bg-zinc-700/60 hover:border-zinc-600/40",
-                  "transition-all duration-200",
-                  "shadow-md backdrop-blur-sm"
-                )}
-                style={{
-                  top: '8px',
-                }}
-                title={t('canvasToolbar.collapseToolbar')}
-              >
-                <Plus
-                  size={12}
-                  className="rotate-45 transition-transform duration-200"
-                />
-              </button>
-            </div>
 
             {/* Core Tools */}
             {coreTools.length > 0 && (

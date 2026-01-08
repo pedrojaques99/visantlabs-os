@@ -3,7 +3,7 @@ import { cn } from '../../lib/utils';
 import { useTranslation } from '../../hooks/useTranslation';
 import type { Node } from '@xyflow/react';
 import type { FlowNodeData } from '../../types/reactFlow';
-import { MessageSquare, Settings, X, Palette, Share, ChevronRight, Brush } from 'lucide-react';
+import { MessageSquare, Settings, X, Share, Brush } from 'lucide-react';
 
 // Import child components
 import { ShaderControlsSidebar } from './ShaderControlsSidebar';
@@ -31,7 +31,6 @@ interface UniversalSidePanelProps {
 const DEFAULT_WIDTH = 320;
 const MIN_WIDTH = 280;
 const MAX_WIDTH = 800;
-const COLLAPSED_WIDTH = 56;
 
 // Registry configuration type
 interface PanelConfig {
@@ -40,6 +39,7 @@ interface PanelConfig {
     icon: React.ComponentType<any>;
     className?: string;
     autoOpen?: boolean;
+    variant?: string;
 }
 
 // Registry of supported node types
@@ -48,13 +48,15 @@ const PANEL_REGISTRY: Record<string, PanelConfig> = {
         component: ShaderControlsSidebar,
         title: 'Shader Controls',
         icon: Brush,
-        autoOpen: true
+        autoOpen: true,
+        variant: 'embedded'
     },
     'chat': {
         component: ChatSidebar,
         title: 'Chat Assistant',
         icon: MessageSquare,
-        autoOpen: false
+        autoOpen: false,
+        variant: 'embedded'
     },
     // Add other node types here as needed
 };
@@ -78,10 +80,6 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
     // Filter selected nodes to those that have a registered panel
     const validNodes = selectedNodes.filter(node => PANEL_REGISTRY[node.type || '']);
 
-    // Determine if we should show content
-    const showContent = isOpen && (validNodes.length > 0 || !!overridePanel);
-    const isCollapsed = !isOpen;
-
     // Handle auto-selection of tab when nodes change
     useEffect(() => {
         if (activeTabId && validNodes.find(n => n.id === activeTabId)) {
@@ -101,7 +99,7 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
     // Resizing logic
     useEffect(() => {
         const resizer = resizerRef.current;
-        if (!resizer || isCollapsed) return;
+        if (!resizer) return;
 
         const handleMouseDown = (e: MouseEvent) => {
             e.preventDefault();
@@ -128,7 +126,7 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
 
         resizer.addEventListener('mousedown', handleMouseDown);
         return () => resizer.removeEventListener('mousedown', handleMouseDown);
-    }, [isCollapsed, onResize, panelWidth]);
+    }, [onResize, panelWidth]);
 
     // Determine what to render
     const renderContent = () => {
@@ -161,6 +159,18 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
             }
         }
 
+        if (validNodes.length === 0) {
+            return (
+                <div className="h-full flex flex-col items-center justify-center text-zinc-500 p-8 text-center gap-4">
+                    <Brush size={32} className="opacity-20" />
+                    <div className="flex flex-col gap-1">
+                        <h3 className="text-sm font-medium text-zinc-400">No node selected</h3>
+                        <p className="text-xs">Select a supported node to view its controls</p>
+                    </div>
+                </div>
+            );
+        }
+
         if (!activeTabId) return null;
 
         const activeNode = validNodes.find(n => n.id === activeTabId);
@@ -178,85 +188,83 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
                 nodeData={activeNode.data}
                 onUpdateData={onUpdateNode}
                 variant="embedded" // New variant we will add
-                isCollapsed={false} // Always expanded inside the panel
                 // Forward width props if needed by child
                 width={panelWidth}
             />
         );
     };
 
-    if (!isOpen && validNodes.length === 0 && !overridePanel) return null;
+    if (!isOpen) return null;
 
     return (
         <aside
             ref={sidebarRef}
             className={cn(
-                "fixed right-0 top-[65px] h-[calc(100vh-65px)] z-40",
-                "bg-zinc-950/80 backdrop-blur-xl border-l border-zinc-800",
-                "transition-all duration-300 ease-out flex flex-col shadow-2xl",
+                "fixed right-4 top-[81px] z-40",
+                "backdrop-blur-xl border border-zinc-800/50",
+                "rounded-2xl shadow-2xl",
+                "transition-all duration-300 ease-out flex flex-col",
+                "bg-black/40",
                 isResizing ? "transition-none select-none" : ""
             )}
             style={{
-                width: isOpen ? `${panelWidth}px` : `${COLLAPSED_WIDTH}px`,
+                width: `${panelWidth}px`,
+                height: 'calc(100vh - 97px)',
+                backgroundColor: 'var(--sidebar)',
             }}
         >
             {/* Resizer Handle */}
-            {isOpen && (
-                <div
-                    ref={resizerRef}
-                    className="absolute left-0 top-0 w-1 h-full cursor-col-resize hover:bg-brand-cyan/50 transition-colors z-50"
-                />
-            )}
+            <div
+                ref={resizerRef}
+                className="absolute left-0 top-0 w-1 h-full cursor-col-resize hover:bg-zinc-500/50 transition-colors z-50 rounded-l-2xl"
+            />
 
             {/* Tabs / Header */}
-            {isOpen && validNodes.length > 1 && !overridePanel && (
-                <div className="flex items-center overflow-x-auto border-b border-zinc-800 scrollbar-hide">
-                    {validNodes.map(node => {
-                        const conf = PANEL_REGISTRY[node.type || ''];
-                        const Icon = conf?.icon || Settings;
-                        const isActive = node.id === activeTabId;
+            {!overridePanel && (
+                <div className="flex items-center justify-between border-b border-zinc-800/50 bg-transparent rounded-t-2xl overflow-hidden">
+                    <div className="flex items-center overflow-x-auto scrollbar-hide flex-1 h-[41px]"> {/* Fixed height for consistency */}
+                        {validNodes.length > 0 ? (
+                            validNodes.map(node => {
+                                const conf = PANEL_REGISTRY[node.type || ''];
+                                const Icon = conf?.icon || Settings;
+                                const isActive = node.id === activeTabId;
 
-                        return (
-                            <button
-                                key={node.id}
-                                onClick={() => setActiveTabId(node.id)}
-                                className={cn(
-                                    "flex items-center gap-2 px-4 py-3 text-xs font-medium border-b-2 transition-colors min-w-[100px]",
-                                    isActive
-                                        ? "border-brand-cyan text-brand-cyan bg-brand-cyan/5"
-                                        : "border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50"
-                                )}
-                            >
-                                <Icon size={14} />
-                                <span className="truncate max-w-[80px]">{node.data.label || conf?.title || 'Node'}</span>
-                            </button>
-                        );
-                    })}
+                                return (
+                                    <button
+                                        key={node.id}
+                                        onClick={() => setActiveTabId(node.id)}
+                                        className={cn(
+                                            "flex items-center gap-2 px-4 py-3 text-xs font-medium border-r border-zinc-800/50 transition-colors min-w-[100px] h-full",
+                                            isActive
+                                                ? "text-zinc-400 bg-zinc-800/5"
+                                                : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50"
+                                        )}
+                                    >
+                                        <Icon size={14} />
+                                        <span className="truncate max-w-[80px]">{node.data.label || conf?.title || 'Node'}</span>
+                                    </button>
+                                );
+                            })
+                        ) : (
+                            <div className="px-4 text-xs font-medium text-zinc-500 italic">
+                                Controls
+                            </div>
+                        )}
+                    </div>
+                    {/* Close Button */}
+                    <button
+                        onClick={onClose}
+                        className="p-3 text-zinc-500 hover:text-zinc-200 border-l border-zinc-800/50 hover:bg-zinc-800/50 transition-colors h-full rounded-tr-2xl"
+                    >
+                        <X size={16} />
+                    </button>
                 </div>
             )}
 
             {/* Main Content Area */}
-            <div className="flex-1 overflow-hidden relative">
-                {isOpen ? renderContent() : (
-                    // Collapsed State Icons
-                    <div className="flex flex-col items-center py-4 gap-4">
-                        <button onClick={onClose} className="p-2 text-zinc-500 hover:text-zinc-300">
-                            <Settings size={20} />
-                        </button>
-                        {/* Add more collapsed state indicators if needed */}
-                    </div>
-                )}
+            <div className="flex-1 overflow-hidden relative rounded-b-2xl">
+                {renderContent()}
             </div>
-
-            {/* Collapsed Toggle Button (if we want manual toggle from collapsed state) */}
-            {!isOpen && (
-                <button
-                    onClick={onClose} // Re-open or toggle
-                    className="absolute left-0 top-0 w-full h-full flex items-center justify-center hover:bg-zinc-800/50"
-                >
-                    <ChevronRight size={20} className="text-zinc-500 rotate-180" />
-                </button>
-            )}
         </aside>
     );
 };

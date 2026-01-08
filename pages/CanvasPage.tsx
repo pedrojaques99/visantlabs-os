@@ -47,6 +47,7 @@ import { useCanvasHistory } from '../hooks/canvas/useCanvasHistory';
 import { useCanvasProject } from '../hooks/canvas/useCanvasProject';
 import { useCanvasNodeHandlers } from '../hooks/canvas/useCanvasNodeHandlers';
 import { useCanvasNodeCreation } from '../hooks/canvas/useCanvasNodeCreation';
+import { useCanvasToolbarActions } from '../hooks/canvas/useCanvasToolbarActions';
 import { useCanvasEvents } from '../hooks/canvas/useCanvasEvents';
 import { useCanvasContextMenu } from '../hooks/canvas/useCanvasContextMenu';
 import { useCanvasKeyboard } from '../hooks/canvas/useCanvasKeyboard';
@@ -307,10 +308,18 @@ export const CanvasPage: React.FC = () => {
     if (selectedIds !== prevSelectedNodeIdsRef.current) {
       prevSelectedNodeIdsRef.current = selectedIds;
 
-      // Auto-open panel if a shader node is newly selected
+      // Auto-open panel if a shader node or chat node is newly selected
       const hasShader = selected.some(n => n.type === 'shader');
-      if (hasShader) {
+      const hasChat = selected.some(n => n.type === 'chat');
+      if (hasShader || hasChat) {
         setIsUniversalPanelOpen(true);
+      }
+
+      // Logic: If there is a chat node, keep panel open.
+      // If NO chat node and nothing selected, close it.
+      const hasChatNode = nodes.some(n => n.type === 'chat');
+      if (selected.length === 0 && !hasChatNode) {
+        setIsUniversalPanelOpen(false);
       }
     }
   }, [nodes, setSelectedNodesCountInContext]);
@@ -1041,6 +1050,24 @@ export const CanvasPage: React.FC = () => {
     };
   }, [drawing.editingDrawingId, drawing]);
 
+  const nodeCreators = useCanvasNodeCreation(
+    reactFlowInstance,
+    nodes,
+    edges,
+    setNodes,
+    addToHistory,
+    handleView,
+    handleEdit,
+    handleDelete,
+    handleDuplicate,
+    handlersRef,
+    subscriptionStatus,
+    nodesRef,
+    updateNodeData,
+    saveImmediately,
+    projectId
+  );
+
   const {
     addMergeNode,
     addPromptNode,
@@ -1067,25 +1094,7 @@ export const CanvasPage: React.FC = () => {
     addBrandCoreNode,
     addTextNode,
     addChatNode,
-  } = useCanvasNodeCreation(
-    reactFlowInstance,
-    nodes,
-    edges,
-    setNodes,
-    addToHistory,
-    handleView,
-    handleEdit,
-    handleDelete,
-    handleDuplicate,
-    handlersRef,
-    subscriptionStatus,
-    nodesRef,
-    updateNodeData,
-    saveImmediately,
-    projectId
-  );
-
-
+  } = nodeCreators;
 
   // Register handleSavePrompt in handlersRef for new nodes
   useEffect(() => {
@@ -1151,6 +1160,31 @@ export const CanvasPage: React.FC = () => {
       addImageNode,
     }
   );
+
+  const toolbarActions = useCanvasToolbarActions({
+    nodes,
+    onConnect,
+    reactFlowInstance,
+    creators: {
+      addMergeNode,
+      addPromptNode,
+      addEditNode,
+      addUpscaleNode,
+      addMockupNode,
+      addAngleNode,
+      addTextureNode,
+      addAmbienceNode,
+      addLuminanceNode,
+      addShaderNode,
+      addBrandKitNodes,
+      addLogoNode,
+      addPDFNode,
+      addStrategyNode,
+      addBrandCoreNode,
+      addChatNode,
+      addColorExtractorNode,
+    }
+  });
 
   const { handleAddNode } = useCanvasContextMenu({
     reactFlowWrapper,
@@ -1254,8 +1288,6 @@ export const CanvasPage: React.FC = () => {
     }
   }, [setOnSaveWorkflow]);
 
-
-
   // Handle drop of images onto canvas
   const handleDropImage = useCallback((image: UploadedImage, position: { x: number; y: number }) => {
     if (!reactFlowInstance) return;
@@ -1300,6 +1332,57 @@ export const CanvasPage: React.FC = () => {
     // Upload para R2 será feito automaticamente pelo hook useImmediateR2Upload
     toast.success(t('canvas.imageDropped'), { duration: 2000 });
   }, [reactFlowInstance, handleView, handleEdit, handleDelete, handleDuplicate, nodes, edges, addToHistory, setNodes, handlersRef, addTextNode, t]);
+
+  // Handle Paste from Context Menu
+  const handlePaste = useCallback(async () => {
+    try {
+      // Try to read image from clipboard
+      // Use standard clipboard API which works in most modern browsers (except Firefox sometimes without user action)
+      // But since this is triggered by a user click (context menu), it should work.
+      try {
+        const items = await navigator.clipboard.read();
+        for (const item of items) {
+          if (item.types.some(type => type.startsWith('image/'))) {
+            const blob = await item.getType(item.types.find(type => type.startsWith('image/'))!);
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              const base64 = e.target?.result as string;
+              if (reactFlowInstance) {
+                const viewport = reactFlowInstance.getViewport();
+                // Paste at center of viewport
+                const x = (window.innerWidth / 2 - viewport.x) / viewport.zoom;
+                const y = (window.innerHeight / 2 - viewport.y) / viewport.zoom;
+                handleDropImage({ base64, mimeType: blob.type }, { x: x - 250, y: y - 250 }); // Offset slightly
+              }
+            };
+            reader.readAsDataURL(blob);
+            return;
+          }
+        }
+      } catch (e) {
+        // Fallback or permission error, try text
+        console.log('Clipboard read failed or not supported, trying text fallback', e);
+      }
+
+      // Try to read text
+      const text = await navigator.clipboard.readText();
+      if (text) {
+        if (reactFlowInstance) {
+          const viewport = reactFlowInstance.getViewport();
+          const x = (window.innerWidth / 2 - viewport.x) / viewport.zoom;
+          const y = (window.innerHeight / 2 - viewport.y) / viewport.zoom;
+
+          // Use addTextNode
+          addTextNode({ x, y }, text);
+          toast.success(t('canvas.textPasted') || 'Text pasted');
+        }
+      }
+
+    } catch (err) {
+      console.error('Paste failed:', err);
+      toast.error(t('canvas.pasteFailed') || 'Failed to paste');
+    }
+  }, [handleDropImage, addTextNode, reactFlowInstance, t]);
 
   // Handle drop of toolbar nodes onto canvas
   const handleDropNode = useCallback((nodeType: string, position: { x: number; y: number }) => {
@@ -3492,6 +3575,8 @@ export const CanvasPage: React.FC = () => {
             onAddBrandCore={() => handleAddNode(addBrandCoreNode)}
             onAddChat={() => handleAddNode(addChatNode)}
             experimentalMode={experimentalMode}
+            onPaste={handlePaste}
+            onToggleUI={() => canvasHeader.setShowControls(!canvasHeader.showControls)}
           />
         )}
 
@@ -3918,7 +4003,16 @@ export const CanvasPage: React.FC = () => {
 
       {/* Universal Side Panel */}
       <UniversalSidePanel
-        selectedNodes={nodes.filter(n => n.selected)}
+        selectedNodes={(() => {
+          const selected = nodes.filter(n => n.selected);
+          // Always include chat node in the panel context if it exists, so the tab is available
+          const chatNode = nodes.find(n => n.type === 'chat');
+          if (chatNode && !selected.find(n => n.id === chatNode.id)) {
+            // Prepend chat node so real selected nodes take priority in tab selection (last wins)
+            return [chatNode, ...selected];
+          }
+          return selected;
+        })()}
         isOpen={isUniversalPanelOpen}
         onClose={() => {
           setIsUniversalPanelOpen(false);
@@ -3951,278 +4045,23 @@ export const CanvasPage: React.FC = () => {
           position="left"
           selectedNodesCount={nodes.filter(n => n.selected).length}
           experimentalMode={experimentalMode}
-          onAddMerge={() => {
-            const selectedNodes = nodes.filter(n => n.selected);
-            const newNodeId = addMergeNode();
-            if (newNodeId && selectedNodes.length > 0 && onConnect) {
-              setTimeout(() => {
-                onConnect({
-                  source: selectedNodes[0].id,
-                  target: newNodeId,
-                } as any);
-              }, 100);
-            }
-          }}
-          onAddEdit={() => {
-            const selectedNodes = nodes.filter(n => n.selected);
-            const newNodeId = addPromptNode();
-            if (newNodeId && selectedNodes.length > 0 && onConnect) {
-              setTimeout(() => {
-                onConnect({
-                  source: selectedNodes[0].id,
-                  target: newNodeId,
-                } as any);
-              }, 100);
-            }
-          }}
-          onAddUpscale={() => {
-            const selectedNodes = nodes.filter(n => n.selected);
-            const newNodeId = addUpscaleNode();
-            if (newNodeId && selectedNodes.length > 0 && onConnect) {
-              setTimeout(() => {
-                onConnect({
-                  source: selectedNodes[0].id,
-                  target: newNodeId,
-                } as any);
-              }, 100);
-            }
-          }}
-          onAddMockup={() => {
-            const selectedNodes = nodes.filter(n => n.selected);
-            let newNodeId: string | undefined;
-            if (reactFlowInstance) {
-              const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-              if (pane) {
-                newNodeId = addMockupNode({
-                  x: window.innerWidth / 2,
-                  y: window.innerHeight / 2,
-                });
-              }
-            }
-            if (newNodeId && selectedNodes.length > 0 && onConnect) {
-              setTimeout(() => {
-                onConnect({
-                  source: selectedNodes[0].id,
-                  target: newNodeId,
-                } as any);
-              }, 100);
-            }
-          }}
-          onAddAngle={() => {
-            const selectedNodes = nodes.filter(n => n.selected);
-            let newNodeId: string | undefined;
-            if (reactFlowInstance) {
-              const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-              if (pane) {
-                newNodeId = addAngleNode({
-                  x: window.innerWidth / 2,
-                  y: window.innerHeight / 2,
-                });
-              }
-            }
-            if (newNodeId && selectedNodes.length > 0 && onConnect) {
-              setTimeout(() => {
-                onConnect({
-                  source: selectedNodes[0].id,
-                  target: newNodeId,
-                } as any);
-              }, 100);
-            }
-          }}
-          onAddTexture={() => {
-            const selectedNodes = nodes.filter(n => n.selected);
-            let newNodeId: string | undefined;
-            if (reactFlowInstance) {
-              const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-              if (pane) {
-                newNodeId = addTextureNode({
-                  x: window.innerWidth / 2,
-                  y: window.innerHeight / 2,
-                });
-              }
-            }
-            if (newNodeId && selectedNodes.length > 0 && onConnect) {
-              setTimeout(() => {
-                onConnect({
-                  source: selectedNodes[0].id,
-                  target: newNodeId,
-                } as any);
-              }, 100);
-            }
-          }}
-          onAddAmbience={() => {
-            const selectedNodes = nodes.filter(n => n.selected);
-            let newNodeId: string | undefined;
-            if (reactFlowInstance) {
-              const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-              if (pane) {
-                newNodeId = addAmbienceNode({
-                  x: window.innerWidth / 2,
-                  y: window.innerHeight / 2,
-                });
-              }
-            }
-            if (newNodeId && selectedNodes.length > 0 && onConnect) {
-              setTimeout(() => {
-                onConnect({
-                  source: selectedNodes[0].id,
-                  target: newNodeId,
-                } as any);
-              }, 100);
-            }
-          }}
-          onAddLuminance={() => {
-            const selectedNodes = nodes.filter(n => n.selected);
-            let newNodeId: string | undefined;
-            if (reactFlowInstance) {
-              const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-              if (pane) {
-                newNodeId = addLuminanceNode({
-                  x: window.innerWidth / 2,
-                  y: window.innerHeight / 2,
-                });
-              }
-            }
-            if (newNodeId && selectedNodes.length > 0 && onConnect) {
-              setTimeout(() => {
-                onConnect({
-                  source: selectedNodes[0].id,
-                  target: newNodeId,
-                } as any);
-              }, 100);
-            }
-          }}
-          onAddBrandKit={() => {
-            const selectedNodes = nodes.filter(n => n.selected);
-            let newNodeIds: string[] = [];
-            if (reactFlowInstance) {
-              const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-              if (pane) {
-                newNodeIds = addBrandKitNodes({
-                  x: window.innerWidth / 2,
-                  y: window.innerHeight / 2,
-                });
-              }
-            }
-            if (newNodeIds.length > 0 && selectedNodes.length > 0 && onConnect) {
-              setTimeout(() => {
-                selectedNodes[0].id && newNodeIds.forEach(newNodeId => {
-                  onConnect({
-                    source: selectedNodes[0].id,
-                    target: newNodeId,
-                  } as any);
-                });
-              }, 100);
-            }
-          }}
-          onAddLogo={() => {
-            if (reactFlowInstance) {
-              const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-              if (pane) {
-                addLogoNode({
-                  x: window.innerWidth / 2,
-                  y: window.innerHeight / 2,
-                });
-              }
-            }
-          }}
-          onAddPDF={() => {
-            if (reactFlowInstance) {
-              const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-              if (pane) {
-                addPDFNode({
-                  x: window.innerWidth / 2,
-                  y: window.innerHeight / 2,
-                });
-              }
-            }
-          }}
-          onAddStrategy={() => {
-            if (reactFlowInstance) {
-              const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-              if (pane) {
-                addStrategyNode({
-                  x: window.innerWidth / 2,
-                  y: window.innerHeight / 2,
-                });
-              }
-            }
-          }}
-          onAddBrandCore={() => {
-            if (reactFlowInstance) {
-              const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-              if (pane) {
-                addBrandCoreNode({
-                  x: window.innerWidth / 2,
-                  y: window.innerHeight / 2,
-                });
-              }
-            }
-          }}
-          onAddChat={() => {
-            if (reactFlowInstance) {
-              const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-              if (pane) {
-                addChatNode({
-                  x: window.innerWidth / 2,
-                  y: window.innerHeight / 2,
-                });
-              }
-            }
-          }}
-          onAddPrompt={() => {
-            const selectedNodes = nodes.filter(n => n.selected);
-            let newNodeId: string | undefined;
-            if (reactFlowInstance) {
-              const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-              if (pane) {
-                newNodeId = addPromptNode({
-                  x: window.innerWidth / 2,
-                  y: window.innerHeight / 2,
-                });
-              }
-            }
-            if (newNodeId && selectedNodes.length > 0 && onConnect) {
-              setTimeout(() => {
-                onConnect({
-                  source: selectedNodes[0].id,
-                  target: newNodeId,
-                } as any);
-              }, 100);
-            }
-          }}
-          onAddColorExtractor={() => {
-            if (reactFlowInstance) {
-              const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-              if (pane) {
-                addColorExtractorNode({
-                  x: window.innerWidth / 2,
-                  y: window.innerHeight / 2,
-                });
-              }
-            }
-          }}
-          onAddShader={() => {
-            const selectedNodes = nodes.filter(n => n.selected);
-            let newNodeId: string | undefined;
-            if (reactFlowInstance) {
-              const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-              if (pane) {
-                newNodeId = addShaderNode({
-                  x: window.innerWidth / 2,
-                  y: window.innerHeight / 2,
-                });
-              }
-            }
-            if (newNodeId && selectedNodes.length > 0 && onConnect) {
-              setTimeout(() => {
-                onConnect({
-                  source: selectedNodes[0].id,
-                  target: newNodeId,
-                } as any);
-              }, 100);
-            }
-          }}
+          onAddMerge={toolbarActions.onAddMerge}
+          onAddEdit={toolbarActions.onAddEdit}
+          onAddUpscale={toolbarActions.onAddUpscale}
+          onAddMockup={toolbarActions.onAddMockup}
+          onAddAngle={toolbarActions.onAddAngle}
+          onAddTexture={toolbarActions.onAddTexture}
+          onAddAmbience={toolbarActions.onAddAmbience}
+          onAddLuminance={toolbarActions.onAddLuminance}
+          onAddBrandKit={toolbarActions.onAddBrandKit}
+          onAddLogo={toolbarActions.onAddLogo}
+          onAddPDF={toolbarActions.onAddPDF}
+          onAddStrategy={toolbarActions.onAddStrategy}
+          onAddBrandCore={toolbarActions.onAddBrandCore}
+          onAddChat={toolbarActions.onAddChat}
+          onAddPrompt={toolbarActions.onAddPrompt}
+          onAddColorExtractor={toolbarActions.onAddColorExtractor}
+          onAddShader={toolbarActions.onAddShader}
           onToggleDrawing={() => {
             drawing.setIsDrawingMode(!drawing.drawingState.isDrawingMode);
           }}
