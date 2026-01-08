@@ -20,13 +20,13 @@ const FREE_GENERATIONS_LIMIT = 4;
 // Handles cases where FRONTEND_URL contains multiple comma-separated URLs
 const getFrontendUrl = (): string => {
   const rawUrl = FRONTEND_URL || 'http://localhost:3000';
-  
+
   // Split by comma if multiple URLs are provided
   const urls = rawUrl.split(',').map(url => url.trim()).filter(url => url.length > 0);
-  
+
   // Get the first URL
   const firstUrl = urls[0] || 'http://localhost:3000';
-  
+
   // Validate URL format
   try {
     const url = new URL(firstUrl);
@@ -252,12 +252,12 @@ const getStripePlanInfo = async (subscriptionId: string): Promise<StripePlanInfo
   try {
     const subscription = await stripe.subscriptions.retrieve(subscriptionId);
     const priceId = subscription.items.data[0]?.price?.id;
-    
+
     if (!priceId) return null;
 
     const price = await stripe.prices.retrieve(priceId);
     const productId = typeof price.product === 'string' ? price.product : price.product?.id;
-    
+
     if (!productId) return null;
 
     const product = await stripe.products.retrieve(productId);
@@ -265,8 +265,8 @@ const getStripePlanInfo = async (subscriptionId: string): Promise<StripePlanInfo
 
     // Extract tier and monthlyCredits from metadata
     const tier = metadata.tier || 'premium';
-    const monthlyCredits = metadata.monthlyCredits 
-      ? parseInt(metadata.monthlyCredits, 10) 
+    const monthlyCredits = metadata.monthlyCredits
+      ? parseInt(metadata.monthlyCredits, 10)
       : (tier === 'premium' ? 100 : tier === 'pro' ? 500 : 3);
 
     return { tier, monthlyCredits };
@@ -315,7 +315,7 @@ router.post('/create-checkout-session', verifyBotId, authenticate, async (req: A
     await connectToMongoDB();
     const db = getDb();
     const userId = req.userId!;
-    
+
     // Get or create Stripe customer
     let user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
     if (!user) {
@@ -334,7 +334,7 @@ router.post('/create-checkout-session', verifyBotId, authenticate, async (req: A
         },
       });
       customerId = customer.id;
-      
+
       await db.collection('users').updateOne(
         { _id: new ObjectId(userId) },
         { $set: { stripeCustomerId: customerId } }
@@ -344,7 +344,7 @@ router.post('/create-checkout-session', verifyBotId, authenticate, async (req: A
 
     // Get normalized frontend URL (handles comma-separated URLs)
     const normalizedFrontendUrl = getFrontendUrl();
-    
+
     console.log('🔗 Creating checkout session:', {
       customerId,
       priceId,
@@ -396,7 +396,7 @@ router.post('/create-portal-session', verifyBotId, authenticate, async (req: Aut
     await connectToMongoDB();
     const db = getDb();
     const userId = req.userId!;
-    
+
     const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
     if (!user || !user.stripeCustomerId) {
       return res.status(400).json({ error: 'No subscription found' });
@@ -419,7 +419,7 @@ router.get('/subscription-status', authenticate, async (req: AuthRequest, res, n
     await connectToMongoDB();
     const db = getDb();
     const userId = req.userId!;
-    
+
     const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
@@ -448,8 +448,8 @@ router.get('/subscription-status', authenticate, async (req: AuthRequest, res, n
       creditsResetDate,
       totalCreditsEarned,
       totalCredits,
-      canGenerate: hasActiveSubscription 
-        ? totalCredits > 0 
+      canGenerate: hasActiveSubscription
+        ? totalCredits > 0
         : (freeGenerationsUsed < FREE_GENERATIONS_LIMIT && totalCredits > 0),
     });
   } catch (error) {
@@ -482,14 +482,14 @@ router.get('/plans', async (req, res, next) => {
     } catch (priceError: any) {
       console.error('❌ Error retrieving price from Stripe:', priceError.message);
       if (priceError.code === 'resource_missing') {
-        return res.status(404).json({ 
-          error: `Price ID not found in Stripe: ${priceId}. Please check your STRIPE_PRICE_ID configuration.` 
+        return res.status(404).json({
+          error: `Price ID not found in Stripe: ${priceId}. Please check your STRIPE_PRICE_ID configuration.`
         });
       }
       throw priceError;
     }
     const productId = typeof price.product === 'string' ? price.product : price.product?.id;
-    
+
     if (!productId) {
       console.error('❌ Product ID not found in price');
       return res.status(404).json({ error: 'Product not found' });
@@ -503,8 +503,8 @@ router.get('/plans', async (req, res, next) => {
 
     // Extract plan information
     const tier = metadata.tier || 'premium';
-    const monthlyCredits = metadata.monthlyCredits 
-      ? parseInt(metadata.monthlyCredits, 10) 
+    const monthlyCredits = metadata.monthlyCredits
+      ? parseInt(metadata.monthlyCredits, 10)
       : (tier === 'premium' ? 100 : tier === 'pro' ? 500 : 3);
 
     // Format price
@@ -530,13 +530,27 @@ router.get('/plans', async (req, res, next) => {
   }
 });
 
+// Get all active products (credit packages and subscription plans) from database
+router.get('/products', async (_req, res, next) => {
+  try {
+    const products = await prisma.product.findMany({
+      where: { isActive: true },
+      orderBy: { displayOrder: 'asc' },
+    });
+    res.json(products);
+  } catch (error) {
+    console.error('❌ Error fetching public products:', error);
+    next(error);
+  }
+});
+
 // Get usage info
 router.get('/usage', authenticate, async (req: AuthRequest, res, next) => {
   try {
     await connectToMongoDB();
     const db = getDb();
     const userId = req.userId!;
-    
+
     const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
@@ -561,8 +575,8 @@ router.get('/usage', authenticate, async (req: AuthRequest, res, next) => {
       creditsResetDate,
       totalCreditsEarned,
       totalCredits,
-      canGenerate: hasActiveSubscription 
-        ? totalCredits > 0 
+      canGenerate: hasActiveSubscription
+        ? totalCredits > 0
         : (freeGenerationsUsed < FREE_GENERATIONS_LIMIT && totalCredits > 0),
     });
   } catch (error) {
@@ -618,7 +632,7 @@ router.post('/verify-subscription', authenticate, async (req: AuthRequest, res, 
     await connectToMongoDB();
     const db = getDb();
     const userId = req.userId!;
-    
+
     const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
@@ -765,7 +779,7 @@ router.post('/create-pix-checkout', verifyBotId, authenticate, async (req: AuthR
     await connectToMongoDB();
     const db = getDb();
     const userId = req.userId!;
-    
+
     // Get or create Stripe customer
     let user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
     if (!user) {
@@ -800,7 +814,7 @@ router.post('/create-pix-checkout', verifyBotId, authenticate, async (req: AuthR
         },
       });
       customerId = customer.id;
-      
+
       await db.collection('users').updateOne(
         { _id: new ObjectId(userId) },
         { $set: { stripeCustomerId: customerId } }
@@ -810,7 +824,7 @@ router.post('/create-pix-checkout', verifyBotId, authenticate, async (req: AuthR
 
     // Get normalized frontend URL (handles comma-separated URLs)
     const normalizedFrontendUrl = getFrontendUrl();
-    
+
     // Convert price to cents (minor units)
     const unitAmount = Math.round(price * 100);
 
@@ -826,24 +840,24 @@ router.post('/create-pix-checkout', verifyBotId, authenticate, async (req: AuthR
     // Build URLs properly using URL constructor
     let successUrl: string;
     let cancelUrl: string;
-    
+
     try {
       const baseUrl = new URL(normalizedFrontendUrl);
       const successUrlObj = new URL('/pricing', baseUrl);
       successUrlObj.searchParams.set('session_id', '{CHECKOUT_SESSION_ID}');
       successUrlObj.searchParams.set('success', 'true');
       successUrl = successUrlObj.toString();
-      
+
       const cancelUrlObj = new URL('/pricing', baseUrl);
       cancelUrlObj.searchParams.set('canceled', 'true');
       cancelUrl = cancelUrlObj.toString();
     } catch (urlError: any) {
-      console.error('❌ Invalid URL format:', { 
-        frontendUrl: normalizedFrontendUrl, 
-        error: urlError.message 
+      console.error('❌ Invalid URL format:', {
+        frontendUrl: normalizedFrontendUrl,
+        error: urlError.message
       });
-      return res.status(500).json({ 
-        error: 'Invalid URL configuration. Please check FRONTEND_URL environment variable.' 
+      return res.status(500).json({
+        error: 'Invalid URL configuration. Please check FRONTEND_URL environment variable.'
       });
     }
 
@@ -905,24 +919,24 @@ router.post('/create-pix-checkout', verifyBotId, authenticate, async (req: AuthR
 
     console.log('✅ PIX checkout session created:', session.id);
 
-    res.json({ 
-      sessionId: session.id, 
+    res.json({
+      sessionId: session.id,
       url: session.url,
     });
   } catch (error: any) {
     console.error('❌ PIX checkout session error:', error);
-    
+
     // Handle Stripe errors specifically
     if (error.type && error.type.startsWith('Stripe')) {
       const statusCode = error.statusCode || 400;
       let errorMessage = error.message || 'Stripe error occurred';
-      
+
       // Check if PIX is not enabled
-      if (errorMessage.includes('payment method type provided: pix is invalid') || 
-          errorMessage.includes('Pix') && errorMessage.includes('invalid')) {
+      if (errorMessage.includes('payment method type provided: pix is invalid') ||
+        errorMessage.includes('Pix') && errorMessage.includes('invalid')) {
         errorMessage = 'PIX payment method is not enabled in your Stripe account. Please enable PIX in Stripe Dashboard: https://dashboard.stripe.com/account/payments/settings';
       }
-      
+
       console.error('Stripe error details:', {
         message: errorMessage,
         type: error.type,
@@ -930,14 +944,14 @@ router.post('/create-pix-checkout', verifyBotId, authenticate, async (req: AuthR
         statusCode,
         param: error.param,
       });
-      
+
       return res.status(statusCode).json({
         error: errorMessage,
         code: error.code,
         type: error.type,
       });
     }
-    
+
     // Handle other errors
     if (process.env.NODE_ENV === 'development') {
       console.error('Error details:', {
@@ -948,7 +962,7 @@ router.post('/create-pix-checkout', verifyBotId, authenticate, async (req: AuthR
         stack: error.stack,
       });
     }
-    
+
     next(error);
   }
 });
@@ -985,7 +999,7 @@ router.post('/create-credit-checkout', verifyBotId, authenticate, async (req: Au
     await connectToMongoDB();
     const db = getDb();
     const userId = req.userId!;
-    
+
     // Get or create Stripe customer
     let user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
     if (!user) {
@@ -1020,7 +1034,7 @@ router.post('/create-credit-checkout', verifyBotId, authenticate, async (req: Au
         },
       });
       customerId = customer.id;
-      
+
       await db.collection('users').updateOne(
         { _id: new ObjectId(userId) },
         { $set: { stripeCustomerId: customerId } }
@@ -1030,7 +1044,7 @@ router.post('/create-credit-checkout', verifyBotId, authenticate, async (req: Au
 
     // Get normalized frontend URL (handles comma-separated URLs)
     const normalizedFrontendUrl = getFrontendUrl();
-    
+
     // Convert price to cents (minor units)
     const unitAmount = Math.round(price * 100);
     const currencyLower = currency.toLowerCase();
@@ -1047,30 +1061,30 @@ router.post('/create-credit-checkout', verifyBotId, authenticate, async (req: Au
     // Build URLs properly using URL constructor
     let successUrl: string;
     let cancelUrl: string;
-    
+
     try {
       const baseUrl = new URL(normalizedFrontendUrl);
       const successUrlObj = new URL('/pricing', baseUrl);
       successUrlObj.searchParams.set('session_id', '{CHECKOUT_SESSION_ID}');
       successUrlObj.searchParams.set('success', 'true');
       successUrl = successUrlObj.toString();
-      
+
       const cancelUrlObj = new URL('/pricing', baseUrl);
       cancelUrlObj.searchParams.set('canceled', 'true');
       cancelUrl = cancelUrlObj.toString();
     } catch (urlError: any) {
-      console.error('❌ Invalid URL format:', { 
-        frontendUrl: normalizedFrontendUrl, 
-        error: urlError.message 
+      console.error('❌ Invalid URL format:', {
+        frontendUrl: normalizedFrontendUrl,
+        error: urlError.message
       });
-      return res.status(500).json({ 
-        error: 'Invalid URL configuration. Please check FRONTEND_URL environment variable.' 
+      return res.status(500).json({
+        error: 'Invalid URL configuration. Please check FRONTEND_URL environment variable.'
       });
     }
 
     // Try to use stripeProductId if available, otherwise use price_data
     let lineItems: Stripe.Checkout.SessionCreateParams.LineItem[];
-    
+
     if (creditPackage.stripeProductId) {
       // Use existing product - need to find or create price for this currency
       // For now, use price_data as fallback since we need dynamic pricing
@@ -1154,18 +1168,18 @@ router.post('/create-credit-checkout', verifyBotId, authenticate, async (req: Au
 
     console.log('✅ Credit checkout session created:', session.id);
 
-    res.json({ 
-      sessionId: session.id, 
+    res.json({
+      sessionId: session.id,
       url: session.url,
     });
   } catch (error: any) {
     console.error('❌ Credit checkout session error:', error);
-    
+
     // Handle Stripe errors specifically
     if (error.type && error.type.startsWith('Stripe')) {
       const statusCode = error.statusCode || 400;
       const errorMessage = error.message || 'Stripe error occurred';
-      
+
       console.error('Stripe error details:', {
         message: errorMessage,
         type: error.type,
@@ -1173,14 +1187,14 @@ router.post('/create-credit-checkout', verifyBotId, authenticate, async (req: Au
         statusCode,
         param: error.param,
       });
-      
+
       return res.status(statusCode).json({
         error: errorMessage,
         code: error.code,
         type: error.type,
       });
     }
-    
+
     // Handle other errors
     if (process.env.NODE_ENV === 'development') {
       console.error('Error details:', {
@@ -1191,7 +1205,7 @@ router.post('/create-credit-checkout', verifyBotId, authenticate, async (req: Au
         stack: error.stack,
       });
     }
-    
+
     next(error);
   }
 });
@@ -1230,8 +1244,8 @@ router.get('/pix-qrcode/:sessionId', authenticate, async (req: AuthRequest, res,
     let qrCode: string | null = null;
 
     if (session.payment_intent) {
-      const paymentIntentId = typeof session.payment_intent === 'string' 
-        ? session.payment_intent 
+      const paymentIntentId = typeof session.payment_intent === 'string'
+        ? session.payment_intent
         : session.payment_intent.id;
 
       try {
@@ -1287,7 +1301,7 @@ router.post('/webhook', async (req, res) => {
   // Check if this is an AbacatePay webhook (has webhookSecret query param or missing stripe-signature)
   const webhookSecretQuery = req.query.webhookSecret || req.query.secret;
   const sig = req.headers['stripe-signature'];
-  
+
   // If webhookSecret is in query params and no stripe-signature, it's AbacatePay
   if (webhookSecretQuery && !sig) {
     console.log('🔍 Detected AbacatePay webhook, forwarding to AbacatePay handler');
@@ -1295,10 +1309,10 @@ router.post('/webhook', async (req, res) => {
     // We'll handle it inline to avoid route conflicts
     try {
       // Validate webhook secret if configured
-      const abacateWebhookSecret = process.env.ABACATE_WEBHOOK_SECRET 
-        || process.env.ABACATEPAY_WEBHOOK_SECRET 
+      const abacateWebhookSecret = process.env.ABACATE_WEBHOOK_SECRET
+        || process.env.ABACATEPAY_WEBHOOK_SECRET
         || process.env.ABACATEPAY_WEBHHOOK_SECRET; // Support typo variant
-      
+
       if (abacateWebhookSecret) {
         const secretValue = typeof webhookSecretQuery === 'string' ? webhookSecretQuery : (Array.isArray(webhookSecretQuery) ? webhookSecretQuery[0] : String(webhookSecretQuery));
         if (secretValue !== abacateWebhookSecret) {
@@ -1321,8 +1335,8 @@ router.post('/webhook', async (req, res) => {
       // Try multiple possible locations for billId
       const billId = data?.id || data?.billId || data?.billing?.id || req.body?.id || req.body?.billId || req.body?.billing?.id;
 
-      console.log('📥 AbacatePay webhook received:', { 
-        event, 
+      console.log('📥 AbacatePay webhook received:', {
+        event,
         billId,
         dataKeys: data ? Object.keys(data) : [],
         bodyKeys: Object.keys(req.body),
@@ -1342,21 +1356,21 @@ router.post('/webhook', async (req, res) => {
 
         // Find payment in database
         let payment = await db.collection('payments').findOne({ billId });
-        
+
         // Use webhook data directly - it already contains payment status
         // Check pixQrCode status from webhook first (most reliable)
         const pixQrCodeStatus = data?.pixQrCode?.status || data?.pixQrCode?.paymentStatus;
         const pixQrCodeAmount = data?.pixQrCode?.amount;
         const pixQrCodeMetadata = data?.pixQrCode?.metadata || {};
-        
+
         // Determine if payment is confirmed from webhook data
         const isPaidFromWebhook = pixQrCodeStatus === 'PAID' || pixQrCodeStatus === 'CONFIRMED';
-        
+
         // Fallback to API call only if webhook doesn't have clear status
         let billingStatus: any = null;
         let amountPaidInCents = pixQrCodeAmount || 0;
         let isPaid = isPaidFromWebhook;
-        
+
         if (!isPaidFromWebhook && pixQrCodeStatus) {
           // If webhook has status but not PAID, use it
           console.log('📥 Using status from webhook:', pixQrCodeStatus);
@@ -1380,10 +1394,10 @@ router.post('/webhook', async (req, res) => {
           if (!amountPaidInCents && billingStatus) {
             amountPaidInCents = billingStatus.amount || 0;
           }
-          
+
           // Use getCreditsByAmount to identify the correct package (supports coupons)
           let credits = 0;
-          
+
           // Try to get credits from metadata first
           if (pixQrCodeMetadata.credits) {
             credits = parseInt(pixQrCodeMetadata.credits, 10);
@@ -1438,12 +1452,12 @@ router.post('/webhook', async (req, res) => {
           }
 
           if (!user || !userId) {
-            console.error('❌ User not found for AbacatePay payment:', { 
-              billId, 
-              userId, 
+            console.error('❌ User not found for AbacatePay payment:', {
+              billId,
+              userId,
               metadataUserId: pixQrCodeMetadata.userId,
               email: customerEmail,
-              paymentUserId: payment?.userId 
+              paymentUserId: payment?.userId
             });
             return res.status(404).json({ error: 'User not found' });
           }
@@ -1539,29 +1553,29 @@ router.post('/webhook', async (req, res) => {
             console.log('📡 Retrieving subscription from Stripe:', subscriptionId);
             const subscription: Stripe.Subscription = await stripe!.subscriptions.retrieve(subscriptionId);
             const periodEnd = (subscription as any).current_period_end as number | undefined;
-            console.log('✅ Subscription retrieved:', { 
+            console.log('✅ Subscription retrieved:', {
               status: subscription.status,
               currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
             });
-            
+
             // Get plan info from Stripe metadata
             console.log('📦 Getting plan info from Stripe metadata...');
             const planInfo = await getStripePlanInfo(subscriptionId);
             const tier = planInfo?.tier || 'premium';
             const monthlyCredits = planInfo?.monthlyCredits || 100;
             const creditsResetDate = calculateCreditsResetDate(subscription);
-            
+
             console.log('📋 Plan info:', { tier, monthlyCredits, creditsResetDate: creditsResetDate.toISOString() });
-            
+
             // Try to find user by stripeCustomerId first, then by email (for Payment Links)
             console.log('🔍 Searching for user by stripeCustomerId:', customerId);
             let user = await db.collection('users').findOne({ stripeCustomerId: customerId });
-            
+
             if (!user && customerEmail) {
               // Payment Link case: find user by email and associate customerId
               console.log('🔍 User not found by customerId, searching by email:', customerEmail);
               user = await db.collection('users').findOne({ email: customerEmail });
-              
+
               if (user) {
                 // Associate the Stripe customer with our user
                 console.log('🔗 Associating Stripe customer with user:', user._id);
@@ -1578,10 +1592,10 @@ router.post('/webhook', async (req, res) => {
               console.log('🔍 User not found by customerId/email, searching by subscriptionId:', subscriptionId);
               user = await db.collection('users').findOne({ stripeSubscriptionId: subscriptionId });
             }
-            
+
             if (user) {
-              console.log('👤 User found, updating subscription status:', { 
-                userId: user._id, 
+              console.log('👤 User found, updating subscription status:', {
+                userId: user._id,
                 email: user.email,
                 currentStatus: user.subscriptionStatus,
                 currentTier: user.subscriptionTier,
@@ -1604,8 +1618,8 @@ router.post('/webhook', async (req, res) => {
               );
 
               if (updateResult.modifiedCount > 0) {
-                console.log('✅ User subscription activated successfully:', { 
-                  userId: user._id, 
+                console.log('✅ User subscription activated successfully:', {
+                  userId: user._id,
                   monthlyCredits,
                   tier,
                   creditsResetDate: creditsResetDate.toISOString(),
@@ -1631,8 +1645,8 @@ router.post('/webhook', async (req, res) => {
                 console.warn('⚠️ User update returned 0 modified documents:', { userId: user._id });
               }
             } else {
-              console.error('❌ User not found for customer:', { 
-                customerId, 
+              console.error('❌ User not found for customer:', {
+                customerId,
                 customerEmail,
                 subscriptionId,
                 suggestion: 'User may not exist in database or customer was not created during checkout'
@@ -1654,9 +1668,9 @@ router.post('/webhook', async (req, res) => {
           const customerEmail = session.customer_email || (session.customer_details?.email);
           const paymentMethodTypes = session.payment_method_types || [];
 
-          console.log('✅ Checkout session completed for one-time payment:', { 
-            sessionId: session.id, 
-            customerId, 
+          console.log('✅ Checkout session completed for one-time payment:', {
+            sessionId: session.id,
+            customerId,
             customerEmail,
             paymentMethodTypes,
             isPix: paymentMethodTypes.includes('pix'),
@@ -1670,7 +1684,7 @@ router.post('/webhook', async (req, res) => {
 
             // Get line items to extract product information
             const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
-            
+
             if (!lineItems.data || lineItems.data.length === 0) {
               console.error('❌ No line items found in checkout session:', session.id);
               break;
@@ -1679,7 +1693,7 @@ router.post('/webhook', async (req, res) => {
             // Get the first line item (we expect one product per checkout)
             const lineItem = lineItems.data[0];
             const priceId = typeof lineItem.price === 'string' ? lineItem.price : lineItem.price?.id;
-            
+
             if (!priceId) {
               console.error('❌ No price ID found in line item');
               break;
@@ -1688,7 +1702,7 @@ router.post('/webhook', async (req, res) => {
             // Get price details to access product
             const price = await stripe.prices.retrieve(priceId);
             const productId = typeof price.product === 'string' ? price.product : price.product?.id;
-            
+
             if (!productId) {
               console.error('❌ No product ID found in price');
               break;
@@ -1725,7 +1739,7 @@ router.post('/webhook', async (req, res) => {
             console.log('👤 Starting user lookup process...');
             let user = null;
             let userFoundBy = '';
-            
+
             // Step 1: By stripeCustomerId (most reliable)
             if (customerId) {
               console.log('🔍 Step 1: Looking up user by stripeCustomerId:', customerId);
@@ -1738,26 +1752,26 @@ router.post('/webhook', async (req, res) => {
             } else {
               console.log('⚠️ No customerId available, skipping customerId lookup');
             }
-            
+
             // Step 2: By client_reference_id (priority high - comes from dynamic checkout)
             if (!user && session.client_reference_id) {
               console.log('🔍 Step 2: Looking up user by client_reference_id:', session.client_reference_id);
               try {
                 user = await db.collection('users').findOne({ _id: new ObjectId(session.client_reference_id) });
                 console.log('🔍 User lookup by client_reference_id:', { client_reference_id: session.client_reference_id, found: !!user });
-                
+
                 if (user) {
                   console.log('✅ User found by client_reference_id:', { userId: user._id, email: user.email });
                   userFoundBy = 'client_reference_id';
-                  
+
                   // Check for email mismatch
                   if (customerEmail && user.email !== customerEmail) {
-                    console.warn('⚠️ Email mismatch detected:', { 
-                      userId: user._id, 
-                      accountEmail: user.email, 
-                      paymentEmail: customerEmail 
+                    console.warn('⚠️ Email mismatch detected:', {
+                      userId: user._id,
+                      accountEmail: user.email,
+                      paymentEmail: customerEmail
                     });
-                    
+
                     // Create audit record for email mismatch
                     try {
                       await db.collection('email_mismatches').insertOne({
@@ -1777,26 +1791,26 @@ router.post('/webhook', async (req, res) => {
                 console.warn('⚠️ Invalid client_reference_id format:', refError.message);
               }
             }
-            
+
             // Step 3: By metadata.userId (priority high)
             if (!user && session.metadata?.userId) {
               console.log('🔍 Step 3: Looking up user by metadata.userId:', session.metadata.userId);
               try {
                 user = await db.collection('users').findOne({ _id: new ObjectId(session.metadata.userId) });
                 console.log('🔍 User lookup by metadata.userId:', { metadataUserId: session.metadata.userId, found: !!user });
-                
+
                 if (user) {
                   console.log('✅ User found by metadata.userId:', { userId: user._id, email: user.email });
                   userFoundBy = 'metadata.userId';
-                  
+
                   // Check for email mismatch
                   if (customerEmail && user.email !== customerEmail) {
-                    console.warn('⚠️ Email mismatch detected:', { 
-                      userId: user._id, 
-                      accountEmail: user.email, 
-                      paymentEmail: customerEmail 
+                    console.warn('⚠️ Email mismatch detected:', {
+                      userId: user._id,
+                      accountEmail: user.email,
+                      paymentEmail: customerEmail
                     });
-                    
+
                     // Create audit record for email mismatch
                     try {
                       await db.collection('email_mismatches').insertOne({
@@ -1816,18 +1830,18 @@ router.post('/webhook', async (req, res) => {
                 console.warn('⚠️ Invalid metadata.userId format:', metaError.message);
               }
             }
-            
+
             // Step 4: By email (fallback - low priority)
             if (!user && customerEmail) {
               console.log('🔍 Step 4: Looking up user by email (fallback):', customerEmail);
               user = await db.collection('users').findOne({ email: customerEmail });
               console.log('🔍 User lookup by email:', { customerEmail, found: !!user });
-              
+
               if (user) {
                 console.log('✅ User found by email:', { userId: user._id, email: user.email });
                 console.log('⚠️ User found by email (no user ID in payment) - less reliable');
                 userFoundBy = 'email';
-                
+
                 // If found by email and we have a customerId, associate it
                 if (customerId) {
                   console.log('🔗 Associating Stripe customerId with user account...');
@@ -1843,7 +1857,7 @@ router.post('/webhook', async (req, res) => {
             } else if (!user && !customerEmail) {
               console.log('⚠️ No customerEmail available, skipping email lookup');
             }
-            
+
             // If user not found, create pending payment
             if (!user) {
               console.error('❌ User not found for credit purchase - creating pending payment:', {
@@ -1853,7 +1867,7 @@ router.post('/webhook', async (req, res) => {
                 client_reference_id: session.client_reference_id,
                 metadata: session.metadata,
               });
-              
+
               try {
                 await db.collection('pending_payments').insertOne({
                   sessionId: session.id,
@@ -1868,14 +1882,14 @@ router.post('/webhook', async (req, res) => {
               } catch (pendingError: any) {
                 console.error('❌ Failed to create pending payment:', pendingError.message);
               }
-              
+
               break; // Don't credit if user not found
             }
 
             if (user) {
-              console.log('👤 User found:', { 
-                userId: user._id, 
-                email: user.email, 
+              console.log('👤 User found:', {
+                userId: user._id,
+                email: user.email,
                 foundBy: userFoundBy,
               });
               // Atomically increment totalCreditsEarned
@@ -1918,11 +1932,11 @@ router.post('/webhook', async (req, res) => {
                 // Send credits purchased email
                 try {
                   const { sendCreditsPurchasedEmail, isEmailConfigured } = await import('../services/emailService.js');
-                  
+
                   if (isEmailConfigured() && updatedUser) {
-                    const totalCredits = (updatedUser.totalCreditsEarned || 0) + 
-                                       Math.max(0, (updatedUser.monthlyCredits || 0) - (updatedUser.creditsUsed || 0));
-                    
+                    const totalCredits = (updatedUser.totalCreditsEarned || 0) +
+                      Math.max(0, (updatedUser.monthlyCredits || 0) - (updatedUser.creditsUsed || 0));
+
                     await sendCreditsPurchasedEmail({
                       email: user.email,
                       name: user.name || undefined,
@@ -1975,7 +1989,7 @@ router.post('/webhook', async (req, res) => {
         try {
           // Get current user to check if plan changed
           const user = await db.collection('users').findOne({ stripeCustomerId: customerId });
-          
+
           if (!user) {
             console.error('❌ User not found for subscription update:', { customerId, subscriptionId });
             break;
@@ -1988,8 +2002,8 @@ router.post('/webhook', async (req, res) => {
           });
 
           const currentTier = user?.subscriptionTier || 'free';
-          const currentPeriodEnd = user?.creditsResetDate 
-            ? new Date(user.creditsResetDate).getTime() 
+          const currentPeriodEnd = user?.creditsResetDate
+            ? new Date(user.creditsResetDate).getTime()
             : null;
           const newPeriodEnd = ((subscription as any).current_period_end as number) * 1000;
 
@@ -2065,7 +2079,7 @@ router.post('/webhook', async (req, res) => {
 
         try {
           const user = await db.collection('users').findOne({ stripeCustomerId: customerId });
-          
+
           if (!user) {
             console.error('❌ User not found for subscription deletion:', { customerId });
             break;
@@ -2121,15 +2135,15 @@ router.post('/webhook', async (req, res) => {
         });
 
         try {
-          const subscriptionId = (invoice as any).subscription 
-            ? (typeof (invoice as any).subscription === 'string' 
-                ? (invoice as any).subscription 
-                : (invoice as any).subscription?.id)
+          const subscriptionId = (invoice as any).subscription
+            ? (typeof (invoice as any).subscription === 'string'
+              ? (invoice as any).subscription
+              : (invoice as any).subscription?.id)
             : null;
 
           if (subscriptionId) {
             const user = await db.collection('users').findOne({ stripeCustomerId: customerId });
-            
+
             if (!user) {
               console.error('❌ User not found for invoice payment succeeded:', { customerId });
               break;
@@ -2172,15 +2186,15 @@ router.post('/webhook', async (req, res) => {
         });
 
         try {
-          const subscriptionId = (invoice as any).subscription 
-            ? (typeof (invoice as any).subscription === 'string' 
-                ? (invoice as any).subscription 
-                : (invoice as any).subscription?.id)
+          const subscriptionId = (invoice as any).subscription
+            ? (typeof (invoice as any).subscription === 'string'
+              ? (invoice as any).subscription
+              : (invoice as any).subscription?.id)
             : null;
 
           if (subscriptionId) {
             const user = await db.collection('users').findOne({ stripeCustomerId: customerId });
-            
+
             if (!user) {
               console.error('❌ User not found for invoice payment failed:', { customerId });
               break;
@@ -2229,7 +2243,7 @@ router.post('/create-abacate-pix', verifyBotId, authenticate, async (req: AuthRe
     // Check if AbacatePay is configured
     if (!abacatepayService.isConfigured()) {
       console.error('❌ AbacatePay is not configured. ABACATEPAY_API_KEY is missing.');
-      return res.status(503).json({ 
+      return res.status(503).json({
         error: 'PIX payment service is not available. Please contact support.',
         code: 'SERVICE_NOT_CONFIGURED'
       });
@@ -2257,12 +2271,12 @@ router.post('/create-abacate-pix', verifyBotId, authenticate, async (req: AuthRe
     }
 
     const userId = req.userId!;
-    
+
     // Get user info using Prisma
     let user = await prisma.user.findUnique({
       where: { id: userId },
     });
-    
+
     if (!user) {
       console.error('❌ User not found:', userId);
       return res.status(404).json({ error: 'User not found' });
@@ -2271,22 +2285,22 @@ router.post('/create-abacate-pix', verifyBotId, authenticate, async (req: AuthRe
     // Get or create abacateCustomerId
     // AbacatePay uses email as customer identifier, so we'll use email if no customer ID exists
     let abacateCustomerId = user.abacateCustomerId;
-    
+
     // Save taxId to user profile if not already saved
     const taxIdNumbers = taxId ? taxId.replace(/\D/g, '') : '';
     const updateData: { taxId?: string; abacateCustomerId?: string } = {};
-    
+
     if (!user.taxId && taxIdNumbers) {
       updateData.taxId = taxIdNumbers;
     }
-    
+
     if (!abacateCustomerId && user.email) {
       // Use email as abacateCustomerId identifier (AbacatePay doesn't have separate customer API like Stripe)
       // The customer is created inline with the billing
       abacateCustomerId = user.email;
       updateData.abacateCustomerId = abacateCustomerId;
     }
-    
+
     // Update user with abacateCustomerId and/or taxId if needed using Prisma
     if (Object.keys(updateData).length > 0) {
       await prisma.user.update({
@@ -2294,7 +2308,7 @@ router.post('/create-abacate-pix', verifyBotId, authenticate, async (req: AuthRe
         data: updateData,
       });
       console.log('✅ Updated user profile:', Object.keys(updateData));
-      
+
       // Update local user object for use below
       if (updateData.taxId) {
         user = { ...user, taxId: updateData.taxId };
@@ -2361,16 +2375,16 @@ router.post('/create-abacate-pix', verifyBotId, authenticate, async (req: AuthRe
     });
   } catch (error: any) {
     console.error('❌ AbacatePay payment creation error:', error);
-    
+
     // Provide more specific error messages
     let statusCode = 500;
     let errorMessage = error.message || 'Failed to create AbacatePay payment';
-    
+
     if (error.message?.includes('not configured') || error.message?.includes('ABACATEPAY_API_KEY')) {
       statusCode = 503;
       errorMessage = 'PIX payment service is not available. Please contact support.';
     }
-    
+
     res.status(statusCode).json({
       error: errorMessage,
       code: statusCode === 503 ? 'SERVICE_NOT_CONFIGURED' : 'PAYMENT_CREATION_FAILED',
@@ -2447,11 +2461,11 @@ router.post('/abacate-webhook', async (req, res) => {
     // Validate webhook secret if configured
     // AbacatePay sends the secret as a query parameter in the URL
     // Support multiple variable name variations for compatibility
-    const abacateWebhookSecret = process.env.ABACATE_WEBHOOK_SECRET 
-      || process.env.ABACATEPAY_WEBHOOK_SECRET 
+    const abacateWebhookSecret = process.env.ABACATE_WEBHOOK_SECRET
+      || process.env.ABACATEPAY_WEBHOOK_SECRET
       || process.env.ABACATEPAY_WEBHHOOK_SECRET; // Support typo variant
     const webhookSecret = req.query.secret as string | undefined;
-    
+
     if (abacateWebhookSecret) {
       if (!webhookSecret || webhookSecret !== abacateWebhookSecret) {
         console.error('❌ AbacatePay webhook secret validation failed', {
@@ -2480,18 +2494,18 @@ router.post('/abacate-webhook', async (req, res) => {
 
       // Find payment in database
       let payment = await db.collection('payments').findOne({ billId });
-      
+
       // Get billing details from AbacatePay to get actual amount paid (supports coupons)
       const billingStatus = await abacatepayService.getPaymentStatus(billId);
 
       if (billingStatus.status === 'PAID' || billingStatus.status === 'CONFIRMED') {
         // Extract actual amount paid (in cents) - this handles coupons correctly
         const amountPaidInCents = billingStatus.amount || 0;
-        
+
         // Use getCreditsByAmount to identify the correct package (supports coupons)
         // This ensures we credit the right amount even if a coupon was applied
         let credits = 0;
-        
+
         if (payment && payment.credits) {
           // If payment record exists, use stored credits as primary source
           credits = payment.credits;
@@ -2532,7 +2546,7 @@ router.post('/abacate-webhook', async (req, res) => {
 
         // Get or create abacateCustomerId
         let abacateCustomerId = user.abacateCustomerId;
-        
+
         // If no abacateCustomerId, try to extract from billing or create one
         // For now, we'll use the billId or customer email as identifier
         // AbacatePay might not have a separate customer ID, so we'll use email as fallback
@@ -2621,27 +2635,27 @@ router.get('/pending-payments', authenticate, async (req: AuthRequest, res, next
     await connectToMongoDB();
     const db = getDb();
     const userId = req.userId!;
-    
+
     // Get user to check email
     const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-    
+
     // Find pending payments by email or allow admin to see all
     const query: any = { resolved: false };
-    
+
     // Regular users can only see their own pending payments (by email)
     // Admins can see all (you can add admin check here if needed)
     if (user.email) {
       query.customerEmail = user.email;
     }
-    
+
     const pendingPayments = await db.collection('pending_payments')
       .find(query)
       .sort({ timestamp: -1 })
       .toArray();
-    
+
     res.json({ pendingPayments });
   } catch (error: any) {
     console.error('❌ Error fetching pending payments:', error);
@@ -2656,27 +2670,27 @@ router.post('/resolve-pending-payment', authenticate, async (req: AuthRequest, r
     const db = getDb();
     const userId = req.userId!;
     const { sessionId } = req.body;
-    
+
     if (!sessionId) {
       return res.status(400).json({ error: 'Session ID is required' });
     }
-    
+
     // Get user
     const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-    
+
     // Find pending payment
     const pendingPayment = await db.collection('pending_payments').findOne({
       sessionId,
       resolved: false
     });
-    
+
     if (!pendingPayment) {
       return res.status(404).json({ error: 'Pending payment not found or already resolved' });
     }
-    
+
     // Verify email matches (optional security check)
     if (pendingPayment.customerEmail && user.email !== pendingPayment.customerEmail) {
       console.warn('⚠️ Email mismatch in pending payment resolution:', {
@@ -2686,13 +2700,13 @@ router.post('/resolve-pending-payment', authenticate, async (req: AuthRequest, r
       });
       // Still allow resolution but log it
     }
-    
+
     // Credit the user
     const updateResult = await db.collection('users').updateOne(
       { _id: user._id },
       { $inc: { totalCreditsEarned: pendingPayment.credits } }
     );
-    
+
     if (updateResult.modifiedCount > 0) {
       // Mark payment as resolved
       await db.collection('pending_payments').updateOne(
@@ -2705,13 +2719,13 @@ router.post('/resolve-pending-payment', authenticate, async (req: AuthRequest, r
           }
         }
       );
-      
+
       console.log('✅ Pending payment resolved:', {
         sessionId,
         userId: user._id,
         credits: pendingPayment.credits
       });
-      
+
       res.json({
         success: true,
         credits: pendingPayment.credits,

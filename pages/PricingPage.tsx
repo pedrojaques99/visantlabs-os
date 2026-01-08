@@ -2,13 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { CreditCard, Plus, Minus, Pickaxe, QrCode } from 'lucide-react';
 import { getUserLocale, formatPrice, type CurrencyInfo } from '../utils/localeUtils';
-import { CREDIT_PACKAGES, getCreditPackageLink, getCreditPackagePrice } from '../utils/creditPackages';
+import { getCreditPackageLink, getCreditPackagePrice } from '../utils/creditPackages';
 import { useTranslation } from '../hooks/useTranslation';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { BreadcrumbWithBack, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '../components/ui/BreadcrumbWithBack';
 import { PixPaymentModal } from '../components/PixPaymentModal';
 import { SEO } from '../components/SEO';
 import { subscriptionService } from '../services/subscriptionService';
+import { productService, type Product } from '../services/productService';
 
 // Hook para animação de contador
 const useAnimatedCounter = (targetValue: number, duration: number = 500) => {
@@ -73,12 +74,20 @@ export const PricingPage: React.FC = () => {
   const [currencyInfo, setCurrencyInfo] = useState<CurrencyInfo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [creditPackages, setCreditPackages] = useState<Product[]>([]);
   const [selectedCreditIndex, setSelectedCreditIndex] = useState(0);
   const [isPixModalOpen, setIsPixModalOpen] = useState(false);
 
   useEffect(() => {
     const locale = getUserLocale();
     setCurrencyInfo(locale);
+
+    // Fetch dynamic credit packages
+    productService.getCreditPackages().then(packages => {
+      if (packages.length > 0) {
+        setCreditPackages(packages);
+      }
+    });
   }, []);
 
   useEffect(() => {
@@ -128,9 +137,9 @@ export const PricingPage: React.FC = () => {
   }, [currencyInfo]);
 
   const handleBuyCredits = async () => {
-    if (!currencyInfo) return;
+    if (!currencyInfo || creditPackages.length === 0) return;
 
-    const currentPackage = CREDIT_PACKAGES[selectedCreditIndex];
+    const currentPackage = creditPackages[selectedCreditIndex];
 
     // Flag no localStorage para detectar retorno do pagamento
     localStorage.setItem('credit_purchase_pending', JSON.stringify({
@@ -138,8 +147,15 @@ export const PricingPage: React.FC = () => {
       credits: currentPackage.credits,
     }));
 
-    // Usar Payment Link diretamente
-    const paymentLink = getCreditPackageLink(currentPackage.credits, currencyInfo.currency);
+    // Usar Payment Link do produto se disponível, caso contrário fallback para utils
+    let paymentLink = currencyInfo.currency === 'USD'
+      ? currentPackage.paymentLinkUSD
+      : currentPackage.paymentLinkBRL;
+
+    if (!paymentLink) {
+      paymentLink = getCreditPackageLink(currentPackage.credits, currencyInfo.currency);
+    }
+
     if (!paymentLink) {
       setError('Payment link not found for this package');
       return;
@@ -164,16 +180,30 @@ export const PricingPage: React.FC = () => {
   };
 
   const handleNextCredit = () => {
-    setSelectedCreditIndex((prev) => (prev < CREDIT_PACKAGES.length - 1 ? prev + 1 : prev));
+    setSelectedCreditIndex((prev) => (prev < creditPackages.length - 1 ? prev + 1 : prev));
   };
 
-  const currentCreditPackage = CREDIT_PACKAGES[selectedCreditIndex];
-  const creditPrice = currencyInfo && currentCreditPackage
-    ? getCreditPackagePrice(currentCreditPackage.credits, currencyInfo.currency)
-    : 0;
+  const currentCreditPackage = creditPackages[selectedCreditIndex];
+
+  const getDisplayPrice = () => {
+    if (!currencyInfo || !currentCreditPackage) return 0;
+
+    // Prefer product price if set
+    if (currencyInfo.currency === 'USD' && currentCreditPackage.priceUSD) {
+      return currentCreditPackage.priceUSD;
+    }
+    if (currencyInfo.currency === 'BRL') {
+      return currentCreditPackage.priceBRL;
+    }
+
+    // Fallback to utils
+    return getCreditPackagePrice(currentCreditPackage.credits, currencyInfo.currency);
+  };
+
+  const creditPrice = getDisplayPrice();
 
   // Animated counter for credits (30% faster: 280ms instead of 400ms)
-  const animatedCredits = useAnimatedCounter(currentCreditPackage.credits, 280);
+  const animatedCredits = useAnimatedCounter(currentCreditPackage?.credits || 0, 280);
 
   // Animated counter for price (30% faster: 280ms instead of 400ms)
   const animatedPrice = useAnimatedCounter(creditPrice, 280);
@@ -259,8 +289,8 @@ export const PricingPage: React.FC = () => {
                           {/* Next button */}
                           <button
                             onClick={handleNextCredit}
-                            disabled={selectedCreditIndex === CREDIT_PACKAGES.length - 1}
-                            className={`p-2 md:p-2.5 transition-all duration-200 rounded-md active:scale-[0.95] ${selectedCreditIndex === CREDIT_PACKAGES.length - 1
+                            disabled={selectedCreditIndex === creditPackages.length - 1}
+                            className={`p-2 md:p-2.5 transition-all duration-200 rounded-md active:scale-[0.95] ${selectedCreditIndex === creditPackages.length - 1
                               ? 'text-zinc-600 cursor-not-allowed opacity-50'
                               : 'text-zinc-400 hover:text-brand-cyan hover:bg-zinc-800/50 hover:scale-110 cursor-pointer'
                               }`}
@@ -314,7 +344,7 @@ export const PricingPage: React.FC = () => {
 
                 {/* Package Indicator */}
                 <div className="flex gap-2 mb-6">
-                  {CREDIT_PACKAGES.map((_, index) => (
+                  {creditPackages.map((pkg, index) => (
                     <button
                       key={index}
                       onClick={() => setSelectedCreditIndex(index)}
@@ -322,7 +352,7 @@ export const PricingPage: React.FC = () => {
                         ? 'bg-brand-cyan w-8 shadow-[0_0_8px_rgba(82,221,235,0.4)]'
                         : 'bg-zinc-600 hover:bg-zinc-500 w-2 hover:scale-125'
                         }`}
-                      aria-label={`Select ${CREDIT_PACKAGES[index].credits} credits package`}
+                      aria-label={`Select ${pkg.credits} credits package`}
                     />
                   ))}
                 </div>
@@ -336,11 +366,11 @@ export const PricingPage: React.FC = () => {
         </div>
 
         {/* PIX Payment Modal */}
-        {isPixModalOpen && currencyInfo && (
+        {isPixModalOpen && currencyInfo && currentCreditPackage && (
           <PixPaymentModal
             isOpen={isPixModalOpen}
             onClose={() => setIsPixModalOpen(false)}
-            credits={CREDIT_PACKAGES[selectedCreditIndex].credits}
+            credits={currentCreditPackage.credits}
             currency={currencyInfo.currency}
             onSuccess={handlePixSuccess}
           />
@@ -349,4 +379,3 @@ export const PricingPage: React.FC = () => {
     </>
   );
 };
-
