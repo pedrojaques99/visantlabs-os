@@ -1,6 +1,6 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
-import { ArrowRight, UploadCloud, BookOpen, Play, X } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { ArrowRight, UploadCloud, BookOpen, Play, X, Layers } from 'lucide-react';
+import { useLocation, Link } from 'react-router-dom';
 import { InteractiveASCII } from '../components/ui/InteractiveASCII';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
@@ -430,6 +430,15 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
               </span>
             </div>
           )}
+
+          <Link
+            to="/apps"
+            className={`mt-4 flex items-center gap-2 text-sm font-mono transition-all duration-300 opacity-50 hover:opacity-100 hover:translate-y-[-2px] ${theme === 'dark' ? 'text-zinc-400 hover:text-brand-cyan' : 'text-zinc-600 hover:text-brand-cyan'
+              }`}
+          >
+            <Layers size={16} />
+            <span>View All Apps</span>
+          </Link>
         </div>
 
         {/* Tutorial Button - Floating */}

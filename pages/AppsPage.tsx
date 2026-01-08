@@ -4,7 +4,7 @@ import { useTranslation } from '../hooks/useTranslation';
 import { usePremiumAccess } from '../hooks/usePremiumAccess';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { LinearGradientBackground } from '../components/ui/LinearGradientBackground';
-import { Pickaxe, Palette, FileText, Layers, ArrowRight } from 'lucide-react';
+import { Pickaxe, Palette, FileText, Layers, ArrowRight, Grid } from 'lucide-react';
 import { SEO } from '../components/SEO';
 import { Card, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
@@ -32,6 +32,8 @@ export const AppsPage: React.FC = () => {
       route: '/',
       icon: Pickaxe,
       color: 'brand-cyan',
+      badge: t('apps.badge.free') || 'Free',
+      isExternal: false,
     },
     {
       id: 'branding',
@@ -40,6 +42,9 @@ export const AppsPage: React.FC = () => {
       route: '/branding-machine',
       icon: Palette,
       color: 'brand-cyan',
+      badge: 'Premium Users Only',
+      requiresPremium: true,
+      isExternal: false,
     },
     {
       id: 'budget',
@@ -48,6 +53,9 @@ export const AppsPage: React.FC = () => {
       route: '/budget-machine',
       icon: FileText,
       color: 'brand-cyan',
+      badge: 'Coming Soon',
+      isExternal: false,
+      disabled: true,
     },
     {
       id: 'canvas',
@@ -56,6 +64,29 @@ export const AppsPage: React.FC = () => {
       route: '/canvas',
       icon: Layers,
       color: 'brand-cyan',
+      badge: 'Featured',
+      requiresPremium: true,
+      isExternal: false,
+    },
+    {
+      id: 'colorfy',
+      name: 'Colorfy',
+      description: 'A gradient generator for your projects.',
+      route: 'https://gradient-machine.vercel.app/',
+      icon: Palette, // Using Palette as placeholder/reuse if specific paint icon not available instantly, but user suggested paint bucket
+      color: 'brand-cyan',
+      badge: 'Beta',
+      isExternal: true,
+    },
+    {
+      id: 'halftone',
+      name: 'Halftone Machine',
+      description: 'Create halftone effects from your images.',
+      route: 'https://pedrojaques99.github.io/halftone-machine/',
+      icon: Grid, // Need to import Grid
+      color: 'brand-cyan',
+      badge: 'Beta',
+      isExternal: true,
     },
   ];
 
@@ -141,7 +172,7 @@ export const AppsPage: React.FC = () => {
                             {canvasApp.name}
                           </h3>
                           <Badge variant="outline" className="border-brand-cyan/30 text-brand-cyan">
-                            Featured
+                            {canvasApp.badge}
                           </Badge>
                         </div>
                         <p className="text-base text-zinc-400 font-mono leading-relaxed">
@@ -159,13 +190,20 @@ export const AppsPage: React.FC = () => {
               );
             })()}
 
-            {/* Outros 3 Apps - Grid de 3 colunas */}
+            {/* Outros Apps - Grid de 3 colunas */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {apps
                 .filter(app => app.id !== 'canvas')
                 .map((app) => {
                   const Icon = app.icon;
                   const handleClick = () => {
+                    if (app.disabled) return;
+
+                    if (app.isExternal) {
+                      window.open(app.route, '_blank');
+                      return;
+                    }
+
                     // Mockup Machine is always accessible
                     if (app.id === 'mockup') {
                       navigate(app.route);
@@ -173,14 +211,17 @@ export const AppsPage: React.FC = () => {
                     }
 
                     // Check access for premium apps
-                    if (!isLoadingAccess && hasAccess) {
-                      navigate(app.route);
-                    } else {
-                      navigate('/waitlist');
+                    if (app.requiresPremium) {
+                      if (!isLoadingAccess && hasAccess) {
+                        navigate(app.route);
+                      } else {
+                        navigate('/waitlist');
+                      }
+                      return;
                     }
-                  };
 
-                  const isFree = app.id === 'mockup';
+                    navigate(app.route);
+                  };
 
                   return (
                     <Card
@@ -188,9 +229,9 @@ export const AppsPage: React.FC = () => {
                       onClick={handleClick}
                       className={cn(
                         "group relative overflow-hidden border-zinc-800/50 bg-card/50",
-                        "hover:border-brand-cyan/50 hover:bg-card/70 hover:shadow-lg hover:shadow-brand-cyan/10",
-                        "transition-all duration-300 cursor-pointer",
-                        "hover:scale-[1.02] active:scale-[0.98]"
+                        !app.disabled && "hover:border-brand-cyan/50 hover:bg-card/70 hover:shadow-lg hover:shadow-brand-cyan/10 hover:scale-[1.02] active:scale-[0.98] cursor-pointer",
+                        app.disabled && "opacity-60 cursor-not-allowed",
+                        "transition-all duration-300"
                       )}
                     >
                       <CardContent className="p-6 md:p-8">
@@ -200,32 +241,47 @@ export const AppsPage: React.FC = () => {
                               className={cn(
                                 "p-4 rounded-xl border transition-all duration-300",
                                 "bg-brand-cyan/10 border-brand-cyan/20",
-                                "group-hover:bg-brand-cyan/20 group-hover:border-brand-cyan/40"
+                                !app.disabled && "group-hover:bg-brand-cyan/20 group-hover:border-brand-cyan/40"
                               )}
                             >
                               <Icon
                                 size={32}
-                                className="text-brand-cyan transition-transform duration-300 group-hover:scale-110"
+                                className={cn(
+                                  "text-brand-cyan transition-transform duration-300",
+                                  !app.disabled && "group-hover:scale-110"
+                                )}
                               />
                             </div>
-                            {isFree && (
-                              <Badge variant="outline" className="text-xs border-zinc-700/50 text-zinc-400">
-                                Free
+                            {app.badge && (
+                              <Badge
+                                variant="outline"
+                                className={cn(
+                                  "text-xs border-zinc-700/50 text-zinc-400",
+                                  app.id === 'branding' && "border-brand-cyan/30 text-brand-cyan",
+                                  app.id === 'canvas' && "border-brand-cyan/30 text-brand-cyan"
+                                )}
+                              >
+                                {app.badge}
                               </Badge>
                             )}
                           </div>
                           <div className="flex-1 w-full">
-                            <h3 className="text-xl font-semibold text-zinc-200 mb-2 font-manrope group-hover:text-brand-cyan/90 transition-colors">
+                            <h3 className={cn(
+                              "text-xl font-semibold text-zinc-200 mb-2 font-manrope transition-colors",
+                              !app.disabled && "group-hover:text-brand-cyan/90"
+                            )}>
                               {app.name}
                             </h3>
                             <p className="text-sm text-zinc-400 font-mono leading-relaxed">
                               {app.description}
                             </p>
                           </div>
-                          <div className="flex items-center gap-2 text-xs font-mono text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-full">
-                            <span>Explore</span>
-                            <ArrowRight className="w-3 h-3" />
-                          </div>
+                          {!app.disabled && (
+                            <div className="flex items-center gap-2 text-xs font-mono text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-full">
+                              <span>{app.isExternal ? 'Visit' : 'Explore'}</span>
+                              <ArrowRight className="w-3 h-3" />
+                            </div>
+                          )}
                         </div>
                       </CardContent>
                     </Card>
