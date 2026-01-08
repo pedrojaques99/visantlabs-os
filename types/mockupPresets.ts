@@ -38,7 +38,7 @@ export const MOCKUP_PRESETS: MockupPreset[] = [
     description: 'Logo como wallpaper em iPhone 17 Pro, cenário minimal studio',
     prompt: 'Minimalist studio mockup: iPhone 17 Pro displaying design as wallpaper. Minimal background, soft lighting. Design centered and scaled for screen. Realistic screen reflections, premium device details.',
     referenceImageUrl: '', // Será preenchido quando a imagem for enviada ao R2
-    aspectRatio: '16:9',    
+    aspectRatio: '16:9',
     model: 'gemini-2.5-flash-image',
   },
   {
@@ -113,7 +113,7 @@ export const MOCKUP_PRESETS: MockupPreset[] = [
     aspectRatio: '16:9',
     model: 'gemini-2.5-flash-image',
   },
-    {
+  {
     id: 'runner-squeeze',
     name: 'Runner with Squeeze Bottle',
     description: 'Corredor bebendo água de squeeze com design aplicado, motion blur, ângulo diagonal',

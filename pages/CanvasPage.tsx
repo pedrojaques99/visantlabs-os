@@ -83,6 +83,7 @@ import type { CanvasWorkflow } from '../services/workflowApi';
 
 import { isLocalDevelopment } from '../utils/env';
 import { ExportPanel } from '@/components/ui/ExportPanel';
+import type { CommunityPrompt } from '../types/communityPrompts';
 
 // Node types
 const nodeTypes = {
@@ -308,21 +309,45 @@ export const CanvasPage: React.FC = () => {
     if (selectedIds !== prevSelectedNodeIdsRef.current) {
       prevSelectedNodeIdsRef.current = selectedIds;
 
-      // Auto-open panel if a shader node or chat node is newly selected
+      // Auto-open panel if a mockup node is selected (prioritize global prompts)
+      const hasMockup = selected.some(n => n.type === 'mockup');
       const hasShader = selected.some(n => n.type === 'shader');
       const hasChat = selected.some(n => n.type === 'chat');
-      if (hasShader || hasChat) {
+
+      if (hasMockup) {
+        // If it's a mockup, we want to open the Community Presets panel
+        canvasHeader.setActiveSidePanel('community-presets');
         setIsUniversalPanelOpen(true);
+      } else {
+        // If no mockup is selected, clear community-presets if it was active
+        // This ensures the panel closes or switches back to regular tabs on deselection/context switch
+        if (canvasHeader.activeSidePanel === 'community-presets') {
+          canvasHeader.setActiveSidePanel(null);
+        }
+
+        // Handle auto-opening for other node types (shader, chat)
+        if (hasShader || hasChat) {
+          setIsUniversalPanelOpen(true);
+        }
       }
 
-      // Logic: If there is a chat node, keep panel open.
-      // If NO chat node and nothing selected, close it.
+      // Logic: If there is a chat node or active global panel, keep panel open.
+      // If NO chat node, no active global panel and nothing selected, close it.
       const hasChatNode = nodes.some(n => n.type === 'chat');
-      if (selected.length === 0 && !hasChatNode) {
+      const hasActiveGlobalPanel = !!canvasHeader.activeSidePanel;
+
+      if (selected.length === 0 && !hasChatNode && !hasActiveGlobalPanel) {
         setIsUniversalPanelOpen(false);
       }
     }
-  }, [nodes, setSelectedNodesCountInContext]);
+  }, [nodes, setSelectedNodesCountInContext, canvasHeader.activeSidePanel]);
+
+  // Effect to auto-open the panel when activeSidePanel is set externally (e.g. from header button)
+  useEffect(() => {
+    if (canvasHeader.activeSidePanel) {
+      setIsUniversalPanelOpen(true);
+    }
+  }, [canvasHeader.activeSidePanel]);
 
   // Persist settings to backend (localStorage is handled by context)
   useEffect(() => {
@@ -1096,6 +1121,83 @@ export const CanvasPage: React.FC = () => {
     addChatNode,
   } = nodeCreators;
 
+  const handleImportCommunityPreset = useCallback((preset: CommunityPrompt, type: string) => {
+    if (!reactFlowInstance) return;
+
+    // Determine target category/type
+    const targetCategory = type === 'all' ? (preset.category || 'presets') : type;
+    const presetType = preset.presetType || (targetCategory !== 'presets' ? targetCategory : null);
+
+    // Map preset types to node types for compatibility check
+    const typeToNodeType: Record<string, string> = {
+      'mockup': 'mockup',
+      'angle': 'mockup',
+      'texture': 'mockup',
+      'ambience': 'mockup',
+      'luminance': 'mockup'
+    };
+
+    const nodeType = typeToNodeType[presetType || ''] || typeToNodeType[targetCategory || ''] || 'prompt';
+
+    // Check for selected nodes of matching type
+    const selectedNodes = nodesRef.current.filter(n => n.selected);
+
+    // A MockupNode is compatible with ANY preset type (mockup, angle, texture, ambience, luminance)
+    const standardPresetTypes = ['mockup', 'angle', 'texture', 'ambience', 'luminance'];
+    const isStandardPreset = standardPresetTypes.includes(presetType || '') || standardPresetTypes.includes(targetCategory || '');
+
+    const compatibleSelectedNodes = selectedNodes.filter(n =>
+      n.type === nodeType || (n.type === 'mockup' && isStandardPreset)
+    );
+
+    if (compatibleSelectedNodes.length > 0) {
+      // Update all selected compatible nodes
+      compatibleSelectedNodes.forEach(node => {
+        if (node.type === 'mockup') {
+          updateNodeData(node.id, {
+            selectedPreset: preset.id,
+            customPrompt: preset.prompt || ''
+          });
+        } else if (node.type === 'prompt') {
+          updateNodeData(node.id, {
+            prompt: preset.prompt,
+            model: preset.model || 'gemini-2.5-flash-image'
+          });
+        }
+      });
+
+      toast.success(t('communityPresets.messages.presetApplied') || `Preset applied to ${compatibleSelectedNodes.length} selected node(s)`);
+      return;
+    }
+
+    // Default Fallback: Create new node at center of viewport if no compatible node is selected
+    const center = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    let nodeId: string | undefined;
+
+    if (nodeType === 'mockup') {
+      nodeId = addMockupNode(center);
+      if (nodeId) {
+        updateNodeData(nodeId, {
+          selectedPreset: preset.id,
+          customPrompt: preset.prompt || ''
+        });
+      }
+    } else {
+      // Default to PromptNode for other categories (3d, aesthetics, themes, prompts, etc.)
+      nodeId = addPromptNode(center, {
+        prompt: preset.prompt,
+        model: preset.model || 'gemini-2.5-flash-image'
+      });
+    }
+
+    if (nodeId) {
+      toast.success(t('communityPresets.messages.presetImported') || `Imported: ${preset.name}`);
+      // Select the new node
+      setNodes(nds => nds.map(n => ({ ...n, selected: n.id === nodeId })));
+    }
+  }, [reactFlowInstance, addMockupNode, addAngleNode, addTextureNode, addAmbienceNode, addLuminanceNode, addPromptNode, updateNodeData, setNodes, t]);
+
+
   // Register handleSavePrompt in handlersRef for new nodes
   useEffect(() => {
     if (handlersRef.current) {
@@ -1287,6 +1389,12 @@ export const CanvasPage: React.FC = () => {
       setOnSaveWorkflow(() => () => setShowSaveWorkflow(true));
     }
   }, [setOnSaveWorkflow]);
+
+  // Register import handler
+  const setOnImportCommunityPreset = canvasHeader.setOnImportCommunityPreset;
+  useEffect(() => {
+    setOnImportCommunityPreset(() => handleImportCommunityPreset);
+  }, [handleImportCommunityPreset, setOnImportCommunityPreset]);
 
   // Handle drop of images onto canvas
   const handleDropImage = useCallback((image: UploadedImage, position: { x: number; y: number }) => {
@@ -4014,8 +4122,11 @@ export const CanvasPage: React.FC = () => {
           return selected;
         })()}
         isOpen={isUniversalPanelOpen}
+        activeSidePanel={canvasHeader.activeSidePanel}
+        onImportCommunityPreset={canvasHeader.onImportCommunityPreset}
         onClose={() => {
           setIsUniversalPanelOpen(false);
+          canvasHeader.setActiveSidePanel(null); // Clear global panel on close
           setExportPanel(null);
         }}
         onUpdateNode={updateNodeData}

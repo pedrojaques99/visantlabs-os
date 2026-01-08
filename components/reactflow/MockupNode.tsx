@@ -1,22 +1,29 @@
 import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
 import { type NodeProps, type Node, useReactFlow, NodeResizer, Position } from '@xyflow/react';
-import { Image as ImageIcon, ChevronDown, ChevronUp, Plus, X, FileText, ChevronRight, Settings } from 'lucide-react';
+import { Image as ImageIcon, ChevronDown, ChevronUp, Plus, X, FileText, ChevronRight, Settings, Camera, Layers, MapPin, Sun, Box, Sparkles, LayoutGrid } from 'lucide-react';
 import { GlitchLoader } from '../ui/GlitchLoader';
 import type { MockupNodeData } from '../../types/reactFlow';
 import type { MockupPresetType, MockupPreset } from '../../types/mockupPresets';
 import type { Mockup } from '../../services/mockupApi';
+import type { GeminiModel, AspectRatio, Resolution } from '../../types';
 import { cn } from '../../lib/utils';
 import { getAllPresets, getPreset, getAllPresetsAsync, clearPresetsCache } from '../../services/mockupPresetsService';
 import { MockupPresetModal } from '../MockupPresetModal';
 import { getImageUrl, isSafeUrl } from '../../utils/imageUtils';
 import { ConnectedImagesDisplay } from './ConnectedImagesDisplay';
+import { CATEGORY_CONFIG } from '../PresetCard';
 import { NodeHandles } from './shared/NodeHandles';
 import { LabeledHandle } from './shared/LabeledHandle';
 import { NodeContainer } from './shared/NodeContainer';
+import { NodeLabel } from './shared/node-label';
+import { AspectRatioSelector } from './shared/AspectRatioSelector';
+import { ResolutionSelector } from './shared/ResolutionSelector';
+import { getCreditsRequired } from '../../utils/creditCalculator';
 import { Textarea } from '../ui/textarea';
 import { toast } from 'sonner';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useNodeResize } from '../../hooks/canvas/useNodeResize';
+import { applyPresetDataToNodes } from '../../lib/presetImportUtils';
 
 const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
@@ -32,6 +39,9 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
   const [isValidColor, setIsValidColor] = useState(data.isValidColor || false);
   const [withHuman, setWithHuman] = useState(data.withHuman || false);
   const [customPrompt, setCustomPrompt] = useState(data.customPrompt || '');
+  const [model, setModel] = useState<GeminiModel>(data.model || 'gemini-2.5-flash-image');
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>(data.aspectRatio || '16:9');
+  const [resolution, setResolution] = useState<Resolution>(data.resolution || '1K');
   const [isPromptOpen, setIsPromptOpen] = useState(false);
   const [isColorSectionOpen, setIsColorSectionOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -97,6 +107,12 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
   const selectedPreset = isPreset ? (currentPresets.find(p => p.id === selectedPresetId) || null) : null;
   const selectedMockup = !isPreset && userMockups ? userMockups.find(m => m._id === selectedPresetId) : null;
 
+  // Determine dynamic identity based on category
+  const presetCategory = (selectedPreset as any)?.presetType || (selectedPreset as any)?.category || (selectedPreset?.id as any) || 'mockup';
+  const categoryConfig = CATEGORY_CONFIG[presetCategory as keyof typeof CATEGORY_CONFIG] || CATEGORY_CONFIG.mockup;
+  const CategoryIcon = categoryConfig.icon;
+  const categoryTitle = t(`communityPresets.tabs.${presetCategory}`) || categoryConfig.label;
+
   // Get base prompt from preset
   const basePrompt = selectedPreset?.prompt || '';
 
@@ -138,14 +154,43 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
     if (data.customPrompt !== undefined) {
       setCustomPrompt(data.customPrompt);
     }
-  }, [data.selectedColors, data.colorInput, data.isValidColor, data.withHuman, data.customPrompt]);
+    if (data.model) {
+      setModel(data.model);
+    }
+    if (data.aspectRatio) {
+      setAspectRatio(data.aspectRatio);
+    }
+    if (data.resolution) {
+      setResolution(data.resolution);
+    }
+  }, [data.selectedColors, data.colorInput, data.isValidColor, data.withHuman, data.customPrompt, data.model, data.aspectRatio, data.resolution]);
 
+
+  const { getNodes } = useReactFlow();
 
   const handlePresetChange = (presetId: string | MockupPresetType) => {
-    setSelectedPresetId(presetId);
-    if (data.onUpdateData) {
-      data.onUpdateData(id, { selectedPreset: presetId });
+    const allNodes = getNodes();
+
+    // Use shared utility for smart selection/update
+    const updated = applyPresetDataToNodes(
+      allNodes as any,
+      { id: presetId as string },
+      (nodeId, updates) => {
+        if (data.onUpdateData) {
+          data.onUpdateData(nodeId, updates);
+        }
+      },
+      id
+    );
+
+    if (!updated && data.onUpdateData) {
+      data.onUpdateData(id, {
+        selectedPreset: presetId as any,
+        customPrompt: ''
+      });
     }
+
+    setSelectedPresetId(presetId);
   };
 
   const handleColorInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -249,7 +294,11 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
       hasFinalPrompt: !!finalPrompt,
     });
 
-    await data.onGenerate(id, imageToUse, selectedPresetId, selectedColors, withHuman, finalPrompt || undefined);
+    const isProModel = model === 'gemini-3-pro-image-preview';
+    const finalResolution = isProModel ? resolution : undefined;
+    const finalAspectRatio = isProModel ? aspectRatio : undefined;
+
+    await data.onGenerate(id, imageToUse, selectedPresetId, selectedColors, withHuman, finalPrompt || undefined, model, finalResolution, finalAspectRatio);
   };
 
   // Handle resize from NodeResizer (com debounce - aplica apenas quando soltar o mouse)
@@ -303,8 +352,8 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
 
       {/* Header */}
       <div className="flex items-center gap-3 mb-3">
-        <ImageIcon size={16} className="text-brand-cyan" />
-        <h3 className="text-xs font-semibold text-zinc-300 font-mono">{t('canvasNodes.mockupNode.title')}</h3>
+        <CategoryIcon size={16} className={cn(categoryConfig.color)} />
+        <h3 className="text-xs font-semibold text-zinc-300 font-mono">{categoryTitle}</h3>
       </div>
 
       {/* Preset Selector - Button to open modal */}
@@ -527,6 +576,127 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
 
         {isColorSectionOpen && (
           <div className="mt-3 space-y-3">
+            {/* Model Selector */}
+            <div>
+              <NodeLabel className="mb-1.5 text-[10px]">
+                {t('canvasNodes.promptNode.model')}
+              </NodeLabel>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newModel: GeminiModel = 'gemini-2.5-flash-image';
+                    setModel(newModel);
+
+                    if (data.onUpdateData) {
+                      data.onUpdateData(id, {
+                        model: newModel,
+                        resolution: undefined,
+                        aspectRatio: undefined
+                      });
+                    }
+                  }}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  disabled={isLoading}
+                  className={cn(
+                    'p-2 rounded border transition-all text-left node-interactive',
+                    model === 'gemini-2.5-flash-image'
+                      ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
+                      : 'bg-zinc-900/50 border-zinc-700/50 text-zinc-400 hover:bg-zinc-800/50 hover:border-zinc-600/50',
+                    isLoading && 'opacity-50 cursor-not-allowed'
+                  )}
+                >
+                  <div className="text-[11px] font-mono font-semibold">
+                    {t('canvasNodes.promptNode.modelHD')}
+                  </div>
+                  <div className="text-[9px] font-mono opacity-70 mt-0.5">
+                    {getCreditsRequired('gemini-2.5-flash-image')} {t('canvasNodes.promptNode.credits')}
+                  </div>
+                </button>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newModel: GeminiModel = 'gemini-3-pro-image-preview';
+                    setModel(newModel);
+
+                    if (data.onUpdateData) {
+                      const updates: Partial<MockupNodeData> = { model: newModel };
+                      if (!data.resolution) {
+                        updates.resolution = '4K';
+                        setResolution('4K');
+                      }
+                      if (!data.aspectRatio) {
+                        updates.aspectRatio = '16:9';
+                        setAspectRatio('16:9');
+                      }
+                      data.onUpdateData(id, updates);
+                    }
+                  }}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  disabled={isLoading}
+                  className={cn(
+                    'p-2 rounded border transition-all text-left node-interactive',
+                    model === 'gemini-3-pro-image-preview'
+                      ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
+                      : 'bg-zinc-900/50 border-zinc-700/50 text-zinc-400 hover:bg-zinc-800/50 hover:border-zinc-600/50',
+                    isLoading && 'opacity-50 cursor-not-allowed'
+                  )}
+                >
+                  <div className="text-[11px] font-mono font-semibold">
+                    {t('canvasNodes.promptNode.model4K')}
+                  </div>
+                  <div className="text-[9px] font-mono opacity-70 mt-0.5">
+                    {getCreditsRequired('gemini-3-pro-image-preview', resolution)} {t('canvasNodes.promptNode.credits')}
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            {/* Pro Model Settings */}
+            {model === 'gemini-3-pro-image-preview' && (
+              <div className="grid grid-cols-2 gap-2.5">
+                <div>
+                  <NodeLabel className="mb-1.5 text-[10px]">
+                    {t('canvasNodes.promptNode.aspectRatio')}
+                  </NodeLabel>
+                  <div onMouseDown={(e) => e.stopPropagation()}>
+                    <AspectRatioSelector
+                      value={aspectRatio}
+                      onChange={(ratio) => {
+                        setAspectRatio(ratio);
+                        if (data.onUpdateData) {
+                          data.onUpdateData(id, { aspectRatio: ratio });
+                        }
+                      }}
+                      disabled={isLoading}
+                      compact
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <NodeLabel className="mb-1.5 text-[10px]">
+                    {t('canvasNodes.promptNode.resolution')}
+                  </NodeLabel>
+                  <div onMouseDown={(e) => e.stopPropagation()}>
+                    <ResolutionSelector
+                      value={resolution}
+                      onChange={(res) => {
+                        setResolution(res);
+                        if (data.onUpdateData) {
+                          data.onUpdateData(id, { resolution: res });
+                        }
+                      }}
+                      model={model}
+                      disabled={isLoading}
+                      compact
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Color Picker */}
             <div>
               <h4 className="text-xs font-mono mb-1.5 text-zinc-500">{t('canvasNodes.mockupNode.colorPalette')}</h4>
@@ -688,6 +858,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
       <MockupPresetModal
         isOpen={isPresetModalOpen}
         selectedPresetId={selectedPresetId}
+        initialCategory={presetCategory}
         onClose={() => setIsPresetModalOpen(false)}
         onSelectPreset={(presetId) => {
           handlePresetChange(presetId);
@@ -735,7 +906,10 @@ export const MockupNode = memo(MockupNodeComponent, (prevProps, nextProps) => {
     prevProps.data.withHuman === nextProps.data.withHuman &&
     prevProps.data.customPrompt === nextProps.data.customPrompt &&
     prevProps.data.colorInput === nextProps.data.colorInput &&
-    prevProps.data.isValidColor === nextProps.data.isValidColor
+    prevProps.data.isValidColor === nextProps.data.isValidColor &&
+    prevProps.data.model === nextProps.data.model &&
+    prevProps.data.aspectRatio === nextProps.data.aspectRatio &&
+    prevProps.data.resolution === nextProps.data.resolution
   );
 });
 
