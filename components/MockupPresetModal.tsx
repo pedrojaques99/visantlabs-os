@@ -236,26 +236,8 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
     // Helper to generate unique key
     const getUniqueKey = (p: UnifiedPreset) => `${p.presetType}:${p.id}`;
 
-    // Add official first
-    officialUnified.forEach(p => {
-      const key = getUniqueKey(p);
-      if (!seenIds.has(key)) {
-        seenIds.add(key);
-        merged.push(p);
-      }
-    });
-
-    // Add community if not seen
-    communityUnified.forEach(p => {
-      const key = getUniqueKey(p);
-      if (!seenIds.has(key)) {
-        seenIds.add(key);
-        merged.push(p);
-      }
-    });
-
-    // Add user if not seen
-    userUnified.forEach(p => {
+    // Add presets in order of priority, ensuring no duplicates
+    [...officialUnified, ...communityUnified, ...userUnified].forEach(p => {
       const key = getUniqueKey(p);
       if (!seenIds.has(key)) {
         seenIds.add(key);
