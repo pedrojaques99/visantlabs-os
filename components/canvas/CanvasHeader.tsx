@@ -10,6 +10,7 @@ import { CommunityPresetsSidebar } from './CommunityPresetsSidebar';
 import { ShareModal } from './ShareModal';
 import { useCanvasHeader } from './CanvasHeaderContext';
 import { canvasApi } from '../../services/canvasApi';
+import { cn } from '@/lib/utils';
 
 interface CanvasHeaderProps {
   onBack: () => void;
@@ -57,13 +58,14 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
     onLoadWorkflow,
     onExportImagesRequest,
     onExportAllImagesRequest,
+    activeSidePanel,
+    setActiveSidePanel,
   } = useCanvasHeader();
 
   const [isEditing, setIsEditing] = useState(false);
   const [localName, setLocalName] = useState(projectName || 'Untitled');
   const inputRef = useRef<HTMLInputElement>(null);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [showCommunityPresetsSidebar, setShowCommunityPresetsSidebar] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
 
   // Handle share button click
@@ -198,8 +200,19 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
             </button>
           )}
           <button
-            onClick={() => setShowCommunityPresetsSidebar(true)}
-            className="p-1.5 border rounded-md transition-all flex items-center justify-center bg-zinc-800/50 hover:bg-zinc-700/50 text-zinc-300 border-zinc-700/50 hover:border-zinc-600 cursor-pointer"
+            onClick={() => {
+              if (activeSidePanel === 'community-presets') {
+                setActiveSidePanel(null);
+              } else {
+                setActiveSidePanel('community-presets');
+              }
+            }}
+            className={cn(
+              "p-1.5 border rounded-md transition-all flex items-center justify-center cursor-pointer",
+              activeSidePanel === 'community-presets'
+                ? "bg-brand-cyan/20 text-brand-cyan border-[brand-cyan]/30"
+                : "bg-zinc-800/50 hover:bg-zinc-700/50 text-zinc-300 border-zinc-700/50 hover:border-zinc-600"
+            )}
             title="Community Presets"
           >
             <Users size={14} />
@@ -295,11 +308,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
         />
       )}
 
-      <CommunityPresetsSidebar
-        isOpen={showCommunityPresetsSidebar}
-        onClose={() => setShowCommunityPresetsSidebar(false)}
-        onImportPreset={onImportCommunityPreset}
-      />
+
 
       {/* Share Modal */}
       {projectId && (

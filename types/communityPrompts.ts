@@ -1,5 +1,7 @@
 import type { AspectRatio, GeminiModel } from '../types';
 
+export type { AspectRatio, GeminiModel };
+
 // Categorias válidas para armazenamento no banco
 export const VALID_PROMPT_CATEGORIES = [
   '3d',

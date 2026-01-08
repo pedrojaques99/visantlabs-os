@@ -9,6 +9,7 @@ import { MessageSquare, Settings, X, Share, Brush } from 'lucide-react';
 import { ShaderControlsSidebar } from './ShaderControlsSidebar';
 import { ChatSidebar } from './ChatSidebar';
 import { ExportPanel } from '../ui/ExportPanel';
+import { CommunityPresetsSidebar } from './CommunityPresetsSidebar';
 
 interface UniversalSidePanelProps {
     selectedNodes: Node<FlowNodeData>[];
@@ -19,6 +20,10 @@ interface UniversalSidePanelProps {
 
     // Handlers
     onUpdateNode: (nodeId: string, newData: any) => void;
+
+    // Global Panel State
+    activeSidePanel?: string | null;
+    onImportCommunityPreset?: (preset: any, type: string) => void;
 
     // Override view (e.g. for manual export trigger)
     overridePanel?: {
@@ -68,7 +73,9 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
     width = DEFAULT_WIDTH,
     onResize,
     onUpdateNode,
-    overridePanel
+    overridePanel,
+    activeSidePanel,
+    onImportCommunityPreset
 }) => {
     const { t } = useTranslation();
     const [panelWidth, setPanelWidth] = useState(width);
@@ -159,6 +166,20 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
             }
         }
 
+        if (activeSidePanel === 'community-presets') {
+            return (
+                <div className="h-full">
+                    <CommunityPresetsSidebar
+                        isOpen={true}
+                        variant="embedded"
+                        onImportPreset={(preset, type) => {
+                            if (onImportCommunityPreset) onImportCommunityPreset(preset, type);
+                        }}
+                    />
+                </div>
+            );
+        }
+
         if (validNodes.length === 0) {
             return (
                 <div className="h-full flex flex-col items-center justify-center text-zinc-500 p-8 text-center gap-4">
@@ -220,7 +241,7 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
             />
 
             {/* Tabs / Header */}
-            {!overridePanel && (
+            {!overridePanel && activeSidePanel !== 'community-presets' && (
                 <div className="flex items-center justify-between border-b border-zinc-800/50 bg-transparent rounded-t-2xl overflow-hidden">
                     <div className="flex items-center overflow-x-auto scrollbar-hide flex-1 h-[41px]"> {/* Fixed height for consistency */}
                         {validNodes.length > 0 ? (
@@ -252,6 +273,23 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
                         )}
                     </div>
                     {/* Close Button */}
+                    <button
+                        onClick={onClose}
+                        className="p-3 text-zinc-500 hover:text-zinc-200 border-l border-zinc-800/50 hover:bg-zinc-800/50 transition-colors h-full rounded-tr-2xl"
+                    >
+                        <X size={16} />
+                    </button>
+                </div>
+            )}
+
+            {/* Global Panel Header for Community Presets */}
+            {activeSidePanel === 'community-presets' && (
+                <div className="flex items-center justify-between border-b border-zinc-800/50 bg-transparent rounded-t-2xl overflow-hidden h-[41px]">
+                    <div className="flex items-center px-4 gap-2 text-zinc-200 font-medium text-xs">
+                        {/* We need Users icon imported */}
+                        <span className="text-brand-cyan">❖</span>
+                        Community Presets
+                    </div>
                     <button
                         onClick={onClose}
                         className="p-3 text-zinc-500 hover:text-zinc-200 border-l border-zinc-800/50 hover:bg-zinc-800/50 transition-colors h-full rounded-tr-2xl"
