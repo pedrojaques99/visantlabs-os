@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Image as ImageIcon, Box, Settings, Palette, Sparkles, Camera, Layers, MapPin, Sun } from 'lucide-react';
+import { X, Save, Image as ImageIcon } from 'lucide-react';
 import { GlitchLoader } from './ui/GlitchLoader';
 import { toast } from 'sonner';
 import { useTranslation } from '../hooks/useTranslation';
@@ -12,6 +12,7 @@ import type { UploadedImage, AspectRatio, GeminiModel } from '../types';
 import type { PromptCategory, LegacyPresetType } from '../types/communityPrompts';
 import { authService } from '../services/authService';
 import { cn } from '../lib/utils';
+import { CATEGORY_CONFIG } from './PresetCard';
 
 interface PresetFormData {
     category: PromptCategory;
@@ -71,8 +72,8 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
 }) => {
     const { t } = useTranslation();
     const [formData, setFormData] = useState<PresetFormData>(
-        initialData 
-            ? { ...getInitialFormData(initialData.category || 'presets', initialData.presetType), ...initialData } 
+        initialData
+            ? { ...getInitialFormData(initialData.category || 'presets', initialData.presetType), ...initialData }
             : getInitialFormData('presets', 'mockup')
     );
     const [tagInput, setTagInput] = useState('');
@@ -95,9 +96,9 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
     useEffect(() => {
         if (isOpen) {
             if (initialData) {
-                setFormData({ 
-                    ...getInitialFormData(initialData.category || 'presets', initialData.presetType), 
-                    ...initialData 
+                setFormData({
+                    ...getInitialFormData(initialData.category || 'presets', initialData.presetType),
+                    ...initialData
                 });
             } else {
                 setFormData(getInitialFormData('presets', 'mockup'));
@@ -218,17 +219,13 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
         }
     };
 
-    const categoryOptions = [
-        { value: '3d', label: t('communityPresets.categories.3d'), icon: Box },
-        { value: 'presets', label: t('communityPresets.categories.presets'), icon: Settings },
-        { value: 'aesthetics', label: t('communityPresets.categories.aesthetics'), icon: Palette },
-        { value: 'themes', label: t('communityPresets.categories.themes'), icon: Sparkles },
-        { value: 'mockup', label: t('communityPresets.tabs.mockup'), icon: ImageIcon },
-        { value: 'angle', label: t('communityPresets.tabs.angle'), icon: Camera },
-        { value: 'texture', label: t('communityPresets.tabs.texture'), icon: Layers },
-        { value: 'ambience', label: t('communityPresets.tabs.ambience'), icon: MapPin },
-        { value: 'luminance', label: t('communityPresets.tabs.luminance'), icon: Sun },
-    ];
+    const categoryOptions = Object.entries(CATEGORY_CONFIG)
+        .filter(([key]) => key !== 'all')
+        .map(([key, config]) => ({
+            value: key as PromptCategory,
+            label: t(`communityPresets.categories.${key}`) || config.label,
+            icon: config.icon
+        }));
 
     const presetTypeOptions = [
         { value: 'mockup', label: t('communityPresets.tabs.mockup') },
@@ -249,13 +246,13 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
 
     if (!isOpen) return null;
 
-    const categoryIcon = categoryOptions.find(opt => opt.value === formData.category)?.icon || Settings;
+    const categoryIcon = CATEGORY_CONFIG[formData.category]?.icon || CATEGORY_CONFIG.presets.icon;
     const Icon = categoryIcon;
-    
+
     // Determinar se precisa mostrar referenceImageUrl
     // Para categoria mockup OU para outras categorias (3d, aesthetics, themes)
     // Categorias antigas (angle, texture, ambience, luminance) não precisam de imagem
-    const needsReferenceImage = formData.category === 'mockup' 
+    const needsReferenceImage = formData.category === 'mockup'
         || (formData.category === 'presets' && formData.presetType === 'mockup')
         || (formData.category !== 'presets' && formData.category !== 'all' && !['angle', 'texture', 'ambience', 'luminance'].includes(formData.category));
 
@@ -387,8 +384,8 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                                         value={formData.category}
                                         onChange={(value) => {
                                             const newCategory = value as PromptCategory;
-                                            setFormData({ 
-                                                ...formData, 
+                                            setFormData({
+                                                ...formData,
                                                 category: newCategory,
                                                 presetType: newCategory === 'presets' ? (formData.presetType || 'mockup') : undefined,
                                             });

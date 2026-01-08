@@ -584,7 +584,7 @@ export const CommunityPage: React.FC = () => {
               {workflows.length > 8 && (
                 <div className="flex justify-center mt-8">
                   <button
-                    onClick={() => navigate('/canvas')}
+                    onClick={() => setShowWorkflowLibrary(true)}
                     className="flex items-center gap-2 px-6 py-2 bg-zinc-900/50 hover:bg-brand-cyan/10 text-zinc-500 hover:text-brand-cyan border border-zinc-800/50 rounded-full transition-all text-sm font-mono group"
                   >
                     Ver todos os workflows

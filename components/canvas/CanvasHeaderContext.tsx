@@ -35,6 +35,10 @@ interface CanvasHeaderContextValue {
   setBrandCyan: (color: string) => void;
   experimentalMode: boolean;
   setExperimentalMode: (value: boolean) => void;
+  edgeStyle: 'solid' | 'dashed';
+  setEdgeStyle: (style: 'solid' | 'dashed') => void;
+  edgeStrokeWidth: 'normal' | 'thin';
+  setEdgeStrokeWidth: (width: 'normal' | 'thin') => void;
   onImportCommunityPreset?: (preset: any, type: string) => void;
   setOnImportCommunityPreset: (handler: ((preset: any, type: string) => void) | undefined) => void;
   onProjectNameChange?: (name: string) => void;
@@ -47,6 +51,8 @@ interface CanvasHeaderContextValue {
   setOnExportImagesRequest: (handler: (() => void) | undefined) => void;
   onExportAllImagesRequest?: () => void;
   setOnExportAllImagesRequest: (handler: (() => void) | undefined) => void;
+  activeSidePanel: string | null;
+  setActiveSidePanel: (panel: string | null) => void;
 }
 
 const CanvasHeaderContext = createContext<CanvasHeaderContextValue | null>(null);
@@ -100,6 +106,7 @@ export const CanvasHeaderProvider: React.FC<CanvasHeaderProviderProps> = ({ chil
   const [onLoadWorkflow, setOnLoadWorkflow] = useState<(() => void) | undefined>(undefined);
   const [onExportImagesRequest, setOnExportImagesRequest] = useState<(() => void) | undefined>(undefined);
   const [onExportAllImagesRequest, setOnExportAllImagesRequest] = useState<(() => void) | undefined>(undefined);
+  const [activeSidePanel, setActiveSidePanel] = useState<string | null>(null);
 
   const [backgroundColor, setBackgroundColor] = useLocalStorage('canvasBackgroundColor', '#121212');
   const [gridColor, setGridColor] = useLocalStorage('canvasGridColor', 'rgba(255, 255, 255, 0.1)');
@@ -109,6 +116,8 @@ export const CanvasHeaderProvider: React.FC<CanvasHeaderProviderProps> = ({ chil
   const [cursorColor, setCursorColor] = useLocalStorage('canvasCursorColor', '#FFFFFF');
   const [brandCyan, setBrandCyan] = useLocalStorage('canvasBrandCyan', 'brand-cyan');
   const [experimentalMode, setExperimentalMode] = useLocalStorage('canvasExperimentalMode', false);
+  const [edgeStyle, setEdgeStyle] = useLocalStorage<'solid' | 'dashed'>('canvasEdgeStyle', 'solid');
+  const [edgeStrokeWidth, setEdgeStrokeWidth] = useLocalStorage<'normal' | 'thin'>('canvasEdgeStrokeWidth', 'normal');
 
   const setProjectName = useCallback((name: string) => {
     setProjectNameState(name && typeof name === 'string' ? name : '');
@@ -147,6 +156,10 @@ export const CanvasHeaderProvider: React.FC<CanvasHeaderProviderProps> = ({ chil
     setBrandCyan,
     experimentalMode,
     setExperimentalMode,
+    edgeStyle,
+    setEdgeStyle,
+    edgeStrokeWidth,
+    setEdgeStrokeWidth,
     onImportCommunityPreset,
     setOnImportCommunityPreset,
     onProjectNameChange,
@@ -159,6 +172,8 @@ export const CanvasHeaderProvider: React.FC<CanvasHeaderProviderProps> = ({ chil
     setOnExportImagesRequest,
     onExportAllImagesRequest,
     setOnExportAllImagesRequest,
+    activeSidePanel,
+    setActiveSidePanel,
   }), [
     projectName,
     selectedNodesCount,
@@ -176,12 +191,16 @@ export const CanvasHeaderProvider: React.FC<CanvasHeaderProviderProps> = ({ chil
     cursorColor,
     brandCyan,
     experimentalMode,
+    edgeStyle,
+    edgeStrokeWidth,
     onImportCommunityPreset,
     onProjectNameChange,
     onSaveWorkflow,
     onLoadWorkflow,
     onExportImagesRequest,
     onExportAllImagesRequest,
+    activeSidePanel,
+    setActiveSidePanel,
   ]);
 
   return (

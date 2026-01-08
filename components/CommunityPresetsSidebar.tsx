@@ -2,27 +2,14 @@ import React, { useRef, useState } from 'react';
 import { Menu, ChevronUp } from 'lucide-react';
 import { cn } from '../lib/utils';
 import type { PromptCategory } from '../types/communityPrompts';
-import { LayoutGrid, Box, Settings, Palette, Sparkles, ImageIcon, Camera, Layers, MapPin, Sun } from 'lucide-react';
-
-const CATEGORY_CONFIG: Record<PromptCategory, { icon: any; color: string; label: string }> = {
-  'all': { icon: LayoutGrid, color: 'text-zinc-300', label: 'All Prompts' },
-  '3d': { icon: Box, color: 'text-purple-400', label: '3D' },
-  'presets': { icon: Settings, color: 'text-blue-400', label: 'Presets' },
-  'aesthetics': { icon: Palette, color: 'text-pink-400', label: 'Aesthetics' },
-  'themes': { icon: Sparkles, color: 'text-amber-400', label: 'Themes' },
-  'mockup': { icon: ImageIcon, color: 'text-blue-400', label: 'Mockup' },
-  'angle': { icon: Camera, color: 'text-cyan-400', label: 'Angle' },
-  'texture': { icon: Layers, color: 'text-green-400', label: 'Texture' },
-  'ambience': { icon: MapPin, color: 'text-orange-400', label: 'Ambience' },
-  'luminance': { icon: Sun, color: 'text-yellow-400', label: 'Luminance' },
-};
+import { CATEGORY_CONFIG } from './PresetCard';
 
 interface CommunityPresetsSidebarProps {
   isCollapsed: boolean;
   onToggleCollapse: () => void;
   activeCategory: PromptCategory;
   onCategoryChange: (category: PromptCategory) => void;
-  allTags: string[];
+  allTags: { tag: string; count: number }[];
   filterTag: string | null;
   onFilterTagChange: (tag: string | null) => void;
   currentPresetsCount: number;
@@ -46,12 +33,12 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
     onFilterTagChange(filterTag === tag ? null : tag);
   };
 
-  return (
-    <div className="relative bg-black/30 backdrop-blur-sm border border-zinc-800/40 rounded-md px-3 md:px-4 py-2.5 md:py-3 opacity-70 hover:opacity-90 transition-opacity w-full transition-all duration-300">
 
-      {/* Categories Section - Always visible */}
-      <div className="space-y-2 mb-3">
-        <div className="flex flex-wrap gap-1.5 transition-all duration-300">
+  return (
+    <div className="w-full space-y-4 mb-2">
+      {/* Categories Section */}
+      <div className="relative bg-black/30 backdrop-blur-sm border border-zinc-800/40 rounded-xl p-2">
+        <div className="flex flex-wrap gap-2 items-center justify-center md:justify-start">
           {categories.map((category) => {
             const config = CATEGORY_CONFIG[category];
             const Icon = config?.icon;
@@ -62,62 +49,65 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                 key={category}
                 onClick={() => onCategoryChange(category)}
                 className={cn(
-                  "flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono border transition-all whitespace-nowrap",
+                  "flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium transition-all duration-300 border",
                   isActive
-                    ? 'bg-zinc-800/50 text-zinc-200 border-zinc-700/50'
-                    : 'text-zinc-500 border-zinc-700/20 hover:border-zinc-600/30 hover:bg-zinc-800/30'
+                    ? 'bg-zinc-800 text-white border-zinc-700 shadow-lg shadow-zinc-900/50 scale-105'
+                    : 'text-zinc-500 border-transparent hover:bg-zinc-800/30 hover:text-zinc-300'
                 )}
               >
-                {Icon && <Icon size={12} className={isActive ? config.color : 'text-zinc-500'} />}
+                {Icon && <Icon size={14} className={isActive ? config.color : 'text-zinc-500 group-hover:text-zinc-400'} />}
                 <span>
                   {t(`communityPresets.categories.${category}`) || config?.label || category}
                 </span>
               </button>
             );
           })}
-          <button
-            onClick={onToggleCollapse}
-            className="p-1 text-zinc-500 hover:text-zinc-400 transition-colors flex-shrink-0 ml-auto transition-all duration-300"
-            title={isCollapsed ? (t('communityPresets.filters.show') || 'Show filters') : (t('communityPresets.filters.collapse') || 'Collapse')}
-          >
-            {isCollapsed ? <Menu size={14} /> : <ChevronUp size={14} />}
-          </button>
         </div>
       </div>
 
-      {/* Tags Section - Cloud Layout - Only visible when expanded */}
-      {!isCollapsed && allTags.length > 0 && (
-        <div className="space-y-2">
-          <h3 className="text-xs font-semibold font-mono uppercase text-zinc-400 tracking-wider mb-2 transition-all duration-300">
-            {t('communityPresets.tags.title') || 'Tags'}
-          </h3>
-          <div className="flex flex-wrap gap-1.5">
+      {/* Tags Section - Horizontal Scroll */}
+      {allTags.length > 0 && (
+        <div className="relative group">
+          <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-hide [&::-webkit-scrollbar]:hidden mask-linear-fade items-center">
             <button
               onClick={() => handleTagClick(null)}
               className={cn(
-                "px-2.5 py-1 rounded-md text-xs font-mono border transition-all whitespace-nowrap",
+                "flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
                 filterTag === null
-                  ? 'text-brand-cyan border-[brand-cyan]/30 bg-brand-cyan/10'
-                  : 'text-zinc-500 border-zinc-700/20 hover:border-zinc-600/30 hover:bg-zinc-800/30'
+                  ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/20'
+                  : 'text-zinc-500 border-zinc-800 hover:border-zinc-700 bg-black/20 hover:bg-black/40'
               )}
             >
-              {t('communityPresets.tags.all') || 'All Tags'}
+              {t('communityPresets.tags.all') || 'All'}
             </button>
-            {allTags.map((tag) => (
+
+            <div className="w-[1px] h-6 bg-zinc-800 mx-1 flex-shrink-0" />
+
+            {allTags.map(({ tag, count }) => (
               <button
                 key={tag}
                 onClick={() => handleTagClick(tag)}
                 className={cn(
-                  "px-2.5 py-1 rounded-md text-xs font-mono border transition-all whitespace-nowrap",
+                  "flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs transition-all border group/tag",
                   filterTag === tag
-                    ? 'text-brand-cyan border-[brand-cyan]/30 bg-brand-cyan/10'
-                    : 'text-zinc-500 border-zinc-700/20 hover:border-zinc-600/30 hover:bg-zinc-800/30'
+                    ? 'bg-zinc-800 text-zinc-100 border-zinc-700'
+                    : 'text-zinc-400 border-zinc-800/50 hover:border-zinc-700 bg-black/20 hover:bg-black/40 hover:text-zinc-300'
                 )}
               >
-                #{tag}
+                <span>#{tag}</span>
+                <span className={cn(
+                  "text-[10px] px-1.5 py-0.5 rounded-full",
+                  filterTag === tag
+                    ? "bg-zinc-700 text-zinc-300"
+                    : "bg-zinc-900/50 text-zinc-600 group-hover/tag:text-zinc-500"
+                )}>
+                  {count}
+                </span>
               </button>
             ))}
           </div>
+          {/* Gradient Fade for scroll indication */}
+          <div className="absolute right-0 top-0 bottom-2 w-12 bg-gradient-to-l from-[#121212] to-transparent pointer-events-none md:block hidden" />
         </div>
       )}
     </div>

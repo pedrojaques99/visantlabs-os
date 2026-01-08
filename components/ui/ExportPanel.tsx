@@ -82,7 +82,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = ({
 
   return (
     <div className={cn(
-      embedded ? "w-full h-full bg-transparent border-none shadow-none flex flex-col" : "fixed right-0 top-0 h-full w-80 bg-[#2a2a2a] border-l border-zinc-700/30 z-50 flex flex-col shadow-2xl"
+      "w-full h-full bg-transparent border-none shadow-none flex flex-col"
     )}>
       {/* Header */}
       {/* Header - Only hide in embedded mode if we want to rely on parent header, but keeping it for now serves as title */}

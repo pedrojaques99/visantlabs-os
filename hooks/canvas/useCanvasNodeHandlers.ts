@@ -1,12 +1,3 @@
-/**
- * useCanvasNodeHandlers
- * 
- * Hook principal que gerencia todos os handlers de interação com os node do canvas.
- * Responsável por processar ações de geração, edição, merge, upscale, mockup, prompt,
- * brand identity e outros tipos de node. Coordena a comunicação entre os node, valida
- * créditos, gerencia uploads para R2 e atualiza o estado do canvas.
- */
-
 // ========== IMPORTS - React ==========
 import { useCallback, useRef, useEffect } from 'react';
 
@@ -16,7 +7,7 @@ import type { FlowNodeData, ImageNodeData, MergeNodeData, EditNodeData, UpscaleN
 import type { ReactFlowInstance } from '../../types/reactflow-instance';
 
 // ========== IMPORTS - Tipos Customizados ==========
-import type { UploadedImage, GeminiModel, Resolution, BrandingData } from '../../types';
+import type { UploadedImage, GeminiModel, Resolution, BrandingData, AspectRatio } from '../../types';
 import type { Mockup } from '../../services/mockupApi';
 
 // ========== IMPORTS - Serviços ==========
@@ -98,8 +89,6 @@ export const useCanvasNodeHandlers = (
     nodesRef.current = nodes;
     edgesRef.current = edges;
   }, [nodes, edges]);
-
-  // ========== HELPER FUNCTIONS ==========
 
   // Wrapper for uploadImageToR2Auto to match old signature (used by handlers not yet refactored)
   const uploadImageToR2Auto = useCallback(async (
@@ -605,7 +594,7 @@ export const useCanvasNodeHandlers = (
   }, [updateNodeData]);
 
   // Handle mockup node generate
-  const handleMockupGenerate = useCallback(async (nodeId: string, imageInput: string, presetId: string, selectedColors?: string[], withHuman?: boolean, customPrompt?: string) => {
+  const handleMockupGenerate = useCallback(async (nodeId: string, imageInput: string, presetId: string, selectedColors?: string[], withHuman?: boolean, customPrompt?: string, modelOverride?: GeminiModel, resolutionOverride?: Resolution, aspectRatioOverride?: AspectRatio) => {
     const node = nodesRef.current.find(n => n.id === nodeId);
     if (!node || node.type !== 'mockup') {
       console.warn('handleMockupGenerate: Node not found or wrong type', { nodeId, foundNode: !!node });
@@ -675,8 +664,9 @@ export const useCanvasNodeHandlers = (
       });
     }
 
-    const model = preset.model || 'gemini-2.5-flash-image';
-    const resolution: Resolution = model === 'gemini-3-pro-image-preview' ? '4K' : '1K';
+    const model = modelOverride || preset.model || 'gemini-2.5-flash-image';
+    const resolution: Resolution = resolutionOverride || (model === 'gemini-3-pro-image-preview' ? '4K' : '1K');
+    const aspectRatio = aspectRatioOverride || preset.aspectRatio;
 
     const hasCredits = await validateCredits(model, resolution);
     if (!hasCredits) return;
@@ -919,7 +909,7 @@ export const useCanvasNodeHandlers = (
         hasIdentityAsReference,
         model,
         resolution,
-        aspectRatio: preset.aspectRatio,
+        aspectRatio,
       });
 
       // CRITICAL: Use backend endpoint which validates and deducts credits BEFORE generation
@@ -931,7 +921,7 @@ export const useCanvasNodeHandlers = (
         } : undefined,
         model: model,
         resolution: resolution,
-        aspectRatio: preset.aspectRatio,
+        aspectRatio: aspectRatio,
         referenceImages: referenceImages?.map(img => ({
           base64: img.base64,
           mimeType: img.mimeType
