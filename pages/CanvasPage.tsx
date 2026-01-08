@@ -68,6 +68,7 @@ import { useCanvasCollaboration } from '../hooks/canvas/useCanvasCollaboration';
 import { authService } from '../services/authService';
 import { getCanvasSettings, updateCanvasSettings } from '../services/userSettingsService';
 import { CollaborativeCursors } from '../components/canvas/CollaborativeCursors';
+import { applyPresetDataToNodes, PRESET_TYPE_TO_NODE_TYPE } from '../lib/presetImportUtils';
 import { useTranslation } from '../hooks/useTranslation';
 import { AuthModal } from '../components/AuthModal';
 import { useImageNodeHandlers } from '../hooks/canvas/useImageNodeHandlers';
@@ -1128,58 +1129,29 @@ export const CanvasPage: React.FC = () => {
     const targetCategory = type === 'all' ? (preset.category || 'presets') : type;
     const presetType = preset.presetType || (targetCategory !== 'presets' ? targetCategory : null);
 
-    // Map preset types to node types for compatibility check
-    const typeToNodeType: Record<string, string> = {
-      'mockup': 'mockup',
-      'angle': 'mockup',
-      'texture': 'mockup',
-      'ambience': 'mockup',
-      'luminance': 'mockup'
-    };
-
-    const nodeType = typeToNodeType[presetType || ''] || typeToNodeType[targetCategory || ''] || 'prompt';
-
-    // Check for selected nodes of matching type
-    const selectedNodes = nodesRef.current.filter(n => n.selected);
-
-    // A MockupNode is compatible with ANY preset type (mockup, angle, texture, ambience, luminance)
-    const standardPresetTypes = ['mockup', 'angle', 'texture', 'ambience', 'luminance'];
-    const isStandardPreset = standardPresetTypes.includes(presetType || '') || standardPresetTypes.includes(targetCategory || '');
-
-    const compatibleSelectedNodes = selectedNodes.filter(n =>
-      n.type === nodeType || (n.type === 'mockup' && isStandardPreset)
+    // Use shared utility for smart selection/update
+    const updated = applyPresetDataToNodes(
+      nodesRef.current as any,
+      preset,
+      updateNodeData
     );
 
-    if (compatibleSelectedNodes.length > 0) {
-      // Update all selected compatible nodes
-      compatibleSelectedNodes.forEach(node => {
-        if (node.type === 'mockup') {
-          updateNodeData(node.id, {
-            selectedPreset: preset.id,
-            customPrompt: preset.prompt || ''
-          });
-        } else if (node.type === 'prompt') {
-          updateNodeData(node.id, {
-            prompt: preset.prompt,
-            model: preset.model || 'gemini-2.5-flash-image'
-          });
-        }
-      });
-
-      toast.success(t('communityPresets.messages.presetApplied') || `Preset applied to ${compatibleSelectedNodes.length} selected node(s)`);
+    if (updated) {
+      toast.success(t('communityPresets.messages.presetApplied') || `Preset applied to selected node(s)`);
       return;
     }
 
     // Default Fallback: Create new node at center of viewport if no compatible node is selected
     const center = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
     let nodeId: string | undefined;
+    const nodeType = PRESET_TYPE_TO_NODE_TYPE[presetType || ''] || PRESET_TYPE_TO_NODE_TYPE[targetCategory || ''] || 'prompt';
 
     if (nodeType === 'mockup') {
       nodeId = addMockupNode(center);
       if (nodeId) {
         updateNodeData(nodeId, {
           selectedPreset: preset.id,
-          customPrompt: preset.prompt || ''
+          customPrompt: '' // Keep consistent with MockupNode behavior
         });
       }
     } else {

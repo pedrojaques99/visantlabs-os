@@ -278,6 +278,11 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
         if (viewMode === 'my') await handleFetchMyPresets();
         else await handleFetchAllPresets();
 
+        // Auto-import after save for "smart import" experience
+        if (onImportPreset) {
+            onImportPreset(data as any, data.category);
+        }
+
         clearCommunityPresetsCache();
         toast.success(isCreating ? t('communityPresets.messages.presetCreated') : t('communityPresets.messages.presetUpdated'));
     };

@@ -3,6 +3,14 @@ import type { FlowNodeData } from '../../types/reactFlow';
 
 export const STANDARD_PRESET_TYPES = ['mockup', 'angle', 'texture', 'ambience', 'luminance'];
 
+export const PRESET_TYPE_TO_NODE_TYPE: Record<string, string> = {
+    'mockup': 'mockup',
+    'angle': 'mockup',
+    'texture': 'mockup',
+    'ambience': 'mockup',
+    'luminance': 'mockup'
+};
+
 /**
  * Checks if a preset type or category should be handled by a MockupNode
  */
@@ -49,14 +57,22 @@ export const applyPresetDataToNodes = (
     if (compatibleNodes.length > 0) {
         compatibleNodes.forEach(node => {
             if (node.type === 'mockup') {
-                updateNodeData(node.id, {
+                const updates: any = {
                     selectedPreset: preset.id,
                     customPrompt: ''
-                });
+                };
+                if (preset.model) updates.model = preset.model;
+                if (preset.aspectRatio) updates.aspectRatio = preset.aspectRatio;
+
+                updateNodeData(node.id, updates);
             } else if (node.type === 'prompt') {
-                updateNodeData(node.id, {
+                const updates: any = {
                     prompt: preset.prompt || ''
-                });
+                };
+                if (preset.model) updates.model = preset.model;
+                if (preset.aspectRatio) updates.aspectRatio = preset.aspectRatio;
+
+                updateNodeData(node.id, updates);
             }
         });
         return true;
