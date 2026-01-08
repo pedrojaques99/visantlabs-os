@@ -23,6 +23,7 @@ interface MockupPresetModalProps {
   isLoading?: boolean;
   multiSelect?: boolean;
   maxSelections?: number;
+  initialCategory?: PresetFilterType;
 }
 
 type PresetFilterType = 'all' | 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance';
@@ -41,13 +42,14 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
   isLoading = false,
   multiSelect = false,
   maxSelections = 5,
+  initialCategory,
 }) => {
   const { t } = useTranslation();
   const [officialPresets, setOfficialPresets] = React.useState<MockupPreset[]>([]);
   const [communityPresets, setCommunityPresets] = React.useState<any[]>([]);
   const [isLoadingPresets, setIsLoadingPresets] = React.useState(false);
   const [selectedPresetIds, setSelectedPresetIds] = React.useState<Set<string>>(new Set());
-  const [activeFilter, setActiveFilter] = React.useState<PresetFilterType>('all');
+  const [activeFilter, setActiveFilter] = React.useState<PresetFilterType>(initialCategory || 'all');
   const [searchQuery, setSearchQuery] = React.useState('');
   const [presetSource, setPresetSource] = React.useState<'all' | 'official' | 'community'>('all');
 
@@ -149,6 +151,13 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
       setSelectedPresetIds(new Set());
     }
   }, [isOpen, multiSelect]);
+
+  // Sync activeFilter with initialCategory when modal opens
+  React.useEffect(() => {
+    if (isOpen && initialCategory) {
+      setActiveFilter(initialCategory);
+    }
+  }, [isOpen, initialCategory]);
 
   const handlePresetClick = (presetId: string) => {
     if (isLoading) return;

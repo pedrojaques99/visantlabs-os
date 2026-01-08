@@ -258,6 +258,10 @@
     "openInCanvas": "Open in Canvas",
     "tabs": {
       "all": "All",
+      "3d": "3D",
+      "presets": "Presets",
+      "aesthetics": "Aesthetics",
+      "themes": "Themes",
       "mockup": "Mockup",
       "angle": "Angle",
       "texture": "Texture",
