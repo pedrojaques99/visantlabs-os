@@ -175,6 +175,8 @@ export const CanvasPage: React.FC = () => {
   const showControls = canvasHeader.showControls;
   const cursorColor = canvasHeader.cursorColor;
   const brandCyan = canvasHeader.brandCyan;
+  const edgeStyle = canvasHeader.edgeStyle;
+  const edgeStrokeWidth = canvasHeader.edgeStrokeWidth;
   // Universal Panel State
   const [isUniversalPanelOpen, setIsUniversalPanelOpen] = useState(false);
   const [openChatNodeId, setOpenChatNodeId] = useState<string | null>(null);
@@ -327,9 +329,11 @@ export const CanvasPage: React.FC = () => {
         cursorColor,
         brandCyan,
         experimentalMode,
+        edgeStyle,
+        edgeStrokeWidth,
       });
     }
-  }, [backgroundColor, gridColor, showGrid, showMinimap, showControls, cursorColor, brandCyan, experimentalMode, isAuthenticated, debouncedUpdateSettings]);
+  }, [backgroundColor, gridColor, showGrid, showMinimap, showControls, cursorColor, brandCyan, experimentalMode, edgeStyle, edgeStrokeWidth, isAuthenticated, debouncedUpdateSettings]);
 
 
   // Drawing hook - initialize before history so we can pass drawings to it
@@ -3266,6 +3270,8 @@ export const CanvasPage: React.FC = () => {
                   onDropNode={handleDropNode}
                   onAddColorExtractor={addColorExtractorNode}
                   experimentalMode={experimentalMode}
+                  edgeStyle={edgeStyle}
+                  edgeStrokeWidth={edgeStrokeWidth}
                   cursorColor={cursorColor}
                   isDrawingMode={drawing.drawingState.isDrawingMode}
                   drawingType={drawing.drawingState.drawingType}
@@ -3342,6 +3348,8 @@ export const CanvasPage: React.FC = () => {
                 onDropNode={handleDropNode}
                 reactFlowInstance={reactFlowInstance}
                 experimentalMode={experimentalMode}
+                edgeStyle={edgeStyle}
+                edgeStrokeWidth={edgeStrokeWidth}
                 onAddColorExtractor={addColorExtractorNode}
                 isDrawingMode={drawing.drawingState.isDrawingMode}
                 drawingType={drawing.drawingState.drawingType}
@@ -4644,6 +4652,8 @@ const CollaborativeCanvas: React.FC<{
   onDropNode?: (nodeType: string, position: { x: number; y: number }) => void;
   onAddColorExtractor?: (position?: { x: number; y: number }) => void;
   experimentalMode?: boolean;
+  edgeStyle?: 'solid' | 'dashed';
+  edgeStrokeWidth?: 'normal' | 'thin';
   cursorColor?: string;
   isDrawingMode?: boolean;
   drawingType?: 'freehand' | 'text' | 'shape';
@@ -4710,6 +4720,8 @@ const CollaborativeCanvas: React.FC<{
   onDropNode,
   onAddColorExtractor,
   experimentalMode = false,
+  edgeStyle = 'solid',
+  edgeStrokeWidth = 'normal',
   cursorColor = '#FFFFFF',
   isDrawingMode = false,
   drawingType = 'freehand',
@@ -4889,6 +4901,8 @@ const CollaborativeCanvas: React.FC<{
           onEdgeContextMenu={onEdgeContextMenu}
           onAddColorExtractor={onAddColorExtractor}
           experimentalMode={experimentalMode}
+          edgeStyle={edgeStyle}
+          edgeStrokeWidth={edgeStrokeWidth}
           nodeTypes={nodeTypes as any}
           onInit={handleInit}
           reactFlowWrapper={reactFlowWrapper}
