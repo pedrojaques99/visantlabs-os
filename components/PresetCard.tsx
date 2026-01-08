@@ -144,7 +144,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <h3 className={cn(
-              "text-base font-semibold mb-0.5 font-mono line-clamp-1",
+              "text-[12px] font-semibold mb-0.5 font-mono line-clamp-1",
               selected ? "text-brand-cyan" : "text-zinc-200"
             )}>
               {migrated.name}
