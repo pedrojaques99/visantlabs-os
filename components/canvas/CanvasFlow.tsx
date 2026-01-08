@@ -88,6 +88,8 @@ interface CanvasFlowProps {
     shapeStrokeWidth?: number;
     shapeFill?: boolean;
   } | null;
+  edgeStyle?: 'solid' | 'dashed';
+  edgeStrokeWidth?: 'normal' | 'thin';
 }
 
 export const CanvasFlow: React.FC<CanvasFlowProps> = ({
@@ -138,6 +140,8 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
   onCreateTextDrawing,
   onUpdateDrawingBounds,
   shapePreview = null,
+  edgeStyle = 'solid',
+  edgeStrokeWidth = 'normal',
 }) => {
   const { t } = useTranslation();
   const [isDragging, setIsDragging] = useState(false);
@@ -258,12 +262,12 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     // Don't show drop feedback if user is actively interacting (dragging nodes, drawing, or selecting)
     if (isDragging || isDrawing || selectionBox) {
       return;
     }
-    
+
     const hasToolbarNode = e.dataTransfer.types.includes('application/vsn-toolbar-node') ||
       e.dataTransfer.types.includes('text/plain');
 
@@ -369,7 +373,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const mediaType = getMediaType(file);
-      
+
       // Update progress with file name
       setProcessingProgress({ current: i + 1, total: files.length, fileName: file.name });
 
@@ -513,7 +517,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
     const handleMouseMove = (e: MouseEvent) => {
       const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
       if (!pane) return;
-      
+
       const rect = pane.getBoundingClientRect();
       setCreateIndicatorPos({
         x: e.clientX - rect.left,
@@ -529,11 +533,11 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
 
   // Selection box handlers (when not in drawing mode and tool is select)
   const [isSelecting, setIsSelecting] = useState(false);
-  
+
   const handleSelectionMouseDown = useCallback((e: React.MouseEvent) => {
     // Don't start selection box if connecting or if clicking on a handle
     if (isConnecting) return;
-    
+
     if (!isDrawingMode && activeTool === 'select' && reactFlowInstance && e.button === 0) {
       const target = e.target as HTMLElement;
       // Check if we're clicking on a handle - if so, don't start selection box
@@ -544,7 +548,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
       if (target.closest('path, rect, circle, line, foreignObject')) {
         return; // Let the drawing handle the click
       }
-      
+
       const position = reactFlowInstance.screenToFlowPosition({
         x: e.clientX,
         y: e.clientY,
@@ -565,7 +569,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
       }
       return;
     }
-    
+
     if (isSelecting && !isDrawingMode && activeTool === 'select' && reactFlowInstance) {
       const position = reactFlowInstance.screenToFlowPosition({
         x: e.clientX,
@@ -593,7 +597,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
       if (target.closest('path, rect, circle, line, foreignObject, .react-flow__node')) {
         return;
       }
-      
+
       const position = reactFlowInstance.screenToFlowPosition({
         x: e.clientX,
         y: e.clientY,
@@ -667,7 +671,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
 
   // Check if we're in drawing mode (freehand or shapes)
   const isDrawingOrShapes = isDrawingMode && (drawingType === 'freehand' || drawingType === 'shape');
-  
+
   // Check if type tool is active
   const isTypeTool = activeTool === 'type' || drawingType === 'text';
 
@@ -698,6 +702,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
       className={cn(
         "w-full h-full transition-all duration-300 ease-in-out relative",
         isDragging && "is-dragging",
+        `edge-style-${edgeStyle}`
       )}
       style={{
         marginRight: `${sidebarSpace}px`,
@@ -708,10 +713,10 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
         cursor: isSelecting && !isDrawingMode && activeTool === 'select' && !spacePressed
           ? customCursorSvg
           : isTypeTool
-          ? 'text'
-          : isDrawingOrShapes
-          ? pencilCursorSvg
-          : undefined,
+            ? 'text'
+            : isDrawingOrShapes
+              ? pencilCursorSvg
+              : undefined,
       }}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -843,10 +848,14 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
         }
         /* Ajusta stroke-width dos edges baseado no zoom - mais grosso ao dar zoom out */
         .react-flow__edge-path {
-          stroke-width: ${Math.max(1.5, Math.min(3, 1.5 / Math.max(zoom, 0.25)))} !important;
+          stroke-width: ${edgeStrokeWidth === 'thin'
+          ? '0.75px'
+          : `${Math.max(1.5, Math.min(3, 1.5 / Math.max(zoom, 0.25)))}px`} !important;
         }
         .react-flow__edge:hover .react-flow__edge-path {
-          stroke-width: ${Math.max(2, Math.min(4, 2 / Math.max(zoom, 0.25)))} !important;
+          stroke-width: ${edgeStrokeWidth === 'thin'
+          ? '1.5px'
+          : `${Math.max(2, Math.min(4, 2 / Math.max(zoom, 0.25)))}px`} !important;
         }
         /* Grid color customization */
         .react-flow__background circle {
@@ -945,14 +954,14 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
           />
         )}
       </ReactFlow>
-      
+
       {/* Drawing layer - persistent SVG drawings */}
       <DrawingLayer
         drawings={drawings}
         currentPathData={currentPathData}
         isDrawing={isDrawing}
         selectedDrawingIds={selectedDrawingIds}
-        onDrawingClick={onDrawingClick || (() => {})}
+        onDrawingClick={onDrawingClick || (() => { })}
         viewport={viewport}
         strokeColor="var(--brand-cyan)"
         strokeSize={2}
@@ -966,7 +975,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
         drawingType={drawingType}
         shapePreview={shapePreview}
       />
-      
+
       {/* Create node indicator */}
       {showCreateIndicator && (
         <div
@@ -983,7 +992,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
           </div>
         </div>
       )}
-      
+
       <style>{`
         @keyframes pulse {
           0%, 100% {

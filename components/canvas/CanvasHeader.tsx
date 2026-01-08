@@ -48,6 +48,10 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
     setBrandCyan,
     experimentalMode,
     setExperimentalMode,
+    edgeStyle,
+    setEdgeStyle,
+    edgeStrokeWidth,
+    setEdgeStrokeWidth,
     onImportCommunityPreset,
     onSaveWorkflow,
     onLoadWorkflow,
@@ -284,6 +288,10 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
           onBrandCyanChange={setBrandCyan}
           experimentalMode={experimentalMode}
           onExperimentalModeChange={setExperimentalMode}
+          edgeStyle={edgeStyle}
+          onEdgeStyleChange={setEdgeStyle}
+          edgeStrokeWidth={edgeStrokeWidth}
+          onEdgeStrokeWidthChange={setEdgeStrokeWidth}
         />
       )}
 

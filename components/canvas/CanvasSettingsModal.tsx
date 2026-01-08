@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, Grid3x3, Maximize2, ZoomIn, Palette, MousePointer2, Beaker, Sparkles } from 'lucide-react';
+import { X, Grid3x3, Maximize2, ZoomIn, Palette, MousePointer2, Beaker, Sparkles, Link } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 
 interface CanvasSettingsModalProps {
@@ -21,6 +21,10 @@ interface CanvasSettingsModalProps {
   onBrandCyanChange?: (color: string) => void;
   experimentalMode?: boolean;
   onExperimentalModeChange?: (experimental: boolean) => void;
+  edgeStyle?: 'solid' | 'dashed';
+  onEdgeStyleChange?: (style: 'solid' | 'dashed') => void;
+  edgeStrokeWidth?: 'normal' | 'thin';
+  onEdgeStrokeWidthChange?: (width: 'normal' | 'thin') => void;
 }
 
 export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
@@ -42,6 +46,10 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
   onBrandCyanChange,
   experimentalMode = false,
   onExperimentalModeChange,
+  edgeStyle = 'solid',
+  onEdgeStyleChange,
+  edgeStrokeWidth = 'normal',
+  onEdgeStrokeWidthChange,
 }) => {
   const { t } = useTranslation();
   const [bgColor, setBgColor] = useState(backgroundColor);
@@ -175,6 +183,67 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
                   }`}
               />
             </button>
+          </div>
+        </div>
+
+        {/* Edge Settings */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 mb-4">
+          <div className="flex items-center justify-between p-2 bg-black/40 border border-zinc-800/50 rounded-md">
+            <div className="flex items-center gap-2">
+              <Link size={16} className="text-zinc-400 flex-shrink-0" />
+              <div className="flex flex-col">
+                <label className="text-xs font-mono text-zinc-300 cursor-pointer">
+                  {t('canvas.edgeStyle') || 'Edge Style'}
+                </label>
+              </div>
+            </div>
+            <div className="flex gap-1">
+              <button
+                onClick={() => onEdgeStyleChange?.('solid')}
+                className={`px-2 py-1 text-[10px] rounded border transition-colors ${edgeStyle === 'solid'
+                  ? 'bg-brand-cyan/20 border-brand-cyan/50 text-brand-cyan'
+                  : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:text-zinc-300'}`}
+              >
+                Solid
+              </button>
+              <button
+                onClick={() => onEdgeStyleChange?.('dashed')}
+                className={`px-2 py-1 text-[10px] rounded border transition-colors ${edgeStyle === 'dashed'
+                  ? 'bg-brand-cyan/20 border-brand-cyan/50 text-brand-cyan'
+                  : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:text-zinc-300'}`}
+              >
+                Dash
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between p-2 bg-black/40 border border-zinc-800/50 rounded-md">
+            <div className="flex items-center gap-2">
+              <Link size={16} className="text-zinc-400 flex-shrink-0" />
+              <div className="flex flex-col">
+                <label className="text-xs font-mono text-zinc-300 cursor-pointer">
+                  {t('canvas.edgeWidth') || 'Edge Width'}
+                </label>
+              </div>
+            </div>
+            <div className="flex gap-1">
+              <button
+                onClick={() => onEdgeStrokeWidthChange?.('normal')}
+                className={`px-2 py-1 text-[10px] rounded border transition-colors ${edgeStrokeWidth === 'normal'
+                  ? 'bg-brand-cyan/20 border-brand-cyan/50 text-brand-cyan'
+                  : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:text-zinc-300'}`}
+              >
+                Bold
+              </button>
+              <button
+                onClick={() => onEdgeStrokeWidthChange?.('thin')}
+                className={`px-2 py-1 text-[10px] rounded border transition-colors ${edgeStrokeWidth === 'thin'
+                  ? 'bg-brand-cyan/20 border-brand-cyan/50 text-brand-cyan'
+                  : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:text-zinc-300'}`}
+              >
+                Thin
+              </button>
+            </div>
           </div>
         </div>
 

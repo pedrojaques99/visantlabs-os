@@ -1397,6 +1397,19 @@
   }
 }
 
+/* Edge Style Variants - controlled by Canvas settings */
+.edge-style-solid .react-flow__edge-path {
+  stroke-dasharray: none !important;
+  animation: none !important;
+}
+
+.edge-style-dashed .react-flow__edge-path {
+  stroke-dasharray: 5 5 !important;
+  animation: edge-dash-scroll 2s linear infinite !important;
+}
+
+/* Base style defaults to dashed if no class present (legacy support) */
+
 
 .react-flow__controls {
   background: transparent;
