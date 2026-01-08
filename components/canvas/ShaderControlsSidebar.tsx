@@ -7,26 +7,25 @@ import { cn } from '../../lib/utils';
 import { useTranslation } from '../../hooks/useTranslation';
 
 interface ShaderControlsSidebarProps {
-  isCollapsed: boolean;
-  onToggleCollapse: () => void;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
   nodeData: ShaderNodeData;
   nodeId: string;
   onUpdateData?: (nodeId: string, newData: Partial<ShaderNodeData>) => void;
   variant?: 'standalone' | 'stacked' | 'embedded';
 }
 
-const SIDEBAR_WIDTH = 280;
-const COLLAPSED_WIDTH = 56;
-
-export const ShaderControlsSidebar: React.FC<ShaderControlsSidebarProps & { width?: number }> = ({
+/**
+ * Shader Controls Sidebar
+ */
+export const ShaderControlsSidebar = ({
   isCollapsed,
   onToggleCollapse,
   nodeData,
   nodeId,
   onUpdateData,
   variant = 'standalone',
-  width,
-}) => {
+}: ShaderControlsSidebarProps) => {
   const { t } = useTranslation();
   // Shader type with default
   const shaderType = nodeData.shaderType ?? 'halftone';
@@ -99,13 +98,13 @@ export const ShaderControlsSidebar: React.FC<ShaderControlsSidebarProps & { widt
     if (!isDraggingShadowRef.current) {
       setLocalShadowColor(duotoneShadowColor);
     }
-  }, [duotoneShadowColor]);
+  }, [duotoneShadowColor[0], duotoneShadowColor[1], duotoneShadowColor[2]]);
 
   useEffect(() => {
     if (!isDraggingHighlightRef.current) {
       setLocalHighlightColor(duotoneHighlightColor);
     }
-  }, [duotoneHighlightColor]);
+  }, [duotoneHighlightColor[0], duotoneHighlightColor[1], duotoneHighlightColor[2]]);
 
   // Cleanup timeouts on unmount
   useEffect(() => {
@@ -213,10 +212,8 @@ export const ShaderControlsSidebar: React.FC<ShaderControlsSidebarProps & { widt
         isCollapsed ? "w-[56px] h-[56px]" : variant === 'standalone' ? "w-[280px] h-[calc(100vh-97px)]" : "w-full"
       )}
       style={{
-        width: variant === 'embedded' ? '100%' : (isCollapsed ? `${COLLAPSED_WIDTH}px` : `${SIDEBAR_WIDTH}px`),
-        height: variant === 'embedded' ? '100%' : (isCollapsed ? `${COLLAPSED_WIDTH}px` : variant === 'standalone' ? `calc(100vh - 97px)` : 'auto'),
-        minHeight: isCollapsed ? `${COLLAPSED_WIDTH}px` : '400px',
-        maxHeight: variant === 'embedded' ? 'none' : (isCollapsed ? `${COLLAPSED_WIDTH}px` : variant === 'standalone' ? `calc(100vh - 97px)` : 'calc(100vh - 97px)'),
+        width: isCollapsed ? '56px' : '100%',
+        height: '100%',
         backgroundColor: variant === 'embedded' ? 'transparent' : 'var(--sidebar)',
       }}
     >

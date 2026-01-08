@@ -194,57 +194,7 @@ const ActionDetector = ({
   );
 };
 
-/**
- * Quick Actions panel for common node creation tasks
- */
-const QuickActionsPanel = ({
-  nodeId,
-  onCreateNode,
-  onAddPrompt,
-  isLoading,
-  t
-}: {
-  nodeId: string;
-  onCreateNode?: (chatNodeId: string, nodeType: FlowNodeType, initialData?: any, connectToChat?: boolean) => string | undefined;
-  onAddPrompt?: (nodeId: string, prompt: string) => void;
-  isLoading: boolean;
-  t: any;
-}) => {
-  const quickActions = [
-    { type: 'prompt' as FlowNodeType, label: 'Prompt', icon: <Wand2 size={12} />, color: 'text-purple-400' },
-    { type: 'mockup' as FlowNodeType, label: 'Mockup', icon: <Layers size={12} />, color: 'text-brand-cyan' },
-    { type: 'strategy' as FlowNodeType, label: 'Strategy', icon: <Target size={12} />, color: 'text-amber-400' },
-    { type: 'text' as FlowNodeType, label: 'Text', icon: <FileText size={12} />, color: 'text-green-400' },
-  ];
 
-  const handleQuickAction = (type: FlowNodeType) => {
-    if (!onCreateNode) return;
-    onCreateNode(nodeId, type, undefined, false);
-  };
-
-  if (!onCreateNode) return null;
-
-  return (
-    <div className="flex items-center gap-1.5 ml-auto">
-      {quickActions.map((action) => (
-        <button
-          key={action.type}
-          onClick={() => handleQuickAction(action.type)}
-          disabled={isLoading}
-          className={cn(
-            "p-2 rounded-md border border-zinc-700/40 transition-all hover:border-zinc-600/60 disabled:opacity-50 nodrag",
-            "bg-zinc-900/60 hover:bg-zinc-800/70 backdrop-blur-sm",
-            "hover:scale-105 active:scale-95 shadow-sm hover:shadow-md",
-            action.color
-          )}
-          title={`Create ${action.label} Node`}
-        >
-          {action.icon}
-        </button>
-      ))}
-    </div>
-  );
-};
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -559,20 +509,14 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-zinc-700/30 bg-gradient-to-r from-zinc-900/40 to-zinc-900/20 backdrop-blur-sm min-w-0">
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
-            <div className="p-1.5 rounded-md bg-brand-cyan/10 border border-brand-cyan/20 shrink-0">
-              <MessageSquare size={16} className="text-brand-cyan" />
+            <div className="p-1.5 rounded-md bg-zinc-900/10 border border-zinc-900/20 shrink-0">
+              <MessageSquare size={12} className="text-zinc-200" />
             </div>
             <h3 className="text-sm font-semibold text-zinc-200 font-mono tracking-tight truncate">{t('canvasNodes.chatNode.title')}</h3>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {/* Quick Actions Panel */}
-            <QuickActionsPanel
-              nodeId={nodeId}
-              onCreateNode={nodeData.onCreateNode}
-              onAddPrompt={nodeData.onAddPromptNode}
-              isLoading={isLoading}
-              t={t}
-            />
+
             {/* Open as Panel Button */}
             {nodeData.onOpenSidebar && (
               <button

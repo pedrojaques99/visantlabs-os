@@ -167,7 +167,10 @@ export interface MockupNodeData extends BaseNodeData {
   isValidColor?: boolean; // Color input validation
   withHuman?: boolean; // Include human interaction
   customPrompt?: string; // Custom editable prompt (optional)
-  onGenerate?: (nodeId: string, imageBase64: string, presetId: string, selectedColors?: string[], withHuman?: boolean, customPrompt?: string) => Promise<void>;
+  model?: GeminiModel; // Model for generation
+  resolution?: Resolution; // Resolution for generation
+  aspectRatio?: AspectRatio; // Aspect ratio for generation
+  onGenerate?: (nodeId: string, imageBase64: string, presetId: string, selectedColors?: string[], withHuman?: boolean, customPrompt?: string, model?: GeminiModel, resolution?: Resolution, aspectRatio?: AspectRatio) => Promise<void>;
   onUpdateData?: (nodeId: string, newData: Partial<MockupNodeData>) => void;
   onAddMockupNode?: () => void;
   onResize?: (nodeId: string, width: number, height: number) => void;

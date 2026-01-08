@@ -61,8 +61,8 @@ export const workflowApi = {
     async getPublic(category?: string): Promise<CanvasWorkflow[]> {
         try {
             const url = category && category !== 'all'
-                ? `${API_BASE_URL}/workflows/public?category=${category}`
-                : `${API_BASE_URL}/workflows/public`;
+                ? `${API_BASE_URL}/workflows/public?category=${category}&_t=${Date.now()}`
+                : `${API_BASE_URL}/workflows/public?_t=${Date.now()}`;
 
             const response = await fetch(url, {
                 headers: getAuthHeaders(),

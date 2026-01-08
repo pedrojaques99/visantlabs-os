@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
-import { Pickaxe, Settings, Maximize2, X, Image as ImageIcon, Wand2, Palette, Target, Dna, FileDown, Camera, Upload, FileText, Video, Layers, MapPin, Sun, Search, Sparkles, MessageSquare } from 'lucide-react';
+import { Pickaxe, Settings, Maximize2, X, Image as ImageIcon, Wand2, Palette, Target, Dna, FileDown, Camera, Upload, FileText, Video, Layers, MapPin, Sun, Search, Sparkles, MessageSquare, Clipboard, LayoutTemplate } from 'lucide-react';
 import { cn } from '../../../lib/utils';
 import type { Node } from '@xyflow/react';
 import type { FlowNodeData } from '../../../types/reactFlow';
@@ -35,6 +35,8 @@ interface ContextMenuProps {
   sourceNodeId?: string;
   nodes?: Node<FlowNodeData>[];
   experimentalMode?: boolean;
+  onPaste?: () => void;
+  onToggleUI?: () => void;
 }
 
 interface MenuItem {
@@ -42,7 +44,7 @@ interface MenuItem {
   label: string;
   icon: React.ReactNode;
   onClick: () => void;
-  section: 'input' | 'processing' | 'export' | 'brand';
+  section: 'input' | 'processing' | 'export' | 'brand' | 'edit' | 'view';
   category?: string;
   highlight?: boolean;
 }
@@ -78,6 +80,8 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   sourceNodeId,
   nodes,
   experimentalMode = false,
+  onPaste,
+  onToggleUI,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [position, setPosition] = useState({ x, y });
@@ -192,6 +196,21 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   const isSourceImageNode = sourceNode?.type === 'image';
 
   const menuItems: MenuItem[] = [
+    // Edit & View
+    ...(onPaste ? [{
+      id: 'paste',
+      label: 'Paste',
+      icon: <Clipboard size={16} />,
+      onClick: () => { onPaste(); onClose(); },
+      section: 'edit' as const,
+    }] : []),
+    ...(onToggleUI ? [{
+      id: 'toggle-ui',
+      label: 'Show/Hide UI',
+      icon: <LayoutTemplate size={16} />,
+      onClick: () => { onToggleUI(); onClose(); },
+      section: 'view' as const,
+    }] : []),
     // Input nodes - hide ImageNode and VideoNode if source is ImageNode
     ...(isSourceImageNode ? [] : [{
       id: 'image',
@@ -385,6 +404,8 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   const inputItems = filteredItems.filter(item => item.section === 'input');
   const processingItems = filteredItems.filter(item => item.section === 'processing');
   const exportItems = filteredItems.filter(item => item.section === 'export');
+  const editItems = filteredItems.filter(item => item.section === 'edit');
+  const viewItems = filteredItems.filter(item => item.section === 'view');
 
   // Group processing items by category
   const groupedProcessingItems = processingItems.reduce((acc, item) => {
@@ -499,6 +520,20 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           </div>
         ) : (
           <div className="space-y-0.5">
+            {/* Edit & View */}
+            {(editItems.length > 0 || viewItems.length > 0) && (
+              <>
+                <GroupLabel title="Actions" />
+                {editItems.map((item, index) => (
+                  <MenuItemButton key={item.id} item={item} index={index} />
+                ))}
+                {viewItems.map((item, index) => (
+                  <MenuItemButton key={item.id} item={item} index={editItems.length + index} />
+                ))}
+                <div className="h-px bg-zinc-700/30 my-1.5" />
+              </>
+            )}
+
             {/* Upload Media */}
             {inputItems.length > 0 && (
               <>

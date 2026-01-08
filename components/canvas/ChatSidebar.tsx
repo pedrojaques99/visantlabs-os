@@ -15,21 +15,12 @@ import { fileToBase64 } from '../../utils/fileUtils';
 import { GlitchLoader } from '../ui/GlitchLoader';
 
 interface ChatSidebarProps {
-  isCollapsed: boolean;
-  onToggleCollapse: () => void;
   nodeData: ChatNodeData;
   nodeId: string;
   onUpdateData?: (nodeId: string, newData: Partial<ChatNodeData>) => void;
   variant?: 'standalone' | 'stacked' | 'embedded';
-  sidebarWidth?: number;
-  onSidebarWidthChange?: (width: number) => void;
   sidebarRef?: React.RefObject<HTMLElement>;
 }
-
-const SIDEBAR_WIDTH = 400;
-const COLLAPSED_WIDTH = 56;
-const MIN_WIDTH = 320;
-const MAX_WIDTH = 800;
 
 // Auto-resize textarea component (reused from ChatNode)
 const AutoResizeTextarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
@@ -205,69 +196,15 @@ const ActionDetector = ({
 };
 
 /**
- * Quick Actions panel for common node creation tasks
+ * Chat Sidebar component
  */
-const QuickActionsPanel = ({
-  nodeId,
-  onCreateNode,
-  onAddPrompt,
-  isLoading,
-  t
-}: {
-  nodeId: string;
-  onCreateNode?: (chatNodeId: string, nodeType: FlowNodeType, initialData?: any, connectToChat?: boolean) => string | undefined;
-  onAddPrompt?: (nodeId: string, prompt: string) => void;
-  isLoading: boolean;
-  t: any;
-}) => {
-  const quickActions = [
-    { type: 'prompt' as FlowNodeType, label: 'Prompt', icon: <Wand2 size={12} />, color: 'text-purple-400' },
-    { type: 'mockup' as FlowNodeType, label: 'Mockup', icon: <Layers size={12} />, color: 'text-brand-cyan' },
-    { type: 'strategy' as FlowNodeType, label: 'Strategy', icon: <Target size={12} />, color: 'text-amber-400' },
-    { type: 'text' as FlowNodeType, label: 'Text', icon: <FileText size={12} />, color: 'text-green-400' },
-  ];
-
-  const handleQuickAction = (type: FlowNodeType) => {
-    if (!onCreateNode) return;
-    onCreateNode(nodeId, type, undefined, false);
-  };
-
-  if (!onCreateNode) return null;
-
-  return (
-    <div className="flex items-center gap-1.5">
-      {quickActions.map((action) => (
-        <button
-          key={action.type}
-          onClick={() => handleQuickAction(action.type)}
-          disabled={isLoading}
-          className={cn(
-            "p-2 rounded-md border border-zinc-700/40 transition-all hover:border-zinc-600/60 disabled:opacity-50",
-            "bg-zinc-900/60 hover:bg-zinc-800/70 backdrop-blur-sm",
-            "hover:scale-105 active:scale-95 shadow-sm hover:shadow-md",
-            action.color
-          )}
-          title={`Create ${action.label} Node`}
-        >
-          {action.icon}
-        </button>
-      ))}
-    </div>
-  );
-};
-
-export const ChatSidebar: React.FC<ChatSidebarProps & { width?: number }> = ({
-  isCollapsed,
-  onToggleCollapse,
+export const ChatSidebar = ({
+  sidebarRef,
   nodeData,
   nodeId,
   onUpdateData,
-  variant = 'standalone',
-  sidebarWidth = SIDEBAR_WIDTH,
-  onSidebarWidthChange,
-  sidebarRef,
-  width,
-}) => {
+  variant,
+}: ChatSidebarProps) => {
   const { t } = useTranslation();
   const [inputMessage, setInputMessage] = useState('');
   const messagesAreaRef = useRef<HTMLDivElement>(null);
@@ -276,8 +213,6 @@ export const ChatSidebar: React.FC<ChatSidebarProps & { width?: number }> = ({
   const [showSystemPromptEditor, setShowSystemPromptEditor] = useState(false);
   const [systemPrompt, setSystemPrompt] = useState(nodeData.systemPrompt || '');
   const [expandedStrategy, setExpandedStrategy] = useState(false);
-  const [isLargeScreen, setIsLargeScreen] = useState(false);
-  const resizerRef = useRef<HTMLDivElement>(null);
   const internalSidebarRef = useRef<HTMLElement>(null);
   const actualSidebarRef = sidebarRef || internalSidebarRef;
 
@@ -315,59 +250,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps & { width?: number }> = ({
     setSystemPrompt(nodeData.systemPrompt || '');
   }, [nodeData.systemPrompt]);
 
-  // Check screen size for responsive width
-  useEffect(() => {
-    const checkScreenSize = () => {
-      setIsLargeScreen(window.innerWidth >= 1024);
-    };
 
-    checkScreenSize();
-    window.addEventListener('resize', checkScreenSize);
-    return () => window.removeEventListener('resize', checkScreenSize);
-  }, []);
-
-  // Setup resizer functionality
-  useEffect(() => {
-    if (isCollapsed || !onSidebarWidthChange) return;
-    if (!resizerRef.current || !actualSidebarRef.current) return;
-
-    const resizer = resizerRef.current;
-    const sidebar = actualSidebarRef.current;
-
-    const handleMouseDown = (e: MouseEvent) => {
-      e.preventDefault();
-      const startX = e.clientX;
-      const startWidth = sidebar.offsetWidth;
-
-      document.body.style.cursor = 'col-resize';
-      document.body.style.userSelect = 'none';
-
-      const handleMouseMove = (moveEvent: MouseEvent) => {
-        const dx = moveEvent.clientX - startX;
-        const newWidth = startWidth + dx;
-
-        if (newWidth >= MIN_WIDTH && newWidth <= MAX_WIDTH) {
-          onSidebarWidthChange(newWidth);
-        }
-      };
-
-      const handleMouseUp = () => {
-        document.body.style.cursor = '';
-        document.body.style.userSelect = '';
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('mouseup', handleMouseUp);
-      };
-
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
-    };
-
-    resizer.addEventListener('mousedown', handleMouseDown);
-
-    return () => {
-      resizer.removeEventListener('mousedown', handleMouseDown);
-    };
-  }, [isCollapsed, onSidebarWidthChange, actualSidebarRef]);
 
   // Get all connected images
   const connectedImages = [
@@ -538,8 +421,6 @@ export const ChatSidebar: React.FC<ChatSidebarProps & { width?: number }> = ({
     }
   }, [nodeId, nodeData, t]);
 
-  const currentWidth = isCollapsed ? COLLAPSED_WIDTH : (variant === 'embedded' && width ? width : sidebarWidth);
-
   return (
     <aside
       ref={actualSidebarRef as React.RefObject<HTMLDivElement>}
@@ -550,372 +431,324 @@ export const ChatSidebar: React.FC<ChatSidebarProps & { width?: number }> = ({
         "transition-all duration-300 ease-out",
         "flex flex-col",
         "flex-shrink-0",
-        isCollapsed ? "w-[56px]" : "w-full"
+        "w-full"
       )}
       style={{
-        width: variant === 'embedded' ? '100%' : `${currentWidth}px`,
+        width: '100%',
         height: '100%',
         backgroundColor: variant === 'embedded' ? 'transparent' : 'var(--sidebar)',
       }}
     >
-      {/* Resizer - only show on large screens when expanded, positioned on left edge */}
-      {!isCollapsed && isLargeScreen && onSidebarWidthChange && (
-        <div
-          ref={resizerRef}
-          className="hidden lg:block absolute left-0 top-0 h-full w-2 cursor-col-resize group z-10"
-          style={{ touchAction: 'none' }}
-        >
-          <div className="w-px h-full mx-auto bg-zinc-800/50 group-hover:bg-brand-cyan/50 transition-colors duration-200"></div>
+      <div className="flex flex-col h-full overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-zinc-700/30 bg-gradient-to-r from-zinc-900/40 to-zinc-900/20 backdrop-blur-sm min-w-0">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <div className="p-1.5 rounded-md bg-brand-cyan/10 border border-brand-cyan/20 shrink-0">
+              <MessageSquare size={16} className="text-brand-cyan" />
+            </div>
+            <h3 className="text-sm font-semibold text-zinc-200 font-mono tracking-tight truncate">{t('canvasNodes.chatNode.title')}</h3>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+
+            <button
+              onClick={() => setShowSystemPromptEditor(!showSystemPromptEditor)}
+              className={cn(
+                "p-2 rounded-md border transition-all bg-zinc-900/60 border-zinc-700/40 text-zinc-400 hover:border-zinc-600/60 hover:text-zinc-200 hover:bg-zinc-800/70 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95",
+                showSystemPromptEditor && "border-brand-cyan/50 text-brand-cyan bg-brand-cyan/10"
+              )}
+              title={t('canvasNodes.chatNode.systemPromptSettings') || 'System Prompt Settings'}
+            >
+              <Settings2 size={14} />
+            </button>
+          </div>
         </div>
-      )}
-      {/* Toggle Button - Only visible when expanded */}
-      {!isCollapsed && (
-        <button
-          onClick={onToggleCollapse}
-          className={cn(
-            "absolute left-2 z-50",
-            "w-6 h-6 rounded-md",
-            "bg-zinc-900/80 backdrop-blur-md border border-zinc-700/50",
-            "flex items-center justify-center",
-            "text-zinc-400 hover:text-zinc-200",
-            "hover:bg-zinc-800/80 hover:border-zinc-600/60",
-            "transition-all duration-200",
-            "shadow-sm hover:shadow-md"
-          )}
-          title={t('canvasNodes.chatNode.collapse') || 'Collapse'}
-        >
-          <ChevronRight size={12} />
-        </button>
-      )}
 
-      {isCollapsed ? (
-        /* Collapsed State - Icon Only */
-        <button
-          onClick={onToggleCollapse}
-          className="w-full h-full flex items-center justify-center text-brand-cyan hover:text-brand-cyan/80 transition-colors border-l border-zinc-800/50"
-          title={t('canvasNodes.chatNode.expand') || 'Expand Chat'}
-        >
-          <MessageSquare size={20} />
-        </button>
-      ) : (
-        /* Expanded State - Full Content */
-        <div className="flex flex-col h-full overflow-hidden">
-          {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-zinc-700/30 bg-gradient-to-r from-zinc-900/40 to-zinc-900/20 backdrop-blur-sm min-w-0">
-            <div className="flex items-center gap-2.5 min-w-0 flex-1">
-              <div className="p-1.5 rounded-md bg-brand-cyan/10 border border-brand-cyan/20 shrink-0">
-                <MessageSquare size={16} className="text-brand-cyan" />
-              </div>
-              <h3 className="text-sm font-semibold text-zinc-200 font-mono tracking-tight truncate">{t('canvasNodes.chatNode.title')}</h3>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <QuickActionsPanel
-                nodeId={nodeId}
-                onCreateNode={nodeData.onCreateNode}
-                onAddPrompt={nodeData.onAddPromptNode}
-                isLoading={isLoading}
-                t={t}
-              />
-              <button
-                onClick={() => setShowSystemPromptEditor(!showSystemPromptEditor)}
-                className={cn(
-                  "p-2 rounded-md border transition-all bg-zinc-900/60 border-zinc-700/40 text-zinc-400 hover:border-zinc-600/60 hover:text-zinc-200 hover:bg-zinc-800/70 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95",
-                  showSystemPromptEditor && "border-brand-cyan/50 text-brand-cyan bg-brand-cyan/10"
-                )}
-                title={t('canvasNodes.chatNode.systemPromptSettings') || 'System Prompt Settings'}
-              >
-                <Settings2 size={14} />
-              </button>
-            </div>
-          </div>
-
-          {/* System Prompt Editor */}
-          {showSystemPromptEditor && (
-            <div className="px-4 py-3 border-b border-zinc-700/30 bg-gradient-to-r from-zinc-900/50 to-zinc-900/30 backdrop-blur-sm animate-in slide-in-from-top-1 duration-200">
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-xs font-mono text-zinc-300 font-semibold uppercase tracking-wider">
-                  {t('canvasNodes.chatNode.systemPrompt') || 'System Prompt (Agent Personality)'}
-                </label>
-                <div className="flex items-center gap-2">
-                  {systemPrompt && (
-                    <button
-                      onClick={handleResetSystemPrompt}
-                      className="text-[10px] px-2 py-1 rounded border border-zinc-600/40 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500/60 transition-all"
-                    >
-                      {t('canvasNodes.chatNode.resetToDefault') || 'Reset to Default'}
-                    </button>
-                  )}
+        {/* System Prompt Editor */}
+        {showSystemPromptEditor && (
+          <div className="px-4 py-3 border-b border-zinc-700/30 bg-gradient-to-r from-zinc-900/50 to-zinc-900/30 backdrop-blur-sm animate-in slide-in-from-top-1 duration-200">
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-mono text-zinc-300 font-semibold uppercase tracking-wider">
+                {t('canvasNodes.chatNode.systemPrompt') || 'System Prompt (Agent Personality)'}
+              </label>
+              <div className="flex items-center gap-2">
+                {systemPrompt && (
                   <button
-                    onClick={handleSaveSystemPrompt}
-                    className="text-[10px] px-2 py-1 rounded bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan hover:bg-brand-cyan/30 transition-all"
+                    onClick={handleResetSystemPrompt}
+                    className="text-[10px] px-2 py-1 rounded border border-zinc-600/40 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500/60 transition-all"
                   >
-                    {t('canvasNodes.chatNode.save') || 'Save'}
+                    {t('canvasNodes.chatNode.resetToDefault') || 'Reset to Default'}
                   </button>
-                </div>
-              </div>
-              <AutoResizeTextarea
-                value={systemPrompt}
-                onChange={(e) => setSystemPrompt(e.target.value)}
-                placeholder={t('canvasNodes.chatNode.systemPromptPlaceholder') || 'Enter custom system prompt to personalize the agent personality. Leave empty to use default.'}
-                className="resize-none bg-zinc-900/60 border-zinc-700/40 focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 backdrop-blur-sm text-xs font-mono min-h-[120px] max-h-[300px]"
-                minHeight={120}
-                maxHeight={300}
-                disabled={isLoading}
-              />
-              <p className="text-[10px] text-zinc-500 mt-2 font-mono">
-                {t('canvasNodes.chatNode.systemPromptHint') || 'This prompt defines how the AI assistant behaves. Use it to customize tone, style, and expertise.'}
-              </p>
-            </div>
-          )}
-
-          {/* Credit Indicator */}
-          <div className="px-4 py-2.5 border-b border-zinc-700/30 bg-gradient-to-r from-zinc-900/50 to-zinc-900/30 backdrop-blur-sm">
-            <div className="flex items-center justify-between text-xs mb-2">
-              <span className="text-zinc-300 font-mono font-medium">
-                {t('canvasNodes.chatNode.messages')}: <span className="text-brand-cyan">{userMessageCount}</span>
-              </span>
-              <span className="text-zinc-400 font-mono text-[10px]">
-                {t('canvasNodes.chatNode.nextCreditIn')} {messagesUntilNextCredit} {messagesUntilNextCredit > 1 ? t('canvasNodes.chatNode.messagesPlural') : t('canvasNodes.chatNode.message')}
-              </span>
-            </div>
-            <div className="h-1.5 bg-zinc-800/40 rounded-full overflow-hidden shadow-inner">
-              <div
-                className="h-full bg-gradient-to-r from-brand-cyan to-brand-cyan/80 transition-all duration-500 ease-out shadow-sm"
-                style={{ width: `${((userMessageCount % 4) / 4) * 100}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Messages Area */}
-          <div
-            ref={messagesAreaRef}
-            className="flex-1 p-4 overflow-y-auto overflow-x-hidden space-y-4 min-h-0 min-w-0 scroll-smooth bg-gradient-to-b from-transparent via-zinc-900/10 to-transparent"
-            onWheel={(e) => e.stopPropagation()}
-          >
-            {messages.length === 0 ? (
-              <div className="text-center text-sm text-muted-foreground py-12">
-                {hasContext ? (
-                  <div className="space-y-3">
-                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-brand-cyan/10 border border-brand-cyan/20 mb-2">
-                      <MessageSquare size={20} className="text-brand-cyan/70" />
-                    </div>
-                    <p className="text-zinc-300 font-medium">{t('canvasNodes.chatNode.startConversationWithContext')}</p>
-                    <p className="text-xs text-zinc-500">{t('canvasNodes.chatNode.chatWillUseImagesAndTexts')}</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-zinc-800/50 border border-zinc-700/30 mb-2">
-                      <MessageSquare size={20} className="text-zinc-500" />
-                    </div>
-                    <p className="text-zinc-300 font-medium">{t('canvasNodes.chatNode.startConversationWithAI')}</p>
-                    <p className="text-xs text-zinc-500">{t('canvasNodes.chatNode.connectImagesOrTexts')}</p>
-                  </div>
                 )}
+                <button
+                  onClick={handleSaveSystemPrompt}
+                  className="text-[10px] px-2 py-1 rounded bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan hover:bg-brand-cyan/30 transition-all"
+                >
+                  {t('canvasNodes.chatNode.save') || 'Save'}
+                </button>
               </div>
-            ) : (
-              messages.map((msg) => (
-                <div
-                  key={msg.id}
+            </div>
+            <AutoResizeTextarea
+              value={systemPrompt}
+              onChange={(e) => setSystemPrompt(e.target.value)}
+              placeholder={t('canvasNodes.chatNode.systemPromptPlaceholder') || 'Enter custom system prompt to personalize the agent personality. Leave empty to use default.'}
+              className="resize-none bg-zinc-900/60 border-zinc-700/40 focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 backdrop-blur-sm text-xs font-mono min-h-[120px] max-h-[300px]"
+              minHeight={120}
+              maxHeight={300}
+              disabled={isLoading}
+            />
+            <p className="text-[10px] text-zinc-500 mt-2 font-mono">
+              {t('canvasNodes.chatNode.systemPromptHint') || 'This prompt defines how the AI assistant behaves. Use it to customize tone, style, and expertise.'}
+            </p>
+          </div>
+        )}
+
+        {/* Credit Indicator */}
+        <div className="px-4 py-2.5 border-b border-zinc-700/30 bg-gradient-to-r from-zinc-900/50 to-zinc-900/30 backdrop-blur-sm">
+          <div className="flex items-center justify-between text-xs mb-2">
+            <span className="text-zinc-300 font-mono font-medium">
+              {t('canvasNodes.chatNode.messages')}: <span className="text-brand-cyan">{userMessageCount}</span>
+            </span>
+            <span className="text-zinc-400 font-mono text-[10px]">
+              {t('canvasNodes.chatNode.nextCreditIn')} {messagesUntilNextCredit} {messagesUntilNextCredit > 1 ? t('canvasNodes.chatNode.messagesPlural') : t('canvasNodes.chatNode.message')}
+            </span>
+          </div>
+          <div className="h-1.5 bg-zinc-800/40 rounded-full overflow-hidden shadow-inner">
+            <div
+              className="h-full bg-gradient-to-r from-brand-cyan to-brand-cyan/80 transition-all duration-500 ease-out shadow-sm"
+              style={{ width: `${((userMessageCount % 4) / 4) * 100}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Messages Area */}
+        <div
+          ref={messagesAreaRef}
+          className="flex-1 p-4 overflow-y-auto overflow-x-hidden space-y-4 min-h-0 min-w-0 scroll-smooth bg-gradient-to-b from-transparent via-zinc-900/10 to-transparent"
+          onWheel={(e) => e.stopPropagation()}
+        >
+          {messages.length === 0 ? (
+            <div className="text-center text-sm text-muted-foreground py-12">
+              {hasContext ? (
+                <div className="space-y-3">
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-brand-cyan/10 border border-brand-cyan/20 mb-2">
+                    <MessageSquare size={20} className="text-brand-cyan/70" />
+                  </div>
+                  <p className="text-zinc-300 font-medium">{t('canvasNodes.chatNode.startConversationWithContext')}</p>
+                  <p className="text-xs text-zinc-500">{t('canvasNodes.chatNode.chatWillUseImagesAndTexts')}</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-zinc-800/50 border border-zinc-700/30 mb-2">
+                    <MessageSquare size={20} className="text-zinc-500" />
+                  </div>
+                  <p className="text-zinc-300 font-medium">{t('canvasNodes.chatNode.startConversationWithAI')}</p>
+                  <p className="text-xs text-zinc-500">{t('canvasNodes.chatNode.connectImagesOrTexts')}</p>
+                </div>
+              )}
+            </div>
+          ) : (
+            messages.map((msg) => (
+              <div
+                key={msg.id}
+                className={cn(
+                  "flex",
+                  msg.role === 'user' ? 'justify-end' : 'justify-start'
+                )}
+              >
+                <Card
                   className={cn(
-                    "flex",
-                    msg.role === 'user' ? 'justify-end' : 'justify-start'
+                    "max-w-[85%] min-w-0 p-3.5 rounded-lg shadow-sm relative group",
+                    msg.role === 'user'
+                      ? 'bg-primary text-primary-foreground border-primary/20'
+                      : 'bg-muted/80 border-zinc-700/40 backdrop-blur-sm'
                   )}
                 >
-                  <Card
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCopyMessage(msg.id, msg.content);
+                    }}
                     className={cn(
-                      "max-w-[85%] min-w-0 p-3.5 rounded-lg shadow-sm relative group",
+                      "absolute top-2 right-2 p-1.5 rounded-md transition-all opacity-0 group-hover:opacity-100",
+                      "backdrop-blur-sm shadow-sm hover:shadow-md",
                       msg.role === 'user'
-                        ? 'bg-primary text-primary-foreground border-primary/20'
-                        : 'bg-muted/80 border-zinc-700/40 backdrop-blur-sm'
+                        ? 'bg-primary/20 hover:bg-primary/30 text-primary-foreground/80 hover:text-primary-foreground'
+                        : 'bg-zinc-800/60 hover:bg-zinc-700/80 text-zinc-300 hover:text-zinc-100'
                     )}
+                    title={t('canvasNodes.chatNode.copyMessage') || 'Copy message'}
                   >
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleCopyMessage(msg.id, msg.content);
-                      }}
-                      className={cn(
-                        "absolute top-2 right-2 p-1.5 rounded-md transition-all opacity-0 group-hover:opacity-100",
-                        "backdrop-blur-sm shadow-sm hover:shadow-md",
-                        msg.role === 'user'
-                          ? 'bg-primary/20 hover:bg-primary/30 text-primary-foreground/80 hover:text-primary-foreground'
-                          : 'bg-zinc-800/60 hover:bg-zinc-700/80 text-zinc-300 hover:text-zinc-100'
-                      )}
-                      title={t('canvasNodes.chatNode.copyMessage') || 'Copy message'}
-                    >
-                      {copiedMessageId === msg.id ? (
-                        <Check size={14} className="text-green-400" />
+                    {copiedMessageId === msg.id ? (
+                      <Check size={14} className="text-green-400" />
+                    ) : (
+                      <Copy size={14} />
+                    )}
+                  </button>
+                  <CardContent className="p-0 min-w-0 select-text">
+                    <div className="text-sm break-words leading-relaxed min-w-0 select-text">
+                      {msg.role === 'assistant' ? (
+                        <MarkdownRenderer content={msg.content} preserveLines className="font-sans select-text" />
                       ) : (
-                        <Copy size={14} />
+                        <p className="whitespace-pre-wrap select-text">{msg.content}</p>
                       )}
-                    </button>
-                    <CardContent className="p-0 min-w-0 select-text">
-                      <div className="text-sm break-words leading-relaxed min-w-0 select-text">
-                        {msg.role === 'assistant' ? (
-                          <MarkdownRenderer content={msg.content} preserveLines className="font-sans select-text" />
-                        ) : (
-                          <p className="whitespace-pre-wrap select-text">{msg.content}</p>
-                        )}
-                      </div>
-                      {msg.role === 'assistant' && (nodeData.onAddPromptNode || nodeData.onCreateNode) && (
-                        <ActionDetector
-                          content={msg.content}
-                          nodeId={nodeId}
-                          onAddPrompt={nodeData.onAddPromptNode}
-                          onCreateNode={nodeData.onCreateNode}
-                          t={t}
-                        />
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
-              ))
-            )}
-            {isLoading && (
-              <div className="flex justify-start">
-                <Card className="bg-muted/80 border-zinc-700/40 max-w-[85%] min-w-0 p-3.5 rounded-lg backdrop-blur-sm shadow-sm">
-                  <CardContent className="p-0 flex items-center gap-2.5 min-w-0">
-                    <GlitchLoader size={16} color="currentColor" />
-                    <span className="text-sm text-muted-foreground">{t('canvasNodes.chatNode.thinking')}</span>
+                    </div>
+                    {msg.role === 'assistant' && (nodeData.onAddPromptNode || nodeData.onCreateNode) && (
+                      <ActionDetector
+                        content={msg.content}
+                        nodeId={nodeId}
+                        onAddPrompt={nodeData.onAddPromptNode}
+                        onCreateNode={nodeData.onCreateNode}
+                        t={t}
+                      />
+                    )}
                   </CardContent>
                 </Card>
               </div>
-            )}
-          </div>
-
-          {/* Compact Context Preview at the bottom */}
-          {hasContext && (
-            <div className="px-4 py-3 border-t border-zinc-700/30 bg-gradient-to-r from-zinc-900/40 to-zinc-900/20 backdrop-blur-sm min-w-0">
-              <div className="flex items-center justify-between gap-4 min-w-0">
-                <div className="flex items-center gap-3 overflow-x-auto py-0.5 min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5 text-[10px] text-zinc-400 font-mono shrink-0 uppercase tracking-wider border-r border-zinc-700/40 pr-3 mr-1">
-                    <CheckCircle2 size={11} className="text-brand-cyan" />
-                    <span className="font-medium">{t('canvasNodes.chatNode.context')}</span>
-                  </div>
-
-                  {connectedImages.length > 0 && (
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-brand-cyan/10 border border-brand-cyan/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm">
-                      <ImageIcon size={11} className="text-brand-cyan" />
-                      <span className="text-[10px] text-brand-cyan font-mono font-bold">{connectedImages.length}</span>
-                    </div>
-                  )}
-
-                  {connectedText && (
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-purple-500/10 border border-purple-500/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm">
-                      <FileText size={11} className="text-purple-400" />
-                      <span className="text-[10px] text-purple-400 font-mono font-bold">{connectedText.length}</span>
-                    </div>
-                  )}
-
-                  {connectedStrategyData && (
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm">
-                      <Target size={11} className="text-amber-400" />
-                      <span className="text-[10px] text-amber-400 font-mono font-bold">{strategySections.length}</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    onClick={handleSuggestMockups}
-                    disabled={isLoading}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/40 rounded-md text-[10px] text-brand-cyan transition-all disabled:opacity-50 font-mono uppercase tracking-tighter backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
-                  >
-                    <Sparkles size={11} />
-                    <span>{t('canvasNodes.chatNode.suggestMockups')}</span>
-                  </button>
-
-                  <button
-                    onClick={() => setExpandedStrategy(!expandedStrategy)}
-                    className="p-1.5 text-zinc-500 hover:text-zinc-300 transition-all rounded-md hover:bg-zinc-800/50"
-                    title="Toggle details"
-                  >
-                    {expandedStrategy ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
-                  </button>
-                </div>
-              </div>
-
-              {/* Expanded Details */}
-              {expandedStrategy && (
-                <div className="mt-3 pt-3 border-t border-zinc-700/20 space-y-3 animate-in slide-in-from-bottom-1 duration-200">
-                  {connectedImages.length > 0 && (
-                    <div className="bg-zinc-900/60 p-2 rounded-lg border border-brand-cyan/20 backdrop-blur-sm shadow-sm">
-                      <ConnectedImagesDisplay
-                        images={connectedImages}
-                        label=""
-                        maxThumbnails={4}
-                        onImageRemove={handleImageRemove}
-                        showLabel={false}
-                      />
-                    </div>
-                  )}
-
-                  <div className="flex flex-col gap-2">
-                    {connectedText && (
-                      <div className="text-[10px] text-zinc-300 font-mono line-clamp-2 bg-purple-500/10 p-2 rounded-md border border-purple-500/20 backdrop-blur-sm">
-                        <span className="text-purple-400 mr-1.5 uppercase font-semibold">Text:</span>
-                        {connectedText}
-                      </div>
-                    )}
-                    {connectedStrategyData && (
-                      <div className="flex flex-wrap gap-1.5">
-                        {strategySections.map((s, i) => (
-                          <span key={i} className="text-[9px] px-2 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-md font-mono uppercase backdrop-blur-sm shadow-sm">
-                            {s}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
+            ))
+          )}
+          {isLoading && (
+            <div className="flex justify-start">
+              <Card className="bg-muted/80 border-zinc-700/40 max-w-[85%] min-w-0 p-3.5 rounded-lg backdrop-blur-sm shadow-sm">
+                <CardContent className="p-0 flex items-center gap-2.5 min-w-0">
+                  <GlitchLoader size={16} color="currentColor" />
+                  <span className="text-sm text-muted-foreground">{t('canvasNodes.chatNode.thinking')}</span>
+                </CardContent>
+              </Card>
             </div>
           )}
+        </div>
 
-          {/* Input Area */}
-          <div className="p-4 border-t border-zinc-700/30 bg-gradient-to-r from-zinc-900/60 to-zinc-900/40 backdrop-blur-sm relative z-10">
-            <input
-              ref={mediaInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleMediaFileChange}
-              className="hidden"
-            />
-            <div className="flex gap-2.5 min-w-0">
-              {(nodeData.onAttachMedia || nodeData.onCreateNode) && (
-                <Button
-                  onClick={handleAttachMediaClick}
+        {/* Compact Context Preview at the bottom */}
+        {hasContext && (
+          <div className="px-4 py-3 border-t border-zinc-700/30 bg-gradient-to-r from-zinc-900/40 to-zinc-900/20 backdrop-blur-sm min-w-0">
+            <div className="flex items-center justify-between gap-4 min-w-0">
+              <div className="flex items-center gap-3 overflow-x-auto py-0.5 min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 text-[10px] text-zinc-400 font-mono shrink-0 uppercase tracking-wider border-r border-zinc-700/40 pr-3 mr-1">
+                  <CheckCircle2 size={11} className="text-brand-cyan" />
+                  <span className="font-medium">{t('canvasNodes.chatNode.context')}</span>
+                </div>
+
+                {connectedImages.length > 0 && (
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-brand-cyan/10 border border-brand-cyan/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm">
+                    <ImageIcon size={11} className="text-brand-cyan" />
+                    <span className="text-[10px] text-brand-cyan font-mono font-bold">{connectedImages.length}</span>
+                  </div>
+                )}
+
+                {connectedText && (
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-purple-500/10 border border-purple-500/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm">
+                    <FileText size={11} className="text-purple-400" />
+                    <span className="text-[10px] text-purple-400 font-mono font-bold">{connectedText.length}</span>
+                  </div>
+                )}
+
+                {connectedStrategyData && (
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm">
+                    <Target size={11} className="text-amber-400" />
+                    <span className="text-[10px] text-amber-400 font-mono font-bold">{strategySections.length}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={handleSuggestMockups}
                   disabled={isLoading}
-                  size="icon"
-                  variant="outline"
-                  className="self-end shrink-0 border-zinc-700/50 hover:border-brand-cyan/50 hover:bg-brand-cyan/10 text-zinc-400 hover:text-brand-cyan backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95 transition-all"
-                  title={t('canvasNodes.chatNode.attachMedia') || 'Attach Image'}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/40 rounded-md text-[10px] text-brand-cyan transition-all disabled:opacity-50 font-mono uppercase tracking-tighter backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
                 >
-                  <Paperclip className="w-4 h-4" />
-                </Button>
-              )}
-              <AutoResizeTextarea
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={hasContext ? t('canvasNodes.chatNode.askAboutContext') : t('canvasNodes.chatNode.typeYourMessage')}
-                className="resize-none bg-zinc-900/60 border-zinc-700/40 focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 backdrop-blur-sm min-w-0 flex-1"
-                minHeight={60}
-                maxHeight={200}
-                disabled={isLoading}
-              />
-              <Button
-                onClick={handleSend}
-                disabled={!inputMessage.trim() || isLoading}
-                size="icon"
-                className="self-end shrink-0 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-brand-cyan/40 text-brand-cyan hover:text-brand-cyan shadow-sm hover:shadow-md hover:scale-105 active:scale-95 transition-all backdrop-blur-sm"
-              >
-                <Send className="w-4 h-4" />
-              </Button>
+                  <Sparkles size={11} />
+                  <span>{t('canvasNodes.chatNode.suggestMockups')}</span>
+                </button>
+
+                <button
+                  onClick={() => setExpandedStrategy(!expandedStrategy)}
+                  className="p-1.5 text-zinc-500 hover:text-zinc-300 transition-all rounded-md hover:bg-zinc-800/50"
+                  title="Toggle details"
+                >
+                  {expandedStrategy ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+                </button>
+              </div>
             </div>
+
+            {/* Expanded Details */}
+            {expandedStrategy && (
+              <div className="mt-3 pt-3 border-t border-zinc-700/20 space-y-3 animate-in slide-in-from-bottom-1 duration-200">
+                {connectedImages.length > 0 && (
+                  <div className="bg-zinc-900/60 p-2 rounded-lg border border-brand-cyan/20 backdrop-blur-sm shadow-sm">
+                    <ConnectedImagesDisplay
+                      images={connectedImages}
+                      label=""
+                      maxThumbnails={4}
+                      onImageRemove={handleImageRemove}
+                      showLabel={false}
+                    />
+                  </div>
+                )}
+
+                <div className="flex flex-col gap-2">
+                  {connectedText && (
+                    <div className="text-[10px] text-zinc-300 font-mono line-clamp-2 bg-purple-500/10 p-2 rounded-md border border-purple-500/20 backdrop-blur-sm">
+                      <span className="text-purple-400 mr-1.5 uppercase font-semibold">Text:</span>
+                      {connectedText}
+                    </div>
+                  )}
+                  {connectedStrategyData && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {strategySections.map((s, i) => (
+                        <span key={i} className="text-[9px] px-2 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-md font-mono uppercase backdrop-blur-sm shadow-sm">
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Input Area */}
+        <div className="p-4 border-t border-zinc-700/30 bg-gradient-to-r from-zinc-900/60 to-zinc-900/40 backdrop-blur-sm relative z-10">
+          <input
+            ref={mediaInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleMediaFileChange}
+            className="hidden"
+          />
+          <div className="flex gap-2.5 min-w-0">
+            {(nodeData.onAttachMedia || nodeData.onCreateNode) && (
+              <Button
+                onClick={handleAttachMediaClick}
+                disabled={isLoading}
+                size="icon"
+                variant="outline"
+                className="self-end shrink-0 border-zinc-700/50 hover:border-brand-cyan/50 hover:bg-brand-cyan/10 text-zinc-400 hover:text-brand-cyan backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95 transition-all"
+                title={t('canvasNodes.chatNode.attachMedia') || 'Attach Image'}
+              >
+                <Paperclip className="w-4 h-4" />
+              </Button>
+            )}
+            <AutoResizeTextarea
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={hasContext ? t('canvasNodes.chatNode.askAboutContext') : t('canvasNodes.chatNode.typeYourMessage')}
+              className="resize-none bg-zinc-900/60 border-zinc-700/40 focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 backdrop-blur-sm min-w-0 flex-1"
+              minHeight={60}
+              maxHeight={200}
+              disabled={isLoading}
+            />
+            <Button
+              onClick={handleSend}
+              disabled={!inputMessage.trim() || isLoading}
+              size="icon"
+              className="self-end shrink-0 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-brand-cyan/40 text-brand-cyan hover:text-brand-cyan shadow-sm hover:shadow-md hover:scale-105 active:scale-95 transition-all backdrop-blur-sm"
+            >
+              <Send className="w-4 h-4" />
+            </Button>
           </div>
         </div>
-      )}
+      </div>
     </aside>
   );
 };

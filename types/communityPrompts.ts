@@ -1,17 +1,22 @@
 import type { AspectRatio, GeminiModel } from '../types';
 
+export type { AspectRatio, GeminiModel };
+
+// Categorias válidas para armazenamento no banco
+export const VALID_PROMPT_CATEGORIES = [
+  '3d',
+  'presets',
+  'aesthetics',
+  'themes',
+  'mockup',
+  'angle',
+  'texture',
+  'ambience',
+  'luminance',
+] as const;
+
 // Categorias - inclui novas e antigas
-export type PromptCategory = 
-  | 'all' 
-  | '3d' 
-  | 'presets' 
-  | 'aesthetics' 
-  | 'themes'
-  | 'mockup' 
-  | 'angle' 
-  | 'texture' 
-  | 'ambience' 
-  | 'luminance';
+export type PromptCategory = typeof VALID_PROMPT_CATEGORIES[number] | 'all';
 
 // Tipos legados (para compatibilidade - agora são categorias também)
 export type LegacyPresetType = 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance';
@@ -20,11 +25,11 @@ export type LegacyPresetType = 'mockup' | 'angle' | 'texture' | 'ambience' | 'lu
 export interface CommunityPrompt {
   _id?: string;
   userId: string;
-  
+
   // Nova estrutura
   category: PromptCategory;
   presetType?: LegacyPresetType; // Opcional, apenas para category === 'presets'
-  
+
   // Campos existentes
   id: string;
   name: string;
@@ -34,7 +39,7 @@ export interface CommunityPrompt {
   aspectRatio: AspectRatio;
   model?: GeminiModel;
   tags?: string[];
-  
+
   // Novos campos opcionais
   useCase?: string;
   examples?: string[];
@@ -42,7 +47,7 @@ export interface CommunityPrompt {
   context?: 'canvas' | 'mockup' | 'branding' | 'general';
   usageCount?: number;
   lastUsedAt?: string;
-  
+
   // Campos existentes
   isApproved: boolean;
   createdAt: string;
@@ -57,11 +62,11 @@ export function migrateLegacyPreset(legacy: any): CommunityPrompt {
   if (legacy.category) {
     return legacy as CommunityPrompt;
   }
-  
+
   // Migrar preset antigo - usa presetType como category diretamente
   // Se tem presetType, usa como category; senão, usa 'presets' como fallback
   const category: PromptCategory = legacy.presetType || 'presets';
-  
+
   return {
     ...legacy,
     category: category,

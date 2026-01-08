@@ -31,18 +31,7 @@ import { migrateLegacyPreset } from '../types/communityPrompts';
 // Constants
 const COMMUNITY_API = '/api/community/presets';
 const PRESET_TYPES = ['all', 'mockup', 'angle', 'texture', 'ambience', 'luminance'] as const;
-const PROMPT_CATEGORIES: PromptCategory[] = [
-  'all',
-  '3d',
-  'presets',
-  'aesthetics',
-  'themes',
-  'mockup',
-  'angle',
-  'texture',
-  'ambience',
-  'luminance'
-];
+const PROMPT_CATEGORIES = Object.keys(CATEGORY_CONFIG) as PromptCategory[];
 
 // Types - manter compatibilidade
 type PresetType = 'all' | 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance';
@@ -653,30 +642,33 @@ export const CommunityPresetsPage: React.FC = () => {
   // Computed - Tags and filtering
   const allTags = useMemo(() => {
     const sourcePresets = viewMode === 'my' ? presets : allPresets;
-    let currentPresets = sourcePresets;
+    let currentCategoryPresets = sourcePresets;
 
     // Filtrar por categoria
     if (activeTab !== 'all') {
       if (activeTab === 'presets') {
         // Para presets, manter compatibilidade com filtro de presetType se houver
-        currentPresets = sourcePresets.filter(p => p.category === 'presets');
+        currentCategoryPresets = sourcePresets.filter(p => p.category === 'presets');
       } else {
-        currentPresets = sourcePresets.filter(p => p.category === activeTab);
+        currentCategoryPresets = sourcePresets.filter(p => p.category === activeTab);
       }
     }
 
-    const tags = new Set<string>();
-    currentPresets.forEach(preset => {
+    const tagCounts = new Map<string, number>();
+    currentCategoryPresets.forEach(preset => {
       if (preset.tags && Array.isArray(preset.tags)) {
         preset.tags.forEach(tag => {
           if (tag && typeof tag === 'string' && tag.trim().length > 0) {
-            tags.add(tag.trim());
+            const trimmedTag = tag.trim();
+            tagCounts.set(trimmedTag, (tagCounts.get(trimmedTag) || 0) + 1);
           }
         });
       }
     });
 
-    return Array.from(tags).sort();
+    return Array.from(tagCounts.entries())
+      .map(([tag, count]) => ({ tag, count }))
+      .sort((a, b) => b.count - a.count);
   }, [presets, allPresets, activeTab, viewMode]);
 
   const currentPresets = useMemo(() => {
@@ -781,7 +773,7 @@ export const CommunityPresetsPage: React.FC = () => {
             </BreadcrumbList>
           </Breadcrumb>
         </div>
-        <div className="flex items-start gap-4 mb-8">
+        <div className="flex items-start gap-4">
           <button
             onClick={() => navigate('/community')}
             className="p-2 hover:bg-zinc-800/50 rounded-md transition-colors"
@@ -849,7 +841,7 @@ export const CommunityPresetsPage: React.FC = () => {
             />
 
             {/* View Mode (All/My) - Sub Hierarchy Tabs */}
-            <div className="flex items-center justify-between mb-[-0.5px] mt-[-20px] border-zinc-800/30">
+            <div className="flex items-center justify-between border-zinc-800/30">
               <div className="flex p-1 rounded-lg border border-zinc-800/50">
                 <button
                   onClick={() => handleViewModeChange('all')}

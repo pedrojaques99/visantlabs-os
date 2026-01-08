@@ -51,7 +51,7 @@ export const AboutPage: React.FC = () => {
           </div>
 
           {/* Header */}
-          <div className="flex items-center gap-4 mb-8">
+          <div className="flex items-center gap-4">
             <Info className="h-6 w-6 md:h-8 md:w-8 text-brand-cyan" />
             <div className="flex-1">
               <h1 className="text-3xl md:text-4xl font-semibold font-manrope text-zinc-300">
