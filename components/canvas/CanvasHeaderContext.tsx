@@ -51,6 +51,8 @@ interface CanvasHeaderContextValue {
   setOnExportImagesRequest: (handler: (() => void) | undefined) => void;
   onExportAllImagesRequest?: () => void;
   setOnExportAllImagesRequest: (handler: (() => void) | undefined) => void;
+  activeSidePanel: string | null;
+  setActiveSidePanel: (panel: string | null) => void;
 }
 
 const CanvasHeaderContext = createContext<CanvasHeaderContextValue | null>(null);
@@ -104,6 +106,7 @@ export const CanvasHeaderProvider: React.FC<CanvasHeaderProviderProps> = ({ chil
   const [onLoadWorkflow, setOnLoadWorkflow] = useState<(() => void) | undefined>(undefined);
   const [onExportImagesRequest, setOnExportImagesRequest] = useState<(() => void) | undefined>(undefined);
   const [onExportAllImagesRequest, setOnExportAllImagesRequest] = useState<(() => void) | undefined>(undefined);
+  const [activeSidePanel, setActiveSidePanel] = useState<string | null>(null);
 
   const [backgroundColor, setBackgroundColor] = useLocalStorage('canvasBackgroundColor', '#121212');
   const [gridColor, setGridColor] = useLocalStorage('canvasGridColor', 'rgba(255, 255, 255, 0.1)');
@@ -169,6 +172,8 @@ export const CanvasHeaderProvider: React.FC<CanvasHeaderProviderProps> = ({ chil
     setOnExportImagesRequest,
     onExportAllImagesRequest,
     setOnExportAllImagesRequest,
+    activeSidePanel,
+    setActiveSidePanel,
   }), [
     projectName,
     selectedNodesCount,
@@ -194,6 +199,8 @@ export const CanvasHeaderProvider: React.FC<CanvasHeaderProviderProps> = ({ chil
     onLoadWorkflow,
     onExportImagesRequest,
     onExportAllImagesRequest,
+    activeSidePanel,
+    setActiveSidePanel,
   ]);
 
   return (
