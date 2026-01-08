@@ -1,6 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { X, Image as ImageIcon, Plus, Crown } from 'lucide-react';
+import { X, Image as ImageIcon, Plus, Crown, Search, Globe, LayoutGrid } from 'lucide-react';
+import { Input } from './ui/input';
 import type { MockupPresetType, MockupPreset } from '../types/mockupPresets';
 import type { Mockup } from '../services/mockupApi';
 import { getImageUrl } from '../utils/imageUtils';
@@ -47,6 +48,8 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
   const [isLoadingPresets, setIsLoadingPresets] = React.useState(false);
   const [selectedPresetIds, setSelectedPresetIds] = React.useState<Set<string>>(new Set());
   const [activeFilter, setActiveFilter] = React.useState<PresetFilterType>('all');
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [presetSource, setPresetSource] = React.useState<'all' | 'official' | 'community'>('all');
 
   // Fetch all presets
   React.useEffect(() => {
@@ -67,11 +70,14 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
           if (!presets || !Array.isArray(presets)) {
             return [];
           }
-          return presets.map((p: any) => ({
-            ...p,
-            referenceImageUrl: p.referenceImageUrl || '',
-            presetType,
-          }));
+          return presets.map((p: any) => {
+            if (!p) return null;
+            return {
+              ...p,
+              referenceImageUrl: p.referenceImageUrl || '',
+              presetType, // Force override
+            };
+          }).filter(Boolean);
         };
 
         // Combine all official presets with their correct presetType
@@ -223,15 +229,81 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
       isOfficial: false,
     }));
 
-    // Combine all: official first, then community, then user
-    return [...officialUnified, ...communityUnified, ...userUnified];
+    // Deduplicate: Official > Community > User
+    const seenIds = new Set<string>();
+    const merged: UnifiedPreset[] = [];
+
+    // Helper to generate unique key
+    const getUniqueKey = (p: UnifiedPreset) => `${p.presetType}:${p.id}`;
+
+    // Add official first
+    officialUnified.forEach(p => {
+      const key = getUniqueKey(p);
+      if (!seenIds.has(key)) {
+        seenIds.add(key);
+        merged.push(p);
+      }
+    });
+
+    // Add community if not seen
+    communityUnified.forEach(p => {
+      const key = getUniqueKey(p);
+      if (!seenIds.has(key)) {
+        seenIds.add(key);
+        merged.push(p);
+      }
+    });
+
+    // Add user if not seen
+    userUnified.forEach(p => {
+      const key = getUniqueKey(p);
+      if (!seenIds.has(key)) {
+        seenIds.add(key);
+        merged.push(p);
+      }
+    });
+
+    return merged;
   }, [officialPresets, communityPresets, userMockups]);
 
-  // Filter presets by type
+  // Scroll container ref
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+
+  // Reset scroll when filter changes
+  React.useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0;
+    }
+  }, [activeFilter]);
+
+  // Filter presets by type and search query
   const filteredPresets = React.useMemo(() => {
-    if (activeFilter === 'all') return allUnifiedPresets;
-    return allUnifiedPresets.filter(p => p.presetType === activeFilter);
-  }, [allUnifiedPresets, activeFilter]);
+    let result = allUnifiedPresets;
+
+    // Filter by Source
+    if (presetSource === 'official') {
+      result = result.filter(p => p.isOfficial);
+    } else if (presetSource === 'community') {
+      result = result.filter(p => !p.isOfficial);
+    }
+
+    // Filter by Type
+    if (activeFilter !== 'all') {
+      result = result.filter(p => p.presetType === activeFilter);
+    }
+
+    // Filter by Search Query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      result = result.filter(p =>
+        (p.name && p.name.toLowerCase().includes(query)) ||
+        (p.description && p.description.toLowerCase().includes(query)) ||
+        (p.prompt && p.prompt.toLowerCase().includes(query))
+      );
+    }
+
+    return result;
+  }, [allUnifiedPresets, activeFilter, searchQuery, presetSource]);
 
   // Count presets by type
   // Optimized: single pass reduce instead of multiple filter calls
@@ -289,46 +361,104 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
           </button>
         </div>
 
-        {/* Type Filters */}
-        <div className="px-4 py-3 border-b border-zinc-800/50 flex gap-2 overflow-x-auto bg-zinc-900/10">
-          {(['all', 'mockup', 'texture', 'angle', 'ambience', 'luminance'] as PresetFilterType[]).map((type) => {
-            const config = CATEGORY_CONFIG[type as keyof typeof CATEGORY_CONFIG];
-            const Icon = config ? config.icon : ImageIcon;
-            const count = presetCounts[type];
+        {/* Type Filters and Search */}
+        <div className="flex flex-col border-b border-zinc-800/50 bg-zinc-900/10">
+          <div className="px-4 py-3 flex gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
+            {(['all', 'mockup', 'texture', 'angle', 'ambience', 'luminance'] as PresetFilterType[]).map((type) => {
+              const config = CATEGORY_CONFIG[type as keyof typeof CATEGORY_CONFIG];
+              const Icon = config ? config.icon : ImageIcon;
+              const count = presetCounts[type];
 
-            return (
+              return (
+                <button
+                  key={type}
+                  onClick={() => setActiveFilter(type)}
+                  className={cn(
+                    'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-mono uppercase transition-all whitespace-nowrap border',
+                    activeFilter === type
+                      ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
+                      : 'bg-zinc-900/50 text-zinc-400 border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700'
+                  )}
+                >
+                  <Icon size={12} />
+                  <span>{t(`communityPresets.tabs.${type}`) || type}</span>
+                  <span className="ml-1 text-[9px] opacity-60">({count})</span>
+                </button>
+              );
+            })}
+
+            {/* Create New Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                window.location.href = '/canvas';
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 ml-auto bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/30 rounded-full text-[10px] font-mono text-brand-cyan transition-all hover:scale-105 whitespace-nowrap"
+            >
+              <Plus size={12} />
+              <span>{t('canvasNodes.promptNode.presetModal.createNew')}</span>
+            </button>
+          </div>
+
+          {/* Search Bar & Source Filter */}
+          <div className="px-4 py-3 border-t border-zinc-800/50 bg-zinc-900/5 flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={t('common.search') || 'Search presets...'}
+                className="pl-9 h-9 bg-zinc-900/50 border-zinc-800/50 focus:border-brand-cyan/30 focus:ring-1 focus:ring-brand-cyan/30 font-mono text-xs w-full"
+              />
+            </div>
+
+            {/* Source Toggle */}
+            <div className="flex bg-zinc-900/50 border border-zinc-800/50 rounded-lg p-1 shrink-0 self-start sm:self-auto">
               <button
-                key={type}
-                onClick={() => setActiveFilter(type)}
+                onClick={() => setPresetSource('all')}
                 className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-mono uppercase transition-all whitespace-nowrap border',
-                  activeFilter === type
-                    ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
-                    : 'bg-zinc-900/50 text-zinc-400 border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700'
+                  'flex items-center gap-2 px-3 py-1.5 rounded-md text-[10px] font-mono uppercase transition-all',
+                  presetSource === 'all'
+                    ? 'bg-zinc-800 text-white shadow-sm'
+                    : 'text-zinc-500 hover:text-zinc-300'
                 )}
+                title={t('communityPresets.filters.all') || 'All'}
               >
-                <Icon size={12} />
-                <span>{t(`communityPresets.tabs.${type}`) || type}</span>
-                <span className="ml-1 text-[9px] opacity-60">({count})</span>
+                <LayoutGrid size={14} />
+                <span className="hidden sm:inline">Todos</span>
               </button>
-            );
-          })}
-
-          {/* Create New Button */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              window.location.href = '/canvas';
-            }}
-            className="flex items-center gap-1.5 px-3 py-1.5 ml-auto bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/30 rounded-full text-[10px] font-mono text-brand-cyan transition-all hover:scale-105 whitespace-nowrap"
-          >
-            <Plus size={12} />
-            <span>{t('canvasNodes.promptNode.presetModal.createNew')}</span>
-          </button>
+              <button
+                onClick={() => setPresetSource('official')}
+                className={cn(
+                  'flex items-center gap-2 px-3 py-1.5 rounded-md text-[10px] font-mono uppercase transition-all',
+                  presetSource === 'official'
+                    ? 'bg-amber-500/10 text-amber-500 shadow-sm'
+                    : 'text-zinc-500 hover:text-amber-500/70'
+                )}
+                title={t('communityPresets.filters.official') || 'Official'}
+              >
+                <Crown size={14} />
+                <span className="hidden sm:inline">Oficial</span>
+              </button>
+              <button
+                onClick={() => setPresetSource('community')}
+                className={cn(
+                  'flex items-center gap-2 px-3 py-1.5 rounded-md text-[10px] font-mono uppercase transition-all',
+                  presetSource === 'community'
+                    ? 'bg-brand-cyan/10 text-brand-cyan shadow-sm'
+                    : 'text-zinc-500 hover:text-brand-cyan/70'
+                )}
+                title={t('communityPresets.filters.community') || 'Community'}
+              >
+                <Globe size={14} />
+                <span className="hidden sm:inline">Comunidade</span>
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 custom-scrollbar bg-black/50">
+        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden p-4 custom-scrollbar bg-black/50">
           {isLoadingPresets ? (
             <div className="flex flex-col items-center justify-center py-20 text-zinc-500 gap-2">
               <div className="w-6 h-6 border-2 border-brand-cyan/30 border-t-brand-cyan rounded-full animate-spin"></div>
@@ -346,7 +476,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
               }}
             >
               {filteredPresets.map((preset) => (
-                <div key={preset.id} className="relative">
+                <div key={`${preset.presetType || 'default'}-${preset.id}`} className="relative">
                   {preset.isOfficial && (
                     <div className="absolute top-2 left-2 z-10 flex items-center gap-1 px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/40 rounded text-[8px] font-mono text-amber-400 uppercase backdrop-blur-sm">
                       <Crown size={8} />

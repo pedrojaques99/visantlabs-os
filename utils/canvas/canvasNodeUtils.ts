@@ -566,11 +566,37 @@ export const copyMediaAsPngFromNode = async (
 
       blob = new Blob([byteArray], { type: mimeType });
     } else {
-      const response = await fetch(media.mediaUrl);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch media: ${response.statusText}`);
+      try {
+        const response = await fetch(media.mediaUrl);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch media: ${response.statusText}`);
+        }
+        blob = await response.blob();
+      } catch (fetchError) {
+        console.warn('Direct fetch failed, trying proxy...', fetchError);
+        // Fallback to proxy
+        const proxyUrl = `/api/images/proxy?url=${encodeURIComponent(media.mediaUrl)}`;
+        const proxyResponse = await fetch(proxyUrl);
+
+        if (!proxyResponse.ok) {
+          throw new Error('Failed to fetch from proxy');
+        }
+
+        const data = await proxyResponse.json();
+        if (data.error) {
+          throw new Error(data.error);
+        }
+
+        // Convert base64 from proxy to blob
+        const base64Data = data.base64;
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        blob = new Blob([byteArray], { type: data.mimeType || 'image/png' });
       }
-      blob = await response.blob();
     }
 
     // If it's a video or not PNG, we try to convert it to PNG
@@ -657,11 +683,37 @@ export const copyMediaFromNode = async (
       blob = new Blob([byteArray], { type: mimeType });
     } else {
       // Fetch from URL
-      const response = await fetch(media.mediaUrl);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch media: ${response.statusText}`);
+      try {
+        const response = await fetch(media.mediaUrl);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch media: ${response.statusText}`);
+        }
+        blob = await response.blob();
+      } catch (fetchError) {
+        console.warn('Direct fetch failed, trying proxy...', fetchError);
+        // Fallback to proxy
+        const proxyUrl = `/api/images/proxy?url=${encodeURIComponent(media.mediaUrl)}`;
+        const proxyResponse = await fetch(proxyUrl);
+
+        if (!proxyResponse.ok) {
+          throw new Error('Failed to fetch from proxy');
+        }
+
+        const data = await proxyResponse.json();
+        if (data.error) {
+          throw new Error(data.error);
+        }
+
+        // Convert base64 from proxy to blob
+        const base64Data = data.base64;
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        blob = new Blob([byteArray], { type: data.mimeType || 'image/png' });
       }
-      blob = await response.blob();
     }
 
     // Copy to clipboard

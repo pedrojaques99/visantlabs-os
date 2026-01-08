@@ -155,7 +155,7 @@ export const VisantPaymentPage: React.FC<VisantPaymentPageProps> = ({
       }}
     >
       {/* Header with Orçamento + Dotted Pattern + Brand Name Banner */}
-      <div className="flex items-center justify-between mb-8 pb-4 border-b" style={{ borderColor: secondaryTextColor }}>
+      <div className="flex items-center justify-between pb-4 border-b" style={{ borderColor: secondaryTextColor }}>
         <div className="flex items-center gap-3">
           <DottedPattern />
           <InlineEditor

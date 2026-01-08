@@ -149,6 +149,7 @@
     "home": "Início"
   },
   "common": {
+    "search": "Buscar",
     "loading": "Carregando...",
     "verifyingAuth": "Verificando autenticação...",
     "cancel": "Cancelar",
