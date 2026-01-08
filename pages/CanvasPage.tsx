@@ -48,6 +48,7 @@ import { useCanvasProject } from '../hooks/canvas/useCanvasProject';
 import { useCanvasNodeHandlers } from '../hooks/canvas/useCanvasNodeHandlers';
 import { useCanvasNodeCreation } from '../hooks/canvas/useCanvasNodeCreation';
 import { useCanvasEvents } from '../hooks/canvas/useCanvasEvents';
+import { useCanvasContextMenu } from '../hooks/canvas/useCanvasContextMenu';
 import { useCanvasKeyboard } from '../hooks/canvas/useCanvasKeyboard';
 import { CanvasToolbar } from '../components/canvas/CanvasNodeToolbar';
 import { useCanvasHeader } from '../components/canvas/CanvasHeaderContext';
@@ -289,8 +290,6 @@ export const CanvasPage: React.FC = () => {
     }
   }, [brandCyan]);
 
-
-
   // Sync selected nodes count and handle Auto-Open Logic
   const setSelectedNodesCountInContext = canvasHeader.setSelectedNodesCount;
 
@@ -385,7 +384,6 @@ export const CanvasPage: React.FC = () => {
   }, [navigate]);
 
   const handleEditOutput = useCallback((imageUrl: string) => {
-    // For OutputNode, we need to convert imageUrl to base64 or use it directly
     // If it's already a data URL, use it; otherwise navigate with URL
     if (imageUrl.startsWith('data:')) {
       navigate(`/editor?image=${encodeURIComponent(imageUrl)}`);
@@ -452,14 +450,12 @@ export const CanvasPage: React.FC = () => {
         selected: false,
         data: {
           ...node.data,
-          // Reset loading states
           isLoading: false,
           isGenerating: false,
           isDescribing: false,
           isAnalyzing: false,
           isGeneratingPrompt: false,
           isSuggestingPrompts: false,
-          // Clear result images for flow nodes
           resultImageBase64: undefined,
           resultImageUrl: undefined,
         } as FlowNodeData,
@@ -1156,6 +1152,14 @@ export const CanvasPage: React.FC = () => {
     }
   );
 
+  const { handleAddNode } = useCanvasContextMenu({
+    reactFlowWrapper,
+    reactFlowInstance,
+    contextMenu,
+    setContextMenu,
+    onConnect,
+  });
+
   // Callback for when drag starts - set ref to prevent useEffect execution
   // Note: This will be overridden in CollaborativeCanvas for collaborative mode
   const onNodeDragStart = useCallback(() => {
@@ -1369,46 +1373,44 @@ export const CanvasPage: React.FC = () => {
     }
   }, [reactFlowInstance, addPromptNode, addMockupNode, addShaderNode, addAngleNode, addBrandKitNodes, addLogoNode, addPDFNode, addStrategyNode, addBrandCoreNode, addTextNode, addChatNode]);
 
-  // Close context menus when clicking outside
+  /**
+   * Resets all context menu states to null.
+   */
+  const closeAllMenus = useCallback(() => {
+    setContextMenu(null);
+    setEdgeContextMenu(null);
+    setImageContextMenu(null);
+    setNodeContextMenu(null);
+  }, [setContextMenu, setEdgeContextMenu, setImageContextMenu, setNodeContextMenu]);
+
+  // Effect to close context menus when clicking outside or pressing Escape
   useEffect(() => {
+    const isAnyMenuOpen = !!(contextMenu || edgeContextMenu || imageContextMenu || nodeContextMenu);
+    if (!isAnyMenuOpen) return;
+
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-
       // Don't close if clicking on a context menu or its children
-      if (target.closest('[data-context-menu]')) {
-        return;
-      }
-
-      // Close all context menus
-      if (contextMenu || edgeContextMenu || imageContextMenu || nodeContextMenu) {
-        setContextMenu(null);
-        setEdgeContextMenu(null);
-        setImageContextMenu(null);
-        setNodeContextMenu(null);
+      if (!target.closest('[data-context-menu]')) {
+        closeAllMenus();
       }
     };
 
-    // Also close on Escape key
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        setContextMenu(null);
-        setEdgeContextMenu(null);
-        setImageContextMenu(null);
-        setNodeContextMenu(null);
+        closeAllMenus();
       }
     };
 
-    if (contextMenu || edgeContextMenu || imageContextMenu || nodeContextMenu) {
-      // Use mousedown for immediate response, click may interfere with menu buttons
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('keydown', handleKeyDown);
+    // Use mousedown for immediate response and to avoid conflicts with menu button clicks
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
 
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-        document.removeEventListener('keydown', handleKeyDown);
-      };
-    }
-  }, [contextMenu, edgeContextMenu, imageContextMenu, nodeContextMenu]);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [contextMenu, edgeContextMenu, imageContextMenu, nodeContextMenu, closeAllMenus]);
 
   // Wrapper for onNodesChange - onNodeDragStop handles history for drag operations
   // This wrapper is kept simple to avoid duplicate history entries
@@ -1645,8 +1647,8 @@ export const CanvasPage: React.FC = () => {
         onConnect({
           source: nodeId,
           target: mockupNodeId,
-          sourceHandle: null,
-          targetHandle: null,
+          sourceHandle: "output-1",
+          targetHandle: 'input-1',
         } as any);
       }
     }, 200);
@@ -3105,8 +3107,6 @@ export const CanvasPage: React.FC = () => {
     };
   }, []);
 
-  // Image context menu handlers
-
   // Generic node handlers for NodeContextMenu
   const handleNodeDuplicate = useCallback(() => {
     if (!nodeContextMenu?.nodeId || !reactFlowInstance) return;
@@ -3177,7 +3177,7 @@ export const CanvasPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
-              <GlitchLoader size={36} className="mx-auto mb-4" />
+              <GlitchLoader size={24} className="mx-auto mb-4" />
               <p className="text-zinc-400 font-mono text-sm">{t('canvas.loadingProject')}</p>
             </div>
           </div>
@@ -3220,8 +3220,6 @@ export const CanvasPage: React.FC = () => {
         <div className="fixed inset-0 z-0" style={{ position: 'relative', opacity: 1, scale: 5 }}>
           <GridDotsBackground />
         </div>
-
-        {/* CanvasHeader is now rendered in Layout component */}
 
         {/* Main Canvas Container with Sidebar Layout - Starts below header (81px) */}
         <div className="flex relative w-full" style={{ height: 'calc(100vh - 81px)', paddingTop: '0px', justifyContent: 'flex-start' }}>
@@ -3470,411 +3468,29 @@ export const CanvasPage: React.FC = () => {
             nodes={nodes}
             onClose={() => setContextMenu(null)}
             onExport={handleExport}
-            onAddImage={() => {
-              if (reactFlowInstance) {
-                const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-                if (pane) {
-                  const rect = pane.getBoundingClientRect();
-                  addImageNode({
-                    x: contextMenu.x + rect.left,
-                    y: contextMenu.y + rect.top,
-                  });
-                }
-              }
-            }}
-            onAddText={() => {
-              if (reactFlowInstance) {
-                const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-                if (pane) {
-                  const rect = pane.getBoundingClientRect();
-                  const newNodeId = addTextNode({
-                    x: contextMenu.x + rect.left,
-                    y: contextMenu.y + rect.top,
-                  });
-                  // Connect automatically if sourceNodeId exists
-                  if (newNodeId && contextMenu.sourceNodeId) {
-                    setTimeout(() => {
-                      onConnect({
-                        source: contextMenu.sourceNodeId,
-                        target: newNodeId,
-                      } as any);
-                    }, 100);
-                  }
-                }
-              }
-            }}
-            onAddMerge={() => {
-              if (reactFlowInstance) {
-                const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-                if (pane) {
-                  const rect = pane.getBoundingClientRect();
-                  const newNodeId = addMergeNode({
-                    x: contextMenu.x + rect.left,
-                    y: contextMenu.y + rect.top,
-                  });
-                  // Connect automatically if sourceNodeId exists
-                  if (newNodeId && contextMenu.sourceNodeId) {
-                    setTimeout(() => {
-                      onConnect({
-                        source: contextMenu.sourceNodeId,
-                        target: newNodeId,
-                      } as any);
-                    }, 100);
-                  }
-                }
-              }
-            }}
-            onAddPrompt={() => {
-              if (reactFlowInstance) {
-                const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-                if (pane) {
-                  const rect = pane.getBoundingClientRect();
-                  const newNodeId = addPromptNode({
-                    x: contextMenu.x + rect.left,
-                    y: contextMenu.y + rect.top,
-                  });
-                  // Connect automatically if sourceNodeId exists
-                  if (newNodeId && contextMenu.sourceNodeId) {
-                    setTimeout(() => {
-                      onConnect({
-                        source: contextMenu.sourceNodeId,
-                        target: newNodeId,
-                      } as any);
-                    }, 100);
-                  }
-                }
-              }
-            }}
-            onAddVideo={() => {
-              if (reactFlowInstance) {
-                const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-                if (pane) {
-                  const rect = pane.getBoundingClientRect();
-                  const newNodeId = addVideoNode({
-                    x: contextMenu.x + rect.left,
-                    y: contextMenu.y + rect.top,
-                  });
-                  // Connect automatically if sourceNodeId exists
-                  if (newNodeId && contextMenu.sourceNodeId) {
-                    setTimeout(() => {
-                      onConnect({
-                        source: contextMenu.sourceNodeId,
-                        target: newNodeId,
-                        targetHandle: 'input-image',
-                      } as any);
-                    }, 100);
-                  }
-                }
-              }
-            }}
-            onAddBrand={() => {
-              if (reactFlowInstance) {
-                const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-                if (pane) {
-                  const rect = pane.getBoundingClientRect();
-                  addBrandNode({
-                    x: contextMenu.x + rect.left,
-                    y: contextMenu.y + rect.top,
-                  });
-                }
-              }
-            }}
-            onAddEdit={() => {
-              if (reactFlowInstance) {
-                const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-                if (pane) {
-                  const rect = pane.getBoundingClientRect();
-                  const newNodeId = addEditNode({
-                    x: contextMenu.x + rect.left,
-                    y: contextMenu.y + rect.top,
-                  });
-                  // Connect automatically if sourceNodeId exists
-                  if (newNodeId && contextMenu.sourceNodeId) {
-                    setTimeout(() => {
-                      onConnect({
-                        source: contextMenu.sourceNodeId,
-                        target: newNodeId,
-                      } as any);
-                    }, 100);
-                  }
-                }
-              }
-            }}
-            onAddUpscale={() => {
-              if (reactFlowInstance) {
-                const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-                if (pane) {
-                  const rect = pane.getBoundingClientRect();
-                  const newNodeId = addUpscaleNode({
-                    x: contextMenu.x + rect.left,
-                    y: contextMenu.y + rect.top,
-                  });
-                  // Connect automatically if sourceNodeId exists
-                  if (newNodeId && contextMenu.sourceNodeId) {
-                    setTimeout(() => {
-                      onConnect({
-                        source: contextMenu.sourceNodeId,
-                        target: newNodeId,
-                      } as any);
-                    }, 100);
-                  }
-                }
-              }
-            }}
-            onAddUpscaleBicubic={() => {
-              if (reactFlowInstance) {
-                const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-                if (pane) {
-                  const rect = pane.getBoundingClientRect();
-                  const newNodeId = addUpscaleBicubicNode({
-                    x: contextMenu.x + rect.left,
-                    y: contextMenu.y + rect.top,
-                  });
-                  // Connect automatically if sourceNodeId exists
-                  if (newNodeId && contextMenu.sourceNodeId) {
-                    setTimeout(() => {
-                      onConnect({
-                        source: contextMenu.sourceNodeId,
-                        target: newNodeId,
-                      } as any);
-                    }, 100);
-                  }
-                }
-              }
-            }}
-            onAddMockup={() => {
-              if (reactFlowInstance) {
-                const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-                if (pane) {
-                  const rect = pane.getBoundingClientRect();
-                  const newNodeId = addMockupNode({
-                    x: contextMenu.x + rect.left,
-                    y: contextMenu.y + rect.top,
-                  });
-                  // Connect automatically if sourceNodeId exists
-                  if (newNodeId && contextMenu.sourceNodeId) {
-                    setTimeout(() => {
-                      onConnect({
-                        source: contextMenu.sourceNodeId,
-                        target: newNodeId,
-                      } as any);
-                    }, 100);
-                  }
-                }
-              }
-            }}
-            onAddAngle={() => {
-              if (reactFlowInstance) {
-                const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-                if (pane) {
-                  const rect = pane.getBoundingClientRect();
-                  const newNodeId = addAngleNode({
-                    x: contextMenu.x + rect.left,
-                    y: contextMenu.y + rect.top,
-                  });
-                  // Connect automatically if sourceNodeId exists
-                  if (newNodeId && contextMenu.sourceNodeId) {
-                    setTimeout(() => {
-                      onConnect({
-                        source: contextMenu.sourceNodeId,
-                        target: newNodeId,
-                      } as any);
-                    }, 100);
-                  }
-                }
-              }
-            }}
-            onAddTexture={() => {
-              if (reactFlowInstance) {
-                const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-                if (pane) {
-                  const rect = pane.getBoundingClientRect();
-                  const newNodeId = addTextureNode({
-                    x: contextMenu.x + rect.left,
-                    y: contextMenu.y + rect.top,
-                  });
-                  // Connect automatically if sourceNodeId exists
-                  if (newNodeId && contextMenu.sourceNodeId) {
-                    setTimeout(() => {
-                      onConnect({
-                        source: contextMenu.sourceNodeId,
-                        target: newNodeId,
-                      } as any);
-                    }, 100);
-                  }
-                }
-              }
-            }}
-            onAddAmbience={() => {
-              if (reactFlowInstance) {
-                const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-                if (pane) {
-                  const rect = pane.getBoundingClientRect();
-                  const newNodeId = addAmbienceNode({
-                    x: contextMenu.x + rect.left,
-                    y: contextMenu.y + rect.top,
-                  });
-                  // Connect automatically if sourceNodeId exists
-                  if (newNodeId && contextMenu.sourceNodeId) {
-                    setTimeout(() => {
-                      onConnect({
-                        source: contextMenu.sourceNodeId,
-                        target: newNodeId,
-                      } as any);
-                    }, 100);
-                  }
-                }
-              }
-            }}
-            onAddLuminance={() => {
-              if (reactFlowInstance) {
-                const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-                if (pane) {
-                  const rect = pane.getBoundingClientRect();
-                  const newNodeId = addLuminanceNode({
-                    x: contextMenu.x + rect.left,
-                    y: contextMenu.y + rect.top,
-                  });
-                  // Connect automatically if sourceNodeId exists
-                  if (newNodeId && contextMenu.sourceNodeId) {
-                    setTimeout(() => {
-                      onConnect({
-                        source: contextMenu.sourceNodeId,
-                        target: newNodeId,
-                      } as any);
-                    }, 100);
-                  }
-                }
-              }
-            }}
-            onAddShader={() => {
-              if (reactFlowInstance) {
-                const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-                if (pane) {
-                  const rect = pane.getBoundingClientRect();
-                  const newNodeId = addShaderNode({
-                    x: contextMenu.x + rect.left,
-                    y: contextMenu.y + rect.top,
-                  });
-                  // Connect automatically if sourceNodeId exists
-                  if (newNodeId && contextMenu.sourceNodeId) {
-                    setTimeout(() => {
-                      onConnect({
-                        source: contextMenu.sourceNodeId,
-                        target: newNodeId,
-                      } as any);
-                    }, 100);
-                  }
-                }
-              }
-            }}
-            onAddColorExtractor={() => {
-              if (reactFlowInstance) {
-                const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-                if (pane) {
-                  const rect = pane.getBoundingClientRect();
-                  const newNodeId = addColorExtractorNode({
-                    x: contextMenu.x + rect.left,
-                    y: contextMenu.y + rect.top,
-                  });
-                  // Connect automatically if sourceNodeId exists
-                  if (newNodeId && contextMenu.sourceNodeId) {
-                    setTimeout(() => {
-                      onConnect({
-                        source: contextMenu.sourceNodeId,
-                        target: newNodeId,
-                        targetHandle: 'image-input',
-                      } as any);
-                    }, 100);
-                  }
-                }
-              }
-            }}
-
-            onAddBrandKit={() => {
-              if (reactFlowInstance) {
-                const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-                if (pane) {
-                  const rect = pane.getBoundingClientRect();
-                  addBrandKitNodes({
-                    x: contextMenu.x + rect.left,
-                    y: contextMenu.y + rect.top,
-                  });
-                }
-              }
-            }}
-            onAddLogo={() => {
-              if (reactFlowInstance) {
-                const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-                if (pane) {
-                  const rect = pane.getBoundingClientRect();
-                  addLogoNode({
-                    x: contextMenu.x + rect.left,
-                    y: contextMenu.y + rect.top,
-                  });
-                }
-              }
-            }}
-            onAddPDF={() => {
-              if (reactFlowInstance) {
-                const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-                if (pane) {
-                  const rect = pane.getBoundingClientRect();
-                  addPDFNode({
-                    x: contextMenu.x + rect.left,
-                    y: contextMenu.y + rect.top,
-                  });
-                }
-              }
-            }}
-            onAddVideoInput={() => {
-              if (reactFlowInstance) {
-                const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-                if (pane) {
-                  const rect = pane.getBoundingClientRect();
-                  addVideoInputNode({
-                    x: contextMenu.x + rect.left,
-                    y: contextMenu.y + rect.top,
-                  });
-                }
-              }
-            }}
-            onAddStrategy={() => {
-              if (reactFlowInstance) {
-                const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-                if (pane) {
-                  const rect = pane.getBoundingClientRect();
-                  addStrategyNode({
-                    x: contextMenu.x + rect.left,
-                    y: contextMenu.y + rect.top,
-                  });
-                }
-              }
-            }}
-            onAddBrandCore={() => {
-              if (reactFlowInstance) {
-                const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-                if (pane) {
-                  const rect = pane.getBoundingClientRect();
-                  addBrandCoreNode({
-                    x: contextMenu.x + rect.left,
-                    y: contextMenu.y + rect.top,
-                  });
-                }
-              }
-            }}
-            onAddChat={() => {
-              if (reactFlowInstance) {
-                const pane = reactFlowWrapper.current?.querySelector('.react-flow__pane');
-                if (pane) {
-                  const rect = pane.getBoundingClientRect();
-                  addChatNode({
-                    x: contextMenu.x + rect.left,
-                    y: contextMenu.y + rect.top,
-                  });
-                }
-              }
-            }}
+            onAddImage={() => handleAddNode(addImageNode)}
+            onAddText={() => handleAddNode(addTextNode)}
+            onAddMerge={() => handleAddNode(addMergeNode)}
+            onAddPrompt={() => handleAddNode(addPromptNode)}
+            onAddVideo={() => handleAddNode(addVideoNode, { targetHandle: 'input-image' })}
+            onAddBrand={() => handleAddNode(addBrandNode)}
+            onAddEdit={() => handleAddNode(addEditNode)}
+            onAddUpscale={() => handleAddNode(addUpscaleNode)}
+            onAddUpscaleBicubic={() => handleAddNode(addUpscaleBicubicNode)}
+            onAddMockup={() => handleAddNode(addMockupNode)}
+            onAddAngle={() => handleAddNode(addAngleNode)}
+            onAddTexture={() => handleAddNode(addTextureNode)}
+            onAddAmbience={() => handleAddNode(addAmbienceNode)}
+            onAddLuminance={() => handleAddNode(addLuminanceNode)}
+            onAddShader={() => handleAddNode(addShaderNode)}
+            onAddColorExtractor={() => handleAddNode(addColorExtractorNode, { targetHandle: 'image-input' })}
+            onAddBrandKit={() => handleAddNode((pos) => addBrandKitNodes(pos)[0])}
+            onAddLogo={() => handleAddNode(addLogoNode)}
+            onAddPDF={() => handleAddNode(addPDFNode)}
+            onAddVideoInput={() => handleAddNode(addVideoInputNode)}
+            onAddStrategy={() => handleAddNode(addStrategyNode)}
+            onAddBrandCore={() => handleAddNode(addBrandCoreNode)}
+            onAddChat={() => handleAddNode(addChatNode)}
             experimentalMode={experimentalMode}
           />
         )}

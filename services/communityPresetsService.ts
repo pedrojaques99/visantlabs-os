@@ -2,60 +2,49 @@ import { migrateLegacyPreset } from '../types/communityPrompts.js';
 import type { PromptCategory } from '../types/communityPrompts.js';
 
 // Cache for community presets
-let cachedPresets: Record<string, any[]> | null = null;
-let isLoadingPresets = false;
+let presetsPromise: Promise<Record<string, any[]>> | null = null;
 
 /**
  * Load community presets from API
  */
 async function loadPresetsFromAPI(): Promise<Record<string, any[]>> {
-  if (isLoadingPresets) {
-    // Wait for ongoing load
-    while (isLoadingPresets) {
-      await new Promise(resolve => setTimeout(resolve, 100));
+  if (presetsPromise) {
+    return presetsPromise;
+  }
+
+  presetsPromise = (async () => {
+    try {
+      const response = await fetch('/api/community/presets/public');
+      if (response.ok) {
+        const data = await response.json();
+        // Migrar presets legados e estruturar por categoria
+        return {
+          '3d': (data['3d'] || []).map(migrateLegacyPreset),
+          'presets': (data['presets'] || []).map(migrateLegacyPreset),
+          'aesthetics': (data['aesthetics'] || []).map(migrateLegacyPreset),
+          'themes': (data['themes'] || []).map(migrateLegacyPreset),
+          // Compatibilidade com formato antigo
+          mockup: (data.mockup || []).map(migrateLegacyPreset),
+          angle: (data.angle || []).map(migrateLegacyPreset),
+          texture: (data.texture || []).map(migrateLegacyPreset),
+          ambience: (data.ambience || []).map(migrateLegacyPreset),
+          luminance: (data.luminance || []).map(migrateLegacyPreset),
+        };
+      }
+    } catch (error) {
+      console.warn('Failed to load community presets from API, using empty fallback:', error);
+      presetsPromise = null; // Reset on error to allow retry
     }
-    return cachedPresets || {
+
+    // Return empty fallback on error or non-ok response
+    return {
       '3d': [], 'presets': [], 'aesthetics': [], 'themes': [],
       // Compatibilidade
       mockup: [], angle: [], texture: [], ambience: [], luminance: []
     };
-  }
+  })();
 
-  if (cachedPresets) {
-    return cachedPresets;
-  }
-
-  isLoadingPresets = true;
-  try {
-    const response = await fetch('/api/community/presets/public');
-    if (response.ok) {
-      const data = await response.json();
-      // Migrar presets legados e estruturar por categoria
-      cachedPresets = {
-        '3d': (data['3d'] || []).map(migrateLegacyPreset),
-        'presets': (data['presets'] || []).map(migrateLegacyPreset),
-        'aesthetics': (data['aesthetics'] || []).map(migrateLegacyPreset),
-        'themes': (data['themes'] || []).map(migrateLegacyPreset),
-        // Compatibilidade com formato antigo
-        mockup: (data.mockup || []).map(migrateLegacyPreset),
-        angle: (data.angle || []).map(migrateLegacyPreset),
-        texture: (data.texture || []).map(migrateLegacyPreset),
-        ambience: (data.ambience || []).map(migrateLegacyPreset),
-        luminance: (data.luminance || []).map(migrateLegacyPreset),
-      };
-      return cachedPresets;
-    }
-  } catch (error) {
-    console.warn('Failed to load community presets from API, using empty fallback:', error);
-  } finally {
-    isLoadingPresets = false;
-  }
-
-  return {
-    '3d': [], 'presets': [], 'aesthetics': [], 'themes': [],
-    // Compatibilidade
-    mockup: [], angle: [], texture: [], ambience: [], luminance: []
-  };
+  return presetsPromise;
 }
 
 /**
@@ -72,7 +61,6 @@ export async function getCommunityPresetsByType(presetType: 'mockup' | 'angle' |
 export async function getPromptsByCategory(category: PromptCategory): Promise<any[]> {
   const presets = await loadPresetsFromAPI();
   if (category === 'all') {
-    // Retornar todos, incluindo categorias antigas e novas
     const allPresets = [
       ...(presets['3d'] || []),
       ...(presets['presets'] || []),
@@ -110,7 +98,7 @@ export async function getAllCommunityPresets(): Promise<Record<string, any[]>> {
  * Clear cache (useful after creating/updating/deleting presets)
  */
 export function clearCommunityPresetsCache(): void {
-  cachedPresets = null;
+  presetsPromise = null;
 }
 
 /**
