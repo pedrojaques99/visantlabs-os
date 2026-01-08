@@ -150,6 +150,7 @@
   },
   "common": {
     "search": "Buscar",
+    "nodeCreated": "Node criado com sucesso",
     "loading": "Carregando...",
     "verifyingAuth": "Verificando autenticação...",
     "cancel": "Cancelar",

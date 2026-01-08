@@ -211,9 +211,15 @@ export const CommunityProfilePage: React.FC = () => {
   }, []);
 
   const handleSelectPreset = useCallback((presetId: string) => {
-    toast.success(t('common.presetSelected') || 'Preset selected');
+    if (selectedPreset) {
+      const type = selectedPreset.presetType || selectedPreset.category || 'mockup';
+      const id = selectedPreset.id || selectedPreset._id || presetId;
+      navigate(`/canvas?action=createNode&type=${encodeURIComponent(type)}&presetId=${encodeURIComponent(id)}`);
+    } else {
+      toast.success(t('common.presetSelected') || 'Preset selected');
+    }
     handleClosePresetModal();
-  }, [t, handleClosePresetModal]);
+  }, [t, handleClosePresetModal, selectedPreset, navigate]);
 
   const handleSelectAngle = useCallback((angleId: string) => {
     toast.success(t('common.presetSelected') || 'Preset selected');
