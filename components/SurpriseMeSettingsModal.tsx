@@ -76,17 +76,54 @@ export const SurpriseMeSettingsModal: React.FC<SurpriseMeSettingsModalProps> = (
     };
   }, [isOpen]);
 
-  // Keyboard navigation
+  // Keyboard navigation & Focus Trap
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
         onClose();
+        return;
+      }
+
+      if (e.key === 'Tab' && isOpen && modalRef.current) {
+        const focusableElements = modalRef.current.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        const firstElement = focusableElements[0] as HTMLElement;
+        const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+        if (e.shiftKey) { // Shift + Tab
+          if (document.activeElement === firstElement) {
+            lastElement.focus();
+            e.preventDefault();
+          }
+        } else { // Tab
+          if (document.activeElement === lastElement) {
+            firstElement.focus();
+            e.preventDefault();
+          }
+        }
       }
     };
 
     if (isOpen) {
       document.addEventListener('keydown', handleKeyDown);
-      return () => document.removeEventListener('keydown', handleKeyDown);
+
+      // Focus first element on open
+      const timer = setTimeout(() => {
+        if (modalRef.current) {
+          const focusableElements = modalRef.current.querySelectorAll(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          );
+          if (focusableElements.length > 0) {
+            (focusableElements[0] as HTMLElement).focus();
+          }
+        }
+      }, 100);
+
+      return () => {
+        document.removeEventListener('keydown', handleKeyDown);
+        clearTimeout(timer);
+      };
     }
   }, [isOpen, onClose]);
 
@@ -214,8 +251,8 @@ export const SurpriseMeSettingsModal: React.FC<SurpriseMeSettingsModalProps> = (
                 selectAllTags(category, availableTags);
               }}
               className={`text-[10px] font-bold px-3 py-1.5 rounded-full border transition-all duration-200 uppercase tracking-tighter ${allSelected
-                  ? 'bg-brand-cyan/10 border-brand-cyan/30 text-brand-cyan'
-                  : 'bg-zinc-800/50 border-zinc-700/50 text-zinc-500 hover:text-zinc-300 hover:border-zinc-600'
+                ? 'bg-brand-cyan/10 border-brand-cyan/30 text-brand-cyan'
+                : 'bg-zinc-800/50 border-zinc-700/50 text-zinc-500 hover:text-zinc-300 hover:border-zinc-600'
                 }`}
             >
               {allSelected ? 'Unselect All' : 'Select All'}
@@ -237,8 +274,8 @@ export const SurpriseMeSettingsModal: React.FC<SurpriseMeSettingsModalProps> = (
                   onClick={() => toggleTag(category, tag)}
                   variant="outline"
                   className={`flex items-center gap-2 p-2.5 rounded-xl border transition-all duration-200 group/tag cursor-pointer ${selected
-                      ? 'bg-brand-cyan/5 border-brand-cyan/20 text-brand-cyan shadow-[0_0_15px_-5px_rgba(0,255,255,0.1)]'
-                      : 'bg-zinc-900/50 border-zinc-800/50 text-zinc-500 hover:border-zinc-700 hover:text-zinc-400'
+                    ? 'bg-brand-cyan/5 border-brand-cyan/20 text-brand-cyan shadow-[0_0_15px_-5px_rgba(0,255,255,0.1)]'
+                    : 'bg-zinc-900/50 border-zinc-800/50 text-zinc-500 hover:border-zinc-700 hover:text-zinc-400'
                     }`}
                 >
                   <div className={`transition-colors duration-200 ${selected ? 'text-brand-cyan' : 'text-zinc-700'}`}>
