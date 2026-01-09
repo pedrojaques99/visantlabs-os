@@ -13,6 +13,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs';
+import { Select } from '../components/ui/select';
 import {
     BreadcrumbWithBack,
     BreadcrumbItem,
@@ -64,6 +65,7 @@ interface ProductFormData {
     abacateBillId: string;
     paymentLinkBRL: string;
     paymentLinkUSD: string;
+    metadata: any;
     isActive: boolean;
     displayOrder: number;
 }
@@ -97,6 +99,7 @@ export const AdminProductsPage: React.FC = () => {
         paymentLinkUSD: '',
         isActive: true,
         displayOrder: 0,
+        metadata: { features: [] },
     });
 
     // Check admin status and load data
@@ -194,6 +197,7 @@ export const AdminProductsPage: React.FC = () => {
             paymentLinkUSD: product.paymentLinkUSD || '',
             isActive: product.isActive,
             displayOrder: product.displayOrder,
+            metadata: product.metadata || { features: [] },
         });
         setIsEditModalOpen(true);
     };
@@ -215,7 +219,8 @@ export const AdminProductsPage: React.FC = () => {
             paymentLinkBRL: '',
             paymentLinkUSD: '',
             isActive: true,
-            displayOrder: products.length,
+            displayOrder: products.length > 0 ? Math.max(...products.map(p => p.displayOrder)) + 1 : 0,
+            metadata: { features: [] },
         });
         setIsEditModalOpen(true);
     };
@@ -481,14 +486,15 @@ export const AdminProductsPage: React.FC = () => {
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Tipo</label>
-                                    <select
-                                        className="w-full bg-zinc-900 border border-zinc-800 rounded-md h-10 px-3 text-zinc-200 outline-none focus:border-brand-cyan/50"
+                                    <Select
                                         value={formData.type}
-                                        onChange={(e: any) => setFormData({ ...formData, type: e.target.value })}
-                                    >
-                                        <option value="credit_package">Pacote de Créditos</option>
-                                        <option value="subscription_plan">Plano de Assinatura</option>
-                                    </select>
+                                        onChange={(val: any) => setFormData({ ...formData, type: val })}
+                                        options={[
+                                            { value: 'credit_package', label: 'Pacote de Créditos' },
+                                            { value: 'subscription_plan', label: 'Plano de Assinatura' }
+                                        ]}
+                                        className="bg-zinc-900 border-zinc-800"
+                                    />
                                 </div>
                                 <div className="space-y-2 md:col-span-2">
                                     <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Nome Comercial</label>
@@ -508,6 +514,23 @@ export const AdminProductsPage: React.FC = () => {
                                         className="bg-zinc-900 border-zinc-800 min-h-[80px]"
                                     />
                                 </div>
+                                {formData.type === 'subscription_plan' && (
+                                    <div className="space-y-2 md:col-span-2">
+                                        <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Benefícios (um por linha para lista em marcadores)</label>
+                                        <Textarea
+                                            placeholder="Benefício 1&#10;Benefício 2&#10;Benefício 3..."
+                                            value={formData.metadata?.features ? (Array.isArray(formData.metadata.features) ? formData.metadata.features.join('\n') : '') : ''}
+                                            onChange={(e) => setFormData({
+                                                ...formData,
+                                                metadata: {
+                                                    ...formData.metadata,
+                                                    features: e.target.value.split('\n').filter(Boolean)
+                                                }
+                                            })}
+                                            className="bg-zinc-900 border-zinc-800 min-h-[120px] font-manrope"
+                                        />
+                                    </div>
+                                )}
                             </div>
 
                             <div className="h-px bg-zinc-800 w-full" />
