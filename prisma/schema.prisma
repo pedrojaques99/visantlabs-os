@@ -197,6 +197,29 @@ model BudgetProject {
   @@map("budget_projects")
 }
 
+model Product {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  productId        String   @unique // e.g., 'credits_20', 'plan_pro'
+  type             String   // 'credit_package' | 'subscription_plan'
+  name             String
+  description      String?
+  credits          Int      @default(0)
+  priceBRL         Float    @default(0)
+  priceUSD         Float?
+  stripeProductId  String?
+  abacateProductId String?
+  abacateBillId    String?
+  paymentLinkBRL   String?
+  paymentLinkUSD   String?
+  metadata         Json?    // For tier, storage limits, features, etc.
+  isActive         Boolean  @default(true)
+  displayOrder     Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("products")
+}
+
 model CanvasProject {
   id              String   @id @default(auto()) @map("_id") @db.ObjectId
   userId          String   @db.ObjectId

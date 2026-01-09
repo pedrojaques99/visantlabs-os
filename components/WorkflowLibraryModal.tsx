@@ -4,6 +4,7 @@ import { X, Search, Loader2, Users, Layout, Globe, BookMarked } from 'lucide-rea
 import { Input } from './ui/input';
 import { WorkflowCard } from './WorkflowCard';
 import { ConfirmationModal } from './ConfirmationModal';
+import { EditWorkflowModal } from './EditWorkflowModal';
 import type { CanvasWorkflow } from '../services/workflowApi';
 import { workflowApi } from '../services/workflowApi';
 import { clearWorkflowCache } from '../services/workflowService';
@@ -29,13 +30,14 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
     isAdmin,
     t,
 }) => {
-    const [activeTab, setActiveTab] = useState<'my' | 'community' | 'all'>('community');
-    const [selectedCategory, setSelectedCategory] = useState<WorkflowCategory>('all');
+    const [activeTab, setActiveTab] = useState<'my' | 'community'>('community');
+    const [selectedCategory, setSelectedCategory] = useState<WorkflowCategory | 'all'>('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [myWorkflows, setMyWorkflows] = useState<CanvasWorkflow[]>([]);
     const [communityWorkflows, setCommunityWorkflows] = useState<CanvasWorkflow[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [deleteConfirmation, setDeleteConfirmation] = useState<{ workflowId: string; workflowName: string } | null>(null);
+    const [editingWorkflow, setEditingWorkflow] = useState<CanvasWorkflow | null>(null);
 
     // Load workflows when modal opens
     useEffect(() => {
@@ -65,8 +67,8 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
             if (activeTab === 'my' && isAuthenticated) {
                 const workflows = await workflowApi.getAll();
                 setMyWorkflows(workflows);
-            } else if (activeTab === 'community' || activeTab === 'all') {
-                const workflows = await workflowApi.getPublic(selectedCategory);
+            } else if (activeTab === 'community') {
+                const workflows = await workflowApi.getPublic(selectedCategory === 'all' ? undefined : selectedCategory);
                 setCommunityWorkflows(workflows);
             }
         } catch (error) {
@@ -119,6 +121,14 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
 
         try {
             const duplicated = await workflowApi.duplicate(workflowId);
+
+            // Append (Copy) to the duplicated workflow name to clarify it's a copy
+            if (duplicated) {
+                await workflowApi.update(duplicated._id, {
+                    name: `${duplicated.name} (Copy)`
+                });
+            }
+
             toast.success(t('workflows.messages.duplicated') || 'Workflow added to your library!');
 
             // Refresh my workflows if on that tab
@@ -151,7 +161,12 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
     };
 
     const handleLoadWorkflow = (workflow: CanvasWorkflow) => {
-        onLoadWorkflow(workflow);
+        // Create a copy of the workflow with (Copy) in the name
+        const workflowCopy = {
+            ...workflow,
+            name: workflow.name.endsWith(' (Copy)') ? workflow.name : `${workflow.name} (Copy)`
+        };
+        onLoadWorkflow(workflowCopy);
         onClose();
     };
 
@@ -221,19 +236,6 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                             {t('workflows.library.tabs.community') || 'Community'}
                         </button>
 
-                        <button
-                            onClick={() => setActiveTab('all')}
-                            className={cn(
-                                'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 flex items-center gap-1.5 relative rounded-t-md',
-                                activeTab === 'all'
-                                    ? 'text-brand-cyan border-[brand-cyan] bg-brand-cyan/5'
-                                    : 'text-zinc-400 border-transparent hover:text-zinc-300 hover:bg-zinc-800/30'
-                            )}
-                        >
-                            <Layout size={12} />
-                            {t('workflows.library.tabs.all') || 'All'}
-                        </button>
-
                         {isAuthenticated && (
                             <button
                                 onClick={() => setActiveTab('my')}
@@ -263,8 +265,20 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                         </div>
 
                         {/* Category filters */}
-                        {(activeTab === 'community' || activeTab === 'all') && (
+                        {activeTab === 'community' && (
                             <div className="flex gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent items-center">
+                                <button
+                                    onClick={() => setSelectedCategory('all')}
+                                    className={cn(
+                                        'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-mono uppercase transition-all whitespace-nowrap border',
+                                        selectedCategory === 'all'
+                                            ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
+                                            : 'bg-zinc-900/50 text-zinc-400 border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700'
+                                    )}
+                                >
+                                    <Layout size={12} />
+                                    All
+                                </button>
                                 {Object.entries(WORKFLOW_CATEGORY_CONFIG).map(([key, config]) => {
                                     const Icon = config.icon;
                                     return (
@@ -319,6 +333,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                                                 ? () => setDeleteConfirmation({ workflowId: workflow._id, workflowName: workflow.name })
                                                 : undefined
                                         }
+                                        onEdit={() => setEditingWorkflow(workflow)}
                                         isAuthenticated={isAuthenticated}
                                         canEdit={isAdmin}
                                         t={t}
@@ -344,6 +359,21 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                     onConfirm={() => handleDelete(deleteConfirmation.workflowId)}
                     onClose={() => setDeleteConfirmation(null)}
                     variant="danger"
+                />
+            )}
+
+            {/* Edit Workflow Modal */}
+            {editingWorkflow && (
+                <EditWorkflowModal
+                    isOpen={true}
+                    workflow={editingWorkflow}
+                    onClose={() => setEditingWorkflow(null)}
+                    onSave={(updated) => {
+                        // Refresh workflows to show updated info
+                        loadWorkflows();
+                        setEditingWorkflow(null);
+                    }}
+                    t={t}
                 />
             )}
         </>
