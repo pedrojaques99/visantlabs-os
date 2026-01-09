@@ -33,7 +33,7 @@ import type { TexturePreset } from '../types/texturePresets';
 import type { AmbiencePreset } from '../types/ambiencePresets';
 import type { LuminancePreset } from '../types/luminancePresets';
 import { SurpriseMeSettingsModal } from '../components/SurpriseMeSettingsModal';
-import { getSurpriseMeExcludedTags } from '../utils/surpriseMeSettings';
+import { getSurpriseMeSelectedTags } from '../utils/surpriseMeSettings';
 
 const MOCKUP_COUNT = 2;
 
@@ -1651,24 +1651,27 @@ export const MockupMachinePage: React.FC = () => {
     // Use current branding tags from state
     const brandingTagsToUse = selectedBrandingTags.length > 0 ? selectedBrandingTags : [];
 
-    // Load excluded tags from settings
-    const excludedTags = getSurpriseMeExcludedTags();
+    // Load selected tags from settings
+    const selectedTagsSettings = getSurpriseMeSelectedTags();
 
-    // Filter categories excluding user-configured excluded tags
+    // Filter categories: use selected ones, or fallback to all if none selected
     const availableCategories = GENERIC_MOCKUP_TAGS.filter(
-      tag => !excludedTags.excludedCategoryTags.includes(tag)
+      tag => selectedTagsSettings.selectedCategoryTags.includes(tag)
     );
     const shuffledCategories = availableCategories.length > 0
       ? [...availableCategories].sort(() => 0.5 - Math.random())
-      : [...GENERIC_MOCKUP_TAGS].sort(() => 0.5 - Math.random()); // Fallback to all if all excluded
+      : [...GENERIC_MOCKUP_TAGS].sort(() => 0.5 - Math.random());
     const selectedCategory = shuffledCategories[0];
     setSelectedTags([selectedCategory]);
 
-    // Seleciona background baseado no branding escolhido (excluindo "Nature landscape" e tags excluídas)
+    // Seleciona background baseado no branding escolhido (excluindo "Nature landscape" e considerando as selecionadas)
     // Inclui "Light Box" e "Minimalist Studio" como opções preferenciais para Surprise Me
     const suitableBackgrounds = getBackgroundsForBranding(brandingTagsToUse);
     const filteredBackgrounds = suitableBackgrounds.filter(bg =>
-      bg !== 'Nature landscape' && !excludedTags.excludedLocationTags.includes(bg)
+      bg !== 'Nature landscape' && (
+        selectedTagsSettings.selectedLocationTags.length === 0 ||
+        selectedTagsSettings.selectedLocationTags.includes(bg)
+      )
     );
 
     // Add Light Box and Minimalist Studio as preferred options if not already included
@@ -1724,27 +1727,27 @@ export const MockupMachinePage: React.FC = () => {
     }
 
     // Fallback para lógica antiga se não houver presets selecionados
-    // Filter available tags excluding user-configured excluded tags
+    // Filter available tags using user-configured selected tags
     const availableAngles = AVAILABLE_ANGLE_TAGS.filter(
-      tag => !excludedTags.excludedAngleTags.includes(tag)
+      tag => selectedTagsSettings.selectedAngleTags.length === 0 || selectedTagsSettings.selectedAngleTags.includes(tag)
     );
     const availableLightings = AVAILABLE_LIGHTING_TAGS.filter(
-      tag => !excludedTags.excludedLightingTags.includes(tag)
+      tag => selectedTagsSettings.selectedLightingTags.length === 0 || selectedTagsSettings.selectedLightingTags.includes(tag)
     );
     const availableEffects = AVAILABLE_EFFECT_TAGS.filter(
-      tag => !excludedTags.excludedEffectTags.includes(tag)
+      tag => selectedTagsSettings.selectedEffectTags.length === 0 || selectedTagsSettings.selectedEffectTags.includes(tag)
     );
 
     const randomAngle = selectedPresets.angle
       ? null
       : availableAngles.length > 0 && Math.random() < 0.4
-      ? availableAngles[Math.floor(Math.random() * availableAngles.length)]
-      : null;
+        ? availableAngles[Math.floor(Math.random() * availableAngles.length)]
+        : null;
     const randomLighting = selectedPresets.luminance
       ? null
       : availableLightings.length > 0 && Math.random() < 0.5
-      ? availableLightings[Math.floor(Math.random() * availableLightings.length)]
-      : null;
+        ? availableLightings[Math.floor(Math.random() * availableLightings.length)]
+        : null;
     const randomEffect = availableEffects.length > 0 && Math.random() < 0.3
       ? availableEffects[Math.floor(Math.random() * availableEffects.length)]
       : null;
@@ -2735,6 +2738,11 @@ Generate the new mockup image with the requested changes applied.`;
   const displayBrandingTags = [...new Set([...AVAILABLE_BRANDING_TAGS, ...selectedBrandingTags])];
   const displaySuggestedTags = [...new Set([...suggestedTags, ...selectedTags])];
   const displayAvailableCategoryTags = [...new Set([...AVAILABLE_TAGS, ...selectedTags])];
+  const displayLocationTags = [...new Set([...AVAILABLE_LOCATION_TAGS, ...selectedLocationTags])];
+  const displayAngleTags = [...new Set([...AVAILABLE_ANGLE_TAGS, ...selectedAngleTags])];
+  const displayLightingTags = [...new Set([...AVAILABLE_LIGHTING_TAGS, ...selectedLightingTags])];
+  const displayEffectTags = [...new Set([...AVAILABLE_EFFECT_TAGS, ...selectedEffectTags])];
+  const displayMaterialTags = [...new Set([...AVAILABLE_MATERIAL_TAGS, ...selectedMaterialTags])];
 
   // Calculate credits needed for main generation
   const creditsNeededForGeneration = useMemo(() => {
@@ -3037,11 +3045,11 @@ Generate the new mockup image with the requested changes applied.`;
                   onRemoveColor={handleRemoveColor}
                   onNegativePromptChange={(e) => setNegativePrompt(e.target.value)}
                   onAdditionalPromptChange={(e) => setAdditionalPrompt(e.target.value)}
-                  availableLocationTags={AVAILABLE_LOCATION_TAGS}
-                  availableAngleTags={AVAILABLE_ANGLE_TAGS}
-                  availableLightingTags={AVAILABLE_LIGHTING_TAGS}
-                  availableEffectTags={AVAILABLE_EFFECT_TAGS}
-                  availableMaterialTags={AVAILABLE_MATERIAL_TAGS}
+                  availableLocationTags={displayLocationTags}
+                  availableAngleTags={displayAngleTags}
+                  availableLightingTags={displayLightingTags}
+                  availableEffectTags={displayEffectTags}
+                  availableMaterialTags={displayMaterialTags}
                   customLocationInput={customLocationInput}
                   customAngleInput={customAngleInput}
                   customLightingInput={customLightingInput}

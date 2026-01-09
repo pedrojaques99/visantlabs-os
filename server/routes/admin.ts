@@ -1597,9 +1597,9 @@ router.post('/products', validateAdmin, async (req, res) => {
         type,
         name,
         description,
-        credits: credits ? parseInt(credits, 10) : 0,
-        priceBRL: priceBRL ? parseFloat(priceBRL) : 0,
-        priceUSD: priceUSD ? parseFloat(priceUSD) : null,
+        credits: credits ? parseInt(credits.toString(), 10) : 0,
+        priceBRL: priceBRL ? parseFloat(priceBRL.toString()) : 0,
+        priceUSD: (priceUSD !== null && priceUSD !== undefined && priceUSD !== '') ? parseFloat(priceUSD.toString()) : null,
         stripeProductId,
         abacateProductId,
         abacateBillId,
@@ -1607,7 +1607,7 @@ router.post('/products', validateAdmin, async (req, res) => {
         paymentLinkUSD,
         metadata,
         isActive: isActive !== false,
-        displayOrder: displayOrder ? parseInt(displayOrder, 10) : 0,
+        displayOrder: displayOrder ? parseInt(displayOrder.toString(), 10) : 0,
       },
     });
 
@@ -1648,9 +1648,9 @@ router.put('/products/:id', validateAdmin, async (req, res) => {
         type,
         name,
         description,
-        credits: credits !== undefined ? parseInt(credits, 10) : undefined,
-        priceBRL: priceBRL !== undefined ? parseFloat(priceBRL) : undefined,
-        priceUSD: priceUSD !== undefined ? parseFloat(priceUSD) : undefined,
+        credits: credits !== undefined ? parseInt(credits.toString(), 10) : undefined,
+        priceBRL: priceBRL !== undefined ? parseFloat(priceBRL.toString()) : undefined,
+        priceUSD: priceUSD === null ? null : (priceUSD !== undefined && priceUSD !== '' ? parseFloat(priceUSD.toString()) : undefined),
         stripeProductId,
         abacateProductId,
         abacateBillId,
@@ -1658,7 +1658,7 @@ router.put('/products/:id', validateAdmin, async (req, res) => {
         paymentLinkUSD,
         metadata,
         isActive: isActive !== undefined ? isActive : undefined,
-        displayOrder: displayOrder !== undefined ? parseInt(displayOrder, 10) : undefined,
+        displayOrder: displayOrder !== undefined ? parseInt(displayOrder.toString(), 10) : undefined,
       },
     });
 

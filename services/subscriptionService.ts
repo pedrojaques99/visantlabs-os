@@ -27,7 +27,7 @@ const getAuthHeaders = () => {
 const fetchWithTimeout = async (url: string, options: RequestInit, timeout: number = REQUEST_TIMEOUT): Promise<Response> => {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
-  
+
   try {
     const response = await fetch(url, {
       ...options,
@@ -158,20 +158,58 @@ export const subscriptionService = {
     productName: string;
     description: string;
   }> {
-    const url = new URL(`${API_BASE_URL}/payments/plans`);
+    const url = new URL(`${API_BASE_URL}/payments/plans`, window.location.origin);
     if (currency) {
       url.searchParams.append('currency', currency);
     }
-    const response = await fetchWithTimeout(url.toString(), {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: 'Failed to fetch plans' }));
-      throw new Error(errorData.error || `Failed to fetch plans: ${response.status}`);
+    try {
+      const response = await fetchWithTimeout(url.toString(), {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to fetch plans: ${response.status}`);
+      }
+      return response.json();
+    } catch (error) {
+      console.warn('Could not load plan info from Stripe, using defaults:', error);
+
+      const defaultPlans: Record<string, any> = {
+        USD: {
+          amount: 9,
+          currency: 'USD',
+          monthlyCredits: 100,
+          interval: 'month',
+          productName: 'Premium',
+          tier: 'premium',
+          description: 'Acesso completo a todas as ferramentas do Visant',
+        },
+        BRL: {
+          amount: 19.90,
+          currency: 'BRL',
+          monthlyCredits: 100,
+          interval: 'month',
+          productName: 'Premium',
+          tier: 'premium',
+          description: 'Acesso completo a todas as ferramentas do Visant',
+        },
+      };
+
+      const targetCurrency = currency || 'USD';
+      const defaultPlan = defaultPlans[targetCurrency] || defaultPlans.USD;
+
+      return {
+        priceId: '',
+        tier: defaultPlan.tier,
+        monthlyCredits: defaultPlan.monthlyCredits,
+        amount: defaultPlan.amount,
+        currency: defaultPlan.currency,
+        interval: defaultPlan.interval,
+        productName: defaultPlan.productName,
+        description: defaultPlan.description,
+      };
     }
-    return response.json();
   },
 
   async verifySubscription(): Promise<{
@@ -194,7 +232,7 @@ export const subscriptionService = {
   },
 
   async trackUsage(
-    success: boolean, 
+    success: boolean,
     imagesCount: number = 1,
     model: string = 'gemini-2.5-flash-image',
     hasInputImage: boolean = false,
@@ -206,8 +244,8 @@ export const subscriptionService = {
     const response = await fetchWithTimeout(`${API_BASE_URL}/mockups/track-usage`, {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ 
-        success, 
+      body: JSON.stringify({
+        success,
         imagesCount,
         model,
         hasInputImage,
@@ -235,8 +273,8 @@ export const subscriptionService = {
     const response = await fetchWithTimeout(`${API_BASE_URL}/branding/track-usage`, {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ 
-        success, 
+      body: JSON.stringify({
+        success,
         stepNumber,
         promptLength
       }),
@@ -249,8 +287,8 @@ export const subscriptionService = {
       throw new Error(error.error || 'Failed to track branding usage');
     }
     const data = await response.json();
-    return { 
-      creditsDeducted: data.creditsDeducted || 0, 
+    return {
+      creditsDeducted: data.creditsDeducted || 0,
       creditsRemaining: data.creditsRemaining || 0,
       totalCredits: data.totalCredits || 0
     };

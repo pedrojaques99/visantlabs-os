@@ -133,27 +133,30 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
       </div>
 
       <div className="flex flex-wrap gap-2 cursor-pointer">
-        {tags.map(tag => {
-          const isSelected = selectedTags.includes(tag);
-          const hasSelection = selectedTags.length > 0;
+        {(() => {
+          const allDisplayTags = [...new Set([...tags, ...selectedTags])];
+          return allDisplayTags.map(tag => {
+            const isSelected = selectedTags.includes(tag);
+            const hasSelection = selectedTags.length > 0;
 
-          return (
-            <button
-              key={tag}
-              onClick={() => onTagToggle(tag)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer ${isSelected
-                ? theme === 'dark'
-                  ? 'bg-brand-cyan/20 text-brand-cyan border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
-                  : 'bg-brand-cyan/20 text-zinc-800 border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
-                : theme === 'dark'
-                  ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
-                  : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'
-                } ${hasSelection && !isSelected ? 'opacity-40' : ''}`}
-            >
-              {translateTag(tag)}
-            </button>
-          );
-        })}
+            return (
+              <button
+                key={tag}
+                onClick={() => onTagToggle(tag)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer ${isSelected
+                  ? theme === 'dark'
+                    ? 'bg-brand-cyan/20 text-brand-cyan border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
+                    : 'bg-brand-cyan/20 text-zinc-800 border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
+                  : theme === 'dark'
+                    ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
+                    : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'
+                  } ${hasSelection && !isSelected ? 'opacity-40' : ''}`}
+              >
+                {translateTag(tag)}
+              </button>
+            );
+          });
+        })()}
         {!isEditingCustom ? (
           <button
             onClick={handleCustomTagClick}

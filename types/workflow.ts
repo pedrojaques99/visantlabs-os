@@ -1,23 +1,17 @@
 import { Workflow, Layers, Image, Video, Palette, LayoutGrid } from 'lucide-react';
 
 export type WorkflowCategory =
-    | 'all'
     | 'branding'
     | 'mockup'
     | 'image-editing'
     | 'video'
     | 'general';
 
-export const WORKFLOW_CATEGORY_CONFIG: Record<WorkflowCategory, {
+export const WORKFLOW_CATEGORY_CONFIG: Record<string, {
     icon: any;
     color: string;
     label: string;
 }> = {
-    all: {
-        icon: LayoutGrid,
-        color: 'text-zinc-300',
-        label: 'All Workflows',
-    },
     branding: {
         icon: Palette,
         color: 'text-purple-400',

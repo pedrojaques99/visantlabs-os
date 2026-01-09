@@ -4,6 +4,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useTheme } from '../../hooks/useTheme';
 import { translateTag } from '../../utils/localeUtils';
 import { Button } from '../ui/button';
+import { Badge } from '../ui/badge';
 import { Input } from '../ui/input';
 import { cn } from '../../lib/utils';
 
@@ -104,40 +105,37 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
             const isDisabled = limitReached && !isSelected;
 
             return (
-              <Button
+              <Badge
                 key={tag}
                 onClick={() => onTagToggle(tag)}
-                disabled={isDisabled}
                 variant="outline"
-                size="sm"
                 className={cn(
-                  "text-xs font-medium transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0",
+                  "text-xs font-medium transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer",
                   isSelected
                     ? theme === 'dark'
                       ? 'bg-brand-cyan/20 text-brand-cyan border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
                       : 'bg-brand-cyan/20 text-zinc-800 border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
                     : theme === 'dark'
                       ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
-                      : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'
+                      : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900',
+                  isDisabled && 'opacity-40 cursor-not-allowed'
                 )}
               >
                 {translateTag(tag)}
-              </Button>
+              </Badge>
             );
           })}
           {!isComplete && (
             !isEditingCustom ? (
-              <Button
+              <Badge
                 onClick={handleCustomTagClick}
-                disabled={limitReached}
                 variant="outline"
-                size="sm"
                 className={cn(
-                  "text-xs font-medium transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0",
+                  "text-xs font-medium transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 gap-1 cursor-pointer",
                   limitReached
                     ? theme === 'dark'
-                      ? 'opacity-40 bg-zinc-800/50 text-zinc-400 border-zinc-700/50'
-                      : 'opacity-40 bg-zinc-100 text-zinc-500 border-zinc-300'
+                      ? 'opacity-40 bg-zinc-800/50 text-zinc-400 border-zinc-700/50 cursor-not-allowed'
+                      : 'opacity-40 bg-zinc-100 text-zinc-500 border-zinc-300 cursor-not-allowed'
                     : theme === 'dark'
                       ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
                       : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'
@@ -145,7 +143,7 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
               >
                 <Plus size={14} />
                 <span>{t('mockup.customTagLabel')}</span>
-              </Button>
+              </Badge>
             ) : (
               <Input
                 ref={inputRef}
