@@ -794,7 +794,8 @@
     "creditsLabel": "Créditos",
     "buyCredits": "Comprar",
     "creditsNote": "Créditos nunca expiram e podem ser usados a qualquer momento",
-    "oneTimePayment": "Pagamento único"
+    "oneTimePayment": "Pagamento único",
+    "noPlansFound": "Nenhum plano disponível no momento."
   },
   "subscription": {
     "upgradeToPremium": "FAZER UPGRADE PARA PREMIUM",
@@ -854,7 +855,8 @@
     "credits": "Créditos",
     "buy": "Comprar",
     "note": "Créditos nunca expiram e podem ser usados a qualquer momento",
-    "purchaseSuccess": "Créditos adicionados com sucesso!"
+    "purchaseSuccess": "Créditos adicionados com sucesso!",
+    "viewPlans": "Ver planos de assinatura"
   },
   "thankYou": {
     "title": "Obrigado por Assinar!",
@@ -1012,7 +1014,8 @@
     "bySigningUp": "Ao criar uma conta, você concorda com nossos",
     "termsOfService": "Termos de Serviço",
     "and": "e",
-    "privacyPolicy": "Política de Privacidade"
+    "privacyPolicy": "Política de Privacidade",
+    "loginRequired": "Por favor, entre para curtir workflows"
   },
   "configuration": {
     "title": "Configuração",
@@ -3000,7 +3003,7 @@
   },
   "surpriseMeSettings": {
     "title": "Configurações do Me Surpreenda",
-    "info": "Selecione as tags que deseja excluir ao usar o Me Surpreenda. As tags excluídas não serão selecionadas aleatoriamente.",
+    "info": "Escolha quais tags você deseja incluir ao usar o Me Surpreenda. Tags não selecionadas serão excluídas das gerações aleatórias.",
     "categories": "Categorias",
     "categoriesDescription": "Categorias de mockup",
     "locations": "Localizações",
@@ -3179,6 +3182,7 @@
       "confirmed": "Confirmado!"
     },
     "workflows": {
+      "importWorkflow": "Importar Workflow",
       "library": {
         "title": "Biblioteca de Workflows",
         "description": "Navegue e carregue modelos de workflow reutilizáveis",
@@ -3186,6 +3190,9 @@
         "noResults": "Nenhum workflow encontrado",
         "noWorkflows": "Nenhum workflow ainda",
         "noCommunityWorkflows": "Nenhum workflow da comunidade disponível",
+        "loadWorkflow": "Carregar Workflow",
+        "createWorkflow": "Criar Workflow",
+        "createNewWorkflow": "Criar Novo Workflow",
         "tabs": {
           "my": "Meus Workflows",
           "community": "Comunidade",
@@ -3228,21 +3235,6 @@
       },
       "saveWorkflow": "Salvar Workflow",
       "loadWorkflow": "Carregar Workflow"
-    }
-  },
-  "workflows": {
-    "library": {
-      "title": "Biblioteca de Workflows",
-      "description": "Navegue e carregue modelos de workflow reutilizáveis",
-      "tabs": {
-        "my": "Meus Workflows",
-        "community": "Comunidade",
-        "all": "Todos"
-      },
-      "search": "Buscar workflows...",
-      "noResults": "Nenhum workflow encontrado",
-      "noWorkflows": "Nenhum workflow criado ainda",
-      "noCommunityWorkflows": "Nenhum workflow da comunidade disponível"
     },
     "saveDialog": {
       "title": "Salvar Workflow",
@@ -3292,6 +3284,22 @@
       "failedToDuplicate": "Falha ao duplicar workflow",
       "failedToDelete": "Falha ao excluir workflow",
       "failedToSave": "Falha ao salvar workflow"
+    },
+    "edit": {
+      "title": "Editar Workflow",
+      "description": "Edite seu canvas como um modelo de workflow reutilizável",
+      "name": "Nome do Workflow",
+      "namePlaceholder": "ex: Workflow de Identidade Visual",
+      "descriptionPlaceholder": "Descreva o que este workflow faz...",
+      "category": "Categoria",
+      "tags": "Tags",
+      "tagsPlaceholder": "ex: branding, logo, identidade (separados por vírgula)",
+      "tagsHint": "Separe as tags com vírgulas",
+      "makePublic": "Tornar Público",
+      "makePublicHint": "Compartilhe este workflow com a comunidade (requer aprovação)",
+      "save": "Salvar Workflow",
+      "saving": "Salvando...",
+      "cancel": "Cancelar"
     }
   }
 }

@@ -152,8 +152,8 @@ export const AdminProductsPage: React.FC = () => {
                 { productId: 'credits_100', type: 'credit_package', name: '100 Créditos', credits: 100, priceBRL: 45.90, displayOrder: 2, paymentLinkBRL: 'https://buy.stripe.com/28E00c4A7eOg0NM38S0gw09', stripeProductId: 'prod_TSoesFFm3kKj1E' },
                 { productId: 'credits_500', type: 'credit_package', name: '500 Créditos', credits: 500, priceBRL: 198.00, displayOrder: 3, paymentLinkBRL: 'https://buy.stripe.com/3cI8wI9Ur0Xq9ki5h00gw07', stripeProductId: 'prod_TSoiFWVxxng27m' },
                 // Plans
-                { productId: 'plan_pro', type: 'subscription_plan', name: 'Plano Pro', credits: 200, priceBRL: 49.90, displayOrder: 4, description: '200 créditos/mês, Modo Experimental, Suporte Prioritário, 20GB Storage', metadata: { tier: 'pro', storageLimitGB: 20 } },
-                { productId: 'plan_vision', type: 'subscription_plan', name: 'Plano Vision', credits: 500, priceBRL: 89.90, displayOrder: 5, description: '500 créditos/mês, Modo Experimental, Suporte Rápido, 100GB Storage', metadata: { tier: 'vision', storageLimitGB: 100 } },
+                { productId: 'plan_pro', type: 'subscription_plan', name: 'Plano Pro', credits: 150, priceBRL: 49.90, displayOrder: 4, description: '150 créditos/mês, Modo Experimental, Suporte Prioritário, 20GB Storage', metadata: { tier: 'pro', storageLimitGB: 20 } },
+                { productId: 'plan_vision', type: 'subscription_plan', name: 'Plano Vision', credits: 400, priceBRL: 89.90, displayOrder: 5, description: '400 créditos/mês, Modo Experimental, Suporte Rápido, 100GB Storage', metadata: { tier: 'vision', storageLimitGB: 100 } },
             ];
 
             for (const product of defaultProducts) {
@@ -337,11 +337,11 @@ export const AdminProductsPage: React.FC = () => {
                                 Semear Padrões
                             </Button>
                             <Button
-                                onClick={handleRefresh}
+                                onClick={handleFetch}
                                 variant="outline"
                                 size="sm"
                                 className="bg-zinc-900 border-zinc-800 hover:bg-zinc-800"
-                            >              >
+                            >
                                 <RefreshCw className={cn("h-4 w-4 mr-2", isLoading && "animate-spin")} />
                                 Sincronizar
                             </Button>
@@ -377,7 +377,7 @@ export const AdminProductsPage: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             {filteredProducts.map((product) => (
                                 <Card key={product.id} className="bg-zinc-900 border-zinc-800 hover:border-zinc-700 transition-all group">
                                     <CardHeader className="pb-3 flex flex-row items-start justify-between space-y-0">

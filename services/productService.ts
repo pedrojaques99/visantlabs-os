@@ -1,3 +1,5 @@
+import { CREDIT_PACKAGES } from '../utils/creditPackages';
+
 export interface Product {
     id: string;
     productId: string;
@@ -32,13 +34,45 @@ class ProductService {
             const response = await fetch('/api/payments/products');
             if (!response.ok) throw new Error('Failed to fetch products');
             const data = await response.json();
-            this.products = data;
-            this.lastFetch = now;
-            return data;
+
+            if (Array.isArray(data) && data.length > 0) {
+                this.products = data;
+                this.lastFetch = now;
+                return data;
+            }
+
+            // Fallback if API returns empty list
+            console.warn('API returned no products, using fallbacks');
+            this.products = this.getFallbackProducts();
+            return this.products;
         } catch (error) {
             console.error('Error fetching products:', error);
-            return this.products; // Return cached if available, or empty
+            if (this.products.length > 0) return this.products;
+
+            this.products = this.getFallbackProducts();
+            return this.products;
         }
+    }
+
+    private getFallbackProducts(): Product[] {
+        return CREDIT_PACKAGES.map((pkg, index) => ({
+            id: `fallback-${pkg.credits}`,
+            productId: `credits_${pkg.credits}`,
+            type: 'credit_package',
+            name: `${pkg.credits} Créditos`,
+            description: `Pacote de ${pkg.credits} créditos para uso no Visant`,
+            credits: pkg.credits,
+            priceBRL: pkg.price.BRL,
+            priceUSD: pkg.price.USD || null,
+            stripeProductId: pkg.stripeProductId || null,
+            abacateProductId: pkg.abacateProductId || null,
+            abacateBillId: pkg.abacateBillId || null,
+            paymentLinkBRL: pkg.paymentLinks?.BRL || null,
+            paymentLinkUSD: pkg.paymentLinks?.USD || null,
+            metadata: null,
+            isActive: true,
+            displayOrder: index,
+        }));
     }
 
     async getCreditPackages(): Promise<Product[]> {

@@ -54,7 +54,7 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
 
     return (
         <div
-            className="bg-card border border-zinc-800/50 rounded-md p-4 hover:border-brand-cyan/30 hover:bg-card/80 transition-all group relative cursor-pointer"
+            className="bg-card border border-zinc-800/50 rounded-md p-4 hover:border-brand-cyan/30 hover:bg-card/80 transition-all group relative cursor-pointer h-full flex flex-col"
             onClick={onClick}
         >
             <div className="mb-3">
@@ -78,7 +78,7 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
                 )}
             </div>
 
-            <div className="space-y-2">
+            <div className="flex-1 space-y-3 flex flex-col min-h-0">
                 <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                         <h3 className="text-base font-semibold text-zinc-200 mb-0.5 font-mono line-clamp-1">
@@ -101,7 +101,7 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
                                 {isOwner ? <Copy className="h-4 w-4" /> : <Download className="h-4 w-4" />}
                             </button>
                         )}
-                        {isOwner && onEdit && (
+                        {(isOwner || canEdit) && onEdit && (
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
@@ -113,91 +113,79 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
                                 <Edit2 className="h-4 w-4" />
                             </button>
                         )}
-                        {canEdit && onEdit && onDelete && (
-                            <>
-                                {!isOwner && (
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            onEdit?.();
-                                        }}
-                                        className="p-1.5 text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-300 rounded transition-colors opacity-0 group-hover:opacity-100"
-                                        title={t('workflows.actions.edit') || 'Edit'}
-                                    >
-                                        <Edit2 className="h-4 w-4" />
-                                    </button>
-                                )}
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onDelete?.();
-                                    }}
-                                    className="p-1.5 text-zinc-500 hover:bg-red-500/10 hover:text-red-400 rounded transition-colors opacity-0 group-hover:opacity-100"
-                                    title={t('workflows.actions.delete') || 'Delete'}
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </button>
-                            </>
-                        )}
-                    </div>
-                </div>
-
-                {/* Tags and metadata */}
-                <div className="flex items-center gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent scroll-smooth">
-                    <span
-                        className={cn(
-                            'px-2 py-0.5 rounded border font-mono text-xs flex-shrink-0 whitespace-nowrap',
-                            categoryConfig.color.replace('text-', 'bg-').replace('-400', '-500/20'),
-                            categoryConfig.color.replace('text-', 'border-').replace('-400', '-500/30'),
-                            categoryConfig.color
-                        )}
-                    >
-                        {categoryConfig.label}
-                    </span>
-                    <span className="px-2 py-0.5 bg-zinc-800/40 rounded border border-zinc-700/30 text-zinc-500 font-mono text-xs flex-shrink-0 whitespace-nowrap">
-                        {t('workflows.stats.nodes') ? t('workflows.stats.nodes').replace('{count}', String(nodeCount)) : `${nodeCount} nodes`}
-                    </span>
-                    <span className="px-2 py-0.5 bg-zinc-800/40 rounded border border-zinc-700/30 text-zinc-500 font-mono text-xs flex-shrink-0 whitespace-nowrap">
-                        {t('workflows.stats.edges') ? t('workflows.stats.edges').replace('{count}', String(edgeCount)) : `${edgeCount} edges`}
-                    </span>
-                    {usageCount > 0 && (
-                        <span className="px-2 py-0.5 bg-zinc-800/40 rounded border border-zinc-700/30 text-zinc-500 font-mono text-xs flex-shrink-0 whitespace-nowrap flex items-center gap-1">
-                            <Play size={10} />
-                            {usageCount}
-                        </span>
-                    )}
-                    {isAuthenticated && onToggleLike && (
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onToggleLike();
-                            }}
-                            className={`flex items-center gap-1 px-2 py-0.5 rounded-md transition-all text-xs font-mono flex-shrink-0 whitespace-nowrap ${isLiked
-                                ? 'bg-zinc-800/50 text-zinc-300 hover:bg-zinc-700/50'
-                                : 'bg-zinc-900/40 text-zinc-500 hover:bg-zinc-800/50 hover:text-zinc-400'
-                                }`}
-                            title={isLiked ? t('workflows.actions.unlike') || 'Unlike' : t('workflows.actions.like') || 'Like'}
-                        >
-                            <Heart size={12} className={isLiked ? 'fill-current' : ''} />
-                            <span>{likesCount}</span>
-                        </button>
-                    )}
-                </div>
-
-                {/* Tags */}
-                {workflow.tags && workflow.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                        {workflow.tags.map((tag, index) => (
-                            <span
-                                key={index}
-                                className="px-1.5 py-0.5 bg-zinc-800/40 rounded border border-zinc-700/20 text-zinc-500 font-mono text-[10px] hover:border-zinc-600/40 hover:text-zinc-400 transition-colors"
-                                title={tag}
+                        {(isOwner || canEdit) && onDelete && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onDelete?.();
+                                }}
+                                className="p-1.5 text-zinc-500 hover:bg-red-500/10 hover:text-red-400 rounded transition-colors opacity-0 group-hover:opacity-100"
+                                title={t('workflows.actions.delete') || 'Delete'}
                             >
-                                #{tag}
-                            </span>
-                        ))}
+                                <Trash2 className="h-4 w-4" />
+                            </button>
+                        )}
                     </div>
-                )}
+                </div>
+
+                <div className="mt-auto space-y-3">
+                    {/* Tags and metadata */}
+                    <div className="flex flex-wrap items-center gap-2">
+                        <span
+                            className={cn(
+                                'px-2 py-0.5 rounded border font-mono text-[10px] flex-shrink-0 whitespace-nowrap',
+                                categoryConfig.color.replace('text-', 'bg-').replace('-400', '-500/20'),
+                                categoryConfig.color.replace('text-', 'border-').replace('-400', '-500/30'),
+                                categoryConfig.color
+                            )}
+                        >
+                            {categoryConfig.label}
+                        </span>
+                        <span className="px-2 py-0.5 bg-zinc-800/40 rounded border border-zinc-700/30 text-zinc-500 font-mono text-[10px] flex-shrink-0 whitespace-nowrap">
+                            {t('workflows.stats.nodes') ? t('workflows.stats.nodes').replace('{count}', String(nodeCount)) : `${nodeCount} nodes`}
+                        </span>
+                        <span className="px-2 py-0.5 bg-zinc-800/40 rounded border border-zinc-700/30 text-zinc-500 font-mono text-[10px] flex-shrink-0 whitespace-nowrap">
+                            {t('workflows.stats.edges') ? t('workflows.stats.edges').replace('{count}', String(edgeCount)) : `${edgeCount} edges`}
+                        </span>
+                        {usageCount > 0 && (
+                            <span className="px-2 py-0.5 bg-zinc-800/40 rounded border border-zinc-700/30 text-zinc-500 font-mono text-[10px] flex-shrink-0 whitespace-nowrap flex items-center gap-1">
+                                <Play size={10} />
+                                {usageCount}
+                            </span>
+                        )}
+                        {isAuthenticated && onToggleLike && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onToggleLike();
+                                }}
+                                className={`flex items-center gap-1 px-2 py-0.5 rounded-md transition-all text-[10px] font-mono flex-shrink-0 whitespace-nowrap ${isLiked
+                                    ? 'bg-zinc-800/50 text-zinc-300 hover:bg-zinc-700/50'
+                                    : 'bg-zinc-900/40 text-zinc-500 hover:bg-zinc-800/50 hover:text-zinc-400'
+                                    }`}
+                                title={isLiked ? t('workflows.actions.unlike') || 'Unlike' : t('workflows.actions.like') || 'Like'}
+                            >
+                                <Heart size={12} className={isLiked ? 'fill-current' : ''} />
+                                <span>{likesCount}</span>
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Tags */}
+                    {workflow.tags && workflow.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                            {workflow.tags.map((tag, index) => (
+                                <span
+                                    key={index}
+                                    className="px-1.5 py-0.5 bg-zinc-800/40 rounded border border-zinc-700/20 text-zinc-500 font-mono text-[10px] hover:border-zinc-600/40 hover:text-zinc-400 transition-colors"
+                                    title={tag}
+                                >
+                                    #{tag}
+                                </span>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

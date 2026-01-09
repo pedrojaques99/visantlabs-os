@@ -150,7 +150,7 @@
   },
   "surpriseMeSettings": {
     "title": "Surprise Me Settings",
-    "info": "Select tags to exclude when using Surprise Me. Excluded tags will not be randomly selected.",
+    "info": "Choose which tags you want to include when using Surprise Me. Unselected tags will be excluded from random generations.",
     "categories": "Categories",
     "categoriesDescription": "Mockup categories",
     "locations": "Locations",
@@ -811,7 +811,8 @@
     "creditsLabel": "Credits",
     "buyCredits": "Buy",
     "creditsNote": "Credits never expire and can be used at any time",
-    "oneTimePayment": "One-time payment"
+    "oneTimePayment": "One-time payment",
+    "noPlansFound": "No plans available at the moment."
   },
   "subscription": {
     "upgradeToPremium": "UPGRADE TO PREMIUM",
@@ -871,7 +872,8 @@
     "credits": "Credits",
     "buy": "Buy",
     "note": "Credits never expire and can be used at any time",
-    "purchaseSuccess": "Credits added successfully!"
+    "purchaseSuccess": "Credits added successfully!",
+    "viewPlans": "View subscription plans"
   },
   "thankYou": {
     "title": "Thank You for Subscribing!",
@@ -1029,7 +1031,8 @@
     "bySigningUp": "By signing up, you agree to our",
     "termsOfService": "Terms of Service",
     "and": "and",
-    "privacyPolicy": "Privacy Policy"
+    "privacyPolicy": "Privacy Policy",
+    "loginRequired": "Please login to like workflows"
   },
   "configuration": {
     "title": "Configuration",
@@ -3236,18 +3239,22 @@
     }
   },
   "workflows": {
+    "importWorkflow": "Import Workflow",
     "library": {
       "title": "Workflow Library",
       "description": "Browse and load reusable workflow templates",
+      "search": "Search workflows...",
+      "noResults": "No workflows found",
+      "noWorkflows": "No workflows yet",
+      "noCommunityWorkflows": "No community workflows available",
+      "loadWorkflow": "Load Workflow",
+      "createWorkflow": "Create Workflow",
+      "createNewWorkflow": "Create New Workflow",
       "tabs": {
         "my": "My Workflows",
         "community": "Community",
         "all": "All"
-      },
-      "search": "Search workflows...",
-      "noResults": "No workflows found",
-      "noWorkflows": "No workflows yet",
-      "noCommunityWorkflows": "No community workflows available"
+      }
     },
     "saveDialog": {
       "title": "Save Workflow",
@@ -3256,6 +3263,7 @@
       "namePlaceholder": "e.g., Brand Identity Workflow",
       "descriptionPlaceholder": "Describe what this workflow does...",
       "category": "Category",
+      "all": "All",
       "tags": "Tags",
       "tagsPlaceholder": "e.g., branding, logo, identity (comma-separated)",
       "tagsHint": "Separate tags with commas",
@@ -3288,7 +3296,8 @@
       "unliked": "Workflow unliked",
       "duplicated": "Workflow added to your library!",
       "deleted": "Workflow deleted",
-      "saved": "Workflow saved successfully!"
+      "saved": "Workflow saved successfully!",
+      "loaded": "Workflow loaded: {name}"
     },
     "errors": {
       "failedToLoad": "Failed to load workflows",
@@ -3297,9 +3306,23 @@
       "failedToDuplicate": "Failed to duplicate workflow",
       "failedToDelete": "Failed to delete workflow",
       "failedToSave": "Failed to save workflow"
+    },
+    "edit": {
+      "title": "Edit Workflow",
+      "description": "Edit your canvas as a reusable workflow template",
+      "name": "Workflow Name",
+      "namePlaceholder": "e.g., Brand Identity Workflow",
+      "descriptionPlaceholder": "Describe what this workflow does...",
+      "category": "Category",
+      "all": "All",
+      "tags": "Tags",
+      "tagsPlaceholder": "e.g., branding, logo, identity (comma-separated)",
+      "tagsHint": "Separate tags with commas",
+      "makePublic": "Make Public",
+      "makePublicHint": "Share this workflow with the community (requires approval)",
+      "save": "Save Workflow",
+      "saving": "Saving...",
+      "cancel": "Cancel"
     }
-  },
-  "auth": {
-    "loginRequired": "Please login to like workflows"
   }
 }

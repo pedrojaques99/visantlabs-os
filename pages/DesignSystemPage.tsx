@@ -238,6 +238,7 @@ export const DesignSystemPage: React.FC = () => {
         { id: 'skeleton-loader', label: t('designSystem.components.skeletonLoader.title') || 'Skeleton Loader' },
         { id: 'grid-dots-background', label: t('designSystem.components.gridDotsBackground.title') || 'Grid Dots Background' },
         { id: 'tabs', label: t('designSystem.components.tabs.title') || 'Tabs' },
+        { id: 'tags', label: t('designSystem.components.tags.title') || 'Tags' },
         { id: 'canvas-toolbar', label: t('designSystem.components.canvasToolbar.title') || 'Canvas Toolbar' },
         { id: 'canvas-header', label: t('designSystem.components.canvasHeader.title') || 'Canvas Header' },
         { id: 'canvas-flow', label: t('designSystem.components.canvasFlow.title') || 'Canvas Flow' },
@@ -1121,23 +1122,47 @@ export const DesignSystemPage: React.FC = () => {
                       <CardHeader>
                         <CardTitle>{t('designSystem.components.modal.title') || 'Modal'}</CardTitle>
                         <CardDescription>
-                          {t('designSystem.components.modal.description') || 'Confirmation modal component for user confirmations and alerts'}
+                          {t('designSystem.components.modal.description') || 'Consistent modal patterns for the application'}
                         </CardDescription>
                       </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="p-6 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                          <p className="text-sm text-zinc-400 mb-4">
-                            Modal for confirmations, warnings, and alerts with multiple variants.
-                          </p>
-                          <div className="flex flex-wrap gap-2 mb-4">
-                            <Badge variant="outline">Warning</Badge>
-                            <Badge variant="outline">Danger</Badge>
-                            <Badge variant="outline">Info</Badge>
+                      <CardContent className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-4">
+                            <h3 className="text-sm font-semibold text-zinc-200 font-mono">Confirmation Modal</h3>
+                            <div className="p-6 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
+                              <p className="text-sm text-zinc-400 mb-4">
+                                Pre-built modal for simple confirmations, warnings, and alerts.
+                              </p>
+                              <div className="flex flex-wrap gap-2 mb-4">
+                                <Badge variant="outline">Warning</Badge>
+                                <Badge variant="outline">Danger</Badge>
+                                <Badge variant="outline">Info</Badge>
+                              </div>
+                              <Button onClick={() => setShowModal(true)} variant="outline" size="sm">
+                                {t('designSystem.modal.exampleTitle') || 'Open Confirmation Modal'}
+                              </Button>
+                            </div>
                           </div>
-                          <Button onClick={() => setShowModal(true)} variant="outline" size="sm">
-                            {t('designSystem.modal.exampleTitle') || 'Open Example Modal'}
-                          </Button>
+
+                          <div className="space-y-4">
+                            <h3 className="text-sm font-semibold text-zinc-200 font-mono">Custom Content Modal Pattern</h3>
+                            <div className="p-6 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
+                              <p className="text-sm text-zinc-400 mb-4">
+                                Standard structure for complex modals using Portal, Backdrop, Header, Content, and Footer.
+                              </p>
+                              <code className="block p-3 bg-black/40 rounded border border-zinc-800/50 text-[10px] font-mono text-zinc-500 overflow-x-auto whitespace-pre">
+                                {`<div className="modal-backdrop">
+  <div className="modal-container">
+    <div className="modal-header">...</div>
+    <div className="modal-content">...</div>
+    <div className="modal-footer">...</div>
+  </div>
+</div>`}
+                              </code>
+                            </div>
+                          </div>
                         </div>
+
                         <ConfirmationModal
                           isOpen={showModal}
                           onClose={() => setShowModal(false)}
@@ -1343,6 +1368,53 @@ export const DesignSystemPage: React.FC = () => {
                             <p className="text-sm font-mono text-zinc-400">Content for Tab 3</p>
                           </TabsContent>
                         </Tabs>
+                      </CardContent>
+                    </Card>
+
+                    {/* Tags */}
+                    <Card id="tags">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.components.tags.title') || 'Tags'}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.components.tags.description') || 'Tag components for categorization, filtering, and metadata display'}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        <div className="space-y-4">
+                          <h4 className="text-sm font-semibold text-zinc-300 font-mono">Variants</h4>
+                          <div className="flex flex-wrap gap-2">
+                            <Badge variant="default">Default</Badge>
+                            <Badge variant="secondary">Secondary</Badge>
+                            <Badge variant="outline">Outline</Badge>
+                            <Badge variant="destructive">Destructive</Badge>
+                          </div>
+                        </div>
+
+                        <Separator className="bg-zinc-800/50" />
+
+                        <div className="space-y-4">
+                          <h4 className="text-sm font-semibold text-zinc-300 font-mono">Selectable Tags (Common Pattern)</h4>
+                          <p className="text-xs text-zinc-500 font-mono mb-2">Used in Branding and Categories sections</p>
+                          <div className="flex flex-wrap gap-2">
+                            <Badge
+                              className="cursor-pointer bg-brand-cyan/20 text-brand-cyan border-brand-cyan/30 shadow-sm shadow-brand-cyan/10"
+                            >
+                              Selected Tag
+                            </Badge>
+                            <Badge
+                              variant="outline"
+                              className="cursor-pointer bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300"
+                            >
+                              Unselected Tag
+                            </Badge>
+                            <Badge
+                              variant="outline"
+                              className="opacity-40 cursor-not-allowed bg-zinc-800/50 text-zinc-400 border-zinc-700/50"
+                            >
+                              Disabled Tag
+                            </Badge>
+                          </div>
+                        </div>
                       </CardContent>
                     </Card>
 

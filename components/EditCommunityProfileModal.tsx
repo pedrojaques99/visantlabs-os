@@ -4,6 +4,10 @@ import { GlitchLoader } from './ui/GlitchLoader';
 import { userProfileService, type UserProfile, type UpdateProfileData } from '../services/userProfileService';
 import { useTranslation } from '../hooks/useTranslation';
 import { toast } from 'sonner';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Textarea } from './ui/textarea';
+import { Badge } from './ui/badge';
 
 export interface EditCommunityProfileModalProps {
   isOpen: boolean;
@@ -181,43 +185,45 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-zinc-900 border border-zinc-800/60 rounded-xl shadow-2xl">
+      <div className="relative w-full max-w-2xl max-h-[90vh] flex flex-col bg-zinc-900 border border-zinc-800/60 rounded-xl shadow-2xl overflow-hidden animate-slide-up">
         {/* Header */}
-        <div className="sticky top-0 bg-zinc-900 border-b border-zinc-800/60 p-6 flex items-center justify-between z-10">
-          <h2 className="text-xl font-semibold text-zinc-200 font-manrope">
-            Edit Profile
+        <div className="p-6 flex items-center justify-between border-b border-zinc-800/60 bg-zinc-900/20 backdrop-blur-sm">
+          <h2 className="text-xl font-semibold text-zinc-200 font-manrope tracking-tight">
+            Edit Community Profile
           </h2>
           <button
             onClick={onClose}
-            className="p-2 text-zinc-500 hover:text-zinc-300 transition-colors rounded-md hover:bg-zinc-800/50"
+            className="p-2 text-zinc-500 hover:text-white transition-all hover:bg-zinc-800/50 rounded-lg"
           >
             <X size={20} />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-6 overflow-y-auto flex-1 custom-scrollbar">
           {error && (
-            <div className="bg-red-500/10 border border-red-500/30 rounded-md p-4 text-sm text-red-400 font-mono">
-              {error}
+            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 text-sm text-red-400 font-mono flex items-center gap-2">
+              <span className="shrink-0">⚠</span>
+              <span>{error}</span>
             </div>
           )}
 
           {/* Cover Image */}
-          <div>
-            <label className="block text-sm font-semibold text-zinc-300 font-mono mb-2">
+          <div className="space-y-2">
+            <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest ml-1">
               Cover Image
             </label>
-            <div className="relative w-full h-32 rounded-md overflow-hidden bg-zinc-900/50 border border-zinc-800/60">
+            <div className="relative w-full h-40 rounded-xl overflow-hidden bg-zinc-900/50 border border-zinc-800/60 group">
               {coverImageUrl ? (
                 <img
                   src={coverImageUrl}
                   alt="Cover"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center">
+                <div className="w-full h-full flex flex-col items-center justify-center gap-2">
                   <ImageIcon size={32} className="text-zinc-700" strokeWidth={1} />
+                  <span className="text-[10px] font-mono text-zinc-600 uppercase tracking-tight">No cover image</span>
                 </div>
               )}
               <input
@@ -231,137 +237,144 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
               <button
                 onClick={handleCoverClick}
                 disabled={isUploadingCover}
-                className="absolute inset-0 flex items-center justify-center bg-black/50 hover:bg-black/70 transition-colors disabled:opacity-50"
+                className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm disabled:opacity-50"
               >
                 {isUploadingCover ? (
                   <GlitchLoader size={24} />
                 ) : (
-                  <Camera size={24} className="text-zinc-300" />
+                  <div className="flex flex-col items-center gap-2">
+                    <Camera size={24} className="text-zinc-300" />
+                    <span className="text-[10px] font-mono text-zinc-300 uppercase tracking-widest">Change Cover</span>
+                  </div>
                 )}
               </button>
             </div>
-            <p className="text-xs text-zinc-500 font-mono mt-2">
-              Recommended: 16:9 aspect ratio, max 2MB
-            </p>
+            <div className="flex items-center gap-2 ml-1">
+              <Badge variant="outline" className="text-[9px] uppercase tracking-tighter py-0">16:9 Aspect</Badge>
+              <Badge variant="outline" className="text-[9px] uppercase tracking-tighter py-0">Max 2MB</Badge>
+            </div>
           </div>
 
           {/* Username */}
-          <div>
-            <label className="block text-sm font-semibold text-zinc-300 font-mono mb-2">
+          <div className="space-y-2">
+            <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest ml-1">
               Username
             </label>
-            <input
+            <Input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="username"
-              className="w-full px-4 py-2 bg-black/40 border border-zinc-800/60 rounded-md text-zinc-200 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50 transition-colors"
+              placeholder="Your username"
+              className="bg-zinc-900/50 border-zinc-800 focus:border-brand-cyan/30"
             />
-            <p className="text-xs text-zinc-500 font-mono mt-1">
-              3-20 characters, letters, numbers, underscores, and hyphens
+            <p className="text-[10px] text-zinc-500 font-mono mt-1 ml-1">
+              3-20 characters: letters, numbers, underscores, and hyphens.
             </p>
           </div>
 
           {/* Bio */}
-          <div>
-            <label className="block text-sm font-semibold text-zinc-300 font-mono mb-2">
+          <div className="space-y-2">
+            <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest ml-1">
               Bio
             </label>
-            <textarea
+            <Textarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               placeholder="Tell us about yourself..."
-              rows={4}
-              className="w-full px-4 py-2 bg-black/40 border border-zinc-800/60 rounded-md text-zinc-200 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50 transition-colors resize-none"
+              className="bg-zinc-900/50 border-zinc-800 focus:border-brand-cyan/30 h-32 resize-none"
             />
           </div>
 
           {/* Social Links */}
-          <div className="space-y-4">
-            <label className="block text-sm font-semibold text-zinc-300 font-mono mb-2">
+          <div className="space-y-6">
+            <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest ml-1">
               Social Media Links
             </label>
 
-            <div>
-              <label className="block text-xs text-zinc-400 font-mono mb-2 flex items-center gap-2">
-                <Instagram size={14} />
-                Instagram
-              </label>
-              <input
-                type="url"
-                value={instagram}
-                onChange={(e) => setInstagram(e.target.value)}
-                placeholder="https://instagram.com/username"
-                className="w-full px-4 py-2 bg-black/40 border border-zinc-800/60 rounded-md text-zinc-200 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50 transition-colors"
-              />
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-[10px] text-zinc-500 font-mono uppercase tracking-tight ml-1 flex items-center gap-2">
+                  <Instagram size={14} className="text-pink-500" />
+                  Instagram
+                </label>
+                <Input
+                  type="url"
+                  value={instagram}
+                  onChange={(e) => setInstagram(e.target.value)}
+                  placeholder="https://instagram.com/username"
+                  className="bg-zinc-900/50 border-zinc-800 focus:border-brand-cyan/30"
+                />
+              </div>
 
-            <div>
-              <label className="block text-xs text-zinc-400 font-mono mb-2 flex items-center gap-2">
-                <Youtube size={14} />
-                YouTube
-              </label>
-              <input
-                type="url"
-                value={youtube}
-                onChange={(e) => setYoutube(e.target.value)}
-                placeholder="https://youtube.com/@channel"
-                className="w-full px-4 py-2 bg-black/40 border border-zinc-800/60 rounded-md text-zinc-200 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50 transition-colors"
-              />
-            </div>
+              <div className="space-y-2">
+                <label className="text-[10px] text-zinc-500 font-mono uppercase tracking-tight ml-1 flex items-center gap-2">
+                  <Youtube size={14} className="text-red-500" />
+                  YouTube
+                </label>
+                <Input
+                  type="url"
+                  value={youtube}
+                  onChange={(e) => setYoutube(e.target.value)}
+                  placeholder="https://youtube.com/@channel"
+                  className="bg-zinc-900/50 border-zinc-800 focus:border-brand-cyan/30"
+                />
+              </div>
 
-            <div>
-              <label className="block text-xs text-zinc-400 font-mono mb-2 flex items-center gap-2">
-                <Twitter size={14} />
-                X (Twitter)
-              </label>
-              <input
-                type="url"
-                value={x}
-                onChange={(e) => setX(e.target.value)}
-                placeholder="https://x.com/username"
-                className="w-full px-4 py-2 bg-black/40 border border-zinc-800/60 rounded-md text-zinc-200 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50 transition-colors"
-              />
-            </div>
+              <div className="space-y-2">
+                <label className="text-[10px] text-zinc-500 font-mono uppercase tracking-tight ml-1 flex items-center gap-2">
+                  <Twitter size={14} className="text-blue-400" />
+                  X (Twitter)
+                </label>
+                <Input
+                  type="url"
+                  value={x}
+                  onChange={(e) => setX(e.target.value)}
+                  placeholder="https://x.com/username"
+                  className="bg-zinc-900/50 border-zinc-800 focus:border-brand-cyan/30"
+                />
+              </div>
 
-            <div>
-              <label className="block text-xs text-zinc-400 font-mono mb-2 flex items-center gap-2">
-                <Globe size={14} />
-                Website
-              </label>
-              <input
-                type="url"
-                value={website}
-                onChange={(e) => setWebsite(e.target.value)}
-                placeholder="https://yourwebsite.com"
-                className="w-full px-4 py-2 bg-black/40 border border-zinc-800/60 rounded-md text-zinc-200 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50 transition-colors"
-              />
+              <div className="space-y-2">
+                <label className="text-[10px] text-zinc-500 font-mono uppercase tracking-tight ml-1 flex items-center gap-2">
+                  <Globe size={14} className="text-brand-cyan" />
+                  Website
+                </label>
+                <Input
+                  type="url"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  placeholder="https://yourwebsite.com"
+                  className="bg-zinc-900/50 border-zinc-800 focus:border-brand-cyan/30"
+                />
+              </div>
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 bg-zinc-900 border-t border-zinc-800/60 p-6 flex items-center justify-end gap-3">
-          <button
+        <div className="p-6 border-t border-zinc-800/60 bg-zinc-900/20 backdrop-blur-sm flex items-center justify-end gap-3">
+          <Button
+            variant="ghost"
             onClick={onClose}
-            className="px-4 py-2 bg-transparent border border-zinc-800/60 text-zinc-400 hover:text-zinc-300 hover:border-zinc-700/60 rounded-md text-sm font-mono transition-colors"
+            className="font-mono text-zinc-400 hover:text-zinc-200"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="brand"
             onClick={handleSave}
             disabled={isSaving || isUploadingCover}
-            className="px-4 py-2 bg-brand-cyan/20 border border-[brand-cyan]/40 text-brand-cyan hover:bg-brand-cyan/30 disabled:opacity-50 disabled:cursor-not-allowed rounded-md text-sm font-mono transition-colors flex items-center gap-2"
+            className="min-w-[140px]"
           >
             {isSaving ? (
               <>
-                <GlitchLoader size={14} />
+                <GlitchLoader size={14} className="mr-2" />
                 Saving...
               </>
             ) : (
               'Save Changes'
             )}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
