@@ -7,7 +7,7 @@ import dotenv from 'dotenv';
   if (typeof process === 'undefined' || !process.versions?.node || typeof process.cwd !== 'function') {
     return; // Skip in browser environment
   }
-  
+
   try {
     // Use a simple path construction to avoid importing path module
     // This avoids bundling issues in Vite builds
@@ -122,9 +122,9 @@ const _performConnection = async (): Promise<Db> => {
   const DB_NAME = getDbName();
 
   // Check if using local MongoDB or MongoDB Atlas
-  const isLocalMongoDB = MONGODB_URI?.startsWith('mongodb://localhost') || 
-                         MONGODB_URI?.startsWith('mongodb://127.0.0.1') ||
-                         MONGODB_URI === 'mongodb://localhost:27017';
+  const isLocalMongoDB = MONGODB_URI?.startsWith('mongodb://localhost') ||
+    MONGODB_URI?.startsWith('mongodb://127.0.0.1') ||
+    MONGODB_URI === 'mongodb://localhost:27017';
   const isAtlasMongoDB = MONGODB_URI?.startsWith('mongodb+srv://');
 
   // Debug: Log connection info (without exposing password)
@@ -183,32 +183,44 @@ const _performConnection = async (): Promise<Db> => {
     // Create new client if needed
     if (!client) {
       client = new MongoClient(MONGODB_URI, clientOptions);
-      
+
       // Connect with timeout
       const connectPromise = client.connect();
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error('Connection timeout')), clientOptions.connectTimeoutMS);
       });
-      
+
       await Promise.race([connectPromise, timeoutPromise]);
-      
+
+
       // Test the connection with a simple command (with timeout)
       const pingPromise = client.db('admin').command({ ping: 1 });
       const pingTimeout = new Promise((_, reject) => {
         setTimeout(() => reject(new Error('Ping timeout')), 5000);
       });
-      
+
       await Promise.race([pingPromise, pingTimeout]);
-      
+
       db = client.db(DB_NAME);
       console.log(`✅ Connected to MongoDB: ${DB_NAME}`);
+    } else {
+      // Client exists and is valid (pinged successfully or skipped ping check logic flaw fixed above)
+      // Ensure db is set even if we reused the client
+      if (!db && client) {
+        db = client.db(DB_NAME);
+        console.log(`✅ Reusing MongoDB client for DB: ${DB_NAME}`);
+      }
     }
-    
-    return db!;
+
+    if (!db) {
+      throw new Error('Database initialization failed');
+    }
+
+    return db;
   } catch (error) {
     const errorMessage = getErrorMessage(error);
     console.error('❌ MongoDB connection error:', errorMessage);
-    
+
     // Reset connection state on error
     if (client) {
       try {
@@ -219,7 +231,7 @@ const _performConnection = async (): Promise<Db> => {
       client = null;
       db = null;
     }
-    
+
     // Additional debugging info
     if (error instanceof MongoServerError) {
       console.error('Error details:');
@@ -227,7 +239,7 @@ const _performConnection = async (): Promise<Db> => {
       console.error('  - CodeName:', error.codeName);
       console.error('  - Error Message:', error.message);
     }
-    
+
     throw new Error(errorMessage);
   }
 };

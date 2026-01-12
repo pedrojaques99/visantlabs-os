@@ -76,6 +76,10 @@ const processWebhookEvent = async (event: Stripe.Event): Promise<void> => {
     // Connect to MongoDB and get db instance directly
     const db = await connectToMongoDB();
 
+    if (!db) {
+      throw new Error('Database connection failed');
+    }
+
     // Process webhook events
     switch (event.type) {
       case 'checkout.session.completed': {
