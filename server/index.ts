@@ -24,6 +24,7 @@ dotenv.config({ path: '.env.local' });
 dotenv.config(); // Fallback to .env if .env.local doesn't exist
 
 const app = express();
+app.set('trust proxy', 1); // Trust first proxy (Vercel/Nginx)
 const PORT = process.env.PORT || 3001;
 
 // Middleware
