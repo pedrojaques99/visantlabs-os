@@ -11,6 +11,17 @@ const getAuthHeaders = () => {
   };
 };
 
+export interface MockupSetupAnalysis {
+  branding: string[];
+  categories: string[];
+  locations: string[];
+  angles: string[];
+  lighting: string[];
+  effects: string[];
+  materials: string[];
+  designType: 'logo' | 'layout';
+}
+
 export const aiApi = {
   /**
    * Improve a text prompt using AI
@@ -67,6 +78,21 @@ export const aiApi = {
 
     const data = await response.json();
     return data.categories;
+  },
+
+  async analyzeSetup(baseImage: UploadedImage): Promise<MockupSetupAnalysis> {
+    const response = await fetch(`${API_BASE_URL}/ai/analyze-setup`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ baseImage }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Failed to analyze setup' }));
+      throw new Error(error.error || 'Failed to analyze setup');
+    }
+
+    return await response.json();
   },
 
   /**

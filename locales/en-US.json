@@ -146,11 +146,14 @@
       "name": "Canvas",
       "description": "Visual flow-based image editor"
     },
+    "badge": {
+      "free": "Free"
+    },
     "home": "Home"
   },
   "surpriseMeSettings": {
     "title": "Surprise Me Settings",
-    "info": "Select tags to exclude when using Surprise Me. Excluded tags will not be randomly selected.",
+    "info": "Choose which tags you want to include when using Surprise Me. Unselected tags will be excluded from random generations.",
     "categories": "Categories",
     "categoriesDescription": "Mockup categories",
     "locations": "Locations",
@@ -171,6 +174,8 @@
     "loading": "Loading...",
     "verifyingAuth": "Verifying authentication...",
     "cancel": "Cancel",
+    "month": "month",
+    "year": "year",
     "back": "Back",
     "close": "Close",
     "save": "Save",
@@ -547,7 +552,8 @@
     "exploreMockups": "explore mockups",
     "by": "by",
     "brand": "visant labs®",
-    "pasteTip": "Tip: You can press ctrl+v to paste images"
+    "pasteTip": "Tip: You can press ctrl+v to paste images",
+    "viewAllApps": "View All Apps"
   },
   "upload": {
     "clickToUpload": "Click to upload, drag & drop, or paste",
@@ -682,7 +688,18 @@
     "surpriseMe": "Surprise Me!",
     "surpriseMeTooltip": "Randomly select branding, categories, and styles for quick inspiration!",
     "surpriseMeSettings": "Surprise Me Settings",
-    "surpriseMeSettingsTooltip": "Configure which tags to exclude from Surprise Me",
+    "surpriseMeSettingsTooltip": "Configure which tags to choose in Surprise Me",
+    "surpriseMePresets": "Surprise Me Presets",
+    "saveAsPreset": "Save as Preset",
+    "presetName": "Preset Name",
+    "presetNamePlaceholder": "Ex: Minimalist Dark",
+    "savePreset": "Save Preset",
+    "loadPreset": "Load Preset",
+    "deletePreset": "Delete Preset",
+    "presetSaved": "Preset saved successfully!",
+    "presetDeleted": "Preset deleted successfully!",
+    "confirmDeletePreset": "Are you sure you want to delete this preset?",
+    "noPresets": "No presets saved yet",
     "autoGenerate": "Auto generate",
     "autoGenerateTooltip": "Skip prompt generation and directly generate outputs (default 2 outputs)",
     "newAngles": "New Angles",
@@ -696,6 +713,7 @@
     "categories": "3. CATEGORIES_",
     "categoriesComment": "// Choose one category to apply your design.",
     "aiSuggested": "// AI Suggested:",
+    "suggestedColors": "// SUGGESTED COLORS",
     "allCategories": "// ALL_CATEGORIES",
     "orAddCustomCategory": "Or add a custom category...",
     "customCategoryLabel": "Custom",
@@ -717,6 +735,7 @@
     "cameraAngle": "// CAMERA_ANGLE",
     "lightingMood": "// LIGHTING_MOOD",
     "visualEffects": "// VISUAL_EFFECTS",
+    "material": "// MATERIAL",
     "negativePrompt": "// NEGATIVE PROMPT (AVOID...)",
     "negativePromptPlaceholder": "e.g., text, people, watermarks, blurry",
     "additionalPrompt": "// ADDITIONAL PROMPT (MUST HAVE...)",
@@ -755,6 +774,14 @@
     "generatingOutputsShort": "GENERATING",
     "outputsShort": "OUTPUTS",
     "promptShort": "PROMPT",
+    "analyzeImage": "ANALYZE IMAGE",
+    "analyzingImage": "ANALYZING IMAGE...",
+    "analysisStatusMessages": [
+      "scanning colors and contrast",
+      "identifying visual style",
+      "detecting categories",
+      "optimizing suggestions"
+    ],
     "promptStatusMessages": [
       "understanding your design",
       "searching for the best visual solutions",
@@ -776,6 +803,14 @@
     "clearAll": "CLEAR ALL",
     "creditsWillBeUsed": "{count} credit{plural} will be used",
     "creditsRequired": "Credits Required",
+    "startOver": "Start Over",
+    "showSidebar": "Show sidebar",
+    "closeSidebar": "Close sidebar",
+    "openSidebar": "Open Panel",
+    "openSidebarTooltip": "Open control panel",
+    "floatingGeneratePrompt": "Generate Prompt",
+    "floatingSurpriseMe": "Surprise Me",
+    "surpriseMeAgain": "Click again for different tags",
     "startOver": "Start Over",
     "showSidebar": "Show sidebar",
     "closeSidebar": "Close sidebar"
@@ -811,7 +846,8 @@
     "creditsLabel": "Credits",
     "buyCredits": "Buy",
     "creditsNote": "Credits never expire and can be used at any time",
-    "oneTimePayment": "One-time payment"
+    "oneTimePayment": "One-time payment",
+    "noPlansFound": "No plans available at the moment."
   },
   "subscription": {
     "upgradeToPremium": "UPGRADE TO PREMIUM",
@@ -871,18 +907,21 @@
     "credits": "Credits",
     "buy": "Buy",
     "note": "Credits never expire and can be used at any time",
-    "purchaseSuccess": "Credits added successfully!"
+    "purchaseSuccess": "Credits added successfully!",
+    "viewPlans": "View subscription plans"
   },
   "thankYou": {
     "title": "Thank You for Subscribing!",
     "subtitle": "Your subscription has been successfully activated",
-    "subscriptionActive": "Premium Subscription Active",
+    "subscriptionActive": "{plan} Subscription Active",
     "whatsNext": "What you can do now:",
-    "benefit1": "{credits} mockup generations per month",
+    "benefit1": "{credits} credits per {interval}",
     "benefit2": "Unlimited prompts for your creations",
     "benefit3": "Access to all premium features",
+    "benefitPro": "Priority Support and 20GB Storage",
+    "benefitVision": "Fast Support and 100GB Storage",
     "creditsAvailable": "Credits available",
-    "getStarted": "Start Creating",
+    "getStarted": "Get Started",
     "support": "Need help? Contact us."
   },
   "creditRechargeSuccess": {
@@ -1029,7 +1068,8 @@
     "bySigningUp": "By signing up, you agree to our",
     "termsOfService": "Terms of Service",
     "and": "and",
-    "privacyPolicy": "Privacy Policy"
+    "privacyPolicy": "Privacy Policy",
+    "loginRequired": "Please login to like workflows"
   },
   "configuration": {
     "title": "Configuration",
@@ -2410,6 +2450,8 @@
     },
     "imageNode": {
       "noImage": "No image",
+      "collapse": "Collapse",
+      "expand": "Expand",
       "uploadImage": "Upload an image",
       "uploadImageTitle": "Upload Image",
       "copyDescription": "Copy description",
@@ -2928,6 +2970,7 @@
     "users": "Users",
     "presets": "Presets",
     "designSystem": "Design System",
+    "products": "Products",
     "dashboard": "Dashboard",
     "generations": "Generations",
     "refresh": "Refresh",
@@ -3235,18 +3278,22 @@
     }
   },
   "workflows": {
+    "importWorkflow": "Import Workflow",
     "library": {
       "title": "Workflow Library",
       "description": "Browse and load reusable workflow templates",
+      "search": "Search workflows...",
+      "noResults": "No workflows found",
+      "noWorkflows": "No workflows yet",
+      "noCommunityWorkflows": "No community workflows available",
+      "loadWorkflow": "Load Workflow",
+      "createWorkflow": "Create Workflow",
+      "createNewWorkflow": "Create New Workflow",
       "tabs": {
         "my": "My Workflows",
         "community": "Community",
         "all": "All"
-      },
-      "search": "Search workflows...",
-      "noResults": "No workflows found",
-      "noWorkflows": "No workflows yet",
-      "noCommunityWorkflows": "No community workflows available"
+      }
     },
     "saveDialog": {
       "title": "Save Workflow",
@@ -3255,6 +3302,7 @@
       "namePlaceholder": "e.g., Brand Identity Workflow",
       "descriptionPlaceholder": "Describe what this workflow does...",
       "category": "Category",
+      "all": "All",
       "tags": "Tags",
       "tagsPlaceholder": "e.g., branding, logo, identity (comma-separated)",
       "tagsHint": "Separate tags with commas",
@@ -3287,7 +3335,8 @@
       "unliked": "Workflow unliked",
       "duplicated": "Workflow added to your library!",
       "deleted": "Workflow deleted",
-      "saved": "Workflow saved successfully!"
+      "saved": "Workflow saved successfully!",
+      "loaded": "Workflow loaded: {name}"
     },
     "errors": {
       "failedToLoad": "Failed to load workflows",
@@ -3296,9 +3345,23 @@
       "failedToDuplicate": "Failed to duplicate workflow",
       "failedToDelete": "Failed to delete workflow",
       "failedToSave": "Failed to save workflow"
+    },
+    "edit": {
+      "title": "Edit Workflow",
+      "description": "Edit your canvas as a reusable workflow template",
+      "name": "Workflow Name",
+      "namePlaceholder": "e.g., Brand Identity Workflow",
+      "descriptionPlaceholder": "Describe what this workflow does...",
+      "category": "Category",
+      "all": "All",
+      "tags": "Tags",
+      "tagsPlaceholder": "e.g., branding, logo, identity (comma-separated)",
+      "tagsHint": "Separate tags with commas",
+      "makePublic": "Make Public",
+      "makePublicHint": "Share this workflow with the community (requires approval)",
+      "save": "Save Workflow",
+      "saving": "Saving...",
+      "cancel": "Cancel"
     }
-  },
-  "auth": {
-    "loginRequired": "Please login to like workflows"
   }
 }

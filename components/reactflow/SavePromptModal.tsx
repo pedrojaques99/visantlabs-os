@@ -9,6 +9,8 @@ import { FormTextarea } from '../ui/form-textarea';
 import { authService } from '../../services/authService';
 import { clearCommunityPresetsCache } from '../../services/communityPresetsService';
 import { cn } from '../../lib/utils';
+import { Button } from '../ui/button';
+import { Badge } from '../ui/badge';
 
 interface SavePromptModalProps {
     isOpen: boolean;
@@ -141,23 +143,23 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
             onClick={onClose}
         >
             <div
-                className="relative bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl w-full max-w-lg flex flex-col overflow-hidden animate-slide-up"
+                className="relative bg-zinc-900 border border-zinc-800/60 rounded-xl shadow-2xl w-full max-w-lg flex flex-col overflow-hidden animate-slide-up"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-zinc-800 bg-zinc-900/50">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-brand-cyan/10 rounded-lg">
+                <div className="flex items-center justify-between p-6 border-b border-zinc-800/60 bg-zinc-900/20 backdrop-blur-sm">
+                    <div className="flex items-center gap-4">
+                        <div className="p-2 bg-brand-cyan/10 rounded-lg border border-brand-cyan/20">
                             <Save className="h-5 w-5 text-brand-cyan" />
                         </div>
                         <div>
-                            <h2 className="text-xl font-semibold text-zinc-100 font-mono">Salvar Prompt</h2>
+                            <h2 className="text-lg font-semibold text-zinc-200 font-manrope tracking-tight">Salvar Prompt</h2>
                             <p className="text-xs text-zinc-500 font-mono mt-0.5">Salve seu prompt para reutilizar ou compartilhar</p>
                         </div>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-colors"
+                        className="p-2 rounded-lg hover:bg-zinc-800/50 text-zinc-400 hover:text-zinc-200 transition-all hover:scale-110 active:scale-95"
                     >
                         <X size={20} />
                     </button>
@@ -231,7 +233,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                         </div>
 
                         <div className="pt-2">
-                            <label className="text-xs font-semibold text-zinc-400 font-mono mb-2 uppercase tracking-wider block">
+                            <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest ml-1 mb-2 block">
                                 Tags
                             </label>
                             <div className="flex gap-2">
@@ -245,21 +247,23 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                                         }
                                     }}
                                     placeholder="moderno, arquitetura..."
-                                    className="flex-1"
+                                    className="flex-1 bg-zinc-900/50 border-zinc-800 focus:border-brand-cyan/30"
                                 />
-                                <button
+                                <Button
+                                    variant="secondary"
                                     onClick={addTag}
-                                    className="px-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg text-sm font-mono transition-colors"
+                                    className="px-4 font-mono text-xs"
                                 >
                                     Add
-                                </button>
+                                </Button>
                             </div>
                             {tags.length > 0 && (
-                                <div className="flex flex-wrap gap-2 mt-3">
+                                <div className="flex flex-wrap gap-2 mt-3 ml-1">
                                     {tags.map((tag, idx) => (
-                                        <span
+                                        <Badge
                                             key={idx}
-                                            className="inline-flex items-center gap-1.5 px-2 py-1 bg-zinc-800 border border-zinc-700 rounded-md text-[10px] text-zinc-300 font-mono"
+                                            variant="outline"
+                                            className="px-2 py-0.5 bg-zinc-800/40 border border-zinc-700/30 text-[10px] text-zinc-400 font-mono gap-1.5 group"
                                         >
                                             #{tag}
                                             <button
@@ -268,7 +272,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                                             >
                                                 <X size={10} />
                                             </button>
-                                        </span>
+                                        </Badge>
                                     ))}
                                 </div>
                             )}
@@ -286,30 +290,32 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                 </div>
 
                 {/* Footer */}
-                <div className="p-6 border-t border-zinc-800 bg-zinc-900/50 flex gap-3">
-                    <button
+                <div className="p-6 border-t border-zinc-800/60 bg-zinc-900/20 backdrop-blur-sm flex gap-3">
+                    <Button
+                        variant="ghost"
                         onClick={onClose}
-                        className="px-6 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-sm font-mono transition-all flex-1"
+                        className="flex-1 font-mono text-zinc-400 hover:text-zinc-200"
                     >
                         Cancelar
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                        variant="brand"
                         onClick={handleSave}
                         disabled={isLoading || !name.trim()}
-                        className="px-6 py-2.5 bg-brand-cyan hover:bg-brand-cyan/90 text-black font-bold rounded-xl text-sm font-mono transition-all flex-[1.5] flex items-center justify-center gap-2 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed shadow-lg shadow-brand-cyan/20"
+                        className="flex-[1.5] font-mono shadow-lg shadow-brand-cyan/10"
                     >
                         {isLoading ? (
                             <>
-                                <GlitchLoader size={16} color="black" />
+                                <GlitchLoader size={16} color="black" className="mr-2" />
                                 <span>Salvando...</span>
                             </>
                         ) : (
                             <>
-                                <Sparkles size={16} />
+                                <Sparkles size={16} className="mr-2" />
                                 <span>Salvar Prompt</span>
                             </>
                         )}
-                    </button>
+                    </Button>
                 </div>
             </div>
         </div>

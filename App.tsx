@@ -11,6 +11,10 @@ const MockupMachinePage = lazyWithRetry(() => import('./pages/MockupMachinePage'
 const PricingPage = lazyWithRetry(() => import('./pages/PricingPage').then(m => ({ default: m.PricingPage })));
 const ProfilePage = lazyWithRetry(() => import('./pages/ProfilePage').then(m => ({ default: m.ProfilePage })));
 const ThankYouPage = lazyWithRetry(() => import('./pages/ThankYouPage').then(m => ({ default: m.ThankYouPage })));
+const ThankYouProPage = lazyWithRetry(() => import('./pages/ThankYouProPage').then(m => ({ default: m.ThankYouProPage })));
+const ThankYouProAnualPage = lazyWithRetry(() => import('./pages/ThankYouProAnualPage').then(m => ({ default: m.ThankYouProAnualPage })));
+const ThankYouVisionPage = lazyWithRetry(() => import('./pages/ThankYouVisionPage').then(m => ({ default: m.ThankYouVisionPage })));
+const ThankYouVisionAnualPage = lazyWithRetry(() => import('./pages/ThankYouVisionAnualPage').then(m => ({ default: m.ThankYouVisionAnualPage })));
 const CreditRechargeSuccessPage = lazyWithRetry(() => import('./components/CreditRechargeSuccessPage').then(m => ({ default: m.CreditRechargeSuccessPage })));
 const MockupsPage = lazyWithRetry(() => import('./pages/MockupsPage').then(m => ({ default: m.MockupsPage })));
 const MyOutputsPage = lazyWithRetry(() => import('./pages/MyOutputsPage').then(m => ({ default: m.MyOutputsPage })));
@@ -19,6 +23,7 @@ const CanvasProjectsPage = lazyWithRetry(() => import('./pages/CanvasProjectsPag
 const CanvasSharedPage = lazyWithRetry(() => import('./pages/CanvasSharedPage').then(m => ({ default: m.CanvasSharedPage })));
 const AdminPage = lazyWithRetry(() => import('./pages/AdminPage').then(m => ({ default: m.AdminPage })));
 const AdminPresetsPage = lazyWithRetry(() => import('./pages/AdminPresetsPage').then(m => ({ default: m.AdminPresetsPage })));
+const AdminProductsPage = lazyWithRetry(() => import('./pages/AdminProductsPage').then(m => ({ default: m.AdminProductsPage })));
 const CommunityPage = lazyWithRetry(() => import('./pages/CommunityPage').then(m => ({ default: m.CommunityPage })));
 const CommunityPresetsPage = lazyWithRetry(() => import('./pages/CommunityPresetsPage').then(m => ({ default: m.CommunityPresetsPage })));
 const CommunityProfilePage = lazyWithRetry(() => import('./pages/CommunityProfilePage').then(m => ({ default: m.CommunityProfilePage })));
@@ -56,6 +61,10 @@ const App: React.FC = () => {
                 <Route path="/pricing" element={<PricingPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/thank-you" element={<ThankYouPage />} />
+                <Route path="/thank-you-pro" element={<ThankYouProPage />} />
+                <Route path="/thank-you-pro-anual" element={<ThankYouProAnualPage />} />
+                <Route path="/thank-you-vision" element={<ThankYouVisionPage />} />
+                <Route path="/thank-you-vision-anual" element={<ThankYouVisionAnualPage />} />
                 <Route path="/recharge-success" element={<CreditRechargeSuccessPage />} />
                 <Route path="/mockups" element={<MockupsPage />} />
                 <Route path="/my-outputs" element={<MyOutputsPage />} />
@@ -79,6 +88,7 @@ const App: React.FC = () => {
                 <Route path="/editor/*" element={<EditorApp />} />
                 <Route path="/admin" element={<AdminPage />} />
                 <Route path="/admin/presets" element={<AdminPresetsPage />} />
+                <Route path="/admin/products" element={<AdminProductsPage />} />
                 <Route path="/community" element={<CommunityPage />} />
                 <Route path="/community/presets" element={<CommunityPresetsPage />} />
                 <Route path="/profile/:identifier" element={<CommunityProfilePage />} />

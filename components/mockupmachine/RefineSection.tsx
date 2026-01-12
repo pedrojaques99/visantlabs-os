@@ -50,6 +50,12 @@ interface RefineSectionProps {
     onCustomMaterialInputChange: (value: string) => void;
     onAddCustomMaterialTag: () => void;
     designType: DesignType | null;
+    suggestedLocationTags: string[];
+    suggestedAngleTags: string[];
+    suggestedLightingTags: string[];
+    suggestedEffectTags: string[];
+    suggestedMaterialTags: string[];
+    suggestedColors: string[];
   };
 }
 
@@ -67,8 +73,8 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
       <button
         onClick={onToggleAdvanced}
         className={`w-full flex justify-between items-center text-left text-sm font-semibold font-mono uppercase tracking-widest mt-3 p-3 rounded-md border transition-all cursor-pointer ${theme === 'dark'
-            ? 'text-zinc-400 bg-zinc-800/30 border-zinc-700/50 hover:border-zinc-600/80'
-            : 'text-zinc-700 bg-zinc-100 border-zinc-300 hover:border-zinc-400'
+          ? 'text-zinc-400 bg-zinc-800/30 border-zinc-700/50 hover:border-zinc-600/80'
+          : 'text-zinc-700 bg-zinc-100 border-zinc-300 hover:border-zinc-400'
           }`}
       >
         <span>{t('mockup.advancedOptions')}</span>

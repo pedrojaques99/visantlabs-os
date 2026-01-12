@@ -35,7 +35,7 @@ router.post('/improve-prompt', authenticate, async (req: AuthRequest, res, next)
     }
 
     const improvedPrompt = await improvePrompt(prompt, userApiKey);
-    
+
     res.json({ improvedPrompt });
   } catch (error: any) {
     console.error('Error improving prompt:', error);
@@ -74,7 +74,7 @@ router.post('/describe-image', authenticate, async (req: AuthRequest, res, next)
     }
 
     const description = await describeImage(imageInput, userApiKey);
-    
+
     res.json({ description });
   } catch (error: any) {
     console.error('Error describing image:', error);
@@ -107,10 +107,40 @@ router.post('/suggest-categories', authenticate, async (req: AuthRequest, res, n
     }
 
     const categories = await suggestCategories(baseImage as UploadedImage, brandingTags, userApiKey);
-    
+
     res.json({ categories });
   } catch (error: any) {
     console.error('Error suggesting categories:', error);
+    next(error);
+  }
+});
+
+/**
+ * POST /api/ai/analyze-setup
+ * Comprehensive analysis of an image to suggest tags for all mockup sections
+ */
+router.post('/analyze-setup', authenticate, async (req: AuthRequest, res, next) => {
+  try {
+    const { baseImage } = req.body;
+
+    if (!baseImage || !baseImage.base64 || !baseImage.mimeType) {
+      return res.status(400).json({ error: 'Base image is required' });
+    }
+
+    // Try to use user's API key first, fallback to system key
+    let userApiKey: string | undefined;
+    try {
+      userApiKey = await getGeminiApiKey(req.userId!);
+    } catch (error) {
+      // User doesn't have API key
+    }
+
+    const { analyzeMockupSetup } = await import('../../services/geminiService.js');
+    const analysis = await analyzeMockupSetup(baseImage as UploadedImage, userApiKey);
+
+    res.json(analysis);
+  } catch (error: any) {
+    console.error('Error analyzing mockup setup:', error);
     next(error);
   }
 });
@@ -168,7 +198,7 @@ router.post('/generate-smart-prompt', authenticate, async (req: AuthRequest, res
       negativePrompt: negativePrompt || '',
       additionalPrompt: additionalPrompt || '',
     }, userApiKey);
-    
+
     res.json(result);
   } catch (error: any) {
     console.error('Error generating smart prompt:', error);
@@ -197,7 +227,7 @@ router.post('/suggest-prompt-variations', authenticate, async (req: AuthRequest,
     }
 
     const variations = await suggestPromptVariations(prompt, userApiKey);
-    
+
     res.json({ variations });
   } catch (error: any) {
     console.error('Error suggesting prompt variations:', error);
@@ -237,7 +267,7 @@ router.post('/change-object', authenticate, async (req: AuthRequest, res, next) 
       undefined, // onRetry
       userApiKey
     );
-    
+
     res.json({ imageBase64 });
   } catch (error: any) {
     console.error('Error changing object:', error);
@@ -277,7 +307,7 @@ router.post('/apply-theme', authenticate, async (req: AuthRequest, res, next) =>
       undefined, // onRetry
       userApiKey
     );
-    
+
     res.json({ imageBase64 });
   } catch (error: any) {
     console.error('Error applying theme:', error);

@@ -4,6 +4,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useTheme } from '../../hooks/useTheme';
 import { translateTag } from '../../utils/localeUtils';
 import { Button } from '../ui/button';
+import { Badge } from '../ui/badge';
 import { Input } from '../ui/input';
 import { cn } from '../../lib/utils';
 
@@ -15,6 +16,7 @@ interface BrandingSectionProps {
   onCustomInputChange: (value: string) => void;
   onAddCustomTag: () => void;
   isComplete: boolean;
+  suggestedTags?: string[];
 }
 
 export const BrandingSection: React.FC<BrandingSectionProps> = ({
@@ -24,7 +26,8 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
   customInput,
   onCustomInputChange,
   onAddCustomTag,
-  isComplete
+  isComplete,
+  suggestedTags = []
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
@@ -100,44 +103,46 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
         <div className="flex flex-wrap gap-2 cursor-pointer">
           {tags.map(tag => {
             const isSelected = selectedTags.includes(tag);
+            const isSuggested = suggestedTags.includes(tag);
             const limitReached = selectedTags.length >= 3;
             const isDisabled = limitReached && !isSelected;
 
             return (
-              <Button
+              <Badge
                 key={tag}
                 onClick={() => onTagToggle(tag)}
-                disabled={isDisabled}
                 variant="outline"
-                size="sm"
                 className={cn(
-                  "text-xs font-medium transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0",
+                  "text-xs font-medium transition-all duration-200 cursor-pointer",
                   isSelected
                     ? theme === 'dark'
                       ? 'bg-brand-cyan/20 text-brand-cyan border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
                       : 'bg-brand-cyan/20 text-zinc-800 border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
                     : theme === 'dark'
-                      ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
-                      : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'
+                      ? isSuggested
+                        ? 'bg-zinc-800/80 text-zinc-300 border-brand-cyan/50 hover:border-brand-cyan/70 hover:text-white animate-pulse-subtle'
+                        : 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
+                      : isSuggested
+                        ? 'bg-brand-cyan/10 text-zinc-800 border-brand-cyan/50 shadow-sm shadow-brand-cyan/5 animate-pulse-subtle'
+                        : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900',
+                  isDisabled && 'opacity-40 cursor-not-allowed'
                 )}
               >
                 {translateTag(tag)}
-              </Button>
+              </Badge>
             );
           })}
           {!isComplete && (
             !isEditingCustom ? (
-              <Button
+              <Badge
                 onClick={handleCustomTagClick}
-                disabled={limitReached}
                 variant="outline"
-                size="sm"
                 className={cn(
-                  "text-xs font-medium transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0",
+                  "text-xs font-medium transition-all duration-200 gap-1 cursor-pointer",
                   limitReached
                     ? theme === 'dark'
-                      ? 'opacity-40 bg-zinc-800/50 text-zinc-400 border-zinc-700/50'
-                      : 'opacity-40 bg-zinc-100 text-zinc-500 border-zinc-300'
+                      ? 'opacity-40 bg-zinc-800/50 text-zinc-400 border-zinc-700/50 cursor-not-allowed'
+                      : 'opacity-40 bg-zinc-100 text-zinc-500 border-zinc-300 cursor-not-allowed'
                     : theme === 'dark'
                       ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
                       : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'
@@ -145,7 +150,7 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
               >
                 <Plus size={14} />
                 <span>{t('mockup.customTagLabel')}</span>
-              </Button>
+              </Badge>
             ) : (
               <Input
                 ref={inputRef}

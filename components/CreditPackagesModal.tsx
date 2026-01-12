@@ -336,6 +336,16 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 {t('pix.payWithPix') || 'Pagar com PIX'}
                               </button>
                             )}
+
+                            <button
+                              onClick={() => {
+                                onClose();
+                                navigate('/pricing');
+                              }}
+                              className="w-full mt-2 px-6 py-2 text-zinc-500 hover:text-brand-cyan text-xs font-mono transition-colors flex items-center justify-center gap-2 hover:bg-zinc-800/30 rounded-md"
+                            >
+                              {t('creditsPackages.viewPlans') || 'View Subscription Plans'}
+                            </button>
                           </div>
                         </div>
                       </div>

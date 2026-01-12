@@ -1,5 +1,5 @@
 import React from 'react';
-import { ExternalLink, Github, Users, Building2, Lightbulb, Code, Info } from 'lucide-react';
+import { ExternalLink, Github, Users, Building2, Lightbulb, Code, Info, Layers } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from '../hooks/useTranslation';
 import { useTheme } from '../hooks/useTheme';
@@ -155,6 +155,14 @@ export const AboutPage: React.FC = () => {
                     <span>{t('about.links.alphaTests')}</span>
                     <ExternalLink className="w-3 h-3" />
                   </a>
+
+                  <Link
+                    to="/apps"
+                    className="flex items-center gap-2 px-4 py-2 rounded-md transition-all duration-300 font-mono text-sm hover:scale-[1.02] active:scale-95 bg-zinc-800/50 hover:bg-zinc-800/70 text-zinc-300 border border-zinc-700 hover:border-brand-cyan/50"
+                  >
+                    <span>{t('welcome.viewAllApps')}</span>
+                    <Layers className="w-3 h-3" />
+                  </Link>
                 </div>
               </div>
             </div>

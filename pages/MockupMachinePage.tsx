@@ -7,9 +7,11 @@ import { MockupDisplay } from '../components/mockupmachine/MockupDisplay';
 import { FullScreenViewer } from '../components/FullScreenViewer';
 import { WelcomeScreen } from './WelcomeScreen';
 import { SidebarOrchestrator } from '../components/SidebarOrchestrator';
+import { FloatingActionButtons } from '../components/mockupmachine/FloatingActionButtons';
 import { GenerateButton } from '../components/ui/GenerateButton';
 import { ConfirmationModal } from '../components/ConfirmationModal';
 import { Button } from '../components/ui/button';
+import { AnalyzingImageOverlay } from '../components/ui/AnalyzingImageOverlay';
 import { aiApi } from '../services/aiApi';
 import { RateLimitError, ModelOverloadedError } from '../services/geminiService';
 import { getCreditsRequired } from '../utils/creditCalculator';
@@ -33,7 +35,9 @@ import type { TexturePreset } from '../types/texturePresets';
 import type { AmbiencePreset } from '../types/ambiencePresets';
 import type { LuminancePreset } from '../types/luminancePresets';
 import { SurpriseMeSettingsModal } from '../components/SurpriseMeSettingsModal';
-import { getSurpriseMeExcludedTags } from '../utils/surpriseMeSettings';
+import { getSurpriseMeSelectedTags } from '../utils/surpriseMeSettings';
+import { MockupProvider, useMockup } from '../components/mockupmachine/MockupContext';
+import { useMockupTags } from '../hooks/useMockupTags';
 
 const MOCKUP_COUNT = 2;
 
@@ -63,59 +67,93 @@ import {
 
 
 export const MockupMachinePage: React.FC = () => {
+  return (
+    <MockupProvider>
+      <MockupMachinePageContent />
+    </MockupProvider>
+  );
+};
+
+const MockupMachinePageContent: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { subscriptionStatus, isAuthenticated, isCheckingAuth, onSubscriptionModalOpen, onCreditPackagesModalOpen, setSubscriptionStatus, registerUnsavedOutputsHandler, registerResetHandler } = useLayout();
 
-  const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(null);
-  const [referenceImage, setReferenceImage] = useState<UploadedImage | null>(null);
-  const [referenceImages, setReferenceImages] = useState<UploadedImage[]>([]);
-  const [isImagelessMode, setIsImagelessMode] = useState(false);
-  const [selectedModel, setSelectedModel] = useState<GeminiModel | null>(null);
-  const [resolution, setResolution] = useState<Resolution>('1K');
-  const [designType, setDesignType] = useState<DesignType | null>(null);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [selectedBrandingTags, setSelectedBrandingTags] = useState<string[]>([]);
-  const [mockupCount, setMockupCount] = useState<number>(MOCKUP_COUNT);
-  const [mockups, setMockups] = useState<(string | null)[]>(Array(MOCKUP_COUNT).fill(null));
-  const [isLoading, setIsLoading] = useState<boolean[]>(Array(MOCKUP_COUNT).fill(false));
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [isGeneratingPrompt, setIsGeneratingPrompt] = useState(false);
-  const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
-  const [generateText, setGenerateText] = useState<boolean>(false);
-  const [withHuman, setWithHuman] = useState<boolean>(false);
-  const [enhanceTexture, setEnhanceTexture] = useState<boolean>(false);
-  const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
-  const [promptPreview, setPromptPreview] = useState<string>('');
-  const [negativePrompt, setNegativePrompt] = useState<string>('');
-  const [additionalPrompt, setAdditionalPrompt] = useState<string>('');
-  const [fullScreenImageIndex, setFullScreenImageIndex] = useState<number | null>(null);
-  const [hasGenerated, setHasGenerated] = useState<boolean>(false);
-  const [isSmartPromptActive, setIsSmartPromptActive] = useState<boolean>(true);
-  const [isPromptManuallyEdited, setIsPromptManuallyEdited] = useState<boolean>(false);
-  const [isPromptReady, setIsPromptReady] = useState<boolean>(false);
-  const promptWasReadyBeforeEditRef = useRef<boolean>(false);
+  const {
+    uploadedImage, setUploadedImage,
+    referenceImage, setReferenceImage,
+    referenceImages, setReferenceImages,
+    isImagelessMode, setIsImagelessMode,
+    selectedModel, setSelectedModel,
+    resolution, setResolution,
+    designType, setDesignType,
+    selectedTags, setSelectedTags,
+    selectedBrandingTags, setSelectedBrandingTags,
+    mockupCount, setMockupCount,
+    mockups, setMockups,
+    isLoading, setIsLoading,
+    isAnalyzing, setIsAnalyzing,
+    isGeneratingPrompt, setIsGeneratingPrompt,
+    suggestedTags, setSuggestedTags,
+    generateText, setGenerateText,
+    withHuman, setWithHuman,
+    enhanceTexture, setEnhanceTexture,
+    aspectRatio, setAspectRatio,
+    promptPreview, setPromptPreview,
+    negativePrompt, setNegativePrompt,
+    additionalPrompt, setAdditionalPrompt,
+    fullScreenImageIndex, setFullScreenImageIndex,
+    hasGenerated, setHasGenerated,
+    isSmartPromptActive, setIsSmartPromptActive,
+    isPromptManuallyEdited, setIsPromptManuallyEdited,
+    isPromptReady, setIsPromptReady,
+    isAdvancedOpen, setIsAdvancedOpen,
+    isAllCategoriesOpen, setIsAllCategoriesOpen,
+    selectedLocationTags, setSelectedLocationTags,
+    selectedAngleTags, setSelectedAngleTags,
+    selectedLightingTags, setSelectedLightingTags,
+    selectedEffectTags, setSelectedEffectTags,
+    selectedMaterialTags, setSelectedMaterialTags,
+    selectedColors, setSelectedColors,
+    colorInput, setColorInput,
+    isValidColor, setIsValidColor,
+    isSuggestingPrompts, setIsSuggestingPrompts,
+    promptSuggestions, setPromptSuggestions,
+    suggestedBrandingTags, setSuggestedBrandingTags,
+    suggestedLocationTags, setSuggestedLocationTags,
+    suggestedAngleTags, setSuggestedAngleTags,
+    suggestedLightingTags, setSuggestedLightingTags,
+    suggestedEffectTags, setSuggestedEffectTags,
+    suggestedMaterialTags, setSuggestedMaterialTags,
+    suggestedColors, setSuggestedColors,
+    customBrandingInput, setCustomBrandingInput,
+    customCategoryInput, setCustomCategoryInput,
+    customLocationInput, setCustomLocationInput,
+    customAngleInput, setCustomAngleInput,
+    customLightingInput, setCustomLightingInput,
+    customEffectInput, setCustomEffectInput,
+    customMaterialInput, setCustomMaterialInput,
+    resetAll,
+    hasAnalyzed,
+    setHasAnalyzed
+  } = useMockup();
 
-  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
-  const [isAllCategoriesOpen, setIsAllCategoriesOpen] = useState<boolean>(false);
-  const [selectedLocationTags, setSelectedLocationTags] = useState<string[]>([]);
-  const [selectedAngleTags, setSelectedAngleTags] = useState<string[]>([]);
-  const [selectedLightingTags, setSelectedLightingTags] = useState<string[]>([]);
-  const [selectedEffectTags, setSelectedEffectTags] = useState<string[]>([]);
-  const [selectedMaterialTags, setSelectedMaterialTags] = useState<string[]>([]);
-  const [selectedColors, setSelectedColors] = useState<string[]>([]);
-  const [colorInput, setColorInput] = useState('');
-  const [isValidColor, setIsValidColor] = useState(false);
-  const [isSuggestingPrompts, setIsSuggestingPrompts] = useState(false);
-  const [promptSuggestions, setPromptSuggestions] = useState<string[]>([]);
-  const [customBrandingInput, setCustomBrandingInput] = useState('');
-  const [customCategoryInput, setCustomCategoryInput] = useState('');
-  const [customLocationInput, setCustomLocationInput] = useState('');
-  const [customAngleInput, setCustomAngleInput] = useState('');
-  const [customLightingInput, setCustomLightingInput] = useState('');
-  const [customEffectInput, setCustomEffectInput] = useState('');
-  const [customMaterialInput, setCustomMaterialInput] = useState('');
+  const {
+    handleTagToggle,
+    handleBrandingTagToggle,
+    handleLocationTagToggle,
+    handleAngleTagToggle,
+    handleLightingTagToggle,
+    handleEffectTagToggle,
+    handleMaterialTagToggle,
+    handleAddCustomBrandingTag,
+    handleAddCustomCategoryTag,
+    handleRandomizeCategories,
+    scrollToSection
+  } = useMockupTags();
+
+  const promptWasReadyBeforeEditRef = useRef<boolean>(false);
   const [showWelcome, setShowWelcome] = useState(true);
   const [shouldAutoGenerate, setShouldAutoGenerate] = useState(false);
   const [autoGenerateSource, setAutoGenerateSource] = useState<'surprise' | 'angles' | 'environments' | null>(null);
@@ -204,6 +242,14 @@ export const MockupMachinePage: React.FC = () => {
         setEnhanceTexture(persistedState.enhanceTexture ?? false);
         setNegativePrompt(persistedState.negativePrompt);
         setAdditionalPrompt(persistedState.additionalPrompt);
+        setSuggestedTags(persistedState.suggestedTags || []);
+        setSuggestedBrandingTags(persistedState.suggestedBrandingTags || []);
+        setSuggestedLocationTags(persistedState.suggestedLocationTags || []);
+        setSuggestedAngleTags(persistedState.suggestedAngleTags || []);
+        setSuggestedLightingTags(persistedState.suggestedLightingTags || []);
+        setSuggestedEffectTags(persistedState.suggestedEffectTags || []);
+        setSuggestedMaterialTags(persistedState.suggestedMaterialTags || []);
+        setSuggestedColors(persistedState.suggestedColors || []);
 
         // Hide welcome screen and show mockups
         setShowWelcome(false);
@@ -273,6 +319,7 @@ export const MockupMachinePage: React.FC = () => {
       !referenceImage &&
       mockups.every(m => m === null) &&
       !isImagelessMode &&
+      isPromptReady &&
       designType !== 'blank' &&
       !hasGenerated &&
       !hasAnyMockups) {
@@ -285,9 +332,9 @@ export const MockupMachinePage: React.FC = () => {
 
   // Save state to localStorage when mockups are generated (with debounce)
   useEffect(() => {
-    // Only save if there are generated mockups
+    // Save if there are generated mockups OR if an image has been uploaded (to persist analysis)
     const hasAnyMockups = mockups.some(m => m !== null);
-    if (!hasAnyMockups || !hasGenerated) return;
+    if (!hasAnyMockups && !uploadedImage && !hasGenerated) return;
 
     const timeoutId = setTimeout(async () => {
       try {
@@ -315,6 +362,14 @@ export const MockupMachinePage: React.FC = () => {
           enhanceTexture,
           negativePrompt,
           additionalPrompt,
+          suggestedTags,
+          suggestedBrandingTags,
+          suggestedLocationTags,
+          suggestedAngleTags,
+          suggestedLightingTags,
+          suggestedEffectTags,
+          suggestedMaterialTags,
+          suggestedColors,
         });
       } catch (error) {
         // Silently fail - don't break UX if localStorage fails
@@ -349,6 +404,15 @@ export const MockupMachinePage: React.FC = () => {
     enhanceTexture,
     negativePrompt,
     additionalPrompt,
+    isPromptReady,
+    suggestedTags,
+    suggestedBrandingTags,
+    suggestedLocationTags,
+    suggestedAngleTags,
+    suggestedLightingTags,
+    suggestedEffectTags,
+    suggestedMaterialTags,
+    suggestedColors,
   ]);
 
   const buildPrompt = useCallback(() => {
@@ -735,74 +799,6 @@ export const MockupMachinePage: React.FC = () => {
     setUploadedImage(null);
   }, [isAuthenticated, mockupCount]);
 
-  const scrollToSection = (sectionId: string) => {
-    setTimeout(() => {
-      const section = document.getElementById(sectionId);
-      const sidebar = document.getElementById('sidebar');
-      if (section && sidebar) {
-        const sidebarRect = sidebar.getBoundingClientRect();
-        const elementRect = section.getBoundingClientRect();
-        const relativeTop = elementRect.top - sidebarRect.top + sidebar.scrollTop;
-
-        sidebar.scrollTo({
-          top: relativeTop - 20,
-          behavior: 'smooth'
-        });
-      }
-    }, 150);
-  };
-
-  const handleTagToggle = (tag: string) => {
-    const wasEmpty = selectedTags.length === 0;
-    setSelectedTags(prev => prev.includes(tag) ? [] : [tag]);
-
-    if (wasEmpty && !selectedTags.includes(tag)) {
-      setTimeout(() => {
-        const refineSection = document.getElementById('refine-section');
-        const sidebar = document.getElementById('sidebar');
-        if (refineSection && sidebar) {
-          const sidebarRect = sidebar.getBoundingClientRect();
-          const elementRect = refineSection.getBoundingClientRect();
-          const relativeTop = elementRect.top - sidebarRect.top + sidebar.scrollTop;
-
-          sidebar.scrollTo({
-            top: relativeTop - 20,
-            behavior: 'smooth'
-          });
-        }
-      }, 150);
-    }
-  };
-
-  const handleBrandingTagToggle = (tag: string) => {
-    const wasEmpty = selectedBrandingTags.length === 0;
-    const isAdding = !selectedBrandingTags.includes(tag);
-
-    setSelectedBrandingTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
-
-    if (wasEmpty && isAdding) {
-      setTimeout(() => {
-        const categoriesSection = document.getElementById('categories-section');
-        const sidebar = document.getElementById('sidebar');
-        if (categoriesSection && sidebar) {
-          const sidebarRect = sidebar.getBoundingClientRect();
-          const elementRect = categoriesSection.getBoundingClientRect();
-          const relativeTop = elementRect.top - sidebarRect.top + sidebar.scrollTop;
-
-          sidebar.scrollTo({
-            top: relativeTop - 20,
-            behavior: 'smooth'
-          });
-        }
-      }, 150);
-    }
-  };
-
-  const handleLocationTagToggle = (tag: string) => setSelectedLocationTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [tag]);
-  const handleAngleTagToggle = (tag: string) => setSelectedAngleTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [tag]);
-  const handleLightingTagToggle = (tag: string) => setSelectedLightingTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [tag]);
-  const handleEffectTagToggle = (tag: string) => setSelectedEffectTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [tag]);
-
   const handleColorInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newColor = e.target.value.trim();
     setColorInput(newColor);
@@ -822,132 +818,7 @@ export const MockupMachinePage: React.FC = () => {
     setSelectedColors(selectedColors.filter(color => color !== colorToRemove));
   };
 
-  const handleAddCustomTag = (
-    inputValue: string,
-    selected: string[],
-    setter: React.Dispatch<React.SetStateAction<string[]>>,
-    inputSetter: React.Dispatch<React.SetStateAction<string>>,
-    limit: number
-  ) => {
-    const newTag = inputValue.trim();
-    if (newTag && selected.length < limit && !selected.map(t => t.toLowerCase()).includes(newTag.toLowerCase())) {
-      setter(prev => [...prev, newTag]);
-      inputSetter('');
-    }
-  };
 
-  const handleAddCustomBrandingTag = () => {
-    const wasEmpty = selectedBrandingTags.length === 0;
-    handleAddCustomTag(customBrandingInput, selectedBrandingTags, setSelectedBrandingTags, setCustomBrandingInput, 3);
-
-    if (wasEmpty) {
-      setTimeout(() => {
-        const categoriesSection = document.getElementById('categories-section');
-        const sidebar = document.getElementById('sidebar');
-        if (categoriesSection && sidebar) {
-          const sidebarRect = sidebar.getBoundingClientRect();
-          const elementRect = categoriesSection.getBoundingClientRect();
-          const relativeTop = elementRect.top - sidebarRect.top + sidebar.scrollTop;
-
-          sidebar.scrollTo({
-            top: relativeTop - 20,
-            behavior: 'smooth'
-          });
-        }
-      }, 150);
-    }
-  };
-
-  const handleAddCustomCategoryTag = () => {
-    const newTag = customCategoryInput.trim();
-    if (newTag) {
-      const wasEmpty = selectedTags.length === 0;
-      setSelectedTags([newTag]);
-      setCustomCategoryInput('');
-
-      if (wasEmpty) {
-        setTimeout(() => {
-          const refineSection = document.getElementById('refine-section');
-          const sidebar = document.getElementById('sidebar');
-          if (refineSection && sidebar) {
-            const sidebarRect = sidebar.getBoundingClientRect();
-            const elementRect = refineSection.getBoundingClientRect();
-            const relativeTop = elementRect.top - sidebarRect.top + sidebar.scrollTop;
-
-            sidebar.scrollTo({
-              top: relativeTop - 20,
-              behavior: 'smooth'
-            });
-          }
-        }, 150);
-      }
-    }
-  };
-
-  const handleAddCustomLocationTag = () => {
-    const newTag = customLocationInput.trim();
-    if (newTag) {
-      setSelectedLocationTags([newTag]);
-      setCustomLocationInput('');
-    }
-  };
-
-  const handleAddCustomAngleTag = () => {
-    const newTag = customAngleInput.trim();
-    if (newTag) {
-      setSelectedAngleTags([newTag]);
-      setCustomAngleInput('');
-    }
-  };
-
-  const handleAddCustomLightingTag = () => {
-    const newTag = customLightingInput.trim();
-    if (newTag) {
-      setSelectedLightingTags([newTag]);
-      setCustomLightingInput('');
-    }
-  };
-
-  const handleAddCustomEffectTag = () => {
-    const newTag = customEffectInput.trim();
-    if (newTag) {
-      setSelectedEffectTags([newTag]);
-      setCustomEffectInput('');
-    }
-  };
-
-  const handleMaterialTagToggle = (tag: string) => setSelectedMaterialTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [tag]);
-
-  const handleAddCustomMaterialTag = () => {
-    const newTag = customMaterialInput.trim();
-    if (newTag) {
-      setSelectedMaterialTags([newTag]);
-      setCustomMaterialInput('');
-    }
-  };
-
-  const handleRandomizeCategories = useCallback(() => {
-    const shuffled = [...AVAILABLE_TAGS].sort(() => 0.5 - Math.random());
-    const wasEmpty = selectedTags.length === 0;
-    setSelectedTags([shuffled[0]]);
-
-    if (wasEmpty) {
-      setTimeout(() => {
-        const refineSection = document.getElementById('refine-section');
-        const sidebar = document.getElementById('sidebar');
-        if (refineSection && sidebar) {
-          const sidebarRect = sidebar.getBoundingClientRect();
-          const elementRect = refineSection.getBoundingClientRect();
-          const relativeTop = elementRect.top - sidebarRect.top + sidebar.scrollTop;
-
-          sidebar.scrollTo({
-            top: relativeTop - 20,
-            behavior: 'smooth'
-          });
-        }
-      }, 150);
-    }
-  }, [selectedTags.length]);
 
   const handleNewAngles = useCallback(() => {
     if (selectedTags.length === 0) {
@@ -1000,29 +871,60 @@ export const MockupMachinePage: React.FC = () => {
   }, [selectedTags.length, selectedLocationTags]);
 
   const handleAnalyze = useCallback(async () => {
-    if (!uploadedImage || selectedBrandingTags.length === 0 || designType === 'blank') {
+    if (!uploadedImage || designType === 'blank') {
       return;
     }
 
     setIsAnalyzing(true);
 
     try {
-      const suggestions = await aiApi.suggestCategories(uploadedImage, selectedBrandingTags);
-      setSuggestedTags(suggestions);
+      // 1. Semantic Analysis via Gemini (tags for all sections)
+      const analysis = await aiApi.analyzeSetup(uploadedImage);
+
+      setSuggestedBrandingTags(analysis.branding);
+      setSuggestedTags(analysis.categories);
+      setSuggestedLocationTags(analysis.locations);
+      setSuggestedAngleTags(analysis.angles);
+      setSuggestedLightingTags(analysis.lighting);
+      setSuggestedEffectTags(analysis.effects);
+      setSuggestedMaterialTags(analysis.materials);
+
+      // Automatically set design type based on AI analysis
+      // Fallback to 'logo' if AI doesn't return designType
+      setDesignType(analysis.designType || 'logo');
+
+      // 2. Color Extraction (Local processing for speed and cost-benefit)
+      try {
+        const { extractColors } = await import('../utils/colorExtraction');
+        const colorResult = await extractColors(uploadedImage.base64, uploadedImage.mimeType, 8);
+        setSuggestedColors(colorResult.colors);
+      } catch (colorErr) {
+        console.error("Error extracting colors:", colorErr);
+      }
+
+      // 3. Auto-expand sections to display all suggested tags
+      setIsAllCategoriesOpen(true);
+      setIsAdvancedOpen(true);
+
+      // 4. Auto-select default model if not already selected
+      if (!selectedModel) {
+        setSelectedModel('gemini-2.5-flash-image');
+      }
+
     } catch (err) {
       if (err instanceof RateLimitError) {
         toast.error(t('messages.rateLimit'), { duration: 5000 });
       } else {
         if (isLocalDevelopment()) {
-          console.error("Error getting suggestions:", err);
+          console.error("Error getting full analysis:", err);
         }
         toast.error(t('messages.aiCouldntGenerateSuggestions'), { duration: 5000 });
       }
-      setSuggestedTags([]);
     } finally {
       setIsAnalyzing(false);
+      setHasAnalyzed(true);
     }
-  }, [uploadedImage, selectedBrandingTags, designType]);
+  }, [uploadedImage, designType]);
 
   useEffect(() => {
     if (prevBrandingTagsLength.current === 0 && selectedBrandingTags.length === 1) {
@@ -1031,21 +933,7 @@ export const MockupMachinePage: React.FC = () => {
     prevBrandingTagsLength.current = selectedBrandingTags.length;
   }, [selectedBrandingTags]);
 
-  useEffect(() => {
-    if (analysisTimeoutRef.current) {
-      clearTimeout(analysisTimeoutRef.current);
-    }
-    if (uploadedImage && selectedBrandingTags.length > 0) {
-      analysisTimeoutRef.current = window.setTimeout(() => {
-        handleAnalyze();
-      }, 750);
-    }
-    return () => {
-      if (analysisTimeoutRef.current) {
-        clearTimeout(analysisTimeoutRef.current);
-      }
-    };
-  }, [selectedBrandingTags, uploadedImage, handleAnalyze]);
+
 
 
   // Check for unsaved images and warn before leaving
@@ -1651,36 +1539,62 @@ export const MockupMachinePage: React.FC = () => {
     // Use current branding tags from state
     const brandingTagsToUse = selectedBrandingTags.length > 0 ? selectedBrandingTags : [];
 
-    // Load excluded tags from settings
-    const excludedTags = getSurpriseMeExcludedTags();
+    // Load selected tags from settings
+    const selectedTagsSettings = getSurpriseMeSelectedTags();
 
-    // Filter categories excluding user-configured excluded tags
-    const availableCategories = GENERIC_MOCKUP_TAGS.filter(
-      tag => !excludedTags.excludedCategoryTags.includes(tag)
+    // 1. Categories: Prioritize AI suggestions
+    let selectedCategory: string;
+    const aiSuggestedCategories = suggestedTags || [];
+    const userAllowedCategories = selectedTagsSettings.selectedCategoryTags;
+
+    const filteredAiCategories = aiSuggestedCategories.filter(tag =>
+      userAllowedCategories.length === 0 || userAllowedCategories.includes(tag)
     );
-    const shuffledCategories = availableCategories.length > 0
-      ? [...availableCategories].sort(() => 0.5 - Math.random())
-      : [...GENERIC_MOCKUP_TAGS].sort(() => 0.5 - Math.random()); // Fallback to all if all excluded
-    const selectedCategory = shuffledCategories[0];
+
+    if (filteredAiCategories.length > 0) {
+      selectedCategory = filteredAiCategories[Math.floor(Math.random() * filteredAiCategories.length)];
+    } else {
+      const availableCategories = GENERIC_MOCKUP_TAGS.filter(tag =>
+        userAllowedCategories.length === 0 || userAllowedCategories.includes(tag)
+      );
+      const categoriesToPickFrom = availableCategories.length > 0 ? availableCategories : GENERIC_MOCKUP_TAGS;
+      selectedCategory = categoriesToPickFrom[Math.floor(Math.random() * categoriesToPickFrom.length)];
+    }
     setSelectedTags([selectedCategory]);
 
-    // Seleciona background baseado no branding escolhido (excluindo "Nature landscape" e tags excluídas)
-    // Inclui "Light Box" e "Minimalist Studio" como opções preferenciais para Surprise Me
-    const suitableBackgrounds = getBackgroundsForBranding(brandingTagsToUse);
-    const filteredBackgrounds = suitableBackgrounds.filter(bg =>
-      bg !== 'Nature landscape' && !excludedTags.excludedLocationTags.includes(bg)
+    // 2. Location: Prioritize AI suggestions
+    let selectedBackground: string;
+    const aiSuggestedLocations = suggestedLocationTags || [];
+    const userAllowedLocations = selectedTagsSettings.selectedLocationTags;
+
+    // First filter AI suggestions by user's "Surprise Me" settings
+    const filteredAiLocations = aiSuggestedLocations.filter(tag =>
+      userAllowedLocations.length === 0 || userAllowedLocations.includes(tag)
     );
 
-    // Add Light Box and Minimalist Studio as preferred options if not already included
-    const preferredBackgrounds = ['Light Box', 'Minimalist Studio'];
-    const backgroundsToUse = filteredBackgrounds.length > 0
-      ? [...new Set([...preferredBackgrounds, ...filteredBackgrounds])]
-      : [...new Set([...preferredBackgrounds, ...suitableBackgrounds])];
+    if (filteredAiLocations.length > 0) {
+      selectedBackground = filteredAiLocations[Math.floor(Math.random() * filteredAiLocations.length)];
+    } else {
+      // Fallback: Pick based on branding but respect user selection
+      const suitableBackgrounds = getBackgroundsForBranding(brandingTagsToUse);
+      const filteredBackgrounds = suitableBackgrounds.filter(bg =>
+        bg !== 'Nature landscape' && (
+          userAllowedLocations.length === 0 ||
+          userAllowedLocations.includes(bg)
+        )
+      );
 
-    const selectedBackground = backgroundsToUse[Math.floor(Math.random() * backgroundsToUse.length)];
+      // Add preferred options if not already included
+      const preferredOptions = ['Light Box', 'Minimalist Studio'];
+      const backgroundsToUse = filteredBackgrounds.length > 0
+        ? [...new Set([...preferredOptions, ...filteredBackgrounds])]
+        : [...new Set([...preferredOptions, ...suitableBackgrounds])];
+
+      selectedBackground = backgroundsToUse[Math.floor(Math.random() * backgroundsToUse.length)];
+    }
     setSelectedLocationTags([selectedBackground]);
 
-    // Buscar presets de forma assíncrona
+    // 3. Presets and Tags: Prioritize AI suggestions for Angle, Lighting, Effect, etc.
     let selectedPresets: {
       angle?: AnglePreset;
       texture?: TexturePreset;
@@ -1689,7 +1603,6 @@ export const MockupMachinePage: React.FC = () => {
     } = {};
 
     try {
-      // Buscar todos os presets em paralelo
       const [allAnglePresets, allTexturePresets, allAmbiencePresets, allLuminancePresets] = await Promise.all([
         getAllAnglePresetsAsync().catch(() => [] as AnglePreset[]),
         getAllTexturePresetsAsync().catch(() => [] as TexturePreset[]),
@@ -1697,25 +1610,20 @@ export const MockupMachinePage: React.FC = () => {
         getAllLuminancePresetsAsync().catch(() => [] as LuminancePreset[]),
       ]);
 
-      // Filtrar presets baseados no branding
       const filteredAnglePresets = filterPresetsByBranding(allAnglePresets, brandingTagsToUse);
       const filteredTexturePresets = filterPresetsByBranding(allTexturePresets, brandingTagsToUse);
       const filteredAmbiencePresets = filterPresetsByBranding(allAmbiencePresets, brandingTagsToUse);
       const filteredLuminancePresets = filterPresetsByBranding(allLuminancePresets, brandingTagsToUse);
 
-      // Selecionar presets aleatoriamente com probabilidades
       if (filteredAnglePresets.length > 0 && Math.random() < 0.4) {
         selectedPresets.angle = filteredAnglePresets[Math.floor(Math.random() * filteredAnglePresets.length)];
       }
-
       if (filteredTexturePresets.length > 0 && Math.random() < 0.3) {
         selectedPresets.texture = filteredTexturePresets[Math.floor(Math.random() * filteredTexturePresets.length)];
       }
-
       if (filteredAmbiencePresets.length > 0 && Math.random() < 0.5) {
         selectedPresets.ambience = filteredAmbiencePresets[Math.floor(Math.random() * filteredAmbiencePresets.length)];
       }
-
       if (filteredLuminancePresets.length > 0 && Math.random() < 0.5) {
         selectedPresets.luminance = filteredLuminancePresets[Math.floor(Math.random() * filteredLuminancePresets.length)];
       }
@@ -1723,35 +1631,42 @@ export const MockupMachinePage: React.FC = () => {
       console.warn('Failed to load presets, using fallback logic:', error);
     }
 
-    // Fallback para lógica antiga se não houver presets selecionados
-    // Filter available tags excluding user-configured excluded tags
-    const availableAngles = AVAILABLE_ANGLE_TAGS.filter(
-      tag => !excludedTags.excludedAngleTags.includes(tag)
-    );
-    const availableLightings = AVAILABLE_LIGHTING_TAGS.filter(
-      tag => !excludedTags.excludedLightingTags.includes(tag)
-    );
-    const availableEffects = AVAILABLE_EFFECT_TAGS.filter(
-      tag => !excludedTags.excludedEffectTags.includes(tag)
-    );
+    // Helper for picking tags (prioritizing AI suggestions)
+    const pickTag = (suggested: string[], availableFromSettings: string[], allAvailable: string[], probability: number) => {
+      if (Math.random() > probability) return null;
 
-    const randomAngle = selectedPresets.angle
-      ? null
-      : availableAngles.length > 0 && Math.random() < 0.4
-      ? availableAngles[Math.floor(Math.random() * availableAngles.length)]
-      : null;
-    const randomLighting = selectedPresets.luminance
-      ? null
-      : availableLightings.length > 0 && Math.random() < 0.5
-      ? availableLightings[Math.floor(Math.random() * availableLightings.length)]
-      : null;
-    const randomEffect = availableEffects.length > 0 && Math.random() < 0.3
-      ? availableEffects[Math.floor(Math.random() * availableEffects.length)]
-      : null;
+      // Filter suggested by settings
+      const filteredSuggested = suggested.filter(tag =>
+        availableFromSettings.length === 0 || availableFromSettings.includes(tag)
+      );
+
+      if (filteredSuggested.length > 0) {
+        return filteredSuggested[Math.floor(Math.random() * filteredSuggested.length)];
+      }
+
+      // Fallback to settings-allowed tags
+      if (availableFromSettings.length > 0) {
+        return availableFromSettings[Math.floor(Math.random() * availableFromSettings.length)];
+      }
+
+      // Final fallback
+      return allAvailable[Math.floor(Math.random() * allAvailable.length)];
+    };
+
+    const userAllowedAngles = selectedTagsSettings.selectedAngleTags;
+    const userAllowedLightings = selectedTagsSettings.selectedLightingTags;
+    const userAllowedEffects = selectedTagsSettings.selectedEffectTags;
+    const userAllowedMaterials = selectedTagsSettings.selectedMaterialTags;
+
+    const randomAngle = selectedPresets.angle ? null : pickTag(suggestedAngleTags || [], userAllowedAngles, AVAILABLE_ANGLE_TAGS, 0.5);
+    const randomLighting = selectedPresets.luminance ? null : pickTag(suggestedLightingTags || [], userAllowedLightings, AVAILABLE_LIGHTING_TAGS, 0.6);
+    const randomEffect = pickTag(suggestedEffectTags || [], userAllowedEffects, AVAILABLE_EFFECT_TAGS, 0.4);
+    const randomMaterial = pickTag(suggestedMaterialTags || [], userAllowedMaterials, AVAILABLE_MATERIAL_TAGS, 0.3);
 
     setSelectedAngleTags(randomAngle ? [randomAngle] : []);
     setSelectedLightingTags(randomLighting ? [randomLighting] : []);
     setSelectedEffectTags(randomEffect ? [randomEffect] : []);
+    setSelectedMaterialTags(randomMaterial ? [randomMaterial] : []);
     setSelectedColors([]);
 
     // Reset prompt and manual edit state so auto-generation can proceed
@@ -2735,6 +2650,11 @@ Generate the new mockup image with the requested changes applied.`;
   const displayBrandingTags = [...new Set([...AVAILABLE_BRANDING_TAGS, ...selectedBrandingTags])];
   const displaySuggestedTags = [...new Set([...suggestedTags, ...selectedTags])];
   const displayAvailableCategoryTags = [...new Set([...AVAILABLE_TAGS, ...selectedTags])];
+  const displayLocationTags = [...new Set([...AVAILABLE_LOCATION_TAGS, ...selectedLocationTags])];
+  const displayAngleTags = [...new Set([...AVAILABLE_ANGLE_TAGS, ...selectedAngleTags])];
+  const displayLightingTags = [...new Set([...AVAILABLE_LIGHTING_TAGS, ...selectedLightingTags])];
+  const displayEffectTags = [...new Set([...AVAILABLE_EFFECT_TAGS, ...selectedEffectTags])];
+  const displayMaterialTags = [...new Set([...AVAILABLE_MATERIAL_TAGS, ...selectedMaterialTags])];
 
   // Calculate credits needed for main generation
   const creditsNeededForGeneration = useMemo(() => {
@@ -2931,194 +2851,69 @@ Generate the new mockup image with the requested changes applied.`;
         applicationCategory="DesignApplication"
       />
       <WebSiteSchema />
+      <AnalyzingImageOverlay isVisible={isAnalyzing} />
 
-      {showWelcome ? (
+      {showWelcome || (!uploadedImage && !isImagelessMode && designType !== 'blank') ? (
         <WelcomeScreen
           onImageUpload={handleImageUpload}
           onBlankMockup={handleProceedWithoutImage}
         />
       ) : (
         <div className="pt-12 md:pt-14">
-          {!uploadedImage && !isImagelessMode && designType !== 'blank' ? (
-            <div className="flex items-center justify-center min-h-[calc(100vh-2.5rem)] md:min-h-[calc(100vh-3.5rem)] py-4 md:py-8">
-              <ImageUploader onImageUpload={handleImageUpload} onProceedWithoutImage={handleProceedWithoutImage} />
+          <div className={`flex flex-col lg:flex-row h-[calc(100vh-2.5rem-120px)] md:h-[calc(100vh-5rem)] ${!hasGenerated ? 'justify-center py-4 md:py-8' : ''} ${hasGenerated ? 'relative' : ''}`}>
+            <div className={`${hasGenerated && !isSidebarVisibleMobile ? 'hidden lg:flex' : hasGenerated ? 'flex' : ''} ${hasGenerated ? 'h-full' : ''}`}>
+              <SidebarOrchestrator
+                sidebarWidth={sidebarWidth}
+                sidebarRef={sidebarRef}
+                onSidebarWidthChange={setSidebarWidth}
+                onCloseMobile={() => setIsSidebarVisibleMobile(false)}
+                onSurpriseMe={handleSurpriseMe}
+                onOpenSurpriseMeSettings={() => setIsSurpriseMeSettingsOpen(true)}
+                onImageUpload={handleImageUpload}
+                onReferenceImagesChange={setReferenceImages}
+                onStartOver={handleStartOver}
+                onDesignTypeChange={handleDesignTypeChange}
+                onSuggestPrompts={handleSuggestPrompts}
+                onGenerateSmartPrompt={handleGenerateSmartPrompt}
+                onSimplify={handleSimplify}
+                onRegenerate={() => runGeneration()}
+                onGenerateClick={handleGenerateClick}
+                onGenerateSuggestion={handleGenerateSuggestion}
+                onAnalyze={handleAnalyze}
+                generateOutputsButtonRef={generateOutputsButtonRef}
+                authenticationRequiredMessage={t('messages.authenticationRequired')}
+                onBlankMockup={handleProceedWithoutImage}
+              />
             </div>
-          ) : (
-            <div className={`flex flex-col lg:flex-row h-[calc(100vh-2.5rem-120px)] md:h-[calc(100vh-5rem)] ${!hasGenerated ? 'justify-center py-4 md:py-8' : ''} ${hasGenerated ? 'relative' : ''}`}>
-              <div className={`${hasGenerated && !isSidebarVisibleMobile ? 'hidden lg:flex' : hasGenerated ? 'flex' : ''} ${hasGenerated ? 'h-full' : ''}`}>
-                <SidebarOrchestrator
-                  hasGenerated={hasGenerated}
-                  sidebarWidth={sidebarWidth}
-                  sidebarRef={sidebarRef}
-                  onSidebarWidthChange={setSidebarWidth}
-                  onCloseMobile={() => setIsSidebarVisibleMobile(false)}
-                  subscriptionStatus={subscriptionStatus}
-                  uploadedImage={uploadedImage}
-                  referenceImage={referenceImage}
-                  referenceImages={referenceImages}
-                  designType={designType}
-                  isImagelessMode={isImagelessMode}
-                  onImageUpload={handleImageUpload}
-                  onReferenceImagesChange={setReferenceImages}
-                  onStartOver={handleStartOver}
-                  onDesignTypeChange={handleDesignTypeChange}
-                  onScrollToSection={scrollToSection}
-                  selectedModel={selectedModel}
-                  resolution={resolution}
-                  onModelChange={handleModelChange}
-                  onResolutionChange={setResolution}
-                  aspectRatio={aspectRatio}
-                  onAspectRatioChange={setAspectRatio}
-                  onSurpriseMe={handleSurpriseMe}
-                  onOpenSurpriseMeSettings={() => setIsSurpriseMeSettingsOpen(true)}
-                  isGenerating={isGenerating}
-                  isGeneratingPrompt={isGeneratingPrompt}
-                  displayBrandingTags={displayBrandingTags}
-                  selectedBrandingTags={selectedBrandingTags}
-                  onBrandingTagToggle={handleBrandingTagToggle}
-                  customBrandingInput={customBrandingInput}
-                  onCustomBrandingInputChange={setCustomBrandingInput}
-                  onAddCustomBrandingTag={handleAddCustomBrandingTag}
-                  brandingComplete={brandingComplete}
-                  suggestedTags={suggestedTags}
-                  displayAvailableCategoryTags={displayAvailableCategoryTags}
-                  displaySuggestedTags={displaySuggestedTags}
-                  selectedTags={selectedTags}
-                  onTagToggle={handleTagToggle}
-                  isAnalyzing={isAnalyzing}
-                  isAllCategoriesOpen={isAllCategoriesOpen}
-                  onToggleAllCategories={() => setIsAllCategoriesOpen(!isAllCategoriesOpen)}
-                  customCategoryInput={customCategoryInput}
-                  onCustomCategoryInputChange={setCustomCategoryInput}
-                  onAddCustomCategoryTag={handleAddCustomCategoryTag}
-                  onRandomizeCategories={handleRandomizeCategories}
-                  categoriesComplete={categoriesComplete}
-                  isAdvancedOpen={isAdvancedOpen}
-                  onToggleAdvanced={() => {
-                    const newState = !isAdvancedOpen;
-                    setIsAdvancedOpen(newState);
-
-                    // Scroll to location section when opening advanced options
-                    if (newState) {
-                      setTimeout(() => {
-                        const locationSection = document.getElementById('location-section');
-                        if (locationSection && sidebarRef.current) {
-                          const elementRect = locationSection.getBoundingClientRect();
-                          const sidebarRect = sidebarRef.current.getBoundingClientRect();
-                          const relativeTop = elementRect.top - sidebarRect.top + sidebarRef.current.scrollTop;
-
-                          sidebarRef.current.scrollTo({
-                            top: relativeTop - 20,
-                            behavior: 'smooth'
-                          });
-                        } else if (locationSection) {
-                          locationSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }
-                      }, 200);
-                    }
-                  }}
-                  selectedLocationTags={selectedLocationTags}
-                  selectedAngleTags={selectedAngleTags}
-                  selectedLightingTags={selectedLightingTags}
-                  selectedEffectTags={selectedEffectTags}
-                  selectedMaterialTags={selectedMaterialTags}
-                  selectedColors={selectedColors}
-                  colorInput={colorInput}
-                  isValidColor={isValidColor}
-                  negativePrompt={negativePrompt}
-                  additionalPrompt={additionalPrompt}
-                  onLocationTagToggle={handleLocationTagToggle}
-                  onAngleTagToggle={handleAngleTagToggle}
-                  onLightingTagToggle={handleLightingTagToggle}
-                  onEffectTagToggle={handleEffectTagToggle}
-                  onMaterialTagToggle={handleMaterialTagToggle}
-                  onColorInputChange={handleColorInputChange}
-                  onAddColor={handleAddColor}
-                  onRemoveColor={handleRemoveColor}
-                  onNegativePromptChange={(e) => setNegativePrompt(e.target.value)}
-                  onAdditionalPromptChange={(e) => setAdditionalPrompt(e.target.value)}
-                  availableLocationTags={AVAILABLE_LOCATION_TAGS}
-                  availableAngleTags={AVAILABLE_ANGLE_TAGS}
-                  availableLightingTags={AVAILABLE_LIGHTING_TAGS}
-                  availableEffectTags={AVAILABLE_EFFECT_TAGS}
-                  availableMaterialTags={AVAILABLE_MATERIAL_TAGS}
-                  customLocationInput={customLocationInput}
-                  customAngleInput={customAngleInput}
-                  customLightingInput={customLightingInput}
-                  customEffectInput={customEffectInput}
-                  customMaterialInput={customMaterialInput}
-                  onCustomLocationInputChange={setCustomLocationInput}
-                  onCustomAngleInputChange={setCustomAngleInput}
-                  onCustomLightingInputChange={setCustomLightingInput}
-                  onCustomEffectInputChange={setCustomEffectInput}
-                  onCustomMaterialInputChange={setCustomMaterialInput}
-                  onAddCustomLocationTag={handleAddCustomLocationTag}
-                  onAddCustomAngleTag={handleAddCustomAngleTag}
-                  onAddCustomLightingTag={handleAddCustomLightingTag}
-                  onAddCustomEffectTag={handleAddCustomEffectTag}
-                  onAddCustomMaterialTag={handleAddCustomMaterialTag}
-                  mockupCount={mockupCount}
-                  onMockupCountChange={setMockupCount}
-                  generateText={generateText}
-                  onGenerateTextChange={setGenerateText}
-                  withHuman={withHuman}
-                  onWithHumanChange={setWithHuman}
-                  enhanceTexture={enhanceTexture}
-                  onEnhanceTextureChange={setEnhanceTexture}
-                  promptPreview={promptPreview}
-                  onPromptChange={handlePromptChange}
-                  promptSuggestions={promptSuggestions}
-                  isSuggestingPrompts={isSuggestingPrompts}
-                  mockups={mockups}
-                  onSuggestPrompts={handleSuggestPrompts}
-                  onGenerateSmartPrompt={handleGenerateSmartPrompt}
-                  onSimplify={handleSimplify}
-                  onRegenerate={() => runGeneration()}
-                  onSuggestionClick={handleSuggestionClick}
-                  isSmartPromptActive={isSmartPromptActive}
-                  setIsSmartPromptActive={setIsSmartPromptActive}
-                  setIsPromptManuallyEdited={setIsPromptManuallyEdited}
-                  onGenerateClick={handleGenerateClick}
-                  isGenerateDisabled={isGenerateDisabled}
-                  isPromptReady={isPromptReady}
-                  generateOutputsButtonRef={generateOutputsButtonRef}
-                  isAuthenticated={isAuthenticated}
-                  authenticationRequiredMessage={t('messages.authenticationRequired')}
-                  onResetControls={resetControls}
-                  onGenerateSuggestion={handleGenerateSuggestion}
-                  onBlankMockup={handleProceedWithoutImage}
-                />
-              </div>
-              {hasGenerated && (
-                <>
-                  <main className={`flex-1 p-2 md:p-4 lg:p-8 overflow-y-auto min-w-0 h-full ${!isSidebarVisibleMobile ? 'w-full' : ''}`}>
-                    <MockupDisplay
-                      mockups={mockups}
-                      isLoading={isLoading}
-                      onRedraw={handleRedrawClick}
-                      onView={handleOpenFullScreen}
-                      onNewAngle={(index, angle) => handleNewAngleFromOutput(index, angle)}
-                      onNewBackground={handleNewBackgroundFromOutput}
-                      onReImagine={handleReImagineFromOutput}
-                      onSave={handleSaveMockup}
-                      savedIndices={savedIndices}
-                      savedMockupIds={savedMockupIds}
-                      onToggleLike={handleToggleLike}
-                      likedIndices={mockupLikedStatus}
-                      onRemove={handleRemoveMockup}
-                      prompt={promptPreview}
-                      designType={designType || undefined}
-                      tags={selectedTags}
-                      brandingTags={selectedBrandingTags}
-                      aspectRatio={aspectRatio as '16:9' | '4:3' | '1:1'}
-                      editButtonsDisabled={isEditOperationDisabled}
-                      creditsPerOperation={creditsNeededForEdit}
-                    />
-                  </main>
-                </>
-              )}
-            </div>
-          )}
+            {hasGenerated && (
+              <>
+                <main className={`flex-1 p-2 md:p-4 lg:p-8 overflow-y-auto min-w-0 h-full ${!isSidebarVisibleMobile ? 'w-full' : ''}`}>
+                  <MockupDisplay
+                    mockups={mockups}
+                    isLoading={isLoading}
+                    onRedraw={handleRedrawClick}
+                    onView={handleOpenFullScreen}
+                    onNewAngle={(index, angle) => handleNewAngleFromOutput(index, angle)}
+                    onNewBackground={handleNewBackgroundFromOutput}
+                    onReImagine={handleReImagineFromOutput}
+                    onSave={handleSaveMockup}
+                    savedIndices={savedIndices}
+                    savedMockupIds={savedMockupIds}
+                    onToggleLike={handleToggleLike}
+                    likedIndices={mockupLikedStatus}
+                    onRemove={handleRemoveMockup}
+                    prompt={promptPreview}
+                    designType={designType || undefined}
+                    tags={selectedTags}
+                    brandingTags={selectedBrandingTags}
+                    aspectRatio={aspectRatio as '16:9' | '4:3' | '1:1'}
+                    editButtonsDisabled={isEditOperationDisabled}
+                    creditsPerOperation={creditsNeededForEdit}
+                  />
+                </main>
+              </>
+            )}
+          </div>
         </div>
       )}
 
@@ -3165,21 +2960,13 @@ Generate the new mockup image with the requested changes applied.`;
         />
       )}
 
-      {/* Floating sidebar toggle button for mobile */}
-      {hasGenerated && !isSidebarVisibleMobile && (
-        <div className="fixed bottom-4 left-4 md:hidden z-50 flex flex-col items-center gap-1">
-          <Button
-            onClick={() => setIsSidebarVisibleMobile(true)}
-            variant="brand"
-            size="icon"
-            className="w-10 h-10 shadow-2xl active:scale-95"
-            aria-label={t('mockup.showSidebar')}
-            title={t('mockup.showSidebar')}
-          >
-            <Pickaxe size={16} />
-          </Button>
-        </div>
-      )}
+      <FloatingActionButtons
+        isVisible={(hasGenerated || hasAnalyzed) && !isSidebarVisibleMobile}
+        onSurpriseMe={() => handleSurpriseMe(true)}
+        isGeneratingPrompt={isGeneratingPrompt}
+        isGenerating={isGenerating}
+        hasAnalyzed={hasAnalyzed}
+      />
 
       {showUnsavedDialog && unsavedDialogConfig && (
         <ConfirmationModal

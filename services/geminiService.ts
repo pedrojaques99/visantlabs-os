@@ -1,6 +1,15 @@
 import { GoogleGenAI, Modality, Type } from "@google/genai";
 import type { UploadedImage, AspectRatio, DesignType, GeminiModel, Resolution } from '../types';
 import { buildGeminiPromptInstructionsTemplate } from '../utils/mockupPromptFormat.js';
+import {
+  AVAILABLE_TAGS,
+  AVAILABLE_BRANDING_TAGS,
+  AVAILABLE_LOCATION_TAGS,
+  AVAILABLE_ANGLE_TAGS,
+  AVAILABLE_LIGHTING_TAGS,
+  AVAILABLE_EFFECT_TAGS,
+  AVAILABLE_MATERIAL_TAGS
+} from '../utils/mockupConstants.js';
 
 // Lazy initialization to avoid breaking app startup if API key is not configured
 let ai: GoogleGenAI | null = null;
@@ -381,6 +390,111 @@ export const suggestCategories = async (
       .split(',')
       .map(tag => tag.trim())
       .filter(tag => tag.length > 0);
+  }, {
+    model: 'gemini-2.5-flash'
+  });
+};
+
+export interface MockupSetupAnalysis {
+  branding: string[];
+  categories: string[];
+  locations: string[];
+  angles: string[];
+  lighting: string[];
+  effects: string[];
+  materials: string[];
+  designType: 'logo' | 'layout';
+}
+
+export const analyzeMockupSetup = async (
+  baseImage: UploadedImage,
+  apiKey?: string
+): Promise<MockupSetupAnalysis> => {
+  return withRetry(async () => {
+    const prompt = `Analyze the provided design image. Based on its visual elements, style, colors, and concept, suggest the most professional and aesthetically pleasing mockup settings.
+    
+    Choose suggestions from these available options if they fit, or suggest similar professional terms:
+    - Branding Styles: ${AVAILABLE_BRANDING_TAGS.join(', ')}
+    - Mockup Categories: ${AVAILABLE_TAGS.join(', ')}
+    - Locations/Environments: ${AVAILABLE_LOCATION_TAGS.join(', ')}
+    - Camera Angles: ${AVAILABLE_ANGLE_TAGS.join(', ')}
+    - Lighting Styles: ${AVAILABLE_LIGHTING_TAGS.join(', ')}
+    - Special Effects: ${AVAILABLE_EFFECT_TAGS.join(', ')}
+    - Materials/Textures: ${AVAILABLE_MATERIAL_TAGS.join(', ')}
+
+    Analyze the "vibe" and "concept" of the uploaded design to provide these suggestions.
+    Return the response as a JSON object with the following structure:
+    {
+      "branding": ["tag1", "tag2", "tag3"], // 2-3 tags
+      "categories": ["cat1", "cat2", "cat3"], // 5-10 categories
+      "locations": ["loc1", "loc2"], // 1-2 locations
+      "angles": ["angle1", "angle2"], // 1-2 angles
+      "lighting": ["light1", "light2"], // 1-2 lighting styles
+      "effects": ["effect1", "effect2"], // 1-2 effects
+      "materials": ["mat1", "mat2"], // 1-2 materials
+      "designType": "logo" // or "layout" - decide based on whether it's a standalone icon/logo or a full layout/composition
+    }`;
+
+    const response = await getAI(apiKey).models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: {
+        parts: [
+          {
+            inlineData: {
+              data: baseImage.base64,
+              mimeType: baseImage.mimeType,
+            },
+          },
+          {
+            text: prompt,
+          },
+        ],
+      },
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            branding: { type: Type.ARRAY, items: { type: Type.STRING } },
+            categories: { type: Type.ARRAY, items: { type: Type.STRING } },
+            locations: { type: Type.ARRAY, items: { type: Type.STRING } },
+            angles: { type: Type.ARRAY, items: { type: Type.STRING } },
+            lighting: { type: Type.ARRAY, items: { type: Type.STRING } },
+            effects: { type: Type.ARRAY, items: { type: Type.STRING } },
+            materials: { type: Type.ARRAY, items: { type: Type.STRING } },
+          },
+          required: ["branding", "categories", "locations", "angles", "lighting", "effects", "materials"],
+        },
+      },
+    });
+
+    const jsonString = response.text.trim();
+    if (!jsonString) {
+      return {
+        branding: [],
+        categories: [],
+        locations: [],
+        angles: [],
+        lighting: [],
+        effects: [],
+        materials: []
+      };
+    }
+
+    try {
+      return JSON.parse(jsonString);
+    } catch (e) {
+      console.error("Failed to parse mockup setup analysis JSON:", e);
+      return {
+        branding: [],
+        categories: [],
+        locations: [],
+        angles: [],
+        lighting: [],
+        effects: [],
+        materials: []
+      };
+    }
   }, {
     model: 'gemini-2.5-flash'
   });

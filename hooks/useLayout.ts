@@ -21,9 +21,6 @@ const defaultContextValue: LayoutContextValue = {
   registerResetHandler: () => {
     console.warn('registerResetHandler called but Layout context is not available');
   },
-  onConfigurationModalOpen: () => {
-    console.warn('onConfigurationModalOpen called but Layout context is not available');
-  },
 };
 
 export const useLayout = (): LayoutContextValue => {

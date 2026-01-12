@@ -679,6 +679,8 @@ export const AdminPage: React.FC = () => {
               onValueChange={(val) => {
                 if (val === 'presets') {
                   navigate('/admin/presets');
+                } else if (val === 'products') {
+                  navigate('/admin/products');
                 } else if (val === 'design-system') {
                   navigate('/design-system');
                 } else {
@@ -746,6 +748,10 @@ export const AdminPage: React.FC = () => {
                       <TabsTrigger value="presets" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
                         <Settings className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
                         {t('admin.presets')}
+                      </TabsTrigger>
+                      <TabsTrigger value="products" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
+                        <ShoppingCart className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
+                        {t('admin.products') || 'Produtos'}
                       </TabsTrigger>
                       <TabsTrigger value="design-system" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
                         <Palette className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
