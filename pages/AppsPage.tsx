@@ -133,67 +133,11 @@ export const AppsPage: React.FC = () => {
           </div>
 
           <div className="space-y-8">
-            {/* Canvas - Hierarquia 1 em Bentobox */}
-            {(() => {
-              const canvasApp = apps.find(app => app.id === 'canvas');
-              if (!canvasApp) return null;
 
-              const Icon = canvasApp.icon;
-              const handleClick = () => {
-                if (!isLoadingAccess && hasAccess) {
-                  navigate(canvasApp.route);
-                } else {
-                  navigate('/waitlist');
-                }
-              };
-
-              return (
-                <Card
-                  className="group relative overflow-hidden border-zinc-800/50 bg-card/50 hover:border-brand-cyan/50 hover:bg-card/70 hover:shadow-lg hover:shadow-brand-cyan/10 transition-all duration-300 cursor-pointer"
-                  onClick={handleClick}
-                >
-                  <LinearGradientBackground
-                    className="rounded-lg"
-                    opacity={0.25}
-                  />
-                  <CardContent className="relative z-10 p-8 md:p-10">
-                    <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-                      <div
-                        className="p-5 rounded-xl flex-shrink-0 border border-brand-cyan/20 bg-brand-cyan/10 group-hover:bg-brand-cyan/20 group-hover:border-brand-cyan/40 transition-all duration-300"
-                      >
-                        <Icon
-                          size={48}
-                          className="text-brand-cyan transition-transform duration-300 group-hover:scale-110"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-3">
-                          <h3 className="text-2xl md:text-3xl font-semibold text-zinc-200 font-manrope">
-                            {canvasApp.name}
-                          </h3>
-                          <Badge variant="outline" className="border-brand-cyan/30 text-brand-cyan">
-                            {canvasApp.badge}
-                          </Badge>
-                        </div>
-                        <p className="text-base text-zinc-400 font-mono leading-relaxed">
-                          {canvasApp.description}
-                        </p>
-                      </div>
-                      <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <div className="p-3 rounded-lg bg-brand-cyan/10 border border-brand-cyan/20 group-hover:bg-brand-cyan/20 transition-colors">
-                          <ArrowRight className="w-5 h-5 text-brand-cyan" />
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })()}
 
             {/* Outros Apps - Grid de 3 colunas */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {apps
-                .filter(app => app.id !== 'canvas')
                 .map((app) => {
                   const Icon = app.icon;
                   const handleClick = () => {

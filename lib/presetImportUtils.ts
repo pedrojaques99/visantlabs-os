@@ -1,5 +1,5 @@
 import type { Node } from '@xyflow/react';
-import type { FlowNodeData } from '../../types/reactFlow';
+import type { FlowNodeData } from '../types/reactFlow';
 
 export const STANDARD_PRESET_TYPES = ['mockup', 'angle', 'texture', 'ambience', 'luminance'];
 
@@ -25,7 +25,7 @@ export const isMockupCompatible = (presetType?: string, category?: string) => {
  */
 export const applyPresetDataToNodes = (
     nodes: Node<FlowNodeData>[],
-    preset: { id: string; prompt?: string; category?: string; presetType?: string },
+    preset: { id: string; prompt?: string; category?: string; presetType?: string; model?: string; aspectRatio?: string },
     updateNodeData: (id: string, data: any) => void,
     targetNodeId?: string
 ) => {

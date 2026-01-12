@@ -8,9 +8,15 @@ import { subscriptionService } from '../services/subscriptionService';
 import type { SubscriptionStatus } from '../services/subscriptionService';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 
-export const ThankYouPage: React.FC = () => {
+interface ThankYouPageProps {
+  planName?: string;
+  planCredits?: number;
+  interval?: string;
+}
+
+export const ThankYouPage: React.FC<ThankYouPageProps> = ({ planName, planCredits, interval }) => {
   const { t } = useTranslation();
-  const { isAuthenticated, isCheckingAuth } = useLayout(); // Usar estado de autenticação do contexto centralizado
+  const { isAuthenticated, isCheckingAuth } = useLayout();
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -87,16 +93,16 @@ export const ThankYouPage: React.FC = () => {
             <div className="flex items-center justify-center gap-2 mt-4">
               <GlitchLoader size={20} color="brand-cyan" />
             </div>
-          ) : subscriptionStatus?.hasActiveSubscription ? (
+          ) : (subscriptionStatus?.hasActiveSubscription || planName) ? (
             <div className="mt-6 inline-block bg-brand-cyan/10 border border-brand-cyan/30 rounded-md px-4 py-2">
               <p className="text-brand-cyan font-mono text-sm">
-                {t('thankYou.subscriptionActive')}
+                {t('thankYou.subscriptionActive', { plan: planName || t('subscriptionStatus.premium') })}
               </p>
             </div>
           ) : null}
         </div>
 
-        {subscriptionStatus?.hasActiveSubscription && (
+        {(subscriptionStatus?.hasActiveSubscription || planName) && (
           <div className="bg-zinc-900 border border-zinc-800/50 rounded-md p-6 mb-8">
             <div className="flex items-center gap-3 mb-4">
               <Pickaxe size={24} className="text-brand-cyan" />
@@ -110,7 +116,8 @@ export const ThankYouPage: React.FC = () => {
                 <CheckCircle size={18} className="text-brand-cyan mt-0.5 flex-shrink-0" />
                 <span>
                   {t('thankYou.benefit1', {
-                    credits: subscriptionStatus.monthlyCredits || 100
+                    credits: planCredits || subscriptionStatus?.monthlyCredits || 100,
+                    interval: interval ? t(`common.${interval}`) : (planCredits && planCredits > 500 ? t('common.year') : t('common.month'))
                   })}
                 </span>
               </li>
@@ -118,13 +125,25 @@ export const ThankYouPage: React.FC = () => {
                 <CheckCircle size={18} className="text-brand-cyan mt-0.5 flex-shrink-0" />
                 <span>{t('thankYou.benefit2')}</span>
               </li>
+              {planName?.toLowerCase().includes('pro') && (
+                <li className="flex items-start gap-3">
+                  <CheckCircle size={18} className="text-brand-cyan mt-0.5 flex-shrink-0" />
+                  <span>{t('thankYou.benefitPro')}</span>
+                </li>
+              )}
+              {planName?.toLowerCase().includes('vision') && (
+                <li className="flex items-start gap-3">
+                  <CheckCircle size={18} className="text-brand-cyan mt-0.5 flex-shrink-0" />
+                  <span>{t('thankYou.benefitVision')}</span>
+                </li>
+              )}
               <li className="flex items-start gap-3">
                 <CheckCircle size={18} className="text-brand-cyan mt-0.5 flex-shrink-0" />
                 <span>{t('thankYou.benefit3')}</span>
               </li>
             </ul>
 
-            {subscriptionStatus.totalCredits !== undefined && (
+            {!planName && subscriptionStatus?.totalCredits !== undefined && (
               <div className="mt-6 pt-6 border-t border-zinc-800/50">
                 <div className="flex items-center justify-between">
                   <span className="text-zinc-400 font-mono text-sm">

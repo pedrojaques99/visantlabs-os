@@ -1,5 +1,8 @@
 import type { BrandingData } from '../types';
 import { parseMarketResearch, categorizeMarketSection, type ParsedSection } from './brandingParsers.js';
+import { cleanMarketResearchText } from './brandingHelpersServer.js';
+
+export { cleanMarketResearchText };
 
 export const getStepContent = (stepNumber: number, data: BrandingData) => {
   // Helper to clean and normalize string content
@@ -136,14 +139,14 @@ export const migrateMarketResearch = (data: BrandingData): BrandingData => {
   }
 
   // Preserve all existing fields including UI states (collapsedSections, compactSections, layout)
-  const migrated: BrandingData = { 
+  const migrated: BrandingData = {
     ...data,
     // Explicitly preserve UI states if they exist
     collapsedSections: data.collapsedSections,
     compactSections: data.compactSections,
     layout: data.layout,
   };
-  
+
   // Group sections by category
   const grouped: Record<string, string[]> = {
     'mercado-nicho': [],
@@ -154,21 +157,21 @@ export const migrateMarketResearch = (data: BrandingData): BrandingData => {
 
   parsed.forEach((section: ParsedSection) => {
     const category = categorizeMarketSection(section.title);
-    
+
     // Combine subsections and items into text
     const parts: string[] = [];
-    
+
     section.subsections.forEach(sub => {
       if (sub.title) {
         parts.push(`**${sub.title}**:`);
       }
       parts.push(...sub.content);
     });
-    
+
     if (section.items.length > 0) {
       parts.push(...section.items);
     }
-    
+
     if (parts.length > 0) {
       grouped[category].push(parts.join('\n'));
     }
@@ -183,44 +186,14 @@ export const migrateMarketResearch = (data: BrandingData): BrandingData => {
   return migrated;
 };
 
-/**
- * Clean and format market research text for proper display in textareas and PDFs
- * - Converts literal \n escape sequences to actual newlines
- * - Converts markdown-style bullet points to proper formatting
- * - Normalizes whitespace and formatting
- */
-export const cleanMarketResearchText = (text: string): string => {
-  if (!text) return '';
-  
-  // Convert literal \n escape sequences to actual newlines
-  let cleaned = text.replace(/\\n/g, '\n');
-  
-  // Convert literal \t to actual tabs
-  cleaned = cleaned.replace(/\\t/g, '\t');
-  
-  // Convert markdown-style bullet points (*   ) to proper bullets
-  // Handle both *   and -   patterns
-  cleaned = cleaned.replace(/^\s*[\*\-]\s+/gm, '• ');
-  
-  // Clean up multiple spaces (but preserve intentional spacing)
-  cleaned = cleaned.replace(/[ \t]+/g, ' ');
-  
-  // Normalize multiple consecutive newlines to double newlines (paragraph breaks)
-  cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
-  
-  // Remove leading/trailing whitespace but preserve internal formatting
-  cleaned = cleaned.trim();
-  
-  return cleaned;
-};
 
 export const extractTextFromContent = (content: any): string => {
   if (!content) return '';
-  
+
   if (typeof content === 'string') {
     return content;
   }
-  
+
   if (Array.isArray(content)) {
     return content.map(item => {
       if (typeof item === 'string') return item;
@@ -232,7 +205,7 @@ export const extractTextFromContent = (content: any): string => {
       return String(item);
     }).join('\n');
   }
-  
+
   if (typeof content === 'object' && content !== null) {
     return Object.entries(content)
       .map(([key, value]) => {
@@ -246,7 +219,7 @@ export const extractTextFromContent = (content: any): string => {
       })
       .join('\n\n');
   }
-  
+
   return String(content);
 };
 

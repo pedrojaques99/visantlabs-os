@@ -3,18 +3,35 @@ import type { PromptCategory } from '../types/communityPrompts.js';
 
 // Cache for community presets
 let presetsPromise: Promise<Record<string, any[]>> | null = null;
+let lastToken: string | null = null;
 
 /**
  * Load community presets from API
  */
 async function loadPresetsFromAPI(): Promise<Record<string, any[]>> {
-  if (presetsPromise) {
+  // Dynamic import to avoid circular dependencies if any
+  const { authService } = await import('./authService');
+  const token = authService.getToken();
+
+  // If we have a cached promise and the token hasn't changed, return it
+  if (presetsPromise && lastToken === token) {
     return presetsPromise;
   }
 
+  // Update token tracker
+  lastToken = token;
+
   presetsPromise = (async () => {
     try {
-      const response = await fetch('/api/community/presets/public');
+      const headers: HeadersInit = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch('/api/community/presets/public', {
+        headers
+      });
+
       if (response.ok) {
         const data = await response.json();
         // Migrar presets legados e estruturar por categoria
@@ -34,6 +51,7 @@ async function loadPresetsFromAPI(): Promise<Record<string, any[]>> {
     } catch (error) {
       console.warn('Failed to load community presets from API, using empty fallback:', error);
       presetsPromise = null; // Reset on error to allow retry
+      lastToken = null; // Reset token on error
     }
 
     // Return empty fallback on error or non-ok response

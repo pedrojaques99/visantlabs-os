@@ -33,7 +33,7 @@ export const TagSelector: React.FC<TagSelectorProps> = ({ tags, selectedTags, on
             key={tag}
             onClick={() => onTagToggle(tag)}
             disabled={isDisabled}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border transform hover:-translate-y-0.5 active:translate-y-0 ${isSelected
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border ${isSelected
               ? theme === 'dark'
                 ? 'bg-brand-cyan/20 text-brand-cyan border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
                 : 'bg-brand-cyan/20 text-zinc-800 border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'

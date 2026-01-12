@@ -362,18 +362,6 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
                   <Globe size={14} />
                   {t('auth.community') || 'Community'}
                 </button>
-                <button
-                  onClick={() => {
-                    setIsDropdownOpen(false);
-                    window.history.pushState({}, '', '/profile?tab=configuration');
-                    window.dispatchEvent(new PopStateEvent('popstate'));
-                  }}
-                  className="w-full text-left px-4 py-2 text-xs font-mono transition-colors cursor-pointer text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 flex items-center gap-2"
-                >
-                  <Key size={14} />
-                  {t('configuration.menuTitle') || 'API Keys'}
-                </button>
-
                 {user.isAdmin && (
                   <>
                     <div className="border-t border-zinc-800/50 my-1" />

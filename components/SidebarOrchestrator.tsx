@@ -1,5 +1,5 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { RotateCcw, Lock, X, Dices, RefreshCcw, FileText, Settings } from 'lucide-react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
+import { RotateCcw, Lock, X, Dices, RefreshCcw, FileText, Settings, Wand2, ScanEye } from 'lucide-react';
 import { InputSection } from './ui/InputSection';
 import { DesignTypeSection } from './mockupmachine/DesignTypeSection';
 import { QuickActionsBar } from './ui/QuickActionsBar';
@@ -18,283 +18,226 @@ import { useTranslation } from '../hooks/useTranslation';
 import { cn } from '../lib/utils';
 import type { UploadedImage, DesignType, AspectRatio, GeminiModel, Resolution } from '../types';
 import type { SubscriptionStatus } from '../services/subscriptionService';
+import { useMockup } from './mockupmachine/MockupContext';
+import { useMockupTags } from '../hooks/useMockupTags';
+import { useLayout } from '../hooks/useLayout';
+import {
+  AVAILABLE_BRANDING_TAGS,
+  AVAILABLE_TAGS,
+  AVAILABLE_LOCATION_TAGS,
+  AVAILABLE_ANGLE_TAGS,
+  AVAILABLE_LIGHTING_TAGS,
+  AVAILABLE_EFFECT_TAGS,
+  AVAILABLE_MATERIAL_TAGS
+} from '../utils/mockupConstants';
 
 interface SidebarOrchestratorProps {
   // Layout props
-  hasGenerated: boolean;
   sidebarWidth: number;
   sidebarRef: React.RefObject<HTMLElement>;
   onSidebarWidthChange: (width: number) => void;
   onCloseMobile?: () => void;
+  generateOutputsButtonRef: React.RefObject<HTMLButtonElement>;
 
-  // Subscription
-  subscriptionStatus: SubscriptionStatus | null;
-
-  // Input
-  uploadedImage: UploadedImage | null;
-  referenceImage: UploadedImage | null;
-  referenceImages: UploadedImage[];
-  designType: DesignType | null;
-  isImagelessMode: boolean;
+  // External Logic / Triggers
+  onSurpriseMe: (autoGenerate: boolean) => void;
+  onOpenSurpriseMeSettings?: () => void;
   onImageUpload: (image: UploadedImage) => void;
   onReferenceImagesChange: (images: UploadedImage[]) => void;
   onStartOver: () => void;
   onDesignTypeChange: (type: DesignType) => void;
-  onScrollToSection: (sectionId: string) => void;
-
-  // Model Selection
-  selectedModel: GeminiModel | null;
-  resolution: Resolution;
-  onModelChange: (model: GeminiModel) => void;
-  onResolutionChange: (resolution: Resolution) => void;
-
-  // Quick Actions
-  onSurpriseMe: (autoGenerate: boolean) => void;
-  onOpenSurpriseMeSettings?: () => void;
-  isGenerating: boolean;
-  isGeneratingPrompt: boolean;
-
-  // Branding
-  displayBrandingTags: string[];
-  selectedBrandingTags: string[];
-  onBrandingTagToggle: (tag: string) => void;
-  customBrandingInput: string;
-  onCustomBrandingInputChange: (value: string) => void;
-  onAddCustomBrandingTag: () => void;
-  brandingComplete: boolean;
-
-  // Categories
-  suggestedTags: string[];
-  displayAvailableCategoryTags: string[];
-  displaySuggestedTags: string[];
-  selectedTags: string[];
-  onTagToggle: (tag: string) => void;
-  isAnalyzing: boolean;
-  isAllCategoriesOpen: boolean;
-  onToggleAllCategories: () => void;
-  customCategoryInput: string;
-  onCustomCategoryInputChange: (value: string) => void;
-  onAddCustomCategoryTag: () => void;
-  onRandomizeCategories: () => void;
-  categoriesComplete: boolean;
-
-  // Advanced Options
-  isAdvancedOpen: boolean;
-  onToggleAdvanced: () => void;
-  selectedLocationTags: string[];
-  selectedAngleTags: string[];
-  selectedLightingTags: string[];
-  selectedEffectTags: string[];
-  selectedMaterialTags: string[];
-  selectedColors: string[];
-  colorInput: string;
-  isValidColor: boolean;
-  negativePrompt: string;
-  additionalPrompt: string;
-  onLocationTagToggle: (tag: string) => void;
-  onAngleTagToggle: (tag: string) => void;
-  onLightingTagToggle: (tag: string) => void;
-  onEffectTagToggle: (tag: string) => void;
-  onMaterialTagToggle: (tag: string) => void;
-  onColorInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onAddColor: () => void;
-  onRemoveColor: (color: string) => void;
-  onNegativePromptChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  onAdditionalPromptChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  availableLocationTags: string[];
-  availableAngleTags: string[];
-  availableLightingTags: string[];
-  availableEffectTags: string[];
-  availableMaterialTags: string[];
-  customLocationInput: string;
-  customAngleInput: string;
-  customLightingInput: string;
-  customEffectInput: string;
-  customMaterialInput: string;
-  onCustomLocationInputChange: (value: string) => void;
-  onCustomAngleInputChange: (value: string) => void;
-  onCustomLightingInputChange: (value: string) => void;
-  onCustomEffectInputChange: (value: string) => void;
-  onCustomMaterialInputChange: (value: string) => void;
-  onAddCustomLocationTag: () => void;
-  onAddCustomAngleTag: () => void;
-  onAddCustomLightingTag: () => void;
-  onAddCustomEffectTag: () => void;
-  onAddCustomMaterialTag: () => void;
-
-  // Aspect Ratio
-  aspectRatio: AspectRatio;
-  onAspectRatioChange: (ratio: AspectRatio) => void;
-
-  // Output Config
-  mockupCount: number;
-  onMockupCountChange: (count: number) => void;
-  generateText: boolean;
-  onGenerateTextChange: (value: boolean) => void;
-  withHuman: boolean;
-  onWithHumanChange: (value: boolean) => void;
-  enhanceTexture: boolean;
-  onEnhanceTextureChange: (value: boolean) => void;
-
-  // Prompt
-  promptPreview: string;
-  onPromptChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  promptSuggestions: string[];
-  isSuggestingPrompts: boolean;
-  mockups: (string | null)[];
+  onGenerateClick: () => void;
   onSuggestPrompts: () => void;
   onGenerateSmartPrompt: () => void;
   onSimplify: () => void;
   onRegenerate: () => void;
-  onSuggestionClick: (suggestion: string) => void;
-  isSmartPromptActive: boolean;
-  setIsSmartPromptActive: (value: boolean) => void;
-  setIsPromptManuallyEdited: (value: boolean) => void;
-
-  // Generate Button
-  onGenerateClick: () => void;
-  isGenerateDisabled: boolean;
-  isPromptReady: boolean;
-  generateOutputsButtonRef: React.RefObject<HTMLButtonElement>;
-
-  // Auth
-  isAuthenticated: boolean | null;
-  authenticationRequiredMessage: string;
-
-  // Reset
-  onResetControls: () => void;
-
-  // Suggestion generation
-  onGenerateSuggestion?: (suggestion: string) => void;
-
-  // Blank mockup
   onBlankMockup?: () => void;
+  onGenerateSuggestion: (suggestion: string) => void;
+  onAnalyze: () => void; // New prop
+
+  // Specific UI props
+  authenticationRequiredMessage: string;
 }
 
 export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
-  hasGenerated,
   sidebarWidth,
   sidebarRef,
   onSidebarWidthChange,
   onCloseMobile,
-  subscriptionStatus,
-  uploadedImage,
-  referenceImage,
-  referenceImages,
-  designType,
-  isImagelessMode,
+  onSurpriseMe,
+  onOpenSurpriseMeSettings,
   onImageUpload,
   onReferenceImagesChange,
   onStartOver,
   onDesignTypeChange,
-  onScrollToSection,
-  selectedModel,
-  resolution,
-  onModelChange,
-  onResolutionChange,
-  onSurpriseMe,
-  onOpenSurpriseMeSettings,
-  isGenerating,
-  isGeneratingPrompt,
-  displayBrandingTags,
-  selectedBrandingTags,
-  onBrandingTagToggle,
-  customBrandingInput,
-  onCustomBrandingInputChange,
-  onAddCustomBrandingTag,
-  brandingComplete,
-  suggestedTags,
-  displayAvailableCategoryTags,
-  displaySuggestedTags,
-  selectedTags,
-  onTagToggle,
-  isAnalyzing,
-  isAllCategoriesOpen,
-  onToggleAllCategories,
-  customCategoryInput,
-  onCustomCategoryInputChange,
-  onAddCustomCategoryTag,
-  onRandomizeCategories,
-  categoriesComplete,
-  isAdvancedOpen,
-  onToggleAdvanced,
-  selectedLocationTags,
-  selectedAngleTags,
-  selectedLightingTags,
-  selectedEffectTags,
-  selectedMaterialTags,
-  selectedColors,
-  colorInput,
-  isValidColor,
-  negativePrompt,
-  additionalPrompt,
-  onLocationTagToggle,
-  onAngleTagToggle,
-  onLightingTagToggle,
-  onEffectTagToggle,
-  onMaterialTagToggle,
-  onColorInputChange,
-  onAddColor,
-  onRemoveColor,
-  onNegativePromptChange,
-  onAdditionalPromptChange,
-  availableLocationTags,
-  availableAngleTags,
-  availableLightingTags,
-  availableEffectTags,
-  availableMaterialTags,
-  customLocationInput,
-  customAngleInput,
-  customLightingInput,
-  customEffectInput,
-  customMaterialInput,
-  onCustomLocationInputChange,
-  onCustomAngleInputChange,
-  onCustomLightingInputChange,
-  onCustomEffectInputChange,
-  onCustomMaterialInputChange,
-  onAddCustomLocationTag,
-  onAddCustomAngleTag,
-  onAddCustomLightingTag,
-  onAddCustomEffectTag,
-  onAddCustomMaterialTag,
-  aspectRatio,
-  onAspectRatioChange,
-  mockupCount,
-  onMockupCountChange,
-  generateText,
-  onGenerateTextChange,
-  withHuman,
-  onWithHumanChange,
-  enhanceTexture,
-  onEnhanceTextureChange,
-  promptPreview,
-  onPromptChange,
-  promptSuggestions,
-  isSuggestingPrompts,
-  hasGenerated: hasGeneratedForPrompt,
-  mockups,
+  onGenerateClick,
   onSuggestPrompts,
   onGenerateSmartPrompt,
   onSimplify,
   onRegenerate,
-  onSuggestionClick,
-  isSmartPromptActive,
-  setIsSmartPromptActive,
-  setIsPromptManuallyEdited,
-  onGenerateClick,
-  isGenerateDisabled,
-  isPromptReady,
-  generateOutputsButtonRef,
-  isAuthenticated,
-  authenticationRequiredMessage,
-  onResetControls,
+  onBlankMockup,
   onGenerateSuggestion,
-  onBlankMockup
+  onAnalyze,
+  generateOutputsButtonRef,
+  authenticationRequiredMessage
 }) => {
   const { t } = useTranslation();
-  const hasGeneratedForPromptSection = hasGeneratedForPrompt;
+  const { subscriptionStatus, isAuthenticated } = useLayout();
+
+  const {
+    uploadedImage,
+    referenceImage,
+    referenceImages,
+    designType,
+    isImagelessMode,
+    selectedModel,
+    resolution,
+    setSelectedModel,
+    setResolution,
+    selectedBrandingTags,
+    customBrandingInput,
+    setCustomBrandingInput,
+    suggestedTags,
+    selectedTags,
+    isAnalyzing,
+    isAllCategoriesOpen,
+    setIsAllCategoriesOpen,
+    customCategoryInput,
+    setCustomCategoryInput,
+    isAdvancedOpen,
+    setIsAdvancedOpen,
+    selectedLocationTags,
+    selectedAngleTags,
+    selectedLightingTags,
+    selectedEffectTags,
+    selectedMaterialTags,
+    selectedColors,
+    colorInput,
+    isValidColor,
+    suggestedBrandingTags,
+    suggestedLocationTags,
+    suggestedAngleTags,
+    suggestedLightingTags,
+    suggestedEffectTags,
+    suggestedMaterialTags,
+    suggestedColors: suggestedColorsFromAnalysis,
+    negativePrompt,
+    setNegativePrompt,
+    additionalPrompt,
+    setAdditionalPrompt,
+    aspectRatio,
+    setAspectRatio,
+    mockupCount,
+    setMockupCount,
+    generateText,
+    setGenerateText,
+    withHuman,
+    setWithHuman,
+    enhanceTexture,
+    setEnhanceTexture,
+    promptPreview,
+    setPromptPreview,
+    promptSuggestions,
+    isSuggestingPrompts,
+    mockups,
+    isSmartPromptActive,
+    setIsSmartPromptActive,
+    setIsPromptManuallyEdited,
+    hasGenerated,
+    resetAll,
+    setColorInput,
+    setIsValidColor,
+    setSelectedColors,
+    setCustomLocationInput,
+    setCustomAngleInput,
+    setCustomLightingInput,
+    setCustomEffectInput,
+    setCustomMaterialInput,
+    customLocationInput,
+    customAngleInput,
+    customLightingInput,
+    customEffectInput,
+    customMaterialInput,
+    isPromptReady,
+    setIsPromptReady,
+    isGeneratingPrompt,
+    isLoading,
+    hasAnalyzed
+  } = useMockup();
+
+  const {
+    handleTagToggle,
+    handleBrandingTagToggle,
+    handleLocationTagToggle,
+    handleAngleTagToggle,
+    handleLightingTagToggle,
+    handleEffectTagToggle,
+    handleMaterialTagToggle,
+    handleAddCustomBrandingTag,
+    handleAddCustomCategoryTag,
+    handleRandomizeCategories,
+    handleAddCustomLocationTag,
+    handleAddCustomAngleTag,
+    handleAddCustomLightingTag,
+    handleAddCustomEffectTag,
+    handleAddCustomMaterialTag,
+    scrollToSection
+  } = useMockupTags();
+
+  // Helper values
   const designTypeSelected = !!designType;
+  const brandingComplete = selectedBrandingTags.length > 0;
+  const categoriesComplete = selectedTags.length > 0;
+  const hasReferenceImage = !!referenceImage || referenceImages.length > 0;
+
+  const displayBrandingTags = useMemo(() => [...new Set([...AVAILABLE_BRANDING_TAGS, ...selectedBrandingTags])], [selectedBrandingTags]);
+  const displaySuggestedTags = useMemo(() => [...new Set([...suggestedTags, ...selectedTags])], [suggestedTags, selectedTags]);
+  const displayAvailableCategoryTags = useMemo(() => [...new Set([...AVAILABLE_TAGS, ...selectedTags])], [selectedTags]);
+  const displayLocationTags = useMemo(() => [...new Set([...AVAILABLE_LOCATION_TAGS, ...selectedLocationTags])], [selectedLocationTags]);
+  const displayAngleTags = useMemo(() => [...new Set([...AVAILABLE_ANGLE_TAGS, ...selectedAngleTags])], [selectedAngleTags]);
+  const displayLightingTags = useMemo(() => [...new Set([...AVAILABLE_LIGHTING_TAGS, ...selectedLightingTags])], [selectedLightingTags]);
+  const displayEffectTags = useMemo(() => [...new Set([...AVAILABLE_EFFECT_TAGS, ...selectedEffectTags])], [selectedEffectTags]);
+  const displayMaterialTags = useMemo(() => [...new Set([...AVAILABLE_MATERIAL_TAGS, ...selectedMaterialTags])], [selectedMaterialTags]);
+
+  const shouldCollapseSections = hasReferenceImage && uploadedImage !== null && designType !== 'blank';
+
+  const handleColorInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newColor = e.target.value.trim();
+    setColorInput(newColor);
+    setIsValidColor(/^#([0-9A-F]{3}){1,2}$/i.test(newColor));
+  };
+
+  const handleAddColor = () => {
+    const sanitizedColor = colorInput.trim().toUpperCase();
+    if (isValidColor && !selectedColors.includes(sanitizedColor) && selectedColors.length < 5) {
+      setSelectedColors([...selectedColors, sanitizedColor]);
+      setColorInput('');
+      setIsValidColor(false);
+    }
+  };
+
+  const handleRemoveColor = (colorToRemove: string) => {
+    setSelectedColors(selectedColors.filter(color => color !== colorToRemove));
+  };
+
+  const handlePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    setPromptPreview(newValue);
+    if (isSmartPromptActive) {
+      setIsSmartPromptActive(false);
+    }
+    setIsPromptManuallyEdited(true);
+    if (newValue.trim().length > 0 && isPromptReady) {
+      setIsPromptReady(true);
+    }
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setPromptPreview(suggestion);
+    if (isSmartPromptActive) setIsSmartPromptActive(false);
+    setIsPromptManuallyEdited(false);
+  };
+
   const [isLargeScreen, setIsLargeScreen] = useState(false);
   const [hasScrolledToBranding, setHasScrolledToBranding] = useState(false);
   const [hasScrolledToCategories, setHasScrolledToCategories] = useState(false);
@@ -302,9 +245,8 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
   const [autoGenerate, setAutoGenerate] = useState(true);
   const [isDiceAnimating, setIsDiceAnimating] = useState(false);
 
-  // Check if reference images are present to determine if sections should be hidden
-  const hasReferenceImage = referenceImage !== null || referenceImages.length > 0;
-  const shouldCollapseSections = hasReferenceImage && uploadedImage !== null && designType !== 'blank';
+  const isGenerating = isLoading.some(l => l);
+  const isGenerateDisabled = !selectedModel || isGenerating || isGeneratingPrompt || !designTypeSelected;
 
   const handleSurpriseMe = () => {
     setIsDiceAnimating(true);
@@ -490,23 +432,26 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
       <aside
         ref={sidebarRef}
         id="sidebar"
-        className={`relative flex-shrink-0 bg-sidebar text-sidebar-foreground p-4 sm:p-6 md:p-8 overflow-y-auto pb-32 md:pb-16 z-10 ${!hasGenerated ? 'rounded-md border border-sidebar-border/5 w-full max-w-5xl lg:max-w-6xl mx-auto' : 'border-r border-sidebar-border/5 w-full lg:w-auto max-w-4xl lg:max-w-5xl h-full'}`}
+        className={`relative flex-shrink-0 bg-sidebar text-sidebar-foreground overflow-y-auto z-10 ${!hasGenerated
+          ? 'p-3 sm:p-4 md:p-6 lg:p-8 pb-24 sm:pb-28 md:pb-32 rounded-md border border-sidebar-border/5 w-full max-w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl mx-auto'
+          : 'p-3 sm:p-4 md:p-6 lg:p-8 pb-24 sm:pb-28 md:pb-32 lg:pb-16 border-r border-sidebar-border/5 w-full lg:w-auto max-w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl h-full'
+          }`}
         style={hasGenerated && isLargeScreen ? { width: `${sidebarWidth}px` } : {}}
       >
-        {/* Close button for mobile when hasGenerated */}
-        {hasGenerated && onCloseMobile && (
+        {/* Close button - always visible on all screen sizes */}
+        {onCloseMobile && (
           <Button
             onClick={onCloseMobile}
             variant="ghost"
             size="icon"
-            className="md:hidden absolute top-4 right-4 z-20 text-muted-foreground hover:text-brand-cyan hover:bg-sidebar-accent"
+            className="absolute top-4 right-4 z-20 text-muted-foreground hover:text-brand-cyan hover:bg-sidebar-accent"
             aria-label={t('mockup.closeSidebar')}
             title={t('mockup.closeSidebar')}
           >
             <X size={18} />
           </Button>
         )}
-        <div className="space-y-4 md:space-y-8">
+        <div className="space-y-3 sm:space-y-4 md:space-y-6 lg:space-y-8">
           <div
             className={`group ${(uploadedImage || referenceImage || referenceImages.length > 0) ? 'opacity-70 scale-[0.98] transition-all duration-300' : ''}`}
           >
@@ -546,61 +491,62 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
             </div>
           )}
 
-          {(uploadedImage || isImagelessMode || referenceImage) && (
-            <div className={selectedModel ? 'opacity-70 scale-[0.98] transition-all duration-300' : ''}>
-              <ModelSelectionSection
-                selectedModel={selectedModel}
-                onModelChange={onModelChange}
-                designType={designType}
-              />
-            </div>
-          )}
 
           {selectedModel && (
             <>
-              {/* Hide DesignTypeSection when reference images are present */}
-              {!hasReferenceImage && (
-                <div className={designTypeSelected ? 'opacity-70 scale-[0.98] transition-all duration-300' : ''}>
-                  <DesignTypeSection
-                    designType={designType}
-                    onDesignTypeChange={onDesignTypeChange}
-                    uploadedImage={uploadedImage}
-                    isImagelessMode={isImagelessMode}
-                    onScrollToSection={onScrollToSection}
-                  />
-                </div>
-              )}
-
               {selectedModel === 'gemini-3-pro-image-preview' && (
                 <AspectRatioSection
                   aspectRatio={aspectRatio}
-                  onAspectRatioChange={onAspectRatioChange}
+                  onAspectRatioChange={setAspectRatio}
                   selectedModel={selectedModel}
                 />
               )}
             </>
           )}
 
-          {/* Show sections when design type is selected OR when reference images are present */}
-          {(designTypeSelected || hasReferenceImage) && (
+          {/* Show sections when design type is selected OR when reference images are present OR when image is uploaded */}
+          {(designTypeSelected || hasReferenceImage || (uploadedImage && !isImagelessMode)) && (
             <div className="space-y-8 animate-fade-in">
               {/* Hide BrandingSection when reference images are present */}
-              {!shouldCollapseSections && designTypeSelected && (
-                <div className={brandingComplete && categoriesComplete ? 'opacity-70 scale-[0.98] transition-all duration-300' : ''}>
-                  <BrandingSection
-                    tags={displayBrandingTags}
-                    selectedTags={selectedBrandingTags}
-                    onTagToggle={onBrandingTagToggle}
-                    customInput={customBrandingInput}
-                    onCustomInputChange={onCustomBrandingInputChange}
-                    onAddCustomTag={onAddCustomBrandingTag}
-                    isComplete={brandingComplete}
-                  />
+              {/* Show branding when design type is selected OR when we have an uploaded image (pre-analysis) */}
+              {(designTypeSelected || (uploadedImage && !isImagelessMode)) && (
+                <BrandingSection
+                  tags={displayBrandingTags}
+                  selectedTags={selectedBrandingTags}
+                  suggestedTags={suggestedBrandingTags}
+                  onTagToggle={handleBrandingTagToggle}
+                  customInput={customBrandingInput}
+                  onCustomInputChange={setCustomBrandingInput}
+                  onAddCustomTag={handleAddCustomBrandingTag}
+                  isComplete={brandingComplete}
+                />
+              )}
+
+              {/* Analyze Button - Show only when uploaded image exists and not yet analyzed */}
+              {uploadedImage && !hasAnalyzed && !isImagelessMode && (
+                <div className="flex justify-center py-4 animate-fade-in">
+                  <Button
+                    onClick={onAnalyze}
+                    disabled={isAnalyzing}
+                    className="bg-brand-cyan text-black hover:bg-brand-cyan/90 font-semibold px-8 py-6 rounded-xl shadow-lg hover:shadow-brand-cyan/20 transition-all active:scale-95"
+                  >
+                    {isAnalyzing ? (
+                      <>
+                        <RefreshCcw className="mr-2 h-5 w-5 animate-spin" />
+                        {t('common.analyzing')}
+                      </>
+                    ) : (
+                      <>
+                        <ScanEye className="mr-2 h-5 w-5" />
+                        {t('mockup.analyzeImage')}
+                      </>
+                    )}
+                  </Button>
                 </div>
               )}
 
-              {/* Hide QuickActionsBar when reference images are present */}
-              {!shouldCollapseSections && designTypeSelected && (
+              {/* Show QuickActionsBar when design type is selected OR has uploaded image, AND analyzed */}
+              {(designTypeSelected || (uploadedImage && !isImagelessMode)) && hasAnalyzed && (
                 <QuickActionsBar
                   onSurpriseMe={handleSurpriseMe}
                   isGenerating={isGenerating}
@@ -611,34 +557,32 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
                 />
               )}
 
-              {/* Hide CategoriesSection when reference images are present */}
-              {!shouldCollapseSections && brandingComplete && designTypeSelected && (
-                <div className={categoriesComplete ? 'opacity-70 scale-[0.98] transition-all duration-300' : ''}>
-                  <CategoriesSection
-                    suggestedTags={suggestedTags}
-                    availableTags={displayAvailableCategoryTags}
-                    selectedTags={selectedTags}
-                    onTagToggle={onTagToggle}
-                    isAnalyzing={isAnalyzing}
-                    isAllCategoriesOpen={isAllCategoriesOpen}
-                    onToggleAllCategories={onToggleAllCategories}
-                    customInput={customCategoryInput}
-                    onCustomInputChange={onCustomCategoryInputChange}
-                    onAddCustomTag={onAddCustomCategoryTag}
-                    onRandomize={onRandomizeCategories}
-                    isComplete={categoriesComplete}
-                    displaySuggestedTags={displaySuggestedTags}
-                  />
-                </div>
+              {/* Show CategoriesSection when design type is selected OR has uploaded image */}
+              {(designTypeSelected || (uploadedImage && !isImagelessMode)) && (
+                <CategoriesSection
+                  suggestedTags={suggestedTags}
+                  availableTags={displayAvailableCategoryTags}
+                  selectedTags={selectedTags}
+                  onTagToggle={handleTagToggle}
+                  isAnalyzing={isAnalyzing}
+                  isAllCategoriesOpen={isAllCategoriesOpen}
+                  onToggleAllCategories={() => setIsAllCategoriesOpen(!isAllCategoriesOpen)}
+                  customInput={customCategoryInput}
+                  onCustomInputChange={setCustomCategoryInput}
+                  onAddCustomTag={handleAddCustomCategoryTag}
+                  onRandomize={handleRandomizeCategories}
+                  isComplete={categoriesComplete}
+                  displaySuggestedTags={displaySuggestedTags}
+                />
               )}
 
-              {/* Show refine section and below when categoriesComplete OR when reference images are present */}
-              {(categoriesComplete || hasReferenceImage) && (
+              {/* Show refine section and below immediately when design type is selected OR when reference images are present OR uploaded image */}
+              {(designTypeSelected || hasReferenceImage || (uploadedImage && !isImagelessMode)) && (
                 <div id="refine-section" className="space-y-8 animate-fade-in">
                   {/* Show RefineSection always - including when reference images are present */}
                   <RefineSection
                     isAdvancedOpen={isAdvancedOpen}
-                    onToggleAdvanced={onToggleAdvanced}
+                    onToggleAdvanced={() => setIsAdvancedOpen(!isAdvancedOpen)}
                     advancedOptionsProps={{
                       selectedLocationTags,
                       selectedAngleTags,
@@ -650,79 +594,94 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
                       isValidColor,
                       negativePrompt,
                       additionalPrompt,
-                      onLocationTagToggle,
-                      onAngleTagToggle,
-                      onLightingTagToggle,
-                      onEffectTagToggle,
-                      onMaterialTagToggle,
-                      onColorInputChange,
-                      onAddColor,
-                      onRemoveColor,
-                      onNegativePromptChange,
-                      onAdditionalPromptChange,
-                      availableLocationTags,
-                      availableAngleTags,
-                      availableLightingTags,
-                      availableEffectTags,
-                      availableMaterialTags,
+                      onLocationTagToggle: handleLocationTagToggle,
+                      onAngleTagToggle: handleAngleTagToggle,
+                      onLightingTagToggle: handleLightingTagToggle,
+                      onEffectTagToggle: handleEffectTagToggle,
+                      onMaterialTagToggle: handleMaterialTagToggle,
+                      onColorInputChange: handleColorInputChange,
+                      onAddColor: handleAddColor,
+                      onRemoveColor: handleRemoveColor,
+                      onNegativePromptChange: (e) => setNegativePrompt(e.target.value),
+                      onAdditionalPromptChange: (e) => setAdditionalPrompt(e.target.value),
+                      availableLocationTags: displayLocationTags,
+                      availableAngleTags: displayAngleTags,
+                      availableLightingTags: displayLightingTags,
+                      availableEffectTags: displayEffectTags,
+                      availableMaterialTags: displayMaterialTags,
                       customLocationInput,
                       customAngleInput,
                       customLightingInput,
                       customEffectInput,
                       customMaterialInput,
-                      onCustomLocationInputChange,
-                      onCustomAngleInputChange,
-                      onCustomLightingInputChange,
-                      onCustomEffectInputChange,
-                      onCustomMaterialInputChange,
-                      onAddCustomLocationTag,
-                      onAddCustomAngleTag,
-                      onAddCustomLightingTag,
-                      onAddCustomEffectTag,
-                      onAddCustomMaterialTag,
-                      designType
+                      onCustomLocationInputChange: setCustomLocationInput,
+                      onCustomAngleInputChange: setCustomAngleInput,
+                      onCustomLightingInputChange: setCustomLightingInput,
+                      onCustomEffectInputChange: setCustomEffectInput,
+                      onCustomMaterialInputChange: setCustomMaterialInput,
+                      onAddCustomLocationTag: handleAddCustomLocationTag,
+                      onAddCustomAngleTag: handleAddCustomAngleTag,
+                      onAddCustomLightingTag: handleAddCustomLightingTag,
+                      onAddCustomEffectTag: handleAddCustomEffectTag,
+                      onAddCustomMaterialTag: handleAddCustomMaterialTag,
+                      designType,
+                      suggestedLocationTags,
+                      suggestedAngleTags,
+                      suggestedLightingTags,
+                      suggestedEffectTags,
+                      suggestedMaterialTags,
+                      suggestedColors: suggestedColorsFromAnalysis
                     }}
                   />
 
+                  {/* Model Selection - after advanced controls, before output config */}
+                  {(uploadedImage || isImagelessMode || referenceImage) && (
+                    <div className="mt-8">
+                      <ModelSelectionSection
+                        selectedModel={selectedModel}
+                        onModelChange={setSelectedModel}
+                        designType={designType}
+                      />
+                    </div>
+                  )}
+
                   <OutputConfigSection
                     mockupCount={mockupCount}
-                    onMockupCountChange={onMockupCountChange}
+                    onMockupCountChange={setMockupCount}
                     generateText={generateText}
-                    onGenerateTextChange={onGenerateTextChange}
+                    onGenerateTextChange={setGenerateText}
                     withHuman={withHuman}
-                    onWithHumanChange={onWithHumanChange}
+                    onWithHumanChange={setWithHuman}
                     enhanceTexture={enhanceTexture}
-                    onEnhanceTextureChange={onEnhanceTextureChange}
+                    onEnhanceTextureChange={setEnhanceTexture}
                     designType={designType}
                     selectedModel={selectedModel}
                     resolution={resolution}
-                    onResolutionChange={onResolutionChange}
+                    onResolutionChange={setResolution}
                   />
 
-                  {/* Show PromptSection when categoriesComplete OR when reference images are present */}
-                  {(categoriesComplete || shouldCollapseSections) && (
-                    <PromptSection
-                      promptPreview={promptPreview}
-                      onPromptChange={onPromptChange}
-                      promptSuggestions={promptSuggestions}
-                      isGeneratingPrompt={isGeneratingPrompt}
-                      isSuggestingPrompts={isSuggestingPrompts}
-                      isGenerating={isGenerating}
-                      hasGenerated={hasGeneratedForPromptSection}
-                      mockups={mockups}
-                      onSuggestPrompts={onSuggestPrompts}
-                      onGenerateSmartPrompt={onGenerateSmartPrompt}
-                      onSimplify={onSimplify}
-                      onRegenerate={onRegenerate}
-                      onSuggestionClick={onSuggestionClick}
-                      isSmartPromptActive={isSmartPromptActive}
-                      setIsSmartPromptActive={setIsSmartPromptActive}
-                      setIsPromptManuallyEdited={setIsPromptManuallyEdited}
-                      creditsPerGeneration={creditsPerGeneration}
-                      onGenerateSuggestion={onGenerateSuggestion}
-                      isGenerateDisabled={isGenerateDisabled}
-                    />
-                  )}
+                  {/* Show PromptSection always */}
+                  <PromptSection
+                    promptPreview={promptPreview}
+                    onPromptChange={handlePromptChange}
+                    promptSuggestions={promptSuggestions}
+                    isGeneratingPrompt={isGeneratingPrompt}
+                    isSuggestingPrompts={isSuggestingPrompts}
+                    isGenerating={isGenerating}
+                    hasGenerated={hasGenerated}
+                    mockups={mockups}
+                    onSuggestPrompts={onSuggestPrompts}
+                    onGenerateSmartPrompt={onGenerateSmartPrompt}
+                    onSimplify={onSimplify}
+                    onRegenerate={onRegenerate}
+                    onSuggestionClick={handleSuggestionClick}
+                    isSmartPromptActive={isSmartPromptActive}
+                    setIsSmartPromptActive={setIsSmartPromptActive}
+                    setIsPromptManuallyEdited={setIsPromptManuallyEdited}
+                    creditsPerGeneration={creditsPerGeneration}
+                    onGenerateSuggestion={onGenerateSuggestion}
+                    isGenerateDisabled={isGenerateDisabled}
+                  />
 
                   <div className="flex flex-col gap-2 mt-6">
                     <GenerateButton
@@ -750,32 +709,34 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
                           {isGenerating ? <RefreshCcw size={18} className="animate-spin" /> : <RefreshCcw size={18} />}
                         </Button>
                       )}
-                      <div className="flex items-center gap-2">
-                        <Button
-                          onClick={handleSurpriseMe}
-                          disabled={isGenerating || isGeneratingPrompt}
-                          variant="sidebarAction"
-                          size="sidebar"
-                          className={cn("flex-1 justify-center", isDiceAnimating && 'dice-button-clicked')}
-                          aria-label={t('mockup.surpriseMe')}
-                          title={t('mockup.surpriseMeTooltip')}
-                        >
-                          <Dices size={18} className={isDiceAnimating ? 'dice-icon-animate' : ''} />
-                        </Button>
-                        {onOpenSurpriseMeSettings && (
+                      {hasAnalyzed && (
+                        <div className="flex items-center gap-2">
                           <Button
-                            onClick={onOpenSurpriseMeSettings}
+                            onClick={handleSurpriseMe}
                             disabled={isGenerating || isGeneratingPrompt}
                             variant="sidebarAction"
                             size="sidebar"
-                            className="w-[48px] justify-center"
-                            aria-label={t('mockup.surpriseMeSettings')}
-                            title={t('mockup.surpriseMeSettingsTooltip')}
+                            className={cn("flex-1 justify-center", isDiceAnimating && 'dice-button-clicked')}
+                            aria-label={t('mockup.surpriseMe')}
+                            title={t('mockup.surpriseMeTooltip')}
                           >
-                            <Settings size={18} />
+                            <Dices size={18} className={isDiceAnimating ? 'dice-icon-animate' : ''} />
                           </Button>
-                        )}
-                      </div>
+                          {onOpenSurpriseMeSettings && (
+                            <Button
+                              onClick={onOpenSurpriseMeSettings}
+                              disabled={isGenerating || isGeneratingPrompt}
+                              variant="sidebarAction"
+                              size="sidebar"
+                              className="w-[48px] justify-center"
+                              aria-label={t('mockup.surpriseMeSettings')}
+                              title={t('mockup.surpriseMeSettingsTooltip')}
+                            >
+                              <Settings size={18} />
+                            </Button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -795,9 +756,10 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
                     ) : null;
                   })()}
 
+
                   <div className="flex justify-center mt-8 mb-4">
                     <Button
-                      onClick={onResetControls}
+                      onClick={resetAll}
                       variant="ghost"
                       size="sm"
                       className="w-auto gap-1.5 text-zinc-500 hover:text-zinc-400 text-[10px] font-mono opacity-60 hover:opacity-100"

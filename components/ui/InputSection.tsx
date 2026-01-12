@@ -95,7 +95,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
         {t('mockup.input')}
       </h2>
 
-      <div className={`${hasImage && supportsReferences ? 'flex gap-2' : (hasImage ? 'w-1/4 opacity-80' : 'w-1/4')} mx-auto transition-all duration-300`}>
+      <div className={`${hasImage && supportsReferences ? 'flex flex-wrap sm:flex-nowrap gap-2' : (hasImage ? 'w-full sm:w-1/2 md:w-1/4 opacity-80' : 'w-full sm:w-1/2 md:w-1/4')} mx-auto transition-all duration-300`}>
         <div className={`relative aspect-[4/3] bg-black/20 rounded-md p-2 border border-zinc-700/50 ${supportsReferences && hasImage ? 'flex-1' : ''}`}>
           {isLoadingImage ? (
             <div className="w-full h-full flex flex-col items-center justify-center text-zinc-500">
@@ -194,7 +194,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
             ) : (
               <label
                 htmlFor="multiple-image-upload"
-                className={`aspect-[4/3] flex items-center justify-center bg-zinc-800/50 text-zinc-400 rounded-md border border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300 hover:bg-zinc-800/70 transition-all duration-200 cursor-pointer ${isImagelessMode ? 'flex-[0.3]' : 'flex-1'}`}
+                className={`aspect-[4/3] flex items-center justify-center bg-zinc-800/50 text-zinc-400 rounded-md border border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300 hover:bg-zinc-800/70 transition-all duration-200 cursor-pointer ${isImagelessMode ? 'flex-[0.3] min-w-[80px]' : 'flex-1 min-w-[100px]'}`}
               >
                 <Plus size={24} />
               </label>

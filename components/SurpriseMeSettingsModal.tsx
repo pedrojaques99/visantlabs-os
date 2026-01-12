@@ -12,12 +12,19 @@ import {
   Sparkles,
   Layers,
   CheckCircle2,
-  Circle
+  Circle,
+  Plus,
+  Trash2,
+  Save as SaveIcon,
+  Play
 } from 'lucide-react';
 import { Badge } from './ui/badge';
+import { Input } from './ui/input';
+import { Button } from './ui/button';
 import { useTranslation } from '../hooks/useTranslation';
 import { toast } from 'sonner';
 import { getSurpriseMeSelectedTags, saveSurpriseMeSelectedTags, type SurpriseMeSelectedTags } from '../utils/surpriseMeSettings';
+import { surpriseMeService, type SurpriseMePreset } from '../services/surpriseMeService';
 import {
   GENERIC_MOCKUP_TAGS,
   AVAILABLE_LOCATION_TAGS,
@@ -42,6 +49,9 @@ export const SurpriseMeSettingsModal: React.FC<SurpriseMeSettingsModalProps> = (
     selectedEffectTags: [],
     selectedMaterialTags: [],
   });
+  const [presets, setPresets] = useState<SurpriseMePreset[]>([]);
+  const [presetName, setPresetName] = useState('');
+  const [showSaveInput, setShowSaveInput] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -61,6 +71,7 @@ export const SurpriseMeSettingsModal: React.FC<SurpriseMeSettingsModalProps> = (
     if (isOpen) {
       setIsAnimating(true);
       loadSettings();
+      fetchPresets();
       // Prevent body scroll
       document.body.style.overflow = 'hidden';
     } else {
@@ -146,6 +157,53 @@ export const SurpriseMeSettingsModal: React.FC<SurpriseMeSettingsModalProps> = (
       toast.error(t('surpriseMeSettings.loadError') || 'Failed to load settings');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchPresets = async () => {
+    try {
+      const data = await surpriseMeService.getPresets();
+      setPresets(data);
+    } catch (error) {
+      console.error('Failed to fetch presets:', error);
+    }
+  };
+
+  const handleSavePreset = async () => {
+    if (!presetName.trim()) {
+      toast.error(t('mockup.presetNameRequired') || 'Preset name is required');
+      return;
+    }
+
+    try {
+      const newPreset = await surpriseMeService.savePreset(presetName.trim(), selectedTags);
+      if (newPreset) {
+        setPresets(prev => [newPreset, ...prev]);
+        setPresetName('');
+        setShowSaveInput(false);
+        toast.success(t('mockup.presetSaved') || 'Preset saved successfully!');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to save preset');
+    }
+  };
+
+  const handleLoadPreset = (preset: SurpriseMePreset) => {
+    setSelectedTags(preset.config);
+    toast.success(`${t('mockup.loadPreset') || 'Loaded'}: ${preset.name}`);
+  };
+
+  const handleDeletePreset = async (id: string) => {
+    if (window.confirm(t('mockup.confirmDeletePreset') || 'Are you sure you want to delete this preset?')) {
+      try {
+        const success = await surpriseMeService.deletePreset(id);
+        if (success) {
+          setPresets(prev => prev.filter(p => p.id !== id));
+          toast.success(t('mockup.presetDeleted') || 'Preset deleted successfully!');
+        }
+      } catch (error) {
+        toast.error('Failed to delete preset');
+      }
     }
   };
 
@@ -359,6 +417,93 @@ export const SurpriseMeSettingsModal: React.FC<SurpriseMeSettingsModalProps> = (
                     {t('surpriseMeSettings.info') || 'Choose which tags you want to include when using Surprise Me. Unselected tags will be excluded from random generations.'}
                   </p>
                 </div>
+
+                {/* Presets Management */}
+                <div className="space-y-4 pt-2">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-mono font-bold text-zinc-500 uppercase tracking-widest">
+                      {t('mockup.surpriseMePresets') || 'Surprise Me Presets'}
+                    </h3>
+                    {!showSaveInput && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowSaveInput(true)}
+                        className="h-8 px-3 text-[10px] font-mono text-brand-cyan hover:bg-brand-cyan/10"
+                      >
+                        <Plus size={14} className="mr-1" />
+                        {t('mockup.saveAsPreset') || 'Save as Preset'}
+                      </Button>
+                    )}
+                  </div>
+
+                  {showSaveInput && (
+                    <div className="flex items-center gap-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                      <Input
+                        value={presetName}
+                        onChange={(e) => setPresetName(e.target.value)}
+                        placeholder={t('mockup.presetNamePlaceholder') || 'Preset name...'}
+                        className="h-9 bg-zinc-900 border-zinc-800 text-sm"
+                        autoFocus
+                      />
+                      <Button
+                        size="sm"
+                        onClick={handleSavePreset}
+                        className="h-9 bg-brand-cyan text-black hover:bg-brand-cyan/90"
+                      >
+                        <SaveIcon size={14} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowSaveInput(false)}
+                        className="h-9 w-9 p-0 text-zinc-500"
+                      >
+                        <X size={16} />
+                      </Button>
+                    </div>
+                  )}
+
+                  {presets.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {presets.map(preset => (
+                        <div
+                          key={preset.id}
+                          className="flex items-center justify-between p-3 bg-white/[0.02] border border-white/5 rounded-xl hover:border-brand-cyan/30 transition-all group"
+                        >
+                          <span className="text-xs font-medium text-zinc-300 truncate mr-2">{preset.name}</span>
+                          <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleLoadPreset(preset)}
+                              className="h-7 px-2 text-[10px] font-mono text-zinc-400 hover:text-brand-cyan"
+                            >
+                              {/* Using simple text if Load icon is not available, but let's assume it is or use simple text */}
+                              Load
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeletePreset(preset.id)}
+                              className="h-7 w-7 p-0 text-zinc-500 hover:text-red-400"
+                            >
+                              <Trash2 size={12} />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    !showSaveInput && (
+                      <p className="text-[10px] font-mono text-zinc-600 italic">
+                        {t('mockup.noPresets') || 'No presets saved yet'}
+                      </p>
+                    )
+                  )}
+                </div>
+
+                <div className="h-px bg-white/5 my-2" />
 
                 {/* Tag Sections */}
                 <div className="space-y-3">
