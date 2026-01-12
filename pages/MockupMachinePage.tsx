@@ -533,8 +533,36 @@ const MockupMachinePageContent: React.FC = () => {
     }
 
     try {
+      // Compress image if it's too large for the API
+      let imageToSend = uploadedImage;
+      if (uploadedImage && needsCompression(uploadedImage.base64, 3.5 * 1024 * 1024)) { // Limit to 3.5MB for API safely
+        try {
+          if (isLocalDevelopment()) {
+            console.log('🖼️ Compressing image for Smart Prompt API...');
+          }
+          const compressedBase64 = await compressImage(uploadedImage.base64, {
+            maxSizeBytes: 3.5 * 1024 * 1024, // 3.5MB target
+            maxWidth: 3072,
+            maxHeight: 3072,
+            quality: 0.8
+          });
+
+          imageToSend = {
+            ...uploadedImage,
+            base64: compressedBase64,
+            size: getBase64ImageSize(compressedBase64)
+          };
+
+          if (isLocalDevelopment()) {
+            console.log(`✅ Image compressed: ${(uploadedImage.size / 1024 / 1024).toFixed(2)}MB -> ${(imageToSend.size / 1024 / 1024).toFixed(2)}MB`);
+          }
+        } catch (compressionError) {
+          console.warn('Failed to compress image for API, sending original:', compressionError);
+        }
+      }
+
       const smartPromptResult = await aiApi.generateSmartPrompt({
-        baseImage: uploadedImage,
+        baseImage: imageToSend,
         designType: designType,
         brandingTags: selectedBrandingTags,
         categoryTags: selectedTags,
@@ -879,7 +907,34 @@ const MockupMachinePageContent: React.FC = () => {
 
     try {
       // 1. Semantic Analysis via Gemini (tags for all sections)
-      const analysis = await aiApi.analyzeSetup(uploadedImage);
+      let imageToAnalyze = uploadedImage;
+      if (uploadedImage && needsCompression(uploadedImage.base64, 3.5 * 1024 * 1024)) { // 3.5MB binary (safe for 4.5MB payload)
+        try {
+          if (isLocalDevelopment()) {
+            console.log('🔍 Compressing image for Analysis API...');
+          }
+          const compressedBase64 = await compressImage(uploadedImage.base64, {
+            maxSizeBytes: 3.5 * 1024 * 1024,
+            maxWidth: 3072, // 3K resolution
+            maxHeight: 3072,
+            quality: 0.8
+          });
+
+          imageToAnalyze = {
+            ...uploadedImage,
+            base64: compressedBase64,
+            size: getBase64ImageSize(compressedBase64)
+          };
+
+          if (isLocalDevelopment()) {
+            console.log(`✅ Image compressed for analysis: ${(uploadedImage.size / 1024 / 1024).toFixed(2)}MB -> ${(imageToAnalyze.size / 1024 / 1024).toFixed(2)}MB`);
+          }
+        } catch (compressionError) {
+          console.warn('Failed to compress image for analysis, sending original:', compressionError);
+        }
+      }
+
+      const analysis = await aiApi.analyzeSetup(imageToAnalyze);
 
       setSuggestedBrandingTags(analysis.branding);
       setSuggestedTags(analysis.categories);
@@ -924,7 +979,7 @@ const MockupMachinePageContent: React.FC = () => {
       setIsAnalyzing(false);
       setHasAnalyzed(true);
     }
-  }, [uploadedImage, designType]);
+  }, [uploadedImage, designType, t]);
 
   useEffect(() => {
     if (prevBrandingTagsLength.current === 0 && selectedBrandingTags.length === 1) {
@@ -1042,18 +1097,25 @@ const MockupMachinePageContent: React.FC = () => {
     if (!image || !image.base64) return undefined;
 
     try {
-      // Check if compression is needed (larger than 1.5MB)
-      const maxSizeBytes = 1.5 * 1024 * 1024; // 1.5MB
+      // Check if compression is needed (larger than 4.5MB)
+      // Vercel limit is ~4.5MB for body, but with 10MB limit in WelcomeScreen, we want to allow as much as possible
+      // We'll use 4.5MB as the trigger, which is close to the limit (binary size)
+      // Note: 4.5MB binary is ~6MB base64 which might fail Vercel (4.5MB limit applies to body).
+      // Wait, Vercel limit is 4.5MB *Body Size*. 
+      // 3MB binary = 4MB Base64. 4.5MB Body Limit.
+      // So 3.5MB is the absolute max safe binary size.
+      const maxSizeBytes = 3.5 * 1024 * 1024; // 3.5MB (Safe limit for 4.5MB payload)
       if (needsCompression(image.base64, maxSizeBytes)) {
         if (isLocalDevelopment()) {
           console.log('[MockupMachinePage] Compressing image before sending...', {
-            originalSize: (getBase64ImageSize(image.base64) / 1024 / 1024).toFixed(2) + 'MB'
+            originalSize: (getBase64ImageSize(image.base64) / 1024 / 1024).toFixed(2) + 'MB',
+            targetLimit: '3.5MB'
           });
         }
 
         const compressedBase64 = await compressImage(image.base64, {
-          maxWidth: 2048,
-          maxHeight: 2048,
+          maxWidth: 3072, // 3K resolution (preserve more detail)
+          maxHeight: 3072,
           maxSizeBytes: maxSizeBytes,
           quality: 0.85,
           mimeType: image.mimeType
@@ -1174,7 +1236,7 @@ const MockupMachinePageContent: React.FC = () => {
     }
 
     return true;
-  }, [subscriptionStatus, mockupCount, onSubscriptionModalOpen, isAuthenticated]);
+  }, [subscriptionStatus, mockupCount, onSubscriptionModalOpen, isAuthenticated, t]);
 
   const executeImageEditOperation = useCallback(async (params: {
     base64Image: string;
@@ -1275,7 +1337,7 @@ const MockupMachinePageContent: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [validateAuthAndSubscription, selectedModel, resolution, aspectRatio, onSubscriptionModalOpen, setSubscriptionStatus, compressImageIfNeeded]);
+  }, [validateAuthAndSubscription, selectedModel, resolution, aspectRatio, onSubscriptionModalOpen, setSubscriptionStatus, compressImageIfNeeded, referenceImages, t]);
 
   const runGeneration = useCallback(async (indexToUpdate?: number, promptOverride?: string, appendMode: boolean = false) => {
     // Prevent multiple simultaneous calls to runGeneration
@@ -1520,7 +1582,7 @@ const MockupMachinePageContent: React.FC = () => {
         }
       }
     }
-  }, [uploadedImage, selectedTags, selectedBrandingTags, promptPreview, hasGenerated, designType, mockupCount, subscriptionStatus, aspectRatio, selectedModel, resolution, validateAuthAndSubscription, onSubscriptionModalOpen, setSubscriptionStatus, mockups, referenceImages, compressImageIfNeeded]);
+  }, [uploadedImage, selectedTags, selectedBrandingTags, promptPreview, hasGenerated, designType, mockupCount, subscriptionStatus, aspectRatio, selectedModel, resolution, validateAuthAndSubscription, onSubscriptionModalOpen, setSubscriptionStatus, mockups, referenceImages, compressImageIfNeeded, t]);
 
   const handleSurpriseMe = useCallback(async (autoGenerate: boolean = false) => {
     // Ensure model is selected (default to gemini-2.5-flash-image if not set)
@@ -1887,7 +1949,7 @@ const MockupMachinePageContent: React.FC = () => {
       // Hide sidebar on mobile after generation
       setIsSidebarVisibleMobile(false);
     }
-  }, [promptPreview, selectedTags, designType, referenceImages, handleGenerateSmartPrompt, runGeneration, mockups, savedIndices, handleSaveAllUnsaved, isAuthenticated, isCheckingAuth]);
+  }, [promptPreview, selectedTags, designType, referenceImages, handleGenerateSmartPrompt, runGeneration, mockups, savedIndices, handleSaveAllUnsaved, isAuthenticated, isCheckingAuth, t]);
 
   const handleGenerateSuggestion = useCallback(async (suggestion: string) => {
     // Check authentication using context state first
@@ -1927,7 +1989,7 @@ const MockupMachinePageContent: React.FC = () => {
 
     // Generate using the suggestion prompt in append mode (adds to existing mockups)
     await runGeneration(undefined, suggestion, true);
-  }, [selectedModel, designType, uploadedImage, referenceImages, selectedTags, runGeneration, isAuthenticated, isCheckingAuth]);
+  }, [selectedModel, designType, uploadedImage, referenceImages, selectedTags, runGeneration, isAuthenticated, isCheckingAuth, t]);
 
   const handleSaveMockup = useCallback(async (index: number, imageBase64: string) => {
     if (!isAuthenticated) {
@@ -1971,7 +2033,7 @@ const MockupMachinePageContent: React.FC = () => {
       toast.error(errorMessage, { duration: 5000 });
       throw error; // Re-throw to let component handle it
     }
-  }, [isAuthenticated, mockupLikedStatus, promptPreview, designType, selectedTags, selectedBrandingTags, aspectRatio]);
+  }, [isAuthenticated, mockupLikedStatus, promptPreview, designType, selectedTags, selectedBrandingTags, aspectRatio, t]);
 
   const handleRedrawClick = (index: number) => runGeneration(index);
   const handleOpenFullScreen = (index: number) => setFullScreenImageIndex(index);

@@ -67,12 +67,12 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
 export const getCreditPackageLink = (credits: number, currency: string): string => {
   const package_ = CREDIT_PACKAGES.find(p => p.credits === credits);
   if (!package_ || !package_.paymentLinks) return '';
-  
+
   // Try requested currency first, fallback to BRL if not available
   if (currency === 'USD' && package_.paymentLinks.USD) {
     return package_.paymentLinks.USD;
   }
-  
+
   return package_.paymentLinks.BRL || '';
 };
 
@@ -83,12 +83,12 @@ export const getCreditPackage = (credits: number): CreditPackage | undefined => 
 export const getCreditPackagePrice = (credits: number, currency: string): number => {
   const package_ = CREDIT_PACKAGES.find(p => p.credits === credits);
   if (!package_) return 0;
-  
+
   // Try requested currency first, fallback to BRL if not available
   if (currency === 'USD' && package_.price.USD) {
     return package_.price.USD;
   }
-  
+
   return package_.price.BRL || 0;
 };
 
@@ -129,14 +129,14 @@ export const getCreditsByAmount = (amountTotalInMinorUnits: number, currency?: s
   // Sort packages by price (highest to lowest) to correctly identify which package was purchased
   // Build list of all packages with their prices, prioritizing currency match
   const allPackages: Array<{ package: CreditPackage; price: number; priceInMinorUnits: number; currency: string }> = [];
-  
+
   for (const creditPackage of CREDIT_PACKAGES) {
     for (const [priceCurrency, priceValue] of Object.entries(creditPackage.price)) {
       if (priceValue === undefined) continue;
-      
+
       const priceCurrencyCode = priceCurrency.toUpperCase();
       const priceInMinorUnits = Math.round(priceValue * 100);
-      
+
       allPackages.push({
         package: creditPackage,
         price: priceValue,
@@ -146,9 +146,9 @@ export const getCreditsByAmount = (amountTotalInMinorUnits: number, currency?: s
     }
   }
 
-  // Sort by price (highest to lowest) to find the correct package
-  // This ensures we match the highest package that the amount could belong to
-  allPackages.sort((a, b) => b.price - a.price);
+  // Sort by price (lowest to highest) to find the correct package
+  // This ensures we match the lowest package that covers the amount (handling coupons)
+  allPackages.sort((a, b) => a.price - b.price);
 
   // First try packages matching the requested currency
   if (normalizedCurrency) {

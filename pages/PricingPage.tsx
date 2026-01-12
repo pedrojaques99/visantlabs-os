@@ -15,6 +15,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card'
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { cn } from '../lib/utils';
+import { authService, type User } from '../services/authService';
 
 // Hook para animação de contador
 const useAnimatedCounter = (targetValue: number, duration: number = 500) => {
@@ -84,6 +85,16 @@ export const PricingPage: React.FC = () => {
   const [isPixModalOpen, setIsPixModalOpen] = useState(false);
   const [subscriptionPlans, setSubscriptionPlans] = useState<Product[]>([]);
   const [activeTab, setActiveTab] = useState<'subscriptions' | 'credits'>('subscriptions');
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    // Check authentication
+    authService.verifyToken().then(user => {
+      if (user) {
+        setCurrentUser(user);
+      }
+    }).catch(err => console.error('Auth verification failed:', err));
+  }, []);
 
   useEffect(() => {
     const locale = getUserLocale();
@@ -123,6 +134,16 @@ export const PricingPage: React.FC = () => {
   const handleBuyCredits = async () => {
     if (!currencyInfo || creditPackages.length === 0) return;
 
+    // Refresh user state to be sure
+    const user = currentUser || await authService.ensureAuthenticated();
+
+    // Optional: Force login if not authenticated (depending on UX requirement)
+    // For now, we proceed but log a warning if no user, as payments might be possible as guest (though risky for credits)
+    // However, the original issue implies logged-in users. 
+
+    const userId = user?.id;
+    const userEmail = user?.email;
+
     const currentPackage = creditPackages[selectedCreditIndex];
 
     // Flag no localStorage para detectar retorno do pagamento
@@ -143,6 +164,22 @@ export const PricingPage: React.FC = () => {
     if (!paymentLink) {
       setError('Payment link not found for this package');
       return;
+    }
+
+    // Append client_reference_id and prefilled_email
+    const separator = paymentLink.includes('?') ? '&' : '?';
+    let params = '';
+
+    if (userId) {
+      params += `client_reference_id=${userId}`;
+    }
+
+    if (userEmail) {
+      params += `${params ? '&' : ''}prefilled_email=${encodeURIComponent(userEmail)}`;
+    }
+
+    if (params) {
+      paymentLink = `${paymentLink}${separator}${params}`;
     }
 
     // Redireciona para o Payment Link do Stripe
