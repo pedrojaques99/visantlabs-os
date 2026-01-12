@@ -141,7 +141,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
                 className={`text-xs font-mono hover:text-brand-cyan transition-colors disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 ${theme === 'dark' ? 'text-zinc-500 disabled:text-zinc-600' : 'text-zinc-600 disabled:text-zinc-400'
                   }`}
               >
-                {isGeneratingPrompt ? <GlitchLoader size={12} /> : <Wand2 size={12} />}
+                <Wand2 size={12} />
               </button>
             </Tooltip>
           )}

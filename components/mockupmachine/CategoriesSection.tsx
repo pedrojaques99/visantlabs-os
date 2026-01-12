@@ -6,6 +6,7 @@ import { useTheme } from '../../hooks/useTheme';
 import { translateTag } from '../../utils/localeUtils';
 import { organizeTagsByGroup, CATEGORY_GROUPS } from '../../utils/categoryGroups';
 import { Button } from '../ui/button';
+import { Badge } from '../ui/badge';
 import { Input } from '../ui/input';
 import { cn } from '../../lib/utils';
 
@@ -135,13 +136,12 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
         : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900';
 
     return (
-      <Button
+      <Badge
         key={tag}
         onClick={() => onTagToggle(tag)}
         variant="outline"
-        size="sm"
         className={cn(
-          "text-xs font-medium transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0",
+          "text-xs font-medium transition-all duration-200 cursor-pointer",
           isSelected
             ? theme === 'dark'
               ? 'bg-brand-cyan/20 text-brand-cyan border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
@@ -151,7 +151,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
         )}
       >
         {translateTag(tag)}
-      </Button>
+      </Badge>
     );
   };
 
@@ -229,12 +229,11 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                 {!isComplete && (
                   <>
                     {!isEditingCustom ? (
-                      <Button
+                      <Badge
                         onClick={handleCustomTagClick}
                         variant="outline"
-                        size="sm"
                         className={cn(
-                          "text-xs font-medium transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0",
+                          "text-xs font-medium transition-all duration-200 gap-1 cursor-pointer",
                           theme === 'dark'
                             ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
                             : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'
@@ -242,7 +241,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                       >
                         <Plus size={14} />
                         <span>{t('mockup.customCategoryLabel')}</span>
-                      </Button>
+                      </Badge>
                     ) : (
                       <Input
                         ref={inputRef}
@@ -271,16 +270,19 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
           {!hasFinalSection && !isComplete && (
             <div className="col-span-2 flex flex-wrap gap-2 mt-3">
               {!isEditingCustom ? (
-                <button
+                <Badge
                   onClick={handleCustomTagClick}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border transform hover:-translate-y-0.5 active:translate-y-0 inline-flex items-center gap-1 cursor-pointer ${theme === 'dark'
-                    ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
-                    : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'
-                    }`}
+                  variant="outline"
+                  className={cn(
+                    "text-xs font-medium transition-all duration-200 gap-1 cursor-pointer",
+                    theme === 'dark'
+                      ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
+                      : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'
+                  )}
                 >
                   <Plus size={14} />
                   <span>{t('mockup.customCategoryLabel')}</span>
-                </button>
+                </Badge>
               ) : (
                 <input
                   ref={inputRef}

@@ -54,11 +54,11 @@ function normalizeResolution(resolution: string | undefined | null): string | un
 // Kept for backward compatibility, but prefer using normalizeResolution with getImagePricing
 function isHighResolution(resolution: string | undefined | null): boolean {
   if (!resolution) return false;
-  
+
   // Direct check for common high-res indicators
   const resLower = resolution.toLowerCase();
   if (resLower.includes('4k') || resLower.includes('8k')) return true;
-  
+
   // Parse dimensions like "3840x2160", "2048x1024", etc.
   const dimensions = resolution.match(/(\d+)\s*[x*×,]\s*(\d+)/i);
   if (dimensions) {
@@ -68,11 +68,11 @@ function isHighResolution(resolution: string | undefined | null): boolean {
       return width >= 2048 || height >= 2048;
     }
   }
-  
+
   // Fallback to numeric-only check for strings like "4096"
   const singleNumber = parseInt(resolution.replace(/\D/g, ''), 10);
   if (!isNaN(singleNumber) && singleNumber >= 2048) return true;
-  
+
   return false;
 }
 
@@ -97,10 +97,10 @@ router.get('/status', validateAdmin, async (req: AuthRequest, res) => {
     try {
       await connectToMongoDB();
       const db = getDb();
-      
+
       // Test connection with ping
       await db.admin().ping();
-      
+
       databaseStatus = {
         status: 'connected',
         database: db.databaseName,
@@ -166,7 +166,7 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req, res) => {
         // Try both string userId and ObjectId userId to handle both cases
         const userIdString = user.id;
         const userIdObjectId = new ObjectId(userIdString);
-        
+
         const [mockupCount, transactionCount, spendingByUser, userUsageAgg] = await Promise.all([
           db.collection('mockups').countDocuments({
             $or: [
@@ -179,26 +179,28 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req, res) => {
           }),
           prisma.transaction.groupBy({
             by: ['currency'],
-            where: { 
-              userId: user.id, 
-              status: 'completed' 
+            where: {
+              userId: user.id,
+              status: 'completed'
             },
             _sum: { amount: true }
           }),
           // Aggregate usage by model/resolution for correct cost calculation
           db.collection('usage_records').aggregate([
             { $match: { userId: userIdString } },
-            { $group: {
-              _id: { model: '$model', resolution: '$resolution', type: '$type' },
-              totalImages: { $sum: { $ifNull: ['$imagesGenerated', 0] } },
-              totalVideos: { $sum: { $ifNull: ['$videosGenerated', 0] } }
-            }}
+            {
+              $group: {
+                _id: { model: '$model', resolution: '$resolution', type: '$type' },
+                totalImages: { $sum: { $ifNull: ['$imagesGenerated', 0] } },
+                totalVideos: { $sum: { $ifNull: ['$videosGenerated', 0] } }
+              }
+            }
           ]).toArray(),
         ]);
 
         const totalSpentBRL = spendingByUser.find(s => s.currency === 'BRL')?._sum.amount || 0;
         const totalSpentUSD = spendingByUser.find(s => s.currency === 'USD')?._sum.amount || 0;
-        
+
         // Calculate API cost using centralized pricing
         let apiCostUSD = 0;
         for (const item of userUsageAgg) {
@@ -207,12 +209,12 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req, res) => {
           const type = item._id.type || '';
           const imageCount = item.totalImages || 0;
           const videoCount = item.totalVideos || 0;
-          
+
           // Video cost
           if (type === 'video' || videoCount > 0) {
             apiCostUSD += calculateVideoCost(videoCount || 1);
           }
-          
+
           // Image cost based on model and resolution
           if (imageCount > 0) {
             const normalizedRes = normalizeResolution(resolution);
@@ -240,7 +242,7 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req, res) => {
     const totalReferredUsers = formattedUsers.filter((user) => Boolean(user.referredBy)).length;
     const usersWithReferralCode = formattedUsers.filter((user) => Boolean(user.referralCode)).length;
     const totalMockupsSaved = await db.collection('mockups').countDocuments({});
-    
+
     // Calculate total mockups generated
     // Use usage_records collection (most accurate), with fallback to creditsUsed if needed
     let totalMockupsGenerated = 0;
@@ -270,7 +272,7 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req, res) => {
           }
         }
       ]).toArray();
-      
+
       if (aggregationResult.length > 0 && aggregationResult[0].totalImages > 0) {
         totalMockupsGenerated = aggregationResult[0].totalImages;
         localDevelopmentImages = aggregationResult[0].localDevImages || 0;
@@ -293,13 +295,13 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req, res) => {
       totalMockupsGenerated = totalCreditsUsed > 0 ? Math.round(totalCreditsUsed / 1.2) : 0;
       console.log(`[Admin] Fallback calculation: ${totalMockupsGenerated} mockups from ${totalCreditsUsed} credits`);
     }
-    
+
     // Ensure we have at least 0 (not negative or NaN)
     if (isNaN(totalMockupsGenerated) || totalMockupsGenerated < 0) {
       console.warn(`[Admin] Invalid totalMockupsGenerated value: ${totalMockupsGenerated}, setting to 0`);
       totalMockupsGenerated = 0;
     }
-    
+
     console.log(`[Admin] Final stats - Users: ${formattedUsers.length}, Mockups Generated: ${totalMockupsGenerated}${localDevelopmentImages > 0 ? ` (${localDevelopmentImages} from local dev)` : ''}, Mockups Saved: ${totalMockupsSaved}, Credits Used: ${totalCreditsUsed}`);
 
     // Calculate detailed generation statistics
@@ -382,7 +384,7 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req, res) => {
 
     // Process aggregation results
     const stats = generationStats[0] || {};
-    
+
     // Process images by model
     const imagesByModel: any = {};
     for (const item of stats.imagesByModel || []) {
@@ -501,11 +503,13 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req, res) => {
 
     // Aggregate global API cost with correct Gemini pricing
     const globalUsageAgg = await db.collection('usage_records').aggregate([
-      { $group: {
-        _id: { model: '$model', resolution: '$resolution', type: '$type' },
-        totalImages: { $sum: { $ifNull: ['$imagesGenerated', 0] } },
-        totalVideos: { $sum: { $ifNull: ['$videosGenerated', 0] } }
-      }}
+      {
+        $group: {
+          _id: { model: '$model', resolution: '$resolution', type: '$type' },
+          totalImages: { $sum: { $ifNull: ['$imagesGenerated', 0] } },
+          totalVideos: { $sum: { $ifNull: ['$videosGenerated', 0] } }
+        }
+      }
     ]).toArray();
 
     // Calculate total API cost using centralized pricing
@@ -516,12 +520,12 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req, res) => {
       const type = item._id.type || '';
       const imageCount = item.totalImages || 0;
       const videoCount = item.totalVideos || 0;
-      
+
       // Video cost
       if (type === 'video' || videoCount > 0) {
         totalApiCostUSD += calculateVideoCost(videoCount || 1);
       }
-      
+
       // Image cost based on model and resolution
       if (imageCount > 0) {
         const normalizedRes = normalizeResolution(resolution);
@@ -690,11 +694,11 @@ router.get('/presets/mockup/:id', validateAdmin, async (req, res) => {
     await connectToMongoDB();
     const db = getDb();
     const preset = await db.collection('mockup_presets').findOne({ id: req.params.id });
-    
+
     if (!preset) {
       return res.status(404).json({ error: 'Preset not found' });
     }
-    
+
     return res.json(preset);
   } catch (error) {
     console.error('Failed to load mockup preset:', error);
@@ -706,20 +710,20 @@ router.post('/presets/mockup', validateAdmin, async (req, res) => {
   try {
     await connectToMongoDB();
     const db = getDb();
-    
+
     const { id, name, description, prompt, referenceImageUrl, aspectRatio, model, tags } = req.body;
-    
+
     // Validation
     if (!id || !name || !description || !prompt || !aspectRatio) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
-    
+
     // Check if ID already exists
     const existing = await db.collection('mockup_presets').findOne({ id });
     if (existing) {
       return res.status(409).json({ error: 'Preset with this ID already exists' });
     }
-    
+
     const preset = {
       id,
       name,
@@ -732,16 +736,16 @@ router.post('/presets/mockup', validateAdmin, async (req, res) => {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    
+
     await db.collection('mockup_presets').insertOne(preset);
-    
+
     // Create unique index on id if it doesn't exist
     try {
       await db.collection('mockup_presets').createIndex({ id: 1 }, { unique: true });
     } catch (e) {
       // Index might already exist, ignore
     }
-    
+
     return res.status(201).json(preset);
   } catch (error: any) {
     console.error('Failed to create mockup preset:', error);
@@ -756,75 +760,75 @@ router.post('/presets/mockup/batch', validateAdmin, async (req, res) => {
   try {
     await connectToMongoDB();
     const db = getDb();
-    
+
     const { presets } = req.body;
-    
+
     // Validation: must be an array
     if (!Array.isArray(presets)) {
       return res.status(400).json({ error: 'presets must be an array' });
     }
-    
+
     if (presets.length === 0) {
       return res.status(400).json({ error: 'presets array cannot be empty' });
     }
-    
+
     const validAspectRatios = ['9:16', '21:9', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '16:9', '1:1'];
     const validModels = ['gemini-2.5-flash-image', 'gemini-3-pro-image-preview'];
-    
+
     const errors: Array<{ index: number; id?: string; error: string }> = [];
     const validPresets: any[] = [];
     const seenIds = new Set<string>();
-    
+
     // Validate each preset
     for (let i = 0; i < presets.length; i++) {
       const preset = presets[i];
       const index = i + 1; // 1-based index for user-friendly error messages
-      
+
       // Check required fields
       if (!preset.id || typeof preset.id !== 'string') {
         errors.push({ index, error: 'Missing or invalid id field' });
         continue;
       }
-      
+
       if (!preset.name || typeof preset.name !== 'string') {
         errors.push({ index, id: preset.id, error: 'Missing or invalid name field' });
         continue;
       }
-      
+
       if (!preset.description || typeof preset.description !== 'string') {
         errors.push({ index, id: preset.id, error: 'Missing or invalid description field' });
         continue;
       }
-      
+
       if (!preset.prompt || typeof preset.prompt !== 'string') {
         errors.push({ index, id: preset.id, error: 'Missing or invalid prompt field' });
         continue;
       }
-      
+
       if (!preset.aspectRatio || typeof preset.aspectRatio !== 'string') {
         errors.push({ index, id: preset.id, error: 'Missing or invalid aspectRatio field' });
         continue;
       }
-      
+
       // Check for duplicate IDs within the batch
       if (seenIds.has(preset.id)) {
         errors.push({ index, id: preset.id, error: 'Duplicate ID within batch' });
         continue;
       }
       seenIds.add(preset.id);
-      
+
       // Validate aspect ratio
       if (!validAspectRatios.includes(preset.aspectRatio)) {
         errors.push({ index, id: preset.id, error: `Invalid aspectRatio. Must be one of: ${validAspectRatios.join(', ')}` });
         continue;
       }
-      
+
       // Validate model if provided
       if (preset.model && !validModels.includes(preset.model)) {
         errors.push({ index, id: preset.id, error: `Invalid model. Must be one of: ${validModels.join(', ')}` });
         continue;
       }
-      
+
       // Build valid preset object
       validPresets.push({
         id: preset.id,
@@ -839,29 +843,29 @@ router.post('/presets/mockup/batch', validateAdmin, async (req, res) => {
         updatedAt: new Date().toISOString(),
       });
     }
-    
+
     // Check for existing IDs in database
     if (validPresets.length > 0) {
       const idsToCheck = validPresets.map(p => p.id);
       const existingPresets = await db.collection('mockup_presets').find({
         id: { $in: idsToCheck }
       }).toArray();
-      
+
       const existingIds = new Set(existingPresets.map(p => p.id));
-      
+
       // Remove presets with existing IDs from validPresets and add to errors
       const validPresetsFiltered: any[] = [];
       for (let i = 0; i < validPresets.length; i++) {
         const preset = validPresets[i];
         const originalIndex = presets.findIndex((p: any) => p.id === preset.id) + 1;
-        
+
         if (existingIds.has(preset.id)) {
           errors.push({ index: originalIndex, id: preset.id, error: 'ID already exists in database' });
         } else {
           validPresetsFiltered.push(preset);
         }
       }
-      
+
       // Insert valid presets
       let created = 0;
       if (validPresetsFiltered.length > 0) {
@@ -872,7 +876,7 @@ router.post('/presets/mockup/batch', validateAdmin, async (req, res) => {
           } catch (e) {
             // Index might already exist, ignore
           }
-          
+
           const result = await db.collection('mockup_presets').insertMany(validPresetsFiltered, { ordered: false });
           created = result.insertedCount;
         } catch (error: any) {
@@ -893,7 +897,7 @@ router.post('/presets/mockup/batch', validateAdmin, async (req, res) => {
           }
         }
       }
-      
+
       return res.json({
         success: true,
         created,
@@ -918,14 +922,14 @@ router.put('/presets/mockup/:id', validateAdmin, async (req, res) => {
   try {
     await connectToMongoDB();
     const db = getDb();
-    
+
     const { name, description, prompt, referenceImageUrl, aspectRatio, model, tags } = req.body;
-    
+
     // Validation
     if (!name || !description || !prompt || !aspectRatio) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
-    
+
     const update: any = {
       name,
       description,
@@ -935,21 +939,21 @@ router.put('/presets/mockup/:id', validateAdmin, async (req, res) => {
       model: model || undefined,
       updatedAt: new Date().toISOString(),
     };
-    
+
     if (tags !== undefined) {
       update.tags = normalizeTags(tags);
     }
-    
+
     const result = await db.collection('mockup_presets').findOneAndUpdate(
       { id: req.params.id },
       { $set: update },
       { returnDocument: 'after' }
     );
-    
+
     if (!result) {
       return res.status(404).json({ error: 'Preset not found' });
     }
-    
+
     return res.json(result);
   } catch (error) {
     console.error('Failed to update mockup preset:', error);
@@ -961,13 +965,13 @@ router.delete('/presets/mockup/:id', validateAdmin, async (req, res) => {
   try {
     await connectToMongoDB();
     const db = getDb();
-    
+
     const result = await db.collection('mockup_presets').deleteOne({ id: req.params.id });
-    
+
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Preset not found' });
     }
-    
+
     return res.json({ success: true });
   } catch (error) {
     console.error('Failed to delete mockup preset:', error);
@@ -980,30 +984,30 @@ router.post('/presets/mockup/:id/upload-image', validateAdmin, async (req, res) 
   try {
     const { base64Image } = req.body;
     const presetId = req.params.id;
-    
+
     if (!base64Image) {
       return res.status(400).json({ error: 'base64Image is required' });
     }
-    
+
     if (!presetId) {
       return res.status(400).json({ error: 'Preset ID is required' });
     }
-    
+
     const r2Service = await import('../../services/r2Service.js');
-    
+
     if (!r2Service.isR2Configured()) {
-      return res.status(500).json({ 
+      return res.status(500).json({
         error: 'R2 storage is not configured',
         details: 'R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, and R2_PUBLIC_URL must be set.'
       });
     }
-    
+
     const imageUrl = await r2Service.uploadMockupPresetReference(base64Image, presetId);
-    
+
     return res.json({ url: imageUrl });
   } catch (error: any) {
     console.error('Failed to upload preset reference image:', error);
-    return res.status(500).json({ 
+    return res.status(500).json({
       error: 'Failed to upload image',
       details: error.message || 'Unknown error'
     });
@@ -1016,11 +1020,11 @@ router.get('/presets/angle/:id', validateAdmin, async (req, res) => {
     await connectToMongoDB();
     const db = getDb();
     const preset = await db.collection('angle_presets').findOne({ id: req.params.id });
-    
+
     if (!preset) {
       return res.status(404).json({ error: 'Preset not found' });
     }
-    
+
     return res.json(preset);
   } catch (error) {
     console.error('Failed to load angle preset:', error);
@@ -1032,20 +1036,20 @@ router.post('/presets/angle', validateAdmin, async (req, res) => {
   try {
     await connectToMongoDB();
     const db = getDb();
-    
+
     const { id, name, description, prompt, aspectRatio, model, tags } = req.body;
-    
+
     // Validation
     if (!id || !name || !description || !prompt || !aspectRatio) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
-    
+
     // Check if ID already exists
     const existing = await db.collection('angle_presets').findOne({ id });
     if (existing) {
       return res.status(409).json({ error: 'Preset with this ID already exists' });
     }
-    
+
     const preset = {
       id,
       name,
@@ -1057,16 +1061,16 @@ router.post('/presets/angle', validateAdmin, async (req, res) => {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    
+
     await db.collection('angle_presets').insertOne(preset);
-    
+
     // Create unique index on id if it doesn't exist
     try {
       await db.collection('angle_presets').createIndex({ id: 1 }, { unique: true });
     } catch (e) {
       // Index might already exist, ignore
     }
-    
+
     return res.status(201).json(preset);
   } catch (error: any) {
     console.error('Failed to create angle preset:', error);
@@ -1081,14 +1085,14 @@ router.put('/presets/angle/:id', validateAdmin, async (req, res) => {
   try {
     await connectToMongoDB();
     const db = getDb();
-    
+
     const { name, description, prompt, aspectRatio, model, tags } = req.body;
-    
+
     // Validation
     if (!name || !description || !prompt || !aspectRatio) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
-    
+
     const update: any = {
       name,
       description,
@@ -1097,21 +1101,21 @@ router.put('/presets/angle/:id', validateAdmin, async (req, res) => {
       model: model || undefined,
       updatedAt: new Date().toISOString(),
     };
-    
+
     if (tags !== undefined) {
       update.tags = normalizeTags(tags);
     }
-    
+
     const result = await db.collection('angle_presets').findOneAndUpdate(
       { id: req.params.id },
       { $set: update },
       { returnDocument: 'after' }
     );
-    
+
     if (!result) {
       return res.status(404).json({ error: 'Preset not found' });
     }
-    
+
     return res.json(result);
   } catch (error) {
     console.error('Failed to update angle preset:', error);
@@ -1123,13 +1127,13 @@ router.delete('/presets/angle/:id', validateAdmin, async (req, res) => {
   try {
     await connectToMongoDB();
     const db = getDb();
-    
+
     const result = await db.collection('angle_presets').deleteOne({ id: req.params.id });
-    
+
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Preset not found' });
     }
-    
+
     return res.json({ success: true });
   } catch (error) {
     console.error('Failed to delete angle preset:', error);
@@ -1143,11 +1147,11 @@ router.get('/presets/texture/:id', validateAdmin, async (req, res) => {
     await connectToMongoDB();
     const db = getDb();
     const preset = await db.collection('texture_presets').findOne({ id: req.params.id });
-    
+
     if (!preset) {
       return res.status(404).json({ error: 'Preset not found' });
     }
-    
+
     return res.json(preset);
   } catch (error) {
     console.error('Failed to load texture preset:', error);
@@ -1159,18 +1163,18 @@ router.post('/presets/texture', validateAdmin, async (req, res) => {
   try {
     await connectToMongoDB();
     const db = getDb();
-    
+
     const { id, name, description, prompt, aspectRatio, model, tags } = req.body;
-    
+
     if (!id || !name || !description || !prompt || !aspectRatio) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
-    
+
     const existing = await db.collection('texture_presets').findOne({ id });
     if (existing) {
       return res.status(409).json({ error: 'Preset with this ID already exists' });
     }
-    
+
     const preset = {
       id,
       name,
@@ -1182,15 +1186,15 @@ router.post('/presets/texture', validateAdmin, async (req, res) => {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    
+
     await db.collection('texture_presets').insertOne(preset);
-    
+
     try {
       await db.collection('texture_presets').createIndex({ id: 1 }, { unique: true });
     } catch (e) {
       // Index might already exist, ignore
     }
-    
+
     return res.status(201).json(preset);
   } catch (error: any) {
     console.error('Failed to create texture preset:', error);
@@ -1205,13 +1209,13 @@ router.put('/presets/texture/:id', validateAdmin, async (req, res) => {
   try {
     await connectToMongoDB();
     const db = getDb();
-    
+
     const { name, description, prompt, aspectRatio, model, tags } = req.body;
-    
+
     if (!name || !description || !prompt || !aspectRatio) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
-    
+
     const update: any = {
       name,
       description,
@@ -1220,21 +1224,21 @@ router.put('/presets/texture/:id', validateAdmin, async (req, res) => {
       model: model || undefined,
       updatedAt: new Date().toISOString(),
     };
-    
+
     if (tags !== undefined) {
       update.tags = normalizeTags(tags);
     }
-    
+
     const result = await db.collection('texture_presets').findOneAndUpdate(
       { id: req.params.id },
       { $set: update },
       { returnDocument: 'after' }
     );
-    
+
     if (!result) {
       return res.status(404).json({ error: 'Preset not found' });
     }
-    
+
     return res.json(result);
   } catch (error) {
     console.error('Failed to update texture preset:', error);
@@ -1246,13 +1250,13 @@ router.delete('/presets/texture/:id', validateAdmin, async (req, res) => {
   try {
     await connectToMongoDB();
     const db = getDb();
-    
+
     const result = await db.collection('texture_presets').deleteOne({ id: req.params.id });
-    
+
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Preset not found' });
     }
-    
+
     return res.json({ success: true });
   } catch (error) {
     console.error('Failed to delete texture preset:', error);
@@ -1266,11 +1270,11 @@ router.get('/presets/ambience/:id', validateAdmin, async (req, res) => {
     await connectToMongoDB();
     const db = getDb();
     const preset = await db.collection('ambience_presets').findOne({ id: req.params.id });
-    
+
     if (!preset) {
       return res.status(404).json({ error: 'Preset not found' });
     }
-    
+
     return res.json(preset);
   } catch (error) {
     console.error('Failed to load ambience preset:', error);
@@ -1282,18 +1286,18 @@ router.post('/presets/ambience', validateAdmin, async (req, res) => {
   try {
     await connectToMongoDB();
     const db = getDb();
-    
+
     const { id, name, description, prompt, aspectRatio, model, tags } = req.body;
-    
+
     if (!id || !name || !description || !prompt || !aspectRatio) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
-    
+
     const existing = await db.collection('ambience_presets').findOne({ id });
     if (existing) {
       return res.status(409).json({ error: 'Preset with this ID already exists' });
     }
-    
+
     const preset = {
       id,
       name,
@@ -1305,15 +1309,15 @@ router.post('/presets/ambience', validateAdmin, async (req, res) => {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    
+
     await db.collection('ambience_presets').insertOne(preset);
-    
+
     try {
       await db.collection('ambience_presets').createIndex({ id: 1 }, { unique: true });
     } catch (e) {
       // Index might already exist, ignore
     }
-    
+
     return res.status(201).json(preset);
   } catch (error: any) {
     console.error('Failed to create ambience preset:', error);
@@ -1328,13 +1332,13 @@ router.put('/presets/ambience/:id', validateAdmin, async (req, res) => {
   try {
     await connectToMongoDB();
     const db = getDb();
-    
+
     const { name, description, prompt, aspectRatio, model, tags } = req.body;
-    
+
     if (!name || !description || !prompt || !aspectRatio) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
-    
+
     const update: any = {
       name,
       description,
@@ -1343,21 +1347,21 @@ router.put('/presets/ambience/:id', validateAdmin, async (req, res) => {
       model: model || undefined,
       updatedAt: new Date().toISOString(),
     };
-    
+
     if (tags !== undefined) {
       update.tags = normalizeTags(tags);
     }
-    
+
     const result = await db.collection('ambience_presets').findOneAndUpdate(
       { id: req.params.id },
       { $set: update },
       { returnDocument: 'after' }
     );
-    
+
     if (!result) {
       return res.status(404).json({ error: 'Preset not found' });
     }
-    
+
     return res.json(result);
   } catch (error) {
     console.error('Failed to update ambience preset:', error);
@@ -1369,13 +1373,13 @@ router.delete('/presets/ambience/:id', validateAdmin, async (req, res) => {
   try {
     await connectToMongoDB();
     const db = getDb();
-    
+
     const result = await db.collection('ambience_presets').deleteOne({ id: req.params.id });
-    
+
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Preset not found' });
     }
-    
+
     return res.json({ success: true });
   } catch (error) {
     console.error('Failed to delete ambience preset:', error);
@@ -1389,11 +1393,11 @@ router.get('/presets/luminance/:id', validateAdmin, async (req, res) => {
     await connectToMongoDB();
     const db = getDb();
     const preset = await db.collection('luminance_presets').findOne({ id: req.params.id });
-    
+
     if (!preset) {
       return res.status(404).json({ error: 'Preset not found' });
     }
-    
+
     return res.json(preset);
   } catch (error) {
     console.error('Failed to load luminance preset:', error);
@@ -1405,18 +1409,18 @@ router.post('/presets/luminance', validateAdmin, async (req, res) => {
   try {
     await connectToMongoDB();
     const db = getDb();
-    
+
     const { id, name, description, prompt, aspectRatio, model, tags } = req.body;
-    
+
     if (!id || !name || !description || !prompt || !aspectRatio) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
-    
+
     const existing = await db.collection('luminance_presets').findOne({ id });
     if (existing) {
       return res.status(409).json({ error: 'Preset with this ID already exists' });
     }
-    
+
     const preset = {
       id,
       name,
@@ -1428,15 +1432,15 @@ router.post('/presets/luminance', validateAdmin, async (req, res) => {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    
+
     await db.collection('luminance_presets').insertOne(preset);
-    
+
     try {
       await db.collection('luminance_presets').createIndex({ id: 1 }, { unique: true });
     } catch (e) {
       // Index might already exist, ignore
     }
-    
+
     return res.status(201).json(preset);
   } catch (error: any) {
     console.error('Failed to create luminance preset:', error);
@@ -1451,13 +1455,13 @@ router.put('/presets/luminance/:id', validateAdmin, async (req, res) => {
   try {
     await connectToMongoDB();
     const db = getDb();
-    
+
     const { name, description, prompt, aspectRatio, model, tags } = req.body;
-    
+
     if (!name || !description || !prompt || !aspectRatio) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
-    
+
     const update: any = {
       name,
       description,
@@ -1466,21 +1470,21 @@ router.put('/presets/luminance/:id', validateAdmin, async (req, res) => {
       model: model || undefined,
       updatedAt: new Date().toISOString(),
     };
-    
+
     if (tags !== undefined) {
       update.tags = normalizeTags(tags);
     }
-    
+
     const result = await db.collection('luminance_presets').findOneAndUpdate(
       { id: req.params.id },
       { $set: update },
       { returnDocument: 'after' }
     );
-    
+
     if (!result) {
       return res.status(404).json({ error: 'Preset not found' });
     }
-    
+
     return res.json(result);
   } catch (error) {
     console.error('Failed to update luminance preset:', error);
@@ -1492,13 +1496,13 @@ router.delete('/presets/luminance/:id', validateAdmin, async (req, res) => {
   try {
     await connectToMongoDB();
     const db = getDb();
-    
+
     const result = await db.collection('luminance_presets').deleteOne({ id: req.params.id });
-    
+
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Preset not found' });
     }
-    
+
     return res.json({ success: true });
   } catch (error) {
     console.error('Failed to delete luminance preset:', error);
@@ -1511,13 +1515,13 @@ router.delete('/community-presets/:id', validateAdmin, async (req, res) => {
   try {
     await connectToMongoDB();
     const db = getDb();
-    
+
     const result = await db.collection('community_presets').deleteOne({ id: req.params.id });
-    
+
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Community preset not found' });
     }
-    
+
     return res.json({ success: true });
   } catch (error) {
     console.error('Failed to delete community preset:', error);
@@ -1529,24 +1533,151 @@ router.put('/community-presets/:id/approve', validateAdmin, async (req, res) => 
   try {
     await connectToMongoDB();
     const db = getDb();
-    
+
     const { isApproved } = req.body;
-    
+
     const result = await db.collection('community_presets').updateOne(
       { id: req.params.id },
       { $set: { isApproved: isApproved !== false, updatedAt: new Date().toISOString() } }
     );
-    
+
     if (result.matchedCount === 0) {
       return res.status(404).json({ error: 'Community preset not found' });
     }
-    
+
     const updated = await db.collection('community_presets').findOne({ id: req.params.id });
-    
+
     return res.json(updated);
   } catch (error) {
     console.error('Failed to update community preset approval:', error);
     return res.status(500).json({ error: 'Failed to update community preset approval' });
+  }
+});
+
+// Products Management (Credit Packages and Subscription Plans)
+router.get('/products', validateAdmin, async (_req, res) => {
+  try {
+    const products = await prisma.product.findMany({
+      orderBy: { displayOrder: 'asc' },
+    });
+    return res.json(products);
+  } catch (error) {
+    console.error('Failed to load products:', error);
+    return res.status(500).json({ error: 'Failed to load products' });
+  }
+});
+
+router.post('/products', validateAdmin, async (req, res) => {
+  try {
+    const {
+      productId,
+      type,
+      name,
+      description,
+      credits,
+      priceBRL,
+      priceUSD,
+      stripeProductId,
+      abacateProductId,
+      abacateBillId,
+      paymentLinkBRL,
+      paymentLinkUSD,
+      metadata,
+      isActive,
+      displayOrder,
+    } = req.body;
+
+    if (!productId || !type || !name) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const product = await prisma.product.create({
+      data: {
+        productId,
+        type,
+        name,
+        description,
+        credits: credits ? parseInt(credits.toString(), 10) : 0,
+        priceBRL: priceBRL ? parseFloat(priceBRL.toString()) : 0,
+        priceUSD: (priceUSD !== null && priceUSD !== undefined && priceUSD !== '') ? parseFloat(priceUSD.toString()) : null,
+        stripeProductId,
+        abacateProductId,
+        abacateBillId,
+        paymentLinkBRL,
+        paymentLinkUSD,
+        metadata,
+        isActive: isActive !== false,
+        displayOrder: displayOrder ? parseInt(displayOrder.toString(), 10) : 0,
+      },
+    });
+
+    return res.status(201).json(product);
+  } catch (error: any) {
+    console.error('Failed to create product:', error);
+    if (error.code === 'P2002') {
+      return res.status(409).json({ error: 'Product with this ID already exists' });
+    }
+    return res.status(500).json({ error: 'Failed to create product' });
+  }
+});
+
+router.put('/products/:id', validateAdmin, async (req, res) => {
+  try {
+    const {
+      productId,
+      type,
+      name,
+      description,
+      credits,
+      priceBRL,
+      priceUSD,
+      stripeProductId,
+      abacateProductId,
+      abacateBillId,
+      paymentLinkBRL,
+      paymentLinkUSD,
+      metadata,
+      isActive,
+      displayOrder,
+    } = req.body;
+
+    const product = await prisma.product.update({
+      where: { id: req.params.id },
+      data: {
+        productId,
+        type,
+        name,
+        description,
+        credits: credits !== undefined ? parseInt(credits.toString(), 10) : undefined,
+        priceBRL: priceBRL !== undefined ? parseFloat(priceBRL.toString()) : undefined,
+        priceUSD: priceUSD === null ? null : (priceUSD !== undefined && priceUSD !== '' ? parseFloat(priceUSD.toString()) : undefined),
+        stripeProductId,
+        abacateProductId,
+        abacateBillId,
+        paymentLinkBRL,
+        paymentLinkUSD,
+        metadata,
+        isActive: isActive !== undefined ? isActive : undefined,
+        displayOrder: displayOrder !== undefined ? parseInt(displayOrder.toString(), 10) : undefined,
+      },
+    });
+
+    return res.json(product);
+  } catch (error) {
+    console.error('Failed to update product:', error);
+    return res.status(500).json({ error: 'Failed to update product' });
+  }
+});
+
+router.delete('/products/:id', validateAdmin, async (req, res) => {
+  try {
+    await prisma.product.delete({
+      where: { id: req.params.id },
+    });
+    return res.json({ success: true });
+  } catch (error) {
+    console.error('Failed to delete product:', error);
+    return res.status(500).json({ error: 'Failed to delete product' });
   }
 });
 

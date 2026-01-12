@@ -26,6 +26,14 @@ export interface PersistedMockupState {
   selectedLightingTags: string[];
   selectedEffectTags: string[];
   selectedColors: string[];
+  suggestedTags: string[];
+  suggestedBrandingTags: string[];
+  suggestedLocationTags: string[];
+  suggestedAngleTags: string[];
+  suggestedLightingTags: string[];
+  suggestedEffectTags: string[];
+  suggestedMaterialTags: string[];
+  suggestedColors: string[];
   promptPreview: string;
   aspectRatio: AspectRatio;
   selectedModel: GeminiModel | null;
@@ -45,10 +53,10 @@ export interface PersistedMockupState {
  */
 async function compressImageIfNeeded(base64Image: string | null): Promise<string | null> {
   if (!base64Image) return null;
-  
+
   try {
     const imageSize = getBase64ImageSize(base64Image);
-    
+
     // Only compress if image is larger than threshold
     if (imageSize > MAX_IMAGE_SIZE_BYTES) {
       const compressed = await compressImage(base64Image, {
@@ -58,24 +66,24 @@ async function compressImageIfNeeded(base64Image: string | null): Promise<string
         quality: COMPRESSION_QUALITY,
         mimeType: 'image/jpeg'
       });
-      
+
       // Extract base64 data (remove data URL prefix if present)
-      const base64Data = compressed.includes(',') 
-        ? compressed.split(',')[1] 
+      const base64Data = compressed.includes(',')
+        ? compressed.split(',')[1]
         : compressed;
-      
+
       return base64Data;
     }
-    
+
     // Return base64 without data URL prefix
-    return base64Image.includes(',') 
-      ? base64Image.split(',')[1] 
+    return base64Image.includes(',')
+      ? base64Image.split(',')[1]
       : base64Image;
   } catch (error) {
     // If compression fails, return original (truncated if needed)
     console.warn('Failed to compress image for storage:', error);
-    return base64Image.includes(',') 
-      ? base64Image.split(',')[1] 
+    return base64Image.includes(',')
+      ? base64Image.split(',')[1]
       : base64Image;
   }
 }
@@ -85,7 +93,7 @@ async function compressImageIfNeeded(base64Image: string | null): Promise<string
  */
 async function compressUploadedImage(image: UploadedImage | null): Promise<UploadedImage | null> {
   if (!image || !image.base64) return image;
-  
+
   try {
     const compressedBase64 = await compressImageIfNeeded(image.base64);
     if (compressedBase64) {
@@ -97,7 +105,7 @@ async function compressUploadedImage(image: UploadedImage | null): Promise<Uploa
   } catch (error) {
     console.warn('Failed to compress uploaded image:', error);
   }
-  
+
   return image;
 }
 
@@ -137,7 +145,7 @@ function calculateStateSize(state: PersistedMockupState): number {
  */
 function limitMockups(mockups: (string | null)[]): (string | null)[] {
   if (mockups.length <= MAX_MOCKUPS) return mockups;
-  
+
   // Keep only the last MAX_MOCKUPS (most recent)
   return mockups.slice(-MAX_MOCKUPS);
 }
@@ -147,19 +155,19 @@ function limitMockups(mockups: (string | null)[]): (string | null)[] {
  */
 function isValidState(data: any): data is PersistedMockupState {
   if (!data || typeof data !== 'object') return false;
-  
+
   // Check required fields
   if (!Array.isArray(data.mockups)) return false;
   if (typeof data.timestamp !== 'number') return false;
-  
+
   // Check timestamp is not too old
   const ageInDays = (Date.now() - data.timestamp) / (1000 * 60 * 60 * 24);
   if (ageInDays > MAX_AGE_DAYS) return false;
-  
+
   // Check if state has at least one mockup
   const hasMockups = data.mockups.some((m: any) => m !== null);
   if (!hasMockups) return false;
-  
+
   return true;
 }
 
@@ -170,18 +178,18 @@ export async function saveMockupState(state: Omit<PersistedMockupState, 'timesta
   try {
     // Limit mockups count
     const limitedMockups = limitMockups(state.mockups);
-    
+
     // Compress images if needed
     const compressedMockups = await Promise.all(
       limitedMockups.map(mockup => compressImageIfNeeded(mockup))
     );
-    
+
     const compressedUploadedImage = await compressUploadedImage(state.uploadedImage);
     const compressedReferenceImage = await compressUploadedImage(state.referenceImage);
     const compressedReferenceImages = await Promise.all(
       state.referenceImages.map(img => compressUploadedImage(img))
     );
-    
+
     // Build state with compressed images
     const stateToSave: PersistedMockupState = {
       ...state,
@@ -191,10 +199,10 @@ export async function saveMockupState(state: Omit<PersistedMockupState, 'timesta
       referenceImages: compressedReferenceImages.filter((img): img is UploadedImage => img !== null),
       timestamp: Date.now()
     };
-    
+
     // Check size and reduce if needed
     let currentSize = calculateStateSize(stateToSave);
-    
+
     if (currentSize > MAX_STATE_SIZE_BYTES) {
       // Remove oldest mockups until size is acceptable
       let reducedMockups = [...stateToSave.mockups];
@@ -204,18 +212,18 @@ export async function saveMockupState(state: Omit<PersistedMockupState, 'timesta
         stateToSave.mockups = reducedMockups;
         currentSize = calculateStateSize(stateToSave);
       }
-      
+
       // If still too large, try removing reference images
       if (currentSize > MAX_STATE_SIZE_BYTES && stateToSave.referenceImages.length > 0) {
         stateToSave.referenceImages = [];
         currentSize = calculateStateSize(stateToSave);
       }
     }
-    
+
     // Save to localStorage
     const jsonString = JSON.stringify(stateToSave);
     localStorage.setItem(STORAGE_KEY, jsonString);
-    
+
     return true;
   } catch (error: any) {
     // Handle quota exceeded error
@@ -237,7 +245,7 @@ export async function saveMockupState(state: Omit<PersistedMockupState, 'timesta
         return false;
       }
     }
-    
+
     console.warn('Failed to save mockup state:', error);
     return false;
   }
@@ -250,15 +258,15 @@ export function loadMockupState(): PersistedMockupState | null {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) return null;
-    
+
     const parsed = JSON.parse(stored);
-    
+
     if (!isValidState(parsed)) {
       // Invalid state, remove it
       localStorage.removeItem(STORAGE_KEY);
       return null;
     }
-    
+
     return parsed;
   } catch (error) {
     // Corrupted data, remove it

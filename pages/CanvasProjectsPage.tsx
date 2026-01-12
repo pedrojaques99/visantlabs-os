@@ -458,7 +458,7 @@ export const CanvasProjectsPage: React.FC = () => {
               className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 hover:border-zinc-600 font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 flex-shrink-0"
             >
               <FolderOpen className="h-4 w-4" />
-              {t('workflows.loadWorkflow') || 'Import'}
+              {t('workflows.importWorkflow') || 'Import workflow'}
             </button>
           </div>
 

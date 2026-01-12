@@ -181,22 +181,13 @@ export const CommunityPresetsPage: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const token = authService.getToken();
-      const response = await fetch('/api/community/presets/public', {
-        headers: token ? {
-          Authorization: `Bearer ${token}`,
-        } : {},
-      });
+      // Use cached service method instead of direct fetch
+      const grouped = await getAllCommunityPresets();
 
-      if (!response.ok) {
-        throw new Error(t('communityPresets.errors.failedToLoad'));
-      }
-
-      const grouped = (await response.json()) as Record<string, CommunityPreset[]>;
-      // Flatten grouped presets into a single array e migrar legados
       const allPresetsArray: CommunityPreset[] = [];
       Object.values(grouped).forEach(presetArray => {
         if (Array.isArray(presetArray)) {
+          // migrateLegacyPreset is safe to call even if already migrated by service
           allPresetsArray.push(...presetArray.map(migrateLegacyPreset));
         }
       });
