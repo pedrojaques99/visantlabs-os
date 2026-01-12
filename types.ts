@@ -4,6 +4,7 @@ export interface UploadedImage {
   url?: string; // R2 URL for the image
   mimeType: string;
   file?: File; // Optional File object for direct upload to R2
+  size?: number; // Size in bytes
 }
 
 // Duplicate removed

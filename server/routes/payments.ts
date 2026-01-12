@@ -1683,34 +1683,55 @@ router.post('/webhook', async (req, res) => {
             }
 
             // Get line items to extract product information
-            const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
+            // Get line items to extract product information
+            let lineItems = null;
+            let product: Stripe.Product | null = null;
+            let credits = 0;
 
-            if (!lineItems.data || lineItems.data.length === 0) {
-              console.error('❌ No line items found in checkout session:', session.id);
-              break;
+            try {
+              lineItems = await stripe.checkout.sessions.listLineItems(session.id);
+            } catch (stripeError: any) {
+              if (stripeError.statusCode === 404) {
+                const isLiveSession = session.id.startsWith('cs_live_');
+                // Check if current key is likely a test key (starts with sk_test)
+                const isTestKey = STRIPE_SECRET_KEY.startsWith('sk_test_');
+
+                console.warn('⚠️ Stripe Session not found (404) via API. Using fallback credit calculation from amount.', {
+                  sessionId: session.id,
+                  isLiveSession,
+                  usingTestKey: isTestKey,
+                  amount: session.amount_total
+                });
+                // We don't throw here, we'll try to use amount_total fallback
+              } else {
+                console.error('❌ Error fetching line items:', stripeError);
+                // For other errors we might want to throw or also fallback
+              }
             }
 
-            // Get the first line item (we expect one product per checkout)
-            const lineItem = lineItems.data[0];
-            const priceId = typeof lineItem.price === 'string' ? lineItem.price : lineItem.price?.id;
+            if (lineItems && lineItems.data && lineItems.data.length > 0) {
+              // Get the first line item (we expect one product per checkout)
+              const lineItem = lineItems.data[0];
+              const priceId = typeof lineItem.price === 'string' ? lineItem.price : lineItem.price?.id;
 
-            if (!priceId) {
-              console.error('❌ No price ID found in line item');
-              break;
+              if (priceId) {
+                try {
+                  // Get price details to access product
+                  const price = await stripe.prices.retrieve(priceId);
+                  const productId = typeof price.product === 'string' ? price.product : price.product?.id;
+
+                  if (productId) {
+                    // Get product to extract credits from metadata
+                    product = await stripe.products.retrieve(productId);
+                    credits = parseInt(product.metadata?.credits || '0', 10);
+                  }
+                } catch (err: any) {
+                  console.warn("⚠️ Failed to retrieve price/product details from Stripe:", err.message);
+                }
+              }
             }
 
-            // Get price details to access product
-            const price = await stripe.prices.retrieve(priceId);
-            const productId = typeof price.product === 'string' ? price.product : price.product?.id;
-
-            if (!productId) {
-              console.error('❌ No product ID found in price');
-              break;
-            }
-
-            // Get product to extract credits from metadata
-            const product = await stripe.products.retrieve(productId);
-            let credits = parseInt(product.metadata?.credits || '0', 10);
+            // Fallback: try to get credits from session metadata (for PIX payments with price_data)
 
             // Fallback: try to get credits from session metadata (for PIX payments with price_data)
             if (!credits || credits <= 0) {
@@ -1724,16 +1745,20 @@ router.post('/webhook', async (req, res) => {
             }
 
             if (!credits || credits <= 0) {
-              console.error('❌ Invalid or missing credits:', {
-                productId,
-                productMetadata: product.metadata,
+              console.error('❌ Invalid or missing credits (Fallbacks failed):', {
                 sessionMetadata: session.metadata,
                 amountTotal: session.amount_total,
+                currency: session.currency
               });
               break;
             }
 
-            console.log('📦 Credit purchase detected:', { productId, credits, sessionId: session.id });
+            console.log('📦 Credit purchase detected:', {
+              productId: product?.id || 'unknown',
+              credits,
+              sessionId: session.id,
+              source: product ? 'product_metadata' : 'amount_calculation'
+            });
 
             // Find user with priority: stripeCustomerId -> client_reference_id -> metadata.userId -> email
             console.log('👤 Starting user lookup process...');
@@ -1923,7 +1948,7 @@ router.post('/webhook', async (req, res) => {
                   credits,
                   amount: session.amount_total ?? null,
                   currency: session.currency,
-                  description: product.name || 'Credit package',
+                  description: product?.name || 'Credit package',
                   stripeSessionId: session.id,
                   stripePaymentIntentId: paymentIntentId || undefined,
                   stripeCustomerId: customerId,
