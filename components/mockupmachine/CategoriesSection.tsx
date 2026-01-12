@@ -141,7 +141,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
         onClick={() => onTagToggle(tag)}
         variant="outline"
         className={cn(
-          "text-xs font-medium transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer",
+          "text-xs font-medium transition-all duration-200 cursor-pointer",
           isSelected
             ? theme === 'dark'
               ? 'bg-brand-cyan/20 text-brand-cyan border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
@@ -233,7 +233,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                         onClick={handleCustomTagClick}
                         variant="outline"
                         className={cn(
-                          "text-xs font-medium transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 gap-1 cursor-pointer",
+                          "text-xs font-medium transition-all duration-200 gap-1 cursor-pointer",
                           theme === 'dark'
                             ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
                             : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'
@@ -274,7 +274,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                   onClick={handleCustomTagClick}
                   variant="outline"
                   className={cn(
-                    "text-xs font-medium transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 gap-1 cursor-pointer",
+                    "text-xs font-medium transition-all duration-200 gap-1 cursor-pointer",
                     theme === 'dark'
                       ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
                       : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'

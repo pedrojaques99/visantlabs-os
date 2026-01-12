@@ -146,6 +146,9 @@
       "name": "Canvas",
       "description": "Editor de imagens baseado em fluxo visual"
     },
+    "badge": {
+      "free": "Gratuito"
+    },
     "home": "Início"
   },
   "common": {
@@ -154,6 +157,8 @@
     "loading": "Carregando...",
     "verifyingAuth": "Verificando autenticação...",
     "cancel": "Cancelar",
+    "month": "mês",
+    "year": "ano",
     "back": "Voltar",
     "close": "Fechar",
     "save": "Salvar",
@@ -527,7 +532,8 @@
     "exploreMockups": "Explorar",
     "by": "por",
     "brand": "visant labs®",
-    "pasteTip": "Dica: Você pode dar ctrl+v para colar imagens"
+    "pasteTip": "Dica: Você pode dar ctrl+v para colar imagens",
+    "viewAllApps": "Ver Todos os Apps"
   },
   "upload": {
     "clickToUpload": "Envie sua imagem",
@@ -665,7 +671,18 @@
     "surpriseMe": "Me Surpreenda!",
     "surpriseMeTooltip": "Seleciona aleatoriamente branding, categorias e estilos para inspiração rápida!",
     "surpriseMeSettings": "Configurações do Me Surpreenda",
-    "surpriseMeSettingsTooltip": "Configure quais tags excluir do Me Surpreenda",
+    "surpriseMeSettingsTooltip": "Configure quais tags escolher no Me Surpreenda",
+    "surpriseMePresets": "Presets do Me Surpreenda",
+    "saveAsPreset": "Salvar como Preset",
+    "presetName": "Nome do Preset",
+    "presetNamePlaceholder": "Ex: Minimalista Dark",
+    "savePreset": "Salvar Preset",
+    "loadPreset": "Carregar Preset",
+    "deletePreset": "Excluir Preset",
+    "presetSaved": "Preset salvo com sucesso!",
+    "presetDeleted": "Preset excluído com sucesso!",
+    "confirmDeletePreset": "Tem certeza que deseja excluir este preset?",
+    "noPresets": "Nenhum preset salvo ainda",
     "autoGenerate": "Auto gerar",
     "autoGenerateTooltip": "Pula a geração de prompt e gera diretamente os outputs (padrão 2 outputs)",
     "newAngles": "Novos Ângulos",
@@ -679,6 +696,7 @@
     "categories": "3. CATEGORIAS_",
     "categoriesComment": "// Escolha uma categoria para aplicar seu design.",
     "aiSuggested": "// Sugerido pela IA:",
+    "suggestedColors": "// CORES SUGERIDAS",
     "allCategories": "// TODAS_CATEGORIAS",
     "orAddCustomCategory": "Ou adicione uma categoria personalizada...",
     "customCategoryLabel": "Personalizado",
@@ -697,10 +715,12 @@
     "advancedOptions": "OPÇÕES_AVANÇADAS_",
     "colorPalette": "// PALETA DE CORES (CÓDIGOS HEX)",
     "location": "// LOCALIZAÇÃO",
-    "cameraAngle": "// ÂNGULO_CÂMERA",
-    "lightingMood": "// ILUMINAÇÃO_AMBIENTE",
+    "cameraAngle": "// ÂNGULO_DA_CÂMERA",
+    "lightingMood": "// ILUMINAÇÃO",
     "visualEffects": "// EFEITOS_VISUAIS",
+    "material": "// MATERIAL",
     "negativePrompt": "// PROMPT NEGATIVO (EVITAR...)",
+    "materialCategory": "// CATEGORIA_MATERIAL",
     "negativePromptPlaceholder": "ex.: texto, pessoas, marcas d'água, embaçado",
     "additionalPrompt": "// PROMPT ADICIONAL (DEVE TER...)",
     "additionalPromptPlaceholder": "ex.: em uma mesa de madeira, sombras suaves",
@@ -738,6 +758,14 @@
     "generatingOutputsShort": "GERANDO",
     "outputsShort": "RESULTADOS",
     "promptShort": "PROMPT",
+    "analyzeImage": "ANALISAR IMAGEM",
+    "analyzingImage": "ANALISANDO IMAGEM...",
+    "analysisStatusMessages": [
+      "escaneando cores e contrastes",
+      "identificando estilo visual",
+      "detectando categorias",
+      "otimizando sugestões"
+    ],
     "promptStatusMessages": [
       "entendendo seu design",
       "buscando as melhores soluções visuais",
@@ -761,7 +789,12 @@
     "creditsRequired": "Créditos necessários:",
     "startOver": "Começar de Novo",
     "showSidebar": "Mostrar barra lateral",
-    "closeSidebar": "Fechar barra lateral"
+    "closeSidebar": "Fechar barra lateral",
+    "openSidebar": "Abrir Painel",
+    "openSidebarTooltip": "Abrir painel de controles",
+    "floatingGeneratePrompt": "Gerar Prompt",
+    "floatingSurpriseMe": "Surpreenda-me",
+    "surpriseMeAgain": "Clique novamente para tags diferentes"
   },
   "pricing": {
     "title": "PREÇOS",
@@ -861,11 +894,13 @@
   "thankYou": {
     "title": "Obrigado por Assinar!",
     "subtitle": "Sua assinatura foi ativada com sucesso",
-    "subscriptionActive": "Assinatura Premium Ativa",
+    "subscriptionActive": "Assinatura {plan} Ativa",
     "whatsNext": "O que você pode fazer agora:",
-    "benefit1": "{credits} gerações de mockup por mês",
+    "benefit1": "{credits} créditos por {interval}",
     "benefit2": "Prompts ilimitados para suas criações",
     "benefit3": "Acesso a todos os recursos premium",
+    "benefitPro": "Suporte Prioritário e 20GB de Armazenamento",
+    "benefitVision": "Suporte Rápido e 100GB de Armazenamento",
     "creditsAvailable": "Créditos disponíveis",
     "getStarted": "Começar a Criar",
     "support": "Precisa de ajuda? Entre em contato conosco."
@@ -2394,6 +2429,8 @@
     },
     "imageNode": {
       "noImage": "Sem imagem",
+      "collapse": "Recolher",
+      "expand": "Expandir",
       "uploadImage": "Enviar uma imagem",
       "uploadImageTitle": "Enviar Imagem",
       "copyDescription": "Copiar descrição",

@@ -41,7 +41,7 @@ export const DesignTypeSection: React.FC<DesignTypeSectionProps> = ({
               disabled={isImagelessMode}
               variant="outline"
               className={cn(
-                "w-full aspect-square max-h-32 flex flex-col items-center justify-center gap-1 p-4 text-xs font-mono",
+                "w-full flex flex-col items-center justify-center gap-1 p-4 text-xs font-mono",
                 designType === 'logo'
                   ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
                   : 'bg-zinc-800/30 text-zinc-400 border-zinc-700/30 hover:border-zinc-600/50'
@@ -58,7 +58,7 @@ export const DesignTypeSection: React.FC<DesignTypeSectionProps> = ({
               disabled={isImagelessMode}
               variant="outline"
               className={cn(
-                "w-full aspect-square max-h-32 flex flex-col items-center justify-center gap-1 p-4 text-xs font-mono",
+                "w-full flex flex-col items-center justify-center gap-1 p-4 text-xs font-mono",
                 designType === 'layout'
                   ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
                   : 'bg-zinc-800/30 text-zinc-400 border-zinc-700/30 hover:border-zinc-600/50'

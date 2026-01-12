@@ -155,6 +155,10 @@ console.log(`✅ Workflow routes registered at: ${routePrefix}/workflows`);
 import aiRoutes from './routes/ai.js';
 app.use(`${routePrefix}/ai`, aiRoutes);
 
+// Import surprise me routes
+import surpriseMeRoutes from './routes/surprise-me.js';
+app.use(`${routePrefix}/surprise-me`, surpriseMeRoutes);
+
 // Basic health check
 app.get(`${routePrefix}/health`, (req, res) => {
   res.json({ status: 'ok', message: 'Server is running' });

@@ -57,6 +57,7 @@ model User {
   canvasProjects   CanvasProject[]
   canvasWorkflows  CanvasWorkflow[]
   customPdfPresets CustomPdfPreset[]
+  surpriseMePresets SurpriseMePreset[]
 
   // Indexes for better query performance
   // Note: @unique on email and username already creates indexes
@@ -346,4 +347,19 @@ model SignupAttempt {
   @@index([email])
   @@index([createdAt])
   @@map("signup_attempts")
+}
+
+model SurpriseMePreset {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  name      String
+  config    Json     // Store SurpriseMeSelectedTags structure
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("surprise_me_presets")
 }

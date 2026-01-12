@@ -5,7 +5,6 @@ import { Header } from './Header';
 import ASCIIFooter from './ASCIIFooter';
 import { SubscriptionModal } from './SubscriptionModal';
 import { CreditPackagesModal } from './CreditPackagesModal';
-import { ConfigurationModal } from './ConfigurationModal';
 import { PrivacyPolicy } from '../pages/PrivacyPolicy';
 import { TermsOfService } from '../pages/TermsOfService';
 import { RefundPolicy } from '../pages/RefundPolicy';
@@ -28,7 +27,6 @@ export type LayoutContextValue = {
   isCheckingAuth: boolean;
   onSubscriptionModalOpen: () => void;
   onCreditPackagesModalOpen: () => void;
-  onConfigurationModalOpen: () => void;
   setSubscriptionStatus: (status: SubscriptionStatus | null) => void;
   registerUnsavedOutputsHandler: (handler: () => { hasUnsaved: boolean; count: number; onSaveAll?: () => Promise<void> } | null) => void;
   registerResetHandler: (handler: () => void) => void;
@@ -54,7 +52,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
   const [isCreditPackagesModalOpen, setIsCreditPackagesModalOpen] = useState(false);
-  const [isConfigurationModalOpen, setIsConfigurationModalOpen] = useState(false);
   const [creditPackagesModalTab, setCreditPackagesModalTab] = useState<'buy' | 'credits'>('buy');
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -479,7 +476,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       setCreditPackagesModalTab('buy');
       setIsCreditPackagesModalOpen(true);
     },
-    onConfigurationModalOpen: () => setIsConfigurationModalOpen(true),
     setSubscriptionStatus,
     registerUnsavedOutputsHandler,
     registerResetHandler,
@@ -580,11 +576,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           onClose={() => setIsCreditPackagesModalOpen(false)}
           subscriptionStatus={subscriptionStatus}
           initialTab={creditPackagesModalTab}
-        />
-
-        <ConfigurationModal
-          isOpen={isConfigurationModalOpen}
-          onClose={() => setIsConfigurationModalOpen(false)}
         />
 
         {!location.pathname.startsWith('/budget/shared') && (
