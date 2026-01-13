@@ -22,6 +22,27 @@ export const ThankYouPage: React.FC<ThankYouPageProps> = ({ planName, planCredit
 
   useEffect(() => {
     const loadData = async () => {
+      // Check for pending credit purchase in localStorage first
+      const pendingPurchaseJson = localStorage.getItem('credit_purchase_pending');
+      if (pendingPurchaseJson) {
+        try {
+          const pendingPurchase = JSON.parse(pendingPurchaseJson);
+          // Check if it's recent (within last hour)
+          if (Date.now() - pendingPurchase.timestamp < 3600000) {
+            // It's a recent purchase, use these credits for display
+            // We don't clear it immediately in case user refreshes, but standard logic might dictate clearing.
+            // For now, valid is good enough.
+            if (pendingPurchase.credits) {
+              // We'll trust this local storage value for the thank you message
+              // Make sure to prioritize this over default subscription status if we are on the generic thank you page
+              // (planName property check handles distinguishing subscription thank you pages)
+            }
+          }
+        } catch (e) {
+          console.error('Failed to parse pending purchase', e);
+        }
+      }
+
       // Wait for auth check to complete
       if (isCheckingAuth) {
         return;
@@ -48,6 +69,26 @@ export const ThankYouPage: React.FC<ThankYouPageProps> = ({ planName, planCredit
       loadData();
     }
   }, [isAuthenticated, isCheckingAuth]);
+
+  // Retrieve credits from localStorage for display
+  const [purchasedCredits, setPurchasedCredits] = useState<number | null>(null);
+
+  useEffect(() => {
+    try {
+      const pendingPurchaseJson = localStorage.getItem('credit_purchase_pending');
+      if (pendingPurchaseJson) {
+        const pendingPurchase = JSON.parse(pendingPurchaseJson);
+        // Valid for 1 hour
+        if (Date.now() - pendingPurchase.timestamp < 3600000) {
+          setPurchasedCredits(pendingPurchase.credits);
+          // Optional: Clear it so it doesn't persist forever, but maybe keep for refresh?
+          // localStorage.removeItem('credit_purchase_pending'); 
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, []);
 
   const creditsUsagePercent =
     subscriptionStatus?.monthlyCredits && subscriptionStatus.monthlyCredits > 0
@@ -93,16 +134,16 @@ export const ThankYouPage: React.FC<ThankYouPageProps> = ({ planName, planCredit
             <div className="flex items-center justify-center gap-2 mt-4">
               <GlitchLoader size={20} color="brand-cyan" />
             </div>
-          ) : (subscriptionStatus?.hasActiveSubscription || planName) ? (
+          ) : (subscriptionStatus?.hasActiveSubscription || planName || purchasedCredits) ? (
             <div className="mt-6 inline-block bg-brand-cyan/10 border border-brand-cyan/30 rounded-md px-4 py-2">
               <p className="text-brand-cyan font-mono text-sm">
-                {t('thankYou.subscriptionActive', { plan: planName || t('subscriptionStatus.premium') })}
+                {t('thankYou.subscriptionActive', { plan: planName || (purchasedCredits ? `${purchasedCredits} Credits` : t('subscriptionStatus.premium')) })}
               </p>
             </div>
           ) : null}
         </div>
 
-        {(subscriptionStatus?.hasActiveSubscription || planName) && (
+        {(subscriptionStatus?.hasActiveSubscription || planName || purchasedCredits) && (
           <div className="bg-zinc-900 border border-zinc-800/50 rounded-md p-6 mb-8">
             <div className="flex items-center gap-3 mb-4">
               <Pickaxe size={24} className="text-brand-cyan" />
@@ -116,8 +157,8 @@ export const ThankYouPage: React.FC<ThankYouPageProps> = ({ planName, planCredit
                 <CheckCircle size={18} className="text-brand-cyan mt-0.5 flex-shrink-0" />
                 <span>
                   {t('thankYou.benefit1', {
-                    credits: planCredits || subscriptionStatus?.monthlyCredits || 100,
-                    interval: interval ? t(`common.${interval}`) : (planCredits && planCredits > 500 ? t('common.year') : t('common.month'))
+                    credits: planCredits || purchasedCredits || subscriptionStatus?.monthlyCredits || 100,
+                    interval: interval ? t(`common.${interval}`) : ((planCredits || purchasedCredits) && (planCredits || purchasedCredits)! > 500 ? t('common.year') : t('common.month'))
                   })}
                 </span>
               </li>
