@@ -3,8 +3,8 @@ import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { getDb, connectToMongoDB } from '../db/mongodb.js';
 import { ObjectId } from 'mongodb';
 import { prisma, verifyPrismaConnectionWithDetails } from '../db/prisma.js';
-import * as brandingService from '../../services/brandingService.js';
-import type { BrandingData } from '../../types.js';
+import * as brandingService from '../services/brandingService.js';
+import type { BrandingData } from '../types/types.js';
 import { checkSubscription, SubscriptionRequest } from '../middleware/subscription.js';
 
 const router = express.Router();
@@ -15,7 +15,7 @@ const router = express.Router();
 async function deductCreditsAtomically(userId: string, creditsToDeduct: number): Promise<{ success: true; updatedUser: any }> {
   await connectToMongoDB();
   const db = getDb();
-  
+
   // Each branding step costs 1 credit
   if (creditsToDeduct !== 1) {
     throw new Error(`Invalid credits to deduct: ${creditsToDeduct}. Branding steps require exactly 1 credit.`);
@@ -48,7 +48,7 @@ async function deductCreditsAtomically(userId: string, creditsToDeduct: number):
   // First, try to deduct from totalCreditsEarned if available
   if (totalCreditsEarned >= creditsToDeduct) {
     const result = await db.collection('users').findOneAndUpdate(
-      { 
+      {
         _id: new ObjectId(userId),
         $expr: { $gte: ['$totalCreditsEarned', creditsToDeduct] }
       },
@@ -74,33 +74,35 @@ async function deductCreditsAtomically(userId: string, creditsToDeduct: number):
   const fromMonthly = creditsToDeduct - fromEarned;
 
   const result2 = await db.collection('users').findOneAndUpdate(
-    { 
+    {
       _id: new ObjectId(userId),
-      $expr: { 
-        $gte: [ 
-          { $add: [
-            { $ifNull: ['$totalCreditsEarned', 0] },
-            {
-              $max: [
-                0,
-                {
-                  $subtract: [
-                    { $ifNull: ['$monthlyCredits', 20] },
-                    { $ifNull: ['$creditsUsed', 0] }
-                  ]
-                }
-              ]
-            }
-          ]},
+      $expr: {
+        $gte: [
+          {
+            $add: [
+              { $ifNull: ['$totalCreditsEarned', 0] },
+              {
+                $max: [
+                  0,
+                  {
+                    $subtract: [
+                      { $ifNull: ['$monthlyCredits', 20] },
+                      { $ifNull: ['$creditsUsed', 0] }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
           creditsToDeduct
-        ] 
+        ]
       }
     },
     [
       {
         $set: {
           // Subtract from earned credits if needed
-          totalCreditsEarned: fromEarned > 0 
+          totalCreditsEarned: fromEarned > 0
             ? { $max: [0, { $subtract: [{ $ifNull: ['$totalCreditsEarned', 0] }, fromEarned] }] }
             : { $ifNull: ['$totalCreditsEarned', 0] },
           // Increment creditsUsed by the amount used from monthly credits
@@ -125,13 +127,13 @@ async function deductCreditsAtomically(userId: string, creditsToDeduct: number):
 async function refundCredits(userId: string, creditsToRefund: number): Promise<void> {
   await connectToMongoDB();
   const db = getDb();
-  
+
   // Simple refund: add back to totalCreditsEarned and reduce creditsUsed
   // This is safe because we know these credits were just deducted
   await db.collection('users').updateOne(
     { _id: new ObjectId(userId) },
     {
-      $inc: { 
+      $inc: {
         totalCreditsEarned: creditsToRefund,
         creditsUsed: -creditsToRefund
       }
@@ -145,7 +147,7 @@ router.post('/generate-step', authenticate, checkSubscription, async (req: Subsc
   let creditsDeducted = false;
   const creditsToDeduct = 1; // Each branding step costs 1 credit
   const { step, prompt, previousData } = req.body;
-  
+
   try {
 
     if (!step || !prompt) {
@@ -157,7 +159,7 @@ router.post('/generate-step', authenticate, checkSubscription, async (req: Subsc
     const { updatedUser } = await deductCreditsAtomically(req.userId!, creditsToDeduct);
     const isAdmin = updatedUser.isAdmin === true;
     creditsDeducted = !isAdmin; // Only mark as deducted if not admin
-    
+
     if (isAdmin) {
       console.log(`[Credit Deduction] Admin user - skipping credit deduction for branding step ${step}`, {
         userId: req.userId,
@@ -193,7 +195,7 @@ router.post('/generate-step', authenticate, checkSubscription, async (req: Subsc
       // Continue without examples if fetch fails
     }
 
-    const formattedExamples = examples.map(e => 
+    const formattedExamples = examples.map(e =>
       `Example for "${e.prompt}":\n${JSON.stringify(e.output, null, 2)}`
     );
 
@@ -377,7 +379,7 @@ router.post('/generate-step', authenticate, checkSubscription, async (req: Subsc
         timestamp: new Date().toISOString(),
         // Note: Credits were already deducted, but audit record is missing
       });
-      
+
       // [ENHANCEMENT] Optional: Implement retry logic or queue for usage record creation
       // Contributions welcome - see CONTRIBUTING.md
     }
@@ -387,7 +389,7 @@ router.post('/generate-step', authenticate, checkSubscription, async (req: Subsc
     const monthlyCreditsRemaining = Math.max(0, (updatedUser.monthlyCredits ?? 20) - (updatedUser.creditsUsed ?? 0));
     const totalCreditsRemaining = (updatedUser.totalCreditsEarned ?? 0) + monthlyCreditsRemaining;
 
-    res.json({ 
+    res.json({
       data: result,
       creditsDeducted: actualCreditsDeducted,
       creditsRemaining: totalCreditsRemaining,
@@ -395,7 +397,7 @@ router.post('/generate-step', authenticate, checkSubscription, async (req: Subsc
     });
   } catch (error: any) {
     console.error('Error generating branding step:', error);
-    
+
     // CRITICAL: Refund credits if generation failed and credits were deducted
     if (creditsDeducted) {
       try {
@@ -422,12 +424,12 @@ router.post('/generate-step', authenticate, checkSubscription, async (req: Subsc
           timestamp: new Date().toISOString(),
           requiresManualIntervention: true, // Flag for monitoring systems
         });
-        
+
         // [ENHANCEMENT] Optional: Integrate with monitoring/alerting system (Sentry, DataDog, etc.)
         // Contributions welcome - see CONTRIBUTING.md
       }
     }
-    
+
     res.status(500).json({
       error: 'Failed to generate branding step',
       message: error.message || 'An error occurred while generating content'
@@ -443,8 +445,8 @@ router.post('/track-usage', authenticate, async (req: AuthRequest, res, next) =>
     await connectToMongoDB();
     const db = getDb();
     const userId = req.userId!;
-    const { 
-      success, 
+    const {
+      success,
       stepNumber,
       promptLength
     } = req.body;
@@ -472,16 +474,16 @@ router.post('/track-usage', authenticate, async (req: AuthRequest, res, next) =>
     if (success) {
       // Each branding step costs 1 credit (using gemini-2.5-flash)
       const creditsToDeduct = isAdmin ? 0 : 1; // Admins don't pay credits
-      
+
       // Calculate cost for text generation
-      const { calculateTextGenerationCost } = await import('../utils/usageTracking.js');
+      const { calculateTextGenerationCost } = await import('@/utils/usageTracking.js');
       // Use real tokens if available, otherwise estimate
       const inputTokens = req.body.inputTokens;
       const outputTokens = req.body.outputTokens;
       const estimatedInputTokens = inputTokens ?? (promptLength ? Math.ceil(promptLength / 4) : 500);
       const estimatedOutputTokens = outputTokens ?? 1000; // Average response size
       const cost = calculateTextGenerationCost(estimatedInputTokens, estimatedOutputTokens, 'gemini-2.5-flash');
-      
+
       // Create usage record for billing (even for admins, for tracking purposes)
       const usageRecord: any = {
         userId,
@@ -506,9 +508,9 @@ router.post('/track-usage', authenticate, async (req: AuthRequest, res, next) =>
       if (outputTokens !== undefined) {
         usageRecord.outputTokens = outputTokens;
       }
-      
+
       await db.collection('usage_records').insertOne(usageRecord);
-      
+
       if (isAdmin) {
         console.log(`[Usage Tracking] Recorded branding usage for admin user ${userId} (no credits deducted):`, {
           stepNumber,
@@ -528,7 +530,7 @@ router.post('/track-usage', authenticate, async (req: AuthRequest, res, next) =>
         // This is the correct order: monthly credits should be used before manual credits
         let newTotalCreditsEarned = totalCreditsEarned;
         let newCreditsUsed = creditsUsed + creditsToDeduct;
-        
+
         // First, use from monthly credits if available
         if (monthlyCreditsRemaining >= creditsToDeduct) {
           // Use monthly credits
@@ -537,7 +539,7 @@ router.post('/track-usage', authenticate, async (req: AuthRequest, res, next) =>
           // Use remaining monthly credits first, then totalCreditsEarned
           const remainingFromMonthly = monthlyCreditsRemaining;
           const neededFromEarned = creditsToDeduct - remainingFromMonthly;
-          
+
           if (neededFromEarned > 0) {
             newTotalCreditsEarned = Math.max(0, totalCreditsEarned - neededFromEarned);
           }
@@ -581,7 +583,7 @@ router.post('/track-usage', authenticate, async (req: AuthRequest, res, next) =>
 
       const responseTotalCredits = responseTotalCreditsEarned + responseMonthlyCreditsRemaining;
 
-      res.json({ 
+      res.json({
         message: 'Usage tracked',
         stepNumber,
         creditsDeducted: creditsToDeduct,
@@ -596,7 +598,7 @@ router.post('/track-usage', authenticate, async (req: AuthRequest, res, next) =>
     } else {
       // Generation failed - credits are not deducted
       // Credits are only deducted when success: true
-      res.json({ 
+      res.json({
         message: 'Generation failed - credits not deducted',
         creditsDeducted: 0
       });
@@ -677,7 +679,7 @@ router.post('/save', authenticate, async (req: AuthRequest, res) => {
     }
 
     // Map Prisma's 'id' to '_id' for consistency with frontend
-    res.json({ 
+    res.json({
       project: {
         ...project,
         _id: project.id,
@@ -713,7 +715,7 @@ router.get('/:id', authenticate, async (req: AuthRequest, res) => {
     }
 
     // Map Prisma's 'id' to '_id' for consistency with frontend
-    res.json({ 
+    res.json({
       project: {
         ...project,
         _id: project.id,
@@ -748,7 +750,7 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
     });
 
     // Map Prisma's 'id' to '_id' for consistency with frontend
-    res.json({ 
+    res.json({
       projects: projects.map(project => ({
         ...project,
         _id: project.id,
@@ -756,15 +758,15 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
     });
   } catch (error: any) {
     // Check Prisma connection if error might be connection-related
-    const isConnectionError = error.code === 'P1001' || 
-                             error.message?.includes('connect') ||
-                             error.message?.includes('connection');
-    
+    const isConnectionError = error.code === 'P1001' ||
+      error.message?.includes('connect') ||
+      error.message?.includes('connection');
+
     let connectionStatus = null;
     if (isConnectionError) {
       connectionStatus = await verifyPrismaConnectionWithDetails();
     }
-    
+
     // Enhanced error logging with full details
     console.error('Error fetching branding projects:', {
       error: error.message || error,
@@ -776,13 +778,13 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
       connectionStatus,
       timestamp: new Date().toISOString(),
     });
-    
+
     // Return detailed error in development, sanitized in production
     const isDevelopment = process.env.NODE_ENV === 'development';
-    const errorMessage = isDevelopment 
+    const errorMessage = isDevelopment
       ? error.message || 'An error occurred'
       : 'Failed to fetch branding projects';
-    
+
     res.status(500).json({
       error: 'Failed to fetch branding projects',
       message: errorMessage,

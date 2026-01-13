@@ -10,8 +10,13 @@
     "skipLibCheck": true,
     "strict": true
   },
-  "include": ["**/*.ts", "../services/**/*.ts", "../types.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "**/*.ts",
+    "../services/**/*.ts",
+    "../types/types.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }
-
-

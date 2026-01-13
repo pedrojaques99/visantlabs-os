@@ -1,8 +1,8 @@
 import express from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma, verifyPrismaConnectionWithDetails } from '../db/prisma.js';
-import { uploadCanvasImage, uploadCanvasPdf, uploadCanvasVideo, isR2Configured, generateCanvasImageUploadUrl, generateCanvasVideoUploadUrl } from '../../services/r2Service.js';
-import { compressPdfSimple } from '../utils/pdfCompression.js';
+import { uploadCanvasImage, uploadCanvasPdf, uploadCanvasVideo, isR2Configured, generateCanvasImageUploadUrl, generateCanvasVideoUploadUrl } from '../services/r2Service.js';
+import { compressPdfSimple } from '@/utils/pdfCompression.js';
 import { validateAdminOrPremium, requireEditAccess, requireViewAccess } from '../middleware/canvasAuth.js';
 import { Liveblocks } from '@liveblocks/node';
 
@@ -80,7 +80,7 @@ function isBase64Expired(base64Timestamp: number | undefined): boolean {
 function cleanExpiredBase64Images(nodes: any[]): any[] {
   const cleanedNodes = nodes.map((node: any) => {
     const cleanedNode = { ...node };
-    
+
     try {
       // Process ImageNode: remove expired imageBase64
       if (node.type === 'image' && node.data?.mockup) {
@@ -361,10 +361,10 @@ function cleanExpiredBase64Images(nodes: any[]): any[] {
  */
 function addBase64Timestamps(nodes: any[]): any[] {
   const now = Date.now();
-  
+
   return nodes.map((node: any) => {
     const timestampedNode = { ...node };
-    
+
     try {
       // Process ImageNode
       if (node.type === 'image' && node.data?.mockup) {
@@ -715,22 +715,22 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
     });
 
     // Map Prisma's 'id' to '_id' for consistency with frontend
-    res.json({ 
+    res.json({
       projects: projects.map(project => ({
         ...project,
         _id: project.id,
       }))
     });
   } catch (error: any) {
-    const isConnectionError = error.code === 'P1001' || 
-                             error.message?.includes('connect') ||
-                             error.message?.includes('connection');
-    
+    const isConnectionError = error.code === 'P1001' ||
+      error.message?.includes('connect') ||
+      error.message?.includes('connection');
+
     let connectionStatus = null;
     if (isConnectionError) {
       connectionStatus = await verifyPrismaConnectionWithDetails();
     }
-    
+
     console.error('Error fetching canvas projects:', {
       error: error.message || error,
       stack: error.stack,
@@ -741,12 +741,12 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
       connectionStatus,
       timestamp: new Date().toISOString(),
     });
-    
+
     const isDevelopment = process.env.NODE_ENV === 'development';
-    const errorMessage = isDevelopment 
+    const errorMessage = isDevelopment
       ? error.message || 'An error occurred'
       : 'Failed to fetch canvas projects';
-    
+
     res.status(500).json({
       error: 'Failed to fetch canvas projects',
       message: errorMessage,
@@ -824,7 +824,7 @@ router.get('/:id', authenticate, async (req: AuthRequest, res) => {
 
 
     if (!project) {
-      
+
       // Check if project exists and user has collaboration permissions
       const sharedProject = await prisma.canvasProject.findUnique({
         where: { id },
@@ -873,7 +873,7 @@ router.get('/:id', authenticate, async (req: AuthRequest, res) => {
     let cleanedNodes = project.nodes as any[];
     if (Array.isArray(cleanedNodes)) {
       cleanedNodes = cleanExpiredBase64Images(cleanedNodes);
-      
+
       // If any nodes were cleaned, update the project
       const nodesChanged = JSON.stringify(cleanedNodes) !== JSON.stringify(project.nodes);
       if (nodesChanged) {
@@ -890,7 +890,7 @@ router.get('/:id', authenticate, async (req: AuthRequest, res) => {
     }
 
     // Map Prisma's 'id' to '_id' for consistency with frontend
-    res.json({ 
+    res.json({
       project: {
         ...project,
         _id: project.id,
@@ -954,7 +954,7 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
     }
 
     // Map Prisma's 'id' to '_id' for consistency with frontend
-    res.json({ 
+    res.json({
       project: {
         ...project,
         _id: project.id,
@@ -976,8 +976,8 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
     // Check request size early to prevent 413 errors
     const contentLength = req.headers['content-length'];
     const VERCEL_LIMIT = 50 * 1024 * 1024; // 50MB Vercel Pro limit
-    
-      if (contentLength && parseInt(contentLength) > VERCEL_LIMIT) {
+
+    if (contentLength && parseInt(contentLength) > VERCEL_LIMIT) {
       const sizeMB = (parseInt(contentLength) / 1024 / 1024).toFixed(2);
       return res.status(413).json({
         error: 'Request Entity Too Large',
@@ -992,12 +992,12 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
     }
 
     const { id } = req.params;
-    
+
     // Validate request body exists
     if (!req.body || typeof req.body !== 'object') {
       return res.status(400).json({ error: 'Invalid request body' });
     }
-    
+
     const { name, nodes, edges, drawings } = req.body;
 
     if (!req.userId) {
@@ -1025,22 +1025,22 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
     // This uploads base64 images to R2 and removes them from payload, reducing size
     let processedNodes = nodes !== undefined ? nodes : existingProject.nodes;
     let r2ProcessingFailed = false;
-    
+
     // Validate nodes if provided
     if (nodes !== undefined) {
       if (!Array.isArray(nodes)) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           error: 'Invalid nodes format',
           message: 'Nodes must be an array'
         });
       }
     }
-    
+
     if (nodes !== undefined && Array.isArray(nodes)) {
       // Clean expired base64 images and add timestamps to new ones
       processedNodes = cleanExpiredBase64Images(nodes);
       processedNodes = addBase64Timestamps(processedNodes);
-      
+
       // Process nodes to upload base64 images to R2 and replace with URLs
       try {
         if (isR2Configured()) {
@@ -1069,7 +1069,7 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
       edges: edges !== undefined ? edges : existingProject.edges,
     };
     const payloadSize = JSON.stringify(processedPayload).length;
-    
+
     // Helper function to count base64 images
     const countBase64ImagesInNodes = (nodesToCount: any[]) => {
       let count = 0;
@@ -1090,12 +1090,12 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
       }
       return count;
     };
-    
+
     // Check Vercel limit first (more restrictive)
     if (payloadSize > VERCEL_LIMIT) {
       const base64ImageCount = countBase64ImagesInNodes(nodes || []);
       const r2Configured = isR2Configured();
-      
+
       let suggestion = '';
       if (!r2Configured) {
         suggestion = 'O limite de 50MB é imposto pela plataforma Vercel Pro. ' +
@@ -1111,7 +1111,7 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
           'Reduza o número de imagens ou elementos no canvas.';
       }
 
-      return res.status(413).json({ 
+      return res.status(413).json({
         error: 'Request Entity Too Large',
         message: `Projeto muito grande (${(payloadSize / 1024 / 1024).toFixed(2)}MB). ` +
           `O tamanho máximo é 50MB (Vercel Pro). ${suggestion}`,
@@ -1123,12 +1123,12 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
         limitType: 'vercel',
       });
     }
-    
+
     // Check MongoDB limit (less restrictive, but still important)
     if (payloadSize > MAX_PAYLOAD_SIZE) {
       const base64ImageCount = countBase64ImagesInNodes(nodes || []);
       const r2Configured = isR2Configured();
-      
+
       let suggestion = '';
       if (base64ImageCount > 0) {
         suggestion = `Detectadas ${base64ImageCount} imagem(ns) base64 no payload. `;
@@ -1142,7 +1142,7 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
       }
       suggestion += 'Ou reduza o número de imagens no canvas.';
 
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Payload too large',
         message: `Payload size (${(payloadSize / 1024 / 1024).toFixed(2)}MB) exceeds maximum allowed size (${MAX_PAYLOAD_SIZE / 1024 / 1024}MB). ${suggestion}`,
         payloadSizeMB: (payloadSize / 1024 / 1024).toFixed(2),
@@ -1155,7 +1155,7 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
 
     // Check for reasonable array size (nodes already validated above)
     if (nodes !== undefined && Array.isArray(nodes) && nodes.length > 10000) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Too many nodes',
         message: `Number of nodes (${nodes.length}) exceeds maximum allowed (10000)`
       });
@@ -1168,7 +1168,7 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
       }
       // Check for reasonable array size
       if (edges.length > 10000) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           error: 'Too many edges',
           message: `Number of edges (${edges.length}) exceeds maximum allowed (10000)`
         });
@@ -1198,17 +1198,17 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
     });
 
     // Map Prisma's 'id' to '_id' for consistency with frontend
-    res.json({ 
+    res.json({
       project: {
         ...project,
         _id: project.id,
       }
     });
   } catch (error: any) {
-    const isConnectionError = error.code === 'P1001' || 
-                             error.message?.includes('connect') ||
-                             error.message?.includes('connection');
-    
+    const isConnectionError = error.code === 'P1001' ||
+      error.message?.includes('connect') ||
+      error.message?.includes('connection');
+
     let connectionStatus = null;
     if (isConnectionError) {
       connectionStatus = await verifyPrismaConnectionWithDetails();
@@ -1217,7 +1217,7 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
     // Detect common Prisma errors
     let errorType = 'Unknown';
     let userMessage = 'An error occurred';
-    
+
     if (error.code) {
       if (error.code === 'P1001') {
         errorType = 'DatabaseConnection';
@@ -1246,12 +1246,12 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
       errorType,
       timestamp: new Date().toISOString(),
     });
-    
+
     const isDevelopment = process.env.NODE_ENV === 'development';
-    const errorMessage = isDevelopment 
+    const errorMessage = isDevelopment
       ? error.message || 'An error occurred'
       : userMessage;
-    
+
     // Return appropriate status code based on error type
     let statusCode = 500;
     if (error.code === 'P2025') {
@@ -1368,7 +1368,7 @@ router.post('/image/upload', authenticate, async (req: AuthRequest, res) => {
     // Check request size early to prevent 413 errors
     const contentLength = req.headers['content-length'];
     const VERCEL_LIMIT = 50 * 1024 * 1024; // 50MB Vercel Pro limit
-    
+
     if (contentLength && parseInt(contentLength) > VERCEL_LIMIT) {
       const sizeMB = (parseInt(contentLength) / 1024 / 1024).toFixed(2);
       return res.status(413).json({
@@ -1390,11 +1390,11 @@ router.post('/image/upload', authenticate, async (req: AuthRequest, res) => {
     }
 
     // Check base64 image size
-    const base64Data = base64Image.includes(',') 
-      ? base64Image.split(',')[1] 
+    const base64Data = base64Image.includes(',')
+      ? base64Image.split(',')[1]
       : base64Image;
     const imageSizeBytes = base64Data ? (base64Data.length * 3) / 4 : 0;
-    
+
     if (imageSizeBytes > VERCEL_LIMIT) {
       const sizeMB = (imageSizeBytes / 1024 / 1024).toFixed(2);
       return res.status(413).json({
@@ -1422,7 +1422,7 @@ router.post('/image/upload', authenticate, async (req: AuthRequest, res) => {
       res.json({ imageUrl });
     } catch (uploadError: any) {
       console.error('Error uploading canvas image to R2:', uploadError);
-      
+
       // Handle 413 errors from R2 or other services
       if (uploadError.message?.includes('too large') || uploadError.message?.includes('413')) {
         return res.status(413).json({
@@ -1430,7 +1430,7 @@ router.post('/image/upload', authenticate, async (req: AuthRequest, res) => {
           message: 'Imagem muito grande para upload. O tamanho máximo é 50MB. Por favor, use uma imagem menor.',
         });
       }
-      
+
       res.status(500).json({
         error: 'Failed to upload image to R2',
         message: uploadError.message || 'An error occurred'
@@ -1438,7 +1438,7 @@ router.post('/image/upload', authenticate, async (req: AuthRequest, res) => {
     }
   } catch (error: any) {
     console.error('Error in canvas image upload endpoint:', error);
-    
+
     // Handle 413 errors
     if (error.status === 413 || error.message?.includes('413') || error.message?.includes('too large')) {
       return res.status(413).json({
@@ -1446,7 +1446,7 @@ router.post('/image/upload', authenticate, async (req: AuthRequest, res) => {
         message: 'Imagem muito grande para upload. O tamanho máximo é 50MB. Por favor, use uma imagem menor.',
       });
     }
-    
+
     res.status(500).json({
       error: 'Failed to process image upload',
       message: error.message || 'An error occurred'
@@ -1501,8 +1501,8 @@ router.post('/video/upload', authenticate, async (req: AuthRequest, res) => {
     // Check request size early to prevent 413 errors
     const contentLength = req.headers['content-length'];
     const VERCEL_LIMIT = 50 * 1024 * 1024; // 50MB Vercel Pro limit
-    
-      if (contentLength && parseInt(contentLength) > VERCEL_LIMIT) {
+
+    if (contentLength && parseInt(contentLength) > VERCEL_LIMIT) {
       const sizeMB = (parseInt(contentLength) / 1024 / 1024).toFixed(2);
       return res.status(413).json({
         error: 'Request Entity Too Large',
@@ -1526,11 +1526,11 @@ router.post('/video/upload', authenticate, async (req: AuthRequest, res) => {
     }
 
     // Check base64 video size
-    const base64Data = videoBase64.includes(',') 
-      ? videoBase64.split(',')[1] 
+    const base64Data = videoBase64.includes(',')
+      ? videoBase64.split(',')[1]
       : videoBase64;
     const videoSizeBytes = base64Data ? (base64Data.length * 3) / 4 : 0;
-    
+
     if (videoSizeBytes > VERCEL_LIMIT) {
       const sizeMB = (videoSizeBytes / 1024 / 1024).toFixed(2);
       return res.status(413).json({
@@ -1559,7 +1559,7 @@ router.post('/video/upload', authenticate, async (req: AuthRequest, res) => {
       res.json({ videoUrl });
     } catch (uploadError: any) {
       console.error('Error uploading canvas video to R2:', uploadError);
-      
+
       // Handle 413 errors from R2 or other services
       if (uploadError.message?.includes('too large') || uploadError.message?.includes('413')) {
         return res.status(413).json({
@@ -1567,7 +1567,7 @@ router.post('/video/upload', authenticate, async (req: AuthRequest, res) => {
           message: 'Vídeo muito grande para upload. Por favor, use um vídeo menor ou comprima o vídeo antes de fazer upload.',
         });
       }
-      
+
       res.status(500).json({
         error: 'Failed to upload video to R2',
         message: uploadError.message || 'An error occurred'
@@ -1575,7 +1575,7 @@ router.post('/video/upload', authenticate, async (req: AuthRequest, res) => {
     }
   } catch (error: any) {
     console.error('Error in canvas video upload endpoint:', error);
-    
+
     // Handle 413 errors
     if (error.status === 413 || error.message?.includes('413') || error.message?.includes('too large')) {
       return res.status(413).json({
@@ -1583,7 +1583,7 @@ router.post('/video/upload', authenticate, async (req: AuthRequest, res) => {
         message: 'Vídeo muito grande para upload. Por favor, use um vídeo menor ou comprima o vídeo antes de fazer upload.',
       });
     }
-    
+
     res.status(500).json({
       error: 'Failed to process video upload',
       message: error.message || 'An error occurred'
@@ -1599,7 +1599,7 @@ router.delete('/image', authenticate, async (req: AuthRequest, res) => {
     }
 
     const imageUrl = req.query.url as string;
-    
+
     if (!imageUrl) {
       return res.status(400).json({ error: 'Image URL is required' });
     }
@@ -1610,7 +1610,7 @@ router.delete('/image', authenticate, async (req: AuthRequest, res) => {
     }
 
     try {
-      const r2Service = await import('../../services/r2Service.js');
+      const r2Service = await import('../services/r2Service.js');
       if (r2Service.isR2Configured()) {
         await r2Service.deleteImage(imageUrl);
         res.json({ success: true, message: 'Image deleted from R2' });

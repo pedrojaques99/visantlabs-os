@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../db/prisma.js';
-import { JWT_SECRET } from '../utils/jwtSecret.js';
+import { JWT_SECRET } from '@/utils/jwtSecret.js';
 
 const isDev = process.env.NODE_ENV !== 'production';
 

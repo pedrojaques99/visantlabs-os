@@ -1,7 +1,7 @@
 // Usage tracking utilities for Gemini API billing
 
-import { calculateImageCost } from '../../utils/pricing.js';
-import type { GeminiModel, Resolution } from '../../types';
+import { calculateImageCost } from '../../src/utils/pricing.js';
+import type { GeminiModel, Resolution } from '../../src/types/types.js';
 
 export type FeatureType = 'brandingmachine' | 'mockupmachine' | 'canvas';
 
@@ -10,6 +10,8 @@ export interface UsageRecord {
   imagesGenerated: number; // Number of images generated in this request
   timestamp: Date;
   promptLength?: number; // Character count of prompt
+  inputTokens?: number; // Number of input tokens
+  outputTokens?: number; // Number of output tokens
   hasInputImage: boolean; // Whether input image was provided
   model: string; // Model used (e.g., 'gemini-2.5-flash-image')
   cost: number; // Calculated cost in USD
@@ -18,10 +20,16 @@ export interface UsageRecord {
   apiKeySource?: 'user' | 'system'; // Source of the API key used
 }
 
-// Text generation pricing (tokens-based) - kept here as it's not part of image/video pricing
+// Text generation pricing (tokens-based)
+// Prices are per 1 million tokens (USD)
 const TEXT_GENERATION_PRICING = {
   'gemini-2.5-flash': {
-    costPer1KTokens: 0.075, // $0.075 per 1K tokens (for text generation)
+    inputPricePer1M: 0.30,
+    outputPricePer1M: 2.50,
+  },
+  'gemini-3-pro-preview': { // Applies to analysis/text tasks using this model
+    inputPricePer1M: 2.00,
+    outputPricePer1M: 12.00,
   },
 };
 
@@ -79,24 +87,27 @@ export function calculateImageGenerationCost(
 
 /**
  * Calculate cost for text generation (tokens-based)
- * Note: Text generation pricing is kept here as it's not part of the image/video pricing structure
+ * Supports separate input and output token pricing
  */
 export function calculateTextGenerationCost(
   inputTokens: number,
   outputTokens: number,
   model: string = 'gemini-2.5-flash'
 ): number {
-  const pricing = TEXT_GENERATION_PRICING[model as keyof typeof TEXT_GENERATION_PRICING];
+  const normalizedModel = model.includes('gemini-3-pro') ? 'gemini-3-pro-preview' : 'gemini-2.5-flash';
+  const pricing = TEXT_GENERATION_PRICING[normalizedModel as keyof typeof TEXT_GENERATION_PRICING];
 
-  if (!pricing || !('costPer1KTokens' in pricing)) {
-    console.warn(`Unknown text model pricing for ${model}`);
-    return 0;
+  if (!pricing) {
+    console.warn(`Unknown text model pricing for ${model}, using Flash rates as fallback`);
+    // Fallback to Flash rates
+    return (inputTokens / 1_000_000) * 0.30 + (outputTokens / 1_000_000) * 2.50;
   }
 
-  // Typically input and output tokens have different pricing
-  // This is a simplified calculation
-  const totalTokens = inputTokens + outputTokens;
-  return (totalTokens / 1000) * pricing.costPer1KTokens;
+  // Calculate cost: (Tokens / 1M) * PricePer1M
+  const inputCost = (inputTokens / 1_000_000) * pricing.inputPricePer1M;
+  const outputCost = (outputTokens / 1_000_000) * pricing.outputPricePer1M;
+
+  return inputCost + outputCost;
 }
 
 /**
@@ -110,18 +121,32 @@ export function createUsageRecord(
   promptLength?: number,
   resolution?: Resolution,
   feature?: FeatureType,
-  apiKeySource: 'user' | 'system' = 'system'
+  apiKeySource: 'user' | 'system' = 'system',
+  inputTokens?: number,
+  outputTokens?: number
 ): UsageRecord {
+  // Determine if this is an image/video generation or text/analysis task
+  let cost = 0;
+
+  if (imagesGenerated > 0) {
+    // It's an image generation
+    cost = calculateImageGenerationCost(imagesGenerated, model, hasInputImage, resolution);
+  } else if (inputTokens !== undefined || outputTokens !== undefined) {
+    // It's a text/analysis task (prompt generation, categorization, etc.)
+    cost = calculateTextGenerationCost(inputTokens || 0, outputTokens || 0, model);
+  }
+
   return {
     userId,
     imagesGenerated,
     timestamp: new Date(),
     promptLength,
+    inputTokens,
+    outputTokens,
     hasInputImage,
     model,
-    cost: calculateImageGenerationCost(imagesGenerated, model, hasInputImage, resolution),
+    cost,
     feature,
     apiKeySource,
   };
 }
-

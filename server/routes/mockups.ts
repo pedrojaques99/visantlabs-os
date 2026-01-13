@@ -4,9 +4,9 @@ import { ObjectId } from 'mongodb';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../db/prisma.js';
 import { checkSubscription, SubscriptionRequest } from '../middleware/subscription.js';
-import { generateMockup, RateLimitError } from '../../services/geminiService.js';
-import { getCreditsRequired } from '../utils/usageTracking.js';
-import type { UploadedImage, AspectRatio, GeminiModel, Resolution } from '../../types.js';
+import { generateMockup, RateLimitError } from '../services/geminiService.js';
+import { getCreditsRequired } from '@/utils/usageTracking.js';
+import type { UploadedImage, AspectRatio, GeminiModel, Resolution } from '../types/types.js';
 
 const router = express.Router();
 
@@ -80,7 +80,7 @@ async function uploadImageToR2(
   userId: string,
   mockupId: string
 ): Promise<string> {
-  const r2Service = await import('../../services/r2Service.js');
+  const r2Service = await import('../services/r2Service.js');
 
   // Check if R2 is configured - it's now required
   if (!r2Service.isR2Configured()) {
@@ -618,7 +618,7 @@ router.get('/:id', authenticate, async (req: AuthRequest, res, next) => {
 router.post('/upload-url', authenticate, async (req: AuthRequest, res) => {
   try {
     const { contentType } = req.body;
-    const { generateMockupImageUploadUrl } = await import('../../services/r2Service.js');
+    const { generateMockupImageUploadUrl } = await import('../services/r2Service.js');
 
     if (!req.userId) {
       return res.status(401).json({ error: 'User not authenticated' });
@@ -835,7 +835,7 @@ router.post('/generate', authenticate, checkSubscription, async (req: Subscripti
     let apiKeySource: 'user' | 'system' = 'system';
 
     try {
-      const { getGeminiApiKey } = await import('../utils/geminiApiKey.js');
+      const { getGeminiApiKey } = await import('@/utils/geminiApiKey.js');
       // Try to get ONLY user key first (skip fallback)
       userApiKey = await getGeminiApiKey(req.userId!, { skipFallback: true });
 
@@ -931,7 +931,7 @@ router.post('/generate', authenticate, checkSubscription, async (req: Subscripti
     let imageUrl: string | undefined;
 
     try {
-      const r2Service = await import('../../services/r2Service.js');
+      const r2Service = await import('../services/r2Service.js');
       if (r2Service.isR2Configured()) {
         console.log(`${logPrefix} [R2] Uploading generated image to R2...`);
         // Use a new ID for the file name, or reuse requestId if unique enough
@@ -949,7 +949,7 @@ router.post('/generate', authenticate, checkSubscription, async (req: Subscripti
     // Use retry mechanism to ensure usage record is created for audit trail
     const createUsageRecordWithRetry = async (maxRetries: number = 3): Promise<void> => {
       const db = getDb();
-      const { createUsageRecord, calculateImageGenerationCost } = await import('../utils/usageTracking.js');
+      const { createUsageRecord, calculateImageGenerationCost } = await import('@/utils/usageTracking.js');
 
       const usageRecord = createUsageRecord(
         req.userId!,
@@ -1216,7 +1216,7 @@ router.post('/track-prompt-generation', authenticate, async (req: AuthRequest, r
     const hasActiveSubscription = subscriptionStatus === 'active';
 
     // Calculate cost
-    const { calculateTextGenerationCost } = await import('../utils/usageTracking.js');
+    const { calculateTextGenerationCost } = await import('@/utils/usageTracking.js');
     const cost = calculateTextGenerationCost(inputTokens, outputTokens, 'gemini-2.5-flash-image');
 
     // Create usage record
@@ -1317,7 +1317,7 @@ router.post('/track-usage', authenticate, async (req: AuthRequest, res, next) =>
 
     if (success) {
       // Import usage tracking utilities
-      const { createUsageRecord, calculateImageGenerationCost, getCreditsRequired } = await import('../utils/usageTracking.js');
+      const { createUsageRecord, calculateImageGenerationCost, getCreditsRequired } = await import('@/utils/usageTracking.js');
 
       // Calculate credits required based on model and resolution
       const creditsPerImage = getCreditsRequired(model as 'gemini-2.5-flash-image' | 'gemini-3-pro-image-preview', resolution);
@@ -1657,7 +1657,7 @@ router.delete('/:id', authenticate, async (req: AuthRequest, res, next) => {
     // Delete image from R2 if it exists
     if (mockup.imageUrl) {
       try {
-        const r2Service = await import('../../services/r2Service.js');
+        const r2Service = await import('../services/r2Service.js');
         if (r2Service.isR2Configured()) {
           await r2Service.deleteImage(mockup.imageUrl);
         }

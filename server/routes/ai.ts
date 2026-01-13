@@ -8,9 +8,9 @@ import {
   suggestPromptVariations,
   changeObjectInMockup,
   applyThemeToMockup,
-} from '../../services/geminiService.js';
-import { getGeminiApiKey } from '../utils/geminiApiKey.js';
-import type { UploadedImage, GeminiModel, Resolution } from '../../types.js';
+} from '../services/geminiService.js';
+import { getGeminiApiKey } from '@/utils/geminiApiKey.js';
+import type { UploadedImage, GeminiModel, Resolution } from '../types/types.js';
 
 const router = express.Router();
 
@@ -135,7 +135,7 @@ router.post('/analyze-setup', authenticate, async (req: AuthRequest, res, next) 
       // User doesn't have API key
     }
 
-    const { analyzeMockupSetup } = await import('../../services/geminiService.js');
+    const { analyzeMockupSetup } = await import('../services/geminiService.js');
     const analysis = await analyzeMockupSetup(baseImage as UploadedImage, userApiKey);
 
     res.json(analysis);
