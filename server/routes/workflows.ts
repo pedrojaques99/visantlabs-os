@@ -1,6 +1,6 @@
 import express from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
-import { getUserIdFromToken } from '../utils/auth.js';
+import { getUserIdFromToken } from '@/utils/auth.js';
 import { prisma } from '../db/prisma.js';
 import { InputJsonValue } from '@prisma/client/runtime/library';
 

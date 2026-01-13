@@ -5,7 +5,7 @@ import { ObjectId } from 'mongodb';
 import { validateAdmin } from '../middleware/adminAuth.js';
 import { AuthRequest } from '../middleware/auth.js';
 import { rateLimit } from 'express-rate-limit';
-import { calculateImageCost, calculateVideoCost, getImagePricing } from '../../utils/pricing.js';
+import { calculateImageCost, calculateVideoCost, getImagePricing } from '../src/utils/pricing.js';
 
 const router = express.Router();
 
@@ -993,7 +993,7 @@ router.post('/presets/mockup/:id/upload-image', validateAdmin, async (req, res) 
       return res.status(400).json({ error: 'Preset ID is required' });
     }
 
-    const r2Service = await import('../../services/r2Service.js');
+    const r2Service = await import('../services/r2Service.js');
 
     if (!r2Service.isR2Configured()) {
       return res.status(500).json({

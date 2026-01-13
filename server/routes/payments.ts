@@ -4,7 +4,7 @@ import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { verifyBotId } from '../middleware/botid.js';
 import { getDb, connectToMongoDB } from '../db/mongodb.js';
 import { ObjectId } from 'mongodb';
-import { getCreditsByAmount, getCreditPackage, getCreditPackagePrice } from '../../utils/creditPackages.js';
+import { getCreditsByAmount, getCreditPackage, getCreditPackagePrice } from '../src/utils/creditPackages.js';
 import { abacatepayService } from '../services/abacatepayService.js';
 import { prisma } from '../db/prisma.js';
 
