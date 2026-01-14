@@ -38,3 +38,11 @@ export async function initializeAnglePresets(): Promise<void> {
   await fetchAllOfficialPresets();
 }
 
+export const anglePresetsService = {
+  getById: getAnglePreset,
+  getAll: getAllAnglePresets,
+  getByIdAsync: getAnglePresetAsync,
+  getAllAsync: getAllAnglePresetsAsync,
+  initialize: initializeAnglePresets
+};
+

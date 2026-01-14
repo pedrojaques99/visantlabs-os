@@ -253,13 +253,13 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
             onClick={tool.onClick}
             className={cn(
               "w-10 h-10 flex items-center justify-center",
-              "bg-zinc-900/50 backdrop-blur-md",
+              "bg-neutral-900/50 backdrop-blur-md",
               "border rounded-md",
               "transition-colors duration-150",
               "cursor-grab active:cursor-grabbing",
               isActive
                 ? "border-[brand-cyan] text-brand-cyan bg-brand-cyan/10"
-                : "border-zinc-800/40 text-zinc-400 hover:text-brand-cyan hover:border-[brand-cyan]/40 hover:bg-zinc-800/50"
+                : "border-neutral-800/40 text-neutral-400 hover:text-brand-cyan hover:border-[brand-cyan]/40 hover:bg-neutral-800/50"
             )}
             aria-label={tool.label}
           >
@@ -277,13 +277,13 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
           onClick={tool.onClick}
           className={cn(
             "w-full px-2 py-1.5",
-            "bg-zinc-900/50 backdrop-blur-md",
+            "bg-neutral-900/50 backdrop-blur-md",
             "border rounded-md",
             "transition-colors duration-150",
             "flex items-center gap-2 cursor-grab active:cursor-grabbing",
             isActive
               ? "border-[brand-cyan] text-brand-cyan bg-brand-cyan/10"
-              : "border-zinc-800/40 text-zinc-400 hover:text-zinc-200 hover:border-[brand-cyan]/40 hover:bg-zinc-800/50"
+              : "border-neutral-800/40 text-neutral-400 hover:text-neutral-200 hover:border-[brand-cyan]/40 hover:bg-neutral-800/50"
           )}
           aria-label={tool.label}
         >
@@ -314,8 +314,8 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
     return (
       <div className="space-y-1">
         <div className="flex items-center gap-1.5 px-1 py-1">
-          <span className="text-zinc-500">{icon}</span>
-          <span className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
+          <span className="text-neutral-500">{icon}</span>
+          <span className="text-[9px] font-semibold text-neutral-500 uppercase tracking-wider">
             {title}
           </span>
         </div>
@@ -339,7 +339,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
       className={cn(
         getPositionClasses(),
         "z-40",
-        "backdrop-blur-xl border border-zinc-800/50",
+        "backdrop-blur-xl border border-neutral-800/50",
         "rounded-2xl shadow-2xl",
         "transition-all duration-300 ease-out",
         "flex flex-col",
@@ -355,16 +355,16 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
       {/* Expanded State - Full Content with Sections */}
       <div className="w-full flex flex-col h-full overflow-hidden">
         {/* Header with Close Button */}
-        <div className="flex items-center justify-between border-b border-zinc-800/30 relative bg-transparent rounded-t-2xl">
+        <div className="flex items-center justify-between border-b border-neutral-800/30 relative bg-transparent rounded-t-2xl">
           <div className="flex items-center gap-1.5 px-3 py-3">
-            <h2 className="text-xs font-semibold text-zinc-300 tracking-wide">
+            <h2 className="text-xs font-semibold text-neutral-300 tracking-wide">
               {t('canvasToolbar.title')}
             </h2>
           </div>
           {onClose && (
             <button
               onClick={onClose}
-              className="p-3 text-zinc-500 hover:text-zinc-200 border-l border-zinc-800/50 hover:bg-zinc-800/50 transition-colors h-full rounded-tr-2xl"
+              className="p-3 text-neutral-500 hover:text-neutral-200 border-l border-neutral-800/50 hover:bg-neutral-800/50 transition-colors h-full rounded-tr-2xl"
             >
               <X size={16} />
             </button>
@@ -372,7 +372,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-zinc-400 dark:scrollbar-thumb-zinc-700 scrollbar-track-transparent">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-neutral-400 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent">
           <div className="flex flex-col p-2 gap-2">
 
             {/* Core Tools */}

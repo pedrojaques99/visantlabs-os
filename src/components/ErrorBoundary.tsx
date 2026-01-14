@@ -185,12 +185,12 @@ export class ErrorBoundary extends Component<Props, State> {
       // Show retrying state for chunk errors
       if (isChunkError && this.state.isRetrying) {
         return (
-          <div className="min-h-screen bg-black text-zinc-300 flex items-center justify-center p-4">
-            <div className="max-w-md w-full bg-black/95 backdrop-blur-xl border border-zinc-800 rounded-xl p-6 md:p-8 space-y-4 text-center">
+          <div className="min-h-screen bg-black text-neutral-300 flex items-center justify-center p-4">
+            <div className="max-w-md w-full bg-black/95 backdrop-blur-xl border border-neutral-800 rounded-xl p-6 md:p-8 space-y-4 text-center">
               <div className="flex justify-center">
                 <RefreshCw className="h-8 w-8 text-brand-cyan animate-spin" />
               </div>
-              <p className="text-sm text-zinc-400 font-mono">
+              <p className="text-sm text-neutral-400 font-mono">
                 {translations.retrying || 'Retrying...'}
               </p>
             </div>
@@ -199,23 +199,23 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="min-h-screen bg-black text-zinc-300 flex items-center justify-center p-4">
-          <div className="max-w-2xl w-full bg-black/95 backdrop-blur-xl border border-zinc-800 rounded-xl p-6 md:p-8 space-y-6">
+        <div className="min-h-screen bg-black text-neutral-300 flex items-center justify-center p-4">
+          <div className="max-w-2xl w-full bg-black/95 backdrop-blur-xl border border-neutral-800 rounded-xl p-6 md:p-8 space-y-6">
             <div className="flex items-center gap-3">
               <div className="p-3 bg-red-500/20 rounded-md">
                 <AlertTriangle className="h-6 w-6 text-red-400" />
               </div>
               <div>
-                <h1 className="text-xl md:text-2xl font-semibold text-zinc-200 font-mono">
+                <h1 className="text-xl md:text-2xl font-semibold text-neutral-200 font-mono">
                   {isChunkError ? (translations.chunkErrorTitle || 'Page Load Error') : (translations.unexpectedErrorTitle || 'Unexpected Error')}
                 </h1>
-                <p className="text-sm text-zinc-400 font-mono mt-1">
+                <p className="text-sm text-neutral-400 font-mono mt-1">
                   {isChunkError ? (translations.chunkErrorDescription || 'Could not load required files') : (translations.unexpectedErrorDescription || 'Something went wrong')}
                 </p>
               </div>
             </div>
 
-            <div className="bg-black/40 border border-zinc-800 rounded-md p-4 space-y-2">
+            <div className="bg-black/40 border border-neutral-800 rounded-md p-4 space-y-2">
               {!isChunkError && (
                 <p className="text-sm font-mono text-red-400 font-semibold">
                   {errorMessage}
@@ -226,17 +226,17 @@ export class ErrorBoundary extends Component<Props, State> {
                   <p className="text-sm font-mono text-yellow-400">
                     {translations.chunkErrorMessage || 'A problem occurred while loading the page files. This is usually caused by network or cache issues.'}
                   </p>
-                  <p className="text-xs font-mono text-zinc-500">
+                  <p className="text-xs font-mono text-neutral-500">
                     {translations.chunkErrorHint || 'Try reloading the page or clearing your browser cache.'}
                   </p>
                 </div>
               )}
               {this.state.errorInfo && !isChunkError && (
                 <details className="mt-4">
-                  <summary className="text-xs text-zinc-500 cursor-pointer hover:text-zinc-400 font-mono mb-2">
+                  <summary className="text-xs text-neutral-500 cursor-pointer hover:text-neutral-400 font-mono mb-2">
                     {translations.stackTrace || 'Stack Trace'}
                   </summary>
-                  <pre className="text-xs text-zinc-600 font-mono overflow-auto max-h-48 p-2 bg-black/40 rounded border border-zinc-800">
+                  <pre className="text-xs text-neutral-600 font-mono overflow-auto max-h-48 p-2 bg-black/40 rounded border border-neutral-800">
                     {this.state.errorInfo.componentStack}
                   </pre>
                 </details>
@@ -263,7 +263,7 @@ export class ErrorBoundary extends Component<Props, State> {
                   </button>
                   <button
                     onClick={this.handleGoHome}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 rounded-md transition-colors font-mono text-sm"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-neutral-300 rounded-md transition-colors font-mono text-sm"
                   >
                     <Home className="h-4 w-4" />
                     {translations.goHome || 'Go Home'}
@@ -280,14 +280,14 @@ export class ErrorBoundary extends Component<Props, State> {
                   </button>
                   <button
                     onClick={this.handleReload}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 rounded-md transition-colors font-mono text-sm"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-neutral-300 rounded-md transition-colors font-mono text-sm"
                   >
                     <RefreshCw className="h-4 w-4" />
                     {translations.reloadPage || 'Reload Page'}
                   </button>
                   <button
                     onClick={this.handleGoHome}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 rounded-md transition-colors font-mono text-sm"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-neutral-300 rounded-md transition-colors font-mono text-sm"
                   >
                     <Home className="h-4 w-4" />
                     {translations.goHome || 'Go Home'}

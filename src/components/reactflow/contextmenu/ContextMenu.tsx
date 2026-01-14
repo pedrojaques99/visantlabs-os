@@ -440,12 +440,12 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
         "flex items-center gap-3",
         item.highlight
           ? "text-brand-cyan hover:bg-brand-cyan/10"
-          : "text-zinc-300 hover:bg-zinc-800/50 hover:text-zinc-400"
+          : "text-neutral-300 hover:bg-neutral-800/50 hover:text-neutral-400"
       )}
     >
       <span className={cn(
         "transition-colors duration-150",
-        item.highlight ? "text-brand-cyan" : "text-zinc-400"
+        item.highlight ? "text-brand-cyan" : "text-neutral-400"
       )}>
         {item.icon}
       </span>
@@ -457,7 +457,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
 
   const GroupLabel: React.FC<{ title: string }> = ({ title }) => (
     <div className="px-3 py-1.5">
-      <span className="text-[10px] font-mono text-zinc-600 uppercase tracking-wider">
+      <span className="text-[10px] font-mono text-neutral-600 uppercase tracking-wider">
         {title}
       </span>
     </div>
@@ -468,7 +468,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       ref={menuRef}
       data-context-menu
       className={cn(
-        "fixed z-50 bg-[#0A0A0A]/80 backdrop-blur-md border border-zinc-700/40 rounded-xl shadow-2xl",
+        "fixed z-50 bg-[#0A0A0A]/80 backdrop-blur-md border border-neutral-700/40 rounded-xl shadow-2xl",
         "min-w-[220px] max-w-[280px]",
         "transition-all duration-200 ease-out"
       )}
@@ -478,14 +478,14 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       onMouseDown={(e) => e.stopPropagation()}
     >
       {/* Header with Search */}
-      <div className="sticky top-0 bg-[#0A0A0A]/80 backdrop-blur-md border-b border-zinc-700/40 z-10 rounded-t-xl">
+      <div className="sticky top-0 bg-[#0A0A0A]/80 backdrop-blur-md border-b border-neutral-700/40 z-10 rounded-t-xl">
         <div className="px-3 py-2.5 flex items-center justify-between gap-2">
-          <span className="text-xs font-mono text-zinc-400 uppercase tracking-wider font-semibold">
+          <span className="text-xs font-mono text-neutral-400 uppercase tracking-wider font-semibold">
             Add Node
           </span>
           <button
             onClick={onClose}
-            className="p-1 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 rounded transition-all duration-200 cursor-pointer"
+            className="p-1 text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/50 rounded transition-all duration-200 cursor-pointer"
             aria-label="Close menu"
             onMouseDown={(e) => e.stopPropagation()}
           >
@@ -496,14 +496,14 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
         {/* Search Input */}
         <div className="px-3 pb-2.5" onMouseDown={(e) => e.stopPropagation()}>
           <div className="relative">
-            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-500" />
+            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-500" />
             <input
               ref={searchInputRef}
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search nodes..."
-              className="w-full pl-8 pr-2.5 py-1.5 text-xs font-mono bg-zinc-900/50 border border-zinc-700/30 rounded-md text-zinc-300 placeholder-zinc-600 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-1 focus:ring-[brand-cyan]/20 transition-all duration-200"
+              className="w-full pl-8 pr-2.5 py-1.5 text-xs font-mono bg-neutral-900/50 border border-neutral-700/30 rounded-md text-neutral-300 placeholder-neutral-600 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-1 focus:ring-[brand-cyan]/20 transition-all duration-200"
               aria-label="Search menu items"
               onMouseDown={(e) => e.stopPropagation()}
             />
@@ -515,8 +515,8 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       <div className="px-2 py-2 max-h-[60vh] overflow-y-auto">
         {filteredItems.length === 0 ? (
           <div className="px-3 py-8 text-center">
-            <p className="text-sm font-mono text-zinc-500">No results found</p>
-            <p className="text-xs font-mono text-zinc-600 mt-1">Try a different search term</p>
+            <p className="text-sm font-mono text-neutral-500">No results found</p>
+            <p className="text-xs font-mono text-neutral-600 mt-1">Try a different search term</p>
           </div>
         ) : (
           <div className="space-y-0.5">
@@ -530,7 +530,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
                 {viewItems.map((item, index) => (
                   <MenuItemButton key={item.id} item={item} index={editItems.length + index} />
                 ))}
-                <div className="h-px bg-zinc-700/30 my-1.5" />
+                <div className="h-px bg-neutral-700/30 my-1.5" />
               </>
             )}
 
@@ -542,7 +542,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
                   <MenuItemButton key={item.id} item={item} index={index} />
                 ))}
                 {(processingItems.length > 0 || exportItems.length > 0) && (
-                  <div className="h-px bg-zinc-700/30 my-1.5" />
+                  <div className="h-px bg-neutral-700/30 my-1.5" />
                 )}
               </>
             )}
@@ -563,14 +563,14 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
               return (
                 <React.Fragment key={category}>
                   {hasItemsBefore && (
-                    <div className="h-px bg-zinc-700/30 my-1.5" />
+                    <div className="h-px bg-neutral-700/30 my-1.5" />
                   )}
                   <GroupLabel title={category} />
                   {categoryItems.map((item) => (
                     <MenuItemButton key={item.id} item={item} index={0} />
                   ))}
                   {categoryIndex === categoryOrder.length - 1 && exportItems.length > 0 && (
-                    <div className="h-px bg-zinc-700/30 my-1.5" />
+                    <div className="h-px bg-neutral-700/30 my-1.5" />
                   )}
                 </React.Fragment>
               );
@@ -580,7 +580,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             {exportItems.length > 0 && (
               <>
                 {processingItems.length > 0 && (
-                  <div className="h-px bg-zinc-700/30 my-1.5" />
+                  <div className="h-px bg-neutral-700/30 my-1.5" />
                 )}
                 <GroupLabel title="Export" />
                 {exportItems.map((item, index) => (

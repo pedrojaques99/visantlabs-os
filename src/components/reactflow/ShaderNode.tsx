@@ -517,12 +517,12 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
       {/* Header */}
       <div className="flex items-center gap-3 mb-3">
         <Sparkles size={16} className="text-brand-cyan" />
-        <h3 className="text-xs font-semibold text-zinc-300 font-mono">Shader Effect</h3>
+        <h3 className="text-xs font-semibold text-neutral-300 font-mono">Shader Effect</h3>
       </div>
 
       {/* Status/Info - Show manual apply option when ready (only for images, videos auto-process) */}
       {!isLoading && hasConnectedImage && !hasResult && !isVideoInput ? (
-        <div className="w-full px-2 py-1.5 bg-zinc-800/30 border border-zinc-700/30 rounded text-xs font-mono text-zinc-400 flex items-center justify-center gap-3">
+        <div className="w-full px-2 py-1.5 bg-neutral-800/30 border border-neutral-700/30 rounded text-xs font-mono text-neutral-400 flex items-center justify-center gap-3">
           <ImageIcon size={14} className="text-brand-cyan" />
           Ready to process
         </div>
@@ -530,7 +530,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
 
       {!hasConnectedImage ? (
         <div className="w-full space-y-2">
-          <div className="w-full px-2 py-1.5 bg-zinc-800/30 border border-zinc-700/30 rounded text-xs font-mono text-zinc-500 flex items-center justify-center gap-3 opacity-50">
+          <div className="w-full px-2 py-1.5 bg-neutral-800/30 border border-neutral-700/30 rounded text-xs font-mono text-neutral-500 flex items-center justify-center gap-3 opacity-50">
             <ImageIcon size={14} />
             {t('canvasNodes.shaderNode.connectImage') || 'Connect an image or video'}
           </div>
@@ -546,7 +546,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
           </label>
         </div>
       ) : hasConnectedImage && !hasResult && !isVideoInput && !isLoading ? (
-        <div className="w-full px-2 py-1.5 bg-zinc-800/30 border border-zinc-700/30 rounded text-xs font-mono text-zinc-400 flex items-center justify-center gap-3">
+        <div className="w-full px-2 py-1.5 bg-neutral-800/30 border border-neutral-700/30 rounded text-xs font-mono text-neutral-400 flex items-center justify-center gap-3">
           <ImageIcon size={14} className="text-brand-cyan" />
           <span>Image connected - Processing...</span>
         </div>
@@ -556,7 +556,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
       {hasConnectedImage && isVideoInput && !hasResult && (
         <>
           {isLoading ? (
-            <div className="mt-2 pt-2 border-t border-zinc-700/30 flex-1 min-h-[200px] flex items-center justify-center">
+            <div className="mt-2 pt-2 border-t border-neutral-700/30 flex-1 min-h-[200px] flex items-center justify-center">
               <NodePlaceholder
                 isLoading={true}
                 emptyMessage={t('canvasNodes.shaderNode.processingVideo') || 'Processing video frames...'}
@@ -566,7 +566,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
             </div>
           ) : (
             <div
-              className="mt-2 pt-2 border-t border-zinc-700/30 relative group flex-1 min-h-0 flex flex-col"
+              className="mt-2 pt-2 border-t border-neutral-700/30 relative group flex-1 min-h-0 flex flex-col"
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
             >
@@ -588,7 +588,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
       {/* Result Preview with Action Icons */}
       {hasResult && (hasVideoResult ? resultVideoUrl : resultImageUrl) && (
         <div
-          className="mt-2 pt-2 border-t border-zinc-700/30 relative group flex-1 min-h-0 flex flex-col"
+          className="mt-2 pt-2 border-t border-neutral-700/30 relative group flex-1 min-h-0 flex flex-col"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
@@ -961,7 +961,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
                 }
               }}
               onMouseDown={(e) => e.stopPropagation()}
-              className="p-1.5 rounded-md bg-black/60 hover:bg-black/80 text-zinc-300 hover:text-white border border-zinc-700/50 hover:border-zinc-600/70 transition-all"
+              className="p-1.5 rounded-md bg-black/60 hover:bg-black/80 text-neutral-300 hover:text-white border border-neutral-700/50 hover:border-neutral-600/70 transition-all"
               title={t('common.viewFullscreen')}
             >
               <Maximize2 size={14} strokeWidth={2} />
@@ -969,7 +969,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
             <button
               onClick={handleDownload}
               onMouseDown={(e) => e.stopPropagation()}
-              className="p-1.5 rounded-md bg-black/60 hover:bg-black/80 text-zinc-300 hover:text-white border border-zinc-700/50 hover:border-zinc-600/70 transition-all"
+              className="p-1.5 rounded-md bg-black/60 hover:bg-black/80 text-neutral-300 hover:text-white border border-neutral-700/50 hover:border-neutral-600/70 transition-all"
               title={hasVideoResult ? t('common.downloadVideo') : t('common.downloadImage')}
             >
               <Download size={14} strokeWidth={2} />

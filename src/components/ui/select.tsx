@@ -114,8 +114,8 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
     };
 
     const baseStyles = variant === 'node'
-      ? "w-full px-3 py-2 bg-zinc-800 border border-zinc-800/30 rounded text-xs font-mono text-zinc-300 z-[100]"
-      : "w-full px-3 py-2.5 bg-zinc-800 border border-zinc-800 rounded-xl text-zinc-200 text-sm font-mono z-[100]";
+      ? "w-full px-3 py-2 bg-neutral-800 border border-neutral-800/30 rounded text-xs font-mono text-neutral-300 z-[100]"
+      : "w-full px-3 py-2.5 bg-neutral-800 border border-neutral-800 rounded-xl text-neutral-200 text-sm font-mono z-[100]";
 
     const focusStyles = variant === 'node'
       ? "focus:outline-none focus:border-[brand-cyan]/50 z-[100]"
@@ -133,7 +133,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
             focusStyles,
             "transition-all duration-200 appearance-none cursor-pointer",
             "flex items-center justify-between gap-2",
-            "hover:border-zinc-600/50",
+            "hover:border-neutral-600/50",
             "disabled:cursor-not-allowed disabled:opacity-50",
             isOpen && "border-[brand-cyan]/50",
             variant === 'node' ? "node-interactive z-[99999]" : "",
@@ -146,14 +146,14 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
         >
           <span className={cn(
             "truncate",
-            !selectedOption && "text-zinc-500"
+            !selectedOption && "text-neutral-500"
           )}>
             {displayValue}
           </span>
           <ChevronDown
             size={16}
             className={cn(
-              "text-zinc-400 pointer-events-none flex-shrink-0 transition-transform duration-200",
+              "text-neutral-400 pointer-events-none flex-shrink-0 transition-transform duration-200",
               isOpen && "rotate-180"
             )}
           />
@@ -164,8 +164,8 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
           <div
             className={cn(
               "absolute z-[99999] w-full mt-1",
-              "bg-zinc-800 backdrop-blur-xl",
-              "border border-zinc-700/50 rounded-md",
+              "bg-neutral-800 backdrop-blur-xl",
+              "border border-neutral-700/50 rounded-md",
               "shadow-2xl",
               "overflow-hidden",
               "animate-fade-in"
@@ -178,7 +178,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
           >
             <ul
               ref={listRef}
-              className="max-h-60 overflow-auto scrollbar-thin scrollbar-thumb-zinc-400 dark:scrollbar-thumb-zinc-700 scrollbar-track-transparent"
+              className="max-h-60 overflow-auto scrollbar-thin scrollbar-thumb-neutral-400 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent"
             >
               {options.map((option, index) => {
                 const isSelected = option.value === value;
@@ -197,9 +197,9 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
                       "transition-all duration-150",
                       "flex items-center justify-between gap-2",
                       "border-l-2 border-transparent", // Marker for hover
-                      isFocused && "bg-zinc-800/60 border-zinc-600", // Focused state
+                      isFocused && "bg-neutral-800/60 border-neutral-600", // Focused state
                       isSelected && "bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]", // Selected state
-                      !isSelected && !isFocused && "text-zinc-400 hover:bg-zinc-800/40 hover:text-zinc-200 hover:border-zinc-700" // Subtle hover
+                      !isSelected && !isFocused && "text-neutral-400 hover:bg-neutral-800/40 hover:text-neutral-200 hover:border-neutral-700" // Subtle hover
                     )}
                   >
                     <span className="truncate">{option.label}</span>

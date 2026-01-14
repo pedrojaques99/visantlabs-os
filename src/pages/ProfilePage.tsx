@@ -211,7 +211,7 @@ export const ProfilePage: React.FC = () => {
 
   if (isCheckingAuth || isLoading) {
     return (
-      <div className="min-h-screen bg-[#121212] text-zinc-300 pt-12 md:pt-14 flex items-center justify-center">
+      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 flex items-center justify-center">
         <GlitchLoader size={32} />
       </div>
     );
@@ -219,12 +219,12 @@ export const ProfilePage: React.FC = () => {
 
   if (!user || isAuthenticated === false) {
     return (
-      <div className="min-h-screen bg-[#121212] text-zinc-300 pt-12 md:pt-14 flex items-center justify-center">
+      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-400 font-mono mb-4">
             {t('profile.notAuthenticated') || 'Please sign in to view your profile'}
           </p>
-          <BackButton className="px-4 py-2 bg-zinc-800/50 text-zinc-400 rounded-md text-sm font-mono hover:bg-zinc-700/50 transition-colors mb-0" to="/" />
+          <BackButton className="px-4 py-2 bg-neutral-800/50 text-neutral-400 rounded-md text-sm font-mono hover:bg-neutral-700/50 transition-colors mb-0" to="/" />
         </div>
       </div>
     );
@@ -237,14 +237,14 @@ export const ProfilePage: React.FC = () => {
         description={t('profile.seoDescription')}
         noindex={true}
       />
-      <div className="min-h-screen bg-[#121212] text-zinc-300 pt-12 md:pt-14 relative">
+      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative">
         <div className="fixed inset-0 z-0">
           <GridDotsBackground />
         </div>
         <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10 space-y-6">
 
           {/* Header Card */}
-          <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl">
+          <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
             <CardContent className="p-4 md:p-6">
               <div className="mb-4">
                 <BreadcrumbWithBack to="/">
@@ -266,11 +266,11 @@ export const ProfilePage: React.FC = () => {
                 <div>
                   <div className="flex items-center gap-3 mb-2">
                     <ShieldCheck className="h-6 w-6 md:h-8 md:w-8 text-brand-cyan" />
-                    <h1 className="text-2xl md:text-3xl font-semibold font-manrope text-zinc-300">
+                    <h1 className="text-2xl md:text-3xl font-semibold font-manrope text-neutral-300">
                       {t('profile.title') || 'Perfil'}
                     </h1>
                   </div>
-                  <p className="text-zinc-500 font-mono text-sm md:text-base ml-9 md:ml-11">
+                  <p className="text-neutral-500 font-mono text-sm md:text-base ml-9 md:ml-11">
                     {t('profile.subtitle') || 'Gerencie sua conta e assinatura'}
                   </p>
                 </div>
@@ -286,7 +286,7 @@ export const ProfilePage: React.FC = () => {
           )}
 
           <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-6">
-            <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl">
+            <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
               <CardContent className="p-2">
                 <TabsList className="bg-transparent border-0 w-full justify-start overflow-x-auto">
                   <TabsTrigger value="overview" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black px-6">

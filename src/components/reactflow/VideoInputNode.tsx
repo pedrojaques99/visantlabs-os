@@ -159,7 +159,7 @@ export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<
           onClick={handleUploadClick}
           onMouseDown={(e) => e.stopPropagation()}
           className={cn(
-            'w-full px-3 py-2 bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700/30 rounded text-xs font-mono text-zinc-300 transition-colors flex items-center justify-center gap-2 node-interactive'
+            'w-full px-3 py-2 bg-neutral-800/50 hover:bg-neutral-700/50 border border-neutral-700/30 rounded text-xs font-mono text-neutral-300 transition-colors flex items-center justify-center gap-2 node-interactive'
           )}
         >
           <Upload size={14} />

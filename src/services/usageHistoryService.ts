@@ -31,6 +31,9 @@ export interface UsageHistoryRecord {
   stepNumber?: number; // Only for branding
   imagesGenerated: number;
   type?: string; // 'branding' or undefined
+  inputTokens?: number;
+  outputTokens?: number;
+  cost?: number;
 }
 
 export interface UsageHistoryFilters {

@@ -109,7 +109,7 @@ export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(({ d
 
       {!hasConnectedImage && (
         <div className="mb-4">
-          <span className="text-xs font-mono text-zinc-500">Connect an image node</span>
+          <span className="text-xs font-mono text-neutral-500">Connect an image node</span>
         </div>
       )}
 
@@ -119,7 +119,7 @@ export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(({ d
         onMouseDown={(e) => e.stopPropagation()}
         onClick={(e) => e.stopPropagation()}
       >
-        <NodeLabel className="text-zinc-500">Target Resolution</NodeLabel>
+        <NodeLabel className="text-neutral-500">Target Resolution</NodeLabel>
         <div
           onMouseDown={(e) => e.stopPropagation()}
           onClick={(e) => e.stopPropagation()}

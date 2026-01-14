@@ -108,7 +108,7 @@ export const CanvasHeaderProvider: React.FC<CanvasHeaderProviderProps> = ({ chil
   const [onExportAllImagesRequest, setOnExportAllImagesRequest] = useState<(() => void) | undefined>(undefined);
   const [activeSidePanel, setActiveSidePanel] = useState<string | null>(null);
 
-  const [backgroundColor, setBackgroundColor] = useLocalStorage('canvasBackgroundColor', '#121212');
+  const [backgroundColor, setBackgroundColor] = useLocalStorage('canvasBackgroundColor', '#0C0C0C');
   const [gridColor, setGridColor] = useLocalStorage('canvasGridColor', 'rgba(255, 255, 255, 0.1)');
   const [showGrid, setShowGrid] = useLocalStorage('canvasShowGrid', true);
   const [showMinimap, setShowMinimap] = useLocalStorage('canvasShowMinimap', true);

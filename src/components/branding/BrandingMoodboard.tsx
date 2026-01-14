@@ -231,7 +231,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
   };
 
   return (
-    <div className={`w-full relative min-h-screen ${theme === 'dark' ? 'bg-[#121212] text-zinc-300' : 'bg-zinc-50 text-zinc-800'
+    <div className={`w-full relative min-h-screen ${theme === 'dark' ? 'bg-[#0C0C0C] text-neutral-300' : 'bg-neutral-50 text-neutral-800'
       }`}>
       <div className="fixed inset-0 z-0">
         <GridDotsBackground />
@@ -240,8 +240,8 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
         <div className="max-w-[1800px] mx-auto px-4 md:px-6 py-4 md:py-6 space-y-3">
           {/* Header Section */}
           <section className={`border rounded-xl p-4 md:p-5 flex-shrink-0 ${theme === 'dark'
-            ? 'bg-[#141414] border-zinc-800/60'
-            : 'bg-white border-zinc-300'
+            ? 'bg-[#141414] border-neutral-800/60'
+            : 'bg-white border-neutral-300'
             }`}>
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
               <div className="flex-1 min-w-0">
@@ -254,7 +254,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                       onKeyDown={handleNameKeyDown}
                       onFocus={(e) => e.target.select()}
                       placeholder={t('branding.projectNamePlaceholder') || 'Nome do projeto'}
-                      className={`flex-1 text-xl md:text-2xl font-semibold font-manrope bg-transparent border-b-2 border-[brand-cyan]/50 focus:border-[brand-cyan] focus:outline-none pb-1 transition-colors ${theme === 'dark' ? 'text-zinc-200' : 'text-zinc-800'
+                      className={`flex-1 text-xl md:text-2xl font-semibold font-manrope bg-transparent border-b-2 border-[brand-cyan]/50 focus:border-[brand-cyan] focus:outline-none pb-1 transition-colors ${theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
                         }`}
                       autoFocus
                     />
@@ -271,8 +271,8 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                     <button
                       onClick={handleNameCancel}
                       className={`p-1.5 rounded-md transition-colors ${theme === 'dark'
-                        ? 'bg-zinc-800/60 hover:bg-zinc-800/80 text-zinc-400 hover:text-zinc-300'
-                        : 'bg-zinc-200 hover:bg-zinc-300 text-zinc-600 hover:text-zinc-700'
+                        ? 'bg-neutral-800/60 hover:bg-neutral-800/80 text-neutral-400 hover:text-neutral-300'
+                        : 'bg-neutral-200 hover:bg-neutral-300 text-neutral-600 hover:text-neutral-700'
                         }`}
                       title="Cancelar (ESC)"
                     >
@@ -284,7 +284,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                     {localProjectName ? (
                       <>
                         <h2
-                          className={`text-xl md:text-2xl font-semibold font-manrope cursor-pointer hover:text-brand-cyan transition-colors truncate ${theme === 'dark' ? 'text-zinc-200' : 'text-zinc-800'
+                          className={`text-xl md:text-2xl font-semibold font-manrope cursor-pointer hover:text-brand-cyan transition-colors truncate ${theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
                             }`}
                           onClick={() => setIsEditingName(true)}
                           title={localProjectName}
@@ -293,18 +293,18 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                         </h2>
                         <button
                           onClick={() => setIsEditingName(true)}
-                          className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded ${theme === 'dark' ? 'hover:bg-black/40' : 'hover:bg-zinc-200'
+                          className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded ${theme === 'dark' ? 'hover:bg-black/40' : 'hover:bg-neutral-200'
                             }`}
                           title={t('branding.editProjectName') || 'Editar nome do projeto'}
                         >
-                          <Edit2 className={`h-4 w-4 hover:text-brand-cyan ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'
+                          <Edit2 className={`h-4 w-4 hover:text-brand-cyan ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                             }`} />
                         </button>
                       </>
                     ) : (
                       <button
                         onClick={() => setIsEditingName(true)}
-                        className={`text-xl md:text-2xl font-semibold font-manrope hover:text-brand-cyan transition-colors ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'
+                        className={`text-xl md:text-2xl font-semibold font-manrope hover:text-brand-cyan transition-colors ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'
                           }`}
                       >
                         {t('branding.projectNamePlaceholder') || 'Clique para adicionar nome do projeto'}
@@ -319,8 +319,8 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                     onClick={onGenerateAll}
                     disabled={generatingSteps.size > 0}
                     className={`px-4 py-2 border rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 hover:border-[brand-cyan]/50 hover:text-brand-cyan ${theme === 'dark'
-                      ? 'bg-black/40 border-zinc-800/60 text-zinc-300 disabled:border-zinc-800/30 disabled:text-zinc-600'
-                      : 'bg-zinc-100 border-zinc-300 text-zinc-800 disabled:border-zinc-200 disabled:text-zinc-400'
+                      ? 'bg-black/40 border-neutral-800/60 text-neutral-300 disabled:border-neutral-800/30 disabled:text-neutral-600'
+                      : 'bg-neutral-100 border-neutral-300 text-neutral-800 disabled:border-neutral-200 disabled:text-neutral-400'
                       }`}
                   >
                     <Zap className="h-4 w-4" />
@@ -330,8 +330,8 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                 <button
                   onClick={handleGeneratePDF}
                   className={`px-4 py-2 border rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 hover:border-[brand-cyan]/50 hover:text-brand-cyan ${theme === 'dark'
-                    ? 'bg-black/40 border-zinc-800/60 text-zinc-300'
-                    : 'bg-zinc-100 border-zinc-300 text-zinc-800'
+                    ? 'bg-black/40 border-neutral-800/60 text-neutral-300'
+                    : 'bg-neutral-100 border-neutral-300 text-neutral-800'
                     }`}
                 >
                   <FileDown className="h-4 w-4" />
@@ -341,8 +341,8 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                   onClick={handleSave}
                   disabled={isSaving || !hasContent(1)}
                   className={`px-4 py-2 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${theme === 'dark'
-                    ? 'disabled:bg-zinc-700 disabled:text-zinc-500'
-                    : 'disabled:bg-zinc-300 disabled:text-zinc-400'
+                    ? 'disabled:bg-neutral-700 disabled:text-neutral-500'
+                    : 'disabled:bg-neutral-300 disabled:text-neutral-400'
                     }`}
                 >
                   <Save className="h-4 w-4" />

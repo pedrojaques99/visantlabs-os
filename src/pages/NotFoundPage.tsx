@@ -20,7 +20,7 @@ export const NotFoundPage: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className={`w-full min-h-screen relative ${theme === 'dark' ? 'bg-[#121212] text-zinc-300' : 'bg-zinc-50 text-zinc-800'
+    <div className={`w-full min-h-screen relative ${theme === 'dark' ? 'bg-[#0C0C0C] text-neutral-300' : 'bg-neutral-50 text-neutral-800'
       }`}>
       <div className="fixed inset-0 z-0">
         <GridDotsBackground />
@@ -62,11 +62,11 @@ export const NotFoundPage: React.FC = () => {
 
             {/* Message */}
             <div className="space-y-4" style={{ marginBottom: '19px' }}>
-              <h2 className={`text-2xl md:text-3xl lg:text-4xl font-semibold font-manrope ${theme === 'dark' ? 'text-zinc-200' : 'text-zinc-800'
+              <h2 className={`text-2xl md:text-3xl lg:text-4xl font-semibold font-manrope ${theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
                 }`}>
                 {t('notFound.title') || 'Página não encontrada'}
               </h2>
-              <p className={`text-base md:text-lg lg:text-xl max-w-md mx-auto ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'
+              <p className={`text-base md:text-lg lg:text-xl max-w-md mx-auto ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                 }`}>
                 {t('notFound.description') || 'Ops! A página que você está procurando não existe ou foi movida.'}
               </p>
@@ -87,23 +87,23 @@ export const NotFoundPage: React.FC = () => {
             </div>
 
             {/* Helpful Links */}
-            <div className={`pt-8 border-t ${theme === 'dark' ? 'border-zinc-800/60' : 'border-zinc-300'
+            <div className={`pt-8 border-t ${theme === 'dark' ? 'border-neutral-800/60' : 'border-neutral-300'
               }`}>
-              <p className={`text-sm mb-4 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-500'
+              <p className={`text-sm mb-4 ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'
                 }`}>
                 {t('notFound.helpfulLinks') || 'Links úteis:'}
               </p>
               <div className="flex flex-wrap justify-center gap-6">
                 <button
                   onClick={() => navigate('/')}
-                  className={`text-sm hover:text-brand-cyan transition-colors cursor-pointer ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'
+                  className={`text-sm hover:text-brand-cyan transition-colors cursor-pointer ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                     }`}
                 >
                   {t('notFound.mockupMachine') || 'Mockup Machine'}
                 </button>
                 <button
                   onClick={() => navigate('/pricing')}
-                  className={`text-sm hover:text-brand-cyan transition-colors cursor-pointer ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'
+                  className={`text-sm hover:text-brand-cyan transition-colors cursor-pointer ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                     }`}
                 >
                   {t('notFound.pricing') || 'Preços'}

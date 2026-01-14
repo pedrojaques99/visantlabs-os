@@ -148,8 +148,8 @@ export const BrandingSectionCard: React.FC<BrandingSectionCardProps> = ({
         } ${isEditing
           ? 'border-[brand-cyan]/50 shadow-[0_0_0_1px_rgba(82,221,235,0.1)]'
           : theme === 'dark'
-            ? 'border-zinc-800/60 hover:border-zinc-700/60'
-            : 'border-zinc-300 hover:border-zinc-400'
+            ? 'border-neutral-800/60 hover:border-neutral-700/60'
+            : 'border-neutral-300 hover:border-neutral-400'
         } ${isDragging ? 'opacity-50' : ''} ${isResizing ? 'cursor-ns-resize' : ''}`}
       style={{
         animation: 'expandSection 0.25s ease-out',
@@ -172,7 +172,7 @@ export const BrandingSectionCard: React.FC<BrandingSectionCardProps> = ({
           <div className="flex items-center gap-2 mb-2">
             {isDraggable && (
               <div
-                className={`transition-colors opacity-60 group-hover:opacity-100 pointer-events-none ${theme === 'dark' ? 'text-zinc-500 hover:text-zinc-400' : 'text-zinc-400 hover:text-zinc-500'
+                className={`transition-colors opacity-60 group-hover:opacity-100 pointer-events-none ${theme === 'dark' ? 'text-neutral-500 hover:text-neutral-400' : 'text-neutral-400 hover:text-neutral-500'
                   }`}
                 title={t('branding.dragToReorder') || 'Drag to reorder'}
               >
@@ -220,18 +220,18 @@ export const BrandingSectionCard: React.FC<BrandingSectionCardProps> = ({
                 onToggleCompact();
               }}
               onMouseDown={(e) => e.stopPropagation()}
-              className={`p-1 rounded transition-colors cursor-pointer ${theme === 'dark' ? 'hover:bg-black/40' : 'hover:bg-zinc-200'
+              className={`p-1 rounded transition-colors cursor-pointer ${theme === 'dark' ? 'hover:bg-black/40' : 'hover:bg-neutral-200'
                 }`}
               title={t('branding.collapse') || 'Collapse to compact'}
             >
-              <X className={`h-4 w-4 ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'
+              <X className={`h-4 w-4 ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                 }`} />
             </button>
           )}
         </div>
       </div>
       {!isCollapsed && (
-        <div className={`relative ${theme === 'dark' ? 'text-zinc-300' : 'text-zinc-800'
+        <div className={`relative ${theme === 'dark' ? 'text-neutral-300' : 'text-neutral-800'
           }`} style={{ height: customHeight ? 'calc(100% - 80px)' : undefined }}>
           <SectionContentRenderer
             stepNumber={stepNumber}
@@ -249,11 +249,11 @@ export const BrandingSectionCard: React.FC<BrandingSectionCardProps> = ({
         <div
           ref={resizeRef}
           onMouseDown={handleResizeStart}
-          className={`absolute bottom-0 right-0 w-8 h-8 cursor-ns-resize flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-tl-lg ${theme === 'dark' ? 'hover:bg-black/20' : 'hover:bg-zinc-200'
+          className={`absolute bottom-0 right-0 w-8 h-8 cursor-ns-resize flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-tl-lg ${theme === 'dark' ? 'hover:bg-black/20' : 'hover:bg-neutral-200'
             }`}
           title={t('branding.resize') || 'Resize'}
         >
-          <Minus className={`h-4 w-4 rotate-90 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'
+          <Minus className={`h-4 w-4 rotate-90 ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'
             }`} />
         </div>
       )}

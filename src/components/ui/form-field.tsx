@@ -38,7 +38,7 @@ const FormField = React.forwardRef<HTMLDivElement, FormFieldProps>(
           </div>
         )}
         {hint && !error && !success && (
-          <p className="text-xs text-zinc-500 font-mono">{hint}</p>
+          <p className="text-xs text-neutral-500 font-mono">{hint}</p>
         )}
       </div>
     )

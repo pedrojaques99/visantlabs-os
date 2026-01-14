@@ -44,7 +44,7 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
         variant="brand"
         className={cn(
           "fixed bottom-4 md:bottom-8 right-4 md:right-8 mb-10 z-30 flex-col gap-0.5 md:gap-1 font-semibold py-2 md:py-3 px-4 md:px-6 text-xs md:text-sm shadow-2xl transform active:scale-95 animate-fade-in-up",
-          "focus:ring-offset-[#121212]"
+          "focus:ring-offset-[#0C0C0C]"
         )}
         aria-label={isGeneratingPrompt ? t('mockup.generatingPrompt') : isGenerating ? t('mockup.generatingOutputs') : isPromptReady ? t('mockup.generateOutputs') : t('mockup.generatePrompt')}
         title={isPromptReady ? t('mockup.generateOutputsShortcut') : t('mockup.generatePromptShortcut')}

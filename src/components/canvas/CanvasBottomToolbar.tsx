@@ -244,7 +244,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
 
   return (
     <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50" ref={toolbarRef}>
-      <div className="flex items-center gap-1 bg-zinc-900/90 backdrop-blur-xl border border-zinc-800/50 rounded-xl px-2 py-1.5 shadow-lg">
+      <div className="flex items-center gap-1 bg-neutral-900/90 backdrop-blur-xl border border-neutral-800/50 rounded-xl px-2 py-1.5 shadow-lg">
         {tools.map((tool) => {
           const Icon = tool.icon;
           const isActive = activeTool === tool.id || (tool.id === 'draw' && isDrawingMode);
@@ -270,14 +270,14 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                     'focus:outline-none focus:ring-1 focus:ring-brand-cyan/50',
                     isActive
                       ? 'bg-brand-cyan/20 text-brand-cyan'
-                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
+                      : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50'
                   )}
                   aria-label={tool.label}
                 >
                   <Icon size={18} strokeWidth={2} />
                   {tool.id === 'color' && (
                     <div
-                      className="absolute bottom-1 left-1 w-2.5 h-2.5 rounded-full border border-zinc-700"
+                      className="absolute bottom-1 left-1 w-2.5 h-2.5 rounded-full border border-neutral-700"
                       style={{ backgroundColor: strokeColor }}
                     />
                   )}
@@ -285,8 +285,8 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
               </Tooltip>
 
               {tool.id === 'type' && activeTool === 'type' && showFontPicker && (
-                <div className="absolute bottom-full left-0 mb-2 bg-zinc-900/95 backdrop-blur-xl border border-zinc-800/50 rounded-xl shadow-xl p-3 min-w-[180px]">
-                  <div className="text-xs text-zinc-400 mb-2 px-1">Font Family</div>
+                <div className="absolute bottom-full left-0 mb-2 bg-neutral-900/95 backdrop-blur-xl border border-neutral-800/50 rounded-xl shadow-xl p-3 min-w-[180px]">
+                  <div className="text-xs text-neutral-400 mb-2 px-1">Font Family</div>
                   <div className="space-y-1">
                     {availableFonts.map((font) => (
                       <button
@@ -297,10 +297,10 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                         }}
                         className={cn(
                           'w-full text-left px-3 py-2 rounded-lg border transition-colors',
-                          'hover:bg-zinc-800/50',
+                          'hover:bg-neutral-800/50',
                           fontFamily === font.value
                             ? 'border-brand-cyan bg-brand-cyan/10 text-brand-cyan'
-                            : 'border-zinc-700 text-zinc-300'
+                            : 'border-neutral-700 text-neutral-300'
                         )}
                         style={getFontPreviewStyle(font.value)}
                       >
@@ -312,7 +312,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
               )}
 
               {tool.id === 'color' && showColorPicker && (
-                <div className="absolute bottom-full left-0 mb-2 bg-zinc-900/95 backdrop-blur-xl border border-zinc-800/50 rounded-xl shadow-xl p-3 min-w-[200px]">
+                <div className="absolute bottom-full left-0 mb-2 bg-neutral-900/95 backdrop-blur-xl border border-neutral-800/50 rounded-xl shadow-xl p-3 min-w-[200px]">
                   {/* Primeira linha: Cor principal (grande) + Preto */}
                   <div className="flex gap-2 mb-2">
                     <button
@@ -324,7 +324,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                         'flex-1 h-10 rounded-lg border transition-colors',
                         strokeColor === colorPalette.primary.brand
                           ? 'border-brand-cyan'
-                          : 'border-zinc-700 hover:border-zinc-600'
+                          : 'border-neutral-700 hover:border-neutral-600'
                       )}
                       style={{ backgroundColor: colorPalette.primary.brand }}
                       aria-label="Brand cyan"
@@ -344,7 +344,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                         'w-8 h-10 rounded-lg border transition-colors',
                         strokeColor === colorPalette.primary.black
                           ? 'border-brand-cyan'
-                          : 'border-zinc-700 hover:border-zinc-600'
+                          : 'border-neutral-700 hover:border-neutral-600'
                       )}
                       style={{ backgroundColor: colorPalette.primary.black }}
                       aria-label="Black"
@@ -364,7 +364,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                           'flex-1 h-8 rounded-md border transition-colors',
                           strokeColor === item.color
                             ? 'border-brand-cyan'
-                            : 'border-zinc-700 hover:border-zinc-600'
+                            : 'border-neutral-700 hover:border-neutral-600'
                         )}
                         style={{ backgroundColor: item.color }}
                         aria-label={item.name}
@@ -385,7 +385,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                           'flex-1 h-8 rounded-md border transition-colors',
                           strokeColor === item.color
                             ? 'border-brand-cyan'
-                            : 'border-zinc-700 hover:border-zinc-600'
+                            : 'border-neutral-700 hover:border-neutral-600'
                         )}
                         style={{ backgroundColor: item.color }}
                         aria-label={item.name}
@@ -406,7 +406,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                           'flex-1 h-8 rounded-md border transition-colors',
                           strokeColor === item.color
                             ? 'border-brand-cyan'
-                            : 'border-zinc-700 hover:border-zinc-600'
+                            : 'border-neutral-700 hover:border-neutral-600'
                         )}
                         style={{ backgroundColor: item.color }}
                         aria-label={item.name}
@@ -416,26 +416,26 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
 
                   {/* Cor atual selecionada (se não estiver nas predefinidas) */}
                   {!allColors.includes(strokeColor) && (
-                    <div className="mb-3 pb-3 border-b border-zinc-800/50">
-                      <div className="text-xs text-zinc-400 mb-1.5 px-1">Current Color</div>
+                    <div className="mb-3 pb-3 border-b border-neutral-800/50">
+                      <div className="text-xs text-neutral-400 mb-1.5 px-1">Current Color</div>
                       <div className="flex items-center gap-2">
                         <div
-                          className="w-8 h-8 rounded-md border border-zinc-700"
+                          className="w-8 h-8 rounded-md border border-neutral-700"
                           style={{ backgroundColor: strokeColor }}
                         />
-                        <div className="flex-1 text-xs text-zinc-300 font-mono">{strokeColor.toUpperCase()}</div>
+                        <div className="flex-1 text-xs text-neutral-300 font-mono">{strokeColor.toUpperCase()}</div>
                       </div>
                     </div>
                   )}
 
                   {/* Seletor de cor customizado */}
                   <div className="space-y-1.5">
-                    <div className="text-xs text-zinc-400 px-1">Custom Color</div>
+                    <div className="text-xs text-neutral-400 px-1">Custom Color</div>
                     <input
                       type="color"
                       value={strokeColor}
                       onChange={(e) => onColorChange?.(e.target.value)}
-                      className="w-full h-9 rounded-lg border border-zinc-700 bg-transparent cursor-pointer hover:border-zinc-600 transition-colors"
+                      className="w-full h-9 rounded-lg border border-neutral-700 bg-transparent cursor-pointer hover:border-neutral-600 transition-colors"
                     />
                   </div>
                 </div>
@@ -458,7 +458,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                   'focus:outline-none focus:ring-1 focus:ring-brand-cyan/50',
                   isActive
                     ? 'bg-brand-cyan/20 text-brand-cyan'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
+                    : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50'
                 )}
                 aria-label={shapeTool.label}
               >
@@ -470,7 +470,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
 
         {/* Toolbar Toggle Button */}
         {onToggleToolbar && (
-          <div className="relative ml-1 pl-1 border-l border-zinc-800/50">
+          <div className="relative ml-1 pl-1 border-l border-neutral-800/50">
             <Tooltip
               content={isToolbarCollapsed
                 ? (t('canvasToolbar.expandToolbar') || 'Expand Toolbar')
@@ -484,7 +484,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                   'relative w-10 h-10 flex items-center justify-center rounded-lg transition-colors duration-150',
                   'focus:outline-none focus:ring-1 focus:ring-brand-cyan/50',
                   isToolbarCollapsed
-                    ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
+                    ? 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50'
                     : 'bg-brand-cyan/20 text-brand-cyan'
                 )}
                 aria-label={isToolbarCollapsed ? 'Expand Toolbar' : 'Collapse Toolbar'}

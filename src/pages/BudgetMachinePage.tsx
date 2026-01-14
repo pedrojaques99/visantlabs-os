@@ -478,9 +478,9 @@ export const BudgetMachinePage: React.FC = () => {
   // Show loading state while checking authentication or access
   if (isCheckingAuth || isLoadingAccess) {
     return (
-      <div className="min-h-full w-full flex items-center justify-center bg-[#121212] text-zinc-300">
+      <div className="min-h-full w-full flex items-center justify-center bg-[#0C0C0C] text-neutral-300">
         <div className="text-center">
-          <p className="text-sm font-mono text-zinc-400">Loading...</p>
+          <p className="text-sm font-mono text-neutral-400">Loading...</p>
         </div>
       </div>
     );
@@ -493,9 +493,9 @@ export const BudgetMachinePage: React.FC = () => {
 
   if (isLoadingProject) {
     return (
-      <div className="min-h-full w-full flex items-center justify-center bg-[#121212] text-zinc-300">
+      <div className="min-h-full w-full flex items-center justify-center bg-[#0C0C0C] text-neutral-300">
         <div className="text-center">
-          <p className="text-sm font-mono text-zinc-400">Loading budget...</p>
+          <p className="text-sm font-mono text-neutral-400">Loading budget...</p>
         </div>
       </div>
     );
@@ -503,7 +503,7 @@ export const BudgetMachinePage: React.FC = () => {
 
   if (!selectedTemplate) {
     return (
-      <div className="min-h-full w-full bg-[#121212] text-zinc-300">
+      <div className="min-h-full w-full bg-[#0C0C0C] text-neutral-300">
         <BudgetTemplateSelector
           selectedTemplate={selectedTemplate}
           onSelectTemplate={handleTemplateSelect}
@@ -543,7 +543,7 @@ export const BudgetMachinePage: React.FC = () => {
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >
-        <div className="min-h-full w-full bg-[#121212] text-zinc-300 pt-10 md:pt-14">
+        <div className="min-h-full w-full bg-[#0C0C0C] text-neutral-300 pt-10 md:pt-14">
           {/* Brand Customization Panel - Floating (only panel, button is in header) */}
           {budgetData && !isCustom && (
             <BrandCustomizationPanel
@@ -564,11 +564,11 @@ export const BudgetMachinePage: React.FC = () => {
             )}
 
             {/* Preview Side - Full Width */}
-            <div className="w-full h-full overflow-y-auto bg-zinc-100 flex flex-col relative min-h-full">
+            <div className="w-full h-full overflow-y-auto bg-neutral-100 flex flex-col relative min-h-full">
               {/* Toggle Sidebar Button */}
               <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="fixed top-12 md:top-16 z-50 p-1.5 bg-black/30 backdrop-blur-sm border border-zinc-700/20 rounded-md text-zinc-400 hover:text-zinc-300 hover:border-zinc-600/30 hover:bg-black/40 transition-all duration-200 shadow-sm"
+                className="fixed top-12 md:top-16 z-50 p-1.5 bg-black/30 backdrop-blur-sm border border-neutral-700/20 rounded-md text-neutral-400 hover:text-neutral-300 hover:border-neutral-600/30 hover:bg-black/40 transition-all duration-200 shadow-sm"
                 style={isSidebarOpen
                   ? (formWidth ? { left: `${formWidth + 16}px` } : { left: '416px' })
                   : { left: '16px' }
@@ -580,11 +580,11 @@ export const BudgetMachinePage: React.FC = () => {
 
               {/* Save Status Indicator */}
               {isAuthenticated === true && currentProjectId && (
-                <div className="absolute top-2 right-2 z-10 flex items-center gap-2 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-md shadow-sm border border-zinc-200">
+                <div className="absolute top-2 right-2 z-10 flex items-center gap-2 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-md shadow-sm border border-neutral-200">
                   {saveStatus === 'saving' && (
                     <>
                       <GlitchLoader size={14} color="brand-cyan" />
-                      <span className="text-xs text-zinc-600">Salvando...</span>
+                      <span className="text-xs text-neutral-600">Salvando...</span>
                     </>
                   )}
                   {saveStatus === 'saved' && (
@@ -600,7 +600,7 @@ export const BudgetMachinePage: React.FC = () => {
                     </>
                   )}
                   {saveStatus === 'idle' && (
-                    <span className="text-xs text-zinc-400">Pronto</span>
+                    <span className="text-xs text-neutral-400">Pronto</span>
                   )}
                 </div>
               )}
@@ -621,7 +621,7 @@ export const BudgetMachinePage: React.FC = () => {
             {/* Form Side - Overlay Sidebar */}
             <div
               ref={formContainerRef}
-              className={`fixed top-10 md:top-14 left-0 h-[calc(100vh-2.5rem)] md:h-[calc(100vh-3.5rem)] z-40 bg-[#121212] border-r border-zinc-800 overflow-hidden flex flex-col transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+              className={`fixed top-10 md:top-14 left-0 h-[calc(100vh-2.5rem)] md:h-[calc(100vh-3.5rem)] z-40 bg-[#0C0C0C] border-r border-neutral-800 overflow-hidden flex flex-col transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
                 }`}
               style={formWidth ? {
                 width: `${formWidth}px`,
@@ -634,7 +634,7 @@ export const BudgetMachinePage: React.FC = () => {
               }}
             >
               {/* Header with actions */}
-              <div className="flex-shrink-0 border-b border-zinc-800 bg-zinc-900 px-4 sm:px-6 py-4">
+              <div className="flex-shrink-0 border-b border-neutral-800 bg-neutral-900 px-4 sm:px-6 py-4">
                 {/* Row 1: Title and Description */}
                 <div className="flex flex-col mb-4">
                   <div className="flex items-center gap-2">
@@ -651,12 +651,12 @@ export const BudgetMachinePage: React.FC = () => {
                           }
                         }
                       }}
-                      className="flex-1 text-xl sm:text-2xl font-bold text-zinc-200 font-mono bg-transparent border-none outline-none focus:outline-none hover:bg-black/20 px-2 py-1 rounded transition-colors cursor-text"
+                      className="flex-1 text-xl sm:text-2xl font-bold text-neutral-200 font-mono bg-transparent border-none outline-none focus:outline-none hover:bg-black/20 px-2 py-1 rounded transition-colors cursor-text"
                       placeholder={t('budget.title') || 'Budget Machine'}
                     />
                   </div>
                   {selectedTemplate && (
-                    <p className="text-xs text-zinc-400 font-mono mt-0.5">
+                    <p className="text-xs text-neutral-400 font-mono mt-0.5">
                       {getTemplateById(selectedTemplate)?.name || selectedTemplate}
                     </p>
                   )}
@@ -675,7 +675,7 @@ export const BudgetMachinePage: React.FC = () => {
                     <Tooltip content={t('budget.duplicate') || 'Duplicar'} position="top">
                       <button
                         onClick={handleDuplicate}
-                        className="flex items-center justify-center p-2 bg-card border border-zinc-800 rounded-md text-zinc-200 hover:text-brand-cyan hover:bg-card/90 hover:border-brand-cyan/50 transition-all duration-300 shadow-lg"
+                        className="flex items-center justify-center p-2 bg-card border border-neutral-800 rounded-md text-neutral-200 hover:text-brand-cyan hover:bg-card/90 hover:border-brand-cyan/50 transition-all duration-300 shadow-lg"
                         aria-label="Duplicate budget"
                       >
                         <Copy size={18} />
@@ -806,16 +806,16 @@ export const BudgetMachinePage: React.FC = () => {
 
               {/* Share Link Section */}
               {shareLink && (
-                <div className="flex-shrink-0 border-t border-zinc-800 p-4 sm:p-6 bg-zinc-900">
+                <div className="flex-shrink-0 border-t border-neutral-800 p-4 sm:p-6 bg-neutral-900">
                   <div className="max-w-2xl mx-auto">
-                    <div className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl">
-                      <p className="text-sm text-zinc-400 mb-2 font-mono">Share Link:</p>
+                    <div className="p-4 bg-neutral-900 border border-neutral-800 rounded-xl">
+                      <p className="text-sm text-neutral-400 mb-2 font-mono">Share Link:</p>
                       <div className="flex flex-col sm:flex-row gap-2">
                         <input
                           type="text"
                           value={shareLink}
                           readOnly
-                          className="flex-1 px-3 py-2 bg-black/40 border border-zinc-800 rounded-md text-zinc-200 text-sm font-mono"
+                          className="flex-1 px-3 py-2 bg-black/40 border border-neutral-800 rounded-md text-neutral-200 text-sm font-mono"
                         />
                         <button
                           onClick={() => {
@@ -842,7 +842,7 @@ export const BudgetMachinePage: React.FC = () => {
                 className="fixed top-10 md:top-14 h-[calc(100vh-2.5rem)] md:h-[calc(100vh-3.5rem)] z-50 w-2 cursor-col-resize group"
                 style={formWidth ? { left: `${formWidth}px` } : { left: '400px' }}
               >
-                <div className="w-px h-full mx-auto bg-zinc-800 group-hover:bg-brand-cyan/50 transition-colors duration-200"></div>
+                <div className="w-px h-full mx-auto bg-neutral-800 group-hover:bg-brand-cyan/50 transition-colors duration-200"></div>
               </div>
             )}
           </div>

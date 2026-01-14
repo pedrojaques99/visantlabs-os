@@ -11,9 +11,9 @@ const formButtonVariants = cva(
         primary:
           "bg-brand-cyan/80 hover:bg-brand-cyan text-black shadow-lg shadow-[brand-cyan]/20 hover:scale-[1.02] active:scale-95",
         outline:
-          "border border-zinc-800/10 bg-transparent hover:bg-zinc-800/50 text-zinc-200 hover:border-[brand-cyan]/30 hover:text-brand-cyan hover:scale-[1.02] active:scale-95",
+          "border border-neutral-800/10 bg-transparent hover:bg-neutral-800/50 text-neutral-200 hover:border-[brand-cyan]/30 hover:text-brand-cyan hover:scale-[1.02] active:scale-95",
         ghost:
-          "bg-transparent hover:bg-zinc-800/50 text-zinc-200 hover:text-brand-cyan hover:scale-[1.02] active:scale-95",
+          "bg-transparent hover:bg-neutral-800/50 text-neutral-200 hover:text-brand-cyan hover:scale-[1.02] active:scale-95",
         destructive:
           "bg-red-500/80 hover:bg-red-500 text-white shadow-lg shadow-red-500/20 hover:scale-[1.02] active:scale-95",
       },

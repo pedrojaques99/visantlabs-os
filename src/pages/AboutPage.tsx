@@ -28,7 +28,7 @@ export const AboutPage: React.FC = () => {
         keywords={t('about.seo.keywords') || 'visant labs, about, agency, design, Brazil, creative tools'}
       />
       <OrganizationSchema />
-      <div className="min-h-screen bg-background text-zinc-300 pt-12 md:pt-14 relative">
+      <div className="min-h-screen bg-background text-neutral-300 pt-12 md:pt-14 relative">
         <div className="fixed inset-0 z-0">
           <GridDotsBackground />
         </div>
@@ -54,10 +54,10 @@ export const AboutPage: React.FC = () => {
           <div className="flex items-center gap-4">
             <Info className="h-6 w-6 md:h-8 md:w-8 text-brand-cyan" />
             <div className="flex-1">
-              <h1 className="text-3xl md:text-4xl font-semibold font-manrope text-zinc-300">
+              <h1 className="text-3xl md:text-4xl font-semibold font-manrope text-neutral-300">
                 {t('about.title')}
               </h1>
-              <p className="text-zinc-500 font-mono text-sm md:text-base mt-1">
+              <p className="text-neutral-500 font-mono text-sm md:text-base mt-1">
                 {t('about.tagline')}
               </p>
             </div>
@@ -66,14 +66,14 @@ export const AboutPage: React.FC = () => {
           {/* Bento Box Grid */}
           <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             {/* Description - Large Card */}
-            <div className="md:col-span-2 lg:col-span-3 bg-card border border-zinc-800/50 rounded-md p-6 md:p-8 hover:border-brand-cyan/30 transition-all">
+            <div className="md:col-span-2 lg:col-span-3 bg-card border border-neutral-800/50 rounded-md p-6 md:p-8 hover:border-brand-cyan/30 transition-all">
               <div className="flex items-start gap-4">
                 <Lightbulb className="w-6 h-6 mt-1 flex-shrink-0 text-brand-cyan" />
                 <div className="flex-1">
-                  <h2 className="text-xl font-semibold font-mono mb-3 text-zinc-200">
+                  <h2 className="text-xl font-semibold font-mono mb-3 text-neutral-200">
                     {t('about.description.title')}
                   </h2>
-                  <p className="text-base leading-relaxed font-mono text-zinc-400">
+                  <p className="text-base leading-relaxed font-mono text-neutral-400">
                     {t('about.description.text')}
                   </p>
                 </div>
@@ -81,19 +81,19 @@ export const AboutPage: React.FC = () => {
             </div>
 
             {/* Founders */}
-            <div className="bg-card border border-zinc-800/50 rounded-md p-6 md:p-8 hover:border-brand-cyan/30 transition-all">
+            <div className="bg-card border border-neutral-800/50 rounded-md p-6 md:p-8 hover:border-brand-cyan/30 transition-all">
               <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-3">
                   <Users className="w-6 h-6 flex-shrink-0 text-brand-cyan" />
-                  <h2 className="text-xl font-semibold font-mono text-zinc-200">
+                  <h2 className="text-xl font-semibold font-mono text-neutral-200">
                     {t('about.founders.title')}
                   </h2>
                 </div>
                 <div className="space-y-3">
-                  <div className="font-mono text-zinc-300">
+                  <div className="font-mono text-neutral-300">
                     <span className="font-semibold">{t('about.founders.pedroJaques')}</span>
                   </div>
-                  <div className="font-mono text-zinc-300">
+                  <div className="font-mono text-neutral-300">
                     <span className="font-semibold">{t('about.founders.pedroXavier')}</span>
                   </div>
                 </div>
@@ -101,15 +101,15 @@ export const AboutPage: React.FC = () => {
             </div>
 
             {/* Open Source */}
-            <div className="bg-card border border-zinc-800/50 rounded-md p-6 md:p-8 hover:border-brand-cyan/30 transition-all">
+            <div className="bg-card border border-neutral-800/50 rounded-md p-6 md:p-8 hover:border-brand-cyan/30 transition-all">
               <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-3">
                   <Code className="w-6 h-6 flex-shrink-0 text-brand-cyan" />
-                  <h2 className="text-xl font-semibold font-mono text-zinc-200">
+                  <h2 className="text-xl font-semibold font-mono text-neutral-200">
                     {t('about.openSource.title')}
                   </h2>
                 </div>
-                <p className="text-base leading-relaxed font-mono text-zinc-400 mb-4">
+                <p className="text-base leading-relaxed font-mono text-neutral-400 mb-4">
                   {t('about.openSource.description')}
                 </p>
                 <a
@@ -126,11 +126,11 @@ export const AboutPage: React.FC = () => {
             </div>
 
             {/* Links */}
-            <div className="bg-card border border-zinc-800/50 rounded-md p-6 md:p-8 hover:border-brand-cyan/30 transition-all">
+            <div className="bg-card border border-neutral-800/50 rounded-md p-6 md:p-8 hover:border-brand-cyan/30 transition-all">
               <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-3">
                   <Building2 className="w-6 h-6 flex-shrink-0 text-brand-cyan" />
-                  <h2 className="text-xl font-semibold font-mono text-zinc-200">
+                  <h2 className="text-xl font-semibold font-mono text-neutral-200">
                     {t('about.links.title')}
                   </h2>
                 </div>
@@ -140,7 +140,7 @@ export const AboutPage: React.FC = () => {
                       href={branding.links.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 px-4 py-2 rounded-md transition-all duration-300 font-mono text-sm hover:scale-[1.02] active:scale-95 bg-zinc-800/50 hover:bg-zinc-800/70 text-zinc-300 border border-zinc-700 hover:border-brand-cyan/50"
+                      className="flex items-center gap-2 px-4 py-2 rounded-md transition-all duration-300 font-mono text-sm hover:scale-[1.02] active:scale-95 bg-neutral-800/50 hover:bg-neutral-800/70 text-neutral-300 border border-neutral-700 hover:border-brand-cyan/50"
                     >
                       <span>{t('about.links.portfolio')}</span>
                       <ExternalLink className="w-3 h-3" />
@@ -150,7 +150,7 @@ export const AboutPage: React.FC = () => {
                     href="https://www.vsn-labs.vercel.app"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-2 rounded-md transition-all duration-300 font-mono text-sm hover:scale-[1.02] active:scale-95 bg-zinc-800/50 hover:bg-zinc-800/70 text-zinc-300 border border-zinc-700 hover:border-brand-cyan/50"
+                    className="flex items-center gap-2 px-4 py-2 rounded-md transition-all duration-300 font-mono text-sm hover:scale-[1.02] active:scale-95 bg-neutral-800/50 hover:bg-neutral-800/70 text-neutral-300 border border-neutral-700 hover:border-brand-cyan/50"
                   >
                     <span>{t('about.links.alphaTests')}</span>
                     <ExternalLink className="w-3 h-3" />
@@ -158,7 +158,7 @@ export const AboutPage: React.FC = () => {
 
                   <Link
                     to="/apps"
-                    className="flex items-center gap-2 px-4 py-2 rounded-md transition-all duration-300 font-mono text-sm hover:scale-[1.02] active:scale-95 bg-zinc-800/50 hover:bg-zinc-800/70 text-zinc-300 border border-zinc-700 hover:border-brand-cyan/50"
+                    className="flex items-center gap-2 px-4 py-2 rounded-md transition-all duration-300 font-mono text-sm hover:scale-[1.02] active:scale-95 bg-neutral-800/50 hover:bg-neutral-800/70 text-neutral-300 border border-neutral-700 hover:border-brand-cyan/50"
                   >
                     <span>{t('welcome.viewAllApps')}</span>
                     <Layers className="w-3 h-3" />
@@ -169,7 +169,7 @@ export const AboutPage: React.FC = () => {
           </div>
 
           {/* Full Width Image Header - At the end */}
-          <div className="mt-6 w-full bg-card border border-zinc-800/50 rounded-md overflow-hidden hover:border-brand-cyan/30 transition-all">
+          <div className="mt-6 w-full bg-card border border-neutral-800/50 rounded-md overflow-hidden hover:border-brand-cyan/30 transition-all">
             <div className="relative w-full aspect-video md:aspect-[21/9]">
               <img
                 src={t('about.headerImage.url') || '/og-image.png'}

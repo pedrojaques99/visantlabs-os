@@ -19,7 +19,7 @@ const NodeHeader = React.forwardRef<HTMLDivElement, NodeHeaderProps>(
         )}
       >
         <Icon size={20} className="text-brand-cyan" />
-        <h3 className="text-sm font-semibold text-zinc-300 font-mono uppercase">{title}</h3>
+        <h3 className="text-sm font-semibold text-neutral-300 font-mono uppercase">{title}</h3>
       </div>
     )
   }

@@ -63,6 +63,7 @@ interface GenerationStats {
     totalPromptLength: number;
     inputTokens: number;
     outputTokens: number;
+    totalCost?: number;
   };
   byFeature: {
     mockupmachine: { images: number; videos: number; textSteps: number; promptGenerations: number };
@@ -130,7 +131,7 @@ function formatCurrency(cents: number, currency: 'BRL' | 'USD'): string {
 const AdminDashboardSkeleton: React.FC = () => (
   <div className="space-y-6 animate-in fade-in duration-300">
     {/* Tabs Skeleton */}
-    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl">
+    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
       <CardContent className="p-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex gap-2">
@@ -146,7 +147,7 @@ const AdminDashboardSkeleton: React.FC = () => (
     {/* KPI Cards Grid Skeleton */}
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
       {[...Array(4)].map((_, i) => (
-        <Card key={i} className="bg-zinc-900 border border-zinc-800/50 rounded-xl">
+        <Card key={i} className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
           <CardContent className="p-6">
             <div className="flex items-start justify-between mb-4">
               <SkeletonLoader width="48px" height="48px" className="rounded-lg" />
@@ -163,7 +164,7 @@ const AdminDashboardSkeleton: React.FC = () => (
     </div>
 
     {/* Revenue Card Skeleton */}
-    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl">
+    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
       <CardContent className="p-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -188,7 +189,7 @@ const AdminDashboardSkeleton: React.FC = () => (
     </Card>
 
     {/* Chart Skeleton */}
-    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl">
+    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
       <CardHeader>
         <SkeletonLoader width="200px" height="24px" className="rounded mb-2" />
         <SkeletonLoader width="280px" height="16px" className="rounded" />
@@ -210,7 +211,7 @@ const AdminDashboardSkeleton: React.FC = () => (
     {/* Referral Stats Skeleton */}
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
       {[...Array(3)].map((_, i) => (
-        <Card key={i} className="bg-zinc-900 border border-zinc-800/50 rounded-xl">
+        <Card key={i} className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
           <CardContent className="p-6">
             <div className="flex items-start justify-between mb-4">
               <SkeletonLoader width="48px" height="48px" className="rounded-lg" />
@@ -401,14 +402,14 @@ export const AdminPage: React.FC = () => {
       model: model.replace('gemini-', '').replace('-image', '').replace('-preview', ''), // Simplify name
       count: stats.total,
       type: 'Imagem',
-      fill: "hsl(var(--chart-1))"
+      fill: "#52ddeb"
     }));
 
     const videoStats = data.generationStats.videos ? Object.entries(data.generationStats.videos.byModel).map(([model, count]) => ({
       model: model,
       count: count,
       type: 'Vídeo',
-      fill: "hsl(var(--chart-2))"
+      fill: "#52ddeb"
     })) : [];
 
     return [...imageStats, ...videoStats].sort((a, b) => b.count - a.count);
@@ -509,8 +510,8 @@ export const AdminPage: React.FC = () => {
       header: t('admin.user'),
       cell: ({ row }) => (
         <div className="flex flex-col">
-          <p className="font-medium text-zinc-200">{row.original.name || t('admin.noName')}</p>
-          <p className="text-xs text-zinc-500 font-mono">{row.original.email}</p>
+          <p className="font-medium text-neutral-200">{row.original.name || t('admin.noName')}</p>
+          <p className="text-xs text-neutral-500 font-mono">{row.original.email}</p>
         </div>
       ),
       size: 200,
@@ -524,7 +525,7 @@ export const AdminPage: React.FC = () => {
           <Badge variant="outline" className="bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/30 font-mono mb-1 w-fit">
             {row.original.subscriptionTier}
           </Badge>
-          <p className="text-xs text-zinc-500 font-mono">{row.original.subscriptionStatus}</p>
+          <p className="text-xs text-neutral-500 font-mono">{row.original.subscriptionStatus}</p>
         </div>
       ),
       size: 150,
@@ -553,7 +554,7 @@ export const AdminPage: React.FC = () => {
         <div className="text-xs font-mono space-y-1">
           <p>{t('admin.made')}: {row.original.referralCount ?? 0}</p>
           <p>{t('admin.code')}: {row.original.referralCode || '—'}</p>
-          <p className="text-[11px] text-zinc-500">
+          <p className="text-[11px] text-neutral-500">
             {row.original.referredBy
               ? `${t('admin.referredBy')}: ${userLookup[row.original.referredBy]?.name || userLookup[row.original.referredBy]?.email || t('admin.unknown')}`
               : t('admin.directOrigin')}
@@ -590,7 +591,7 @@ export const AdminPage: React.FC = () => {
             <p className="text-green-400">{formatCurrency(row.original.totalSpentUSD, 'USD')}</p>
           )}
           {row.original.totalSpentBRL === 0 && row.original.totalSpentUSD === 0 && (
-            <p className="text-zinc-500">—</p>
+            <p className="text-neutral-500">—</p>
           )}
         </div>
       ),
@@ -604,11 +605,11 @@ export const AdminPage: React.FC = () => {
         <div className="text-xs font-mono">
           {row.original.apiCostUSD > 0 ? (
             <>
-              <p className="text-zinc-300">$ {row.original.apiCostUSD.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-              <p className="text-zinc-400 text-[10px]">{(row.original.apiCostUSD * 6).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
+              <p className="text-neutral-300">$ {row.original.apiCostUSD.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+              <p className="text-neutral-400 text-[10px]">{(row.original.apiCostUSD * 6).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
             </>
           ) : (
-            <p className="text-zinc-500">—</p>
+            <p className="text-neutral-500">—</p>
           )}
         </div>
       ),
@@ -618,7 +619,7 @@ export const AdminPage: React.FC = () => {
     {
       accessorKey: 'createdAt',
       header: t('admin.createdAt'),
-      cell: ({ row }) => <span className="text-xs font-mono text-zinc-400">{new Date(row.original.createdAt).toLocaleDateString()}</span>,
+      cell: ({ row }) => <span className="text-xs font-mono text-neutral-400">{new Date(row.original.createdAt).toLocaleDateString()}</span>,
       size: 120,
       enableSorting: true,
     },
@@ -631,7 +632,7 @@ export const AdminPage: React.FC = () => {
         description={t('admin.description')}
         noindex={true}
       />
-      <div className="min-h-screen bg-[#121212] text-zinc-300 pt-12 md:pt-14 relative">
+      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative">
         <div className="fixed inset-0 z-0">
           <GridDotsBackground />
         </div>
@@ -643,11 +644,11 @@ export const AdminPage: React.FC = () => {
 
           {/* Access Denied States */}
           {!isCheckingAuth && !isAuthenticated && !isLoading && (
-            <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl max-w-md mx-auto">
+            <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl max-w-md mx-auto">
               <CardContent className="p-6 md:p-8 space-y-4 text-center">
                 {isUserAuthenticated === false ? (
                   <>
-                    <p className="text-zinc-400 font-mono mb-4">
+                    <p className="text-neutral-400 font-mono mb-4">
                       {t('admin.loginRequired')}
                     </p>
                     <Button
@@ -659,7 +660,7 @@ export const AdminPage: React.FC = () => {
                   </>
                 ) : isAdmin === false ? (
                   <>
-                    <p className="text-zinc-400 font-mono mb-4">
+                    <p className="text-neutral-400 font-mono mb-4">
                       {t('admin.accessDeniedFull')}
                     </p>
                     {error && (
@@ -690,7 +691,7 @@ export const AdminPage: React.FC = () => {
               className="space-y-6"
             >
               {/* Unified Header */}
-              <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl mb-6">
+              <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl mb-6">
                 <CardContent className="p-4 md:p-6">
                   {/* Breadcrumb */}
                   <div className="mb-4">
@@ -710,50 +711,50 @@ export const AdminPage: React.FC = () => {
                   </div>
 
                   {/* Separator */}
-                  <div className="border-t border-zinc-800/50 mb-4"></div>
+                  <div className="border-t border-neutral-800/50 mb-4"></div>
 
                   {/* Icon | Title | Description */}
                   <div className="flex items-center gap-3 mb-4">
                     <ShieldCheck className="h-6 w-6 md:h-8 md:w-8 text-brand-cyan" />
                     <div>
-                      <h1 className="text-2xl md:text-3xl font-semibold font-manrope text-zinc-300">
+                      <h1 className="text-2xl md:text-3xl font-semibold font-manrope text-neutral-300">
                         {t('admin.panelTitle')}
                       </h1>
-                      <p className="text-zinc-500 font-mono text-xs md:text-sm">
+                      <p className="text-neutral-500 font-mono text-xs md:text-sm">
                         {t('admin.panelSubtitle')}
                       </p>
                     </div>
                   </div>
 
                   {/* Separator */}
-                  <div className="border-t border-zinc-800/50 mb-4"></div>
+                  <div className="border-t border-neutral-800/50 mb-4"></div>
 
                   {/* Navbar abas | Botão atualizar (somente icon) */}
                   <div className="flex flex-wrap items-center justify-between gap-2 md:gap-4">
-                    <TabsList className="bg-zinc-900/50 border border-zinc-800/50 p-1 h-auto flex-wrap">
-                      <TabsTrigger value="overview" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
+                    <TabsList className="bg-neutral-900/50 border border-neutral-800/50 p-1 h-auto flex-wrap">
+                      <TabsTrigger value="overview" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
                         {t('admin.dashboard')}
                       </TabsTrigger>
                       {data.generationStats && (
-                        <TabsTrigger value="generations" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
+                        <TabsTrigger value="generations" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
                           {t('admin.generations')}
                         </TabsTrigger>
                       )}
-                      <TabsTrigger value="users" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
+                      <TabsTrigger value="users" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
                         {t('admin.users')}
                       </TabsTrigger>
-                      <TabsTrigger value="financial" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
+                      <TabsTrigger value="financial" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
                         {t('admin.financial')}
                       </TabsTrigger>
-                      <TabsTrigger value="presets" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
+                      <TabsTrigger value="presets" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
                         <Settings className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
                         {t('admin.presets')}
                       </TabsTrigger>
-                      <TabsTrigger value="products" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
+                      <TabsTrigger value="products" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
                         <ShoppingCart className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
                         {t('admin.products') || 'Produtos'}
                       </TabsTrigger>
-                      <TabsTrigger value="design-system" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
+                      <TabsTrigger value="design-system" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/30 transition-all py-1.5 px-3 text-xs md:text-sm">
                         <Palette className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
                         {t('admin.designSystem')}
                       </TabsTrigger>
@@ -764,7 +765,7 @@ export const AdminPage: React.FC = () => {
                       disabled={isLoading}
                       variant="outline"
                       size="sm"
-                      className="flex items-center justify-center border-zinc-800/50 hover:bg-zinc-800/50 h-9 w-9 p-0"
+                      className="flex items-center justify-center border-neutral-800/50 hover:bg-neutral-800/50 h-9 w-9 p-0"
                     >
                       <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
                     </Button>
@@ -777,29 +778,29 @@ export const AdminPage: React.FC = () => {
                 {/* KPI Grid - Top Level Metrics */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                   {/* Total Users */}
-                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-brand-cyan/10 rounded-lg">
                           <User className="h-6 w-6 text-brand-cyan" />
                         </div>
-                        <div className="flex items-center gap-1 text-xs text-zinc-500 font-mono">
+                        <div className="flex items-center gap-1 text-xs text-neutral-500 font-mono">
                           <TrendingUp className="h-3 w-3 text-brand-cyan" />
                           <span>+12.5%</span>
                         </div>
                       </div>
                       <div>
-                        <p className="text-3xl font-bold text-zinc-300 mb-2 font-mono">
+                        <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
                           {data.totalUsers}
                         </p>
-                        <p className="text-sm text-zinc-500 font-mono">{t('admin.totalUsers')}</p>
-                        <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.registeredInSystem')}</p>
+                        <p className="text-sm text-neutral-500 font-mono">{t('admin.totalUsers')}</p>
+                        <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.registeredInSystem')}</p>
                       </div>
                     </CardContent>
                   </Card>
 
                   {/* Active Subscriptions */}
-                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-brand-cyan/10 rounded-lg">
@@ -810,14 +811,14 @@ export const AdminPage: React.FC = () => {
                         <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                           {data.users.filter(u => u.subscriptionStatus === 'active' || u.subscriptionStatus === 'trialing').length}
                         </p>
-                        <p className="text-sm text-zinc-500 font-mono">{t('admin.activeSubscriptions')}</p>
-                        <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.recurringPlans')}</p>
+                        <p className="text-sm text-neutral-500 font-mono">{t('admin.activeSubscriptions')}</p>
+                        <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.recurringPlans')}</p>
                       </div>
                     </CardContent>
                   </Card>
 
                   {/* Total Transactions */}
-                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-brand-cyan/10 rounded-lg">
@@ -825,29 +826,29 @@ export const AdminPage: React.FC = () => {
                         </div>
                       </div>
                       <div>
-                        <p className="text-3xl font-bold text-zinc-300 mb-2 font-mono">
+                        <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
                           {totalTransactions}
                         </p>
-                        <p className="text-sm text-zinc-500 font-mono">{t('admin.transactions')}</p>
-                        <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.completedTransactions')}</p>
+                        <p className="text-sm text-neutral-500 font-mono">{t('admin.transactions')}</p>
+                        <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.completedTransactions')}</p>
                       </div>
                     </CardContent>
                   </Card>
 
                   {/* New Users (Last 30 Days) */}
-                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-brand-cyan/10 rounded-lg">
                           <UserPlus className="h-6 w-6 text-brand-cyan" />
                         </div>
-                        <div className="flex items-center gap-1 text-xs text-zinc-500 font-mono">
+                        <div className="flex items-center gap-1 text-xs text-neutral-500 font-mono">
                           <TrendingUp className="h-3 w-3 text-brand-cyan" />
                           <span>30d</span>
                         </div>
                       </div>
                       <div>
-                        <p className="text-3xl font-bold text-zinc-300 mb-2 font-mono">
+                        <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
                           {data.users.filter(u => {
                             const createdAt = new Date(u.createdAt);
                             const thirtyDaysAgo = new Date();
@@ -855,8 +856,8 @@ export const AdminPage: React.FC = () => {
                             return createdAt >= thirtyDaysAgo;
                           }).length}
                         </p>
-                        <p className="text-sm text-zinc-500 font-mono">Novos Usuários</p>
-                        <p className="text-xs text-zinc-400 font-mono mt-1">Últimos 30 dias</p>
+                        <p className="text-sm text-neutral-500 font-mono">Novos Usuários</p>
+                        <p className="text-xs text-neutral-400 font-mono mt-1">Últimos 30 dias</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -865,7 +866,7 @@ export const AdminPage: React.FC = () => {
                 {/* Additional Summary Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                   {/* Total Mockups */}
-                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-brand-cyan/10 rounded-lg">
@@ -876,14 +877,14 @@ export const AdminPage: React.FC = () => {
                         <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                           {data.totalMockupsGenerated}
                         </p>
-                        <p className="text-sm text-zinc-500 font-mono">{t('admin.mockupsCreated')}</p>
-                        <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.totalMockupsGenerated')}</p>
+                        <p className="text-sm text-neutral-500 font-mono">{t('admin.mockupsCreated')}</p>
+                        <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.totalMockupsGenerated')}</p>
                       </div>
                     </CardContent>
                   </Card>
 
                   {/* Total Credits Used */}
-                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-brand-cyan/10 rounded-lg">
@@ -894,14 +895,14 @@ export const AdminPage: React.FC = () => {
                         <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                           {data.totalCreditsUsed}
                         </p>
-                        <p className="text-sm text-zinc-500 font-mono">{t('admin.creditsDistributed')}</p>
-                        <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.totalCreditsAssigned')}</p>
+                        <p className="text-sm text-neutral-500 font-mono">{t('admin.creditsDistributed')}</p>
+                        <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.totalCreditsAssigned')}</p>
                       </div>
                     </CardContent>
                   </Card>
 
                   {/* Total Storage Used */}
-                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-brand-cyan/10 rounded-lg">
@@ -912,18 +913,18 @@ export const AdminPage: React.FC = () => {
                         <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                           {data.totalStorageUsed !== undefined ? formatBytes(data.totalStorageUsed) : '—'}
                         </p>
-                        <p className="text-sm text-zinc-500 font-mono">{t('admin.storage')}</p>
-                        <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.totalDiskUsage')}</p>
+                        <p className="text-sm text-neutral-500 font-mono">{t('admin.storage')}</p>
+                        <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.totalDiskUsage')}</p>
                       </div>
                     </CardContent>
                   </Card>
                 </div>
 
                 {/* User Growth Chart */}
-                <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl">
+                <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
                   <CardHeader>
-                    <CardTitle className="text-zinc-300">{t('admin.userGrowth')}</CardTitle>
-                    <CardDescription className="text-zinc-500">{t('admin.newUsersLast30Days')}</CardDescription>
+                    <CardTitle className="text-neutral-300">{t('admin.userGrowth')}</CardTitle>
+                    <CardDescription className="text-neutral-500">{t('admin.newUsersLast30Days')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="h-[300px] w-full">
@@ -936,7 +937,7 @@ export const AdminPage: React.FC = () => {
                             right: 12,
                           }}
                         >
-                          <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#333" />
+                          <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#3b3b3bff" />
                           <XAxis
                             dataKey="date"
                             tickLine={false}
@@ -958,9 +959,9 @@ export const AdminPage: React.FC = () => {
                           <Area
                             dataKey="users"
                             type="natural"
-                            fill="brand-cyan"
-                            fillOpacity={0.1}
-                            stroke="brand-cyan"
+                            fill="#52ddeb"
+                            fillOpacity={0.05}
+                            stroke="#64f2ffff"
                             stackId="a"
                           />
                         </AreaChart>
@@ -975,7 +976,7 @@ export const AdminPage: React.FC = () => {
                 <TabsContent value="generations" className={`space-y-6 ${activeTab === 'generations' ? 'admin-tab-enter' : ''}`}>
                   {/* Summary KPIs */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between mb-4">
                           <div className="p-3 bg-brand-cyan/10 rounded-lg">
@@ -986,13 +987,13 @@ export const AdminPage: React.FC = () => {
                           <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                             {Object.values(data.generationStats.imagesByModel).reduce((sum, stats) => sum + stats.total, 0)}
                           </p>
-                          <p className="text-sm text-zinc-500 font-mono">{t('admin.images')}</p>
-                          <p className="text-xs text-zinc-400 font-mono mt-1">Total gerado</p>
+                          <p className="text-sm text-neutral-500 font-mono">{t('admin.images')}</p>
+                          <p className="text-xs text-neutral-400 font-mono mt-1">Total gerado</p>
                         </div>
                       </CardContent>
                     </Card>
 
-                    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between mb-4">
                           <div className="p-3 bg-brand-cyan/10 rounded-lg">
@@ -1003,13 +1004,13 @@ export const AdminPage: React.FC = () => {
                           <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                             {data.generationStats.videos.total}
                           </p>
-                          <p className="text-sm text-zinc-500 font-mono">{t('admin.videos')}</p>
-                          <p className="text-xs text-zinc-400 font-mono mt-1">Total gerado</p>
+                          <p className="text-sm text-neutral-500 font-mono">{t('admin.videos')}</p>
+                          <p className="text-xs text-neutral-400 font-mono mt-1">Total gerado</p>
                         </div>
                       </CardContent>
                     </Card>
 
-                    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between mb-4">
                           <div className="p-3 bg-brand-cyan/10 rounded-lg">
@@ -1020,13 +1021,13 @@ export const AdminPage: React.FC = () => {
                           <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                             {data.generationStats.textTokens.totalSteps}
                           </p>
-                          <p className="text-sm text-zinc-500 font-mono">Passos de Texto</p>
-                          <p className="text-xs text-zinc-400 font-mono mt-1">Processamento de IA</p>
+                          <p className="text-sm text-neutral-500 font-mono">Passos de Texto</p>
+                          <p className="text-xs text-neutral-400 font-mono mt-1">Processamento de IA</p>
                         </div>
                       </CardContent>
                     </Card>
 
-                    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between mb-4">
                           <div className="p-3 bg-brand-cyan/10 rounded-lg">
@@ -1037,8 +1038,8 @@ export const AdminPage: React.FC = () => {
                           <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                             {(data.generationStats.textTokens.inputTokens + data.generationStats.textTokens.outputTokens).toLocaleString()}
                           </p>
-                          <p className="text-sm text-zinc-500 font-mono">Total Tokens</p>
-                          <p className="text-xs text-zinc-400 font-mono mt-1">Input + Output</p>
+                          <p className="text-sm text-neutral-500 font-mono">Total Tokens</p>
+                          <p className="text-xs text-neutral-400 font-mono mt-1">Input + Output</p>
                         </div>
                       </CardContent>
                     </Card>
@@ -1047,14 +1048,14 @@ export const AdminPage: React.FC = () => {
                   {/* By Feature - Enhanced Grid */}
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold text-zinc-300 font-mono">{t('admin.byFeature')}</h3>
+                      <h3 className="text-lg font-semibold text-neutral-300 font-mono">{t('admin.byFeature')}</h3>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                       {(['mockupmachine', 'canvas', 'brandingmachine'] as const).map((feature) => {
                         const stats = data.generationStats.byFeature[feature];
                         const total = stats.images + stats.videos + stats.textSteps + stats.promptGenerations;
                         return (
-                          <Card key={feature} className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                          <Card key={feature} className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                             <CardContent className="p-6">
                               <div className="flex items-start justify-between mb-4">
                                 <div className="p-3 bg-brand-cyan/10 rounded-lg">
@@ -1070,19 +1071,19 @@ export const AdminPage: React.FC = () => {
                                 <p className="text-sm font-semibold text-brand-cyan font-mono mb-4 uppercase">{feature}</p>
                                 <div className="space-y-3">
                                   <div className="flex items-center justify-between">
-                                    <span className="text-xs text-zinc-400 font-mono">{t('admin.images')}</span>
+                                    <span className="text-xs text-neutral-400 font-mono">{t('admin.images')}</span>
                                     <span className="text-sm font-bold text-brand-cyan font-mono">{stats.images}</span>
                                   </div>
                                   <div className="flex items-center justify-between">
-                                    <span className="text-xs text-zinc-400 font-mono">{t('admin.videos')}</span>
+                                    <span className="text-xs text-neutral-400 font-mono">{t('admin.videos')}</span>
                                     <span className="text-sm font-bold text-brand-cyan font-mono">{stats.videos}</span>
                                   </div>
                                   <div className="flex items-center justify-between">
-                                    <span className="text-xs text-zinc-400 font-mono">{t('admin.textSteps')}</span>
+                                    <span className="text-xs text-neutral-400 font-mono">{t('admin.textSteps')}</span>
                                     <span className="text-sm font-bold text-brand-cyan font-mono">{stats.textSteps}</span>
                                   </div>
                                   <div className="flex items-center justify-between">
-                                    <span className="text-xs text-zinc-400 font-mono">{t('admin.promptsGenerated')}</span>
+                                    <span className="text-xs text-neutral-400 font-mono">{t('admin.promptsGenerated')}</span>
                                     <span className="text-sm font-bold text-brand-cyan font-mono">{stats.promptGenerations}</span>
                                   </div>
                                 </div>
@@ -1095,13 +1096,13 @@ export const AdminPage: React.FC = () => {
                   </div>
 
                   {/* Model Usage Chart */}
-                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300">
+                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300">
                     <CardHeader>
-                      <CardTitle className="text-zinc-300 flex items-center gap-2">
+                      <CardTitle className="text-neutral-300 flex items-center gap-2">
                         <Image className="h-5 w-5 text-brand-cyan" />
                         {t('admin.generationsByModel')}
                       </CardTitle>
-                      <CardDescription className="text-zinc-500">
+                      <CardDescription className="text-neutral-500">
                         Distribuição de gerações por modelo de IA
                       </CardDescription>
                     </CardHeader>
@@ -1135,29 +1136,29 @@ export const AdminPage: React.FC = () => {
                   {/* Detailed Breakdowns Grid */}
                   <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                     {/* Images by Model */}
-                    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300">
+                    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300">
                       <CardHeader>
-                        <CardTitle className="text-zinc-300 flex items-center gap-2">
+                        <CardTitle className="text-neutral-300 flex items-center gap-2">
                           <Image className="h-5 w-5 text-brand-cyan" />
                           {t('admin.imagesByModel')}
                         </CardTitle>
-                        <CardDescription className="text-zinc-500">
+                        <CardDescription className="text-neutral-500">
                           Detalhamento por modelo e resolução
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           {Object.entries(data.generationStats.imagesByModel).map(([model, stats]) => (
-                            <Card key={model} className="bg-zinc-900/50 border border-zinc-800/30 rounded-lg hover:border-[brand-cyan]/20 transition-all">
+                            <Card key={model} className="bg-neutral-900/50 border border-neutral-800/30 rounded-lg hover:border-[brand-cyan]/20 transition-all">
                               <CardContent className="p-4">
                                 <p className="text-xs font-semibold text-brand-cyan font-mono mb-2 truncate" title={model}>{model}</p>
-                                <p className="text-2xl font-bold text-zinc-300 font-mono mb-3">{stats.total}</p>
+                                <p className="text-2xl font-bold text-neutral-300 font-mono mb-3">{stats.total}</p>
                                 {Object.keys(stats.byResolution).length > 0 && (
-                                  <div className="mt-3 pt-3 border-t border-zinc-800/50">
-                                    <p className="text-[10px] text-zinc-500 font-mono mb-2 uppercase">Resoluções:</p>
+                                  <div className="mt-3 pt-3 border-t border-neutral-800/50">
+                                    <p className="text-[10px] text-neutral-500 font-mono mb-2 uppercase">Resoluções:</p>
                                     <div className="flex flex-wrap gap-1">
                                       {Object.entries(stats.byResolution).map(([resolution, count]) => (
-                                        <Badge key={resolution} variant="outline" className="text-[10px] px-1.5 py-0.5 h-5 bg-black/40 border-zinc-700/50 text-zinc-400">
+                                        <Badge key={resolution} variant="outline" className="text-[10px] px-1.5 py-0.5 h-5 bg-black/40 border-neutral-700/50 text-neutral-400">
                                           {resolution}: {count}
                                         </Badge>
                                       ))}
@@ -1172,27 +1173,27 @@ export const AdminPage: React.FC = () => {
                     </Card>
 
                     {/* Videos by Model */}
-                    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300">
+                    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300">
                       <CardHeader>
-                        <CardTitle className="text-zinc-300 flex items-center gap-2">
+                        <CardTitle className="text-neutral-300 flex items-center gap-2">
                           <Image className="h-5 w-5 text-brand-cyan" />
                           {t('admin.videosByModel')}
                         </CardTitle>
-                        <CardDescription className="text-zinc-500">
+                        <CardDescription className="text-neutral-500">
                           Detalhamento por modelo
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
                         <div className="mb-4">
-                          <p className="text-3xl font-bold text-zinc-300 font-mono mb-2">{data.generationStats.videos.total}</p>
-                          <p className="text-sm text-zinc-500 font-mono">{t('admin.totalVideos')}</p>
+                          <p className="text-3xl font-bold text-neutral-300 font-mono mb-2">{data.generationStats.videos.total}</p>
+                          <p className="text-sm text-neutral-500 font-mono">{t('admin.totalVideos')}</p>
                         </div>
                         {Object.keys(data.generationStats.videos.byModel).length > 0 && (
-                          <div className="mt-4 pt-4 border-t border-zinc-800/50">
-                            <p className="text-xs text-zinc-500 font-mono mb-3 uppercase">{t('admin.byModel')}:</p>
+                          <div className="mt-4 pt-4 border-t border-neutral-800/50">
+                            <p className="text-xs text-neutral-500 font-mono mb-3 uppercase">{t('admin.byModel')}:</p>
                             <div className="flex flex-wrap gap-2">
                               {Object.entries(data.generationStats.videos.byModel).map(([model, count]) => (
-                                <Badge key={model} variant="outline" className="text-xs bg-black/40 border-zinc-700/50 text-zinc-300 px-3 py-1">
+                                <Badge key={model} variant="outline" className="text-xs bg-black/10 border-neutral-700/50 text-neutral-300 px-3 py-1">
                                   {model}: {count}
                                 </Badge>
                               ))}
@@ -1204,54 +1205,64 @@ export const AdminPage: React.FC = () => {
                   </div>
 
                   {/* Text Tokens Section */}
-                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300">
+                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300">
                     <CardHeader>
-                      <CardTitle className="text-zinc-300 flex items-center gap-2">
+                      <CardTitle className="text-neutral-300 flex items-center gap-2">
                         <Type className="h-5 w-5 text-brand-cyan" />
                         {t('admin.textProcessing')}
                       </CardTitle>
-                      <CardDescription className="text-zinc-500">
+                      <CardDescription className="text-neutral-500">
                         Estatísticas de processamento de texto e tokens
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                         {/* Branding Steps */}
-                        <Card className="bg-zinc-900/50 border border-zinc-800/30 rounded-lg hover:border-[brand-cyan]/20 transition-all">
+                        <Card className="bg-neutral-900/50 border border-neutral-800/30 rounded-lg hover:border-[brand-cyan]/20 transition-all">
                           <CardContent className="p-4">
-                            <p className="text-xs text-zinc-500 font-mono mb-2">{t('admin.brandingSteps')}</p>
-                            <p className="text-2xl font-bold text-zinc-300 font-mono">{data.generationStats.textTokens.totalSteps}</p>
+                            <p className="text-xs text-neutral-500 font-mono mb-2">{t('admin.brandingSteps')}</p>
+                            <p className="text-2xl font-bold text-neutral-300 font-mono">{data.generationStats.textTokens.totalSteps}</p>
                           </CardContent>
                         </Card>
 
                         {/* Input Tokens */}
-                        <Card className="bg-zinc-900/50 border border-zinc-800/30 rounded-lg hover:border-[brand-cyan]/20 transition-all">
+                        <Card className="bg-neutral-900/50 border border-neutral-800/30 rounded-lg hover:border-[brand-cyan]/20 transition-all">
                           <CardContent className="p-4">
-                            <p className="text-xs text-zinc-500 font-mono mb-2">{t('admin.inputTokens')}</p>
+                            <p className="text-xs text-neutral-500 font-mono mb-2">{t('admin.inputTokens')}</p>
                             <p className="text-2xl font-bold text-brand-cyan font-mono">{data.generationStats.textTokens.inputTokens.toLocaleString()}</p>
                           </CardContent>
                         </Card>
 
                         {/* Output Tokens */}
-                        <Card className="bg-zinc-900/50 border border-zinc-800/30 rounded-lg hover:border-[brand-cyan]/20 transition-all">
+                        <Card className="bg-neutral-900/50 border border-neutral-800/30 rounded-lg hover:border-[brand-cyan]/20 transition-all">
                           <CardContent className="p-4">
-                            <p className="text-xs text-zinc-500 font-mono mb-2">{t('admin.outputTokens')}</p>
+                            <p className="text-xs text-neutral-500 font-mono mb-2">{t('admin.outputTokens')}</p>
                             <p className="text-2xl font-bold text-brand-cyan font-mono">{data.generationStats.textTokens.outputTokens.toLocaleString()}</p>
                           </CardContent>
                         </Card>
 
-                        {/* Prompt Gen Total */}
-                        <Card className="bg-zinc-900/50 border border-zinc-800/30 rounded-lg hover:border-[brand-cyan]/20 transition-all">
+                        {/* Analysis Cost */}
+                        <Card className="bg-neutral-900/50 border border-neutral-800/30 rounded-lg hover:border-[brand-cyan]/20 transition-all">
                           <CardContent className="p-4">
-                            <p className="text-xs text-zinc-500 font-mono mb-2">{t('admin.promptGenTotal')}</p>
-                            <p className="text-2xl font-bold text-zinc-300 font-mono">{data.generationStats.byFeature['prompt-generation'].total}</p>
+                            <p className="text-xs text-neutral-500 font-mono mb-2">{t('admin.analysisCost')}</p>
+                            <p className="text-2xl font-bold text-green-400 font-mono">
+                              ${(data.generationStats.textTokens.totalCost || 0).toFixed(4)}
+                            </p>
+                          </CardContent>
+                        </Card>
+
+                        {/* Prompt Gen Total */}
+                        <Card className="bg-neutral-900/50 border border-neutral-800/30 rounded-lg hover:border-[brand-cyan]/20 transition-all">
+                          <CardContent className="p-4">
+                            <p className="text-xs text-neutral-500 font-mono mb-2">{t('admin.promptGenTotal')}</p>
+                            <p className="text-2xl font-bold text-neutral-300 font-mono">{data.generationStats.byFeature['prompt-generation'].total}</p>
                           </CardContent>
                         </Card>
 
                         {/* Prompt Input Tokens */}
-                        <Card className="bg-zinc-900/50 border border-zinc-800/30 rounded-lg hover:border-[brand-cyan]/20 transition-all">
+                        <Card className="bg-neutral-900/50 border border-neutral-800/30 rounded-lg hover:border-[brand-cyan]/20 transition-all">
                           <CardContent className="p-4">
-                            <p className="text-xs text-zinc-500 font-mono mb-2">{t('admin.promptInput')}</p>
+                            <p className="text-xs text-neutral-500 font-mono mb-2">{t('admin.promptInput')}</p>
                             <p className="text-2xl font-bold text-brand-cyan font-mono">{data.generationStats.byFeature['prompt-generation'].inputTokens.toLocaleString()}</p>
                           </CardContent>
                         </Card>
@@ -1264,7 +1275,7 @@ export const AdminPage: React.FC = () => {
               <TabsContent value="users" className={`space-y-6 ${activeTab === 'users' ? 'admin-tab-enter' : ''}`}>
                 {/* Summary Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-brand-cyan/10 rounded-lg">
@@ -1272,16 +1283,16 @@ export const AdminPage: React.FC = () => {
                         </div>
                       </div>
                       <div>
-                        <p className="text-3xl font-bold text-zinc-300 mb-2 font-mono">
+                        <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
                           {data.users.length}
                         </p>
-                        <p className="text-sm text-zinc-500 font-mono">{t('admin.totalUsers')}</p>
-                        <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.registeredInSystem')}</p>
+                        <p className="text-sm text-neutral-500 font-mono">{t('admin.totalUsers')}</p>
+                        <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.registeredInSystem')}</p>
                       </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-brand-cyan/10 rounded-lg">
@@ -1292,13 +1303,13 @@ export const AdminPage: React.FC = () => {
                         <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                           {data.users.filter(u => u.subscriptionStatus === 'active' || u.subscriptionStatus === 'trialing').length}
                         </p>
-                        <p className="text-sm text-zinc-500 font-mono">{t('admin.activeSubscriptions')}</p>
-                        <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.usersWithActivePlan')}</p>
+                        <p className="text-sm text-neutral-500 font-mono">{t('admin.activeSubscriptions')}</p>
+                        <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.usersWithActivePlan')}</p>
                       </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-brand-cyan/10 rounded-lg">
@@ -1309,13 +1320,13 @@ export const AdminPage: React.FC = () => {
                         <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                           {totals.monthlyCredits + totals.manualCredits}
                         </p>
-                        <p className="text-sm text-zinc-500 font-mono">{t('admin.creditsDistributed')}</p>
-                        <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.totalCreditsAssigned')}</p>
+                        <p className="text-sm text-neutral-500 font-mono">{t('admin.creditsDistributed')}</p>
+                        <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.totalCreditsAssigned')}</p>
                       </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-brand-cyan/10 rounded-lg">
@@ -1326,8 +1337,8 @@ export const AdminPage: React.FC = () => {
                         <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                           {data.users.reduce((sum, u) => sum + (u.mockupCount || 0), 0)}
                         </p>
-                        <p className="text-sm text-zinc-500 font-mono">{t('admin.mockupsCreated')}</p>
-                        <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.totalMockupsGenerated')}</p>
+                        <p className="text-sm text-neutral-500 font-mono">{t('admin.mockupsCreated')}</p>
+                        <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.totalMockupsGenerated')}</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -1336,13 +1347,13 @@ export const AdminPage: React.FC = () => {
                 {/* Referral Stats */}
                 {data.referralStats && (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between mb-4">
                           <div className="p-3 bg-brand-cyan/10 rounded-lg">
                             <Link2 className="h-6 w-6 text-brand-cyan" />
                           </div>
-                          <div className="flex items-center gap-1 text-xs text-zinc-500 font-mono">
+                          <div className="flex items-center gap-1 text-xs text-neutral-500 font-mono">
                             <TrendingUp className="h-3 w-3 text-brand-cyan" />
                             <span>+10.2%</span>
                           </div>
@@ -1351,13 +1362,13 @@ export const AdminPage: React.FC = () => {
                           <p className="text-3xl font-bold text-brand-cyan mb-2 font-mono">
                             {data.referralStats.totalReferralCount}
                           </p>
-                          <p className="text-sm text-zinc-500 font-mono">{t('admin.referrals')}</p>
-                          <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.totalInvitesSent')}</p>
+                          <p className="text-sm text-neutral-500 font-mono">{t('admin.referrals')}</p>
+                          <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.totalInvitesSent')}</p>
                         </div>
                       </CardContent>
                     </Card>
 
-                    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between mb-4">
                           <div className="p-3 bg-brand-cyan/10 rounded-lg">
@@ -1365,16 +1376,16 @@ export const AdminPage: React.FC = () => {
                           </div>
                         </div>
                         <div>
-                          <p className="text-3xl font-bold text-zinc-300 mb-2 font-mono">
+                          <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
                             {data.referralStats.totalReferredUsers}
                           </p>
-                          <p className="text-sm text-zinc-500 font-mono">{t('admin.referredUsers')}</p>
-                          <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.newAccountsViaInvite')}</p>
+                          <p className="text-sm text-neutral-500 font-mono">{t('admin.referredUsers')}</p>
+                          <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.newAccountsViaInvite')}</p>
                         </div>
                       </CardContent>
                     </Card>
 
-                    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between mb-4">
                           <div className="p-3 bg-brand-cyan/10 rounded-lg">
@@ -1382,11 +1393,11 @@ export const AdminPage: React.FC = () => {
                           </div>
                         </div>
                         <div>
-                          <p className="text-3xl font-bold text-zinc-300 mb-2 font-mono">
+                          <p className="text-3xl font-bold text-neutral-300 mb-2 font-mono">
                             {data.referralStats.usersWithReferralCode}
                           </p>
-                          <p className="text-sm text-zinc-500 font-mono">{t('admin.activeLinks')}</p>
-                          <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.referralCodesInUse')}</p>
+                          <p className="text-sm text-neutral-500 font-mono">{t('admin.activeLinks')}</p>
+                          <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.referralCodesInUse')}</p>
                         </div>
                       </CardContent>
                     </Card>
@@ -1394,7 +1405,7 @@ export const AdminPage: React.FC = () => {
                 )}
 
                 {/* Table Card */}
-                <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300 shadow-lg">
+                <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300 shadow-lg">
                   <CardContent className="p-6">
                     <DataTable
                       columns={columns}
@@ -1413,7 +1424,7 @@ export const AdminPage: React.FC = () => {
                 {/* Financial Overview - Revenue, Cost, Profit */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                   {/* Revenue Total Card */}
-                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-green-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl ring-1 ring-green-500/20">
+                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-green-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl ring-1 ring-green-500/20">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-green-500/10 rounded-lg">
@@ -1427,14 +1438,14 @@ export const AdminPage: React.FC = () => {
                         <p className="text-sm font-semibold text-green-400 mb-2 font-mono">
                           {formatCurrency(data.totalRevenueUSD, 'USD')}
                         </p>
-                        <p className="text-sm text-zinc-500 font-mono">{t('admin.totalRevenue')}</p>
-                        <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.completedTransactions')}</p>
+                        <p className="text-sm text-neutral-500 font-mono">{t('admin.totalRevenue')}</p>
+                        <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.completedTransactions')}</p>
                       </div>
                     </CardContent>
                   </Card>
 
                   {/* Total Cost Card */}
-                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="p-3 bg-orange-500/10 rounded-lg">
@@ -1451,14 +1462,14 @@ export const AdminPage: React.FC = () => {
                         <p className="text-sm font-semibold text-orange-400 mb-2 font-mono">
                           $ {data.totalApiCostUSD.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </p>
-                        <p className="text-sm text-zinc-500 font-mono">{t('admin.estimatedCost')}</p>
-                        <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.basedOnUsage')}</p>
+                        <p className="text-sm text-neutral-500 font-mono">{t('admin.estimatedCost')}</p>
+                        <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.basedOnUsage')}</p>
                       </div>
                     </CardContent>
                   </Card>
 
                   {/* Profit Card */}
-                  <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-blue-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl ring-1 ring-blue-500/20">
+                  <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-blue-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl ring-1 ring-blue-500/20">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className={`p-3 rounded-lg ${profitStats.isPositive ? 'bg-blue-500/10' : 'bg-red-500/10'}`}>
@@ -1475,8 +1486,8 @@ export const AdminPage: React.FC = () => {
                         <p className={`text-sm font-semibold mb-2 font-mono ${profitStats.isPositive ? 'text-blue-400' : 'text-red-400'}`}>
                           {profitStats.isPositive ? '+' : ''}{profitStats.profitUSD.toLocaleString('pt-BR', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </p>
-                        <p className="text-sm text-zinc-500 font-mono">{t('admin.totalProfit')}</p>
-                        <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.revenueMinusCost')}</p>
+                        <p className="text-sm text-neutral-500 font-mono">{t('admin.totalProfit')}</p>
+                        <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.revenueMinusCost')}</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -1486,13 +1497,13 @@ export const AdminPage: React.FC = () => {
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
                   {/* Revenue Chart */}
                   {data.revenueTimeSeries && data.revenueTimeSeries.length > 0 && (
-                    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-green-500/30 transition-all duration-300">
+                    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-green-500/30 transition-all duration-300">
                       <CardHeader>
-                        <CardTitle className="text-zinc-300 flex items-center gap-2">
+                        <CardTitle className="text-neutral-300 flex items-center gap-2">
                           <DollarSign className="h-5 w-5 text-green-500" />
                           {t('admin.revenueOverTime') || 'Receita ao Longo do Tempo'}
                         </CardTitle>
-                        <CardDescription className="text-zinc-500">
+                        <CardDescription className="text-neutral-500">
                           {t('admin.cumulativeRevenue') || 'Receita acumulada (BRL)'}
                         </CardDescription>
                       </CardHeader>
@@ -1550,13 +1561,13 @@ export const AdminPage: React.FC = () => {
 
                   {/* Cost Chart */}
                   {data.costTimeSeries && data.costTimeSeries.length > 0 && (
-                    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-zinc-700/50 transition-all duration-300">
+                    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-neutral-700/50 transition-all duration-300">
                       <CardHeader>
-                        <CardTitle className="text-zinc-300 flex items-center gap-2">
+                        <CardTitle className="text-neutral-300 flex items-center gap-2">
                           <Database className="h-5 w-5 text-orange-500" />
                           {t('admin.costOverTime') || 'Custo Estimado ao Longo do Tempo'}
                         </CardTitle>
-                        <CardDescription className="text-zinc-500">
+                        <CardDescription className="text-neutral-500">
                           {t('admin.cumulativeCost') || 'Custo API acumulado (USD)'}
                         </CardDescription>
                       </CardHeader>
@@ -1620,7 +1631,7 @@ export const AdminPage: React.FC = () => {
                   <>
                     {/* Daily Cost Stats Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                      <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between mb-4">
                             <div className="p-3 bg-orange-500/10 rounded-lg">
@@ -1634,13 +1645,13 @@ export const AdminPage: React.FC = () => {
                             <p className="text-sm font-semibold text-orange-400 mb-2 font-mono">
                               $ {dailyCostStats.averageCost.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </p>
-                            <p className="text-sm text-zinc-500 font-mono">{t('admin.averageDailyCost')}</p>
-                            <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.dailyCost')}</p>
+                            <p className="text-sm text-neutral-500 font-mono">{t('admin.averageDailyCost')}</p>
+                            <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.dailyCost')}</p>
                           </div>
                         </CardContent>
                       </Card>
 
-                      <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between mb-4">
                             <div className="p-3 bg-orange-500/10 rounded-lg">
@@ -1654,13 +1665,13 @@ export const AdminPage: React.FC = () => {
                             <p className="text-sm font-semibold text-orange-400 mb-2 font-mono">
                               $ {dailyCostStats.maxCost.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </p>
-                            <p className="text-sm text-zinc-500 font-mono">{t('admin.maxDailyCost')}</p>
-                            <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.dailyCost')}</p>
+                            <p className="text-sm text-neutral-500 font-mono">{t('admin.maxDailyCost')}</p>
+                            <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.dailyCost')}</p>
                           </div>
                         </CardContent>
                       </Card>
 
-                      <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between mb-4">
                             <div className="p-3 bg-orange-500/10 rounded-lg">
@@ -1674,13 +1685,13 @@ export const AdminPage: React.FC = () => {
                             <p className="text-sm font-semibold text-orange-400 mb-2 font-mono">
                               $ {dailyCostStats.last7DaysCost.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </p>
-                            <p className="text-sm text-zinc-500 font-mono">{t('admin.last7DaysCost')}</p>
-                            <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.dailyCost')}</p>
+                            <p className="text-sm text-neutral-500 font-mono">{t('admin.last7DaysCost')}</p>
+                            <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.dailyCost')}</p>
                           </div>
                         </CardContent>
                       </Card>
 
-                      <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
+                      <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl">
                         <CardContent className="p-6">
                           <div className="flex items-start justify-between mb-4">
                             <div className="p-3 bg-orange-500/10 rounded-lg">
@@ -1694,21 +1705,21 @@ export const AdminPage: React.FC = () => {
                             <p className="text-sm font-semibold text-orange-400 mb-2 font-mono">
                               $ {dailyCostStats.last30DaysCost.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </p>
-                            <p className="text-sm text-zinc-500 font-mono">{t('admin.last30DaysCost')}</p>
-                            <p className="text-xs text-zinc-400 font-mono mt-1">{t('admin.dailyCost')}</p>
+                            <p className="text-sm text-neutral-500 font-mono">{t('admin.last30DaysCost')}</p>
+                            <p className="text-xs text-neutral-400 font-mono mt-1">{t('admin.dailyCost')}</p>
                           </div>
                         </CardContent>
                       </Card>
                     </div>
 
                     {/* Daily Cost Chart */}
-                    <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-zinc-700/50 transition-all duration-300">
+                    <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-neutral-700/50 transition-all duration-300">
                       <CardHeader>
-                        <CardTitle className="text-zinc-300 flex items-center gap-2">
+                        <CardTitle className="text-neutral-300 flex items-center gap-2">
                           <Database className="h-5 w-5 text-orange-500" />
                           {t('admin.dailyCostChart') || 'Custo Diário (USD)'}
                         </CardTitle>
-                        <CardDescription className="text-zinc-500">
+                        <CardDescription className="text-neutral-500">
                           {t('admin.dailyCost') || 'Custo por dia'}
                         </CardDescription>
                       </CardHeader>

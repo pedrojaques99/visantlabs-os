@@ -43,7 +43,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
   const resizerRef = useRef<HTMLDivElement>(null);
   const sectionRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set([activeItemId]));
-  
+
   // Initialize width from localStorage or default
   const [internalWidth, setInternalWidth] = useState(() => {
     if (controlledWidth !== undefined) return controlledWidth;
@@ -171,7 +171,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
       {/* Mobile Toggle Button */}
       <button
         onClick={() => onToggleOpen(!isOpen)}
-        className="fixed top-10 md:top-12 left-4 z-50 lg:hidden p-2 bg-card border border-zinc-800/50 rounded-md text-zinc-300 hover:bg-zinc-800/50 hover:border-brand-cyan/30 transition-colors"
+        className="fixed top-10 md:top-12 left-4 z-50 lg:hidden p-2 bg-card border border-neutral-800/50 rounded-md text-neutral-300 hover:bg-neutral-800/50 hover:border-brand-cyan/30 transition-colors"
         aria-label="Toggle navigation"
       >
         {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -193,11 +193,11 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
           className="hidden lg:block absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-brand-cyan/50 transition-colors group z-50"
           style={{ touchAction: 'none' }}
         >
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-1 h-8 bg-zinc-700/50 rounded-full group-hover:bg-brand-cyan/70 transition-colors" />
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-1 h-8 bg-neutral-700/50 rounded-full group-hover:bg-brand-cyan/70 transition-colors" />
         </div>
         <div className="p-4 pt-24 md:pt-28 space-y-2">
           {title && (
-            <h2 className="text-sm font-semibold font-mono text-zinc-400 uppercase tracking-wider mb-4 px-2">
+            <h2 className="text-sm font-semibold font-mono text-neutral-400 uppercase tracking-wider mb-4 px-2">
               {title}
             </h2>
           )}
@@ -206,7 +206,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
             const isActive = activeItemId === item.id;
             const isExpanded = expandedItems.has(item.id);
             const hasSections = item.sections && item.sections.length > 0;
-            
+
             return (
               <div key={item.id} className="space-y-1">
                 <div className="flex items-center gap-1">
@@ -219,7 +219,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                       'flex-1 flex items-center gap-2 px-3 py-2 rounded-md text-sm font-mono transition-colors',
                       isActive
                         ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30'
-                        : 'text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800/50'
+                        : 'text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50'
                     )}
                   >
                     <Icon className="w-4 h-4 flex-shrink-0" />
@@ -232,7 +232,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                         toggleItem(item.id);
                       }}
                       className={cn(
-                        'p-1.5 rounded-md text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800/50 transition-colors',
+                        'p-1.5 rounded-md text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50 transition-colors',
                         isExpanded && 'text-brand-cyan'
                       )}
                       aria-label={isExpanded ? 'Collapse' : 'Expand'}
@@ -269,9 +269,9 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                             isSectionActive
                               ? 'text-brand-cyan bg-brand-cyan/10 border-l-2 border-brand-cyan'
                               : activeItemId === item.id
-                              ? 'text-zinc-300 hover:text-zinc-200'
-                              : 'text-zinc-500 hover:text-zinc-300',
-                            'hover:bg-zinc-800/30'
+                                ? 'text-neutral-300 hover:text-neutral-200'
+                                : 'text-neutral-500 hover:text-neutral-300',
+                            'hover:bg-neutral-800/30'
                           )}
                         >
                           {section.label}

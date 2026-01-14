@@ -121,7 +121,7 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
   // Calcular cor de texto baseado no contraste
   const textColor = brandBackgroundColor
     ? getContrastColor(brandBackgroundColor) === 'white' ? 'text-white' : 'text-black'
-    : 'text-zinc-200';
+    : 'text-neutral-200';
 
   return (
     <div
@@ -151,9 +151,9 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
           {t('budget.brandLogo')}
         </label>
         {isUploadingLogo ? (
-          <div className="flex items-center gap-2 p-4 border border-zinc-800 rounded-xl bg-black/20">
+          <div className="flex items-center gap-2 p-4 border border-neutral-800 rounded-xl bg-black/20">
             <GlitchLoader size={16} color="brand-cyan" />
-            <span className="text-sm text-zinc-400 font-mono">
+            <span className="text-sm text-neutral-400 font-mono">
               {t('budget.uploadingLogo') || 'Uploading logo...'}
             </span>
           </div>
@@ -162,7 +162,7 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
             <img
               src={brandLogo}
               alt="Brand logo"
-              className="max-h-32 max-w-48 object-contain rounded-md border border-zinc-800"
+              className="max-h-32 max-w-48 object-contain rounded-md border border-neutral-800"
             />
             <button
               type="button"
@@ -187,7 +187,7 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
               variant="outline"
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploadingLogo}
-              className="border border-zinc-800 bg-black/20 hover:bg-black/30 text-zinc-200 hover:text-brand-cyan"
+              className="border border-neutral-800 bg-black/20 hover:bg-black/30 text-neutral-200 hover:text-brand-cyan"
             >
               <Upload className="h-4 w-4" />
               {t('budget.uploadLogo') || 'Upload Logo'}

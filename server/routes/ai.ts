@@ -8,9 +8,11 @@ import {
   suggestPromptVariations,
   changeObjectInMockup,
   applyThemeToMockup,
-} from '../services/geminiService.js';
-import { getGeminiApiKey } from '@/utils/geminiApiKey.js';
-import type { UploadedImage, GeminiModel, Resolution } from '../types/types.js';
+} from '@/services/geminiService.js';
+import { getGeminiApiKey } from '../utils/geminiApiKey.js';
+import type { UploadedImage, GeminiModel, Resolution } from '@/types/types.js';
+import { connectToMongoDB, getDb } from '../db/mongodb.js';
+import { createUsageRecord } from '../utils/usageTracking.js';
 
 const router = express.Router();
 
@@ -106,9 +108,35 @@ router.post('/suggest-categories', authenticate, async (req: AuthRequest, res, n
       // User doesn't have API key, will use system key
     }
 
-    const categories = await suggestCategories(baseImage as UploadedImage, brandingTags, userApiKey);
+    const result = await suggestCategories(baseImage as UploadedImage, brandingTags, userApiKey);
 
-    res.json({ categories });
+    // Track usage asynchronously
+    (async () => {
+      try {
+        await connectToMongoDB();
+        const db = getDb();
+        const usageRecord = createUsageRecord(
+          req.userId!,
+          0, // images
+          'gemini-2.5-flash',
+          true, // hasInputImage
+          0, // promptLength
+          undefined, // resolution
+          'mockupmachine', // feature
+          'system',
+          result.inputTokens,
+          result.outputTokens
+        );
+        // Add specific type for admin stats
+        (usageRecord as any).type = 'branding';
+
+        await db.collection('usage_records').insertOne(usageRecord);
+      } catch (err) {
+        console.error('Error tracking usage for suggest-categories:', err);
+      }
+    })();
+
+    res.json({ categories: result.categories });
   } catch (error: any) {
     console.error('Error suggesting categories:', error);
     next(error);
@@ -135,8 +163,72 @@ router.post('/analyze-setup', authenticate, async (req: AuthRequest, res, next) 
       // User doesn't have API key
     }
 
-    const { analyzeMockupSetup } = await import('../services/geminiService.js');
-    const analysis = await analyzeMockupSetup(baseImage as UploadedImage, userApiKey);
+    // Fetch all available tags/presets from database
+    let availableTags: any = undefined;
+    try {
+      await connectToMongoDB();
+      const db = getDb();
+
+      const [
+        brandingDocs,
+        mockupDocs,
+        locationDocs,
+        angleDocs,
+        lightingDocs,
+        effectDocs,
+        textureDocs
+      ] = await Promise.all([
+        db.collection('branding_presets').find({}, { projection: { name: 1 } }).toArray(),
+        db.collection('mockup_presets').find({}, { projection: { name: 1 } }).toArray(),
+        db.collection('ambience_presets').find({}, { projection: { name: 1 } }).toArray(),
+        db.collection('angle_presets').find({}, { projection: { name: 1 } }).toArray(),
+        db.collection('luminance_presets').find({}, { projection: { name: 1 } }).toArray(),
+        db.collection('effect_presets').find({}, { projection: { name: 1 } }).toArray(),
+        db.collection('texture_presets').find({}, { projection: { name: 1 } }).toArray()
+      ]);
+
+      availableTags = {
+        branding: brandingDocs.map(d => d.name),
+        categories: [...new Set(mockupDocs.map(d => d.name))], // Mockup presets usually mapped to categories
+        locations: locationDocs.map(d => d.name),
+        angles: angleDocs.map(d => d.name),
+        lighting: lightingDocs.map(d => d.name),
+        effects: effectDocs.map(d => d.name),
+        materials: textureDocs.map(d => d.name)
+      };
+    } catch (dbError) {
+      console.warn('Failed to fetch dynamic tags for analysis, falling back to defaults:', dbError);
+      // availableTags stays undefined, service uses defaults
+    }
+
+    const { analyzeMockupSetup } = await import('@/services/geminiService.js');
+    const analysis = await analyzeMockupSetup(baseImage as UploadedImage, userApiKey, availableTags);
+
+    // Track usage asynchronously
+    (async () => {
+      try {
+        await connectToMongoDB();
+        const db = getDb();
+        const usageRecord = createUsageRecord(
+          req.userId!,
+          0, // images
+          'gemini-2.5-flash',
+          true, // hasInputImage
+          0, // promptLength
+          undefined, // resolution
+          'mockupmachine', // feature
+          'system',
+          analysis.inputTokens,
+          analysis.outputTokens
+        );
+        // Add specific type for admin stats
+        (usageRecord as any).type = 'branding';
+
+        await db.collection('usage_records').insertOne(usageRecord);
+      } catch (err) {
+        console.error('Error tracking usage for analyze-setup:', err);
+      }
+    })();
 
     res.json(analysis);
   } catch (error: any) {

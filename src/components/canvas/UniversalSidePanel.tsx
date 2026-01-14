@@ -143,12 +143,12 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
                 const { nodeId, nodeName, imageUrl, nodeType } = overridePanel.data;
                 return (
                     <div className="h-full flex flex-col">
-                        <div className="flex items-center justify-between p-4 border-b border-zinc-700/30">
+                        <div className="flex items-center justify-between p-4 border-b border-neutral-700/30">
                             <div className="flex items-center gap-2">
                                 <Share size={16} className="text-brand-cyan" />
-                                <h3 className="text-sm font-semibold text-zinc-200">Export</h3>
+                                <h3 className="text-sm font-semibold text-neutral-200">Export</h3>
                             </div>
-                            <button onClick={overridePanel.onClose} className="text-zinc-400 hover:text-zinc-200">
+                            <button onClick={overridePanel.onClose} className="text-neutral-400 hover:text-neutral-200">
                                 <X size={16} />
                             </button>
                         </div>
@@ -182,10 +182,10 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
 
         if (validNodes.length === 0) {
             return (
-                <div className="h-full flex flex-col items-center justify-center text-zinc-500 p-8 text-center gap-4">
+                <div className="h-full flex flex-col items-center justify-center text-neutral-500 p-8 text-center gap-4">
                     <Brush size={32} className="opacity-20" />
                     <div className="flex flex-col gap-1">
-                        <h3 className="text-sm font-medium text-zinc-400">No node selected</h3>
+                        <h3 className="text-sm font-medium text-neutral-400">No node selected</h3>
                         <p className="text-xs">Select a supported node to view its controls</p>
                     </div>
                 </div>
@@ -222,7 +222,7 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
             ref={sidebarRef}
             className={cn(
                 "fixed right-4 top-[81px] z-40",
-                "backdrop-blur-xl border border-zinc-800/50",
+                "backdrop-blur-xl border border-neutral-800/50",
                 "rounded-2xl shadow-2xl",
                 "transition-all duration-300 ease-out flex flex-col",
                 "bg-black/40",
@@ -237,12 +237,12 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
             {/* Resizer Handle */}
             <div
                 ref={resizerRef}
-                className="absolute left-0 top-0 w-1 h-full cursor-col-resize hover:bg-zinc-500/50 transition-colors z-50 rounded-l-2xl"
+                className="absolute left-0 top-0 w-1 h-full cursor-col-resize hover:bg-neutral-500/50 transition-colors z-50 rounded-l-2xl"
             />
 
             {/* Tabs / Header */}
             {!overridePanel && activeSidePanel !== 'community-presets' && (
-                <div className="flex items-center justify-between border-b border-zinc-800/50 bg-transparent rounded-t-2xl overflow-hidden">
+                <div className="flex items-center justify-between border-b border-neutral-800/50 bg-transparent rounded-t-2xl overflow-hidden">
                     <div className="flex items-center overflow-x-auto scrollbar-hide flex-1 h-[41px]"> {/* Fixed height for consistency */}
                         {validNodes.length > 0 ? (
                             validNodes.map(node => {
@@ -255,10 +255,10 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
                                         key={node.id}
                                         onClick={() => setActiveTabId(node.id)}
                                         className={cn(
-                                            "flex items-center gap-2 px-4 py-3 text-xs font-medium border-r border-zinc-800/50 transition-colors min-w-[100px] h-full",
+                                            "flex items-center gap-2 px-4 py-3 text-xs font-medium border-r border-neutral-800/50 transition-colors min-w-[100px] h-full",
                                             isActive
-                                                ? "text-zinc-400 bg-zinc-800/5"
-                                                : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50"
+                                                ? "text-neutral-400 bg-neutral-800/5"
+                                                : "text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50"
                                         )}
                                     >
                                         <Icon size={14} />
@@ -267,7 +267,7 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
                                 );
                             })
                         ) : (
-                            <div className="px-4 text-xs font-medium text-zinc-500 italic">
+                            <div className="px-4 text-xs font-medium text-neutral-500 italic">
                                 Controls
                             </div>
                         )}
@@ -275,7 +275,7 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
                     {/* Close Button */}
                     <button
                         onClick={onClose}
-                        className="p-3 text-zinc-500 hover:text-zinc-200 border-l border-zinc-800/50 hover:bg-zinc-800/50 transition-colors h-full rounded-tr-2xl"
+                        className="p-3 text-neutral-500 hover:text-neutral-200 border-l border-neutral-800/50 hover:bg-neutral-800/50 transition-colors h-full rounded-tr-2xl"
                     >
                         <X size={16} />
                     </button>
@@ -284,15 +284,15 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
 
             {/* Global Panel Header for Community Presets */}
             {activeSidePanel === 'community-presets' && (
-                <div className="flex items-center justify-between border-b border-zinc-800/50 bg-transparent rounded-t-2xl overflow-hidden h-[41px]">
-                    <div className="flex items-center px-4 gap-2 text-zinc-200 font-medium text-xs">
+                <div className="flex items-center justify-between border-b border-neutral-800/50 bg-transparent rounded-t-2xl overflow-hidden h-[41px]">
+                    <div className="flex items-center px-4 gap-2 text-neutral-200 font-medium text-xs">
                         {/* We need Users icon imported */}
                         <span className="text-brand-cyan">❖</span>
                         Community Presets
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-3 text-zinc-500 hover:text-zinc-200 border-l border-zinc-800/50 hover:bg-zinc-800/50 transition-colors h-full rounded-tr-2xl"
+                        className="p-3 text-neutral-500 hover:text-neutral-200 border-l border-neutral-800/50 hover:bg-neutral-800/50 transition-colors h-full rounded-tr-2xl"
                     >
                         <X size={16} />
                     </button>

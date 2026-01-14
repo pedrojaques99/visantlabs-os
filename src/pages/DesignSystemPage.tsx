@@ -51,32 +51,32 @@ const ColorSwatch: React.FC<{
   };
 
   return (
-    <div className="bg-card border border-zinc-800/50 rounded-md p-4 px-6 py-4 hover:border-brand-cyan/30 transition-all">
+    <div className="bg-card border border-neutral-800/50 rounded-md p-4 px-6 py-4 hover:border-brand-cyan/30 transition-all">
       <div className="flex items-start gap-4">
         <div
-          className="w-16 h-16 rounded-md border border-zinc-800/50 flex-shrink-0"
+          className="w-16 h-16 rounded-md border border-neutral-800/50 flex-shrink-0"
           style={{ backgroundColor: `var(${variable})` }}
         />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <h4 className="font-mono font-semibold text-zinc-200">{name}</h4>
+            <h4 className="font-mono font-semibold text-neutral-200">{name}</h4>
             <button
               onClick={copyToClipboard}
-              className="p-1 hover:bg-zinc-800/50 rounded transition-colors"
+              className="p-1 hover:bg-neutral-800/50 rounded transition-colors"
               title="Copy CSS variable"
             >
               {copied ? (
                 <Check className="w-3 h-3 text-brand-cyan" />
               ) : (
-                <Copy className="w-3 h-3 text-zinc-400" />
+                <Copy className="w-3 h-3 text-neutral-400" />
               )}
             </button>
           </div>
-          <p className="font-mono text-xs text-zinc-500 mb-2 break-all">
+          <p className="font-mono text-xs text-neutral-500 mb-2 break-all">
             {variable}
           </p>
           {description && (
-            <p className="text-sm text-zinc-400 font-mono">{description}</p>
+            <p className="text-sm text-neutral-400 font-mono">{description}</p>
           )}
         </div>
       </div>
@@ -94,9 +94,9 @@ const SpacingExample: React.FC<{
 }> = ({ name, value, size }) => {
   return (
     <div className="flex items-center gap-4">
-      <div className="w-24 font-mono text-sm text-zinc-400">{name}</div>
+      <div className="w-24 font-mono text-sm text-neutral-400">{name}</div>
       <div className="flex-1">
-        <div className="h-8 bg-zinc-800/50 rounded flex items-center">
+        <div className="h-8 bg-neutral-800/50 rounded flex items-center">
           <div
             className="bg-brand-cyan/30 h-full flex items-center justify-center text-xs font-mono text-brand-cyan"
             style={{ width: `${size}px`, minWidth: '20px' }}
@@ -105,7 +105,7 @@ const SpacingExample: React.FC<{
           </div>
         </div>
       </div>
-      <div className="w-32 font-mono text-xs text-zinc-500">{value}</div>
+      <div className="w-32 font-mono text-xs text-neutral-500">{value}</div>
     </div>
   );
 };
@@ -422,17 +422,17 @@ export const DesignSystemPage: React.FC = () => {
     if (!previousTab && !nextTab) return null;
 
     return (
-      <div className="mt-8 pt-8 border-t border-zinc-800/50">
+      <div className="mt-8 pt-8 border-t border-neutral-800/50">
         <div className="flex items-center justify-between gap-4">
           {previousTab ? (
             <button
               onClick={() => handleNavigationClick(previousTab)}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-mono text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800/50 rounded-md transition-colors border border-zinc-800/50 hover:border-brand-cyan/30"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-mono text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50 rounded-md transition-colors border border-neutral-800/50 hover:border-brand-cyan/30"
             >
               <ChevronLeft className="w-4 h-4" />
               <span>{t('designSystem.navigation.previous') || 'Previous'}</span>
-              <span className="text-zinc-500">•</span>
-              <span className="text-zinc-500">{getTabLabel(previousTab)}</span>
+              <span className="text-neutral-500">•</span>
+              <span className="text-neutral-500">{getTabLabel(previousTab)}</span>
             </button>
           ) : (
             <div />
@@ -440,10 +440,10 @@ export const DesignSystemPage: React.FC = () => {
           {nextTab && (
             <button
               onClick={() => handleNavigationClick(nextTab)}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-mono text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800/50 rounded-md transition-colors border border-zinc-800/50 hover:border-brand-cyan/30 ml-auto"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-mono text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50 rounded-md transition-colors border border-neutral-800/50 hover:border-brand-cyan/30 ml-auto"
             >
-              <span className="text-zinc-500">{getTabLabel(nextTab)}</span>
-              <span className="text-zinc-500">•</span>
+              <span className="text-neutral-500">{getTabLabel(nextTab)}</span>
+              <span className="text-neutral-500">•</span>
               <span>{t('designSystem.navigation.next') || 'Next'}</span>
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -460,7 +460,7 @@ export const DesignSystemPage: React.FC = () => {
         description={t('designSystem.seo.description') || 'Design system documentation for Visant Labs'}
         keywords={t('designSystem.seo.keywords') || 'design system, UI components, colors, typography'}
       />
-      <div className="bg-background text-zinc-300 relative min-h-screen">
+      <div className="bg-background text-neutral-300 relative min-h-screen">
         <div className="fixed inset-0 z-0">
           <GridDotsBackground />
         </div>
@@ -517,10 +517,10 @@ export const DesignSystemPage: React.FC = () => {
                     <div className="flex items-center gap-4">
                       <Palette className="h-6 w-6 md:h-8 md:w-8 text-brand-cyan" />
                       <div className="flex-1">
-                        <h1 className="text-3xl md:text-4xl font-semibold font-manrope text-zinc-300">
+                        <h1 className="text-3xl md:text-4xl font-semibold font-manrope text-neutral-300">
                           {t('designSystem.title')}
                         </h1>
-                        <p className="text-zinc-500 font-mono text-sm md:text-base mt-1">
+                        <p className="text-neutral-500 font-mono text-sm md:text-base mt-1">
                           {t('designSystem.description')}
                         </p>
                       </div>
@@ -534,12 +534,12 @@ export const DesignSystemPage: React.FC = () => {
                         });
                         document.dispatchEvent(event);
                       }}
-                      className="hidden md:flex items-center gap-2 px-4 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-md text-zinc-400 hover:text-zinc-300 hover:border-brand-cyan/30 transition-colors text-sm font-mono"
+                      className="hidden md:flex items-center gap-2 px-4 py-2 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-neutral-400 hover:text-neutral-300 hover:border-brand-cyan/30 transition-colors text-sm font-mono"
                       title={t('designSystem.commandPalette.searchShortcut') || 'Search (Ctrl+K)'}
                     >
                       <Search className="w-4 h-4" />
                       <span>{t('designSystem.commandPalette.search') || 'Search'}</span>
-                      <div className="flex items-center gap-1 px-1.5 py-0.5 bg-zinc-900/50 rounded border border-zinc-800/50">
+                      <div className="flex items-center gap-1 px-1.5 py-0.5 bg-neutral-900/50 rounded border border-neutral-800/50">
                         <Command className="w-3 h-3" />
                         <kbd className="text-xs">K</kbd>
                       </div>
@@ -564,7 +564,7 @@ export const DesignSystemPage: React.FC = () => {
                       <CardContent className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                           <Card
-                            className="cursor-pointer hover:border-brand-cyan/50 hover:bg-zinc-800/30 hover:shadow-lg hover:shadow-brand-cyan/10 transition-all duration-200 group"
+                            className="cursor-pointer hover:border-brand-cyan/50 hover:bg-neutral-800/30 hover:shadow-lg hover:shadow-brand-cyan/10 transition-all duration-200 group"
                             onClick={() => setActiveTab('colors')}
                           >
                             <CardHeader>
@@ -572,13 +572,13 @@ export const DesignSystemPage: React.FC = () => {
                               <CardTitle className="text-lg group-hover:text-brand-cyan/90 transition-colors">{t('designSystem.tabs.colors')}</CardTitle>
                             </CardHeader>
                             <CardContent>
-                              <p className="text-sm text-zinc-400 font-mono group-hover:text-zinc-300 transition-colors">
+                              <p className="text-sm text-neutral-400 font-mono group-hover:text-neutral-300 transition-colors">
                                 {t('designSystem.home.colorsDescription') || 'Color palette and tokens'}
                               </p>
                             </CardContent>
                           </Card>
                           <Card
-                            className="cursor-pointer hover:border-brand-cyan/50 hover:bg-zinc-800/30 hover:shadow-lg hover:shadow-brand-cyan/10 transition-all duration-200 group"
+                            className="cursor-pointer hover:border-brand-cyan/50 hover:bg-neutral-800/30 hover:shadow-lg hover:shadow-brand-cyan/10 transition-all duration-200 group"
                             onClick={() => setActiveTab('typography')}
                           >
                             <CardHeader>
@@ -586,13 +586,13 @@ export const DesignSystemPage: React.FC = () => {
                               <CardTitle className="text-lg group-hover:text-brand-cyan/90 transition-colors">{t('designSystem.tabs.typography')}</CardTitle>
                             </CardHeader>
                             <CardContent>
-                              <p className="text-sm text-zinc-400 font-mono group-hover:text-zinc-300 transition-colors">
+                              <p className="text-sm text-neutral-400 font-mono group-hover:text-neutral-300 transition-colors">
                                 {t('designSystem.home.typographyDescription') || 'Fonts and text styles'}
                               </p>
                             </CardContent>
                           </Card>
                           <Card
-                            className="cursor-pointer hover:border-brand-cyan/50 hover:bg-zinc-800/30 hover:shadow-lg hover:shadow-brand-cyan/10 transition-all duration-200 group"
+                            className="cursor-pointer hover:border-brand-cyan/50 hover:bg-neutral-800/30 hover:shadow-lg hover:shadow-brand-cyan/10 transition-all duration-200 group"
                             onClick={() => setActiveTab('components')}
                           >
                             <CardHeader>
@@ -600,13 +600,13 @@ export const DesignSystemPage: React.FC = () => {
                               <CardTitle className="text-lg group-hover:text-brand-cyan/90 transition-colors">{t('designSystem.tabs.components')}</CardTitle>
                             </CardHeader>
                             <CardContent>
-                              <p className="text-sm text-zinc-400 font-mono group-hover:text-zinc-300 transition-colors">
+                              <p className="text-sm text-neutral-400 font-mono group-hover:text-neutral-300 transition-colors">
                                 {t('designSystem.home.componentsDescription') || 'Reusable UI components'}
                               </p>
                             </CardContent>
                           </Card>
                           <Card
-                            className="cursor-pointer hover:border-brand-cyan/50 hover:bg-zinc-800/30 hover:shadow-lg hover:shadow-brand-cyan/10 transition-all duration-200 group"
+                            className="cursor-pointer hover:border-brand-cyan/50 hover:bg-neutral-800/30 hover:shadow-lg hover:shadow-brand-cyan/10 transition-all duration-200 group"
                             onClick={() => setActiveTab('spacing')}
                           >
                             <CardHeader>
@@ -614,7 +614,7 @@ export const DesignSystemPage: React.FC = () => {
                               <CardTitle className="text-lg group-hover:text-brand-cyan/90 transition-colors">{t('designSystem.tabs.spacing')}</CardTitle>
                             </CardHeader>
                             <CardContent>
-                              <p className="text-sm text-zinc-400 font-mono group-hover:text-zinc-300 transition-colors">
+                              <p className="text-sm text-neutral-400 font-mono group-hover:text-neutral-300 transition-colors">
                                 {t('designSystem.home.spacingDescription') || 'Spacing scale and system'}
                               </p>
                             </CardContent>
@@ -627,10 +627,10 @@ export const DesignSystemPage: React.FC = () => {
                               <CardTitle className="text-lg">{t('designSystem.home.quickStart') || 'Quick Start'}</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-2">
-                              <p className="text-sm text-zinc-400 font-mono">
+                              <p className="text-sm text-neutral-400 font-mono">
                                 {t('designSystem.home.quickStartDescription') || 'Get started with our design system by exploring the color palette, typography, and components.'}
                               </p>
-                              <ul className="text-sm text-zinc-400 font-mono list-disc list-inside space-y-1">
+                              <ul className="text-sm text-neutral-400 font-mono list-disc list-inside space-y-1">
                                 <li>{t('designSystem.home.quickStart1') || 'Browse components and their variants'}</li>
                                 <li>{t('designSystem.home.quickStart2') || 'Copy CSS variables and class names'}</li>
                                 <li>{t('designSystem.home.quickStart3') || 'Understand spacing and layout patterns'}</li>
@@ -642,11 +642,11 @@ export const DesignSystemPage: React.FC = () => {
                               <CardTitle className="text-lg">{t('designSystem.home.usage') || 'Usage'}</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-2">
-                              <p className="text-sm text-zinc-400 font-mono">
+                              <p className="text-sm text-neutral-400 font-mono">
                                 {t('designSystem.home.usageDescription') || 'All components follow consistent patterns and can be customized using CSS variables.'}
                               </p>
-                              <div className="p-3 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                                <code className="text-xs font-mono text-zinc-300">
+                              <div className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
+                                <code className="text-xs font-mono text-neutral-300">
                                   {t('designSystem.home.usageExample') || '<Button variant="default">Click me</Button>'}
                                 </code>
                               </div>
@@ -714,9 +714,9 @@ export const DesignSystemPage: React.FC = () => {
                       </CardHeader>
                       <CardContent className="space-y-6">
                         {typography.map((font) => (
-                          <div key={font.className} className="border border-zinc-800/50 rounded-md p-6 bg-zinc-900/30">
-                            <h3 className="font-mono font-semibold text-zinc-200 mb-2">{font.name}</h3>
-                            <p className="text-sm text-zinc-400 font-mono mb-4">{font.description}</p>
+                          <div key={font.className} className="border border-neutral-800/50 rounded-md p-6 bg-neutral-900/30">
+                            <h3 className="font-mono font-semibold text-neutral-200 mb-2">{font.name}</h3>
+                            <p className="text-sm text-neutral-400 font-mono mb-4">{font.description}</p>
                             <p className={cn('text-2xl', font.className)}>
                               The quick brown fox jumps over the lazy dog
                             </p>
@@ -788,22 +788,22 @@ export const DesignSystemPage: React.FC = () => {
                         </div>
                         <Separator />
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-4">
-                          <div className="p-3 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                            <div className="text-xs font-mono text-zinc-500 mb-1">Brand</div>
+                          <div className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
+                            <div className="text-xs font-mono text-neutral-500 mb-1">Brand</div>
                             <Button variant="brand" size="sm" className="w-full">Brand Button</Button>
                           </div>
-                          <div className="p-3 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                            <div className="text-xs font-mono text-zinc-500 mb-1">Sidebar</div>
+                          <div className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
+                            <div className="text-xs font-mono text-neutral-500 mb-1">Sidebar</div>
                             <Button variant="sidebarAction" size="sm" className="w-full">Sidebar</Button>
                           </div>
-                          <div className="p-3 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                            <div className="text-xs font-mono text-zinc-500 mb-1">Icon</div>
+                          <div className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
+                            <div className="text-xs font-mono text-neutral-500 mb-1">Icon</div>
                             <Button size="icon" className="w-full">
                               <Palette className="w-4 h-4" />
                             </Button>
                           </div>
-                          <div className="p-3 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                            <div className="text-xs font-mono text-zinc-500 mb-1">Large</div>
+                          <div className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
+                            <div className="text-xs font-mono text-neutral-500 mb-1">Large</div>
                             <Button size="lg" className="w-full">Large</Button>
                           </div>
                         </div>
@@ -912,7 +912,7 @@ export const DesignSystemPage: React.FC = () => {
                             <CardDescription>Card description text</CardDescription>
                           </CardHeader>
                           <CardContent>
-                            <p className="text-sm font-mono text-zinc-400">
+                            <p className="text-sm font-mono text-neutral-400">
                               This is the card content area.
                             </p>
                           </CardContent>
@@ -1013,8 +1013,8 @@ export const DesignSystemPage: React.FC = () => {
                             />
                           ))}
                         </div>
-                        <div className="mt-6 p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                          <p className="text-sm text-zinc-400 mb-3">
+                        <div className="mt-6 p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
+                          <p className="text-sm text-neutral-400 mb-3">
                             Category icons and colors:
                           </p>
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -1023,10 +1023,10 @@ export const DesignSystemPage: React.FC = () => {
                               return (
                                 <div
                                   key={category}
-                                  className="flex items-center gap-2 px-2 py-1 bg-zinc-800/40 rounded border border-zinc-700/30"
+                                  className="flex items-center gap-2 px-2 py-1 bg-neutral-800/40 rounded border border-neutral-700/30"
                                 >
                                   <Icon size={14} className={config.color} />
-                                  <span className="text-xs font-mono text-zinc-400">{category}</span>
+                                  <span className="text-xs font-mono text-neutral-400">{category}</span>
                                 </div>
                               );
                             })}
@@ -1045,7 +1045,7 @@ export const DesignSystemPage: React.FC = () => {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           {/* Default State */}
                           <div>
-                            <p className="text-xs font-mono text-zinc-500 mb-2">Default State:</p>
+                            <p className="text-xs font-mono text-neutral-500 mb-2">Default State:</p>
                             <PresetCard
                               preset={{
                                 id: 'demo-1',
@@ -1068,7 +1068,7 @@ export const DesignSystemPage: React.FC = () => {
 
                           {/* Selected State */}
                           <div>
-                            <p className="text-xs font-mono text-zinc-500 mb-2">Selected State (Multi-select):</p>
+                            <p className="text-xs font-mono text-neutral-500 mb-2">Selected State (Multi-select):</p>
                             <PresetCard
                               preset={{
                                 id: 'demo-2',
@@ -1104,11 +1104,11 @@ export const DesignSystemPage: React.FC = () => {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div className="p-6 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                          <p className="text-sm text-zinc-400 mb-4">
+                        <div className="p-6 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
+                          <p className="text-sm text-neutral-400 mb-4">
                             Navigation sidebar with collapsible sections, mobile support, and active state highlighting.
                           </p>
-                          <div className="flex items-center gap-2 text-xs text-zinc-500">
+                          <div className="flex items-center gap-2 text-xs text-neutral-500">
                             <Badge variant="outline">Responsive</Badge>
                             <Badge variant="outline">Collapsible</Badge>
                             <Badge variant="outline">Active States</Badge>
@@ -1128,9 +1128,9 @@ export const DesignSystemPage: React.FC = () => {
                       <CardContent className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div className="space-y-4">
-                            <h3 className="text-sm font-semibold text-zinc-200 font-mono">Confirmation Modal</h3>
-                            <div className="p-6 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                              <p className="text-sm text-zinc-400 mb-4">
+                            <h3 className="text-sm font-semibold text-neutral-200 font-mono">Confirmation Modal</h3>
+                            <div className="p-6 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
+                              <p className="text-sm text-neutral-400 mb-4">
                                 Pre-built modal for simple confirmations, warnings, and alerts.
                               </p>
                               <div className="flex flex-wrap gap-2 mb-4">
@@ -1145,12 +1145,12 @@ export const DesignSystemPage: React.FC = () => {
                           </div>
 
                           <div className="space-y-4">
-                            <h3 className="text-sm font-semibold text-zinc-200 font-mono">Custom Content Modal Pattern</h3>
-                            <div className="p-6 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                              <p className="text-sm text-zinc-400 mb-4">
+                            <h3 className="text-sm font-semibold text-neutral-200 font-mono">Custom Content Modal Pattern</h3>
+                            <div className="p-6 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
+                              <p className="text-sm text-neutral-400 mb-4">
                                 Standard structure for complex modals using Portal, Backdrop, Header, Content, and Footer.
                               </p>
-                              <code className="block p-3 bg-black/40 rounded border border-zinc-800/50 text-[10px] font-mono text-zinc-500 overflow-x-auto whitespace-pre">
+                              <code className="block p-3 bg-black/40 rounded border border-neutral-800/50 text-[10px] font-mono text-neutral-500 overflow-x-auto whitespace-pre">
                                 {`<div className="modal-backdrop">
   <div className="modal-container">
     <div className="modal-header">...</div>
@@ -1186,7 +1186,7 @@ export const DesignSystemPage: React.FC = () => {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div className="border border-zinc-800/50 rounded-md overflow-hidden">
+                        <div className="border border-neutral-800/50 rounded-md overflow-hidden">
                           <Table>
                             <TableHeader>
                               <TableRow>
@@ -1225,8 +1225,8 @@ export const DesignSystemPage: React.FC = () => {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div className="p-6 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                          <p className="text-sm text-zinc-400 mb-4">
+                        <div className="p-6 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
+                          <p className="text-sm text-neutral-400 mb-4">
                             Advanced data table with sorting, filtering, and search capabilities.
                           </p>
                           <div className="flex flex-wrap gap-2">
@@ -1248,8 +1248,8 @@ export const DesignSystemPage: React.FC = () => {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div className="p-6 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                          <p className="text-sm text-zinc-400 mb-4">
+                        <div className="p-6 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
+                          <p className="text-sm text-neutral-400 mb-4">
                             Chart components for data visualization built on Recharts.
                           </p>
                           <div className="flex flex-wrap gap-2">
@@ -1271,7 +1271,7 @@ export const DesignSystemPage: React.FC = () => {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div className="border border-zinc-800/50 rounded-md p-4">
+                        <div className="border border-neutral-800/50 rounded-md p-4">
                           <BreadcrumbWithBack to="/">
                             <BreadcrumbList>
                               <BreadcrumbItem>
@@ -1300,15 +1300,15 @@ export const DesignSystemPage: React.FC = () => {
                       <CardContent className="space-y-4">
                         <div className="space-y-4">
                           <div>
-                            <p className="text-xs font-mono text-zinc-500 mb-2">Rectangular (default):</p>
+                            <p className="text-xs font-mono text-neutral-500 mb-2">Rectangular (default):</p>
                             <SkeletonLoader width="100%" height="40px" />
                           </div>
                           <div>
-                            <p className="text-xs font-mono text-zinc-500 mb-2">Circular:</p>
+                            <p className="text-xs font-mono text-neutral-500 mb-2">Circular:</p>
                             <SkeletonLoader width="48px" height="48px" variant="circular" />
                           </div>
                           <div>
-                            <p className="text-xs font-mono text-zinc-500 mb-2">Text:</p>
+                            <p className="text-xs font-mono text-neutral-500 mb-2">Text:</p>
                             <SkeletonLoader width="200px" height="16px" variant="text" />
                           </div>
                         </div>
@@ -1324,14 +1324,14 @@ export const DesignSystemPage: React.FC = () => {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div className="relative h-32 border border-zinc-800/50 rounded-md overflow-hidden">
+                        <div className="relative h-32 border border-neutral-800/50 rounded-md overflow-hidden">
                           <GridDotsBackground />
                           <div className="relative z-10 flex items-center justify-center h-full">
-                            <p className="text-sm font-mono text-zinc-400">Grid Dots Background Example</p>
+                            <p className="text-sm font-mono text-neutral-400">Grid Dots Background Example</p>
                           </div>
                         </div>
-                        <div className="p-6 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                          <p className="text-sm text-zinc-400 mb-4">
+                        <div className="p-6 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
+                          <p className="text-sm text-neutral-400 mb-4">
                             Decorative background pattern with configurable dots, spacing, and opacity.
                           </p>
                           <div className="flex flex-wrap gap-2">
@@ -1359,13 +1359,13 @@ export const DesignSystemPage: React.FC = () => {
                             <TabsTrigger value="tab3">Tab 3</TabsTrigger>
                           </TabsList>
                           <TabsContent value="tab1" className="mt-4">
-                            <p className="text-sm font-mono text-zinc-400">Content for Tab 1</p>
+                            <p className="text-sm font-mono text-neutral-400">Content for Tab 1</p>
                           </TabsContent>
                           <TabsContent value="tab2" className="mt-4">
-                            <p className="text-sm font-mono text-zinc-400">Content for Tab 2</p>
+                            <p className="text-sm font-mono text-neutral-400">Content for Tab 2</p>
                           </TabsContent>
                           <TabsContent value="tab3" className="mt-4">
-                            <p className="text-sm font-mono text-zinc-400">Content for Tab 3</p>
+                            <p className="text-sm font-mono text-neutral-400">Content for Tab 3</p>
                           </TabsContent>
                         </Tabs>
                       </CardContent>
@@ -1381,7 +1381,7 @@ export const DesignSystemPage: React.FC = () => {
                       </CardHeader>
                       <CardContent className="space-y-6">
                         <div className="space-y-4">
-                          <h4 className="text-sm font-semibold text-zinc-300 font-mono">Variants</h4>
+                          <h4 className="text-sm font-semibold text-neutral-300 font-mono">Variants</h4>
                           <div className="flex flex-wrap gap-2">
                             <Badge variant="default">Default</Badge>
                             <Badge variant="secondary">Secondary</Badge>
@@ -1390,11 +1390,11 @@ export const DesignSystemPage: React.FC = () => {
                           </div>
                         </div>
 
-                        <Separator className="bg-zinc-800/50" />
+                        <Separator className="bg-neutral-800/50" />
 
                         <div className="space-y-4">
-                          <h4 className="text-sm font-semibold text-zinc-300 font-mono">Selectable Tags (Common Pattern)</h4>
-                          <p className="text-xs text-zinc-500 font-mono mb-2">Used in Branding and Categories sections</p>
+                          <h4 className="text-sm font-semibold text-neutral-300 font-mono">Selectable Tags (Common Pattern)</h4>
+                          <p className="text-xs text-neutral-500 font-mono mb-2">Used in Branding and Categories sections</p>
                           <div className="flex flex-wrap gap-2">
                             <Badge
                               className="cursor-pointer bg-brand-cyan/20 text-brand-cyan border-brand-cyan/30 shadow-sm shadow-brand-cyan/10"
@@ -1403,13 +1403,13 @@ export const DesignSystemPage: React.FC = () => {
                             </Badge>
                             <Badge
                               variant="outline"
-                              className="cursor-pointer bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300"
+                              className="cursor-pointer bg-neutral-800/50 text-neutral-400 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300"
                             >
                               Unselected Tag
                             </Badge>
                             <Badge
                               variant="outline"
-                              className="opacity-40 cursor-not-allowed bg-zinc-800/50 text-zinc-400 border-zinc-700/50"
+                              className="opacity-40 cursor-not-allowed bg-neutral-800/50 text-neutral-400 border-neutral-700/50"
                             >
                               Disabled Tag
                             </Badge>
@@ -1428,8 +1428,8 @@ export const DesignSystemPage: React.FC = () => {
                       </CardHeader>
                       <CardContent>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                          <div className="p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                            <h4 className="text-sm font-semibold text-zinc-300 mb-2 font-mono">Features</h4>
+                          <div className="p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
+                            <h4 className="text-sm font-semibold text-neutral-300 mb-2 font-mono">Features</h4>
                             <div className="flex flex-wrap gap-1.5">
                               <Badge variant="outline" className="text-xs">Collapsible</Badge>
                               <Badge variant="outline" className="text-xs">Drag & Drop</Badge>
@@ -1437,17 +1437,17 @@ export const DesignSystemPage: React.FC = () => {
                               <Badge variant="outline" className="text-xs">Stacked</Badge>
                             </div>
                           </div>
-                          <div className="p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                            <h4 className="text-sm font-semibold text-zinc-300 mb-2 font-mono">Props</h4>
-                            <div className="space-y-1 text-xs font-mono text-zinc-400">
-                              <div><span className="text-zinc-500">variant:</span> 'standalone' | 'stacked'</div>
-                              <div><span className="text-zinc-500">position:</span> 'left' | 'right'</div>
-                              <div><span className="text-zinc-500">experimentalMode:</span> boolean</div>
+                          <div className="p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
+                            <h4 className="text-sm font-semibold text-neutral-300 mb-2 font-mono">Props</h4>
+                            <div className="space-y-1 text-xs font-mono text-neutral-400">
+                              <div><span className="text-neutral-500">variant:</span> 'standalone' | 'stacked'</div>
+                              <div><span className="text-neutral-500">position:</span> 'left' | 'right'</div>
+                              <div><span className="text-neutral-500">experimentalMode:</span> boolean</div>
                             </div>
                           </div>
-                          <div className="p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                            <h4 className="text-sm font-semibold text-zinc-300 mb-2 font-mono">Handlers</h4>
-                            <div className="text-xs font-mono text-zinc-400 space-y-1">
+                          <div className="p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
+                            <h4 className="text-sm font-semibold text-neutral-300 mb-2 font-mono">Handlers</h4>
+                            <div className="text-xs font-mono text-neutral-400 space-y-1">
                               <div>onAddMerge, onAddEdit</div>
                               <div>onAddUpscale, onAddMockup</div>
                               <div>onAddAngle, onAddShader</div>
@@ -1466,8 +1466,8 @@ export const DesignSystemPage: React.FC = () => {
                       </CardHeader>
                       <CardContent>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                          <div className="p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                            <h4 className="text-sm font-semibold text-zinc-300 mb-2 font-mono">Features</h4>
+                          <div className="p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
+                            <h4 className="text-sm font-semibold text-neutral-300 mb-2 font-mono">Features</h4>
                             <div className="flex flex-wrap gap-1.5">
                               <Badge variant="outline" className="text-xs">Editable Name</Badge>
                               <Badge variant="outline" className="text-xs">Settings</Badge>
@@ -1475,18 +1475,18 @@ export const DesignSystemPage: React.FC = () => {
                               <Badge variant="outline" className="text-xs">Presets</Badge>
                             </div>
                           </div>
-                          <div className="p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                            <h4 className="text-sm font-semibold text-zinc-300 mb-2 font-mono">Actions</h4>
-                            <div className="space-y-1 text-xs font-mono text-zinc-400">
+                          <div className="p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
+                            <h4 className="text-sm font-semibold text-neutral-300 mb-2 font-mono">Actions</h4>
+                            <div className="space-y-1 text-xs font-mono text-neutral-400">
                               <div>✓ Inline name editing</div>
                               <div>✓ Settings modal</div>
                               <div>✓ Share & collaboration</div>
                               <div>✓ Community presets</div>
                             </div>
                           </div>
-                          <div className="p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                            <h4 className="text-sm font-semibold text-zinc-300 mb-2 font-mono">Customization</h4>
-                            <div className="space-y-1 text-xs font-mono text-zinc-400">
+                          <div className="p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
+                            <h4 className="text-sm font-semibold text-neutral-300 mb-2 font-mono">Customization</h4>
+                            <div className="space-y-1 text-xs font-mono text-neutral-400">
                               <div>Background color</div>
                               <div>Grid settings</div>
                               <div>Display controls</div>
@@ -1506,36 +1506,36 @@ export const DesignSystemPage: React.FC = () => {
                       </CardHeader>
                       <CardContent>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div className="p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                            <h4 className="text-sm font-semibold text-zinc-300 mb-2 font-mono">Core</h4>
+                          <div className="p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
+                            <h4 className="text-sm font-semibold text-neutral-300 mb-2 font-mono">Core</h4>
                             <div className="flex flex-wrap gap-1.5 mb-3">
                               <Badge variant="outline" className="text-xs">React Flow</Badge>
                               <Badge variant="outline" className="text-xs">Node Based</Badge>
                             </div>
-                            <div className="space-y-1 text-xs font-mono text-zinc-400">
+                            <div className="space-y-1 text-xs font-mono text-neutral-400">
                               <div>Node & edge management</div>
                               <div>Customizable appearance</div>
                             </div>
                           </div>
-                          <div className="p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                            <h4 className="text-sm font-semibold text-zinc-300 mb-2 font-mono">Interactions</h4>
+                          <div className="p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
+                            <h4 className="text-sm font-semibold text-neutral-300 mb-2 font-mono">Interactions</h4>
                             <div className="flex flex-wrap gap-1.5 mb-3">
                               <Badge variant="outline" className="text-xs">Drag & Drop</Badge>
                               <Badge variant="outline" className="text-xs">Context Menus</Badge>
                             </div>
-                            <div className="space-y-1 text-xs font-mono text-zinc-400">
+                            <div className="space-y-1 text-xs font-mono text-neutral-400">
                               <div>Image drag-and-drop</div>
                               <div>Pane & node menus</div>
                               <div>Keyboard shortcuts</div>
                             </div>
                           </div>
-                          <div className="p-4 bg-zinc-900/30 border border-zinc-800/50 rounded-md">
-                            <h4 className="text-sm font-semibold text-zinc-300 mb-2 font-mono">Display</h4>
+                          <div className="p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
+                            <h4 className="text-sm font-semibold text-neutral-300 mb-2 font-mono">Display</h4>
                             <div className="flex flex-wrap gap-1.5 mb-3">
                               <Badge variant="outline" className="text-xs">Custom Grid</Badge>
                               <Badge variant="outline" className="text-xs">Minimap</Badge>
                             </div>
-                            <div className="space-y-1 text-xs font-mono text-zinc-400">
+                            <div className="space-y-1 text-xs font-mono text-neutral-400">
                               <div>Background color</div>
                               <div>Grid customization</div>
                               <div>Controls toggle</div>
@@ -1580,15 +1580,15 @@ export const DesignSystemPage: React.FC = () => {
                       <CardContent className="space-y-4">
                         <div className="font-mono text-sm space-y-2">
                           <div>
-                            <span className="text-zinc-400">--node-padding:</span>{' '}
+                            <span className="text-neutral-400">--node-padding:</span>{' '}
                             <span className="text-brand-cyan">1.75rem (28px)</span>
                           </div>
                           <div>
-                            <span className="text-zinc-400">--node-gap:</span>{' '}
+                            <span className="text-neutral-400">--node-gap:</span>{' '}
                             <span className="text-brand-cyan">0.75rem (12px)</span>
                           </div>
                           <div>
-                            <span className="text-zinc-400">--radius:</span>{' '}
+                            <span className="text-neutral-400">--radius:</span>{' '}
                             <span className="text-brand-cyan">0.625rem (10px)</span>
                           </div>
                         </div>

@@ -15,7 +15,7 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
   className = '',
   variant = 'rectangular',
 }) => {
-  const baseClasses = 'animate-pulse bg-zinc-800/50 rounded';
+  const baseClasses = 'animate-pulse bg-neutral-800/50 rounded';
 
   const variantClasses = {
     text: 'h-4',
@@ -64,7 +64,7 @@ export const SkeletonCard: React.FC<{ aspectRatio?: string }> = ({ aspectRatio =
   };
 
   return (
-    <div className={`${aspectClasses[aspectRatio] || 'aspect-[16/9]'} bg-zinc-800/30 rounded-md overflow-hidden border border-zinc-800/50 relative`}>
+    <div className={`${aspectClasses[aspectRatio] || 'aspect-[16/9]'} bg-neutral-800/30 rounded-md overflow-hidden border border-neutral-800/50 relative`}>
       <SkeletonLoader width="100%" height="100%" variant="rectangular" />
       <div className="absolute inset-0 flex items-center justify-center">
         <span

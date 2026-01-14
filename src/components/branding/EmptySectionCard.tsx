@@ -48,11 +48,11 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
       disabled={isGenerating || isBlocked}
       className={`aspect-square border-2 rounded-xl p-4 md:p-6 active:scale-[0.98] transition-all duration-200 relative flex flex-col items-center justify-center gap-3 w-full ${isBlocked
         ? theme === 'dark'
-          ? 'bg-black/30 border-zinc-700/50 cursor-not-allowed opacity-60'
-          : 'bg-zinc-50 border-zinc-300/50 cursor-not-allowed opacity-60'
+          ? 'bg-black/30 border-neutral-700/50 cursor-not-allowed opacity-60'
+          : 'bg-neutral-50 border-neutral-300/50 cursor-not-allowed opacity-60'
         : theme === 'dark'
           ? 'bg-black border-white/10 hover:border-white/20 hover:bg-white/5 active:bg-white/10 cursor-pointer group'
-          : 'bg-zinc-100 border-zinc-300 hover:border-zinc-400 hover:bg-zinc-200 active:bg-zinc-300 cursor-pointer group'
+          : 'bg-neutral-100 border-neutral-300 hover:border-neutral-400 hover:bg-neutral-200 active:bg-neutral-300 cursor-pointer group'
         } ${isGenerating ? 'opacity-50 cursor-not-allowed' : ''}`}
       title={isBlocked ? `Bloqueado: requer ${getMissingDepsText()}` : undefined}
     >
@@ -74,7 +74,7 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
       </div>
 
       {/* Label */}
-      <h3 className={`font-semibold font-manrope text-xs md:text-sm text-center leading-tight max-w-full truncate px-2 ${theme === 'dark' ? 'text-white' : 'text-zinc-800'
+      <h3 className={`font-semibold font-manrope text-xs md:text-sm text-center leading-tight max-w-full truncate px-2 ${theme === 'dark' ? 'text-white' : 'text-neutral-800'
         }`}>
         {stepTitle}
       </h3>
@@ -83,10 +83,10 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
       {!isBlocked && (
         <div className={`absolute top-3 right-3 px-2 py-1 border rounded-md flex items-center gap-1.5 transition-all duration-200 ${theme === 'dark'
           ? 'bg-white/10 border-white/20 group-hover:bg-white/15'
-          : 'bg-zinc-200 border-zinc-300 group-hover:bg-zinc-300'
+          : 'bg-neutral-200 border-neutral-300 group-hover:bg-neutral-300'
           }`}>
-          <Pickaxe size={12} className={theme === 'dark' ? 'text-white/80' : 'text-zinc-700'} />
-          <span className={`text-xs font-mono font-semibold ${theme === 'dark' ? 'text-white/90' : 'text-zinc-800'
+          <Pickaxe size={12} className={theme === 'dark' ? 'text-white/80' : 'text-neutral-700'} />
+          <span className={`text-xs font-mono font-semibold ${theme === 'dark' ? 'text-white/90' : 'text-neutral-800'
             }`}>
             {creditsRequired}
           </span>
@@ -113,7 +113,7 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
           }`}>
           <div className={`w-6 h-6 border-2 rounded-md animate-spin ${theme === 'dark'
             ? 'border-white/30 border-t-white'
-            : 'border-zinc-400 border-t-zinc-600'
+            : 'border-neutral-400 border-t-neutral-600'
             }`} />
         </div>
       )}

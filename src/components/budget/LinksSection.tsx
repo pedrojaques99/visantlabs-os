@@ -21,12 +21,12 @@ export const LinksSection: React.FC<LinksSectionProps> = ({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-zinc-200 font-mono">
+      <h3 className="text-lg font-semibold text-neutral-200 font-mono">
         {t('budget.links')}
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label className="block text-xs text-zinc-400 mb-2 font-mono flex items-center gap-2">
+          <label className="block text-xs text-neutral-400 mb-2 font-mono flex items-center gap-2">
             <Globe size={14} />
             {t('budget.website')}
           </label>
@@ -38,7 +38,7 @@ export const LinksSection: React.FC<LinksSectionProps> = ({
           />
         </div>
         <div>
-          <label className="block text-xs text-zinc-400 mb-2 font-mono flex items-center gap-2">
+          <label className="block text-xs text-neutral-400 mb-2 font-mono flex items-center gap-2">
             <Instagram size={14} />
             {t('budget.instagram')}
           </label>
@@ -49,7 +49,7 @@ export const LinksSection: React.FC<LinksSectionProps> = ({
           />
         </div>
         <div>
-          <label className="block text-xs text-zinc-400 mb-2 font-mono flex items-center gap-2">
+          <label className="block text-xs text-neutral-400 mb-2 font-mono flex items-center gap-2">
             <MessageCircle size={14} />
             {t('budget.whatsapp')}
           </label>

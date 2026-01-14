@@ -140,15 +140,15 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     <div className={`relative ${className}`}>
       {/* Toolbar */}
       <div className={`flex items-center gap-1 p-2 border rounded-t-xl border-b-0 ${theme === 'dark'
-        ? 'bg-zinc-900 border-zinc-800/60'
-        : 'bg-zinc-100 border-zinc-300'
+        ? 'bg-neutral-900 border-neutral-800/60'
+        : 'bg-neutral-100 border-neutral-300'
         }`}>
         <button
           type="button"
           onClick={handleBold}
           className={`p-2 rounded transition-colors hover:text-brand-cyan ${theme === 'dark'
-            ? 'hover:bg-black/40 text-zinc-300'
-            : 'hover:bg-zinc-200 text-zinc-700'
+            ? 'hover:bg-black/40 text-neutral-300'
+            : 'hover:bg-neutral-200 text-neutral-700'
             }`}
           title="Negrito (Ctrl+B)"
         >
@@ -158,8 +158,8 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           type="button"
           onClick={handleItalic}
           className={`p-2 rounded transition-colors hover:text-brand-cyan ${theme === 'dark'
-            ? 'hover:bg-black/40 text-zinc-300'
-            : 'hover:bg-zinc-200 text-zinc-700'
+            ? 'hover:bg-black/40 text-neutral-300'
+            : 'hover:bg-neutral-200 text-neutral-700'
             }`}
           title="Itálico (Ctrl+I)"
         >
@@ -169,8 +169,8 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           type="button"
           onClick={handleBullet}
           className={`p-2 rounded transition-colors hover:text-brand-cyan ${theme === 'dark'
-            ? 'hover:bg-black/40 text-zinc-300'
-            : 'hover:bg-zinc-200 text-zinc-700'
+            ? 'hover:bg-black/40 text-neutral-300'
+            : 'hover:bg-neutral-200 text-neutral-700'
             }`}
           title="Lista com marcadores"
         >
@@ -181,8 +181,8 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             type="button"
             onClick={() => setShowColorPicker(!showColorPicker)}
             className={`p-2 rounded transition-colors hover:text-brand-cyan ${theme === 'dark'
-              ? 'hover:bg-black/40 text-zinc-300'
-              : 'hover:bg-zinc-200 text-zinc-700'
+              ? 'hover:bg-black/40 text-neutral-300'
+              : 'hover:bg-neutral-200 text-neutral-700'
               }`}
             title="Cor do texto"
           >
@@ -195,8 +195,8 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
                 onClick={() => setShowColorPicker(false)}
               />
               <div className={`absolute top-full left-0 mt-1 p-2 border rounded-md shadow-lg z-20 ${theme === 'dark'
-                ? 'bg-zinc-900 border-zinc-800/60'
-                : 'bg-white border-zinc-300'
+                ? 'bg-neutral-900 border-neutral-800/60'
+                : 'bg-white border-neutral-300'
                 }`}>
                 <div className="grid grid-cols-4 gap-2">
                   {COLOR_PRESETS.map((color) => (
@@ -204,14 +204,14 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
                       key={color}
                       type="button"
                       onClick={() => handleColorSelect(color)}
-                      className={`w-8 h-8 rounded border hover:border-[brand-cyan] transition-colors ${theme === 'dark' ? 'border-zinc-700' : 'border-zinc-400'
+                      className={`w-8 h-8 rounded border hover:border-[brand-cyan] transition-colors ${theme === 'dark' ? 'border-neutral-700' : 'border-neutral-400'
                         }`}
                       style={{ backgroundColor: color }}
                       title={color}
                     />
                   ))}
                 </div>
-                <div className={`mt-2 pt-2 border-t ${theme === 'dark' ? 'border-zinc-800' : 'border-zinc-300'
+                <div className={`mt-2 pt-2 border-t ${theme === 'dark' ? 'border-neutral-800' : 'border-neutral-300'
                   }`}>
                   <input
                     type="color"
@@ -230,8 +230,8 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       <div
         ref={containerRef}
         className={`relative rounded-t-none border-t-0 border overflow-hidden ${theme === 'dark'
-          ? 'border-zinc-800/60 bg-[#141414]'
-          : 'border-zinc-300 bg-white'
+          ? 'border-neutral-800/60 bg-[#141414]'
+          : 'border-neutral-300 bg-white'
           }`}
         style={{ minHeight }}
       >
@@ -270,12 +270,12 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           }}
         >
           {value ? (
-            <div className={`text-sm font-manrope leading-relaxed ${theme === 'dark' ? 'text-zinc-300' : 'text-zinc-800'
+            <div className={`text-sm font-manrope leading-relaxed ${theme === 'dark' ? 'text-neutral-300' : 'text-neutral-800'
               }`}>
               {renderMarkdownWithLines(value)}
             </div>
           ) : (
-            <span className={`font-manrope ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'
+            <span className={`font-manrope ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'
               }`}>{placeholder}</span>
           )}
         </div>

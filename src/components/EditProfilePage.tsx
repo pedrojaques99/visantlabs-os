@@ -199,7 +199,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
         onClick={onClose}
       >
         <div
-          className="bg-black/95 backdrop-blur-xl border border-zinc-800/50 rounded-md p-6 w-full max-w-2xl mx-4"
+          className="bg-black/95 backdrop-blur-xl border border-neutral-800/50 rounded-md p-6 w-full max-w-2xl mx-4"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex flex-col items-center gap-4">
@@ -217,7 +217,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
         onClick={onClose}
       >
         <div
-          className="bg-black/95 backdrop-blur-xl border border-zinc-800/50 rounded-md p-6 w-full max-w-2xl mx-4"
+          className="bg-black/95 backdrop-blur-xl border border-neutral-800/50 rounded-md p-6 w-full max-w-2xl mx-4"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="text-center">
@@ -226,7 +226,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
             </p>
             <button
               onClick={onClose}
-              className="px-4 py-2 bg-zinc-800/50 text-zinc-400 hover:bg-zinc-700/50 rounded-md text-sm font-mono transition-colors"
+              className="px-4 py-2 bg-neutral-800/50 text-neutral-400 hover:bg-neutral-700/50 rounded-md text-sm font-mono transition-colors"
             >
               Close
             </button>
@@ -243,21 +243,21 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
     >
       <div
         className={`relative w-full max-w-2xl mx-4 my-8 ${theme === 'dark'
-          ? 'bg-black/95 backdrop-blur-xl border border-zinc-800/50'
-          : 'bg-white border border-zinc-200'
+          ? 'bg-black/95 backdrop-blur-xl border border-neutral-800/50'
+          : 'bg-white border border-neutral-200'
           } rounded-md shadow-2xl overflow-hidden`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className={`flex items-center justify-between px-6 py-5 border-b ${theme === 'dark' ? 'border-zinc-800/50' : 'border-zinc-200'
+        <div className={`flex items-center justify-between px-6 py-5 border-b ${theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200'
           }`}>
-          <h2 className={`text-lg font-semibold font-mono ${theme === 'dark' ? 'text-zinc-200' : 'text-zinc-900'
+          <h2 className={`text-lg font-semibold font-mono ${theme === 'dark' ? 'text-neutral-200' : 'text-neutral-900'
             } uppercase`}>
             {t('profile.editTitle') || 'Edit profile'}
           </h2>
           <button
             onClick={onClose}
-            className={`transition-colors ${theme === 'dark' ? 'text-zinc-500 hover:text-zinc-300' : 'text-zinc-600 hover:text-zinc-900'
+            className={`transition-colors ${theme === 'dark' ? 'text-neutral-500 hover:text-neutral-300' : 'text-neutral-600 hover:text-neutral-900'
               }`}
             aria-label={t('common.close')}
           >
@@ -304,8 +304,8 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
             <div
               onClick={handlePictureClick}
               className={`relative w-28 h-28 rounded-2xl overflow-hidden flex items-center justify-center cursor-pointer transition-opacity hover:opacity-80 ${theme === 'dark'
-                ? 'bg-zinc-800 border border-zinc-700'
-                : 'bg-zinc-200 border border-zinc-300'
+                ? 'bg-neutral-800 border border-neutral-700'
+                : 'bg-neutral-200 border border-neutral-300'
                 } ${isUploadingPicture ? 'opacity-50 cursor-not-allowed' : ''}`}
               title={isUploadingPicture ? (t('common.processing') || 'Uploading...') : (t('profile.uploadPicture') || 'Click to upload picture')}
             >
@@ -319,23 +319,23 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                   onError={() => setPictureUrl('')}
                 />
               ) : (
-                <User size={44} className={theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'} />
+                <User size={44} className={theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'} />
               )}
               <span className={`absolute bottom-2 right-2 rounded-md p-2 shadow-lg transition ${isUploadingPicture
-                ? 'bg-zinc-600 text-zinc-300'
+                ? 'bg-neutral-600 text-neutral-300'
                 : 'bg-brand-cyan text-black hover:bg-brand-cyan/90'
                 }`}>
                 <Camera size={16} />
               </span>
             </div>
             <div className="flex-1 space-y-3">
-              <p className={`text-sm font-mono ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'
+              <p className={`text-sm font-mono ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                 }`}>
                 {t('profile.currentEmail') || 'Signed in as'}
               </p>
-              <p className={`text-xl font-semibold font-manrope ${theme === 'dark' ? 'text-white' : 'text-zinc-900'
+              <p className={`text-xl font-semibold font-manrope ${theme === 'dark' ? 'text-white' : 'text-neutral-900'
                 }`}>{user.email}</p>
-              <p className={`text-sm font-mono ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-600'
+              <p className={`text-sm font-mono ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
                 }`}>
                 {t('profile.editHint') || 'Changes will reflect instantly across the platform.'}
               </p>
@@ -343,9 +343,9 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
           </div>
 
           {/* Form Fields Section */}
-          <div className="space-y-8 pt-8 mt-8 border-t border-zinc-800/30">
+          <div className="space-y-8 pt-8 mt-8 border-t border-neutral-800/30">
             <div className="space-y-4">
-              <label className={`flex items-center gap-2 text-xs font-mono uppercase tracking-[0.3em] mb-2 ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'
+              <label className={`flex items-center gap-2 text-xs font-mono uppercase tracking-[0.3em] mb-2 ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                 }`}>
                 <User size={14} />
                 {t('profile.name') || 'Name'}
@@ -355,13 +355,13 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className={`w-full px-5 py-3.5 rounded-xl font-mono text-sm focus:outline-none focus:border-[brand-cyan]/70 transition ${theme === 'dark'
-                  ? 'bg-black/40 border border-zinc-800 text-zinc-200'
-                  : 'bg-white border border-zinc-300 text-zinc-900'
+                  ? 'bg-black/40 border border-neutral-800 text-neutral-200'
+                  : 'bg-white border border-neutral-300 text-neutral-900'
                   }`}
               />
             </div>
             <div className="space-y-4">
-              <label className={`flex items-center gap-2 text-xs font-mono uppercase tracking-[0.3em] mb-2 ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'
+              <label className={`flex items-center gap-2 text-xs font-mono uppercase tracking-[0.3em] mb-2 ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                 }`}>
                 <Mail size={14} />
                 {t('profile.email') || 'Email'}
@@ -371,21 +371,21 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className={`w-full px-5 py-3.5 rounded-xl font-mono text-sm focus:outline-none focus:border-[brand-cyan]/70 transition ${theme === 'dark'
-                  ? 'bg-black/40 border border-zinc-800 text-zinc-200'
-                  : 'bg-white border border-zinc-300 text-zinc-900'
+                  ? 'bg-black/40 border border-neutral-800 text-neutral-200'
+                  : 'bg-white border border-neutral-300 text-neutral-900'
                   }`}
               />
             </div>
           </div>
 
           {/* Save Button */}
-          <div className="pt-10 mt-10 border-t border-zinc-800/30">
+          <div className="pt-10 mt-10 border-t border-neutral-800/30">
             <button
               onClick={handleSave}
               disabled={isSaving}
               className={`w-full px-4 py-3 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-xl text-sm font-mono transition flex items-center justify-center gap-2 ${theme === 'dark'
-                ? 'disabled:bg-zinc-700 disabled:text-zinc-500'
-                : 'disabled:bg-zinc-300 disabled:text-zinc-400'
+                ? 'disabled:bg-neutral-700 disabled:text-neutral-500'
+                : 'disabled:bg-neutral-300 disabled:text-neutral-400'
                 }`}
             >
               {isSaving ? (

@@ -3,8 +3,8 @@ import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { getDb, connectToMongoDB } from '../db/mongodb.js';
 import { ObjectId } from 'mongodb';
 import { prisma, verifyPrismaConnectionWithDetails } from '../db/prisma.js';
-import * as brandingService from '../services/brandingService.js';
-import type { BrandingData } from '../types/types.js';
+import * as brandingService from '@/services/brandingService.js';
+import type { BrandingData } from '@/types/types.js';
 import { checkSubscription, SubscriptionRequest } from '../middleware/subscription.js';
 
 const router = express.Router();
@@ -476,7 +476,7 @@ router.post('/track-usage', authenticate, async (req: AuthRequest, res, next) =>
       const creditsToDeduct = isAdmin ? 0 : 1; // Admins don't pay credits
 
       // Calculate cost for text generation
-      const { calculateTextGenerationCost } = await import('@/utils/usageTracking.js');
+      const { calculateTextGenerationCost } = await import('../utils/usageTracking.js');
       // Use real tokens if available, otherwise estimate
       const inputTokens = req.body.inputTokens;
       const outputTokens = req.body.outputTokens;

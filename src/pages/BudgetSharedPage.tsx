@@ -107,7 +107,7 @@ export const BudgetSharedPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#121212] text-zinc-300 pt-14 relative">
+      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-14 relative">
         <div className="fixed inset-0 z-0">
           <GridDotsBackground />
         </div>
@@ -122,14 +122,14 @@ export const BudgetSharedPage: React.FC = () => {
 
   if (error || !budget) {
     return (
-      <div className="min-h-screen bg-[#121212] text-zinc-300 pt-14 relative">
+      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-14 relative">
         <div className="fixed inset-0 z-0">
           <GridDotsBackground />
         </div>
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
           <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-            <h2 className="text-2xl font-bold text-zinc-200 mb-4">{t('budget.shared.budgetNotFound')}</h2>
-            <p className="text-zinc-400 mb-6">{error || t('budget.shared.budgetNotFoundDescription')}</p>
+            <h2 className="text-2xl font-bold text-neutral-200 mb-4">{t('budget.shared.budgetNotFound')}</h2>
+            <p className="text-neutral-400 mb-6">{error || t('budget.shared.budgetNotFoundDescription')}</p>
             <FormButton onClick={() => navigate('/')}>{t('notFound.goHome')}</FormButton>
           </div>
         </div>
@@ -397,8 +397,8 @@ const BudgetSharedContent: React.FC<{
   // If custom PDF, show it in iframe
   if (budgetData.customPdfUrl) {
     return (
-      <div className={`min-h-screen ${theme === 'dark' ? 'bg-[#121212]' : 'bg-white'}`}>
-        <div className={`sticky top-0 z-50 ${theme === 'dark' ? 'bg-[#121212] border-zinc-800' : 'bg-white border-zinc-200'} border-b shadow-sm`}>
+      <div className={`min-h-screen ${theme === 'dark' ? 'bg-[#0C0C0C]' : 'bg-white'}`}>
+        <div className={`sticky top-0 z-50 ${theme === 'dark' ? 'bg-[#0C0C0C] border-neutral-800' : 'bg-white border-neutral-200'} border-b shadow-sm`}>
           <div className="max-w-7xl mx-auto px-4 py-4">
             <div className="mb-3">
               <Breadcrumb>
@@ -422,7 +422,7 @@ const BudgetSharedContent: React.FC<{
               </Breadcrumb>
             </div>
             <div className="flex items-center justify-between">
-              <h1 className={`text-xl font-bold font-mono truncate flex-1 mr-4 ${theme === 'dark' ? 'text-zinc-100' : 'text-zinc-900'}`}>
+              <h1 className={`text-xl font-bold font-mono truncate flex-1 mr-4 ${theme === 'dark' ? 'text-neutral-100' : 'text-neutral-900'}`}>
                 {budgetName}
               </h1>
               <div className="flex items-center gap-2">
@@ -453,7 +453,7 @@ const BudgetSharedContent: React.FC<{
     if (!isLoading && activeTemplate) {
       return (
         <div className="min-h-screen bg-white">
-          <div className="sticky top-0 z-50 bg-white border-b border-zinc-200 shadow-sm">
+          <div className="sticky top-0 z-50 bg-white border-b border-neutral-200 shadow-sm">
             <div className="max-w-7xl mx-auto px-4 py-4">
               <div className="mb-3">
                 <Breadcrumb>
@@ -477,7 +477,7 @@ const BudgetSharedContent: React.FC<{
                 </Breadcrumb>
               </div>
               <div className="flex items-center justify-between">
-                <h1 className="text-xl font-bold text-zinc-900 font-mono truncate flex-1 mr-4">
+                <h1 className="text-xl font-bold text-neutral-900 font-mono truncate flex-1 mr-4">
                   {budgetName}
                 </h1>
                 <div className="flex items-center gap-2">
@@ -552,8 +552,8 @@ const BudgetSharedContent: React.FC<{
 
     // Default Visant pages
     return (
-      <div className={`min-h-screen ${theme === 'dark' ? 'bg-[#121212]' : 'bg-white'}`}>
-        <div className={`sticky top-0 z-50 ${theme === 'dark' ? 'bg-[#121212] border-zinc-800' : 'bg-white border-zinc-200'} border-b shadow-sm`}>
+      <div className={`min-h-screen ${theme === 'dark' ? 'bg-[#0C0C0C]' : 'bg-white'}`}>
+        <div className={`sticky top-0 z-50 ${theme === 'dark' ? 'bg-[#0C0C0C] border-neutral-800' : 'bg-white border-neutral-200'} border-b shadow-sm`}>
           <div className="max-w-7xl mx-auto px-4 py-4">
             <div className="mb-3">
               <Breadcrumb>
@@ -577,7 +577,7 @@ const BudgetSharedContent: React.FC<{
               </Breadcrumb>
             </div>
             <div className="flex items-center justify-between">
-              <h1 className={`text-xl font-bold font-mono truncate flex-1 mr-4 ${theme === 'dark' ? 'text-zinc-100' : 'text-zinc-900'}`}>
+              <h1 className={`text-xl font-bold font-mono truncate flex-1 mr-4 ${theme === 'dark' ? 'text-neutral-100' : 'text-neutral-900'}`}>
                 {budgetName}
               </h1>
               <div className="flex items-center gap-2">
@@ -628,8 +628,8 @@ const BudgetSharedContent: React.FC<{
         description={t('budget.shared.seoDescription')}
         noindex={true}
       />
-      <div className={`min-h-screen ${theme === 'dark' ? 'bg-[#121212]' : 'bg-white'}`}>
-        <div className={`sticky top-0 z-50 ${theme === 'dark' ? 'bg-[#121212] border-zinc-800' : 'bg-white border-zinc-200'} border-b shadow-sm`}>
+      <div className={`min-h-screen ${theme === 'dark' ? 'bg-[#0C0C0C]' : 'bg-white'}`}>
+        <div className={`sticky top-0 z-50 ${theme === 'dark' ? 'bg-[#0C0C0C] border-neutral-800' : 'bg-white border-neutral-200'} border-b shadow-sm`}>
           <div className="max-w-7xl mx-auto px-4 py-4">
             <div className="mb-3">
               <Breadcrumb>
@@ -653,7 +653,7 @@ const BudgetSharedContent: React.FC<{
               </Breadcrumb>
             </div>
             <div className="flex items-center justify-between">
-              <h1 className={`text-xl font-bold font-mono truncate flex-1 mr-4 ${theme === 'dark' ? 'text-zinc-100' : 'text-zinc-900'}`}>
+              <h1 className={`text-xl font-bold font-mono truncate flex-1 mr-4 ${theme === 'dark' ? 'text-neutral-100' : 'text-neutral-900'}`}>
                 {budgetName}
               </h1>
               <div className="flex items-center gap-2">
@@ -670,7 +670,7 @@ const BudgetSharedContent: React.FC<{
           </div>
         </div>
         <div className="max-w-4xl mx-auto px-4 py-8">
-          <p className={`text-center ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-500'}`}>{t('budget.shared.templateNotSupported')}</p>
+          <p className={`text-center ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'}`}>{t('budget.shared.templateNotSupported')}</p>
         </div>
       </div>
     </>

@@ -339,12 +339,12 @@ export const MyOutputsPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#121212] text-zinc-300 pt-12 md:pt-14">
+      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
               <GlitchLoader size={36} className="mx-auto mb-4" />
-              <p className="text-zinc-400 font-mono text-sm">Loading your outputs...</p>
+              <p className="text-neutral-400 font-mono text-sm">Loading your outputs...</p>
             </div>
           </div>
         </div>
@@ -359,7 +359,7 @@ export const MyOutputsPage: React.FC = () => {
         description={t('myOutputs.seoDescription')}
         noindex={true}
       />
-      <div className="min-h-screen bg-[#121212] text-zinc-300 relative overflow-hidden">
+      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 relative overflow-hidden">
         {/* Background */}
         <div className="fixed inset-0 z-0 pointer-events-none">
           <GridDotsBackground />
@@ -413,24 +413,24 @@ export const MyOutputsPage: React.FC = () => {
           {/* Floating Column Control */}
           {filteredMockups.length > 0 && !isMobile && (
             <div className="fixed bottom-4 md:bottom-6 left-4 md:left-6 z-30">
-              <div className="flex items-center gap-1 bg-black/50 backdrop-blur-md border border-zinc-800/60 rounded-md p-1.5 shadow-lg">
+              <div className="flex items-center gap-1 bg-black/50 backdrop-blur-md border border-neutral-800/60 rounded-md p-1.5 shadow-lg">
                 <button
                   onClick={() => handleColumnsChange(columns - 1)}
                   disabled={columns <= 1}
-                  className="p-1.5 text-zinc-500 hover:text-zinc-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded hover:bg-zinc-800/30"
+                  className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded hover:bg-neutral-800/30"
                   aria-label="Decrease columns"
                 >
                   <Minus size={14} />
                 </button>
                 <div className="px-2.5">
-                  <span className="text-xs font-mono text-zinc-400 min-w-[1.5rem] text-center">
+                  <span className="text-xs font-mono text-neutral-400 min-w-[1.5rem] text-center">
                     {columns}
                   </span>
                 </div>
                 <button
                   onClick={() => handleColumnsChange(columns + 1)}
                   disabled={columns >= 6}
-                  className="p-1.5 text-zinc-500 hover:text-zinc-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded hover:bg-zinc-800/30"
+                  className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded hover:bg-neutral-800/30"
                   aria-label="Increase columns"
                 >
                   <Plus size={14} />
@@ -440,11 +440,11 @@ export const MyOutputsPage: React.FC = () => {
           )}
           {filteredMockups.length === 0 ? (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-              <ImageIcon size={64} className="text-zinc-700 mb-4" strokeWidth={1} />
-              <h2 className="text-xl font-semibold font-mono uppercase text-zinc-500 mb-2">
+              <ImageIcon size={64} className="text-neutral-700 mb-4" strokeWidth={1} />
+              <h2 className="text-xl font-semibold font-mono uppercase text-neutral-500 mb-2">
                 {mockups.length === 0 ? 'NO OUTPUTS YET' : 'NO MATCHES FOUND'}
               </h2>
-              <p className="text-sm text-zinc-600 font-mono mb-4">
+              <p className="text-sm text-neutral-600 font-mono mb-4">
                 {mockups.length === 0
                   ? 'Generate mockups to see them here.'
                   : 'Try adjusting your search or filter.'}
@@ -459,11 +459,11 @@ export const MyOutputsPage: React.FC = () => {
                 return (
                   <div
                     key={mockup._id}
-                    className="group relative bg-black/30 backdrop-blur-sm border border-zinc-800/60 rounded-md overflow-hidden hover:border-[brand-cyan]/50 transition-all duration-300"
+                    className="group relative bg-black/30 backdrop-blur-sm border border-neutral-800/60 rounded-md overflow-hidden hover:border-[brand-cyan]/50 transition-all duration-300"
                   >
                     {/* Image */}
                     <div
-                      className="aspect-square relative overflow-hidden bg-zinc-900/50 cursor-pointer"
+                      className="aspect-square relative overflow-hidden bg-neutral-900/50 cursor-pointer"
                       onClick={() => handleView(mockup)}
                     >
                       <img

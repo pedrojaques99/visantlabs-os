@@ -43,7 +43,7 @@ const getStatusColor = (status: string) => {
     case 'past_due':
       return 'text-red-400 bg-red-500/10 border-red-500/30';
     default:
-      return 'text-zinc-400 bg-zinc-500/10 border-zinc-500/30';
+      return 'text-neutral-400 bg-neutral-500/10 border-neutral-500/30';
   }
 };
 
@@ -103,19 +103,19 @@ export const TransactionsModal: React.FC<TransactionsModalProps> = ({ isOpen, on
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-8 backdrop-blur-sm">
-      <div className="w-full max-w-3xl bg-[#0F0F0F] border border-zinc-800/60 rounded-xl shadow-2xl relative">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800/60">
+      <div className="w-full max-w-3xl bg-[#0F0F0F] border border-neutral-800/60 rounded-xl shadow-2xl relative">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-800/60">
           <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-zinc-500 font-mono mb-1">
+            <p className="text-xs uppercase tracking-[0.3em] text-neutral-500 font-mono mb-1">
               {t('transactions.title')}
             </p>
-            <h2 className="text-2xl font-semibold text-zinc-100 font-manrope">
+            <h2 className="text-2xl font-semibold text-neutral-100 font-manrope">
               {t('transactions.subtitle')}
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60 transition-colors"
+            className="p-2 rounded-md text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/60 transition-colors"
             aria-label="Close"
           >
             <X size={18} />
@@ -124,7 +124,7 @@ export const TransactionsModal: React.FC<TransactionsModalProps> = ({ isOpen, on
 
         <div className="p-6 max-h-[70vh] overflow-y-auto space-y-4">
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-12 text-zinc-400 gap-3">
+            <div className="flex flex-col items-center justify-center py-12 text-neutral-400 gap-3">
               <GlitchLoader size={28} />
               <p className="font-mono text-sm">{t('common.loading')}</p>
             </div>
@@ -133,41 +133,41 @@ export const TransactionsModal: React.FC<TransactionsModalProps> = ({ isOpen, on
               {error}
             </div>
           ) : transactions.length === 0 ? (
-            <div className="text-center text-zinc-500 font-mono text-sm py-12">
+            <div className="text-center text-neutral-500 font-mono text-sm py-12">
               {t('transactions.empty')}
             </div>
           ) : (
             groupedTransactions.map(([date, items]) => (
               <div key={date}>
-                <p className="text-xs uppercase tracking-[0.3em] text-zinc-500 font-mono mb-2">{date}</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-neutral-500 font-mono mb-2">{date}</p>
                 <div className="space-y-3">
                   {items.map((transaction) => (
                     <div
                       key={`${transaction.id}-${transaction.createdAt}`}
-                      className="bg-black/40 border border-zinc-800/60 rounded-md p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+                      className="bg-black/40 border border-neutral-800/60 rounded-md p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
                     >
                       <div className="flex items-start gap-3">
                         <div className="w-10 h-10 rounded-md bg-brand-cyan/10 flex items-center justify-center text-brand-cyan">
                           <CreditCard size={18} />
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-zinc-100">
+                          <p className="text-sm font-semibold text-neutral-100">
                             {transaction.description || (transaction.type === 'purchase'
                               ? t('transactions.type.purchase')
                               : t('transactions.type.subscription'))}
                           </p>
-                          <p className="text-xs text-zinc-500 font-mono">
+                          <p className="text-xs text-neutral-500 font-mono">
                             {formatDate(transaction.createdAt)}
                           </p>
                           {transaction.credits !== null && (
-                            <p className="text-xs text-zinc-400 font-mono mt-1">
+                            <p className="text-xs text-neutral-400 font-mono mt-1">
                               {t('transactions.credits', { count: transaction.credits })}
                             </p>
                           )}
                         </div>
                       </div>
                       <div className="flex flex-col md:items-end gap-2">
-                        <span className="text-lg font-semibold font-mono text-zinc-100">
+                        <span className="text-lg font-semibold font-mono text-neutral-100">
                           {formatCurrency(transaction.amount, transaction.currency)}
                         </span>
                         <span

@@ -26,18 +26,7 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
       BRL: 'https://buy.stripe.com/aFa6oA4A76hK2VUfVE0gw02',
     },
   },
-  {
-    credits: 50,
-    price: {
-      BRL: 25.90,
-    },
-    stripeProductId: 'prod_TXViJlOBGY0yTa',
-    abacateProductId: 'prod_mMqpXU4tf2AH2npuA6cFbc2p',
-    abacateBillId: 'bill_6C3nzx6rNp4YkBkpbuS44qBf',
-    paymentLinks: {
-      BRL: 'https://buy.stripe.com/9B6eV65EbdKc3ZYaBk0gw08',
-    },
-  },
+
   {
     credits: 100,
     price: {

@@ -185,15 +185,15 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-2xl max-h-[90vh] flex flex-col bg-zinc-900 border border-zinc-800/60 rounded-xl shadow-2xl overflow-hidden animate-slide-up">
+      <div className="relative w-full max-w-2xl max-h-[90vh] flex flex-col bg-neutral-900 border border-neutral-800/60 rounded-xl shadow-2xl overflow-hidden animate-slide-up">
         {/* Header */}
-        <div className="p-6 flex items-center justify-between border-b border-zinc-800/60 bg-zinc-900/20 backdrop-blur-sm">
-          <h2 className="text-xl font-semibold text-zinc-200 font-manrope tracking-tight">
+        <div className="p-6 flex items-center justify-between border-b border-neutral-800/60 bg-neutral-900/20 backdrop-blur-sm">
+          <h2 className="text-xl font-semibold text-neutral-200 font-manrope tracking-tight">
             Edit Community Profile
           </h2>
           <button
             onClick={onClose}
-            className="p-2 text-zinc-500 hover:text-white transition-all hover:bg-zinc-800/50 rounded-lg"
+            className="p-2 text-neutral-500 hover:text-white transition-all hover:bg-neutral-800/50 rounded-lg"
           >
             <X size={20} />
           </button>
@@ -210,10 +210,10 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
 
           {/* Cover Image */}
           <div className="space-y-2">
-            <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest ml-1">
+            <label className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest ml-1">
               Cover Image
             </label>
-            <div className="relative w-full h-40 rounded-xl overflow-hidden bg-zinc-900/50 border border-zinc-800/60 group">
+            <div className="relative w-full h-40 rounded-xl overflow-hidden bg-neutral-900/50 border border-neutral-800/60 group">
               {coverImageUrl ? (
                 <img
                   src={coverImageUrl}
@@ -222,8 +222,8 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
                 />
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center gap-2">
-                  <ImageIcon size={32} className="text-zinc-700" strokeWidth={1} />
-                  <span className="text-[10px] font-mono text-zinc-600 uppercase tracking-tight">No cover image</span>
+                  <ImageIcon size={32} className="text-neutral-700" strokeWidth={1} />
+                  <span className="text-[10px] font-mono text-neutral-600 uppercase tracking-tight">No cover image</span>
                 </div>
               )}
               <input
@@ -243,8 +243,8 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
                   <GlitchLoader size={24} />
                 ) : (
                   <div className="flex flex-col items-center gap-2">
-                    <Camera size={24} className="text-zinc-300" />
-                    <span className="text-[10px] font-mono text-zinc-300 uppercase tracking-widest">Change Cover</span>
+                    <Camera size={24} className="text-neutral-300" />
+                    <span className="text-[10px] font-mono text-neutral-300 uppercase tracking-widest">Change Cover</span>
                   </div>
                 )}
               </button>
@@ -257,7 +257,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
 
           {/* Username */}
           <div className="space-y-2">
-            <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest ml-1">
+            <label className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest ml-1">
               Username
             </label>
             <Input
@@ -265,35 +265,35 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Your username"
-              className="bg-zinc-900/50 border-zinc-800 focus:border-brand-cyan/30"
+              className="bg-neutral-900/50 border-neutral-800 focus:border-brand-cyan/30"
             />
-            <p className="text-[10px] text-zinc-500 font-mono mt-1 ml-1">
+            <p className="text-[10px] text-neutral-500 font-mono mt-1 ml-1">
               3-20 characters: letters, numbers, underscores, and hyphens.
             </p>
           </div>
 
           {/* Bio */}
           <div className="space-y-2">
-            <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest ml-1">
+            <label className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest ml-1">
               Bio
             </label>
             <Textarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               placeholder="Tell us about yourself..."
-              className="bg-zinc-900/50 border-zinc-800 focus:border-brand-cyan/30 h-32 resize-none"
+              className="bg-neutral-900/50 border-neutral-800 focus:border-brand-cyan/30 h-32 resize-none"
             />
           </div>
 
           {/* Social Links */}
           <div className="space-y-6">
-            <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest ml-1">
+            <label className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest ml-1">
               Social Media Links
             </label>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-[10px] text-zinc-500 font-mono uppercase tracking-tight ml-1 flex items-center gap-2">
+                <label className="text-[10px] text-neutral-500 font-mono uppercase tracking-tight ml-1 flex items-center gap-2">
                   <Instagram size={14} className="text-pink-500" />
                   Instagram
                 </label>
@@ -302,12 +302,12 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
                   value={instagram}
                   onChange={(e) => setInstagram(e.target.value)}
                   placeholder="https://instagram.com/username"
-                  className="bg-zinc-900/50 border-zinc-800 focus:border-brand-cyan/30"
+                  className="bg-neutral-900/50 border-neutral-800 focus:border-brand-cyan/30"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] text-zinc-500 font-mono uppercase tracking-tight ml-1 flex items-center gap-2">
+                <label className="text-[10px] text-neutral-500 font-mono uppercase tracking-tight ml-1 flex items-center gap-2">
                   <Youtube size={14} className="text-red-500" />
                   YouTube
                 </label>
@@ -316,12 +316,12 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
                   value={youtube}
                   onChange={(e) => setYoutube(e.target.value)}
                   placeholder="https://youtube.com/@channel"
-                  className="bg-zinc-900/50 border-zinc-800 focus:border-brand-cyan/30"
+                  className="bg-neutral-900/50 border-neutral-800 focus:border-brand-cyan/30"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] text-zinc-500 font-mono uppercase tracking-tight ml-1 flex items-center gap-2">
+                <label className="text-[10px] text-neutral-500 font-mono uppercase tracking-tight ml-1 flex items-center gap-2">
                   <Twitter size={14} className="text-blue-400" />
                   X (Twitter)
                 </label>
@@ -330,12 +330,12 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
                   value={x}
                   onChange={(e) => setX(e.target.value)}
                   placeholder="https://x.com/username"
-                  className="bg-zinc-900/50 border-zinc-800 focus:border-brand-cyan/30"
+                  className="bg-neutral-900/50 border-neutral-800 focus:border-brand-cyan/30"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] text-zinc-500 font-mono uppercase tracking-tight ml-1 flex items-center gap-2">
+                <label className="text-[10px] text-neutral-500 font-mono uppercase tracking-tight ml-1 flex items-center gap-2">
                   <Globe size={14} className="text-brand-cyan" />
                   Website
                 </label>
@@ -344,7 +344,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
                   placeholder="https://yourwebsite.com"
-                  className="bg-zinc-900/50 border-zinc-800 focus:border-brand-cyan/30"
+                  className="bg-neutral-900/50 border-neutral-800 focus:border-brand-cyan/30"
                 />
               </div>
             </div>
@@ -352,11 +352,11 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-zinc-800/60 bg-zinc-900/20 backdrop-blur-sm flex items-center justify-end gap-3">
+        <div className="p-6 border-t border-neutral-800/60 bg-neutral-900/20 backdrop-blur-sm flex items-center justify-end gap-3">
           <Button
             variant="ghost"
             onClick={onClose}
-            className="font-mono text-zinc-400 hover:text-zinc-200"
+            className="font-mono text-neutral-400 hover:text-neutral-200"
           >
             Cancel
           </Button>

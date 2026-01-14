@@ -85,6 +85,7 @@ export const PricingPage: React.FC = () => {
   const [isPixModalOpen, setIsPixModalOpen] = useState(false);
   const [subscriptionPlans, setSubscriptionPlans] = useState<Product[]>([]);
   const [activeTab, setActiveTab] = useState<'subscriptions' | 'credits'>('subscriptions');
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -236,7 +237,7 @@ export const PricingPage: React.FC = () => {
         description="Planos e pacotes de créditos para gerar mockups profissionais com IA. Escolha o plano ideal para suas necessidades de design."
         keywords="preços, planos, créditos, assinatura, mockup generator, pricing"
       />
-      <div className="min-h-screen bg-[#121212] text-zinc-300 pt-12 md:pt-14 relative">
+      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative">
         <div className="fixed inset-0 z-0">
           <GridDotsBackground />
         </div>
@@ -265,10 +266,10 @@ export const PricingPage: React.FC = () => {
 
           {/* Header */}
           <div className="text-center mb-12 md:mb-16 animate-fade-in-fast">
-            <h1 className="text-5xl md:text-6xl font-semibold font-manrope text-zinc-300 mb-4 tracking-tight">
+            <h1 className="text-5xl md:text-6xl font-semibold font-manrope text-neutral-300 mb-4 tracking-tight">
               {t('pricing.title')}
             </h1>
-            <p className="text-zinc-500 font-mono text-sm md:text-base max-w-2xl mx-auto">
+            <p className="text-neutral-500 font-mono text-sm md:text-base max-w-2xl mx-auto">
               {t('pricing.subtitle')}
             </p>
           </div>
@@ -280,16 +281,16 @@ export const PricingPage: React.FC = () => {
               onValueChange={(v: any) => setActiveTab(v)}
               className="w-full max-w-[400px]"
             >
-              <TabsList className="grid w-full grid-cols-2 bg-zinc-900/50 border border-zinc-800 p-1 rounded-xl">
+              <TabsList className="grid w-full grid-cols-2 bg-neutral-900/50 border border-neutral-800 p-1 rounded-xl">
                 <TabsTrigger
                   value="subscriptions"
-                  className="rounded-lg data-[state=active]:bg-zinc-800 data-[state=active]:text-brand-cyan"
+                  className="rounded-lg data-[state=active]:bg-neutral-800 data-[state=active]:text-brand-cyan"
                 >
                   {t('pricing.tabs.subscriptions') || 'Assinaturas'}
                 </TabsTrigger>
                 <TabsTrigger
                   value="credits"
-                  className="rounded-lg data-[state=active]:bg-zinc-800 data-[state=active]:text-brand-cyan"
+                  className="rounded-lg data-[state=active]:bg-neutral-800 data-[state=active]:text-brand-cyan"
                 >
                   {t('pricing.tabs.credits') || 'Créditos'}
                 </TabsTrigger>
@@ -302,94 +303,141 @@ export const PricingPage: React.FC = () => {
             <Tabs value={activeTab} className="w-full">
               {/* Subscription Plans View */}
               <TabsContent value="subscriptions" className="mt-0 outline-none">
-                {subscriptionPlans.length > 0 ? (
-                  <div className="animate-fade-in-fast">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-                      {subscriptionPlans.map((plan) => (
-                        <Card
-                          key={plan.id}
-                          className="bg-zinc-900/40 border-zinc-800/50 hover:border-brand-cyan/30 transition-all duration-300 flex flex-col group relative overflow-hidden"
-                        >
-                          <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-
-                          <CardHeader className="text-center pb-2 relative z-10">
-                            {plan.displayOrder === 1 && (
-                              <div className="absolute -top-1 left-1/2 -translate-x-1/2">
-                                <Badge className="bg-brand-cyan text-black font-bold text-[10px] uppercase tracking-widest px-3 py-0.5 rounded-full">
-                                  {t('pricing.popular') || 'Popular'}
-                                </Badge>
-                              </div>
-                            )}
-                            <h3 className="text-2xl font-bold text-zinc-100 tracking-tight mt-2">{plan.name}</h3>
-                          </CardHeader>
-
-                          <CardContent className="flex-1 flex flex-col p-6 pt-2 relative z-10">
-                            <div className="text-center mb-6">
-                              <div className="flex items-baseline justify-center gap-1">
-                                <span className="text-4xl font-bold text-brand-cyan font-mono">
-                                  {formatPrice(
-                                    currencyInfo?.currency === 'USD' && plan.priceUSD ? plan.priceUSD : plan.priceBRL,
-                                    currencyInfo?.currency || 'BRL',
-                                    currencyInfo?.locale || 'pt-BR'
-                                  )}
-                                </span>
-                                <span className="text-zinc-500 text-sm font-mono">{t('pricing.perMonth')}</span>
-                              </div>
-                              <div className="flex items-center justify-center gap-1.5 text-[11px] text-zinc-400 font-mono mt-2 uppercase tracking-wider">
-                                <Pickaxe size={12} className="text-brand-cyan/60" />
-                                <span>{plan.credits} {t('pricing.creditsLabel')}</span>
-                              </div>
-                            </div>
-
-                            {/* Plan Benefits */}
-                            <div className="space-y-3 mb-8">
-                              {plan.metadata?.features && Array.isArray(plan.metadata.features) ? (
-                                plan.metadata.features.map((benefit: string, idx: number) => (
-                                  <div key={idx} className="flex items-start gap-3 text-sm text-zinc-400">
-                                    <CheckCircle2 size={16} className="text-brand-cyan mt-0.5 flex-shrink-0" />
-                                    <span>{benefit.trim()}</span>
-                                  </div>
-                                ))
-                              ) : plan.description ? (
-                                plan.description.split(',').map((benefit: string, idx: number) => (
-                                  <div key={idx} className="flex items-start gap-3 text-sm text-zinc-400">
-                                    <CheckCircle2 size={16} className="text-brand-cyan mt-0.5 flex-shrink-0" />
-                                    <span>{benefit.trim()}</span>
-                                  </div>
-                                ))
-                              ) : null}
-                            </div>
-
-                            <div className="mt-auto pt-4">
-                              <Button
-                                onClick={() => {
-                                  const link = currencyInfo?.currency === 'USD' ? plan.paymentLinkUSD : plan.paymentLinkBRL;
-                                  if (link) window.location.href = link;
-                                }}
-                                className="w-full bg-brand-cyan hover:bg-brand-cyan/90 text-black font-bold h-11 rounded-lg transition-transform hover:scale-[1.02] active:scale-[0.98]"
-                                size="lg"
-                              >
-                                <CreditCard className="mr-2 h-4 w-4" />
-                                {t('pricing.subscribe')}
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
+                <div className="animate-fade-in-fast">
+                  {/* Billing Cycle Toggle */}
+                  <div className="flex justify-center mb-10">
+                    <div className="bg-neutral-900/50 p-1 rounded-full border border-neutral-800 inline-flex relative">
+                      <div
+                        className={cn(
+                          "absolute inset-y-1 rounded-full bg-brand-cyan transition-all duration-300 ease-out",
+                          billingCycle === 'monthly' ? "left-1 w-[calc(50%-4px)]" : "left-[50%] w-[calc(50%-4px)]"
+                        )}
+                      />
+                      <button
+                        onClick={() => setBillingCycle('monthly')}
+                        className={cn(
+                          "relative z-10 px-6 py-2 text-sm font-medium rounded-full transition-colors duration-200 min-w-[100px]",
+                          billingCycle === 'monthly' ? "text-black font-bold" : "text-neutral-400 hover:text-neutral-200"
+                        )}
+                      >
+                        {t('pricing.monthly') || 'Mensal'}
+                      </button>
+                      <button
+                        onClick={() => setBillingCycle('yearly')}
+                        className={cn(
+                          "relative z-10 px-6 py-2 text-sm font-medium rounded-full transition-colors duration-200 min-w-[100px] flex items-center justify-center gap-2",
+                          billingCycle === 'yearly' ? "text-black font-bold" : "text-neutral-400 hover:text-neutral-200"
+                        )}
+                      >
+                        {t('pricing.yearly') || 'Anual'}
+                        <span className={cn(
+                          "text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider",
+                          billingCycle === 'yearly' ? "bg-black/20 text-black" : "bg-brand-cyan/20 text-brand-cyan"
+                        )}>
+                          {t('pricing.yearlyDiscount') || '-16%'}
+                        </span>
+                      </button>
                     </div>
                   </div>
-                ) : (
-                  <div className="text-center py-20 text-zinc-600 font-mono italic">
-                    {t('pricing.noPlansFound') || 'Nenhum plano disponível no momento.'}
-                  </div>
-                )}
+
+                  {(() => {
+                    const filteredPlans = subscriptionPlans.filter(plan => {
+                      const isYearly = plan.metadata?.interval === 'year' ||
+                        plan.name.toLowerCase().includes('anual') ||
+                        plan.name.toLowerCase().includes('yearly');
+                      return billingCycle === 'yearly' ? isYearly : !isYearly;
+                    });
+
+                    return filteredPlans.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+                        {filteredPlans.map((plan) => (
+                          <Card
+                            key={plan.id}
+                            className="bg-neutral-900/40 border-neutral-800/50 hover:border-brand-cyan/30 transition-all duration-300 flex flex-col group relative overflow-hidden"
+                          >
+                            <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+                            <CardHeader className="text-center pb-2 relative z-10">
+                              {plan.displayOrder === 1 && (
+                                <div className="absolute -top-1 left-1/2 -translate-x-1/2">
+                                  <Badge className="bg-brand-cyan text-black font-bold text-[10px] uppercase tracking-widest px-3 py-0.5 rounded-full">
+                                    {t('pricing.popular') || 'Popular'}
+                                  </Badge>
+                                </div>
+                              )}
+                              <h3 className="text-2xl font-bold text-neutral-100 tracking-tight mt-2">{plan.name}</h3>
+                            </CardHeader>
+
+                            <CardContent className="flex-1 flex flex-col p-6 pt-2 relative z-10">
+                              <div className="text-center mb-6">
+                                <div className="flex items-baseline justify-center gap-1">
+                                  <span className="text-4xl font-bold text-brand-cyan font-mono">
+                                    {formatPrice(
+                                      currencyInfo?.currency === 'USD' && plan.priceUSD ? plan.priceUSD : plan.priceBRL,
+                                      currencyInfo?.currency || 'BRL',
+                                      currencyInfo?.locale || 'pt-BR'
+                                    )}
+                                  </span>
+                                  <span className="text-neutral-500 text-sm font-mono">
+                                    {billingCycle === 'yearly' ? (t('pricing.perYear') || '/ano') : t('pricing.perMonth')}
+                                  </span>
+                                </div>
+                                <div className="flex items-center justify-center gap-1.5 text-[11px] text-neutral-400 font-mono mt-2 uppercase tracking-wider">
+                                  <Pickaxe size={12} className="text-brand-cyan/60" />
+                                  <span>{plan.credits} {t('pricing.creditsLabel')}</span>
+                                </div>
+                              </div>
+
+                              {/* Plan Benefits */}
+                              <div className="space-y-3 mb-8">
+                                {plan.metadata?.features && Array.isArray(plan.metadata.features) ? (
+                                  plan.metadata.features.map((benefit: string, idx: number) => (
+                                    <div key={idx} className="flex items-start gap-3 text-sm text-neutral-400">
+                                      <CheckCircle2 size={16} className="text-brand-cyan mt-0.5 flex-shrink-0" />
+                                      <span>{benefit.trim()}</span>
+                                    </div>
+                                  ))
+                                ) : plan.description ? (
+                                  plan.description.split(',').map((benefit: string, idx: number) => (
+                                    <div key={idx} className="flex items-start gap-3 text-sm text-neutral-400">
+                                      <CheckCircle2 size={16} className="text-brand-cyan mt-0.5 flex-shrink-0" />
+                                      <span>{benefit.trim()}</span>
+                                    </div>
+                                  ))
+                                ) : null}
+                              </div>
+
+                              <div className="mt-auto pt-4">
+                                <Button
+                                  onClick={() => {
+                                    const link = currencyInfo?.currency === 'USD' ? plan.paymentLinkUSD : plan.paymentLinkBRL;
+                                    if (link) window.location.href = link;
+                                  }}
+                                  className="w-full bg-brand-cyan hover:bg-brand-cyan/90 text-black font-bold h-11 rounded-lg transition-transform hover:scale-[1.02] active:scale-[0.98]"
+                                  size="lg"
+                                >
+                                  <CreditCard className="mr-2 h-4 w-4" />
+                                  {t('pricing.subscribe')}
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-20 text-neutral-600 font-mono italic">
+                        {t('pricing.noPlansFound') || 'Nenhum plano disponível no momento.'}
+                      </div>
+                    );
+                  })()}
+                </div>
               </TabsContent>
 
               {/* Credit Packages View */}
               <TabsContent value="credits" className="mt-0 outline-none">
                 <div className="animate-fade-in-fast">
                   <div className="flex flex-col items-center justify-center py-4">
-                    <Card className="bg-zinc-900/40 border-zinc-800/50 w-full max-w-[500px] shadow-2xl overflow-hidden group relative">
+                    <Card className="bg-neutral-900/40 border-neutral-800/50 w-full max-w-[500px] shadow-2xl overflow-hidden group relative">
                       <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
                       <CardContent className="p-8 md:p-12">
@@ -402,8 +450,8 @@ export const PricingPage: React.FC = () => {
                                 className={cn(
                                   "p-2 rounded-lg transition-all active:scale-90",
                                   selectedCreditIndex === 0
-                                    ? "text-zinc-700 opacity-30 cursor-not-allowed"
-                                    : "text-zinc-400 hover:text-brand-cyan hover:bg-zinc-800/50 cursor-pointer"
+                                    ? "text-neutral-700 opacity-30 cursor-not-allowed"
+                                    : "text-neutral-400 hover:text-brand-cyan hover:bg-neutral-800/50 cursor-pointer"
                                 )}
                               >
                                 <Minus size={24} />
@@ -419,25 +467,25 @@ export const PricingPage: React.FC = () => {
                                 className={cn(
                                   "p-2 rounded-lg transition-all active:scale-90",
                                   selectedCreditIndex === creditPackages.length - 1
-                                    ? "text-zinc-700 opacity-30 cursor-not-allowed"
-                                    : "text-zinc-400 hover:text-brand-cyan hover:bg-zinc-800/50 cursor-pointer"
+                                    ? "text-neutral-700 opacity-30 cursor-not-allowed"
+                                    : "text-neutral-400 hover:text-brand-cyan hover:bg-neutral-800/50 cursor-pointer"
                                 )}
                               >
                                 <Plus size={24} />
                               </button>
                             </div>
 
-                            <div className="flex items-center justify-center gap-2 text-xs text-zinc-500 font-mono uppercase tracking-[0.2em]">
+                            <div className="flex items-center justify-center gap-2 text-xs text-neutral-500 font-mono uppercase tracking-[0.2em]">
                               <Pickaxe size={14} className="text-brand-cyan/50" />
                               {t('pricing.creditsLabel')}
                             </div>
                           </div>
 
-                          <div className="pt-8 border-t border-zinc-800/50 text-center">
-                            <div className="text-4xl font-bold text-zinc-100 font-mono mb-1">
+                          <div className="pt-8 border-t border-neutral-800/50 text-center">
+                            <div className="text-4xl font-bold text-neutral-100 font-mono mb-1">
                               {formatPrice(animatedPrice, currencyInfo?.currency || 'BRL', currencyInfo?.locale || 'pt-BR')}
                             </div>
-                            <div className="text-[10px] text-zinc-500 font-mono uppercase tracking-widest opacity-60">
+                            <div className="text-[10px] text-neutral-500 font-mono uppercase tracking-widest opacity-60">
                               {currencyInfo?.currency === 'BRL' ? 'Pagamento Único' : 'One-time payment'}
                             </div>
                           </div>
@@ -465,7 +513,7 @@ export const PricingPage: React.FC = () => {
                             )}
                           </div>
 
-                          <p className="text-[10px] text-zinc-600 font-mono text-center leading-relaxed">
+                          <p className="text-[10px] text-neutral-600 font-mono text-center leading-relaxed">
                             {t('pricing.creditsNote')}
                           </p>
                         </div>
@@ -473,7 +521,7 @@ export const PricingPage: React.FC = () => {
                     </Card>
 
                     {/* Indicators */}
-                    <div className="flex gap-1.5 mt-8 items-center bg-zinc-900/40 p-1.5 rounded-full border border-zinc-800/30">
+                    <div className="flex gap-1.5 mt-8 items-center bg-neutral-900/40 p-1.5 rounded-full border border-neutral-800/30">
                       {creditPackages.map((_, index) => (
                         <button
                           key={index}
@@ -482,7 +530,7 @@ export const PricingPage: React.FC = () => {
                             "h-1.5 rounded-full transition-all duration-300",
                             index === selectedCreditIndex
                               ? "bg-brand-cyan w-8"
-                              : "bg-zinc-800 w-1.5 hover:bg-zinc-700"
+                              : "bg-neutral-800 w-1.5 hover:bg-neutral-700"
                           )}
                         />
                       ))}

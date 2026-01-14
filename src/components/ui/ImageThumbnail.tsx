@@ -34,15 +34,15 @@ export const ImageThumbnail: React.FC<ImageThumbnailProps> = ({
   return (
     <div
       className={cn(
-        'relative group aspect-square bg-zinc-900/50 border border-zinc-700/30 rounded overflow-hidden',
+        'relative group aspect-square bg-neutral-900/50 border border-neutral-700/30 rounded overflow-hidden',
         onClick && 'cursor-pointer hover:border-[brand-cyan]/50 transition-colors',
         className
       )}
       onClick={onClick}
     >
       {hasError ? (
-        <div className="w-full h-full flex items-center justify-center bg-zinc-900/50">
-          <ImageIcon size={16} className="text-zinc-600" />
+        <div className="w-full h-full flex items-center justify-center bg-neutral-900/50">
+          <ImageIcon size={16} className="text-neutral-600" />
         </div>
       ) : (
         <img
@@ -116,8 +116,8 @@ export const ImageThumbnailList: React.FC<ImageThumbnailListProps> = ({
         );
       })}
       {images.length > maxThumbnails && (
-        <div className="w-16 h-16 flex items-center justify-center bg-zinc-900/50 border border-zinc-700/30 rounded">
-          <span className="text-xs font-mono text-zinc-500">+{images.length - maxThumbnails}</span>
+        <div className="w-16 h-16 flex items-center justify-center bg-neutral-900/50 border border-neutral-700/30 rounded">
+          <span className="text-xs font-mono text-neutral-500">+{images.length - maxThumbnails}</span>
         </div>
       )}
     </div>

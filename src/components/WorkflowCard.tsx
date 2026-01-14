@@ -54,24 +54,24 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
 
     return (
         <div
-            className="bg-card border border-zinc-800/50 rounded-md p-4 hover:border-brand-cyan/30 hover:bg-card/80 transition-all group relative cursor-pointer h-full flex flex-col"
+            className="bg-card border border-neutral-800/50 rounded-md p-4 hover:border-brand-cyan/30 hover:bg-card/80 transition-all group relative cursor-pointer h-full flex flex-col"
             onClick={onClick}
         >
             <div className="mb-3">
                 {workflow.thumbnailUrl ? (
-                    <div className="relative w-full aspect-video rounded-md overflow-hidden border border-zinc-700/30 bg-zinc-900/30">
+                    <div className="relative w-full aspect-video rounded-md overflow-hidden border border-neutral-700/30 bg-neutral-900/30">
                         <img
                             src={workflow.thumbnailUrl}
                             alt={workflow.name}
-                            className="w-full h-full object-cover bg-zinc-900/50 group-hover:scale-105 transition-transform duration-300"
+                            className="w-full h-full object-cover bg-neutral-900/50 group-hover:scale-105 transition-transform duration-300"
                             onError={(e) => {
                                 (e.target as HTMLImageElement).style.display = 'none';
                             }}
                         />
                     </div>
                 ) : (
-                    <div className="w-full aspect-video rounded-md border border-zinc-700/30 bg-zinc-900/30 flex items-center justify-center">
-                        <div className="text-zinc-500">
+                    <div className="w-full aspect-video rounded-md border border-neutral-700/30 bg-neutral-900/30 flex items-center justify-center">
+                        <div className="text-neutral-500">
                             <CategoryIcon size={32} />
                         </div>
                     </div>
@@ -81,10 +81,10 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
             <div className="flex-1 space-y-3 flex flex-col min-h-0">
                 <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                        <h3 className="text-base font-semibold text-zinc-200 mb-0.5 font-mono line-clamp-1">
+                        <h3 className="text-base font-semibold text-neutral-200 mb-0.5 font-mono line-clamp-1">
                             {workflow.name}
                         </h3>
-                        <p className="text-xs text-zinc-500 font-mono line-clamp-2 leading-snug">
+                        <p className="text-xs text-neutral-500 font-mono line-clamp-2 leading-snug">
                             {workflow.description}
                         </p>
                     </div>
@@ -95,7 +95,7 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
                                     e.stopPropagation();
                                     onDuplicate();
                                 }}
-                                className="p-1.5 text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-300 rounded transition-colors opacity-0 group-hover:opacity-100"
+                                className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-100"
                                 title={isOwner ? t('workflows.actions.duplicate') || 'Duplicate' : t('workflows.actions.addToLibrary') || 'Add to Library'}
                             >
                                 {isOwner ? <Copy className="h-4 w-4" /> : <Download className="h-4 w-4" />}
@@ -107,7 +107,7 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
                                     e.stopPropagation();
                                     onEdit?.();
                                 }}
-                                className="p-1.5 text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-300 rounded transition-colors opacity-0 group-hover:opacity-100"
+                                className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-100"
                                 title={t('workflows.actions.edit') || 'Edit'}
                             >
                                 <Edit2 className="h-4 w-4" />
@@ -119,7 +119,7 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
                                     e.stopPropagation();
                                     onDelete?.();
                                 }}
-                                className="p-1.5 text-zinc-500 hover:bg-red-500/10 hover:text-red-400 rounded transition-colors opacity-0 group-hover:opacity-100"
+                                className="p-1.5 text-neutral-500 hover:bg-red-500/10 hover:text-red-400 rounded transition-colors opacity-0 group-hover:opacity-100"
                                 title={t('workflows.actions.delete') || 'Delete'}
                             >
                                 <Trash2 className="h-4 w-4" />
@@ -141,14 +141,14 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
                         >
                             {categoryConfig.label}
                         </span>
-                        <span className="px-2 py-0.5 bg-zinc-800/40 rounded border border-zinc-700/30 text-zinc-500 font-mono text-[10px] flex-shrink-0 whitespace-nowrap">
+                        <span className="px-2 py-0.5 bg-neutral-800/40 rounded border border-neutral-700/30 text-neutral-500 font-mono text-[10px] flex-shrink-0 whitespace-nowrap">
                             {t('workflows.stats.nodes') ? t('workflows.stats.nodes').replace('{count}', String(nodeCount)) : `${nodeCount} nodes`}
                         </span>
-                        <span className="px-2 py-0.5 bg-zinc-800/40 rounded border border-zinc-700/30 text-zinc-500 font-mono text-[10px] flex-shrink-0 whitespace-nowrap">
+                        <span className="px-2 py-0.5 bg-neutral-800/40 rounded border border-neutral-700/30 text-neutral-500 font-mono text-[10px] flex-shrink-0 whitespace-nowrap">
                             {t('workflows.stats.edges') ? t('workflows.stats.edges').replace('{count}', String(edgeCount)) : `${edgeCount} edges`}
                         </span>
                         {usageCount > 0 && (
-                            <span className="px-2 py-0.5 bg-zinc-800/40 rounded border border-zinc-700/30 text-zinc-500 font-mono text-[10px] flex-shrink-0 whitespace-nowrap flex items-center gap-1">
+                            <span className="px-2 py-0.5 bg-neutral-800/40 rounded border border-neutral-700/30 text-neutral-500 font-mono text-[10px] flex-shrink-0 whitespace-nowrap flex items-center gap-1">
                                 <Play size={10} />
                                 {usageCount}
                             </span>
@@ -160,8 +160,8 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
                                     onToggleLike();
                                 }}
                                 className={`flex items-center gap-1 px-2 py-0.5 rounded-md transition-all text-[10px] font-mono flex-shrink-0 whitespace-nowrap ${isLiked
-                                    ? 'bg-zinc-800/50 text-zinc-300 hover:bg-zinc-700/50'
-                                    : 'bg-zinc-900/40 text-zinc-500 hover:bg-zinc-800/50 hover:text-zinc-400'
+                                    ? 'bg-neutral-800/50 text-neutral-300 hover:bg-neutral-700/50'
+                                    : 'bg-neutral-900/40 text-neutral-500 hover:bg-neutral-800/50 hover:text-neutral-400'
                                     }`}
                                 title={isLiked ? t('workflows.actions.unlike') || 'Unlike' : t('workflows.actions.like') || 'Like'}
                             >
@@ -177,7 +177,7 @@ export const WorkflowCard: React.FC<WorkflowCardProps> = ({
                             {workflow.tags.map((tag, index) => (
                                 <span
                                     key={index}
-                                    className="px-1.5 py-0.5 bg-zinc-800/40 rounded border border-zinc-700/20 text-zinc-500 font-mono text-[10px] hover:border-zinc-600/40 hover:text-zinc-400 transition-colors"
+                                    className="px-1.5 py-0.5 bg-neutral-800/40 rounded border border-neutral-700/20 text-neutral-500 font-mono text-[10px] hover:border-neutral-600/40 hover:text-neutral-400 transition-colors"
                                     title={tag}
                                 >
                                     #{tag}

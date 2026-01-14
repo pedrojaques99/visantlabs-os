@@ -207,7 +207,7 @@ export const ShaderControlsSidebar = ({
       data-shader-sidebar="true"
       className={cn(
         variant === 'standalone' ? "fixed right-4 top-[81px]" : "relative h-full border-none shadow-none rounded-none bg-transparent backdrop-blur-none",
-        variant === 'standalone' && "z-50 backdrop-blur-xl border border-zinc-800/50 rounded-2xl shadow-2xl transition-all duration-300 ease-out bg-black/40",
+        variant === 'standalone' && "z-50 backdrop-blur-xl border border-neutral-800/50 rounded-2xl shadow-2xl transition-all duration-300 ease-out bg-black/40",
         "flex flex-col",
         isCollapsed ? "w-[56px] h-[56px]" : variant === 'standalone' ? "w-[280px] h-[calc(100vh-97px)]" : "w-full"
       )}
@@ -224,10 +224,10 @@ export const ShaderControlsSidebar = ({
           className={cn(
             "absolute -left-3 z-50",
             "w-5 h-5 rounded-md",
-            "bg-zinc-900/60 backdrop-blur-md border border-zinc-700/30",
+            "bg-neutral-900/60 backdrop-blur-md border border-neutral-700/30",
             "flex items-center justify-center",
-            "text-zinc-500 hover:text-zinc-400",
-            "hover:bg-zinc-800/60 hover:border-zinc-600/40",
+            "text-neutral-500 hover:text-neutral-400",
+            "hover:bg-neutral-800/60 hover:border-neutral-600/40",
             "transition-all duration-200",
             "shadow-sm hover:shadow-md"
           )}
@@ -244,26 +244,26 @@ export const ShaderControlsSidebar = ({
         /* Collapsed State - Icon Only - Entire button is clickable */
         <button
           onClick={onToggleCollapse}
-          className="w-full h-full flex items-center justify-center hover:bg-zinc-800/30 transition-colors duration-200 cursor-pointer"
+          className="w-full h-full flex items-center justify-center hover:bg-neutral-800/30 transition-colors duration-200 cursor-pointer"
           title={t('shaderControls.expand')}
         >
-          <Brush size={20} className="text-zinc-500 hover:text-zinc-400 transition-colors duration-200" />
+          <Brush size={20} className="text-neutral-500 hover:text-neutral-400 transition-colors duration-200" />
         </button>
       ) : (
         /* Expanded State - Full Content */
         <div className="w-full h-full flex flex-col overflow-hidden">
           {/* Scrollable Content */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-zinc-400 dark:scrollbar-thumb-zinc-700 scrollbar-track-transparent">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-neutral-400 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent">
             <div className="flex flex-col p-2 gap-2">
               {/* Header */}
-              <div className="flex items-center gap-1.5 px-1 py-1.5 border-b border-zinc-800/30 flex-shrink-0 relative">
-                <h2 className="text-xs font-semibold text-zinc-300 tracking-wide">
+              <div className="flex items-center gap-1.5 px-1 py-1.5 border-b border-neutral-800/30 flex-shrink-0 relative">
+                <h2 className="text-xs font-semibold text-neutral-300 tracking-wide">
                   {t('shaderControls.title')}
                 </h2>
               </div>
               {/* Shader Type Select */}
               <div className="space-y-1">
-                <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
+                <label className="text-[9px] font-semibold text-neutral-500 uppercase tracking-wider">
                   {t('shaderControls.shaderType')}
                 </label>
                 <Select
@@ -288,7 +288,7 @@ export const ShaderControlsSidebar = ({
               {/* Halftone Variant Select (only when halftone is selected) */}
               {shaderType === 'halftone' && (
                 <div className="space-y-1">
-                  <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
+                  <label className="text-[9px] font-semibold text-neutral-500 uppercase tracking-wider">
                     {t('shaderControls.halftoneVariant')}
                   </label>
                   <Select
@@ -377,10 +377,10 @@ export const ShaderControlsSidebar = ({
                     className={cn(
                       "w-full flex items-center justify-center py-1.5 rounded",
                       "border transition-all",
-                      "hover:bg-zinc-800/30",
+                      "hover:bg-neutral-800/30",
                       halftoneInvert > 0.5
                         ? "border-[brand-cyan]/40 bg-brand-cyan/10 text-brand-cyan"
-                        : "border-zinc-700/30 bg-transparent text-zinc-500 hover:text-zinc-400 hover:border-zinc-600/40"
+                        : "border-neutral-700/30 bg-transparent text-neutral-500 hover:text-neutral-400 hover:border-neutral-600/40"
                     )}
                     title={t('shaderControls.labels.invert')}
                   >
@@ -397,7 +397,7 @@ export const ShaderControlsSidebar = ({
                 <>
                   {/* Animation Toggle Button */}
                   <div className="flex items-center justify-between py-1">
-                    <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
+                    <label className="text-[9px] font-semibold text-neutral-500 uppercase tracking-wider">
                       {t('shaderControls.labels.animation')}
                     </label>
                     <button
@@ -408,7 +408,7 @@ export const ShaderControlsSidebar = ({
                         "text-xs font-mono uppercase tracking-wider",
                         isAnimating
                           ? "bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan hover:bg-brand-cyan/30"
-                          : "bg-zinc-800/50 border-zinc-700/50 text-zinc-400 hover:bg-zinc-700/50 hover:border-zinc-600/50"
+                          : "bg-neutral-800/50 border-neutral-700/50 text-neutral-400 hover:bg-neutral-700/50 hover:border-neutral-600/50"
                       )}
                       title={isAnimating ? t('shaderControls.tooltips.stopAnimation') : t('shaderControls.tooltips.startAnimation')}
                     >
@@ -502,7 +502,7 @@ export const ShaderControlsSidebar = ({
               {shaderType === 'ascii' && (
                 <>
                   <div className="space-y-1">
-                    <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
+                    <label className="text-[9px] font-semibold text-neutral-500 uppercase tracking-wider">
                       {t('shaderControls.labels.characterSet')}
                     </label>
                     <Select
@@ -567,7 +567,7 @@ export const ShaderControlsSidebar = ({
                   />
 
                   <div className="flex items-center justify-between py-1">
-                    <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
+                    <label className="text-[9px] font-semibold text-neutral-500 uppercase tracking-wider">
                       {t('shaderControls.labels.colored')}
                     </label>
                     <button
@@ -580,7 +580,7 @@ export const ShaderControlsSidebar = ({
                         "px-3 py-1.5 rounded border transition-all text-xs font-mono uppercase tracking-wider",
                         asciiColored > 0.5
                           ? "bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan"
-                          : "bg-zinc-800/50 border-zinc-700/50 text-zinc-400"
+                          : "bg-neutral-800/50 border-neutral-700/50 text-neutral-400"
                       )}
                     >
                       {asciiColored > 0.5 ? t('shaderControls.buttons.on') : t('shaderControls.buttons.off')}
@@ -588,7 +588,7 @@ export const ShaderControlsSidebar = ({
                   </div>
 
                   <div className="flex items-center justify-between py-1">
-                    <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
+                    <label className="text-[9px] font-semibold text-neutral-500 uppercase tracking-wider">
                       {t('shaderControls.labels.invert')}
                     </label>
                     <button
@@ -601,7 +601,7 @@ export const ShaderControlsSidebar = ({
                         "px-3 py-1.5 rounded border transition-all text-xs font-mono uppercase tracking-wider",
                         asciiInvert > 0.5
                           ? "bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan"
-                          : "bg-zinc-800/50 border-zinc-700/50 text-zinc-400"
+                          : "bg-neutral-800/50 border-neutral-700/50 text-neutral-400"
                       )}
                     >
                       {asciiInvert > 0.5 ? t('shaderControls.buttons.on') : t('shaderControls.buttons.off')}
@@ -614,7 +614,7 @@ export const ShaderControlsSidebar = ({
               {shaderType === 'matrixDither' && (
                 <>
                   <div className="space-y-1">
-                    <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
+                    <label className="text-[9px] font-semibold text-neutral-500 uppercase tracking-wider">
                       {t('shaderControls.labels.matrixSize')}
                     </label>
                     <Select
@@ -709,7 +709,7 @@ export const ShaderControlsSidebar = ({
                   />
 
                   <div className="space-y-1">
-                    <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
+                    <label className="text-[9px] font-semibold text-neutral-500 uppercase tracking-wider">
                       {t('shaderControls.labels.palette')}
                     </label>
                     <Select
@@ -737,7 +737,7 @@ export const ShaderControlsSidebar = ({
                 <>
                   {/* Shadow Color Picker */}
                   <div className="space-y-1">
-                    <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
+                    <label className="text-[9px] font-semibold text-neutral-500 uppercase tracking-wider">
                       {t('shaderControls.labels.shadowColor')}
                     </label>
                     <div className="flex items-center gap-2">
@@ -785,7 +785,7 @@ export const ShaderControlsSidebar = ({
                             onUpdateData(nodeId, { duotoneShadowColor: localShadowColor });
                           }
                         }}
-                        className="w-full h-8 rounded-md border border-zinc-700/50 bg-zinc-900/50 cursor-pointer [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-md [&::-moz-color-swatch]:border-none [&::-moz-color-swatch]:rounded-md"
+                        className="w-full h-8 rounded-md border border-neutral-700/50 bg-neutral-900/50 cursor-pointer [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-md [&::-moz-color-swatch]:border-none [&::-moz-color-swatch]:rounded-md"
                         style={{
                           WebkitAppearance: 'none',
                           MozAppearance: 'none',
@@ -797,7 +797,7 @@ export const ShaderControlsSidebar = ({
 
                   {/* Highlight Color Picker */}
                   <div className="space-y-1">
-                    <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">
+                    <label className="text-[9px] font-semibold text-neutral-500 uppercase tracking-wider">
                       {t('shaderControls.labels.highlightColor')}
                     </label>
                     <div className="flex items-center gap-2">
@@ -845,7 +845,7 @@ export const ShaderControlsSidebar = ({
                             onUpdateData(nodeId, { duotoneHighlightColor: localHighlightColor });
                           }
                         }}
-                        className="w-full h-8 rounded-md border border-zinc-700/50 bg-zinc-900/50 cursor-pointer [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-md [&::-moz-color-swatch]:border-none [&::-moz-color-swatch]:rounded-md"
+                        className="w-full h-8 rounded-md border border-neutral-700/50 bg-neutral-900/50 cursor-pointer [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-md [&::-moz-color-swatch]:border-none [&::-moz-color-swatch]:rounded-md"
                         style={{
                           WebkitAppearance: 'none',
                           MozAppearance: 'none',

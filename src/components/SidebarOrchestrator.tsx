@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { RotateCcw, Lock, X, Dices, RefreshCcw, FileText, Settings, Wand2, ScanEye } from 'lucide-react';
+import { useTheme } from '@/hooks/useTheme';
 import { InputSection } from './ui/InputSection';
 import { DesignTypeSection } from './mockupmachine/DesignTypeSection';
 import { QuickActionsBar } from './ui/QuickActionsBar';
@@ -82,6 +83,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
   authenticationRequiredMessage
 }) => {
   const { t } = useTranslation();
+  const { theme } = useTheme();
   const { subscriptionStatus, isAuthenticated } = useLayout();
 
   const {
@@ -181,7 +183,14 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
     handleAddCustomLightingTag,
     handleAddCustomEffectTag,
     handleAddCustomMaterialTag,
-    scrollToSection
+    scrollToSection,
+    availableBrandingTags,
+    availableMockupTags,
+    availableLocationTags,
+    availableAngleTags,
+    availableLightingTags,
+    availableEffectTags,
+    availableMaterialTags
   } = useMockupTags();
 
   // Helper values
@@ -190,14 +199,14 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
   const categoriesComplete = selectedTags.length > 0;
   const hasReferenceImage = !!referenceImage || referenceImages.length > 0;
 
-  const displayBrandingTags = useMemo(() => [...new Set([...AVAILABLE_BRANDING_TAGS, ...selectedBrandingTags])], [selectedBrandingTags]);
+  const displayBrandingTags = useMemo(() => [...new Set([...availableBrandingTags, ...selectedBrandingTags])], [availableBrandingTags, selectedBrandingTags]);
   const displaySuggestedTags = useMemo(() => [...new Set([...suggestedTags, ...selectedTags])], [suggestedTags, selectedTags]);
-  const displayAvailableCategoryTags = useMemo(() => [...new Set([...AVAILABLE_TAGS, ...selectedTags])], [selectedTags]);
-  const displayLocationTags = useMemo(() => [...new Set([...AVAILABLE_LOCATION_TAGS, ...selectedLocationTags])], [selectedLocationTags]);
-  const displayAngleTags = useMemo(() => [...new Set([...AVAILABLE_ANGLE_TAGS, ...selectedAngleTags])], [selectedAngleTags]);
-  const displayLightingTags = useMemo(() => [...new Set([...AVAILABLE_LIGHTING_TAGS, ...selectedLightingTags])], [selectedLightingTags]);
-  const displayEffectTags = useMemo(() => [...new Set([...AVAILABLE_EFFECT_TAGS, ...selectedEffectTags])], [selectedEffectTags]);
-  const displayMaterialTags = useMemo(() => [...new Set([...AVAILABLE_MATERIAL_TAGS, ...selectedMaterialTags])], [selectedMaterialTags]);
+  const displayAvailableCategoryTags = useMemo(() => [...new Set([...availableMockupTags, ...selectedTags])], [availableMockupTags, selectedTags]);
+  const displayLocationTags = useMemo(() => [...new Set([...availableLocationTags, ...selectedLocationTags])], [availableLocationTags, selectedLocationTags]);
+  const displayAngleTags = useMemo(() => [...new Set([...availableAngleTags, ...selectedAngleTags])], [availableAngleTags, selectedAngleTags]);
+  const displayLightingTags = useMemo(() => [...new Set([...availableLightingTags, ...selectedLightingTags])], [availableLightingTags, selectedLightingTags]);
+  const displayEffectTags = useMemo(() => [...new Set([...availableEffectTags, ...selectedEffectTags])], [availableEffectTags, selectedEffectTags]);
+  const displayMaterialTags = useMemo(() => [...new Set([...availableMaterialTags, ...selectedMaterialTags])], [availableMaterialTags, selectedMaterialTags]);
 
   const shouldCollapseSections = hasReferenceImage && uploadedImage !== null && designType !== 'blank';
 
@@ -438,19 +447,6 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
           }`}
         style={hasGenerated && isLargeScreen ? { width: `${sidebarWidth}px` } : {}}
       >
-        {/* Close button - always visible on all screen sizes */}
-        {onCloseMobile && (
-          <Button
-            onClick={onCloseMobile}
-            variant="ghost"
-            size="icon"
-            className="absolute top-4 right-4 z-20 text-muted-foreground hover:text-brand-cyan hover:bg-sidebar-accent"
-            aria-label={t('mockup.closeSidebar')}
-            title={t('mockup.closeSidebar')}
-          >
-            <X size={18} />
-          </Button>
-        )}
         <div className="space-y-3 sm:space-y-4 md:space-y-6 lg:space-y-8">
           <div
             className={`group ${(uploadedImage || referenceImage || referenceImages.length > 0) ? 'opacity-70 scale-[0.98] transition-all duration-300' : ''}`}
@@ -469,7 +465,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
 
             {/* Tip about image format - only show on hover */}
             {!uploadedImage && !referenceImage && referenceImages.length === 0 && !isImagelessMode && (
-              <p className="text-[10px] font-mono text-zinc-500/70 text-center px-2 leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-200 mt-2">
+              <p className="text-[10px] font-mono text-neutral-500/70 text-center px-2 leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-200 mt-2">
                 {t('mockup.imageFormatTip')}
               </p>
             )}
@@ -510,16 +506,18 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
               {/* Hide BrandingSection when reference images are present */}
               {/* Show branding when design type is selected OR when we have an uploaded image (pre-analysis) */}
               {(designTypeSelected || (uploadedImage && !isImagelessMode)) && (
-                <BrandingSection
-                  tags={displayBrandingTags}
-                  selectedTags={selectedBrandingTags}
-                  suggestedTags={suggestedBrandingTags}
-                  onTagToggle={handleBrandingTagToggle}
-                  customInput={customBrandingInput}
-                  onCustomInputChange={setCustomBrandingInput}
-                  onAddCustomTag={handleAddCustomBrandingTag}
-                  isComplete={brandingComplete}
-                />
+                <div className={`p-4 rounded-xl border transition-all duration-200 ${theme === 'dark' ? 'bg-black/20 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
+                  <BrandingSection
+                    tags={displayBrandingTags}
+                    selectedTags={selectedBrandingTags}
+                    suggestedTags={suggestedBrandingTags}
+                    onTagToggle={handleBrandingTagToggle}
+                    customInput={customBrandingInput}
+                    onCustomInputChange={setCustomBrandingInput}
+                    onAddCustomTag={handleAddCustomBrandingTag}
+                    isComplete={brandingComplete}
+                  />
+                </div>
               )}
 
               {/* Analyze Button - Show only when uploaded image exists and not yet analyzed */}
@@ -559,21 +557,23 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
 
               {/* Show CategoriesSection when design type is selected OR has uploaded image */}
               {(designTypeSelected || (uploadedImage && !isImagelessMode)) && (
-                <CategoriesSection
-                  suggestedTags={suggestedTags}
-                  availableTags={displayAvailableCategoryTags}
-                  selectedTags={selectedTags}
-                  onTagToggle={handleTagToggle}
-                  isAnalyzing={isAnalyzing}
-                  isAllCategoriesOpen={isAllCategoriesOpen}
-                  onToggleAllCategories={() => setIsAllCategoriesOpen(!isAllCategoriesOpen)}
-                  customInput={customCategoryInput}
-                  onCustomInputChange={setCustomCategoryInput}
-                  onAddCustomTag={handleAddCustomCategoryTag}
-                  onRandomize={handleRandomizeCategories}
-                  isComplete={categoriesComplete}
-                  displaySuggestedTags={displaySuggestedTags}
-                />
+                <div className={`p-4 rounded-xl border transition-all duration-200 ${theme === 'dark' ? 'bg-black/20 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
+                  <CategoriesSection
+                    suggestedTags={suggestedTags}
+                    availableTags={displayAvailableCategoryTags}
+                    selectedTags={selectedTags}
+                    onTagToggle={handleTagToggle}
+                    isAnalyzing={isAnalyzing}
+                    isAllCategoriesOpen={isAllCategoriesOpen}
+                    onToggleAllCategories={() => setIsAllCategoriesOpen(!isAllCategoriesOpen)}
+                    customInput={customCategoryInput}
+                    onCustomInputChange={setCustomCategoryInput}
+                    onAddCustomTag={handleAddCustomCategoryTag}
+                    onRandomize={handleRandomizeCategories}
+                    isComplete={categoriesComplete}
+                    displaySuggestedTags={displaySuggestedTags}
+                  />
+                </div>
               )}
 
               {/* Show refine section and below immediately when design type is selected OR when reference images are present OR uploaded image */}
@@ -684,16 +684,19 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
                   />
 
                   <div className="flex flex-col gap-2 mt-6">
-                    <GenerateButton
-                      onClick={onGenerateClick}
-                      disabled={isGenerateDisabled || (isPromptReady && isGenerating)}
-                      isGeneratingPrompt={isGeneratingPrompt}
-                      isGenerating={isGenerating}
-                      isPromptReady={isPromptReady}
-                      variant="sidebar"
-                      buttonRef={generateOutputsButtonRef}
-                      creditsRequired={creditsRequired}
-                    />
+                    {/* Generate Button - Only show if prompt is ready OR user has valid setup (Generate Prompt) */}
+                    {(isPromptReady || designTypeSelected || brandingComplete || categoriesComplete || hasReferenceImage || (uploadedImage && !isImagelessMode)) && (
+                      <GenerateButton
+                        onClick={onGenerateClick}
+                        disabled={isGenerateDisabled || (isPromptReady && isGenerating)}
+                        isGeneratingPrompt={isGeneratingPrompt}
+                        isGenerating={isGenerating}
+                        isPromptReady={isPromptReady}
+                        variant="sidebar"
+                        buttonRef={generateOutputsButtonRef}
+                        creditsRequired={creditsRequired}
+                      />
+                    )}
                     <div className={`grid gap-2 ${hasGenerated && mockups.some(m => m !== null) ? 'grid-cols-2' : 'grid-cols-1'}`}>
                       {/* Show regenerate button only when hasGenerated and mockups have content */}
                       {hasGenerated && mockups.some(m => m !== null) && (
@@ -762,7 +765,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
                       onClick={resetAll}
                       variant="ghost"
                       size="sm"
-                      className="w-auto gap-1.5 text-zinc-500 hover:text-zinc-400 text-[10px] font-mono opacity-60 hover:opacity-100"
+                      className="w-auto gap-1.5 text-neutral-500 hover:text-neutral-400 text-[10px] font-mono opacity-60 hover:opacity-100"
                       aria-label={t('mockup.clearAll')}
                     >
                       <RotateCcw size={12} />

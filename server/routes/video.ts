@@ -4,10 +4,10 @@ import { getDb, connectToMongoDB } from '../db/mongodb.js';
 import { ObjectId } from 'mongodb';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { checkSubscription, SubscriptionRequest } from '../middleware/subscription.js';
-import { generateVideo } from '../services/videoService.js';
-import { getVideoCreditsRequired } from '@/utils/usageTracking.js';
-import { uploadCanvasVideo, isR2Configured } from '../services/r2Service.js';
-import { calculateVideoCost } from '../src/utils/pricing.js';
+import { generateVideo } from '@/services/videoService.js';
+import { getVideoCreditsRequired } from '../utils/usageTracking.js';
+import { uploadCanvasVideo, isR2Configured } from '@/services/r2Service.js';
+import { calculateVideoCost } from '@/utils/pricing.js';
 
 // Helper function to refund credits if generation fails
 // Uses deduction source information to properly refund credits to their original source

@@ -39,6 +39,14 @@ export async function initializeLuminancePresets(): Promise<void> {
   await fetchAllOfficialPresets();
 }
 
+export const luminancePresetsService = {
+  getById: getLuminancePreset,
+  getAll: getAllLuminancePresets,
+  getByIdAsync: getLuminancePresetAsync,
+  getAllAsync: getAllLuminancePresetsAsync,
+  initialize: initializeLuminancePresets
+};
+
 
 
 

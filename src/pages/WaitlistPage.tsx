@@ -66,7 +66,7 @@ export const WaitlistPage: React.FC = () => {
         description={t('waitlist.seoDescription')}
         keywords={t('waitlist.seoKeywords')}
       />
-      <div className="min-h-screen bg-[#121212] text-zinc-300 pt-12 md:pt-14 relative">
+      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative">
         <div className="fixed inset-0 z-0">
           <LinearGradientBackground
             topColor="#DCEAF3"
@@ -79,13 +79,13 @@ export const WaitlistPage: React.FC = () => {
         </div>
         <div className="max-w-3xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
           {/* Main Content Card */}
-          <div className="bg-card border border-zinc-800/30 rounded-md p-8 md:p-12 shadow-sm relative overflow-hidden">
+          <div className="bg-card border border-neutral-800/30 rounded-md p-8 md:p-12 shadow-sm relative overflow-hidden">
             {/* Header */}
             <div className="text-center mb-8 md:mb-12 animate-fade-in-fast">
-              <h1 className="text-4xl md:text-5xl font-semibold font-manrope text-zinc-200 mb-4 tracking-tight">
+              <h1 className="text-4xl md:text-5xl font-semibold font-manrope text-neutral-200 mb-4 tracking-tight">
                 {t('waitlist.title') || 'Closed Alpha // VSN Labs®'}
               </h1>
-              <p className="text-zinc-400 font-mono text-sm md:text-base max-w-2xl mx-auto mt-4">
+              <p className="text-neutral-400 font-mono text-sm md:text-base max-w-2xl mx-auto mt-4">
                 {t('waitlist.subtitle') || 'Be among the first to access our premium tools. Get notified when we open access.'}
               </p>
             </div>
@@ -95,11 +95,11 @@ export const WaitlistPage: React.FC = () => {
               {!isSubmitted ? (
                 <form onSubmit={handleEmailSubmit} className="space-y-4">
                   <div>
-                    <label htmlFor="email" className="block text-sm font-mono text-zinc-400 mb-2">
+                    <label htmlFor="email" className="block text-sm font-mono text-neutral-400 mb-2">
                       {t('waitlist.emailLabel') || 'Email Address'}
                     </label>
                     <div className="relative">
-                      <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-zinc-500" />
+                      <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-neutral-500" />
                       <FormInput
                         id="email"
                         type="email"
@@ -146,10 +146,10 @@ export const WaitlistPage: React.FC = () => {
               )}
 
               {/* Mockup Machine Button */}
-              <div className="pt-4 border-t border-zinc-800/50">
+              <div className="pt-4 border-t border-neutral-800/50">
                 <button
                   onClick={() => navigate('/')}
-                  className="w-full px-6 py-3 bg-black/40 border border-zinc-800/60 hover:border-brand-cyan/50 hover:text-brand-cyan rounded-md text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                  className="w-full px-6 py-3 bg-black/40 border border-neutral-800/60 hover:border-brand-cyan/50 hover:text-brand-cyan rounded-md text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                 >
                   <Pickaxe size={16} />
                   {t('waitlist.tryMockupMachineNow') || 'Try Mockup Machine Now'}

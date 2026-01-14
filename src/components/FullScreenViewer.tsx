@@ -256,12 +256,12 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
       onClick={onClose}
     >
       <div
-        className="relative max-w-[90vw] md:max-w-[85vw] lg:max-w-[80vw] w-full max-h-[90vh] bg-zinc-900 border border-zinc-800/50 rounded-md shadow-2xl p-6 flex flex-col gap-4"
+        className="relative max-w-[90vw] md:max-w-[85vw] lg:max-w-[80vw] w-full max-h-[90vh] bg-neutral-900 border border-neutral-800/50 rounded-md shadow-2xl p-6 flex flex-col gap-4"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 p-1.5 rounded-md text-zinc-400/40 hover:text-zinc-300/80 hover:bg-black/20 transition-all z-20"
+          className="absolute top-2 right-2 p-1.5 rounded-md text-neutral-400/40 hover:text-neutral-300/80 hover:bg-black/20 transition-all z-20"
           title="Close (Esc)"
         >
           <X size={16} />
@@ -274,7 +274,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
               e.stopPropagation();
               onNavigatePrevious();
             }}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 p-2 text-zinc-400/30 hover:text-zinc-300/70 hover:bg-black/10 rounded-md transition-all"
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 p-2 text-neutral-400/30 hover:text-neutral-300/70 hover:bg-black/10 rounded-md transition-all"
             title="Previous (←)"
           >
             <ChevronLeft size={18} />
@@ -286,7 +286,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
               e.stopPropagation();
               onNavigateNext();
             }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-2 text-zinc-400/30 hover:text-zinc-300/70 hover:bg-black/10 rounded-md transition-all"
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-2 text-neutral-400/30 hover:text-neutral-300/70 hover:bg-black/10 rounded-md transition-all"
             title="Next (→)"
           >
             <ChevronRight size={18} />
@@ -325,7 +325,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                 }}
                 className={`absolute top-4 right-4 p-2 rounded-md transition-all z-30 backdrop-blur-sm ${localIsLiked
                   ? 'bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30'
-                  : 'bg-black/40 text-zinc-400 hover:bg-black/60 hover:text-zinc-200'
+                  : 'bg-black/40 text-neutral-400 hover:bg-black/60 hover:text-neutral-200'
                   }`}
                 title={localIsLiked ? t('canvasNodes.outputNode.removeFromFavorites') : t('canvasNodes.outputNode.saveToCollection')}
                 aria-label={localIsLiked ? 'Unlike' : 'Like'}
@@ -394,7 +394,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                   onZoomIn();
                 }}
                 disabled={editButtonsDisabled || isLoading}
-                className={`flex items-center gap-2 px-3 py-1.5 bg-black/10 backdrop-blur-sm text-zinc-400 border border-white/5 hover:border-white/8 hover:bg-white/3 hover:text-zinc-300 rounded-md transition-all duration-200 ${editButtonsDisabled || isLoading
+                className={`flex items-center gap-2 px-3 py-1.5 bg-black/10 backdrop-blur-sm text-neutral-400 border border-white/5 hover:border-white/8 hover:bg-white/3 hover:text-neutral-300 rounded-md transition-all duration-200 ${editButtonsDisabled || isLoading
                   ? 'opacity-50 cursor-not-allowed'
                   : ''
                   }`}
@@ -416,7 +416,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                   onZoomOut();
                 }}
                 disabled={editButtonsDisabled || isLoading}
-                className={`flex items-center gap-2 px-3 py-1.5 bg-black/10 backdrop-blur-sm text-zinc-400 border border-white/5 hover:border-white/8 hover:bg-white/3 hover:text-zinc-300 rounded-md transition-all duration-200 ${editButtonsDisabled || isLoading
+                className={`flex items-center gap-2 px-3 py-1.5 bg-black/10 backdrop-blur-sm text-neutral-400 border border-white/5 hover:border-white/8 hover:bg-white/3 hover:text-neutral-300 rounded-md transition-all duration-200 ${editButtonsDisabled || isLoading
                   ? 'opacity-50 cursor-not-allowed'
                   : ''
                   }`}
@@ -462,7 +462,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
             <button
               onClick={handleOpenInEditor}
               disabled={isConvertingImage}
-              className={`flex flex-nowrap items-center gap-2 px-3 py-1.5 bg-black/10 backdrop-blur-sm text-zinc-400 border border-white/5 hover:border-white/8 hover:bg-white/3 hover:text-zinc-300 rounded-md transition-all duration-200 ${isConvertingImage ? 'opacity-50 cursor-not-allowed' : ''
+              className={`flex flex-nowrap items-center gap-2 px-3 py-1.5 bg-black/10 backdrop-blur-sm text-neutral-400 border border-white/5 hover:border-white/8 hover:bg-white/3 hover:text-neutral-300 rounded-md transition-all duration-200 ${isConvertingImage ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               title="Open in Editor"
             >
@@ -483,13 +483,13 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
 
         {/* Mockup Information */}
         {mockup && !isLoading && (
-          <div className="flex-shrink-0 space-y-3 border-t border-zinc-800/50 pt-4">
+          <div className="flex-shrink-0 space-y-3 border-t border-neutral-800/50 pt-4">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-mono text-zinc-500 uppercase">
+                <span className="text-xs font-mono text-neutral-500 uppercase">
                   {mockup.designType}
                 </span>
-                <span className="text-xs font-mono text-zinc-500">
+                <span className="text-xs font-mono text-neutral-500">
                   {mockup.aspectRatio}
                 </span>
               </div>
@@ -498,14 +498,14 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                 <div>
                   <button
                     onClick={() => setShowPrompt(!showPrompt)}
-                    className="flex items-center gap-2 text-xs font-mono text-zinc-400 hover:text-brand-cyan transition-colors mb-2"
+                    className="flex items-center gap-2 text-xs font-mono text-neutral-400 hover:text-brand-cyan transition-colors mb-2"
                   >
                     <FileText size={14} />
                     <span>{showPrompt ? 'Hide' : 'Show'} Prompt</span>
                     {showPrompt ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                   </button>
                   {showPrompt && (
-                    <p className="text-sm font-mono text-zinc-300 bg-black/20 p-3 rounded-md border border-zinc-700/30">
+                    <p className="text-sm font-mono text-neutral-300 bg-black/20 p-3 rounded-md border border-neutral-700/30">
                       {mockup.prompt}
                     </p>
                   )}
@@ -517,7 +517,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
                   {[...(Array.isArray(mockup.tags) ? mockup.tags : []), ...(Array.isArray(mockup.brandingTags) ? mockup.brandingTags : [])].map((tag, idx) => (
                     <span
                       key={idx}
-                      className="px-2 py-1 bg-transparent border border-zinc-700/30 text-xs font-mono text-zinc-400 rounded"
+                      className="px-2 py-1 bg-transparent border border-neutral-700/30 text-xs font-mono text-neutral-400 rounded"
                     >
                       {translateTag(String(tag))}
                     </span>
@@ -526,7 +526,7 @@ export const FullScreenViewer: React.FC<FullScreenViewerProps> = ({
               )}
 
               {mockup.createdAt && (
-                <p className="text-xs font-mono text-zinc-500">
+                <p className="text-xs font-mono text-neutral-500">
                   {formatDate(mockup.createdAt)}
                 </p>
               )}

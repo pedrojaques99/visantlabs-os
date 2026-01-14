@@ -65,7 +65,7 @@ export const BrandingWelcomeScreen: React.FC<BrandingWelcomeScreenProps> = ({
         </div>
         <div className="relative z-10 max-w-2xl w-full text-center space-y-8 animate-fade-in">
           <div className="space-y-4">
-            <h1 className={`text-2xl md:text-3xl font-regular font-mono tracking-wider flex items-center justify-center gap-2 ${theme === 'dark' ? 'text-zinc-200' : 'text-zinc-800'
+            <h1 className={`text-2xl md:text-3xl font-regular font-mono tracking-wider flex items-center justify-center gap-2 ${theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
               }`}>
               BRANDING MACHINE® <span className="text-brand-cyan text-sm">v1.0</span>
             </h1>
@@ -77,11 +77,11 @@ export const BrandingWelcomeScreen: React.FC<BrandingWelcomeScreenProps> = ({
               : 'bg-card/50 backdrop-blur-sm'
               }`}>
               <div className="text-center">
-                <h2 className={`text-xl md:text-2xl font-semibold mb-2 normal-case ${theme === 'dark' ? 'text-zinc-200' : 'text-zinc-800'
+                <h2 className={`text-xl md:text-2xl font-semibold mb-2 normal-case ${theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
                   }`}>
                   {t('branding.describeYourBrand')}
                 </h2>
-                <p className={`text-sm md:text-base normal-case ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'
+                <p className={`text-sm md:text-base normal-case ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                   }`}>
                   {t('branding.describeYourBrandDescription')}
                 </p>

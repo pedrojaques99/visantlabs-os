@@ -13,7 +13,7 @@ const FormLabel = React.forwardRef<HTMLLabelElement, FormLabelProps>(
       <label
         ref={ref}
         className={cn(
-          "flex items-center gap-2 text-xs text-zinc-400 font-mono uppercase tracking-[0.3em]",
+          "flex items-center gap-2 text-xs text-neutral-400 font-mono uppercase tracking-[0.3em]",
           className
         )}
         {...props}

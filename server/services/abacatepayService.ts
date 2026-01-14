@@ -1,5 +1,5 @@
 import AbacatePayModule from 'abacatepay-nodejs-sdk';
-import { getCreditPackage, getAbacateBillId } from '../src/utils/creditPackages.js';
+import { getCreditPackage, getAbacateBillId } from '@/utils/creditPackages.js';
 
 // Support both ABACATEPAY_API_KEY and ABACATE_API_KEY for compatibility
 const ABACATEPAY_API_KEY = process.env.ABACATEPAY_API_KEY || process.env.ABACATE_API_KEY || '';

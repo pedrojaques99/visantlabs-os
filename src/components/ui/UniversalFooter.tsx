@@ -23,7 +23,7 @@ function UniversalFooterComponent({ isDarkMode, className = '' }: UniversalFoote
   }, [])
 
   return (
-    <div className={`text-center text-[9px] sm:text-[10px] md:text-[11px] text-zinc-500 ${className}`}>
+    <div className={`text-center text-[9px] sm:text-[10px] md:text-[11px] text-neutral-500 ${className}`}>
       <span>{glitchText}  {' | '} VSNLABS® v1.0</span>
     </div>
   )

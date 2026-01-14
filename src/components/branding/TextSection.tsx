@@ -52,9 +52,9 @@ export const TextSection: React.FC<TextSectionProps> = ({
   // If content is empty, show placeholder
   if (!safeContent.trim()) {
     return (
-      <Card className={theme === 'dark' ? 'bg-black/40 border-zinc-800/60' : 'bg-zinc-100 border-zinc-300'}>
+      <Card className={theme === 'dark' ? 'bg-black/40 border-neutral-800/60' : 'bg-neutral-100 border-neutral-300'}>
         <CardContent className="p-4 md:p-6">
-          <div className={`text-sm font-manrope italic ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'
+          <div className={`text-sm font-manrope italic ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'
             }`}>
             Nenhum conteúdo disponível.
           </div>
@@ -78,11 +78,11 @@ export const TextSection: React.FC<TextSectionProps> = ({
           <Card
             key={index}
             className={theme === 'dark'
-              ? 'bg-black/40 border-zinc-800/60 hover:border-zinc-700/60'
-              : 'bg-zinc-100 border-zinc-300 hover:border-zinc-400'}
+              ? 'bg-black/40 border-neutral-800/60 hover:border-neutral-700/60'
+              : 'bg-neutral-100 border-neutral-300 hover:border-neutral-400'}
           >
             <CardContent className="p-4 md:p-6">
-              <div className={`text-sm font-manrope leading-relaxed ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'
+              <div className={`text-sm font-manrope leading-relaxed ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                 }`}>
                 <MarkdownRenderer content={paragraph.trim()} preserveLines />
               </div>
@@ -96,11 +96,11 @@ export const TextSection: React.FC<TextSectionProps> = ({
   // Render as a single block of text with proper line breaks
   return (
     <Card className={theme === 'dark'
-      ? 'bg-black/40 border-zinc-800/60 hover:border-zinc-700/60'
-      : 'bg-zinc-100 border-zinc-300 hover:border-zinc-400'}
+      ? 'bg-black/40 border-neutral-800/60 hover:border-neutral-700/60'
+      : 'bg-neutral-100 border-neutral-300 hover:border-neutral-400'}
     >
       <CardContent className="p-4 md:p-6">
-        <div className={`text-sm font-manrope leading-relaxed whitespace-pre-wrap ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'
+        <div className={`text-sm font-manrope leading-relaxed whitespace-pre-wrap ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
           }`}>
           <MarkdownRenderer content={safeContent} preserveLines />
         </div>

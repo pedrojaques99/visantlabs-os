@@ -55,7 +55,7 @@ const VisantPreviewContent: React.FC<{ data: BudgetData; editable?: boolean; onD
   // If loading or no custom template, use default components
   if (isLoading || !activeTemplate) {
     return (
-      <div className={`w-full h-full min-h-full flex flex-col ${theme === 'dark' ? 'bg-[#121212]' : 'bg-zinc-100'}`}>
+      <div className={`w-full h-full min-h-full flex flex-col ${theme === 'dark' ? 'bg-[#0C0C0C]' : 'bg-neutral-100'}`}>
         <div className="flex-1 min-h-full overflow-visible">
           {/* Page 1: Cover */}
           <ResponsivePageWrapper contentWidth={data.contentWidth} pageName="cover" budgetData={data} isSidebarOpen={isSidebarOpen}>
@@ -122,7 +122,7 @@ const VisantPreviewContent: React.FC<{ data: BudgetData; editable?: boolean; onD
 
   // Use custom template layout
   return (
-    <div className={`w-full h-full min-h-full flex flex-col ${theme === 'dark' ? 'bg-[#121212]' : 'bg-zinc-100'}`}>
+    <div className={`w-full h-full min-h-full flex flex-col ${theme === 'dark' ? 'bg-[#0C0C0C]' : 'bg-neutral-100'}`}>
       <div className="flex-1 min-h-full overflow-visible">
         {/* Page 1: Cover */}
         <ResponsivePageWrapper contentWidth={data.contentWidth} pageName="cover" budgetData={data} isSidebarOpen={isSidebarOpen}>
@@ -226,7 +226,7 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
   // If custom PDF is provided, show it instead
   if (data.customPdfUrl) {
     return (
-      <div className={`w-full h-full min-h-full flex flex-col ${theme === 'dark' ? 'bg-[#121212]' : 'bg-zinc-100'}`}>
+      <div className={`w-full h-full min-h-full flex flex-col ${theme === 'dark' ? 'bg-[#0C0C0C]' : 'bg-neutral-100'}`}>
         <PdfPreviewWithFields
           pdfUrl={data.customPdfUrl}
           data={data}
@@ -251,12 +251,12 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
   // If template is custom but no PDF uploaded yet
   if (data.template === 'custom') {
     return (
-      <div className={`w-full h-full min-h-full flex items-center justify-center ${theme === 'dark' ? 'bg-[#121212]' : 'bg-zinc-100'}`}>
+      <div className={`w-full h-full min-h-full flex items-center justify-center ${theme === 'dark' ? 'bg-[#0C0C0C]' : 'bg-neutral-100'}`}>
         <div className="text-center p-8">
-          <p className={`text-lg font-mono mb-2 ${theme === 'dark' ? 'text-zinc-300' : 'text-zinc-600'}`}>
+          <p className={`text-lg font-mono mb-2 ${theme === 'dark' ? 'text-neutral-300' : 'text-neutral-600'}`}>
             Layout Custom
           </p>
-          <p className={`text-sm font-mono ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-500'}`}>
+          <p className={`text-sm font-mono ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'}`}>
             Faça upload de um PDF customizado no formulário para ver o preview aqui
           </p>
         </div>
@@ -298,7 +298,7 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
   const secondaryColor = data.brandColors[1] || '#34d399';
 
   return (
-    <div className={`w-full h-full overflow-auto p-8 ${theme === 'dark' ? 'bg-[#121212] text-zinc-100' : 'bg-white text-zinc-900'}`}>
+    <div className={`w-full h-full overflow-auto p-8 ${theme === 'dark' ? 'bg-[#0C0C0C] text-neutral-100' : 'bg-white text-neutral-900'}`}>
       <style>
         {`
           @media print {
@@ -328,19 +328,19 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
       {/* Title */}
       <div className="mb-8">
         <h2 className="text-4xl font-bold mb-2">{t('budget.title')}</h2>
-        <p className="text-lg text-zinc-600">{data.projectName}</p>
+        <p className="text-lg text-neutral-600">{data.projectName}</p>
       </div>
 
       {/* Client Info */}
       <div className="mb-8 grid grid-cols-2 gap-6">
         <div>
-          <h3 className="text-sm font-semibold text-zinc-500 mb-1 uppercase">
+          <h3 className="text-sm font-semibold text-neutral-500 mb-1 uppercase">
             {t('budget.clientName')}
           </h3>
           <p className="text-base">{data.clientName}</p>
         </div>
         <div>
-          <h3 className="text-sm font-semibold text-zinc-500 mb-1 uppercase flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-neutral-500 mb-1 uppercase flex items-center gap-2">
             <Calendar size={14} />
             {t('budget.startDate')} - {t('budget.endDate')}
           </h3>
@@ -356,7 +356,7 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
           <h3 className="text-lg font-semibold mb-2" style={{ color: primaryColor }}>
             {t('budget.projectDescription')}
           </h3>
-          <p className="text-base text-zinc-700 whitespace-pre-wrap">
+          <p className="text-base text-neutral-700 whitespace-pre-wrap">
             {data.projectDescription}
           </p>
         </div>
@@ -378,12 +378,12 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
           </thead>
           <tbody>
             {data.deliverables.map((deliverable, index) => (
-              <tr key={index} className="border-b border-zinc-200">
+              <tr key={index} className="border-b border-neutral-200">
                 <td className="py-3 px-4">
                   <div>
                     <div className="font-medium">{deliverable.name}</div>
                     {deliverable.description && (
-                      <div className="text-sm text-zinc-600">{deliverable.description}</div>
+                      <div className="text-sm text-neutral-600">{deliverable.description}</div>
                     )}
                   </div>
                 </td>
@@ -414,7 +414,7 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
           <h3 className="text-lg font-semibold mb-2" style={{ color: primaryColor }}>
             {t('budget.observations')}
           </h3>
-          <p className="text-base text-zinc-700 whitespace-pre-wrap">
+          <p className="text-base text-neutral-700 whitespace-pre-wrap">
             {data.observations}
           </p>
         </div>
@@ -430,7 +430,7 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
             {data.faq.map((item, index) => (
               <div key={index} className="border-l-4 pl-4" style={{ borderColor: secondaryColor }}>
                 <h4 className="font-semibold mb-1">{item.question}</h4>
-                <p className="text-zinc-700 text-sm">{item.answer}</p>
+                <p className="text-neutral-700 text-sm">{item.answer}</p>
               </div>
             ))}
           </div>
@@ -439,7 +439,7 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
 
       {/* Links */}
       {(data.links.website || data.links.instagram || data.links.whatsapp) && (
-        <div className="mb-8 pt-6 border-t border-zinc-200">
+        <div className="mb-8 pt-6 border-t border-neutral-200">
           <h3 className="text-lg font-semibold mb-4" style={{ color: primaryColor }}>
             {t('budget.links')}
           </h3>
@@ -449,7 +449,7 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
                 href={data.links.website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-zinc-700 hover:underline"
+                className="flex items-center gap-2 text-neutral-700 hover:underline"
               >
                 <Globe size={16} />
                 {data.links.website}
@@ -460,7 +460,7 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
                 href={`https://instagram.com/${data.links.instagram.replace('@', '')}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-zinc-700 hover:underline"
+                className="flex items-center gap-2 text-neutral-700 hover:underline"
               >
                 <Instagram size={16} />
                 {data.links.instagram}
@@ -471,7 +471,7 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
                 href={`https://wa.me/${data.links.whatsapp.replace(/\D/g, '')}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-zinc-700 hover:underline"
+                className="flex items-center gap-2 text-neutral-700 hover:underline"
               >
                 <MessageCircle size={16} />
                 {data.links.whatsapp}
@@ -482,7 +482,7 @@ export const BudgetPreview: React.FC<BudgetPreviewProps> = ({
       )}
 
       {/* Footer */}
-      <div className="mt-12 pt-6 border-t border-zinc-200 text-center text-sm text-zinc-500">
+      <div className="mt-12 pt-6 border-t border-neutral-200 text-center text-sm text-neutral-500">
         <p>Generated by Budget Machine® - {new Date().toLocaleDateString('pt-BR')}</p>
       </div>
     </div>

@@ -68,13 +68,13 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
   const { theme } = useTheme();
   return (
     <section>
-      <h2 className={`text-sm font-semibold font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'}`}>{t('mockup.refine')}</h2>
+      <h2 className={`text-sm font-semibold font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}`}>{t('mockup.refine')}</h2>
 
       <button
         onClick={onToggleAdvanced}
         className={`w-full flex justify-between items-center text-left text-sm font-semibold font-mono uppercase tracking-widest mt-3 p-3 rounded-md border transition-all cursor-pointer ${theme === 'dark'
-          ? 'text-zinc-400 bg-zinc-800/30 border-zinc-700/50 hover:border-zinc-600/80'
-          : 'text-zinc-700 bg-zinc-100 border-zinc-300 hover:border-zinc-400'
+          ? 'text-neutral-400 bg-neutral-800/30 border-neutral-700/50 hover:border-neutral-600/80'
+          : 'text-neutral-700 bg-neutral-100 border-neutral-300 hover:border-neutral-400'
           }`}
       >
         <span>{t('mockup.advancedOptions')}</span>

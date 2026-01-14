@@ -63,23 +63,23 @@ export const PdfThumbnail: React.FC<PdfThumbnailProps> = ({
   return (
     <div
       className={cn(
-        'relative group aspect-square bg-zinc-900/50 border border-zinc-700/30 rounded overflow-hidden',
+        'relative group aspect-square bg-neutral-900/50 border border-neutral-700/30 rounded overflow-hidden',
         onClick && 'cursor-pointer hover:border-[brand-cyan]/50 transition-colors',
         className
       )}
       onClick={onClick}
     >
       {hasError ? (
-        <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-900/50 gap-1">
-          <FileText size={16} className="text-zinc-600" />
+        <div className="w-full h-full flex flex-col items-center justify-center bg-neutral-900/50 gap-1">
+          <FileText size={16} className="text-neutral-600" />
           {fileName && (
-            <span className="text-[10px] font-mono text-zinc-600 truncate max-w-full px-1">
+            <span className="text-[10px] font-mono text-neutral-600 truncate max-w-full px-1">
               {fileName}
             </span>
           )}
         </div>
       ) : (
-        <div className="w-full h-full relative flex items-center justify-center bg-zinc-900/50">
+        <div className="w-full h-full relative flex items-center justify-center bg-neutral-900/50">
           <Document
             file={pdfSource}
             onLoadSuccess={onDocumentLoadSuccess}

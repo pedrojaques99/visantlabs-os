@@ -24,11 +24,11 @@ export const DesignTypeSection: React.FC<DesignTypeSectionProps> = ({
 
   return (
     <section className={isComplete ? 'pb-0' : ''}>
-      <h2 className={`font-semibold font-mono uppercase tracking-widest mb-3 transition-all duration-300 ${isComplete ? 'text-[10px] text-zinc-600 mb-1' : 'text-sm text-zinc-400'}`}>
+      <h2 className={`font-semibold font-mono uppercase tracking-widest mb-3 transition-all duration-300 ${isComplete ? 'text-[10px] text-neutral-600 mb-1' : 'text-sm text-neutral-400'}`}>
         {t('mockup.designType')}
       </h2>
       {!isComplete && (
-        <p className="text-xs text-zinc-500 mb-3 font-mono">{t('mockup.designTypeComment')}</p>
+        <p className="text-xs text-neutral-500 mb-3 font-mono">{t('mockup.designTypeComment')}</p>
       )}
       <div className="space-y-2">
         {designType !== 'blank' && (
@@ -44,7 +44,7 @@ export const DesignTypeSection: React.FC<DesignTypeSectionProps> = ({
                 "w-full flex flex-col items-center justify-center gap-1 p-4 text-xs font-mono",
                 designType === 'logo'
                   ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
-                  : 'bg-zinc-800/30 text-zinc-400 border-zinc-700/30 hover:border-zinc-600/50'
+                  : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50'
               )}
             >
               <span className="text-2xl">🖼️</span>
@@ -61,7 +61,7 @@ export const DesignTypeSection: React.FC<DesignTypeSectionProps> = ({
                 "w-full flex flex-col items-center justify-center gap-1 p-4 text-xs font-mono",
                 designType === 'layout'
                   ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
-                  : 'bg-zinc-800/30 text-zinc-400 border-zinc-700/30 hover:border-zinc-600/50'
+                  : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50'
               )}
             >
               <span className="text-2xl">🎨</span>
@@ -77,7 +77,7 @@ export const DesignTypeSection: React.FC<DesignTypeSectionProps> = ({
               "w-full flex items-center gap-2 px-3 py-2 text-xs font-mono",
               designType === 'blank'
                 ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
-                : 'bg-zinc-800/30 text-zinc-400 border-zinc-700/30 hover:border-zinc-600/50'
+                : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50'
             )}
           >
             <span className="text-lg">📄</span>

@@ -33,8 +33,8 @@ const NodeSlider = React.forwardRef<HTMLInputElement, NodeSliderProps>(
     return (
       <div className="space-y-2.5">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-mono text-zinc-400">{label}</label>
-          <span className="text-xs font-mono text-zinc-500">{displayValue}</span>
+          <label className="text-xs font-mono text-neutral-400">{label}</label>
+          <span className="text-xs font-mono text-neutral-500">{displayValue}</span>
         </div>
         <input
           ref={ref}
@@ -46,7 +46,7 @@ const NodeSlider = React.forwardRef<HTMLInputElement, NodeSliderProps>(
           onChange={handleChange}
           onMouseDown={handleMouseDown}
           className={cn(
-            "w-full h-1.5 bg-zinc-800 rounded-md appearance-none cursor-pointer accent-[brand-cyan]",
+            "w-full h-1.5 bg-neutral-800 rounded-md appearance-none cursor-pointer accent-[brand-cyan]",
             "transition-all duration-150",
             className
           )}

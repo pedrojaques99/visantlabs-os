@@ -992,15 +992,15 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
 
       <div className="flex flex-col h-full min-h-0">
         {/* Header with action buttons */}
-        <div className="flex items-center justify-between mb-5 pb-4 border-b border-zinc-700/30 bg-gradient-to-r from-zinc-900/40 to-zinc-900/20 backdrop-blur-sm -mx-5 px-5 pt-0">
+        <div className="flex items-center justify-between mb-5 pb-4 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/40 to-neutral-900/20 backdrop-blur-sm -mx-5 px-5 pt-0">
           <div className="flex items-center gap-2.5">
             <div className="p-1.5 rounded-md bg-brand-cyan/10 border border-brand-cyan/20">
               <Target size={16} className="text-brand-cyan" />
             </div>
             <div className="flex flex-col">
-              <h3 className="text-sm font-semibold text-zinc-200 font-mono tracking-tight">{t('canvasNodes.strategyNode.title') || 'Strategy Node'}</h3>
+              <h3 className="text-sm font-semibold text-neutral-200 font-mono tracking-tight">{t('canvasNodes.strategyNode.title') || 'Strategy Node'}</h3>
               {projectName && (
-                <span className="text-[10px] text-zinc-400 font-mono mt-0.5 truncate max-w-[200px]" title={projectName}>{projectName}</span>
+                <span className="text-[10px] text-neutral-400 font-mono mt-0.5 truncate max-w-[200px]" title={projectName}>{projectName}</span>
               )}
             </div>
           </div>
@@ -1014,9 +1014,9 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                 disabled={!hasData || isGenerating}
                 className={cn(
                   "p-2 rounded-md border transition-all nodrag nopan",
-                  "bg-zinc-900/60 border-zinc-700/40 text-zinc-300 hover:border-zinc-600/60",
+                  "bg-neutral-900/60 border-neutral-700/40 text-neutral-300 hover:border-neutral-600/60",
                   "disabled:opacity-50 disabled:cursor-not-allowed",
-                  "hover:bg-zinc-800/70 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
+                  "hover:bg-neutral-800/70 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
                 )}
                 title={t('canvasNodes.strategyNode.openInNewTab')}
               >
@@ -1032,9 +1032,9 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                 disabled={!hasData}
                 className={cn(
                   "p-2 rounded-md border transition-all nodrag nopan",
-                  "bg-zinc-900/60 border-zinc-700/40 text-zinc-300 hover:border-zinc-600/60",
+                  "bg-neutral-900/60 border-neutral-700/40 text-neutral-300 hover:border-neutral-600/60",
                   "disabled:opacity-50 disabled:cursor-not-allowed",
-                  "hover:bg-zinc-800/70 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
+                  "hover:bg-neutral-800/70 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
                 )}
                 title={t('canvasNodes.strategyNode.downloadPDF')}
               >
@@ -1065,7 +1065,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
         {/* Initial State - Project Selector or Create New */}
         {showProjectSelector && !isCreatingNew && (
           <div className="mb-5 space-y-4">
-            <NodeLabel className="text-zinc-300 font-medium">{t('canvasNodes.strategyNode.chooseOption')}</NodeLabel>
+            <NodeLabel className="text-neutral-300 font-medium">{t('canvasNodes.strategyNode.chooseOption')}</NodeLabel>
 
             {/* Load Existing Projects */}
             <div className="space-y-2.5">
@@ -1086,7 +1086,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
             </div>
 
             {/* Create New Project */}
-            <div className="pt-3 border-t border-zinc-700/30">
+            <div className="pt-3 border-t border-neutral-700/30">
               <NodeButton
                 onClick={(e) => {
                   e.stopPropagation();
@@ -1105,7 +1105,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
         {/* Name Input - Show when creating new */}
         {isCreatingNew && (
           <div className="mb-5">
-            <NodeLabel className="text-zinc-300 font-medium">{t('canvasNodes.strategyNode.projectName') || 'Project Name'}</NodeLabel>
+            <NodeLabel className="text-neutral-300 font-medium">{t('canvasNodes.strategyNode.projectName') || 'Project Name'}</NodeLabel>
             <NodeInput
               type="text"
               value={projectName}
@@ -1121,12 +1121,12 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
         {/* Prompt Input - Show when creating new or when has data */}
         {(!showProjectSelector || isCreatingNew || hasData) && (
           <div className="mb-5">
-            <NodeLabel className="text-zinc-300 font-medium">{t('canvasNodes.strategyNode.brandDescription')}</NodeLabel>
+            <NodeLabel className="text-neutral-300 font-medium">{t('canvasNodes.strategyNode.brandDescription')}</NodeLabel>
             <Textarea
               value={prompt}
               onChange={handlePromptChange}
               placeholder={t('canvasNodes.strategyNode.brandDescriptionPlaceholder')}
-              className="text-xs resize-none nodrag nopan bg-zinc-900/60 border-zinc-700/40 focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 backdrop-blur-sm"
+              className="text-xs resize-none nodrag nopan bg-neutral-900/60 border-neutral-700/40 focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 backdrop-blur-sm"
               rows={3}
               disabled={isGenerating}
             />
@@ -1222,7 +1222,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
         {hasData && (
           <div className="mb-5">
             <div className="flex items-center justify-between mb-3">
-              <NodeLabel className="mb-0 text-zinc-300 font-medium">{t('canvasNodes.strategyNode.generateSections')}</NodeLabel>
+              <NodeLabel className="mb-0 text-neutral-300 font-medium">{t('canvasNodes.strategyNode.generateSections')}</NodeLabel>
               {nodeData.onGenerateAll && (
                 <button
                   onClick={(e) => {
@@ -1232,7 +1232,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                   disabled={!prompt.trim() || isGenerating}
                   className={cn(
                     'px-2.5 py-1.5 text-[10px] font-mono border rounded-md transition-all nodrag nopan',
-                    'bg-zinc-900/60 border-zinc-700/40 text-zinc-400 hover:border-zinc-600/60 hover:text-zinc-300',
+                    'bg-neutral-900/60 border-neutral-700/40 text-neutral-400 hover:border-neutral-600/60 hover:text-neutral-300',
                     'disabled:opacity-50 disabled:cursor-not-allowed',
                     'backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95'
                   )}
@@ -1272,8 +1272,8 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                       className={cn(
                         'px-2.5 py-2 border rounded-md text-xs font-mono transition-all flex items-center gap-1.5 justify-center nodrag nopan relative',
                         isBlocked
-                          ? 'bg-zinc-900/30 border-zinc-700/30 text-zinc-500 cursor-not-allowed opacity-60'
-                          : 'bg-zinc-900/60 border-zinc-700/40 text-zinc-300 hover:border-zinc-600/60 cursor-pointer backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98]',
+                          ? 'bg-neutral-900/30 border-neutral-700/30 text-neutral-500 cursor-not-allowed opacity-60'
+                          : 'bg-neutral-900/60 border-neutral-700/40 text-neutral-300 hover:border-neutral-600/60 cursor-pointer backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98]',
                         (!prompt.trim() || isGeneratingSection || (isGenerating && generatingStep === 'all') || generatingSteps.length > 0) && !isBlocked && 'opacity-50 cursor-not-allowed'
                       )}
                       title={isBlocked ? `Bloqueado: requer ${missingDepsLabels}` : section.label}
@@ -1334,9 +1334,9 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
 
         {/* Generated Sections Display */}
         {hasData && (
-          <div className="border-t border-zinc-700/30 pt-4 flex flex-col flex-1 min-h-0">
+          <div className="border-t border-neutral-700/30 pt-4 flex flex-col flex-1 min-h-0">
             <div className="flex items-center justify-between mb-4 shrink-0 px-1">
-              <span className="text-xs font-mono text-zinc-300 font-medium">
+              <span className="text-xs font-mono text-neutral-300 font-medium">
                 {t('canvasNodes.strategyNode.generatedSections')} <span className="text-brand-cyan">({sections.filter(s => hasSectionData(s.type)).length}/{sections.length})</span>
               </span>
               <button
@@ -1344,7 +1344,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                   e.stopPropagation();
                   toggleAllSections();
                 }}
-                className="text-xs font-mono text-zinc-400 hover:text-zinc-300 flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-zinc-800/50 transition-all backdrop-blur-sm nodrag nopan"
+                className="text-xs font-mono text-neutral-400 hover:text-neutral-300 flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-neutral-800/50 transition-all backdrop-blur-sm nodrag nopan"
               >
                 {sections.every(s => !hasSectionData(s.type) || expandedSections[s.type]) ? (
                   <>
@@ -1376,14 +1376,14 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                 return (
                   <div
                     key={section.type}
-                    className="border border-zinc-700/40 rounded-lg overflow-hidden group bg-zinc-900/30 backdrop-blur-sm shadow-sm hover:shadow-md transition-all"
+                    className="border border-neutral-700/40 rounded-lg overflow-hidden group bg-neutral-900/30 backdrop-blur-sm shadow-sm hover:shadow-md transition-all"
                   >
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         toggleSection(section.type);
                       }}
-                      className="w-full flex items-center justify-between px-3.5 py-2.5 bg-zinc-900/40 hover:bg-zinc-900/60 transition-all nodrag nopan"
+                      className="w-full flex items-center justify-between px-3.5 py-2.5 bg-neutral-900/40 hover:bg-neutral-900/60 transition-all nodrag nopan"
                     >
                       <div className="flex items-center gap-2.5">
                         {sectionHasData && !isGeneratingSection && (
@@ -1404,26 +1404,26 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                           </div>
                         )}
                         <span className="text-sm">{section.emoji}</span>
-                        <NodeLabel className="mb-0 text-zinc-200">
+                        <NodeLabel className="mb-0 text-neutral-200">
                           {section.label}
                           {sectionHasData && !isGeneratingSection && (
                             <span className="ml-2 text-brand-cyan text-[10px]">✓</span>
                           )}
                         </NodeLabel>
                       </div>
-                      {isSectionExpanded ? <ChevronUp size={14} className="text-zinc-400" /> : <ChevronDown size={14} className="text-zinc-400" />}
+                      {isSectionExpanded ? <ChevronUp size={14} className="text-neutral-400" /> : <ChevronDown size={14} className="text-neutral-400" />}
                     </button>
 
                     {isSectionExpanded && (
                       <div
-                        className="p-3.5 bg-zinc-900/20 border-t border-zinc-700/20"
+                        className="p-3.5 bg-neutral-900/20 border-t border-neutral-700/20"
                         onWheel={(e) => e.stopPropagation()}
                       >
                         {sectionHasData && content && (
                           <AutoResizeTextarea
                             value={content}
                             onChange={(e) => handleSectionContentChange(section.type, e.target.value)}
-                            className="text-xs resize-none nodrag nopan w-full bg-zinc-900/60 border-zinc-700/40 focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 backdrop-blur-sm"
+                            className="text-xs resize-none nodrag nopan w-full bg-neutral-900/60 border-neutral-700/40 focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 backdrop-blur-sm"
                             minHeight={40}
                             maxHeight={400}
                             onWheel={(e) => {

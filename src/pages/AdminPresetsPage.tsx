@@ -34,6 +34,18 @@ import { LUMINANCE_PRESETS } from '../types/luminancePresets';
 import type { AspectRatio, GeminiModel, UploadedImage } from '../types/types';
 import { cn } from '../lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
+import type { BrandingPreset } from '../types/brandingPresets';
+import { BRANDING_PRESETS } from '../types/brandingPresets';
+import type { EffectPreset } from '../types/effectPresets';
+import { EFFECT_PRESETS } from '../types/effectPresets';
+import {
+  AVAILABLE_ANGLE_TAGS,
+  AVAILABLE_MATERIAL_TAGS,
+  AVAILABLE_LOCATION_TAGS,
+  AVAILABLE_LIGHTING_TAGS,
+  AVAILABLE_BRANDING_TAGS,
+  AVAILABLE_EFFECT_TAGS
+} from '@/utils/mockupConstants';
 
 const ADMIN_API = '/api/admin/presets';
 
@@ -46,9 +58,11 @@ interface PresetsData {
   texturePresets: TexturePreset[];
   ambiencePresets: AmbiencePreset[];
   luminancePresets: LuminancePreset[];
+  brandingPresets: BrandingPreset[];
+  effectPresets: EffectPreset[];
 }
 
-type PresetType = 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance';
+type PresetType = 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance' | 'branding' | 'effect';
 
 interface PresetFormData {
   id: string;
@@ -192,7 +206,7 @@ export const AdminPresetsPage: React.FC = () => {
     handleFetch();
   };
 
-  const handleEdit = (type: PresetType, preset: MockupPreset | AnglePreset | TexturePreset | AmbiencePreset | LuminancePreset) => {
+  const handleEdit = (type: PresetType, preset: MockupPreset | AnglePreset | TexturePreset | AmbiencePreset | LuminancePreset | BrandingPreset | EffectPreset) => {
     setEditingPreset({ type, id: preset.id });
     setIsCreating(false);
     setFormData({
@@ -843,26 +857,138 @@ export const AdminPresetsPage: React.FC = () => {
     }
   };
 
+  const handlePopulateFromTags = async () => {
+    const token = authService.getToken();
+    if (!token) {
+      setError('Você precisa estar autenticado como administrador.');
+      return;
+    }
+
+    let tags: string[] = [];
+    let endpoint = '';
+
+    // Map active tab to tags and endpoint
+    switch (activeTab) {
+      case 'angle':
+        tags = AVAILABLE_ANGLE_TAGS;
+        endpoint = 'angle';
+        break;
+      case 'texture':
+        tags = AVAILABLE_MATERIAL_TAGS; // Material tags map to textures
+        endpoint = 'texture';
+        break;
+      case 'ambience':
+        tags = AVAILABLE_LOCATION_TAGS; // Location tags map to ambience
+        endpoint = 'ambience';
+        break;
+      case 'luminance':
+        tags = AVAILABLE_LIGHTING_TAGS; // Lighting tags map to luminance
+        endpoint = 'luminance';
+        break;
+      case 'branding':
+        tags = AVAILABLE_BRANDING_TAGS;
+        endpoint = 'branding';
+        break;
+      case 'effect':
+        tags = AVAILABLE_EFFECT_TAGS;
+        endpoint = 'effect';
+        break;
+      default:
+        setError('Esta categoria não suporta população por tags.');
+        return;
+    }
+
+    if (!confirm(t('adminPresets.confirmPopulate', { count: tags.length }))) {
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    setBatchResult(null);
+
+    try {
+      let created = 0;
+      let failed = 0;
+      const errors: Array<{ index: number; id?: string; error: string }> = [];
+
+      // Create presets from tags
+      for (let i = 0; i < tags.length; i++) {
+        const tag = tags[i];
+        // Generate ID from tag (kebab-case)
+        const id = tag.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+        const presetData = {
+          id,
+          name: tag,
+          description: tag, // Default description
+          prompt: tag, // Default prompt is the tag itself
+          // Add default values if needed based on type, but backend usually handles optional fields
+          // For now sending minimal required fields
+        };
+
+        try {
+          const response = await fetch(`${ADMIN_API}/${endpoint}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(presetData),
+          });
+
+          if (response.ok) {
+            created++;
+          } else {
+            // If it failed, check if it's because it already exists (409 Conflict) - we count as success/skipped or fail?
+            // Usually we just want to know if it *failed* to be created. 
+            // If it exists, we might just skip. 
+            // For now, let's log fail but usually user wants to fill missing ones.
+            failed++;
+            const errorData = await response.json();
+            errors.push({ index: i, id, error: errorData.error || t('common.unknownError') });
+          }
+        } catch (error: any) {
+          failed++;
+          errors.push({ index: i, id, error: error.message || t('common.unknownError') });
+        }
+      }
+
+      setBatchResult({ created, failed, errors });
+      await handleFetch();
+      if (created > 0) {
+        toast.success(t('adminPresets.importedSuccess', { count: created }));
+      } else if (failed > 0) {
+        toast.error(`Falha: ${failed} itens não puderam ser criados (podem já existir).`);
+      }
+    } catch (error: any) {
+      setError(error.message || 'Erro ao popular presets.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const currentPresets =
     activeTab === 'mockup' ? data?.mockupPresets || [] :
       activeTab === 'angle' ? data?.anglePresets || [] :
         activeTab === 'texture' ? data?.texturePresets || [] :
           activeTab === 'ambience' ? data?.ambiencePresets || [] :
-            activeTab === 'luminance' ? data?.luminancePresets || [] : [];
+            activeTab === 'luminance' ? data?.luminancePresets || [] :
+              activeTab === 'branding' ? data?.brandingPresets || [] :
+                activeTab === 'effect' ? data?.effectPresets || [] : [];
   const isEditing = editingPreset !== null || isCreating;
 
   return (
-    <div className="min-h-screen bg-[#121212] text-zinc-300 pt-12 md:pt-14 relative">
+    <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative">
       <div className="fixed inset-0 z-0">
         <GridDotsBackground />
       </div>
       <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
         {!isCheckingAuth && !isAuthenticated && (
           <div className="max-w-md mx-auto">
-            <div className="bg-zinc-900 border border-zinc-800/50 rounded-md p-6 md:p-8 space-y-4 text-center">
+            <div className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 md:p-8 space-y-4 text-center">
               {isUserAuthenticated === false ? (
                 <>
-                  <p className="text-zinc-400 font-mono mb-4">
+                  <p className="text-neutral-400 font-mono mb-4">
                     Você precisa estar logado para acessar esta página.
                   </p>
                   <a
@@ -874,7 +1000,7 @@ export const AdminPresetsPage: React.FC = () => {
                 </>
               ) : isAdmin === false ? (
                 <>
-                  <p className="text-zinc-400 font-mono mb-4">
+                  <p className="text-neutral-400 font-mono mb-4">
                     Acesso negado. Você precisa ser um administrador para acessar esta página.
                   </p>
                   {error && (
@@ -893,7 +1019,7 @@ export const AdminPresetsPage: React.FC = () => {
             if (val !== 'presets') navigate('/admin');
           }}>
             {/* Unified Header */}
-            <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl mb-6">
+            <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl mb-6">
               <CardContent className="p-4 md:p-6">
                 <div className="mb-4">
                   <BreadcrumbWithBack to="/">
@@ -921,29 +1047,25 @@ export const AdminPresetsPage: React.FC = () => {
                   <div className="flex items-center gap-3">
                     <ShieldCheck className="h-6 w-6 md:h-8 md:w-8 text-brand-cyan" />
                     <div>
-                      <h1 className="text-2xl md:text-3xl font-semibold font-manrope text-zinc-300">
+                      <h1 className="text-2xl md:text-3xl font-semibold font-manrope text-neutral-300">
                         {t('adminPresets.title') || 'Administração de Presets'}
                       </h1>
-                      <p className="text-zinc-500 font-mono text-xs md:text-sm">
+                      <p className="text-neutral-500 font-mono text-xs md:text-sm">
                         {t('adminPresets.subtitle') || 'Gerencie presets de mockup e gerações'}
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-4">
-                    <TabsList className="bg-zinc-900/50 border border-zinc-800/50 p-1 h-auto flex-wrap">
-                      <TabsTrigger value="overview" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/10 transition-all py-1.5 px-3 text-xs md:text-sm">
+                    <TabsList className="bg-neutral-900/50 border border-neutral-800/50 p-1 h-auto flex-wrap">
+                      <TabsTrigger value="overview" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/10 transition-all py-1.5 px-3 text-xs md:text-sm">
                         {t('admin.dashboard')}
                       </TabsTrigger>
-                      <TabsTrigger value="generations" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/10 transition-all py-1.5 px-3 text-xs md:text-sm">
+                      <TabsTrigger value="generations" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/10 transition-all py-1.5 px-3 text-xs md:text-sm">
                         {t('admin.generations')}
                       </TabsTrigger>
-                      <TabsTrigger value="users" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/10 transition-all py-1.5 px-3 text-xs md:text-sm">
+                      <TabsTrigger value="users" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/10 transition-all py-1.5 px-3 text-xs md:text-sm">
                         {t('admin.users')}
-                      </TabsTrigger>
-                      <TabsTrigger value="presets" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-zinc-200 hover:bg-zinc-800/10 transition-all py-1.5 px-3 text-xs md:text-sm">
-                        <Settings className="h-3 w-3 md:h-4 md:w-4 mr-1.5" />
-                        {t('admin.presets')}
                       </TabsTrigger>
                     </TabsList>
 
@@ -952,7 +1074,7 @@ export const AdminPresetsPage: React.FC = () => {
                       disabled={isLoading}
                       variant="outline"
                       size="sm"
-                      className="flex items-center gap-2 border-zinc-800/50 hover:bg-zinc-800/50 h-9"
+                      className="flex items-center gap-2 border-neutral-800/50 hover:bg-neutral-800/50 h-9"
                     >
                       <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
                       <span className="hidden sm:inline">{t('admin.refresh') || 'Atualizar'}</span>
@@ -964,7 +1086,7 @@ export const AdminPresetsPage: React.FC = () => {
 
             <div className="space-y-6">
               {/* Tabs and Actions Card */}
-              <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300 shadow-lg">
+              <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300 shadow-lg">
                 <CardContent className="p-4 md:p-6">
                   <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
                     <div className="flex gap-2 flex-wrap">
@@ -976,7 +1098,7 @@ export const AdminPresetsPage: React.FC = () => {
                         variant={activeTab === 'mockup' ? 'default' : 'outline'}
                         className={`font-mono transition-all ${activeTab === 'mockup'
                           ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
-                          : 'border-zinc-700/60 hover:border-[brand-cyan]/30'
+                          : 'border-neutral-700/60 hover:border-[brand-cyan]/30'
                           }`}
                       >
                         Mockup Presets
@@ -989,7 +1111,7 @@ export const AdminPresetsPage: React.FC = () => {
                         variant={activeTab === 'angle' ? 'default' : 'outline'}
                         className={`font-mono transition-all ${activeTab === 'angle'
                           ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
-                          : 'border-zinc-700/60 hover:border-[brand-cyan]/30'
+                          : 'border-neutral-700/60 hover:border-[brand-cyan]/30'
                           }`}
                       >
                         Angle Presets
@@ -1002,7 +1124,7 @@ export const AdminPresetsPage: React.FC = () => {
                         variant={activeTab === 'texture' ? 'default' : 'outline'}
                         className={`font-mono transition-all ${activeTab === 'texture'
                           ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
-                          : 'border-zinc-700/60 hover:border-[brand-cyan]/30'
+                          : 'border-neutral-700/60 hover:border-[brand-cyan]/30'
                           }`}
                       >
                         Texture Presets
@@ -1015,7 +1137,7 @@ export const AdminPresetsPage: React.FC = () => {
                         variant={activeTab === 'ambience' ? 'default' : 'outline'}
                         className={`font-mono transition-all ${activeTab === 'ambience'
                           ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
-                          : 'border-zinc-700/60 hover:border-[brand-cyan]/30'
+                          : 'border-neutral-700/60 hover:border-[brand-cyan]/30'
                           }`}
                       >
                         Ambience Presets
@@ -1028,17 +1150,43 @@ export const AdminPresetsPage: React.FC = () => {
                         variant={activeTab === 'luminance' ? 'default' : 'outline'}
                         className={`font-mono transition-all ${activeTab === 'luminance'
                           ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
-                          : 'border-zinc-700/60 hover:border-[brand-cyan]/30'
+                          : 'border-neutral-700/60 hover:border-[brand-cyan]/30'
                           }`}
                       >
                         Luminance Presets
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setActiveTab('branding');
+                          if (isEditModalOpen) handleCancel();
+                        }}
+                        variant={activeTab === 'branding' ? 'default' : 'outline'}
+                        className={`font-mono transition-all ${activeTab === 'branding'
+                          ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
+                          : 'border-neutral-700/60 hover:border-[brand-cyan]/30'
+                          }`}
+                      >
+                        Branding Presets
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setActiveTab('effect');
+                          if (isEditModalOpen) handleCancel();
+                        }}
+                        variant={activeTab === 'effect' ? 'default' : 'outline'}
+                        className={`font-mono transition-all ${activeTab === 'effect'
+                          ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
+                          : 'border-neutral-700/60 hover:border-[brand-cyan]/30'
+                          }`}
+                      >
+                        Effect Presets
                       </Button>
                     </div>
                     <div className="flex gap-2">
                       <Button
                         onClick={handleRefresh}
                         disabled={isLoading}
-                        className="font-mono bg-brand-cyan/80 hover:bg-brand-cyan text-black disabled:bg-zinc-700 disabled:text-zinc-500"
+                        className="font-mono bg-brand-cyan/80 hover:bg-brand-cyan text-black disabled:bg-neutral-700 disabled:text-neutral-500"
                       >
                         Atualizar
                       </Button>
@@ -1049,6 +1197,16 @@ export const AdminPresetsPage: React.FC = () => {
                         >
                           <Plus className="h-4 w-4 mr-2" />
                           Novo
+                        </Button>
+                      )}
+                      {!isEditing && activeTab !== 'mockup' && (
+                        <Button
+                          onClick={handlePopulateFromTags}
+                          disabled={isLoading}
+                          className="font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-brand-cyan/30"
+                        >
+                          <Layers className="h-4 w-4 mr-2" />
+                          {t('adminPresets.populateDefaults') || 'Popular Padrões'}
                         </Button>
                       )}
                     </div>
@@ -1085,9 +1243,9 @@ export const AdminPresetsPage: React.FC = () => {
 
               {/* Presets Grid - Bento Box Cards */}
               {currentPresets.length === 0 ? (
-                <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl">
+                <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
                   <CardContent className="p-12 text-center">
-                    <p className="text-zinc-500 font-mono">Nenhum preset encontrado</p>
+                    <p className="text-neutral-500 font-mono">Nenhum preset encontrado</p>
                   </CardContent>
                 </Card>
               ) : (
@@ -1097,7 +1255,7 @@ export const AdminPresetsPage: React.FC = () => {
                     return (
                       <Card
                         key={preset.id}
-                        className="bg-zinc-900 border border-zinc-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl"
+                        className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl"
                       >
                         <CardContent className="p-6">
                           {/* Image */}
@@ -1106,54 +1264,54 @@ export const AdminPresetsPage: React.FC = () => {
                               <img
                                 src={(preset as any).referenceImageUrl}
                                 alt={preset.name}
-                                className="w-full h-48 object-cover rounded-lg border border-zinc-700/30 bg-zinc-900/30"
+                                className="w-full h-48 object-cover rounded-lg border border-neutral-700/30 bg-neutral-900/30"
                                 onError={(e) => {
                                   const target = e.target as HTMLImageElement;
                                   target.style.display = 'none';
                                 }}
                               />
                             ) : (
-                              <div className="w-full h-48 rounded-lg border border-zinc-700/30 bg-zinc-900/30 flex items-center justify-center">
-                                <ImageIcon className="h-12 w-12 text-zinc-600" />
+                              <div className="w-full h-48 rounded-lg border border-neutral-700/30 bg-neutral-900/30 flex items-center justify-center">
+                                <ImageIcon className="h-12 w-12 text-neutral-600" />
                               </div>
                             )}
                           </div>
 
                           {/* ID Badge */}
                           <div className="mb-3">
-                            <Badge variant="outline" className="bg-black/40 border-zinc-700/50 text-zinc-400 font-mono text-xs">
+                            <Badge variant="outline" className="bg-black/40 border-neutral-700/50 text-neutral-400 font-mono text-xs">
                               {preset.id}
                             </Badge>
                           </div>
 
                           {/* Name */}
-                          <h3 className="text-lg font-semibold text-zinc-200 mb-2 font-mono">
+                          <h3 className="text-lg font-semibold text-neutral-200 mb-2 font-mono">
                             {preset.name}
                           </h3>
 
                           {/* Description */}
-                          <p className="text-sm text-zinc-400 mb-4 line-clamp-2 font-mono">
+                          <p className="text-sm text-neutral-400 mb-4 line-clamp-2 font-mono">
                             {preset.description}
                           </p>
 
                           {/* Metadata */}
                           <div className="space-y-2 mb-4">
                             <div className="flex items-center gap-2 text-xs font-mono">
-                              <span className="text-zinc-500">Aspect Ratio:</span>
+                              <span className="text-neutral-500">Aspect Ratio:</span>
                               <Badge variant="outline" className="bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/30 text-xs">
                                 {preset.aspectRatio}
                               </Badge>
                             </div>
                             {preset.model && (
                               <div className="flex items-center gap-2 text-xs font-mono">
-                                <span className="text-zinc-500">Model:</span>
-                                <span className="text-zinc-300">{preset.model}</span>
+                                <span className="text-neutral-500">Model:</span>
+                                <span className="text-neutral-300">{preset.model}</span>
                               </div>
                             )}
                           </div>
 
                           {/* Actions */}
-                          <div className="flex gap-2 pt-4 border-t border-zinc-800/50">
+                          <div className="flex gap-2 pt-4 border-t border-neutral-800/50">
                             <Button
                               onClick={() => handleEdit(activeTab, preset)}
                               variant="outline"
@@ -1183,15 +1341,15 @@ export const AdminPresetsPage: React.FC = () => {
             {/* Batch Upload Modal */}
             {isBatchModalOpen && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-                <Card className="bg-zinc-900 border border-zinc-800/50 rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
                   <CardContent className="p-6 md:p-8">
                     <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-xl font-semibold text-zinc-200 font-mono">
+                      <h3 className="text-xl font-semibold text-neutral-200 font-mono">
                         Importar Batch de Mockup Presets
                       </h3>
                       <button
                         onClick={handleCloseBatchModal}
-                        className="text-zinc-400 hover:text-zinc-200 transition-colors"
+                        className="text-neutral-400 hover:text-neutral-200 transition-colors"
                       >
                         <X className="h-5 w-5" />
                       </button>
@@ -1199,7 +1357,7 @@ export const AdminPresetsPage: React.FC = () => {
 
                     <div className="space-y-4 mb-6">
                       <div>
-                        <label className="block text-sm text-zinc-400 font-mono mb-2">
+                        <label className="block text-sm text-neutral-400 font-mono mb-2">
                           Cole o JSON com os presets (array de objetos)
                         </label>
                         <textarea
@@ -1210,7 +1368,7 @@ export const AdminPresetsPage: React.FC = () => {
                             setError(null);
                           }}
                           rows={12}
-                          className="w-full px-4 py-2 bg-black/40 border border-zinc-700/50 rounded-md text-zinc-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50 resize-none"
+                          className="w-full px-4 py-2 bg-black/40 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50 resize-none"
                           placeholder={`[\n  {\n    "id": "preset-id-1",\n    "name": "Nome do Preset 1",\n    "description": "Descrição do preset 1",\n    "prompt": "Prompt completo...",\n    "referenceImageUrl": "",\n    "aspectRatio": "16:9",\n    "model": "gemini-2.5-flash-image"\n  }\n]`}
                         />
                       </div>
@@ -1248,14 +1406,14 @@ export const AdminPresetsPage: React.FC = () => {
                         onClick={handleValidateJson}
                         disabled={isLoading || !batchJson.trim()}
                         variant="outline"
-                        className="font-mono border-zinc-700/60 hover:border-[brand-cyan]/30"
+                        className="font-mono border-neutral-700/60 hover:border-[brand-cyan]/30"
                       >
                         Validar JSON
                       </Button>
                       <Button
                         onClick={handleBatchUpload}
                         disabled={isLoading || !batchJson.trim()}
-                        className="font-mono bg-brand-cyan/80 hover:bg-brand-cyan text-black disabled:bg-zinc-700 disabled:text-zinc-500"
+                        className="font-mono bg-brand-cyan/80 hover:bg-brand-cyan text-black disabled:bg-neutral-700 disabled:text-neutral-500"
                       >
                         <Upload className="h-4 w-4 mr-2" />
                         {isLoading ? 'Enviando...' : 'Enviar Batch'}
@@ -1263,7 +1421,7 @@ export const AdminPresetsPage: React.FC = () => {
                       <Button
                         onClick={handleCloseBatchModal}
                         variant="outline"
-                        className="font-mono border-zinc-700/60 hover:border-[brand-cyan]/30"
+                        className="font-mono border-neutral-700/60 hover:border-[brand-cyan]/30"
                       >
                         Fechar
                       </Button>
@@ -1280,17 +1438,17 @@ export const AdminPresetsPage: React.FC = () => {
                 onClick={handleCancel}
               >
                 <Card
-                  className="bg-zinc-900 border border-zinc-800/50 rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+                  className="bg-neutral-900 border border-neutral-800/50 rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <CardContent className="p-6 md:p-8">
                     <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-xl font-semibold text-zinc-200 font-mono">
+                      <h3 className="text-xl font-semibold text-neutral-200 font-mono">
                         {isCreating ? 'Criar Novo Preset' : 'Editar Preset'}
                       </h3>
                       <button
                         onClick={handleCancel}
-                        className="text-zinc-400 hover:text-zinc-200 transition-colors"
+                        className="text-neutral-400 hover:text-neutral-200 transition-colors"
                       >
                         <X className="h-5 w-5" />
                       </button>
@@ -1304,7 +1462,7 @@ export const AdminPresetsPage: React.FC = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm text-zinc-400 font-mono mb-2">
+                        <label className="block text-sm text-neutral-400 font-mono mb-2">
                           ID {isCreating && '(obrigatório)'}
                         </label>
                         <Input
@@ -1318,7 +1476,7 @@ export const AdminPresetsPage: React.FC = () => {
                       </div>
 
                       <div>
-                        <label className="block text-sm text-zinc-400 font-mono mb-2">
+                        <label className="block text-sm text-neutral-400 font-mono mb-2">
                           Nome (obrigatório)
                         </label>
                         <Input
@@ -1330,7 +1488,7 @@ export const AdminPresetsPage: React.FC = () => {
                       </div>
 
                       <div className="md:col-span-2">
-                        <label className="block text-sm text-zinc-400 font-mono mb-2">
+                        <label className="block text-sm text-neutral-400 font-mono mb-2">
                           Descrição (obrigatório)
                         </label>
                         <Input
@@ -1342,7 +1500,7 @@ export const AdminPresetsPage: React.FC = () => {
                       </div>
 
                       <div className="md:col-span-2">
-                        <label className="block text-sm text-zinc-400 font-mono mb-2">
+                        <label className="block text-sm text-neutral-400 font-mono mb-2">
                           Prompt (obrigatório)
                         </label>
                         <Textarea
@@ -1356,7 +1514,7 @@ export const AdminPresetsPage: React.FC = () => {
                       {activeTab === 'mockup' && (
                         <div className="md:col-span-2 space-y-4">
                           <div>
-                            <label className="block text-sm text-zinc-400 font-mono mb-2">
+                            <label className="block text-sm text-neutral-400 font-mono mb-2">
                               Imagem de Referência
                             </label>
                             {!formData.referenceImageUrl ? (
@@ -1366,13 +1524,13 @@ export const AdminPresetsPage: React.FC = () => {
                                   disabled={isUploadingImage || !formData.id || formData.id.trim() === ''}
                                 />
                                 {isUploadingImage && (
-                                  <p className="text-sm text-zinc-400 font-mono">Fazendo upload da imagem...</p>
+                                  <p className="text-sm text-neutral-400 font-mono">Fazendo upload da imagem...</p>
                                 )}
                                 {imageUploadError && (
                                   <p className="text-sm text-red-400 font-mono">{imageUploadError}</p>
                                 )}
                                 {(!formData.id || formData.id.trim() === '') && (
-                                  <p className="text-xs text-zinc-500 font-mono">
+                                  <p className="text-xs text-neutral-500 font-mono">
                                     Defina o ID do preset antes de fazer upload da imagem.
                                   </p>
                                 )}
@@ -1383,7 +1541,7 @@ export const AdminPresetsPage: React.FC = () => {
                                   <img
                                     src={formData.referenceImageUrl}
                                     alt={t('adminPresets.reference')}
-                                    className="w-full max-h-64 object-contain rounded-md border border-zinc-700/50 bg-black/40"
+                                    className="w-full max-h-64 object-contain rounded-md border border-neutral-700/50 bg-black/40"
                                     onError={() => setImageUploadError('Erro ao carregar imagem. Verifique a URL.')}
                                   />
                                   <button
@@ -1392,14 +1550,14 @@ export const AdminPresetsPage: React.FC = () => {
                                       setFormData({ ...formData, referenceImageUrl: '' });
                                       setImageUploadError(null);
                                     }}
-                                    className="absolute top-2 right-2 p-1 bg-black/80 hover:bg-black text-zinc-300 rounded transition-colors"
+                                    className="absolute top-2 right-2 p-1 bg-black/80 hover:bg-black text-neutral-300 rounded transition-colors"
                                     title={t('adminPresets.removeImage')}
                                   >
                                     <X className="h-4 w-4" />
                                   </button>
                                 </div>
                                 <div>
-                                  <p className="text-xs text-zinc-500 font-mono mb-2">Ou faça upload de uma nova imagem:</p>
+                                  <p className="text-xs text-neutral-500 font-mono mb-2">Ou faça upload de uma nova imagem:</p>
                                   <AdminImageUploader
                                     onImageUpload={handleImageUpload}
                                     disabled={isUploadingImage || !formData.id || formData.id.trim() === ''}
@@ -1409,7 +1567,7 @@ export const AdminPresetsPage: React.FC = () => {
                             )}
                           </div>
                           <div>
-                            <label className="block text-sm text-zinc-400 font-mono mb-2">
+                            <label className="block text-sm text-neutral-400 font-mono mb-2">
                               Ou insira a URL manualmente
                             </label>
                             <input
@@ -1419,7 +1577,7 @@ export const AdminPresetsPage: React.FC = () => {
                                 setFormData({ ...formData, referenceImageUrl: e.target.value });
                                 setImageUploadError(null);
                               }}
-                              className="w-full px-4 py-2 bg-black/40 border border-zinc-700/50 rounded-md text-zinc-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
+                              className="w-full px-4 py-2 bg-black/40 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
                               placeholder="https://..."
                             />
                           </div>
@@ -1427,13 +1585,13 @@ export const AdminPresetsPage: React.FC = () => {
                       )}
 
                       <div>
-                        <label className="block text-sm text-zinc-400 font-mono mb-2">
+                        <label className="block text-sm text-neutral-400 font-mono mb-2">
                           Aspect Ratio (obrigatório)
                         </label>
                         <select
                           value={formData.aspectRatio}
                           onChange={(e) => setFormData({ ...formData, aspectRatio: e.target.value as AspectRatio })}
-                          className="w-full px-4 py-2 bg-black/40 border border-zinc-700/50 rounded-md text-zinc-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
+                          className="w-full px-4 py-2 bg-black/40 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
                         >
                           {ASPECT_RATIOS.map((ratio) => (
                             <option key={ratio} value={ratio}>
@@ -1444,13 +1602,13 @@ export const AdminPresetsPage: React.FC = () => {
                       </div>
 
                       <div>
-                        <label className="block text-sm text-zinc-400 font-mono mb-2">
+                        <label className="block text-sm text-neutral-400 font-mono mb-2">
                           Model (opcional)
                         </label>
                         <select
                           value={formData.model || ''}
                           onChange={(e) => setFormData({ ...formData, model: e.target.value as GeminiModel || undefined })}
-                          className="w-full px-4 py-2 bg-black/40 border border-zinc-700/50 rounded-md text-zinc-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
+                          className="w-full px-4 py-2 bg-black/40 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
                         >
                           <option value="">Nenhum</option>
                           {GEMINI_MODELS.map((model) => (
@@ -1462,7 +1620,7 @@ export const AdminPresetsPage: React.FC = () => {
                       </div>
 
                       <div className="md:col-span-2">
-                        <label className="block text-sm text-zinc-400 font-mono mb-2">
+                        <label className="block text-sm text-neutral-400 font-mono mb-2">
                           Tags (opcional)
                         </label>
                         <div className="space-y-2">
@@ -1485,7 +1643,7 @@ export const AdminPresetsPage: React.FC = () => {
                                 }
                               }}
                               placeholder="Digite uma tag e pressione Enter"
-                              className="flex-1 px-4 py-2 bg-black/40 border border-zinc-700/50 rounded-md text-zinc-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
+                              className="flex-1 px-4 py-2 bg-black/40 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
                             />
                             <button
                               type="button"
@@ -1508,7 +1666,7 @@ export const AdminPresetsPage: React.FC = () => {
                               {formData.tags.map((tag, index) => (
                                 <span
                                   key={index}
-                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-zinc-900/50 border border-zinc-700/30 rounded text-xs text-zinc-300 font-mono"
+                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-neutral-900/50 border border-neutral-700/30 rounded text-xs text-neutral-300 font-mono"
                                 >
                                   {tag}
                                   <button
@@ -1519,7 +1677,7 @@ export const AdminPresetsPage: React.FC = () => {
                                         tags: formData.tags?.filter((_, i) => i !== index) || [],
                                       });
                                     }}
-                                    className="text-zinc-500 hover:text-zinc-300 transition-colors"
+                                    className="text-neutral-500 hover:text-neutral-300 transition-colors"
                                   >
                                     <X size={12} />
                                   </button>
@@ -1535,7 +1693,7 @@ export const AdminPresetsPage: React.FC = () => {
                       <Button
                         onClick={handleSave}
                         disabled={isLoading}
-                        className="font-mono bg-brand-cyan/80 hover:bg-brand-cyan text-black disabled:bg-zinc-700 disabled:text-zinc-500"
+                        className="font-mono bg-brand-cyan/80 hover:bg-brand-cyan text-black disabled:bg-neutral-700 disabled:text-neutral-500"
                       >
                         <Save className="h-4 w-4 mr-2" />
                         Salvar
@@ -1543,7 +1701,7 @@ export const AdminPresetsPage: React.FC = () => {
                       <Button
                         onClick={handleCancel}
                         variant="outline"
-                        className="font-mono border-zinc-700/60 hover:border-[brand-cyan]/30"
+                        className="font-mono border-neutral-700/60 hover:border-[brand-cyan]/30"
                       >
                         Cancelar
                       </Button>
@@ -1555,7 +1713,7 @@ export const AdminPresetsPage: React.FC = () => {
           </Tabs>
         )}
       </div>
-    </div>
+    </div >
   );
 };
 

@@ -328,14 +328,14 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
       aria-labelledby="mockup-preset-modal-title"
     >
       <div
-        className="relative max-w-4xl w-full max-h-[90vh] bg-black/95 backdrop-blur-xl border border-zinc-800/50 rounded-md shadow-2xl overflow-hidden flex flex-col"
+        className="relative max-w-4xl w-full max-h-[90vh] bg-black/95 backdrop-blur-xl border border-neutral-800/50 rounded-md shadow-2xl overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-zinc-800/50 bg-zinc-900/20">
+        <div className="flex items-center justify-between p-4 border-b border-neutral-800/50 bg-neutral-900/20">
           <div className="flex items-center gap-2">
             <ImageIcon size={20} className="text-brand-cyan" />
-            <h2 id="mockup-preset-modal-title" className="text-sm font-mono text-zinc-300 uppercase tracking-wider">
+            <h2 id="mockup-preset-modal-title" className="text-sm font-mono text-neutral-300 uppercase tracking-wider">
               {multiSelect
                 ? t('canvasNodes.promptNode.presetModal.titleMulti')
                   .replace('{selected}', selectedPresetIds.size.toString())
@@ -345,7 +345,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-zinc-500 hover:text-white transition-colors hover:bg-zinc-800/50 rounded-full"
+            className="p-2 text-neutral-500 hover:text-white transition-colors hover:bg-neutral-800/50 rounded-full"
             title="Close (Esc)"
           >
             <X size={20} />
@@ -353,8 +353,8 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
         </div>
 
         {/* Type Filters and Search */}
-        <div className="flex flex-col border-b border-zinc-800/50 bg-zinc-900/10">
-          <div className="px-4 py-3 flex gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
+        <div className="flex flex-col border-b border-neutral-800/50 bg-neutral-900/10">
+          <div className="px-4 py-3 flex gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent">
             {(['all', 'mockup', 'texture', 'angle', 'ambience', 'luminance'] as PresetFilterType[]).map((type) => {
               const config = CATEGORY_CONFIG[type as keyof typeof CATEGORY_CONFIG];
               const Icon = config ? config.icon : ImageIcon;
@@ -368,7 +368,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
                     'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-mono uppercase transition-all whitespace-nowrap border',
                     activeFilter === type
                       ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
-                      : 'bg-zinc-900/50 text-zinc-400 border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700'
+                      : 'bg-neutral-900/50 text-neutral-400 border-neutral-800 hover:bg-neutral-800 hover:border-neutral-700'
                   )}
                 >
                   <Icon size={12} />
@@ -392,26 +392,26 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
           </div>
 
           {/* Search Bar & Source Filter */}
-          <div className="px-4 py-3 border-t border-zinc-800/50 bg-zinc-900/5 flex flex-col sm:flex-row gap-3">
+          <div className="px-4 py-3 border-t border-neutral-800/50 bg-neutral-900/5 flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-500" />
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t('common.search') || 'Search presets...'}
-                className="pl-9 h-9 bg-zinc-900/50 border-zinc-800/50 focus:border-brand-cyan/30 focus:ring-1 focus:ring-brand-cyan/30 font-mono text-xs w-full"
+                className="pl-9 h-9 bg-neutral-900/50 border-neutral-800/50 focus:border-brand-cyan/30 focus:ring-1 focus:ring-brand-cyan/30 font-mono text-xs w-full"
               />
             </div>
 
             {/* Source Toggle */}
-            <div className="flex bg-zinc-900/50 border border-zinc-800/50 rounded-lg p-1 shrink-0 self-start sm:self-auto">
+            <div className="flex bg-neutral-900/50 border border-neutral-800/50 rounded-lg p-1 shrink-0 self-start sm:self-auto">
               <button
                 onClick={() => setPresetSource('all')}
                 className={cn(
                   'flex items-center gap-2 px-3 py-1.5 rounded-md text-[10px] font-mono uppercase transition-all',
                   presetSource === 'all'
-                    ? 'bg-zinc-800 text-white shadow-sm'
-                    : 'text-zinc-500 hover:text-zinc-300'
+                    ? 'bg-neutral-800 text-white shadow-sm'
+                    : 'text-neutral-500 hover:text-neutral-300'
                 )}
                 title={t('communityPresets.filters.all') || 'All'}
               >
@@ -424,7 +424,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
                   'flex items-center gap-2 px-3 py-1.5 rounded-md text-[10px] font-mono uppercase transition-all',
                   presetSource === 'official'
                     ? 'bg-amber-500/10 text-amber-500 shadow-sm'
-                    : 'text-zinc-500 hover:text-amber-500/70'
+                    : 'text-neutral-500 hover:text-amber-500/70'
                 )}
                 title={t('communityPresets.filters.official') || 'Official'}
               >
@@ -437,7 +437,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
                   'flex items-center gap-2 px-3 py-1.5 rounded-md text-[10px] font-mono uppercase transition-all',
                   presetSource === 'community'
                     ? 'bg-brand-cyan/10 text-brand-cyan shadow-sm'
-                    : 'text-zinc-500 hover:text-brand-cyan/70'
+                    : 'text-neutral-500 hover:text-brand-cyan/70'
                 )}
                 title={t('communityPresets.filters.community') || 'Community'}
               >
@@ -451,13 +451,13 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
         {/* Content */}
         <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden p-4 custom-scrollbar bg-black/50">
           {isLoadingPresets ? (
-            <div className="flex flex-col items-center justify-center py-20 text-zinc-500 gap-2">
+            <div className="flex flex-col items-center justify-center py-20 text-neutral-500 gap-2">
               <div className="w-6 h-6 border-2 border-brand-cyan/30 border-t-brand-cyan rounded-full animate-spin"></div>
               <p className="text-xs font-mono">{t('canvasNodes.promptNode.presetModal.loading')}</p>
             </div>
           ) : filteredPresets.length === 0 ? (
             <div className="flex items-center justify-center py-20">
-              <p className="text-sm font-mono text-zinc-500">{t('canvasNodes.promptNode.presetModal.noCommunity')}</p>
+              <p className="text-sm font-mono text-neutral-500">{t('canvasNodes.promptNode.presetModal.noCommunity')}</p>
             </div>
           ) : (
             <div
@@ -491,8 +491,8 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
 
         {/* Footer with Select Mockups button (multi-select mode only) */}
         {multiSelect && (
-          <div className="border-t border-zinc-800/50 p-4 flex items-center justify-between bg-zinc-900/50 backdrop-blur-md">
-            <div className="text-xs font-mono text-zinc-400">
+          <div className="border-t border-neutral-800/50 p-4 flex items-center justify-between bg-neutral-900/50 backdrop-blur-md">
+            <div className="text-xs font-mono text-neutral-400">
               {selectedPresetIds.size === 0
                 ? t('canvasNodes.promptNode.presetModal.multiSelectMessageEmpty').replace('{max}', maxSelections.toString())
                 : t('canvasNodes.promptNode.presetModal.multiSelectMessage')

@@ -3321,7 +3321,7 @@ export const CanvasPage: React.FC = () => {
   // Show loading state while checking access
   if (isLoadingAccess) {
     return (
-      <div className="min-h-screen bg-[#121212] text-zinc-300 flex items-center justify-center">
+      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 flex items-center justify-center">
         <GlitchLoader />
       </div>
     );
@@ -3336,12 +3336,12 @@ export const CanvasPage: React.FC = () => {
   // Allow visual rendering of canvas even during authentication
   if (isLoadingProject && isAuthenticated !== false) {
     return (
-      <div className="min-h-screen bg-[#121212] text-zinc-300 pt-12 md:pt-14">
+      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
               <GlitchLoader size={24} className="mx-auto mb-4" />
-              <p className="text-zinc-400 font-mono text-sm">{t('canvas.loadingProject')}</p>
+              <p className="text-neutral-400 font-mono text-sm">{t('canvas.loadingProject')}</p>
             </div>
           </div>
         </div>
@@ -3377,7 +3377,7 @@ export const CanvasPage: React.FC = () => {
   return (
     <>
       <div
-        className="text-zinc-300 relative overflow-hidden transition-colors duration-300"
+        className="text-neutral-300 relative overflow-hidden transition-colors duration-300"
         style={{ backgroundColor: backgroundColor, minHeight: '100vh' }}
       >
         <div className="fixed inset-0 z-0" style={{ position: 'relative', opacity: 1, scale: 5 }}>
@@ -4249,7 +4249,7 @@ const CollaborativeCanvas: React.FC<{
   setEdges,
   saveImmediately,
   onOthersCountChange,
-  backgroundColor = '#121212',
+  backgroundColor = '#0C0C0C',
   gridColor = 'rgba(255, 255, 255, 0.1)',
   showGrid = true,
   showMinimap = true,

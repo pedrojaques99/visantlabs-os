@@ -16,11 +16,11 @@ interface ParsedNode {
  */
 const parseMarkdown = (text: string): ParsedNode[] => {
   if (!text) return [];
-  
+
   const nodes: ParsedNode[] = [];
   let i = 0;
   let currentText = '';
-  
+
   while (i < text.length) {
     // Check for color tags: [color:#hex]text[/color]
     const colorTagMatch = text.substring(i).match(/^\[color:([^\]]+)\]/);
@@ -30,15 +30,15 @@ const parseMarkdown = (text: string): ParsedNode[] => {
         nodes.push({ type: 'text', content: currentText });
         currentText = '';
       }
-      
+
       const color = colorTagMatch[1];
       const tagLength = colorTagMatch[0].length;
       i += tagLength;
-      
+
       // Find closing tag
       const closingTag = '[/color]';
       const closingIndex = text.indexOf(closingTag, i);
-      
+
       if (closingIndex !== -1) {
         const colorContent = text.substring(i, closingIndex);
         nodes.push({ type: 'color', content: colorContent, color });
@@ -50,7 +50,7 @@ const parseMarkdown = (text: string): ParsedNode[] => {
         continue;
       }
     }
-    
+
     // Check for bold: **text**
     if (text.substring(i, i + 2) === '**') {
       // Save any accumulated text
@@ -58,7 +58,7 @@ const parseMarkdown = (text: string): ParsedNode[] => {
         nodes.push({ type: 'text', content: currentText });
         currentText = '';
       }
-      
+
       const closingBold = text.indexOf('**', i + 2);
       if (closingBold !== -1) {
         const boldContent = text.substring(i + 2, closingBold);
@@ -67,7 +67,7 @@ const parseMarkdown = (text: string): ParsedNode[] => {
         continue;
       }
     }
-    
+
     // Check for italic: *text* (but not ** which is bold)
     if (text[i] === '*' && text[i + 1] !== '*') {
       // Save any accumulated text
@@ -75,7 +75,7 @@ const parseMarkdown = (text: string): ParsedNode[] => {
         nodes.push({ type: 'text', content: currentText });
         currentText = '';
       }
-      
+
       const closingItalic = text.indexOf('*', i + 1);
       if (closingItalic !== -1) {
         const italicContent = text.substring(i + 1, closingItalic);
@@ -84,17 +84,17 @@ const parseMarkdown = (text: string): ParsedNode[] => {
         continue;
       }
     }
-    
+
     // Regular character
     currentText += text[i];
     i++;
   }
-  
+
   // Add remaining text
   if (currentText) {
     nodes.push({ type: 'text', content: currentText });
   }
-  
+
   return nodes;
 };
 
@@ -105,13 +105,13 @@ const renderNode = (node: ParsedNode, key: number): React.ReactNode => {
   switch (node.type) {
     case 'bold':
       return (
-        <strong key={key} className="font-semibold text-zinc-200">
+        <strong key={key} className="font-semibold text-neutral-200">
           {node.content}
         </strong>
       );
     case 'italic':
       return (
-        <em key={key} className="italic text-zinc-300">
+        <em key={key} className="italic text-neutral-300">
           {node.content}
         </em>
       );
@@ -135,9 +135,9 @@ const renderNode = (node: ParsedNode, key: number): React.ReactNode => {
  */
 export const renderMarkdown = (text: string): React.ReactNode => {
   if (!text) return null;
-  
+
   const nodes = parseMarkdown(text);
-  
+
   return (
     <>
       {nodes.map((node, index) => renderNode(node, index))}
@@ -150,14 +150,14 @@ export const renderMarkdown = (text: string): React.ReactNode => {
  */
 export const renderMarkdownWithLines = (text: string): React.ReactNode => {
   if (!text) return null;
-  
+
   const lines = text.split('\n');
-  
+
   return (
     <>
       {lines.map((line, lineIndex) => {
         const trimmedLine = line.trim();
-        
+
         // Check if it's a bullet point
         const bulletMatch = trimmedLine.match(/^[-*•]\s*(.+)$/);
         if (bulletMatch) {
@@ -169,7 +169,7 @@ export const renderMarkdownWithLines = (text: string): React.ReactNode => {
             </div>
           );
         }
-        
+
         // Regular line
         if (trimmedLine) {
           return (
@@ -178,7 +178,7 @@ export const renderMarkdownWithLines = (text: string): React.ReactNode => {
             </p>
           );
         }
-        
+
         // Empty line
         return <br key={lineIndex} />;
       })}

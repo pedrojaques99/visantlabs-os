@@ -310,7 +310,7 @@ export const CommunityPage: React.FC = () => {
   }, [t]);
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-zinc-300 pt-12 md:pt-14 relative overflow-x-hidden">
+    <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative overflow-x-hidden">
       <div className="fixed inset-0 z-0">
         <GridDotsBackground />
       </div>
@@ -334,7 +334,7 @@ export const CommunityPage: React.FC = () => {
 
         {/* Hero Section */}
         <ClubHero3D
-          className="mb-16 rounded-3xl border border-zinc-800/50 min-h-[400px] h-auto"
+          className="mb-16 rounded-3xl border border-neutral-800/50 min-h-[400px] h-auto"
           color="brand-cyan"
           starColor="brand-cyan"
         >
@@ -348,7 +348,7 @@ export const CommunityPage: React.FC = () => {
               <h1 className="text-3xl md:text-5xl font-bold font-manrope text-white mb-4 leading-tight">
                 {t('communityPresets.title')}
               </h1>
-              <p className="text-zinc-400 text-base md:text-lg font-mono mb-6 max-w-xl leading-relaxed">
+              <p className="text-neutral-400 text-base md:text-lg font-mono mb-6 max-w-xl leading-relaxed">
                 {t('communityPresets.subtitle')}
               </p>
 
@@ -362,14 +362,14 @@ export const CommunityPage: React.FC = () => {
                 </button>
                 <button
                   onClick={() => navigate('/community/presets')}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-zinc-800/50 hover:bg-zinc-800 text-white font-semibold rounded-xl border border-zinc-700/50 transition-all hover:scale-105 active:scale-95 backdrop-blur-sm"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-neutral-800/50 hover:bg-neutral-800 text-white font-semibold rounded-xl border border-neutral-700/50 transition-all hover:scale-105 active:scale-95 backdrop-blur-sm"
                 >
                   <Globe size={18} />
                   <span className="font-mono uppercase tracking-wider text-sm">Ver Tudo</span>
                 </button>
                 <button
                   onClick={() => setShowWorkflowLibrary(true)}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-zinc-800/50 hover:bg-zinc-800 text-white font-semibold rounded-xl border border-zinc-700/50 transition-all hover:scale-105 active:scale-95 backdrop-blur-sm"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-neutral-800/50 hover:bg-neutral-800 text-white font-semibold rounded-xl border border-neutral-700/50 transition-all hover:scale-105 active:scale-95 backdrop-blur-sm"
                 >
                   <FolderOpen size={18} />
                   <span className="font-mono uppercase tracking-wider text-sm">{t('workflows.library.title') || 'Biblioteca'}</span>
@@ -379,27 +379,27 @@ export const CommunityPage: React.FC = () => {
 
             {/* Global Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 relative z-10 pointer-events-auto">
-              <div className="bg-black/40 backdrop-blur-sm border border-zinc-800/50 rounded-xl p-4 transition-all hover:border-[brand-cyan]/30 group hover:bg-black/60">
+              <div className="bg-black/40 backdrop-blur-sm border border-neutral-800/50 rounded-xl p-4 transition-all hover:border-[brand-cyan]/30 group hover:bg-black/60">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-zinc-500 font-mono text-xs uppercase tracking-widest">Usuários</span>
+                  <span className="text-neutral-500 font-mono text-xs uppercase tracking-widest">Usuários</span>
                   <TrendingUp size={14} className="text-brand-cyan" />
                 </div>
                 <p className="text-3xl font-bold text-white font-mono group-hover:scale-110 transition-transform origin-left">
                   {isLoading ? '...' : globalCommunityStats.totalUsers}
                 </p>
               </div>
-              <div className="bg-black/40 backdrop-blur-sm border border-zinc-800/50 rounded-xl p-4 transition-all hover:border-[brand-cyan]/30 group hover:bg-black/60">
+              <div className="bg-black/40 backdrop-blur-sm border border-neutral-800/50 rounded-xl p-4 transition-all hover:border-[brand-cyan]/30 group hover:bg-black/60">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-zinc-500 font-mono text-xs uppercase tracking-widest">Presets Criados</span>
+                  <span className="text-neutral-500 font-mono text-xs uppercase tracking-widest">Presets Criados</span>
                   <Sparkles size={14} className="text-brand-cyan" />
                 </div>
                 <p className="text-3xl font-bold text-white font-mono group-hover:scale-110 transition-transform origin-left">
                   {isLoading ? '...' : globalCommunityStats.totalPresets}
                 </p>
               </div>
-              <div className="bg-black/40 backdrop-blur-sm border border-zinc-800/50 rounded-xl p-4 transition-all hover:border-[brand-cyan]/30 group hover:bg-black/60">
+              <div className="bg-black/40 backdrop-blur-sm border border-neutral-800/50 rounded-xl p-4 transition-all hover:border-[brand-cyan]/30 group hover:bg-black/60">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-zinc-500 font-mono text-xs uppercase tracking-widest">Public Mockups</span>
+                  <span className="text-neutral-500 font-mono text-xs uppercase tracking-widest">Public Mockups</span>
                   <ImageIcon size={14} className="text-brand-cyan" />
                 </div>
                 <p className="text-3xl font-bold text-white font-mono group-hover:scale-110 transition-transform origin-left">
@@ -412,7 +412,7 @@ export const CommunityPage: React.FC = () => {
 
         {isCheckingAuth && (
           <div className="flex items-center justify-center py-20">
-            <p className="text-zinc-400 font-mono animate-pulse">{t('common.loading')}</p>
+            <p className="text-neutral-400 font-mono animate-pulse">{t('common.loading')}</p>
           </div>
         )}
 
@@ -438,19 +438,19 @@ export const CommunityPage: React.FC = () => {
                   <button
                     key={category.type}
                     onClick={() => navigate(`/community/presets?type=${category.type}`)}
-                    className="group relative bg-[#141414] border border-zinc-800/50 rounded-2xl p-6 flex flex-col h-full hover:border-[brand-cyan]/40 transition-all hover:-translate-y-1 active:translate-y-0"
+                    className="group relative bg-[#141414] border border-neutral-800/50 rounded-2xl p-6 flex flex-col h-full hover:border-[brand-cyan]/40 transition-all hover:-translate-y-1 active:translate-y-0 overflow-hidden"
                   >
-                    <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-10 transition-opacity">
-                      <category.icon size={64} className="text-brand-cyan" />
+                    <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-5 transition-opacity [mask-image:linear-gradient(to_bottom_left,black,transparent)]">
+                      <category.icon size={500} className="text-brand-cyan" />
                     </div>
 
                     <div className="flex items-center justify-between mb-6">
-                      <div className="p-3 bg-zinc-900 rounded-xl group-hover:bg-brand-cyan/10 transition-colors">
-                        <category.icon size={24} className="text-zinc-400 group-hover:text-brand-cyan transition-colors" />
+                      <div className="p-3 bg-neutral-900 rounded-xl group-hover:bg-brand-cyan/10 transition-colors">
+                        <category.icon size={24} className="text-neutral-400 group-hover:text-brand-cyan transition-colors" />
                       </div>
                       <div className="flex flex-col items-end">
                         <span className="text-2xl font-bold font-mono text-white whitespace-nowrap">{category.count}</span>
-                        <span className="text-[10px] text-zinc-600 font-mono uppercase tracking-widest">Presets</span>
+                        <span className="text-[10px] text-neutral-600 font-mono uppercase tracking-widest">Presets</span>
                       </div>
                     </div>
 
@@ -458,26 +458,26 @@ export const CommunityPage: React.FC = () => {
                       <h3 className="text-lg font-semibold text-white font-manrope mb-1 capitalize group-hover:text-brand-cyan transition-colors">
                         {category.label}
                       </h3>
-                      <p className="text-xs text-zinc-500 font-mono line-clamp-2 leading-relaxed">
+                      <p className="text-xs text-neutral-500 font-mono line-clamp-2 leading-relaxed">
                         Explorar {category.label.toLowerCase()} criados pela nossa comunidade.
                       </p>
                     </div>
 
-                    <div className="space-y-2 pt-4 border-t border-zinc-800/50 max-h-48 overflow-y-auto">
+                    <div className="space-y-2 pt-4 border-t border-neutral-800/50 max-h-48 overflow-y-auto">
                       {category.presets.length > 0 ? (
                         category.presets.map((preset: any, index: number) => (
                           <div
                             key={`${category.type}-${preset.id || preset._id || index}`}
                             className="flex items-center gap-3 py-1 group/item"
                           >
-                            <div className="w-1.5 h-1.5 rounded-full bg-zinc-700 group-hover/item:bg-brand-cyan transition-colors" />
-                            <p className="text-xs font-mono text-zinc-500 group-hover/item:text-zinc-300 truncate transition-colors">
+                            <div className="w-1.5 h-1.5 rounded-full bg-neutral-700 group-hover/item:bg-brand-cyan transition-colors" />
+                            <p className="text-xs font-mono text-neutral-500 group-hover/item:text-neutral-300 truncate transition-colors">
                               {preset.name}
                             </p>
                           </div>
                         ))
                       ) : (
-                        <p className="text-[10px] text-zinc-700 font-mono italic">Ainda sem presets</p>
+                        <p className="text-[10px] text-neutral-700 font-mono italic">Ainda sem presets</p>
                       )}
                     </div>
                   </button>
@@ -490,7 +490,7 @@ export const CommunityPage: React.FC = () => {
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                   <h2 className="text-2xl font-bold text-white font-manrope">Workflows da Comunidade</h2>
-                  <p className="text-zinc-500 font-mono text-sm max-w-lg mt-2">
+                  <p className="text-neutral-500 font-mono text-sm max-w-lg mt-2">
                     Workflows completos criados pela comunidade. Salve, compartilhe e reutilize estruturas de canvas inteiras.
                   </p>
                 </div>
@@ -506,10 +506,10 @@ export const CommunityPage: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {workflowsLoading ? (
                   Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="bg-[#141414] border border-zinc-800/50 rounded-2xl p-6 animate-pulse">
-                      <div className="aspect-video bg-zinc-900 rounded-lg mb-4" />
-                      <div className="h-4 bg-zinc-900 rounded mb-2" />
-                      <div className="h-3 bg-zinc-900 rounded w-2/3" />
+                    <div key={i} className="bg-[#141414] border border-neutral-800/50 rounded-2xl p-6 animate-pulse">
+                      <div className="aspect-video bg-neutral-900 rounded-lg mb-4" />
+                      <div className="h-4 bg-neutral-900 rounded mb-2" />
+                      <div className="h-3 bg-neutral-900 rounded w-2/3" />
                     </div>
                   ))
                 ) : workflows.length > 0 ? (
@@ -521,10 +521,10 @@ export const CommunityPage: React.FC = () => {
                       <button
                         key={workflow._id}
                         onClick={() => navigate('/canvas')}
-                        className="group relative bg-[#141414] border border-zinc-800/50 rounded-2xl p-6 flex flex-col h-full hover:border-[brand-cyan]/40 transition-all hover:-translate-y-1 active:translate-y-0 text-left"
+                        className="group relative bg-[#141414] border border-neutral-800/50 rounded-2xl p-6 flex flex-col h-full hover:border-[brand-cyan]/40 transition-all hover:-translate-y-1 active:translate-y-0 text-left"
                       >
                         {workflow.thumbnailUrl ? (
-                          <div className="aspect-video rounded-lg overflow-hidden border border-zinc-700/30 bg-zinc-900/30 mb-4">
+                          <div className="aspect-video rounded-lg overflow-hidden border border-neutral-700/30 bg-neutral-900/30 mb-4">
                             <img
                               src={workflow.thumbnailUrl}
                               alt={workflow.name}
@@ -532,8 +532,8 @@ export const CommunityPage: React.FC = () => {
                             />
                           </div>
                         ) : (
-                          <div className="aspect-video rounded-lg border border-zinc-700/30 bg-zinc-900/30 flex items-center justify-center mb-4">
-                            <CategoryIcon size={32} className="text-zinc-700" />
+                          <div className="aspect-video rounded-lg border border-neutral-700/30 bg-neutral-900/30 flex items-center justify-center mb-4">
+                            <CategoryIcon size={32} className="text-neutral-700" />
                           </div>
                         )}
 
@@ -541,12 +541,12 @@ export const CommunityPage: React.FC = () => {
                           <h3 className="text-base font-semibold text-white font-mono mb-1 line-clamp-1 group-hover:text-brand-cyan transition-colors">
                             {workflow.name}
                           </h3>
-                          <p className="text-xs text-zinc-500 font-mono line-clamp-2 mb-3">
+                          <p className="text-xs text-neutral-500 font-mono line-clamp-2 mb-3">
                             {workflow.description}
                           </p>
                         </div>
 
-                        <div className="flex items-center gap-2 pt-3 border-t border-zinc-800/50">
+                        <div className="flex items-center gap-2 pt-3 border-t border-neutral-800/50">
                           <span
                             className={cn(
                               'px-2 py-0.5 rounded border font-mono text-[10px] flex-shrink-0',
@@ -557,11 +557,11 @@ export const CommunityPage: React.FC = () => {
                           >
                             {categoryConfig.label}
                           </span>
-                          <span className="px-2 py-0.5 bg-zinc-800/40 rounded border border-zinc-700/30 text-zinc-500 font-mono text-[10px] flex-shrink-0">
+                          <span className="px-2 py-0.5 bg-neutral-800/40 rounded border border-neutral-700/30 text-neutral-500 font-mono text-[10px] flex-shrink-0">
                             {Array.isArray(workflow.nodes) ? workflow.nodes.length : 0} nodes
                           </span>
                           {workflow.likesCount > 0 && (
-                            <span className="px-2 py-0.5 bg-zinc-800/40 rounded border border-zinc-700/30 text-zinc-500 font-mono text-[10px] flex-shrink-0">
+                            <span className="px-2 py-0.5 bg-neutral-800/40 rounded border border-neutral-700/30 text-neutral-500 font-mono text-[10px] flex-shrink-0">
                               ❤️ {workflow.likesCount}
                             </span>
                           )}
@@ -570,10 +570,10 @@ export const CommunityPage: React.FC = () => {
                     );
                   })
                 ) : (
-                  <div className="col-span-full py-20 text-center bg-[#141414] rounded-3xl border border-zinc-800/50 border-dashed">
+                  <div className="col-span-full py-20 text-center bg-[#141414] rounded-3xl border border-neutral-800/50 border-dashed">
                     <div className="flex flex-col items-center gap-4">
-                      <Workflow size={48} className="text-zinc-800" />
-                      <p className="text-zinc-500 font-mono text-sm">
+                      <Workflow size={48} className="text-neutral-800" />
+                      <p className="text-neutral-500 font-mono text-sm">
                         Nenhum workflow público disponível ainda
                       </p>
                     </div>
@@ -585,7 +585,7 @@ export const CommunityPage: React.FC = () => {
                 <div className="flex justify-center mt-8">
                   <button
                     onClick={() => setShowWorkflowLibrary(true)}
-                    className="flex items-center gap-2 px-6 py-2 bg-zinc-900/50 hover:bg-brand-cyan/10 text-zinc-500 hover:text-brand-cyan border border-zinc-800/50 rounded-full transition-all text-sm font-mono group"
+                    className="flex items-center gap-2 px-6 py-2 bg-neutral-900/50 hover:bg-brand-cyan/10 text-neutral-500 hover:text-brand-cyan border border-neutral-800/50 rounded-full transition-all text-sm font-mono group"
                   >
                     Ver todos os workflows
                     <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
@@ -599,7 +599,7 @@ export const CommunityPage: React.FC = () => {
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div className="space-y-2">
                   <h2 className="text-3xl font-bold text-white font-manrope">Galeria da Comunidade</h2>
-                  <p className="text-zinc-500 font-mono text-sm max-w-lg">
+                  <p className="text-neutral-500 font-mono text-sm max-w-lg">
                     Inspirado pelas criações enviadas pelos nossos usuários em tempo real.
                   </p>
                 </div>
@@ -615,14 +615,14 @@ export const CommunityPage: React.FC = () => {
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
                 {isLoading ? (
                   Array.from({ length: 10 }).map((_, i) => (
-                    <div key={i} className="aspect-square bg-zinc-900 rounded-2xl animate-pulse border border-zinc-800/50" />
+                    <div key={i} className="aspect-square bg-neutral-900 rounded-2xl animate-pulse border border-neutral-800/50" />
                   ))
                 ) : (isGalleryExpanded ? allPublicMockups : communityMockups).length > 0 ? (
                   (isGalleryExpanded ? allPublicMockups : communityMockups).map((mockup) => (
                     <Link
                       key={mockup._id}
                       to="/mockups"
-                      className="group relative aspect-square bg-[#141414] rounded-2xl overflow-hidden border border-zinc-800/50 hover:border-[brand-cyan]/50 transition-all hover:shadow-2xl hover:shadow-[brand-cyan]/5"
+                      className="group relative aspect-square bg-[#141414] rounded-2xl overflow-hidden border border-neutral-800/50 hover:border-[brand-cyan]/50 transition-all hover:shadow-2xl hover:shadow-[brand-cyan]/5"
                     >
                       {mockup.imageUrl || mockup.imageBase64 ? (
                         <img
@@ -631,7 +631,7 @@ export const CommunityPage: React.FC = () => {
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-zinc-800">
+                        <div className="w-full h-full flex items-center justify-center text-neutral-800">
                           <ImageIcon size={48} />
                         </div>
                       )}
@@ -642,16 +642,16 @@ export const CommunityPage: React.FC = () => {
                         </p>
                         <div className="flex items-center gap-2 pt-2 border-t border-white/10">
                           <Plus size={10} className="text-brand-cyan" />
-                          <span className="text-[9px] text-zinc-400 font-mono uppercase">Usar como referência</span>
+                          <span className="text-[9px] text-neutral-400 font-mono uppercase">Usar como referência</span>
                         </div>
                       </div>
                     </Link>
                   ))
                 ) : (
-                  <div className="col-span-full py-20 text-center bg-[#141414] rounded-3xl border border-zinc-800/50 border-dashed">
+                  <div className="col-span-full py-20 text-center bg-[#141414] rounded-3xl border border-neutral-800/50 border-dashed">
                     <div className="flex flex-col items-center gap-4">
-                      <ImageIcon size={48} className="text-zinc-800" />
-                      <p className="text-zinc-500 font-mono text-sm">
+                      <ImageIcon size={48} className="text-neutral-800" />
+                      <p className="text-neutral-500 font-mono text-sm">
                         Nenhum mockup encontrado na galeria pública
                       </p>
                     </div>
@@ -663,7 +663,7 @@ export const CommunityPage: React.FC = () => {
                 <div className="flex justify-center mt-8">
                   <button
                     onClick={() => setIsGalleryExpanded(!isGalleryExpanded)}
-                    className="flex items-center gap-2 px-6 py-2 bg-zinc-900/50 hover:bg-brand-cyan/10 text-zinc-500 hover:text-brand-cyan border border-zinc-800/50 rounded-full transition-all text-sm font-mono group"
+                    className="flex items-center gap-2 px-6 py-2 bg-neutral-900/50 hover:bg-brand-cyan/10 text-neutral-500 hover:text-brand-cyan border border-neutral-800/50 rounded-full transition-all text-sm font-mono group"
                   >
                     {isGalleryExpanded ? (
                       <>
@@ -682,7 +682,7 @@ export const CommunityPage: React.FC = () => {
             {/* GitHub Ecosystem CTA */}
             <section className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-[brand-cyan]/5 to-transparent rounded-3xl" />
-              <div className="relative z-10 p-8 md:p-12 rounded-3xl border border-zinc-800/50 bg-[#141414] overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
+              <div className="relative z-10 p-8 md:p-12 rounded-3xl border border-neutral-800/50 bg-[#141414] overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
                 <div className="max-w-xl space-y-4 text-center md:text-left">
                   <div className="flex items-center justify-center md:justify-start gap-3 text-brand-cyan">
                     <Github size={24} />
@@ -691,7 +691,7 @@ export const CommunityPage: React.FC = () => {
                   <h2 className="text-3xl md:text-4xl font-bold text-white font-manrope leading-tight">
                     Vamos crescer junto
                   </h2>
-                  <p className="text-zinc-400 font-mono text-sm md:text-base leading-relaxed">
+                  <p className="text-neutral-400 font-mono text-sm md:text-base leading-relaxed">
                     Visant Labs é movido pela paixão e colaboração. Acesse nosso repositório no GitHub para contribuir, relatar bugs ou dar uma estrela.
                   </p>
                 </div>
@@ -706,7 +706,7 @@ export const CommunityPage: React.FC = () => {
                     <span className="font-mono uppercase tracking-widest">Ver Repositório</span>
                     <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                   </a>
-                  <p className="text-[10px] text-zinc-500 font-mono uppercase tracking-widest animate-pulse">
+                  <p className="text-[10px] text-neutral-500 font-mono uppercase tracking-widest animate-pulse">
                     v1.0.0-alpha • MIT License
                   </p>
                 </div>

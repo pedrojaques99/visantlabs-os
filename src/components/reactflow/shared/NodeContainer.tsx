@@ -60,7 +60,7 @@ export const NodeContainer: React.FC<NodeContainerProps> = ({
         'border rounded-xl relative node-container flex flex-col',
         'min-w-[140px] min-h-[140px] min-h-full rounded-xl',
         // Border color - maintain border even when dragging
-        selected ? 'border-[brand-cyan]' : warning ? 'border-zinc-600/40' : 'border-gray-700/30',
+        selected ? 'border-[brand-cyan]' : warning ? 'border-neutral-600/40' : 'border-gray-700/30',
         dragging && 'pointer-events-none',
         dragging ? 'node-container-dragging' : 'node-container-static',
         // Apply default padding unless overridden by className - maintain padding during dragging

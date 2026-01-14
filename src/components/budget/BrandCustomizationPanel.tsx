@@ -159,9 +159,9 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
           className={`
             flex items-center justify-center
             p-2
-            bg-zinc-900 border border-zinc-800 rounded-xl
-            text-zinc-200 hover:text-brand-cyan
-            hover:bg-zinc-900/90 hover:border-[brand-cyan]/50
+            bg-neutral-900 border border-neutral-800 rounded-xl
+            text-neutral-200 hover:text-brand-cyan
+            hover:bg-neutral-900/90 hover:border-[brand-cyan]/50
             transition-all duration-300
             shadow-lg
             ${isOpen ? 'hidden' : ''}
@@ -179,7 +179,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
         className={`
           fixed top-20 right-0 z-50
           h-[calc(100vh-5rem)]
-          bg-zinc-900 border-l border-zinc-800
+          bg-neutral-900 border-l border-neutral-800
           shadow-2xl
           transition-all duration-300 ease-in-out
           flex flex-col
@@ -190,13 +190,13 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
         {/* Panel Content */}
         <div className="flex-1 overflow-y-auto">
           {/* Panel Header */}
-          <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-zinc-800 bg-zinc-900">
-            <h3 className="text-lg font-semibold text-zinc-200 font-mono">
+          <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-neutral-800 bg-neutral-900">
+            <h3 className="text-lg font-semibold text-neutral-200 font-mono">
               {t('budget.brandCustomization') || 'Customização da Marca'}
             </h3>
             <button
               onClick={togglePanel}
-              className="p-2 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded-md transition-colors"
+              className="p-2 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 rounded-md transition-colors"
               aria-label="Close panel"
             >
               <X size={20} />
@@ -219,15 +219,15 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
             />
 
             {/* Content Dimensions Control */}
-            <div className="mt-6 pt-6 border-t border-zinc-800">
-              <label className="block text-sm font-medium text-zinc-300 mb-4 font-mono">
+            <div className="mt-6 pt-6 border-t border-neutral-800">
+              <label className="block text-sm font-medium text-neutral-300 mb-4 font-mono">
                 Dimensões do Conteúdo
               </label>
 
               {/* Width Control - Document Formats */}
               <div className="space-y-3 mb-6">
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs text-zinc-400 font-mono">Formato do Documento</label>
+                  <label className="text-xs text-neutral-400 font-mono">Formato do Documento</label>
                   <span className="font-mono text-brand-cyan font-semibold text-xs">
                     {data.contentWidth || 800}px
                   </span>
@@ -238,44 +238,44 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                     onClick={() => handleContentWidthChange(595)}
                     className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${data.contentWidth === 595
                       ? 'bg-brand-cyan/20 border-[brand-cyan] text-brand-cyan'
-                      : 'bg-black/40 border-zinc-800 text-zinc-300 hover:border-zinc-700'
+                      : 'bg-black/40 border-neutral-800 text-neutral-300 hover:border-neutral-700'
                       }`}
                   >
                     A4
-                    <div className="text-[10px] text-zinc-500 mt-0.5">595px</div>
+                    <div className="text-[10px] text-neutral-500 mt-0.5">595px</div>
                   </button>
                   <button
                     type="button"
                     onClick={() => handleContentWidthChange(842)}
                     className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${data.contentWidth === 842
                       ? 'bg-brand-cyan/20 border-[brand-cyan] text-brand-cyan'
-                      : 'bg-black/40 border-zinc-800 text-zinc-300 hover:border-zinc-700'
+                      : 'bg-black/40 border-neutral-800 text-neutral-300 hover:border-neutral-700'
                       }`}
                   >
                     A3
-                    <div className="text-[10px] text-zinc-500 mt-0.5">842px</div>
+                    <div className="text-[10px] text-neutral-500 mt-0.5">842px</div>
                   </button>
                   <button
                     type="button"
                     onClick={() => handleContentWidthChange(612)}
                     className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${data.contentWidth === 612
                       ? 'bg-brand-cyan/20 border-[brand-cyan] text-brand-cyan'
-                      : 'bg-black/40 border-zinc-800 text-zinc-300 hover:border-zinc-700'
+                      : 'bg-black/40 border-neutral-800 text-neutral-300 hover:border-neutral-700'
                       }`}
                   >
                     Letter
-                    <div className="text-[10px] text-zinc-500 mt-0.5">612px</div>
+                    <div className="text-[10px] text-neutral-500 mt-0.5">612px</div>
                   </button>
                   <button
                     type="button"
                     onClick={() => handleContentWidthChange(800)}
                     className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${(data.contentWidth === 800 || !data.contentWidth)
                       ? 'bg-brand-cyan/20 border-[brand-cyan] text-brand-cyan'
-                      : 'bg-black/40 border-zinc-800 text-zinc-300 hover:border-zinc-700'
+                      : 'bg-black/40 border-neutral-800 text-neutral-300 hover:border-neutral-700'
                       }`}
                   >
                     Custom
-                    <div className="text-[10px] text-zinc-500 mt-0.5">800px</div>
+                    <div className="text-[10px] text-neutral-500 mt-0.5">800px</div>
                   </button>
                 </div>
                 {/* Custom width input if not a standard format */}
@@ -289,7 +289,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                       value={data.contentWidth}
                       onChange={(e) => handleContentWidthChange(Number(e.target.value))}
                       placeholder="Largura customizada"
-                      className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-xs text-zinc-200 font-mono focus:outline-none focus:border-[brand-cyan]"
+                      className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-xs text-neutral-200 font-mono focus:outline-none focus:border-[brand-cyan]"
                     />
                   </div>
                 )}
@@ -298,7 +298,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
               {/* Height Control */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs text-zinc-400 font-mono">Altura</label>
+                  <label className="text-xs text-neutral-400 font-mono">Altura</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="number"
@@ -315,9 +315,9 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                         }
                       }}
                       placeholder="Auto"
-                      className="w-20 px-2 py-1 bg-black/40 border border-zinc-800 rounded-xl text-xs text-zinc-200 font-mono focus:outline-none focus:border-[brand-cyan]/70 transition-all duration-300"
+                      className="w-20 px-2 py-1 bg-black/40 border border-neutral-800 rounded-xl text-xs text-neutral-200 font-mono focus:outline-none focus:border-[brand-cyan]/70 transition-all duration-300"
                     />
-                    <span className="text-xs text-zinc-500">px</span>
+                    <span className="text-xs text-neutral-500">px</span>
                     {data.contentHeight && (
                       <button
                         onClick={() => handleContentHeightChange(0)}
@@ -337,13 +337,13 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                     step="50"
                     value={data.contentHeight}
                     onChange={(e) => handleContentHeightChange(Number(e.target.value))}
-                    className="w-full h-2 bg-zinc-800 rounded-md appearance-none cursor-pointer accent-[brand-cyan]"
+                    className="w-full h-2 bg-neutral-800 rounded-md appearance-none cursor-pointer accent-[brand-cyan]"
                   />
                 ) : (
-                  <p className="text-xs text-zinc-500 italic">Altura automática (baseada no conteúdo)</p>
+                  <p className="text-xs text-neutral-500 italic">Altura automática (baseada no conteúdo)</p>
                 )}
                 {data.contentHeight && (
-                  <div className="flex items-center justify-between text-xs text-zinc-500">
+                  <div className="flex items-center justify-between text-xs text-neutral-500">
                     <span>500px</span>
                     <span>{data.contentHeight}px</span>
                     <span>2000px</span>
@@ -351,13 +351,13 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                 )}
               </div>
 
-              <p className="text-xs text-zinc-500 mt-4 pt-4 border-t border-zinc-800">
+              <p className="text-xs text-neutral-500 mt-4 pt-4 border-t border-neutral-800">
                 As dimensões serão aplicadas no preview e no PDF exportado
               </p>
             </div>
 
             {/* Template Actions */}
-            <div className="mt-6 pt-6 border-t border-zinc-800 space-y-3 mb-[40px]">
+            <div className="mt-6 pt-6 border-t border-neutral-800 space-y-3 mb-[40px]">
               <div className="flex gap-2">
                 <button
                   onClick={() => setShowSaveModal(true)}
@@ -368,7 +368,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                 </button>
                 <button
                   onClick={() => setShowLoadModal(true)}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-md text-zinc-300 text-sm font-mono transition-all"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-md text-neutral-300 text-sm font-mono transition-all"
                   disabled={templates.length === 0}
                 >
                   <FolderOpen size={16} />
@@ -383,8 +383,8 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
       {/* Save Template Modal */}
       {showSaveModal && (
         <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 max-w-md w-full">
-            <h3 className="text-lg font-semibold text-zinc-200 font-mono mb-4">
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 max-w-md w-full">
+            <h3 className="text-lg font-semibold text-neutral-200 font-mono mb-4">
               Salvar como Template
             </h3>
             <input
@@ -392,7 +392,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
               value={templateName}
               onChange={(e) => setTemplateName(e.target.value)}
               placeholder="Nome do template"
-              className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-zinc-200 font-mono focus:outline-none focus:border-[brand-cyan] mb-4"
+              className="w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-md text-neutral-200 font-mono focus:outline-none focus:border-[brand-cyan] mb-4"
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
@@ -415,7 +415,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                   setShowSaveModal(false);
                   setTemplateName('');
                 }}
-                className="flex-1 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-md text-sm font-mono transition-all"
+                className="flex-1 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-md text-sm font-mono transition-all"
               >
                 Cancelar
               </button>
@@ -427,13 +427,13 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
       {/* Load Template Modal */}
       {showLoadModal && (
         <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 max-w-md w-full max-h-[80vh] overflow-hidden flex flex-col">
-            <h3 className="text-lg font-semibold text-zinc-200 font-mono mb-4">
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 max-w-md w-full max-h-[80vh] overflow-hidden flex flex-col">
+            <h3 className="text-lg font-semibold text-neutral-200 font-mono mb-4">
               Carregar Template
             </h3>
             <div className="flex-1 overflow-y-auto space-y-2 mb-4">
               {templates.length === 0 ? (
-                <p className="text-sm text-zinc-500 text-center py-8">
+                <p className="text-sm text-neutral-500 text-center py-8">
                   Nenhum template salvo ainda
                 </p>
               ) : (
@@ -441,21 +441,21 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                   <div
                     key={template.id}
                     onClick={() => loadTemplate(template)}
-                    className="p-4 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-md cursor-pointer transition-all group relative"
+                    className="p-4 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-md cursor-pointer transition-all group relative"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <h4 className="text-sm font-semibold text-zinc-200 font-mono mb-1">
+                        <h4 className="text-sm font-semibold text-neutral-200 font-mono mb-1">
                           {template.name}
                         </h4>
-                        <p className="text-xs text-zinc-400 font-mono">
+                        <p className="text-xs text-neutral-400 font-mono">
                           {template.brandName}
                         </p>
                         <div className="flex gap-1 mt-2">
                           {template.brandColors.map((color, idx) => (
                             <div
                               key={idx}
-                              className="w-4 h-4 rounded border border-zinc-700"
+                              className="w-4 h-4 rounded border border-neutral-700"
                               style={{ backgroundColor: color }}
                             />
                           ))}
@@ -475,7 +475,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
             </div>
             <button
               onClick={() => setShowLoadModal(false)}
-              className="w-full px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-md text-sm font-mono transition-all"
+              className="w-full px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-md text-sm font-mono transition-all"
             >
               Fechar
             </button>

@@ -72,7 +72,7 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
 
   const cardBg = theme === 'dark' ? '#1a1a1a' : '#fafafa';
   const cardBorder = theme === 'dark' ? '#2a2a2a' : '#e5e5e5';
-  const textColor = theme === 'dark' ? 'text-zinc-200' : 'text-zinc-700';
+  const textColor = theme === 'dark' ? 'text-neutral-200' : 'text-neutral-700';
 
   return (
     <div
@@ -86,7 +86,7 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
         {/* Close Button */}
         <button
           onClick={onClose}
-          className={`fixed top-4 right-4 sm:top-6 sm:right-6 md:top-8 md:right-8 z-20 transition-all duration-300 cursor-pointer rounded-md p-2 hover:bg-white/5 backdrop-blur-sm ${theme === 'dark' ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-500 hover:text-zinc-700'
+          className={`fixed top-4 right-4 sm:top-6 sm:right-6 md:top-8 md:right-8 z-20 transition-all duration-300 cursor-pointer rounded-md p-2 hover:bg-white/5 backdrop-blur-sm ${theme === 'dark' ? 'text-neutral-400 hover:text-neutral-200' : 'text-neutral-500 hover:text-neutral-700'
             }`}
           aria-label={t('tutorial.close')}
         >
@@ -139,7 +139,7 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
                             target.parentElement.style.justifyContent = 'center';
                             if (!target.parentElement.querySelector('.placeholder')) {
                               const placeholder = document.createElement('div');
-                              placeholder.className = 'placeholder text-zinc-500 text-sm font-mono';
+                              placeholder.className = 'placeholder text-neutral-500 text-sm font-mono';
                               placeholder.textContent = `${t('tutorial.step')} ${step.number}`;
                               target.parentElement.appendChild(placeholder);
                             }

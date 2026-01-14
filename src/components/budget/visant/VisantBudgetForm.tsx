@@ -29,10 +29,10 @@ export const VisantBudgetForm: React.FC<VisantBudgetFormProps> = ({
     <div className="space-y-6 w-full h-full min-h-full">
       {/* Basic Info */}
       <div className="space-y-4">
-        <h3 className="text-base sm:text-lg font-semibold text-zinc-200 font-mono">Informações Básicas</h3>
+        <h3 className="text-base sm:text-lg font-semibold text-neutral-200 font-mono">Informações Básicas</h3>
 
         <div className="w-full">
-          <label className="block text-xs sm:text-sm text-zinc-400 mb-2 font-mono">
+          <label className="block text-xs sm:text-sm text-neutral-400 mb-2 font-mono">
             {t('budget.clientName')} *
           </label>
           <FormInput
@@ -44,7 +44,7 @@ export const VisantBudgetForm: React.FC<VisantBudgetFormProps> = ({
         </div>
 
         <div className="w-full">
-          <label className="block text-xs sm:text-sm text-zinc-400 mb-2 font-mono">
+          <label className="block text-xs sm:text-sm text-neutral-400 mb-2 font-mono">
             {t('budget.projectName')} *
           </label>
           <FormInput
@@ -56,7 +56,7 @@ export const VisantBudgetForm: React.FC<VisantBudgetFormProps> = ({
         </div>
 
         <div className="w-full">
-          <label className="block text-xs sm:text-sm text-zinc-400 mb-2 font-mono">
+          <label className="block text-xs sm:text-sm text-neutral-400 mb-2 font-mono">
             {t('budget.projectDescription')} *
           </label>
           <FormTextarea
@@ -76,7 +76,7 @@ export const VisantBudgetForm: React.FC<VisantBudgetFormProps> = ({
         />
 
         <div className="w-full">
-          <label className="block text-xs sm:text-sm text-zinc-400 mb-2 font-mono">
+          <label className="block text-xs sm:text-sm text-neutral-400 mb-2 font-mono">
             Título do Serviço (Capa)
           </label>
           <FormInput
@@ -88,13 +88,13 @@ export const VisantBudgetForm: React.FC<VisantBudgetFormProps> = ({
 
         {/* Cores - Grid 2x2 */}
         <div className="w-full">
-          <label className="block text-xs sm:text-sm text-zinc-400 mb-3 font-mono">
+          <label className="block text-xs sm:text-sm text-neutral-400 mb-3 font-mono">
             Cores
           </label>
           <div className="grid grid-cols-2 gap-4">
             {/* Cor de Fundo da Capa */}
             <div>
-              <label className="block text-xs text-zinc-500 mb-2 font-mono">
+              <label className="block text-xs text-neutral-500 mb-2 font-mono">
                 Cor de Fundo da Capa
               </label>
               <div className="flex gap-2 items-center">
@@ -116,7 +116,7 @@ export const VisantBudgetForm: React.FC<VisantBudgetFormProps> = ({
 
             {/* Cor do Texto da Capa */}
             <div>
-              <label className="block text-xs text-zinc-500 mb-2 font-mono">
+              <label className="block text-xs text-neutral-500 mb-2 font-mono">
                 Cor do Texto da Capa
               </label>
               <div className="flex gap-2 items-center">
@@ -138,7 +138,7 @@ export const VisantBudgetForm: React.FC<VisantBudgetFormProps> = ({
 
             {/* Cor de Fundo */}
             <div>
-              <label className="block text-xs text-zinc-500 mb-2 font-mono">
+              <label className="block text-xs text-neutral-500 mb-2 font-mono">
                 {t('budget.brandBackgroundColor') || 'Cor de Fundo'}
               </label>
               <div className="flex gap-2 items-center">
@@ -160,7 +160,7 @@ export const VisantBudgetForm: React.FC<VisantBudgetFormProps> = ({
 
             {/* Cor de Destaque */}
             <div>
-              <label className="block text-xs text-zinc-500 mb-2 font-mono">
+              <label className="block text-xs text-neutral-500 mb-2 font-mono">
                 {t('budget.brandAccentColor') || 'Cor de Destaque'}
               </label>
               <div className="flex gap-2 items-center">
@@ -200,7 +200,7 @@ export const VisantBudgetForm: React.FC<VisantBudgetFormProps> = ({
 
       {/* Observations */}
       <div className="w-full">
-        <label className="block text-xs sm:text-sm text-zinc-400 mb-2 font-mono">
+        <label className="block text-xs sm:text-sm text-neutral-400 mb-2 font-mono">
           {t('budget.observations')}
         </label>
         <FormTextarea

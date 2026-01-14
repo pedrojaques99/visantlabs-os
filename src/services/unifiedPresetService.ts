@@ -3,8 +3,10 @@ import { TEXTURE_PRESETS, type TexturePreset } from '../types/texturePresets';
 import { AMBIENCE_PRESETS, type AmbiencePreset } from '../types/ambiencePresets';
 import { LUMINANCE_PRESETS, type LuminancePreset } from '../types/luminancePresets';
 import { MOCKUP_PRESETS, type MockupPreset } from '../types/mockupPresets';
+import { BRANDING_PRESETS, type BrandingPreset } from '../types/brandingPresets';
+import { EFFECT_PRESETS, type EffectPreset } from '../types/effectPresets';
 
-export type PresetType = 'angle' | 'texture' | 'ambience' | 'luminance' | 'mockup';
+export type PresetType = 'angle' | 'texture' | 'ambience' | 'luminance' | 'mockup' | 'branding' | 'effect';
 
 export interface UnifiedPresets {
     anglePresets: AnglePreset[];
@@ -12,6 +14,8 @@ export interface UnifiedPresets {
     ambiencePresets: AmbiencePreset[];
     luminancePresets: LuminancePreset[];
     mockupPresets: MockupPreset[];
+    brandingPresets: BrandingPreset[];
+    effectPresets: EffectPreset[];
 }
 
 // Internal cache
@@ -25,6 +29,8 @@ const DEFAULT_PRESETS: UnifiedPresets = {
     ambiencePresets: AMBIENCE_PRESETS,
     luminancePresets: LUMINANCE_PRESETS,
     mockupPresets: MOCKUP_PRESETS,
+    brandingPresets: BRANDING_PRESETS,
+    effectPresets: EFFECT_PRESETS,
 };
 
 /**
@@ -51,6 +57,8 @@ export async function fetchAllOfficialPresets(): Promise<UnifiedPresets> {
                     ambiencePresets: data.ambiencePresets?.length > 0 ? data.ambiencePresets : AMBIENCE_PRESETS,
                     luminancePresets: data.luminancePresets?.length > 0 ? data.luminancePresets : LUMINANCE_PRESETS,
                     mockupPresets: data.mockupPresets?.length > 0 ? data.mockupPresets : MOCKUP_PRESETS,
+                    brandingPresets: data.brandingPresets?.length > 0 ? data.brandingPresets : BRANDING_PRESETS,
+                    effectPresets: data.effectPresets?.length > 0 ? data.effectPresets : EFFECT_PRESETS,
                 };
 
                 console.log('[UnifiedPresetService] Presets loaded successfully');

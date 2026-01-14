@@ -738,10 +738,10 @@ export const BrandingMachinePage: React.FC = () => {
 
   if (isLoadingProject) {
     return (
-      <div className={`h-screen w-full flex items-center justify-center ${theme === 'dark' ? 'bg-[#121212] text-zinc-300' : 'bg-zinc-50 text-zinc-800'
+      <div className={`h-screen w-full flex items-center justify-center ${theme === 'dark' ? 'bg-[#0C0C0C] text-neutral-300' : 'bg-neutral-50 text-neutral-800'
         }`}>
         <div className="text-center">
-          <p className={`text-sm font-mono ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'
+          <p className={`text-sm font-mono ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
             }`}>{t('branding.loadingProject')}</p>
         </div>
       </div>

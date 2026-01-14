@@ -46,21 +46,21 @@ export const ReImaginePanel: React.FC<ReImaginePanelProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-30 flex items-center justify-center p-4 animate-fade-in">
-      <div className="w-full max-w-2xl bg-zinc-900 rounded-xl border border-zinc-800/50 shadow-2xl overflow-hidden">
+      <div className="w-full max-w-2xl bg-neutral-900 rounded-xl border border-neutral-800/50 shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-zinc-800/50">
+        <div className="flex items-center justify-between p-4 border-b border-neutral-800/50">
           <div className="flex items-center gap-2">
             <div className="p-2 bg-brand-cyan/20 rounded-md">
               <Pencil size={20} className="text-brand-cyan" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-zinc-200">Re-imagine</h3>
-              <p className="text-xs text-zinc-500">Describe the changes you want to make</p>
+              <h3 className="text-lg font-semibold text-neutral-200">Re-imagine</h3>
+              <p className="text-xs text-neutral-500">Describe the changes you want to make</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-md text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 transition-colors"
+            className="p-2 rounded-md text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 transition-colors"
             title="Close"
           >
             <X size={20} />

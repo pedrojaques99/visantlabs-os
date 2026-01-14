@@ -29,11 +29,11 @@ export const AspectRatioSection: React.FC<AspectRatioSectionProps> = ({
 
   return (
     <section>
-      <h2 className={`text-sm font-semibold font-mono uppercase tracking-widest mb-2 transition-all duration-300 ${aspectRatio ? 'text-zinc-600' : 'text-zinc-400'}`}>
+      <h2 className={`text-sm font-semibold font-mono uppercase tracking-widest mb-2 transition-all duration-300 ${aspectRatio ? 'text-neutral-600' : 'text-neutral-400'}`}>
         {isProModel ? t('mockup.aspectRatioTitle') : t('mockup.autoAspectRatioTitle')}
       </h2>
       {!isProModel && (
-        <p className="text-xs text-zinc-500 mb-3 font-mono">{t('mockup.autoAspectRatioDescription')}</p>
+        <p className="text-xs text-neutral-500 mb-3 font-mono">{t('mockup.autoAspectRatioDescription')}</p>
       )}
       <div className="flex flex-wrap justify-center gap-2 cursor-pointer">
         {MAIN_ASPECT_RATIOS.map((ratio) => {
@@ -51,12 +51,12 @@ export const AspectRatioSection: React.FC<AspectRatioSectionProps> = ({
               className={`flex flex-col items-center justify-center gap-1 py-1.5 px-4 md:px-5 text-xs font-mono rounded-md transition-all duration-200 border ${isSelected
                 ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40 cursor-pointer'
                 : isProModel
-                  ? 'bg-zinc-800/30 text-zinc-500 border-zinc-700/30 hover:border-zinc-600/50 hover:text-zinc-400 cursor-pointer'
-                  : 'bg-zinc-800/20 text-zinc-600 border-zinc-700/20 opacity-40 cursor-not-allowed'
+                  ? 'bg-neutral-800/30 text-neutral-500 border-neutral-700/30 hover:border-neutral-600/50 hover:text-neutral-400 cursor-pointer'
+                  : 'bg-neutral-800/20 text-neutral-600 border-neutral-700/20 opacity-40 cursor-not-allowed'
                 }`}
               title={!isProModel ? t('mockup.aspectRatioAutoTooltip') : t('mockup.aspectRatioValue', { ratio })}
             >
-              <div className={`${isSquare ? 'w-6 h-6' : isLandscape ? 'w-8 h-5' : 'w-5 h-8'} border ${isSelected ? 'border-[brand-cyan]/60' : 'border-zinc-600/50'
+              <div className={`${isSquare ? 'w-6 h-6' : isLandscape ? 'w-8 h-5' : 'w-5 h-8'} border ${isSelected ? 'border-[brand-cyan]/60' : 'border-neutral-600/50'
                 } rounded-md`} />
               <span className="text-[10px] mt-0.5">{ratio}</span>
             </button>
@@ -69,7 +69,7 @@ export const AspectRatioSection: React.FC<AspectRatioSectionProps> = ({
               onClick={() => setShowOther(!showOther)}
               className={`flex flex-col items-center justify-center gap-1 py-1.5 px-4 md:px-5 text-xs font-mono rounded-md transition-all duration-200 border cursor-pointer ${isOtherSelected
                 ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
-                : 'bg-zinc-800/30 text-zinc-500 border-zinc-700/30 hover:border-zinc-600/50 hover:text-zinc-400'
+                : 'bg-neutral-800/30 text-neutral-500 border-neutral-700/30 hover:border-neutral-600/50 hover:text-neutral-400'
                 }`}
             >
               <span className="text-[10px]">{t('mockup.otherAspectRatio')}</span>
@@ -79,7 +79,7 @@ export const AspectRatioSection: React.FC<AspectRatioSectionProps> = ({
       </div>
 
       {isProModel && showOther && (
-        <div className="mt-3 pt-3 border-t border-zinc-700/30 animate-fade-in">
+        <div className="mt-3 pt-3 border-t border-neutral-700/30 animate-fade-in">
           <div className="flex flex-wrap justify-center gap-2 cursor-pointer">
             {OTHER_ASPECT_RATIOS.map((ratio) => {
               const [w, h] = ratio.split(':').map(Number);
@@ -97,11 +97,11 @@ export const AspectRatioSection: React.FC<AspectRatioSectionProps> = ({
                   }}
                   className={`flex flex-col items-center justify-center gap-1 py-1.5 px-4 md:px-5 text-xs font-mono rounded-md transition-all duration-200 border cursor-pointer ${isSelected
                     ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
-                    : 'bg-zinc-800/30 text-zinc-500 border-zinc-700/30 hover:border-zinc-600/50 hover:text-zinc-400'
+                    : 'bg-neutral-800/30 text-neutral-500 border-neutral-700/30 hover:border-neutral-600/50 hover:text-neutral-400'
                     }`}
                   title={t('mockup.aspectRatioValue', { ratio })}
                 >
-                  <div className={`${isSquare ? 'w-6 h-6' : isLandscape ? 'w-8 h-5' : 'w-5 h-8'} border ${isSelected ? 'border-[brand-cyan]/60' : 'border-zinc-600/50'
+                  <div className={`${isSquare ? 'w-6 h-6' : isLandscape ? 'w-8 h-5' : 'w-5 h-8'} border ${isSelected ? 'border-[brand-cyan]/60' : 'border-neutral-600/50'
                     } rounded-md`} />
                   <span className="text-[10px] mt-0.5">{ratio}</span>
                 </button>

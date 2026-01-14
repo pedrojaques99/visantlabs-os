@@ -90,12 +90,12 @@ const router = createBrowserRouter([
     element: <App />,
     errorElement: (
       <ErrorBoundaryWrapper>
-        <div className="min-h-screen bg-background text-zinc-300 flex items-center justify-center p-4">
-          <div className="max-w-2xl w-full bg-card border border-zinc-800 rounded-md p-6 md:p-8 space-y-6">
-            <h1 className="text-xl md:text-2xl font-semibold text-zinc-200 font-mono">
+        <div className="min-h-screen bg-background text-neutral-300 flex items-center justify-center p-4">
+          <div className="max-w-2xl w-full bg-card border border-neutral-800 rounded-md p-6 md:p-8 space-y-6">
+            <h1 className="text-xl md:text-2xl font-semibold text-neutral-200 font-mono">
               {translate('router.routeError', initialLocale)}
             </h1>
-            <p className="text-sm text-zinc-400 font-mono">
+            <p className="text-sm text-neutral-400 font-mono">
               {translate('router.routeErrorDescription', initialLocale)}
             </p>
             <button

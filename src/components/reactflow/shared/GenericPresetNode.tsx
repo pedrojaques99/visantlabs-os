@@ -169,7 +169,7 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                 {/* Header */}
                 <div className="flex items-center gap-3 mb-3">
                     <Icon size={16} className="text-brand-cyan" />
-                    <h3 className="text-xs font-semibold text-zinc-300 font-mono uppercase">
+                    <h3 className="text-xs font-semibold text-neutral-300 font-mono uppercase">
                         {t(config.translationKeys.title) || config.title}
                     </h3>
                 </div>
@@ -191,20 +191,20 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                             isLoading && 'opacity-50 cursor-not-allowed'
                         )}
                     >
-                        <div className="w-10 h-10 bg-zinc-900/30 border border-zinc-700/30 rounded flex items-center justify-center flex-shrink-0">
-                            <Icon size={14} className="text-zinc-400" />
+                        <div className="w-10 h-10 bg-neutral-900/30 border border-neutral-700/30 rounded flex items-center justify-center flex-shrink-0">
+                            <Icon size={14} className="text-neutral-400" />
                         </div>
                         <div className="flex-1 min-w-0">
                             <div className="text-xs font-mono truncate text-brand-cyan">
                                 {selectedPreset?.name || t(config.translationKeys.selectPreset) || `Select ${config.title.toLowerCase()}`}
                             </div>
                             {selectedPreset?.description && (
-                                <div className="text-[10px] font-mono text-zinc-500 truncate">
+                                <div className="text-[10px] font-mono text-neutral-500 truncate">
                                     {selectedPreset.description}
                                 </div>
                             )}
                         </div>
-                        <ChevronDown size={14} className="text-zinc-400 flex-shrink-0" />
+                        <ChevronDown size={14} className="text-neutral-400 flex-shrink-0" />
                     </button>
                 </div>
 
@@ -217,7 +217,7 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
 
                 {!hasConnectedImage && (
                     <div className="mb-2">
-                        <span className="text-xs font-mono text-zinc-500">
+                        <span className="text-xs font-mono text-neutral-500">
                             {t(config.translationKeys.connectImageNode) || 'Connect an image node'}
                         </span>
                     </div>
@@ -254,7 +254,7 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
 
                 {/* Result Preview */}
                 {hasResult && (resultImageUrl || resultImageBase64) && (
-                    <div className="mt-2 pt-2 border-t border-zinc-700/30">
+                    <div className="mt-2 pt-2 border-t border-neutral-700/30">
                         <img
                             src={resultImageUrl || (resultImageBase64 ? `data:image/png;base64,${resultImageBase64}` : '')}
                             alt={t(config.translationKeys.result) || `${config.title} result`}

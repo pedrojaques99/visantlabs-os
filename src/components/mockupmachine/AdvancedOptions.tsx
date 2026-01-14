@@ -162,9 +162,9 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
   };
 
   return (
-    <div>
+    <div className={`p-4 rounded-xl border transition-all duration-200 ${theme === 'dark' ? 'bg-black/20 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
       <div className="mb-2">
-        <h4 className={`text-xs font-mono ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-600'}`}>{title}</h4>
+        <h4 className={`text-xs font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{title}</h4>
       </div>
 
       <div
@@ -179,8 +179,8 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
           <button
             onClick={handleCustomTagClick}
             className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border inline-flex items-center gap-1 cursor-pointer ${theme === 'dark'
-              ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
-              : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'
+              ? 'bg-neutral-800/50 text-neutral-400 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
+              : 'bg-neutral-100 text-neutral-700 border-neutral-300 hover:border-neutral-400 hover:text-neutral-900'
               }`}
           >
             <Plus size={14} />
@@ -197,7 +197,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
             placeholder={t('mockup.customCategoryPlaceholder')}
             className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border border-[brand-cyan]/30 focus:outline-none focus:ring-0 min-w-[120px] font-mono ${theme === 'dark'
               ? 'bg-brand-cyan/20 text-brand-cyan'
-              : 'bg-brand-cyan/20 text-zinc-800'
+              : 'bg-brand-cyan/20 text-neutral-800'
               }`}
             autoFocus
           />
@@ -205,7 +205,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
 
         {/* Regular tags */}
         {(() => {
-          const allDisplayTags = [...new Set([...tags, ...selectedTags])];
+          const allDisplayTags = [...new Set([...tags, ...selectedTags, ...suggestedTags])];
 
           // Sort tags: suggested first, then selected, then others
           const sortedTags = [...allDisplayTags].sort((a, b) => {
@@ -237,14 +237,14 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border cursor-pointer ${isSelected
                   ? theme === 'dark'
                     ? 'bg-brand-cyan/20 text-brand-cyan border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
-                    : 'bg-brand-cyan/20 text-zinc-800 border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
+                    : 'bg-brand-cyan/20 text-neutral-800 border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
                   : theme === 'dark'
                     ? isSuggested
-                      ? 'bg-zinc-800/80 text-zinc-300 border-brand-cyan/50 hover:border-brand-cyan/70 hover:text-white animate-pulse-subtle'
-                      : 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
+                      ? 'bg-neutral-800/80 text-neutral-300 border-brand-cyan/50 hover:border-brand-cyan/70 hover:text-white animate-pulse-subtle'
+                      : 'bg-neutral-800/50 text-neutral-400 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
                     : isSuggested
-                      ? 'bg-brand-cyan/10 text-zinc-800 border-brand-cyan/50 shadow-sm shadow-brand-cyan/5 animate-pulse-subtle'
-                      : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'
+                      ? 'bg-brand-cyan/10 text-neutral-800 border-brand-cyan/50 shadow-sm shadow-brand-cyan/5 animate-pulse-subtle'
+                      : 'bg-neutral-100 text-neutral-700 border-neutral-300 hover:border-neutral-400 hover:text-neutral-900'
                   } ${hasSelection && !isSelected ? 'opacity-40' : ''}`}
               >
                 {translateTag(tag)}
@@ -259,7 +259,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
         <div className="flex justify-center mt-2">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className={`p-1.5 rounded transition-all duration-200 ${theme === 'dark' ? 'hover:bg-zinc-800/50 text-zinc-500 hover:text-zinc-400' : 'hover:bg-zinc-200/50 text-zinc-600 hover:text-zinc-700'}`}
+            className={`p-1.5 rounded transition-all duration-200 ${theme === 'dark' ? 'hover:bg-neutral-800/50 text-neutral-500 hover:text-neutral-400' : 'hover:bg-neutral-200/50 text-neutral-600 hover:text-neutral-700'}`}
             aria-label={isExpanded ? t('common.collapse') : t('common.expand')}
           >
             {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -344,8 +344,8 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
 
   return (
     <div className="space-y-4 pt-4 animate-fade-in-down">
-      <div>
-        <h4 className={`text-xs font-mono mb-3 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-600'}`}>{t('mockup.colorPalette')}</h4>
+      <div className={`p-4 rounded-xl border transition-all duration-200 ${theme === 'dark' ? 'bg-black/20 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
+        <h4 className={`text-xs font-mono mb-3 uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.colorPalette')}</h4>
 
         {/* Two-column layout: Input on left, Suggestions on right */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -364,14 +364,14 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
                     }
                   }}
                   className={`w-full p-2 rounded-md border focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs font-mono transition-colors duration-200 pl-8 ${theme === 'dark'
-                    ? 'bg-black/40 border-zinc-700/50 text-zinc-400'
-                    : 'bg-zinc-50 border-zinc-300 text-zinc-700'
+                    ? 'bg-black/40 border-neutral-700/50 text-neutral-400'
+                    : 'bg-neutral-50 border-neutral-300 text-neutral-700'
                     }`}
                   placeholder="#52ddeb"
                 />
                 {(isValidColor || !colorInput) && (
                   <span
-                    className="absolute left-2.5 w-4 h-4 rounded-md border border-zinc-600"
+                    className="absolute left-2.5 w-4 h-4 rounded-md border border-neutral-600"
                     style={{ backgroundColor: isValidColor ? colorInput : '#52ddeb' }}
                   ></span>
                 )}
@@ -381,9 +381,9 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
                 disabled={!isValidColor}
                 className={`px-3 rounded-md border text-xs font-mono transition-all ${isValidColor
                   ? theme === 'dark'
-                    ? 'bg-zinc-700/50 text-zinc-400 border-zinc-700/50 hover:bg-zinc-600/50 hover:text-zinc-300 cursor-pointer'
-                    : 'bg-zinc-200 text-zinc-700 border-zinc-300 hover:bg-zinc-300 hover:text-zinc-900 cursor-pointer'
-                  : 'bg-zinc-800/30 text-zinc-600 border-zinc-700/30 cursor-not-allowed opacity-50'
+                    ? 'bg-neutral-700/50 text-neutral-400 border-neutral-700/50 hover:bg-neutral-600/50 hover:text-neutral-300 cursor-pointer'
+                    : 'bg-neutral-200 text-neutral-700 border-neutral-300 hover:bg-neutral-300 hover:text-neutral-900 cursor-pointer'
+                  : 'bg-neutral-800/30 text-neutral-600 border-neutral-700/30 cursor-not-allowed opacity-50'
                   }`}
               >
                 {t('common.add')}
@@ -395,15 +395,15 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
               <div className="flex flex-wrap gap-2 min-h-[26px]">
                 {selectedColors.map(color => (
                   <div key={color} className={`flex items-center gap-1.5 pl-2 pr-1 py-0.5 rounded-md border text-xs ${theme === 'dark'
-                    ? 'bg-zinc-900/80 border-zinc-700'
-                    : 'bg-zinc-200 border-zinc-300'
+                    ? 'bg-neutral-900/80 border-neutral-700'
+                    : 'bg-neutral-200 border-neutral-300'
                     }`}>
                     <span
                       className="w-3 h-3 rounded-md border border-white/10"
                       style={{ backgroundColor: color }}
                     ></span>
                     <span className="font-mono">{color}</span>
-                    <button onClick={() => onRemoveColor(color)} className={`rounded-md cursor-pointer ${theme === 'dark' ? 'text-zinc-500 hover:text-white' : 'text-zinc-600 hover:text-zinc-900'
+                    <button onClick={() => onRemoveColor(color)} className={`rounded-md cursor-pointer ${theme === 'dark' ? 'text-neutral-500 hover:text-white' : 'text-neutral-600 hover:text-neutral-900'
                       }`}>
                       <X size={14} />
                     </button>
@@ -514,28 +514,28 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
           suggestedTags={suggestedMaterialTags}
         />
       )}
-      <div>
-        <h4 className={`text-xs font-mono mb-2 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-600'}`}>{t('mockup.negativePrompt')}</h4>
+      <div className={`p-4 rounded-xl border transition-all duration-200 ${theme === 'dark' ? 'bg-black/20 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
+        <h4 className={`text-xs font-mono mb-2 uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.negativePrompt')}</h4>
         <textarea
           value={negativePrompt}
           onChange={onNegativePromptChange}
           rows={2}
           className={`w-full p-2 rounded-md border focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y ${theme === 'dark'
-            ? 'bg-black/40 border-zinc-700/50 text-zinc-400'
-            : 'bg-zinc-50 border-zinc-300 text-zinc-700'
+            ? 'bg-black/40 border-neutral-700/50 text-neutral-400'
+            : 'bg-neutral-50 border-neutral-300 text-neutral-700'
             }`}
           placeholder={t('mockup.negativePromptPlaceholder')}
         />
       </div>
-      <div>
-        <h4 className={`text-xs font-mono mb-2 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-600'}`}>{t('mockup.additionalPrompt')}</h4>
+      <div className={`p-4 rounded-xl border transition-all duration-200 ${theme === 'dark' ? 'bg-black/20 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
+        <h4 className={`text-xs font-mono mb-2 uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.additionalPrompt')}</h4>
         <textarea
           value={additionalPrompt}
           onChange={onAdditionalPromptChange}
           rows={2}
           className={`w-full p-2 rounded-md border focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y ${theme === 'dark'
-            ? 'bg-black/40 border-zinc-700/50 text-zinc-400'
-            : 'bg-zinc-50 border-zinc-300 text-zinc-700'
+            ? 'bg-black/40 border-neutral-700/50 text-neutral-400'
+            : 'bg-neutral-50 border-neutral-300 text-neutral-700'
             }`}
           placeholder={t('mockup.additionalPromptPlaceholder')}
         />

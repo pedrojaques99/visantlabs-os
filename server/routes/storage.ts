@@ -1,7 +1,7 @@
 import express from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../db/prisma.js';
-import { getUserStorageLimit, syncUserStorage, calculateUserStorage } from '../services/r2Service.js';
+import { getUserStorageLimit, syncUserStorage, calculateUserStorage } from '@/services/r2Service.js';
 
 const router = express.Router();
 

@@ -17,7 +17,7 @@ interface NodePlaceholderProps {
 export const NodePlaceholder: React.FC<NodePlaceholderProps> = ({
   isLoading = false,
   uploadButton,
-  emptyIcon = <Maximize2 size={32} className="text-zinc-600" />,
+  emptyIcon = <Maximize2 size={32} className="text-neutral-600" />,
   emptyMessage = 'No output',
   emptySubmessage = 'Connect a node to see result',
   elapsedTime = 0,
@@ -47,7 +47,7 @@ export const NodePlaceholder: React.FC<NodePlaceholderProps> = ({
   }, [isLoading, statusMessages]);
 
   return (
-    <div className="flex flex-col items-center justify-center gap-3 p-5 text-zinc-500 min-h-[75px] relative" style={{ width: '100%', minWidth: isLoading ? '200px' : '150px' }}>
+    <div className="flex flex-col items-center justify-center gap-3 p-5 text-neutral-500 min-h-[75px] relative" style={{ width: '100%', minWidth: isLoading ? '200px' : '150px' }}>
       {isLoading ? (
         <div className="flex flex-col items-center justify-center gap-3 w-full">
           {/* Linha 1: Picareta */}
@@ -59,7 +59,7 @@ export const NodePlaceholder: React.FC<NodePlaceholderProps> = ({
           </div>
 
           {/* Linha 3: Labels */}
-          <div className="h-4 text-xs font-mono text-zinc-500 overflow-hidden text-center">
+          <div className="h-4 text-xs font-mono text-neutral-500 overflow-hidden text-center">
             <span
               key={messageIndex}
               className="block animate-fade-in"
@@ -71,7 +71,7 @@ export const NodePlaceholder: React.FC<NodePlaceholderProps> = ({
           {/* Linha 4: Timer (subtle) */}
           {elapsedTime > 0 && (
             <div className="h-3 flex items-center justify-center">
-              <span className="text-[10px] font-mono text-zinc-500/40">
+              <span className="text-[10px] font-mono text-neutral-500/40">
                 {Math.floor(elapsedTime / 60)}:{(elapsedTime % 60).toString().padStart(2, '0')}
               </span>
             </div>
@@ -82,9 +82,9 @@ export const NodePlaceholder: React.FC<NodePlaceholderProps> = ({
           {uploadButton || (
             <>
               {emptyIcon}
-              <span className="text-xs font-mono text-zinc-500 text-center">{emptyMessage}</span>
+              <span className="text-xs font-mono text-neutral-500 text-center">{emptyMessage}</span>
               {emptySubmessage && (
-                <span className="text-xs font-mono text-zinc-600 text-center">{emptySubmessage}</span>
+                <span className="text-xs font-mono text-neutral-600 text-center">{emptySubmessage}</span>
               )}
             </>
           )}

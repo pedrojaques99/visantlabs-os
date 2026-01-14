@@ -103,7 +103,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
       {/* Project Detail Sections */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-zinc-200 font-mono">
+          <h3 className="text-lg font-semibold text-neutral-200 font-mono">
             {t('budget.projectDetailSections') || 'Seções de Descrição do Projeto'}
           </h3>
           <button
@@ -116,7 +116,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
         </div>
 
         {(customContent.projectDetailSections || []).length === 0 ? (
-          <div className="text-center py-4 text-zinc-500 font-mono text-sm">
+          <div className="text-center py-4 text-neutral-500 font-mono text-sm">
             {t('budget.noSections') || 'Nenhuma seção adicionada ainda'}
           </div>
         ) : (
@@ -124,12 +124,12 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
             {(customContent.projectDetailSections || []).map((section, sectionIndex) => (
               <div
                 key={sectionIndex}
-                className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl space-y-3"
+                className="p-4 bg-neutral-900 border border-neutral-800 rounded-xl space-y-3"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 space-y-3">
                     <div>
-                      <label className="block text-xs text-zinc-400 mb-1 font-mono">
+                      <label className="block text-xs text-neutral-400 mb-1 font-mono">
                         {t('budget.sectionTitle') || 'Título da Seção'}
                       </label>
                       <FormInput
@@ -142,7 +142,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <label className="block text-xs text-zinc-400 font-mono">
+                        <label className="block text-xs text-neutral-400 font-mono">
                           {t('budget.paragraphs') || 'Parágrafos'}
                         </label>
                         <button
@@ -193,7 +193,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
       {/* Info Boxes */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-zinc-200 font-mono">
+          <h3 className="text-lg font-semibold text-neutral-200 font-mono">
             {t('budget.infoBoxes') || 'Caixas de Informação'}
           </h3>
           <button
@@ -206,7 +206,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
         </div>
 
         {(customContent.infoBoxes || []).length === 0 ? (
-          <div className="text-center py-4 text-zinc-500 font-mono text-sm">
+          <div className="text-center py-4 text-neutral-500 font-mono text-sm">
             {t('budget.noInfoBoxes') || 'Nenhuma caixa de informação adicionada ainda'}
           </div>
         ) : (
@@ -214,12 +214,12 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
             {(customContent.infoBoxes || []).map((box, index) => (
               <div
                 key={index}
-                className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl space-y-3"
+                className="p-4 bg-neutral-900 border border-neutral-800 rounded-xl space-y-3"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 space-y-3">
                     <div>
-                      <label className="block text-xs text-zinc-400 mb-1 font-mono">
+                      <label className="block text-xs text-neutral-400 mb-1 font-mono">
                         {t('budget.infoBoxTitle') || 'Título'}
                       </label>
                       <FormInput
@@ -229,7 +229,7 @@ export const CustomContentSection: React.FC<CustomContentSectionProps> = ({
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-zinc-400 mb-1 font-mono">
+                      <label className="block text-xs text-neutral-400 mb-1 font-mono">
                         {t('budget.infoBoxContent') || 'Conteúdo'}
                       </label>
                       <FormTextarea

@@ -515,7 +515,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
           {/* Efeito de brilho animado */}
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[brand-cyan]/20 to-transparent animate-shimmer" />
 
-          <div className={`relative z-10 ${theme === 'dark' ? 'text-zinc-300' : 'text-zinc-800'
+          <div className={`relative z-10 ${theme === 'dark' ? 'text-neutral-300' : 'text-neutral-800'
             }`}>
             <div className="text-brand-cyan text-2xl font-semibold mb-3 flex items-center justify-center gap-2">
               <div className="w-8 h-8 border-2 border-[brand-cyan] rounded flex items-center justify-center">
@@ -543,24 +543,24 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
       {/* Column Control - Only show on desktop and when onSetColumnCount is provided */}
       {isDesktop && onSetColumnCount && (
         <div className="flex items-center justify-end mb-4">
-          <div className="flex items-center gap-1 bg-black/20 backdrop-blur-sm border border-zinc-800/40 rounded-md p-1">
+          <div className="flex items-center gap-1 bg-black/20 backdrop-blur-sm border border-neutral-800/40 rounded-md p-1">
             <button
               onClick={() => handleColumnsChange(columns - 1)}
               disabled={columns <= 1}
-              className="p-1.5 text-zinc-500 hover:text-zinc-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               aria-label="Decrease columns"
             >
               <Minus size={14} />
             </button>
             <div className="px-2">
-              <span className="text-xs font-mono text-zinc-400 min-w-[1.5rem] text-center">
+              <span className="text-xs font-mono text-neutral-400 min-w-[1.5rem] text-center">
                 {columns}
               </span>
             </div>
             <button
               onClick={() => handleColumnsChange(columns + 1)}
               disabled={columns >= 3}
-              className="p-1.5 text-zinc-500 hover:text-zinc-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               aria-label="Increase columns"
             >
               <Plus size={14} />
@@ -664,7 +664,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
               aria-label={`Column ${columnIndex + 1} with ${sectionsInColumn.length} section${sectionsInColumn.length !== 1 ? 's' : ''}`}
             >
               {sectionsInColumn.length === 0 && dragOverColumn === columnIndex && (
-                <div className="border-2 border-dashed border-[brand-cyan]/60 rounded-xl p-8 text-center text-zinc-400 text-sm bg-brand-cyan/5 transition-all duration-300">
+                <div className="border-2 border-dashed border-[brand-cyan]/60 rounded-xl p-8 text-center text-neutral-400 text-sm bg-brand-cyan/5 transition-all duration-300">
                   {draggedStepNumber !== null ? 'Drop here' : ''}
                 </div>
               )}
@@ -779,8 +779,8 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
               {/* Empty column indicator */}
               {sectionsInColumn.length === 0 && dragOverColumn !== columnIndex && (
                 <div className={`border border-dashed rounded-xl p-8 text-center text-xs opacity-60 transition-opacity duration-300 ${theme === 'dark'
-                  ? 'border-zinc-800/40 text-zinc-500'
-                  : 'border-zinc-300 text-zinc-400'
+                  ? 'border-neutral-800/40 text-neutral-500'
+                  : 'border-neutral-300 text-neutral-400'
                   }`}>
                   Empty column
                 </div>
@@ -841,7 +841,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
             role="group"
             aria-label="New column preview - drop here to create"
           >
-            <div className={`flex-1 flex items-center justify-center text-sm font-mono ${theme === 'dark' ? 'text-zinc-300' : 'text-zinc-800'
+            <div className={`flex-1 flex items-center justify-center text-sm font-mono ${theme === 'dark' ? 'text-neutral-300' : 'text-neutral-800'
               }`}>
               <div className="text-center space-y-3">
                 <div className="text-brand-cyan text-2xl font-semibold animate-pulse">+</div>

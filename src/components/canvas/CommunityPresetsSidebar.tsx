@@ -322,31 +322,31 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
     // --- Render Content ---
 
     const content = (
-        <div className={cn("flex flex-col h-full bg-[#121212]", variant === 'embedded' ? "bg-transparent" : "")}>
+        <div className={cn("flex flex-col h-full bg-[#0C0C0C]", variant === 'embedded' ? "bg-transparent" : "")}>
             {/* Header Area */}
             <div className={cn(
                 "flex-shrink-0 space-y-4 p-4",
-                variant === 'sheet' ? "border-b border-zinc-800/50" : ""
+                variant === 'sheet' ? "border-b border-neutral-800/50" : ""
             )}>
                 {variant === 'sheet' && (
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <Users className="h-5 w-5 text-brand-cyan" />
-                            <h2 className="text-zinc-200 font-semibold">{t('communityPresets.title')}</h2>
+                            <h2 className="text-neutral-200 font-semibold">{t('communityPresets.title')}</h2>
                         </div>
                     </div>
                 )}
 
                 {/* View Mode & Create */}
                 <div className="flex items-center gap-2">
-                    <div className="flex p-1 rounded-lg bg-zinc-900 border border-zinc-800/50 flex-1">
+                    <div className="flex p-1 rounded-lg bg-neutral-900 border border-neutral-800/50 flex-1">
                         <button
                             onClick={() => setViewMode('all')}
                             className={cn(
                                 "flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all",
                                 viewMode === 'all'
-                                    ? "bg-zinc-800 text-zinc-200 shadow-sm"
-                                    : "text-zinc-500 hover:text-zinc-300"
+                                    ? "bg-neutral-800 text-neutral-200 shadow-sm"
+                                    : "text-neutral-500 hover:text-neutral-300"
                             )}
                         >
                             {t('communityPresets.allPresets')}
@@ -356,8 +356,8 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                             className={cn(
                                 "flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all",
                                 viewMode === 'my'
-                                    ? "bg-zinc-800 text-zinc-200 shadow-sm"
-                                    : "text-zinc-500 hover:text-zinc-300"
+                                    ? "bg-neutral-800 text-neutral-200 shadow-sm"
+                                    : "text-neutral-500 hover:text-neutral-300"
                             )}
                         >
                             {t('communityPresets.myPresets')}
@@ -374,12 +374,12 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
 
                 {/* Search */}
                 <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-500" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-500" />
                     <input
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder={t('communityPresets.searchPlaceholder') || "Search presets..."}
-                        className="w-full pl-9 pr-4 py-2 bg-zinc-900/50 border border-zinc-700/50 rounded-lg text-xs text-zinc-300 placeholder:text-zinc-600 focus:outline-none focus:border-brand-cyan/50"
+                        className="w-full pl-9 pr-4 py-2 bg-neutral-900/50 border border-neutral-700/50 rounded-lg text-xs text-neutral-300 placeholder:text-neutral-600 focus:outline-none focus:border-brand-cyan/50"
                     />
                 </div>
 
@@ -398,7 +398,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                                     "flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[10px] font-mono whitespace-nowrap transition-all",
                                     isActive
                                         ? "bg-brand-cyan/10 border-brand-cyan/30 text-brand-cyan"
-                                        : "bg-zinc-900/50 border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-400"
+                                        : "bg-neutral-900/50 border-neutral-800 text-neutral-500 hover:border-neutral-700 hover:text-neutral-400"
                                 )}
                             >
                                 <Icon size={12} />
@@ -420,7 +420,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                         {error}
                     </div>
                 ) : filteredPresets.length === 0 ? (
-                    <div className="text-center py-12 text-zinc-500 text-xs">
+                    <div className="text-center py-12 text-neutral-500 text-xs">
                         {t('communityPresets.noPresets')}
                     </div>
                 ) : (
@@ -462,7 +462,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
     if (variant === 'sheet') {
         return (
             <Sheet open={isOpen} onOpenChange={onClose}>
-                <SheetContent side="right" className="w-full sm:max-w-md p-0 bg-[#121212] border-zinc-800">
+                <SheetContent side="right" className="w-full sm:max-w-md p-0 bg-[#0C0C0C] border-neutral-800">
                     {content}
                 </SheetContent>
             </Sheet>

@@ -4,7 +4,7 @@ import { prisma } from '../db/prisma.js';
 import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { AuthRequest } from './auth.js';
 import { ObjectId } from 'mongodb';
-import { JWT_SECRET } from '@/utils/jwtSecret.js';
+import { JWT_SECRET } from '../utils/jwtSecret.js';
 
 /**
  * Middleware to validate admin access

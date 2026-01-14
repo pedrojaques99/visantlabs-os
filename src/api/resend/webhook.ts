@@ -1,7 +1,7 @@
 // Dedicated Resend webhook handler for Vercel
 // This file is automatically detected by Vercel for /api/resend/webhook routes
 import dotenv from 'dotenv';
-import { connectToMongoDB, getDb } from '../server/db/mongodb.js';
+import { connectToMongoDB, getDb } from '../../../server/db/mongodb.js';
 import crypto from 'crypto';
 
 // Load environment variables

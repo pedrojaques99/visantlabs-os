@@ -328,7 +328,7 @@ export const CanvasProjectsPage: React.FC = () => {
   // Show loading state while checking access
   if (isLoadingAccess || isLoading) {
     return (
-      <div className="min-h-screen bg-[#121212] text-zinc-300 pt-14 relative overflow-hidden">
+      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-14 relative overflow-hidden">
         <div className="fixed inset-0 z-0">
           <GridDotsBackground />
         </div>
@@ -350,7 +350,7 @@ export const CanvasProjectsPage: React.FC = () => {
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
                 key={i}
-                className="bg-[#141414] border border-zinc-800/60 rounded-2xl p-6 md:p-8"
+                className="bg-[#141414] border border-neutral-800/60 rounded-2xl p-6 md:p-8"
                 style={{ animationDelay: `${i * 100}ms` }}
               >
                 {/* Thumbnail Skeleton */}
@@ -400,7 +400,7 @@ export const CanvasProjectsPage: React.FC = () => {
         keywords={t('canvas.seoKeywords') || 'canvas editor, editor visual, design editor, colaboração, visual flow editor'}
         noindex={true}
       />
-      <div className="min-h-screen bg-[#121212] text-zinc-300 pt-14 relative overflow-hidden">
+      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-14 relative overflow-hidden">
         <div className="fixed inset-0 z-0">
           <GridDotsBackground />
         </div>
@@ -429,10 +429,10 @@ export const CanvasProjectsPage: React.FC = () => {
           </div>
           <div className="flex items-start gap-4 mb-6">
             <div className="flex-1">
-              <h1 className="text-3xl md:text-4xl font-semibold font-manrope text-zinc-300 mb-2">
+              <h1 className="text-3xl md:text-4xl font-semibold font-manrope text-neutral-300 mb-2">
                 {t('canvas.projects') || 'Projects'}
               </h1>
-              <p className="text-zinc-500 font-mono text-sm md:text-base">
+              <p className="text-neutral-500 font-mono text-sm md:text-base">
                 {projects.length === 0
                   ? (t('canvas.noProjectsYet') || 'No projects yet')
                   : (() => {
@@ -455,7 +455,7 @@ export const CanvasProjectsPage: React.FC = () => {
             </button>
             <button
               onClick={() => setShowWorkflowLibrary(true)}
-              className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 hover:border-zinc-600 font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 flex-shrink-0"
+              className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-700 hover:border-neutral-600 font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 flex-shrink-0"
             >
               <FolderOpen className="h-4 w-4" />
               {t('workflows.importWorkflow') || 'Import workflow'}
@@ -465,11 +465,11 @@ export const CanvasProjectsPage: React.FC = () => {
           {/* Projects Grid */}
           {projects.length === 0 ? (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-              <FolderKanban size={64} className="text-zinc-700 mb-4" strokeWidth={1} />
-              <h2 className="text-xl font-semibold font-mono uppercase text-zinc-500 mb-2">
+              <FolderKanban size={64} className="text-neutral-700 mb-4" strokeWidth={1} />
+              <h2 className="text-xl font-semibold font-mono uppercase text-neutral-500 mb-2">
                 {t('canvas.noProjectsYet')?.toUpperCase() || 'NO PROJECTS YET'}
               </h2>
-              <p className="text-sm text-zinc-600 font-mono mb-6">
+              <p className="text-sm text-neutral-600 font-mono mb-6">
                 {t('canvas.createFirstProject') || 'Create your first canvas project to start working with nodes.'}
               </p>
               <button
@@ -489,7 +489,7 @@ export const CanvasProjectsPage: React.FC = () => {
                 return (
                   <div
                     key={project._id}
-                    className="bg-[#141414] border border-zinc-800/60 rounded-2xl p-6 md:p-8 hover:border-zinc-700/60 transition-all duration-300 group cursor-pointer overflow-hidden"
+                    className="bg-[#141414] border border-neutral-800/60 rounded-2xl p-6 md:p-8 hover:border-neutral-700/60 transition-all duration-300 group cursor-pointer overflow-hidden"
                     onClick={() => {
                       if (editingProjectId !== project._id) {
                         handleView(project);
@@ -500,7 +500,7 @@ export const CanvasProjectsPage: React.FC = () => {
                     {(() => {
                       const thumbnail = getProjectThumbnail(project);
                       return thumbnail ? (
-                        <div className="w-full h-48 mb-4 rounded-md overflow-hidden bg-zinc-900/50 border border-zinc-800/60">
+                        <div className="w-full h-48 mb-4 rounded-md overflow-hidden bg-neutral-900/50 border border-neutral-800/60">
                           <img
                             src={thumbnail}
                             alt={project.name || 'Project preview'}
@@ -512,8 +512,8 @@ export const CanvasProjectsPage: React.FC = () => {
                           />
                         </div>
                       ) : (
-                        <div className="w-full h-48 mb-4 rounded-md bg-zinc-900/50 border border-zinc-800/60 flex items-center justify-center">
-                          <FolderKanban className="h-12 w-12 text-zinc-700" strokeWidth={1} />
+                        <div className="w-full h-48 mb-4 rounded-md bg-neutral-900/50 border border-neutral-800/60 flex items-center justify-center">
+                          <FolderKanban className="h-12 w-12 text-neutral-700" strokeWidth={1} />
                         </div>
                       );
                     })()}
@@ -531,11 +531,11 @@ export const CanvasProjectsPage: React.FC = () => {
                               onBlur={() => handleNameEditSave(project._id)}
                               onKeyDown={(e) => handleNameEditKeyDown(e, project._id)}
                               onClick={(e) => e.stopPropagation()}
-                              className="flex-1 font-semibold text-zinc-200 font-manrope text-lg bg-transparent border-b border-zinc-600 focus:border-brand-cyan focus:outline-none px-1"
+                              className="flex-1 font-semibold text-neutral-200 font-manrope text-lg bg-transparent border-b border-neutral-600 focus:border-brand-cyan focus:outline-none px-1"
                             />
                           ) : (
                             <h3
-                              className="font-semibold text-zinc-200 font-manrope text-lg line-clamp-2 cursor-text hover:text-brand-cyan transition-colors"
+                              className="font-semibold text-neutral-200 font-manrope text-lg line-clamp-2 cursor-text hover:text-brand-cyan transition-colors"
                               onClick={(e) => handleNameEditStart(project, e)}
                               title={t('canvas.clickToEdit') || 'Click to edit'}
                             >
@@ -543,14 +543,14 @@ export const CanvasProjectsPage: React.FC = () => {
                             </h3>
                           )}
                         </div>
-                        <div className="flex items-center gap-2 text-xs text-zinc-400 font-mono mb-3">
+                        <div className="flex items-center gap-2 text-xs text-neutral-400 font-mono mb-3">
                           <Calendar className="h-3.5 w-3.5" />
                           <span>{formatDate(project.createdAt)}</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-4 text-xs text-zinc-500 font-mono mb-4">
+                    <div className="flex items-center gap-4 text-xs text-neutral-500 font-mono mb-4">
                       <span>{nodeCount} {nodeCount === 1 ? 'node' : 'nodes'}</span>
                       <span>•</span>
                       <span>{edgeCount} {edgeCount === 1 ? 'edge' : 'edges'}</span>
@@ -562,7 +562,7 @@ export const CanvasProjectsPage: React.FC = () => {
                           e.stopPropagation();
                           handleView(project);
                         }}
-                        className="flex-1 px-4 py-2 bg-black/40 border border-zinc-800/60 hover:border-brand-cyan/50 hover:text-brand-cyan rounded-md text-sm font-mono text-zinc-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
+                        className="flex-1 px-4 py-2 bg-black/40 border border-neutral-800/60 hover:border-brand-cyan/50 hover:text-brand-cyan rounded-md text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
                       >
                         <Eye className="h-4 w-4" />
                         {t('canvas.open') || 'Open'}
@@ -570,7 +570,7 @@ export const CanvasProjectsPage: React.FC = () => {
                       <button
                         onClick={(e) => handleDeleteClick(project._id, e)}
                         disabled={deletingId === project._id}
-                        className="px-4 py-2 bg-black/40 border border-zinc-800/60 hover:border-red-500/50 hover:text-red-400 rounded-xl text-sm font-mono text-zinc-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        className="px-4 py-2 bg-black/40 border border-neutral-800/60 hover:border-red-500/50 hover:text-red-400 rounded-xl text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>

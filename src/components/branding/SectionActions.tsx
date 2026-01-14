@@ -81,7 +81,7 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
               e.stopPropagation();
               onEdit(); // Toggle edit mode off (dismiss)
             }}
-            className={`h-7 w-7 px-2 hover:bg-red-500/20 rounded-md flex items-center justify-center flex-shrink-0 transition-all ${theme === 'dark' ? 'text-zinc-400 hover:text-red-400' : 'text-zinc-600 hover:text-red-500'
+            className={`h-7 w-7 px-2 hover:bg-red-500/20 rounded-md flex items-center justify-center flex-shrink-0 transition-all ${theme === 'dark' ? 'text-neutral-400 hover:text-red-400' : 'text-neutral-600 hover:text-red-500'
               }`}
           >
             <X className="h-4 w-4" />
@@ -103,8 +103,8 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
             }}
             disabled={isGenerating}
             className={`h-7 w-7 px-2 rounded-md flex items-center justify-center flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed relative transition-all duration-300 hover:text-brand-cyan ${theme === 'dark'
-              ? 'hover:bg-black/40 text-zinc-400 shadow-[0_0_8px_rgba(82,221,235,0.3)] hover:shadow-[0_0_12px_rgba(82,221,235,0.5)]'
-              : 'hover:bg-zinc-200 text-zinc-600'
+              ? 'hover:bg-black/40 text-neutral-400 shadow-[0_0_8px_rgba(82,221,235,0.3)] hover:shadow-[0_0_12px_rgba(82,221,235,0.5)]'
+              : 'hover:bg-neutral-200 text-neutral-600'
               }`}
           >
             <RotateCw className="h-4 w-4" />
@@ -116,8 +116,8 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
           <button
             onClick={handleCopy}
             className={`h-7 w-7 px-2 rounded-md flex items-center justify-center flex-shrink-0 transition-colors hover:text-brand-cyan ${theme === 'dark'
-              ? 'hover:bg-black/40 text-zinc-400'
-              : 'hover:bg-zinc-200 text-zinc-600'
+              ? 'hover:bg-black/40 text-neutral-400'
+              : 'hover:bg-neutral-200 text-neutral-600'
               }`}
           >
             {copied ? (
@@ -136,8 +136,8 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
               onEdit();
             }}
             className={`h-7 w-7 px-2 rounded-md flex items-center justify-center flex-shrink-0 hover:text-brand-cyan ${theme === 'dark'
-              ? 'hover:bg-black/40 text-zinc-400'
-              : 'hover:bg-zinc-200 text-zinc-600'
+              ? 'hover:bg-black/40 text-neutral-400'
+              : 'hover:bg-neutral-200 text-neutral-600'
               }`}
           >
             <Edit2 className="h-4 w-4" />
@@ -157,8 +157,8 @@ export const SectionActions: React.FC<SectionActionsProps> = ({
             className={`h-7 w-7 px-2 rounded-md flex items-center justify-center flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ${feedbackGiven === 'up'
               ? 'text-brand-cyan'
               : theme === 'dark'
-                ? 'hover:bg-black/40 text-zinc-400 hover:text-brand-cyan'
-                : 'hover:bg-zinc-200 text-zinc-600 hover:text-brand-cyan'
+                ? 'hover:bg-black/40 text-neutral-400 hover:text-brand-cyan'
+                : 'hover:bg-neutral-200 text-neutral-600 hover:text-brand-cyan'
               }`}
           >
             <ThumbsUp className={`h-4 w-4 ${feedbackGiven === 'up' ? 'fill-current' : ''}`} />

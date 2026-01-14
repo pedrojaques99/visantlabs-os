@@ -106,28 +106,28 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
       onClick={onClose}
     >
       <div
-        className="bg-[#141414] border border-zinc-800/60 rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col"
+        className="bg-[#141414] border border-neutral-800/60 rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-zinc-800/60">
-          <h2 className="text-lg font-semibold text-zinc-200 font-mono">Select Branding Project</h2>
+        <div className="flex items-center justify-between p-4 border-b border-neutral-800/60">
+          <h2 className="text-lg font-semibold text-neutral-200 font-mono">Select Branding Project</h2>
           <button
             onClick={onClose}
-            className="p-1.5 rounded hover:bg-zinc-800/50 text-zinc-400 hover:text-zinc-200 transition-colors"
+            className="p-1.5 rounded hover:bg-neutral-800/50 text-neutral-400 hover:text-neutral-200 transition-colors"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Search */}
-        <div className="p-4 border-b border-zinc-800/60">
+        <div className="p-4 border-b border-neutral-800/60">
           <input
             type="text"
             placeholder={t('canvasNodes.brandingProjectSelectModal.searchProjectsPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-700/30 rounded text-sm text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-[brand-cyan]/50 transition-colors"
+            className="w-full px-3 py-2 bg-neutral-900/50 border border-neutral-700/30 rounded text-sm text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-[brand-cyan]/50 transition-colors"
             autoFocus
           />
         </div>
@@ -138,7 +138,7 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
                 <GlitchLoader size={20} color="brand-cyan" />
-                <span className="ml-2 text-sm text-zinc-400">Loading projects...</span>
+                <span className="ml-2 text-sm text-neutral-400">Loading projects...</span>
               </div>
             ) : filteredProjects.length > 0 ? (
               filteredProjects.map((project) => {
@@ -147,21 +147,21 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
                   <button
                     key={projectId}
                     onClick={() => handleSelectProject(project)}
-                    className="w-full px-4 py-3 text-left border rounded-md transition-all bg-zinc-900/50 border-zinc-700/30 text-zinc-300 hover:border-[brand-cyan]/50 hover:bg-zinc-800/50 group"
+                    className="w-full px-4 py-3 text-left border rounded-md transition-all bg-neutral-900/50 border-neutral-700/30 text-neutral-300 hover:border-[brand-cyan]/50 hover:bg-neutral-800/50 group"
                   >
                     <div className="flex items-start gap-3">
                       <FolderOpen size={16} className="text-brand-cyan flex-shrink-0 mt-0.5" />
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm text-zinc-200 truncate">
+                        <div className="font-medium text-sm text-neutral-200 truncate">
                           {project.name || 'Untitled'}
                         </div>
                         {project.prompt && (
-                          <div className="text-xs text-zinc-500 mt-1 line-clamp-2">
+                          <div className="text-xs text-neutral-500 mt-1 line-clamp-2">
                             {project.prompt}
                           </div>
                         )}
                         {project.createdAt && (
-                          <div className="text-[10px] text-zinc-600 mt-1">
+                          <div className="text-[10px] text-neutral-600 mt-1">
                             {formatDate(project.createdAt)}
                           </div>
                         )}
@@ -172,7 +172,7 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
               })
             ) : (
               <div className="col-span-full text-center py-8">
-                <p className="text-sm text-zinc-500 font-mono">
+                <p className="text-sm text-neutral-500 font-mono">
                   {searchQuery ? 'No projects found matching your search' : 'No projects found'}
                 </p>
               </div>
@@ -181,7 +181,7 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-zinc-800/60 flex gap-2">
+        <div className="p-4 border-t border-neutral-800/60 flex gap-2">
           <button
             onClick={handleCreateNew}
             className="flex-1 px-4 py-2 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
@@ -191,7 +191,7 @@ export const BrandingProjectSelectModal: React.FC<BrandingProjectSelectModalProp
           </button>
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-zinc-800/50 hover:bg-zinc-700/50 text-zinc-300 rounded-md text-sm font-mono transition-colors"
+            className="px-4 py-2 bg-neutral-800/50 hover:bg-neutral-700/50 text-neutral-300 rounded-md text-sm font-mono transition-colors"
           >
             Cancel
           </button>

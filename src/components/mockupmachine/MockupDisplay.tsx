@@ -181,7 +181,7 @@ const MockupCard: React.FC<{
 
   return (
     <div
-      className={`relative ${aspectRatioClasses[aspectRatio]} bg-black/20 rounded-md overflow-visible group border border-zinc-800/50 transition-all duration-300 hover:border-zinc-700/80 hover:shadow-2xl hover:shadow-black/30 hover:scale-[1.02] animate-fade-in w-full`}
+      className={`relative ${aspectRatioClasses[aspectRatio]} bg-black/20 rounded-md overflow-visible group border border-neutral-800/50 transition-all duration-300 hover:border-neutral-700/80 hover:shadow-2xl hover:shadow-black/30 hover:scale-[1.02] animate-fade-in w-full`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -195,7 +195,7 @@ const MockupCard: React.FC<{
       )}
 
       {showEmptyState && (
-        <div className="w-full h-full flex items-center justify-center text-zinc-700">
+        <div className="w-full h-full flex items-center justify-center text-neutral-700">
           <ImageIcon size={40} strokeWidth={1} />
         </div>
       )}
@@ -222,7 +222,7 @@ const MockupCard: React.FC<{
       )}
 
       {isLoading && !isRedrawing && !!base64Image && (
-        <div className="absolute inset-0 flex items-center justify-center text-zinc-700 overflow-hidden" role="status" aria-label="Generating mockup...">
+        <div className="absolute inset-0 flex items-center justify-center text-neutral-700 overflow-hidden" role="status" aria-label="Generating mockup...">
           <ImageIcon size={40} strokeWidth={1} className="opacity-50" aria-hidden="true" />
           <div className="absolute inset-0 w-full h-full bg-transparent -translate-x-full animate-shimmer shimmer-glow"></div>
           <span className="sr-only">Generating mockup, please wait...</span>
@@ -234,7 +234,7 @@ const MockupCard: React.FC<{
           onClick={(e) => { e.stopPropagation(); handleToggleLike(); }}
           className={`absolute top-3 right-3 p-2 rounded-md transition-all z-30 backdrop-blur-sm ${localIsLiked
             ? 'bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30'
-            : 'bg-black/40 text-zinc-400 hover:bg-black/60 hover:text-zinc-200'
+            : 'bg-black/40 text-neutral-400 hover:bg-black/60 hover:text-neutral-200'
             }`}
           title={localIsLiked ? t('canvasNodes.outputNode.removeFromFavorites') : t('canvasNodes.outputNode.saveToCollection')}
           aria-label={localIsLiked ? 'Unlike' : 'Like'}
@@ -247,7 +247,7 @@ const MockupCard: React.FC<{
       {canInteract && onRemove && (
         <button
           onClick={(e) => { e.stopPropagation(); onRemove(); }}
-          className="absolute top-3 left-3 p-2 rounded-md transition-all z-30 backdrop-blur-sm bg-black/40 text-zinc-400 hover:bg-red-500/20 hover:text-red-400 opacity-0 group-hover:opacity-100"
+          className="absolute top-3 left-3 p-2 rounded-md transition-all z-30 backdrop-blur-sm bg-black/40 text-neutral-400 hover:bg-red-500/20 hover:text-red-400 opacity-0 group-hover:opacity-100"
           title="Remove output (will be lost if not saved)"
           aria-label="Remove output"
         >
@@ -269,7 +269,7 @@ const MockupCard: React.FC<{
               <a
                 href={imageUrl}
                 download={`mockup-${Date.now()}.png`}
-                className="p-2 rounded text-zinc-400 hover:text-white hover:bg-white/5 transition-colors duration-150 flex items-center justify-center"
+                className="p-2 rounded text-neutral-400 hover:text-white hover:bg-white/5 transition-colors duration-150 flex items-center justify-center"
                 onClick={async (e) => {
                   e.stopPropagation();
                   e.preventDefault();
@@ -305,8 +305,8 @@ const MockupCard: React.FC<{
                 onClick={(e) => { e.stopPropagation(); onRedraw(); }}
                 disabled={editButtonsDisabled || isRedrawing}
                 className={`p-2 rounded transition-colors duration-150 focus:outline-none focus:ring-1 focus:ring-white/20 flex items-center gap-1 ${editButtonsDisabled || isRedrawing
-                  ? 'text-zinc-600 cursor-not-allowed opacity-50'
-                  : 'text-zinc-400 hover:text-white hover:bg-white/5'
+                  ? 'text-neutral-600 cursor-not-allowed opacity-50'
+                  : 'text-neutral-400 hover:text-white hover:bg-white/5'
                   }`}
                 aria-label="Re-draw mockup"
               >
@@ -324,7 +324,7 @@ const MockupCard: React.FC<{
                   onClick={(e) => { e.stopPropagation(); setShowReImaginePanel(true); }}
                   disabled={editButtonsDisabled || isRedrawing}
                   className={`p-2 rounded transition-colors duration-150 focus:outline-none focus:ring-1 focus:ring-[brand-cyan]/50 flex items-center gap-1 ${editButtonsDisabled || isRedrawing
-                    ? 'text-zinc-600 cursor-not-allowed opacity-50'
+                    ? 'text-neutral-600 cursor-not-allowed opacity-50'
                     : 'text-brand-cyan hover:text-white hover:bg-brand-cyan/20'
                     }`}
                   aria-label="Re-imagine mockup"
@@ -392,10 +392,10 @@ export const MockupDisplay: React.FC<MockupDisplayProps> = ({ mockups, isLoading
 
   if (!hasContent) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-center text-zinc-600">
+      <div className="flex flex-col items-center justify-center h-full text-center text-neutral-600">
         <Palette size={64} strokeWidth={1} />
         <h2 className="mt-4 text-xl font-semibold font-mono uppercase">AWAITING GENERATION</h2>
-        <p className="mt-1 text-sm text-zinc-500">Your generated mockups will appear here.</p>
+        <p className="mt-1 text-sm text-neutral-500">Your generated mockups will appear here.</p>
       </div>
     );
   }

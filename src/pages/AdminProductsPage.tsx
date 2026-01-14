@@ -296,7 +296,7 @@ export const AdminProductsPage: React.FC = () => {
 
     if (!isCheckingAuth && isAdmin === false) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-zinc-950 text-white font-mono">
+            <div className="flex items-center justify-center min-h-screen bg-neutral-950 text-white font-mono">
                 Acesso negado. Administradores apenas.
             </div>
         );
@@ -305,7 +305,7 @@ export const AdminProductsPage: React.FC = () => {
     return (
         <>
             <SEO title="Admin | Produtos" noindex={true} />
-            <div className="min-h-screen bg-[#09090b] text-zinc-300 pt-14 relative pb-20">
+            <div className="min-h-screen bg-neutral-950 text-neutral-300 pt-14 relative pb-20">
                 <div className="fixed inset-0 z-0">
                     <GridDotsBackground />
                 </div>
@@ -327,11 +327,11 @@ export const AdminProductsPage: React.FC = () => {
 
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                         <div>
-                            <h1 className="text-3xl font-bold text-zinc-100 flex items-center gap-3">
+                            <h1 className="text-3xl font-bold text-neutral-100 flex items-center gap-3">
                                 <Package className="text-brand-cyan h-8 w-8" />
                                 Gestão de Produtos
                             </h1>
-                            <p className="text-zinc-500 mt-1">Gerencie pacotes de créditos e planos de assinatura.</p>
+                            <p className="text-neutral-500 mt-1">Gerencie pacotes de créditos e planos de assinatura.</p>
                         </div>
 
                         <div className="flex items-center gap-3">
@@ -339,7 +339,7 @@ export const AdminProductsPage: React.FC = () => {
                                 onClick={handleSeedDefaults}
                                 variant="outline"
                                 size="sm"
-                                className="bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-400"
+                                className="bg-neutral-900 border-neutral-800 hover:bg-neutral-800 text-neutral-400"
                             >
                                 Semear Padrões
                             </Button>
@@ -347,14 +347,14 @@ export const AdminProductsPage: React.FC = () => {
                                 onClick={handleFetch}
                                 variant="outline"
                                 size="sm"
-                                className="bg-zinc-900 border-zinc-800 hover:bg-zinc-800"
+                                className="bg-neutral-900 border-neutral-800 hover:bg-neutral-800"
                             >
                                 <RefreshCw className={cn("h-4 w-4 mr-2", isLoading && "animate-spin")} />
                                 Sincronizar
                             </Button>
                             <Button
                                 onClick={handleCreate}
-                                className="bg-brand-cyan hover:bg-brand-cyan/90 text-zinc-950 font-bold"
+                                className="bg-brand-cyan hover:bg-brand-cyan/90 text-neutral-950 font-bold"
                             >
                                 <Plus className="h-4 w-4 mr-2" />
                                 Novo Produto
@@ -364,61 +364,61 @@ export const AdminProductsPage: React.FC = () => {
 
                     <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)} className="w-full">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                            <TabsList className="bg-zinc-900 border border-zinc-800 p-1">
-                                <TabsTrigger value="credit_package" className="data-[state=active]:bg-zinc-800 data-[state=active]:text-brand-cyan">
+                            <TabsList className="bg-neutral-900 border border-neutral-800 p-1">
+                                <TabsTrigger value="credit_package" className="data-[state=active]:bg-neutral-800 data-[state=active]:text-brand-cyan">
                                     Pacotes de Créditos
                                 </TabsTrigger>
-                                <TabsTrigger value="subscription_plan" className="data-[state=active]:bg-zinc-800 data-[state=active]:text-brand-cyan">
+                                <TabsTrigger value="subscription_plan" className="data-[state=active]:bg-neutral-800 data-[state=active]:text-brand-cyan">
                                     Assinaturas
                                 </TabsTrigger>
                             </TabsList>
 
                             <div className="relative w-full md:w-64">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-500" />
                                 <Input
                                     placeholder="Buscar produto..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="pl-9 bg-zinc-900 border-zinc-800 focus:border-brand-cyan/50"
+                                    className="pl-9 bg-neutral-900 border-neutral-800 focus:border-brand-cyan/50"
                                 />
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             {filteredProducts.map((product) => (
-                                <Card key={product.id} className="bg-zinc-900 border-zinc-800 hover:border-zinc-700 transition-all group">
+                                <Card key={product.id} className="bg-neutral-900 border-neutral-800 hover:border-neutral-700 transition-all group">
                                     <CardHeader className="pb-3 flex flex-row items-start justify-between space-y-0">
                                         <div>
-                                            <CardTitle className="text-xl text-zinc-100">{product.name}</CardTitle>
-                                            <CardDescription className="font-mono text-xs text-zinc-500">ID: {product.productId}</CardDescription>
+                                            <CardTitle className="text-xl text-neutral-100">{product.name}</CardTitle>
+                                            <CardDescription className="font-mono text-xs text-neutral-500">ID: {product.productId}</CardDescription>
                                         </div>
                                         <Badge variant={product.isActive ? "default" : "secondary"}
-                                            className={cn(product.isActive ? "bg-green-500/10 text-green-500 border-green-500/20" : "bg-zinc-800 text-zinc-500 border-zinc-700")}>
+                                            className={cn(product.isActive ? "bg-green-500/10 text-green-500 border-green-500/20" : "bg-neutral-800 text-neutral-500 border-neutral-700")}>
                                             {product.isActive ? 'Ativo' : 'Inativo'}
                                         </Badge>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
-                                        <div className="flex items-center justify-between text-sm py-2 border-b border-zinc-800/50">
-                                            <span className="text-zinc-500">Preço BRL</span>
-                                            <span className="text-zinc-200 font-bold">R$ {product.priceBRL.toFixed(2)}</span>
+                                        <div className="flex items-center justify-between text-sm py-2 border-b border-neutral-800/50">
+                                            <span className="text-neutral-500">Preço BRL</span>
+                                            <span className="text-neutral-200 font-bold">R$ {product.priceBRL.toFixed(2)}</span>
                                         </div>
-                                        <div className="flex items-center justify-between text-sm py-2 border-b border-zinc-800/50">
-                                            <span className="text-zinc-500">Créditos</span>
+                                        <div className="flex items-center justify-between text-sm py-2 border-b border-neutral-800/50">
+                                            <span className="text-neutral-500">Créditos</span>
                                             <span className="text-brand-cyan font-mono">{product.credits}</span>
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-2 pt-2">
                                             <div className="flex flex-col gap-1">
-                                                <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Stripe</span>
+                                                <span className="text-[10px] text-neutral-500 uppercase font-bold tracking-wider">Stripe</span>
                                                 <div className="flex items-center gap-1.5 overflow-hidden">
-                                                    <CheckCircle2 className={cn("h-3 w-3", product.stripeProductId ? "text-green-500" : "text-zinc-700")} />
+                                                    <CheckCircle2 className={cn("h-3 w-3", product.stripeProductId ? "text-green-500" : "text-neutral-700")} />
                                                     <span className="text-[10px] truncate max-w-full font-mono">{product.stripeProductId || 'N/A'}</span>
                                                 </div>
                                             </div>
                                             <div className="flex flex-col gap-1">
-                                                <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Payments</span>
+                                                <span className="text-[10px] text-neutral-500 uppercase font-bold tracking-wider">Payments</span>
                                                 <div className="flex items-center gap-1.5">
-                                                    <Link2 className={cn("h-3 w-3", product.paymentLinkBRL ? "text-brand-cyan" : "text-zinc-700")} />
+                                                    <Link2 className={cn("h-3 w-3", product.paymentLinkBRL ? "text-brand-cyan" : "text-neutral-700")} />
                                                     <span className="text-[10px]">{product.paymentLinkBRL ? 'Configurado' : 'Aguardando'}</span>
                                                 </div>
                                             </div>
@@ -428,7 +428,7 @@ export const AdminProductsPage: React.FC = () => {
                                             <Button
                                                 size="sm"
                                                 variant="ghost"
-                                                className="flex-1 bg-zinc-950 border border-zinc-800 hover:bg-zinc-800 hover:text-brand-cyan h-9"
+                                                className="flex-1 bg-neutral-950 border border-neutral-800 hover:bg-neutral-800 hover:text-brand-cyan h-9"
                                                 onClick={() => handleEdit(product)}
                                             >
                                                 <Edit2 className="h-4 w-4 mr-2" />
@@ -437,7 +437,7 @@ export const AdminProductsPage: React.FC = () => {
                                             <Button
                                                 size="sm"
                                                 variant="ghost"
-                                                className="bg-zinc-950 border border-zinc-800 hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/20 h-9"
+                                                className="bg-neutral-950 border border-neutral-800 hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/20 h-9"
                                                 onClick={() => handleDelete(product.id)}
                                             >
                                                 <Trash2 className="h-4 w-4" />
@@ -448,9 +448,9 @@ export const AdminProductsPage: React.FC = () => {
                             ))}
 
                             {filteredProducts.length === 0 && !isLoading && (
-                                <div className="col-span-full py-12 text-center bg-zinc-900/50 border border-dashed border-zinc-800 rounded-xl">
-                                    <Package className="h-12 w-12 text-zinc-700 mx-auto mb-4" />
-                                    <p className="text-zinc-500">Nenhum produto encontrado nesta categoria.</p>
+                                <div className="col-span-full py-12 text-center bg-neutral-900/50 border border-dashed border-neutral-800 rounded-xl">
+                                    <Package className="h-12 w-12 text-neutral-700 mx-auto mb-4" />
+                                    <p className="text-neutral-500">Nenhum produto encontrado nesta categoria.</p>
                                 </div>
                             )}
                         </div>
@@ -461,13 +461,13 @@ export const AdminProductsPage: React.FC = () => {
             {/* Edit Modal / Slide-over */}
             {isEditModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="bg-zinc-950 border border-zinc-800 w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl slide-in-from-bottom duration-500">
-                        <div className="p-6 border-b border-zinc-800 sticky top-0 bg-zinc-950 z-10 flex items-center justify-between">
+                    <div className="bg-neutral-950 border border-neutral-800 w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl slide-in-from-bottom duration-500">
+                        <div className="p-6 border-b border-neutral-800 sticky top-0 bg-neutral-950 z-10 flex items-center justify-between">
                             <div>
-                                <h2 className="text-2xl font-bold text-zinc-100">
+                                <h2 className="text-2xl font-bold text-neutral-100">
                                     {isCreating ? 'Novo Produto' : 'Editar Produto'}
                                 </h2>
-                                <p className="text-zinc-500 text-sm">Preencha os detalhes do produto e links de pagamento.</p>
+                                <p className="text-neutral-500 text-sm">Preencha os detalhes do produto e links de pagamento.</p>
                             </div>
                             <Button variant="ghost" size="icon" onClick={() => setIsEditModalOpen(false)} className="rounded-full">
                                 <X className="h-6 w-6" />
@@ -478,16 +478,16 @@ export const AdminProductsPage: React.FC = () => {
                             {/* Basic Info */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">ID do Produto (único)</label>
+                                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider">ID do Produto (único)</label>
                                     <Input
                                         placeholder="ex: credits_20, plan_pro"
                                         value={formData.productId}
                                         onChange={(e) => setFormData({ ...formData, productId: e.target.value })}
-                                        className="bg-zinc-900 border-zinc-800 font-mono"
+                                        className="bg-neutral-900 border-neutral-800 font-mono"
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Tipo</label>
+                                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Tipo</label>
                                     <Select
                                         value={formData.type}
                                         onChange={(val: any) => setFormData({ ...formData, type: val })}
@@ -495,30 +495,30 @@ export const AdminProductsPage: React.FC = () => {
                                             { value: 'credit_package', label: 'Pacote de Créditos' },
                                             { value: 'subscription_plan', label: 'Plano de Assinatura' }
                                         ]}
-                                        className="bg-zinc-900 border-zinc-800"
+                                        className="bg-neutral-900 border-neutral-800"
                                     />
                                 </div>
                                 <div className="space-y-2 md:col-span-2">
-                                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Nome Comercial</label>
+                                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Nome Comercial</label>
                                     <Input
                                         placeholder="ex: Pacote Gamer"
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        className="bg-zinc-900 border-zinc-800"
+                                        className="bg-neutral-900 border-neutral-800"
                                     />
                                 </div>
                                 <div className="space-y-2 md:col-span-2">
-                                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Descrição</label>
+                                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Descrição</label>
                                     <Textarea
                                         placeholder="Descrição breve do que este produto oferece..."
                                         value={formData.description}
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                        className="bg-zinc-900 border-zinc-800 min-h-[80px]"
+                                        className="bg-neutral-900 border-neutral-800 min-h-[80px]"
                                     />
                                 </div>
                                 {formData.type === 'subscription_plan' && (
                                     <div className="space-y-2 md:col-span-2">
-                                        <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Benefícios (um por linha para lista em marcadores)</label>
+                                        <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Benefícios (um por linha para lista em marcadores)</label>
                                         <Textarea
                                             placeholder="Benefício 1&#10;Benefício 2&#10;Benefício 3..."
                                             value={formData.metadata?.features ? (Array.isArray(formData.metadata.features) ? formData.metadata.features.join('\n') : '') : ''}
@@ -529,122 +529,122 @@ export const AdminProductsPage: React.FC = () => {
                                                     features: e.target.value.split('\n').filter(Boolean)
                                                 }
                                             })}
-                                            className="bg-zinc-900 border-zinc-800 min-h-[120px] font-manrope"
+                                            className="bg-neutral-900 border-neutral-800 min-h-[120px] font-manrope"
                                         />
                                     </div>
                                 )}
                             </div>
 
-                            <div className="h-px bg-zinc-800 w-full" />
+                            <div className="h-px bg-neutral-800 w-full" />
 
                             {/* Values & Limits */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Créditos</label>
+                                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Créditos</label>
                                     <Input
                                         type="number"
                                         value={formData.credits}
                                         onChange={(e) => setFormData({ ...formData, credits: parseInt(e.target.value) || 0 })}
-                                        className="bg-zinc-900 border-zinc-800 text-brand-cyan font-bold"
+                                        className="bg-neutral-900 border-neutral-800 text-brand-cyan font-bold"
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Preço R$ (BRL)</label>
+                                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Preço R$ (BRL)</label>
                                     <div className="relative">
-                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500">R$</span>
+                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">R$</span>
                                         <Input
                                             type="number"
                                             step="0.01"
                                             value={formData.priceBRL}
                                             onChange={(e) => setFormData({ ...formData, priceBRL: parseFloat(e.target.value) || 0 })}
-                                            className="bg-zinc-900 border-zinc-800 pl-9 font-bold text-green-500"
+                                            className="bg-neutral-900 border-neutral-800 pl-9 font-bold text-green-500"
                                         />
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Preço $ (USD) - Opcional</label>
+                                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-wider">Preço $ (USD) - Opcional</label>
                                     <div className="relative">
-                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500">$</span>
+                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">$</span>
                                         <Input
                                             type="number"
                                             step="0.01"
                                             value={formData.priceUSD}
                                             onChange={(e) => setFormData({ ...formData, priceUSD: e.target.value })}
-                                            className="bg-zinc-900 border-zinc-800 pl-7 text-zinc-300"
+                                            className="bg-neutral-900 border-neutral-800 pl-7 text-neutral-300"
                                         />
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="h-px bg-zinc-800 w-full" />
+                            <div className="h-px bg-neutral-800 w-full" />
 
                             {/* Payment Settings */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-4">
-                                    <h3 className="text-sm font-bold text-zinc-400 flex items-center gap-2">
+                                    <h3 className="text-sm font-bold text-neutral-400 flex items-center gap-2">
                                         <CheckCircle2 className="h-4 w-4 text-brand-cyan" />
                                         Plataformas & IDs
                                     </h3>
                                     <div className="space-y-3">
                                         <div className="space-y-1">
-                                            <label className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest pl-1">Stripe Product ID</label>
+                                            <label className="text-[10px] text-neutral-500 uppercase font-bold tracking-widest pl-1">Stripe Product ID</label>
                                             <Input
                                                 placeholder="prod_..."
                                                 value={formData.stripeProductId}
                                                 onChange={(e) => setFormData({ ...formData, stripeProductId: e.target.value })}
-                                                className="bg-zinc-900 border-zinc-800 text-xs font-mono"
+                                                className="bg-neutral-900 border-neutral-800 text-xs font-mono"
                                             />
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest pl-1">Abacate Product ID</label>
+                                            <label className="text-[10px] text-neutral-500 uppercase font-bold tracking-widest pl-1">Abacate Product ID</label>
                                             <Input
                                                 placeholder="prod_..."
                                                 value={formData.abacateProductId}
                                                 onChange={(e) => setFormData({ ...formData, abacateProductId: e.target.value })}
-                                                className="bg-zinc-900 border-zinc-800 text-xs font-mono"
+                                                className="bg-neutral-900 border-neutral-800 text-xs font-mono"
                                             />
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest pl-1">Abacate Bill ID (PIX)</label>
+                                            <label className="text-[10px] text-neutral-500 uppercase font-bold tracking-widest pl-1">Abacate Bill ID (PIX)</label>
                                             <Input
                                                 placeholder="bill_..."
                                                 value={formData.abacateBillId}
                                                 onChange={(e) => setFormData({ ...formData, abacateBillId: e.target.value })}
-                                                className="bg-zinc-900 border-zinc-800 text-xs font-mono"
+                                                className="bg-neutral-900 border-neutral-800 text-xs font-mono"
                                             />
                                         </div>
                                     </div>
                                 </div>
 
                                 <div className="space-y-4">
-                                    <h3 className="text-sm font-bold text-zinc-400 flex items-center gap-2">
+                                    <h3 className="text-sm font-bold text-neutral-400 flex items-center gap-2">
                                         <Link2 className="h-4 w-4 text-brand-cyan" />
                                         Checkout Links
                                     </h3>
                                     <div className="space-y-3">
                                         <div className="space-y-1">
-                                            <label className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest pl-1">Link de Pagamento BRL (Stripe)</label>
+                                            <label className="text-[10px] text-neutral-500 uppercase font-bold tracking-widest pl-1">Link de Pagamento BRL (Stripe)</label>
                                             <Input
                                                 placeholder="https://buy.stripe.com/..."
                                                 value={formData.paymentLinkBRL}
                                                 onChange={(e) => setFormData({ ...formData, paymentLinkBRL: e.target.value })}
-                                                className="bg-zinc-900 border-zinc-800 text-xs"
+                                                className="bg-neutral-900 border-neutral-800 text-xs"
                                             />
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest pl-1">Link de Pagamento USD (Stripe)</label>
+                                            <label className="text-[10px] text-neutral-500 uppercase font-bold tracking-widest pl-1">Link de Pagamento USD (Stripe)</label>
                                             <Input
                                                 placeholder="https://buy.stripe.com/..."
                                                 value={formData.paymentLinkUSD}
                                                 onChange={(e) => setFormData({ ...formData, paymentLinkUSD: e.target.value })}
-                                                className="bg-zinc-900 border-zinc-800 text-xs"
+                                                className="bg-neutral-900 border-neutral-800 text-xs"
                                             />
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="flex items-center justify-between pt-6 border-t border-zinc-800">
+                            <div className="flex items-center justify-between pt-6 border-t border-neutral-800">
                                 <div className="flex items-center gap-6">
                                     <div className="flex items-center gap-2">
                                         <input
@@ -654,15 +654,15 @@ export const AdminProductsPage: React.FC = () => {
                                             onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                                             className="w-4 h-4 accent-brand-cyan"
                                         />
-                                        <label htmlFor="isActive" className="text-sm text-zinc-400">Produto Ativo</label>
+                                        <label htmlFor="isActive" className="text-sm text-neutral-400">Produto Ativo</label>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <label className="text-sm text-zinc-400">Ordem:</label>
+                                        <label className="text-sm text-neutral-400">Ordem:</label>
                                         <Input
                                             type="number"
                                             value={formData.displayOrder}
                                             onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 0 })}
-                                            className="w-20 bg-zinc-900 border-zinc-800 h-8 text-center"
+                                            className="w-20 bg-neutral-900 border-neutral-800 h-8 text-center"
                                         />
                                     </div>
                                 </div>
@@ -670,7 +670,7 @@ export const AdminProductsPage: React.FC = () => {
                                 <div className="flex items-center gap-3">
                                     <Button variant="ghost" onClick={() => setIsEditModalOpen(false)}>Cancelar</Button>
                                     <Button
-                                        className="bg-brand-cyan hover:bg-brand-cyan/90 text-zinc-950 font-bold px-8"
+                                        className="bg-brand-cyan hover:bg-brand-cyan/90 text-neutral-950 font-bold px-8"
                                         onClick={handleSave}
                                         disabled={isLoading}
                                     >

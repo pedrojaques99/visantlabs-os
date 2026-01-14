@@ -38,11 +38,11 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
 
   return (
     <section>
-      <h2 className={`text-sm font-semibold font-mono uppercase tracking-widest mb-3 ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'}`}>{t('mockup.outputConfig')}</h2>
+      <h2 className={`text-sm font-semibold font-mono uppercase tracking-widest mb-3 ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}`}>{t('mockup.outputConfig')}</h2>
       <div className="space-y-3">
         {isProModel && (
           <div>
-            <h4 className={`text-xs font-mono mb-2 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-600'}`}>{t('mockup.resolution4kOnly')}</h4>
+            <h4 className={`text-xs font-mono mb-2 ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.resolution4kOnly')}</h4>
             <div className="flex gap-2 cursor-pointer">
               {(['1K', '2K', '4K'] as Resolution[]).map(res => (
                 <button
@@ -51,8 +51,8 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
                   className={`flex-1 flex items-center justify-center gap-1 py-2 text-xs font-mono rounded-md transition-all duration-200 border cursor-pointer ${resolution === res
                     ? 'bg-brand-cyan/20 text-brand-cyan border-[brand-cyan]/30'
                     : theme === 'dark'
-                      ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600'
-                      : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400'
+                      ? 'bg-neutral-800/50 text-neutral-400 border-neutral-700/50 hover:border-neutral-600'
+                      : 'bg-neutral-100 text-neutral-700 border-neutral-300 hover:border-neutral-400'
                     }`}
                 >
                   {res}
@@ -62,7 +62,7 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
           </div>
         )}
         <div>
-          <h4 className={`text-xs font-mono mb-2 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-600'}`}>{t('mockup.numberOfImages')}</h4>
+          <h4 className={`text-xs font-mono mb-2 ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.numberOfImages')}</h4>
           <div className="flex gap-2 cursor-pointer">
             {[1, 2, 3, 4].map(count => (
               <button
@@ -71,8 +71,8 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
                 className={`flex-1 flex items-center justify-center gap-1 py-2 text-xs font-mono rounded-md transition-all duration-200 border cursor-pointer ${mockupCount === count
                   ? 'bg-brand-cyan/20 text-brand-cyan border-[brand-cyan]/30'
                   : theme === 'dark'
-                    ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600'
-                    : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400'
+                    ? 'bg-neutral-800/50 text-neutral-400 border-neutral-700/50 hover:border-neutral-600'
+                    : 'bg-neutral-100 text-neutral-700 border-neutral-300 hover:border-neutral-400'
                   }`}
               >
                 {count}
@@ -83,10 +83,10 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
         <div className="flex gap-2">
           {designType !== 'blank' && (
             <div
-              className={`flex-1 flex items-center p-2.5 rounded-md cursor-pointer border ${theme === 'dark' ? 'bg-zinc-800/50 border-zinc-700/50' : 'bg-zinc-100 border-zinc-300'}`}
+              className={`flex-1 flex items-center p-2.5 rounded-md cursor-pointer border ${theme === 'dark' ? 'bg-neutral-800/50 border-neutral-700/50' : 'bg-neutral-100 border-neutral-300'}`}
               onClick={() => onGenerateTextChange(!generateText)}
             >
-              <div className={`w-4 h-4 rounded-md flex items-center justify-center border transition-all duration-200 ${generateText ? 'bg-brand-cyan/80 border-[brand-cyan]' : theme === 'dark' ? 'bg-zinc-700 border-zinc-600' : 'bg-white border-zinc-400'
+              <div className={`w-4 h-4 rounded-md flex items-center justify-center border transition-all duration-200 ${generateText ? 'bg-brand-cyan/80 border-[brand-cyan]' : theme === 'dark' ? 'bg-neutral-700 border-neutral-600' : 'bg-white border-neutral-400'
                 }`}>
                 {generateText && (
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -94,14 +94,14 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
                   </svg>
                 )}
               </div>
-              <label className={`ml-3 text-xs select-none cursor-pointer ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-700'}`}>{t('mockup.generateContextualText')}</label>
+              <label className={`ml-3 text-xs select-none cursor-pointer ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-700'}`}>{t('mockup.generateContextualText')}</label>
             </div>
           )}
           <div
-            className={`flex items-center p-2.5 rounded-md cursor-pointer border ${designType !== 'blank' ? 'flex-1' : 'w-full'} ${theme === 'dark' ? 'bg-zinc-800/50 border-zinc-700/50' : 'bg-zinc-100 border-zinc-300'}`}
+            className={`flex items-center p-2.5 rounded-md cursor-pointer border ${designType !== 'blank' ? 'flex-1' : 'w-full'} ${theme === 'dark' ? 'bg-neutral-800/50 border-neutral-700/50' : 'bg-neutral-100 border-neutral-300'}`}
             onClick={() => onWithHumanChange(!withHuman)}
           >
-            <div className={`w-4 h-4 rounded-md flex items-center justify-center border transition-all duration-200 ${withHuman ? 'bg-brand-cyan/80 border-[brand-cyan]' : theme === 'dark' ? 'bg-zinc-700 border-zinc-600' : 'bg-white border-zinc-400'
+            <div className={`w-4 h-4 rounded-md flex items-center justify-center border transition-all duration-200 ${withHuman ? 'bg-brand-cyan/80 border-[brand-cyan]' : theme === 'dark' ? 'bg-neutral-700 border-neutral-600' : 'bg-white border-neutral-400'
               }`}>
               {withHuman && (
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -109,13 +109,13 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
                 </svg>
               )}
             </div>
-            <label className={`ml-3 text-xs select-none cursor-pointer ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-700'}`}>{t('mockup.includeHumanInteraction')}</label>
+            <label className={`ml-3 text-xs select-none cursor-pointer ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-700'}`}>{t('mockup.includeHumanInteraction')}</label>
           </div>
           <div
-            className={`flex items-center p-2.5 rounded-md cursor-pointer border ${designType !== 'blank' ? 'flex-1' : 'w-full'} ${theme === 'dark' ? 'bg-zinc-800/50 border-zinc-700/50' : 'bg-zinc-100 border-zinc-300'}`}
+            className={`flex items-center p-2.5 rounded-md cursor-pointer border ${designType !== 'blank' ? 'flex-1' : 'w-full'} ${theme === 'dark' ? 'bg-neutral-800/50 border-neutral-700/50' : 'bg-neutral-100 border-neutral-300'}`}
             onClick={() => onEnhanceTextureChange(!enhanceTexture)}
           >
-            <div className={`w-4 h-4 rounded-md flex items-center justify-center border transition-all duration-200 ${enhanceTexture ? 'bg-brand-cyan/80 border-[brand-cyan]' : theme === 'dark' ? 'bg-zinc-700 border-zinc-600' : 'bg-white border-zinc-400'
+            <div className={`w-4 h-4 rounded-md flex items-center justify-center border transition-all duration-200 ${enhanceTexture ? 'bg-brand-cyan/80 border-[brand-cyan]' : theme === 'dark' ? 'bg-neutral-700 border-neutral-600' : 'bg-white border-neutral-400'
               }`}>
               {enhanceTexture && (
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -123,7 +123,7 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
                 </svg>
               )}
             </div>
-            <label className={`ml-3 text-xs select-none cursor-pointer ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-700'}`}>{t('mockup.enhanceTexture')}</label>
+            <label className={`ml-3 text-xs select-none cursor-pointer ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-700'}`}>{t('mockup.enhanceTexture')}</label>
           </div>
         </div>
       </div>

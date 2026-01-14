@@ -33,7 +33,7 @@ export const FAQSection: React.FC<FAQSectionProps> = ({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-zinc-200 font-mono">
+        <h3 className="text-lg font-semibold text-neutral-200 font-mono">
           {t('budget.faq')}
         </h3>
         <button
@@ -46,7 +46,7 @@ export const FAQSection: React.FC<FAQSectionProps> = ({
       </div>
 
       {faq.length === 0 ? (
-        <div className="text-center py-8 text-zinc-500 font-mono text-sm">
+        <div className="text-center py-8 text-neutral-500 font-mono text-sm">
           No FAQs added yet
         </div>
       ) : (
@@ -54,12 +54,12 @@ export const FAQSection: React.FC<FAQSectionProps> = ({
           {faq.map((item, index) => (
             <div
               key={index}
-              className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl space-y-3"
+              className="p-4 bg-neutral-900 border border-neutral-800 rounded-xl space-y-3"
             >
               <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                 <div className="flex-1 w-full space-y-3">
                   <div>
-                    <label className="block text-xs text-zinc-400 mb-1 font-mono">
+                    <label className="block text-xs text-neutral-400 mb-1 font-mono">
                       {t('budget.question')}
                     </label>
                     <FormInput
@@ -71,7 +71,7 @@ export const FAQSection: React.FC<FAQSectionProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-zinc-400 mb-1 font-mono">
+                    <label className="block text-xs text-neutral-400 mb-1 font-mono">
                       {t('budget.answer')}
                     </label>
                     <FormTextarea

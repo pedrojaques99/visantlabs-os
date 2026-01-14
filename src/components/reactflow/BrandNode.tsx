@@ -52,7 +52,7 @@ const ColorEditRow = ({
 
   return (
     <div className="flex items-center gap-2 mb-2">
-      <div className="relative w-8 h-8 rounded border border-zinc-700 overflow-hidden shrink-0">
+      <div className="relative w-8 h-8 rounded border border-neutral-700 overflow-hidden shrink-0">
         <div
           className="absolute inset-0"
           style={{ backgroundColor: color }}
@@ -77,7 +77,7 @@ const ColorEditRow = ({
       <Button
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-zinc-500 hover:text-red-400 shrink-0"
+        className="h-8 w-8 text-neutral-500 hover:text-red-400 shrink-0"
         onClick={onDelete}
       >
         <Trash2 size={14} />
@@ -387,7 +387,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
     return (
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
-          <div className="text-zinc-500 font-mono capitalize text-xs">{title}</div>
+          <div className="text-neutral-500 font-mono capitalize text-xs">{title}</div>
           <div className="flex items-center gap-1">
             {isEditing ? (
               <Button
@@ -403,7 +403,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-5 w-5 text-zinc-500 hover:text-zinc-300"
+                className="h-5 w-5 text-neutral-500 hover:text-neutral-300"
                 onClick={() => setEditingCategory(category)}
                 title="Edit Colors"
               >
@@ -426,7 +426,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
             <Button
               variant="outline"
               size="sm"
-              className="w-full h-7 text-xs border-dashed border-zinc-700 text-zinc-500 hover:text-zinc-300 hover:border-zinc-500 mt-2"
+              className="w-full h-7 text-xs border-dashed border-neutral-700 text-neutral-500 hover:text-neutral-300 hover:border-neutral-500 mt-2"
               onClick={() => handleColorAdd(category)}
             >
               <Plus size={12} className="mr-1" /> Add Color
@@ -437,19 +437,19 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
             {colors.map((color, idx) => (
               <div
                 key={idx}
-                className="flex items-center gap-1 px-2 py-1 bg-zinc-900/50 rounded border border-zinc-700/30 cursor-pointer hover:border-zinc-500 transition-colors group/color"
+                className="flex items-center gap-1 px-2 py-1 bg-neutral-900/50 rounded border border-neutral-700/30 cursor-pointer hover:border-neutral-500 transition-colors group/color"
                 title="Click to edit"
                 onClick={() => setEditingCategory(category)}
               >
                 <div
-                  className="w-3 h-3 rounded border border-zinc-700/50"
+                  className="w-3 h-3 rounded border border-neutral-700/50"
                   style={{ backgroundColor: color }}
                 />
-                <span className="text-zinc-400 font-mono text-[10px] group-hover/color:text-zinc-300 transition-colors">{color}</span>
+                <span className="text-neutral-400 font-mono text-[10px] group-hover/color:text-neutral-300 transition-colors">{color}</span>
               </div>
             ))}
             {colors.length === 0 && (
-              <span className="text-[10px] text-zinc-600 italic">No colors</span>
+              <span className="text-[10px] text-neutral-600 italic">No colors</span>
             )}
           </div>
         )}
@@ -510,10 +510,10 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
       {/* Logo Upload Section */}
       <div className="mb-4">
-        <NodeLabel>Logo {connectedLogo && <span className="text-[10px] text-zinc-500">(connected)</span>}</NodeLabel>
+        <NodeLabel>Logo {connectedLogo && <span className="text-[10px] text-neutral-500">(connected)</span>}</NodeLabel>
         {logoImageUrl ? (
           <div className="relative group/logo">
-            <div className="relative w-full h-24 bg-zinc-900/50 rounded border border-zinc-700/30 overflow-hidden">
+            <div className="relative w-full h-24 bg-neutral-900/50 rounded border border-neutral-700/30 overflow-hidden">
               <img
                 src={logoImageUrl}
                 alt="Logo"
@@ -549,11 +549,11 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
       {/* Identity Guide Upload Section (PDF or PNG) */}
       <div className="mb-4">
-        <NodeLabel>Identity Guide (PDF or PNG) {connectedIdentity && <span className="text-[10px] text-zinc-500">(connected)</span>}</NodeLabel>
+        <NodeLabel>Identity Guide (PDF or PNG) {connectedIdentity && <span className="text-[10px] text-neutral-500">(connected)</span>}</NodeLabel>
         {identityBase64 || nodeData.identityPdfUrl || nodeData.identityImageUrl ? (
           <div className="relative group/identity">
             {identityFileType === 'png' && identityImageUrl ? (
-              <div className="relative w-full h-24 bg-zinc-900/50 rounded border border-zinc-700/30 overflow-hidden">
+              <div className="relative w-full h-24 bg-neutral-900/50 rounded border border-neutral-700/30 overflow-hidden">
                 <img
                   src={identityImageUrl}
                   alt="Identity Guide"
@@ -570,9 +570,9 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 )}
               </div>
             ) : (
-              <div className="px-3 py-2 bg-zinc-900/50 rounded border border-zinc-700/30 flex items-center gap-3">
+              <div className="px-3 py-2 bg-neutral-900/50 rounded border border-neutral-700/30 flex items-center gap-3">
                 <FileText size={16} className="text-brand-cyan" />
-                <span className="text-xs font-mono text-zinc-400 flex-1">{identityFileType?.toUpperCase()} {connectedIdentity ? 'connected' : 'uploaded'}</span>
+                <span className="text-xs font-mono text-neutral-400 flex-1">{identityFileType?.toUpperCase()} {connectedIdentity ? 'connected' : 'uploaded'}</span>
                 {!connectedIdentity && (
                   <button
                     onClick={handleRemoveIdentity}
@@ -624,10 +624,10 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
       {/* Brand Identity Display */}
       {brandIdentity && (
-        <div className="border-t border-zinc-700/30 pt-3">
+        <div className="border-t border-neutral-700/30 pt-3">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="w-full flex items-center justify-between text-xs font-mono text-zinc-400 hover:text-zinc-300 mb-2"
+            className="w-full flex items-center justify-between text-xs font-mono text-neutral-400 hover:text-neutral-300 mb-2"
           >
             <span>Brand Identity</span>
             {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -638,11 +638,11 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
               {/* Colors */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <div className="text-zinc-500 font-mono">Colors</div>
+                  <div className="text-neutral-500 font-mono">Colors</div>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-5 text-[10px] px-2 text-zinc-500 hover:text-zinc-300"
+                    className="h-5 text-[10px] px-2 text-neutral-500 hover:text-neutral-300"
                     onClick={manuallyExtractColors}
                     disabled={!logoBase64}
                   >
@@ -658,10 +658,10 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
               {/* Typography */}
               {brandIdentity.typography.primary && (
                 <div>
-                  <div className="text-zinc-500 font-mono mb-1">Typography</div>
-                  <div className="text-zinc-400">{brandIdentity.typography.primary}</div>
+                  <div className="text-neutral-500 font-mono mb-1">Typography</div>
+                  <div className="text-neutral-400">{brandIdentity.typography.primary}</div>
                   {brandIdentity.typography.secondary && (
-                    <div className="text-zinc-500 text-[10px] mt-1">{brandIdentity.typography.secondary}</div>
+                    <div className="text-neutral-500 text-[10px] mt-1">{brandIdentity.typography.secondary}</div>
                   )}
                 </div>
               )}
@@ -669,8 +669,8 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
               {/* Personality */}
               {(brandIdentity.personality.tone || brandIdentity.personality.feeling) && (
                 <div>
-                  <div className="text-zinc-500 font-mono mb-1">Personality</div>
-                  <div className="text-zinc-400 space-y-1">
+                  <div className="text-neutral-500 font-mono mb-1">Personality</div>
+                  <div className="text-neutral-400 space-y-1">
                     {brandIdentity.personality.tone && (
                       <div>Tone: {brandIdentity.personality.tone}</div>
                     )}
@@ -684,15 +684,15 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
               {/* Visual Elements */}
               {brandIdentity.visualElements.length > 0 && (
                 <div>
-                  <div className="text-zinc-500 font-mono mb-1">Visual Elements</div>
+                  <div className="text-neutral-500 font-mono mb-1">Visual Elements</div>
                   <div className="flex flex-wrap gap-1">
                     {brandIdentity.visualElements.slice(0, 5).map((element, idx) => (
-                      <span key={idx} className="px-2 py-1 bg-zinc-900/50 rounded border border-zinc-700/30 text-zinc-400 text-[10px]">
+                      <span key={idx} className="px-2 py-1 bg-neutral-900/50 rounded border border-neutral-700/30 text-neutral-400 text-[10px]">
                         {element}
                       </span>
                     ))}
                     {brandIdentity.visualElements.length > 5 && (
-                      <span className="text-zinc-500 text-[10px]">+{brandIdentity.visualElements.length - 5} more</span>
+                      <span className="text-neutral-500 text-[10px]">+{brandIdentity.visualElements.length - 5} more</span>
                     )}
                   </div>
                 </div>

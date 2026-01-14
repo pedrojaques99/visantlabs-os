@@ -71,9 +71,9 @@ export const PdfPresetSelector: React.FC<PdfPresetSelectorProps> = ({
 
   if (isLoading) {
     return (
-      <div className="flex items-center gap-2 p-4 border border-zinc-800 rounded-xl bg-black/20">
+      <div className="flex items-center gap-2 p-4 border border-neutral-800 rounded-xl bg-black/20">
         <GlitchLoader size={16} color="brand-cyan" />
-        <span className="text-sm text-zinc-400 font-mono">
+        <span className="text-sm text-neutral-400 font-mono">
           Carregando presets...
         </span>
       </div>
@@ -86,7 +86,7 @@ export const PdfPresetSelector: React.FC<PdfPresetSelectorProps> = ({
 
   return (
     <div className="space-y-2">
-      <label className="block text-xs mb-2 font-mono text-zinc-400">
+      <label className="block text-xs mb-2 font-mono text-neutral-400">
         Presets Salvos
       </label>
       <div className="grid grid-cols-1 gap-2">
@@ -102,16 +102,16 @@ export const PdfPresetSelector: React.FC<PdfPresetSelectorProps> = ({
                 relative p-3 border rounded-xl cursor-pointer transition-all
                 ${isSelected
                   ? 'border-[brand-cyan] bg-brand-cyan/10'
-                  : 'border-zinc-800 bg-black/20 hover:bg-black/30'
+                  : 'border-neutral-800 bg-black/20 hover:bg-black/30'
                 }
               `}
             >
               <div className="flex items-center gap-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-mono text-zinc-300 truncate">
+                  <p className="text-sm font-mono text-neutral-300 truncate">
                     {preset.name}
                   </p>
-                  <p className="text-xs text-zinc-500 mt-0.5">
+                  <p className="text-xs text-neutral-500 mt-0.5">
                     {new Date(preset.createdAt).toLocaleDateString('pt-BR')}
                   </p>
                 </div>

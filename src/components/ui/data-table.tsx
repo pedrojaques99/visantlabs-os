@@ -72,31 +72,31 @@ export function DataTable<TData, TValue>({
       {(title || searchKey) && (
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           {title && (
-            <div className="flex items-center gap-3 text-zinc-300 font-mono">
+            <div className="flex items-center gap-3 text-neutral-300 font-mono">
               {icon}
               <h2 className="text-xl font-semibold">{title}</h2>
             </div>
           )}
           {searchKey && (
             <div className="relative w-full md:w-auto md:min-w-[300px]">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-zinc-500" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-500" />
               <Input
                 placeholder={searchPlaceholder || "Search..."}
                 value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
                 onChange={(event) =>
                   table.getColumn(searchKey)?.setFilterValue(event.target.value)
                 }
-                className="pl-10 bg-black/40 border-zinc-800/50 text-zinc-300 placeholder:text-zinc-500 focus:ring-[brand-cyan]/30 focus:border-[brand-cyan]/50"
+                className="pl-10 bg-black/40 border-neutral-800/50 text-neutral-300 placeholder:text-neutral-500 focus:ring-[brand-cyan]/30 focus:border-[brand-cyan]/50"
               />
             </div>
           )}
         </div>
       )}
-      <div className={cn("rounded-md border border-zinc-800/50", className)}>
+      <div className={cn("rounded-md border border-neutral-800/50", className)}>
         <Table style={{ width: table.getTotalSize(), minWidth: '100%', tableLayout: 'fixed' }}>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="hover:bg-transparent border-zinc-800/50">
+              <TableRow key={headerGroup.id} className="hover:bg-transparent border-neutral-800/50">
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead
@@ -107,7 +107,7 @@ export function DataTable<TData, TValue>({
                       <div
                         className={cn(
                           "px-4 py-2 flex items-center gap-2 h-full",
-                          header.column.getCanSort() && "cursor-pointer select-none hover:text-zinc-200 transition-colors"
+                          header.column.getCanSort() && "cursor-pointer select-none hover:text-neutral-200 transition-colors"
                         )}
                         onClick={header.column.getToggleSortingHandler()}
                       >
@@ -139,7 +139,7 @@ export function DataTable<TData, TValue>({
                           onMouseDown={header.getResizeHandler()}
                           onTouchStart={header.getResizeHandler()}
                           className={cn(
-                            "absolute right-0 top-0 h-full w-1 cursor-col-resize bg-zinc-700/50 opacity-0 group-hover:opacity-100 transition-opacity z-10",
+                            "absolute right-0 top-0 h-full w-1 cursor-col-resize bg-neutral-700/50 opacity-0 group-hover:opacity-100 transition-opacity z-10",
                             header.column.getIsResizing() && "bg-brand-cyan opacity-100 w-0.5"
                           )}
                         />
@@ -156,7 +156,7 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className="border-zinc-800/30 hover:bg-black/20 transition-colors"
+                  className="border-neutral-800/30 hover:bg-black/20 transition-colors"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
@@ -173,7 +173,7 @@ export function DataTable<TData, TValue>({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center text-zinc-500 font-mono">
+                <TableCell colSpan={columns.length} className="h-24 text-center text-neutral-500 font-mono">
                   No results.
                 </TableCell>
               </TableRow>

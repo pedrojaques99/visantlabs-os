@@ -164,3 +164,197 @@ export const selectRandomBackground = (brandingTags: string[]): string => {
     const suitableBackgrounds = getBackgroundsForBranding(brandingTags);
     return suitableBackgrounds[Math.floor(Math.random() * suitableBackgrounds.length)];
 };
+
+// ==========================================
+// 12 BRAND ARCHETYPES SYSTEM
+// ==========================================
+
+export interface BrandArchetype {
+    id: number;
+    name: string;
+    description: string;
+    brandingTags: string[]; // Tags that trigger this archetype
+    visuals: {
+        locations: string[];
+        lighting: string[];
+        effects: string[];
+        materials?: string[]; // For logos
+    };
+}
+
+export const BRAND_ARCHETYPES: BrandArchetype[] = [
+    {
+        id: 1,
+        name: "The Explorer",
+        description: "Curiosity, freedom, and discovering the unknown.",
+        brandingTags: ["Travel & Hospitality", "Sport", "Eco-friendly", "Adventure", "Outdoor", "Freedom"],
+        visuals: {
+            locations: ["Nature landscape", "California Coast", "Nordic", "Brazil", "Urban City"],
+            lighting: ["Natural Light", "Golden Hour", "Direct Sunlight", "Daylight"],
+            effects: ["Motion Blur", "Lens Flare", "High Contrast"],
+            materials: ["Wood", "Leather", "Canvas"]
+        }
+    },
+    {
+        id: 2,
+        name: "The Magician",
+        description: "Transformation, vision, and making things happen.",
+        brandingTags: ["Tech", "Crypto/Web3", "Innovation", "Futuristic", "Magic", "Transformation"],
+        visuals: {
+            locations: ["Glass Environment", "Light Box", "Tokyo", "Modern Office"],
+            lighting: ["Cinematic", "Blue Hour", "Night Scene", "Studio Lighting"],
+            effects: ["Bokeh", "Long Exposure", "Lens Flare", "High Contrast"],
+            materials: ["Glass", "Holographic", "Metal"]
+        }
+    },
+    {
+        id: 3,
+        name: "The Hero",
+        description: "Mastery, courage, and improving the world.",
+        brandingTags: ["Sport", "Energetic", "Corporate", "Power", "Strength", "Achievement"],
+        visuals: {
+            locations: ["Urban City", "Concrete", "Gym", "Stadium", "New York"],
+            lighting: ["High Contrast", "Direct Sun", "Studio Lighting", "Dramatic"],
+            effects: ["Motion Blur", "High Contrast", "Sharpen"],
+            materials: ["Metal", "Concrete", "Carbon Fiber"]
+        }
+    },
+    {
+        id: 4,
+        name: "The Lover",
+        description: "Intimacy, connection, and sensual pleasure.",
+        brandingTags: ["Beauty", "Fashion", "Luxury", "Romance", "Passion", "Indulgence"],
+        visuals: {
+            locations: ["Paris", "Minimalist Studio", "Silk Sheets", "Elegant Room"],
+            lighting: ["Soft Light", "Golden Hour", "Candlelight", "Moody"],
+            effects: ["Bokeh", "Soft Focus", "Warm Filter"],
+            materials: ["Silk", "Velvet", "Gold"]
+        }
+    },
+    {
+        id: 5,
+        name: "The Jester",
+        description: "Joy, humor, and living in the moment.",
+        brandingTags: ["Playful", "Kids & Baby", "Food", "Entertainment", "Fun", "Humor"],
+        visuals: {
+            locations: ["Bright Studio", "Park", "Party", "Colorful Room"],
+            lighting: ["High Key", "Bright", "Studio Lighting"],
+            effects: ["Vibrant Colors", "Pop Art", "Saturation Boost"],
+            materials: ["Plastic", "Colorful Fabric", "Confetti"]
+        }
+    },
+    {
+        id: 6,
+        name: "The Everyman",
+        description: "Belonging, connection, and being down to earth.",
+        brandingTags: ["Casual", "Friendly", "Home", "Community", "Reliable", "Honest"],
+        visuals: {
+            locations: ["Living Room", "Coffee Shop", "Street", "Park"],
+            lighting: ["Natural Light", "Daylight", "Diffused"],
+            effects: ["Natural", "No Filter", "Authentic"],
+            materials: ["Denim", "Cotton", "Wood"]
+        }
+    },
+    {
+        id: 7,
+        name: "The Caregiver",
+        description: "Service, empathy, and protecting others.",
+        brandingTags: ["Health & Wellness", "Non-profit", "Education", "Support", "Nurturing"],
+        visuals: {
+            locations: ["Home", "Garden", "Clinic", "Cozy Room"],
+            lighting: ["Soft Light", "Diffused", "Morning Light"],
+            effects: ["Warmth", "Soft Glow", "Clean"],
+            materials: ["Cotton", "Soft Fabric", "Wood"]
+        }
+    },
+    {
+        id: 8,
+        name: "The Ruler",
+        description: "Control, leadership, and creating prosperity.",
+        brandingTags: ["Corporate", "Luxury", "Exclusive", "Leadership", "Success", "Power"],
+        visuals: {
+            locations: ["Modern Office", "Executive Boardroom", "Mansion", "London"],
+            lighting: ["Studio Lighting", "Dramatic", "Sophisticated"],
+            effects: ["Sharp", "Clean", "High Resolution"],
+            materials: ["Gold", "Marble", "Leather"]
+        }
+    },
+    {
+        id: 9,
+        name: "The Creator",
+        description: "Innovation, creativity, and realizing a vision.",
+        brandingTags: ["Creative", "Art", "Design", "Innovation", "Expression", "Originality"],
+        visuals: {
+            locations: ["Art Studio", "Workspace", "Gallery", "Creative Lab"],
+            lighting: ["Studio Lighting", "Natural Light", "Spotlight"],
+            effects: ["Artistic", "Texture", "Grain"],
+            materials: ["Paper", "Paint", "Canvas"]
+        }
+    },
+    {
+        id: 10,
+        name: "The Innocent",
+        description: "Safety, optimism, and doing things right.",
+        brandingTags: ["Organic", "Pure", "Simple", "Optimistic", "Happy", "Faith"],
+        visuals: {
+            locations: ["White Room", "Meadow", "Cloud", "Simple Background"],
+            lighting: ["High Key", "Soft Light", "Bright"],
+            effects: ["Soft", "Ethereal", "Pastel"],
+            materials: ["White Fabric", "Clouds", "Light Wood"]
+        }
+    },
+    {
+        id: 11,
+        name: "The Sage",
+        description: "Wisdom, knowledge, and understanding the world.",
+        brandingTags: ["Education", "Consulting", "Research", "Wisdom", "Truth", "Intelligence"],
+        visuals: {
+            locations: ["Library", "Study", "University", "Minimalist Office"],
+            lighting: ["Natural Light", "Reading Light", "Focused"],
+            effects: ["Clear", "Sharp", "Minimalist"],
+            materials: ["Paper", "Books", "Wood"]
+        }
+    },
+    {
+        id: 12,
+        name: "The Rebel",
+        description: "Liberation, revolution, and breaking the rules.",
+        brandingTags: ["Streetwear", "Alternative", "Disruption", "Bold", "Freedom", "Change"],
+        visuals: {
+            locations: ["Urban City", "Graffiti Wall", "Abandoned", "Underground"],
+            lighting: ["Low Key", "Neon", "Harsh"],
+            effects: ["Grain", "Distortion", "Glitch"],
+            materials: ["Concrete", "Metal", "Spikes"]
+        }
+    }
+];
+
+export const getArchetypeById = (id: number): BrandArchetype | undefined => {
+    return BRAND_ARCHETYPES.find(a => a.id === id);
+};
+
+export const determineArchetypeFromBranding = (tags: string[]): BrandArchetype | null => {
+    if (!tags || tags.length === 0) return null;
+
+    // Count matches for each archetype
+    const scores = BRAND_ARCHETYPES.map(archetype => {
+        const matches = archetype.brandingTags.filter(tag =>
+            tags.some(t => t.toLowerCase().includes(tag.toLowerCase()) || tag.toLowerCase().includes(t.toLowerCase()))
+        ).length;
+        return { archetype, matches };
+    });
+
+    // Sort by matches desc
+    scores.sort((a, b) => b.matches - a.matches);
+
+    // If top score > 0, return that archetype
+    if (scores[0].matches > 0) {
+        return scores[0].archetype;
+    }
+
+    return null;
+};
+
+export const getRandomArchetype = (): BrandArchetype => {
+    return BRAND_ARCHETYPES[Math.floor(Math.random() * BRAND_ARCHETYPES.length)];
+};
