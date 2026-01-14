@@ -128,7 +128,7 @@ export function DataTable<TData, TValue>({
           </DropdownMenu>
         </div>
       </div>
-      <div className={cn("rounded-md border border-neutral-800/50", className)}>
+      <div className={cn("rounded-md border border-neutral-800/50 overflow-x-auto", className)}>
         <Table style={{ width: table.getTotalSize(), minWidth: '100%', tableLayout: 'fixed' }}>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
