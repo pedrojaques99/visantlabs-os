@@ -130,12 +130,12 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
       )}
 
       {/* Enhanced Header with Glassmorphism */}
-      <div className="flex items-center justify-between p-4 border-b border-zinc-700/30 bg-gradient-to-r from-zinc-900/60 to-zinc-900/30 backdrop-blur-sm">
+      <div className="flex items-center justify-between p-4 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/60 to-neutral-900/30 backdrop-blur-sm">
         <div className="flex items-center gap-3">
           <div className="p-1.5 rounded-md bg-brand-cyan/10 border border-brand-cyan/20 shadow-sm">
             <Type size={16} className="text-brand-cyan" />
           </div>
-          <h3 className="text-sm font-semibold text-zinc-200 font-mono tracking-tight uppercase">
+          <h3 className="text-sm font-semibold text-neutral-200 font-mono tracking-tight uppercase">
             {t('canvasNodes.textNode.title') || 'Text Node'}
           </h3>
         </div>
@@ -152,8 +152,8 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
               onMouseDown={(e) => e.stopPropagation()}
               className={cn(
                 "p-2 rounded-md border transition-all nodrag",
-                "bg-zinc-900/60 border-zinc-700/40 text-zinc-400",
-                "hover:bg-zinc-800/70 hover:border-zinc-600/60 hover:text-zinc-200",
+                "bg-neutral-900/60 border-neutral-700/40 text-neutral-400",
+                "hover:bg-neutral-800/70 hover:border-neutral-600/60 hover:text-neutral-200",
                 "backdrop-blur-sm shadow-sm hover:shadow-md",
                 "hover:scale-105 active:scale-95"
               )}
@@ -185,10 +185,10 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
             className={cn(
               "min-h-[100px] max-h-[400px] resize-y w-full nodrag nopan text-xs",
               "pr-12 pb-8",
-              "bg-zinc-900/60 border-zinc-700/40",
+              "bg-neutral-900/60 border-neutral-700/40",
               "focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20",
               "backdrop-blur-sm transition-all duration-200",
-              "placeholder:text-zinc-500 placeholder:font-mono"
+              "placeholder:text-neutral-500 placeholder:font-mono"
             )}
             style={{
               overflowY: textareaRef.current && textareaRef.current.scrollHeight > 400 ? 'auto' : 'hidden',
@@ -210,7 +210,7 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                 "shadow-sm hover:shadow-md",
                 "hover:scale-105 active:scale-95",
                 isImproving || !text.trim()
-                  ? "bg-zinc-800/50 text-zinc-500 cursor-not-allowed"
+                  ? "bg-neutral-800/50 text-neutral-500 cursor-not-allowed"
                   : "bg-gradient-to-br from-brand-cyan/20 to-brand-cyan/10 hover:from-brand-cyan/30 hover:to-brand-cyan/20 text-brand-cyan border border-[brand-cyan]/30 hover:border-[brand-cyan]/50"
               )}
               title={isImproving
@@ -232,8 +232,8 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
             isVeryLongText
               ? "text-amber-400 bg-amber-400/10 border border-amber-400/20"
               : isLongText
-                ? "text-zinc-400 bg-zinc-800/50"
-                : "text-zinc-500 bg-zinc-800/30"
+                ? "text-neutral-400 bg-neutral-800/50"
+                : "text-neutral-500 bg-neutral-800/30"
           )}>
             {charCount.toLocaleString()} {t('canvasNodes.textNode.characters') || 'chars'}
           </div>
@@ -241,7 +241,7 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
 
         {/* AI Enhancement Hint */}
         {text.trim() && !isImproving && (
-          <div className="mt-3 flex items-center gap-2 text-[10px] text-zinc-500 font-mono animate-in fade-in duration-300">
+          <div className="mt-3 flex items-center gap-2 text-[10px] text-neutral-500 font-mono animate-in fade-in duration-300">
             <Sparkles size={10} className="text-brand-cyan/70" />
             <span>{t('canvasNodes.textNode.aiHint') || 'Click the wand to enhance with AI'}</span>
           </div>

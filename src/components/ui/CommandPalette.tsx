@@ -100,11 +100,11 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ items, onClose }
       />
       <div className="fixed inset-0 z-50 flex items-start justify-center pt-[20vh] px-4">
         <div
-          className="w-full max-w-2xl bg-card border border-zinc-800/50 rounded-lg shadow-2xl overflow-hidden"
+          className="w-full max-w-2xl bg-card border border-neutral-800/50 rounded-lg shadow-2xl overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex items-center gap-3 px-4 py-3 border-b border-zinc-800/50">
-            <Search className="w-5 h-5 text-zinc-400" />
+          <div className="flex items-center gap-3 px-4 py-3 border-b border-neutral-800/50">
+            <Search className="w-5 h-5 text-neutral-400" />
             <input
               ref={inputRef}
               type="text"
@@ -112,11 +112,11 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ items, onClose }
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={t('designSystem.commandPalette.placeholder') || 'Search components, colors, typography...'}
-              className="flex-1 bg-transparent text-zinc-200 placeholder:text-zinc-500 focus:outline-none font-mono text-sm"
+              className="flex-1 bg-transparent text-neutral-200 placeholder:text-neutral-500 focus:outline-none font-mono text-sm"
             />
-            <div className="flex items-center gap-1 px-2 py-1 bg-zinc-900/50 rounded border border-zinc-800/50">
-              <Command className="w-3 h-3 text-zinc-500" />
-              <kbd className="text-xs font-mono text-zinc-500">K</kbd>
+            <div className="flex items-center gap-1 px-2 py-1 bg-neutral-900/50 rounded border border-neutral-800/50">
+              <Command className="w-3 h-3 text-neutral-500" />
+              <kbd className="text-xs font-mono text-neutral-500">K</kbd>
             </div>
           </div>
           <div
@@ -124,7 +124,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ items, onClose }
             className="max-h-[60vh] overflow-y-auto"
           >
             {filteredItems.length === 0 ? (
-              <div className="px-4 py-8 text-center text-zinc-500 font-mono text-sm">
+              <div className="px-4 py-8 text-center text-neutral-500 font-mono text-sm">
                 {t('designSystem.commandPalette.noResults') || 'No results found'}
               </div>
             ) : (
@@ -134,14 +134,14 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ items, onClose }
                     key={item.id}
                     onClick={() => handleSelect(item)}
                     className={cn(
-                      'w-full px-4 py-3 text-left hover:bg-zinc-800/50 transition-colors',
-                      index === selectedIndex && 'bg-zinc-800/50'
+                      'w-full px-4 py-3 text-left hover:bg-neutral-800/50 transition-colors',
+                      index === selectedIndex && 'bg-neutral-800/50'
                     )}
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="text-sm font-mono text-zinc-200">{item.label}</div>
-                        <div className="text-xs font-mono text-zinc-500 mt-0.5">{item.category}</div>
+                        <div className="text-sm font-mono text-neutral-200">{item.label}</div>
+                        <div className="text-xs font-mono text-neutral-500 mt-0.5">{item.category}</div>
                       </div>
                     </div>
                   </button>

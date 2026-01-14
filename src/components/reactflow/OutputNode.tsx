@@ -521,7 +521,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
             </video>
             {isLoading && elapsedTime > 0 && (
               <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 z-10">
-                <span className="text-zinc-500/40 text-[10px] font-mono">
+                <span className="text-neutral-500/40 text-[10px] font-mono">
                   {Math.floor(elapsedTime / 60)}:{(elapsedTime % 60).toString().padStart(2, '0')}
                 </span>
               </div>
@@ -564,7 +564,7 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
             />
             {isLoading && elapsedTime > 0 && (
               <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 z-10">
-                <span className="text-zinc-500/40 text-[10px] font-mono">
+                <span className="text-neutral-500/40 text-[10px] font-mono">
                   {Math.floor(elapsedTime / 60)}:{(elapsedTime % 60).toString().padStart(2, '0')}
                 </span>
               </div>

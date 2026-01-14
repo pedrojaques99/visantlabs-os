@@ -154,14 +154,14 @@ export const MyBudgetsPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#121212] text-zinc-300 pt-14 relative">
+      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-14 relative">
         <div className="fixed inset-0 z-0">
           <GridDotsBackground />
         </div>
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-card border border-zinc-800/60 rounded-md p-6">
+              <div key={i} className="bg-card border border-neutral-800/60 rounded-md p-6">
                 <SkeletonLoader height="1.5rem" className="w-3/4 mb-2" />
                 <SkeletonLoader height="1rem" className="w-1/2" />
               </div>
@@ -179,7 +179,7 @@ export const MyBudgetsPage: React.FC = () => {
         description={t('budget.myBudgets.seoDescription')}
         noindex={true}
       />
-      <div className="min-h-screen bg-[#121212] text-zinc-300 pt-14 relative overflow-hidden">
+      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-14 relative overflow-hidden">
         <div className="fixed inset-0 z-0">
           <GridDotsBackground />
         </div>
@@ -209,10 +209,10 @@ export const MyBudgetsPage: React.FC = () => {
           {/* Header */}
           <div className="flex items-start gap-4 mb-6">
             <div className="flex-1">
-              <h1 className="text-3xl md:text-4xl font-semibold font-manrope text-zinc-300 mb-2">
+              <h1 className="text-3xl md:text-4xl font-semibold font-manrope text-neutral-300 mb-2">
                 {t('budget.myBudgets') || 'My Budgets'}
               </h1>
-              <p className="text-zinc-500 font-mono text-sm md:text-base">
+              <p className="text-neutral-500 font-mono text-sm md:text-base">
                 {budgets.length === 0
                   ? t('budget.noBudgets') || 'No budgets yet'
                   : `${budgets.length} ${budgets.length === 1 ? 'budget' : 'budgets'}`}
@@ -221,7 +221,7 @@ export const MyBudgetsPage: React.FC = () => {
             <div className="flex items-center gap-2 flex-shrink-0">
               <button
                 onClick={() => navigate('/budget-machine')}
-                className="px-3 py-1.5 bg-black/40 border border-zinc-800/60 hover:border-brand-cyan/50 hover:text-brand-cyan rounded-md text-xs font-mono text-zinc-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 cursor-pointer"
+                className="px-3 py-1.5 bg-black/40 border border-neutral-800/60 hover:border-brand-cyan/50 hover:text-brand-cyan rounded-md text-xs font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 cursor-pointer"
               >
                 <Layout className="h-3.5 w-3.5" />
                 {t('budget.selectTemplate') || 'Ver Templates'}
@@ -238,13 +238,13 @@ export const MyBudgetsPage: React.FC = () => {
 
           {/* Presets Salvos Section */}
           {isAuthenticated === true && (
-            <section className="bg-card border border-zinc-800/60 rounded-md p-4 md:p-5 mb-6">
+            <section className="bg-card border border-neutral-800/60 rounded-md p-4 md:p-5 mb-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h2 className="text-lg md:text-xl font-semibold font-manrope text-zinc-200 mb-1">
+                  <h2 className="text-lg md:text-xl font-semibold font-manrope text-neutral-200 mb-1">
                     {t('budget.myPdfTemplates') || 'Presets Salvos'}
                   </h2>
-                  <p className="text-sm text-zinc-400 font-mono">
+                  <p className="text-sm text-neutral-400 font-mono">
                     {isLoadingPresets
                       ? 'Carregando...'
                       : presets.length === 0
@@ -258,13 +258,13 @@ export const MyBudgetsPage: React.FC = () => {
                 <div className="flex items-center justify-center py-8">
                   <div className="flex items-center gap-2">
                     <div className="h-4 w-4 border-2 border-[brand-cyan] border-t-transparent rounded-md animate-spin" />
-                    <span className="text-sm text-zinc-400 font-mono">Carregando presets...</span>
+                    <span className="text-sm text-neutral-400 font-mono">Carregando presets...</span>
                   </div>
                 </div>
               ) : presets.length === 0 ? (
                 <div className="text-center py-8">
-                  <FileText size={48} className="text-zinc-700 mx-auto mb-3" strokeWidth={1} />
-                  <p className="text-sm text-zinc-500 font-mono">
+                  <FileText size={48} className="text-neutral-700 mx-auto mb-3" strokeWidth={1} />
+                  <p className="text-sm text-neutral-500 font-mono">
                     {t('budget.noPresets') || 'Nenhum preset salvo ainda'}
                   </p>
                 </div>
@@ -275,17 +275,17 @@ export const MyBudgetsPage: React.FC = () => {
                     return (
                       <div
                         key={presetId}
-                        className="bg-zinc-900 border border-zinc-800/60 rounded-2xl p-6 md:p-8 hover:border-zinc-700/60 transition-all duration-300"
+                        className="bg-neutral-900 border border-neutral-800/60 rounded-2xl p-6 md:p-8 hover:border-neutral-700/60 transition-all duration-300"
                       >
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
                               <FileText className="h-5 w-5 text-brand-cyan" />
-                              <h3 className="font-semibold text-zinc-200 font-manrope text-lg line-clamp-2">
+                              <h3 className="font-semibold text-neutral-200 font-manrope text-lg line-clamp-2">
                                 {truncateText(preset.name, 60)}
                               </h3>
                             </div>
-                            <div className="flex items-center gap-2 text-xs text-zinc-400 font-mono mb-3">
+                            <div className="flex items-center gap-2 text-xs text-neutral-400 font-mono mb-3">
                               <Calendar className="h-3.5 w-3.5" />
                               <span>{formatDate(preset.createdAt)}</span>
                             </div>
@@ -295,7 +295,7 @@ export const MyBudgetsPage: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleEditPreset(presetId)}
-                            className="flex-1 px-4 py-2 bg-black/40 border border-zinc-800/60 hover:border-brand-cyan/50 hover:text-brand-cyan rounded-md text-sm font-mono text-zinc-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+                            className="flex-1 px-4 py-2 bg-black/40 border border-neutral-800/60 hover:border-brand-cyan/50 hover:text-brand-cyan rounded-md text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
                           >
                             <Edit className="h-4 w-4" />
                             {t('budget.edit') || 'Edit'}
@@ -303,7 +303,7 @@ export const MyBudgetsPage: React.FC = () => {
                           <button
                             onClick={(e) => handleDeletePresetClick(presetId, e)}
                             disabled={deletingPresetId === presetId}
-                            className="px-4 py-2 bg-black/40 border border-zinc-800/60 hover:border-red-500/50 hover:text-red-400 rounded-md text-sm font-mono text-zinc-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                            className="px-4 py-2 bg-black/40 border border-neutral-800/60 hover:border-red-500/50 hover:text-red-400 rounded-md text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
@@ -319,11 +319,11 @@ export const MyBudgetsPage: React.FC = () => {
           {/* Budgets Grid */}
           {budgets.length === 0 ? (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-              <FileText size={64} className="text-zinc-700 mb-4" strokeWidth={1} />
-              <h2 className="text-xl font-semibold font-mono uppercase text-zinc-500 mb-2">
+              <FileText size={64} className="text-neutral-700 mb-4" strokeWidth={1} />
+              <h2 className="text-xl font-semibold font-mono uppercase text-neutral-500 mb-2">
                 {t('budget.emptyTitle') || 'NO BUDGETS YET'}
               </h2>
-              <p className="text-sm text-zinc-600 font-mono mb-6">
+              <p className="text-sm text-neutral-600 font-mono mb-6">
                 {t('budget.emptyDescription') || 'Create your first budget to see it here.'}
               </p>
               <button
@@ -339,25 +339,25 @@ export const MyBudgetsPage: React.FC = () => {
               {budgets.map((budget) => (
                 <div
                   key={budget._id}
-                  className="bg-[#141414] border border-zinc-800/60 rounded-2xl p-6 md:p-8 hover:border-zinc-700/60 transition-all duration-300 group cursor-pointer"
+                  className="bg-[#141414] border border-neutral-800/60 rounded-2xl p-6 md:p-8 hover:border-neutral-700/60 transition-all duration-300 group cursor-pointer"
                   onClick={() => handleView(budget)}
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <FileText className="h-5 w-5 text-brand-cyan" />
-                        <h3 className="font-semibold text-zinc-200 font-manrope text-lg line-clamp-2">
+                        <h3 className="font-semibold text-neutral-200 font-manrope text-lg line-clamp-2">
                           {budget.name ? truncateText(budget.name, 60) : truncateText(budget.projectDescription, 60)}
                         </h3>
                       </div>
-                      <div className="flex items-center gap-2 text-xs text-zinc-400 font-mono mb-3">
+                      <div className="flex items-center gap-2 text-xs text-neutral-400 font-mono mb-3">
                         <Calendar className="h-3.5 w-3.5" />
                         <span>{formatDate(budget.createdAt)}</span>
                       </div>
                     </div>
                   </div>
 
-                  <p className="text-sm text-zinc-400 font-mono mb-4 line-clamp-3">
+                  <p className="text-sm text-neutral-400 font-mono mb-4 line-clamp-3">
                     {truncateText(budget.clientName, 120)}
                   </p>
 
@@ -367,7 +367,7 @@ export const MyBudgetsPage: React.FC = () => {
                         e.stopPropagation();
                         handleView(budget);
                       }}
-                      className="flex-1 px-4 py-2 bg-black/40 border border-zinc-800/60 hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono text-zinc-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+                      className="flex-1 px-4 py-2 bg-black/40 border border-neutral-800/60 hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Eye className="h-4 w-4" />
                       {t('budget.view') || 'View'}
@@ -375,7 +375,7 @@ export const MyBudgetsPage: React.FC = () => {
                     <button
                       onClick={(e) => handleDeleteClick(budget._id, e)}
                       disabled={deletingId === budget._id}
-                      className="px-4 py-2 bg-black/40 border border-zinc-800/60 hover:border-red-500/50 hover:text-red-400 rounded-xl text-sm font-mono text-zinc-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                      className="px-4 py-2 bg-black/40 border border-neutral-800/60 hover:border-red-500/50 hover:text-red-400 rounded-xl text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>

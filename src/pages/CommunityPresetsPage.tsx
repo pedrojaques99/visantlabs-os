@@ -1,17 +1,17 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { Users, Plus, Edit2, Trash2, X, Save, Image as ImageIcon, Camera, Layers, MapPin, Sun, ArrowLeft, Heart, Maximize2, ExternalLink, Copy, Globe, User, LayoutGrid, Box, Settings, Palette, Sparkles, Download, Search } from 'lucide-react';
+import { Users, Plus, Edit2, Trash2, X, Save, Image as ImageIcon, Camera, Layers, MapPin, Sun, Heart, Maximize2, ExternalLink, Copy, Globe, User, LayoutGrid, Box, Settings, Palette, Sparkles, Download, Search } from 'lucide-react';
 
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 
 import {
-  Breadcrumb,
+  BreadcrumbWithBack,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "../components/ui/breadcrumb";
+} from "../components/ui/BreadcrumbWithBack";
 import { useLayout } from '@/hooks/useLayout';
 import { authService } from '../services/authService';
 import { toast } from 'sonner';
@@ -737,14 +737,14 @@ export const CommunityPresetsPage: React.FC = () => {
 
 
   return (
-    <div className="min-h-screen bg-[#121212] text-zinc-300 pt-12 md:pt-14 relative">
+    <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative">
       <div className="fixed inset-0 z-0">
         <GridDotsBackground />
       </div>
 
       <div className="max-w-6xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
         <div className="mb-6">
-          <Breadcrumb>
+          <BreadcrumbWithBack to="/community">
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
@@ -762,15 +762,10 @@ export const CommunityPresetsPage: React.FC = () => {
                 <BreadcrumbPage>{t('common.presets')}</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
-          </Breadcrumb>
+          </BreadcrumbWithBack>
         </div>
+
         <div className="flex items-start gap-4">
-          <button
-            onClick={() => navigate('/community')}
-            className="p-2 hover:bg-zinc-800/50 rounded-md transition-colors"
-          >
-            <ArrowLeft className="h-5 w-5 text-zinc-400" />
-          </button>
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
               {viewMode === 'all' ? (
@@ -780,12 +775,12 @@ export const CommunityPresetsPage: React.FC = () => {
               )}
               <h1 className={cn(
                 "text-3xl md:text-4xl font-semibold font-manrope",
-                viewMode === 'all' ? "text-zinc-300" : "text-indigo-100"
+                viewMode === 'all' ? "text-neutral-300" : "text-indigo-100"
               )}>
                 {viewMode === 'my' ? t('communityPresets.myPresets') : t('communityPresets.allPresets')}
               </h1>
             </div>
-            <p className="text-zinc-500 font-mono text-sm md:text-base ml-9 md:ml-11 mb-6">
+            <p className="text-neutral-500 font-mono text-sm md:text-base mb-6">
               {viewMode === 'my' ? t('communityPresets.myPresetsSubtitle') : t('communityPresets.subtitle')}
             </p>
           </div>
@@ -793,21 +788,21 @@ export const CommunityPresetsPage: React.FC = () => {
 
         {isCheckingAuth && (
           <div className="max-w-md mx-auto">
-            <div className="bg-zinc-900 border border-zinc-800/50 rounded-md p-6 md:p-8 text-center">
-              <p className="text-zinc-400 font-mono">{t('common.loading')}</p>
+            <div className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 md:p-8 text-center">
+              <p className="text-neutral-400 font-mono">{t('common.loading')}</p>
             </div>
           </div>
         )}
 
         {!isCheckingAuth && viewMode === 'my' && !isAuthenticated && (
           <div className="max-w-md mx-auto">
-            <div className="bg-zinc-900 border border-zinc-800/50 rounded-md p-6 md:p-8 space-y-4 text-center">
-              <p className="text-zinc-400 font-mono mb-4">
+            <div className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 md:p-8 space-y-4 text-center">
+              <p className="text-neutral-400 font-mono mb-4">
                 {t('communityPresets.errors.mustBeAuthenticated')}
               </p>
               <button
                 onClick={() => setShowAuthModal(true)}
-                className="inline-block px-4 py-2 bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700/50 text-zinc-300 font-medium rounded-md text-sm font-mono transition-colors"
+                className="inline-block px-4 py-2 bg-neutral-800/50 hover:bg-neutral-700/50 border border-neutral-700/50 text-neutral-300 font-medium rounded-md text-sm font-mono transition-colors"
               >
                 {t('header.register')}
               </button>
@@ -816,31 +811,17 @@ export const CommunityPresetsPage: React.FC = () => {
         )}
 
         {!isCheckingAuth && (viewMode === 'all' || isAuthenticated) && (
-          <div className="space-y-6">
-            {/* Sidebar */}
-            <CommunityPresetsSidebar
-              isCollapsed={isSidebarCollapsed}
-              onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-              activeCategory={activeTab}
-              onCategoryChange={handleTabChange}
-              allTags={allTags}
-              filterTag={filterTag}
-              onFilterTagChange={setFilterTag}
-              currentPresetsCount={currentPresets.length}
-              categories={sortedCategories}
-              t={t}
-            />
-
+          <div className="space-y-4">
             {/* View Mode (All/My) - Sub Hierarchy Tabs */}
-            <div className="flex items-center justify-between border-zinc-800/30">
-              <div className="flex p-1 rounded-lg border border-zinc-800/50">
+            <div className="flex items-center justify-between border-neutral-800/30">
+              <div className="flex p-1 rounded-lg border border-neutral-800/50">
                 <button
                   onClick={() => handleViewModeChange('all')}
                   className={cn(
                     "px-6 py-2 rounded-md text-xs font-mono transition-all flex items-center gap-2",
                     viewMode === 'all'
-                      ? 'bg-zinc-800 text-brand-cyan shadow-sm'
-                      : 'text-zinc-500 hover:text-zinc-300'
+                      ? 'bg-neutral-800 text-brand-cyan shadow-sm'
+                      : 'text-neutral-500 hover:text-neutral-300'
                   )}
                 >
                   <Globe className="h-3.5 w-3.5" />
@@ -851,8 +832,8 @@ export const CommunityPresetsPage: React.FC = () => {
                   className={cn(
                     "px-6 rounded-md text-xs font-mono transition-all flex items-center gap-2",
                     viewMode === 'my'
-                      ? 'bg-zinc-800 text-indigo-400 shadow-sm'
-                      : 'text-zinc-500 hover:text-zinc-300'
+                      ? 'bg-neutral-800 text-indigo-400 shadow-sm'
+                      : 'text-neutral-500 hover:text-neutral-300'
                   )}
                   disabled={!isAuthenticated}
                 >
@@ -869,13 +850,13 @@ export const CommunityPresetsPage: React.FC = () => {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder={t('communityPresets.search.placeholder') || 'Search presets...'}
-                    className="bg-black/40 backdrop-blur-sm border border-zinc-700/30 rounded-md pl-8 pr-8 py-2 w-48 md:w-64 focus:outline-none focus:border-[brand-cyan]/50 text-xs text-zinc-300 font-mono"
+                    className="bg-black/40 backdrop-blur-sm border border-neutral-700/30 rounded-md pl-8 pr-8 py-2 w-48 md:w-64 focus:outline-none focus:border-[brand-cyan]/50 text-xs text-neutral-300 font-mono"
                   />
-                  <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-zinc-500" size={14} />
+                  <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-neutral-500" size={14} />
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery('')}
-                      className="absolute right-2.5 top-1/2 transform -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                      className="absolute right-2.5 top-1/2 transform -translate-y-1/2 text-neutral-500 hover:text-neutral-300 transition-colors"
                     >
                       <X size={14} />
                     </button>
@@ -885,7 +866,7 @@ export const CommunityPresetsPage: React.FC = () => {
                 {!isEditing && isAuthenticated && (
                   <button
                     onClick={handleCreate}
-                    className="flex items-center gap-2 px-4 py-2 bg-zinc-950/70 hover:bg-zinc-800/50 border border-zinc-800/50 text-zinc-300 font-medium rounded-md text-sm font-mono transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-neutral-950/70 hover:bg-neutral-800/50 border border-neutral-800/50 text-neutral-300 font-medium rounded-md text-sm font-mono transition-colors"
                   >
                     <Plus className="h-4 w-4" />
                     {t('communityPresets.createNew')}
@@ -893,7 +874,21 @@ export const CommunityPresetsPage: React.FC = () => {
                 )}
               </div>
             </div>
-            <div className="bg-zinc-900 border border-zinc-800/50 rounded-md p-4 md:p-6">
+
+            {/* Sidebar */}
+            <CommunityPresetsSidebar
+              isCollapsed={isSidebarCollapsed}
+              onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+              activeCategory={activeTab}
+              onCategoryChange={handleTabChange}
+              allTags={allTags}
+              filterTag={filterTag}
+              onFilterTagChange={setFilterTag}
+              currentPresetsCount={currentPresets.length}
+              categories={sortedCategories}
+              t={t}
+            />
+            <div>
               {error && (
                 <div className="mb-4 bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-sm text-red-400 font-mono">
                   {error}
@@ -904,8 +899,8 @@ export const CommunityPresetsPage: React.FC = () => {
 
                 {/* Bento Box Grid */}
                 {currentPresets.length === 0 ? (
-                  <div key="empty" className="bg-zinc-900 border border-zinc-800/50 rounded-xl p-12 text-center tab-content-active">
-                    <p className="text-zinc-500 font-mono">
+                  <div key="empty" className="bg-neutral-900 border border-neutral-800/50 rounded-xl p-12 text-center tab-content-active">
+                    <p className="text-neutral-500 font-mono">
                       {searchQuery.trim()
                         ? (t('communityPresets.search.noResults') || `No presets found for "${searchQuery}"`)
                         : t('communityPresets.table.noPresets')
@@ -914,7 +909,7 @@ export const CommunityPresetsPage: React.FC = () => {
                     {searchQuery.trim() && (
                       <button
                         onClick={() => setSearchQuery('')}
-                        className="mt-4 px-4 py-2 text-xs font-mono text-zinc-400 hover:text-zinc-300 border border-zinc-700/50 rounded-md hover:border-zinc-600/50 transition-colors"
+                        className="mt-4 px-4 py-2 text-xs font-mono text-neutral-400 hover:text-neutral-300 border border-neutral-700/50 rounded-md hover:border-neutral-600/50 transition-colors"
                       >
                         {t('communityPresets.search.clear') || 'Clear search'}
                       </button>
@@ -1112,16 +1107,16 @@ const PresetDetailModal: React.FC<{
       onClick={onClose}
     >
       <div
-        className="bg-[#0F0F0F] border border-zinc-800/60 rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+        className="bg-[#0F0F0F] border border-neutral-800/60 rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 bg-[#0F0F0F] border-b border-zinc-800/50 p-6 flex items-center justify-between z-10">
+        <div className="sticky top-0 bg-[#0F0F0F] border-b border-neutral-800/50 p-10 flex items-center justify-between z-10">
           <div className="flex-1 min-w-0">
-            <h2 className="text-2xl font-semibold text-zinc-100 font-mono mb-1 truncate">
+            <h2 className="text-2xl font-semibold text-neutral-100 font-mono mb-1 truncate">
               {migrated.name}
             </h2>
-            <p className="text-sm text-zinc-400 font-mono">
+            <p className="text-sm text-neutral-400 font-mono">
               {migrated.description}
             </p>
           </div>
@@ -1132,7 +1127,7 @@ const PresetDetailModal: React.FC<{
                   e.stopPropagation();
                   onEdit();
                 }}
-                className="flex items-center gap-2 px-3 py-2 rounded-md transition-all text-sm font-mono bg-zinc-800/50 text-zinc-300 hover:bg-zinc-700/50"
+                className="flex items-center gap-2 px-3 py-2 rounded-md transition-all text-sm font-mono bg-neutral-800/50 text-neutral-300 hover:bg-neutral-700/50"
                 title={t('communityPresets.actions.edit')}
               >
                 <Edit2 size={16} />
@@ -1146,8 +1141,8 @@ const PresetDetailModal: React.FC<{
                   onToggleLike();
                 }}
                 className={`flex items-center gap-2 px-3 py-2 rounded-md transition-all text-sm font-mono ${isLiked
-                  ? 'bg-zinc-800/50 text-zinc-300 hover:bg-zinc-700/50'
-                  : 'bg-zinc-900/40 text-zinc-500 hover:bg-zinc-800/50 hover:text-zinc-400'
+                  ? 'bg-neutral-800/50 text-neutral-300 hover:bg-neutral-700/50'
+                  : 'bg-neutral-900/40 text-neutral-500 hover:bg-neutral-800/50 hover:text-neutral-400'
                   }`}
                 title={isLiked ? t('communityPresets.actions.unlike') : t('communityPresets.actions.like')}
               >
@@ -1157,7 +1152,7 @@ const PresetDetailModal: React.FC<{
             )}
             <button
               onClick={onClose}
-              className="p-2 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 rounded-lg transition-colors"
+              className="p-2 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 rounded-lg transition-colors"
             >
               <X className="h-5 w-5" />
             </button>
@@ -1170,11 +1165,11 @@ const PresetDetailModal: React.FC<{
             {/* Image or Icon - Left Side */}
             <div className="flex-shrink-0 w-1/2">
               {hasImage ? (
-                <div className="relative rounded-lg overflow-hidden border border-zinc-700/30 bg-zinc-900/30 aspect-square group">
+                <div className="relative rounded-lg overflow-hidden border border-neutral-700/30 bg-neutral-900/30 aspect-square group">
                   <img
                     src={migrated.referenceImageUrl}
                     alt={migrated.name}
-                    className="w-full h-full object-cover bg-zinc-900/50"
+                    className="w-full h-full object-cover bg-neutral-900/50"
                     onError={(e) => {
                       (e.target as HTMLImageElement).style.display = 'none';
                     }}
@@ -1184,15 +1179,15 @@ const PresetDetailModal: React.FC<{
                       e.stopPropagation();
                       setIsImageFullscreen(true);
                     }}
-                    className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-black/80 backdrop-blur-sm border border-zinc-700/50 rounded-md text-zinc-300 hover:text-white transition-all opacity-0 group-hover:opacity-100"
+                    className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-black/80 backdrop-blur-sm border border-neutral-700/50 rounded-md text-neutral-300 hover:text-white transition-all opacity-0 group-hover:opacity-100"
                     title="View fullscreen"
                   >
                     <Maximize2 size={14} />
                   </button>
                 </div>
               ) : (
-                <div className="w-full aspect-square rounded-lg border border-zinc-700/30 bg-zinc-900/30 flex items-center justify-center">
-                  <div className="text-zinc-500">{presetIcon}</div>
+                <div className="w-full aspect-square rounded-lg border border-neutral-700/30 bg-neutral-900/30 flex items-center justify-center">
+                  <div className="text-neutral-500">{presetIcon}</div>
                 </div>
               )}
             </div>
@@ -1201,32 +1196,32 @@ const PresetDetailModal: React.FC<{
             <div className="flex-1 space-y-4 min-w-0">
               {/* Details */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-4">
-                  <label className="block text-xs font-semibold text-zinc-400 font-mono mb-2 uppercase">
+                <div className="bg-neutral-900/30 border border-neutral-800/50 rounded-xl p-4">
+                  <label className="block text-xs font-semibold text-neutral-400 font-mono mb-2 uppercase">
                     Category
                   </label>
-                  <p className="text-sm text-zinc-200 font-mono">{t(`communityPresets.categories.${migrated.category}`)}</p>
+                  <p className="text-sm text-neutral-200 font-mono">{t(`communityPresets.categories.${migrated.category}`)}</p>
                 </div>
                 {migrated.category === 'presets' && migrated.presetType && (
-                  <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-4">
-                    <label className="block text-xs font-semibold text-zinc-400 font-mono mb-2 uppercase">
+                  <div className="bg-neutral-900/30 border border-neutral-800/50 rounded-xl p-4">
+                    <label className="block text-xs font-semibold text-neutral-400 font-mono mb-2 uppercase">
                       Preset Type
                     </label>
-                    <p className="text-sm text-zinc-200 font-mono uppercase">{migrated.presetType}</p>
+                    <p className="text-sm text-neutral-200 font-mono uppercase">{migrated.presetType}</p>
                   </div>
                 )}
-                <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-3">
-                  <label className="block text-xs font-semibold text-zinc-400 font-mono mb-1.5 uppercase">
+                <div className="bg-neutral-900/30 border border-neutral-800/50 rounded-xl p-3">
+                  <label className="block text-xs font-semibold text-neutral-400 font-mono mb-1.5 uppercase">
                     Aspect Ratio
                   </label>
-                  <p className="text-sm text-zinc-200 font-mono">{migrated.aspectRatio}</p>
+                  <p className="text-sm text-neutral-200 font-mono">{migrated.aspectRatio}</p>
                 </div>
               </div>
 
               {/* Prompt */}
-              <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-4">
+              <div className="bg-neutral-900/30 border border-neutral-800/50 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <label className="block text-xs font-semibold text-zinc-400 font-mono uppercase">
+                  <label className="block text-xs font-semibold text-neutral-400 font-mono uppercase">
                     Prompt
                   </label>
                   <button
@@ -1240,11 +1235,11 @@ const PresetDetailModal: React.FC<{
                         toast.error('Failed to copy prompt');
                       }
                     }}
-                    className="p-1.5 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 rounded-md transition-all relative min-w-[14px] min-h-[14px] flex items-center justify-center"
+                    className="p-1.5 text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/50 rounded-md transition-all relative min-w-[14px] min-h-[14px] flex items-center justify-center"
                     title="Copy prompt"
                   >
                     {isCopying ? (
-                      <span className="text-[10px] font-mono text-zinc-400">
+                      <span className="text-[10px] font-mono text-neutral-400">
                         {glitchText}
                       </span>
                     ) : (
@@ -1252,20 +1247,20 @@ const PresetDetailModal: React.FC<{
                     )}
                   </button>
                 </div>
-                <p className="text-sm text-zinc-300 font-mono whitespace-pre-wrap max-h-32 overflow-y-auto">{migrated.prompt}</p>
+                <p className="text-sm text-neutral-300 font-mono whitespace-pre-wrap max-h-32 overflow-y-auto">{migrated.prompt}</p>
               </div>
 
               {/* Examples */}
               {migrated.examples && migrated.examples.length > 0 && (
-                <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-4">
-                  <label className="block text-xs font-semibold text-zinc-400 font-mono mb-2 uppercase">
+                <div className="bg-neutral-900/30 border border-neutral-800/50 rounded-xl p-4">
+                  <label className="block text-xs font-semibold text-neutral-400 font-mono mb-2 uppercase">
                     {t('communityPresets.examples')}
                   </label>
                   <div className="flex flex-wrap gap-2">
                     {migrated.examples.map((example, index) => (
                       <span
                         key={index}
-                        className="px-2 py-1 bg-zinc-800/40 rounded border border-zinc-700/20 text-zinc-400 font-mono text-xs"
+                        className="px-2 py-1 bg-neutral-800/40 rounded border border-neutral-700/20 text-neutral-400 font-mono text-xs"
                       >
                         {example}
                       </span>
@@ -1276,15 +1271,15 @@ const PresetDetailModal: React.FC<{
 
               {/* Tags */}
               {migrated.tags && migrated.tags.length > 0 && (
-                <div className="bg-zinc-900/30 border border-zinc-800/50 rounded-xl p-4">
-                  <label className="block text-xs font-semibold text-zinc-400 font-mono mb-2 uppercase">
+                <div className="bg-neutral-900/30 border border-neutral-800/50 rounded-xl p-4">
+                  <label className="block text-xs font-semibold text-neutral-400 font-mono mb-2 uppercase">
                     Tags
                   </label>
                   <div className="flex flex-wrap gap-2">
                     {migrated.tags.map((tag, index) => (
                       <span
                         key={index}
-                        className="px-2 py-1 bg-zinc-800/40 rounded border border-zinc-700/20 text-zinc-400 font-mono text-xs"
+                        className="px-2 py-1 bg-neutral-800/40 rounded border border-neutral-700/20 text-neutral-400 font-mono text-xs"
                       >
                         {tag}
                       </span>
@@ -1297,17 +1292,17 @@ const PresetDetailModal: React.FC<{
         </div>
 
         {/* Footer Actions */}
-        <div className="sticky bottom-0 bg-[#0F0F0F] border-t border-zinc-800/50 p-6 flex gap-3">
+        <div className="sticky bottom-0 bg-[#0F0F0F] border-t border-neutral-800/50 p-6 flex gap-3">
           <button
             onClick={onOpenInCanvas}
-            className="flex items-center gap-2 flex-1 px-6 py-3 bg-zinc-800/50 hover:bg-zinc-700/50 border border-zinc-700/50 text-zinc-300 font-medium rounded-xl text-sm font-mono transition-all"
+            className="flex items-center gap-2 flex-1 px-6 py-3 bg-neutral-800/50 hover:bg-neutral-700/50 border border-neutral-700/50 text-neutral-300 font-medium rounded-xl text-sm font-mono transition-all"
           >
             <ExternalLink className="h-4 w-4" />
             {t('communityPresets.openInCanvas')}
           </button>
           <button
             onClick={onClose}
-            className="px-6 py-3 bg-zinc-900/50 border border-zinc-700/50 text-zinc-300 hover:bg-zinc-800/50 hover:border-zinc-600/50 font-medium rounded-xl text-sm font-mono transition-all"
+            className="px-6 py-3 bg-neutral-900/50 border border-neutral-700/50 text-neutral-300 hover:bg-neutral-800/50 hover:border-neutral-600/50 font-medium rounded-xl text-sm font-mono transition-all"
           >
             {t('common.close')}
           </button>
@@ -1322,7 +1317,7 @@ const PresetDetailModal: React.FC<{
         >
           <button
             onClick={() => setIsImageFullscreen(false)}
-            className="absolute top-4 right-4 p-2 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 rounded-lg transition-colors z-10"
+            className="absolute top-4 right-4 p-2 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 rounded-lg transition-colors z-10"
           >
             <X className="h-5 w-5" />
           </button>

@@ -362,14 +362,14 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
             "px-2 py-2 rounded border transition-colors",
             hasLogo
               ? "bg-green-500/10 border-green-500/30"
-              : "bg-zinc-900/30 border-zinc-700/20"
+              : "bg-neutral-900/30 border-neutral-700/20"
           )}>
             <div className="flex items-center gap-3 mb-2">
               <div className={cn(
                 "w-2 h-2 rounded-md",
-                hasLogo ? "bg-green-400" : "bg-zinc-500"
+                hasLogo ? "bg-green-400" : "bg-neutral-500"
               )} />
-              <span className="text-xs font-mono text-zinc-400">{t('canvasNodes.brandCore.logo')}</span>
+              <span className="text-xs font-mono text-neutral-400">{t('canvasNodes.brandCore.logo')}</span>
             </div>
             {hasLogo ? (
               <div className="mt-2 relative group/logo">
@@ -403,7 +403,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                   <UploadCloud size={14} />
                   {t('canvasNodes.brandCore.uploadLogo')}
                 </NodeButton>
-                <div className="text-[10px] text-zinc-500 font-mono mt-1">
+                <div className="text-[10px] text-neutral-500 font-mono mt-1">
                   {t('canvasNodes.brandCore.orConnectLogoOrImageNode')}
                 </div>
               </>
@@ -415,19 +415,19 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
             "px-2 py-2 rounded border transition-colors",
             hasIdentity
               ? "bg-green-500/10 border-green-500/30"
-              : "bg-zinc-900/30 border-zinc-700/20"
+              : "bg-neutral-900/30 border-neutral-700/20"
           )}>
             <div className="flex items-center gap-3 mb-2">
               <div className={cn(
                 "w-2 h-2 rounded-md",
-                hasIdentity ? "bg-green-400" : "bg-zinc-500"
+                hasIdentity ? "bg-green-400" : "bg-neutral-500"
               )} />
-              <span className="text-xs font-mono text-zinc-400">{t('canvasNodes.brandCore.identityGuide')}</span>
+              <span className="text-xs font-mono text-neutral-400">{t('canvasNodes.brandCore.identityGuide')}</span>
             </div>
             {hasIdentity ? (
               <div className="mt-2 relative group/identity">
                 {connectedPdf ? (
-                  <div className="text-[10px] text-zinc-400 font-mono">
+                  <div className="text-[10px] text-neutral-400 font-mono">
                     {t('canvasNodes.brandCore.pdfConnected')}
                   </div>
                 ) : connectedImage ? (
@@ -437,9 +437,9 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                     maxThumbnails={1}
                   />
                 ) : uploadedIdentityUrl && identityType === 'pdf' ? (
-                  <div className="px-3 py-2 bg-zinc-900/50 rounded border border-zinc-700/30 flex items-center gap-3">
+                  <div className="px-3 py-2 bg-neutral-900/50 rounded border border-neutral-700/30 flex items-center gap-3">
                     <FileText size={16} className="text-brand-cyan" />
-                    <span className="text-xs font-mono text-zinc-400 flex-1">{t('canvasNodes.brandCore.pdfUploadedR2')}</span>
+                    <span className="text-xs font-mono text-neutral-400 flex-1">{t('canvasNodes.brandCore.pdfUploadedR2')}</span>
                   </div>
                 ) : uploadedIdentity && identityType === 'png' ? (
                   <div className="w-16 h-16">
@@ -450,9 +450,9 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                     />
                   </div>
                 ) : (
-                  <div className="px-3 py-2 bg-zinc-900/50 rounded border border-zinc-700/30 flex items-center gap-3">
+                  <div className="px-3 py-2 bg-neutral-900/50 rounded border border-neutral-700/30 flex items-center gap-3">
                     <FileText size={16} className="text-brand-cyan" />
-                    <span className="text-xs font-mono text-zinc-400 flex-1">{identityType?.toUpperCase()} uploaded</span>
+                    <span className="text-xs font-mono text-neutral-400 flex-1">{identityType?.toUpperCase()} uploaded</span>
                   </div>
                 )}
                 {(uploadedIdentity || uploadedIdentityUrl) && !connectedPdf && !connectedImage && (
@@ -478,7 +478,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                   <FileText size={14} />
                   Upload PDF or PNG
                 </NodeButton>
-                <div className="text-[10px] text-zinc-500 font-mono mt-1">
+                <div className="text-[10px] text-neutral-500 font-mono mt-1">
                   Or connect a PDF Node or Image Node (PNG)
                 </div>
               </>
@@ -490,21 +490,21 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
             "px-2 py-2 rounded border transition-colors",
             hasStrategies
               ? "bg-green-500/10 border-green-500/30"
-              : "bg-zinc-900/30 border-zinc-700/20"
+              : "bg-neutral-900/30 border-neutral-700/20"
           )}>
             <div className="flex items-center gap-3 mb-2">
               <div className={cn(
                 "w-2 h-2 rounded-md",
-                hasStrategies ? "bg-green-400" : "bg-zinc-500"
+                hasStrategies ? "bg-green-400" : "bg-neutral-500"
               )} />
-              <span className="text-xs font-mono text-zinc-400">Strategy</span>
+              <span className="text-xs font-mono text-neutral-400">Strategy</span>
             </div>
             {hasStrategies ? (
-              <div className="text-[10px] text-zinc-400 font-mono mt-1">
+              <div className="text-[10px] text-neutral-400 font-mono mt-1">
                 {connectedStrategies.length} Strategy Node(s) Connected
               </div>
             ) : (
-              <div className="text-[10px] text-zinc-500 font-mono mt-1">
+              <div className="text-[10px] text-neutral-500 font-mono mt-1">
                 Connect Strategy Node(s) (optional)
               </div>
             )}
@@ -556,10 +556,10 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
       {/* Brand Identity Display */}
       {brandIdentity && (
-        <div className="border-t border-zinc-700/30 pt-4 mb-4">
+        <div className="border-t border-neutral-700/30 pt-4 mb-4">
           <button
             onClick={() => setIsExpandedBrandIdentity(!isExpandedBrandIdentity)}
-            className="w-full flex items-center justify-between text-xs font-mono text-zinc-400 hover:text-zinc-300 mb-2"
+            className="w-full flex items-center justify-between text-xs font-mono text-neutral-400 hover:text-neutral-300 mb-2"
           >
             <span>Brand Identity</span>
             {isExpandedBrandIdentity ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -570,34 +570,34 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
               {/* Logo Details */}
               {(brandIdentity.logo.colors.length > 0 || brandIdentity.logo.style || brandIdentity.logo.elements.length > 0) && (
                 <div>
-                  <div className="text-zinc-500 font-mono mb-1">Logo</div>
+                  <div className="text-neutral-500 font-mono mb-1">Logo</div>
                   <div className="space-y-3">
                     {brandIdentity.logo.colors.length > 0 && (
                       <div className="flex flex-wrap gap-1.5">
                         {brandIdentity.logo.colors.map((color, idx) => (
                           <div
                             key={idx}
-                            className="flex items-center gap-1 px-2 py-0.5 bg-zinc-900/50 rounded border border-zinc-700/30"
+                            className="flex items-center gap-1 px-2 py-0.5 bg-neutral-900/50 rounded border border-neutral-700/30"
                           >
                             <div
-                              className="w-2.5 h-2.5 rounded border border-zinc-700/50"
+                              className="w-2.5 h-2.5 rounded border border-neutral-700/50"
                               style={{ backgroundColor: color }}
                             />
-                            <span className="text-zinc-400 font-mono text-[10px]">{color}</span>
+                            <span className="text-neutral-400 font-mono text-[10px]">{color}</span>
                           </div>
                         ))}
                       </div>
                     )}
                     {brandIdentity.logo.style && (
-                      <div className="text-zinc-400">
-                        <span className="text-zinc-500 text-[10px]">Style: </span>
+                      <div className="text-neutral-400">
+                        <span className="text-neutral-500 text-[10px]">Style: </span>
                         {brandIdentity.logo.style}
                       </div>
                     )}
                     {brandIdentity.logo.elements.length > 0 && (
                       <div className="flex flex-wrap gap-1">
                         {brandIdentity.logo.elements.map((element, idx) => (
-                          <span key={idx} className="px-1.5 py-0.5 bg-zinc-900/50 rounded border border-zinc-700/30 text-zinc-400 text-[10px]">
+                          <span key={idx} className="px-1.5 py-0.5 bg-neutral-900/50 rounded border border-neutral-700/30 text-neutral-400 text-[10px]">
                             {element}
                           </span>
                         ))}
@@ -610,22 +610,22 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
               {/* Brand Colors */}
               {(brandIdentity.colors.primary.length > 0 || brandIdentity.colors.secondary.length > 0 || brandIdentity.colors.accent.length > 0) && (
                 <div>
-                  <div className="text-zinc-500 font-mono mb-1">Brand Colors</div>
+                  <div className="text-neutral-500 font-mono mb-1">Brand Colors</div>
                   <div className="space-y-1.5">
                     {brandIdentity.colors.primary.length > 0 && (
                       <div>
-                        <div className="text-zinc-500 text-[10px] mb-1">Primary</div>
+                        <div className="text-neutral-500 text-[10px] mb-1">Primary</div>
                         <div className="flex flex-wrap gap-1.5">
                           {brandIdentity.colors.primary.map((color, idx) => (
                             <div
                               key={idx}
-                              className="flex items-center gap-1 px-2 py-0.5 bg-zinc-900/50 rounded border border-zinc-700/30"
+                              className="flex items-center gap-1 px-2 py-0.5 bg-neutral-900/50 rounded border border-neutral-700/30"
                             >
                               <div
-                                className="w-2.5 h-2.5 rounded border border-zinc-700/50"
+                                className="w-2.5 h-2.5 rounded border border-neutral-700/50"
                                 style={{ backgroundColor: color }}
                               />
-                              <span className="text-zinc-400 font-mono text-[10px]">{color}</span>
+                              <span className="text-neutral-400 font-mono text-[10px]">{color}</span>
                             </div>
                           ))}
                         </div>
@@ -633,18 +633,18 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                     )}
                     {brandIdentity.colors.secondary.length > 0 && (
                       <div>
-                        <div className="text-zinc-500 text-[10px] mb-1">Secondary</div>
+                        <div className="text-neutral-500 text-[10px] mb-1">Secondary</div>
                         <div className="flex flex-wrap gap-1.5">
                           {brandIdentity.colors.secondary.map((color, idx) => (
                             <div
                               key={idx}
-                              className="flex items-center gap-1 px-2 py-0.5 bg-zinc-900/50 rounded border border-zinc-700/30"
+                              className="flex items-center gap-1 px-2 py-0.5 bg-neutral-900/50 rounded border border-neutral-700/30"
                             >
                               <div
-                                className="w-2.5 h-2.5 rounded border border-zinc-700/50"
+                                className="w-2.5 h-2.5 rounded border border-neutral-700/50"
                                 style={{ backgroundColor: color }}
                               />
-                              <span className="text-zinc-400 font-mono text-[10px]">{color}</span>
+                              <span className="text-neutral-400 font-mono text-[10px]">{color}</span>
                             </div>
                           ))}
                         </div>
@@ -652,18 +652,18 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                     )}
                     {brandIdentity.colors.accent.length > 0 && (
                       <div>
-                        <div className="text-zinc-500 text-[10px] mb-1">Accent</div>
+                        <div className="text-neutral-500 text-[10px] mb-1">Accent</div>
                         <div className="flex flex-wrap gap-1.5">
                           {brandIdentity.colors.accent.map((color, idx) => (
                             <div
                               key={idx}
-                              className="flex items-center gap-1 px-2 py-0.5 bg-zinc-900/50 rounded border border-zinc-700/30"
+                              className="flex items-center gap-1 px-2 py-0.5 bg-neutral-900/50 rounded border border-neutral-700/30"
                             >
                               <div
-                                className="w-2.5 h-2.5 rounded border border-zinc-700/50"
+                                className="w-2.5 h-2.5 rounded border border-neutral-700/50"
                                 style={{ backgroundColor: color }}
                               />
-                              <span className="text-zinc-400 font-mono text-[10px]">{color}</span>
+                              <span className="text-neutral-400 font-mono text-[10px]">{color}</span>
                             </div>
                           ))}
                         </div>
@@ -676,24 +676,24 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
               {/* Typography */}
               {(brandIdentity.typography.primary || brandIdentity.typography.weights?.length > 0) && (
                 <div>
-                  <div className="text-zinc-500 font-mono mb-1">Typography</div>
+                  <div className="text-neutral-500 font-mono mb-1">Typography</div>
                   <div className="space-y-1">
                     {brandIdentity.typography.primary && (
-                      <div className="text-zinc-400">
-                        <span className="text-zinc-500 text-[10px]">Primary: </span>
+                      <div className="text-neutral-400">
+                        <span className="text-neutral-500 text-[10px]">Primary: </span>
                         {brandIdentity.typography.primary}
                       </div>
                     )}
                     {brandIdentity.typography.secondary && (
-                      <div className="text-zinc-400">
-                        <span className="text-zinc-500 text-[10px]">Secondary: </span>
+                      <div className="text-neutral-400">
+                        <span className="text-neutral-500 text-[10px]">Secondary: </span>
                         {brandIdentity.typography.secondary}
                       </div>
                     )}
                     {brandIdentity.typography.weights && brandIdentity.typography.weights.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-1">
                         {brandIdentity.typography.weights.map((weight, idx) => (
-                          <span key={idx} className="px-1.5 py-0.5 bg-zinc-900/50 rounded border border-zinc-700/30 text-zinc-400 text-[10px]">
+                          <span key={idx} className="px-1.5 py-0.5 bg-neutral-900/50 rounded border border-neutral-700/30 text-neutral-400 text-[10px]">
                             {weight}
                           </span>
                         ))}
@@ -706,23 +706,23 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
               {/* Composition */}
               {(brandIdentity.composition.style || brandIdentity.composition.grid || brandIdentity.composition.spacing) && (
                 <div>
-                  <div className="text-zinc-500 font-mono mb-1">Composition</div>
-                  <div className="space-y-1 text-zinc-400">
+                  <div className="text-neutral-500 font-mono mb-1">Composition</div>
+                  <div className="space-y-1 text-neutral-400">
                     {brandIdentity.composition.style && (
                       <div>
-                        <span className="text-zinc-500 text-[10px]">Style: </span>
+                        <span className="text-neutral-500 text-[10px]">Style: </span>
                         {brandIdentity.composition.style}
                       </div>
                     )}
                     {brandIdentity.composition.grid && (
                       <div>
-                        <span className="text-zinc-500 text-[10px]">Grid: </span>
+                        <span className="text-neutral-500 text-[10px]">Grid: </span>
                         {brandIdentity.composition.grid}
                       </div>
                     )}
                     {brandIdentity.composition.spacing && (
                       <div>
-                        <span className="text-zinc-500 text-[10px]">Spacing: </span>
+                        <span className="text-neutral-500 text-[10px]">Spacing: </span>
                         {brandIdentity.composition.spacing}
                       </div>
                     )}
@@ -733,26 +733,26 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
               {/* Personality */}
               {(brandIdentity.personality.tone || brandIdentity.personality.feeling || brandIdentity.personality.values?.length > 0) && (
                 <div>
-                  <div className="text-zinc-500 font-mono mb-1">Personality</div>
-                  <div className="space-y-1 text-zinc-400">
+                  <div className="text-neutral-500 font-mono mb-1">Personality</div>
+                  <div className="space-y-1 text-neutral-400">
                     {brandIdentity.personality.tone && (
                       <div>
-                        <span className="text-zinc-500 text-[10px]">Tone: </span>
+                        <span className="text-neutral-500 text-[10px]">Tone: </span>
                         {brandIdentity.personality.tone}
                       </div>
                     )}
                     {brandIdentity.personality.feeling && (
                       <div>
-                        <span className="text-zinc-500 text-[10px]">Feeling: </span>
+                        <span className="text-neutral-500 text-[10px]">Feeling: </span>
                         {brandIdentity.personality.feeling}
                       </div>
                     )}
                     {brandIdentity.personality.values && brandIdentity.personality.values.length > 0 && (
                       <div>
-                        <div className="text-zinc-500 text-[10px] mb-1">Values</div>
+                        <div className="text-neutral-500 text-[10px] mb-1">Values</div>
                         <div className="flex flex-wrap gap-1">
                           {brandIdentity.personality.values.map((value, idx) => (
-                            <span key={idx} className="px-1.5 py-0.5 bg-zinc-900/50 rounded border border-zinc-700/30 text-zinc-400 text-[10px]">
+                            <span key={idx} className="px-1.5 py-0.5 bg-neutral-900/50 rounded border border-neutral-700/30 text-neutral-400 text-[10px]">
                               {value}
                             </span>
                           ))}
@@ -766,15 +766,15 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
               {/* Visual Elements */}
               {brandIdentity.visualElements.length > 0 && (
                 <div>
-                  <div className="text-zinc-500 font-mono mb-1">Visual Elements</div>
+                  <div className="text-neutral-500 font-mono mb-1">Visual Elements</div>
                   <div className="flex flex-wrap gap-1">
                     {brandIdentity.visualElements.slice(0, 8).map((element, idx) => (
-                      <span key={idx} className="px-1.5 py-0.5 bg-zinc-900/50 rounded border border-zinc-700/30 text-zinc-400 text-[10px]">
+                      <span key={idx} className="px-1.5 py-0.5 bg-neutral-900/50 rounded border border-neutral-700/30 text-neutral-400 text-[10px]">
                         {element}
                       </span>
                     ))}
                     {brandIdentity.visualElements.length > 8 && (
-                      <span className="text-zinc-500 text-[10px]">+{brandIdentity.visualElements.length - 8} more</span>
+                      <span className="text-neutral-500 text-[10px]">+{brandIdentity.visualElements.length - 8} more</span>
                     )}
                   </div>
                 </div>
@@ -786,10 +786,10 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
       {/* Visual Prompts Section */}
       {visualPrompts && (
-        <div className="border-t border-zinc-700/30 pt-4 mb-4">
+        <div className="border-t border-neutral-700/30 pt-4 mb-4">
           <button
             onClick={() => setIsExpandedVisual(!isExpandedVisual)}
-            className="w-full flex items-center justify-between text-xs font-mono text-zinc-400 hover:text-zinc-300 mb-2"
+            className="w-full flex items-center justify-between text-xs font-mono text-neutral-400 hover:text-neutral-300 mb-2"
           >
             <span>Visual Prompts</span>
             {isExpandedVisual ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -800,19 +800,19 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
               {visualPrompts.mockupPrompt && (
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <div className="text-xs text-zinc-500 font-mono">Mockup Prompt</div>
+                    <div className="text-xs text-neutral-500 font-mono">Mockup Prompt</div>
                     <button
                       onClick={() => handleCopyPrompt(visualPrompts.mockupPrompt!, 'mockup')}
-                      className="p-1 hover:bg-zinc-800 rounded"
+                      className="p-1 hover:bg-neutral-800 rounded"
                     >
                       {copiedPrompt === 'mockup' ? (
                         <Check size={12} className="text-green-400" />
                       ) : (
-                        <Copy size={12} className="text-zinc-400" />
+                        <Copy size={12} className="text-neutral-400" />
                       )}
                     </button>
                   </div>
-                  <div className="text-[10px] text-zinc-400 font-mono bg-zinc-900/50 p-2 rounded border border-zinc-700/30 max-h-32 overflow-y-auto">
+                  <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border border-neutral-700/30 max-h-32 overflow-y-auto">
                     {visualPrompts.mockupPrompt}
                   </div>
                 </div>
@@ -821,19 +821,19 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
               {visualPrompts.compositionPrompt && (
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <div className="text-xs text-zinc-500 font-mono">Composition Prompt</div>
+                    <div className="text-xs text-neutral-500 font-mono">Composition Prompt</div>
                     <button
                       onClick={() => handleCopyPrompt(visualPrompts.compositionPrompt!, 'composition')}
-                      className="p-1 hover:bg-zinc-800 rounded"
+                      className="p-1 hover:bg-neutral-800 rounded"
                     >
                       {copiedPrompt === 'composition' ? (
                         <Check size={12} className="text-green-400" />
                       ) : (
-                        <Copy size={12} className="text-zinc-400" />
+                        <Copy size={12} className="text-neutral-400" />
                       )}
                     </button>
                   </div>
-                  <div className="text-[10px] text-zinc-400 font-mono bg-zinc-900/50 p-2 rounded border border-zinc-700/30 max-h-24 overflow-y-auto">
+                  <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border border-neutral-700/30 max-h-24 overflow-y-auto">
                     {visualPrompts.compositionPrompt}
                   </div>
                 </div>
@@ -842,19 +842,19 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
               {visualPrompts.stylePrompt && (
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <div className="text-xs text-zinc-500 font-mono">Style Prompt</div>
+                    <div className="text-xs text-neutral-500 font-mono">Style Prompt</div>
                     <button
                       onClick={() => handleCopyPrompt(visualPrompts.stylePrompt!, 'style')}
-                      className="p-1 hover:bg-zinc-800 rounded"
+                      className="p-1 hover:bg-neutral-800 rounded"
                     >
                       {copiedPrompt === 'style' ? (
                         <Check size={12} className="text-green-400" />
                       ) : (
-                        <Copy size={12} className="text-zinc-400" />
+                        <Copy size={12} className="text-neutral-400" />
                       )}
                     </button>
                   </div>
-                  <div className="text-[10px] text-zinc-400 font-mono bg-zinc-900/50 p-2 rounded border border-zinc-700/30 max-h-24 overflow-y-auto">
+                  <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border border-neutral-700/30 max-h-24 overflow-y-auto">
                     {visualPrompts.stylePrompt}
                   </div>
                 </div>
@@ -866,10 +866,10 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
       {/* Strategic Prompts Section */}
       {strategicPrompts?.consolidated && (
-        <div className="border-t border-zinc-700/30 pt-3">
+        <div className="border-t border-neutral-700/30 pt-3">
           <div
             onClick={() => setIsExpandedStrategic(!isExpandedStrategic)}
-            className="w-full flex items-center justify-between text-xs font-mono text-zinc-400 hover:text-zinc-300 mb-2 cursor-pointer"
+            className="w-full flex items-center justify-between text-xs font-mono text-neutral-400 hover:text-neutral-300 mb-2 cursor-pointer"
           >
             <span>Strategic Prompts (Consolidated)</span>
             {isExpandedStrategic ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -878,23 +878,23 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
           {isExpandedStrategic && (
             <div className="space-y-3 text-xs">
               <div className="flex items-center justify-between mb-1">
-                <div className="text-xs text-zinc-500 font-mono">Consolidated Strategy</div>
+                <div className="text-xs text-neutral-500 font-mono">Consolidated Strategy</div>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     const consolidatedText = consolidateStrategiesToText(strategicPrompts.consolidated);
                     handleCopyPrompt(consolidatedText, 'strategic');
                   }}
-                  className="p-1 hover:bg-zinc-800 rounded"
+                  className="p-1 hover:bg-neutral-800 rounded"
                 >
                   {copiedPrompt === 'strategic' ? (
                     <Check size={12} className="text-green-400" />
                   ) : (
-                    <Copy size={12} className="text-zinc-400" />
+                    <Copy size={12} className="text-neutral-400" />
                   )}
                 </button>
               </div>
-              <div className="text-[10px] text-zinc-400 font-mono bg-zinc-900/50 p-2 rounded border border-zinc-700/30 max-h-64 overflow-y-auto whitespace-pre-wrap">
+              <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border border-neutral-700/30 max-h-64 overflow-y-auto whitespace-pre-wrap">
                 {consolidateStrategiesToText(strategicPrompts.consolidated)}
               </div>
             </div>

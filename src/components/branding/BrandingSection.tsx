@@ -93,11 +93,11 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
 
   return (
     <section id="branding-section" className={isComplete ? 'pb-0' : ''}>
-      <h2 className={`font-semibold font-mono uppercase tracking-widest mb-3 transition-all duration-300 ${isComplete ? 'text-[10px] mb-1' : 'text-sm'} ${isComplete ? (theme === 'dark' ? 'text-zinc-600' : 'text-zinc-500') : (theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600')}`}>
+      <h2 className={`font-semibold font-mono uppercase tracking-widest mb-3 transition-all duration-300 ${isComplete ? 'text-[10px] mb-1' : 'text-sm'} ${isComplete ? (theme === 'dark' ? 'text-neutral-600' : 'text-neutral-500') : (theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600')}`}>
         {t('mockup.branding')}
       </h2>
       {!isComplete && (
-        <p className={`text-xs mb-3 font-mono ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-600'}`}>{t('mockup.brandingComment')}</p>
+        <p className={`text-xs mb-3 font-mono ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.brandingComment')}</p>
       )}
       <div>
         <div className="flex flex-wrap gap-2 cursor-pointer">
@@ -117,14 +117,14 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
                   isSelected
                     ? theme === 'dark'
                       ? 'bg-brand-cyan/20 text-brand-cyan border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
-                      : 'bg-brand-cyan/20 text-zinc-800 border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
+                      : 'bg-brand-cyan/20 text-neutral-800 border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
                     : theme === 'dark'
                       ? isSuggested
-                        ? 'bg-zinc-800/80 text-zinc-300 border-brand-cyan/50 hover:border-brand-cyan/70 hover:text-white animate-pulse-subtle'
-                        : 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
+                        ? 'bg-neutral-800/80 text-neutral-300 border-brand-cyan/50 hover:border-brand-cyan/70 hover:text-white animate-pulse-subtle'
+                        : 'bg-neutral-800/50 text-neutral-400 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
                       : isSuggested
-                        ? 'bg-brand-cyan/10 text-zinc-800 border-brand-cyan/50 shadow-sm shadow-brand-cyan/5 animate-pulse-subtle'
-                        : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900',
+                        ? 'bg-brand-cyan/10 text-neutral-800 border-brand-cyan/50 shadow-sm shadow-brand-cyan/5 animate-pulse-subtle'
+                        : 'bg-neutral-100 text-neutral-700 border-neutral-300 hover:border-neutral-400 hover:text-neutral-900',
                   isDisabled && 'opacity-40 cursor-not-allowed'
                 )}
               >
@@ -132,43 +132,41 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
               </Badge>
             );
           })}
-          {!isComplete && (
-            !isEditingCustom ? (
-              <Badge
-                onClick={handleCustomTagClick}
-                variant="outline"
-                className={cn(
-                  "text-xs font-medium transition-all duration-200 gap-1 cursor-pointer",
-                  limitReached
-                    ? theme === 'dark'
-                      ? 'opacity-40 bg-zinc-800/50 text-zinc-400 border-zinc-700/50 cursor-not-allowed'
-                      : 'opacity-40 bg-zinc-100 text-zinc-500 border-zinc-300 cursor-not-allowed'
-                    : theme === 'dark'
-                      ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
-                      : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'
-                )}
-              >
-                <Plus size={14} />
-                <span>{t('mockup.customTagLabel')}</span>
-              </Badge>
-            ) : (
-              <Input
-                ref={inputRef}
-                type="text"
-                value={customInput}
-                onChange={(e) => onCustomInputChange(e.target.value)}
-                onKeyDown={handleKeyDown}
-                onBlur={handleBlur}
-                placeholder={t('mockup.customStylePlaceholder')}
-                className={cn(
-                  "px-3 py-1.5 text-xs font-medium transition-all duration-200 border-[brand-cyan]/30 focus:ring-0 min-w-[120px] font-mono",
-                  theme === 'dark'
-                    ? 'bg-brand-cyan/20 text-brand-cyan'
-                    : 'bg-brand-cyan/20 text-zinc-800'
-                )}
-                autoFocus
-              />
-            )
+          {!isEditingCustom ? (
+            <Badge
+              onClick={handleCustomTagClick}
+              variant="outline"
+              className={cn(
+                "text-xs font-medium transition-all duration-200 gap-1 cursor-pointer",
+                limitReached
+                  ? theme === 'dark'
+                    ? 'opacity-40 bg-neutral-800/50 text-neutral-400 border-neutral-700/50 cursor-not-allowed'
+                    : 'opacity-40 bg-neutral-100 text-neutral-500 border-neutral-300 cursor-not-allowed'
+                  : theme === 'dark'
+                    ? 'bg-neutral-800/50 text-neutral-400 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
+                    : 'bg-neutral-100 text-neutral-700 border-neutral-300 hover:border-neutral-400 hover:text-neutral-900'
+              )}
+            >
+              <Plus size={14} />
+              <span>{t('mockup.customTagLabel')}</span>
+            </Badge>
+          ) : (
+            <Input
+              ref={inputRef}
+              type="text"
+              value={customInput}
+              onChange={(e) => onCustomInputChange(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onBlur={handleBlur}
+              placeholder={t('mockup.customStylePlaceholder')}
+              className={cn(
+                "px-3 py-1.5 text-xs font-medium transition-all duration-200 border-[brand-cyan]/30 focus:ring-0 min-w-[120px] font-mono",
+                theme === 'dark'
+                  ? 'bg-brand-cyan/20 text-brand-cyan'
+                  : 'bg-brand-cyan/20 text-neutral-800'
+              )}
+              autoFocus
+            />
           )}
         </div>
       </div>

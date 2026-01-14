@@ -11,7 +11,7 @@ interface GridDotsBackgroundProps {
 
 export const GridDotsBackground: React.FC<GridDotsBackgroundProps> = (props) => {
   const {
-    opacity = 0.1,
+    opacity = 0.07,
     dotSize = 1.5,
     spacing = 20,
     color,

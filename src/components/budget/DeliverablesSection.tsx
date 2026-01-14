@@ -51,7 +51,7 @@ export const DeliverablesSection: React.FC<DeliverablesSectionProps> = ({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-zinc-200 font-mono">
+        <h3 className="text-lg font-semibold text-neutral-200 font-mono">
           {t('budget.deliverables')}
         </h3>
         <button
@@ -64,7 +64,7 @@ export const DeliverablesSection: React.FC<DeliverablesSectionProps> = ({
       </div>
 
       {deliverables.length === 0 ? (
-        <div className="text-center py-8 text-zinc-500 font-mono text-sm">
+        <div className="text-center py-8 text-neutral-500 font-mono text-sm">
           {t('budget.placeholders.deliverableName')}
         </div>
       ) : (
@@ -72,13 +72,13 @@ export const DeliverablesSection: React.FC<DeliverablesSectionProps> = ({
           {deliverables.map((deliverable, index) => (
             <div key={index}>
               <div
-                className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl space-y-3"
+                className="p-4 bg-neutral-900 border border-neutral-800 rounded-xl space-y-3"
               >
                 <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                   <div className="flex-1 w-full space-y-3">
                     <div className="grid grid-cols-1 gap-3">
                       <div>
-                        <label className="block text-xs text-zinc-400 mb-1 font-mono">
+                        <label className="block text-xs text-neutral-400 mb-1 font-mono">
                           {t('budget.deliverableName')}
                         </label>
                         <FormInput
@@ -90,7 +90,7 @@ export const DeliverablesSection: React.FC<DeliverablesSectionProps> = ({
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-zinc-400 mb-1 font-mono">
+                        <label className="block text-xs text-neutral-400 mb-1 font-mono">
                           {t('budget.deliverableDescription')}
                         </label>
                         <FormInput
@@ -102,7 +102,7 @@ export const DeliverablesSection: React.FC<DeliverablesSectionProps> = ({
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-zinc-400 mb-1 font-mono">
+                        <label className="block text-xs text-neutral-400 mb-1 font-mono">
                           {t('budget.quantity')}
                         </label>
                         <FormInput
@@ -133,7 +133,7 @@ export const DeliverablesSection: React.FC<DeliverablesSectionProps> = ({
                 <div className="flex justify-center pt-2">
                   <button
                     onClick={addDeliverable}
-                    className="flex items-center justify-center p-1.5 bg-black/30 hover:bg-black/50 border border-zinc-700/30 hover:border-zinc-600/50 rounded-md text-zinc-400 hover:text-zinc-300 transition-all duration-200"
+                    className="flex items-center justify-center p-1.5 bg-black/30 hover:bg-black/50 border border-neutral-700/30 hover:border-neutral-600/50 rounded-md text-neutral-400 hover:text-neutral-300 transition-all duration-200"
                     title={t('budget.addDeliverable') || 'Adicionar Entregável'}
                   >
                     <Plus size={16} />

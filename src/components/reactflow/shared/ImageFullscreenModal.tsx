@@ -133,24 +133,24 @@ export const ImageFullscreenModal: React.FC<ImageFullscreenModalProps> = ({
         {/* Top Bar - Minimal controls */}
         <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 bg-gradient-to-b from-black/80 to-transparent">
           {title && (
-            <h3 className="text-sm font-mono text-zinc-400">{title}</h3>
+            <h3 className="text-sm font-mono text-neutral-400">{title}</h3>
           )}
           <div className="flex items-center gap-2 ml-auto">
             {/* Zoom Controls */}
-            <div className="flex items-center gap-1 bg-black/40 backdrop-blur-sm rounded-md border border-zinc-700/50 p-1">
+            <div className="flex items-center gap-1 bg-black/40 backdrop-blur-sm rounded-md border border-neutral-700/50 p-1">
               <button
                 onClick={handleZoomOut}
-                className="p-1.5 hover:bg-zinc-800/50 rounded text-zinc-400 hover:text-white transition-colors"
+                className="p-1.5 hover:bg-neutral-800/50 rounded text-neutral-400 hover:text-white transition-colors"
                 title={t('common.zoomOut')}
               >
                 <ZoomOut size={14} strokeWidth={2} />
               </button>
-              <span className="text-xs font-mono text-zinc-500 px-2 min-w-[3rem] text-center">
+              <span className="text-xs font-mono text-neutral-500 px-2 min-w-[3rem] text-center">
                 {Math.round(zoom * 100)}%
               </span>
               <button
                 onClick={handleZoomIn}
-                className="p-1.5 hover:bg-zinc-800/50 rounded text-zinc-400 hover:text-white transition-colors"
+                className="p-1.5 hover:bg-neutral-800/50 rounded text-neutral-400 hover:text-white transition-colors"
                 title={t('common.zoomIn')}
               >
                 <ZoomIn size={14} strokeWidth={2} />
@@ -160,7 +160,7 @@ export const ImageFullscreenModal: React.FC<ImageFullscreenModalProps> = ({
             {/* Rotate */}
             <button
               onClick={handleRotate}
-              className="p-1.5 bg-black/40 backdrop-blur-sm hover:bg-zinc-800/50 rounded text-zinc-400 hover:text-white transition-colors border border-zinc-700/50"
+              className="p-1.5 bg-black/40 backdrop-blur-sm hover:bg-neutral-800/50 rounded text-neutral-400 hover:text-white transition-colors border border-neutral-700/50"
               title={t('common.rotate')}
             >
               <RotateCw size={14} strokeWidth={2} />
@@ -169,7 +169,7 @@ export const ImageFullscreenModal: React.FC<ImageFullscreenModalProps> = ({
             {/* Download */}
             <button
               onClick={handleDownload}
-              className="p-1.5 bg-black/40 backdrop-blur-sm hover:bg-zinc-800/50 rounded text-zinc-400 hover:text-white transition-colors border border-zinc-700/50"
+              className="p-1.5 bg-black/40 backdrop-blur-sm hover:bg-neutral-800/50 rounded text-neutral-400 hover:text-white transition-colors border border-neutral-700/50"
               title={t('common.download')}
             >
               <Download size={14} strokeWidth={2} />
@@ -178,7 +178,7 @@ export const ImageFullscreenModal: React.FC<ImageFullscreenModalProps> = ({
             {/* Close */}
             <button
               onClick={onClose}
-              className="p-1.5 bg-black/40 backdrop-blur-sm hover:bg-red-500/80 rounded text-zinc-400 hover:text-white transition-colors border border-zinc-700/50"
+              className="p-1.5 bg-black/40 backdrop-blur-sm hover:bg-red-500/80 rounded text-neutral-400 hover:text-white transition-colors border border-neutral-700/50"
               title={t('common.closeEsc')}
             >
               <X size={14} strokeWidth={2} />
@@ -229,7 +229,7 @@ export const ImageFullscreenModal: React.FC<ImageFullscreenModalProps> = ({
         {(zoom !== 1 || rotation !== 0 || panX !== 0 || panY !== 0) && (
           <button
             onClick={handleReset}
-            className="absolute bottom-4 right-4 z-10 px-3 py-1.5 bg-black/60 backdrop-blur-sm hover:bg-black/80 rounded text-xs font-mono text-zinc-400 hover:text-white transition-colors border border-zinc-700/50"
+            className="absolute bottom-4 right-4 z-10 px-3 py-1.5 bg-black/60 backdrop-blur-sm hover:bg-black/80 rounded text-xs font-mono text-neutral-400 hover:text-white transition-colors border border-neutral-700/50"
             title={t('common.resetView')}
           >
             {t('common.reset')}

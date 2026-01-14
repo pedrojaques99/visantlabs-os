@@ -109,7 +109,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
   nodeTypes,
   onInit,
   reactFlowWrapper,
-  backgroundColor = '#121212',
+  backgroundColor = '#0C0C0C',
   gridColor = 'rgba(255, 255, 255, 0.1)',
   showGrid = true,
   showMinimap = true,

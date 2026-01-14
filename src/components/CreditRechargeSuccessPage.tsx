@@ -180,7 +180,7 @@ export const CreditRechargeSuccessPage: React.FC = () => {
   const animatedTotalCredits = useCountAnimation(creditsConfirmed ? totalCredits : 0, 1200);
 
   return (
-    <div className="min-h-screen bg-black text-zinc-300 pt-12 md:pt-14 relative">
+    <div className="min-h-screen bg-black text-neutral-300 pt-12 md:pt-14 relative">
       <div className="fixed inset-0 z-0">
         <GridDotsBackground />
       </div>
@@ -193,11 +193,11 @@ export const CreditRechargeSuccessPage: React.FC = () => {
             </div>
           </div>
 
-          <h1 className="text-4xl md:text-5xl font-bold font-mono text-zinc-200 mb-4 uppercase">
+          <h1 className="text-4xl md:text-5xl font-bold font-mono text-neutral-200 mb-4 uppercase">
             {t('creditRechargeSuccess.title')}
           </h1>
 
-          <p className="text-zinc-400 font-mono text-base md:text-lg mb-2">
+          <p className="text-neutral-400 font-mono text-base md:text-lg mb-2">
             {t('creditRechargeSuccess.subtitle')}
           </p>
 
@@ -208,7 +208,7 @@ export const CreditRechargeSuccessPage: React.FC = () => {
           ) : isVerifyingCredits ? (
             <div className="flex items-center justify-center gap-2 mt-4">
               <GlitchLoader size={20} color="brand-cyan" />
-              <span className="text-zinc-500 text-sm font-mono">
+              <span className="text-neutral-500 text-sm font-mono">
                 {t('creditRechargeSuccess.verifying')}
               </span>
             </div>
@@ -216,10 +216,10 @@ export const CreditRechargeSuccessPage: React.FC = () => {
         </div>
 
         {creditsConfirmed && (
-          <div className="bg-black/95 backdrop-blur-xl border border-zinc-800/50 rounded-md p-6 mb-8">
+          <div className="bg-black/95 backdrop-blur-xl border border-neutral-800/50 rounded-md p-6 mb-8">
             <div className="flex items-center gap-3 mb-6">
               <Pickaxe size={24} className="text-brand-cyan" />
-              <h2 className="text-xl font-semibold font-mono text-zinc-200">
+              <h2 className="text-xl font-semibold font-mono text-neutral-200">
                 {t('creditRechargeSuccess.creditsPurchased')}
               </h2>
             </div>
@@ -230,21 +230,21 @@ export const CreditRechargeSuccessPage: React.FC = () => {
                   <div className="text-5xl font-bold font-mono text-brand-cyan mb-2">
                     +{animatedCreditsPurchased}
                   </div>
-                  <div className="text-zinc-400 font-mono text-sm">
+                  <div className="text-neutral-400 font-mono text-sm">
                     {t('creditRechargeSuccess.creditsPurchased')}
                   </div>
                 </div>
               </div>
             )}
 
-            <div className="space-y-3 pt-6 border-t border-zinc-800/50">
+            <div className="space-y-3 pt-6 border-t border-neutral-800/50">
               {/* Previous Credits */}
               {previousCredits !== null && (
-                <div className="flex items-center justify-between p-3 bg-zinc-900/50 rounded-md">
-                  <span className="text-zinc-400 font-mono text-sm">
+                <div className="flex items-center justify-between p-3 bg-neutral-900/50 rounded-md">
+                  <span className="text-neutral-400 font-mono text-sm">
                     {t('creditRechargeSuccess.previousCredits')}
                   </span>
-                  <span className="text-zinc-300 font-mono font-semibold text-lg">
+                  <span className="text-neutral-300 font-mono font-semibold text-lg">
                     {previousCredits} {t('creditsPackages.credits')}
                   </span>
                 </div>
@@ -259,7 +259,7 @@ export const CreditRechargeSuccessPage: React.FC = () => {
 
               {/* Total Credits */}
               <div className="flex items-center justify-between p-3 bg-brand-cyan/5 border border-[brand-cyan]/20 rounded-md">
-                <span className="text-zinc-300 font-mono text-sm font-semibold">
+                <span className="text-neutral-300 font-mono text-sm font-semibold">
                   {t('creditRechargeSuccess.totalCredits')}
                 </span>
                 <span className="text-brand-cyan font-mono font-bold text-xl">
@@ -281,7 +281,7 @@ export const CreditRechargeSuccessPage: React.FC = () => {
         </div>
 
         <div className="mt-12 text-center">
-          <p className="text-zinc-500 text-xs font-mono">
+          <p className="text-neutral-500 text-xs font-mono">
             {t('creditRechargeSuccess.support')}
           </p>
         </div>

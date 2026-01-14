@@ -103,14 +103,14 @@ export const MyBrandingsPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#121212] text-zinc-300 pt-14 relative">
+      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-14 relative">
         <div className="fixed inset-0 z-0">
           <GridDotsBackground />
         </div>
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 relative z-10">
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-card border border-zinc-800/60 rounded-md p-6">
+              <div key={i} className="bg-card border border-neutral-800/60 rounded-md p-6">
                 <SkeletonLoader height="1.5rem" className="w-3/4 mb-2" />
                 <SkeletonLoader height="1rem" className="w-1/2" />
               </div>
@@ -128,7 +128,7 @@ export const MyBrandingsPage: React.FC = () => {
         description={t('branding.myBrandings.seoDescription')}
         noindex={true}
       />
-      <div className="min-h-screen bg-[#121212] text-zinc-300 pt-14 relative overflow-hidden">
+      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-14 relative overflow-hidden">
         <div className="fixed inset-0 z-0">
           <GridDotsBackground />
         </div>
@@ -158,10 +158,10 @@ export const MyBrandingsPage: React.FC = () => {
           {/* Header */}
           <div className="flex items-start gap-4 mb-6">
             <div className="flex-1">
-              <h1 className="text-3xl md:text-4xl font-semibold font-manrope text-zinc-300 mb-2">
+              <h1 className="text-3xl md:text-4xl font-semibold font-manrope text-neutral-300 mb-2">
                 {t('branding.myBrandings.title') || 'My Branding Projects'}
               </h1>
-              <p className="text-zinc-500 font-mono text-sm md:text-base">
+              <p className="text-neutral-500 font-mono text-sm md:text-base">
                 {projects.length === 0
                   ? t('branding.myBrandings.noProjects') || 'No projects yet'
                   : `${projects.length} ${projects.length === 1 ? 'project' : 'projects'}`}
@@ -179,11 +179,11 @@ export const MyBrandingsPage: React.FC = () => {
           {/* Projects Grid */}
           {projects.length === 0 ? (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-              <FileText size={64} className="text-zinc-700 mb-4" strokeWidth={1} />
-              <h2 className="text-xl font-semibold font-mono uppercase text-zinc-500 mb-2">
+              <FileText size={64} className="text-neutral-700 mb-4" strokeWidth={1} />
+              <h2 className="text-xl font-semibold font-mono uppercase text-neutral-500 mb-2">
                 {t('branding.myBrandings.emptyTitle') || 'NO PROJECTS YET'}
               </h2>
-              <p className="text-sm text-zinc-600 font-mono mb-6">
+              <p className="text-sm text-neutral-600 font-mono mb-6">
                 {t('branding.myBrandings.emptyDescription') || 'Create your first branding project to see it here.'}
               </p>
               <button
@@ -199,25 +199,25 @@ export const MyBrandingsPage: React.FC = () => {
               {projects.map((project) => (
                 <div
                   key={project._id}
-                  className="bg-[#141414] border border-zinc-800/60 rounded-2xl p-6 md:p-8 hover:border-zinc-700/60 transition-all duration-300 group cursor-pointer"
+                  className="bg-[#141414] border border-neutral-800/60 rounded-2xl p-6 md:p-8 hover:border-neutral-700/60 transition-all duration-300 group cursor-pointer"
                   onClick={() => handleView(project)}
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <FileText className="h-5 w-5 text-brand-cyan" />
-                        <h3 className="font-semibold text-zinc-200 font-manrope text-lg line-clamp-2">
+                        <h3 className="font-semibold text-neutral-200 font-manrope text-lg line-clamp-2">
                           {project.name ? truncateText(project.name, 60) : truncateText(project.prompt, 60)}
                         </h3>
                       </div>
-                      <div className="flex items-center gap-2 text-xs text-zinc-400 font-mono mb-3">
+                      <div className="flex items-center gap-2 text-xs text-neutral-400 font-mono mb-3">
                         <Calendar className="h-3.5 w-3.5" />
                         <span>{formatDate(project.createdAt)}</span>
                       </div>
                     </div>
                   </div>
 
-                  <p className="text-sm text-zinc-400 font-mono mb-4 line-clamp-3">
+                  <p className="text-sm text-neutral-400 font-mono mb-4 line-clamp-3">
                     {truncateText(project.prompt, 120)}
                   </p>
 
@@ -227,7 +227,7 @@ export const MyBrandingsPage: React.FC = () => {
                         e.stopPropagation();
                         handleView(project);
                       }}
-                      className="flex-1 px-4 py-2 bg-black/40 border border-zinc-800/60 hover:border-brand-cyan/50 hover:text-brand-cyan rounded-md text-sm font-mono text-zinc-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+                      className="flex-1 px-4 py-2 bg-black/40 border border-neutral-800/60 hover:border-brand-cyan/50 hover:text-brand-cyan rounded-md text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Eye className="h-4 w-4" />
                       {t('branding.myBrandings.view') || 'View'}
@@ -235,7 +235,7 @@ export const MyBrandingsPage: React.FC = () => {
                     <button
                       onClick={(e) => handleDeleteClick(project._id, e)}
                       disabled={deletingId === project._id}
-                      className="px-4 py-2 bg-black/40 border border-zinc-800/60 hover:border-red-500/50 hover:text-red-400 rounded-md text-sm font-mono text-zinc-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                      className="px-4 py-2 bg-black/40 border border-neutral-800/60 hover:border-red-500/50 hover:text-red-400 rounded-md text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>

@@ -7,8 +7,8 @@ import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { signupRateLimiter, signinRateLimiter, getClientIp } from '../middleware/rateLimit.js';
 // CAPTCHA middleware import removed - CAPTCHA is disabled
 // import { captchaMiddleware } from '../middleware/captcha.js';
-import { detectAbuse, recordSignupAttempt } from '@/utils/abuseDetection.js';
-import { JWT_SECRET } from '@/utils/jwtSecret.js';
+import { detectAbuse, recordSignupAttempt } from '../utils/abuseDetection.js';
+import { JWT_SECRET } from '../utils/jwtSecret.js';
 
 const router = express.Router();
 
@@ -921,7 +921,7 @@ router.post('/profile/picture', authenticate, async (req: AuthRequest, res) => {
     }
 
     // Upload to R2
-    const r2Service = await import('../services/r2Service.js');
+    const r2Service = await import('@/services/r2Service.js');
 
     if (!r2Service.isR2Configured()) {
       return res.status(500).json({

@@ -120,7 +120,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
     return (
         <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 animate-in fade-in duration-500">
             {/* Container 1: Profile Info - Top Left */}
-            <section className="bg-zinc-900 border border-zinc-800/50 rounded-2xl p-6 md:p-8 flex flex-col gap-6 shadow-lg shadow-black/20">
+            <section className="bg-neutral-900 border border-neutral-800/50 rounded-2xl p-6 md:p-8 flex flex-col gap-6 shadow-lg shadow-black/20">
                 <div className="flex flex-col items-center gap-4">
                     <input
                         ref={fileInputRef}
@@ -131,7 +131,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                         className="hidden"
                     />
                     <div
-                        className="relative w-28 h-28 rounded-2xl bg-[#121212] border border-zinc-800 focus-within:ring-2 ring-brand-cyan/20 overflow-hidden flex items-center justify-center cursor-pointer hover:opacity-80 transition-all duration-300 group shadow-lg"
+                        className="relative w-28 h-28 rounded-2xl bg-[#0C0C0C] border border-neutral-800 focus-within:ring-2 ring-brand-cyan/20 overflow-hidden flex items-center justify-center cursor-pointer hover:opacity-80 transition-all duration-300 group shadow-lg"
                         onClick={handlePictureClick}
                         title={t('profile.uploadPicture') || 'Clique para enviar foto'}
                     >
@@ -145,7 +145,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                             />
                         ) : (
-                            <User size={48} className="text-zinc-700" />
+                            <User size={48} className="text-neutral-700" />
                         )}
                         <span className="absolute bottom-2 right-2 bg-brand-cyan text-black rounded-lg p-1.5 shadow-lg shadow-brand-cyan/20 group-hover:bg-brand-cyan/90 transition-all hover:scale-110">
                             <Camera size={14} />
@@ -155,14 +155,14 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                         <h2 className="text-2xl font-bold text-white font-manrope tracking-tight">
                             {user.name || t('profile.name') || 'Seu nome'}
                         </h2>
-                        <p className="text-sm text-zinc-500 font-mono">{user.email}</p>
+                        <p className="text-sm text-neutral-500 font-mono">{user.email}</p>
                     </div>
                 </div>
 
                 <div className="flex flex-col gap-3 mt-2">
                     <button
                         onClick={onEditProfile}
-                        className="w-full px-4 py-2.5 bg-zinc-900/50 hover:bg-zinc-900 text-zinc-300 border border-zinc-800/50 hover:border-zinc-700 rounded-xl text-sm font-mono transition flex items-center justify-between group cursor-pointer font-medium"
+                        className="w-full px-4 py-2.5 bg-neutral-900/50 hover:bg-neutral-900 text-neutral-300 border border-neutral-800/50 hover:border-neutral-700 rounded-xl text-sm font-mono transition flex items-center justify-between group cursor-pointer font-medium"
                     >
                         <div className="flex items-center gap-3">
                             <UserCog size={16} strokeWidth={2} className="group-hover:text-brand-cyan transition-colors" />
@@ -174,7 +174,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                     {user && (user.id || user.email) && (
                         <Link
                             to={`/profile/${user.username || user.id}`}
-                            className="w-full px-4 py-2.5 bg-zinc-900/50 hover:bg-zinc-900 text-zinc-300 border border-zinc-800/50 hover:border-zinc-700 rounded-xl text-sm font-mono transition flex items-center justify-between group cursor-pointer font-medium"
+                            className="w-full px-4 py-2.5 bg-neutral-900/50 hover:bg-neutral-900 text-neutral-300 border border-neutral-800/50 hover:border-neutral-700 rounded-xl text-sm font-mono transition flex items-center justify-between group cursor-pointer font-medium"
                         >
                             <div className="flex items-center gap-3">
                                 <ExternalLink size={16} strokeWidth={2} className="group-hover:text-brand-cyan transition-colors" />
@@ -187,7 +187,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                     <div className="flex flex-col gap-3 pt-2">
                         <Link
                             to="/my-outputs"
-                            className="w-full px-4 py-2.5 bg-zinc-900/50 hover:bg-zinc-900 text-zinc-300 border border-zinc-800/50 hover:border-zinc-700 rounded-xl text-sm font-mono transition flex items-center justify-between group cursor-pointer font-medium"
+                            className="w-full px-4 py-2.5 bg-neutral-900/50 hover:bg-neutral-900 text-neutral-300 border border-neutral-800/50 hover:border-neutral-700 rounded-xl text-sm font-mono transition flex items-center justify-between group cursor-pointer font-medium"
                         >
                             <div className="flex items-center gap-3">
                                 <Heart size={16} strokeWidth={2} className="group-hover:text-brand-cyan transition-colors" />
@@ -197,7 +197,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                         </Link>
                         <Link
                             to="/community"
-                            className="w-full px-4 py-2.5 bg-zinc-900/50 hover:bg-zinc-900 text-zinc-300 border border-zinc-800/50 hover:border-zinc-700 rounded-xl text-sm font-mono transition flex items-center justify-between group cursor-pointer font-medium"
+                            className="w-full px-4 py-2.5 bg-neutral-900/50 hover:bg-neutral-900 text-neutral-300 border border-neutral-800/50 hover:border-neutral-700 rounded-xl text-sm font-mono transition flex items-center justify-between group cursor-pointer font-medium"
                         >
                             <div className="flex items-center gap-3">
                                 <Users size={16} strokeWidth={2} className="group-hover:text-brand-cyan transition-colors" />
@@ -210,13 +210,13 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
             </section>
 
             {/* Container 2: Credits & Stats - Top Right */}
-            <section className="bg-zinc-900 border border-zinc-800/50 rounded-2xl p-6 md:p-8 flex flex-col gap-6 shadow-lg shadow-black/20">
-                <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4">
+            <section className="bg-neutral-900 border border-neutral-800/50 rounded-2xl p-6 md:p-8 flex flex-col gap-6 shadow-lg shadow-black/20">
+                <div className="flex items-center gap-3 border-b border-neutral-800/50 pb-4">
                     <div className="p-2 bg-brand-cyan/10 rounded-lg">
                         <CreditCard size={20} className="text-brand-cyan" />
                     </div>
                     <div>
-                        <h3 className="text-base font-semibold text-zinc-100 font-redhatmono">
+                        <h3 className="text-base font-semibold text-neutral-100 font-redhatmono">
                             {t('credits.title') || 'CRÉDITOS'}
                         </h3>
                     </div>
@@ -225,7 +225,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                 {subscriptionStatus ? (
                     <>
                         <div className="space-y-4 flex-1">
-                            <div className="bg-zinc-900/40 border border-zinc-800 rounded-xl p-5 relative overflow-hidden group">
+                            <div className="bg-neutral-900/40 border border-neutral-800 rounded-xl p-5 relative overflow-hidden group">
                                 {/* Buy Credits Button in Top Right */}
                                 <div className="absolute top-4 right-4 z-20">
                                     <button
@@ -236,11 +236,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                                         <Plus size={16} />
                                     </button>
                                 </div>
-
-                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                                    <CreditCard size={64} className="text-brand-cyan" />
-                                </div>
-                                <p className="text-xs text-zinc-500 font-mono mb-1 uppercase tracking-wider">
+                                <p className="text-xs text-neutral-500 font-mono mb-1 uppercase tracking-wider">
                                     {t('credits.available') || 'DISPONÍVEIS'}
                                 </p>
                                 <div className="flex items-baseline gap-2">
@@ -252,35 +248,35 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                             </div>
 
                             <div className="grid grid-cols-2 gap-3">
-                                <div className="bg-zinc-900/30 border border-zinc-800 rounded-xl p-3">
-                                    <p className="text-[10px] text-zinc-500 font-mono uppercase mb-1">{t('profile.totalCreditsUsed') || 'USADOS'}</p>
-                                    <p className="text-lg font-bold text-zinc-300 font-mono">{subscriptionStatus.creditsUsed ?? 0}</p>
+                                <div className="bg-neutral-900/30 border border-neutral-800 rounded-xl p-3">
+                                    <p className="text-[10px] text-neutral-500 font-mono uppercase mb-1">{t('profile.totalCreditsUsed') || 'USADOS'}</p>
+                                    <p className="text-lg font-bold text-neutral-300 font-mono">{subscriptionStatus.creditsUsed ?? 0}</p>
                                 </div>
                                 {/* Storage Usage - Compact */}
                                 {isLoadingStorage ? (
-                                    <div className="bg-zinc-900/30 border border-zinc-800 rounded-xl p-3 flex items-center justify-center">
+                                    <div className="bg-neutral-900/30 border border-neutral-800 rounded-xl p-3 flex items-center justify-center">
                                         <GlitchLoader size={16} />
                                     </div>
                                 ) : storageUsage ? (
-                                    <div className="bg-zinc-900/30 border border-zinc-800 rounded-xl p-3">
+                                    <div className="bg-neutral-900/30 border border-neutral-800 rounded-xl p-3">
                                         <div className="flex items-center justify-between gap-1 mb-1">
                                             <div className="flex items-center gap-1.5">
-                                                <HardDrive size={10} className="text-zinc-500" />
-                                                <p className="text-[10px] text-zinc-500 font-mono uppercase">{t('credits.storage') || 'STORAGE'}</p>
+                                                <HardDrive size={10} className="text-neutral-500" />
+                                                <p className="text-[10px] text-neutral-500 font-mono uppercase">{t('credits.storage') || 'STORAGE'}</p>
                                             </div>
                                             <p className="text-[10px] text-brand-cyan font-mono">{storageUsage.percentage.toFixed(0)}%</p>
                                         </div>
-                                        <div className="w-full bg-zinc-800 rounded-full h-1.5 mb-1">
+                                        <div className="w-full bg-neutral-800 rounded-full h-1.5 mb-1">
                                             <div className="bg-brand-cyan h-1.5 rounded-full transition-all" style={{ width: `${Math.min(storageUsage.percentage, 100)}%` }}></div>
                                         </div>
-                                        <p className="text-[10px] text-zinc-400 font-mono">{storageUsage.formatted.used} / {storageUsage.formatted.limit}</p>
+                                        <p className="text-[10px] text-neutral-400 font-mono">{storageUsage.formatted.used} / {storageUsage.formatted.limit}</p>
                                     </div>
-                                ) : <div className="bg-zinc-900/30 border border-zinc-800 rounded-xl p-3"></div>}
+                                ) : <div className="bg-neutral-900/30 border border-neutral-800 rounded-xl p-3"></div>}
                             </div>
 
                             {subscriptionStatus.creditsResetDate && (
                                 <div className="text-center pt-2">
-                                    <p className="text-[10px] text-zinc-600 font-mono uppercase tracking-widest">
+                                    <p className="text-[10px] text-neutral-600 font-mono uppercase tracking-widest">
                                         {subscriptionStatus.hasActiveSubscription
                                             ? t('credits.renews', {
                                                 date: formatFriendlyDate(subscriptionStatus.creditsResetDate),
@@ -296,14 +292,14 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                         <div className="flex flex-col gap-3 pt-2">
                             <button
                                 onClick={onViewTransactions}
-                                className="w-full px-4 py-2.5 bg-zinc-900/50 hover:bg-zinc-900 text-zinc-300 border border-zinc-800/50 hover:border-zinc-700 rounded-xl text-sm font-mono transition text-center font-medium"
+                                className="w-full px-4 py-2.5 bg-neutral-900/50 hover:bg-neutral-900 text-neutral-300 border border-neutral-800/50 hover:border-neutral-700 rounded-xl text-sm font-mono transition text-center font-medium"
                             >
                                 {t('profile.viewAllTransactions') || 'Transações'}
                             </button>
                             {hasActiveSubscription && subscriptionStatus?.subscriptionStatus !== 'free' && (
                                 <button
                                     onClick={onManageSubscription}
-                                    className="w-full px-4 py-2.5 bg-zinc-900/50 hover:bg-zinc-900 text-zinc-300 border border-zinc-800/50 hover:border-zinc-700 rounded-xl text-sm font-mono transition text-center flex items-center justify-center gap-2 font-medium"
+                                    className="w-full px-4 py-2.5 bg-neutral-900/50 hover:bg-neutral-900 text-neutral-300 border border-neutral-800/50 hover:border-neutral-700 rounded-xl text-sm font-mono transition text-center flex items-center justify-center gap-2 font-medium"
                                     title={t('profile.manageSubscription') || 'Gerenciar Assinatura'}
                                 >
                                     <CreditCard size={14} />
@@ -314,7 +310,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                     </>
                 ) : (
                     <div className="flex flex-col items-center justify-center gap-4 py-12 flex-1">
-                        <p className="text-sm text-zinc-400 font-mono text-center max-w-[200px]">
+                        <p className="text-sm text-neutral-400 font-mono text-center max-w-[200px]">
                             {t('profile.noSubscriptionData') || 'Dados de assinatura indisponíveis.'}
                         </p>
                     </div>
@@ -322,13 +318,13 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
             </section>
 
             {/* Container 3: Referral Program - Bottom Span */}
-            <section className="bg-zinc-900 border border-zinc-800/50 rounded-2xl p-6 md:p-8 flex flex-col gap-6 shadow-lg shadow-black/20">
-                <div className="flex items-center gap-3 border-b border-zinc-800/50 pb-4">
+            <section className="bg-neutral-900 border border-neutral-800/50 rounded-2xl p-6 md:p-8 flex flex-col gap-6 shadow-lg shadow-black/20">
+                <div className="flex items-center gap-3 border-b border-neutral-800/50 pb-4">
                     <div className="p-2 bg-brand-cyan/10 rounded-lg">
                         <Share2 size={20} className="text-brand-cyan" />
                     </div>
                     <div>
-                        <h3 className="text-base font-semibold text-zinc-100 font-redhatmono">
+                        <h3 className="text-base font-semibold text-neutral-100 font-redhatmono">
                             {t('referral.title') || 'INDICAÇÃO'}
                         </h3>
                     </div>
@@ -338,12 +334,12 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                     <>
                         <div className="space-y-4 flex-1">
                             <div className="bg-transparent rounded-xl p-0">
-                                <p className="text-sm text-zinc-400 font-mono mb-6 leading-relaxed">
+                                <p className="text-sm text-neutral-400 font-mono mb-6 leading-relaxed">
                                     {t('referral.description') || 'Compartilhe seu link e ganhe créditos bônus quando amigos entrarem.'}
                                 </p>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] text-zinc-600 font-mono uppercase block tracking-widest">
+                                    <label className="text-[10px] text-neutral-600 font-mono uppercase block tracking-widest">
                                         {t('referral.yourLink') || 'SEU LINK DE INDICAÇÃO'}
                                     </label>
                                     <div className="flex gap-2">
@@ -352,12 +348,12 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                                                 type="text"
                                                 value={referralLink}
                                                 readOnly
-                                                className="w-full px-3 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg text-zinc-400 group-hover:text-zinc-200 font-mono text-xs focus:outline-none focus:border-brand-cyan/30 transition pr-10"
+                                                className="w-full px-3 py-2 bg-neutral-900/50 border border-neutral-800 rounded-lg text-neutral-400 group-hover:text-neutral-200 font-mono text-xs focus:outline-none focus:border-brand-cyan/30 transition pr-10"
                                             />
                                             <button
                                                 onClick={handleCopyReferralLink}
                                                 disabled={!referralStats.referralCode}
-                                                className="absolute right-1 top-1 p-1 bg-zinc-800 hover:bg-brand-cyan/20 text-zinc-400 hover:text-brand-cyan rounded-md transition-colors"
+                                                className="absolute right-1 top-1 p-1 bg-neutral-800 hover:bg-brand-cyan/20 text-neutral-400 hover:text-brand-cyan rounded-md transition-colors"
                                             >
                                                 {isLoadingReferral ? <GlitchLoader size={12} /> : <Copy size={12} />}
                                             </button>
@@ -367,21 +363,21 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                             </div>
 
                             <div className="grid grid-cols-2 gap-3 pt-4">
-                                <div className="bg-zinc-900/20 border border-zinc-800/50 rounded-xl p-4 flex flex-col items-center justify-center text-center">
-                                    <Users className="text-zinc-600 mb-2" size={20} />
-                                    <p className="text-xl font-bold text-zinc-300 font-mono mb-1">
+                                <div className="bg-neutral-900/20 border border-neutral-800/50 rounded-xl p-4 flex flex-col items-center justify-center text-center">
+                                    <Users className="text-neutral-600 mb-2" size={20} />
+                                    <p className="text-xl font-bold text-neutral-300 font-mono mb-1">
                                         {referralStats.referredUsersCount || 0}
                                     </p>
-                                    <p className="text-[10px] text-zinc-600 font-mono uppercase tracking-wide">
+                                    <p className="text-[10px] text-neutral-600 font-mono uppercase tracking-wide">
                                         {t('referral.friendsReferred') || 'AMIGOS INDICADOS'}
                                     </p>
                                 </div>
-                                <div className="bg-zinc-900/20 border border-zinc-800/50 rounded-xl p-4 flex flex-col items-center justify-center text-center">
+                                <div className="bg-neutral-900/20 border border-neutral-800/50 rounded-xl p-4 flex flex-col items-center justify-center text-center">
                                     <CreditCard className="text-brand-cyan/50 mb-2" size={20} />
                                     <p className="text-xl font-bold text-brand-cyan font-mono mb-1">
                                         {referralStats.totalCreditsEarned || 0}
                                     </p>
-                                    <p className="text-[10px] text-zinc-600 font-mono uppercase tracking-wide">
+                                    <p className="text-[10px] text-neutral-600 font-mono uppercase tracking-wide">
                                         {t('referral.totalEarned') || 'TOTAL DE CRÉDITOS GANHOS'}
                                     </p>
                                 </div>
@@ -391,7 +387,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                 ) : (
                     <div className="flex flex-col items-center justify-center gap-3 py-12 flex-1">
                         <GlitchLoader size={20} />
-                        <p className="text-sm text-zinc-500 font-mono text-center">
+                        <p className="text-sm text-neutral-500 font-mono text-center">
                             {isLoadingReferral
                                 ? t('common.loading') || 'Carregando...'
                                 : t('referral.generating') || 'Gerando código...'}

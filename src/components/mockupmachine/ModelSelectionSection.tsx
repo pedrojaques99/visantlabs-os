@@ -56,12 +56,12 @@ export const ModelSelectionSection: React.FC<ModelSelectionSectionProps> = ({
         onClick={() => onModelChange(model)}
         className={`w-full aspect-square max-h-32 flex flex-col items-center justify-center gap-1 p-4 text-xs font-mono rounded border transition-colors cursor-pointer ${isSelected
           ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
-          : 'bg-zinc-800/30 text-zinc-400 border-zinc-700/30 hover:border-zinc-600/50'
+          : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50'
           }`}
       >
         <span className="text-2xl">{info.emoji}</span>
         <span className="font-semibold text-sm">{info.name}</span>
-        <span className="text-[10px] text-zinc-500">{info.version}</span>
+        <span className="text-[10px] text-neutral-500">{info.version}</span>
       </button>
     );
   };

@@ -279,12 +279,12 @@ export const MockupsPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#121212] text-zinc-300 pt-12 md:pt-14">
+      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
               <GlitchLoader size={36} className="mx-auto mb-4" />
-              <p className="text-zinc-400 font-mono text-sm">{t('mockupsPage.loadingMockups')}</p>
+              <p className="text-neutral-400 font-mono text-sm">{t('mockupsPage.loadingMockups')}</p>
             </div>
           </div>
         </div>
@@ -302,7 +302,7 @@ export const MockupsPage: React.FC = () => {
         description="Explore mockups criados pela comunidade. Descubra designs profissionais e inspire-se para seus próprios projetos."
         keywords="mockups comunidade, galeria mockups, designs compartilhados, inspiração design"
       />
-      <div className="min-h-screen bg-[#121212] text-zinc-300 relative overflow-hidden">
+      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 relative overflow-hidden">
         {/* Background */}
         <div className="fixed inset-0 z-0 pointer-events-none">
           <GridDotsBackground />
@@ -372,27 +372,27 @@ export const MockupsPage: React.FC = () => {
               <div className="relative flex-shrink-0">
                 <button
                   onClick={() => setShowSearch(!showSearch)}
-                  className="p-2 text-zinc-500 hover:text-brand-cyan transition-colors rounded-md hover:bg-black/20"
+                  className="p-2 text-neutral-500 hover:text-brand-cyan transition-colors rounded-md hover:bg-black/20"
                   title={t('mockupsPage.search')}
                 >
                   <Search size={20} />
                 </button>
                 {showSearch && (
-                  <div className="absolute top-12 right-0 bg-black/90 backdrop-blur-sm border border-zinc-700/30 rounded-md p-2 min-w-[240px] shadow-lg animate-[fadeInScale_0.2s_ease-out] z-50">
+                  <div className="absolute top-12 right-0 bg-black/90 backdrop-blur-sm border border-neutral-700/30 rounded-md p-2 min-w-[240px] shadow-lg animate-[fadeInScale_0.2s_ease-out] z-50">
                     <div className="relative">
                       <input
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder={t('mockupsPage.searchPlaceholder')}
-                        className="w-full bg-transparent pl-7 pr-8 py-2 rounded-md border border-zinc-700/30 focus:outline-none focus:border-[brand-cyan]/50 text-sm text-zinc-300 font-mono"
+                        className="w-full bg-transparent pl-7 pr-8 py-2 rounded-md border border-neutral-700/30 focus:outline-none focus:border-[brand-cyan]/50 text-sm text-neutral-300 font-mono"
                         autoFocus
                       />
-                      <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-zinc-500" size={14} />
+                      <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-neutral-500" size={14} />
                       {searchQuery && (
                         <button
                           onClick={() => setSearchQuery('')}
-                          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-neutral-500 hover:text-neutral-300 transition-colors"
                         >
                           <X size={14} />
                         </button>
@@ -410,24 +410,24 @@ export const MockupsPage: React.FC = () => {
           {/* Floating Column Control */}
           {filteredMockups.length > 0 && !isMobile && (
             <div className="fixed bottom-4 md:bottom-6 left-4 md:left-6 z-30">
-              <div className="flex items-center gap-1 bg-black/50 backdrop-blur-md border border-zinc-800/60 rounded-md p-1.5 shadow-lg">
+              <div className="flex items-center gap-1 bg-black/50 backdrop-blur-md border border-neutral-800/60 rounded-md p-1.5 shadow-lg">
                 <button
                   onClick={() => handleColumnsChange(columns - 1)}
                   disabled={columns <= 1}
-                  className="p-1.5 text-zinc-500 hover:text-zinc-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded hover:bg-zinc-800/30"
+                  className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded hover:bg-neutral-800/30"
                   aria-label="Decrease columns"
                 >
                   <Minus size={14} />
                 </button>
                 <div className="px-2.5">
-                  <span className="text-xs font-mono text-zinc-400 min-w-[1.5rem] text-center">
+                  <span className="text-xs font-mono text-neutral-400 min-w-[1.5rem] text-center">
                     {columns}
                   </span>
                 </div>
                 <button
                   onClick={() => handleColumnsChange(columns + 1)}
                   disabled={columns >= 6}
-                  className="p-1.5 text-zinc-500 hover:text-zinc-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded hover:bg-zinc-800/30"
+                  className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded hover:bg-neutral-800/30"
                   aria-label="Increase columns"
                 >
                   <Plus size={14} />
@@ -439,11 +439,11 @@ export const MockupsPage: React.FC = () => {
           {/* Empty State */}
           {filteredMockups.length === 0 ? (
             <div className="flex flex-col items-center justify-center min-h-[50vh] text-center py-16">
-              <ImageIcon size={64} className="text-zinc-700 mb-6" strokeWidth={1} />
-              <h2 className="text-xl font-semibold font-mono uppercase text-zinc-500 mb-3">
+              <ImageIcon size={64} className="text-neutral-700 mb-6" strokeWidth={1} />
+              <h2 className="text-xl font-semibold font-mono uppercase text-neutral-500 mb-3">
                 {mockups.length === 0 ? t('mockupsPage.noMockupsYet') : t('mockupsPage.noMatchesFound')}
               </h2>
-              <p className="text-sm text-zinc-600 font-mono max-w-md">
+              <p className="text-sm text-neutral-600 font-mono max-w-md">
                 {mockups.length === 0
                   ? t('mockupsPage.generateBlankMockups')
                   : t('mockupsPage.tryAdjustingSearch')}
@@ -458,11 +458,11 @@ export const MockupsPage: React.FC = () => {
                 return (
                   <div
                     key={mockup._id}
-                    className="group relative bg-black/30 backdrop-blur-sm border border-zinc-800/60 rounded-md overflow-hidden hover:border-[brand-cyan]/50 transition-all duration-300"
+                    className="group relative bg-black/30 backdrop-blur-sm border border-neutral-800/60 rounded-md overflow-hidden hover:border-[brand-cyan]/50 transition-all duration-300"
                   >
                     {/* Image */}
                     <div
-                      className="aspect-square relative overflow-hidden bg-zinc-900/50 cursor-pointer"
+                      className="aspect-square relative overflow-hidden bg-neutral-900/50 cursor-pointer"
                       onClick={() => handleView(mockup)}
                     >
                       <img

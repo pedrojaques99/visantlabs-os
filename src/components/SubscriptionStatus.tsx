@@ -65,20 +65,20 @@ export const SubscriptionStatus: React.FC<SubscriptionStatusProps> = ({
   // Hide subscription information, show only credits
   if (hasActiveSubscription) {
     return (
-      <div className="flex flex-col gap-1 text-xs text-zinc-400 font-mono">
+      <div className="flex flex-col gap-1 text-xs text-neutral-400 font-mono">
         <div className="flex items-center gap-2">
-          <div className="flex-1 bg-zinc-800 rounded-md h-1.5 overflow-hidden">
+          <div className="flex-1 bg-neutral-800 rounded-md h-1.5 overflow-hidden">
             <div
               className="h-full bg-brand-cyan transition-all duration-300 progress-fill"
               style={subscriptionProgressStyle}
             />
           </div>
-          <span className="text-zinc-500 whitespace-nowrap">
+          <span className="text-neutral-500 whitespace-nowrap">
             {totalCreditsAvailable} credits
           </span>
         </div>
         {creditsResetDate && (
-          <span className="text-zinc-600 text-[10px]">
+          <span className="text-neutral-600 text-[10px]">
             Resets {formatDate(creditsResetDate)}
           </span>
         )}
@@ -87,15 +87,15 @@ export const SubscriptionStatus: React.FC<SubscriptionStatusProps> = ({
   }
 
   return (
-    <div className="flex flex-col gap-1 text-xs text-zinc-400 font-mono">
+    <div className="flex flex-col gap-1 text-xs text-neutral-400 font-mono">
       <div className="flex items-center gap-2">
         <span>Free</span>
-        <span className="text-zinc-500">
+        <span className="text-neutral-500">
           ({totalCreditsAvailable} credits)
         </span>
       </div>
       {creditsResetDate && (
-        <span className="text-zinc-600 text-[10px]">
+        <span className="text-neutral-600 text-[10px]">
           Resets {formatDate(creditsResetDate)}
         </span>
       )}

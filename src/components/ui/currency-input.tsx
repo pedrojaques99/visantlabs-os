@@ -100,7 +100,7 @@ const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
       <input
         type="text"
         className={cn(
-          "w-full px-4 py-3 bg-black/40 border border-zinc-800 rounded-xl text-zinc-200 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/70 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50 placeholder:text-zinc-500",
+          "w-full px-4 py-3 bg-black/40 border border-neutral-800 rounded-xl text-neutral-200 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/70 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50 placeholder:text-neutral-500",
           className
         )}
         ref={ref}

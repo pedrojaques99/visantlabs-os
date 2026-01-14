@@ -230,11 +230,11 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
       {/* Image Upload Section */}
       <div className="mb-4">
         <NodeLabel>
-          Image {connectedImage && <span className="text-[10px] text-zinc-500">(connected)</span>}
+          Image {connectedImage && <span className="text-[10px] text-neutral-500">(connected)</span>}
         </NodeLabel>
         {imageUrl ? (
           <div className="relative">
-            <div className="relative w-full h-auto min-h-[128px] bg-zinc-900/50 rounded border border-zinc-700/30 overflow-hidden">
+            <div className="relative w-full h-auto min-h-[128px] bg-neutral-900/50 rounded border border-neutral-700/30 overflow-hidden">
               <img
                 src={imageUrl}
                 alt="Image to extract colors from"
@@ -292,7 +292,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
 
       {/* Extracted Colors Display */}
       {extractedColors.length > 0 && (
-        <div className="border-t border-zinc-700/30 pt-4 space-y-3">
+        <div className="border-t border-neutral-700/30 pt-4 space-y-3">
           <div className="flex items-center justify-between">
             <NodeLabel className="mb-0">Extracted Colors ({extractedColors.length})</NodeLabel>
             <NodeButton
@@ -310,16 +310,16 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
             {extractedColors.map((color, index) => (
               <div
                 key={`${color}-${index}`}
-                className="flex items-center gap-2 p-2 bg-zinc-900/50 rounded border border-zinc-700/30 hover:border-[brand-cyan]/50 transition-colors group/color cursor-pointer hover:bg-zinc-800/50 opacity-0 animate-[fadeInScale_0.4s_cubic-bezier(0.34,1.56,0.64,1)_forwards] relative"
+                className="flex items-center gap-2 p-2 bg-neutral-900/50 rounded border border-neutral-700/30 hover:border-[brand-cyan]/50 transition-colors group/color cursor-pointer hover:bg-neutral-800/50 opacity-0 animate-[fadeInScale_0.4s_cubic-bezier(0.34,1.56,0.64,1)_forwards] relative"
                 style={{ animationDelay: `${index * 50}ms` }}
                 onClick={() => handleCopyColor(color)}
                 title="Click to copy hex code"
               >
                 <div
-                  className="w-8 h-8 rounded border border-zinc-700/50 flex-shrink-0"
+                  className="w-8 h-8 rounded border border-neutral-700/50 flex-shrink-0"
                   style={{ backgroundColor: color }}
                 />
-                <span className="text-xs font-mono text-zinc-400 flex-1 truncate">
+                <span className="text-xs font-mono text-neutral-400 flex-1 truncate">
                   {color}
                 </span>
 
@@ -330,7 +330,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
                 >
                   {/* Regenerate Single Color */}
                   <div
-                    className="p-1.5 rounded hover:bg-zinc-700/50 opacity-0 group-hover/color:opacity-100 transition-opacity cursor-pointer relative"
+                    className="p-1.5 rounded hover:bg-neutral-700/50 opacity-0 group-hover/color:opacity-100 transition-opacity cursor-pointer relative"
                     onClick={(e) => {
                       e.stopPropagation();
                       e.preventDefault();
@@ -338,7 +338,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
                     }}
                     title="Regenerate only this color"
                   >
-                    <RefreshCw size={10} className="text-zinc-400 hover:text-brand-cyan transition-colors" />
+                    <RefreshCw size={10} className="text-neutral-400 hover:text-brand-cyan transition-colors" />
                   </div>
 
                   {/* Manual Edit via invisible input + visible icon */}
@@ -352,9 +352,9 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
                       title="Edit specific color"
                     />
                     {/* Visual fake icon for edit */}
-                    <div className="p-1 rounded hover:bg-zinc-700/50 pointer-events-none">
-                      <div className="w-2.5 h-2.5 rounded-full border border-zinc-400/50 bg-transparent flex items-center justify-center">
-                        <div className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
+                    <div className="p-1 rounded hover:bg-neutral-700/50 pointer-events-none">
+                      <div className="w-2.5 h-2.5 rounded-full border border-neutral-400/50 bg-transparent flex items-center justify-center">
+                        <div className="w-1.5 h-1.5 rounded-full bg-neutral-400" />
                       </div>
                     </div>
                   </div>

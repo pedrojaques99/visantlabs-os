@@ -73,21 +73,21 @@ export const AuthCallbackPage: React.FC = () => {
 
   if (isProcessing && !error) {
     return (
-      <div className="min-h-screen bg-[#121212] flex items-center justify-center">
+      <div className="min-h-screen bg-[#0C0C0C] flex items-center justify-center">
         <div className="text-center">
           <GlitchLoader size={32} color="brand-cyan" className="mx-auto mb-4" />
-          <p className="text-zinc-400 font-mono text-sm">{t('auth.processing') || 'Processing authentication...'}</p>
+          <p className="text-neutral-400 font-mono text-sm">{t('auth.processing') || 'Processing authentication...'}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#121212] flex items-center justify-center p-4">
-      <div className="bg-zinc-900 border border-zinc-800/50 rounded-md p-6 w-full max-w-md">
+    <div className="min-h-screen bg-[#0C0C0C] flex items-center justify-center p-4">
+      <div className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 w-full max-w-md">
         <div className="flex items-center gap-3 mb-4">
           <AlertCircle size={24} className="text-red-400" />
-          <h2 className="text-lg font-semibold font-mono text-zinc-200 uppercase">
+          <h2 className="text-lg font-semibold font-mono text-neutral-200 uppercase">
             {t('auth.authenticationError') || 'Authentication Error'}
           </h2>
         </div>
@@ -114,7 +114,7 @@ export const AuthCallbackPage: React.FC = () => {
                 window.dispatchEvent(new CustomEvent('openAuthModal'));
               }, 100);
             }}
-            className="flex-1 bg-zinc-800/50 hover:bg-zinc-800/70 text-zinc-300 font-semibold py-2.5 px-4 rounded-md border border-zinc-700/50 hover:border-zinc-600/50 transition-all duration-200 text-sm font-mono"
+            className="flex-1 bg-neutral-800/50 hover:bg-neutral-800/70 text-neutral-300 font-semibold py-2.5 px-4 rounded-md border border-neutral-700/50 hover:border-neutral-600/50 transition-all duration-200 text-sm font-mono"
           >
             {t('auth.tryAgain') || 'Try Again'}
           </button>

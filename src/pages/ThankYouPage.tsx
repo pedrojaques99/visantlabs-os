@@ -109,7 +109,7 @@ export const ThankYouPage: React.FC<ThankYouPageProps> = ({ planName, planCredit
   };
 
   return (
-    <div className="min-h-screen bg-[#121212] text-zinc-300 pt-12 md:pt-14 relative">
+    <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative">
       <div className="fixed inset-0 z-0">
         <GridDotsBackground />
       </div>
@@ -122,11 +122,11 @@ export const ThankYouPage: React.FC<ThankYouPageProps> = ({ planName, planCredit
             </div>
           </div>
 
-          <h1 className="text-4xl md:text-5xl font-bold font-mono text-zinc-200 mb-4 uppercase">
+          <h1 className="text-4xl md:text-5xl font-bold font-mono text-neutral-200 mb-4 uppercase">
             {t('thankYou.title')}
           </h1>
 
-          <p className="text-zinc-400 font-mono text-base md:text-lg mb-2">
+          <p className="text-neutral-400 font-mono text-base md:text-lg mb-2">
             {t('thankYou.subtitle')}
           </p>
 
@@ -144,15 +144,15 @@ export const ThankYouPage: React.FC<ThankYouPageProps> = ({ planName, planCredit
         </div>
 
         {(subscriptionStatus?.hasActiveSubscription || planName || purchasedCredits) && (
-          <div className="bg-zinc-900 border border-zinc-800/50 rounded-md p-6 mb-8">
+          <div className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 mb-8">
             <div className="flex items-center gap-3 mb-4">
               <Pickaxe size={24} className="text-brand-cyan" />
-              <h2 className="text-xl font-semibold font-mono text-zinc-200">
+              <h2 className="text-xl font-semibold font-mono text-neutral-200">
                 {t('thankYou.whatsNext')}
               </h2>
             </div>
 
-            <ul className="space-y-3 text-sm text-zinc-300 font-mono">
+            <ul className="space-y-3 text-sm text-neutral-300 font-mono">
               <li className="flex items-start gap-3">
                 <CheckCircle size={18} className="text-brand-cyan mt-0.5 flex-shrink-0" />
                 <span>
@@ -185,16 +185,16 @@ export const ThankYouPage: React.FC<ThankYouPageProps> = ({ planName, planCredit
             </ul>
 
             {!planName && subscriptionStatus?.totalCredits !== undefined && (
-              <div className="mt-6 pt-6 border-t border-zinc-800/50">
+              <div className="mt-6 pt-6 border-t border-neutral-800/50">
                 <div className="flex items-center justify-between">
-                  <span className="text-zinc-400 font-mono text-sm">
+                  <span className="text-neutral-400 font-mono text-sm">
                     {t('thankYou.creditsAvailable')}
                   </span>
                   <span className="text-brand-cyan font-mono font-semibold">
                     {subscriptionStatus.totalCredits} credits
                   </span>
                 </div>
-                <div className="mt-2 bg-zinc-800 rounded-md h-2 overflow-hidden">
+                <div className="mt-2 bg-neutral-800 rounded-md h-2 overflow-hidden">
                   <div
                     className="h-full bg-brand-cyan transition-all duration-300 progress-fill"
                     style={creditsUsageStyle}
@@ -216,7 +216,7 @@ export const ThankYouPage: React.FC<ThankYouPageProps> = ({ planName, planCredit
         </div>
 
         <div className="mt-12 text-center">
-          <p className="text-zinc-500 text-xs font-mono">
+          <p className="text-neutral-500 text-xs font-mono">
             {t('thankYou.support')}
           </p>
         </div>

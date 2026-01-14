@@ -149,7 +149,7 @@ export const LogoNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
       {/* Logo Upload Section */}
       {logoImageUrl ? (
         <div className="relative">
-          <div className="relative w-full h-auto min-h-[128px] bg-zinc-900/50 rounded border border-zinc-700/30 overflow-hidden">
+          <div className="relative w-full h-auto min-h-[128px] bg-neutral-900/50 rounded border border-neutral-700/30 overflow-hidden">
             <img
               src={logoImageUrl}
               alt={t('canvasNodes.logoNode.logoAltText')}

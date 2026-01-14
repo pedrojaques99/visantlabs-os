@@ -522,7 +522,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
         ) : (
           <NodePlaceholder
             isLoading={isGenerating}
-            emptyIcon={<Upload size={32} className="text-zinc-600" />}
+            emptyIcon={<Upload size={32} className="text-neutral-600" />}
             emptyMessage={t('canvasNodes.imageNode.noImage')}
             emptySubmessage={t('canvasNodes.imageNode.uploadImage')}
             uploadButton={
@@ -553,11 +553,11 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       {/* Description Section */}
       {description && (
         <div className={cn(
-          "px-2 py-2 border-t border-zinc-700/30 flex-shrink-0",
+          "px-2 py-2 border-t border-neutral-700/30 flex-shrink-0",
           imageUrl && "absolute bottom-0 left-0 w-full z-10 bg-black/60 backdrop-blur-md border-t-0"
         )}>
           <div className="flex items-center justify-between mb-1">
-            <label className="text-xs text-zinc-400 font-mono">{t('canvasNodes.imageNode.description')}</label>
+            <label className="text-xs text-neutral-400 font-mono">{t('canvasNodes.imageNode.description')}</label>
             <div className="flex items-center gap-1">
               <button
                 onClick={(e) => {
@@ -575,7 +575,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                   e.stopPropagation();
                   handleClearDescription();
                 }}
-                className="p-1 bg-zinc-700/20 hover:bg-zinc-700/30 text-zinc-400 rounded transition-colors backdrop-blur-sm border border-zinc-700/20 hover:border-zinc-700/30"
+                className="p-1 bg-neutral-700/20 hover:bg-neutral-700/30 text-neutral-400 rounded transition-colors backdrop-blur-sm border border-neutral-700/20 hover:border-neutral-700/30"
                 title={t('canvasNodes.imageNode.clearDescription')}
                 onMouseDown={(e) => e.stopPropagation()}
               >

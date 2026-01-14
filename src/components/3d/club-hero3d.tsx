@@ -28,19 +28,19 @@ export default function ClubHero3D({
 
   if (!mounted) {
     return (
-      <div className={cn("relative w-full h-[70vh] flex items-center justify-center bg-zinc-900", className)}>
+      <div className={cn("relative w-full h-[70vh] flex items-center justify-center bg-neutral-900", className)}>
         <div className="w-full h-full" />
       </div>
     );
   }
 
   return (
-    <div className={cn("relative w-full h-[70vh] bg-gradient-to-b from-zinc-950 via-cyan-900/20 to-zinc-950 overflow-hidden", className)}>
+    <div className={cn("relative w-full h-[70vh] bg-gradient-to-b from-neutral-950 via-cyan-900/20 to-neutral-950 overflow-hidden", className)}>
       <div className="absolute inset-0 w-full h-full">
         <Suspense fallback={
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="px-4 py-2 rounded-md bg-zinc-900/80 backdrop-blur-sm border border-zinc-800/50">
-              <span className="text-sm text-zinc-200">Loading 3D viewer...</span>
+            <div className="px-4 py-2 rounded-md bg-neutral-900/80 backdrop-blur-sm border border-neutral-800/50">
+              <span className="text-sm text-neutral-200">Loading 3D viewer...</span>
             </div>
           </div>
         }>

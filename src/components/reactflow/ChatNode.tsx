@@ -89,7 +89,7 @@ const getActionColor = (type: DetectedAction['type']) => {
     case 'mockup': return 'text-brand-cyan border-[brand-cyan]/30 bg-brand-cyan/10 hover:bg-brand-cyan/20';
     case 'strategy': return 'text-amber-400 border-amber-400/30 bg-amber-400/10 hover:bg-amber-400/20';
     case 'text': return 'text-green-400 border-green-400/30 bg-green-400/10 hover:bg-green-400/20';
-    default: return 'text-zinc-400 border-zinc-400/30 bg-zinc-400/10 hover:bg-zinc-400/20';
+    default: return 'text-neutral-400 border-neutral-400/30 bg-neutral-400/10 hover:bg-neutral-400/20';
   }
 };
 
@@ -163,7 +163,7 @@ const ActionDetector = ({
   if (actions.length === 0) return null;
 
   return (
-    <div className="mt-4 pt-3 border-t border-zinc-700/20 space-y-2.5 min-w-0">
+    <div className="mt-4 pt-3 border-t border-neutral-700/20 space-y-2.5 min-w-0">
       <div className="text-[10px] font-mono text-brand-cyan/80 flex items-center gap-1.5 mb-2 min-w-0">
         <Sparkles size={11} className="animate-pulse text-brand-cyan shrink-0" />
         <span className="uppercase tracking-wider truncate">{t('canvasNodes.chatNode.detectedActions') || 'Detected Actions'}</span>
@@ -507,12 +507,12 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
 
       <div className="flex flex-col h-full w-full min-h-[600px] overflow-hidden max-h-[inherit]">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-zinc-700/30 bg-gradient-to-r from-zinc-900/40 to-zinc-900/20 backdrop-blur-sm min-w-0">
+        <div className="flex items-center justify-between p-4 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/40 to-neutral-900/20 backdrop-blur-sm min-w-0">
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
-            <div className="p-1.5 rounded-md bg-zinc-900/10 border border-zinc-900/20 shrink-0">
-              <MessageSquare size={12} className="text-zinc-200" />
+            <div className="p-1.5 rounded-md bg-neutral-900/10 border border-neutral-900/20 shrink-0">
+              <MessageSquare size={12} className="text-neutral-200" />
             </div>
-            <h3 className="text-sm font-semibold text-zinc-200 font-mono tracking-tight truncate">{t('canvasNodes.chatNode.title')}</h3>
+            <h3 className="text-sm font-semibold text-neutral-200 font-mono tracking-tight truncate">{t('canvasNodes.chatNode.title')}</h3>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {/* Quick Actions Panel */}
@@ -521,7 +521,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
             {nodeData.onOpenSidebar && (
               <button
                 onClick={() => nodeData.onOpenSidebar!(nodeId)}
-                className="p-2 rounded-md border transition-all bg-zinc-900/60 border-zinc-700/40 text-zinc-400 hover:border-zinc-600/60 hover:text-zinc-200 hover:bg-zinc-800/70 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95 nodrag"
+                className="p-2 rounded-md border transition-all bg-neutral-900/60 border-neutral-700/40 text-neutral-400 hover:border-neutral-600/60 hover:text-neutral-200 hover:bg-neutral-800/70 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95 nodrag"
                 title={t('canvasNodes.chatNode.openAsPanel') || 'Abrir como painel'}
               >
                 <PanelRight size={14} />
@@ -531,7 +531,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
             <button
               onClick={() => setShowSystemPromptEditor(!showSystemPromptEditor)}
               className={cn(
-                "p-2 rounded-md border transition-all bg-zinc-900/60 border-zinc-700/40 text-zinc-400 hover:border-zinc-600/60 hover:text-zinc-200 hover:bg-zinc-800/70 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95 nodrag",
+                "p-2 rounded-md border transition-all bg-neutral-900/60 border-neutral-700/40 text-neutral-400 hover:border-neutral-600/60 hover:text-neutral-200 hover:bg-neutral-800/70 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95 nodrag",
                 showSystemPromptEditor && "border-brand-cyan/50 text-brand-cyan bg-brand-cyan/10"
               )}
               title={t('canvasNodes.chatNode.systemPromptSettings') || 'System Prompt Settings'}
@@ -543,16 +543,16 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
 
         {/* System Prompt Editor */}
         {showSystemPromptEditor && (
-          <div className="px-4 py-3 border-b border-zinc-700/30 bg-gradient-to-r from-zinc-900/50 to-zinc-900/30 backdrop-blur-sm animate-in slide-in-from-top-1 duration-200">
+          <div className="px-4 py-3 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/50 to-neutral-900/30 backdrop-blur-sm animate-in slide-in-from-top-1 duration-200">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs font-mono text-zinc-300 font-semibold uppercase tracking-wider">
+              <label className="text-xs font-mono text-neutral-300 font-semibold uppercase tracking-wider">
                 {t('canvasNodes.chatNode.systemPrompt') || 'System Prompt (Agent Personality)'}
               </label>
               <div className="flex items-center gap-2">
                 {systemPrompt && (
                   <button
                     onClick={handleResetSystemPrompt}
-                    className="text-[10px] px-2 py-1 rounded border border-zinc-600/40 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500/60 transition-all nodrag"
+                    className="text-[10px] px-2 py-1 rounded border border-neutral-600/40 text-neutral-400 hover:text-neutral-200 hover:border-neutral-500/60 transition-all nodrag"
                   >
                     {t('canvasNodes.chatNode.resetToDefault') || 'Reset to Default'}
                   </button>
@@ -569,28 +569,28 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
               value={systemPrompt}
               onChange={(e) => setSystemPrompt(e.target.value)}
               placeholder={t('canvasNodes.chatNode.systemPromptPlaceholder') || 'Enter custom system prompt to personalize the agent personality. Leave empty to use default.'}
-              className="resize-none nodrag nopan bg-zinc-900/60 border-zinc-700/40 focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 backdrop-blur-sm text-xs font-mono min-h-[120px] max-h-[300px]"
+              className="resize-none nodrag nopan bg-neutral-900/60 border-neutral-700/40 focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 backdrop-blur-sm text-xs font-mono min-h-[120px] max-h-[300px]"
               minHeight={120}
               maxHeight={300}
               disabled={isLoading}
             />
-            <p className="text-[10px] text-zinc-500 mt-2 font-mono">
+            <p className="text-[10px] text-neutral-500 mt-2 font-mono">
               {t('canvasNodes.chatNode.systemPromptHint') || 'This prompt defines how the AI assistant behaves. Use it to customize tone, style, and expertise.'}
             </p>
           </div>
         )}
 
         {/* Credit Indicator */}
-        <div className="px-4 py-2.5 border-b border-zinc-700/30 bg-gradient-to-r from-zinc-900/50 to-zinc-900/30 backdrop-blur-sm">
+        <div className="px-4 py-2.5 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/50 to-neutral-900/30 backdrop-blur-sm">
           <div className="flex items-center justify-between text-xs mb-2">
-            <span className="text-zinc-300 font-mono font-medium">
+            <span className="text-neutral-300 font-mono font-medium">
               {t('canvasNodes.chatNode.messages')}: <span className="text-brand-cyan">{userMessageCount}</span>
             </span>
-            <span className="text-zinc-400 font-mono text-[10px]">
+            <span className="text-neutral-400 font-mono text-[10px]">
               {t('canvasNodes.chatNode.nextCreditIn')} {messagesUntilNextCredit} {messagesUntilNextCredit > 1 ? t('canvasNodes.chatNode.messagesPlural') : t('canvasNodes.chatNode.message')}
             </span>
           </div>
-          <div className="h-1.5 bg-zinc-800/40 rounded-full overflow-hidden shadow-inner">
+          <div className="h-1.5 bg-neutral-800/40 rounded-full overflow-hidden shadow-inner">
             <div
               className="h-full bg-gradient-to-r from-brand-cyan to-brand-cyan/80 transition-all duration-500 ease-out shadow-sm"
               style={{ width: `${((userMessageCount % 4) / 4) * 100}%` }}
@@ -601,7 +601,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         {/* Messages Area */}
         <div
           ref={messagesAreaRef}
-          className="flex-1 p-4 overflow-y-auto overflow-x-hidden space-y-4 min-h-0 min-w-0 scroll-smooth bg-gradient-to-b from-transparent via-zinc-900/10 to-transparent"
+          className="flex-1 p-4 overflow-y-auto overflow-x-hidden space-y-4 min-h-0 min-w-0 scroll-smooth bg-gradient-to-b from-transparent via-neutral-900/10 to-transparent"
           onWheel={(e) => e.stopPropagation()}
         >
           {messages.length === 0 ? (
@@ -611,16 +611,16 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-brand-cyan/10 border border-brand-cyan/20 mb-2">
                     <MessageSquare size={20} className="text-brand-cyan/70" />
                   </div>
-                  <p className="text-zinc-300 font-medium">{t('canvasNodes.chatNode.startConversationWithContext')}</p>
-                  <p className="text-xs text-zinc-500">{t('canvasNodes.chatNode.chatWillUseImagesAndTexts')}</p>
+                  <p className="text-neutral-300 font-medium">{t('canvasNodes.chatNode.startConversationWithContext')}</p>
+                  <p className="text-xs text-neutral-500">{t('canvasNodes.chatNode.chatWillUseImagesAndTexts')}</p>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-zinc-800/50 border border-zinc-700/30 mb-2">
-                    <MessageSquare size={20} className="text-zinc-500" />
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-neutral-800/50 border border-neutral-700/30 mb-2">
+                    <MessageSquare size={20} className="text-neutral-500" />
                   </div>
-                  <p className="text-zinc-300 font-medium">{t('canvasNodes.chatNode.startConversationWithAI')}</p>
-                  <p className="text-xs text-zinc-500">{t('canvasNodes.chatNode.connectImagesOrTexts')}</p>
+                  <p className="text-neutral-300 font-medium">{t('canvasNodes.chatNode.startConversationWithAI')}</p>
+                  <p className="text-xs text-neutral-500">{t('canvasNodes.chatNode.connectImagesOrTexts')}</p>
                 </div>
               )}
             </div>
@@ -638,7 +638,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                     "max-w-[85%] min-w-0 p-3.5 rounded-lg shadow-sm relative group nodrag",
                     msg.role === 'user'
                       ? 'bg-primary text-primary-foreground border-primary/20'
-                      : 'bg-muted/80 border-zinc-700/40 backdrop-blur-sm'
+                      : 'bg-muted/80 border-neutral-700/40 backdrop-blur-sm'
                   )}
                 >
                   {/* Copy button - appears on hover */}
@@ -652,7 +652,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                       "backdrop-blur-sm shadow-sm hover:shadow-md nodrag",
                       msg.role === 'user'
                         ? 'bg-primary/20 hover:bg-primary/30 text-primary-foreground/80 hover:text-primary-foreground'
-                        : 'bg-zinc-800/60 hover:bg-zinc-700/80 text-zinc-300 hover:text-zinc-100'
+                        : 'bg-neutral-800/60 hover:bg-neutral-700/80 text-neutral-300 hover:text-neutral-100'
                     )}
                     title={t('canvasNodes.chatNode.copyMessage') || 'Copy message'}
                   >
@@ -686,7 +686,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
           )}
           {isLoading && (
             <div className="flex justify-start">
-              <Card className="bg-muted/80 border-zinc-700/40 max-w-[85%] min-w-0 p-3.5 rounded-lg backdrop-blur-sm shadow-sm nodrag">
+              <Card className="bg-muted/80 border-neutral-700/40 max-w-[85%] min-w-0 p-3.5 rounded-lg backdrop-blur-sm shadow-sm nodrag">
                 <CardContent className="p-0 flex items-center gap-2.5 min-w-0">
                   <GlitchLoader size={16} color="currentColor" />
                   <span className="text-sm text-muted-foreground">{t('canvasNodes.chatNode.thinking')}</span>
@@ -698,10 +698,10 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
 
         {/* Compact Context Preview at the bottom */}
         {hasContext && (
-          <div className="px-4 py-3 border-t border-zinc-700/30 bg-gradient-to-r from-zinc-900/40 to-zinc-900/20 backdrop-blur-sm min-w-0">
+          <div className="px-4 py-3 border-t border-neutral-700/30 bg-gradient-to-r from-neutral-900/40 to-neutral-900/20 backdrop-blur-sm min-w-0">
             <div className="flex items-center justify-between gap-4 min-w-0">
               <div className="flex items-center gap-3 overflow-x-auto py-0.5 min-w-0 flex-1">
-                <div className="flex items-center gap-1.5 text-[10px] text-zinc-400 font-mono shrink-0 uppercase tracking-wider border-r border-zinc-700/40 pr-3 mr-1">
+                <div className="flex items-center gap-1.5 text-[10px] text-neutral-400 font-mono shrink-0 uppercase tracking-wider border-r border-neutral-700/40 pr-3 mr-1">
                   <CheckCircle2 size={11} className="text-brand-cyan" />
                   <span className="font-medium">{t('canvasNodes.chatNode.context')}</span>
                 </div>
@@ -740,7 +740,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
 
                 <button
                   onClick={() => setExpandedStrategy(!expandedStrategy)}
-                  className="p-1.5 text-zinc-500 hover:text-zinc-300 transition-all rounded-md hover:bg-zinc-800/50 nodrag"
+                  className="p-1.5 text-neutral-500 hover:text-neutral-300 transition-all rounded-md hover:bg-neutral-800/50 nodrag"
                   title="Toggle details"
                 >
                   {expandedStrategy ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
@@ -750,10 +750,10 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
 
             {/* Expanded Details */}
             {expandedStrategy && (
-              <div className="mt-3 pt-3 border-t border-zinc-700/20 space-y-3 animate-in slide-in-from-bottom-1 duration-200">
+              <div className="mt-3 pt-3 border-t border-neutral-700/20 space-y-3 animate-in slide-in-from-bottom-1 duration-200">
                 {/* Images Preview */}
                 {connectedImages.length > 0 && (
-                  <div className="bg-zinc-900/60 p-2 rounded-lg border border-brand-cyan/20 backdrop-blur-sm shadow-sm">
+                  <div className="bg-neutral-900/60 p-2 rounded-lg border border-brand-cyan/20 backdrop-blur-sm shadow-sm">
                     <ConnectedImagesDisplay
                       images={connectedImages}
                       label=""
@@ -767,7 +767,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                 {/* Text & Strategy simplified list */}
                 <div className="flex flex-col gap-2">
                   {connectedText && (
-                    <div className="text-[10px] text-zinc-300 font-mono line-clamp-2 bg-purple-500/10 p-2 rounded-md border border-purple-500/20 backdrop-blur-sm">
+                    <div className="text-[10px] text-neutral-300 font-mono line-clamp-2 bg-purple-500/10 p-2 rounded-md border border-purple-500/20 backdrop-blur-sm">
                       <span className="text-purple-400 mr-1.5 uppercase font-semibold">Text:</span>
                       {connectedText}
                     </div>
@@ -788,7 +788,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         )}
 
         {/* Input Area */}
-        <div className="p-4 border-t border-zinc-700/30 bg-gradient-to-r from-zinc-900/60 to-zinc-900/40 backdrop-blur-sm relative z-10">
+        <div className="p-4 border-t border-neutral-700/30 bg-gradient-to-r from-neutral-900/60 to-neutral-900/40 backdrop-blur-sm relative z-10">
           {/* Hidden file input for media attachment */}
           <input
             ref={mediaInputRef}
@@ -805,7 +805,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                 disabled={isLoading}
                 size="icon"
                 variant="outline"
-                className="self-end shrink-0 border-zinc-700/50 hover:border-brand-cyan/50 hover:bg-brand-cyan/10 text-zinc-400 hover:text-brand-cyan nodrag backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95 transition-all"
+                className="self-end shrink-0 border-neutral-700/50 hover:border-brand-cyan/50 hover:bg-brand-cyan/10 text-neutral-400 hover:text-brand-cyan nodrag backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95 transition-all"
                 title={t('canvasNodes.chatNode.attachMedia') || 'Attach Image'}
               >
                 <Paperclip className="w-4 h-4" />
@@ -816,7 +816,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={hasContext ? t('canvasNodes.chatNode.askAboutContext') : t('canvasNodes.chatNode.typeYourMessage')}
-              className="resize-none nodrag nopan bg-zinc-900/60 border-zinc-700/40 focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 backdrop-blur-sm min-w-0 flex-1"
+              className="resize-none nodrag nopan bg-neutral-900/60 border-neutral-700/40 focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 backdrop-blur-sm min-w-0 flex-1"
               minHeight={60}
               maxHeight={200}
               disabled={isLoading}

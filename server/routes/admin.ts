@@ -5,7 +5,7 @@ import { ObjectId } from 'mongodb';
 import { validateAdmin } from '../middleware/adminAuth.js';
 import { AuthRequest } from '../middleware/auth.js';
 import { rateLimit } from 'express-rate-limit';
-import { calculateImageCost, calculateVideoCost, getImagePricing } from '../src/utils/pricing.js';
+import { calculateImageCost, calculateVideoCost, getImagePricing } from '../../src/utils/pricing.js';
 
 const router = express.Router();
 
@@ -192,7 +192,8 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req, res) => {
               $group: {
                 _id: { model: '$model', resolution: '$resolution', type: '$type' },
                 totalImages: { $sum: { $ifNull: ['$imagesGenerated', 0] } },
-                totalVideos: { $sum: { $ifNull: ['$videosGenerated', 0] } }
+                totalVideos: { $sum: { $ifNull: ['$videosGenerated', 0] } },
+                totalCost: { $sum: { $ifNull: ['$cost', 0] } }
               }
             }
           ]).toArray(),
@@ -210,15 +211,22 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req, res) => {
           const imageCount = item.totalImages || 0;
           const videoCount = item.totalVideos || 0;
 
-          // Video cost
-          if (type === 'video' || videoCount > 0) {
-            apiCostUSD += calculateVideoCost(videoCount || 1);
-          }
+          // Calculate API cost
+          // Prefer stored cost if available, otherwise fallback to calculation
+          if (item.totalCost && item.totalCost > 0) {
+            apiCostUSD += item.totalCost;
+          } else {
+            // Fallback calculation
+            // Video cost
+            if (type === 'video' || videoCount > 0) {
+              apiCostUSD += calculateVideoCost(videoCount || 1);
+            }
 
-          // Image cost based on model and resolution
-          if (imageCount > 0) {
-            const normalizedRes = normalizeResolution(resolution);
-            apiCostUSD += calculateImageCost(imageCount, model, normalizedRes);
+            // Image cost based on model and resolution
+            if (imageCount > 0) {
+              const normalizedRes = normalizeResolution(resolution);
+              apiCostUSD += calculateImageCost(imageCount, model, normalizedRes);
+            }
           }
         }
 
@@ -350,7 +358,8 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req, res) => {
                 totalPromptLength: { $sum: { $ifNull: ['$promptLength', 0] } },
                 estimatedTokens: { $sum: { $ceil: { $divide: [{ $ifNull: ['$promptLength', 0] }, 4] } } },
                 inputTokens: { $sum: { $ifNull: ['$inputTokens', 0] } },
-                outputTokens: { $sum: { $ifNull: ['$outputTokens', 0] } }
+                outputTokens: { $sum: { $ifNull: ['$outputTokens', 0] } },
+                totalCost: { $sum: { $ifNull: ['$cost', 0] } }
               }
             }
           ],
@@ -414,7 +423,8 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req, res) => {
       estimatedTokens: 0,
       totalPromptLength: 0,
       inputTokens: 0,
-      outputTokens: 0
+      outputTokens: 0,
+      totalCost: 0
     };
 
     // Process prompt generations
@@ -507,7 +517,8 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req, res) => {
         $group: {
           _id: { model: '$model', resolution: '$resolution', type: '$type' },
           totalImages: { $sum: { $ifNull: ['$imagesGenerated', 0] } },
-          totalVideos: { $sum: { $ifNull: ['$videosGenerated', 0] } }
+          totalVideos: { $sum: { $ifNull: ['$videosGenerated', 0] } },
+          totalCost: { $sum: { $ifNull: ['$cost', 0] } }
         }
       }
     ]).toArray();
@@ -521,15 +532,22 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req, res) => {
       const imageCount = item.totalImages || 0;
       const videoCount = item.totalVideos || 0;
 
-      // Video cost
-      if (type === 'video' || videoCount > 0) {
-        totalApiCostUSD += calculateVideoCost(videoCount || 1);
-      }
+      const totalCost = item.totalCost || 0;
 
-      // Image cost based on model and resolution
-      if (imageCount > 0) {
-        const normalizedRes = normalizeResolution(resolution);
-        totalApiCostUSD += calculateImageCost(imageCount, model, normalizedRes);
+      if (totalCost > 0) {
+        totalApiCostUSD += totalCost;
+      } else {
+        // Fallback calculation
+        // Video cost
+        if (type === 'video' || videoCount > 0) {
+          totalApiCostUSD += calculateVideoCost(videoCount || 1);
+        }
+
+        // Image cost based on model and resolution
+        if (imageCount > 0) {
+          const normalizedRes = normalizeResolution(resolution);
+          totalApiCostUSD += calculateImageCost(imageCount, model, normalizedRes);
+        }
       }
     }
 
@@ -544,7 +562,8 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req, res) => {
             type: '$type'
           },
           totalImages: { $sum: { $ifNull: ['$imagesGenerated', 0] } },
-          totalVideos: { $sum: { $ifNull: ['$videosGenerated', 0] } }
+          totalVideos: { $sum: { $ifNull: ['$videosGenerated', 0] } },
+          totalCost: { $sum: { $ifNull: ['$cost', 0] } }
         }
       },
       { $sort: { '_id.date': 1 } }
@@ -564,15 +583,22 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req, res) => {
         costByDateMap[date] = 0;
       }
 
-      // Video cost
-      if (type === 'video' || videoCount > 0) {
-        costByDateMap[date] += calculateVideoCost(videoCount || 1);
-      }
+      const totalCost = (item as any).totalCost || 0;
 
-      // Image cost based on model and resolution
-      if (imageCount > 0) {
-        const normalizedRes = normalizeResolution(resolution);
-        costByDateMap[date] += calculateImageCost(imageCount, model, normalizedRes);
+      if (totalCost > 0) {
+        costByDateMap[date] += totalCost;
+      } else {
+        // Fallback calculation
+        // Video cost
+        if (type === 'video' || videoCount > 0) {
+          costByDateMap[date] += calculateVideoCost(videoCount || 1);
+        }
+
+        // Image cost based on model and resolution
+        if (imageCount > 0) {
+          const normalizedRes = normalizeResolution(resolution);
+          costByDateMap[date] += calculateImageCost(imageCount, model, normalizedRes);
+        }
       }
     }
 
@@ -614,7 +640,8 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req, res) => {
           estimatedTokens: textTokens.estimatedTokens || 0,
           totalPromptLength: textTokens.totalPromptLength || 0,
           inputTokens: textTokens.inputTokens || 0,
-          outputTokens: textTokens.outputTokens || 0
+          outputTokens: textTokens.outputTokens || 0,
+          totalCost: textTokens.totalCost || 0
         },
         byFeature
       },
@@ -633,13 +660,16 @@ router.get('/presets/public', async (_req, res) => {
     await connectToMongoDB();
     const db = getDb();
 
-    const [mockupPresets, anglePresets, texturePresets, ambiencePresets, luminancePresets] = await Promise.all([
+    const [mockupPresets, anglePresets, texturePresets, ambiencePresets, luminancePresets, brandingPresets, effectPresets] = await Promise.all([
       db.collection('mockup_presets').find({}).toArray(),
       db.collection('angle_presets').find({}).toArray(),
       db.collection('texture_presets').find({}).toArray(),
       db.collection('ambience_presets').find({}).toArray(),
       db.collection('luminance_presets').find({}).toArray(),
+      db.collection('branding_presets').find({}).toArray(),
+      db.collection('effect_presets').find({}).toArray(),
     ]);
+
 
     return res.json({
       mockupPresets,
@@ -647,17 +677,12 @@ router.get('/presets/public', async (_req, res) => {
       texturePresets,
       ambiencePresets,
       luminancePresets,
+      brandingPresets,
+      effectPresets,
     });
   } catch (error) {
-    console.error('Failed to load presets:', error);
-    // Return empty arrays on error, services will use TypeScript fallback
-    return res.json({
-      mockupPresets: [],
-      anglePresets: [],
-      texturePresets: [],
-      ambiencePresets: [],
-      luminancePresets: [],
-    });
+    console.error('Failed to load public presets:', error);
+    return res.status(500).json({ error: 'Failed to load presets' });
   }
 });
 
@@ -667,12 +692,14 @@ router.get('/presets', validateAdmin, async (_req, res) => {
     await connectToMongoDB();
     const db = getDb();
 
-    const [mockupPresets, anglePresets, texturePresets, ambiencePresets, luminancePresets] = await Promise.all([
+    const [mockupPresets, anglePresets, texturePresets, ambiencePresets, luminancePresets, brandingPresets, effectPresets] = await Promise.all([
       db.collection('mockup_presets').find({}).toArray(),
       db.collection('angle_presets').find({}).toArray(),
       db.collection('texture_presets').find({}).toArray(),
       db.collection('ambience_presets').find({}).toArray(),
       db.collection('luminance_presets').find({}).toArray(),
+      db.collection('branding_presets').find({}).toArray(),
+      db.collection('effect_presets').find({}).toArray(),
     ]);
 
     return res.json({
@@ -681,6 +708,8 @@ router.get('/presets', validateAdmin, async (_req, res) => {
       texturePresets,
       ambiencePresets,
       luminancePresets,
+      brandingPresets,
+      effectPresets,
     });
   } catch (error) {
     console.error('Failed to load presets:', error);
@@ -993,7 +1022,7 @@ router.post('/presets/mockup/:id/upload-image', validateAdmin, async (req, res) 
       return res.status(400).json({ error: 'Preset ID is required' });
     }
 
-    const r2Service = await import('../services/r2Service.js');
+    const r2Service = await import('@/services/r2Service.js');
 
     if (!r2Service.isR2Configured()) {
       return res.status(500).json({
@@ -1678,6 +1707,196 @@ router.delete('/products/:id', validateAdmin, async (req, res) => {
   } catch (error) {
     console.error('Failed to delete product:', error);
     return res.status(500).json({ error: 'Failed to delete product' });
+  }
+});
+
+// Branding Presets
+router.post('/presets/branding', validateAdmin, async (req, res) => {
+  try {
+    await connectToMongoDB();
+    const db = getDb();
+
+    const { id, name, description, prompt, aspectRatio, model, tags } = req.body;
+
+    if (!id || !name || !description || !prompt) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const existing = await db.collection('branding_presets').findOne({ id });
+    if (existing) {
+      return res.status(409).json({ error: 'Preset with this ID already exists' });
+    }
+
+    const preset = {
+      id,
+      name,
+      description,
+      prompt,
+      aspectRatio,
+      model: model || undefined,
+      tags: normalizeTags(tags),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    await db.collection('branding_presets').insertOne(preset);
+
+    // Create index if needed
+    try {
+      await db.collection('branding_presets').createIndex({ id: 1 }, { unique: true });
+    } catch (e) { }
+
+    return res.status(201).json(preset);
+  } catch (error: any) {
+    if (error.code === 11000) {
+      return res.status(409).json({ error: 'Preset with this ID already exists' });
+    }
+    return res.status(500).json({ error: 'Failed to create preset' });
+  }
+});
+
+router.put('/presets/branding/:id', validateAdmin, async (req, res) => {
+  try {
+    await connectToMongoDB();
+    const db = getDb();
+
+    const { name, description, prompt, aspectRatio, model, tags } = req.body;
+
+    const updateData: any = {
+      updatedAt: new Date().toISOString(),
+    };
+
+    if (name) updateData.name = name;
+    if (description) updateData.description = description;
+    if (prompt) updateData.prompt = prompt;
+    if (aspectRatio !== undefined) updateData.aspectRatio = aspectRatio;
+    if (model !== undefined) updateData.model = model;
+    if (tags !== undefined) updateData.tags = normalizeTags(tags);
+
+    const result = await db.collection('branding_presets').findOneAndUpdate(
+      { id: req.params.id },
+      { $set: updateData },
+      { returnDocument: 'after' }
+    );
+
+    if (!result) {
+      return res.status(404).json({ error: 'Preset not found' });
+    }
+
+    return res.json(result);
+  } catch (error) {
+    return res.status(500).json({ error: 'Failed to update preset' });
+  }
+});
+
+router.delete('/presets/branding/:id', validateAdmin, async (req, res) => {
+  try {
+    await connectToMongoDB();
+    const db = getDb();
+    const result = await db.collection('branding_presets').deleteOne({ id: req.params.id });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ error: 'Preset not found' });
+    }
+
+    return res.json({ message: 'Preset deleted successfully' });
+  } catch (error) {
+    return res.status(500).json({ error: 'Failed to delete preset' });
+  }
+});
+
+// Effect Presets
+router.post('/presets/effect', validateAdmin, async (req, res) => {
+  try {
+    await connectToMongoDB();
+    const db = getDb();
+
+    const { id, name, description, prompt, aspectRatio, model, tags } = req.body;
+
+    if (!id || !name || !description || !prompt) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const existing = await db.collection('effect_presets').findOne({ id });
+    if (existing) {
+      return res.status(409).json({ error: 'Preset with this ID already exists' });
+    }
+
+    const preset = {
+      id,
+      name,
+      description,
+      prompt,
+      aspectRatio,
+      model: model || undefined,
+      tags: normalizeTags(tags),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    await db.collection('effect_presets').insertOne(preset);
+
+    // Create index if needed
+    try {
+      await db.collection('effect_presets').createIndex({ id: 1 }, { unique: true });
+    } catch (e) { }
+
+    return res.status(201).json(preset);
+  } catch (error: any) {
+    if (error.code === 11000) {
+      return res.status(409).json({ error: 'Preset with this ID already exists' });
+    }
+    return res.status(500).json({ error: 'Failed to create preset' });
+  }
+});
+
+router.put('/presets/effect/:id', validateAdmin, async (req, res) => {
+  try {
+    await connectToMongoDB();
+    const db = getDb();
+
+    const { name, description, prompt, aspectRatio, model, tags } = req.body;
+
+    const updateData: any = {
+      updatedAt: new Date().toISOString(),
+    };
+
+    if (name) updateData.name = name;
+    if (description) updateData.description = description;
+    if (prompt) updateData.prompt = prompt;
+    if (aspectRatio !== undefined) updateData.aspectRatio = aspectRatio;
+    if (model !== undefined) updateData.model = model;
+    if (tags !== undefined) updateData.tags = normalizeTags(tags);
+
+    const result = await db.collection('effect_presets').findOneAndUpdate(
+      { id: req.params.id },
+      { $set: updateData },
+      { returnDocument: 'after' }
+    );
+
+    if (!result) {
+      return res.status(404).json({ error: 'Preset not found' });
+    }
+
+    return res.json(result);
+  } catch (error) {
+    return res.status(500).json({ error: 'Failed to update preset' });
+  }
+});
+
+router.delete('/presets/effect/:id', validateAdmin, async (req, res) => {
+  try {
+    await connectToMongoDB();
+    const db = getDb();
+    const result = await db.collection('effect_presets').deleteOne({ id: req.params.id });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ error: 'Preset not found' });
+    }
+
+    return res.json({ message: 'Preset deleted successfully' });
+  } catch (error) {
+    return res.status(500).json({ error: 'Failed to delete preset' });
   }
 });
 

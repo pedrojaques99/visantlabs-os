@@ -204,23 +204,23 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
     <aside
       ref={sidebarRef}
       id="sidebar"
-      className={`relative flex-shrink-0 bg-zinc-900 p-3 sm:p-4 md:p-6 overflow-y-auto pb-24 md:pb-6 z-10 border-r border-zinc-800/50`}
+      className={`relative flex-shrink-0 bg-neutral-900 p-3 sm:p-4 md:p-6 overflow-y-auto pb-24 md:pb-6 z-10 border-r border-neutral-800/50`}
       style={{ width: `${sidebarWidth}px` }}
     >
       <div className="space-y-0">
         {/* Minimal Thumbnail Section */}
         {!hasMockup ? (
-          <section className="py-4 border-b border-zinc-800/30">
-            <h3 className="text-xs font-semibold font-mono uppercase text-zinc-400 tracking-widest mb-3">EDITOR_</h3>
+          <section className="py-4 border-b border-neutral-800/30">
+            <h3 className="text-xs font-semibold font-mono uppercase text-neutral-400 tracking-widest mb-3">EDITOR_</h3>
             <ImageUploader
               onImageUpload={onEditorImageUpload}
               onProceedWithoutImage={() => { }}
             />
           </section>
         ) : (
-          <section className="py-3 border-b border-zinc-800/30">
+          <section className="py-3 border-b border-neutral-800/30">
             <div className="flex items-center gap-3">
-              <div className="relative w-20 h-20 flex-shrink-0 rounded border border-zinc-700/50 overflow-hidden bg-black/20">
+              <div className="relative w-20 h-20 flex-shrink-0 rounded border border-neutral-700/50 overflow-hidden bg-black/20">
                 <img
                   src={`data:image/png;base64,${editorMockup}`}
                   alt="Mockup being edited"
@@ -229,7 +229,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
               </div>
               <button
                 onClick={onStartOver}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-zinc-800/50 rounded border border-zinc-700/50 text-zinc-400 hover:bg-brand-cyan/20 hover:text-brand-cyan hover:border-[brand-cyan]/30 transition-colors text-xs font-mono"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-neutral-800/50 rounded border border-neutral-700/50 text-neutral-400 hover:bg-brand-cyan/20 hover:text-brand-cyan hover:border-[brand-cyan]/30 transition-colors text-xs font-mono"
                 title="Start Over"
               >
                 <RotateCcw size={14} />
@@ -242,16 +242,16 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
         {hasMockup && (
           <>
             {/* Quick Actions */}
-            <section className="border-b border-zinc-800/30">
+            <section className="border-b border-neutral-800/30">
               <button
                 onClick={() => toggleSection('quickActions')}
-                className="w-full flex items-center justify-between px-0 py-2.5 text-left hover:bg-zinc-800/20 transition-colors"
+                className="w-full flex items-center justify-between px-0 py-2.5 text-left hover:bg-neutral-800/20 transition-colors"
               >
-                <span className="text-xs font-semibold font-mono uppercase text-zinc-400 tracking-widest">QUICK ACTIONS_</span>
+                <span className="text-xs font-semibold font-mono uppercase text-neutral-400 tracking-widest">QUICK ACTIONS_</span>
                 {openSections.quickActions ? (
-                  <ChevronDown size={14} className="text-zinc-500" />
+                  <ChevronDown size={14} className="text-neutral-500" />
                 ) : (
-                  <ChevronRight size={14} className="text-zinc-500" />
+                  <ChevronRight size={14} className="text-neutral-500" />
                 )}
               </button>
               {openSections.quickActions && (
@@ -260,24 +260,24 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                     <button
                       onClick={onZoomIn}
                       disabled={isProcessing}
-                      className="flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 bg-zinc-800/50 text-zinc-400 rounded border border-zinc-700/50 hover:border-[brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono"
+                      className="flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 bg-neutral-800/50 text-neutral-400 rounded border border-neutral-700/50 hover:border-[brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono"
                     >
                       <div className="flex items-center gap-1.5">
                         <ZoomIn size={14} />
                         <span>ZOOM IN</span>
                       </div>
-                      <span className="text-[9px] text-zinc-500">1 credit</span>
+                      <span className="text-[9px] text-neutral-500">1 credit</span>
                     </button>
                     <button
                       onClick={onZoomOut}
                       disabled={isProcessing}
-                      className="flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 bg-zinc-800/50 text-zinc-400 rounded border border-zinc-700/50 hover:border-[brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono"
+                      className="flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 bg-neutral-800/50 text-neutral-400 rounded border border-neutral-700/50 hover:border-[brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono"
                     >
                       <div className="flex items-center gap-1.5">
                         <ZoomOut size={14} />
                         <span>ZOOM OUT</span>
                       </div>
-                      <span className="text-[9px] text-zinc-500">1 credit</span>
+                      <span className="text-[9px] text-neutral-500">1 credit</span>
                     </button>
                     <button
                       onClick={() => {
@@ -285,25 +285,25 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                         onNewAngle(randomAngle);
                       }}
                       disabled={isProcessing}
-                      className="flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 bg-zinc-800/50 text-zinc-400 rounded border border-zinc-700/50 hover:border-[brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono"
+                      className="flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 bg-neutral-800/50 text-neutral-400 rounded border border-neutral-700/50 hover:border-[brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono"
                       title="Generate a random new camera angle"
                     >
                       <div className="flex items-center gap-1.5">
                         <Camera size={14} />
                         <span>NEW ANGLE</span>
                       </div>
-                      <span className="text-[9px] text-zinc-500">1 credit</span>
+                      <span className="text-[9px] text-neutral-500">1 credit</span>
                     </button>
                     <button
                       onClick={onNewBackground}
                       disabled={isProcessing}
-                      className="flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 bg-zinc-800/50 text-zinc-400 rounded border border-zinc-700/50 hover:border-[brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono"
+                      className="flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 bg-neutral-800/50 text-neutral-400 rounded border border-neutral-700/50 hover:border-[brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono"
                     >
                       <div className="flex items-center gap-1.5">
                         <MapPin size={14} />
                         <span>NEW BG</span>
                       </div>
-                      <span className="text-[9px] text-zinc-500">1 credit</span>
+                      <span className="text-[9px] text-neutral-500">1 credit</span>
                     </button>
                   </div>
                 </div>
@@ -311,16 +311,16 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
             </section>
 
             {/* Custom Edit */}
-            <section className="border-b border-zinc-800/30">
+            <section className="border-b border-neutral-800/30">
               <button
                 onClick={() => toggleSection('customEdit')}
-                className="w-full flex items-center justify-between px-0 py-2.5 text-left hover:bg-zinc-800/20 transition-colors"
+                className="w-full flex items-center justify-between px-0 py-2.5 text-left hover:bg-neutral-800/20 transition-colors"
               >
-                <span className="text-xs font-semibold font-mono uppercase text-zinc-400 tracking-widest">CUSTOM EDIT_</span>
+                <span className="text-xs font-semibold font-mono uppercase text-neutral-400 tracking-widest">CUSTOM EDIT_</span>
                 {openSections.customEdit ? (
-                  <ChevronDown size={14} className="text-zinc-500" />
+                  <ChevronDown size={14} className="text-neutral-500" />
                 ) : (
-                  <ChevronRight size={14} className="text-zinc-500" />
+                  <ChevronRight size={14} className="text-neutral-500" />
                 )}
               </button>
               {openSections.customEdit && (
@@ -330,7 +330,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                     onChange={(e) => setCustomPrompt(e.target.value)}
                     placeholder="Enter your edit prompt here..."
                     disabled={isProcessing}
-                    className="w-full bg-black/40 p-2.5 rounded border border-zinc-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs text-zinc-400 font-mono resize-none min-h-[80px] disabled:opacity-50"
+                    className="w-full bg-black/40 p-2.5 rounded border border-neutral-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs text-neutral-400 font-mono resize-none min-h-[80px] disabled:opacity-50"
                     rows={3}
                   />
                   <button
@@ -350,16 +350,16 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
             </section>
 
             {/* Change Object */}
-            <section className="border-b border-zinc-800/30">
+            <section className="border-b border-neutral-800/30">
               <button
                 onClick={() => toggleSection('changeObject')}
-                className="w-full flex items-center justify-between px-0 py-2.5 text-left hover:bg-zinc-800/20 transition-colors"
+                className="w-full flex items-center justify-between px-0 py-2.5 text-left hover:bg-neutral-800/20 transition-colors"
               >
-                <span className="text-xs font-semibold font-mono uppercase text-zinc-400 tracking-widest">CHANGE OBJECT_</span>
+                <span className="text-xs font-semibold font-mono uppercase text-neutral-400 tracking-widest">CHANGE OBJECT_</span>
                 {openSections.changeObject ? (
-                  <ChevronDown size={14} className="text-zinc-500" />
+                  <ChevronDown size={14} className="text-neutral-500" />
                 ) : (
-                  <ChevronRight size={14} className="text-zinc-500" />
+                  <ChevronRight size={14} className="text-neutral-500" />
                 )}
               </button>
               {openSections.changeObject && (
@@ -382,12 +382,12 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                         }
                       }}
                       placeholder="Custom object..."
-                      className="w-full bg-black/40 p-2 rounded border border-zinc-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs text-zinc-400 font-mono disabled:opacity-50"
+                      className="w-full bg-black/40 p-2 rounded border border-neutral-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs text-neutral-400 font-mono disabled:opacity-50"
                       disabled={!!selectedObject}
                     />
                     <button
                       onClick={onAddCustomObject}
-                      className="px-2.5 py-2 bg-zinc-700/50 text-zinc-400 rounded border border-zinc-700/50 hover:bg-zinc-600/50 hover:text-zinc-300 text-xs font-mono disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-2.5 py-2 bg-neutral-700/50 text-neutral-400 rounded border border-neutral-700/50 hover:bg-neutral-600/50 hover:text-neutral-300 text-xs font-mono disabled:opacity-50 disabled:cursor-not-allowed"
                       disabled={!!selectedObject || !customObjectInput.trim()}
                     >
                       ADD
@@ -407,16 +407,16 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
             </section>
 
             {/* Themes */}
-            <section className="border-b border-zinc-800/30">
+            <section className="border-b border-neutral-800/30">
               <button
                 onClick={() => toggleSection('themes')}
-                className="w-full flex items-center justify-between px-0 py-2.5 text-left hover:bg-zinc-800/20 transition-colors"
+                className="w-full flex items-center justify-between px-0 py-2.5 text-left hover:bg-neutral-800/20 transition-colors"
               >
-                <span className="text-xs font-semibold font-mono uppercase text-zinc-400 tracking-widest">THEMES_</span>
+                <span className="text-xs font-semibold font-mono uppercase text-neutral-400 tracking-widest">THEMES_</span>
                 {openSections.themes ? (
-                  <ChevronDown size={14} className="text-zinc-500" />
+                  <ChevronDown size={14} className="text-neutral-500" />
                 ) : (
-                  <ChevronRight size={14} className="text-zinc-500" />
+                  <ChevronRight size={14} className="text-neutral-500" />
                 )}
               </button>
               {openSections.themes && (
@@ -439,12 +439,12 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                         }
                       }}
                       placeholder="Custom theme..."
-                      className="w-full bg-black/40 p-2 rounded border border-zinc-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs text-zinc-400 font-mono disabled:opacity-50"
+                      className="w-full bg-black/40 p-2 rounded border border-neutral-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs text-neutral-400 font-mono disabled:opacity-50"
                       disabled={selectedThemes.length >= 3}
                     />
                     <button
                       onClick={onAddCustomTheme}
-                      className="px-2.5 py-2 bg-zinc-700/50 text-zinc-400 rounded border border-zinc-700/50 hover:bg-zinc-600/50 hover:text-zinc-300 text-xs font-mono disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-2.5 py-2 bg-neutral-700/50 text-neutral-400 rounded border border-neutral-700/50 hover:bg-neutral-600/50 hover:text-neutral-300 text-xs font-mono disabled:opacity-50 disabled:cursor-not-allowed"
                       disabled={selectedThemes.length >= 3 || !customThemeInput.trim()}
                     >
                       ADD
@@ -464,22 +464,22 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
             </section>
 
             {/* Angle Presets */}
-            <section className="border-b border-zinc-800/30">
+            <section className="border-b border-neutral-800/30">
               <button
                 onClick={() => toggleSection('angle')}
-                className="w-full flex items-center justify-between px-0 py-2.5 text-left hover:bg-zinc-800/20 transition-colors"
+                className="w-full flex items-center justify-between px-0 py-2.5 text-left hover:bg-neutral-800/20 transition-colors"
               >
-                <span className="text-xs font-semibold font-mono uppercase text-zinc-400 tracking-widest">ANGLE_</span>
+                <span className="text-xs font-semibold font-mono uppercase text-neutral-400 tracking-widest">ANGLE_</span>
                 {openSections.angle ? (
-                  <ChevronDown size={14} className="text-zinc-500" />
+                  <ChevronDown size={14} className="text-neutral-500" />
                 ) : (
-                  <ChevronRight size={14} className="text-zinc-500" />
+                  <ChevronRight size={14} className="text-neutral-500" />
                 )}
               </button>
               {openSections.angle && (
                 <div className="pb-3">
                   {isLoadingPresets.angle ? (
-                    <p className="text-xs text-zinc-500 text-center py-2">Loading...</p>
+                    <p className="text-xs text-neutral-500 text-center py-2">Loading...</p>
                   ) : (
                     <div className="grid grid-cols-2 gap-1.5">
                       {anglePresets.slice(0, 8).map((preset) => (
@@ -487,7 +487,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                           key={preset.id || preset._id}
                           onClick={() => handlePresetClick(preset)}
                           disabled={isProcessing}
-                          className="px-2 py-1.5 bg-zinc-800/50 text-zinc-400 rounded border border-zinc-700/50 hover:border-[brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono text-left truncate"
+                          className="px-2 py-1.5 bg-neutral-800/50 text-neutral-400 rounded border border-neutral-700/50 hover:border-[brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono text-left truncate"
                           title={preset.description || preset.name}
                         >
                           <Camera size={12} className="inline mr-1.5" />
@@ -497,29 +497,29 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                     </div>
                   )}
                   {!isLoadingPresets.angle && anglePresets.length > 8 && (
-                    <p className="text-[9px] text-zinc-500 mt-1 text-center font-mono">+{anglePresets.length - 8} more</p>
+                    <p className="text-[9px] text-neutral-500 mt-1 text-center font-mono">+{anglePresets.length - 8} more</p>
                   )}
                 </div>
               )}
             </section>
 
             {/* Texture Presets */}
-            <section className="border-b border-zinc-800/30">
+            <section className="border-b border-neutral-800/30">
               <button
                 onClick={() => toggleSection('texture')}
-                className="w-full flex items-center justify-between px-0 py-2.5 text-left hover:bg-zinc-800/20 transition-colors"
+                className="w-full flex items-center justify-between px-0 py-2.5 text-left hover:bg-neutral-800/20 transition-colors"
               >
-                <span className="text-xs font-semibold font-mono uppercase text-zinc-400 tracking-widest">TEXTURE_</span>
+                <span className="text-xs font-semibold font-mono uppercase text-neutral-400 tracking-widest">TEXTURE_</span>
                 {openSections.texture ? (
-                  <ChevronDown size={14} className="text-zinc-500" />
+                  <ChevronDown size={14} className="text-neutral-500" />
                 ) : (
-                  <ChevronRight size={14} className="text-zinc-500" />
+                  <ChevronRight size={14} className="text-neutral-500" />
                 )}
               </button>
               {openSections.texture && (
                 <div className="pb-3">
                   {isLoadingPresets.texture ? (
-                    <p className="text-xs text-zinc-500 text-center py-2">Loading...</p>
+                    <p className="text-xs text-neutral-500 text-center py-2">Loading...</p>
                   ) : (
                     <div className="grid grid-cols-2 gap-1.5">
                       {texturePresets.slice(0, 8).map((preset) => (
@@ -527,7 +527,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                           key={preset.id || preset._id}
                           onClick={() => handlePresetClick(preset)}
                           disabled={isProcessing}
-                          className="px-2 py-1.5 bg-zinc-800/50 text-zinc-400 rounded border border-zinc-700/50 hover:border-[brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono text-left truncate"
+                          className="px-2 py-1.5 bg-neutral-800/50 text-neutral-400 rounded border border-neutral-700/50 hover:border-[brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono text-left truncate"
                           title={preset.description || preset.name}
                         >
                           <Layers size={12} className="inline mr-1.5" />
@@ -537,29 +537,29 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                     </div>
                   )}
                   {!isLoadingPresets.texture && texturePresets.length > 8 && (
-                    <p className="text-[9px] text-zinc-500 mt-1 text-center font-mono">+{texturePresets.length - 8} more</p>
+                    <p className="text-[9px] text-neutral-500 mt-1 text-center font-mono">+{texturePresets.length - 8} more</p>
                   )}
                 </div>
               )}
             </section>
 
             {/* Ambience Presets */}
-            <section className="border-b border-zinc-800/30">
+            <section className="border-b border-neutral-800/30">
               <button
                 onClick={() => toggleSection('ambience')}
-                className="w-full flex items-center justify-between px-0 py-2.5 text-left hover:bg-zinc-800/20 transition-colors"
+                className="w-full flex items-center justify-between px-0 py-2.5 text-left hover:bg-neutral-800/20 transition-colors"
               >
-                <span className="text-xs font-semibold font-mono uppercase text-zinc-400 tracking-widest">AMBIENCE_</span>
+                <span className="text-xs font-semibold font-mono uppercase text-neutral-400 tracking-widest">AMBIENCE_</span>
                 {openSections.ambience ? (
-                  <ChevronDown size={14} className="text-zinc-500" />
+                  <ChevronDown size={14} className="text-neutral-500" />
                 ) : (
-                  <ChevronRight size={14} className="text-zinc-500" />
+                  <ChevronRight size={14} className="text-neutral-500" />
                 )}
               </button>
               {openSections.ambience && (
                 <div className="pb-3">
                   {isLoadingPresets.ambience ? (
-                    <p className="text-xs text-zinc-500 text-center py-2">Loading...</p>
+                    <p className="text-xs text-neutral-500 text-center py-2">Loading...</p>
                   ) : (
                     <div className="grid grid-cols-2 gap-1.5">
                       {ambiencePresets.slice(0, 8).map((preset) => (
@@ -567,7 +567,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                           key={preset.id || preset._id}
                           onClick={() => handlePresetClick(preset)}
                           disabled={isProcessing}
-                          className="px-2 py-1.5 bg-zinc-800/50 text-zinc-400 rounded border border-zinc-700/50 hover:border-[brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono text-left truncate"
+                          className="px-2 py-1.5 bg-neutral-800/50 text-neutral-400 rounded border border-neutral-700/50 hover:border-[brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono text-left truncate"
                           title={preset.description || preset.name}
                         >
                           <MapPin size={12} className="inline mr-1.5" />
@@ -577,29 +577,29 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                     </div>
                   )}
                   {!isLoadingPresets.ambience && ambiencePresets.length > 8 && (
-                    <p className="text-[9px] text-zinc-500 mt-1 text-center font-mono">+{ambiencePresets.length - 8} more</p>
+                    <p className="text-[9px] text-neutral-500 mt-1 text-center font-mono">+{ambiencePresets.length - 8} more</p>
                   )}
                 </div>
               )}
             </section>
 
             {/* Luminance Presets */}
-            <section className="border-b border-zinc-800/30">
+            <section className="border-b border-neutral-800/30">
               <button
                 onClick={() => toggleSection('luminance')}
-                className="w-full flex items-center justify-between px-0 py-2.5 text-left hover:bg-zinc-800/20 transition-colors"
+                className="w-full flex items-center justify-between px-0 py-2.5 text-left hover:bg-neutral-800/20 transition-colors"
               >
-                <span className="text-xs font-semibold font-mono uppercase text-zinc-400 tracking-widest">LUMINANCE_</span>
+                <span className="text-xs font-semibold font-mono uppercase text-neutral-400 tracking-widest">LUMINANCE_</span>
                 {openSections.luminance ? (
-                  <ChevronDown size={14} className="text-zinc-500" />
+                  <ChevronDown size={14} className="text-neutral-500" />
                 ) : (
-                  <ChevronRight size={14} className="text-zinc-500" />
+                  <ChevronRight size={14} className="text-neutral-500" />
                 )}
               </button>
               {openSections.luminance && (
                 <div className="pb-3">
                   {isLoadingPresets.luminance ? (
-                    <p className="text-xs text-zinc-500 text-center py-2">Loading...</p>
+                    <p className="text-xs text-neutral-500 text-center py-2">Loading...</p>
                   ) : (
                     <div className="grid grid-cols-2 gap-1.5">
                       {luminancePresets.slice(0, 8).map((preset) => (
@@ -607,7 +607,7 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                           key={preset.id || preset._id}
                           onClick={() => handlePresetClick(preset)}
                           disabled={isProcessing}
-                          className="px-2 py-1.5 bg-zinc-800/50 text-zinc-400 rounded border border-zinc-700/50 hover:border-[brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono text-left truncate"
+                          className="px-2 py-1.5 bg-neutral-800/50 text-neutral-400 rounded border border-neutral-700/50 hover:border-[brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs font-mono text-left truncate"
                           title={preset.description || preset.name}
                         >
                           <Sun size={12} className="inline mr-1.5" />
@@ -617,23 +617,23 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                     </div>
                   )}
                   {!isLoadingPresets.luminance && luminancePresets.length > 8 && (
-                    <p className="text-[9px] text-zinc-500 mt-1 text-center font-mono">+{luminancePresets.length - 8} more</p>
+                    <p className="text-[9px] text-neutral-500 mt-1 text-center font-mono">+{luminancePresets.length - 8} more</p>
                   )}
                 </div>
               )}
             </section>
 
             {/* Download */}
-            <section className="border-b border-zinc-800/30 last:border-b-0">
+            <section className="border-b border-neutral-800/30 last:border-b-0">
               <button
                 onClick={() => toggleSection('download')}
-                className="w-full flex items-center justify-between px-0 py-2.5 text-left hover:bg-zinc-800/20 transition-colors"
+                className="w-full flex items-center justify-between px-0 py-2.5 text-left hover:bg-neutral-800/20 transition-colors"
               >
-                <span className="text-xs font-semibold font-mono uppercase text-zinc-400 tracking-widest">DOWNLOAD_</span>
+                <span className="text-xs font-semibold font-mono uppercase text-neutral-400 tracking-widest">DOWNLOAD_</span>
                 {openSections.download ? (
-                  <ChevronDown size={14} className="text-zinc-500" />
+                  <ChevronDown size={14} className="text-neutral-500" />
                 ) : (
-                  <ChevronRight size={14} className="text-zinc-500" />
+                  <ChevronRight size={14} className="text-neutral-500" />
                 )}
               </button>
               {openSections.download && (
@@ -641,13 +641,13 @@ export const EditorSidebar: React.FC<EditorSidebarProps> = ({
                   <a
                     href={`data:image/png;base64,${editorMockup}`}
                     download={`mockup-${Date.now()}.png`}
-                    className="flex items-center justify-center gap-2 w-full px-3 py-1.5 bg-zinc-800/50 text-zinc-400 rounded border border-zinc-700/50 hover:border-[brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors text-xs font-mono"
+                    className="flex items-center justify-center gap-2 w-full px-3 py-1.5 bg-neutral-800/50 text-neutral-400 rounded border border-neutral-700/50 hover:border-[brand-cyan]/30 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-colors text-xs font-mono"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <Download size={14} />
                     <span>DOWNLOAD</span>
                   </a>
-                  <p className="text-[9px] text-zinc-500 mt-1 text-center font-mono">Max resolution</p>
+                  <p className="text-[9px] text-neutral-500 mt-1 text-center font-mono">Max resolution</p>
                 </div>
               )}
             </section>

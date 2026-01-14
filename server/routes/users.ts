@@ -2,7 +2,7 @@ import express from 'express';
 import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { ObjectId } from 'mongodb';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
-import { getUserIdFromToken } from '@/utils/auth.js';
+import { getUserIdFromToken } from '../utils/auth.js';
 import { prisma } from '../db/prisma.js';
 
 const router = express.Router();
@@ -368,7 +368,7 @@ router.put('/profile', authenticate, async (req: AuthRequest, res) => {
 
     // Handle cover image upload
     if (coverImageBase64) {
-      const r2Service = await import('../services/r2Service.js');
+      const r2Service = await import('@/services/r2Service.js');
 
       if (!r2Service.isR2Configured()) {
         return res.status(500).json({
@@ -454,7 +454,7 @@ router.put('/settings/gemini-api-key', authenticate, async (req: AuthRequest, re
     }
 
     // Encrypt the API key
-    const { encryptApiKey } = await import('@/utils/encryption.js');
+    const { encryptApiKey } = await import('../utils/encryption.js');
     const encryptedKey = encryptApiKey(trimmedKey);
 
     // Update user with encrypted key

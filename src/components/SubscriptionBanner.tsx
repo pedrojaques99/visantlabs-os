@@ -27,7 +27,7 @@ export const SubscriptionBanner: React.FC<SubscriptionBannerProps> = ({
         {onDismiss && (
           <button
             onClick={onDismiss}
-            className="absolute top-2 right-2 text-zinc-500 hover:text-zinc-300 transition-colors"
+            className="absolute top-2 right-2 text-neutral-500 hover:text-neutral-300 transition-colors"
           >
             <X size={16} />
           </button>
@@ -35,10 +35,10 @@ export const SubscriptionBanner: React.FC<SubscriptionBannerProps> = ({
         <div className="flex items-center gap-3">
           <CreditCard size={20} className="text-brand-cyan" />
           <div className="flex-1">
-            <p className="text-sm font-mono text-zinc-300">
+            <p className="text-sm font-mono text-neutral-300">
               {t('subscription.freeGenerationsRemaining', { remaining: freeGenerationsRemaining })}
             </p>
-            <p className="text-xs text-zinc-500 mt-1">
+            <p className="text-xs text-neutral-500 mt-1">
               {t('subscription.subscribeForUnlimited')}
             </p>
           </div>
@@ -58,7 +58,7 @@ export const SubscriptionBanner: React.FC<SubscriptionBannerProps> = ({
       {onDismiss && (
         <button
           onClick={onDismiss}
-          className="absolute top-2 right-2 text-zinc-500 hover:text-zinc-300 transition-colors"
+          className="absolute top-2 right-2 text-neutral-500 hover:text-neutral-300 transition-colors"
         >
           <X size={16} />
         </button>
@@ -69,7 +69,7 @@ export const SubscriptionBanner: React.FC<SubscriptionBannerProps> = ({
           <p className="text-sm font-mono text-red-400 font-semibold">
             {t('subscription.allFreeGenerationsUsed', { used: freeGenerationsUsed })}
           </p>
-          <p className="text-xs text-zinc-500 mt-1">
+          <p className="text-xs text-neutral-500 mt-1">
             {t('subscription.subscribeToContinue')}
           </p>
         </div>

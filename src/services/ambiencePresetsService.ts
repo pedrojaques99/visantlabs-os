@@ -38,6 +38,14 @@ export async function initializeAmbiencePresets(): Promise<void> {
   await fetchAllOfficialPresets();
 }
 
+export const ambiencePresetsService = {
+  getById: getAmbiencePreset,
+  getAll: getAllAmbiencePresets,
+  getByIdAsync: getAmbiencePresetAsync,
+  getAllAsync: getAllAmbiencePresetsAsync,
+  initialize: initializeAmbiencePresets
+};
+
 
 
 

@@ -80,27 +80,27 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
     return (
       <button
         onClick={onToggleCollapse}
-        className="w-full bg-black/30 backdrop-blur-sm border border-zinc-800/40 rounded-md px-3 py-2 opacity-70 hover:opacity-100 transition-opacity flex items-center gap-2 justify-center"
+        className="w-full bg-black/30 backdrop-blur-sm border border-neutral-800/40 rounded-md px-3 py-2 opacity-70 hover:opacity-100 transition-opacity flex items-center gap-2 justify-center"
         title="Show filters"
       >
-        <Menu size={16} className="text-zinc-500 flex-shrink-0" />
-        <span className="text-xs font-mono text-zinc-500 uppercase truncate">{title}</span>
+        <Menu size={16} className="text-neutral-500 flex-shrink-0" />
+        <span className="text-xs font-mono text-neutral-500 uppercase truncate">{title}</span>
       </button>
     );
   }
 
   return (
-    <div className="relative bg-black/30 backdrop-blur-sm border border-zinc-800/40 rounded-md px-3 md:px-4 py-2.5 md:py-3 opacity-70 hover:opacity-90 transition-opacity w-full">
+    <div className="relative bg-black/30 backdrop-blur-sm border border-neutral-800/40 rounded-md px-3 md:px-4 py-2.5 md:py-3 opacity-70 hover:opacity-90 transition-opacity w-full">
       {/* Header with title, count and collapse button */}
       <div className="flex items-center justify-between gap-2 md:gap-3 mb-2">
         <div className="flex items-center gap-2 md:gap-3 flex-shrink-0 min-w-0">
           {showBackButton && (
             <BackButton className="mb-0" />
           )}
-          <h1 className="text-xs font-medium font-mono uppercase text-zinc-500 whitespace-nowrap">
+          <h1 className="text-xs font-medium font-mono uppercase text-neutral-500 whitespace-nowrap">
             {title}
           </h1>
-          <span className="text-xs text-zinc-500 font-mono whitespace-nowrap">
+          <span className="text-xs text-neutral-500 font-mono whitespace-nowrap">
             {count} {countLabel}
           </span>
         </div>
@@ -114,14 +114,14 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
                     value={searchQuery}
                     onChange={(e) => onSearchChange?.(e.target.value)}
                     placeholder="Search..."
-                    className="bg-black/40 backdrop-blur-sm border border-zinc-700/30 rounded-md pl-7 pr-7 py-1.5 w-40 focus:outline-none focus:border-[brand-cyan]/50 text-xs text-zinc-300 font-mono"
+                    className="bg-black/40 backdrop-blur-sm border border-neutral-700/30 rounded-md pl-7 pr-7 py-1.5 w-40 focus:outline-none focus:border-[brand-cyan]/50 text-xs text-neutral-300 font-mono"
                     autoFocus
                   />
-                  <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-zinc-500" size={12} />
+                  <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-neutral-500" size={12} />
                   {searchQuery && (
                     <button
                       onClick={() => onSearchChange?.('')}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-neutral-500 hover:text-neutral-300"
                     >
                       <X size={12} />
                     </button>
@@ -130,7 +130,7 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
               ) : (
                 <button
                   onClick={onToggleSearch}
-                  className="p-1.5 text-zinc-500 hover:text-brand-cyan transition-colors"
+                  className="p-1.5 text-neutral-500 hover:text-brand-cyan transition-colors"
                   title="Search"
                 >
                   <Search size={14} />
@@ -140,7 +140,7 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
           )}
           <button
             onClick={onToggleCollapse}
-            className="p-1 text-zinc-500 hover:text-zinc-400 transition-colors flex-shrink-0"
+            className="p-1 text-neutral-500 hover:text-neutral-400 transition-colors flex-shrink-0"
             title="Collapse"
           >
             <ChevronUp size={14} />
@@ -152,7 +152,7 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
       {allTags.length > 0 && (
         <div
           ref={scrollContainerRef}
-          className={`flex gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-zinc-400 dark:scrollbar-thumb-zinc-700 scrollbar-track-transparent pb-0.5 -mx-1 px-1 cursor-pointer select-none`}
+          className={`flex gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-400 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent pb-0.5 -mx-1 px-1 cursor-pointer select-none`}
           onMouseDown={handleMouseDown}
           onMouseLeave={handleMouseUp}
           onMouseUp={handleMouseUp}
@@ -162,7 +162,7 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
             onClick={(e) => handleTagClick(null, e)}
             className={`px-2.5 py-1 rounded-md text-xs font-mono border whitespace-nowrap flex-shrink-0 transition-all ${filterTag === null
               ? 'text-brand-cyan border-[brand-cyan]/30 bg-brand-cyan/10'
-              : 'text-zinc-500 border-zinc-700/20 hover:border-zinc-600/30 hover:bg-zinc-800/30'
+              : 'text-neutral-500 border-neutral-700/20 hover:border-neutral-600/30 hover:bg-neutral-800/30'
               }`}
           >
             All
@@ -173,7 +173,7 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
               onClick={(e) => handleTagClick(tag, e)}
               className={`px-2.5 py-1 rounded-md text-xs font-mono border whitespace-nowrap flex-shrink-0 transition-all ${filterTag === tag
                 ? 'text-brand-cyan border-[brand-cyan]/30 bg-brand-cyan/10'
-                : 'text-zinc-500 border-zinc-700/20 hover:border-zinc-600/30 hover:bg-zinc-800/30'
+                : 'text-neutral-500 border-neutral-700/20 hover:border-neutral-600/30 hover:bg-neutral-800/30'
                 }`}
             >
               {translateTag(tag)}

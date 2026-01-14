@@ -163,19 +163,19 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="bg-zinc-900 border border-zinc-800/50 rounded-md p-6 w-full max-w-2xl mx-4 shadow-xl max-h-[90vh] overflow-y-auto"
+        className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 w-full max-w-2xl mx-4 shadow-xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-center gap-3">
             <Share2 className="text-brand-cyan" size={24} />
-            <h2 className="text-lg font-semibold font-mono text-zinc-200 uppercase">
+            <h2 className="text-lg font-semibold font-mono text-neutral-200 uppercase">
               {t('shareModal.shareProject')}
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="text-zinc-500 hover:text-zinc-300 transition-colors"
+            className="text-neutral-500 hover:text-neutral-300 transition-colors"
             aria-label="Close"
           >
             <X size={20} />
@@ -184,7 +184,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
 
         {/* Share Link Section */}
         <div className="mb-6">
-          <label className="block text-sm font-mono text-zinc-400 mb-2">
+          <label className="block text-sm font-mono text-neutral-400 mb-2">
             {t('shareModal.shareLink')}
           </label>
           {shareUrl ? (
@@ -193,7 +193,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
                 type="text"
                 value={shareUrl}
                 readOnly
-                className="flex-1 px-3 py-2 bg-zinc-900/50 border border-zinc-700/50 rounded text-sm text-zinc-300 font-mono"
+                className="flex-1 px-3 py-2 bg-neutral-900/50 border border-neutral-700/50 rounded text-sm text-neutral-300 font-mono"
               />
               <button
                 onClick={handleCopyLink}
@@ -240,7 +240,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <Edit className="text-brand-cyan" size={18} />
-                <label className="text-sm font-mono text-zinc-300">
+                <label className="text-sm font-mono text-neutral-300">
                   {t('shareModal.usersWhoCanEdit')}
                 </label>
               </div>
@@ -252,11 +252,11 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
                     onChange={(e) => setNewEditUser(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && addEditUser()}
                     placeholder={t('shareModal.userEmailPlaceholder')}
-                    className="flex-1 px-3 py-2 bg-zinc-900/50 border border-zinc-700/50 rounded text-sm text-zinc-300 font-mono placeholder-zinc-600"
+                    className="flex-1 px-3 py-2 bg-neutral-900/50 border border-neutral-700/50 rounded text-sm text-neutral-300 font-mono placeholder-neutral-600"
                   />
                   <button
                     onClick={addEditUser}
-                    className="px-3 py-2 bg-zinc-800/50 hover:bg-zinc-700/50 text-zinc-300 border border-zinc-700/50 rounded text-xs font-mono transition-all"
+                    className="px-3 py-2 bg-neutral-800/50 hover:bg-neutral-700/50 text-neutral-300 border border-neutral-700/50 rounded text-xs font-mono transition-all"
                   >
                     Adicionar
                   </button>
@@ -266,12 +266,12 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
                     {editUsers.map((userId) => (
                       <div
                         key={userId}
-                        className="flex items-center gap-2 px-3 py-1 bg-zinc-800/50 border border-zinc-700/50 rounded text-xs font-mono text-zinc-300"
+                        className="flex items-center gap-2 px-3 py-1 bg-neutral-800/50 border border-neutral-700/50 rounded text-xs font-mono text-neutral-300"
                       >
                         <span>{userId}</span>
                         <button
                           onClick={() => removeEditUser(userId)}
-                          className="text-zinc-500 hover:text-red-400 transition-colors"
+                          className="text-neutral-500 hover:text-red-400 transition-colors"
                         >
                           <X size={14} />
                         </button>
@@ -286,7 +286,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <Eye className="text-brand-cyan" size={18} />
-                <label className="text-sm font-mono text-zinc-300">
+                <label className="text-sm font-mono text-neutral-300">
                   Usuários que podem Visualizar
                 </label>
               </div>
@@ -298,11 +298,11 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
                     onChange={(e) => setNewViewUser(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && addViewUser()}
                     placeholder="E-mail do usuário"
-                    className="flex-1 px-3 py-2 bg-zinc-900/50 border border-zinc-700/50 rounded text-sm text-zinc-300 font-mono placeholder-zinc-600"
+                    className="flex-1 px-3 py-2 bg-neutral-900/50 border border-neutral-700/50 rounded text-sm text-neutral-300 font-mono placeholder-neutral-600"
                   />
                   <button
                     onClick={addViewUser}
-                    className="px-3 py-2 bg-zinc-800/50 hover:bg-zinc-700/50 text-zinc-300 border border-zinc-700/50 rounded text-xs font-mono transition-all"
+                    className="px-3 py-2 bg-neutral-800/50 hover:bg-neutral-700/50 text-neutral-300 border border-neutral-700/50 rounded text-xs font-mono transition-all"
                   >
                     Adicionar
                   </button>
@@ -312,12 +312,12 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
                     {viewUsers.map((userId) => (
                       <div
                         key={userId}
-                        className="flex items-center gap-2 px-3 py-1 bg-zinc-800/50 border border-zinc-700/50 rounded text-xs font-mono text-zinc-300"
+                        className="flex items-center gap-2 px-3 py-1 bg-neutral-800/50 border border-neutral-700/50 rounded text-xs font-mono text-neutral-300"
                       >
                         <span>{userId}</span>
                         <button
                           onClick={() => removeViewUser(userId)}
-                          className="text-zinc-500 hover:text-red-400 transition-colors"
+                          className="text-neutral-500 hover:text-red-400 transition-colors"
                         >
                           <X size={14} />
                         </button>
@@ -331,7 +331,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
         )}
 
         {/* Actions */}
-        <div className="flex items-center justify-between gap-3 pt-4 border-t border-zinc-800/50">
+        <div className="flex items-center justify-between gap-3 pt-4 border-t border-neutral-800/50">
           <button
             onClick={handleRemoveShare}
             disabled={!isCollaborative || isLoading}
@@ -343,7 +343,7 @@ const ShareModalComponent: React.FC<ShareModalProps> = ({
           <div className="flex items-center gap-3">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-xs font-mono text-zinc-400 hover:text-zinc-200 transition-colors border border-zinc-700/50 hover:border-zinc-600 rounded-md"
+              className="px-4 py-2 text-xs font-mono text-neutral-400 hover:text-neutral-200 transition-colors border border-neutral-700/50 hover:border-neutral-600 rounded-md"
             >
               Fechar
             </button>

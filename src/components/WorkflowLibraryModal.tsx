@@ -197,39 +197,39 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                 onClick={onClose}
             >
                 <div
-                    className="relative max-w-6xl w-full max-h-[90vh] bg-black/95 backdrop-blur-xl border border-zinc-800/50 rounded-md shadow-2xl overflow-hidden flex flex-col"
+                    className="relative max-w-6xl w-full max-h-[90vh] bg-black/95 backdrop-blur-xl border border-neutral-800/50 rounded-md shadow-2xl overflow-hidden flex flex-col"
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* Header */}
-                    <div className="flex items-center justify-between p-4 border-b border-zinc-800/50 bg-zinc-900/20">
+                    <div className="flex items-center justify-between p-4 border-b border-neutral-800/50 bg-neutral-900/20">
                         <div className="flex items-center gap-2">
                             <Layout size={20} className="text-brand-cyan" />
                             <div>
-                                <h2 className="text-sm font-mono text-zinc-300 uppercase tracking-wider">
+                                <h2 className="text-sm font-mono text-neutral-300 uppercase tracking-wider">
                                     {t('workflows.library.title') || 'Workflow Library'}
                                 </h2>
-                                <p className="text-[10px] text-zinc-500 font-mono hidden sm:block">
+                                <p className="text-[10px] text-neutral-500 font-mono hidden sm:block">
                                     {t('workflows.library.description') || 'Browse and load reusable workflow templates'}
                                 </p>
                             </div>
                         </div>
                         <button
                             onClick={onClose}
-                            className="p-2 text-zinc-500 hover:text-white transition-colors hover:bg-zinc-800/50 rounded-full"
+                            className="p-2 text-neutral-500 hover:text-white transition-colors hover:bg-neutral-800/50 rounded-full"
                         >
                             <X size={20} />
                         </button>
                     </div>
 
                     {/* Tabs */}
-                    <div className="flex gap-1 px-4 pt-4 border-b border-zinc-800/50 bg-zinc-900/10">
+                    <div className="flex gap-1 px-4 pt-4 border-b border-neutral-800/50 bg-neutral-900/10">
                         <button
                             onClick={() => setActiveTab('community')}
                             className={cn(
                                 'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 flex items-center gap-1.5 relative rounded-t-md',
                                 activeTab === 'community'
                                     ? 'text-brand-cyan border-[brand-cyan] bg-brand-cyan/5'
-                                    : 'text-zinc-400 border-transparent hover:text-zinc-300 hover:bg-zinc-800/30'
+                                    : 'text-neutral-400 border-transparent hover:text-neutral-300 hover:bg-neutral-800/30'
                             )}
                         >
                             <Globe size={12} />
@@ -243,7 +243,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                                     'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 flex items-center gap-1.5 relative rounded-t-md',
                                     activeTab === 'my'
                                         ? 'text-brand-cyan border-[brand-cyan] bg-brand-cyan/5'
-                                        : 'text-zinc-400 border-transparent hover:text-zinc-300 hover:bg-zinc-800/30'
+                                        : 'text-neutral-400 border-transparent hover:text-neutral-300 hover:bg-neutral-800/30'
                                 )}
                             >
                                 <BookMarked size={12} />
@@ -253,27 +253,27 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                     </div>
 
                     {/* Controls Row: Search & Filters */}
-                    <div className="flex flex-col sm:flex-row gap-4 p-4 border-b border-zinc-800/50 bg-zinc-900/5">
+                    <div className="flex flex-col sm:flex-row gap-4 p-4 border-b border-neutral-800/50 bg-neutral-900/5">
                         <div className="relative flex-1 max-w-md">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-500" />
                             <Input
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder={t('workflows.library.search') || 'Search workflows...'}
-                                className="pl-9 h-9 bg-zinc-900/50 border-zinc-800/50 focus:border-brand-cyan/30 focus:ring-1 focus:ring-brand-cyan/30 font-mono text-xs w-full"
+                                className="pl-9 h-9 bg-neutral-900/50 border-neutral-800/50 focus:border-brand-cyan/30 focus:ring-1 focus:ring-brand-cyan/30 font-mono text-xs w-full"
                             />
                         </div>
 
                         {/* Category filters */}
                         {activeTab === 'community' && (
-                            <div className="flex gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent items-center">
+                            <div className="flex gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent items-center">
                                 <button
                                     onClick={() => setSelectedCategory('all')}
                                     className={cn(
                                         'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-mono uppercase transition-all whitespace-nowrap border',
                                         selectedCategory === 'all'
                                             ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
-                                            : 'bg-zinc-900/50 text-zinc-400 border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700'
+                                            : 'bg-neutral-900/50 text-neutral-400 border-neutral-800 hover:bg-neutral-800 hover:border-neutral-700'
                                     )}
                                 >
                                     <Layout size={12} />
@@ -289,7 +289,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                                                 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-mono uppercase transition-all whitespace-nowrap border',
                                                 selectedCategory === key
                                                     ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30'
-                                                    : 'bg-zinc-900/50 text-zinc-400 border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700'
+                                                    : 'bg-neutral-900/50 text-neutral-400 border-neutral-800 hover:bg-neutral-800 hover:border-neutral-700'
                                             )}
                                         >
                                             <Icon size={12} />
@@ -306,10 +306,10 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                         {isLoading ? (
                             <div className="flex flex-col items-center justify-center h-64 gap-2">
                                 <div className="w-6 h-6 border-2 border-brand-cyan/30 border-t-brand-cyan rounded-full animate-spin"></div>
-                                <p className="text-xs font-mono text-zinc-500">Loading workflows...</p>
+                                <p className="text-xs font-mono text-neutral-500">Loading workflows...</p>
                             </div>
                         ) : displayedWorkflows.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center h-64 text-zinc-500">
+                            <div className="flex flex-col items-center justify-center h-64 text-neutral-500">
                                 <Search className="w-8 h-8 opacity-20 mb-2" />
                                 <p className="text-sm font-mono">
                                     {searchQuery

@@ -35,9 +35,10 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
 
 
   return (
-    <div className="w-full space-y-4 mb-2">
-      {/* Categories Section */}
-      <div className="relative bg-black/30 backdrop-blur-sm border border-zinc-800/40 rounded-xl p-2">
+    <div className="w-full space-y-4">
+      {/* Categories & Tags Container */}
+      <div className="relative bg-neutral-950 backdrop-blur-sm border border-neutral-800/40 rounded-xl p-3 md:p-4 space-y-4">
+        {/* Categories Row */}
         <div className="flex flex-wrap gap-2 items-center justify-center md:justify-start">
           {categories.map((category) => {
             const config = CATEGORY_CONFIG[category];
@@ -51,11 +52,11 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                 className={cn(
                   "flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium transition-all duration-300 border",
                   isActive
-                    ? 'bg-zinc-800 text-white border-zinc-700 shadow-lg shadow-zinc-900/50 scale-105'
-                    : 'text-zinc-500 border-transparent hover:bg-zinc-800/30 hover:text-zinc-300'
+                    ? 'bg-neutral-800 text-white border-neutral-700 shadow-lg shadow-neutral-900/50 scale-105'
+                    : 'text-neutral-500 border-transparent hover:bg-neutral-800/30 hover:text-neutral-300'
                 )}
               >
-                {Icon && <Icon size={14} className={isActive ? config.color : 'text-zinc-500 group-hover:text-zinc-400'} />}
+                {Icon && <Icon size={14} className={isActive ? config.color : 'text-neutral-500 group-hover:text-neutral-400'} />}
                 <span>
                   {t(`communityPresets.categories.${category}`) || config?.label || category}
                 </span>
@@ -63,53 +64,58 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
             );
           })}
         </div>
-      </div>
 
-      {/* Tags Section - Horizontal Scroll */}
-      {allTags.length > 0 && (
-        <div className="relative group">
-          <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-hide [&::-webkit-scrollbar]:hidden mask-linear-fade items-center">
-            <button
-              onClick={() => handleTagClick(null)}
-              className={cn(
-                "flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
-                filterTag === null
-                  ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/20'
-                  : 'text-zinc-500 border-zinc-800 hover:border-zinc-700 bg-black/20 hover:bg-black/40'
-              )}
-            >
-              {t('communityPresets.tags.all') || 'All'}
-            </button>
+        {/* Separator - Only show if we have tags */}
+        {allTags.length > 0 && (
+          <div className="w-full h-px bg-neutral-800/50" />
+        )}
 
-            <div className="w-[1px] h-6 bg-zinc-800 mx-1 flex-shrink-0" />
-
-            {allTags.map(({ tag, count }) => (
+        {/* Tags Section - Horizontal Scroll */}
+        {allTags.length > 0 && (
+          <div className="relative group">
+            <div className="flex overflow-x-auto gap-2 pb-1 scrollbar-hide [&::-webkit-scrollbar]:hidden mask-linear-fade items-center">
               <button
-                key={tag}
-                onClick={() => handleTagClick(tag)}
+                onClick={() => handleTagClick(null)}
                 className={cn(
-                  "flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs transition-all border group/tag",
-                  filterTag === tag
-                    ? 'bg-zinc-800 text-zinc-100 border-zinc-700'
-                    : 'text-zinc-400 border-zinc-800/50 hover:border-zinc-700 bg-black/20 hover:bg-black/40 hover:text-zinc-300'
+                  "flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
+                  filterTag === null
+                    ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/20'
+                    : 'text-neutral-500 border-neutral-800 hover:border-neutral-700 bg-black/20 hover:bg-black/40' // Darker bg for contrast inside container
                 )}
               >
-                <span>#{tag}</span>
-                <span className={cn(
-                  "text-[10px] px-1.5 py-0.5 rounded-full",
-                  filterTag === tag
-                    ? "bg-zinc-700 text-zinc-300"
-                    : "bg-zinc-900/50 text-zinc-600 group-hover/tag:text-zinc-500"
-                )}>
-                  {count}
-                </span>
+                {t('communityPresets.tags.all') || 'All'}
               </button>
-            ))}
+
+              <div className="w-[1px] h-4 bg-neutral-800 mx-1 flex-shrink-0" />
+
+              {allTags.map(({ tag, count }) => (
+                <button
+                  key={tag}
+                  onClick={() => handleTagClick(tag)}
+                  className={cn(
+                    "flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs transition-all border group/tag",
+                    filterTag === tag
+                      ? 'bg-neutral-800 text-neutral-100 border-neutral-700'
+                      : 'text-neutral-400 border-neutral-800/50 hover:border-neutral-700 bg-black/20 hover:bg-black/40 hover:text-neutral-300'
+                  )}
+                >
+                  <span>#{tag}</span>
+                  <span className={cn(
+                    "text-[10px] px-1.5 py-0.5 rounded-full",
+                    filterTag === tag
+                      ? "bg-neutral-700 text-neutral-300"
+                      : "bg-neutral-900/50 text-neutral-600 group-hover/tag:text-neutral-500"
+                  )}>
+                    {count}
+                  </span>
+                </button>
+              ))}
+            </div>
+            {/* Gradient Fade for scroll indication - Adjusted for inside container */}
+            <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-[#0C0C0C]/10 to-transparent pointer-events-none md:block hidden" />
           </div>
-          {/* Gradient Fade for scroll indication */}
-          <div className="absolute right-0 top-0 bottom-2 w-12 bg-gradient-to-l from-[#121212] to-transparent pointer-events-none md:block hidden" />
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

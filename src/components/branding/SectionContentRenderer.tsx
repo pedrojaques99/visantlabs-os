@@ -197,7 +197,7 @@ export const SectionContentRenderer: React.FC<SectionContentRendererProps> = ({
 
   const { theme } = useTheme();
   return (
-    <div className={`text-sm font-manrope ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'
+    <div className={`text-sm font-manrope ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
       }`}>
       {JSON.stringify(content, null, 2)}
     </div>

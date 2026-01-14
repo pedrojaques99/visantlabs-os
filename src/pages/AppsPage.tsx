@@ -97,7 +97,7 @@ export const AppsPage: React.FC = () => {
         description={t('apps.seoDescription')}
         keywords={t('apps.seoKeywords')}
       />
-      <div className="min-h-screen bg-background text-zinc-300 relative overflow-hidden">
+      <div className="min-h-screen bg-background text-neutral-300 relative overflow-hidden">
         <div className="fixed inset-0 z-0">
           <GridDotsBackground />
         </div>
@@ -122,10 +122,10 @@ export const AppsPage: React.FC = () => {
           {/* Header */}
           <div className="mb-12">
             <div className="mb-4">
-              <h1 className="text-3xl md:text-4xl font-semibold font-manrope text-zinc-200 mb-2">
+              <h1 className="text-3xl md:text-4xl font-semibold font-manrope text-neutral-200 mb-2">
                 {t('apps.title')}
               </h1>
-              <p className="text-zinc-500 font-mono text-sm md:text-base">
+              <p className="text-neutral-500 font-mono text-sm md:text-base">
                 {t('apps.subtitle')}
               </p>
             </div>
@@ -172,7 +172,7 @@ export const AppsPage: React.FC = () => {
                       key={app.id}
                       onClick={handleClick}
                       className={cn(
-                        "group relative overflow-hidden border-zinc-800/50 bg-card/50",
+                        "group relative overflow-hidden border-neutral-800/50 bg-card/50",
                         !app.disabled && "hover:border-brand-cyan/50 hover:bg-card/70 hover:shadow-lg hover:shadow-brand-cyan/10 hover:scale-[1.02] active:scale-[0.98] cursor-pointer",
                         app.disabled && "opacity-60 cursor-not-allowed",
                         "transition-all duration-300"
@@ -200,7 +200,7 @@ export const AppsPage: React.FC = () => {
                               <Badge
                                 variant="outline"
                                 className={cn(
-                                  "text-xs border-zinc-700/50 text-zinc-400",
+                                  "text-xs border-neutral-700/50 text-neutral-400",
                                   app.id === 'branding' && "border-brand-cyan/30 text-brand-cyan",
                                   app.id === 'canvas' && "border-brand-cyan/30 text-brand-cyan"
                                 )}
@@ -211,17 +211,17 @@ export const AppsPage: React.FC = () => {
                           </div>
                           <div className="flex-1 w-full">
                             <h3 className={cn(
-                              "text-xl font-semibold text-zinc-200 mb-2 font-manrope transition-colors",
+                              "text-xl font-semibold text-neutral-200 mb-2 font-manrope transition-colors",
                               !app.disabled && "group-hover:text-brand-cyan/90"
                             )}>
                               {app.name}
                             </h3>
-                            <p className="text-sm text-zinc-400 font-mono leading-relaxed">
+                            <p className="text-sm text-neutral-400 font-mono leading-relaxed">
                               {app.description}
                             </p>
                           </div>
                           {!app.disabled && (
-                            <div className="flex items-center gap-2 text-xs font-mono text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-full">
+                            <div className="flex items-center gap-2 text-xs font-mono text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-full">
                               <span>{app.isExternal ? 'Visit' : 'Explore'}</span>
                               <ArrowRight className="w-3 h-3" />
                             </div>

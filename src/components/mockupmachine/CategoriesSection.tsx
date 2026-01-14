@@ -129,11 +129,11 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
     const hasSelection = selectedTags.length > 0;
     const unselectedClass = theme === 'dark'
       ? isSuggested
-        ? 'bg-zinc-800/50 text-zinc-300 border-[brand-cyan]/50 hover:border-[brand-cyan]/70 hover:text-white'
-        : 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
+        ? 'bg-neutral-800/50 text-neutral-300 border-[brand-cyan]/50 hover:border-[brand-cyan]/70 hover:text-white'
+        : 'bg-neutral-800/50 text-neutral-400 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
       : isSuggested
-        ? 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'
-        : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900';
+        ? 'bg-neutral-100 text-neutral-700 border-neutral-300 hover:border-neutral-400 hover:text-neutral-900'
+        : 'bg-neutral-100 text-neutral-700 border-neutral-300 hover:border-neutral-400 hover:text-neutral-900';
 
     return (
       <Badge
@@ -145,7 +145,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
           isSelected
             ? theme === 'dark'
               ? 'bg-brand-cyan/20 text-brand-cyan border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
-              : 'bg-brand-cyan/20 text-zinc-800 border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
+              : 'bg-brand-cyan/20 text-neutral-800 border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
             : unselectedClass,
           hasSelection && !isSelected && 'opacity-40'
         )}
@@ -158,13 +158,13 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
   return (
     <section id="categories-section" className={`animate-fade-in ${isComplete ? 'pb-0' : ''}`}>
       <div className={`flex justify-between items-center ${isComplete ? 'mb-1' : 'mb-3'}`}>
-        <h2 className="font-semibold font-mono uppercase tracking-widest text-sm text-zinc-400 transition-all duration-300">
+        <h2 className="font-semibold font-mono uppercase tracking-widest text-sm text-neutral-400 transition-all duration-300">
           {t('mockup.categories')}
         </h2>
         {isAnalyzing && <GlitchLoader size={16} color="#71717a" />}
       </div>
       {!isComplete && (
-        <p className="text-xs text-zinc-500 mb-3 font-mono">{t('mockup.categoriesComment')}</p>
+        <p className="text-xs text-neutral-500 mb-3 font-mono">{t('mockup.categoriesComment')}</p>
       )}
       <div className={isComplete ? 'opacity-80' : ''}>
         <div className="grid grid-cols-2 gap-3">
@@ -176,10 +176,10 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
               <div key={group.id} className="space-y-2">
                 {/* Subtle group label */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[9px] font-mono uppercase tracking-wider text-zinc-500/60">
+                  <span className="text-[9px] font-mono uppercase tracking-wider text-neutral-500/60">
                     {t(`mockup.categoryGroups.${group.id}`)}
                   </span>
-                  <div className="flex-1 h-px bg-zinc-800/30"></div>
+                  <div className="flex-1 h-px bg-neutral-800/30"></div>
                 </div>
 
                 {/* Tags in this group */}
@@ -197,15 +197,15 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
               <div className="flex items-center gap-2">
                 {drinkwareTags.length > 0 && (
                   <>
-                    <span className="text-[9px] font-mono uppercase tracking-wider text-zinc-500/60">
+                    <span className="text-[9px] font-mono uppercase tracking-wider text-neutral-500/60">
                       {t(`mockup.categoryGroups.drinkware`)}
                     </span>
                     {otherTags.length > 0 && (
                       <>
-                        <span className="text-[9px] font-mono uppercase tracking-wider text-zinc-500/60">
+                        <span className="text-[9px] font-mono uppercase tracking-wider text-neutral-500/60">
                           /
                         </span>
-                        <span className="text-[9px] font-mono uppercase tracking-wider text-zinc-500/60">
+                        <span className="text-[9px] font-mono uppercase tracking-wider text-neutral-500/60">
                           {t(`mockup.categoryGroups.other`)}
                         </span>
                       </>
@@ -213,11 +213,11 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                   </>
                 )}
                 {drinkwareTags.length === 0 && otherTags.length > 0 && (
-                  <span className="text-[9px] font-mono uppercase tracking-wider text-zinc-500/60">
+                  <span className="text-[9px] font-mono uppercase tracking-wider text-neutral-500/60">
                     {t(`mockup.categoryGroups.other`)}
                   </span>
                 )}
-                <div className="flex-1 h-px bg-zinc-800/30"></div>
+                <div className="flex-1 h-px bg-neutral-800/30"></div>
               </div>
 
               {/* Tags: drinkware + other + custom */}
@@ -235,8 +235,8 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                         className={cn(
                           "text-xs font-medium transition-all duration-200 gap-1 cursor-pointer",
                           theme === 'dark'
-                            ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
-                            : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'
+                            ? 'bg-neutral-800/50 text-neutral-400 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
+                            : 'bg-neutral-100 text-neutral-700 border-neutral-300 hover:border-neutral-400 hover:text-neutral-900'
                         )}
                       >
                         <Plus size={14} />
@@ -255,7 +255,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                           "px-3 py-1.5 text-xs font-medium transition-all duration-200 border-[brand-cyan]/30 focus:ring-0 min-w-[120px] font-mono",
                           theme === 'dark'
                             ? 'bg-brand-cyan/20 text-brand-cyan'
-                            : 'bg-brand-cyan/20 text-zinc-800'
+                            : 'bg-brand-cyan/20 text-neutral-800'
                         )}
                         autoFocus
                       />
@@ -276,8 +276,8 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                   className={cn(
                     "text-xs font-medium transition-all duration-200 gap-1 cursor-pointer",
                     theme === 'dark'
-                      ? 'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300'
-                      : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:border-zinc-400 hover:text-zinc-900'
+                      ? 'bg-neutral-800/50 text-neutral-400 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
+                      : 'bg-neutral-100 text-neutral-700 border-neutral-300 hover:border-neutral-400 hover:text-neutral-900'
                   )}
                 >
                   <Plus size={14} />
@@ -294,7 +294,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                   placeholder={t('mockup.customCategoryPlaceholder')}
                   className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border border-[brand-cyan]/30 focus:outline-none focus:ring-0 min-w-[120px] font-mono ${theme === 'dark'
                     ? 'bg-brand-cyan/20 text-brand-cyan'
-                    : 'bg-brand-cyan/20 text-zinc-800'
+                    : 'bg-brand-cyan/20 text-neutral-800'
                     }`}
                   autoFocus
                 />

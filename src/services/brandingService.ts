@@ -9,7 +9,7 @@ let ObjectId: any = null;
 
 const getMongoDB = async () => {
   if (!connectToMongoDB || !getDb || !ObjectId) {
-    const mongoModule = await import('../../server/db/mongodb.ts');
+    const mongoModule = await import('../../server/db/mongodb.js');
     connectToMongoDB = mongoModule.connectToMongoDB;
     getDb = mongoModule.getDb;
     const mongodb = await import('mongodb');
@@ -1184,7 +1184,7 @@ export const createBrandingUsageRecord = async (
     const db = getDb();
 
     // Import usage tracking utilities
-    const { calculateTextGenerationCost } = await import('../../server/utils/usageTracking.ts');
+    const { calculateTextGenerationCost } = await import('../../server/utils/usageTracking.js');
 
     // Use real tokens if available, otherwise estimate
     const actualInputTokens = inputTokens ?? (promptLength ? Math.ceil(promptLength / 4) : 500);

@@ -113,9 +113,9 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
   };
 
   return (
-    <section id="prompt-section" className={`p-3 rounded-md border ${theme === 'dark' ? 'bg-black/20 border-zinc-700/50' : 'bg-zinc-50 border-zinc-300'}`}>
+    <section id="prompt-section" className={`p-3 rounded-md border ${theme === 'dark' ? 'bg-black/20 border-neutral-700/50' : 'bg-neutral-50 border-neutral-300'}`}>
       <div className="flex items-center justify-between mb-2">
-        <h4 className={`flex items-center gap-2 text-xs font-mono ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-600'}`}>
+        <h4 className={`flex items-center gap-2 text-xs font-mono ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>
           <Info size={14} /> {t('mockup.prompt')}
         </h4>
         <div className="flex items-center gap-3">
@@ -125,7 +125,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
               <button
                 onClick={onSuggestPrompts}
                 disabled={isSuggestingPrompts || !promptPreview.trim() || isGeneratingPrompt}
-                className={`text-xs font-mono hover:text-brand-cyan transition-colors disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 ${theme === 'dark' ? 'text-zinc-500 disabled:text-zinc-600' : 'text-zinc-600 disabled:text-zinc-400'
+                className={`text-xs font-mono hover:text-brand-cyan transition-colors disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 ${theme === 'dark' ? 'text-neutral-500 disabled:text-neutral-600' : 'text-neutral-600 disabled:text-neutral-400'
                   }`}
               >
                 {isSuggestingPrompts ? <GlitchLoader size={12} /> : <Pickaxe size={12} />}
@@ -138,7 +138,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
               <button
                 onClick={onGenerateSmartPrompt}
                 disabled={isGeneratingPrompt || isSuggestingPrompts || isGenerateDisabled}
-                className={`text-xs font-mono hover:text-brand-cyan transition-colors disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 ${theme === 'dark' ? 'text-zinc-500 disabled:text-zinc-600' : 'text-zinc-600 disabled:text-zinc-400'
+                className={`text-xs font-mono hover:text-brand-cyan transition-colors disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 ${theme === 'dark' ? 'text-neutral-500 disabled:text-neutral-600' : 'text-neutral-600 disabled:text-neutral-400'
                   }`}
               >
                 <Wand2 size={12} />
@@ -150,7 +150,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
             <Tooltip content={t('mockup.simplifyTooltip')} position="top">
               <button
                 onClick={onSimplify}
-                className="text-xs font-mono text-zinc-500 hover:text-brand-cyan transition-colors cursor-pointer flex items-center gap-1"
+                className="text-xs font-mono text-neutral-500 hover:text-brand-cyan transition-colors cursor-pointer flex items-center gap-1"
               >
                 <ArrowLeftRight size={12} />
                 <span>{t('mockup.simplify')}</span>
@@ -166,8 +166,8 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
           onChange={handleChange}
           rows={1}
           className={`w-full p-2 rounded-md border focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y ${theme === 'dark'
-            ? 'bg-black/40 border-zinc-700/50 text-zinc-400'
-            : 'bg-white border-zinc-300 text-zinc-700'
+            ? 'bg-black/40 border-neutral-700/50 text-neutral-400'
+            : 'bg-white border-neutral-300 text-neutral-700'
             } ${isGeneratingPrompt ? 'opacity-50' : ''}`}
           placeholder={t('mockup.promptPlaceholder')}
           style={{ minHeight: '48px', maxHeight: '600px' }}
@@ -193,22 +193,22 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
       </div>
       {promptSuggestions.length > 0 && (
         <div className="mt-3 space-y-2 animate-fade-in">
-          <p className={`text-xs font-mono ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-600'}`}>{t('mockup.aiSuggestions')}</p>
+          <p className={`text-xs font-mono ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.aiSuggestions')}</p>
           {promptSuggestions.map((suggestion, index) => (
             <div
               key={index}
-              className={`flex flex-col gap-2 p-2 rounded-md border ${theme === 'dark' ? 'bg-zinc-900/50 border-zinc-700/50' : 'bg-zinc-100 border-zinc-300'
+              className={`flex flex-col gap-2 p-2 rounded-md border ${theme === 'dark' ? 'bg-neutral-900/50 border-neutral-700/50' : 'bg-neutral-100 border-neutral-300'
                 }`}
             >
               <button
                 onClick={() => onSuggestionClick(suggestion)}
-                className={`w-full text-left text-xs font-mono transition-colors cursor-pointer ${theme === 'dark' ? 'text-zinc-400 hover:text-zinc-300' : 'text-zinc-700 hover:text-zinc-900'
+                className={`w-full text-left text-xs font-mono transition-colors cursor-pointer ${theme === 'dark' ? 'text-neutral-400 hover:text-neutral-300' : 'text-neutral-700 hover:text-neutral-900'
                   }`}
               >
                 {suggestion}
               </button>
               {onGenerateSuggestion && (
-                <div className={`flex items-center justify-between gap-2 pt-2 border-t ${theme === 'dark' ? 'border-zinc-700/50' : 'border-zinc-300'
+                <div className={`flex items-center justify-between gap-2 pt-2 border-t ${theme === 'dark' ? 'border-neutral-700/50' : 'border-neutral-300'
                   }`}>
                   {isGenerateDisabled ? (
                     <Tooltip content={t('mockup.insufficientCredits') || "Insufficient credits to generate"} position="top">
@@ -218,7 +218,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
                           onGenerateSuggestion(suggestion);
                         }}
                         disabled={isGenerating || !suggestion.trim() || isGenerateDisabled}
-                        className="flex-1 flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-semibold py-2 px-3 rounded-md transition-all duration-300 text-xs transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50"
+                        className="flex-1 flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold py-2 px-3 rounded-md transition-all duration-300 text-xs transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50"
                       >
                         {isGenerating ? (
                           <>
@@ -240,7 +240,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
                         onGenerateSuggestion(suggestion);
                       }}
                       disabled={isGenerating || !suggestion.trim() || isGenerateDisabled}
-                      className="flex-1 flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-semibold py-2 px-3 rounded-md transition-all duration-300 text-xs transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50"
+                      className="flex-1 flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold py-2 px-3 rounded-md transition-all duration-300 text-xs transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50"
                     >
                       {isGenerating ? (
                         <>
@@ -256,7 +256,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
                     </button>
                   )}
                   {creditsPerGeneration !== undefined && creditsPerGeneration > 0 && (
-                    <span className={`text-xs font-mono whitespace-nowrap ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-600'
+                    <span className={`text-xs font-mono whitespace-nowrap ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
                       }`}>
                       {creditsPerGeneration} {creditsPerGeneration === 1 ? t('mockup.creditUnitSingular') : t('mockup.creditUnitPlural')}
                     </span>

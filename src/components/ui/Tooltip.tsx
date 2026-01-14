@@ -182,8 +182,8 @@ export const Tooltip: React.FC<TooltipProps> = ({
         <div
           ref={tooltipRef}
           className={`fixed z-50 px-2.5 py-1.5 text-xs font-mono backdrop-blur-sm rounded-md shadow-lg pointer-events-auto animate-fade-in ${theme === 'dark'
-            ? 'text-zinc-300 bg-zinc-900/70 border border-zinc-800/40'
-            : 'text-zinc-700 bg-white/70 border border-zinc-200/40'
+            ? 'text-neutral-300 bg-neutral-900/70 border border-neutral-800/40'
+            : 'text-neutral-700 bg-white/70 border border-neutral-200/40'
             }`}
           style={{
             top: `${tooltipPosition.top}px`,
@@ -197,8 +197,8 @@ export const Tooltip: React.FC<TooltipProps> = ({
               <button
                 onClick={handleDismiss}
                 className={`flex-shrink-0 p-0.5 rounded hover:bg-opacity-20 transition-colors ${theme === 'dark'
-                  ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700'
-                  : 'text-zinc-500 hover:text-zinc-700 hover:bg-zinc-200'
+                  ? 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-700'
+                  : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-200'
                   }`}
                 aria-label="Close tooltip"
               >
@@ -209,18 +209,18 @@ export const Tooltip: React.FC<TooltipProps> = ({
           <div
             className={`absolute w-0 h-0 border-4 ${position === 'top'
               ? theme === 'dark'
-                ? 'top-full left-1/2 -translate-x-1/2 border-t-zinc-900/70 border-r-transparent border-b-transparent border-l-transparent'
+                ? 'top-full left-1/2 -translate-x-1/2 border-t-neutral-900/70 border-r-transparent border-b-transparent border-l-transparent'
                 : 'top-full left-1/2 -translate-x-1/2 border-t-white/70 border-r-transparent border-b-transparent border-l-transparent'
               : position === 'bottom'
                 ? theme === 'dark'
-                  ? 'bottom-full left-1/2 -translate-x-1/2 border-b-zinc-900/70 border-r-transparent border-t-transparent border-l-transparent'
+                  ? 'bottom-full left-1/2 -translate-x-1/2 border-b-neutral-900/70 border-r-transparent border-t-transparent border-l-transparent'
                   : 'bottom-full left-1/2 -translate-x-1/2 border-b-white/70 border-r-transparent border-t-transparent border-l-transparent'
                 : position === 'left'
                   ? theme === 'dark'
-                    ? 'left-full top-1/2 -translate-y-1/2 border-l-zinc-900/70 border-r-transparent border-t-transparent border-b-transparent'
+                    ? 'left-full top-1/2 -translate-y-1/2 border-l-neutral-900/70 border-r-transparent border-t-transparent border-b-transparent'
                     : 'left-full top-1/2 -translate-y-1/2 border-l-white/70 border-r-transparent border-t-transparent border-b-transparent'
                   : theme === 'dark'
-                    ? 'right-full top-1/2 -translate-y-1/2 border-r-zinc-900/70 border-l-transparent border-t-transparent border-b-transparent'
+                    ? 'right-full top-1/2 -translate-y-1/2 border-r-neutral-900/70 border-l-transparent border-t-transparent border-b-transparent'
                     : 'right-full top-1/2 -translate-y-1/2 border-r-white/70 border-l-transparent border-t-transparent border-b-transparent'
               }`}
           />

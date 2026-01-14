@@ -45,10 +45,10 @@ export const EditorDisplay: React.FC<EditorDisplayProps> = ({
 
   if (!base64Image && !isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-center text-zinc-600">
+      <div className="flex flex-col items-center justify-center h-full text-center text-neutral-600">
         <Palette size={64} strokeWidth={1} />
         <h2 className="mt-4 text-xl font-semibold font-mono uppercase">UPLOAD A MOCKUP</h2>
-        <p className="mt-1 text-sm text-zinc-500">Upload a mockup image to start editing.</p>
+        <p className="mt-1 text-sm text-neutral-500">Upload a mockup image to start editing.</p>
       </div>
     );
   }
@@ -57,7 +57,7 @@ export const EditorDisplay: React.FC<EditorDisplayProps> = ({
     <section className="h-full flex items-center justify-center py-4 md:py-8">
       <div className="w-full max-w-6xl mx-auto px-2 sm:px-4 md:px-6">
         <div
-          className={`relative ${aspectRatioClasses[aspectRatio] || 'aspect-[16/9]'} bg-black/20 rounded-md overflow-hidden group border border-zinc-800/50 transition-all duration-300 hover:border-zinc-700/80 hover:shadow-2xl hover:shadow-black/30 hover:scale-[1.02] animate-fade-in w-full`}
+          className={`relative ${aspectRatioClasses[aspectRatio] || 'aspect-[16/9]'} bg-black/20 rounded-md overflow-hidden group border border-neutral-800/50 transition-all duration-300 hover:border-neutral-700/80 hover:shadow-2xl hover:shadow-black/30 hover:scale-[1.02] animate-fade-in w-full`}
           onClick={canInteract ? onView : undefined}
         >
           {base64Image && (
@@ -76,7 +76,7 @@ export const EditorDisplay: React.FC<EditorDisplayProps> = ({
           )}
 
           {!isLoading && !base64Image && (
-            <div className="absolute inset-0 flex items-center justify-center text-zinc-700 overflow-hidden" role="status" aria-label="Processing mockup...">
+            <div className="absolute inset-0 flex items-center justify-center text-neutral-700 overflow-hidden" role="status" aria-label="Processing mockup...">
               <ImageIcon size={40} strokeWidth={1} className="opacity-50" aria-hidden="true" />
               <div className="absolute inset-0 w-full h-full bg-transparent -translate-x-full animate-shimmer shimmer-glow"></div>
               <span className="sr-only">Processing mockup, please wait...</span>
@@ -88,7 +88,7 @@ export const EditorDisplay: React.FC<EditorDisplayProps> = ({
               <a
                 href={imageUrl}
                 download={`mockup-${Date.now()}.png`}
-                className="p-3 bg-zinc-900/50 rounded-md text-zinc-300 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-all transform hover:scale-[1.03]"
+                className="p-3 bg-neutral-900/50 rounded-md text-neutral-300 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-all transform hover:scale-[1.03]"
                 title="Download"
                 onClick={(e) => e.stopPropagation()}
               >
@@ -100,12 +100,12 @@ export const EditorDisplay: React.FC<EditorDisplayProps> = ({
                   onAngleSelect={onNewAngle}
                   disabled={isLoading}
                   className="inline-flex"
-                  buttonClassName="p-3 bg-zinc-900/50 rounded-md text-zinc-300 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-all transform hover:scale-[1.03]"
+                  buttonClassName="p-3 bg-neutral-900/50 rounded-md text-neutral-300 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-all transform hover:scale-[1.03]"
                 />
               </div>
               <button
                 onClick={(e) => { e.stopPropagation(); onNewBackground(); }}
-                className="p-3 bg-zinc-900/50 rounded-md text-zinc-300 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-all transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 focus:ring-offset-2 focus:ring-offset-black/70"
+                className="p-3 bg-neutral-900/50 rounded-md text-neutral-300 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-all transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 focus:ring-offset-2 focus:ring-offset-black/70"
                 title="New Background (Change environment)"
                 aria-label="Generate new background"
               >
@@ -113,7 +113,7 @@ export const EditorDisplay: React.FC<EditorDisplayProps> = ({
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); onZoomIn(); }}
-                className="p-3 bg-zinc-900/50 rounded-md text-zinc-300 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-all transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 focus:ring-offset-2 focus:ring-offset-black/70"
+                className="p-3 bg-neutral-900/50 rounded-md text-neutral-300 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-all transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 focus:ring-offset-2 focus:ring-offset-black/70"
                 title="Zoom In (Move camera closer)"
                 aria-label="Zoom in"
               >
@@ -121,7 +121,7 @@ export const EditorDisplay: React.FC<EditorDisplayProps> = ({
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); onZoomOut(); }}
-                className="p-3 bg-zinc-900/50 rounded-md text-zinc-300 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-all transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 focus:ring-offset-2 focus:ring-offset-black/70"
+                className="p-3 bg-neutral-900/50 rounded-md text-neutral-300 hover:bg-brand-cyan/20 hover:text-brand-cyan transition-all transform hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 focus:ring-offset-2 focus:ring-offset-black/70"
                 title="Zoom Out (Move camera further)"
                 aria-label="Zoom out"
               >

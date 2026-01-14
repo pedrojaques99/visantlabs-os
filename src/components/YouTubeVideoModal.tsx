@@ -41,18 +41,18 @@ export const YouTubeVideoModal: React.FC<YouTubeVideoModalProps> = ({
       onClick={onClose}
     >
       <div
-        className={`relative w-full max-w-4xl mx-4 ${theme === 'dark' ? 'bg-zinc-900' : 'bg-white'
-          } border border-zinc-800/50 rounded-md shadow-xl overflow-hidden`}
+        className={`relative w-full max-w-4xl mx-4 ${theme === 'dark' ? 'bg-neutral-900' : 'bg-white'
+          } border border-neutral-800/50 rounded-md shadow-xl overflow-hidden`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-4 border-b border-zinc-800/50">
-          <h2 className={`text-lg font-semibold font-mono ${theme === 'dark' ? 'text-zinc-200' : 'text-zinc-800'
+        <div className="flex items-center justify-between p-4 border-b border-neutral-800/50">
+          <h2 className={`text-lg font-semibold font-mono ${theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
             } uppercase`}>
             Tutorial Video
           </h2>
           <button
             onClick={onClose}
-            className="text-zinc-500 hover:text-zinc-300 transition-colors"
+            className="text-neutral-500 hover:text-neutral-300 transition-colors"
             aria-label="Close"
           >
             <X size={20} />

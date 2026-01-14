@@ -266,6 +266,43 @@ export const SurpriseMeSettingsModal: React.FC<SurpriseMeSettingsModalProps> = (
     return availableTags.length > 0 && availableTags.every(tag => selectedTags[category].includes(tag));
   };
 
+  const [customInputs, setCustomInputs] = useState<Record<string, string>>({
+    categories: '',
+    locations: '',
+    angles: '',
+    lighting: '',
+    effects: '',
+    materials: '',
+  });
+
+  const handleCustomInputChange = (section: string, value: string) => {
+    setCustomInputs(prev => ({
+      ...prev,
+      [section]: value
+    }));
+  };
+
+  const handleAddCustomTag = (sectionKey: string, category: keyof SurpriseMeSelectedTags) => {
+    const value = customInputs[sectionKey]?.trim();
+    if (!value) return;
+
+    // Check if duplicate
+    if (selectedTags[category].some(tag => tag.toLowerCase() === value.toLowerCase())) {
+      toast.error(t('mockup.tagAlreadyExists') || "Tag already exists");
+      return;
+    }
+
+    setSelectedTags(prev => ({
+      ...prev,
+      [category]: [...prev[category], value]
+    }));
+
+    setCustomInputs(prev => ({
+      ...prev,
+      [sectionKey]: ''
+    }));
+  };
+
   const renderTagSection = (
     sectionKey: string,
     category: keyof SurpriseMeSelectedTags,
@@ -278,25 +315,29 @@ export const SurpriseMeSettingsModal: React.FC<SurpriseMeSettingsModalProps> = (
     const allSelected = areAllTagsSelected(category, availableTags);
     const selectedCount = selectedTags[category].length;
 
+    // Combine available tags with selected custom tags that might not be in the available list
+    // This allows custom tags to be displayed and toggled
+    const displayTags = [...new Set([...availableTags, ...selectedTags[category]])];
+
     return (
-      <div className="group border border-white/5 bg-zinc-900/40 rounded-2xl overflow-hidden transition-all duration-300 hover:border-brand-cyan/20">
+      <div className="group border border-white/5 bg-neutral-900/40 rounded-2xl overflow-hidden transition-all duration-300 hover:border-brand-cyan/20">
         <button
           type="button"
           onClick={() => toggleSection(sectionKey)}
-          className={`w-full flex items-center justify-between p-4 transition-all duration-300 ${isExpanded ? 'bg-zinc-800/40' : 'hover:bg-zinc-800/20'
+          className={`w-full flex items-center justify-between p-4 transition-all duration-300 ${isExpanded ? 'bg-neutral-800/40' : 'hover:bg-neutral-800/20'
             }`}
         >
           <div className="flex items-center gap-4">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${isExpanded ? 'bg-brand-cyan/20 text-brand-cyan' : 'bg-zinc-800/50 text-zinc-400'
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${isExpanded ? 'bg-brand-cyan/20 text-brand-cyan' : 'bg-neutral-800/50 text-neutral-400'
               }`}>
               {icon}
             </div>
             <div className="flex flex-col items-start">
-              <span className="text-sm font-semibold text-zinc-100 font-manrope">
+              <span className="text-sm font-semibold text-neutral-100 font-manrope">
                 {t(titleKey)}
               </span>
-              <span className="text-[10px] text-zinc-500 font-mono uppercase tracking-wider">
-                {selectedCount} / {availableTags.length} SELECTED
+              <span className="text-[10px] text-neutral-500 font-mono uppercase tracking-wider">
+                {selectedCount} SELECTED
               </span>
             </div>
           </div>
@@ -306,25 +347,50 @@ export const SurpriseMeSettingsModal: React.FC<SurpriseMeSettingsModalProps> = (
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                selectAllTags(category, availableTags);
+                selectAllTags(category, displayTags);
               }}
               className={`text-[10px] font-bold px-3 py-1.5 rounded-full border transition-all duration-200 uppercase tracking-tighter ${allSelected
                 ? 'bg-brand-cyan/10 border-brand-cyan/30 text-brand-cyan'
-                : 'bg-zinc-800/50 border-zinc-700/50 text-zinc-500 hover:text-zinc-300 hover:border-zinc-600'
+                : 'bg-neutral-800/50 border-neutral-700/50 text-neutral-500 hover:text-neutral-300 hover:border-neutral-600'
                 }`}
             >
               {allSelected ? 'Unselect All' : 'Select All'}
             </button>
             <div className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
-              <ChevronDown size={18} className="text-zinc-500" />
+              <ChevronDown size={18} className="text-neutral-500" />
             </div>
           </div>
         </button>
 
         <div className={`transition-all duration-500 ease-in-out ${isExpanded ? 'max-h-[1000px] opacity-100 py-4' : 'max-h-0 opacity-0 py-0'
           } bg-black/20 px-4`}>
+
+          {/* Custom Tag Input */}
+          <div className="mb-4 flex gap-2">
+            <Input
+              value={customInputs[sectionKey]}
+              onChange={(e) => handleCustomInputChange(sectionKey, e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddCustomTag(sectionKey, category);
+                }
+              }}
+              placeholder={t('mockup.addCustomTag') || "Add custom tag..."}
+              className="bg-neutral-900/50 border-neutral-800 hover:border-neutral-700 focus:border-brand-cyan/50 h-9 text-sm"
+            />
+            <Button
+              onClick={() => handleAddCustomTag(sectionKey, category)}
+              disabled={!customInputs[sectionKey]?.trim()}
+              size="sm"
+              className="bg-neutral-800 hover:bg-neutral-700 text-neutral-300 h-9 w-9 p-0"
+            >
+              <Plus size={16} />
+            </Button>
+          </div>
+
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {availableTags.map(tag => {
+            {displayTags.map(tag => {
               const selected = isTagSelected(category, tag);
               return (
                 <Badge
@@ -333,10 +399,10 @@ export const SurpriseMeSettingsModal: React.FC<SurpriseMeSettingsModalProps> = (
                   variant="outline"
                   className={`flex items-center gap-2 p-2.5 rounded-xl border transition-all duration-200 group/tag cursor-pointer ${selected
                     ? 'bg-brand-cyan/5 border-brand-cyan/20 text-brand-cyan shadow-[0_0_15px_-5px_rgba(0,255,255,0.1)]'
-                    : 'bg-zinc-900/50 border-zinc-800/50 text-zinc-500 hover:border-zinc-700 hover:text-zinc-400'
+                    : 'bg-neutral-900/50 border-neutral-800/50 text-neutral-500 hover:border-neutral-700 hover:text-neutral-400'
                     }`}
                 >
-                  <div className={`transition-colors duration-200 ${selected ? 'text-brand-cyan' : 'text-zinc-700'}`}>
+                  <div className={`transition-colors duration-200 ${selected ? 'text-brand-cyan' : 'text-neutral-700'}`}>
                     {selected ? <CheckCircle2 size={14} /> : <Circle size={14} />}
                   </div>
                   <span className="text-xs font-medium truncate font-manrope">{tag}</span>
@@ -368,7 +434,7 @@ export const SurpriseMeSettingsModal: React.FC<SurpriseMeSettingsModalProps> = (
       >
         <div
           ref={modalRef}
-          className={`bg-zinc-950 border border-white/10 rounded-[2rem] w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] transform transition-all duration-300 flex flex-col ${isOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-8'
+          className={`bg-neutral-950 border border-white/10 rounded-[2rem] w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] transform transition-all duration-300 flex flex-col ${isOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-8'
             }`}
           onClick={(e) => e.stopPropagation()}
           role="dialog"
@@ -379,7 +445,7 @@ export const SurpriseMeSettingsModal: React.FC<SurpriseMeSettingsModalProps> = (
           <div className="px-8 pt-8 pb-6 flex items-center justify-between shrink-0 bg-gradient-to-b from-white/[0.02] to-transparent">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-cyan to-blue-600 p-[1px]">
-                <div className="w-full h-full rounded-[0.9rem] bg-zinc-950 flex items-center justify-center">
+                <div className="w-full h-full rounded-[0.9rem] bg-neutral-950 flex items-center justify-center">
                   <Settings size={22} className="text-brand-cyan animate-pulse-slow" />
                 </div>
               </div>
@@ -387,12 +453,12 @@ export const SurpriseMeSettingsModal: React.FC<SurpriseMeSettingsModalProps> = (
                 <h2 id="modal-title" className="text-2xl font-bold font-manrope text-white tracking-tight">
                   {t('surpriseMeSettings.title') || 'Surprise Me Settings'}
                 </h2>
-                <p className="text-xs text-zinc-500 font-medium">Configure your random generation preferences</p>
+                <p className="text-xs text-neutral-500 font-medium">Configure your random generation preferences</p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="text-zinc-500 hover:text-white hover:bg-white/10 rounded-full p-2.5 transition-all duration-200 border border-transparent hover:border-white/10"
+              className="text-neutral-500 hover:text-white hover:bg-white/10 rounded-full p-2.5 transition-all duration-200 border border-transparent hover:border-white/10"
               aria-label="Close modal"
             >
               <X size={20} />
@@ -406,14 +472,14 @@ export const SurpriseMeSettingsModal: React.FC<SurpriseMeSettingsModalProps> = (
                   <div className="w-12 h-12 border-2 border-brand-cyan/20 rounded-full" />
                   <div className="absolute inset-0 w-12 h-12 border-2 border-transparent border-t-brand-cyan rounded-full animate-spin" />
                 </div>
-                <p className="text-zinc-500 font-mono text-sm animate-pulse uppercase tracking-widest">Loading Settings</p>
+                <p className="text-neutral-500 font-mono text-sm animate-pulse uppercase tracking-widest">Loading Settings</p>
               </div>
             ) : (
               <div className="space-y-6">
                 {/* Info Box */}
                 <div className="relative group overflow-hidden bg-white/[0.02] border border-white/5 rounded-2xl p-5">
-                  <div className="absolute top-0 right-0 -tranzinc-y-1/2 tranzinc-x-1/2 w-32 h-32 bg-brand-cyan/10 blur-[50px] rounded-full group-hover:bg-brand-cyan/20 transition-all duration-500" />
-                  <p className="relative text-sm text-zinc-400 font-manrope leading-relaxed">
+                  <div className="absolute top-0 right-0 -tranneutral-y-1/2 tranneutral-x-1/2 w-32 h-32 bg-brand-cyan/10 blur-[50px] rounded-full group-hover:bg-brand-cyan/20 transition-all duration-500" />
+                  <p className="relative text-sm text-neutral-400 font-manrope leading-relaxed">
                     {t('surpriseMeSettings.info') || 'Choose which tags you want to include when using Surprise Me. Unselected tags will be excluded from random generations.'}
                   </p>
                 </div>
@@ -421,7 +487,7 @@ export const SurpriseMeSettingsModal: React.FC<SurpriseMeSettingsModalProps> = (
                 {/* Presets Management */}
                 <div className="space-y-4 pt-2">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-mono font-bold text-zinc-500 uppercase tracking-widest">
+                    <h3 className="text-xs font-mono font-bold text-neutral-500 uppercase tracking-widest">
                       {t('mockup.surpriseMePresets') || 'Surprise Me Presets'}
                     </h3>
                     {!showSaveInput && (
@@ -443,7 +509,7 @@ export const SurpriseMeSettingsModal: React.FC<SurpriseMeSettingsModalProps> = (
                         value={presetName}
                         onChange={(e) => setPresetName(e.target.value)}
                         placeholder={t('mockup.presetNamePlaceholder') || 'Preset name...'}
-                        className="h-9 bg-zinc-900 border-zinc-800 text-sm"
+                        className="h-9 bg-neutral-900 border-neutral-800 text-sm"
                         autoFocus
                       />
                       <Button
@@ -457,7 +523,7 @@ export const SurpriseMeSettingsModal: React.FC<SurpriseMeSettingsModalProps> = (
                         variant="ghost"
                         size="sm"
                         onClick={() => setShowSaveInput(false)}
-                        className="h-9 w-9 p-0 text-zinc-500"
+                        className="h-9 w-9 p-0 text-neutral-500"
                       >
                         <X size={16} />
                       </Button>
@@ -471,13 +537,13 @@ export const SurpriseMeSettingsModal: React.FC<SurpriseMeSettingsModalProps> = (
                           key={preset.id}
                           className="flex items-center justify-between p-3 bg-white/[0.02] border border-white/5 rounded-xl hover:border-brand-cyan/30 transition-all group"
                         >
-                          <span className="text-xs font-medium text-zinc-300 truncate mr-2">{preset.name}</span>
+                          <span className="text-xs font-medium text-neutral-300 truncate mr-2">{preset.name}</span>
                           <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleLoadPreset(preset)}
-                              className="h-7 px-2 text-[10px] font-mono text-zinc-400 hover:text-brand-cyan"
+                              className="h-7 px-2 text-[10px] font-mono text-neutral-400 hover:text-brand-cyan"
                             >
                               {/* Using simple text if Load icon is not available, but let's assume it is or use simple text */}
                               Load
@@ -486,7 +552,7 @@ export const SurpriseMeSettingsModal: React.FC<SurpriseMeSettingsModalProps> = (
                               variant="ghost"
                               size="sm"
                               onClick={() => handleDeletePreset(preset.id)}
-                              className="h-7 w-7 p-0 text-zinc-500 hover:text-red-400"
+                              className="h-7 w-7 p-0 text-neutral-500 hover:text-red-400"
                             >
                               <Trash2 size={12} />
                             </Button>
@@ -496,7 +562,7 @@ export const SurpriseMeSettingsModal: React.FC<SurpriseMeSettingsModalProps> = (
                     </div>
                   ) : (
                     !showSaveInput && (
-                      <p className="text-[10px] font-mono text-zinc-600 italic">
+                      <p className="text-[10px] font-mono text-neutral-600 italic">
                         {t('mockup.noPresets') || 'No presets saved yet'}
                       </p>
                     )
@@ -512,7 +578,8 @@ export const SurpriseMeSettingsModal: React.FC<SurpriseMeSettingsModalProps> = (
                     'selectedCategoryTags',
                     GENERIC_MOCKUP_TAGS,
                     'surpriseMeSettings.categories',
-                    <LayoutGrid size={20} />
+                    <LayoutGrid size={20} />,
+                    'surpriseMeSettings.categoriesDesc'
                   )}
 
                   {renderTagSection(
@@ -520,7 +587,8 @@ export const SurpriseMeSettingsModal: React.FC<SurpriseMeSettingsModalProps> = (
                     'selectedLocationTags',
                     AVAILABLE_LOCATION_TAGS,
                     'surpriseMeSettings.locations',
-                    <MapPin size={20} />
+                    <MapPin size={20} />,
+                    'surpriseMeSettings.locationsDesc'
                   )}
 
                   {renderTagSection(
@@ -528,7 +596,8 @@ export const SurpriseMeSettingsModal: React.FC<SurpriseMeSettingsModalProps> = (
                     'selectedAngleTags',
                     AVAILABLE_ANGLE_TAGS,
                     'surpriseMeSettings.angles',
-                    <Camera size={20} />
+                    <Camera size={20} />,
+                    'surpriseMeSettings.anglesDesc'
                   )}
 
                   {renderTagSection(
@@ -536,7 +605,8 @@ export const SurpriseMeSettingsModal: React.FC<SurpriseMeSettingsModalProps> = (
                     'selectedLightingTags',
                     AVAILABLE_LIGHTING_TAGS,
                     'surpriseMeSettings.lighting',
-                    <Sun size={20} />
+                    <Sun size={20} />,
+                    'surpriseMeSettings.lightingDesc'
                   )}
 
                   {renderTagSection(
@@ -544,7 +614,8 @@ export const SurpriseMeSettingsModal: React.FC<SurpriseMeSettingsModalProps> = (
                     'selectedEffectTags',
                     AVAILABLE_EFFECT_TAGS,
                     'surpriseMeSettings.effects',
-                    <Sparkles size={20} />
+                    <Sparkles size={20} />,
+                    'surpriseMeSettings.effectsDesc'
                   )}
 
                   {renderTagSection(
@@ -552,7 +623,8 @@ export const SurpriseMeSettingsModal: React.FC<SurpriseMeSettingsModalProps> = (
                     'selectedMaterialTags',
                     AVAILABLE_MATERIAL_TAGS,
                     'surpriseMeSettings.materials',
-                    <Layers size={20} />
+                    <Layers size={20} />,
+                    'surpriseMeSettings.materialsDesc'
                   )}
                 </div>
               </div>
@@ -560,12 +632,12 @@ export const SurpriseMeSettingsModal: React.FC<SurpriseMeSettingsModalProps> = (
           </div>
 
           {/* Actions */}
-          <div className="px-8 py-6 shrink-0 bg-zinc-900/50 backdrop-blur-xl border-t border-white/5 flex items-center gap-4">
+          <div className="px-8 py-6 shrink-0 bg-neutral-900/50 backdrop-blur-xl border-t border-white/5 flex items-center gap-4">
             <button
               type="button"
               onClick={onClose}
               disabled={isSaving}
-              className="flex-1 px-6 py-3.5 bg-white/[0.02] hover:bg-white/[0.05] disabled:opacity-50 disabled:cursor-not-allowed text-zinc-300 hover:text-white border border-white/5 hover:border-white/10 font-bold rounded-2xl transition-all duration-200 text-xs uppercase tracking-widest font-mono"
+              className="flex-1 px-6 py-3.5 bg-white/[0.02] hover:bg-white/[0.05] disabled:opacity-50 disabled:cursor-not-allowed text-neutral-300 hover:text-white border border-white/5 hover:border-white/10 font-bold rounded-2xl transition-all duration-200 text-xs uppercase tracking-widest font-mono"
             >
               {t('common.cancel') || 'Cancel'}
             </button>

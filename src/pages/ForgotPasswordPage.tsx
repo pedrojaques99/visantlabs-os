@@ -77,17 +77,17 @@ export const ForgotPasswordPage: React.FC = () => {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-[#121212] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#0C0C0C] flex items-center justify-center p-4">
         <GridDotsBackground />
-        <div className="bg-zinc-900 border border-zinc-800/50 rounded-md p-8 w-full max-w-md relative z-10">
+        <div className="bg-neutral-900 border border-neutral-800/50 rounded-md p-8 w-full max-w-md relative z-10">
           <div className="flex flex-col items-center text-center space-y-4">
             <div className="flex items-center justify-center w-16 h-16 rounded-md bg-green-500/20 mb-4">
               <CheckCircle2 className="w-8 h-8 text-green-500" />
             </div>
-            <h1 className="text-2xl font-semibold font-mono text-zinc-200">
+            <h1 className="text-2xl font-semibold font-mono text-neutral-200">
               {t('auth.passwordResetSuccess') || 'Password Reset Successful!'}
             </h1>
-            <p className="text-sm text-zinc-400 font-mono">
+            <p className="text-sm text-neutral-400 font-mono">
               {t('auth.redirectingToLogin') || 'Redirecting to login...'}
             </p>
           </div>
@@ -98,17 +98,17 @@ export const ForgotPasswordPage: React.FC = () => {
 
   if (!token) {
     return (
-      <div className="min-h-screen bg-[#121212] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#0C0C0C] flex items-center justify-center p-4">
         <GridDotsBackground />
-        <div className="bg-zinc-900 border border-zinc-800/50 rounded-md p-8 w-full max-w-md relative z-10">
+        <div className="bg-neutral-900 border border-neutral-800/50 rounded-md p-8 w-full max-w-md relative z-10">
           <div className="flex flex-col items-center text-center space-y-4">
             <div className="flex items-center justify-center w-16 h-16 rounded-md bg-red-500/20 mb-4">
               <XCircle className="w-8 h-8 text-red-500" />
             </div>
-            <h1 className="text-2xl font-semibold font-mono text-zinc-200">
+            <h1 className="text-2xl font-semibold font-mono text-neutral-200">
               {t('auth.invalidResetLink') || 'Invalid Reset Link'}
             </h1>
-            <p className="text-sm text-zinc-400 font-mono mb-4">
+            <p className="text-sm text-neutral-400 font-mono mb-4">
               {t('auth.invalidResetLinkMessage') || 'This password reset link is invalid or has expired. Please request a new password reset.'}
             </p>
             <button
@@ -124,23 +124,23 @@ export const ForgotPasswordPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#121212] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#0C0C0C] flex items-center justify-center p-4">
       <GridDotsBackground />
-      <div className="bg-zinc-900 border border-zinc-800/50 rounded-md p-8 w-full max-w-md relative z-10">
+      <div className="bg-neutral-900 border border-neutral-800/50 rounded-md p-8 w-full max-w-md relative z-10">
         <div className="flex items-center justify-center w-16 h-16 mx-auto mb-6 rounded-md bg-brand-cyan/20">
           <Lock className="w-8 h-8 text-brand-cyan" />
         </div>
 
-        <h1 className="text-2xl font-semibold font-mono text-zinc-200 text-center mb-2">
+        <h1 className="text-2xl font-semibold font-mono text-neutral-200 text-center mb-2">
           {t('auth.resetPassword') || 'Reset Password'}
         </h1>
-        <p className="text-sm text-zinc-400 font-mono text-center mb-6">
+        <p className="text-sm text-neutral-400 font-mono text-center mb-6">
           {t('auth.enterNewPassword') || 'Enter your new password below'}
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-mono text-zinc-400 mb-1">
+            <label className="block text-xs font-mono text-neutral-400 mb-1">
               {t('auth.newPassword') || 'New Password'}
             </label>
             <input
@@ -149,16 +149,16 @@ export const ForgotPasswordPage: React.FC = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full bg-black/40 p-2 rounded-md border border-zinc-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-zinc-300 font-mono"
+              className="w-full bg-black/40 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-neutral-300 font-mono"
               placeholder={t('auth.passwordPlaceholder') || 'Enter new password'}
             />
-            <p className="text-xs text-zinc-500 mt-1 font-mono">
+            <p className="text-xs text-neutral-500 mt-1 font-mono">
               {t('auth.minimumCharacters') || 'Minimum 6 characters'}
             </p>
           </div>
 
           <div>
-            <label className="block text-xs font-mono text-zinc-400 mb-1">
+            <label className="block text-xs font-mono text-neutral-400 mb-1">
               {t('auth.confirmPassword') || 'Confirm Password'}
             </label>
             <input
@@ -167,7 +167,7 @@ export const ForgotPasswordPage: React.FC = () => {
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full bg-black/40 p-2 rounded-md border border-zinc-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-zinc-300 font-mono"
+              className="w-full bg-black/40 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-neutral-300 font-mono"
               placeholder={t('auth.confirmPasswordPlaceholder') || 'Confirm new password'}
             />
           </div>
@@ -181,7 +181,7 @@ export const ForgotPasswordPage: React.FC = () => {
           <button
             type="submit"
             disabled={isLoading || !password || !confirmPassword}
-            className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
+            className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
           >
             {isLoading ? (
               <>

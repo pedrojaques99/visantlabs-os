@@ -789,35 +789,35 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
     <div className="w-full h-full flex">
       <div
         id="pdf-preview-container"
-        className="flex-1 overflow-auto bg-zinc-200 px-4 py-4 relative"
+        className="flex-1 overflow-auto bg-neutral-200 px-4 py-4 relative"
         style={{ cursor: (isAddingField || isPositioningMode) ? 'crosshair' : 'default' }}
       >
         {/* Zoom controls - top right */}
         <div className="sticky top-0 z-40 mb-4 flex justify-end">
-          <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm border border-zinc-300/50 rounded-md px-2 py-1.5 shadow-sm">
+          <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm border border-neutral-300/50 rounded-md px-2 py-1.5 shadow-sm">
             <button
               onClick={handleZoomOut}
               disabled={zoomLevel <= 0.5}
-              className="p-1.5 hover:bg-zinc-200/50 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              className="p-1.5 hover:bg-neutral-200/50 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
               title="Diminuir zoom"
             >
-              <ZoomOut size={16} className="text-zinc-700" />
+              <ZoomOut size={16} className="text-neutral-700" />
             </button>
-            <span className="text-xs font-mono text-zinc-700 px-2 min-w-[3rem] text-center">
+            <span className="text-xs font-mono text-neutral-700 px-2 min-w-[3rem] text-center">
               {Math.round(zoomLevel * 100)}%
             </span>
             <button
               onClick={handleZoomIn}
               disabled={zoomLevel >= 3.0}
-              className="p-1.5 hover:bg-zinc-200/50 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              className="p-1.5 hover:bg-neutral-200/50 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
               title="Aumentar zoom"
             >
-              <ZoomIn size={16} className="text-zinc-700" />
+              <ZoomIn size={16} className="text-neutral-700" />
             </button>
-            <div className="w-px h-4 bg-zinc-300 mx-1" />
+            <div className="w-px h-4 bg-neutral-300 mx-1" />
             <button
               onClick={handleZoomReset}
-              className="text-xs font-mono text-zinc-700 px-2 py-1 hover:bg-zinc-200/50 rounded transition-colors"
+              className="text-xs font-mono text-neutral-700 px-2 py-1 hover:bg-neutral-200/50 rounded transition-colors"
               title="Resetar zoom"
             >
               Reset
@@ -966,9 +966,9 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
         `}</style>
           {/* PDF Document */}
           {(isReloading || !isVisible) && (
-            <div className="absolute inset-0 flex items-center justify-center bg-zinc-200/80 z-30">
+            <div className="absolute inset-0 flex items-center justify-center bg-neutral-200/80 z-30">
               <div className="text-center">
-                <div className="text-zinc-600 font-mono text-sm mb-2">Recarregando PDF...</div>
+                <div className="text-neutral-600 font-mono text-sm mb-2">Recarregando PDF...</div>
                 <div className="w-8 h-8 border-2 border-[brand-cyan] border-t-transparent rounded-md animate-spin mx-auto"></div>
               </div>
             </div>
@@ -977,7 +977,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
             key={documentKey}
             file={pdfUrl}
             onLoadSuccess={onDocumentLoadSuccess}
-            loading={<div className="text-zinc-600">Carregando PDF...</div>}
+            loading={<div className="text-neutral-600">Carregando PDF...</div>}
             error={<div className="text-red-600">Erro ao carregar PDF</div>}
           >
             {numPages > 0 && Array.from({ length: numPages }, (_, i) => i + 1).map((pageNum) => (
@@ -1160,7 +1160,7 @@ export const PdfPreviewWithFields: React.FC<PdfPreviewWithFieldsProps> = ({
                 minWidth: '300px',
                 maxWidth: '400px',
               }}
-              className="bg-zinc-900 border border-zinc-800 rounded-md shadow-xl"
+              className="bg-neutral-900 border border-neutral-800 rounded-md shadow-xl"
               role="dialog"
               aria-label="Painel de propriedades do campo"
             >

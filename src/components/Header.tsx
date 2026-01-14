@@ -172,15 +172,15 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
           className="h-5 md:h-7 w-auto opacity-90 group-hover:opacity-100 transition-opacity"
         />
         <div className="hidden sm:flex items-baseline gap-1.5">
-          <span className="text-xs md:text-sm font-mono text-zinc-500 uppercase">Visant Labs®</span>
-          <span className="text-[10px] font-mono text-zinc-600">v1.1</span>
+          <span className="text-xs md:text-sm font-mono text-neutral-500 uppercase">Visant Labs®</span>
+          <span className="text-[10px] font-mono text-neutral-600">v1.1</span>
         </div>
       </button>
       <div className="flex items-center gap-1.5 md:gap-4">
         {/* Pricing button hidden */}
         {/* <button
           onClick={onPricingClick}
-          className="hidden md:block text-[11px] md:text-xs font-mono text-zinc-500 hover:text-zinc-400 transition-colors tracking-wider uppercase"
+          className="hidden md:block text-[11px] md:text-xs font-mono text-neutral-500 hover:text-neutral-400 transition-colors tracking-wider uppercase"
         >
           {t('header.pricing')}
         </button> */}
@@ -193,7 +193,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
               window.location.href = '/';
             }
           }}
-          className="p-1.5 md:px-3 md:py-1.5 text-zinc-500 hover:text-brand-cyan transition-colors rounded border border-zinc-800/50 hover:border-[brand-cyan]/30 cursor-pointer"
+          className="p-1.5 md:px-3 md:py-1.5 text-neutral-500 hover:text-brand-cyan transition-colors rounded border border-neutral-800/50 hover:border-[brand-cyan]/30 cursor-pointer"
           title="Mockup Machine"
           aria-label="Go to Mockup Machine"
         >
@@ -205,7 +205,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
             onClick={handleNewMockupClick}
             variant="outline"
             size="sm"
-            className="text-[10px] md:text-xs font-mono text-zinc-400 hover:text-brand-cyan border-zinc-700/30 hover:border-[brand-cyan]/50 hover:bg-zinc-800/30"
+            className="text-[10px] md:text-xs font-mono text-neutral-400 hover:text-brand-cyan border-neutral-700/30 hover:border-[brand-cyan]/50 hover:bg-neutral-800/30"
             title="New Mockup"
             aria-label="Create new mockup"
           >
@@ -221,7 +221,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
             const popStateEvent = new PopStateEvent('popstate', { state: {} });
             window.dispatchEvent(popStateEvent);
           }}
-          className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-mono text-zinc-400 hover:text-brand-cyan transition-colors rounded border border-zinc-700/30 hover:border-[brand-cyan]/50 hover:bg-zinc-800/30 cursor-pointer"
+          className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-mono text-neutral-400 hover:text-brand-cyan transition-colors rounded border border-neutral-700/30 hover:border-[brand-cyan]/50 hover:bg-neutral-800/30 cursor-pointer"
           title="Explore Mockups"
           aria-label="Explore mockups"
         >
@@ -235,7 +235,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
             const popStateEvent = new PopStateEvent('popstate', { state: {} });
             window.dispatchEvent(popStateEvent);
           }}
-          className="p-1.5 md:p-2 text-zinc-500 hover:text-brand-cyan transition-colors rounded hover:bg-zinc-800/30 cursor-pointer"
+          className="p-1.5 md:p-2 text-neutral-500 hover:text-brand-cyan transition-colors rounded hover:bg-neutral-800/30 cursor-pointer"
           title="Community"
           aria-label="Community"
         >
@@ -249,7 +249,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
               const popStateEvent = new PopStateEvent('popstate', { state: {} });
               window.dispatchEvent(popStateEvent);
             }}
-            className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-mono text-zinc-400 hover:text-brand-cyan transition-colors rounded border border-zinc-700/30 hover:border-[brand-cyan]/50 hover:bg-zinc-800/30 cursor-pointer"
+            className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-mono text-neutral-400 hover:text-brand-cyan transition-colors rounded border border-neutral-700/30 hover:border-[brand-cyan]/50 hover:bg-neutral-800/30 cursor-pointer"
             title="About"
             aria-label="About"
           >
@@ -262,7 +262,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
           onClick={() => {
             window.location.href = '/branding-machine';
           }}
-          className="hidden md:block text-[11px] md:text-xs font-mono text-zinc-500 hover:text-zinc-400 transition-colors tracking-wider uppercase"
+          className="hidden md:block text-[11px] md:text-xs font-mono text-neutral-500 hover:text-neutral-400 transition-colors tracking-wider uppercase"
         >
           Branding
         </button> */}
@@ -271,7 +271,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
           onClick={() => {
             window.location.href = '/budget-machine';
           }}
-          className="hidden md:block text-[11px] md:text-xs font-mono text-zinc-500 hover:text-zinc-400 transition-colors tracking-wider uppercase"
+          className="hidden md:block text-[11px] md:text-xs font-mono text-neutral-500 hover:text-neutral-400 transition-colors tracking-wider uppercase"
         >
           Budget
         </button> */}
@@ -287,13 +287,13 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
         {isAuthenticated && onMyOutputsClick && (
           <button
             onClick={onMyOutputsClick}
-            className="relative p-1.5 md:p-2 text-zinc-500 hover:text-brand-cyan transition-colors rounded hover:bg-zinc-800/30 cursor-pointer"
+            className="relative p-1.5 md:p-2 text-neutral-500 hover:text-brand-cyan transition-colors rounded hover:bg-neutral-800/30 cursor-pointer"
             title="Saved"
             aria-label="View saved outputs"
           >
             <Heart size={14} className="md:w-4 md:h-4" strokeWidth={2} />
             {savedCount !== null && savedCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 md:-top-1 md:-right-1 bg-zinc-800/40 text-zinc-400 text-[8px] md:text-[9px] font-mono font-medium px-0.5 md:px-1 py-0 md:py-0.5 rounded-md min-w-[14px] md:min-w-[16px] text-center">
+              <span className="absolute -top-0.5 -right-0.5 md:-top-1 md:-right-1 bg-neutral-800/40 text-neutral-400 text-[8px] md:text-[9px] font-mono font-medium px-0.5 md:px-1 py-0 md:py-0.5 rounded-md min-w-[14px] md:min-w-[16px] text-center">
                 {savedCount > 99 ? '99+' : savedCount}
               </span>
             )}
@@ -303,13 +303,13 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
         {/* {isAuthenticated && onMyBrandingsClick && (
           <button
             onClick={onMyBrandingsClick}
-            className="relative p-1.5 md:p-2 text-zinc-500 hover:text-brand-cyan transition-colors rounded hover:bg-zinc-800/30"
+            className="relative p-1.5 md:p-2 text-neutral-500 hover:text-brand-cyan transition-colors rounded hover:bg-neutral-800/30"
             title="My Branding Projects"
             aria-label="View my branding projects"
           >
             <FilePenLine size={14} className="md:w-4 md:h-4" strokeWidth={2} />
             {brandingsCount !== null && brandingsCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 md:-top-1 md:-right-1 bg-zinc-800/40 text-zinc-400 text-[8px] md:text-[9px] font-mono font-medium px-0.5 md:px-1 py-0 md:py-0.5 rounded-md min-w-[14px] md:min-w-[16px] text-center">
+              <span className="absolute -top-0.5 -right-0.5 md:-top-1 md:-right-1 bg-neutral-800/40 text-neutral-400 text-[8px] md:text-[9px] font-mono font-medium px-0.5 md:px-1 py-0 md:py-0.5 rounded-md min-w-[14px] md:min-w-[16px] text-center">
                 {brandingsCount > 99 ? '99+' : brandingsCount}
               </span>
             )}
@@ -322,7 +322,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
             toggleTheme();
             window.location.reload();
           }}
-          className="flex items-center justify-center p-1.5 md:px-3 md:py-1.5 text-[11px] md:text-xs font-mono text-zinc-500 hover:text-zinc-400 transition-colors rounded border border-zinc-800/50 hover:border-zinc-700 cursor-pointer"
+          className="flex items-center justify-center p-1.5 md:px-3 md:py-1.5 text-[11px] md:text-xs font-mono text-neutral-500 hover:text-neutral-400 transition-colors rounded border border-neutral-800/50 hover:border-neutral-700 cursor-pointer"
           title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
         >

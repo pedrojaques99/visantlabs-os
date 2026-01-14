@@ -141,16 +141,16 @@ ${message}
       onClick={handleClose}
     >
       <div
-        className="bg-zinc-900 border border-zinc-800/50 rounded-md p-6 w-full max-w-lg mx-4 shadow-xl"
+        className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 w-full max-w-lg mx-4 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold font-mono text-zinc-200 uppercase">
+          <h2 className="text-lg font-semibold font-mono text-neutral-200 uppercase">
             {t('support.title') || 'Support / Report Bug'}
           </h2>
           <button
             onClick={handleClose}
-            className="text-zinc-500 hover:text-zinc-300 transition-colors"
+            className="text-neutral-500 hover:text-neutral-300 transition-colors"
             aria-label="Close"
           >
             <X size={20} />
@@ -160,7 +160,7 @@ ${message}
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Contact Type Selection */}
           <div>
-            <label className="block text-xs font-mono text-zinc-400 mb-2">
+            <label className="block text-xs font-mono text-neutral-400 mb-2">
               {t('support.contactType') || 'Contact Type'}
             </label>
             <div className="flex gap-2">
@@ -169,7 +169,7 @@ ${message}
                 onClick={() => setContactType('customerService')}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md border transition-all text-sm font-mono ${contactType === 'customerService'
                   ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
-                  : 'bg-black/40 border-zinc-700/50 text-zinc-400 hover:border-zinc-600'
+                  : 'bg-black/40 border-neutral-700/50 text-neutral-400 hover:border-neutral-600'
                   }`}
               >
                 <MessageCircle size={16} />
@@ -180,7 +180,7 @@ ${message}
                 onClick={() => setContactType('reportBug')}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md border transition-all text-sm font-mono ${contactType === 'reportBug'
                   ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
-                  : 'bg-black/40 border-zinc-700/50 text-zinc-400 hover:border-zinc-600'
+                  : 'bg-black/40 border-neutral-700/50 text-neutral-400 hover:border-neutral-600'
                   }`}
               >
                 <Bug size={16} />
@@ -191,35 +191,35 @@ ${message}
 
           {/* Name Field */}
           <div>
-            <label className="block text-xs font-mono text-zinc-400 mb-1">
-              {t('support.name') || 'Name'} {!userName && <span className="text-zinc-600">({t('support.optional') || 'Optional'})</span>}
+            <label className="block text-xs font-mono text-neutral-400 mb-1">
+              {t('support.name') || 'Name'} {!userName && <span className="text-neutral-600">({t('support.optional') || 'Optional'})</span>}
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full bg-black/40 p-2 rounded-md border border-zinc-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-zinc-300 font-mono"
+              className="w-full bg-black/40 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-neutral-300 font-mono"
               placeholder={t('support.namePlaceholder') || 'Your name'}
             />
           </div>
 
           {/* Email Field */}
           <div>
-            <label className="block text-xs font-mono text-zinc-400 mb-1">
-              {t('support.email') || 'Email'} {!userEmail && <span className="text-zinc-600">({t('support.optional') || 'Optional'})</span>}
+            <label className="block text-xs font-mono text-neutral-400 mb-1">
+              {t('support.email') || 'Email'} {!userEmail && <span className="text-neutral-600">({t('support.optional') || 'Optional'})</span>}
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-black/40 p-2 rounded-md border border-zinc-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-zinc-300 font-mono"
+              className="w-full bg-black/40 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-neutral-300 font-mono"
               placeholder={t('support.emailPlaceholder') || 'your@email.com'}
             />
           </div>
 
           {/* Subject Field */}
           <div>
-            <label className="block text-xs font-mono text-zinc-400 mb-1">
+            <label className="block text-xs font-mono text-neutral-400 mb-1">
               {t('support.subject') || 'Subject'} <span className="text-red-400">*</span>
             </label>
             <input
@@ -227,14 +227,14 @@ ${message}
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               required
-              className="w-full bg-black/40 p-2 rounded-md border border-zinc-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-zinc-300 font-mono"
+              className="w-full bg-black/40 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-neutral-300 font-mono"
               placeholder={t('support.subjectPlaceholder') || 'Brief description'}
             />
           </div>
 
           {/* Message Field */}
           <div>
-            <label className="block text-xs font-mono text-zinc-400 mb-1">
+            <label className="block text-xs font-mono text-neutral-400 mb-1">
               {t('support.message') || 'Message'} <span className="text-red-400">*</span>
             </label>
             <textarea
@@ -242,24 +242,24 @@ ${message}
               onChange={(e) => setMessage(e.target.value)}
               required
               rows={6}
-              className="w-full bg-black/40 p-2 rounded-md border border-zinc-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-zinc-300 font-mono resize-none"
+              className="w-full bg-black/40 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-neutral-300 font-mono resize-none"
               placeholder={t('support.messagePlaceholder') || 'Describe your issue or question...'}
             />
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-zinc-800/50">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-800/50">
             <button
               type="button"
               onClick={handleClose}
-              className="px-4 py-2 text-xs font-mono text-zinc-400 hover:text-zinc-200 transition-colors border border-zinc-700/50 hover:border-zinc-600 rounded-md"
+              className="px-4 py-2 text-xs font-mono text-neutral-400 hover:text-neutral-200 transition-colors border border-neutral-700/50 hover:border-neutral-600 rounded-md"
             >
               {t('common.cancel') || 'Cancel'}
             </button>
             <button
               type="submit"
               disabled={isSubmitting || !subject.trim() || !message.trim()}
-              className="flex items-center justify-center gap-2 px-4 py-2 text-xs font-mono bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-semibold rounded-md transition-all duration-200"
+              className="flex items-center justify-center gap-2 px-4 py-2 text-xs font-mono bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold rounded-md transition-all duration-200"
             >
               {isSubmitting ? (
                 <>

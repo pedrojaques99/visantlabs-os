@@ -353,7 +353,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
       {/* Header */}
       <div className="flex items-center gap-3 mb-3">
         <CategoryIcon size={16} className={cn(categoryConfig.color)} />
-        <h3 className="text-xs font-semibold text-zinc-300 font-mono">{categoryTitle}</h3>
+        <h3 className="text-xs font-semibold text-neutral-300 font-mono">{categoryTitle}</h3>
       </div>
 
       {/* Preset Selector - Button to open modal */}
@@ -375,7 +375,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
         >
           {/* Thumbnail */}
           {selectedPreset?.referenceImageUrl ? (
-            <div className="w-10 h-10 bg-zinc-900/30 border border-zinc-700/30 rounded overflow-hidden flex-shrink-0">
+            <div className="w-10 h-10 bg-neutral-900/30 border border-neutral-700/30 rounded overflow-hidden flex-shrink-0">
               <img
                 src={isSafeUrl(selectedPreset.referenceImageUrl) ? selectedPreset.referenceImageUrl : ''}
                 alt={selectedPreset.name}
@@ -389,7 +389,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
               />
             </div>
           ) : selectedMockup ? (
-            <div className="w-10 h-10 bg-zinc-900/30 border border-zinc-700/30 rounded overflow-hidden flex-shrink-0">
+            <div className="w-10 h-10 bg-neutral-900/30 border border-neutral-700/30 rounded overflow-hidden flex-shrink-0">
               <img
                 src={getImageUrl(selectedMockup) || ''}
                 alt={selectedMockup.prompt || t('canvasNodes.mockupNode.mockupAltText')}
@@ -403,8 +403,8 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
               />
             </div>
           ) : (
-            <div className="w-10 h-10 bg-zinc-900/30 border border-zinc-700/30 rounded flex items-center justify-center flex-shrink-0">
-              <ImageIcon size={14} className="text-zinc-600" />
+            <div className="w-10 h-10 bg-neutral-900/30 border border-neutral-700/30 rounded flex items-center justify-center flex-shrink-0">
+              <ImageIcon size={14} className="text-neutral-600" />
             </div>
           )}
           {/* Title with thumbnail in same div */}
@@ -414,7 +414,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
             </div>
           </div>
           {/* Click indicator */}
-          <ChevronDown size={14} className="text-zinc-400 flex-shrink-0" />
+          <ChevronDown size={14} className="text-neutral-400 flex-shrink-0" />
         </button>
       </div>
 
@@ -451,13 +451,13 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
           {connectedTextDirection && (
             <div className="p-2 rounded border border-[brand-cyan]/30 bg-brand-cyan/5">
               <div className="text-xs font-mono text-brand-cyan mb-1">{t('canvasNodes.mockupNode.textDirectionFromBrandCore')}</div>
-              <div className="text-xs text-zinc-400 line-clamp-3">{connectedTextDirection}</div>
+              <div className="text-xs text-neutral-400 line-clamp-3">{connectedTextDirection}</div>
             </div>
           )}
           {data.connectedStrategyData && (
             <div className="p-2 rounded border border-[brand-cyan]/20 bg-brand-cyan/3">
               <div className="text-xs font-mono text-brand-cyan/80 mb-1">{t('canvasNodes.mockupNode.strategyDataFromBrandCore')}</div>
-              <div className="text-[10px] text-zinc-500">{t('canvasNodes.mockupNode.available')}</div>
+              <div className="text-[10px] text-neutral-500">{t('canvasNodes.mockupNode.available')}</div>
             </div>
           )}
         </div>
@@ -496,8 +496,8 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
           disabled={isLoading}
           className={cn(
             'w-full flex items-center justify-between p-1.5 rounded border transition-all text-left node-interactive',
-            'bg-zinc-900/50 border-zinc-700/50 hover:bg-zinc-800/50 hover:border-zinc-600/50',
-            'text-zinc-400 hover:text-brand-cyan',
+            'bg-neutral-900/50 border-neutral-700/50 hover:bg-neutral-800/50 hover:border-neutral-600/50',
+            'text-neutral-400 hover:text-brand-cyan',
             isLoading && 'opacity-50 cursor-not-allowed'
           )}
         >
@@ -532,7 +532,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
             className="text-xs nodrag nopan"
             rows={1}
           />
-          <p className="text-[10px] font-mono text-zinc-500 mt-1">
+          <p className="text-[10px] font-mono text-neutral-500 mt-1">
             {customPrompt && customPrompt.trim()
               ? t('canvasNodes.mockupNode.customPromptOverride')
               : t('canvasNodes.mockupNode.editPromptHint')}
@@ -551,13 +551,13 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
           disabled={isLoading}
           className={cn(
             'w-full flex items-center justify-between p-1.5 rounded border transition-all text-left node-interactive',
-            'bg-zinc-900/50 border-zinc-700/50 hover:bg-zinc-800/50 hover:border-zinc-600/50',
-            'text-zinc-400 hover:text-brand-cyan',
+            'bg-neutral-900/50 border-neutral-700/50 hover:bg-neutral-800/50 hover:border-neutral-600/50',
+            'text-neutral-400 hover:text-brand-cyan',
             isLoading && 'opacity-50 cursor-not-allowed'
           )}
         >
           <div className="flex items-center gap-3">
-            <Settings size={12} className="text-zinc-500" />
+            <Settings size={12} className="text-neutral-500" />
             <span className="text-xs font-mono">{t('canvasNodes.mockupNode.advancedControls')}</span>
             {(selectedColors.length > 0 || withHuman) && (
               <span className="text-[10px] text-brand-cyan">
@@ -602,7 +602,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                     'p-2 rounded border transition-all text-left node-interactive',
                     model === 'gemini-2.5-flash-image'
                       ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
-                      : 'bg-zinc-900/50 border-zinc-700/50 text-zinc-400 hover:bg-zinc-800/50 hover:border-zinc-600/50',
+                      : 'bg-neutral-900/50 border-neutral-700/50 text-neutral-400 hover:bg-neutral-800/50 hover:border-neutral-600/50',
                     isLoading && 'opacity-50 cursor-not-allowed'
                   )}
                 >
@@ -639,7 +639,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                     'p-2 rounded border transition-all text-left node-interactive',
                     model === 'gemini-3-pro-image-preview'
                       ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
-                      : 'bg-zinc-900/50 border-zinc-700/50 text-zinc-400 hover:bg-zinc-800/50 hover:border-zinc-600/50',
+                      : 'bg-neutral-900/50 border-neutral-700/50 text-neutral-400 hover:bg-neutral-800/50 hover:border-neutral-600/50',
                     isLoading && 'opacity-50 cursor-not-allowed'
                   )}
                 >
@@ -699,7 +699,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
 
             {/* Color Picker */}
             <div>
-              <h4 className="text-xs font-mono mb-1.5 text-zinc-500">{t('canvasNodes.mockupNode.colorPalette')}</h4>
+              <h4 className="text-xs font-mono mb-1.5 text-neutral-500">{t('canvasNodes.mockupNode.colorPalette')}</h4>
               <div className="flex gap-3">
                 <div className="flex-grow relative flex items-center">
                   <input
@@ -714,14 +714,14 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                       }
                     }}
                     onMouseDown={(e) => e.stopPropagation()}
-                    className="w-full p-1.5 rounded-md border focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs font-mono transition-colors duration-200 pl-7 bg-zinc-900/50 border-zinc-700/50 text-zinc-400"
+                    className="w-full p-1.5 rounded-md border focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs font-mono transition-colors duration-200 pl-7 bg-neutral-900/50 border-neutral-700/50 text-neutral-400"
                     placeholder={t('canvasNodes.mockupNode.colorPlaceholder')}
                     disabled={isLoading}
                     style={{ pointerEvents: 'auto' }}
                   />
                   {(isValidColor || !colorInput) && (
                     <span
-                      className="absolute left-2 w-3 h-3 rounded-md border border-zinc-600"
+                      className="absolute left-2 w-3 h-3 rounded-md border border-neutral-600"
                       style={{ backgroundColor: isValidColor ? colorInput : 'brand-cyan' }}
                     ></span>
                   )}
@@ -735,7 +735,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                   disabled={isLoading || !isValidColor}
                   className={cn(
                     'px-2 rounded-md border text-xs font-mono transition-colors node-interactive',
-                    'bg-zinc-800/50 text-zinc-400 border-zinc-700/50 hover:bg-zinc-700/50 hover:text-zinc-300',
+                    'bg-neutral-800/50 text-neutral-400 border-neutral-700/50 hover:bg-neutral-700/50 hover:text-neutral-300',
                     (isLoading || !isValidColor) && 'opacity-50 cursor-not-allowed'
                   )}
                 >
@@ -745,7 +745,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
               {selectedColors.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mt-1.5 min-h-[24px]">
                   {selectedColors.map(color => (
-                    <div key={color} className="flex items-center gap-1 pl-1.5 pr-0.5 py-0.5 rounded-md border text-xs bg-zinc-900/80 border-zinc-700">
+                    <div key={color} className="flex items-center gap-1 pl-1.5 pr-0.5 py-0.5 rounded-md border text-xs bg-neutral-900/80 border-neutral-700">
                       <span
                         className="w-2.5 h-2.5 rounded-md border border-white/10"
                         style={{ backgroundColor: color }}
@@ -757,7 +757,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                           handleRemoveColor(color);
                         }}
                         onMouseDown={(e) => e.stopPropagation()}
-                        className="rounded-md text-zinc-500 hover:text-white transition-colors node-interactive"
+                        className="rounded-md text-neutral-500 hover:text-white transition-colors node-interactive"
                       >
                         <X size={10} />
                       </button>
@@ -771,7 +771,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
             <div>
               <div
                 className={cn(
-                  "flex items-center p-1.5 rounded-md cursor-pointer border bg-zinc-900/50 border-zinc-700/50 hover:bg-zinc-800/50 transition-colors",
+                  "flex items-center p-1.5 rounded-md cursor-pointer border bg-neutral-900/50 border-neutral-700/50 hover:bg-neutral-800/50 transition-colors",
                   "node-interactive"
                 )}
                 onClick={(e) => {
@@ -782,7 +782,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
               >
                 <div className={cn(
                   "w-3.5 h-3.5 rounded-md flex items-center justify-center border transition-all duration-200",
-                  withHuman ? 'bg-brand-cyan/80 border-[brand-cyan]' : 'bg-zinc-700 border-zinc-600'
+                  withHuman ? 'bg-brand-cyan/80 border-[brand-cyan]' : 'bg-neutral-700 border-neutral-600'
                 )}>
                   {withHuman && (
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-2.5 w-2.5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -790,7 +790,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                     </svg>
                   )}
                 </div>
-                <label className="ml-2 text-xs select-none cursor-pointer text-zinc-400 font-mono">{t('canvasNodes.mockupNode.includeHumanInteraction')}</label>
+                <label className="ml-2 text-xs select-none cursor-pointer text-neutral-400 font-mono">{t('canvasNodes.mockupNode.includeHumanInteraction')}</label>
               </div>
             </div>
           </div>
@@ -830,7 +830,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
 
 
       {/* Add Mockup Button */}
-      <div className="mt-2 pt-2 border-t border-zinc-700/30 flex justify-center">
+      <div className="mt-2 pt-2 border-t border-neutral-700/30 flex justify-center">
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -844,8 +844,8 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
           disabled={isLoading}
           className={cn(
             'w-6 h-6 flex items-center justify-center rounded-md border transition-all node-interactive',
-            'bg-zinc-900/50 border-zinc-700/50 hover:bg-zinc-800/50 hover:border-zinc-600/50',
-            'text-zinc-400 hover:text-brand-cyan',
+            'bg-neutral-900/50 border-neutral-700/50 hover:bg-neutral-800/50 hover:border-neutral-600/50',
+            'text-neutral-400 hover:text-brand-cyan',
             isLoading && 'opacity-50 cursor-not-allowed'
           )}
           title={t('canvasNodes.mockupNode.addAnotherMockupNode')}

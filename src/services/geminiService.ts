@@ -424,19 +424,40 @@ export interface MockupSetupAnalysis {
 
 export const analyzeMockupSetup = async (
   baseImage: UploadedImage,
-  apiKey?: string
+  apiKey?: string,
+  availableTags?: {
+    branding: string[];
+    categories: string[];
+    locations: string[];
+    angles: string[];
+    lighting: string[];
+    effects: string[];
+    materials: string[];
+  }
 ): Promise<MockupSetupAnalysis> => {
   return withRetry(async () => {
+    // Use provided tags or fallback to defaults
+    const brandingTags = availableTags?.branding?.length ? availableTags.branding : AVAILABLE_BRANDING_TAGS;
+    const categoryTags = availableTags?.categories?.length ? availableTags.categories : AVAILABLE_TAGS;
+    const locationTags = availableTags?.locations?.length ? availableTags.locations : AVAILABLE_LOCATION_TAGS;
+    const angleTags = availableTags?.angles?.length ? availableTags.angles : AVAILABLE_ANGLE_TAGS;
+    const lightingTags = availableTags?.lighting?.length ? availableTags.lighting : AVAILABLE_LIGHTING_TAGS;
+    const effectTags = availableTags?.effects?.length ? availableTags.effects : AVAILABLE_EFFECT_TAGS;
+    const materialTags = availableTags?.materials?.length ? availableTags.materials : AVAILABLE_MATERIAL_TAGS;
+
     const prompt = `Analyze the provided design image. Based on its visual elements, style, colors, and concept, suggest the most professional and aesthetically pleasing mockup settings.
     
-    Choose suggestions from these available options if they fit, or suggest similar professional terms:
-    - Branding Styles: ${AVAILABLE_BRANDING_TAGS.join(', ')}
-    - Mockup Categories: ${AVAILABLE_TAGS.join(', ')}
-    - Locations/Environments: ${AVAILABLE_LOCATION_TAGS.join(', ')}
-    - Camera Angles: ${AVAILABLE_ANGLE_TAGS.join(', ')}
-    - Lighting Styles: ${AVAILABLE_LIGHTING_TAGS.join(', ')}
-    - Special Effects: ${AVAILABLE_EFFECT_TAGS.join(', ')}
-    - Materials/Textures: ${AVAILABLE_MATERIAL_TAGS.join(', ')}
+    You are encouraged to suggest creative, novel, or specific tags that perfectly fit the vibe, even if they are not in the provided lists.
+    For example, if the design looks like a "Cyberpunk City", suggest that as a location even if it's not listed.
+    
+    Reference options (use these as a base, but feel free to suggest others):
+    - Branding Styles: ${brandingTags.join(', ')}
+    - Mockup Categories: ${categoryTags.join(', ')}
+    - Locations/Environments: ${locationTags.join(', ')}
+    - Camera Angles: ${angleTags.join(', ')}
+    - Lighting Styles: ${lightingTags.join(', ')}
+    - Special Effects: ${effectTags.join(', ')}
+    - Materials/Textures: ${materialTags.join(', ')}
 
     Analyze the "vibe" and "concept" of the uploaded design to provide these suggestions.
     Return the response as a JSON object with the following structure:

@@ -303,7 +303,7 @@ export const CommunityProfilePage: React.FC = () => {
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className="p-2 bg-zinc-900/50 border border-zinc-800/60 rounded-md hover:border-brand-cyan/50 hover:bg-zinc-900/80 hover:text-brand-cyan transition-all duration-200"
+        className="p-2 bg-neutral-900/50 border border-neutral-800/60 rounded-md hover:border-brand-cyan/50 hover:bg-neutral-900/80 hover:text-brand-cyan transition-all duration-200"
         title={label}
       >
         {icon}
@@ -313,7 +313,7 @@ export const CommunityProfilePage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#121212] text-zinc-300 pt-12 md:pt-14 relative overflow-hidden">
+      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative overflow-hidden">
         <div className="fixed inset-0 z-0">
           <GridDotsBackground />
         </div>
@@ -321,7 +321,7 @@ export const CommunityProfilePage: React.FC = () => {
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
               <GlitchLoader size={36} className="mx-auto mb-4" />
-              <p className="text-zinc-400 font-mono text-sm">Loading profile...</p>
+              <p className="text-neutral-400 font-mono text-sm">Loading profile...</p>
             </div>
           </div>
         </div>
@@ -331,7 +331,7 @@ export const CommunityProfilePage: React.FC = () => {
 
   if (error || !profile) {
     return (
-      <div className="min-h-screen bg-[#121212] text-zinc-300 pt-12 md:pt-14 relative overflow-hidden">
+      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative overflow-hidden">
         <div className="fixed inset-0 z-0">
           <GridDotsBackground />
         </div>
@@ -354,7 +354,7 @@ export const CommunityProfilePage: React.FC = () => {
         description={profile.bio || t('community.viewProfile', { name: profile.name || profile.username || t('common.user') })}
       />
 
-      <div className="min-h-screen bg-[#121212] text-zinc-300 relative overflow-hidden">
+      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 relative overflow-hidden">
         {/* Background */}
         <div className="fixed inset-0 z-0 pointer-events-none">
           <GridDotsBackground />
@@ -390,10 +390,10 @@ export const CommunityProfilePage: React.FC = () => {
             </div>
 
             {/* Profile Header Card */}
-            <div className="relative mb-8 rounded-2xl overflow-hidden bg-zinc-900/20 border border-zinc-800/50">
+            <div className="relative mb-8 rounded-2xl overflow-hidden bg-neutral-900/20 border border-neutral-800/50">
 
               {/* Cover Image */}
-              <div className="h-48 md:h-64 relative w-full bg-zinc-900/50 overflow-hidden">
+              <div className="h-48 md:h-64 relative w-full bg-neutral-900/50 overflow-hidden">
                 {profile.coverImageUrl ? (
                   <>
                     <img
@@ -401,14 +401,14 @@ export const CommunityProfilePage: React.FC = () => {
                       alt={t('common.cover')}
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#121212] via-transparent to-transparent opacity-90" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0C0C0C] via-transparent to-transparent opacity-90" />
                   </>
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-zinc-900/50">
-                    <div className="text-zinc-800">
+                  <div className="w-full h-full flex items-center justify-center bg-neutral-900/50">
+                    <div className="text-neutral-800">
                       <ImageIcon size={64} strokeWidth={0.5} />
                     </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#121212] via-transparent to-transparent opacity-90" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0C0C0C] via-transparent to-transparent opacity-90" />
                   </div>
                 )}
               </div>
@@ -419,7 +419,7 @@ export const CommunityProfilePage: React.FC = () => {
 
                   {/* Avatar */}
                   <div className="relative group">
-                    <div className="w-32 h-32 md:w-36 md:h-36 rounded-2xl bg-zinc-900 border-4 border-[#121212] overflow-hidden flex items-center justify-center shadow-xl">
+                    <div className="w-32 h-32 md:w-36 md:h-36 rounded-2xl bg-neutral-900 border-4 border-[#0C0C0C] overflow-hidden flex items-center justify-center shadow-xl">
                       {profile.picture ? (
                         <img
                           src={profile.picture}
@@ -427,19 +427,19 @@ export const CommunityProfilePage: React.FC = () => {
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         />
                       ) : (
-                        <User size={64} className="text-zinc-600" />
+                        <User size={64} className="text-neutral-600" />
                       )}
                     </div>
                   </div>
 
                   {/* Info */}
                   <div className="flex-1 text-center md:text-left min-w-0">
-                    <h1 className="text-3xl md:text-4xl font-bold text-zinc-100 font-manrope mb-2 tracking-tight">
+                    <h1 className="text-3xl md:text-4xl font-bold text-neutral-100 font-manrope mb-2 tracking-tight">
                       {profile.name || profile.username || t('common.user')}
                     </h1>
 
                     {profile.bio && (
-                      <p className="text-zinc-400 font-mono text-sm md:text-base mb-4 max-w-2xl line-clamp-3">
+                      <p className="text-neutral-400 font-mono text-sm md:text-base mb-4 max-w-2xl line-clamp-3">
                         {profile.bio}
                       </p>
                     )}
@@ -466,26 +466,26 @@ export const CommunityProfilePage: React.FC = () => {
                   </div>
 
                   {/* Stats */}
-                  <div className="flex gap-4 md:gap-8 mt-4 md:mt-0 p-4 bg-zinc-900/40 rounded-xl border border-zinc-800/50 backdrop-blur-sm">
+                  <div className="flex gap-4 md:gap-8 mt-4 md:mt-0 p-4 bg-neutral-900/40 rounded-xl border border-neutral-800/50 backdrop-blur-sm">
                     <div className="text-center">
                       <div className="text-xl md:text-2xl font-bold font-manrope text-white">
                         {profile.stats.mockups}
                       </div>
-                      <div className="text-xs font-mono text-zinc-500 uppercase tracking-wider">Mockups</div>
+                      <div className="text-xs font-mono text-neutral-500 uppercase tracking-wider">Mockups</div>
                     </div>
-                    <div className="w-px bg-zinc-800/50" />
+                    <div className="w-px bg-neutral-800/50" />
                     <div className="text-center">
                       <div className="text-xl md:text-2xl font-bold font-manrope text-white">
                         {workflows.length}
                       </div>
-                      <div className="text-xs font-mono text-zinc-500 uppercase tracking-wider">Workflows</div>
+                      <div className="text-xs font-mono text-neutral-500 uppercase tracking-wider">Workflows</div>
                     </div>
-                    <div className="w-px bg-zinc-800/50" />
+                    <div className="w-px bg-neutral-800/50" />
                     <div className="text-center">
                       <div className="text-xl md:text-2xl font-bold font-manrope text-white">
                         {profile.stats.presets}
                       </div>
-                      <div className="text-xs font-mono text-zinc-500 uppercase tracking-wider">Presets</div>
+                      <div className="text-xs font-mono text-neutral-500 uppercase tracking-wider">Presets</div>
                     </div>
                   </div>
 
@@ -496,25 +496,25 @@ export const CommunityProfilePage: React.FC = () => {
             {/* Content Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <div className="flex items-center justify-between mb-6">
-                <TabsList className="bg-zinc-900/50 border border-zinc-800/50">
+                <TabsList className="bg-neutral-900/50 border border-neutral-800/50">
                   <TabsTrigger value="mockups" className="gap-2">
                     <ImageIcon size={14} />
                     Mockups
-                    <Badge variant="secondary" className="ml-1 bg-zinc-800/50 text-xs px-1.5 py-0 h-5">
+                    <Badge variant="secondary" className="ml-1 bg-neutral-800/50 text-xs px-1.5 py-0 h-5">
                       {mockups.length}
                     </Badge>
                   </TabsTrigger>
                   <TabsTrigger value="workflows" className="gap-2">
                     <Workflow size={14} />
                     Workflows
-                    <Badge variant="secondary" className="ml-1 bg-zinc-800/50 text-xs px-1.5 py-0 h-5">
+                    <Badge variant="secondary" className="ml-1 bg-neutral-800/50 text-xs px-1.5 py-0 h-5">
                       {workflows.length}
                     </Badge>
                   </TabsTrigger>
                   <TabsTrigger value="presets" className="gap-2">
                     <Sparkles size={14} />
                     Presets
-                    <Badge variant="secondary" className="ml-1 bg-zinc-800/50 text-xs px-1.5 py-0 h-5">
+                    <Badge variant="secondary" className="ml-1 bg-neutral-800/50 text-xs px-1.5 py-0 h-5">
                       {allPresets.length}
                     </Badge>
                   </TabsTrigger>
@@ -524,12 +524,12 @@ export const CommunityProfilePage: React.FC = () => {
               {/* Mockups Tab */}
               <TabsContent value="mockups" className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
                 {mockups.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center min-h-[40vh] text-center p-8 bg-zinc-900/20 border border-zinc-800/50 rounded-xl border-dashed">
-                    <ImageIcon size={48} className="text-zinc-700 mb-4" strokeWidth={1} />
-                    <h2 className="text-lg font-semibold font-mono uppercase text-zinc-500 mb-2">
+                  <div className="flex flex-col items-center justify-center min-h-[40vh] text-center p-8 bg-neutral-900/20 border border-neutral-800/50 rounded-xl border-dashed">
+                    <ImageIcon size={48} className="text-neutral-700 mb-4" strokeWidth={1} />
+                    <h2 className="text-lg font-semibold font-mono uppercase text-neutral-500 mb-2">
                       No mockups yet
                     </h2>
-                    <p className="text-sm text-zinc-600 font-mono max-w-sm">
+                    <p className="text-sm text-neutral-600 font-mono max-w-sm">
                       This user hasn't published any mockups yet.
                     </p>
                   </div>
@@ -542,7 +542,7 @@ export const CommunityProfilePage: React.FC = () => {
                       return (
                         <div
                           key={mockup._id}
-                          className="group relative bg-zinc-900/40 border border-zinc-800/50 rounded-xl overflow-hidden hover:border-brand-cyan/50 hover:shadow-lg hover:shadow-brand-cyan/5 transition-all duration-300 aspect-square cursor-pointer"
+                          className="group relative bg-neutral-900/40 border border-neutral-800/50 rounded-xl overflow-hidden hover:border-brand-cyan/50 hover:shadow-lg hover:shadow-brand-cyan/5 transition-all duration-300 aspect-square cursor-pointer"
                           onClick={() => handleView(mockup)}
                         >
                           <img
@@ -567,12 +567,12 @@ export const CommunityProfilePage: React.FC = () => {
               {/* Workflows Tab */}
               <TabsContent value="workflows" className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
                 {workflows.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center min-h-[40vh] text-center p-8 bg-zinc-900/20 border border-zinc-800/50 rounded-xl border-dashed">
-                    <Workflow size={48} className="text-zinc-700 mb-4" strokeWidth={1} />
-                    <h2 className="text-lg font-semibold font-mono uppercase text-zinc-500 mb-2">
+                  <div className="flex flex-col items-center justify-center min-h-[40vh] text-center p-8 bg-neutral-900/20 border border-neutral-800/50 rounded-xl border-dashed">
+                    <Workflow size={48} className="text-neutral-700 mb-4" strokeWidth={1} />
+                    <h2 className="text-lg font-semibold font-mono uppercase text-neutral-500 mb-2">
                       No workflows yet
                     </h2>
-                    <p className="text-sm text-zinc-600 font-mono max-w-sm">
+                    <p className="text-sm text-neutral-600 font-mono max-w-sm">
                       This user hasn't published any workflows yet.
                     </p>
                   </div>
@@ -581,10 +581,10 @@ export const CommunityProfilePage: React.FC = () => {
                     {workflows.map(workflow => (
                       <Card
                         key={workflow._id}
-                        className="group overflow-hidden bg-zinc-900/40 border-zinc-800/50 hover:border-brand-cyan/50 hover:bg-zinc-800/60 transition-all duration-300 flex flex-col h-full"
+                        className="group overflow-hidden bg-neutral-900/40 border-neutral-800/50 hover:border-brand-cyan/50 hover:bg-neutral-800/60 transition-all duration-300 flex flex-col h-full"
                       >
                         <div
-                          className="aspect-video w-full bg-zinc-950 relative overflow-hidden cursor-pointer"
+                          className="aspect-video w-full bg-neutral-950 relative overflow-hidden cursor-pointer"
                           onClick={() => navigate(`/canvas/${workflow._id}`)}
                         >
                           {workflow.thumbnailUrl ? (
@@ -595,7 +595,7 @@ export const CommunityProfilePage: React.FC = () => {
                               loading="lazy"
                             />
                           ) : (
-                            <div className="absolute inset-0 flex items-center justify-center text-zinc-700">
+                            <div className="absolute inset-0 flex items-center justify-center text-neutral-700">
                               <Workflow size={48} strokeWidth={1} />
                             </div>
                           )}
@@ -624,7 +624,7 @@ export const CommunityProfilePage: React.FC = () => {
                           </div>
 
                           <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                            <Badge variant="secondary" className="bg-black/70 backdrop-blur-sm border-zinc-700 text-xs">
+                            <Badge variant="secondary" className="bg-black/70 backdrop-blur-sm border-neutral-700 text-xs">
                               {workflow.category}
                             </Badge>
                           </div>
@@ -633,19 +633,19 @@ export const CommunityProfilePage: React.FC = () => {
                         <CardContent className="p-4 flex flex-col flex-1">
                           <div className="flex items-start justify-between gap-2 mb-2">
                             <h3
-                              className="font-semibold text-zinc-200 line-clamp-1 group-hover:text-brand-cyan transition-colors cursor-pointer"
+                              className="font-semibold text-neutral-200 line-clamp-1 group-hover:text-brand-cyan transition-colors cursor-pointer"
                               onClick={() => navigate(`/canvas/${workflow._id}`)}
                             >
                               {workflow.name}
                             </h3>
                           </div>
 
-                          <p className="text-sm text-zinc-500 font-mono line-clamp-2 mb-4 flex-1">
+                          <p className="text-sm text-neutral-500 font-mono line-clamp-2 mb-4 flex-1">
                             {workflow.description}
                           </p>
 
-                          <div className="flex items-center justify-between pt-3 border-t border-zinc-800/50 mt-auto">
-                            <div className="flex items-center gap-1 text-zinc-500 text-xs font-mono">
+                          <div className="flex items-center justify-between pt-3 border-t border-neutral-800/50 mt-auto">
+                            <div className="flex items-center gap-1 text-neutral-500 text-xs font-mono">
                               <span>{workflow.nodes?.length || 0} nodes</span>
                             </div>
 
@@ -656,7 +656,7 @@ export const CommunityProfilePage: React.FC = () => {
                                   "flex items-center gap-1.5 text-xs font-mono transition-colors",
                                   workflow.isLikedByUser
                                     ? "text-red-400 hover:text-red-300"
-                                    : "text-zinc-500 hover:text-zinc-300"
+                                    : "text-neutral-500 hover:text-neutral-300"
                                 )}
                               >
                                 <Heart
@@ -677,12 +677,12 @@ export const CommunityProfilePage: React.FC = () => {
               {/* Presets Tab */}
               <TabsContent value="presets" className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
                 {allPresets.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center min-h-[40vh] text-center p-8 bg-zinc-900/20 border border-zinc-800/50 rounded-xl border-dashed">
-                    <Sparkles size={48} className="text-zinc-700 mb-4" strokeWidth={1} />
-                    <h2 className="text-lg font-semibold font-mono uppercase text-zinc-500 mb-2">
+                  <div className="flex flex-col items-center justify-center min-h-[40vh] text-center p-8 bg-neutral-900/20 border border-neutral-800/50 rounded-xl border-dashed">
+                    <Sparkles size={48} className="text-neutral-700 mb-4" strokeWidth={1} />
+                    <h2 className="text-lg font-semibold font-mono uppercase text-neutral-500 mb-2">
                       No presets yet
                     </h2>
-                    <p className="text-sm text-zinc-600 font-mono max-w-sm">
+                    <p className="text-sm text-neutral-600 font-mono max-w-sm">
                       This user hasn't published any presets yet.
                     </p>
                   </div>
@@ -692,9 +692,9 @@ export const CommunityProfilePage: React.FC = () => {
                       <button
                         key={preset._id || preset.id}
                         onClick={() => handlePresetClick(preset)}
-                        className="group flex flex-col text-left h-full bg-zinc-900/40 border border-zinc-800/50 rounded-xl overflow-hidden hover:border-brand-cyan/50 hover:bg-zinc-800/60 transition-all duration-300"
+                        className="group flex flex-col text-left h-full bg-neutral-900/40 border border-neutral-800/50 rounded-xl overflow-hidden hover:border-brand-cyan/50 hover:bg-neutral-800/60 transition-all duration-300"
                       >
-                        <div className="aspect-[3/2] w-full bg-zinc-950 relative overflow-hidden">
+                        <div className="aspect-[3/2] w-full bg-neutral-950 relative overflow-hidden">
                           {preset.referenceImageUrl ? (
                             <img
                               src={preset.referenceImageUrl}
@@ -704,21 +704,21 @@ export const CommunityProfilePage: React.FC = () => {
                             />
                           ) : (
                             <div className="absolute inset-0 flex items-center justify-center">
-                              <Sparkles size={32} className="text-zinc-700" />
+                              <Sparkles size={32} className="text-neutral-700" />
                             </div>
                           )}
                           <div className="absolute bottom-2 right-2">
-                            <Badge variant="secondary" className="bg-black/70 backdrop-blur-sm border-zinc-700 text-[10px] uppercase">
+                            <Badge variant="secondary" className="bg-black/70 backdrop-blur-sm border-neutral-700 text-[10px] uppercase">
                               {preset.presetType}
                             </Badge>
                           </div>
                         </div>
                         <div className="p-4 flex flex-col flex-1 w-full">
-                          <h3 className="font-semibold text-zinc-200 font-mono text-sm mb-1 line-clamp-1 group-hover:text-brand-cyan transition-colors">
+                          <h3 className="font-semibold text-neutral-200 font-mono text-sm mb-1 line-clamp-1 group-hover:text-brand-cyan transition-colors">
                             {preset.name}
                           </h3>
                           {preset.description && (
-                            <p className="text-xs text-zinc-500 font-mono line-clamp-2 mt-1">
+                            <p className="text-xs text-neutral-500 font-mono line-clamp-2 mt-1">
                               {preset.description}
                             </p>
                           )}

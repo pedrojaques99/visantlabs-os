@@ -7,9 +7,9 @@
 import Stripe from 'stripe';
 import dotenv from 'dotenv';
 import { ObjectId } from 'mongodb';
-import { connectToMongoDB, getDb } from '../server/db/mongodb.js';
-import { getCreditsByAmount, getCreditPackagePrice } from '../src/utils/creditPackages.js';
-import { abacatepayService } from '../server/services/abacatepayService.js';
+import { connectToMongoDB, getDb } from '../../../server/db/mongodb.js';
+import { getCreditsByAmount, getCreditPackagePrice } from '@/utils/creditPackages.js';
+import { abacatepayService } from '../../../server/services/abacatepayService.js';
 
 // Load environment variables
 dotenv.config();
@@ -995,7 +995,7 @@ export default async (req: any, res: any) => {
 
             // Send credits purchased email
             try {
-              const { sendCreditsPurchasedEmail, isEmailConfigured } = await import('../server/services/emailService.js');
+              const { sendCreditsPurchasedEmail, isEmailConfigured } = await import('../../../server/services/emailService.js');
 
               if (isEmailConfigured()) {
                 // Get updated user to calculate total credits

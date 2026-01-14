@@ -39,6 +39,14 @@ export async function initializeTexturePresets(): Promise<void> {
   await fetchAllOfficialPresets();
 }
 
+export const texturePresetsService = {
+  getById: getTexturePreset,
+  getAll: getAllTexturePresets,
+  getByIdAsync: getTexturePresetAsync,
+  getAllAsync: getAllTexturePresetsAsync,
+  initialize: initializeTexturePresets
+};
+
 
 
 

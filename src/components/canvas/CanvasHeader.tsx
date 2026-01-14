@@ -148,18 +148,18 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
   }, [handleSaveProjectName, projectName, generateGenericName]);
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 bg-[#121212]/95 backdrop-blur-sm border-b border-zinc-800/50">
+    <div className="fixed top-0 left-0 right-0 z-50 bg-[#0C0C0C]/95 backdrop-blur-sm border-b border-neutral-800/50">
       <div className="px-2 sm:px-4 md:px-6 flex items-center justify-between h-12 gap-2 py-2">
         <div className="flex items-center gap-2 min-w-0 flex-1">
           <BackButton onClick={onBack} className="mt-8 flex-shrink-0" />
-          <div className="flex items-center gap-1.5 text-xs font-mono text-zinc-400 min-w-0">
+          <div className="flex items-center gap-1.5 text-xs font-mono text-neutral-400 min-w-0">
             <button
               onClick={() => navigate('/canvas')}
-              className="hover:text-zinc-300 transition-colors truncate cursor-pointer"
+              className="hover:text-neutral-300 transition-colors truncate cursor-pointer"
             >
               {t('canvas.title') || 'Canvas'}
             </button>
-            <ChevronRight size={12} className="flex-shrink-0 text-zinc-600" />
+            <ChevronRight size={12} className="flex-shrink-0 text-neutral-600" />
             {isEditing ? (
               <input
                 ref={inputRef}
@@ -168,12 +168,12 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
                 onChange={(e) => setLocalName(e.target.value)}
                 onBlur={handleSaveProjectName}
                 onKeyDown={handleKeyDown}
-                className="text-xs font-mono text-zinc-300 bg-transparent border-b border-zinc-600 focus:border-[brand-cyan] focus:outline-none px-1 min-w-[80px] sm:min-w-[100px] max-w-[200px] sm:max-w-none"
+                className="text-xs font-mono text-neutral-300 bg-transparent border-b border-neutral-600 focus:border-[brand-cyan] focus:outline-none px-1 min-w-[80px] sm:min-w-[100px] max-w-[200px] sm:max-w-none"
               />
             ) : (
               <span
                 onClick={() => setIsEditing(true)}
-                className="text-zinc-300 truncate cursor-text hover:text-zinc-200 transition-colors"
+                className="text-neutral-300 truncate cursor-text hover:text-neutral-200 transition-colors"
                 title={localName}
               >
                 {localName}
@@ -191,7 +191,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
               }}
               className={`p-1.5 border rounded-md transition-all flex items-center justify-center ${isCollaborative
                 ? 'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border-[brand-cyan]/30 hover:border-[brand-cyan]/50'
-                : 'bg-zinc-800/50 hover:bg-zinc-700/50 text-zinc-300 border-zinc-700/50 hover:border-zinc-600'
+                : 'bg-neutral-800/50 hover:bg-neutral-700/50 text-neutral-300 border-neutral-700/50 hover:border-neutral-600'
                 }`}
               title={t('canvas.share')}
               type="button"
@@ -211,7 +211,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
               "p-1.5 border rounded-md transition-all flex items-center justify-center cursor-pointer",
               activeSidePanel === 'community-presets'
                 ? "bg-brand-cyan/20 text-brand-cyan border-[brand-cyan]/30"
-                : "bg-zinc-800/50 hover:bg-zinc-700/50 text-zinc-300 border-zinc-700/50 hover:border-zinc-600"
+                : "bg-neutral-800/50 hover:bg-neutral-700/50 text-neutral-300 border-neutral-700/50 hover:border-neutral-600"
             )}
             title="Community Presets"
           >
@@ -220,7 +220,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
           {onLoadWorkflow && (
             <button
               onClick={() => onLoadWorkflow?.()}
-              className="p-1.5 border rounded-md transition-all flex items-center justify-center bg-zinc-800/50 hover:bg-zinc-700/50 text-zinc-300 border-zinc-700/50 hover:border-zinc-600 cursor-pointer"
+              className="p-1.5 border rounded-md transition-all flex items-center justify-center bg-neutral-800/50 hover:bg-neutral-700/50 text-neutral-300 border-neutral-700/50 hover:border-neutral-600 cursor-pointer"
               title={t('workflows.loadWorkflow') || 'Load Workflow'}
             >
               <FolderOpen size={14} />
@@ -229,7 +229,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
           {onSaveWorkflow && (
             <button
               onClick={() => onSaveWorkflow?.()}
-              className="p-1.5 border rounded-md transition-all flex items-center justify-center bg-zinc-800/50 hover:bg-zinc-700/50 text-zinc-300 border-zinc-700/50 hover:border-zinc-600 cursor-pointer"
+              className="p-1.5 border rounded-md transition-all flex items-center justify-center bg-neutral-800/50 hover:bg-neutral-700/50 text-neutral-300 border-neutral-700/50 hover:border-neutral-600 cursor-pointer"
               title={t('workflows.saveWorkflow') || 'Save as Workflow'}
             >
               <Save size={14} />
@@ -239,22 +239,22 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
           {/* Download Dropdown */}
           <div className="relative group">
             <button
-              className="p-1.5 border rounded-md transition-all flex items-center justify-center bg-zinc-800/50 hover:bg-zinc-700/50 text-zinc-300 border-zinc-700/50 hover:border-zinc-600 cursor-pointer"
+              className="p-1.5 border rounded-md transition-all flex items-center justify-center bg-neutral-800/50 hover:bg-neutral-700/50 text-neutral-300 border-neutral-700/50 hover:border-neutral-600 cursor-pointer"
               title={t('canvas.download') || 'Download'}
             >
               <Download size={14} />
             </button>
-            <div className="absolute right-0 top-full mt-1 w-48 bg-[#1a1a1a] border border-zinc-800/50 rounded-lg shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60] py-1 backdrop-blur-md">
+            <div className="absolute right-0 top-full mt-1 w-48 bg-[#1a1a1a] border border-neutral-800/50 rounded-lg shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60] py-1 backdrop-blur-md">
               <button
                 onClick={() => onExportImagesRequest?.()}
-                className="w-full text-left px-3 py-2 text-xs text-zinc-300 hover:bg-zinc-800/80 transition-colors flex items-center gap-2 font-mono"
+                className="w-full text-left px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-800/80 transition-colors flex items-center gap-2 font-mono"
               >
                 <Download size={12} className="text-[brand-cyan]" />
                 Exportar imagens...
               </button>
               <button
                 onClick={() => onExportAllImagesRequest?.()}
-                className="w-full text-left px-3 py-2 text-xs text-zinc-300 hover:bg-zinc-800/80 transition-colors flex items-center gap-2 font-mono"
+                className="w-full text-left px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-800/80 transition-colors flex items-center gap-2 font-mono"
               >
                 <Check size={12} className="text-[brand-cyan]" />
                 Exportar todas (PNG)
@@ -273,7 +273,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
                 setShowSettingsModal(true);
               }
             }}
-            className="p-1.5 border rounded-md transition-all flex items-center justify-center bg-zinc-800/50 hover:bg-zinc-700/50 text-zinc-300 border-zinc-700/50 hover:border-zinc-600 cursor-pointer"
+            className="p-1.5 border rounded-md transition-all flex items-center justify-center bg-neutral-800/50 hover:bg-neutral-700/50 text-neutral-300 border-neutral-700/50 hover:border-neutral-600 cursor-pointer"
             title={t('canvas.settings')}
           >
             <Settings size={14} />

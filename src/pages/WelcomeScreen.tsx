@@ -391,7 +391,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
           <div className="flex items-baseline justify-center gap-2">
             <AnimatedTitle
               text="MOCKUP MACHINE®"
-              className={`text-2xl md:text-3xl font-regular font-mono tracking-wider ${theme === 'dark' ? 'text-zinc-200' : 'text-zinc-800'}`}
+              className={`text-2xl md:text-3xl font-regular font-mono tracking-wider ${theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'}`}
             />
             <span className="text-brand-cyan text-sm font-mono transform -translate-y-1">v1.0</span>
           </div>
@@ -415,14 +415,14 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
               onClick={handleUploadClick}
               disabled={isProcessing || isCheckingAuth || isVerifyingAuth}
               data-tutorial-target="upload-image"
-              className="inline-flex items-center gap-3 bg-brand-cyan/80 hover:bg-brand-cyan disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed cursor-pointer text-black font-bold py-5 px-12 rounded-md transition-all duration-300 text-2xl md:text-3xl font-mono shadow-lg shadow-brand-cyan/20"
+              className="inline-flex items-center gap-3 bg-brand-cyan/80 hover:bg-brand-cyan disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed cursor-pointer text-black font-bold py-5 px-12 rounded-md transition-all duration-300 text-2xl md:text-3xl font-mono shadow-lg shadow-brand-cyan/20"
             >
               <UploadCloud size={22} className="md:w-8 md:h-8" />
               <span className="text-sm md:text-base">{t('welcome.uploadImage')}</span>
             </button>
           </Tooltip>
           {isProcessing && (
-            <div className={`flex items-center gap-2 font-mono text-sm ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-600'
+            <div className={`flex items-center gap-2 font-mono text-sm ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
               }`}>
               <GlitchLoader size={16} color="var(--brand-cyan)" />
               <span>
@@ -441,14 +441,14 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
             <button
               onClick={() => setShowTutorialModal(true)}
               className={`md:hidden flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-300 cursor-pointer shadow-md hover:shadow-lg ${theme === 'dark'
-                ? 'bg-zinc-900/90 hover:bg-zinc-800/95 border border-zinc-700/50 hover:border-brand-cyan/30'
-                : 'bg-white/90 hover:bg-white border border-zinc-300 hover:border-brand-cyan/50'
+                ? 'bg-neutral-900/90 hover:bg-neutral-800/95 border border-neutral-700/50 hover:border-brand-cyan/30'
+                : 'bg-white/90 hover:bg-white border border-neutral-300 hover:border-brand-cyan/50'
                 }`}
             >
               <div className="flex items-center justify-center w-7 h-7 rounded-md bg-brand-cyan/80">
                 <Play size={14} className="text-black ml-0.5" fill="black" />
               </div>
-              <span className={`font-mono text-xs font-medium ${theme === 'dark' ? 'text-zinc-300' : 'text-zinc-700'
+              <span className={`font-mono text-xs font-medium ${theme === 'dark' ? 'text-neutral-300' : 'text-neutral-700'
                 }`}>{t('tutorial.title')}</span>
               <div
                 onClick={(e) => {
@@ -465,8 +465,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
                   }
                 }}
                 className={`ml-1 p-1 rounded-md transition-colors cursor-pointer ${theme === 'dark'
-                  ? 'hover:bg-zinc-700 text-zinc-500 hover:text-red-400'
-                  : 'hover:bg-zinc-200 text-zinc-400 hover:text-red-500'
+                  ? 'hover:bg-neutral-700 text-neutral-500 hover:text-red-400'
+                  : 'hover:bg-neutral-200 text-neutral-400 hover:text-red-500'
                   }`}
                 aria-label="Close tutorial"
               >
@@ -511,7 +511,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
               </div>
 
               {/* Text Label */}
-              <div className={`absolute bottom-0 left-0 right-0 p-3 flex items-center gap-1.5 ${theme === 'dark' ? 'text-zinc-200' : 'text-white'
+              <div className={`absolute bottom-0 left-0 right-0 p-3 flex items-center gap-1.5 ${theme === 'dark' ? 'text-neutral-200' : 'text-white'
                 }`}>
                 <BookOpen size={12} className="text-brand-cyan/90" />
                 <span className="font-mono text-sm font-medium opacity-90">{t('tutorial.title')}</span>
@@ -525,8 +525,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
                 setShowTutorialButton(false);
               }}
               className={`hidden md:flex absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-6 h-6 rounded-md items-center justify-center opacity-0 group-hover:opacity-100 hover:opacity-100 transition-all duration-200 z-50 ${theme === 'dark'
-                ? 'bg-black/80 hover:bg-red-500/90 text-zinc-300 hover:text-white hover:scale-110 shadow-lg hover:shadow-red-500/50'
-                : 'bg-white/80 hover:bg-red-500/90 text-zinc-600 hover:text-white hover:scale-110 shadow-lg hover:shadow-red-500/50'
+                ? 'bg-black/80 hover:bg-red-500/90 text-neutral-300 hover:text-white hover:scale-110 shadow-lg hover:shadow-red-500/50'
+                : 'bg-white/80 hover:bg-red-500/90 text-neutral-600 hover:text-white hover:scale-110 shadow-lg hover:shadow-red-500/50'
                 }`}
               title="Fechar"
             >

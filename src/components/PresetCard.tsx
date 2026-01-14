@@ -7,7 +7,7 @@ import { migrateLegacyPreset } from '../types/communityPrompts';
 import type { CommunityPrompt, PromptCategory } from '../types/communityPrompts';
 
 export const CATEGORY_CONFIG: Record<PromptCategory, { icon: any; color: string; label: string }> = {
-  'all': { icon: LayoutGrid, color: 'text-zinc-300', label: 'All Prompts' },
+  'all': { icon: LayoutGrid, color: 'text-neutral-300', label: 'All Prompts' },
   '3d': { icon: Box, color: 'text-purple-400', label: '3D' },
   'presets': { icon: Settings, color: 'text-blue-400', label: 'Presets' },
   'aesthetics': { icon: Palette, color: 'text-pink-400', label: 'Aesthetics' },
@@ -104,25 +104,25 @@ export const PresetCard: React.FC<PresetCardProps> = ({
         "bg-card border rounded-md p-4 transition-all group relative cursor-pointer overflow-hidden",
         selected
           ? "border-brand-cyan/50 bg-brand-cyan/5"
-          : "border-zinc-800/50 hover:border-brand-cyan/30 hover:bg-card/80"
+          : "border-neutral-800/50 hover:border-brand-cyan/30 hover:bg-card/80"
       )}
       onClick={onClick}
     >
       <div className="mb-3 relative">
         {hasImage ? (
-          <div className="relative w-full aspect-square rounded-md overflow-hidden border border-zinc-700/30 bg-zinc-900/30">
+          <div className="relative w-full aspect-square rounded-md overflow-hidden border border-neutral-700/30 bg-neutral-900/30">
             <img
               src={migrated.referenceImageUrl}
               alt={migrated.name}
-              className="w-full h-full object-cover bg-zinc-900/50 group-hover:scale-105 transition-transform duration-300"
+              className="w-full h-full object-cover bg-neutral-900/50 group-hover:scale-105 transition-transform duration-300"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = 'none';
               }}
             />
           </div>
         ) : (
-          <div className="w-full aspect-square rounded-md border border-zinc-700/30 bg-zinc-900/30 flex items-center justify-center">
-            <div className="text-zinc-500">{presetIcon}</div>
+          <div className="w-full aspect-square rounded-md border border-neutral-700/30 bg-neutral-900/30 flex items-center justify-center">
+            <div className="text-neutral-500">{presetIcon}</div>
           </div>
         )}
 
@@ -145,14 +145,14 @@ export const PresetCard: React.FC<PresetCardProps> = ({
           <div className="flex-1 min-w-0">
             <h3 className={cn(
               "text-[12px] font-semibold mb-0.5 font-mono line-clamp-1",
-              selected ? "text-brand-cyan" : "text-zinc-200"
+              selected ? "text-brand-cyan" : "text-neutral-200"
             )}>
               {migrated.name}
             </h3>
             <div className="relative">
               <p
                 className={cn(
-                  "text-xs text-zinc-500 font-mono leading-snug transition-all duration-300",
+                  "text-xs text-neutral-500 font-mono leading-snug transition-all duration-300",
                   isPromptExpanded ? "" : "line-clamp-2"
                 )}
                 onClick={(e) => {
@@ -168,14 +168,14 @@ export const PresetCard: React.FC<PresetCardProps> = ({
                     e.stopPropagation();
                     setIsPromptExpanded(true);
                   }}
-                  className="text-[10px] text-zinc-600 hover:text-brand-cyan mt-1 font-mono uppercase"
+                  className="text-[10px] text-neutral-600 hover:text-brand-cyan mt-1 font-mono uppercase"
                 >
                   {t('canvasNodes.promptNode.presetCard.viewMore')}
                 </button>
               )}
               {isPromptExpanded && (
-                <div className="mt-2 text-[10px] font-mono text-zinc-400 bg-zinc-900/50 p-2 rounded border border-zinc-800/50">
-                  <div className="mb-1 text-zinc-500 uppercase text-[9px]">{t('canvasNodes.promptNode.presetCard.promptLabel')}</div>
+                <div className="mt-2 text-[10px] font-mono text-neutral-400 bg-neutral-900/50 p-2 rounded border border-neutral-800/50">
+                  <div className="mb-1 text-neutral-500 uppercase text-[9px]">{t('canvasNodes.promptNode.presetCard.promptLabel')}</div>
                   {migrated.prompt}
                 </div>
               )}
@@ -195,11 +195,11 @@ export const PresetCard: React.FC<PresetCardProps> = ({
                     toast.error(t('canvasNodes.promptNode.presetCard.copyFailed'));
                   }
                 }}
-                className="p-1.5 text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-300 rounded transition-colors opacity-0 group-hover:opacity-100 relative min-w-[16px] min-h-[16px] flex items-center justify-center"
+                className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-100 relative min-w-[16px] min-h-[16px] flex items-center justify-center"
                 title="Copy prompt"
               >
                 {isCopyingPrompt ? (
-                  <span className="text-[10px] font-mono text-zinc-400">{glitchText}</span>
+                  <span className="text-[10px] font-mono text-neutral-400">{glitchText}</span>
                 ) : (
                   <Copy className="h-4 w-4" />
                 )}
@@ -210,7 +210,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
                     e.stopPropagation();
                     onDuplicate();
                   }}
-                  className="p-1.5 text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-300 rounded transition-colors opacity-0 group-hover:opacity-100"
+                  className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-100"
                   title={t('communityPresets.actions.duplicate') || 'Duplicate'}
                 >
                   {canEdit ? <Download className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
@@ -222,7 +222,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
                     e.stopPropagation();
                     onEdit?.();
                   }}
-                  className="p-1.5 text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-300 rounded transition-colors opacity-0 group-hover:opacity-100"
+                  className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-100"
                   title={t('communityPresets.actions.edit')}
                 >
                   <Edit2 className="h-4 w-4" />
@@ -236,7 +236,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
                     e.stopPropagation();
                     onEdit?.();
                   }}
-                  className="p-1.5 text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-300 rounded transition-colors opacity-0 group-hover:opacity-100"
+                  className="p-1.5 text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-300 rounded transition-colors opacity-0 group-hover:opacity-100"
                   title={t('communityPresets.actions.edit')}
                 >
                   <Edit2 className="h-4 w-4" />
@@ -248,7 +248,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
                     e.stopPropagation();
                     onDelete?.();
                   }}
-                  className="p-1.5 text-zinc-500 hover:bg-red-500/10 hover:text-red-400 rounded transition-colors opacity-0 group-hover:opacity-100"
+                  className="p-1.5 text-neutral-500 hover:bg-red-500/10 hover:text-red-400 rounded transition-colors opacity-0 group-hover:opacity-100"
                   title={t('communityPresets.actions.delete')}
                 >
                   <Trash2 className="h-4 w-4" />
@@ -260,7 +260,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
 
         {/* Tags */}
         <div
-          className="flex items-center gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent scroll-smooth cursor-grab active:cursor-grabbing pb-1"
+          className="flex items-center gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-transparent scroll-smooth cursor-grab active:cursor-grabbing pb-1"
           onMouseDown={(e) => {
             const container = e.currentTarget;
             const startX = e.pageX - container.offsetLeft;
@@ -300,7 +300,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
               migrated.category === 'texture' && 'bg-green-500/20 border-green-500/30 text-green-400',
               migrated.category === 'ambience' && 'bg-orange-500/20 border-orange-500/30 text-orange-400',
               migrated.category === 'luminance' && 'bg-yellow-500/20 border-yellow-500/30 text-yellow-400',
-              !migrated.category && 'bg-zinc-800/40 border-zinc-700/30 text-zinc-500'
+              !migrated.category && 'bg-neutral-800/40 border-neutral-700/30 text-neutral-500'
             )}
           >
             {t(`communityPresets.categories.${migrated.category}`) ||
@@ -309,7 +309,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
               migrated.category}
           </span>
           {migrated.category === 'presets' && migrated.presetType && (
-            <span className="px-2 py-0.5 bg-zinc-800/40 rounded border border-zinc-700/30 text-zinc-500 font-mono text-[10px] uppercase flex-shrink-0 whitespace-nowrap">
+            <span className="px-2 py-0.5 bg-neutral-800/40 rounded border border-neutral-700/30 text-neutral-500 font-mono text-[10px] uppercase flex-shrink-0 whitespace-nowrap">
               {migrated.presetType}
             </span>
           )}
@@ -329,7 +329,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
               )}
             </span>
           )}
-          <span className="px-2 py-0.5 bg-zinc-800/40 rounded border border-zinc-700/30 text-zinc-500 font-mono text-xs flex-shrink-0 whitespace-nowrap">
+          <span className="px-2 py-0.5 bg-neutral-800/40 rounded border border-neutral-700/30 text-neutral-500 font-mono text-xs flex-shrink-0 whitespace-nowrap">
             {migrated.aspectRatio}
           </span>
           {isAuthenticated && onToggleLike && (
@@ -339,8 +339,8 @@ export const PresetCard: React.FC<PresetCardProps> = ({
                 onToggleLike();
               }}
               className={`flex items-center gap-1 px-2 py-0.5 rounded-md transition-all text-xs font-mono flex-shrink-0 whitespace-nowrap ${isLiked
-                ? 'bg-zinc-800/50 text-zinc-300 hover:bg-zinc-700/50'
-                : 'bg-zinc-900/40 text-zinc-500 hover:bg-zinc-800/50 hover:text-zinc-400'
+                ? 'bg-neutral-800/50 text-neutral-300 hover:bg-neutral-700/50'
+                : 'bg-neutral-900/40 text-neutral-500 hover:bg-neutral-800/50 hover:text-neutral-400'
                 }`}
               title={isLiked ? t('communityPresets.actions.unlike') : t('communityPresets.actions.like')}
             >
@@ -356,7 +356,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
             {migrated.tags.map((tag, index) => (
               <span
                 key={index}
-                className="px-1.5 py-0.5 bg-zinc-800/40 rounded border border-zinc-700/20 text-zinc-500 font-mono text-[10px] hover:border-zinc-600/40 hover:text-zinc-400 transition-colors"
+                className="px-1.5 py-0.5 bg-neutral-800/40 rounded border border-neutral-700/20 text-neutral-500 font-mono text-[10px] hover:border-neutral-600/40 hover:text-neutral-400 transition-colors"
                 title={tag}
               >
                 #{tag}

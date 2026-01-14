@@ -54,8 +54,8 @@ export const ListSection: React.FC<ListSectionProps> = ({
             <div
               key={index}
               className={`border rounded-xl p-4 hover:border-[brand-cyan]/50 transition-colors relative ${theme === 'dark'
-                ? 'bg-black/40 border-zinc-800/60'
-                : 'bg-zinc-100 border-zinc-300'
+                ? 'bg-black/40 border-neutral-800/60'
+                : 'bg-neutral-100 border-neutral-300'
                 }`}
             >
               <Textarea
@@ -63,13 +63,13 @@ export const ListSection: React.FC<ListSectionProps> = ({
                 onChange={(e) => handleItemChange(index, e.target.value)}
                 placeholder="Digite o item..."
                 className={`bg-transparent font-manrope text-sm min-h-[80px] pr-8 ${theme === 'dark'
-                  ? 'border-zinc-700/50 text-zinc-300'
-                  : 'border-zinc-400/50 text-zinc-800'
+                  ? 'border-neutral-700/50 text-neutral-300'
+                  : 'border-neutral-400/50 text-neutral-800'
                   }`}
               />
               <button
                 onClick={() => handleRemoveItem(index)}
-                className={`absolute top-2 right-2 p-1 hover:bg-red-500/20 rounded transition-colors hover:text-red-400 ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-600'
+                className={`absolute top-2 right-2 p-1 hover:bg-red-500/20 rounded transition-colors hover:text-red-400 ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                   }`}
                 title="Remover item"
               >
@@ -81,8 +81,8 @@ export const ListSection: React.FC<ListSectionProps> = ({
         <button
           onClick={handleAddItem}
           className={`flex items-center gap-2 px-4 py-2 border hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-all duration-300 ${theme === 'dark'
-            ? 'bg-black/40 border-zinc-800/60 text-zinc-300'
-            : 'bg-zinc-100 border-zinc-300 text-zinc-800'
+            ? 'bg-black/40 border-neutral-800/60 text-neutral-300'
+            : 'bg-neutral-100 border-neutral-300 text-neutral-800'
             }`}
         >
           <Plus className="h-4 w-4" />
@@ -98,11 +98,11 @@ export const ListSection: React.FC<ListSectionProps> = ({
         <div
           key={index}
           className={`border rounded-xl p-4 transition-colors ${theme === 'dark'
-            ? 'bg-black/40 border-zinc-800/60 hover:border-zinc-700/60'
-            : 'bg-zinc-100 border-zinc-300 hover:border-zinc-400'
+            ? 'bg-black/40 border-neutral-800/60 hover:border-neutral-700/60'
+            : 'bg-neutral-100 border-neutral-300 hover:border-neutral-400'
             }`}
         >
-          <p className={`text-sm font-manrope leading-relaxed ${theme === 'dark' ? 'text-zinc-300' : 'text-zinc-800'
+          <p className={`text-sm font-manrope leading-relaxed ${theme === 'dark' ? 'text-neutral-300' : 'text-neutral-800'
             }`}>
             {item}
           </p>

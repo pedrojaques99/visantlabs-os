@@ -494,8 +494,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           gap={12}
           toastOptions={{
             className: theme === 'dark'
-              ? 'bg-black/40 backdrop-blur-[2px] border border-zinc-800/10 !text-white/70 shadow-sm cursor-pointer hover:bg-black/50 transition-all duration-150 margin-2'
-              : 'bg-white/40 backdrop-blur-[2px] border border-zinc-200/10 text-zinc-800/70 shadow-sm cursor-pointer hover:bg-white/50 transition-all duration-150 margin-2',
+              ? 'bg-black/40 backdrop-blur-[2px] border border-neutral-800/10 !text-white/70 shadow-sm cursor-pointer hover:bg-black/50 transition-all duration-150 margin-2'
+              : 'bg-white/40 backdrop-blur-[2px] border border-neutral-200/10 text-neutral-800/70 shadow-sm cursor-pointer hover:bg-white/50 transition-all duration-150 margin-2',
             style: {
               background: theme === 'dark' ? 'rgba(18, 18, 18, 0.4)' : 'rgba(255, 255, 255, 0.4)',
               padding: '12px 16px',
@@ -506,10 +506,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             },
             classNames: {
               toast: theme === 'dark'
-                ? 'bg-black/40 border-zinc-800/10 !text-white/70 !shadow-sm !p-2 !text-[11px] !font-mono'
-                : 'bg-white/40 border-zinc-200/10 text-zinc-800/70 !shadow-sm !p-2 !text-[11px] !font-mono',
-              title: theme === 'dark' ? '!text-white/70 !font-mono !text-[11px] !font-normal !leading-tight' : 'text-zinc-900/70 !font-mono !text-[11px] !font-normal !leading-tight',
-              description: theme === 'dark' ? '!text-white/60 !font-mono !text-[10px] !leading-tight' : 'text-zinc-600/60 !font-mono !text-[10px] !leading-tight',
+                ? 'bg-black/40 border-neutral-800/10 !text-white/70 !shadow-sm !p-2 !text-[11px] !font-mono'
+                : 'bg-white/40 border-neutral-200/10 text-neutral-800/70 !shadow-sm !p-2 !text-[11px] !font-mono',
+              title: theme === 'dark' ? '!text-white/70 !font-mono !text-[11px] !font-normal !leading-tight' : 'text-neutral-900/70 !font-mono !text-[11px] !font-normal !leading-tight',
+              description: theme === 'dark' ? '!text-white/60 !font-mono !text-[10px] !leading-tight' : 'text-neutral-600/60 !font-mono !text-[10px] !leading-tight',
               success: theme === 'dark'
                 ? 'bg-black/40 border-brand-cyan/15 text-brand-cyan/70'
                 : 'bg-white/40 border-green-500/15 text-green-600/70',
@@ -520,8 +520,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 ? 'bg-black/40 border-blue-500/15 text-blue-400/70'
                 : 'bg-white/40 border-blue-500/15 text-blue-600/70',
               closeButton: theme === 'dark'
-                ? 'text-zinc-500/30 hover:text-zinc-400/50 opacity-30 hover:opacity-50 !w-3 !h-3'
-                : 'text-zinc-400/30 hover:text-zinc-500/50 opacity-30 hover:opacity-50 !w-3 !h-3',
+                ? 'text-neutral-500/30 hover:text-neutral-400/50 opacity-30 hover:opacity-50 !w-3 !h-3'
+                : 'text-neutral-400/30 hover:text-neutral-500/50 opacity-30 hover:opacity-50 !w-3 !h-3',
             },
           }}
         />

@@ -116,7 +116,7 @@ export function GenericPresetModal<T extends string>({
                     'flex flex-col rounded-md border transition-all overflow-hidden group',
                     isSelected
                         ? 'bg-brand-cyan/10 border-[brand-cyan]/50 hover:bg-brand-cyan/15'
-                        : 'bg-zinc-900/30 border-zinc-700/30 hover:bg-zinc-900/50 hover:border-zinc-600/50',
+                        : 'bg-neutral-900/30 border-neutral-700/30 hover:bg-neutral-900/50 hover:border-neutral-600/50',
                     isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                 )}
             >
@@ -131,12 +131,12 @@ export function GenericPresetModal<T extends string>({
                     }}
                     disabled={isLoading}
                     className={cn(
-                        "relative w-full aspect-square bg-zinc-900/30 border-b border-zinc-700/30 overflow-hidden flex-shrink-0",
+                        "relative w-full aspect-square bg-neutral-900/30 border-b border-neutral-700/30 overflow-hidden flex-shrink-0",
                         !isLoading && "cursor-pointer"
                     )}
                 >
-                    <div className="w-full h-full flex items-center justify-center bg-zinc-900/50">
-                        <FallbackIcon size={40} className="text-zinc-500" />
+                    <div className="w-full h-full flex items-center justify-center bg-neutral-900/50">
+                        <FallbackIcon size={40} className="text-neutral-500" />
                     </div>
                     {/* Selection Indicator */}
                     {isSelected && (
@@ -155,14 +155,14 @@ export function GenericPresetModal<T extends string>({
                     {/* Name */}
                     <div className={cn(
                         'text-sm font-mono font-semibold mb-2 line-clamp-2 leading-tight',
-                        isSelected ? 'text-brand-cyan' : 'text-zinc-200'
+                        isSelected ? 'text-brand-cyan' : 'text-neutral-200'
                     )}>
                         {preset.name}
                     </div>
 
                     {/* Description */}
                     {preset.description && (
-                        <div className="text-[10px] text-zinc-500 font-mono mb-2 line-clamp-2">
+                        <div className="text-[10px] text-neutral-500 font-mono mb-2 line-clamp-2">
                             {preset.description}
                         </div>
                     )}
@@ -172,7 +172,7 @@ export function GenericPresetModal<T extends string>({
                         <div className="flex-1 flex flex-col min-h-0">
                             <button
                                 onClick={(e) => togglePrompt(preset.id, e)}
-                                className="flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-300 transition-colors mb-1"
+                                className="flex items-center gap-1 text-xs text-neutral-400 hover:text-neutral-300 transition-colors mb-1"
                                 aria-expanded={isPromptExpanded}
                             >
                                 <span className="text-[10px] uppercase font-mono">Prompt</span>
@@ -183,7 +183,7 @@ export function GenericPresetModal<T extends string>({
                                 )}
                             </button>
                             {isPromptExpanded && (
-                                <div className="text-[10px] text-zinc-500 font-mono leading-relaxed overflow-y-auto max-h-24">
+                                <div className="text-[10px] text-neutral-500 font-mono leading-relaxed overflow-y-auto max-h-24">
                                     {preset.prompt}
                                 </div>
                             )}
@@ -206,18 +206,18 @@ export function GenericPresetModal<T extends string>({
             aria-labelledby="preset-modal-title"
         >
             <div
-                className="relative max-w-4xl w-full max-h-[90vh] bg-black/95 backdrop-blur-xl border border-zinc-800/50 rounded-md shadow-2xl overflow-hidden flex flex-col"
+                className="relative max-w-4xl w-full max-h-[90vh] bg-black/95 backdrop-blur-xl border border-neutral-800/50 rounded-md shadow-2xl overflow-hidden flex flex-col"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-zinc-800/50">
+                <div className="flex items-center justify-between p-4 border-b border-neutral-800/50">
                     <div className="flex items-center gap-2">
                         <Icon size={20} className="text-brand-cyan" />
-                        <h2 id="preset-modal-title" className="text-sm font-mono text-zinc-300 uppercase">{title}</h2>
+                        <h2 id="preset-modal-title" className="text-sm font-mono text-neutral-300 uppercase">{title}</h2>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 text-zinc-500 hover:text-white transition-colors"
+                        className="p-2 text-neutral-500 hover:text-white transition-colors"
                         title="Close (Esc)"
                     >
                         <X size={20} />
@@ -225,14 +225,14 @@ export function GenericPresetModal<T extends string>({
                 </div>
 
                 {/* Tabs */}
-                <div className="flex gap-2 px-4 pt-4 border-b border-zinc-800/50">
+                <div className="flex gap-2 px-4 pt-4 border-b border-neutral-800/50">
                     <button
                         onClick={() => setActiveTab('official')}
                         className={cn(
                             'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 relative',
                             activeTab === 'official'
                                 ? 'text-brand-cyan border-[brand-cyan]'
-                                : 'text-zinc-400 border-transparent hover:text-zinc-300 hover:border-zinc-600/50'
+                                : 'text-neutral-400 border-transparent hover:text-neutral-300 hover:border-neutral-600/50'
                         )}
                     >
                         Official ({officialPresets.length})
@@ -243,7 +243,7 @@ export function GenericPresetModal<T extends string>({
                             'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 flex items-center gap-1.5 relative',
                             activeTab === 'community'
                                 ? 'text-brand-cyan border-[brand-cyan]'
-                                : 'text-zinc-400 border-transparent hover:text-zinc-300 hover:border-zinc-600/50'
+                                : 'text-neutral-400 border-transparent hover:text-neutral-300 hover:border-neutral-600/50'
                         )}
                     >
                         <Users size={12} />
@@ -263,7 +263,7 @@ export function GenericPresetModal<T extends string>({
                         )}
                     >
                         <div>
-                            <h3 className="text-xs font-mono text-zinc-400 uppercase mb-4">{title}s</h3>
+                            <h3 className="text-xs font-mono text-neutral-400 uppercase mb-4">{title}s</h3>
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                                 {officialPresets.map((preset) => renderPresetCard(preset, false))}
                             </div>
@@ -282,15 +282,15 @@ export function GenericPresetModal<T extends string>({
                         <div>
                             <div className="flex items-center gap-2 mb-4">
                                 <Users size={14} className="text-brand-cyan" />
-                                <h3 className="text-xs font-mono text-zinc-400 uppercase">Community Presets</h3>
+                                <h3 className="text-xs font-mono text-neutral-400 uppercase">Community Presets</h3>
                             </div>
                             {isLoadingCommunityPresets ? (
                                 <div className="flex items-center justify-center py-12">
-                                    <p className="text-sm font-mono text-zinc-400">Loading community presets...</p>
+                                    <p className="text-sm font-mono text-neutral-400">Loading community presets...</p>
                                 </div>
                             ) : communityPresets.length === 0 ? (
                                 <div className="flex items-center justify-center py-12">
-                                    <p className="text-sm font-mono text-zinc-400">Nenhum preset encontrado</p>
+                                    <p className="text-sm font-mono text-neutral-400">Nenhum preset encontrado</p>
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">

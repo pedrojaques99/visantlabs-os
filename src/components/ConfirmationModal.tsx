@@ -70,7 +70,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="bg-black/95 backdrop-blur-xl border border-zinc-800/50 rounded-md p-6 w-full max-w-lg mx-4 shadow-xl"
+        className="bg-black/95 backdrop-blur-xl border border-neutral-800/50 rounded-md p-6 w-full max-w-lg mx-4 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start gap-4 mb-4">
@@ -78,16 +78,16 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             <AlertTriangle size={24} />
           </div>
           <div className="flex-1">
-            <h2 className="text-lg font-semibold font-mono text-zinc-200 uppercase mb-2">
+            <h2 className="text-lg font-semibold font-mono text-neutral-200 uppercase mb-2">
               {title || t('confirmationModal.defaultTitle')}
             </h2>
-            <p className="text-sm text-zinc-400 font-mono leading-relaxed">
+            <p className="text-sm text-neutral-400 font-mono leading-relaxed">
               {message}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="flex-shrink-0 text-zinc-500 hover:text-zinc-300 transition-colors"
+            className="flex-shrink-0 text-neutral-500 hover:text-neutral-300 transition-colors"
             aria-label="Close"
           >
             <X size={20} />
@@ -98,7 +98,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           <div className="flex items-center gap-3">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-xs font-mono text-zinc-400 hover:text-zinc-200 transition-colors border border-zinc-700/50 hover:border-zinc-600 rounded-md"
+              className="px-4 py-2 text-xs font-mono text-neutral-400 hover:text-neutral-200 transition-colors border border-neutral-700/50 hover:border-neutral-600 rounded-md"
             >
               {cancelText || t('confirmationModal.defaultCancel')}
             </button>

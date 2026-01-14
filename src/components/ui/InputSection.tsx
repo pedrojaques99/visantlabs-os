@@ -91,14 +91,14 @@ export const InputSection: React.FC<InputSectionProps> = ({
 
   return (
     <section className={hasImage ? 'pb-0' : ''}>
-      <h2 className={`font-semibold font-mono uppercase tracking-widest mb-3 transition-all duration-300 ${hasImage ? 'text-[10px] text-zinc-600 mb-1' : 'text-sm text-zinc-400'}`}>
+      <h2 className={`font-semibold font-mono uppercase tracking-widest mb-3 transition-all duration-300 ${hasImage ? 'text-[10px] text-neutral-600 mb-1' : 'text-sm text-neutral-400'}`}>
         {t('mockup.input')}
       </h2>
 
       <div className={`${hasImage && supportsReferences ? 'flex flex-wrap sm:flex-nowrap gap-2' : (hasImage ? 'w-full sm:w-1/2 md:w-1/4 opacity-80' : 'w-full sm:w-1/2 md:w-1/4')} mx-auto transition-all duration-300`}>
-        <div className={`relative aspect-[4/3] bg-black/20 rounded-md p-2 border border-zinc-700/50 ${supportsReferences && hasImage ? 'flex-1' : ''}`}>
+        <div className={`relative aspect-[4/3] bg-black/20 rounded-md p-2 border border-neutral-700/50 ${supportsReferences && hasImage ? 'flex-1' : ''}`}>
           {isLoadingImage ? (
-            <div className="w-full h-full flex flex-col items-center justify-center text-zinc-500">
+            <div className="w-full h-full flex flex-col items-center justify-center text-neutral-500">
               <GlitchLoader size={18} color="brand-cyan" />
               <p className="text-xs font-mono mt-2">{t('mockup.loadingImage')}</p>
             </div>
@@ -113,18 +113,18 @@ export const InputSection: React.FC<InputSectionProps> = ({
                 <p className="text-xs font-mono text-white">{isReferenceOnly ? t('mockup.clickToChangeReference') : t('mockup.clickToChange')}</p>
               </div>
               {isReferenceOnly && (
-                <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 bg-zinc-900/80 backdrop-blur-sm rounded-md border border-zinc-700/50">
+                <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 bg-neutral-900/80 backdrop-blur-sm rounded-md border border-neutral-700/50">
                   <Info size={12} className="text-brand-cyan/80" />
-                  <span className="text-[10px] font-mono text-zinc-400">{t('mockup.referenceOnly')}</span>
+                  <span className="text-[10px] font-mono text-neutral-400">{t('mockup.referenceOnly')}</span>
                 </div>
               )}
             </label>
           ) : (
-            <label htmlFor="image-upload-blank" className="w-full h-full flex flex-col items-center justify-center text-zinc-700 cursor-pointer hover:text-zinc-500 transition-colors">
+            <label htmlFor="image-upload-blank" className="w-full h-full flex flex-col items-center justify-center text-neutral-700 cursor-pointer hover:text-neutral-500 transition-colors">
               <ImageOff size={40} strokeWidth={1} />
               <p className="text-xs font-mono mt-2">{t('common.noImage')}</p>
               {designType === 'blank' && (
-                <p className="text-xs font-mono mt-1 text-zinc-600">{t('mockup.clickToUploadReference')}</p>
+                <p className="text-xs font-mono mt-1 text-neutral-600">{t('mockup.clickToUploadReference')}</p>
               )}
             </label>
           )}
@@ -169,7 +169,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
         </div>
 
         {supportsReferences && hasImage && referenceImages.map((img, index) => (
-          <div key={index} className="relative aspect-[4/3] bg-black/20 rounded-md p-2 border border-zinc-700/50 flex-1 group">
+          <div key={index} className="relative aspect-[4/3] bg-black/20 rounded-md p-2 border border-neutral-700/50 flex-1 group">
             <img
               src={isSafeUrl(`data:${img.mimeType};base64,${img.base64}`) ? `data:${img.mimeType};base64,${img.base64}` : ''}
               alt={`${t('mockup.referenceImageAlt')} ${index + 1}`}
@@ -188,13 +188,13 @@ export const InputSection: React.FC<InputSectionProps> = ({
         {supportsReferences && hasImage && canAddMoreReferences && (
           <>
             {isLoadingImage ? (
-              <div className="aspect-[4/3] flex-1 flex items-center justify-center bg-zinc-800/50 rounded-md border border-zinc-700/50">
+              <div className="aspect-[4/3] flex-1 flex items-center justify-center bg-neutral-800/50 rounded-md border border-neutral-700/50">
                 <GlitchLoader size={16} color="brand-cyan" />
               </div>
             ) : (
               <label
                 htmlFor="multiple-image-upload"
-                className={`aspect-[4/3] flex items-center justify-center bg-zinc-800/50 text-zinc-400 rounded-md border border-zinc-700/50 hover:border-zinc-600 hover:text-zinc-300 hover:bg-zinc-800/70 transition-all duration-200 cursor-pointer ${isImagelessMode ? 'flex-[0.3] min-w-[80px]' : 'flex-1 min-w-[100px]'}`}
+                className={`aspect-[4/3] flex items-center justify-center bg-neutral-800/50 text-neutral-400 rounded-md border border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300 hover:bg-neutral-800/70 transition-all duration-200 cursor-pointer ${isImagelessMode ? 'flex-[0.3] min-w-[80px]' : 'flex-1 min-w-[100px]'}`}
               >
                 <Plus size={24} />
               </label>
@@ -213,8 +213,8 @@ export const InputSection: React.FC<InputSectionProps> = ({
       </div>
 
       {supportsReferences && referenceImages.length >= maxReferences && (
-        <div className="mb-3 p-2 bg-zinc-800/30 rounded-md border border-zinc-700/50">
-          <p className="text-xs font-mono text-zinc-500 text-center">
+        <div className="mb-3 p-2 bg-neutral-800/30 rounded-md border border-neutral-700/50">
+          <p className="text-xs font-mono text-neutral-500 text-center">
             {t('mockup.maxReferenceImages')}
           </p>
         </div>

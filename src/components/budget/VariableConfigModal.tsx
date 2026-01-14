@@ -134,14 +134,14 @@ export const VariableConfigModal: React.FC<VariableConfigModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 w-full max-w-md mx-4">
+      <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 w-full max-w-md mx-4">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold font-mono text-zinc-200">
+          <h3 className="text-lg font-semibold font-mono text-neutral-200">
             {label}
           </h3>
           <button
             onClick={onClose}
-            className="text-zinc-400 hover:text-zinc-200 transition-colors"
+            className="text-neutral-400 hover:text-neutral-200 transition-colors"
           >
             <X size={20} />
           </button>
@@ -151,10 +151,10 @@ export const VariableConfigModal: React.FC<VariableConfigModalProps> = ({
           {/* Preview do valor atual */}
           {!showCustomInput && defaultValue && (
             <div>
-              <label className="block text-xs text-zinc-400 mb-2 font-mono">
+              <label className="block text-xs text-neutral-400 mb-2 font-mono">
                 Valor Atual
               </label>
-              <div className="p-3 bg-black/40 border border-zinc-800 rounded-md text-sm text-zinc-300 font-mono">
+              <div className="p-3 bg-black/40 border border-neutral-800 rounded-md text-sm text-neutral-300 font-mono">
                 {defaultValue}
               </div>
             </div>
@@ -163,7 +163,7 @@ export const VariableConfigModal: React.FC<VariableConfigModalProps> = ({
           {/* Input para valor customizado */}
           {showCustomInput && (
             <div>
-              <label className="block text-xs text-zinc-400 mb-2 font-mono">
+              <label className="block text-xs text-neutral-400 mb-2 font-mono">
                 {isCurrencyField ? 'Valor (R$)' : 'Valor'}
               </label>
               <FormInput
@@ -176,7 +176,7 @@ export const VariableConfigModal: React.FC<VariableConfigModalProps> = ({
                 autoFocus
               />
               {isCurrencyField && customValue && (
-                <p className="text-xs text-zinc-500 font-mono mt-1">
+                <p className="text-xs text-neutral-500 font-mono mt-1">
                   Preview: R$ {formatCurrencyDisplay(customValue)}
                 </p>
               )}
@@ -187,7 +187,7 @@ export const VariableConfigModal: React.FC<VariableConfigModalProps> = ({
           <div className="flex gap-3 pt-2">
             <button
               onClick={onClose}
-              className="flex-1 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-md text-zinc-300 font-mono text-sm transition-colors"
+              className="flex-1 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-md text-neutral-300 font-mono text-sm transition-colors"
             >
               Cancelar
             </button>

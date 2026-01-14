@@ -51,10 +51,10 @@ export const BrandIdentityPanel: React.FC<BrandIdentityPanelProps> = ({
   ];
 
   return (
-    <div className={cn('border-t border-zinc-700/30 pt-3 mb-3', className)}>
+    <div className={cn('border-t border-neutral-700/30 pt-3 mb-3', className)}>
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between text-xs font-mono text-zinc-400 hover:text-zinc-300 mb-2"
+        className="w-full flex items-center justify-between text-xs font-mono text-neutral-400 hover:text-neutral-300 mb-2"
       >
         <div className="flex items-center gap-2">
           <Dna size={14} className="text-brand-cyan" />
@@ -68,20 +68,20 @@ export const BrandIdentityPanel: React.FC<BrandIdentityPanelProps> = ({
           {/* Colors */}
           {allColors.length > 0 && (
             <div>
-              <div className="text-zinc-500 font-mono mb-1.5">Colors</div>
+              <div className="text-neutral-500 font-mono mb-1.5">Colors</div>
               <div className="flex flex-wrap gap-2">
                 {allColors.map(({ color, type }, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleColorClick(color, type)}
-                    className="flex items-center gap-1.5 px-2 py-1 bg-zinc-900/50 hover:bg-zinc-900/70 border border-zinc-700/30 rounded transition-colors cursor-pointer"
+                    className="flex items-center gap-1.5 px-2 py-1 bg-neutral-900/50 hover:bg-neutral-900/70 border border-neutral-700/30 rounded transition-colors cursor-pointer"
                     title={`Click to insert {brand-color: ${color}}`}
                   >
                     <div
-                      className="w-3 h-3 rounded border border-zinc-700/50"
+                      className="w-3 h-3 rounded border border-neutral-700/50"
                       style={{ backgroundColor: color }}
                     />
-                    <span className="text-zinc-400 font-mono text-[10px]">{color}</span>
+                    <span className="text-neutral-400 font-mono text-[10px]">{color}</span>
                   </button>
                 ))}
               </div>
@@ -91,12 +91,12 @@ export const BrandIdentityPanel: React.FC<BrandIdentityPanelProps> = ({
           {/* Typography */}
           {(brandIdentity.typography.primary || brandIdentity.typography.secondary) && (
             <div>
-              <div className="text-zinc-500 font-mono mb-1.5">Typography</div>
+              <div className="text-neutral-500 font-mono mb-1.5">Typography</div>
               <div className="flex flex-wrap gap-2">
                 {brandIdentity.typography.primary && (
                   <button
                     onClick={() => handleTypographyClick(brandIdentity.typography.primary, 'primary')}
-                    className="px-2 py-1 bg-zinc-900/50 hover:bg-zinc-900/70 border border-zinc-700/30 rounded text-zinc-400 font-mono text-[10px] transition-colors cursor-pointer"
+                    className="px-2 py-1 bg-neutral-900/50 hover:bg-neutral-900/70 border border-neutral-700/30 rounded text-neutral-400 font-mono text-[10px] transition-colors cursor-pointer"
                     title={`Click to insert {brand-typography: ${brandIdentity.typography.primary}}`}
                   >
                     {brandIdentity.typography.primary}
@@ -105,7 +105,7 @@ export const BrandIdentityPanel: React.FC<BrandIdentityPanelProps> = ({
                 {brandIdentity.typography.secondary && (
                   <button
                     onClick={() => handleTypographyClick(brandIdentity.typography.secondary!, 'secondary')}
-                    className="px-2 py-1 bg-zinc-900/50 hover:bg-zinc-900/70 border border-zinc-700/30 rounded text-zinc-400 font-mono text-[10px] transition-colors cursor-pointer"
+                    className="px-2 py-1 bg-neutral-900/50 hover:bg-neutral-900/70 border border-neutral-700/30 rounded text-neutral-400 font-mono text-[10px] transition-colors cursor-pointer"
                     title={`Click to insert {brand-typography: ${brandIdentity.typography.secondary}}`}
                   >
                     {brandIdentity.typography.secondary}
@@ -118,12 +118,12 @@ export const BrandIdentityPanel: React.FC<BrandIdentityPanelProps> = ({
           {/* Personality */}
           {(brandIdentity.personality.tone || brandIdentity.personality.feeling) && (
             <div>
-              <div className="text-zinc-500 font-mono mb-1.5">Personality</div>
+              <div className="text-neutral-500 font-mono mb-1.5">Personality</div>
               <div className="flex flex-wrap gap-2">
                 {brandIdentity.personality.tone && (
                   <button
                     onClick={() => handlePersonalityClick(brandIdentity.personality.tone, 'tone')}
-                    className="px-2 py-1 bg-zinc-900/50 hover:bg-zinc-900/70 border border-zinc-700/30 rounded text-zinc-400 text-[10px] transition-colors cursor-pointer"
+                    className="px-2 py-1 bg-neutral-900/50 hover:bg-neutral-900/70 border border-neutral-700/30 rounded text-neutral-400 text-[10px] transition-colors cursor-pointer"
                     title={`Click to insert {brand-tone: ${brandIdentity.personality.tone}}`}
                   >
                     Tone: {brandIdentity.personality.tone}
@@ -132,7 +132,7 @@ export const BrandIdentityPanel: React.FC<BrandIdentityPanelProps> = ({
                 {brandIdentity.personality.feeling && (
                   <button
                     onClick={() => handlePersonalityClick(brandIdentity.personality.feeling, 'feeling')}
-                    className="px-2 py-1 bg-zinc-900/50 hover:bg-zinc-900/70 border border-zinc-700/30 rounded text-zinc-400 text-[10px] transition-colors cursor-pointer"
+                    className="px-2 py-1 bg-neutral-900/50 hover:bg-neutral-900/70 border border-neutral-700/30 rounded text-neutral-400 text-[10px] transition-colors cursor-pointer"
                     title={`Click to insert {brand-feeling: ${brandIdentity.personality.feeling}}`}
                   >
                     Feeling: {brandIdentity.personality.feeling}
@@ -145,20 +145,20 @@ export const BrandIdentityPanel: React.FC<BrandIdentityPanelProps> = ({
           {/* Visual Elements */}
           {brandIdentity.visualElements.length > 0 && (
             <div>
-              <div className="text-zinc-500 font-mono mb-1.5">Visual Elements</div>
+              <div className="text-neutral-500 font-mono mb-1.5">Visual Elements</div>
               <div className="flex flex-wrap gap-1.5">
                 {brandIdentity.visualElements.slice(0, 8).map((element, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleElementClick(element)}
-                    className="px-2 py-1 bg-zinc-900/50 hover:bg-zinc-900/70 border border-zinc-700/30 rounded text-zinc-400 text-[10px] transition-colors cursor-pointer"
+                    className="px-2 py-1 bg-neutral-900/50 hover:bg-neutral-900/70 border border-neutral-700/30 rounded text-neutral-400 text-[10px] transition-colors cursor-pointer"
                     title={`Click to insert {brand-element: ${element}}`}
                   >
                     {element}
                   </button>
                 ))}
                 {brandIdentity.visualElements.length > 8 && (
-                  <span className="text-zinc-500 text-[10px] px-2 py-1">+{brandIdentity.visualElements.length - 8} more</span>
+                  <span className="text-neutral-500 text-[10px] px-2 py-1">+{brandIdentity.visualElements.length - 8} more</span>
                 )}
               </div>
             </div>
@@ -167,8 +167,8 @@ export const BrandIdentityPanel: React.FC<BrandIdentityPanelProps> = ({
           {/* Composition Style */}
           {brandIdentity.composition.style && (
             <div>
-              <div className="text-zinc-500 font-mono mb-1.5">Composition</div>
-              <div className="text-zinc-400 text-[10px]">
+              <div className="text-neutral-500 font-mono mb-1.5">Composition</div>
+              <div className="text-neutral-400 text-[10px]">
                 {brandIdentity.composition.style}
               </div>
             </div>

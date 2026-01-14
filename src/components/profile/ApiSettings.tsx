@@ -92,7 +92,7 @@ export const ApiSettings: React.FC = () => {
 
     return (
         <div className="space-y-6 w-full mx-auto animate-in fade-in duration-500">
-            <Card className="bg-zinc-900 border border-zinc-800/50 rounded-2xl shadow-xl shadow-black/20">
+            <Card className="bg-neutral-900 border border-neutral-800/50 rounded-2xl shadow-xl shadow-black/20">
                 <CardHeader className="pb-4">
                     <div className="flex items-start justify-between">
                         <div className="flex items-center gap-4">
@@ -100,10 +100,10 @@ export const ApiSettings: React.FC = () => {
                                 <Sparkles size={24} className="text-brand-cyan" />
                             </div>
                             <div>
-                                <CardTitle className="text-xl font-bold font-manrope text-zinc-100 mb-1">
+                                <CardTitle className="text-xl font-bold font-manrope text-neutral-100 mb-1">
                                     {t('configuration.title') || 'Configuração'}
                                 </CardTitle>
-                                <CardDescription className="text-zinc-500 font-mono text-xs">
+                                <CardDescription className="text-neutral-500 font-mono text-xs">
                                     Gerencie suas chaves de API e conexões externas
                                 </CardDescription>
                             </div>
@@ -118,7 +118,7 @@ export const ApiSettings: React.FC = () => {
                 </CardHeader>
                 <CardContent className="space-y-6">
                     {/* Info Box */}
-                    <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 space-y-3 relative overflow-hidden group">
+                    <div className="bg-neutral-900/50 border border-neutral-800 rounded-xl p-4 space-y-3 relative overflow-hidden group">
                         <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                             <Lock size={64} />
                         </div>
@@ -127,10 +127,10 @@ export const ApiSettings: React.FC = () => {
                                 <Lock size={16} className="text-blue-400" />
                             </div>
                             <div className="space-y-1">
-                                <p className="text-sm text-zinc-300 font-medium font-manrope">
+                                <p className="text-sm text-neutral-300 font-medium font-manrope">
                                     {t('configuration.privateKey') || "Sua chave é mantida privada"}
                                 </p>
-                                <p className="text-xs text-zinc-400 font-mono leading-relaxed">
+                                <p className="text-xs text-neutral-400 font-mono leading-relaxed">
                                     {t('configuration.info') || "Usar sua própria chave de API permite que você utilize sua própria cota e créditos do Google."}
                                     <br />
                                     {t('configuration.warning') || "Sua chave é criptografada e armazenada com segurança. Apenas você pode acessá-la."}
@@ -142,7 +142,7 @@ export const ApiSettings: React.FC = () => {
                     {/* API Key Input */}
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                            <label htmlFor="api-key-input" className="text-sm font-semibold text-zinc-300 font-manrope">
+                            <label htmlFor="api-key-input" className="text-sm font-semibold text-neutral-300 font-manrope">
                                 {t('configuration.geminiApiKey') || 'Chave da API Gemini'}
                             </label>
                             <button
@@ -165,13 +165,13 @@ export const ApiSettings: React.FC = () => {
                                 onKeyPress={handleKeyPress}
                                 placeholder={hasKey ? '••••••••••••••••••••••••••••••••' : (t('configuration.apiKeyPlaceholder') || 'Insira sua chave da API Gemini')}
                                 disabled={hasKey && !apiKey}
-                                className="w-full bg-black/40 px-4 py-3.5 pr-12 rounded-xl border border-zinc-800 focus:outline-none focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 text-sm text-zinc-200 font-mono placeholder:text-zinc-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-inner"
+                                className="w-full bg-black/40 px-4 py-3.5 pr-12 rounded-xl border border-neutral-800 focus:outline-none focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 text-sm text-neutral-200 font-mono placeholder:text-neutral-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-inner"
                                 autoComplete="off"
                             />
                             <button
                                 type="button"
                                 onClick={() => setShowApiKey(!showApiKey)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 p-1.5 rounded-lg hover:bg-zinc-800/50 transition-all duration-150"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-300 p-1.5 rounded-lg hover:bg-neutral-800/50 transition-all duration-150"
                                 aria-label={showApiKey ? 'Ocultar chave' : 'Mostrar chave'}
                                 tabIndex={-1}
                             >
@@ -179,7 +179,7 @@ export const ApiSettings: React.FC = () => {
                             </button>
                         </div>
                         {hasKey && !apiKey && (
-                            <p className="text-xs text-zinc-500 font-mono pl-1">
+                            <p className="text-xs text-neutral-500 font-mono pl-1">
                                 {t('configuration.updateHint') || 'Para atualizar, basta colar sua nova chave acima.'}
                             </p>
                         )}
@@ -189,7 +189,7 @@ export const ApiSettings: React.FC = () => {
                         <button
                             type="button"
                             onClick={() => setShowPolicyModal(true)}
-                            className="flex items-center gap-2 text-xs text-zinc-500 hover:text-zinc-400 font-mono transition-colors"
+                            className="flex items-center gap-2 text-xs text-neutral-500 hover:text-neutral-400 font-mono transition-colors"
                         >
                             <Lock size={12} />
                             <span>{t('configuration.policyLink') || 'Política de Privacidade e Segurança'}</span>
@@ -197,13 +197,13 @@ export const ApiSettings: React.FC = () => {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-3 pt-6 border-t border-zinc-800/50">
+                    <div className="flex items-center gap-3 pt-6 border-t border-neutral-800/50">
                         {hasKey && (
                             <button
                                 type="button"
                                 onClick={() => setShowDeleteConfirm(true)}
                                 disabled={isLoading}
-                                className="px-4 py-2.5 bg-zinc-900/50 hover:bg-red-500/10 disabled:bg-zinc-900/30 disabled:text-zinc-600 disabled:cursor-not-allowed text-zinc-400 hover:text-red-400 border border-zinc-800/50 hover:border-red-500/30 font-medium rounded-xl transition-all duration-200 text-xs font-mono"
+                                className="px-4 py-2.5 bg-neutral-900/50 hover:bg-red-500/10 disabled:bg-neutral-900/30 disabled:text-neutral-600 disabled:cursor-not-allowed text-neutral-400 hover:text-red-400 border border-neutral-800/50 hover:border-red-500/30 font-medium rounded-xl transition-all duration-200 text-xs font-mono"
                             >
                                 {t('configuration.delete') || 'Remover Chave'}
                             </button>
@@ -213,7 +213,7 @@ export const ApiSettings: React.FC = () => {
                             type="button"
                             onClick={handleSave}
                             disabled={isLoading || !apiKey.trim()}
-                            className="px-8 py-2.5 bg-brand-cyan hover:bg-brand-cyan/90 disabled:bg-zinc-800 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-bold rounded-xl transition-all duration-200 text-sm font-mono shadow-lg shadow-brand-cyan/20 hover:shadow-brand-cyan/30 disabled:shadow-none min-w-[100px] flex items-center justify-center"
+                            className="px-8 py-2.5 bg-brand-cyan hover:bg-brand-cyan/90 disabled:bg-neutral-800 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-bold rounded-xl transition-all duration-200 text-sm font-mono shadow-lg shadow-brand-cyan/20 hover:shadow-brand-cyan/30 disabled:shadow-none min-w-[100px] flex items-center justify-center"
                         >
                             {isLoading ? (
                                 <GlitchLoader size={16} />

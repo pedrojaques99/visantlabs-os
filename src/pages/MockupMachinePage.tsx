@@ -184,6 +184,7 @@ const MockupMachinePageContent: React.FC = () => {
   const [sidebarWidth, setSidebarWidth] = useState(715); // 30% maior que 550
   const sidebarRef = useRef<HTMLElement>(null);
   const [isSidebarVisibleMobile, setIsSidebarVisibleMobile] = useState(true);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const analysisTimeoutRef = useRef<number | null>(null);
   const prevBrandingTagsLength = useRef(0);
   const autoGenerateTimeoutRef = useRef<number | null>(null);
@@ -1665,6 +1666,7 @@ const MockupMachinePageContent: React.FC = () => {
     } = {};
 
     try {
+      const { determineArchetypeFromBranding, getRandomArchetype } = await import('@/utils/promptHelpers');
       const [allAnglePresets, allTexturePresets, allAmbiencePresets, allLuminancePresets] = await Promise.all([
         getAllAnglePresetsAsync().catch(() => [] as AnglePreset[]),
         getAllTexturePresetsAsync().catch(() => [] as TexturePreset[]),
@@ -1672,6 +1674,102 @@ const MockupMachinePageContent: React.FC = () => {
         getAllLuminancePresetsAsync().catch(() => [] as LuminancePreset[]),
       ]);
 
+      // --- ARCHETYPE LOGIC START ---
+      // Determine archetype based on branding OR random chance
+      let currentArchetype = determineArchetypeFromBranding(brandingTagsToUse);
+
+      // 20% chance to ignore branding and pick a random archetype for variety
+      // OR if no branding tags provided
+      if (!currentArchetype || Math.random() < 0.2) {
+        currentArchetype = getRandomArchetype();
+      }
+
+      console.log('[SurpriseMe] Selected Archetype:', currentArchetype.name);
+
+      // Helper to pick a tag from archetype preference (80% chance) or random (20% chance)
+      const pickTagWithVariety = (archetypeTags: string[], availableTags: string[], userAllowedTags: string[] = []): string => {
+        const shouldUseArchetype = Math.random() < 0.8;
+        let pool = availableTags;
+
+        // Filter by user allowed tags if any
+        if (userAllowedTags.length > 0) {
+          pool = pool.filter(t => userAllowedTags.includes(t));
+        }
+
+        if (shouldUseArchetype && archetypeTags && archetypeTags.length > 0) {
+          // Try to find archetype tags that are also in the allowed pool
+          const archetypePool = archetypeTags.filter(t =>
+            userAllowedTags.length === 0 || userAllowedTags.includes(t)
+          );
+
+          if (archetypePool.length > 0) {
+            return archetypePool[Math.floor(Math.random() * archetypePool.length)];
+          }
+        }
+
+        // Fallback to random from pool
+        return pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : "";
+      };
+
+      // SELECT LOCATION
+      const userAllowedLocations = selectedTagsSettings.selectedLocationTags;
+      if (currentArchetype.visuals.locations) {
+        selectedBackground = pickTagWithVariety(currentArchetype.visuals.locations, AVAILABLE_LOCATION_TAGS, userAllowedLocations);
+      }
+      setSelectedLocationTags([selectedBackground || selectRandomBackground(brandingTagsToUse)]);
+
+      // SELECT LIGHTING
+      const userAllowedLighting = selectedTagsSettings.selectedLightingTags;
+      let lightingTag = "";
+      if (currentArchetype.visuals.lighting) {
+        lightingTag = pickTagWithVariety(currentArchetype.visuals.lighting, AVAILABLE_LIGHTING_TAGS, userAllowedLighting);
+      }
+      if (!lightingTag) {
+        // Fallback
+        const availableLighting = userAllowedLighting.length > 0 ? userAllowedLighting : AVAILABLE_LIGHTING_TAGS;
+        lightingTag = availableLighting[Math.floor(Math.random() * availableLighting.length)];
+      }
+      setSelectedLightingTags([lightingTag]);
+
+      // SELECT EFFECT (Optional - 50% chance)
+      const userAllowedEffects = selectedTagsSettings.selectedEffectTags;
+      if (Math.random() < 0.5) {
+        let effectTag = "";
+        if (currentArchetype.visuals.effects) {
+          effectTag = pickTagWithVariety(currentArchetype.visuals.effects, AVAILABLE_EFFECT_TAGS, userAllowedEffects);
+        }
+        if (!effectTag) {
+          const availableEffects = userAllowedEffects.length > 0 ? userAllowedEffects : AVAILABLE_EFFECT_TAGS;
+          effectTag = availableEffects[Math.floor(Math.random() * availableEffects.length)];
+        }
+        setSelectedEffectTags([effectTag]);
+      } else {
+        setSelectedEffectTags([]);
+      }
+
+      // SELECT MATERIAL (If Logo)
+      if (designType === 'logo') {
+        const userAllowedMaterials = selectedTagsSettings.selectedMaterialTags;
+        let materialTag = "";
+        if (currentArchetype.visuals.materials) {
+          materialTag = pickTagWithVariety(currentArchetype.visuals.materials, AVAILABLE_MATERIAL_TAGS, userAllowedMaterials);
+        }
+        if (!materialTag) {
+          const availableMaterials = userAllowedMaterials.length > 0 ? userAllowedMaterials : AVAILABLE_MATERIAL_TAGS;
+          materialTag = availableMaterials[Math.floor(Math.random() * availableMaterials.length)];
+        }
+        setSelectedMaterialTags([materialTag]);
+      }
+
+      // SELECT ANGLE (Random but consistent)
+      const userAllowedAngles = selectedTagsSettings.selectedAngleTags;
+      const availableAngles = userAllowedAngles.length > 0 ? userAllowedAngles : AVAILABLE_ANGLE_TAGS;
+      const angleTag = availableAngles[Math.floor(Math.random() * availableAngles.length)];
+      setSelectedAngleTags([angleTag]);
+
+      // --- ARCHETYPE LOGIC END ---
+
+      // Fallback filtering for presets (keeping existing logic for safety)
       const filteredAnglePresets = filterPresetsByBranding(allAnglePresets, brandingTagsToUse);
       const filteredTexturePresets = filterPresetsByBranding(allTexturePresets, brandingTagsToUse);
       const filteredAmbiencePresets = filterPresetsByBranding(allAmbiencePresets, brandingTagsToUse);
@@ -1945,7 +2043,7 @@ const MockupMachinePageContent: React.FC = () => {
       }, 100);
 
       await runGeneration(undefined, undefined, hasExistingOutputs);
-      setIsPromptReady(false);
+      // setIsPromptReady(false); // Kept ready so "Generate Results" stays active or can be hidden logic-side
       // Hide sidebar on mobile after generation
       setIsSidebarVisibleMobile(false);
     }
@@ -2705,7 +2803,7 @@ Generate the new mockup image with the requested changes applied.`;
       setAutoGenerateSource(null);
 
       // Trigger generation
-      runGeneration();
+      runGeneration(undefined, undefined, true);
     }
   }, [autoGenerateSource, isPromptReady, isGenerating, isGeneratingPrompt, runGeneration]);
 
@@ -2900,6 +2998,15 @@ Generate the new mockup image with the requested changes applied.`;
     };
   }, [t]);
 
+
+
+  // Helper values for GenerateButton visibility
+
+  const hasUserChanges = designTypeSelected || brandingComplete || categoriesComplete || referenceImages.length > 0 || (uploadedImage && !isImagelessMode);
+
+  // Logic to show generation button (matches SidebarOrchestrator logic)
+  const shouldShowGenerateButton = isPromptReady || hasUserChanges;
+
   return (
     <>
       <SEO
@@ -2923,12 +3030,50 @@ Generate the new mockup image with the requested changes applied.`;
       ) : (
         <div className="pt-12 md:pt-14">
           <div className={`flex flex-col lg:flex-row h-[calc(100vh-2.5rem-120px)] md:h-[calc(100vh-5rem)] ${!hasGenerated ? 'justify-center py-4 md:py-8' : ''} ${hasGenerated ? 'relative' : ''}`}>
-            <div className={`${hasGenerated && !isSidebarVisibleMobile ? 'hidden lg:flex' : hasGenerated ? 'flex' : ''} ${hasGenerated ? 'h-full' : ''}`}>
+
+            {/* Collapse/Expand Toggle Button */}
+            {hasGenerated && (
+              <Button
+                onClick={() => {
+                  // Check if we are on mobile or desktop based on visibility state or window width
+                  // Since we don't track window width here, we use a heuristic or simple toggle
+                  // If sidebar is visible on mobile, close it.
+                  if (isSidebarVisibleMobile) {
+                    setIsSidebarVisibleMobile(false);
+                  } else {
+                    // Desktop toggle
+                    setIsSidebarCollapsed(!isSidebarCollapsed);
+                  }
+                }}
+                variant="outline"
+                size="icon"
+                className={`z-30 shadow-md bg-background border-border hover:bg-accent text-muted-foreground
+                        ${isSidebarVisibleMobile
+                    ? 'fixed top-20 right-4 lg:hidden' /* Mobile Close: Fixed top-right */
+                    : 'absolute top-4 left-4 lg:static lg:mr-4 lg:mt-0 transition-all' /* Desktop Toggle: In flow or absolute */
+                  }
+                        /* On desktop, we want it in the Main area flow but absolute helps if we want it "outside" sidebar */
+                        ${!isSidebarVisibleMobile ? 'lg:absolute lg:left-0 lg:ml-2 lg:top-4' : ''}
+                        /* When collapsed on desktop, move it to left edge */
+                    `}
+                style={{
+                  /* Dynamic positioning for desktop if needed, but flex layout handles main area */
+                }}
+              >
+                {isSidebarVisibleMobile || !isSidebarCollapsed ? (
+                  <Menu className="h-4 w-4 rotate-180" /> /* Close/Collapse Icon */
+                ) : (
+                  <Menu className="h-4 w-4" /> /* Expand Icon */
+                )}
+              </Button>
+            )}
+
+            <div className={`${hasGenerated && !isSidebarVisibleMobile ? (isSidebarCollapsed ? 'hidden' : 'hidden lg:flex') : hasGenerated ? 'flex' : ''} ${hasGenerated ? 'h-full' : ''}`}>
               <SidebarOrchestrator
                 sidebarWidth={sidebarWidth}
                 sidebarRef={sidebarRef}
                 onSidebarWidthChange={setSidebarWidth}
-                onCloseMobile={() => setIsSidebarVisibleMobile(false)}
+                // onCloseMobile removed to use external button
                 onSurpriseMe={handleSurpriseMe}
                 onOpenSurpriseMeSettings={() => setIsSurpriseMeSettingsOpen(true)}
                 onImageUpload={handleImageUpload}
@@ -2949,7 +3094,23 @@ Generate the new mockup image with the requested changes applied.`;
             </div>
             {hasGenerated && (
               <>
-                <main className={`flex-1 p-2 md:p-4 lg:p-8 overflow-y-auto min-w-0 h-full ${!isSidebarVisibleMobile ? 'w-full' : ''}`}>
+                <main className={`flex-1 p-2 md:p-4 lg:p-8 overflow-y-auto min-w-0 h-full ${!isSidebarVisibleMobile ? 'w-full' : ''} relative`}>
+                  {/* Desktop Toggle Button specific placement in Main if sidebar is consistent */}
+                  {!isSidebarVisibleMobile && (
+                    <div className="hidden lg:block absolute top-4 left-4 z-50">
+                      <Button
+                        onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                        variant="outline"
+                        size="icon"
+                        className="shadow-sm bg-background/80 backdrop-blur-sm border-border/50 hover:bg-accent"
+                        title={isSidebarCollapsed ? t('mockup.expandSidebar') : t('mockup.collapseSidebar')}
+                      >
+                        {isSidebarCollapsed ? <Menu size={18} /> : <div className="flex"><Menu size={18} className="rotate-180" /></div>}
+                        {/* Or use specific icons like PanelLeftClose/Open if available */}
+                      </Button>
+                    </div>
+                  )}
+
                   <MockupDisplay
                     mockups={mockups}
                     isLoading={isLoading}
@@ -3010,16 +3171,18 @@ Generate the new mockup image with the requested changes applied.`;
         />
       )}
 
-      {hasGenerated && (
-        <GenerateButton
-          onClick={handleGenerateClick}
-          disabled={isGenerateDisabled || (isPromptReady && isGenerating)}
-          isGeneratingPrompt={isGeneratingPrompt}
-          isGenerating={isGenerating}
-          isPromptReady={isPromptReady}
-          variant="floating"
-          creditsRequired={selectedModel && isPromptReady ? mockupCount * getCreditsRequired(selectedModel, resolution) : undefined}
-        />
+      {hasGenerated && !isSidebarVisibleMobile && shouldShowGenerateButton && (
+        <div className="lg:hidden">
+          <GenerateButton
+            onClick={handleGenerateClick}
+            disabled={isGenerateDisabled || (isPromptReady && isGenerating)}
+            isGeneratingPrompt={isGeneratingPrompt}
+            isGenerating={isGenerating}
+            isPromptReady={isPromptReady}
+            variant="floating"
+            creditsRequired={selectedModel && isPromptReady ? mockupCount * getCreditsRequired(selectedModel, resolution) : undefined}
+          />
+        </div>
       )}
 
       <FloatingActionButtons

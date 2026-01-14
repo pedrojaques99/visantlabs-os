@@ -291,7 +291,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
 
       {/* Result Preview */}
       {hasResult && (data.resultImageUrl || data.resultImageBase64) && (
-        <div className="mt-3 pt-3 border-t border-zinc-700/30">
+        <div className="mt-3 pt-3 border-t border-neutral-700/30">
           <img
             src={data.resultImageUrl || (data.resultImageBase64 ? `data:image/png;base64,${data.resultImageBase64}` : '')}
             alt={t('canvasNodes.mergeNode.result')}

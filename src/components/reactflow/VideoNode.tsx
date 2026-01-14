@@ -206,7 +206,7 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
       )}
 
       {/* Header */}
-      <div className="p-4 border-b border-zinc-800">
+      <div className="p-4 border-b border-neutral-800">
         <NodeHeader icon={Clapperboard} title="Veo Video" className="mb-0" />
       </div>
 
@@ -269,17 +269,17 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
         )}
 
         {data.connectedVideo && (
-          <div className="bg-zinc-900/50 border border-zinc-800 rounded p-2 flex items-center gap-2">
+          <div className="bg-neutral-900/50 border border-neutral-800 rounded p-2 flex items-center gap-2">
             <VideoIcon size={14} className="text-brand-cyan" />
-            <span className="text-xs text-zinc-400">{t('Video Input Connected')}</span>
+            <span className="text-xs text-neutral-400">{t('Video Input Connected')}</span>
           </div>
         )}
 
         {/* Advanced Settings */}
-        <div className="border border-zinc-800 rounded-md bg-zinc-900/30">
+        <div className="border border-neutral-800 rounded-md bg-neutral-900/30">
           <button
             onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
-            className="flex items-center gap-2 text-xs font-mono text-zinc-400 hover:text-zinc-200 transition-colors w-full p-2 hover:bg-zinc-800/50"
+            className="flex items-center gap-2 text-xs font-mono text-neutral-400 hover:text-neutral-200 transition-colors w-full p-2 hover:bg-neutral-800/50"
           >
             <Settings size={12} />
             <span>{t('Advanced Settings')}</span>
@@ -287,7 +287,7 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
           </button>
 
           {isAdvancedOpen && (
-            <div className="p-3 space-y-3 border-t border-zinc-800 bg-zinc-900/50">
+            <div className="p-3 space-y-3 border-t border-neutral-800 bg-neutral-900/50">
               <div>
                 <NodeLabel>{t('Model')}</NodeLabel>
                 <Select
@@ -352,7 +352,7 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
               <div>
                 <NodeLabel>{t('Negative Prompt')}</NodeLabel>
                 <input
-                  className="w-full bg-zinc-900 border border-zinc-700 rounded p-2 text-xs font-mono text-zinc-300 focus:border-[brand-cyan] outline-none placeholder:text-zinc-600"
+                  className="w-full bg-neutral-900 border border-neutral-700 rounded p-2 text-xs font-mono text-neutral-300 focus:border-[brand-cyan] outline-none placeholder:text-neutral-600"
                   placeholder={t('What to avoid...')}
                   value={negativePrompt}
                   onChange={(e) => {
@@ -394,7 +394,7 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
 
         {/* Result Preview */}
         {(data.resultVideoUrl || data.resultVideoBase64) && !isLoading && (
-          <div className="mt-4 rounded-lg overflow-hidden border border-zinc-700 bg-black relative group shadow-lg">
+          <div className="mt-4 rounded-lg overflow-hidden border border-neutral-700 bg-black relative group shadow-lg">
             <video
               src={data.resultVideoUrl || (data.resultVideoBase64 ? `data:video/mp4;base64,${data.resultVideoBase64}` : undefined)}
               className="w-full h-auto max-h-[200px] object-contain"

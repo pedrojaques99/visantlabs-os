@@ -1,10 +1,21 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useMockup } from '../components/mockupmachine/MockupContext';
 import {
     AVAILABLE_TAGS,
+    AVAILABLE_BRANDING_TAGS, // Fallback
+    AVAILABLE_LOCATION_TAGS,
     AVAILABLE_ANGLE_TAGS,
-    AVAILABLE_LOCATION_TAGS
+    AVAILABLE_LIGHTING_TAGS,
+    AVAILABLE_EFFECT_TAGS,
+    AVAILABLE_MATERIAL_TAGS
 } from '@/utils/mockupConstants';
+import { brandingPresetsService } from '@/services/brandingPresetsService';
+import { effectPresetsService } from '@/services/effectPresetsService';
+import { mockupPresetsService } from '@/services/mockupPresetsService';
+import { anglePresetsService } from '@/services/anglePresetsService';
+import { ambiencePresetsService } from '@/services/ambiencePresetsService';
+import { luminancePresetsService } from '@/services/luminancePresetsService';
+import { texturePresetsService } from '@/services/texturePresetsService';
 
 export const useMockupTags = () => {
     const {
@@ -23,6 +34,70 @@ export const useMockupTags = () => {
         customEffectInput, setCustomEffectInput,
         customMaterialInput, setCustomMaterialInput,
     } = useMockup();
+
+    // Dynamic Tag State
+    const [availableBrandingTags, setAvailableBrandingTags] = useState<string[]>(AVAILABLE_BRANDING_TAGS);
+    const [availableMockupTags, setAvailableMockupTags] = useState<string[]>(AVAILABLE_TAGS);
+    const [availableLocationTags, setAvailableLocationTags] = useState<string[]>(AVAILABLE_LOCATION_TAGS);
+    const [availableAngleTags, setAvailableAngleTags] = useState<string[]>(AVAILABLE_ANGLE_TAGS);
+    const [availableLightingTags, setAvailableLightingTags] = useState<string[]>(AVAILABLE_LIGHTING_TAGS);
+    const [availableEffectTags, setAvailableEffectTags] = useState<string[]>(AVAILABLE_EFFECT_TAGS);
+    const [availableMaterialTags, setAvailableMaterialTags] = useState<string[]>(AVAILABLE_MATERIAL_TAGS);
+
+    // Fetch dynamic tags on mount
+    useEffect(() => {
+        const fetchTags = async () => {
+            try {
+                // Fetch all presets in parallel
+                const [
+                    brandingPresets,
+                    mockupPresets,
+                    anglePresets,
+                    ambiencePresets,
+                    luminancePresets,
+                    effectPresets,
+                    texturePresets
+                ] = await Promise.all([
+                    brandingPresetsService.getAllAsync(),
+                    mockupPresetsService.getCategoriesAsync(), // Use new categorized method
+                    anglePresetsService.getAllAsync(),
+                    ambiencePresetsService.getAllAsync(),
+                    luminancePresetsService.getAllAsync(),
+                    effectPresetsService.getAllAsync(),
+                    texturePresetsService.getAllAsync()
+                ]);
+
+                if (brandingPresets.length > 0) {
+                    setAvailableBrandingTags(brandingPresets.map(p => p.name));
+                }
+                if (mockupPresets.length > 0) {
+                    const uniqueCategories = Array.from(new Set(mockupPresets.map(p => p.name))) as string[];
+                    setAvailableMockupTags(uniqueCategories);
+                }
+                if (ambiencePresets.length > 0) {
+                    setAvailableLocationTags(ambiencePresets.map(p => p.name));
+                }
+                if (anglePresets.length > 0) {
+                    setAvailableAngleTags(anglePresets.map(p => p.name));
+                }
+                if (luminancePresets.length > 0) {
+                    setAvailableLightingTags(luminancePresets.map(p => p.name));
+                }
+                if (effectPresets.length > 0) {
+                    setAvailableEffectTags(effectPresets.map(p => p.name));
+                }
+                if (texturePresets.length > 0) {
+                    setAvailableMaterialTags(texturePresets.map(p => p.name));
+                }
+
+            } catch (error) {
+                console.error("Failed to fetch dynamic tags:", error);
+                // Keep defaults on error
+            }
+        };
+
+        fetchTags();
+    }, []);
 
     const scrollToSection = useCallback((sectionId: string) => {
         setTimeout(() => {
@@ -98,7 +173,7 @@ export const useMockupTags = () => {
         limit: number
     ) => {
         const newTag = inputValue.trim();
-        if (newTag && selected.length < limit && !selected.map(t => t.toLowerCase()).includes(newTag.toLowerCase())) {
+        if (newTag && !selected.includes(newTag)) {
             setter([...selected, newTag]);
             inputSetter('');
         }
@@ -106,7 +181,7 @@ export const useMockupTags = () => {
 
     const handleAddCustomBrandingTag = useCallback(() => {
         const wasEmpty = selectedBrandingTags.length === 0;
-        handleAddCustomTag(customBrandingInput, selectedBrandingTags, setSelectedBrandingTags, setCustomBrandingInput, 3);
+        handleAddCustomTag(customBrandingInput, selectedBrandingTags, setSelectedBrandingTags, setCustomBrandingInput, 5);
         if (wasEmpty && customBrandingInput.trim()) {
             scrollToSection('categories-section');
         }
@@ -125,55 +200,59 @@ export const useMockupTags = () => {
     }, [customCategoryInput, selectedTags, setSelectedTags, setCustomCategoryInput, scrollToSection]);
 
     const handleRandomizeCategories = useCallback(() => {
-        const shuffled = [...AVAILABLE_TAGS].sort(() => 0.5 - Math.random());
+        const shuffled = [...availableMockupTags].sort(() => 0.5 - Math.random());
         const wasEmpty = selectedTags.length === 0;
         setSelectedTags([shuffled[0]]);
         if (wasEmpty) {
             scrollToSection('refine-section');
         }
-    }, [selectedTags.length, setSelectedTags, scrollToSection]);
+    }, [availableMockupTags, selectedTags.length, setSelectedTags, scrollToSection]);
 
     const handleAddCustomLocationTag = useCallback(() => {
-        const newTag = customLocationInput.trim();
-        if (newTag) {
-            setSelectedLocationTags([newTag]);
-            setCustomLocationInput('');
-        }
-    }, [customLocationInput, setSelectedLocationTags, setCustomLocationInput]);
+        handleAddCustomTag(customLocationInput, selectedLocationTags, setSelectedLocationTags, setCustomLocationInput, 3);
+    }, [customLocationInput, selectedLocationTags, setSelectedLocationTags, setCustomLocationInput, handleAddCustomTag]);
 
     const handleAddCustomAngleTag = useCallback(() => {
-        const newTag = customAngleInput.trim();
-        if (newTag) {
-            setSelectedAngleTags([newTag]);
-            setCustomAngleInput('');
-        }
-    }, [customAngleInput, setSelectedAngleTags, setCustomAngleInput]);
+        handleAddCustomTag(customAngleInput, selectedAngleTags, setSelectedAngleTags, setCustomAngleInput, 3);
+    }, [customAngleInput, selectedAngleTags, setSelectedAngleTags, setCustomAngleInput, handleAddCustomTag]);
 
     const handleAddCustomLightingTag = useCallback(() => {
-        const newTag = customLightingInput.trim();
-        if (newTag) {
-            setSelectedLightingTags([newTag]);
-            setCustomLightingInput('');
-        }
-    }, [customLightingInput, setSelectedLightingTags, setCustomLightingInput]);
+        handleAddCustomTag(customLightingInput, selectedLightingTags, setSelectedLightingTags, setCustomLightingInput, 3);
+    }, [customLightingInput, selectedLightingTags, setSelectedLightingTags, setCustomLightingInput, handleAddCustomTag]);
 
     const handleAddCustomEffectTag = useCallback(() => {
-        const newTag = customEffectInput.trim();
-        if (newTag) {
-            setSelectedEffectTags([newTag]);
-            setCustomEffectInput('');
-        }
-    }, [customEffectInput, setSelectedEffectTags, setCustomEffectInput]);
+        handleAddCustomTag(customEffectInput, selectedEffectTags, setSelectedEffectTags, setCustomEffectInput, 3);
+    }, [customEffectInput, selectedEffectTags, setSelectedEffectTags, setCustomEffectInput, handleAddCustomTag]);
 
     const handleAddCustomMaterialTag = useCallback(() => {
-        const newTag = customMaterialInput.trim();
-        if (newTag) {
-            setSelectedMaterialTags([newTag]);
-            setCustomMaterialInput('');
+        handleAddCustomTag(customMaterialInput, selectedMaterialTags, setSelectedMaterialTags, setCustomMaterialInput, 3);
+    }, [customMaterialInput, selectedMaterialTags, setSelectedMaterialTags, setCustomMaterialInput, handleAddCustomTag]);
+
+    // Randomize functions
+    const randomizeSelection = useCallback((available: string[], setter: (tags: string[]) => void, count: number = 1) => {
+        if (available.length === 0) return;
+        const random = [];
+        const availableCopy = [...available];
+        for (let i = 0; i < count; i++) {
+            if (availableCopy.length === 0) break;
+            const randomIndex = Math.floor(Math.random() * availableCopy.length);
+            random.push(availableCopy[randomIndex]);
+            availableCopy.splice(randomIndex, 1);
         }
-    }, [customMaterialInput, setSelectedMaterialTags, setCustomMaterialInput]);
+        setter(random);
+    }, []);
+
+    const randomizeBranding = useCallback(() => randomizeSelection(availableBrandingTags, setSelectedBrandingTags, 1), [availableBrandingTags, setSelectedBrandingTags, randomizeSelection]);
+    const randomizeCategory = useCallback(() => randomizeSelection(availableMockupTags, setSelectedTags, 1), [availableMockupTags, setSelectedTags, randomizeSelection]);
+    const randomizeLocation = useCallback(() => randomizeSelection(availableLocationTags, setSelectedLocationTags, 1), [availableLocationTags, setSelectedLocationTags, randomizeSelection]);
+    const randomizeAngle = useCallback(() => randomizeSelection(availableAngleTags, setSelectedAngleTags, 1), [availableAngleTags, setSelectedAngleTags, randomizeSelection]);
+    const randomizeLighting = useCallback(() => randomizeSelection(availableLightingTags, setSelectedLightingTags, 1), [availableLightingTags, setSelectedLightingTags, randomizeSelection]);
+    const randomizeEffect = useCallback(() => randomizeSelection(availableEffectTags, setSelectedEffectTags, 1), [availableEffectTags, setSelectedEffectTags, randomizeSelection]);
+    const randomizeMaterial = useCallback(() => randomizeSelection(availableMaterialTags, setSelectedMaterialTags, 1), [availableMaterialTags, setSelectedMaterialTags, randomizeSelection]);
+
 
     return {
+        // Tag Selection Handlers
         handleTagToggle,
         handleBrandingTagToggle,
         handleLocationTagToggle,
@@ -181,6 +260,8 @@ export const useMockupTags = () => {
         handleLightingTagToggle,
         handleEffectTagToggle,
         handleMaterialTagToggle,
+
+        // Custom Tag Handlers
         handleAddCustomBrandingTag,
         handleAddCustomCategoryTag,
         handleAddCustomLocationTag,
@@ -188,7 +269,27 @@ export const useMockupTags = () => {
         handleAddCustomLightingTag,
         handleAddCustomEffectTag,
         handleAddCustomMaterialTag,
+
+        // Randomize Handlers
         handleRandomizeCategories,
+        randomizeBranding,
+        randomizeCategory,
+        randomizeLocation,
+        randomizeAngle,
+        randomizeLighting,
+        randomizeEffect,
+        randomizeMaterial,
+
+        // Scroll Utility
         scrollToSection,
+
+        // Dynamic Available Tags
+        availableBrandingTags,
+        availableMockupTags,
+        availableLocationTags,
+        availableAngleTags,
+        availableLightingTags,
+        availableEffectTags,
+        availableMaterialTags
     };
 };

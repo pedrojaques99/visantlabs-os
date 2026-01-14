@@ -46,13 +46,13 @@ export const VariableThumbnail: React.FC<VariableThumbnailProps> = ({
   const getStatusStyles = () => {
     switch (status) {
       case 'available':
-        return 'border-zinc-700 bg-black/20 hover:bg-black/40 text-zinc-400';
+        return 'border-neutral-700 bg-black/20 hover:bg-black/40 text-neutral-400';
       case 'added':
         return 'border-[brand-cyan]/50 bg-brand-cyan/10 hover:bg-brand-cyan/20 text-brand-cyan';
       case 'positioned':
         return 'border-green-500/50 bg-green-500/10 hover:bg-green-500/20 text-green-400';
       default:
-        return 'border-zinc-700 bg-black/20 text-zinc-400';
+        return 'border-neutral-700 bg-black/20 text-neutral-400';
     }
   };
 

@@ -35,7 +35,7 @@ router.get('/db', async (req, res) => {
 // R2 storage health check
 router.get('/r2', async (req, res) => {
   try {
-    const r2Service = await import('../services/r2Service.js');
+    const r2Service = await import('@/services/r2Service.js');
 
     // Check if R2 is configured
     if (!r2Service.isR2Configured()) {

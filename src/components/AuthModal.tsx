@@ -164,14 +164,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-black/50 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-zinc-900 border border-zinc-800/50 rounded-md p-6 w-full max-w-md mx-4">
+      <div className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 w-full max-w-md mx-4">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold font-mono text-zinc-200 uppercase">
+          <h2 className="text-lg font-semibold font-mono text-neutral-200 uppercase">
             {isSignUp ? t('auth.signUp') : t('auth.signIn')}
           </h2>
           <button
             onClick={handleClose}
-            className="text-zinc-500 hover:text-zinc-300 transition-colors"
+            className="text-neutral-500 hover:text-neutral-300 transition-colors"
           >
             <X size={20} />
           </button>
@@ -184,7 +184,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               type="button"
               onClick={handleGoogleAuth}
               disabled={isGoogleLoading}
-              className="w-full flex items-center justify-center gap-2 bg-zinc-800/50 hover:bg-zinc-800/70 disabled:opacity-50 disabled:cursor-not-allowed text-zinc-300 font-semibold py-2.5 px-4 rounded-md border border-zinc-700/50 hover:border-zinc-600/50 transition-all duration-200 text-sm font-mono mb-4"
+              className="w-full flex items-center justify-center gap-2 bg-neutral-800/50 hover:bg-neutral-800/70 disabled:opacity-50 disabled:cursor-not-allowed text-neutral-300 font-semibold py-2.5 px-4 rounded-md border border-neutral-700/50 hover:border-neutral-600/50 transition-all duration-200 text-sm font-mono mb-4"
             >
               {isGoogleLoading ? (
                 <>
@@ -197,9 +197,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </button>
 
             <div className="flex items-center gap-2 mb-4">
-              <div className="flex-1 h-px bg-zinc-800/50"></div>
-              <span className="text-xs text-zinc-500 font-mono">{t('auth.or')}</span>
-              <div className="flex-1 h-px bg-zinc-800/50"></div>
+              <div className="flex-1 h-px bg-neutral-800/50"></div>
+              <span className="text-xs text-neutral-500 font-mono">{t('auth.or')}</span>
+              <div className="flex-1 h-px bg-neutral-800/50"></div>
             </div>
           </>
         )}
@@ -207,21 +207,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         <form onSubmit={handleEmailAuth} className="space-y-4">
           {isSignUp && (
             <div>
-              <label className="block text-xs font-mono text-zinc-400 mb-1">
+              <label className="block text-xs font-mono text-neutral-400 mb-1">
                 {t('auth.name')}
               </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-black/40 p-2 rounded-md border border-zinc-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-zinc-300 font-mono"
+                className="w-full bg-black/40 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-neutral-300 font-mono"
                 placeholder={t('auth.namePlaceholder')}
               />
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-mono text-zinc-400 mb-1">
+            <label className="block text-xs font-mono text-neutral-400 mb-1">
               {t('auth.email')}
             </label>
             <input
@@ -229,13 +229,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full bg-black/40 p-2 rounded-md border border-zinc-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-zinc-300 font-mono"
+              className="w-full bg-black/40 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-neutral-300 font-mono"
               placeholder={t('auth.emailPlaceholder')}
             />
           </div>
 
           <div>
-            <label className="block text-xs font-mono text-zinc-400 mb-1">
+            <label className="block text-xs font-mono text-neutral-400 mb-1">
               {t('auth.password')}
             </label>
             <input
@@ -244,11 +244,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full bg-black/40 p-2 rounded-md border border-zinc-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-zinc-300 font-mono"
+              className="w-full bg-black/40 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-neutral-300 font-mono"
               placeholder={t('auth.passwordPlaceholder')}
             />
             {isSignUp && (
-              <p className="text-xs text-zinc-500 mt-1 font-mono">
+              <p className="text-xs text-neutral-500 mt-1 font-mono">
                 {t('auth.minimumCharacters')}
               </p>
             )}
@@ -288,7 +288,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <button
             type="submit"
             disabled={isAuthLoading || !email || !password}
-            className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
+            className="w-full flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold py-2.5 px-4 rounded-md transition-all duration-200 text-sm font-mono"
           >
             {isAuthLoading ? (
               <>
@@ -301,7 +301,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </button>
         </form>
 
-        <div className="mt-4 pt-4 border-t border-zinc-800/50">
+        <div className="mt-4 pt-4 border-t border-neutral-800/50">
           <PillButton
             onClick={() => {
               setIsSignUp(!isSignUp);
@@ -318,8 +318,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         </div>
 
         {isSignUp && (
-          <div className="mt-4 pt-4 border-t border-zinc-800/50">
-            <p className="text-xs text-zinc-500 font-mono text-center">
+          <div className="mt-4 pt-4 border-t border-neutral-800/50">
+            <p className="text-xs text-neutral-500 font-mono text-center">
               {t('auth.bySigningUp')}{' '}
               <Link
                 to="/terms"

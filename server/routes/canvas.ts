@@ -1,8 +1,8 @@
 import express from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma, verifyPrismaConnectionWithDetails } from '../db/prisma.js';
-import { uploadCanvasImage, uploadCanvasPdf, uploadCanvasVideo, isR2Configured, generateCanvasImageUploadUrl, generateCanvasVideoUploadUrl } from '../services/r2Service.js';
-import { compressPdfSimple } from '@/utils/pdfCompression.js';
+import { uploadCanvasImage, uploadCanvasPdf, uploadCanvasVideo, isR2Configured, generateCanvasImageUploadUrl, generateCanvasVideoUploadUrl } from '@/services/r2Service.js';
+import { compressPdfSimple } from '../utils/pdfCompression.js';
 import { validateAdminOrPremium, requireEditAccess, requireViewAccess } from '../middleware/canvasAuth.js';
 import { Liveblocks } from '@liveblocks/node';
 
@@ -1610,7 +1610,7 @@ router.delete('/image', authenticate, async (req: AuthRequest, res) => {
     }
 
     try {
-      const r2Service = await import('../services/r2Service.js');
+      const r2Service = await import('@/services/r2Service.js');
       if (r2Service.isR2Configured()) {
         await r2Service.deleteImage(imageUrl);
         res.json({ success: true, message: 'Image deleted from R2' });

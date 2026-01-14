@@ -120,8 +120,8 @@ export const PDFNode = memo(({ data, selected, id, dragging }: NodeProps<any>) =
                 className="w-full h-32"
               />
             ) : (
-              <div className="w-full h-32 bg-zinc-900/50 border border-zinc-700/30 rounded flex items-center justify-center">
-                <FileText size={16} className="text-zinc-600" />
+              <div className="w-full h-32 bg-neutral-900/50 border border-neutral-700/30 rounded flex items-center justify-center">
+                <FileText size={16} className="text-neutral-600" />
               </div>
             )}
           </div>

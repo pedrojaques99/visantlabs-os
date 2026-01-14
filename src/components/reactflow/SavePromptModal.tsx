@@ -143,23 +143,23 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
             onClick={onClose}
         >
             <div
-                className="relative bg-zinc-900 border border-zinc-800/60 rounded-xl shadow-2xl w-full max-w-lg flex flex-col overflow-hidden animate-slide-up"
+                className="relative bg-neutral-900 border border-neutral-800/60 rounded-xl shadow-2xl w-full max-w-lg flex flex-col overflow-hidden animate-slide-up"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-zinc-800/60 bg-zinc-900/20 backdrop-blur-sm">
+                <div className="flex items-center justify-between p-6 border-b border-neutral-800/60 bg-neutral-900/20 backdrop-blur-sm">
                     <div className="flex items-center gap-4">
                         <div className="p-2 bg-brand-cyan/10 rounded-lg border border-brand-cyan/20">
                             <Save className="h-5 w-5 text-brand-cyan" />
                         </div>
                         <div>
-                            <h2 className="text-lg font-semibold text-zinc-200 font-manrope tracking-tight">Salvar Prompt</h2>
-                            <p className="text-xs text-zinc-500 font-mono mt-0.5">Salve seu prompt para reutilizar ou compartilhar</p>
+                            <h2 className="text-lg font-semibold text-neutral-200 font-manrope tracking-tight">Salvar Prompt</h2>
+                            <p className="text-xs text-neutral-500 font-mono mt-0.5">Salve seu prompt para reutilizar ou compartilhar</p>
                         </div>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 rounded-lg hover:bg-zinc-800/50 text-zinc-400 hover:text-zinc-200 transition-all hover:scale-110 active:scale-95"
+                        className="p-2 rounded-lg hover:bg-neutral-800/50 text-neutral-400 hover:text-neutral-200 transition-all hover:scale-110 active:scale-95"
                     >
                         <X size={20} />
                     </button>
@@ -194,7 +194,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                         </FormField>
 
                         <div className="pt-2">
-                            <label className="text-xs font-semibold text-zinc-400 font-mono mb-3 uppercase tracking-wider block">
+                            <label className="text-xs font-semibold text-neutral-400 font-mono mb-3 uppercase tracking-wider block">
                                 Privacidade
                             </label>
                             <div className="grid grid-cols-2 gap-3">
@@ -203,8 +203,8 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                                     className={cn(
                                         "flex flex-col items-start p-3 rounded-xl border transition-all text-left group",
                                         !isPublic
-                                            ? "bg-zinc-800/50 border-zinc-700 text-zinc-200"
-                                            : "bg-transparent border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:bg-zinc-800/20"
+                                            ? "bg-neutral-800/50 border-neutral-700 text-neutral-200"
+                                            : "bg-transparent border-neutral-800 text-neutral-500 hover:border-neutral-700 hover:bg-neutral-800/20"
                                     )}
                                 >
                                     <div className="flex items-center gap-2 mb-1">
@@ -220,7 +220,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                                         "flex flex-col items-start p-3 rounded-xl border transition-all text-left group",
                                         isPublic
                                             ? "bg-brand-cyan/10 border-brand-cyan/30 text-brand-cyan"
-                                            : "bg-transparent border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:bg-zinc-800/20"
+                                            : "bg-transparent border-neutral-800 text-neutral-500 hover:border-neutral-700 hover:bg-neutral-800/20"
                                     )}
                                 >
                                     <div className="flex items-center gap-2 mb-1">
@@ -233,7 +233,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                         </div>
 
                         <div className="pt-2">
-                            <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest ml-1 mb-2 block">
+                            <label className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest ml-1 mb-2 block">
                                 Tags
                             </label>
                             <div className="flex gap-2">
@@ -247,7 +247,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                                         }
                                     }}
                                     placeholder="moderno, arquitetura..."
-                                    className="flex-1 bg-zinc-900/50 border-zinc-800 focus:border-brand-cyan/30"
+                                    className="flex-1 bg-neutral-900/50 border-neutral-800 focus:border-brand-cyan/30"
                                 />
                                 <Button
                                     variant="secondary"
@@ -263,12 +263,12 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                                         <Badge
                                             key={idx}
                                             variant="outline"
-                                            className="px-2 py-0.5 bg-zinc-800/40 border border-zinc-700/30 text-[10px] text-zinc-400 font-mono gap-1.5 group"
+                                            className="px-2 py-0.5 bg-neutral-800/40 border border-neutral-700/30 text-[10px] text-neutral-400 font-mono gap-1.5 group"
                                         >
                                             #{tag}
                                             <button
                                                 onClick={() => setTags(tags.filter((_, i) => i !== idx))}
-                                                className="text-zinc-500 hover:text-zinc-300 transition-colors"
+                                                className="text-neutral-500 hover:text-neutral-300 transition-colors"
                                             >
                                                 <X size={10} />
                                             </button>
@@ -278,10 +278,10 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                             )}
                         </div>
 
-                        <div className="pt-4 border-t border-zinc-800">
-                            <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest mb-2 block">Visualização do Prompt</label>
-                            <div className="p-3 bg-zinc-950/50 border border-zinc-800 rounded-lg max-h-32 overflow-y-auto">
-                                <p className="text-xs text-zinc-400 font-mono whitespace-pre-wrap leading-relaxed">
+                        <div className="pt-4 border-t border-neutral-800">
+                            <label className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest mb-2 block">Visualização do Prompt</label>
+                            <div className="p-3 bg-neutral-950/50 border border-neutral-800 rounded-lg max-h-32 overflow-y-auto">
+                                <p className="text-xs text-neutral-400 font-mono whitespace-pre-wrap leading-relaxed">
                                     {prompt}
                                 </p>
                             </div>
@@ -290,11 +290,11 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                 </div>
 
                 {/* Footer */}
-                <div className="p-6 border-t border-zinc-800/60 bg-zinc-900/20 backdrop-blur-sm flex gap-3">
+                <div className="p-6 border-t border-neutral-800/60 bg-neutral-900/20 backdrop-blur-sm flex gap-3">
                     <Button
                         variant="ghost"
                         onClick={onClose}
-                        className="flex-1 font-mono text-zinc-400 hover:text-zinc-200"
+                        className="flex-1 font-mono text-neutral-400 hover:text-neutral-200"
                     >
                         Cancelar
                     </Button>

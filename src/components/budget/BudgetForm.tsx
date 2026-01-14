@@ -127,7 +127,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
     return (
       <div className="space-y-6">
         {/* Custom PDF Section */}
-        <div className="space-y-6 rounded-xl p-4 sm:p-6 bg-zinc-900 border border-zinc-800">
+        <div className="space-y-6 rounded-xl p-4 sm:p-6 bg-neutral-900 border border-neutral-800">
           <PdfUploadSection
             customPdfUrl={data.customPdfUrl}
             budgetId={budgetId}
@@ -153,10 +153,10 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
     <div className="space-y-6">
       {/* Basic Info */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-zinc-200 font-mono">Informações Básicas</h3>
+        <h3 className="text-lg font-semibold text-neutral-200 font-mono">Informações Básicas</h3>
 
         <div>
-          <label className="block text-xs text-zinc-400 mb-2 font-mono">
+          <label className="block text-xs text-neutral-400 mb-2 font-mono">
             {t('budget.clientName')} *
           </label>
           <FormInput
@@ -170,7 +170,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
         </div>
 
         <div>
-          <label className="block text-xs text-zinc-400 mb-2 font-mono">
+          <label className="block text-xs text-neutral-400 mb-2 font-mono">
             {t('budget.projectName')} *
           </label>
           <FormInput
@@ -184,7 +184,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
         </div>
 
         <div>
-          <label className="block text-xs text-zinc-400 mb-2 font-mono">
+          <label className="block text-xs text-neutral-400 mb-2 font-mono">
             {t('budget.projectDescription')} *
           </label>
           <FormTextarea
@@ -216,7 +216,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
 
       {/* Observations */}
       <div>
-        <label className="block text-xs text-zinc-400 mb-2 font-mono">
+        <label className="block text-xs text-neutral-400 mb-2 font-mono">
           {t('budget.observations')}
         </label>
         <FormTextarea
@@ -242,7 +242,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
       />
 
       {/* Custom PDF Section */}
-      <div className="space-y-6 rounded-xl p-6 bg-zinc-900 border border-zinc-800">
+      <div className="space-y-6 rounded-xl p-6 bg-neutral-900 border border-neutral-800">
         <PdfUploadSection
           customPdfUrl={data.customPdfUrl}
           budgetId={budgetId}
