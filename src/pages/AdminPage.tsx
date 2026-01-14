@@ -16,11 +16,14 @@ import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "
 import { useLayout } from '@/hooks/useLayout';
 import { useTranslation } from '@/hooks/useTranslation';
 import { authService } from '../services/authService';
+import { toast } from 'sonner';
 import { SEO } from '../components/SEO';
 
 import { DataTable } from '../components/ui/data-table';
+import { DataTableEditableCell } from '../components/ui/data-table-editable-cell';
 import { ColumnDef } from '@tanstack/react-table';
 import { getImagePricing } from '@/utils/pricing';
+import { cn } from '@/lib/utils';
 
 interface AdminUser {
   id: string;
@@ -278,6 +281,54 @@ export const AdminPage: React.FC = () => {
     handleFetch();
   };
 
+  const handleSaveUser = async (user: AdminUser, field: string, value: string) => {
+    // Optimistic check
+    if ((user as any)[field] === value) return;
+
+    const token = authService.getToken();
+    if (!token) {
+      toast.error(t('admin.authRequired') || 'Authentication required');
+      return;
+    }
+
+    try {
+      // Assuming generic update endpoint /api/admin/users/:id
+      // We might need to send the whole object or just the patch.
+      // Based on typical patterns, let's try sending the updated field in a body.
+      // If the backend expects a specific structure, we might need to adjust.
+      // For now, mimicking the preset logic but for users.
+
+      const body = {
+        ...user,
+        [field]: value
+      };
+
+      const response = await fetch(`${ADMIN_API}/${user.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        throw new Error(t('admin.saveError') || 'Failed to update user');
+      }
+
+      toast.success(t('admin.saveSuccess') || 'User updated successfully');
+
+      // Update local state to avoid full refetch if preferred, or just refetch
+      // For simplicity/consistency, let's refetch or update the specific row in data
+      // Refetching is safer to ensure sync
+      handleFetch();
+
+    } catch (error) {
+      console.error('Error updating user:', error);
+      toast.error(t('admin.saveError') || 'Failed to update user');
+    }
+  };
+
   // Check if user is admin and load data
   useEffect(() => {
     const checkAdminStatus = async () => {
@@ -509,11 +560,21 @@ export const AdminPage: React.FC = () => {
       accessorKey: 'name',
       header: t('admin.user'),
       cell: ({ row }) => (
-        <div className="flex flex-col">
-          <p className="font-medium text-neutral-200">{row.original.name || t('admin.noName')}</p>
-          <p className="text-xs text-neutral-500 font-mono">{row.original.email}</p>
-        </div>
+        <DataTableEditableCell
+          row={row}
+          field="name"
+          className="font-medium text-neutral-200"
+          placeholder={t('admin.noName')}
+          onSave={handleSaveUser}
+        />
       ),
+      size: 150,
+      enableSorting: true,
+    },
+    {
+      accessorKey: 'email',
+      header: 'Email',
+      cell: ({ row }) => <span className="text-xs text-neutral-500 font-mono select-all">{row.original.email}</span>,
       size: 200,
       enableSorting: true,
     },
@@ -521,47 +582,74 @@ export const AdminPage: React.FC = () => {
       accessorKey: 'subscriptionTier',
       header: t('admin.subscription'),
       cell: ({ row }) => (
-        <div className="flex flex-col">
-          <Badge variant="outline" className="bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/30 font-mono mb-1 w-fit">
-            {row.original.subscriptionTier}
-          </Badge>
-          <p className="text-xs text-neutral-500 font-mono">{row.original.subscriptionStatus}</p>
-        </div>
+        <Badge variant="outline" className="bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/30 font-mono w-fit">
+          {row.original.subscriptionTier}
+        </Badge>
       ),
-      size: 150,
+      size: 120,
       enableSorting: true,
     },
     {
-      id: 'creditsRemaining',
+      accessorKey: 'subscriptionStatus',
+      header: 'Status',
+      cell: ({ row }) => <span className="text-xs text-neutral-500 font-mono capitalize">{row.original.subscriptionStatus}</span>,
+      size: 100,
+      enableSorting: true,
+    },
+    {
+      accessorKey: 'monthlyCredits',
+      header: t('admin.monthly'),
+      cell: ({ row }) => <span className="text-xs font-mono">{row.original.monthlyCredits ?? 0}</span>,
+      size: 100,
+      enableSorting: true,
+    },
+    {
+      accessorKey: 'creditsUsed',
+      header: t('admin.used'),
+      cell: ({ row }) => <span className="text-xs font-mono">{row.original.creditsUsed ?? 0}</span>,
+      size: 80,
+      enableSorting: true,
+    },
+    {
       accessorKey: 'creditsRemaining',
-      header: t('admin.credits'),
-      cell: ({ row }) => (
-        <div className="text-xs font-mono space-y-1">
-          <p>{t('admin.monthly')}: {row.original.monthlyCredits ?? 0}</p>
-          <p>{t('admin.used')}: {row.original.creditsUsed ?? 0}</p>
-          <p className="text-brand-cyan">{t('admin.remaining')}: {row.original.creditsRemaining}</p>
-          <p>{t('admin.manual')}: {row.original.manualCredits}</p>
-        </div>
-      ),
-      size: 150,
+      header: t('admin.remaining'),
+      cell: ({ row }) => <span className="text-xs font-mono text-brand-cyan">{row.original.creditsRemaining}</span>,
+      size: 100,
       enableSorting: true,
     },
     {
-      id: 'referralCount',
+      accessorKey: 'manualCredits',
+      header: t('admin.manual'),
+      cell: ({ row }) => <span className="text-xs font-mono">{row.original.manualCredits}</span>,
+      size: 80,
+      enableSorting: true,
+    },
+    {
       accessorKey: 'referralCount',
       header: t('admin.referrals'),
+      cell: ({ row }) => <span className="text-xs font-mono">{row.original.referralCount ?? 0}</span>,
+      size: 80,
+      enableSorting: true,
+    },
+    {
+      accessorKey: 'referralCode',
+      header: t('admin.code'),
+      cell: ({ row }) => <span className="text-xs font-mono select-all">{row.original.referralCode || '—'}</span>,
+      size: 100,
+      enableSorting: true,
+    },
+    {
+      id: 'referredBy',
+      accessorKey: 'referredBy',
+      header: t('admin.referredBy'),
       cell: ({ row }) => (
-        <div className="text-xs font-mono space-y-1">
-          <p>{t('admin.made')}: {row.original.referralCount ?? 0}</p>
-          <p>{t('admin.code')}: {row.original.referralCode || '—'}</p>
-          <p className="text-[11px] text-neutral-500">
-            {row.original.referredBy
-              ? `${t('admin.referredBy')}: ${userLookup[row.original.referredBy]?.name || userLookup[row.original.referredBy]?.email || t('admin.unknown')}`
-              : t('admin.directOrigin')}
-          </p>
-        </div>
+        <span className="text-[11px] text-neutral-500 truncate max-w-[150px] inline-block" title={row.original.referredBy || ''}>
+          {row.original.referredBy
+            ? (userLookup[row.original.referredBy]?.name || userLookup[row.original.referredBy]?.email || t('admin.unknown'))
+            : t('admin.directOrigin')}
+        </span>
       ),
-      size: 180,
+      size: 150,
       enableSorting: true,
     },
     {
@@ -579,23 +667,25 @@ export const AdminPage: React.FC = () => {
       enableSorting: true,
     },
     {
-      id: 'totalSpentBRL',
       accessorKey: 'totalSpentBRL',
-      header: t('admin.spent'),
+      header: 'BRL',
       cell: ({ row }) => (
-        <div className="text-xs font-mono space-y-1">
-          {row.original.totalSpentBRL > 0 && (
-            <p className="text-green-500">{formatCurrency(row.original.totalSpentBRL, 'BRL')}</p>
-          )}
-          {row.original.totalSpentUSD > 0 && (
-            <p className="text-green-400">{formatCurrency(row.original.totalSpentUSD, 'USD')}</p>
-          )}
-          {row.original.totalSpentBRL === 0 && row.original.totalSpentUSD === 0 && (
-            <p className="text-neutral-500">—</p>
-          )}
-        </div>
+        <span className={cn("text-xs font-mono", row.original.totalSpentBRL > 0 ? "text-green-500" : "text-neutral-500")}>
+          {row.original.totalSpentBRL > 0 ? formatCurrency(row.original.totalSpentBRL, 'BRL') : '—'}
+        </span>
       ),
-      size: 130,
+      size: 100,
+      enableSorting: true,
+    },
+    {
+      accessorKey: 'totalSpentUSD',
+      header: 'USD',
+      cell: ({ row }) => (
+        <span className={cn("text-xs font-mono", row.original.totalSpentUSD > 0 ? "text-green-400" : "text-neutral-500")}>
+          {row.original.totalSpentUSD > 0 ? formatCurrency(row.original.totalSpentUSD, 'USD') : '—'}
+        </span>
+      ),
+      size: 100,
       enableSorting: true,
     },
     {

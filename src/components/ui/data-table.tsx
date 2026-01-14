@@ -9,8 +9,16 @@ import {
   SortingState,
   ColumnFiltersState,
   useReactTable,
+  VisibilityState,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ArrowUp, ArrowDown, Search } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/ui/button"
+import { ArrowUpDown, ArrowUp, ArrowDown, Search, ChevronDown } from "lucide-react"
 
 import {
   Table,
@@ -46,6 +54,8 @@ export function DataTable<TData, TValue>({
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({})
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
 
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
+
   const table = useReactTable({
     data,
     columns,
@@ -56,6 +66,7 @@ export function DataTable<TData, TValue>({
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
     onColumnSizingChange: setColumnSizing,
+    onColumnVisibilityChange: setColumnVisibility,
     defaultColumn: {
       minSize: 50,
       maxSize: 1000,
@@ -64,19 +75,20 @@ export function DataTable<TData, TValue>({
       sorting,
       columnSizing,
       columnFilters,
+      columnVisibility,
     },
   })
 
   return (
     <div className="space-y-4">
-      {(title || searchKey) && (
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          {title && (
-            <div className="flex items-center gap-3 text-neutral-300 font-mono">
-              {icon}
-              <h2 className="text-xl font-semibold">{title}</h2>
-            </div>
-          )}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {title && (
+          <div className="flex items-center gap-3 text-neutral-300 font-mono">
+            {icon}
+            <h2 className="text-xl font-semibold">{title}</h2>
+          </div>
+        )}
+        <div className="flex items-center gap-2 w-full md:w-auto">
           {searchKey && (
             <div className="relative w-full md:w-auto md:min-w-[300px]">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-500" />
@@ -90,8 +102,32 @@ export function DataTable<TData, TValue>({
               />
             </div>
           )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="ml-auto bg-black/40 border-neutral-800/50 text-neutral-300">
+                Columns <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-neutral-900 border-neutral-800">
+              {table
+                .getAllColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => {
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize text-neutral-300 focus:bg-neutral-800"
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                    >
+                      {column.id}
+                    </DropdownMenuCheckboxItem>
+                  )
+                })}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-      )}
+      </div>
       <div className={cn("rounded-md border border-neutral-800/50", className)}>
         <Table style={{ width: table.getTotalSize(), minWidth: '100%', tableLayout: 'fixed' }}>
           <TableHeader>

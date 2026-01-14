@@ -1069,8 +1069,9 @@ router.post('/presets/angle', validateAdmin, async (req, res) => {
     const { id, name, description, prompt, aspectRatio, model, tags } = req.body;
 
     // Validation
-    if (!id || !name || !description || !prompt || !aspectRatio) {
-      return res.status(400).json({ error: 'Missing required fields' });
+    // Validation - ID and Name are minimal requirements
+    if (!id || !name) {
+      return res.status(400).json({ error: 'Missing required fields (id, name)' });
     }
 
     // Check if ID already exists
@@ -1118,7 +1119,8 @@ router.put('/presets/angle/:id', validateAdmin, async (req, res) => {
     const { name, description, prompt, aspectRatio, model, tags } = req.body;
 
     // Validation
-    if (!name || !description || !prompt || !aspectRatio) {
+    // Validation
+    if (!name) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
@@ -1195,8 +1197,9 @@ router.post('/presets/texture', validateAdmin, async (req, res) => {
 
     const { id, name, description, prompt, aspectRatio, model, tags } = req.body;
 
-    if (!id || !name || !description || !prompt || !aspectRatio) {
-      return res.status(400).json({ error: 'Missing required fields' });
+    // Validation - ID and Name are minimal requirements
+    if (!id || !name) {
+      return res.status(400).json({ error: 'Missing required fields (id, name)' });
     }
 
     const existing = await db.collection('texture_presets').findOne({ id });
@@ -1241,7 +1244,7 @@ router.put('/presets/texture/:id', validateAdmin, async (req, res) => {
 
     const { name, description, prompt, aspectRatio, model, tags } = req.body;
 
-    if (!name || !description || !prompt || !aspectRatio) {
+    if (!name) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
@@ -1318,8 +1321,9 @@ router.post('/presets/ambience', validateAdmin, async (req, res) => {
 
     const { id, name, description, prompt, aspectRatio, model, tags } = req.body;
 
-    if (!id || !name || !description || !prompt || !aspectRatio) {
-      return res.status(400).json({ error: 'Missing required fields' });
+    // Validation - ID and Name are minimal requirements
+    if (!id || !name) {
+      return res.status(400).json({ error: 'Missing required fields (id, name)' });
     }
 
     const existing = await db.collection('ambience_presets').findOne({ id });
@@ -1364,7 +1368,7 @@ router.put('/presets/ambience/:id', validateAdmin, async (req, res) => {
 
     const { name, description, prompt, aspectRatio, model, tags } = req.body;
 
-    if (!name || !description || !prompt || !aspectRatio) {
+    if (!name) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
@@ -1441,8 +1445,9 @@ router.post('/presets/luminance', validateAdmin, async (req, res) => {
 
     const { id, name, description, prompt, aspectRatio, model, tags } = req.body;
 
-    if (!id || !name || !description || !prompt || !aspectRatio) {
-      return res.status(400).json({ error: 'Missing required fields' });
+    // Validation - ID and Name are minimal requirements
+    if (!id || !name) {
+      return res.status(400).json({ error: 'Missing required fields (id, name)' });
     }
 
     const existing = await db.collection('luminance_presets').findOne({ id });
@@ -1487,7 +1492,7 @@ router.put('/presets/luminance/:id', validateAdmin, async (req, res) => {
 
     const { name, description, prompt, aspectRatio, model, tags } = req.body;
 
-    if (!name || !description || !prompt || !aspectRatio) {
+    if (!name) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
@@ -1718,8 +1723,9 @@ router.post('/presets/branding', validateAdmin, async (req, res) => {
 
     const { id, name, description, prompt, aspectRatio, model, tags } = req.body;
 
-    if (!id || !name || !description || !prompt) {
-      return res.status(400).json({ error: 'Missing required fields' });
+    // Validation - ID and Name are minimal requirements
+    if (!id || !name) {
+      return res.status(400).json({ error: 'Missing required fields (id, name)' });
     }
 
     const existing = await db.collection('branding_presets').findOne({ id });
@@ -1813,8 +1819,9 @@ router.post('/presets/effect', validateAdmin, async (req, res) => {
 
     const { id, name, description, prompt, aspectRatio, model, tags } = req.body;
 
-    if (!id || !name || !description || !prompt) {
-      return res.status(400).json({ error: 'Missing required fields' });
+    // Validation - ID and Name are minimal requirements
+    if (!id || !name) {
+      return res.status(400).json({ error: 'Missing required fields (id, name)' });
     }
 
     const existing = await db.collection('effect_presets').findOne({ id });

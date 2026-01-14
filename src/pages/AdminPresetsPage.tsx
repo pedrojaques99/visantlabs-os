@@ -1,7 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, Plus, Edit2, Trash2, X, Save, Upload, Image as ImageIcon, Camera, Layers, MapPin, Sun, RefreshCw, Settings, Users } from 'lucide-react';
+import { ShieldCheck, Plus, Edit2, Trash2, X, Save, Upload, Image as ImageIcon, Camera, Layers, MapPin, Sun, RefreshCw, Settings, Users, LayoutGrid, Table as TableIcon } from 'lucide-react';
+import { DataTable } from '../components/ui/data-table';
+import { DataTableEditableCell } from '../components/ui/data-table-editable-cell';
+import { ColumnDef } from '@tanstack/react-table';
+import { CATEGORY_CONFIG } from '@/components/PresetCard';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { AdminImageUploader } from '../components/ui/AdminImageUploader';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/card';
@@ -46,6 +50,9 @@ import {
   AVAILABLE_BRANDING_TAGS,
   AVAILABLE_EFFECT_TAGS
 } from '@/utils/mockupConstants';
+import { PresetCard } from '@/components/PresetCard';
+import { migrateLegacyPreset } from '@/types/communityPrompts';
+import type { CommunityPrompt } from '@/types/communityPrompts';
 
 const ADMIN_API = '/api/admin/presets';
 
@@ -62,7 +69,7 @@ interface PresetsData {
   effectPresets: EffectPreset[];
 }
 
-type PresetType = 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance' | 'branding' | 'effect';
+type PresetType = 'all' | 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance' | 'branding' | 'effect';
 
 interface PresetFormData {
   id: string;
@@ -82,7 +89,7 @@ export const AdminPresetsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState<PresetsData | null>(null);
-  const [activeTab, setActiveTab] = useState<PresetType>('mockup');
+  const [activeTab, setActiveTab] = useState<PresetType>('all');
   const [editingPreset, setEditingPreset] = useState<{ type: PresetType; id: string } | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [formData, setFormData] = useState<PresetFormData>({
@@ -108,6 +115,9 @@ export const AdminPresetsPage: React.FC = () => {
   const [isValidatingJson, setIsValidatingJson] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [tagInput, setTagInput] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+
+
 
   // Check if user is admin and load data
   useEffect(() => {
@@ -167,6 +177,177 @@ export const AdminPresetsPage: React.FC = () => {
   }, [isEditModalOpen]);
 
   const isAuthenticated = isUserAuthenticated === true && isAdmin === true;
+
+  const handleInlineSave = async (preset: CommunityPrompt, field: string, value: string) => {
+    // Optimistic check: if value hasn't changed, do nothing
+    if ((preset as any)[field] === value) return;
+
+    const token = authService.getToken();
+    if (!token) {
+      toast.error(t('adminPresets.unauthorized'));
+      return;
+    }
+
+    const type = (preset as any).category || 'mockup';
+    const id = preset.id;
+
+    try {
+      // Construct the body based on the existing preset, only updating one field
+      // We need to send required fields usually, or use PATCH if supported. 
+      // Assuming PUT requires all fields, we construct a "best effort" complete object from the row data.
+      // Ideally, the backend supports PATCH. If not, we just send what we have.
+      // Based on handleSave, we use PUT.
+
+      const body: any = {
+        id: preset.id,
+        name: preset.name,
+        description: preset.description,
+        prompt: preset.prompt,
+        aspectRatio: preset.aspectRatio,
+        model: preset.model,
+        tags: preset.tags,
+        referenceImageUrl: preset.referenceImageUrl
+      };
+
+      // Update the modified field
+      body[field] = value;
+
+      const response = await fetch(`${ADMIN_API}/${type}/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        throw new Error(t('adminPresets.saveError'));
+      }
+
+      toast.success(t('adminPresets.saveSuccess'));
+      handleFetch(); // Refresh data
+    } catch (error) {
+      toast.error(t('adminPresets.saveError'));
+      console.error(error);
+    }
+  };
+
+
+
+  const columns = useMemo<ColumnDef<CommunityPrompt>[]>(() => [
+    {
+      accessorKey: "referenceImageUrl",
+      header: t('adminPresets.table.image'),
+      cell: ({ row }) => {
+        const imageUrl = row.getValue("referenceImageUrl") as string;
+        const category = row.original.category;
+        const config = CATEGORY_CONFIG[category] || CATEGORY_CONFIG['presets'];
+        const Icon = config.icon;
+
+        return (
+          <div className="w-10 h-10 rounded overflow-hidden bg-neutral-800 flex items-center justify-center group relative">
+            {imageUrl ? (
+              <>
+                <img src={imageUrl} alt={row.getValue("name")} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer" onClick={() => {
+                  handleEdit((row.original.category as PresetType) || 'mockup', row.original as any);
+                }}>
+                  <Edit2 className="w-4 h-4 text-white" />
+                </div>
+              </>
+            ) : (
+              <Icon className={cn("w-5 h-5", config.color)} />
+            )}
+          </div>
+        );
+      },
+      enableSorting: false,
+      size: 60,
+    },
+    {
+      accessorKey: "id",
+      header: t('adminPresets.table.id'),
+      cell: ({ row }) => <span className="font-mono text-xs text-neutral-400 select-all">{row.getValue("id")}</span>,
+      size: 100,
+    },
+    {
+      accessorKey: "name",
+      header: t('adminPresets.table.name'),
+      cell: ({ row }) => <DataTableEditableCell row={row} field="name" className="font-medium" onSave={handleInlineSave} />,
+      size: 150,
+    },
+    {
+      accessorKey: "description",
+      header: t('adminPresets.descriptionRequired'), // Using existing key or fallback
+      cell: ({ row }) => <DataTableEditableCell row={row} field="description" className="text-xs text-neutral-400" onSave={handleInlineSave} />,
+      size: 200,
+    },
+    {
+      accessorKey: "prompt",
+      header: t('adminPresets.promptRequired'),
+      cell: ({ row }) => <DataTableEditableCell row={row} field="prompt" type="textarea" className="font-mono text-[10px] text-neutral-500 line-clamp-2" onSave={handleInlineSave} />,
+      size: 300,
+    },
+    {
+      accessorKey: "category",
+      header: t('adminPresets.table.category'),
+      cell: ({ row }) => {
+        const category = row.original.category;
+        const config = CATEGORY_CONFIG[category] || CATEGORY_CONFIG['presets'];
+        return (
+          <Badge variant="outline" className="bg-neutral-900/50 border-neutral-800">
+            <span className={cn("flex items-center gap-1.5", config.color)}>
+              {React.createElement(config.icon, { className: "w-3 h-3" })}
+              {config.label}
+            </span>
+          </Badge>
+        );
+      },
+      size: 120,
+    },
+    {
+      accessorKey: "model",
+      header: t('adminPresets.table.model'),
+      cell: ({ row }) => {
+        const model = row.original.model;
+        if (!model) return null;
+        return (
+          <Badge variant="secondary" className="text-[10px] h-5 bg-neutral-800 text-neutral-400 hover:bg-neutral-700">
+            {model.includes('flash') ? 'HD' : '4K'}
+          </Badge>
+        );
+      },
+      size: 80,
+    },
+    {
+      id: "actions",
+      header: t('adminPresets.table.actions'),
+      cell: ({ row }) => {
+        return (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-neutral-400 hover:text-white hover:bg-neutral-800"
+              onClick={() => handleEdit((row.original.category as PresetType) || 'mockup', row.original as any)}
+            >
+              <Edit2 className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-neutral-400 hover:text-red-400 hover:bg-neutral-800"
+              onClick={() => handleDelete((row.original.category as PresetType) || 'mockup', row.original.id)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        );
+      },
+      size: 100,
+    },
+  ], [t]);
 
   const handleFetch = async () => {
     const token = authService.getToken();
@@ -319,9 +500,15 @@ export const AdminPresetsPage: React.FC = () => {
     setError(null);
 
     try {
+      const type = isCreating ? (activeTab === 'all' ? 'mockup' : activeTab) : editingPreset?.type;
+
+      if (!type) {
+        throw new Error('Tipo de preset inválido.');
+      }
+
       const url = isCreating
-        ? `${ADMIN_API}/${activeTab}`
-        : `${ADMIN_API}/${activeTab}/${editingPreset?.id}`;
+        ? `${ADMIN_API}/${type}`
+        : `${ADMIN_API}/${type}/${editingPreset?.id}`;
       const method = isCreating ? 'POST' : 'PUT';
 
       const body: any = {
@@ -334,7 +521,7 @@ export const AdminPresetsPage: React.FC = () => {
         tags: formData.tags && formData.tags.length > 0 ? formData.tags : undefined,
       };
 
-      if (activeTab === 'mockup' && formData.referenceImageUrl !== undefined) {
+      if (type === 'mockup' && formData.referenceImageUrl !== undefined) {
         body.referenceImageUrl = formData.referenceImageUrl;
       }
 
@@ -967,15 +1154,35 @@ export const AdminPresetsPage: React.FC = () => {
     }
   };
 
-  const currentPresets =
-    activeTab === 'mockup' ? data?.mockupPresets || [] :
-      activeTab === 'angle' ? data?.anglePresets || [] :
-        activeTab === 'texture' ? data?.texturePresets || [] :
-          activeTab === 'ambience' ? data?.ambiencePresets || [] :
-            activeTab === 'luminance' ? data?.luminancePresets || [] :
-              activeTab === 'branding' ? data?.brandingPresets || [] :
-                activeTab === 'effect' ? data?.effectPresets || [] : [];
+  // Calculate presets with category for "all" view and easy filtering
+  const allPresetsWithCategory = useMemo(() => {
+    if (!data) return [];
+
+    const mockups = (data.mockupPresets || []).map(p => ({ ...p, category: 'mockup' as const }));
+    const angles = (data.anglePresets || []).map(p => ({ ...p, category: 'angle' as const }));
+    const textures = (data.texturePresets || []).map(p => ({ ...p, category: 'texture' as const }));
+    const ambiences = (data.ambiencePresets || []).map(p => ({ ...p, category: 'ambience' as const }));
+    const luminances = (data.luminancePresets || []).map(p => ({ ...p, category: 'luminance' as const }));
+    const brandings = (data.brandingPresets || []).map(p => ({ ...p, category: 'branding' as const }));
+    const effects = (data.effectPresets || []).map(p => ({ ...p, category: 'effect' as const }));
+
+    return [
+      ...mockups,
+      ...angles,
+      ...textures,
+      ...ambiences,
+      ...luminances,
+      ...brandings,
+      ...effects
+    ];
+  }, [data]);
+
+  const currentPresets = useMemo(() => {
+    if (activeTab === 'all') return allPresetsWithCategory;
+    return allPresetsWithCategory.filter(p => p.category === activeTab);
+  }, [activeTab, allPresetsWithCategory]);
   const isEditing = editingPreset !== null || isCreating;
+  const effectiveEditType = isCreating ? (activeTab === 'all' ? 'mockup' : activeTab) : editingPreset?.type;
 
   return (
     <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 pt-12 md:pt-14 relative">
@@ -1018,7 +1225,7 @@ export const AdminPresetsPage: React.FC = () => {
           <Tabs value="presets" className="space-y-6" onValueChange={(val) => {
             if (val !== 'presets') navigate('/admin');
           }}>
-            {/* Unified Header */}
+            {/* Row 1: Header */}
             <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl mb-6">
               <CardContent className="p-4 md:p-6">
                 <div className="mb-4">
@@ -1042,7 +1249,6 @@ export const AdminPresetsPage: React.FC = () => {
                     </BreadcrumbList>
                   </BreadcrumbWithBack>
                 </div>
-
                 <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <ShieldCheck className="h-6 w-6 md:h-8 md:w-8 text-brand-cyan" />
@@ -1056,288 +1262,193 @@ export const AdminPresetsPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4">
-                    <TabsList className="bg-neutral-900/50 border border-neutral-800/50 p-1 h-auto flex-wrap">
-                      <TabsTrigger value="overview" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/10 transition-all py-1.5 px-3 text-xs md:text-sm">
-                        {t('admin.dashboard')}
-                      </TabsTrigger>
-                      <TabsTrigger value="generations" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/10 transition-all py-1.5 px-3 text-xs md:text-sm">
-                        {t('admin.generations')}
-                      </TabsTrigger>
-                      <TabsTrigger value="users" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/10 transition-all py-1.5 px-3 text-xs md:text-sm">
-                        {t('admin.users')}
-                      </TabsTrigger>
-                    </TabsList>
-
-                    <Button
-                      onClick={handleRefresh}
-                      disabled={isLoading}
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center gap-2 border-neutral-800/50 hover:bg-neutral-800/50 h-9"
-                    >
-                      <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-                      <span className="hidden sm:inline">{t('admin.refresh') || 'Atualizar'}</span>
-                    </Button>
-                  </div>
+                  <TabsList className="bg-neutral-900/50 border border-neutral-800/50 p-1 h-auto flex-wrap">
+                    <TabsTrigger value="overview" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/10 transition-all py-1.5 px-3 text-xs md:text-sm">
+                      {t('admin.dashboard')}
+                    </TabsTrigger>
+                    <TabsTrigger value="generations" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/10 transition-all py-1.5 px-3 text-xs md:text-sm">
+                      {t('admin.generations')}
+                    </TabsTrigger>
+                    <TabsTrigger value="users" className="data-[state=active]:bg-brand-cyan/80 data-[state=active]:text-black hover:text-neutral-200 hover:bg-neutral-800/10 transition-all py-1.5 px-3 text-xs md:text-sm">
+                      {t('admin.users')}
+                    </TabsTrigger>
+                  </TabsList>
                 </div>
               </CardContent>
             </Card>
 
+            {/* Row 2: Action Buttons */}
+            <div className="flex flex-wrap items-center gap-2 mb-6">
+              <Button
+                onClick={handleRefresh}
+                disabled={isLoading}
+                className="font-mono bg-brand-cyan/80 hover:bg-brand-cyan text-black disabled:bg-neutral-700 disabled:text-neutral-500 h-9"
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                {t('admin.refresh') || 'Atualizar'}
+              </Button>
+
+              {!isEditing && (
+                <Button
+                  onClick={handleCreate}
+                  className="font-mono bg-brand-cyan/80 hover:bg-brand-cyan text-black h-9"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Novo
+                </Button>
+              )}
+
+              {!isEditing && activeTab === 'mockup' && (
+                <>
+                  <Button
+                    onClick={handlePopulateFromDefaults}
+                    disabled={isLoading}
+                    className="font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-brand-cyan/30 h-9"
+                  >
+                    <Layers className="h-4 w-4 mr-2" />
+                    Popular Mockups Padrão
+                  </Button>
+                  <Button
+                    onClick={handleOpenBatchModal}
+                    disabled={isLoading}
+                    className="font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-brand-cyan/30 h-9"
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Batch Upload
+                  </Button>
+                </>
+              )}
+
+              {!isEditing && activeTab !== 'mockup' && activeTab !== 'all' && (
+                <Button
+                  onClick={handlePopulateFromTags}
+                  disabled={isLoading}
+                  className="font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-brand-cyan/30 h-9"
+                >
+                  <Layers className="h-4 w-4 mr-2" />
+                  {t('adminPresets.populateDefaults') || 'Popular Padrões'}
+                </Button>
+              )}
+
+              {/* View Toggle */}
+              <div className="bg-neutral-900 border border-neutral-800 p-1 rounded-lg h-9 flex items-center ml-auto">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={cn(
+                    "p-1.5 rounded-md transition-all duration-200",
+                    viewMode === 'grid'
+                      ? "bg-neutral-800 text-white shadow-sm"
+                      : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                  )}
+                  title={t('adminPresets.viewGrid')}
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode('table')}
+                  className={cn(
+                    "p-1.5 rounded-md transition-all duration-200",
+                    viewMode === 'table'
+                      ? "bg-neutral-800 text-white shadow-sm"
+                      : "text-neutral-400 hover:text-white hover:bg-neutral-800/50"
+                  )}
+                  title={t('adminPresets.viewTable')}
+                >
+                  <TableIcon className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Row 3: Category Tabs */}
+            <div className="flex flex-wrap gap-2 mb-6">
+              {[
+                { id: 'all', label: 'All' },
+                { id: 'mockup', label: 'Mockups' },
+                { id: 'angle', label: 'Angles' },
+                { id: 'texture', label: 'Textures' },
+                { id: 'ambience', label: 'Ambiences' },
+                { id: 'luminance', label: 'Luminances' },
+                { id: 'branding', label: 'Branding' },
+                { id: 'effect', label: 'Effects' }
+              ].map((tab) => (
+                <Button
+                  key={tab.id}
+                  onClick={() => {
+                    setActiveTab(tab.id as PresetType);
+                    if (isEditModalOpen) handleCancel();
+                  }}
+                  variant={activeTab === tab.id ? 'default' : 'outline'}
+                  className={`font-mono transition-all h-8 text-xs ${activeTab === tab.id
+                    ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
+                    : 'border-neutral-700/60 hover:border-[brand-cyan]/30 text-neutral-400'
+                    }`}
+                >
+                  {tab.label}
+                </Button>
+              ))}
+            </div>
+
+            {/* Row 4: Grid */}
             <div className="space-y-6">
-              {/* Tabs and Actions Card */}
-              <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 transition-all duration-300 shadow-lg">
-                <CardContent className="p-4 md:p-6">
-                  <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
-                    <div className="flex gap-2 flex-wrap">
-                      <Button
-                        onClick={() => {
-                          setActiveTab('mockup');
-                          if (isEditModalOpen) handleCancel();
-                        }}
-                        variant={activeTab === 'mockup' ? 'default' : 'outline'}
-                        className={`font-mono transition-all ${activeTab === 'mockup'
-                          ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
-                          : 'border-neutral-700/60 hover:border-[brand-cyan]/30'
-                          }`}
-                      >
-                        Mockup Presets
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          setActiveTab('angle');
-                          if (isEditModalOpen) handleCancel();
-                        }}
-                        variant={activeTab === 'angle' ? 'default' : 'outline'}
-                        className={`font-mono transition-all ${activeTab === 'angle'
-                          ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
-                          : 'border-neutral-700/60 hover:border-[brand-cyan]/30'
-                          }`}
-                      >
-                        Angle Presets
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          setActiveTab('texture');
-                          if (isEditModalOpen) handleCancel();
-                        }}
-                        variant={activeTab === 'texture' ? 'default' : 'outline'}
-                        className={`font-mono transition-all ${activeTab === 'texture'
-                          ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
-                          : 'border-neutral-700/60 hover:border-[brand-cyan]/30'
-                          }`}
-                      >
-                        Texture Presets
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          setActiveTab('ambience');
-                          if (isEditModalOpen) handleCancel();
-                        }}
-                        variant={activeTab === 'ambience' ? 'default' : 'outline'}
-                        className={`font-mono transition-all ${activeTab === 'ambience'
-                          ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
-                          : 'border-neutral-700/60 hover:border-[brand-cyan]/30'
-                          }`}
-                      >
-                        Ambience Presets
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          setActiveTab('luminance');
-                          if (isEditModalOpen) handleCancel();
-                        }}
-                        variant={activeTab === 'luminance' ? 'default' : 'outline'}
-                        className={`font-mono transition-all ${activeTab === 'luminance'
-                          ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
-                          : 'border-neutral-700/60 hover:border-[brand-cyan]/30'
-                          }`}
-                      >
-                        Luminance Presets
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          setActiveTab('branding');
-                          if (isEditModalOpen) handleCancel();
-                        }}
-                        variant={activeTab === 'branding' ? 'default' : 'outline'}
-                        className={`font-mono transition-all ${activeTab === 'branding'
-                          ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
-                          : 'border-neutral-700/60 hover:border-[brand-cyan]/30'
-                          }`}
-                      >
-                        Branding Presets
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          setActiveTab('effect');
-                          if (isEditModalOpen) handleCancel();
-                        }}
-                        variant={activeTab === 'effect' ? 'default' : 'outline'}
-                        className={`font-mono transition-all ${activeTab === 'effect'
-                          ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
-                          : 'border-neutral-700/60 hover:border-[brand-cyan]/30'
-                          }`}
-                      >
-                        Effect Presets
-                      </Button>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={handleRefresh}
-                        disabled={isLoading}
-                        className="font-mono bg-brand-cyan/80 hover:bg-brand-cyan text-black disabled:bg-neutral-700 disabled:text-neutral-500"
-                      >
-                        Atualizar
-                      </Button>
-                      {!isEditing && (
-                        <Button
-                          onClick={handleCreate}
-                          className="font-mono bg-brand-cyan/80 hover:bg-brand-cyan text-black"
-                        >
-                          <Plus className="h-4 w-4 mr-2" />
-                          Novo
-                        </Button>
-                      )}
-                      {!isEditing && activeTab !== 'mockup' && (
-                        <Button
-                          onClick={handlePopulateFromTags}
-                          disabled={isLoading}
-                          className="font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-brand-cyan/30"
-                        >
-                          <Layers className="h-4 w-4 mr-2" />
-                          {t('adminPresets.populateDefaults') || 'Popular Padrões'}
-                        </Button>
-                      )}
-                    </div>
+              {error && (
+                <div className="mb-4 bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-sm text-red-400 font-mono">
+                  {error}
+                </div>
+              )}
+
+              {batchResult && !isBatchModalOpen && (
+                <div className={`mb-4 border rounded-xl p-4 text-sm font-mono ${batchResult.created > 0
+                  ? 'bg-green-500/10 border-green-500/30 text-green-400'
+                  : 'bg-red-500/10 border-red-500/30 text-red-400'
+                  }`}>
+                  <div className="mb-2">
+                    <strong>Resultado da importação:</strong> {batchResult.created} criado(s), {batchResult.failed} falha(s)
                   </div>
-
-                  {error && (
-                    <div className="mb-4 bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-sm text-red-400 font-mono">
-                      {error}
-                    </div>
-                  )}
-
-                  {batchResult && !isBatchModalOpen && (
-                    <div className={`mb-4 border rounded-xl p-4 text-sm font-mono ${batchResult.created > 0
-                      ? 'bg-green-500/10 border-green-500/30 text-green-400'
-                      : 'bg-red-500/10 border-red-500/30 text-red-400'
-                      }`}>
-                      <div className="mb-2">
-                        <strong>Resultado da importação:</strong> {batchResult.created} criado(s), {batchResult.failed} falha(s)
-                      </div>
-                      {batchResult.errors && batchResult.errors.length > 0 && (
-                        <div className="mt-3 space-y-1">
-                          <strong>Erros:</strong>
-                          {batchResult.errors.map((err, idx) => (
-                            <div key={idx} className="text-xs">
-                              Preset {err.index} {err.id ? `(${err.id})` : ''}: {err.error}
-                            </div>
-                          ))}
+                  {batchResult.errors && batchResult.errors.length > 0 && (
+                    <div className="mt-3 space-y-1">
+                      <strong>Erros:</strong>
+                      {batchResult.errors.map((err, idx) => (
+                        <div key={idx} className="text-xs">
+                          Preset {err.index} {err.id ? `(${err.id})` : ''}: {err.error}
                         </div>
-                      )}
+                      ))}
                     </div>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              )}
 
-              {/* Presets Grid - Bento Box Cards */}
               {currentPresets.length === 0 ? (
                 <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl">
                   <CardContent className="p-12 text-center">
-                    <p className="text-neutral-500 font-mono">Nenhum preset encontrado</p>
+                    <p className="text-neutral-500 font-mono">
+                      {t('adminPresets.noPresets')}
+                    </p>
                   </CardContent>
                 </Card>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                  {currentPresets.map((preset) => {
-                    const hasImage = activeTab === 'mockup' && (preset as any).referenceImageUrl;
-                    return (
-                      <Card
-                        key={preset.id}
-                        className="bg-neutral-900 border border-neutral-800/50 rounded-xl hover:border-[brand-cyan]/30 hover:-translate-y-1 transition-all duration-300 shadow-lg hover:shadow-xl"
-                      >
-                        <CardContent className="p-6">
-                          {/* Image */}
-                          <div className="mb-4">
-                            {hasImage ? (
-                              <img
-                                src={(preset as any).referenceImageUrl}
-                                alt={preset.name}
-                                className="w-full h-48 object-cover rounded-lg border border-neutral-700/30 bg-neutral-900/30"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  target.style.display = 'none';
-                                }}
-                              />
-                            ) : (
-                              <div className="w-full h-48 rounded-lg border border-neutral-700/30 bg-neutral-900/30 flex items-center justify-center">
-                                <ImageIcon className="h-12 w-12 text-neutral-600" />
-                              </div>
-                            )}
-                          </div>
-
-                          {/* ID Badge */}
-                          <div className="mb-3">
-                            <Badge variant="outline" className="bg-black/40 border-neutral-700/50 text-neutral-400 font-mono text-xs">
-                              {preset.id}
-                            </Badge>
-                          </div>
-
-                          {/* Name */}
-                          <h3 className="text-lg font-semibold text-neutral-200 mb-2 font-mono">
-                            {preset.name}
-                          </h3>
-
-                          {/* Description */}
-                          <p className="text-sm text-neutral-400 mb-4 line-clamp-2 font-mono">
-                            {preset.description}
-                          </p>
-
-                          {/* Metadata */}
-                          <div className="space-y-2 mb-4">
-                            <div className="flex items-center gap-2 text-xs font-mono">
-                              <span className="text-neutral-500">Aspect Ratio:</span>
-                              <Badge variant="outline" className="bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/30 text-xs">
-                                {preset.aspectRatio}
-                              </Badge>
-                            </div>
-                            {preset.model && (
-                              <div className="flex items-center gap-2 text-xs font-mono">
-                                <span className="text-neutral-500">Model:</span>
-                                <span className="text-neutral-300">{preset.model}</span>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Actions */}
-                          <div className="flex gap-2 pt-4 border-t border-neutral-800/50">
-                            <Button
-                              onClick={() => handleEdit(activeTab, preset)}
-                              variant="outline"
-                              size="sm"
-                              className="flex-1 border-[brand-cyan]/30 text-brand-cyan hover:bg-brand-cyan/10 hover:border-[brand-cyan]/50 font-mono"
-                            >
-                              <Edit2 className="h-4 w-4 mr-2" />
-                              Editar
-                            </Button>
-                            <Button
-                              onClick={() => handleDelete(activeTab, preset.id)}
-                              variant="outline"
-                              size="sm"
-                              className="border-red-400/30 text-red-400 hover:bg-red-400/10 hover:border-red-400/50 font-mono"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
+                <>
+                  {viewMode === 'table' ? (
+                    <div className="pb-20">
+                      <DataTable columns={columns} data={currentPresets as any} searchKey="name" />
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                      {currentPresets.map((preset) => (
+                        <PresetCard
+                          key={`${preset.category}-${preset.id}`}
+                          preset={preset as unknown as CommunityPrompt}
+                          isAuthenticated={true}
+                          canEdit={true}
+                          onEdit={() => handleEdit((preset as any).category, preset)}
+                          onDelete={() => handleDelete((preset as any).category, preset.id)}
+                          t={t}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
             </div>
-
             {/* Batch Upload Modal */}
             {isBatchModalOpen && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
@@ -1408,7 +1519,7 @@ export const AdminPresetsPage: React.FC = () => {
                         variant="outline"
                         className="font-mono border-neutral-700/60 hover:border-[brand-cyan]/30"
                       >
-                        Validar JSON
+                        {t('adminPresets.validateJson')}
                       </Button>
                       <Button
                         onClick={handleBatchUpload}
@@ -1416,14 +1527,14 @@ export const AdminPresetsPage: React.FC = () => {
                         className="font-mono bg-brand-cyan/80 hover:bg-brand-cyan text-black disabled:bg-neutral-700 disabled:text-neutral-500"
                       >
                         <Upload className="h-4 w-4 mr-2" />
-                        {isLoading ? 'Enviando...' : 'Enviar Batch'}
+                        {isLoading ? t('adminPresets.sending') : t('adminPresets.sendBatch')}
                       </Button>
                       <Button
                         onClick={handleCloseBatchModal}
                         variant="outline"
                         className="font-mono border-neutral-700/60 hover:border-[brand-cyan]/30"
                       >
-                        Fechar
+                        {t('adminPresets.close')}
                       </Button>
                     </div>
                   </CardContent>
@@ -1444,7 +1555,7 @@ export const AdminPresetsPage: React.FC = () => {
                   <CardContent className="p-6 md:p-8">
                     <div className="flex items-center justify-between mb-6">
                       <h3 className="text-xl font-semibold text-neutral-200 font-mono">
-                        {isCreating ? 'Criar Novo Preset' : 'Editar Preset'}
+                        {isCreating ? t('adminPresets.createTitle') : t('adminPresets.editTitle')}
                       </h3>
                       <button
                         onClick={handleCancel}
@@ -1463,7 +1574,7 @@ export const AdminPresetsPage: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm text-neutral-400 font-mono mb-2">
-                          ID {isCreating && '(obrigatório)'}
+                          {t('adminPresets.idRequired')}
                         </label>
                         <Input
                           type="text"
@@ -1477,7 +1588,7 @@ export const AdminPresetsPage: React.FC = () => {
 
                       <div>
                         <label className="block text-sm text-neutral-400 font-mono mb-2">
-                          Nome (obrigatório)
+                          {t('adminPresets.nameRequired')}
                         </label>
                         <Input
                           type="text"
@@ -1489,7 +1600,7 @@ export const AdminPresetsPage: React.FC = () => {
 
                       <div className="md:col-span-2">
                         <label className="block text-sm text-neutral-400 font-mono mb-2">
-                          Descrição (obrigatório)
+                          {t('adminPresets.descriptionRequired')}
                         </label>
                         <Input
                           type="text"
@@ -1501,7 +1612,7 @@ export const AdminPresetsPage: React.FC = () => {
 
                       <div className="md:col-span-2">
                         <label className="block text-sm text-neutral-400 font-mono mb-2">
-                          Prompt (obrigatório)
+                          {t('adminPresets.promptRequired')}
                         </label>
                         <Textarea
                           value={formData.prompt}
@@ -1511,7 +1622,7 @@ export const AdminPresetsPage: React.FC = () => {
                         />
                       </div>
 
-                      {activeTab === 'mockup' && (
+                      {effectiveEditType === 'mockup' && (
                         <div className="md:col-span-2 space-y-4">
                           <div>
                             <label className="block text-sm text-neutral-400 font-mono mb-2">
