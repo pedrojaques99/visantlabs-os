@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Copy, Download, Edit2, Trash2, Heart, LayoutGrid, Box, Settings, Palette, Sparkles, Image as ImageIcon, Camera, Layers, MapPin, Sun, Check } from 'lucide-react';
+import { Copy, Download, Edit2, Trash2, Heart, LayoutGrid, Box, Settings, Palette, Sparkles, Image as ImageIcon, Camera, Layers, MapPin, Sun, Check, Clipboard } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '../lib/utils';
 import { authService } from '../services/authService';
@@ -201,7 +201,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
                 {isCopyingPrompt ? (
                   <span className="text-[10px] font-mono text-neutral-400">{glitchText}</span>
                 ) : (
-                  <Copy className="h-4 w-4" />
+                  <Clipboard className="h-4 w-4" />
                 )}
               </button>
               {isAuthenticated && onDuplicate && (

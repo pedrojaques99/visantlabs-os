@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { Users, Plus, Edit2, Trash2, X, Save, Image as ImageIcon, Camera, Layers, MapPin, Sun, Heart, Maximize2, ExternalLink, Copy, Globe, User, LayoutGrid, Box, Settings, Palette, Sparkles, Download, Search } from 'lucide-react';
+import { Users, Plus, Edit2, Trash2, X, Save, Image as ImageIcon, Camera, Layers, MapPin, Sun, Heart, Maximize2, ExternalLink, Copy, Globe, User, LayoutGrid, Box, Settings, Palette, Sparkles, Download, Search, Clipboard } from 'lucide-react';
 
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 
@@ -135,6 +135,8 @@ export const CommunityPresetsPage: React.FC = () => {
   const [presetToDuplicate, setPresetToDuplicate] = useState<CommunityPreset | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const isFetchingMyRef = useRef(false);
+  const isFetchingAllRef = useRef(false);
 
   // Computed values
   const isAuthenticated = isUserAuthenticated === true;
@@ -148,6 +150,9 @@ export const CommunityPresetsPage: React.FC = () => {
       setError(t('communityPresets.errors.mustBeAuthenticated'));
       return;
     }
+
+    if (isFetchingMyRef.current) return;
+    isFetchingMyRef.current = true;
 
     setIsLoading(true);
     setError(null);
@@ -173,30 +178,43 @@ export const CommunityPresetsPage: React.FC = () => {
       setPresets([]);
       setError(fetchError.message || t('communityPresets.errors.failedToLoad'));
     } finally {
+      isFetchingMyRef.current = false;
       setIsLoading(false);
     }
   }, [t]);
 
   const handleFetchAllPresets = useCallback(async () => {
+    if (isFetchingAllRef.current) return;
+    isFetchingAllRef.current = true;
+
     setIsLoading(true);
     setError(null);
     try {
       // Use cached service method instead of direct fetch
       const grouped = await getAllCommunityPresets();
 
-      const allPresetsArray: CommunityPreset[] = [];
+      const uniquePresetsMap = new Map<string, CommunityPreset>();
+
       Object.values(grouped).forEach(presetArray => {
         if (Array.isArray(presetArray)) {
-          // migrateLegacyPreset is safe to call even if already migrated by service
-          allPresetsArray.push(...presetArray.map(migrateLegacyPreset));
+          presetArray.forEach(p => {
+            const migrated = migrateLegacyPreset(p);
+            // Use ID as key to deduplicate. Last one wins (or first, doesn't matter much if they are identical)
+            // If we want to prioritize certain categories, we should process them in order.
+            if (!uniquePresetsMap.has(migrated.id)) {
+              uniquePresetsMap.set(migrated.id, migrated);
+            }
+          });
         }
       });
-      setAllPresets(allPresetsArray);
+
+      setAllPresets(Array.from(uniquePresetsMap.values()));
     } catch (fetchError: any) {
       console.error('Error loading all presets:', fetchError);
       setAllPresets([]);
       setError(fetchError.message || t('communityPresets.errors.failedToLoad'));
     } finally {
+      isFetchingAllRef.current = false;
       setIsLoading(false);
     }
   }, [t]);
@@ -1243,7 +1261,7 @@ const PresetDetailModal: React.FC<{
                         {glitchText}
                       </span>
                     ) : (
-                      <Copy size={14} />
+                      <Clipboard size={14} />
                     )}
                   </button>
                 </div>
