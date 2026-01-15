@@ -81,7 +81,7 @@ async function uploadImageToR2(
   userId: string,
   mockupId: string
 ): Promise<string> {
-  const r2Service = await import('@/services/r2Service.js');
+  const r2Service = await import('../../src/services/r2Service.js');
 
   // Check if R2 is configured - it's now required
   if (!r2Service.isR2Configured()) {
@@ -619,7 +619,7 @@ router.get('/:id', authenticate, async (req: AuthRequest, res, next) => {
 router.post('/upload-url', authenticate, async (req: AuthRequest, res) => {
   try {
     const { contentType } = req.body;
-    const { generateMockupImageUploadUrl } = await import('@/services/r2Service.js');
+    const { generateMockupImageUploadUrl } = await import('../../src/services/r2Service.js');
 
     if (!req.userId) {
       return res.status(401).json({ error: 'User not authenticated' });
@@ -932,7 +932,7 @@ router.post('/generate', authenticate, checkSubscription, async (req: Subscripti
     let imageUrl: string | undefined;
 
     try {
-      const r2Service = await import('@/services/r2Service.js');
+      const r2Service = await import('../../src/services/r2Service.js');
       if (r2Service.isR2Configured()) {
         console.log(`${logPrefix} [R2] Uploading generated image to R2...`);
         // Use a new ID for the file name, or reuse requestId if unique enough
@@ -1668,7 +1668,7 @@ router.delete('/:id', authenticate, async (req: AuthRequest, res, next) => {
     // Delete image from R2 if it exists
     if (mockup.imageUrl) {
       try {
-        const r2Service = await import('@/services/r2Service.js');
+        const r2Service = await import('../../src/services/r2Service.js');
         if (r2Service.isR2Configured()) {
           await r2Service.deleteImage(mockup.imageUrl);
         }

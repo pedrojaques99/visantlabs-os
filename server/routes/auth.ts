@@ -921,7 +921,7 @@ router.post('/profile/picture', authenticate, async (req: AuthRequest, res) => {
     }
 
     // Upload to R2
-    const r2Service = await import('@/services/r2Service.js');
+    const r2Service = await import('../../src/services/r2Service.js');
 
     if (!r2Service.isR2Configured()) {
       return res.status(500).json({
