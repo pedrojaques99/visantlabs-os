@@ -1,5 +1,5 @@
 import { authService } from './authService';
-import type { BrandingData } from '../types/types';
+import type { BrandingData, BrandingProject } from '../types/branding';
 
 // Get API URL from environment or use current origin for production
 const getApiBaseUrl = () => {
@@ -20,15 +20,6 @@ const getAuthHeaders = () => {
   };
 };
 
-export interface BrandingProject {
-  _id: string;
-  userId: string;
-  name?: string | null;
-  prompt: string;
-  data: BrandingData;
-  createdAt: string;
-  updatedAt: string;
-}
 
 export const brandingApi = {
   async getAll(): Promise<BrandingProject[]> {

@@ -394,7 +394,7 @@ export const useCanvasProject = (
           // Continue without R2 processing if check fails
         }
 
-        const WARNING_SIZE = 10 * 1024 * 1024; // 10MB warning threshold
+        const WARNING_SIZE = 15 * 1024 * 1024; // 10MB warning threshold
         const MAX_SIZE = 15 * 1024 * 1024; // 15MB max (MongoDB limit is 16MB)
         const VERCEL_LIMIT = 50 * 1024 * 1024; // 50MB Vercel Pro serverless function limit
 

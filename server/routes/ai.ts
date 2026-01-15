@@ -9,9 +9,9 @@ import {
   analyzeMockupSetup,
   changeObjectInMockup,
   applyThemeToMockup,
-} from '@/services/geminiService.js';
+} from '../services/geminiService.js';
 import { getGeminiApiKey } from '../utils/geminiApiKey.js';
-import type { UploadedImage, GeminiModel, Resolution } from '@/types/types.js';
+import type { UploadedImage, GeminiModel, Resolution } from '../../src/types/types.js';
 import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { createUsageRecord } from '../utils/usageTracking.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';

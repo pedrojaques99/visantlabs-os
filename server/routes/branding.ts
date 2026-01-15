@@ -3,8 +3,8 @@ import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { getDb, connectToMongoDB } from '../db/mongodb.js';
 import { ObjectId } from 'mongodb';
 import { prisma, verifyPrismaConnectionWithDetails } from '../db/prisma.js';
-import * as brandingService from '@/services/brandingService.js';
-import type { BrandingData } from '@/types/types.js';
+import * as brandingService from '../services/brandingService.js';
+import type { BrandingData } from '../../src/types/branding.js';
 import { checkSubscription, SubscriptionRequest } from '../middleware/subscription.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
 
