@@ -18,6 +18,7 @@ import { ambiencePresetsService } from '@/services/ambiencePresetsService';
 import { luminancePresetsService } from '@/services/luminancePresetsService';
 import { texturePresetsService } from '@/services/texturePresetsService';
 import { mockupTagService, MockupTagCategory } from '@/services/mockupTagService';
+import { saveSurpriseMeSelectedTags, type SurpriseMeSelectedTags } from '@/utils/surpriseMeSettings';
 
 export const useMockupTags = () => {
     const {
@@ -264,6 +265,62 @@ export const useMockupTags = () => {
     const randomizeEffect = useCallback(() => randomizeSelection(availableEffectTags, setSelectedEffectTags, 1), [availableEffectTags, setSelectedEffectTags, randomizeSelection]);
     const randomizeMaterial = useCallback(() => randomizeSelection(availableMaterialTags, setSelectedMaterialTags, 1), [availableMaterialTags, setSelectedMaterialTags, randomizeSelection]);
 
+    // Surprise Me Pool handlers
+    const togglePoolTag = useCallback((
+        category: keyof SurpriseMeSelectedTags,
+        tag: string,
+        pool: SurpriseMeSelectedTags,
+        setPool: React.Dispatch<React.SetStateAction<SurpriseMeSelectedTags>>
+    ) => {
+        const currentTags = pool[category] || [];
+        const isInPool = currentTags.includes(tag);
+        const newPool = {
+            ...pool,
+            [category]: isInPool
+                ? currentTags.filter((t: string) => t !== tag)
+                : [...currentTags, tag]
+        };
+        setPool(newPool);
+        saveSurpriseMeSelectedTags(newPool);
+    }, []);
+
+    const randomizeFromPool = useCallback((
+        pool: SurpriseMeSelectedTags,
+        setters: {
+            setSelectedTags: (tags: string[]) => void;
+            setSelectedLocationTags: (tags: string[]) => void;
+            setSelectedAngleTags: (tags: string[]) => void;
+            setSelectedLightingTags: (tags: string[]) => void;
+            setSelectedEffectTags: (tags: string[]) => void;
+            setSelectedMaterialTags: (tags: string[]) => void;
+        }
+    ) => {
+        const pickRandom = (tags: string[]): string[] => {
+            if (tags.length === 0) return [];
+            const randomIndex = Math.floor(Math.random() * tags.length);
+            return [tags[randomIndex]];
+        };
+
+        if (pool.selectedCategoryTags?.length > 0) {
+            setters.setSelectedTags(pickRandom(pool.selectedCategoryTags));
+        }
+        if (pool.selectedLocationTags?.length > 0) {
+            setters.setSelectedLocationTags(pickRandom(pool.selectedLocationTags));
+        }
+        if (pool.selectedAngleTags?.length > 0) {
+            setters.setSelectedAngleTags(pickRandom(pool.selectedAngleTags));
+        }
+        if (pool.selectedLightingTags?.length > 0) {
+            setters.setSelectedLightingTags(pickRandom(pool.selectedLightingTags));
+        }
+        if (pool.selectedEffectTags?.length > 0) {
+            setters.setSelectedEffectTags(pickRandom(pool.selectedEffectTags));
+        }
+        if (pool.selectedMaterialTags?.length > 0) {
+            setters.setSelectedMaterialTags(pickRandom(pool.selectedMaterialTags));
+        }
+    }, []);
+
 
     return {
         // Tag Selection Handlers
@@ -306,6 +363,10 @@ export const useMockupTags = () => {
         availableEffectTags,
         availableMaterialTags,
         mockupPresets,
-        tagCategories
+        tagCategories,
+
+        // Pool handlers for Surprise Me Mode
+        togglePoolTag,
+        randomizeFromPool
     };
 };

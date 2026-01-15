@@ -7,6 +7,7 @@ export interface TagProps extends React.PropsWithChildren {
     label?: string;
     selected?: boolean;
     suggested?: boolean;
+    inPool?: boolean;  // For Surprise Me Mode - show dashed border
     removable?: boolean;
     onToggle?: () => void;
     onRemove?: () => void;
@@ -19,6 +20,7 @@ export const Tag: React.FC<TagProps> = ({
     children,
     selected = false,
     suggested = false,
+    inPool = false,
     removable = false,
     onToggle,
     onRemove,
@@ -29,7 +31,14 @@ export const Tag: React.FC<TagProps> = ({
 
     const baseStyles = "h-7 px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 border cursor-pointer inline-flex items-center gap-1.5 select-none box-border whitespace-nowrap";
 
-    const themeStyles = theme === 'dark'
+    // Pool mode styling - dashed border for tags in the pool
+    const poolStyles = inPool
+        ? theme === 'dark'
+            ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/60 border-dashed shadow-sm shadow-brand-cyan/5'
+            : 'bg-brand-cyan/10 text-neutral-800 border-brand-cyan/60 border-dashed shadow-sm shadow-brand-cyan/5'
+        : '';
+
+    const themeStyles = inPool ? poolStyles : (theme === 'dark'
         ? selected
             ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/40 shadow-sm shadow-brand-cyan/10'
             : suggested
@@ -39,7 +48,7 @@ export const Tag: React.FC<TagProps> = ({
             ? 'bg-brand-cyan/20 text-neutral-800 border-brand-cyan/40 shadow-sm shadow-brand-cyan/10'
             : suggested
                 ? 'bg-brand-cyan/10 text-neutral-800 border-brand-cyan/40 shadow-sm shadow-brand-cyan/5 animate-pulse-subtle'
-                : 'bg-neutral-100 text-neutral-700 border-neutral-300 hover:border-neutral-400 hover:text-neutral-900';
+                : 'bg-neutral-100 text-neutral-700 border-neutral-300 hover:border-neutral-400 hover:text-neutral-900');
 
     const disabledStyles = disabled ? "opacity-40 cursor-not-allowed" : "";
 
