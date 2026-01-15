@@ -1610,7 +1610,7 @@ router.delete('/image', authenticate, async (req: AuthRequest, res) => {
     }
 
     try {
-      const r2Service = await import('@/services/r2Service.js');
+      const r2Service = await import('../../src/services/r2Service.js');
       if (r2Service.isR2Configured()) {
         await r2Service.deleteImage(imageUrl);
         res.json({ success: true, message: 'Image deleted from R2' });
