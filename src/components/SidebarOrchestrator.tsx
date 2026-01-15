@@ -1,10 +1,11 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
-import { RotateCcw, Lock, X, Dices, RefreshCcw, FileText, Settings, Wand2, ScanEye } from 'lucide-react';
+import { RotateCcw, Lock, X, Dices, RefreshCcw, FileText, Wand2, ScanEye } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { InputSection } from './ui/InputSection';
 import { DesignTypeSection } from './mockupmachine/DesignTypeSection';
 import { QuickActionsBar } from './ui/QuickActionsBar';
 import { BrandingSection } from './branding/BrandingSection';
+import { ColorPalettePreview } from './mockupmachine/ColorPalettePreview';
 import { CategoriesSection } from './mockupmachine/CategoriesSection';
 import { RefineSection } from './mockupmachine/RefineSection';
 import { OutputConfigSection } from './mockupmachine/OutputConfigSection';
@@ -42,7 +43,6 @@ interface SidebarOrchestratorProps {
 
   // External Logic / Triggers
   onSurpriseMe: (autoGenerate: boolean) => void;
-  onOpenSurpriseMeSettings?: () => void;
   onImageUpload: (image: UploadedImage) => void;
   onReferenceImagesChange: (images: UploadedImage[]) => void;
   onStartOver: () => void;
@@ -66,7 +66,6 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
   onSidebarWidthChange,
   onCloseMobile,
   onSurpriseMe,
-  onOpenSurpriseMeSettings,
   onImageUpload,
   onReferenceImagesChange,
   onStartOver,
@@ -101,6 +100,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
     setCustomBrandingInput,
     suggestedTags,
     selectedTags,
+    setSelectedTags,
     isAnalyzing,
     isAllCategoriesOpen,
     setIsAllCategoriesOpen,
@@ -109,10 +109,15 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
     isAdvancedOpen,
     setIsAdvancedOpen,
     selectedLocationTags,
+    setSelectedLocationTags,
     selectedAngleTags,
+    setSelectedAngleTags,
     selectedLightingTags,
+    setSelectedLightingTags,
     selectedEffectTags,
+    setSelectedEffectTags,
     selectedMaterialTags,
+    setSelectedMaterialTags,
     selectedColors,
     colorInput,
     isValidColor,
@@ -164,7 +169,11 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
     setIsPromptReady,
     isGeneratingPrompt,
     isLoading,
-    hasAnalyzed
+    hasAnalyzed,
+    isSurpriseMeMode,
+    setIsSurpriseMeMode,
+    surpriseMePool,
+    setSurpriseMePool
   } = useMockup();
 
   const {
@@ -192,7 +201,8 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
     availableEffectTags,
     availableMaterialTags,
     tagCategories,
-    mockupPresets
+    mockupPresets,
+    togglePoolTag
   } = useMockupTags();
 
   // Helper values
@@ -261,7 +271,49 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
 
   const handleSurpriseMe = () => {
     setIsDiceAnimating(true);
-    onSurpriseMe(autoGenerate);
+
+    // If pool mode is active, use the pool for randomization
+    if (isSurpriseMeMode && Object.values(surpriseMePool).some(arr => arr.length > 0)) {
+      // Helper to pick one random tag from an array
+      const pickRandom = (tags: string[]): string | null => {
+        if (tags.length === 0) return null;
+        return tags[Math.floor(Math.random() * tags.length)];
+      };
+
+      // Randomize from pool - set one tag from each pool section
+      if (surpriseMePool.selectedCategoryTags?.length > 0) {
+        const tag = pickRandom(surpriseMePool.selectedCategoryTags);
+        if (tag) setSelectedTags([tag]);
+      }
+      if (surpriseMePool.selectedLocationTags?.length > 0) {
+        const tag = pickRandom(surpriseMePool.selectedLocationTags);
+        if (tag) setSelectedLocationTags([tag]);
+      }
+      if (surpriseMePool.selectedAngleTags?.length > 0) {
+        const tag = pickRandom(surpriseMePool.selectedAngleTags);
+        if (tag) setSelectedAngleTags([tag]);
+      }
+      if (surpriseMePool.selectedLightingTags?.length > 0) {
+        const tag = pickRandom(surpriseMePool.selectedLightingTags);
+        if (tag) setSelectedLightingTags([tag]);
+      }
+      if (surpriseMePool.selectedEffectTags?.length > 0) {
+        const tag = pickRandom(surpriseMePool.selectedEffectTags);
+        if (tag) setSelectedEffectTags([tag]);
+      }
+      if (surpriseMePool.selectedMaterialTags?.length > 0) {
+        const tag = pickRandom(surpriseMePool.selectedMaterialTags);
+        if (tag) setSelectedMaterialTags([tag]);
+      }
+
+      // Still call onSurpriseMe for auto-generation if enabled, but without full randomization
+      if (autoGenerate) {
+        onSurpriseMe(autoGenerate);
+      }
+    } else {
+      // Normal behavior - call the external handler
+      onSurpriseMe(autoGenerate);
+    }
 
     // Scroll to Generate button
     setTimeout(() => {
@@ -450,349 +502,432 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
         style={hasGenerated && isLargeScreen ? { width: `${sidebarWidth}px` } : {}}
       >
         <div className="space-y-3 sm:space-y-4 md:space-y-6 lg:space-y-8">
+
+          {/* ====== SECTION 1: SETUP & ANALYSIS ====== */}
           <div
-            className={`group ${(uploadedImage || referenceImage || referenceImages.length > 0) ? 'opacity-70 scale-[0.98] transition-all duration-300' : ''}`}
-          >
-            <InputSection
-              uploadedImage={uploadedImage}
-              referenceImage={referenceImage}
-              referenceImages={referenceImages}
-              designType={designType}
-              selectedModel={selectedModel}
-              onImageUpload={onImageUpload}
-              onReferenceImagesChange={onReferenceImagesChange}
-              onStartOver={onStartOver}
-              isImagelessMode={isImagelessMode}
-              hasAnalyzed={hasAnalyzed}
-            />
-
-            {/* Tip about image format - only show on hover */}
-            {!uploadedImage && !referenceImage && referenceImages.length === 0 && !isImagelessMode && (
-              <p className="text-[10px] font-mono text-neutral-500/70 text-center px-2 leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-200 mt-2">
-                {t('mockup.imageFormatTip')}
-              </p>
+            id="section-setup"
+            className={cn(
+              "transition-all duration-300",
+              hasAnalyzed && "opacity-60 pointer-events-none"
             )}
-          </div>
-
-          {/* Blank Mockup Button - only show when no image is uploaded */}
-          {!uploadedImage && !referenceImage && referenceImages.length === 0 && !isImagelessMode && onBlankMockup && (
-            <div className="flex justify-center">
-              <PillButton
-                onClick={onBlankMockup}
-                disabled={isGenerating || isGeneratingPrompt}
-                size="sm"
-                variant="outlineDark"
-                style={{ cursor: 'pointer' }}
-              >
-                <FileText size={14} />
-                <span>{t('welcome.newBlankMockup')}</span>
-              </PillButton>
-            </div>
-          )}
-
-
-          {selectedModel && (
-            <>
-              {selectedModel === 'gemini-3-pro-image-preview' && (
-                <AspectRatioSection
-                  aspectRatio={aspectRatio}
-                  onAspectRatioChange={setAspectRatio}
-                  selectedModel={selectedModel}
-                />
-              )}
-            </>
-          )}
-
-          {/* Show sections when design type is selected OR when reference images are present OR when image is uploaded */}
-          {(designTypeSelected || hasReferenceImage || (uploadedImage && !isImagelessMode)) && (
-            <div className="space-y-8 animate-fade-in">
-              {/* Hide BrandingSection when reference images are present */}
-              {/* Show branding when design type is selected OR when we have an uploaded image (pre-analysis) */}
-              {(designTypeSelected || (uploadedImage && !isImagelessMode)) && (
-                <div className={`p-4 rounded-xl border transition-all duration-200 ${theme === 'dark' ? 'bg-black/20 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
-                  <BrandingSection
-                    tags={displayBrandingTags}
-                    selectedTags={selectedBrandingTags}
-                    suggestedTags={suggestedBrandingTags}
-                    onTagToggle={handleBrandingTagToggle}
-                    customInput={customBrandingInput}
-                    onCustomInputChange={setCustomBrandingInput}
-                    onAddCustomTag={handleAddCustomBrandingTag}
-                    isComplete={brandingComplete}
+          >
+            {/* Logic: If no image/design, show centered input. If active, show grid */}
+            {!uploadedImage && !referenceImage && referenceImages.length === 0 && !isImagelessMode && !designTypeSelected ? (
+              /* INITIAL VIEW */
+              <div className="max-w-xl mx-auto space-y-6">
+                <div className={`group ${(uploadedImage || referenceImage || referenceImages.length > 0) ? 'opacity-70 scale-[0.98] transition-all duration-300' : ''}`}>
+                  <InputSection
+                    uploadedImage={uploadedImage}
+                    referenceImage={referenceImage}
+                    referenceImages={referenceImages}
+                    designType={designType}
+                    selectedModel={selectedModel}
+                    onImageUpload={onImageUpload}
+                    onReferenceImagesChange={onReferenceImagesChange}
+                    onStartOver={onStartOver}
+                    isImagelessMode={isImagelessMode}
+                    hasAnalyzed={hasAnalyzed}
+                    className="w-full"
                   />
+                  {/* Tip about image format - only show on hover */}
+                  <p className="text-[10px] font-mono text-neutral-500/70 text-center px-2 leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-200 mt-2">
+                    {t('mockup.imageFormatTip')}
+                  </p>
                 </div>
-              )}
 
-              {/* Analyze Button - Show only when uploaded image exists and not yet analyzed */}
-              {uploadedImage && !hasAnalyzed && !isImagelessMode && (
-                <div className="flex justify-center py-4 animate-fade-in">
-                  <Button
-                    onClick={onAnalyze}
-                    disabled={isAnalyzing}
-                    className="bg-brand-cyan text-black hover:bg-brand-cyan/90 font-semibold px-8 py-6 rounded-xl shadow-lg hover:shadow-brand-cyan/20 transition-all active:scale-95"
-                  >
-                    {isAnalyzing ? (
-                      <>
-                        <RefreshCcw className="mr-2 h-5 w-5 animate-spin" />
-                        {t('common.analyzing')}
-                      </>
-                    ) : (
-                      <>
-                        <ScanEye className="mr-2 h-5 w-5" />
-                        {t('mockup.analyzeImage')}
-                      </>
-                    )}
-                  </Button>
+                {/* Blank Mockup Button */}
+                {onBlankMockup && (
+                  <div className="flex justify-center">
+                    <PillButton
+                      onClick={onBlankMockup}
+                      disabled={isGenerating || isGeneratingPrompt}
+                      size="sm"
+                      variant="outlineDark"
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <FileText size={14} />
+                      <span>{t('welcome.newBlankMockup')}</span>
+                    </PillButton>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* ACTIVE GRID VIEW */
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-start">
+                {/* LEFT COLUMN: Input */}
+                <div className="space-y-4">
+                  {hasAnalyzed && (
+                    <div className="flex items-center gap-2 text-neutral-500 mb-2">
+                      <Lock size={14} />
+                      <span className="text-[10px] font-mono uppercase tracking-wider">
+                        {t('mockup.sectionLocked')}
+                      </span>
+                    </div>
+                  )}
+                  <div className="bg-black/20 rounded-xl border border-white/5 overflow-hidden">
+                    <InputSection
+                      uploadedImage={uploadedImage}
+                      referenceImage={referenceImage}
+                      referenceImages={referenceImages}
+                      designType={designType}
+                      selectedModel={selectedModel}
+                      onImageUpload={onImageUpload}
+                      onReferenceImagesChange={onReferenceImagesChange}
+                      onStartOver={onStartOver}
+                      isImagelessMode={isImagelessMode}
+                      hasAnalyzed={hasAnalyzed}
+                      className="w-full"
+                    />
+                  </div>
                 </div>
-              )}
 
-              {/* Show QuickActionsBar when design type is selected OR has uploaded image, AND analyzed */}
-              {(designTypeSelected || (uploadedImage && !isImagelessMode)) && hasAnalyzed && (
-                <QuickActionsBar
-                  onSurpriseMe={handleSurpriseMe}
-                  isGenerating={isGenerating}
-                  isGeneratingPrompt={isGeneratingPrompt}
-                  autoGenerate={autoGenerate}
-                  onAutoGenerateChange={setAutoGenerate}
-                  onOpenSurpriseMeSettings={onOpenSurpriseMeSettings}
-                />
-              )}
+                {/* RIGHT COLUMN: Options */}
+                <div className="space-y-6">
 
-              {/* Show CategoriesSection when design type is selected OR has uploaded image */}
-              {(designTypeSelected || (uploadedImage && !isImagelessMode)) && (
-                <div className={`p-4 rounded-xl border transition-all duration-200 ${theme === 'dark' ? 'bg-black/20 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
-                  <CategoriesSection
-                    suggestedTags={suggestedTags}
-                    availableTags={displayAvailableCategoryTags}
-                    selectedTags={selectedTags}
-                    onTagToggle={handleTagToggle}
-                    isAnalyzing={isAnalyzing}
-                    isAllCategoriesOpen={isAllCategoriesOpen}
-                    onToggleAllCategories={() => setIsAllCategoriesOpen(!isAllCategoriesOpen)}
-                    customInput={customCategoryInput}
-                    onCustomInputChange={setCustomCategoryInput}
-                    onAddCustomTag={handleAddCustomCategoryTag}
-                    onRandomize={handleRandomizeCategories}
-                    isComplete={categoriesComplete}
-                    displaySuggestedTags={displaySuggestedTags}
-                    tagCategories={tagCategories}
-                    mockupPresets={mockupPresets}
-                  />
-                </div>
-              )}
-
-              {/* Show refine section and below immediately when design type is selected OR when reference images are present OR uploaded image */}
-              {(designTypeSelected || hasReferenceImage || (uploadedImage && !isImagelessMode)) && (
-                <div id="refine-section" className="space-y-8 animate-fade-in">
-                  {/* Show RefineSection always - including when reference images are present */}
-                  <RefineSection
-                    isAdvancedOpen={isAdvancedOpen}
-                    onToggleAdvanced={() => setIsAdvancedOpen(!isAdvancedOpen)}
-                    advancedOptionsProps={{
-                      selectedLocationTags,
-                      selectedAngleTags,
-                      selectedLightingTags,
-                      selectedEffectTags,
-                      selectedMaterialTags,
-                      selectedColors,
-                      colorInput,
-                      isValidColor,
-                      negativePrompt,
-                      additionalPrompt,
-                      onLocationTagToggle: handleLocationTagToggle,
-                      onAngleTagToggle: handleAngleTagToggle,
-                      onLightingTagToggle: handleLightingTagToggle,
-                      onEffectTagToggle: handleEffectTagToggle,
-                      onMaterialTagToggle: handleMaterialTagToggle,
-                      onColorInputChange: handleColorInputChange,
-                      onAddColor: handleAddColor,
-                      onRemoveColor: handleRemoveColor,
-                      onNegativePromptChange: (e) => setNegativePrompt(e.target.value),
-                      onAdditionalPromptChange: (e) => setAdditionalPrompt(e.target.value),
-                      availableLocationTags: displayLocationTags,
-                      availableAngleTags: displayAngleTags,
-                      availableLightingTags: displayLightingTags,
-                      availableEffectTags: displayEffectTags,
-                      availableMaterialTags: displayMaterialTags,
-                      customLocationInput,
-                      customAngleInput,
-                      customLightingInput,
-                      customEffectInput,
-                      customMaterialInput,
-                      onCustomLocationInputChange: setCustomLocationInput,
-                      onCustomAngleInputChange: setCustomAngleInput,
-                      onCustomLightingInputChange: setCustomLightingInput,
-                      onCustomEffectInputChange: setCustomEffectInput,
-                      onCustomMaterialInputChange: setCustomMaterialInput,
-                      onAddCustomLocationTag: handleAddCustomLocationTag,
-                      onAddCustomAngleTag: handleAddCustomAngleTag,
-                      onAddCustomLightingTag: handleAddCustomLightingTag,
-                      onAddCustomEffectTag: handleAddCustomEffectTag,
-                      onAddCustomMaterialTag: handleAddCustomMaterialTag,
-                      designType,
-                      suggestedLocationTags,
-                      suggestedAngleTags,
-                      suggestedLightingTags,
-                      suggestedEffectTags,
-                      suggestedMaterialTags,
-                      suggestedColors: suggestedColorsFromAnalysis
-                    }}
-                  />
-
-                  {/* Model Selection - after advanced controls, before output config */}
-                  {(uploadedImage || isImagelessMode || referenceImage) && (
-                    <div className="mt-8">
-                      <ModelSelectionSection
-                        selectedModel={selectedModel}
-                        onModelChange={setSelectedModel}
-                        designType={designType}
+                  {/* Branding Section */}
+                  {(designTypeSelected || (uploadedImage && !isImagelessMode)) && (
+                    <div className={`p-4 rounded-xl border transition-all duration-200 ${theme === 'dark' ? 'bg-black/20 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
+                      <BrandingSection
+                        tags={displayBrandingTags}
+                        selectedTags={selectedBrandingTags}
+                        suggestedTags={suggestedBrandingTags}
+                        onTagToggle={handleBrandingTagToggle}
+                        customInput={customBrandingInput}
+                        onCustomInputChange={setCustomBrandingInput}
+                        onAddCustomTag={handleAddCustomBrandingTag}
+                        isComplete={brandingComplete}
                       />
                     </div>
                   )}
 
-                  <OutputConfigSection
-                    mockupCount={mockupCount}
-                    onMockupCountChange={setMockupCount}
-                    generateText={generateText}
-                    onGenerateTextChange={setGenerateText}
-                    withHuman={withHuman}
-                    onWithHumanChange={setWithHuman}
-                    enhanceTexture={enhanceTexture}
-                    onEnhanceTextureChange={setEnhanceTexture}
-                    designType={designType}
-                    selectedModel={selectedModel}
-                    resolution={resolution}
-                    onResolutionChange={setResolution}
-                  />
-
-                  {/* Show PromptSection always */}
-                  <PromptSection
-                    promptPreview={promptPreview}
-                    onPromptChange={handlePromptChange}
-                    promptSuggestions={promptSuggestions}
-                    isGeneratingPrompt={isGeneratingPrompt}
-                    isSuggestingPrompts={isSuggestingPrompts}
-                    isGenerating={isGenerating}
-                    hasGenerated={hasGenerated}
-                    mockups={mockups}
-                    onSuggestPrompts={onSuggestPrompts}
-                    onGenerateSmartPrompt={onGenerateSmartPrompt}
-                    onSimplify={onSimplify}
-                    onRegenerate={onRegenerate}
-                    onSuggestionClick={handleSuggestionClick}
-                    isSmartPromptActive={isSmartPromptActive}
-                    setIsSmartPromptActive={setIsSmartPromptActive}
-                    setIsPromptManuallyEdited={setIsPromptManuallyEdited}
-                    creditsPerGeneration={creditsPerGeneration}
-                    onGenerateSuggestion={onGenerateSuggestion}
-                    isGenerateDisabled={isGenerateDisabled}
-                  />
-
-                  <div className="flex flex-col gap-2 mt-6">
-                    {/* Generate Button - Only show if prompt is ready OR user has valid setup (Generate Prompt) */}
-                    {(isPromptReady || designTypeSelected || brandingComplete || categoriesComplete || hasReferenceImage || (uploadedImage && !isImagelessMode)) && (
-                      <GenerateButton
-                        onClick={onGenerateClick}
-                        disabled={isGenerateDisabled || (isPromptReady && isGenerating)}
-                        isGeneratingPrompt={isGeneratingPrompt}
-                        isGenerating={isGenerating}
-                        isPromptReady={isPromptReady}
-                        variant="sidebar"
-                        buttonRef={generateOutputsButtonRef}
-                        creditsRequired={creditsRequired}
+                  {/* Color Palette Preview */}
+                  {uploadedImage && !isImagelessMode && (suggestedColorsFromAnalysis.length > 0 || selectedColors.length > 0) && (
+                    <div className={`p-4 rounded-xl border transition-all duration-200 ${theme === 'dark' ? 'bg-black/20 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
+                      <ColorPalettePreview
+                        suggestedColors={suggestedColorsFromAnalysis}
+                        selectedColors={selectedColors}
+                        onColorToggle={(color) => {
+                          if (!selectedColors.includes(color)) {
+                            setSelectedColors([...selectedColors, color]);
+                          }
+                        }}
+                        onAddColor={(color) => {
+                          if (!selectedColors.includes(color) && selectedColors.length < 5) {
+                            setSelectedColors([...selectedColors, color]);
+                          }
+                        }}
+                        onRemoveColor={(color) => {
+                          setSelectedColors(selectedColors.filter(c => c !== color));
+                        }}
+                        disabled={hasAnalyzed}
+                        maxColors={5}
                       />
-                    )}
-                    <div className={`grid gap-2 ${hasGenerated && mockups.some(m => m !== null) ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                      {/* Show regenerate button only when hasGenerated and mockups have content */}
-                      {hasGenerated && mockups.some(m => m !== null) && (
-                        <Button
-                          onClick={onRegenerate}
-                          disabled={isGenerating || !promptPreview.trim() || isGenerateDisabled}
-                          variant="sidebarAction"
-                          size="sidebar"
-                          className="justify-center"
-                          aria-label={t('mockup.regenerate')}
-                          title={t('mockup.regenerateTooltip')}
-                        >
-                          {isGenerating ? <RefreshCcw size={18} className="animate-spin" /> : <RefreshCcw size={18} />}
-                        </Button>
-                      )}
-                      {hasAnalyzed && (
-                        <div className="flex items-center gap-2">
-                          <Button
-                            onClick={handleSurpriseMe}
-                            disabled={isGeneratingPrompt}
-                            variant="sidebarAction"
-                            size="sidebar"
-                            className={cn("flex-1 justify-center", isDiceAnimating && 'dice-button-clicked')}
-                            aria-label={t('mockup.surpriseMe')}
-                            title={t('mockup.surpriseMeTooltip')}
-                          >
-                            <Dices size={18} className={isDiceAnimating ? 'dice-icon-animate' : ''} />
-                          </Button>
-                          {onOpenSurpriseMeSettings && (
-                            <Button
-                              onClick={onOpenSurpriseMeSettings}
-                              disabled={isGeneratingPrompt}
-                              variant="sidebarAction"
-                              size="sidebar"
-                              className="w-[48px] justify-center"
-                              aria-label={t('mockup.surpriseMeSettings')}
-                              title={t('mockup.surpriseMeSettingsTooltip')}
-                            >
-                              <Settings size={18} />
-                            </Button>
-                          )}
-                        </div>
-                      )}
                     </div>
-                  </div>
+                  )}
 
-                  {(() => {
-                    // Only show alert if user is definitely not authenticated
-                    // Check both isAuthenticated state and localStorage token
-                    const hasToken = typeof window !== 'undefined' && localStorage.getItem('auth_token');
-                    const shouldShowAlert = isAuthenticated === false && !hasToken;
+                  {/* Analyze Button */}
+                  {uploadedImage && !hasAnalyzed && !isImagelessMode && (
+                    <div className="flex justify-center py-4 animate-fade-in">
+                      <Button
+                        onClick={onAnalyze}
+                        disabled={isAnalyzing}
+                        className="bg-brand-cyan text-black hover:bg-brand-cyan/90 font-semibold px-8 py-6 rounded-xl shadow-lg hover:shadow-brand-cyan/20 transition-all active:scale-95 w-full"
+                      >
+                        {isAnalyzing ? (
+                          <>
+                            <RefreshCcw className="mr-2 h-5 w-5 animate-spin" />
+                            {t('common.analyzing')}
+                          </>
+                        ) : (
+                          <>
+                            <ScanEye className="mr-2 h-5 w-5" />
+                            {t('mockup.analyzeImage')}
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
 
-                    return shouldShowAlert ? (
-                      <div className="mt-4 flex items-start gap-2 rounded-md border border-red-500/30 bg-red-500/5 px-4 py-3">
-                        <Lock size={16} className="text-red-400 mt-0.5" />
-                        <p className="text-xs font-mono text-red-200">
-                          {authenticationRequiredMessage}
-                        </p>
-                      </div>
-                    ) : null;
-                  })()}
+
+          {/* ====== SECTION 2: GENERATION CONFIGURATION ====== */}
+          {/* This section only appears after analysis is complete */}
+          {hasAnalyzed && (
+            <div
+              id="section-generation"
+              className="space-y-8 animate-fade-in"
+            >
+              {/* Section Header */}
+              <div className="flex items-center gap-2">
+                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-brand-cyan/30 to-transparent" />
+                <span className={cn(
+                  "text-[10px] font-mono uppercase tracking-wider px-3",
+                  theme === 'dark' ? 'text-brand-cyan' : 'text-brand-cyan'
+                )}>
+                  {t('mockup.generationConfig')}
+                </span>
+                <div className="h-px flex-1 bg-gradient-to-l from-transparent via-brand-cyan/30 to-transparent" />
+              </div>
+
+              {/* QuickActionsBar with Surprise Me */}
+              <QuickActionsBar
+                onSurpriseMe={handleSurpriseMe}
+                isGenerating={isGenerating}
+                isGeneratingPrompt={isGeneratingPrompt}
+                autoGenerate={autoGenerate}
+                onAutoGenerateChange={setAutoGenerate}
+                isSurpriseMeMode={isSurpriseMeMode}
+                onSurpriseMeModeChange={setIsSurpriseMeMode}
+              />
+
+              {/* CategoriesSection - Mockup Types */}
+              <div className={`p-4 rounded-xl border transition-all duration-200 ${theme === 'dark' ? 'bg-black/20 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
+                <CategoriesSection
+                  suggestedTags={suggestedTags}
+                  availableTags={displayAvailableCategoryTags}
+                  selectedTags={selectedTags}
+                  onTagToggle={handleTagToggle}
+                  isAnalyzing={isAnalyzing}
+                  isAllCategoriesOpen={isAllCategoriesOpen}
+                  onToggleAllCategories={() => setIsAllCategoriesOpen(!isAllCategoriesOpen)}
+                  customInput={customCategoryInput}
+                  onCustomInputChange={setCustomCategoryInput}
+                  onAddCustomTag={handleAddCustomCategoryTag}
+                  onRandomize={handleRandomizeCategories}
+                  isComplete={categoriesComplete}
+                  displaySuggestedTags={displaySuggestedTags}
+                  tagCategories={tagCategories}
+                  mockupPresets={mockupPresets}
+                  isSurpriseMeMode={isSurpriseMeMode}
+                  categoriesPool={surpriseMePool.selectedCategoryTags || []}
+                  onPoolToggle={(tag) => togglePoolTag('selectedCategoryTags', tag, surpriseMePool, setSurpriseMePool)}
+                />
+              </div>
+
+              {/* Show refine section and below immediately when design type is selected OR when reference images are present OR uploaded image */}
+              <div id="refine-section" className="space-y-8 animate-fade-in">
+                {/* Show RefineSection always - including when reference images are present */}
+                <RefineSection
+                  isAdvancedOpen={isAdvancedOpen}
+                  onToggleAdvanced={() => setIsAdvancedOpen(!isAdvancedOpen)}
+                  advancedOptionsProps={{
+                    selectedLocationTags,
+                    selectedAngleTags,
+                    selectedLightingTags,
+                    selectedEffectTags,
+                    selectedMaterialTags,
+                    selectedColors,
+                    colorInput,
+                    isValidColor,
+                    negativePrompt,
+                    additionalPrompt,
+                    onLocationTagToggle: handleLocationTagToggle,
+                    onAngleTagToggle: handleAngleTagToggle,
+                    onLightingTagToggle: handleLightingTagToggle,
+                    onEffectTagToggle: handleEffectTagToggle,
+                    onMaterialTagToggle: handleMaterialTagToggle,
+                    onColorInputChange: handleColorInputChange,
+                    onAddColor: handleAddColor,
+                    onRemoveColor: handleRemoveColor,
+                    onNegativePromptChange: (e) => setNegativePrompt(e.target.value),
+                    onAdditionalPromptChange: (e) => setAdditionalPrompt(e.target.value),
+                    availableLocationTags: displayLocationTags,
+                    availableAngleTags: displayAngleTags,
+                    availableLightingTags: displayLightingTags,
+                    availableEffectTags: displayEffectTags,
+                    availableMaterialTags: displayMaterialTags,
+                    customLocationInput,
+                    customAngleInput,
+                    customLightingInput,
+                    customEffectInput,
+                    customMaterialInput,
+                    onCustomLocationInputChange: setCustomLocationInput,
+                    onCustomAngleInputChange: setCustomAngleInput,
+                    onCustomLightingInputChange: setCustomLightingInput,
+                    onCustomEffectInputChange: setCustomEffectInput,
+                    onCustomMaterialInputChange: setCustomMaterialInput,
+                    onAddCustomLocationTag: handleAddCustomLocationTag,
+                    onAddCustomAngleTag: handleAddCustomAngleTag,
+                    onAddCustomLightingTag: handleAddCustomLightingTag,
+                    onAddCustomEffectTag: handleAddCustomEffectTag,
+                    onAddCustomMaterialTag: handleAddCustomMaterialTag,
+                    designType,
+                    suggestedLocationTags,
+                    suggestedAngleTags,
+                    suggestedLightingTags,
+                    suggestedEffectTags,
+                    suggestedMaterialTags,
+                    suggestedColors: suggestedColorsFromAnalysis,
+                    // Surprise Me Mode props
+                    isSurpriseMeMode,
+                    locationPool: surpriseMePool.selectedLocationTags || [],
+                    anglePool: surpriseMePool.selectedAngleTags || [],
+                    lightingPool: surpriseMePool.selectedLightingTags || [],
+                    effectPool: surpriseMePool.selectedEffectTags || [],
+                    materialPool: surpriseMePool.selectedMaterialTags || [],
+                    onLocationPoolToggle: (tag) => togglePoolTag('selectedLocationTags', tag, surpriseMePool, setSurpriseMePool),
+                    onAnglePoolToggle: (tag) => togglePoolTag('selectedAngleTags', tag, surpriseMePool, setSurpriseMePool),
+                    onLightingPoolToggle: (tag) => togglePoolTag('selectedLightingTags', tag, surpriseMePool, setSurpriseMePool),
+                    onEffectPoolToggle: (tag) => togglePoolTag('selectedEffectTags', tag, surpriseMePool, setSurpriseMePool),
+                    onMaterialPoolToggle: (tag) => togglePoolTag('selectedMaterialTags', tag, surpriseMePool, setSurpriseMePool)
+                  }}
+                />
 
 
-                  <div className="flex justify-center mt-8 mb-4">
+              </div>
+
+              <OutputConfigSection
+                mockupCount={mockupCount}
+                onMockupCountChange={setMockupCount}
+                generateText={generateText}
+                onGenerateTextChange={setGenerateText}
+                withHuman={withHuman}
+                onWithHumanChange={setWithHuman}
+                enhanceTexture={enhanceTexture}
+                onEnhanceTextureChange={setEnhanceTexture}
+                designType={designType}
+                selectedModel={selectedModel}
+                resolution={resolution}
+                onResolutionChange={setResolution}
+              />
+
+              {/* Show PromptSection always */}
+              <PromptSection
+                promptPreview={promptPreview}
+                onPromptChange={handlePromptChange}
+                promptSuggestions={promptSuggestions}
+                isGeneratingPrompt={isGeneratingPrompt}
+                isSuggestingPrompts={isSuggestingPrompts}
+                isGenerating={isGenerating}
+                hasGenerated={hasGenerated}
+                mockups={mockups}
+                onSuggestPrompts={onSuggestPrompts}
+                onGenerateSmartPrompt={onGenerateSmartPrompt}
+                onSimplify={onSimplify}
+                onRegenerate={onRegenerate}
+                onSuggestionClick={handleSuggestionClick}
+                isSmartPromptActive={isSmartPromptActive}
+                setIsSmartPromptActive={setIsSmartPromptActive}
+                setIsPromptManuallyEdited={setIsPromptManuallyEdited}
+                creditsPerGeneration={creditsPerGeneration}
+                onGenerateSuggestion={onGenerateSuggestion}
+                isGenerateDisabled={isGenerateDisabled}
+              />
+
+              {/* Model Selection - placed before action buttons */}
+              {(uploadedImage || isImagelessMode || referenceImage) && (
+                <div className="mb-6">
+                  <ModelSelectionSection
+                    selectedModel={selectedModel}
+                    onModelChange={setSelectedModel}
+                    designType={designType}
+                  />
+                </div>
+              )}
+
+              {selectedModel && selectedModel === 'gemini-3-pro-image-preview' && (
+                <div className="mb-6">
+                  <AspectRatioSection
+                    aspectRatio={aspectRatio}
+                    onAspectRatioChange={setAspectRatio}
+                    selectedModel={selectedModel}
+                  />
+                </div>
+              )}
+
+              <div className="flex flex-col gap-2 mt-6">
+                {/* Generate Button - Only show if prompt is ready OR user has valid setup (Generate Prompt) */}
+                {(isPromptReady || designTypeSelected || brandingComplete || categoriesComplete || hasReferenceImage || (uploadedImage && !isImagelessMode)) && (
+                  <GenerateButton
+                    onClick={onGenerateClick}
+                    disabled={isGenerateDisabled || (isPromptReady && isGenerating)}
+                    isGeneratingPrompt={isGeneratingPrompt}
+                    isGenerating={isGenerating}
+                    isPromptReady={isPromptReady}
+                    variant="sidebar"
+                    buttonRef={generateOutputsButtonRef}
+                    creditsRequired={creditsRequired}
+                  />
+                )}
+                <div className={`grid gap-2 ${hasGenerated && mockups.some(m => m !== null) ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                  {/* Show regenerate button only when hasGenerated and mockups have content */}
+                  {hasGenerated && mockups.some(m => m !== null) && (
                     <Button
-                      onClick={resetAll}
-                      variant="ghost"
-                      size="sm"
-                      className="w-auto gap-1.5 text-neutral-500 hover:text-neutral-400 text-[10px] font-mono opacity-60 hover:opacity-100"
-                      aria-label={t('mockup.clearAll')}
+                      onClick={onRegenerate}
+                      disabled={isGenerating || !promptPreview.trim() || isGenerateDisabled}
+                      variant="sidebarAction"
+                      size="sidebar"
+                      className="justify-center"
+                      aria-label={t('mockup.regenerate')}
+                      title={t('mockup.regenerateTooltip')}
                     >
-                      <RotateCcw size={12} />
-                      <span>{t('mockup.clearAll')}</span>
+                      {isGenerating ? <RefreshCcw size={18} className="animate-spin" /> : <RefreshCcw size={18} />}
+                    </Button>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={handleSurpriseMe}
+                      disabled={isGeneratingPrompt}
+                      variant="sidebarAction"
+                      size="sidebar"
+                      className={cn("flex-1 justify-center", isDiceAnimating && 'dice-button-clicked', isSurpriseMeMode && 'bg-brand-cyan/20 border-brand-cyan/50')}
+                      aria-label={t('mockup.surpriseMe')}
+                      title={t('mockup.surpriseMeTooltip')}
+                    >
+                      <Dices size={18} className={isDiceAnimating ? 'dice-icon-animate' : ''} />
                     </Button>
                   </div>
                 </div>
-              )}
+              </div>
+
+              {(() => {
+                // Only show alert if user is definitely not authenticated
+                // Check both isAuthenticated state and localStorage token
+                const hasToken = typeof window !== 'undefined' && localStorage.getItem('auth_token');
+                const shouldShowAlert = isAuthenticated === false && !hasToken;
+
+                return shouldShowAlert ? (
+                  <div className="mt-4 flex items-start gap-2 rounded-md border border-red-500/30 bg-red-500/5 px-4 py-3">
+                    <Lock size={16} className="text-red-400 mt-0.5" />
+                    <p className="text-xs font-mono text-red-200">
+                      {authenticationRequiredMessage}
+                    </p>
+                  </div>
+                ) : null;
+              })()}
+
+
+              <div className="flex justify-center mt-8 mb-4">
+                <Button
+                  onClick={resetAll}
+                  variant="ghost"
+                  size="sm"
+                  className="w-auto gap-1.5 text-neutral-500 hover:text-neutral-400 text-[10px] font-mono opacity-60 hover:opacity-100"
+                  aria-label={t('mockup.clearAll')}
+                >
+                  <RotateCcw size={12} />
+                  <span>{t('mockup.clearAll')}</span>
+                </Button>
+              </div>
             </div>
           )}
         </div>
       </aside>
       {/* Resizer - only show on large screens when hasGenerated */}
-      {hasGenerated && isLargeScreen && (
-        <div
-          ref={resizerRef}
-          id="sidebar-resizer"
-          className="hidden lg:block flex-shrink-0 w-2 cursor-col-resize group"
-        >
-          <div className="w-px h-full mx-auto bg-sidebar-border group-hover:bg-brand-cyan/50 dark:group-hover:bg-brand-cyan/50 transition-colors duration-200"></div>
-        </div>
-      )}
+      {
+        hasGenerated && isLargeScreen && (
+          <div
+            ref={resizerRef}
+            id="sidebar-resizer"
+            className="hidden lg:block flex-shrink-0 w-2 cursor-col-resize group"
+          >
+            <div className="w-px h-full mx-auto bg-sidebar-border group-hover:bg-brand-cyan/50 dark:group-hover:bg-brand-cyan/50 transition-colors duration-200"></div>
+          </div>
+        )
+      }
     </>
   );
 };

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo, Dispatch, SetStateAction } from 'react';
 import type { UploadedImage, AspectRatio, DesignType, GeminiModel, Resolution } from '@/types/types';
+import { getSurpriseMeSelectedTags, type SurpriseMeSelectedTags } from '@/utils/surpriseMeSettings';
 
 interface MockupContextState {
     // Image State
@@ -69,6 +70,10 @@ interface MockupContextState {
     // UI State
     fullScreenImageIndex: number | null;
     mockupCount: number;
+
+    // Surprise Me Mode State
+    isSurpriseMeMode: boolean;
+    surpriseMePool: SurpriseMeSelectedTags;
 }
 
 interface MockupContextActions {
@@ -126,6 +131,8 @@ interface MockupContextActions {
     setIsValidColor: Dispatch<SetStateAction<boolean>>;
     setFullScreenImageIndex: Dispatch<SetStateAction<number | null>>;
     setMockupCount: Dispatch<SetStateAction<number>>;
+    setIsSurpriseMeMode: Dispatch<SetStateAction<boolean>>;
+    setSurpriseMePool: Dispatch<SetStateAction<SurpriseMeSelectedTags>>;
     resetAll: () => void;
 }
 
@@ -191,6 +198,10 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const [fullScreenImageIndex, setFullScreenImageIndex] = useState<number | null>(null);
     const [mockupCount, setMockupCount] = useState(initialMockupCount);
 
+    // Surprise Me Mode State - load initial pool from localStorage
+    const [isSurpriseMeMode, setIsSurpriseMeMode] = useState(false);
+    const [surpriseMePool, setSurpriseMePool] = useState<SurpriseMeSelectedTags>(() => getSurpriseMeSelectedTags());
+
     const resetAll = () => {
         setUploadedImage(null);
         setReferenceImage(null);
@@ -218,6 +229,7 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         setIsLoading(Array(mockupCount).fill(false));
         setHasGenerated(false);
         setHasAnalyzed(false);
+        setIsSurpriseMeMode(false);
     };
 
     const value = useMemo(() => ({
@@ -275,6 +287,8 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         isValidColor, setIsValidColor,
         fullScreenImageIndex, setFullScreenImageIndex,
         mockupCount, setMockupCount,
+        isSurpriseMeMode, setIsSurpriseMeMode,
+        surpriseMePool, setSurpriseMePool,
         resetAll
     }), [
         uploadedImage, referenceImage, referenceImages, isImagelessMode, designType,
@@ -290,7 +304,7 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         isPromptReady, promptSuggestions, isSuggestingPrompts, customBrandingInput,
         customCategoryInput, customLocationInput, customAngleInput, customLightingInput,
         customEffectInput, customMaterialInput, colorInput, isValidColor,
-        fullScreenImageIndex, mockupCount, resetAll
+        fullScreenImageIndex, mockupCount, isSurpriseMeMode, surpriseMePool, resetAll
     ]);
 
     return (

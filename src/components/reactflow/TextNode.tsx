@@ -30,16 +30,7 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
     }
   }, [nodeData.text]);
 
-  // Auto-resize textarea
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      const scrollHeight = textareaRef.current.scrollHeight;
-      const minHeight = 100;
-      const maxHeight = 400;
-      textareaRef.current.style.height = `${Math.max(minHeight, Math.min(scrollHeight, maxHeight))}px`;
-    }
-  }, [text]);
+
 
   // Debounced update for data changes
   const debouncedUpdateData = useDebouncedCallback((updates: Partial<TextNodeData>) => {
@@ -110,7 +101,7 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
       selected={selected}
       dragging={dragging}
       onFitToContent={handleFitToContent}
-      className="p-0 min-w-[320px] overflow-hidden"
+      className="p-0 min-w-[320px] min-h-[200px] h-auto flex flex-col overflow-hidden"
       onContextMenu={(e) => {
         // Allow ReactFlow to handle the context menu event
       }}
@@ -170,8 +161,8 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
       </div>
 
       {/* Text Input Area */}
-      <div className="p-4">
-        <div className="relative group">
+      <div className="p-4 flex-1 flex flex-col overflow-hidden">
+        <div className="relative group flex-1 overflow-hidden">
           <Textarea
             ref={textareaRef}
             value={text}
@@ -183,16 +174,14 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
             onClick={(e) => e.stopPropagation()}
             placeholder={t('canvasNodes.textNode.placeholder') || 'Enter text...'}
             className={cn(
-              "min-h-[100px] max-h-[400px] resize-y w-full nodrag nopan text-xs",
+              "h-full w-full resize-none nodrag nopan text-xs",
               "pr-12 pb-8",
               "bg-neutral-900/60 border-neutral-700/40",
               "focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20",
               "backdrop-blur-sm transition-all duration-200",
-              "placeholder:text-neutral-500 placeholder:font-mono"
+              "placeholder:text-neutral-500 placeholder:font-mono",
+              "overflow-y-auto"
             )}
-            style={{
-              overflowY: textareaRef.current && textareaRef.current.scrollHeight > 400 ? 'auto' : 'hidden',
-            }}
           />
 
           {/* Improve Prompt Button - Enhanced */}

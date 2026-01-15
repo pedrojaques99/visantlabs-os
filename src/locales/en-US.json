@@ -851,7 +851,19 @@
     "openSidebarTooltip": "Open control panel",
     "floatingGeneratePrompt": "Generate Prompt",
     "floatingSurpriseMe": "Surprise Me",
-    "surpriseMeAgain": "Click again for different tags"
+    "surpriseMeAgain": "Click again for different tags",
+    "surpriseMeMode": "Pool Mode",
+    "surpriseMeModeActiveTooltip": "Pool mode active - selecting random tags from your configured pool",
+    "surpriseMeModeEnableTooltip": "Enable Pool Mode to configure which tags can be randomly selected",
+    "surpriseMeModeDisableTooltip": "Disable Pool Mode and return to normal tag selection",
+    "savePoolAsPreset": "Save Pool as Preset",
+    "colorPaletteSection": "COLOR PALETTE_",
+    "colorPaletteComment": "// Select colors from your design or add custom hex colors (max 5).",
+    "selected": "SELECTED",
+    "colorsSelected": "colors selected",
+    "setupAndAnalysis": "SETUP & ANALYSIS",
+    "generationConfig": "GENERATION CONFIG",
+    "sectionLocked": "Section locked after analysis"
   },
   "adminPresets": {
     "title": "Preset Administration",

@@ -5,6 +5,7 @@ import type { UploadedImage, DesignType, GeminiModel } from '@/types/types';
 import { useTranslation } from '@/hooks/useTranslation';
 import { formatImageTo16_9 } from '@/utils/fileUtils';
 import { isSafeUrl } from '@/utils/imageUtils';
+import { cn } from '@/lib/utils';
 
 interface InputSectionProps {
   uploadedImage: UploadedImage | null;
@@ -17,6 +18,7 @@ interface InputSectionProps {
   onStartOver: () => void;
   isImagelessMode: boolean;
   hasAnalyzed?: boolean;
+  className?: string; // Add className
 }
 
 export const InputSection: React.FC<InputSectionProps> = ({
@@ -29,7 +31,8 @@ export const InputSection: React.FC<InputSectionProps> = ({
   onReferenceImagesChange,
   onStartOver,
   isImagelessMode,
-  hasAnalyzed = false
+  hasAnalyzed = false,
+  className = ""
 }) => {
   const { t } = useTranslation();
   // No modo blank, usa referenceImage; caso contrário, usa uploadedImage
@@ -92,12 +95,12 @@ export const InputSection: React.FC<InputSectionProps> = ({
   };
 
   return (
-    <section className={hasImage ? 'pb-0' : ''}>
+    <section className={cn(hasImage ? 'pb-0' : '', className)}>
       <h2 className={`font-semibold font-mono uppercase tracking-widest mb-3 transition-all duration-300 ${hasImage ? 'text-[10px] text-neutral-600 mb-1' : 'text-sm text-neutral-400'}`}>
         {t('mockup.input')}
       </h2>
 
-      <div className={`${hasImage && supportsReferences ? 'flex flex-wrap sm:flex-nowrap gap-2' : (hasImage ? 'w-full sm:w-1/2 md:w-1/4 opacity-80' : 'w-full sm:w-1/2 md:w-1/4')} mx-auto transition-all duration-300`}>
+      <div className={`${hasImage && supportsReferences ? 'flex flex-wrap sm:flex-nowrap gap-2' : (hasImage ? 'w-full opacity-80' : 'w-full')} transition-all duration-300`}>
         <div className={`relative aspect-[4/3] bg-black/20 rounded-md p-2 border border-neutral-700/50 ${supportsReferences && hasImage ? 'flex-1' : ''}`}>
           {isLoadingImage ? (
             <div className="w-full h-full flex flex-col items-center justify-center text-neutral-500">

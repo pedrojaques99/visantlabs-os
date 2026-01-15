@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Dices, Settings } from 'lucide-react';
+import { Dices, Shuffle } from 'lucide-react';
 import { Tooltip } from './Tooltip';
 import { GlitchLoader } from './GlitchLoader';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -11,7 +11,8 @@ interface QuickActionsBarProps {
   isGeneratingPrompt: boolean;
   autoGenerate: boolean;
   onAutoGenerateChange: (value: boolean) => void;
-  onOpenSurpriseMeSettings?: () => void;
+  isSurpriseMeMode: boolean;
+  onSurpriseMeModeChange: (value: boolean) => void;
 }
 
 export const QuickActionsBar: React.FC<QuickActionsBarProps> = ({
@@ -20,7 +21,8 @@ export const QuickActionsBar: React.FC<QuickActionsBarProps> = ({
   isGeneratingPrompt,
   autoGenerate,
   onAutoGenerateChange,
-  onOpenSurpriseMeSettings,
+  isSurpriseMeMode,
+  onSurpriseMeModeChange,
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
@@ -47,14 +49,16 @@ export const QuickActionsBar: React.FC<QuickActionsBarProps> = ({
     <div className="flex items-center py-2">
       <div className={`flex-grow border-t border-dashed ${theme === 'dark' ? 'border-neutral-700/50' : 'border-neutral-300/50'}`}></div>
       <div className="flex-shrink mx-2 flex flex-col items-center gap-2">
-        <Tooltip content={t('mockup.surpriseMeTooltip')} position="top">
+        <Tooltip content={isSurpriseMeMode ? t('mockup.surpriseMeModeActiveTooltip') : t('mockup.surpriseMeTooltip')} position="top">
           <button
             onClick={handleClick}
             disabled={isGenerating || isGeneratingPrompt}
             data-tutorial-target="surprise-me"
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-md border hover:border-[brand-cyan]/30 hover:bg-brand-cyan/10 hover:text-brand-cyan transition-all text-sm font-mono transform hover:scale-[1.02] active:scale-100 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg hover:shadow-[brand-cyan]/10 cursor-pointer ${isAnimating ? 'dice-button-clicked' : ''} ${theme === 'dark'
-              ? 'bg-neutral-800/50 text-neutral-400 border-neutral-700/50 shadow-black/20'
-              : 'bg-neutral-100 text-neutral-700 border-neutral-300 shadow-neutral-200/20'
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-md border hover:border-brand-cyan/30 hover:bg-brand-cyan/10 hover:text-brand-cyan transition-all text-sm font-mono transform hover:scale-[1.02] active:scale-100 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg hover:shadow-brand-cyan/10 cursor-pointer ${isAnimating ? 'dice-button-clicked' : ''} ${isSurpriseMeMode
+              ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/50 shadow-brand-cyan/20'
+              : theme === 'dark'
+                ? 'bg-neutral-800/50 text-neutral-400 border-neutral-700/50 shadow-black/20'
+                : 'bg-neutral-100 text-neutral-700 border-neutral-300 shadow-neutral-200/20'
               }`}
           >
             {(isGeneratingPrompt || isAnimating) ? (
@@ -65,14 +69,15 @@ export const QuickActionsBar: React.FC<QuickActionsBarProps> = ({
             {t('mockup.surpriseMe')}
           </button>
         </Tooltip>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2.5">
+          {/* Auto Generate Toggle */}
           <Tooltip content={t('mockup.autoGenerateTooltip')} position="top">
             <div
               className={`group flex items-center gap-1.5 cursor-pointer opacity-40 hover:opacity-100 transition-opacity duration-200 ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'}`}
               onClick={() => onAutoGenerateChange(!autoGenerate)}
             >
               <div className={`w-3 h-3 rounded-md flex items-center justify-center border transition-all duration-200 ${autoGenerate
-                ? 'bg-brand-cyan/80 border-[brand-cyan] opacity-100'
+                ? 'bg-brand-cyan/80 border-brand-cyan opacity-100'
                 : theme === 'dark'
                   ? 'bg-neutral-700/50 border-neutral-600/50 group-hover:border-neutral-500 group-hover:bg-neutral-700'
                   : 'bg-white/50 border-neutral-400/50 group-hover:border-neutral-400 group-hover:bg-white'
@@ -88,26 +93,39 @@ export const QuickActionsBar: React.FC<QuickActionsBarProps> = ({
               </label>
             </div>
           </Tooltip>
-          {onOpenSurpriseMeSettings && (
-            <Tooltip content={t('mockup.surpriseMeSettingsTooltip') || 'Surprise Me Settings'} position="top">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onOpenSurpriseMeSettings();
-                }}
-                disabled={isGenerating || isGeneratingPrompt}
-                className={`opacity-40 hover:opacity-100 transition-opacity duration-200 p-1 rounded hover:bg-neutral-800/50 disabled:opacity-30 disabled:cursor-not-allowed ${theme === 'dark' ? 'text-neutral-500 hover:text-neutral-400' : 'text-neutral-500 hover:text-neutral-600'}`}
-                aria-label={t('mockup.surpriseMeSettings')}
-              >
-                <Settings size={12} />
-              </button>
-            </Tooltip>
-          )}
+
+          {/* Surprise Me Mode Toggle */}
+          <Tooltip content={isSurpriseMeMode ? t('mockup.surpriseMeModeDisableTooltip') : t('mockup.surpriseMeModeEnableTooltip')} position="top">
+            <div
+              className={`group flex items-center gap-1.5 cursor-pointer transition-opacity duration-200 ${isSurpriseMeMode
+                  ? 'opacity-100'
+                  : 'opacity-40 hover:opacity-100'
+                } ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'}`}
+              onClick={() => onSurpriseMeModeChange(!isSurpriseMeMode)}
+            >
+              <div className={`w-3 h-3 rounded-md flex items-center justify-center border transition-all duration-200 ${isSurpriseMeMode
+                ? 'bg-brand-cyan/80 border-brand-cyan'
+                : theme === 'dark'
+                  ? 'bg-neutral-700/50 border-neutral-600/50 group-hover:border-neutral-500 group-hover:bg-neutral-700'
+                  : 'bg-white/50 border-neutral-400/50 group-hover:border-neutral-400 group-hover:bg-white'
+                }`}>
+                {isSurpriseMeMode && (
+                  <Shuffle size={8} className="text-black" />
+                )}
+              </div>
+              <label className={`text-[10px] select-none cursor-pointer font-mono group-hover:text-[11px] transition-all ${isSurpriseMeMode
+                  ? 'text-brand-cyan'
+                  : theme === 'dark'
+                    ? 'text-neutral-500 group-hover:text-neutral-400'
+                    : 'text-neutral-500 group-hover:text-neutral-600'
+                }`}>
+                {t('mockup.surpriseMeMode')}
+              </label>
+            </div>
+          </Tooltip>
         </div>
       </div>
       <div className={`flex-grow border-t border-dashed ${theme === 'dark' ? 'border-neutral-700/50' : 'border-neutral-300/50'}`}></div>
     </div>
   );
 };
-
-

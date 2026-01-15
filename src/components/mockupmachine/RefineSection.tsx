@@ -56,6 +56,18 @@ interface RefineSectionProps {
     suggestedEffectTags: string[];
     suggestedMaterialTags: string[];
     suggestedColors: string[];
+    // Surprise Me Mode props
+    isSurpriseMeMode?: boolean;
+    locationPool?: string[];
+    anglePool?: string[];
+    lightingPool?: string[];
+    effectPool?: string[];
+    materialPool?: string[];
+    onLocationPoolToggle?: (tag: string) => void;
+    onAnglePoolToggle?: (tag: string) => void;
+    onLightingPoolToggle?: (tag: string) => void;
+    onEffectPoolToggle?: (tag: string) => void;
+    onMaterialPoolToggle?: (tag: string) => void;
   };
 }
 

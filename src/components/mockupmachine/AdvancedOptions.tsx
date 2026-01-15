@@ -54,6 +54,18 @@ interface AdvancedOptionsProps {
   suggestedEffectTags: string[];
   suggestedMaterialTags: string[];
   suggestedColors: string[];
+  // Surprise Me Mode props
+  isSurpriseMeMode?: boolean;
+  locationPool?: string[];
+  anglePool?: string[];
+  lightingPool?: string[];
+  effectPool?: string[];
+  materialPool?: string[];
+  onLocationPoolToggle?: (tag: string) => void;
+  onAnglePoolToggle?: (tag: string) => void;
+  onLightingPoolToggle?: (tag: string) => void;
+  onEffectPoolToggle?: (tag: string) => void;
+  onMaterialPoolToggle?: (tag: string) => void;
 }
 
 interface CollapsableTagSectionProps {
@@ -65,6 +77,10 @@ interface CollapsableTagSectionProps {
   onCustomInputChange: (value: string) => void;
   onAddCustomTag: () => void;
   suggestedTags?: string[];
+  // Surprise Me Mode props
+  isSurpriseMeMode?: boolean;
+  poolTags?: string[];
+  onPoolToggle?: (tag: string) => void;
 }
 
 const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
@@ -75,7 +91,11 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
   customInput,
   onCustomInputChange,
   onAddCustomTag,
-  suggestedTags = []
+  suggestedTags = [],
+  // Surprise Me Mode props
+  isSurpriseMeMode = false,
+  poolTags = [],
+  onPoolToggle
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
@@ -227,15 +247,26 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
             const isSelected = selectedTags.includes(tag);
             const isSuggested = suggestedTags.includes(tag);
             const hasSelection = selectedTags.length > 0;
+            const isInPool = isSurpriseMeMode && poolTags.includes(tag);
+
+            // In Surprise Me Mode, clicking toggles pool membership
+            const handleClick = () => {
+              if (isSurpriseMeMode && onPoolToggle) {
+                onPoolToggle(tag);
+              } else {
+                onTagToggle(tag);
+              }
+            };
 
             return (
               <Tag
                 key={tag}
                 label={translateTag(tag)}
-                selected={isSelected}
-                suggested={isSuggested}
-                onToggle={() => onTagToggle(tag)}
-                disabled={hasSelection && !isSelected}
+                selected={!isSurpriseMeMode && isSelected}
+                suggested={!isSurpriseMeMode && isSuggested}
+                inPool={isInPool}
+                onToggle={handleClick}
+                disabled={!isSurpriseMeMode && hasSelection && !isSelected}
               />
             );
           });
@@ -305,7 +336,19 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
   suggestedLightingTags,
   suggestedEffectTags,
   suggestedMaterialTags,
-  suggestedColors
+  suggestedColors,
+  // Surprise Me Mode props
+  isSurpriseMeMode = false,
+  locationPool = [],
+  anglePool = [],
+  lightingPool = [],
+  effectPool = [],
+  materialPool = [],
+  onLocationPoolToggle,
+  onAnglePoolToggle,
+  onLightingPoolToggle,
+  onEffectPoolToggle,
+  onMaterialPoolToggle
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
@@ -458,6 +501,9 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
           onCustomInputChange={onCustomLocationInputChange}
           onAddCustomTag={onAddCustomLocationTag}
           suggestedTags={suggestedLocationTags}
+          isSurpriseMeMode={isSurpriseMeMode}
+          poolTags={locationPool}
+          onPoolToggle={onLocationPoolToggle}
         />
       </div>
       <CollapsableTagSection
@@ -469,6 +515,9 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
         onCustomInputChange={onCustomAngleInputChange}
         onAddCustomTag={onAddCustomAngleTag}
         suggestedTags={suggestedAngleTags}
+        isSurpriseMeMode={isSurpriseMeMode}
+        poolTags={anglePool}
+        onPoolToggle={onAnglePoolToggle}
       />
       <CollapsableTagSection
         title={t('mockup.lightingMood')}
@@ -479,6 +528,9 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
         onCustomInputChange={onCustomLightingInputChange}
         onAddCustomTag={onAddCustomLightingTag}
         suggestedTags={suggestedLightingTags}
+        isSurpriseMeMode={isSurpriseMeMode}
+        poolTags={lightingPool}
+        onPoolToggle={onLightingPoolToggle}
       />
       <CollapsableTagSection
         title={t('mockup.visualEffects')}
@@ -489,6 +541,9 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
         onCustomInputChange={onCustomEffectInputChange}
         onAddCustomTag={onAddCustomEffectTag}
         suggestedTags={suggestedEffectTags}
+        isSurpriseMeMode={isSurpriseMeMode}
+        poolTags={effectPool}
+        onPoolToggle={onEffectPoolToggle}
       />
       {designType === 'logo' && (
         <CollapsableTagSection
@@ -500,6 +555,9 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
           onCustomInputChange={onCustomMaterialInputChange}
           onAddCustomTag={onAddCustomMaterialTag}
           suggestedTags={suggestedMaterialTags}
+          isSurpriseMeMode={isSurpriseMeMode}
+          poolTags={materialPool}
+          onPoolToggle={onMaterialPoolToggle}
         />
       )}
       <div className={`p-4 rounded-xl border transition-all duration-200 ${theme === 'dark' ? 'bg-black/20 border-white/5' : 'bg-white/50 border-neutral-200'}`}>

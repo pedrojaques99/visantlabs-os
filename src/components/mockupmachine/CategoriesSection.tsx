@@ -28,6 +28,10 @@ interface CategoriesSectionProps {
   displaySuggestedTags: string[];
   tagCategories: MockupTagCategory[];
   mockupPresets?: MockupPreset[];
+  // Surprise Me Mode props
+  isSurpriseMeMode?: boolean;
+  categoriesPool?: string[];
+  onPoolToggle?: (tag: string) => void;
 }
 
 export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
@@ -45,7 +49,11 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
   isComplete,
   displaySuggestedTags,
   tagCategories,
-  mockupPresets = []
+  mockupPresets = [],
+  // Surprise Me Mode props
+  isSurpriseMeMode = false,
+  categoriesPool = [],
+  onPoolToggle
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
@@ -174,15 +182,26 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
     const isSelected = selectedTags.includes(tag);
     const isSuggested = displaySuggestedTags.includes(tag);
     const hasSelection = selectedTags.length > 0;
+    const isInPool = isSurpriseMeMode && categoriesPool.includes(tag);
+
+    // In Surprise Me Mode, clicking toggles pool membership
+    const handleClick = () => {
+      if (isSurpriseMeMode && onPoolToggle) {
+        onPoolToggle(tag);
+      } else {
+        onTagToggle(tag);
+      }
+    };
 
     return (
       <Tag
         key={tag}
         label={translateTag(tag)}
-        selected={isSelected}
-        suggested={isSuggested}
-        onToggle={() => onTagToggle(tag)}
-        disabled={hasSelection && !isSelected}
+        selected={!isSurpriseMeMode && isSelected}
+        suggested={!isSurpriseMeMode && isSuggested}
+        inPool={isInPool}
+        onToggle={handleClick}
+        disabled={!isSurpriseMeMode && hasSelection && !isSelected}
       />
     );
   };

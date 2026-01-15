@@ -49,9 +49,7 @@ import {
   AVAILABLE_ANGLE_TAGS,
   AVAILABLE_LIGHTING_TAGS,
   AVAILABLE_EFFECT_TAGS,
-  AVAILABLE_MATERIAL_TAGS,
-  GENERIC_MOCKUP_TAGS,
-  GENERIC_BRANDING_TAGS
+  AVAILABLE_MATERIAL_TAGS
 } from '@/utils/mockupConstants';
 import {
   getBackgroundDescription,
@@ -150,7 +148,9 @@ const MockupMachinePageContent: React.FC = () => {
     handleAddCustomBrandingTag,
     handleAddCustomCategoryTag,
     handleRandomizeCategories,
-    scrollToSection
+    scrollToSection,
+    availableMockupTags,
+    availableLocationTags
   } = useMockupTags();
 
   const promptWasReadyBeforeEditRef = useRef<boolean>(false);
@@ -696,6 +696,14 @@ const MockupMachinePageContent: React.FC = () => {
     setIsAllCategoriesOpen(false);
     setSuggestedTags([]);
     setHasGenerated(false);
+    setHasAnalyzed(false);
+    setSuggestedBrandingTags([]);
+    setSuggestedLocationTags([]);
+    setSuggestedAngleTags([]);
+    setSuggestedLightingTags([]);
+    setSuggestedEffectTags([]);
+    setSuggestedMaterialTags([]);
+    setSuggestedColors([]);
     setNegativePrompt('');
     setAdditionalPrompt('');
     setGenerateText(false);
@@ -760,7 +768,22 @@ const MockupMachinePageContent: React.FC = () => {
     setResolution('1K');
     // Por último, esconde welcome screen para garantir que fique false
     setShowWelcome(false);
-  }, [designType, resetControls, isAuthenticated, isCheckingAuth]);
+
+    // Auto-extract colors from uploaded image
+    try {
+      const { extractColors } = await import('@/utils/colorExtraction');
+      const colorResult = await extractColors(image.base64, image.mimeType, 8);
+      setSuggestedColors(colorResult.colors);
+      if (isLocalDevelopment()) {
+        console.log('🎨 Auto-extracted colors:', colorResult.colors);
+      }
+    } catch (colorErr) {
+      if (isLocalDevelopment()) {
+        console.error("Error auto-extracting colors:", colorErr);
+      }
+      // Non-critical - don't block UX if color extraction fails
+    }
+  }, [designType, resetControls, isAuthenticated, isCheckingAuth, t]);
 
   const handleStartOver = () => {
     setUploadedImage(null);
@@ -771,6 +794,7 @@ const MockupMachinePageContent: React.FC = () => {
     setShowWelcome(true);
     // Clear persisted state from localStorage
     clearMockupState();
+    localStorage.removeItem('edit-mockup');
   };
 
   const handleDesignTypeChange = (type: DesignType) => {
@@ -1636,6 +1660,7 @@ const MockupMachinePageContent: React.FC = () => {
     const aiSuggestedCategories = suggestedTags || [];
     const userAllowedCategories = selectedTagsSettings.selectedCategoryTags;
 
+    // First filter AI suggestions by user's "Surprise Me" settings
     const filteredAiCategories = aiSuggestedCategories.filter(tag =>
       userAllowedCategories.length === 0 || userAllowedCategories.includes(tag)
     );
@@ -1643,11 +1668,16 @@ const MockupMachinePageContent: React.FC = () => {
     if (filteredAiCategories.length > 0) {
       selectedCategory = filteredAiCategories[Math.floor(Math.random() * filteredAiCategories.length)];
     } else {
-      const availableCategories = GENERIC_MOCKUP_TAGS.filter(tag =>
-        userAllowedCategories.length === 0 || userAllowedCategories.includes(tag)
-      );
-      const categoriesToPickFrom = availableCategories.length > 0 ? availableCategories : GENERIC_MOCKUP_TAGS;
-      selectedCategory = categoriesToPickFrom[Math.floor(Math.random() * categoriesToPickFrom.length)];
+      // Fallback: Use available dynamic tags instead of static list
+      // filtered by user settings if any
+      const poolToUse = userAllowedCategories.length > 0
+        ? availableMockupTags.filter(tag => userAllowedCategories.includes(tag))
+        : availableMockupTags;
+
+      // If pool is empty (edge case), fallback to full list
+      const finalPool = poolToUse.length > 0 ? poolToUse : availableMockupTags;
+
+      selectedCategory = finalPool[Math.floor(Math.random() * finalPool.length)];
     }
     setSelectedTags([selectedCategory]);
 
@@ -1675,11 +1705,25 @@ const MockupMachinePageContent: React.FC = () => {
 
       // Add preferred options if not already included
       const preferredOptions = ['Light Box', 'Minimalist Studio'];
-      const backgroundsToUse = filteredBackgrounds.length > 0
-        ? [...new Set([...preferredOptions, ...filteredBackgrounds])]
-        : [...new Set([...preferredOptions, ...suitableBackgrounds])];
 
-      selectedBackground = backgroundsToUse[Math.floor(Math.random() * backgroundsToUse.length)];
+      // Filter preferred options by user allowed list if set
+      const filteredPreferredOptions = userAllowedLocations.length > 0
+        ? preferredOptions.filter(opt => userAllowedLocations.includes(opt))
+        : preferredOptions;
+
+      // Ensure we have something to pick from
+      const optionsToUse = filteredPreferredOptions.length > 0 ? filteredPreferredOptions : preferredOptions;
+
+      const backgroundsToUse = filteredBackgrounds.length > 0
+        ? [...new Set([...optionsToUse, ...filteredBackgrounds])]
+        : [...new Set([...optionsToUse, ...suitableBackgrounds])];
+
+      // Final availability check with full location list fallback
+      const finalBackgrounds = backgroundsToUse.length > 0
+        ? backgroundsToUse
+        : availableLocationTags; // Fallback to all dynamic locations
+
+      selectedBackground = finalBackgrounds[Math.floor(Math.random() * finalBackgrounds.length)];
     }
     setSelectedLocationTags([selectedBackground]);
 
@@ -1976,6 +2020,26 @@ const MockupMachinePageContent: React.FC = () => {
       throw error;
     }
   }, [isAuthenticated, mockups, savedIndices, mockupLikedStatus, promptPreview, designType, selectedTags, selectedBrandingTags, aspectRatio]);
+
+  // Handle navigation blocker
+  useEffect(() => {
+    if (blocker.state === 'blocked') {
+      setUnsavedDialogConfig({
+        message: t('messages.unsavedChangesMessage') || "You have unsaved changes. Are you sure you want to discard them?",
+        onConfirm: () => {
+          clearMockupState();
+          localStorage.removeItem('edit-mockup');
+          blocker.proceed();
+        },
+        onSaveAll: async () => {
+          await handleSaveAllUnsaved();
+          // We don't auto-proceed after save, user can decide
+        },
+        showSaveAll: true
+      });
+      setShowUnsavedDialog(true);
+    }
+  }, [blocker, t, handleSaveAllUnsaved]);
 
   // Register handlers with Layout context for Header to use
   useEffect(() => {
@@ -3104,7 +3168,6 @@ Generate the new mockup image with the requested changes applied.`;
                 onSidebarWidthChange={setSidebarWidth}
                 // onCloseMobile removed to use external button
                 onSurpriseMe={handleSurpriseMe}
-                onOpenSurpriseMeSettings={() => setIsSurpriseMeSettingsOpen(true)}
                 onImageUpload={handleImageUpload}
                 onReferenceImagesChange={setReferenceImages}
                 onStartOver={handleStartOver}
@@ -3124,21 +3187,7 @@ Generate the new mockup image with the requested changes applied.`;
             {hasGenerated && (
               <>
                 <main className={`flex-1 p-2 md:p-4 lg:p-8 overflow-y-auto min-w-0 h-full ${!isSidebarVisibleMobile ? 'w-full' : ''} relative`}>
-                  {/* Desktop Toggle Button specific placement in Main if sidebar is consistent */}
-                  {!isSidebarVisibleMobile && (
-                    <div className="hidden lg:block absolute top-4 left-4 z-50">
-                      <Button
-                        onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                        variant="outline"
-                        size="icon"
-                        className="shadow-sm bg-background/80 backdrop-blur-sm border-border/50 hover:bg-accent"
-                        title={isSidebarCollapsed ? t('mockup.expandSidebar') : t('mockup.collapseSidebar')}
-                      >
-                        {isSidebarCollapsed ? <Menu size={18} /> : <div className="flex"><Menu size={18} className="rotate-180" /></div>}
-                        {/* Or use specific icons like PanelLeftClose/Open if available */}
-                      </Button>
-                    </div>
-                  )}
+
 
                   <MockupDisplay
                     mockups={mockups}
