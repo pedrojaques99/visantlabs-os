@@ -7,6 +7,7 @@ import { CREDIT_PACKAGES, getCreditPackageLink, getCreditPackagePrice } from '@/
 import { useTranslation } from '@/hooks/useTranslation';
 import { LinearGradientBackground } from './ui/LinearGradientBackground';
 import type { SubscriptionStatus } from '../services/subscriptionService';
+import { SubscriptionPlansGrid } from './SubscriptionPlansGrid';
 
 // Função para tocar som de clique
 const playClickSound = () => {
@@ -71,7 +72,7 @@ interface CreditPackagesModalProps {
   isOpen: boolean;
   onClose: () => void;
   subscriptionStatus?: SubscriptionStatus | null;
-  initialTab?: 'buy' | 'credits';
+  initialTab?: 'buy' | 'credits' | 'subscriptions';
 }
 
 const formatDate = (dateString: string | null): string => {
@@ -94,7 +95,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
   const navigate = useNavigate();
   const [currencyInfo, setCurrencyInfo] = useState<CurrencyInfo | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [activeTab, setActiveTab] = useState<'buy' | 'credits'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'buy' | 'credits' | 'subscriptions'>(initialTab);
 
   // Reset tab when modal opens
   useEffect(() => {
@@ -199,271 +200,288 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="border border-neutral-800/50 rounded-md max-w-4xl w-full mx-4 relative max-h-[90vh] overflow-y-auto overflow-hidden">
-        <div className="relative p-6 min-h-[100%]">
-          <LinearGradientBackground className="rounded-md" fullHeight />
-          <div className="relative z-10">
-            <button
-              onClick={onClose}
-              className="absolute top-4 right-4 text-neutral-500 hover:text-neutral-300 transition-colors z-20"
-            >
-              <X size={20} />
-            </button>
+      <div className="border border-neutral-800/50 rounded-md max-w-4xl w-full mx-4 relative min-h-[800px] max-h-[90vh] overflow-y-auto overflow-x-hidden flex flex-col">
+        <LinearGradientBackground className="rounded-md" fullHeight />
+        <div className="relative p-6 z-10 flex-1">
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-neutral-500 hover:text-neutral-300 transition-colors z-20"
+          >
+            <X size={20} />
+          </button>
 
-            <div className="space-y-6">
-              <div className="flex items-center gap-3">
-                <CreditCard size={20} className="text-neutral-500" />
-                <h2 className="text-base font-medium font-mono text-neutral-400">
-                  {t('creditsPackages.title') || 'CREDITS'}
-                </h2>
-              </div>
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <CreditCard size={20} className="text-neutral-500" />
+              <h2 className="text-base font-medium font-mono text-neutral-400">
+                {t('creditsPackages.title') || 'CREDITS'}
+              </h2>
+            </div>
 
-              {/* Tabs */}
-              <div className="flex gap-2 border-b border-neutral-800/50">
+            {/* Tabs */}
+            <div className={`grid ${subscriptionStatus ? 'grid-cols-3' : 'grid-cols-2'} bg-neutral-900/50 p-1 rounded-lg border border-neutral-800/50`}>
+              <button
+                onClick={() => setActiveTab('buy')}
+                className={`px-4 py-2 text-xs font-mono uppercase tracking-wider transition-all rounded-md ${activeTab === 'buy'
+                  ? 'bg-neutral-800 text-white shadow-sm'
+                  : 'text-neutral-500 hover:text-neutral-300'
+                  }`}
+              >
+                {t('creditsPackages.buy') || 'Buy'}
+              </button>
+
+              <button
+                onClick={() => setActiveTab('subscriptions')}
+                className={`px-4 py-2 text-xs font-mono uppercase tracking-wider transition-all rounded-md ${activeTab === 'subscriptions'
+                  ? 'bg-neutral-800 text-white shadow-sm'
+                  : 'text-neutral-500 hover:text-neutral-300'
+                  }`}
+              >
+                {t('pricing.tabs.subscriptions') || 'Assinaturas'}
+              </button>
+
+              {subscriptionStatus ? (
                 <button
-                  onClick={() => setActiveTab('buy')}
-                  className={`px-4 py-2 text-xs font-mono uppercase tracking-wider transition-colors border-b-2 ${activeTab === 'buy'
-                    ? 'text-brand-cyan border-[brand-cyan]'
-                    : 'text-neutral-500 border-transparent hover:text-neutral-400'
+                  onClick={() => setActiveTab('credits')}
+                  className={`px-4 py-2 text-xs font-mono uppercase tracking-wider transition-all rounded-md ${activeTab === 'credits'
+                    ? 'bg-neutral-800 text-white shadow-sm'
+                    : 'text-neutral-500 hover:text-neutral-300'
                     }`}
                 >
-                  {t('creditsPackages.buy') || 'Buy'}
+                  {t('credits.title') || 'Credits'}
                 </button>
-                {subscriptionStatus && (
-                  <button
-                    onClick={() => setActiveTab('credits')}
-                    className={`px-4 py-2 text-xs font-mono uppercase tracking-wider transition-colors border-b-2 ${activeTab === 'credits'
-                      ? 'text-brand-cyan border-[brand-cyan]'
-                      : 'text-neutral-500 border-transparent hover:text-neutral-400'
-                      }`}
-                  >
-                    {t('credits.title') || 'Credits'}
-                  </button>
-                )}
-              </div>
+              ) : (
+                <div className="hidden"></div>
+              )}
+            </div>
 
-              {/* Tab Content */}
-              <div className="relative min-h-[400px] overflow-hidden">
-                {activeTab === 'buy' && (
-                  <div className="flex flex-col items-center justify-center py-8 animate-slide-in-right transition-all duration-300 ease-in-out">
-                    {/* Package Selector */}
-                    <div className="flex items-center justify-center mb-6">
-                      {/* Current Package Display */}
-                      <div className="bg-neutral-900 border border-neutral-800/30 rounded-xl p-6 md:p-10 min-w-[280px] md:min-w-[420px] text-center shadow-sm">
-                        <div className="space-y-4">
-                          <div>
-                            {/* Credits Display with Pickaxe and +/- buttons */}
-                            <div className="flex items-center justify-center gap-3 mb-3">
-                              {/* Previous button */}
-                              <button
-                                onClick={handlePrevious}
-                                disabled={selectedIndex === 0}
-                                className={`p-2 md:p-2.5 transition-all duration-200 rounded-md active:scale-[0.95] ${selectedIndex === 0
-                                  ? 'text-neutral-600 cursor-not-allowed opacity-50'
-                                  : 'text-neutral-400 hover:text-brand-cyan hover:bg-neutral-800/50 hover:scale-110 cursor-pointer'
-                                  }`}
-                                aria-label="Previous package"
-                              >
-                                <Minus size={20} className="md:w-5 md:h-5" />
-                              </button>
+            {/* Tab Content */}
+            <div className="relative min-h-[400px] overflow-hidden">
+              {activeTab === 'subscriptions' && (
+                <div className="py-4 animate-slide-in-right transition-all duration-300 ease-in-out">
+                  <SubscriptionPlansGrid currencyInfo={currencyInfo} gridClassName="grid-cols-1 md:grid-cols-1" />
+                </div>
+              )}
 
-                              {/* Credits number */}
-                              <div className="text-5xl md:text-6xl font-bold text-brand-cyan/80 font-mono">
-                                {animatedCredits}
-                              </div>
+              {activeTab === 'buy' && (
+                <div className="flex flex-col items-center justify-center py-8 animate-slide-in-right transition-all duration-300 ease-in-out">
+                  {/* Package Selector */}
+                  <div className="flex items-center justify-center mb-6">
+                    {/* Current Package Display */}
+                    <div className="bg-neutral-900 border border-neutral-800/30 rounded-xl p-6 md:p-10 min-w-[280px] md:min-w-[420px] text-center shadow-sm">
+                      <div className="space-y-4">
+                        <div>
+                          {/* Credits Display with Pickaxe and +/- buttons */}
+                          <div className="flex items-center justify-center gap-3 mb-3">
+                            {/* Previous button */}
+                            <button
+                              onClick={handlePrevious}
+                              disabled={selectedIndex === 0}
+                              className={`p-2 md:p-2.5 transition-all duration-200 rounded-md active:scale-[0.95] ${selectedIndex === 0
+                                ? 'text-neutral-600 cursor-not-allowed opacity-50'
+                                : 'text-neutral-400 hover:text-brand-cyan hover:bg-neutral-800/50 hover:scale-110 cursor-pointer'
+                                }`}
+                              aria-label="Previous package"
+                            >
+                              <Minus size={20} className="md:w-5 md:h-5" />
+                            </button>
 
-                              {/* Next button */}
-                              <button
-                                onClick={handleNext}
-                                disabled={selectedIndex === CREDIT_PACKAGES.length - 1}
-                                className={`p-2 md:p-2.5 transition-all duration-200 rounded-md active:scale-[0.95] ${selectedIndex === CREDIT_PACKAGES.length - 1
-                                  ? 'text-neutral-600 cursor-not-allowed opacity-50'
-                                  : 'text-neutral-400 hover:text-brand-cyan hover:bg-neutral-800/50 hover:scale-110 cursor-pointer'
-                                  }`}
-                                aria-label="Next package"
-                              >
-                                <Plus size={20} className="md:w-5 md:h-5" />
-                              </button>
+                            {/* Credits number */}
+                            <div className="text-5xl md:text-6xl font-bold text-brand-cyan/80 font-mono">
+                              {animatedCredits}
                             </div>
 
-                            <div className="flex items-center justify-center gap-2 text-sm text-neutral-400 font-mono uppercase tracking-wider">
-                              <Pickaxe
-                                size={14}
-                                className="md:w-4 md:h-4 text-brand-cyan/70 flex-shrink-0"
-                              />
-                              {t('creditsPackages.credits') || 'Credits'}
-                            </div>
+                            {/* Next button */}
+                            <button
+                              onClick={handleNext}
+                              disabled={selectedIndex === CREDIT_PACKAGES.length - 1}
+                              className={`p-2 md:p-2.5 transition-all duration-200 rounded-md active:scale-[0.95] ${selectedIndex === CREDIT_PACKAGES.length - 1
+                                ? 'text-neutral-600 cursor-not-allowed opacity-50'
+                                : 'text-neutral-400 hover:text-brand-cyan hover:bg-neutral-800/50 hover:scale-110 cursor-pointer'
+                                }`}
+                              aria-label="Next package"
+                            >
+                              <Plus size={20} className="md:w-5 md:h-5" />
+                            </button>
                           </div>
 
-                          {currencyInfo && price > 0 && (
-                            <div className="pt-4 border-t border-neutral-800/50">
-                              <div className="flex items-center justify-center gap-2">
-                                <div className="text-3xl font-bold text-neutral-200 font-mono">
-                                  {formatPrice(animatedPrice, currencyInfo.currency, currencyInfo.locale)}
-                                </div>
-                                <div className="relative group">
-                                  <Info
-                                    size={14}
-                                    className="text-neutral-500 hover:text-neutral-400 transition-colors cursor-help"
-                                  />
-                                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-neutral-300 bg-neutral-900/95 border border-neutral-700/50 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-                                    {t('pricing.oneTimePayment') || (currencyInfo.currency === 'BRL' ? 'Pagamento único' : 'One-time payment')}
-                                  </div>
-                                </div>
-                              </div>
-                              {currentPackage.credits > 0 && (
-                                <div className="text-xs text-neutral-500 font-mono mt-2">
-                                  {formatPrice(price / currentPackage.credits, currencyInfo.currency, currencyInfo.locale)} {currencyInfo.currency === 'BRL' ? 'por crédito' : 'per credit'}
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                          <div className="flex flex-col gap-2 mt-6">
-                            <button
-                              onClick={handleBuyCredits}
-                              className="w-full px-6 py-3 bg-brand-cyan/80 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-[brand-cyan]/20"
-                            >
-                              <CreditCard size={16} />
-                              {t('creditsPackages.buy') || 'Buy'}
-                            </button>
-                            {currencyInfo?.currency === 'BRL' && ABACATEPAY_LINKS[currentPackage.credits] && (
-                              <button
-                                onClick={handleBuyWithPix}
-                                className="w-full px-6 py-3 bg-[#6fd591]/80 hover:bg-[#6fd591] text-white font-semibold rounded-md text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-[#6fd591]/20"
-                              >
-                                <QrCode size={16} />
-                                {t('pix.payWithPix') || 'Pagar com PIX'}
-                              </button>
-                            )}
-
-                            <button
-                              onClick={() => {
-                                onClose();
-                                navigate('/pricing');
-                              }}
-                              className="w-full mt-2 px-6 py-2 text-neutral-500 hover:text-brand-cyan text-xs font-mono transition-colors flex items-center justify-center gap-2 hover:bg-neutral-800/30 rounded-md"
-                            >
-                              {t('creditsPackages.viewPlans') || 'View Subscription Plans'}
-                            </button>
+                          <div className="flex items-center justify-center gap-2 text-sm text-neutral-400 font-mono uppercase tracking-wider">
+                            <Pickaxe
+                              size={14}
+                              className="md:w-4 md:h-4 text-brand-cyan/70 flex-shrink-0"
+                            />
+                            {t('creditsPackages.credits') || 'Credits'}
                           </div>
                         </div>
+
+                        {currencyInfo && price > 0 && (
+                          <div className="pt-4 border-t border-neutral-800/50">
+                            <div className="flex items-center justify-center gap-2">
+                              <div className="text-3xl font-bold text-neutral-200 font-mono">
+                                {formatPrice(animatedPrice, currencyInfo.currency, currencyInfo.locale)}
+                              </div>
+                              <div className="relative group">
+                                <Info
+                                  size={14}
+                                  className="text-neutral-500 hover:text-neutral-400 transition-colors cursor-help"
+                                />
+                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-neutral-300 bg-neutral-900/95 border border-neutral-700/50 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                                  {t('pricing.oneTimePayment') || (currencyInfo.currency === 'BRL' ? 'Pagamento único' : 'One-time payment')}
+                                </div>
+                              </div>
+                            </div>
+                            {currentPackage.credits > 0 && (
+                              <div className="text-xs text-neutral-500 font-mono mt-2">
+                                {formatPrice(price / currentPackage.credits, currencyInfo.currency, currencyInfo.locale)} {currencyInfo.currency === 'BRL' ? 'por crédito' : 'per credit'}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        <div className="flex flex-col gap-2 mt-6">
+                          <button
+                            onClick={handleBuyCredits}
+                            className="w-full px-6 py-3 bg-brand-cyan/80 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-[brand-cyan]/20"
+                          >
+                            <CreditCard size={16} />
+                            {t('creditsPackages.buy') || 'Buy'}
+                          </button>
+                          {currencyInfo?.currency === 'BRL' && ABACATEPAY_LINKS[currentPackage.credits] && (
+                            <button
+                              onClick={handleBuyWithPix}
+                              className="w-full px-6 py-3 bg-[#6fd591]/80 hover:bg-[#6fd591] text-white font-semibold rounded-md text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-[#6fd591]/20"
+                            >
+                              <QrCode size={16} />
+                              {t('pix.payWithPix') || 'Pagar com PIX'}
+                            </button>
+                          )}
+
+                          <button
+                            onClick={() => {
+                              onClose();
+                              navigate('/pricing');
+                            }}
+                            className="w-full mt-2 px-6 py-2 text-neutral-500 hover:text-brand-cyan text-xs font-mono transition-colors flex items-center justify-center gap-2 hover:bg-neutral-800/30 rounded-md"
+                          >
+                            {t('creditsPackages.viewPlans') || 'View Subscription Plans'}
+                          </button>
+                        </div>
                       </div>
-                    </div>
-
-                    {/* Package Indicator */}
-                    <div className="flex gap-2 mb-6">
-                      {CREDIT_PACKAGES.map((_, index) => (
-                        <button
-                          key={index}
-                          onClick={() => setSelectedIndex(index)}
-                          className={`h-2 rounded-md transition-all duration-300 ease-out ${index === selectedIndex
-                            ? 'bg-brand-cyan w-8 shadow-[0_0_8px_rgba(82,221,235,0.4)]'
-                            : 'bg-neutral-600 hover:bg-neutral-500 w-2 hover:scale-125'
-                            }`}
-                          aria-label={`Select ${CREDIT_PACKAGES[index].credits} credits package`}
-                        />
-                      ))}
-                    </div>
-
-                    <div className="text-xs text-neutral-300 font-mono text-center max-w-md">
-                      {t('creditsPackages.note') || 'Credits never expire and can be used at any time'}
                     </div>
                   </div>
-                )}
 
-                {/* Credits Tab Content */}
-                {activeTab === 'credits' && subscriptionStatus && (() => {
-                  const {
-                    hasActiveSubscription,
-                    subscriptionTier,
-                    monthlyCredits,
-                    creditsUsed,
-                    creditsRemaining,
-                    creditsResetDate,
-                    totalCreditsEarned,
-                    totalCredits,
-                  } = subscriptionStatus;
+                  {/* Package Indicator */}
+                  <div className="flex gap-2 mb-6">
+                    {CREDIT_PACKAGES.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setSelectedIndex(index)}
+                        className={`h-2 rounded-md transition-all duration-300 ease-out ${index === selectedIndex
+                          ? 'bg-brand-cyan w-8 shadow-[0_0_8px_rgba(82,221,235,0.4)]'
+                          : 'bg-neutral-600 hover:bg-neutral-500 w-2 hover:scale-125'
+                          }`}
+                        aria-label={`Select ${CREDIT_PACKAGES[index].credits} credits package`}
+                      />
+                    ))}
+                  </div>
 
-                  // Calculate total credits available
-                  const totalCreditsAvailable = typeof totalCredits === 'number'
-                    ? totalCredits
-                    : ((totalCreditsEarned ?? 0) + (creditsRemaining ?? 0));
+                  <div className="text-xs text-neutral-300 font-mono text-center max-w-md">
+                    {t('creditsPackages.note') || 'Credits never expire and can be used at any time'}
+                  </div>
+                </div>
+              )}
 
-                  const creditsPercentage = monthlyCredits > 0
-                    ? Math.round((creditsUsed / monthlyCredits) * 100)
-                    : 0;
+              {/* Credits Tab Content */}
+              {activeTab === 'credits' && subscriptionStatus && (() => {
+                const {
+                  hasActiveSubscription,
+                  subscriptionTier,
+                  monthlyCredits,
+                  creditsUsed,
+                  creditsRemaining,
+                  creditsResetDate,
+                  totalCreditsEarned,
+                  totalCredits,
+                } = subscriptionStatus;
 
-                  const monthlyUsageStyle = {
-                    '--progress': `${Math.min(creditsPercentage, 100)}%`,
-                  } as CSSProperties;
+                // Calculate total credits available
+                const totalCreditsAvailable = typeof totalCredits === 'number'
+                  ? totalCredits
+                  : ((totalCreditsEarned ?? 0) + (creditsRemaining ?? 0));
 
-                  return (
-                    <div className="flex flex-col items-center justify-center py-8 animate-slide-in-left transition-all duration-300 ease-in-out">
-                      {/* Available Credits Box */}
-                      <div className="bg-neutral-900 border border-neutral-800/30 rounded-xl p-6 md:p-10 min-w-[280px] md:min-w-[420px] text-center shadow-sm mb-8">
-                        <div className="space-y-4">
-                          <div>
-                            {/* Credits Display */}
-                            <div className="flex items-center justify-center mb-3">
-                              <div className="text-5xl md:text-6xl font-bold text-brand-cyan/80 font-mono">
-                                {totalCreditsAvailable}
-                              </div>
-                            </div>
+                const creditsPercentage = monthlyCredits > 0
+                  ? Math.round((creditsUsed / monthlyCredits) * 100)
+                  : 0;
 
-                            <div className="flex items-center justify-center gap-2 text-sm text-neutral-400 font-mono uppercase tracking-wider">
-                              <Pickaxe
-                                size={14}
-                                className="md:w-4 md:h-4 text-brand-cyan/70 flex-shrink-0"
-                              />
-                              {t('credits.available')}
+                const monthlyUsageStyle = {
+                  '--progress': `${Math.min(creditsPercentage, 100)}%`,
+                } as CSSProperties;
+
+                return (
+                  <div className="flex flex-col items-center justify-center py-8 animate-slide-in-left transition-all duration-300 ease-in-out">
+                    {/* Available Credits Box */}
+                    <div className="bg-black/20 backdrop-blur-sm border border-neutral-800/30 rounded-xl p-6 md:p-10 min-w-[280px] md:min-w-[420px] text-center shadow-sm mb-8">
+                      <div className="space-y-4">
+                        <div>
+                          {/* Credits Display */}
+                          <div className="flex items-center justify-center mb-3">
+                            <div className="text-5xl md:text-6xl font-bold text-brand-cyan/80 font-mono">
+                              {totalCreditsAvailable}
                             </div>
                           </div>
 
-                          {/* Reset Date */}
-                          {creditsResetDate && (
-                            <div className="pt-4 border-t border-neutral-800/50">
-                              <div className="text-xs font-mono text-neutral-400 text-center">
-                                {hasActiveSubscription
-                                  ? t('credits.renews', { date: formatDate(creditsResetDate) })
-                                  : t('credits.resets', { date: formatDate(creditsResetDate) })}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Action Buttons */}
-                          <div className="flex flex-col gap-2 mt-6">
-                            <button
-                              onClick={() => setActiveTab('buy')}
-                              className="w-full px-6 py-3 bg-brand-cyan/80 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-[brand-cyan]/20"
-                            >
-                              <CreditCard size={16} />
-                              {t('credits.buyCredits')}
-                            </button>
-                            <button
-                              onClick={() => {
-                                onClose();
-                                navigate('/profile');
-                                // Scroll to usage history section after navigation
-                                setTimeout(() => {
-                                  const section = document.getElementById('usage-history-section');
-                                  if (section) {
-                                    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                  }
-                                }, 300);
-                              }}
-                              className="w-full px-6 py-3 bg-neutral-800/50 hover:bg-neutral-800/70 border border-neutral-700/50 hover:border-neutral-600/50 text-neutral-300 font-semibold rounded-md text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98]"
-                            >
-                              <FileText size={16} />
-                              {t('usageHistory.title') || 'Usage History'}
-                            </button>
+                          <div className="flex items-center justify-center gap-2 text-sm text-neutral-400 font-mono uppercase tracking-wider">
+                            <Pickaxe
+                              size={14}
+                              className="md:w-4 md:h-4 text-brand-cyan/70 flex-shrink-0"
+                            />
+                            {t('credits.available')}
                           </div>
+                        </div>
+
+                        {/* Reset Date */}
+                        {creditsResetDate && (
+                          <div className="pt-4 border-t border-neutral-800/50">
+                            <div className="text-xs font-mono text-neutral-400 text-center">
+                              {hasActiveSubscription
+                                ? t('credits.renews', { date: formatDate(creditsResetDate) })
+                                : t('credits.resets', { date: formatDate(creditsResetDate) })}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-col gap-2 mt-6">
+                          <button
+                            onClick={() => setActiveTab('buy')}
+                            className="w-full px-6 py-3 bg-brand-cyan/80 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-[brand-cyan]/20"
+                          >
+                            <CreditCard size={16} />
+                            {t('credits.buyCredits')}
+                          </button>
+                          <button
+                            onClick={() => {
+                              onClose();
+                              navigate('/profile');
+                              // Scroll to usage history section after navigation
+                              setTimeout(() => {
+                                const section = document.getElementById('usage-history-section');
+                                if (section) {
+                                  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                }
+                              }, 300);
+                            }}
+                            className="w-full px-6 py-3 bg-neutral-800/50 hover:bg-neutral-800/70 border border-neutral-700/50 hover:border-neutral-600/50 text-neutral-300 font-semibold rounded-md text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98]"
+                          >
+                            <FileText size={16} />
+                            {t('usageHistory.title') || 'Usage History'}
+                          </button>
                         </div>
                       </div>
                     </div>
-                  );
-                })()}
-              </div>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>

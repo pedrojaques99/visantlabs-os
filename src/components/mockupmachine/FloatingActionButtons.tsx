@@ -23,7 +23,7 @@ export const FloatingActionButtons: React.FC<FloatingActionButtonsProps> = ({
 
     if (!isVisible) return null;
 
-    const isDisabled = isGenerating || isGeneratingPrompt;
+    const isDisabled = isGeneratingPrompt;
 
     return (
         <div

@@ -18,6 +18,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import mockupRoutes from './routes/mockups.js';
+import mockupTagRoutes from './routes/mockupTags.js';
 import authRoutes from './routes/auth.js';
 import healthRoutes from './routes/health.js';
 import paymentRoutes from './routes/payments.js';
@@ -134,6 +135,7 @@ if (process.env.VERCEL) {
 
 app.use(`${routePrefix}/auth`, authRoutes);
 app.use(`${routePrefix}/mockups`, mockupRoutes);
+app.use(`${routePrefix}/mockup-tags`, mockupTagRoutes);
 app.use(`${routePrefix}/payments`, paymentRoutes);
 app.use(`${routePrefix}/health`, healthRoutes);
 app.use(`${routePrefix}/admin`, adminRoutes);

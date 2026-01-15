@@ -11,6 +11,8 @@ export interface MockupPreset {
   aspectRatio: AspectRatio;
   model?: GeminiModel; // Model padrão (opcional)
   tags?: string[]; // Tags for filtering
+  mockupCategoryId?: string;
+  mockupCategoryName?: string;
 }
 
 export const MOCKUP_PRESETS: MockupPreset[] = [

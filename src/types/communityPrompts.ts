@@ -47,6 +47,8 @@ export interface CommunityPrompt {
   context?: 'canvas' | 'mockup' | 'branding' | 'general';
   usageCount?: number;
   lastUsedAt?: string;
+  mockupCategoryId?: string;
+  mockupCategoryName?: string;
 
   // Campos existentes
   isApproved: boolean;

@@ -146,9 +146,47 @@
       "name": "Canvas",
       "description": "Editor de imagens baseado em fluxo visual"
     },
-    "badge": {
-      "free": "Gratuito"
+    "colorfy": {
+      "name": "Colorfy",
+      "description": "Um gerador de gradientes para seus projetos"
     },
+    "halftoneMachine": {
+      "name": "Halftone Machine",
+      "description": "Crie efeitos halftone a partir das suas imagens"
+    },
+    "youtubeMixer": {
+      "name": "YouTube Mixer",
+      "description": "Conecte múltiplos vídeos simultaneamente e crie mixes"
+    },
+    "asciiVortex": {
+      "name": "Image ASCII Vortex",
+      "description": "Transforme imagens em arte ASCII interativa"
+    },
+    "gridPaint": {
+      "name": "Grid Paint",
+      "description": "Ferramenta de desenho vetorial minimalista com precisão"
+    },
+    "ellipseAudio": {
+      "name": "Ellipse Audio Freq",
+      "description": "Analisador de espectro de áudio circular"
+    },
+    "vsnLabs": {
+      "name": "VSN Labs",
+      "description": "Laboratório de efeitos interativos experimentais"
+    },
+    "badge": {
+      "free": "Gratuito",
+      "premium": "Somente Premium",
+      "comingSoon": "Em Breve",
+      "featured": "Destaque",
+      "beta": "Beta",
+      "audio": "Áudio",
+      "moreTools": "Mais Ferramentas"
+    },
+    "subscribeNow": "ASSINAR AGORA",
+    "brandingTools": "BRANDING TOOLS //",
+    "effectsTools": "EFFECTS TOOLS //",
+    "audioTools": "AUDIO TOOLS //",
     "home": "Início"
   },
   "common": {
@@ -2875,6 +2913,8 @@
     "shareRemoved": "Compartilhamento removido!"
   },
   "about": {
+    "exploreApps": "EXPLORAR APPS",
+    "labsApps": "LABS APPS //",
     "title": "VISANT",
     "tagline": "Laboratório de experimentos",
     "seo": {
