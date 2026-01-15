@@ -1,7 +1,7 @@
 import express from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma, verifyPrismaConnectionWithDetails } from '../db/prisma.js';
-import { uploadBrandLogo, uploadBudgetPdf, uploadCustomPdfPreset, uploadGiftImage } from '@/services/r2Service.js';
+import { uploadBrandLogo, uploadBudgetPdf, uploadCustomPdfPreset, uploadGiftImage } from '../../src/services/r2Service.js';
 import crypto from 'crypto';
 
 const router = express.Router();
