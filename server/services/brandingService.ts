@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import type { BrandingData } from '@/types/branding';
+import type { BrandingData } from '../../src/types/branding';
 import { cleanMarketResearchText } from '../utils/brandingHelpersServer.js';
 import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { ObjectId } from 'mongodb';
@@ -213,7 +213,7 @@ IMPORTANT:
         const inputTokens = usageMetadata?.promptTokenCount;
         const outputTokens = usageMetadata?.candidatesTokenCount;
 
-        const text = response.text.trim();
+        const text = response.text?.trim() || '';
 
         // Remove markdown code blocks if present
         let cleanedText = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
@@ -310,7 +310,7 @@ Example: {"competitors": [{"name": "Competitor 1", "url": "https://competitor1.c
         });
 
         const tokens = extractTokens(response);
-        const jsonString = response.text.trim();
+        const jsonString = response.text?.trim() || '';
         if (!jsonString) return { result: [], ...tokens };
 
         try {
@@ -375,7 +375,7 @@ Example: {"references": ["Reference 1", "Reference 2", "Reference 3"]}`;
         });
 
         const tokens = extractTokens(response);
-        const jsonString = response.text.trim();
+        const jsonString = response.text?.trim() || '';
         if (!jsonString) return { result: [], ...tokens };
 
         try {
@@ -447,7 +447,7 @@ Example: {
         });
 
         const tokens = extractTokens(response);
-        const jsonString = response.text.trim();
+        const jsonString = response.text?.trim() || '';
         const defaultResult = { strengths: [], weaknesses: [], opportunities: [], threats: [] };
         if (!jsonString) {
             return { result: defaultResult, ...tokens };
@@ -591,7 +591,7 @@ Example: {
         });
 
         const tokens = extractTokens(response);
-        const jsonString = response.text.trim();
+        const jsonString = response.text?.trim() || '';
         const defaultResult: Array<{ name: string; colors: string[]; psychology: string }> = [];
         if (!jsonString) return { result: defaultResult, ...tokens };
 
@@ -679,7 +679,7 @@ Example: {"elements": ["Element 1", "Element 2", "Element 3"]}`;
         });
 
         const tokens = extractTokens(response);
-        const jsonString = response.text.trim();
+        const jsonString = response.text?.trim() || '';
         if (!jsonString) return { result: [], ...tokens };
 
         try {
@@ -812,7 +812,7 @@ IMPORTANT:
         });
 
         const tokens = extractTokens(response);
-        let jsonString = response.text.trim();
+        let jsonString = response.text?.trim() || '';
         if (!jsonString) {
             throw new Error('Empty response from AI');
         }
@@ -971,7 +971,7 @@ Example: {
         });
 
         const tokens = extractTokens(response);
-        const jsonString = response.text.trim();
+        const jsonString = response.text?.trim() || '';
         const defaultResult = { demographics: '', desires: [], pains: [] };
         if (!jsonString) {
             return { result: defaultResult, ...tokens };
@@ -1030,7 +1030,7 @@ Example: {"mockups": ["Mockup idea 1", "Mockup idea 2", "Mockup idea 3"]}`;
         });
 
         const tokens = extractTokens(response);
-        const jsonString = response.text.trim();
+        const jsonString = response.text?.trim() || '';
         if (!jsonString) return { result: [], ...tokens };
 
         try {
@@ -1105,7 +1105,7 @@ Example: {
         });
 
         const tokens = extractTokens(response);
-        const jsonString = response.text.trim();
+        const jsonString = response.text?.trim() || '';
         const defaultResult = { summary: '', visualDirection: '', keyElements: [] };
         if (!jsonString) {
             return { result: defaultResult, ...tokens };
@@ -1155,7 +1155,7 @@ export const createBrandingUsageRecord = async (
         const db = getDb();
 
         // Import usage tracking utilities
-        const { calculateTextGenerationCost } = await import('../../server/utils/usageTracking.js');
+        const { calculateTextGenerationCost } = await import('../utils/usageTracking.js');
 
         // Use real tokens if available, otherwise estimate
         const actualInputTokens = inputTokens ?? (promptLength ? Math.ceil(promptLength / 4) : 500);

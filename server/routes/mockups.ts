@@ -4,10 +4,10 @@ import { ObjectId } from 'mongodb';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../db/prisma.js';
 import { checkSubscription, SubscriptionRequest } from '../middleware/subscription.js';
-import { generateMockup, RateLimitError } from '@/services/geminiService.js';
+import { generateMockup, RateLimitError } from '../../src/services/geminiService.js';
 import { createUsageRecord, getCreditsRequired } from '../utils/usageTracking.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
-import type { UploadedImage, AspectRatio, GeminiModel, Resolution } from '@/types/types.js';
+import type { UploadedImage, AspectRatio, GeminiModel, Resolution } from '../../src/types/types.js';
 
 const router = express.Router();
 
