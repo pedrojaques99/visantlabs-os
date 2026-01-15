@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ImageOff, Info, X, Plus } from 'lucide-react';
+import { ImageOff, Info, X, Plus, CheckCircle2 } from 'lucide-react';
 import { GlitchLoader } from './GlitchLoader';
 import type { UploadedImage, DesignType, GeminiModel } from '@/types/types';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -16,6 +16,7 @@ interface InputSectionProps {
   onReferenceImagesChange: (images: UploadedImage[]) => void;
   onStartOver: () => void;
   isImagelessMode: boolean;
+  hasAnalyzed?: boolean;
 }
 
 export const InputSection: React.FC<InputSectionProps> = ({
@@ -27,7 +28,8 @@ export const InputSection: React.FC<InputSectionProps> = ({
   onImageUpload,
   onReferenceImagesChange,
   onStartOver,
-  isImagelessMode
+  isImagelessMode,
+  hasAnalyzed = false
 }) => {
   const { t } = useTranslation();
   // No modo blank, usa referenceImage; caso contrário, usa uploadedImage
@@ -116,6 +118,11 @@ export const InputSection: React.FC<InputSectionProps> = ({
                 <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 bg-neutral-900/80 backdrop-blur-sm rounded-md border border-neutral-700/50">
                   <Info size={12} className="text-brand-cyan/80" />
                   <span className="text-[10px] font-mono text-neutral-400">{t('mockup.referenceOnly')}</span>
+                </div>
+              )}
+              {hasAnalyzed && !isReferenceOnly && (
+                <div className="absolute top-2 left-2 flex items-center gap-1 px-1.5 py-1.5 bg-brand-cyan/20 backdrop-blur-sm rounded-full border border-brand-cyan/40 shadow-[0_0_10px_rgba(82,221,235,0.2)] animate-pulse-subtle" title={t('mockup.analyzed')}>
+                  <CheckCircle2 size={14} className="text-brand-cyan" strokeWidth={2.5} />
                 </div>
               )}
             </label>

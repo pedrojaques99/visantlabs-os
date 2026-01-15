@@ -1872,7 +1872,7 @@ const MockupMachinePageContent: React.FC = () => {
       setTimeout(() => {
         setShouldAutoGenerate(true);
         setAutoGenerateSource('surprise');
-      }, 420); // Delay to allow state updates to settle
+      }, 2000); // Increased delay to allow users to see selected tags
 
       // Scroll to generate outputs button after state changes are applied
       setTimeout(() => {
@@ -1888,7 +1888,7 @@ const MockupMachinePageContent: React.FC = () => {
         } else {
           generateOutputsButtonRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-      }, 600);
+      }, 2200);
     } else {
       // Manual mode: Set tags -> Wait for user review
       // We set source to 'surprise' so that WHEN they click generate, it proceeds to image generation automatically
@@ -1908,7 +1908,7 @@ const MockupMachinePageContent: React.FC = () => {
             behavior: 'smooth'
           });
         }
-      }, 420);
+      }, 2000); // Increased delay to allow users to see selected tags
     }
   }, [aspectRatio, designType, selectedModel, selectedBrandingTags, generateText, withHuman, additionalPrompt, negativePrompt, runGeneration, mockups]);
 

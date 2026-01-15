@@ -5,6 +5,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { connectToMongoDB } from '../server/db/mongodb.js';
 import mockupRoutes from '../server/routes/mockups.js';
+import mockupTagRoutes from '../server/routes/mockupTags.js';
 import authRoutes from '../server/routes/auth.js';
 import healthRoutes from '../server/routes/health.js';
 import paymentRoutes from '../server/routes/payments.js';
@@ -113,6 +114,7 @@ app.use((req, res, next) => {
 // Routes (no /api prefix needed in Vercel)
 app.use('/auth', authRoutes);
 app.use('/mockups', mockupRoutes);
+app.use('/mockup-tags', mockupTagRoutes);
 app.use('/payments', paymentRoutes);
 app.use('/health', healthRoutes);
 app.use('/admin', adminRoutes);
