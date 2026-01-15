@@ -1,5 +1,6 @@
 import { authService } from './authService';
 import type { BrandingData, BrandingProject } from '../types/branding';
+export type { BrandingProject };
 
 // Get API URL from environment or use current origin for production
 const getApiBaseUrl = () => {

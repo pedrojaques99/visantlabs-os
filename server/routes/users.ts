@@ -368,7 +368,7 @@ router.put('/profile', authenticate, async (req: AuthRequest, res) => {
 
     // Handle cover image upload
     if (coverImageBase64) {
-      const r2Service = await import('@/services/r2Service.js');
+      const r2Service = await import('../../src/services/r2Service.js');
 
       if (!r2Service.isR2Configured()) {
         return res.status(500).json({

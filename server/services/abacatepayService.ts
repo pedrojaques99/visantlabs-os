@@ -1,5 +1,5 @@
 import AbacatePayModule from 'abacatepay-nodejs-sdk';
-import { getCreditPackage, getAbacateBillId, getCreditsByAmount } from '@/utils/creditPackages.js';
+import { getCreditPackage, getAbacateBillId, getCreditsByAmount } from '../../src/utils/creditPackages.js';
 import { ObjectId } from 'mongodb';
 import { sendCreditsPurchasedEmail, isEmailConfigured } from './emailService.js';
 

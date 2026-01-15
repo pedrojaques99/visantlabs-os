@@ -913,8 +913,6 @@ export const CanvasPage: React.FC = () => {
   } : null;
 
   const {
-    handleMergeGenerate,
-    handleMergeGeneratePrompt,
     handleEditApply,
     handleUpscale,
     handleMockupGenerate,
@@ -3052,7 +3050,7 @@ export const CanvasPage: React.FC = () => {
       previousEdgesRef.current = edges;
       return nds;
     });
-  }, [nodes, edges, setNodes, handleView, handleEdit, handleEditOutput, handleDelete, subscriptionStatus, handlersRef, handleMergeGeneratePrompt, handleMergeNodeDataUpdate, handlePromptNodeDataUpdate, handlePromptRemoveEdge, userMockups, handleBrandKit, handleDeleteNodeById, handleChatOpenSidebar]);
+  }, [nodes, edges, setNodes, handleView, handleEdit, handleEditOutput, handleDelete, subscriptionStatus, handlersRef, handleMergeNodeDataUpdate, handlePromptNodeDataUpdate, handlePromptRemoveEdge, userMockups, handleBrandKit, handleDeleteNodeById, handleChatOpenSidebar]);
 
   // Validate and fix node positions to prevent NaN errors
   useEffect(() => {

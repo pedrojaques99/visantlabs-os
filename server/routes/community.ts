@@ -552,7 +552,7 @@ router.post('/upload-image', authenticate, uploadImageRateLimiter, async (req: A
     // Use provided ID or generate a temporary one if creating a new preset
     const presetId = id || `temp-${Date.now()}`;
 
-    const r2Service = await import('@/services/r2Service.js');
+    const r2Service = await import('../../src/services/r2Service.js');
 
     if (!r2Service.isR2Configured()) {
       return res.status(500).json({
@@ -609,7 +609,7 @@ router.post('/presets/:id/upload-image', authenticate, async (req: AuthRequest, 
       return res.status(400).json({ error: 'Reference images are only supported for mockup presets or non-preset categories' });
     }
 
-    const r2Service = await import('@/services/r2Service.js');
+    const r2Service = await import('../../src/services/r2Service.js');
 
     if (!r2Service.isR2Configured()) {
       return res.status(500).json({
