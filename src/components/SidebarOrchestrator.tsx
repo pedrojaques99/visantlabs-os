@@ -463,6 +463,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
               onReferenceImagesChange={onReferenceImagesChange}
               onStartOver={onStartOver}
               isImagelessMode={isImagelessMode}
+              hasAnalyzed={hasAnalyzed}
             />
 
             {/* Tip about image format - only show on hover */}

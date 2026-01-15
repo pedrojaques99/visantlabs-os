@@ -27,7 +27,7 @@ export const Tag: React.FC<TagProps> = ({
 }) => {
     const { theme } = useTheme();
 
-    const baseStyles = "px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 border cursor-pointer inline-flex items-center gap-1.5 select-none";
+    const baseStyles = "h-7 px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 border cursor-pointer inline-flex items-center gap-1.5 select-none box-border whitespace-nowrap";
 
     const themeStyles = theme === 'dark'
         ? selected

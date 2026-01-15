@@ -363,7 +363,10 @@ export const AdminPresetsPage: React.FC = () => {
             row={row}
             field="mockupCategoryId"
             type="select"
-            options={mockupCategories.map(c => ({ value: c.id, label: c.name }))}
+            options={mockupCategories.map(c => ({
+              value: c.id,
+              label: t(`mockup.categoryGroups.${c.name}`, { defaultValue: c.name })
+            }))}
             onSave={handleInlineSaveCategory}
           />
         );
