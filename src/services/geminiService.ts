@@ -409,7 +409,7 @@ export const suggestCategories = async (
   });
 };
 
-export interface MockupSetupAnalysis {
+export interface AnalyzeMockupSetupResult {
   branding: string[];
   categories: string[];
   locations: string[];
@@ -417,14 +417,13 @@ export interface MockupSetupAnalysis {
   lighting: string[];
   effects: string[];
   materials: string[];
-  designType: 'logo' | 'layout';
   inputTokens?: number;
   outputTokens?: number;
 }
 
 export const analyzeMockupSetup = async (
   baseImage: UploadedImage,
-  apiKey?: string,
+  userApiKey?: string,
   availableTags?: {
     branding: string[];
     categories: string[];
@@ -434,45 +433,42 @@ export const analyzeMockupSetup = async (
     effects: string[];
     materials: string[];
   }
-): Promise<MockupSetupAnalysis> => {
+): Promise<AnalyzeMockupSetupResult> => {
   return withRetry(async () => {
-    // Use provided tags or fallback to defaults
-    const brandingTags = availableTags?.branding?.length ? availableTags.branding : AVAILABLE_BRANDING_TAGS;
-    const categoryTags = availableTags?.categories?.length ? availableTags.categories : AVAILABLE_TAGS;
-    const locationTags = availableTags?.locations?.length ? availableTags.locations : AVAILABLE_LOCATION_TAGS;
-    const angleTags = availableTags?.angles?.length ? availableTags.angles : AVAILABLE_ANGLE_TAGS;
-    const lightingTags = availableTags?.lighting?.length ? availableTags.lighting : AVAILABLE_LIGHTING_TAGS;
-    const effectTags = availableTags?.effects?.length ? availableTags.effects : AVAILABLE_EFFECT_TAGS;
-    const materialTags = availableTags?.materials?.length ? availableTags.materials : AVAILABLE_MATERIAL_TAGS;
+    const promptToGemini = `Você é um especialista em mockup e fotografia.
+Analise esta imagem base e sugira as melhores tags para cada categoria para criar um mockup perfeito.
+Se disponível, escolha preferencialmente entre as tags existentes.
 
-    const prompt = `Analyze the provided design image. Based on its visual elements, style, colors, and concept, suggest the most professional and aesthetically pleasing mockup settings.
-    
-    You are encouraged to suggest creative, novel, or specific tags that perfectly fit the vibe, even if they are not in the provided lists.
-    For example, if the design looks like a "Cyberpunk City", suggest that as a location even if it's not listed.
-    
-    Reference options (use these as a base, but feel free to suggest others):
-    - Branding Styles: ${brandingTags.join(', ')}
-    - Mockup Categories: ${categoryTags.join(', ')}
-    - Locations/Environments: ${locationTags.join(', ')}
-    - Camera Angles: ${angleTags.join(', ')}
-    - Lighting Styles: ${lightingTags.join(', ')}
-    - Special Effects: ${effectTags.join(', ')}
-    - Materials/Textures: ${materialTags.join(', ')}
+${availableTags ? `Tags existentes por categoria:
+- Branding/Estilo: ${availableTags.branding.join(', ')}
+- Categorias de Mockup: ${availableTags.categories.join(', ')}
+- Locais/Ambientes: ${availableTags.locations.join(', ')}
+- Ângulos: ${availableTags.angles.join(', ')}
+- Iluminação: ${availableTags.lighting.join(', ')}
+- Efeitos: ${availableTags.effects.join(', ')}
+- Materiais/Texturas: ${availableTags.materials.join(', ')}` : ''}
 
-    Analyze the "vibe" and "concept" of the uploaded design to provide these suggestions.
-    Return the response as a JSON object with the following structure:
-    {
-      "branding": ["tag1", "tag2", "tag3"], // 2-3 tags
-      "categories": ["cat1", "cat2", "cat3"], // 5-10 categories
-      "locations": ["loc1", "loc2"], // 1-2 locations
-      "angles": ["angle1", "angle2"], // 1-2 angles
-      "lighting": ["light1", "light2"], // 1-2 lighting styles
-      "effects": ["effect1", "effect2"], // 1-2 effects
-      "materials": ["mat1", "mat2"], // 1-2 materials
-      "designType": "logo" // or "layout" - decide based on whether it's a standalone icon/logo or a full layout/composition
-    }`;
+Sugira:
+1. Pelo menos 4 tags de "branding" que descrevam o estilo visual.
+2. Pelo menos 3 "categories" de mockup que combinem com a imagem.
+3. Pelo menos 3 "locations" onde o mockup poderia estar.
+4. Os 2 melhores "angles" de visualização.
+5. As 2 melhores opções de "lighting".
+6. 2 "effects" visuais interessantes.
+7. 2 "materials" (texturas) adequados.
 
-    const response = await getAI(apiKey).models.generateContent({
+Retorne em formato JSON JSON:
+{
+  "branding": [...],
+  "categories": [...],
+  "locations": [...],
+  "angles": [...],
+  "lighting": [...],
+  "effects": [...],
+  "materials": [...]
+}`;
+
+    const response = await getAI(userApiKey).models.generateContent({
       model: 'gemini-2.5-flash',
       contents: {
         parts: [
@@ -482,9 +478,7 @@ export const analyzeMockupSetup = async (
               mimeType: baseImage.mimeType,
             },
           },
-          {
-            text: prompt,
-          },
+          { text: promptToGemini },
         ],
       },
       config: {
@@ -500,18 +494,16 @@ export const analyzeMockupSetup = async (
             effects: { type: Type.ARRAY, items: { type: Type.STRING } },
             materials: { type: Type.ARRAY, items: { type: Type.STRING } },
           },
-          required: ["branding", "categories", "locations", "angles", "lighting", "effects", "materials"],
         },
       },
     });
-
-    const jsonString = response.text.trim();
 
     // Extract usage metadata
     const usageMetadata = (response as any).usageMetadata;
     const inputTokens = usageMetadata?.promptTokenCount;
     const outputTokens = usageMetadata?.candidatesTokenCount;
 
+    const jsonString = response.text.trim();
     if (!jsonString) {
       return {
         branding: [],
@@ -521,18 +513,23 @@ export const analyzeMockupSetup = async (
         lighting: [],
         effects: [],
         materials: [],
-        designType: 'logo',
         inputTokens,
-        outputTokens
+        outputTokens,
       };
     }
 
     try {
       const result = JSON.parse(jsonString);
       return {
-        ...result,
+        branding: result.branding || [],
+        categories: result.categories || [],
+        locations: result.locations || [],
+        angles: result.angles || [],
+        lighting: result.lighting || [],
+        effects: result.effects || [],
+        materials: result.materials || [],
         inputTokens,
-        outputTokens
+        outputTokens,
       };
     } catch (e) {
       console.error("Failed to parse mockup setup analysis JSON:", e);
@@ -544,9 +541,8 @@ export const analyzeMockupSetup = async (
         lighting: [],
         effects: [],
         materials: [],
-        designType: 'logo',
         inputTokens,
-        outputTokens
+        outputTokens,
       };
     }
   }, {
@@ -640,7 +636,13 @@ export const generateSmartPrompt = async (params: SmartPromptParams, apiKey?: st
   });
 };
 
-export const generateMergePrompt = async (images: UploadedImage[]): Promise<string> => {
+export interface GenerateMergePromptResult {
+  prompt: string;
+  inputTokens?: number;
+  outputTokens?: number;
+}
+
+export const generateMergePrompt = async (images: UploadedImage[]): Promise<GenerateMergePromptResult> => {
   return withRetry(async () => {
     if (images.length < 2) {
       throw new Error('At least 2 images are required to generate a merge prompt');
@@ -681,13 +683,28 @@ export const generateMergePrompt = async (images: UploadedImage[]): Promise<stri
       contents: { parts },
     });
 
-    return response.text.trim();
+    // Extract usage metadata
+    const usageMetadata = (response as any).usageMetadata;
+    const inputTokens = usageMetadata?.promptTokenCount;
+    const outputTokens = usageMetadata?.candidatesTokenCount;
+
+    return {
+      prompt: response.text.trim(),
+      inputTokens,
+      outputTokens,
+    };
   }, {
     model: 'gemini-2.5-flash'
   });
 };
 
-export const improvePrompt = async (basePrompt: string, apiKey?: string): Promise<string> => {
+export interface ImprovedPromptResult {
+  improvedPrompt: string;
+  inputTokens?: number;
+  outputTokens?: number;
+}
+
+export const improvePrompt = async (basePrompt: string, apiKey?: string): Promise<ImprovedPromptResult> => {
   return withRetry(async () => {
     if (!basePrompt || basePrompt.trim().length === 0) {
       throw new Error('O prompt não pode estar vazio');
@@ -711,18 +728,33 @@ Retorne APENAS o texto melhorado, sem explicações.`;
       contents: promptToGemini,
     });
 
+    // Extract usage metadata
+    const usageMetadata = (response as any).usageMetadata;
+    const inputTokens = usageMetadata?.promptTokenCount;
+    const outputTokens = usageMetadata?.candidatesTokenCount;
+
     const improvedPrompt = response.text.trim();
     if (!improvedPrompt) {
       throw new Error('Nenhum prompt melhorado foi gerado na resposta.');
     }
 
-    return improvedPrompt;
+    return {
+      improvedPrompt,
+      inputTokens,
+      outputTokens,
+    };
   }, {
     model: 'gemini-2.5-flash'
   });
 };
 
-export const suggestPromptVariations = async (basePrompt: string, apiKey?: string): Promise<string[]> => {
+export interface PromptVariationsResult {
+  variations: string[];
+  inputTokens?: number;
+  outputTokens?: number;
+}
+
+export const suggestPromptVariations = async (basePrompt: string, apiKey?: string): Promise<PromptVariationsResult> => {
   return withRetry(async () => {
     const promptToGemini = `Você é um engenheiro de prompts especializado. Sua tarefa é criar três variações diversas, criativas e eficazes de um prompt para gerador de imagens IA.
 
@@ -757,15 +789,24 @@ export const suggestPromptVariations = async (basePrompt: string, apiKey?: strin
       },
     });
 
+    // Extract usage metadata
+    const usageMetadata = (response as any).usageMetadata;
+    const inputTokens = usageMetadata?.promptTokenCount;
+    const outputTokens = usageMetadata?.candidatesTokenCount;
+
     const jsonString = response.text.trim();
-    if (!jsonString) return [];
+    if (!jsonString) return { variations: [], inputTokens, outputTokens };
 
     try {
       const result = JSON.parse(jsonString);
-      return result.suggestions || [];
+      return {
+        variations: result.suggestions || [],
+        inputTokens,
+        outputTokens,
+      };
     } catch (e) {
       console.error("Failed to parse prompt suggestions JSON:", e);
-      return [];
+      return { variations: [], inputTokens, outputTokens };
     }
   }, {
     model: 'gemini-2.5-flash'
@@ -883,10 +924,17 @@ export const applyThemeToMockup = async (
   });
 };
 
+export interface DescribeImageResult {
+  description: string;
+  title?: string;
+  inputTokens?: number;
+  outputTokens?: number;
+}
+
 export const describeImage = async (
   image: UploadedImage | string,
   apiKey?: string
-): Promise<string> => {
+): Promise<DescribeImageResult> => {
   return withRetry(async () => {
     // Normalize image input
     let imageBase64: string;
@@ -912,18 +960,16 @@ export const describeImage = async (
       mimeType = image.mimeType;
     }
 
-    const prompt = `Analyze this image and provide a clear, objective visual description suitable for use in AI image generation prompts. 
+    const prompt = `Analise esta imagem em detalhes.
+Forneça:
+1. Uma descrição visual clara e objetiva adequada para uso em prompts de geração de imagens IA (em inglês).
+2. Um título curto e descritivo para a imagem (em português).
 
-Focus on:
-- Composition and layout
-- Main subjects and objects
-- Colors and color palette
-- Style and aesthetic
-- Lighting conditions
-- Key visual elements and details
-- Overall mood or atmosphere
-
-Be concise, objective, and descriptive. The description should be ready to use as a prompt for generating similar images.`;
+Retorne em formato JSON:
+{
+  "description": "A detailed visual description...",
+  "title": "Um título descritivo"
+}`;
 
     const parts: any[] = [
       {
@@ -938,14 +984,44 @@ Be concise, objective, and descriptive. The description should be ready to use a
     const response = await getAI(apiKey).models.generateContent({
       model: 'gemini-2.5-flash',
       contents: { parts },
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            description: { type: Type.STRING },
+            title: { type: Type.STRING },
+          },
+        },
+      },
     });
 
-    const description = response.text.trim();
-    if (!description) {
+    // Extract usage metadata
+    const usageMetadata = (response as any).usageMetadata;
+    const inputTokens = usageMetadata?.promptTokenCount;
+    const outputTokens = usageMetadata?.candidatesTokenCount;
+
+    const jsonString = response.text.trim();
+    if (!jsonString) {
       throw new Error('No description was generated in the response.');
     }
 
-    return description;
+    try {
+      const result = JSON.parse(jsonString);
+      return {
+        description: result.description || '',
+        title: result.title || '',
+        inputTokens,
+        outputTokens,
+      };
+    } catch (e) {
+      console.error("Failed to parse image description JSON:", e);
+      return {
+        description: response.text.trim(),
+        inputTokens,
+        outputTokens,
+      };
+    }
   }, {
     model: 'gemini-2.5-flash'
   });

@@ -148,6 +148,8 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req, res) => {
         referralCount: true,
         referredBy: true,
         storageUsedBytes: true,
+        totalGenerations: true,
+        totalTokensUsed: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -1922,6 +1924,59 @@ router.delete('/presets/effect/:id', validateAdmin, async (req, res) => {
     return res.json({ message: 'Preset deleted successfully' });
   } catch (error) {
     return res.status(500).json({ error: 'Failed to delete preset' });
+  }
+});
+
+/**
+ * GET /api/admin/users/:id/history
+ * Get detailed usage history for a specific user
+ */
+router.get('/users/:id/history', adminUsersLimiter, validateAdmin, async (req: AuthRequest, res) => {
+  try {
+    const { id } = req.params;
+    const limit = parseInt(req.query.limit as string) || 50;
+    const offset = parseInt(req.query.offset as string) || 0;
+
+    await connectToMongoDB();
+    const db = getDb();
+
+    const [records, total] = await Promise.all([
+      db.collection('usage_records')
+        .find({ userId: id })
+        .sort({ timestamp: -1 })
+        .skip(offset)
+        .limit(limit)
+        .toArray(),
+      db.collection('usage_records').countDocuments({ userId: id })
+    ]);
+
+    const formattedRecords = records.map((record: any) => ({
+      id: record._id?.toString(),
+      timestamp: record.timestamp,
+      feature: record.feature || 'mockupmachine',
+      creditsDeducted: record.creditsDeducted || 0,
+      model: record.model,
+      resolution: record.resolution,
+      imagesGenerated: record.imagesGenerated || 0,
+      inputTokens: record.inputTokens || 0,
+      outputTokens: record.outputTokens || 0,
+      cost: record.cost || 0,
+      type: record.type,
+      imageUrl: record.imageUrl,
+    }));
+
+    res.json({
+      records: formattedRecords,
+      pagination: {
+        total,
+        limit,
+        offset,
+        hasMore: offset + limit < total
+      }
+    });
+  } catch (error: any) {
+    console.error('Error fetching user history for admin:', error);
+    res.status(500).json({ error: 'Failed to fetch user history' });
   }
 });
 

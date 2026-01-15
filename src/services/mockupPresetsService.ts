@@ -17,6 +17,7 @@ const ALL_STATIC_PRESETS: MockupPreset[] = [
 ];
 
 import { fetchAllOfficialPresets, clearPresetsCache as clearUnifiedCache } from './unifiedPresetService';
+import { normalizeImageToBase64, detectMimeType } from './reactFlowService';
 
 // Cache for loaded presets
 let cachedPresets: MockupPreset[] | null = null;
@@ -82,12 +83,17 @@ async function loadPresetsFromMongoDB(): Promise<MockupPreset[]> {
   }
 }
 
-export const getAllMockupPresets = (): MockupPreset[] => {
+export const getAllPresets = (): MockupPreset[] => {
   return cachedPresets || ALL_STATIC_PRESETS;
 };
 
-export const getAllMockupPresetsAsync = async (): Promise<MockupPreset[]> => {
+export const getAllPresetsAsync = async (): Promise<MockupPreset[]> => {
   return loadPresetsFromMongoDB();
+};
+
+export const getPresetAsync = async (id: string): Promise<MockupPreset | undefined> => {
+  const all = await getAllPresetsAsync();
+  return all.find(p => p.id === id);
 };
 
 /**
@@ -128,9 +134,28 @@ export async function getMockupCategoriesAsync(): Promise<MockupPreset[]> {
   }
 }
 
-export const getMockupPresetById = (id: string): MockupPreset | undefined => {
-  const all = getAllMockupPresets();
+export const getPreset = (id: string): MockupPreset | undefined => {
+  const all = getAllPresets();
   return all.find(p => p.id === id);
+};
+
+export const loadReferenceImage = async (preset: MockupPreset): Promise<{ base64: string; mimeType: string } | null> => {
+  if (!preset.referenceImageUrl || preset.referenceImageUrl.trim() === '') {
+    return null;
+  }
+
+  try {
+    const base64 = await normalizeImageToBase64(preset.referenceImageUrl);
+    const mimeType = detectMimeType(preset.referenceImageUrl);
+    return { base64, mimeType };
+  } catch (error) {
+    console.error(`Failed to load reference image for preset ${preset.id}:`, error);
+    return null;
+  }
+};
+
+export const updatePresetsCache = (presets: MockupPreset[]) => {
+  cachedPresets = presets;
 };
 
 export const clearPresetsCache = () => {
@@ -139,9 +164,12 @@ export const clearPresetsCache = () => {
 };
 
 export const mockupPresetsService = {
-  getAll: getAllMockupPresets,
-  getAllAsync: getAllMockupPresetsAsync,
+  getAll: getAllPresets,
+  getAllAsync: getAllPresetsAsync,
   getCategoriesAsync: getMockupCategoriesAsync,
-  getById: getMockupPresetById,
+  getById: getPreset,
+  getByIdAsync: getPresetAsync,
+  loadReferenceImage,
+  updateCache: updatePresetsCache,
   clearCache: clearPresetsCache
 };

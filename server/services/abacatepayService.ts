@@ -1,5 +1,7 @@
 import AbacatePayModule from 'abacatepay-nodejs-sdk';
-import { getCreditPackage, getAbacateBillId } from '@/utils/creditPackages.js';
+import { getCreditPackage, getAbacateBillId, getCreditsByAmount } from '@/utils/creditPackages.js';
+import { ObjectId } from 'mongodb';
+import { sendCreditsPurchasedEmail, isEmailConfigured } from './emailService.js';
 
 // Support both ABACATEPAY_API_KEY and ABACATE_API_KEY for compatibility
 const ABACATEPAY_API_KEY = process.env.ABACATEPAY_API_KEY || process.env.ABACATE_API_KEY || '';
@@ -979,6 +981,219 @@ export const abacatepayService = {
       }
       console.error('❌ Error getting AbacatePay payment status:', error);
       throw new Error(error.message || 'Failed to get payment status');
+    }
+  },
+
+  /**
+   * Process AbacatePay webhook
+   */
+  async processWebhook(body: any, db: any): Promise<{ success: boolean; message: string }> {
+    try {
+      const { event, data } = body;
+
+      console.log('📥 AbacatePay webhook received in service:', { event, billId: data?.id });
+
+      if (event === 'billing.paid' || event === 'billing.payment_received') {
+        const billId = data?.id;
+        if (!billId) {
+          return { success: false, message: 'Bill ID is missing' };
+        }
+
+        // Find payment in database
+        let payment = await db.collection('payments').findOne({ billId });
+
+        // Get billing details from AbacatePay to get actual amount paid (supports coupons)
+        const billingStatus = await this.getPaymentStatus(billId);
+
+        if (billingStatus.status === 'PAID' || billingStatus.status === 'CONFIRMED') {
+          // Extract actual amount paid (in cents) - this handles coupons correctly
+          const amountPaidInCents = billingStatus.amount || 0;
+
+          // Use getCreditsByAmount to identify the correct package (supports coupons)
+          let credits = 0;
+
+          if (payment && payment.credits) {
+            credits = payment.credits;
+            console.log('📦 Using credits from payment record:', credits);
+          } else {
+            credits = getCreditsByAmount(amountPaidInCents, 'BRL');
+            console.log('📦 Calculated credits from amount paid:', { amountPaidInCents, credits });
+          }
+
+          if (credits <= 0) {
+            console.error('❌ Invalid credits amount:', { billId, amountPaidInCents, credits });
+            return { success: false, message: 'Invalid credits amount' };
+          }
+
+          // Find user - be robust in discovery
+          let user = null;
+          let userId: ObjectId | null = null;
+
+          // 1. Try metadata from webhook first (most reliable)
+          const metadataUserId = data?.metadata?.userId || data?.billing?.metadata?.userId;
+          if (metadataUserId) {
+            try {
+              userId = new ObjectId(metadataUserId);
+              user = await db.collection('users').findOne({ _id: userId });
+              if (user) console.log('👤 Found user by metadata userId:', metadataUserId);
+            } catch (idError) {
+              console.warn('⚠️ Invalid userId in metadata:', metadataUserId);
+            }
+          }
+
+          // 2. Fallback to payment record
+          if (!user && payment && payment.userId) {
+            userId = payment.userId instanceof ObjectId ? payment.userId : new ObjectId(payment.userId);
+            user = await db.collection('users').findOne({ _id: userId });
+            if (user) console.log('👤 Found user by payment record userId');
+          }
+
+          // 3. Fallback to email from customer data
+          const customerEmail = data?.customer?.email || data?.billing?.customer?.email || data?.pixQrCode?.customer?.email;
+          if (!user && customerEmail) {
+            user = await db.collection('users').findOne({ email: customerEmail });
+            if (user) {
+              userId = user._id;
+              console.log('👤 Found user by email:', customerEmail);
+            }
+          }
+
+          if (!user || !userId) {
+            console.error('❌ User not found for AbacatePay payment:', {
+              billId,
+              metadataUserId,
+              paymentUserId: payment?.userId,
+              email: customerEmail
+            });
+            return { success: false, message: 'User not found' };
+          }
+
+          // Get or create abacateCustomerId
+          let abacateCustomerId = user.abacateCustomerId;
+          if (!abacateCustomerId && data?.customer?.email) {
+            abacateCustomerId = data.customer.email;
+          }
+
+          // Add credits to user
+          const updateResult = await db.collection('users').updateOne(
+            { _id: userId },
+            {
+              $inc: { totalCreditsEarned: credits },
+              ...(abacateCustomerId && !user.abacateCustomerId ? { $set: { abacateCustomerId } } : {}),
+            }
+          );
+
+          if (updateResult.modifiedCount > 0) {
+            console.log('✅ Credits added via AbacatePay webhook service:', {
+              userId: userId.toString(),
+              credits,
+              billId,
+            });
+
+            // Status update for payment record
+            if (!payment) {
+              await db.collection('payments').insertOne({
+                userId,
+                billId,
+                provider: 'abacatepay',
+                type: 'credit_purchase',
+                credits,
+                amount: amountPaidInCents,
+                currency: 'BRL',
+                status: 'paid',
+                createdAt: new Date(),
+                paidAt: new Date(),
+              });
+            } else {
+              await db.collection('payments').updateOne(
+                { billId },
+                {
+                  $set: {
+                    status: 'paid',
+                    paidAt: new Date(),
+                    updatedAt: new Date(),
+                    credits,
+                    amount: amountPaidInCents,
+                  },
+                }
+              );
+            }
+
+            // Record transaction
+            const recordTransaction = async (
+              db: any,
+              transaction: any
+            ) => {
+              try {
+                const now = new Date();
+                const payload = {
+                  userId: transaction.userId,
+                  type: transaction.type,
+                  status: (transaction.status || 'pending'),
+                  credits: transaction.credits,
+                  amount: transaction.amount ?? 0,
+                  currency: (transaction.currency || 'USD').toUpperCase(),
+                  description: transaction.description,
+                  stripeSessionId: transaction.stripeSessionId,
+                  stripePaymentIntentId: transaction.stripePaymentIntentId,
+                  stripeCustomerId: transaction.stripeCustomerId,
+                  updatedAt: now,
+                  createdAt: now,
+                };
+
+                await db.collection('transactions').insertOne(payload);
+              } catch (transactionError: any) {
+                console.error('❌ Failed to record transaction in webhook service:', transactionError.message);
+              }
+            };
+
+            await recordTransaction(db, {
+              userId,
+              type: 'purchase',
+              status: 'paid',
+              credits,
+              amount: amountPaidInCents,
+              currency: 'BRL',
+              description: `Credit package - ${credits} credits (AbacatePay)`,
+              stripeSessionId: null,
+              stripePaymentIntentId: null,
+              stripeCustomerId: null,
+            });
+
+            // Send credits purchased email
+            try {
+              if (isEmailConfigured()) {
+                // Get updated user to calculate total credits
+                const updatedUser = await db.collection('users').findOne({ _id: userId });
+                if (updatedUser) {
+                  const currentCredits = (updatedUser.totalCreditsEarned || 0) +
+                    Math.max(0, (updatedUser.monthlyCredits || 0) - (updatedUser.creditsUsed || 0));
+
+                  await sendCreditsPurchasedEmail({
+                    email: user.email,
+                    name: user.name || undefined,
+                    credits,
+                    totalCredits: currentCredits,
+                    amount: amountPaidInCents,
+                    currency: 'BRL',
+                  });
+                  console.log('📧 Credits purchased email sent to:', user.email);
+                }
+              }
+            } catch (emailError) {
+              console.error('❌ Error sending credits purchased email:', emailError);
+              // Don't fail the webhook processing if email fails
+            }
+
+            return { success: true, message: `Successfully credited ${credits} credits to user ${userId}` };
+          }
+        }
+      }
+
+      return { success: true, message: 'Event successfully received but no action required' };
+    } catch (error: any) {
+      console.error('❌ Error in abacatepayService.processWebhook:', error);
+      return { success: false, message: error.message || 'Internal error processing webhook' };
     }
   },
 };
