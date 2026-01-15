@@ -6,6 +6,7 @@ import { prisma, verifyPrismaConnectionWithDetails } from '../db/prisma.js';
 import * as brandingService from '@/services/brandingService.js';
 import type { BrandingData } from '@/types/types.js';
 import { checkSubscription, SubscriptionRequest } from '../middleware/subscription.js';
+import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
 
 const router = express.Router();
 
@@ -366,6 +367,19 @@ router.post('/generate-step', authenticate, checkSubscription, async (req: Subsc
         inputTokens,
         outputTokens
       );
+
+      // Track total tokens for user stats (regardless of credits)
+      // This runs in the background
+      (async () => {
+        try {
+          const totalTokens = (inputTokens || 0) + (outputTokens || 0);
+          if (totalTokens > 0) {
+            await incrementUserGenerations(req.userId!, 0, totalTokens);
+          }
+        } catch (err) {
+          console.error('[Stats Tracking] Error incrementing total tokens for branding:', err);
+        }
+      })();
     } catch (usageError: any) {
       // WARNING: Failed to create usage record - this is an audit issue but generation succeeded
       console.error('[AUDIT WARNING] [Usage Tracking] Failed to create usage record after successful generation:', {

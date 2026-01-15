@@ -6,6 +6,7 @@ import {
   suggestCategories,
   generateSmartPrompt,
   suggestPromptVariations,
+  analyzeMockupSetup,
   changeObjectInMockup,
   applyThemeToMockup,
 } from '@/services/geminiService.js';
@@ -13,6 +14,7 @@ import { getGeminiApiKey } from '../utils/geminiApiKey.js';
 import type { UploadedImage, GeminiModel, Resolution } from '@/types/types.js';
 import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { createUsageRecord } from '../utils/usageTracking.js';
+import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
 
 const router = express.Router();
 
@@ -36,9 +38,40 @@ router.post('/improve-prompt', authenticate, async (req: AuthRequest, res, next)
       // User doesn't have API key, will use system key
     }
 
-    const improvedPrompt = await improvePrompt(prompt, userApiKey);
+    const result = await improvePrompt(prompt, userApiKey);
 
-    res.json({ improvedPrompt });
+    // Track usage asynchronously
+    (async () => {
+      try {
+        await connectToMongoDB();
+        const db = getDb();
+        const usageRecord = createUsageRecord(
+          req.userId!,
+          0, // images
+          'gemini-2.5-flash',
+          false, // hasInputImage
+          prompt.length,
+          undefined, // resolution
+          'branding', // feature
+          'system',
+          result.inputTokens,
+          result.outputTokens
+        );
+        (usageRecord as any).type = 'branding';
+
+        await db.collection('usage_records').insertOne(usageRecord);
+
+        // Track total tokens for user stats
+        const totalTokens = (result.inputTokens || 0) + (result.outputTokens || 0);
+        if (totalTokens > 0) {
+          await incrementUserGenerations(req.userId!, 0, totalTokens);
+        }
+      } catch (err) {
+        console.error('Error tracking usage for improve-prompt:', err);
+      }
+    })();
+
+    res.json({ improvedPrompt: result.improvedPrompt });
   } catch (error: any) {
     console.error('Error improving prompt:', error);
     next(error);
@@ -75,9 +108,43 @@ router.post('/describe-image', authenticate, async (req: AuthRequest, res, next)
       return res.status(400).json({ error: 'Invalid image format' });
     }
 
-    const description = await describeImage(imageInput, userApiKey);
+    const result = await describeImage(imageInput, userApiKey);
 
-    res.json({ description });
+    // Track usage asynchronously
+    (async () => {
+      try {
+        await connectToMongoDB();
+        const db = getDb();
+        const usageRecord = createUsageRecord(
+          req.userId!,
+          0, // images
+          'gemini-2.5-flash',
+          true, // hasInputImage
+          0, // promptLength
+          undefined, // resolution
+          'branding', // feature
+          'system',
+          result.inputTokens,
+          result.outputTokens
+        );
+        (usageRecord as any).type = 'branding';
+
+        await db.collection('usage_records').insertOne(usageRecord);
+
+        // Track total tokens for user stats
+        const totalTokens = (result.inputTokens || 0) + (result.outputTokens || 0);
+        if (totalTokens > 0) {
+          await incrementUserGenerations(req.userId!, 0, totalTokens);
+        }
+      } catch (err) {
+        console.error('Error tracking usage for describe-image:', err);
+      }
+    })();
+
+    res.json({
+      description: result.description,
+      title: result.title,
+    });
   } catch (error: any) {
     console.error('Error describing image:', error);
     next(error);
@@ -122,7 +189,7 @@ router.post('/suggest-categories', authenticate, async (req: AuthRequest, res, n
           true, // hasInputImage
           0, // promptLength
           undefined, // resolution
-          'mockupmachine', // feature
+          'branding', // feature
           'system',
           result.inputTokens,
           result.outputTokens
@@ -131,6 +198,12 @@ router.post('/suggest-categories', authenticate, async (req: AuthRequest, res, n
         (usageRecord as any).type = 'branding';
 
         await db.collection('usage_records').insertOne(usageRecord);
+
+        // Track total tokens for user stats
+        const totalTokens = (result.inputTokens || 0) + (result.outputTokens || 0);
+        if (totalTokens > 0) {
+          await incrementUserGenerations(req.userId!, 0, totalTokens);
+        }
       } catch (err) {
         console.error('Error tracking usage for suggest-categories:', err);
       }
@@ -201,8 +274,7 @@ router.post('/analyze-setup', authenticate, async (req: AuthRequest, res, next) 
       // availableTags stays undefined, service uses defaults
     }
 
-    const { analyzeMockupSetup } = await import('@/services/geminiService.js');
-    const analysis = await analyzeMockupSetup(baseImage as UploadedImage, userApiKey, availableTags);
+    const result = await analyzeMockupSetup(baseImage as UploadedImage, userApiKey, availableTags);
 
     // Track usage asynchronously
     (async () => {
@@ -216,21 +288,27 @@ router.post('/analyze-setup', authenticate, async (req: AuthRequest, res, next) 
           true, // hasInputImage
           0, // promptLength
           undefined, // resolution
-          'mockupmachine', // feature
+          'branding', // feature
           'system',
-          analysis.inputTokens,
-          analysis.outputTokens
+          result.inputTokens,
+          result.outputTokens
         );
         // Add specific type for admin stats
         (usageRecord as any).type = 'branding';
 
         await db.collection('usage_records').insertOne(usageRecord);
+
+        // Track total tokens for user stats
+        const totalTokens = (result.inputTokens || 0) + (result.outputTokens || 0);
+        if (totalTokens > 0) {
+          await incrementUserGenerations(req.userId!, 0, totalTokens);
+        }
       } catch (err) {
         console.error('Error tracking usage for analyze-setup:', err);
       }
     })();
 
-    res.json(analysis);
+    res.json(result);
   } catch (error: any) {
     console.error('Error analyzing mockup setup:', error);
     next(error);
@@ -291,6 +369,18 @@ router.post('/generate-smart-prompt', authenticate, async (req: AuthRequest, res
       additionalPrompt: additionalPrompt || '',
     }, userApiKey);
 
+    // Track total tokens
+    (async () => {
+      try {
+        const totalTokens = (result.inputTokens || 0) + (result.outputTokens || 0);
+        if (totalTokens > 0) {
+          await incrementUserGenerations(req.userId!, 0, totalTokens);
+        }
+      } catch (err) {
+        console.error('Error tracking tokens for smart prompt:', err);
+      }
+    })();
+
     res.json(result);
   } catch (error: any) {
     console.error('Error generating smart prompt:', error);
@@ -318,9 +408,40 @@ router.post('/suggest-prompt-variations', authenticate, async (req: AuthRequest,
       // User doesn't have API key, will use system key
     }
 
-    const variations = await suggestPromptVariations(prompt, userApiKey);
+    const result = await suggestPromptVariations(prompt, userApiKey);
 
-    res.json({ variations });
+    // Track usage asynchronously
+    (async () => {
+      try {
+        await connectToMongoDB();
+        const db = getDb();
+        const usageRecord = createUsageRecord(
+          req.userId!,
+          0, // images
+          'gemini-2.5-flash',
+          false, // hasInputImage
+          prompt.length,
+          undefined, // resolution
+          'branding', // feature
+          'system',
+          result.inputTokens,
+          result.outputTokens
+        );
+        (usageRecord as any).type = 'branding';
+
+        await db.collection('usage_records').insertOne(usageRecord);
+
+        // Track total tokens for user stats
+        const totalTokens = (result.inputTokens || 0) + (result.outputTokens || 0);
+        if (totalTokens > 0) {
+          await incrementUserGenerations(req.userId!, 0, totalTokens);
+        }
+      } catch (err) {
+        console.error('Error tracking usage for suggest-prompt-variations:', err);
+      }
+    })();
+
+    res.json({ variations: result.variations });
   } catch (error: any) {
     console.error('Error suggesting prompt variations:', error);
     next(error);
@@ -359,6 +480,15 @@ router.post('/change-object', authenticate, async (req: AuthRequest, res, next) 
       undefined, // onRetry
       userApiKey
     );
+
+    // Track total generations
+    (async () => {
+      try {
+        await incrementUserGenerations(req.userId!, 1, 0);
+      } catch (err) {
+        console.error('Error tracking generation for change-object:', err);
+      }
+    })();
 
     res.json({ imageBase64 });
   } catch (error: any) {
@@ -399,6 +529,15 @@ router.post('/apply-theme', authenticate, async (req: AuthRequest, res, next) =>
       undefined, // onRetry
       userApiKey
     );
+
+    // Track total generations
+    (async () => {
+      try {
+        await incrementUserGenerations(req.userId!, 1, 0);
+      } catch (err) {
+        console.error('Error tracking generation for apply-theme:', err);
+      }
+    })();
 
     res.json({ imageBase64 });
   } catch (error: any) {

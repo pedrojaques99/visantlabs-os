@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { ShieldCheck, RefreshCw, Users, Settings, ChevronUp, ChevronDown, Search, TrendingUp, TrendingDown, User, Image, CreditCard, HardDrive, UserPlus, Link2, Database, DollarSign, Palette, Type, ShoppingCart } from 'lucide-react';
+import { ShieldCheck, RefreshCw, Users, Settings, ChevronUp, ChevronDown, Search, TrendingUp, TrendingDown, User, Image, CreditCard, HardDrive, UserPlus, Link2, Database, DollarSign, Palette, Type, ShoppingCart, History, RotateCcw, X } from 'lucide-react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell } from "recharts"
 
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
@@ -47,6 +47,8 @@ interface AdminUser {
   totalSpentBRL: number;
   totalSpentUSD: number;
   apiCostUSD: number;
+  totalGenerations?: number; // Total images generated (from User model)
+  totalTokensUsed?: number;  // Total tokens used (from User model)
 }
 
 interface GenerationStats {
@@ -242,6 +244,46 @@ export const AdminPage: React.FC = () => {
   const [data, setData] = useState<AdminResponse | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [activeTab, setActiveTab] = useState<string>('overview');
+
+  // Usage History Modal State
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
+  const [historyRecords, setHistoryRecords] = useState<any[]>([]);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(false);
+  const [historyPagination, setHistoryPagination] = useState({ total: 0, limit: 50, offset: 0, hasMore: false });
+
+  const fetchUserHistory = async (userId: string, offset = 0) => {
+    const token = authService.getToken();
+    if (!token) return;
+
+    setIsHistoryLoading(true);
+    try {
+      const response = await fetch(`/api/admin/users/${userId}/history?limit=50&offset=${offset}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!response.ok) throw new Error('Failed to fetch history');
+      const result = await response.json();
+
+      if (offset === 0) {
+        setHistoryRecords(result.records);
+      } else {
+        setHistoryRecords(prev => [...prev, ...result.records]);
+      }
+      setHistoryPagination(result.pagination);
+    } catch (err) {
+      console.error('Error fetching history:', err);
+      toast.error('Failed to load usage history');
+    } finally {
+      setIsHistoryLoading(false);
+    }
+  };
+
+  const handleViewHistory = (user: AdminUser) => {
+    setSelectedUser(user);
+    setIsHistoryModalOpen(true);
+    setHistoryRecords([]);
+    fetchUserHistory(user.id, 0);
+  };
 
   const handleFetch = async () => {
     const token = authService.getToken();
@@ -709,11 +751,43 @@ export const AdminPage: React.FC = () => {
     {
       accessorKey: 'createdAt',
       header: t('admin.createdAt'),
-      cell: ({ row }) => <span className="text-xs font-mono text-neutral-400">{new Date(row.original.createdAt).toLocaleDateString()}</span>,
+      cell: ({ row }) => <span className="text-xs font-mono text-neutral-400 text-center block">{new Date(row.original.createdAt).toLocaleDateString()}</span>,
       size: 120,
       enableSorting: true,
     },
-  ], [t, userLookup]);
+    {
+      accessorKey: 'totalGenerations',
+      header: 'Imagens',
+      cell: ({ row }) => <span className="font-mono text-brand-cyan text-center block">{row.original.totalGenerations ?? 0}</span>,
+      size: 100,
+      enableSorting: true,
+    },
+    {
+      accessorKey: 'totalTokensUsed',
+      header: 'Tokens',
+      cell: ({ row }) => <span className="text-[10px] font-mono text-neutral-400 text-center block">{(row.original.totalTokensUsed ?? 0).toLocaleString()}</span>,
+      size: 100,
+      enableSorting: true,
+    },
+    {
+      id: 'actions',
+      header: 'Histórico',
+      cell: ({ row }) => (
+        <div className="flex justify-center">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 border-neutral-800 hover:bg-neutral-800 text-[10px] font-mono"
+            onClick={() => handleViewHistory(row.original)}
+          >
+            <History className="h-3 w-3 mr-1" />
+            LOG
+          </Button>
+        </div>
+      ),
+      size: 100,
+    },
+  ], [t, userLookup, handleViewHistory]);
 
   return (
     <>
@@ -1865,6 +1939,134 @@ export const AdminPage: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Usage History Modal */}
+      {isHistoryModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <Card className="w-full max-w-4xl bg-neutral-900 border-neutral-800 shadow-2xl max-h-[85vh] flex flex-col">
+            <CardHeader className="border-b border-neutral-800 pb-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-xl flex items-center gap-2 text-neutral-200">
+                    <History className="h-5 w-5 text-brand-cyan" />
+                    Histórico de Uso
+                  </CardTitle>
+                  <CardDescription className="text-neutral-500 font-mono text-xs">
+                    Logs de geração para {selectedUser?.name || selectedUser?.email}
+                  </CardDescription>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsHistoryModalOpen(false)}
+                  className="hover:bg-neutral-800 text-neutral-500"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0 overflow-y-auto flex-1 custom-scrollbar">
+              {isHistoryLoading && historyRecords.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 gap-4">
+                  <RotateCcw className="h-8 w-8 text-brand-cyan animate-spin" />
+                  <p className="text-neutral-500 font-mono text-sm">Carregando registros...</p>
+                </div>
+              ) : historyRecords.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 text-neutral-500">
+                  <p className="font-mono text-sm">Nenhum registro encontrado para este usuário.</p>
+                </div>
+              ) : (
+                <div className="p-4">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-neutral-800 hover:bg-transparent">
+                        <TableHead className="text-[10px] uppercase font-mono text-neutral-500">Data</TableHead>
+                        <TableHead className="text-[10px] uppercase font-mono text-neutral-500">Feature</TableHead>
+                        <TableHead className="text-[10px] uppercase font-mono text-neutral-500">Modelo</TableHead>
+                        <TableHead className="text-[10px] uppercase font-mono text-neutral-500">Tipo</TableHead>
+                        <TableHead className="text-[10px] uppercase font-mono text-neutral-500">Stats</TableHead>
+                        <TableHead className="text-[10px] uppercase font-mono text-neutral-500 text-right">Créditos</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {historyRecords.map((record) => (
+                        <TableRow key={record.id} className="border-neutral-800/50 hover:bg-white/5">
+                          <TableCell className="py-3 text-[11px] font-mono text-neutral-400">
+                            {new Date(record.timestamp).toLocaleString('pt-BR', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </TableCell>
+                          <TableCell className="py-3">
+                            <Badge variant="outline" className="text-[10px] bg-neutral-800/50 border-neutral-700/50 text-neutral-400 capitalize">
+                              {record.feature}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="py-3">
+                            <span className="text-[11px] font-mono text-neutral-300">{record.model || '—'}</span>
+                          </TableCell>
+                          <TableCell className="py-3">
+                            <Badge variant="outline" className={cn(
+                              "text-[10px] border-none",
+                              record.imagesGenerated > 0 ? "bg-brand-cyan/20 text-brand-cyan" : "bg-purple-500/20 text-purple-400"
+                            )}>
+                              {record.imagesGenerated > 0 ? 'Imagem' : 'Texto/Branding'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="py-3">
+                            <div className="flex flex-col gap-0.5">
+                              {record.imagesGenerated > 0 && (
+                                <span className="text-[10px] font-mono text-neutral-300">{record.imagesGenerated} img {record.resolution && `(${record.resolution})`}</span>
+                              )}
+                              {(record.inputTokens > 0 || record.outputTokens > 0) && (
+                                <span className="text-[10px] font-mono text-neutral-500">
+                                  {record.inputTokens + record.outputTokens} tokens
+                                </span>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-3 text-right">
+                            <span className={cn(
+                              "text-[11px] font-mono font-bold",
+                              record.creditsDeducted > 0 ? "text-brand-cyan" : "text-neutral-600"
+                            )}>
+                              {record.creditsDeducted > 0 ? `-${record.creditsDeducted}` : '0'}
+                            </span>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+
+                  {historyPagination.hasMore && (
+                    <div className="flex justify-center mt-6 mb-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fetchUserHistory(selectedUser!.id, historyPagination.offset + historyPagination.limit)}
+                        disabled={isHistoryLoading}
+                        className="bg-neutral-800 border-neutral-700 text-neutral-300 hover:bg-neutral-700"
+                      >
+                        {isHistoryLoading ? (
+                          <RotateCcw className="h-3 w-3 mr-2 animate-spin" />
+                        ) : null}
+                        Carregar mais
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+            <CardFooter className="border-t border-neutral-800 py-3 bg-black/20 flex justify-between text-[10px] font-mono text-neutral-500">
+              <span>Total de registros: {historyPagination.total}</span>
+              <span>Todos os tipos de geração incluídos</span>
+            </CardFooter>
+          </Card>
+        </div>
+      )}
     </>
   );
 };

@@ -5,7 +5,8 @@ import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../db/prisma.js';
 import { checkSubscription, SubscriptionRequest } from '../middleware/subscription.js';
 import { generateMockup, RateLimitError } from '@/services/geminiService.js';
-import { getCreditsRequired } from '../utils/usageTracking.js';
+import { createUsageRecord, getCreditsRequired } from '../utils/usageTracking.js';
+import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
 import type { UploadedImage, AspectRatio, GeminiModel, Resolution } from '@/types/types.js';
 
 const router = express.Router();
@@ -1040,6 +1041,16 @@ router.post('/generate', authenticate, checkSubscription, async (req: Subscripti
       // All retries failed - this is logged above but doesn't throw to avoid breaking the response
       // The generation succeeded, credits were deducted, but audit trail is incomplete
     };
+
+    // Track total generations for user stats (regardless of credits)
+    // This runs in the background to not delay the response
+    (async () => {
+      try {
+        await incrementUserGenerations(req.userId!, actualImagesCount, 0);
+      } catch (err) {
+        console.error(`${logPrefix} [Stats Tracking] Error incrementing total generations:`, err);
+      }
+    })();
 
     try {
       await createUsageRecordWithRetry(3);
