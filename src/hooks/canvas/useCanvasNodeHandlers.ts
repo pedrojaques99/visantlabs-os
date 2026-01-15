@@ -41,7 +41,6 @@ import { useAngleNodeHandlers } from './handlers/useAngleNodeHandlers';
 import { useTextureNodeHandlers } from './handlers/useTextureNodeHandlers';
 import { useAmbienceNodeHandlers } from './handlers/useAmbienceNodeHandlers';
 import { useLuminanceNodeHandlers } from './handlers/useLuminanceNodeHandlers';
-import { useMergeNodeHandlers } from './handlers/useMergeNodeHandlers';
 import { useCanvasNodeSync } from './useCanvasNodeSync';
 import {
   createOutputNodeWithSkeleton as createOutputNodeWithSkeletonUtil,
@@ -204,27 +203,6 @@ export const useCanvasNodeHandlers = (
     }
   }, [subscriptionStatus, setSubscriptionStatus]);
 
-
-
-  // ========== END HELPER FUNCTIONS ==========
-
-  // ========== MERGE NODE HANDLERS ==========
-  // Handlers para gerenciar operações de merge de imagens
-  const {
-    handleMergeGenerate,
-    handleMergeGeneratePrompt,
-  } = useMergeNodeHandlers({
-    nodesRef,
-    edgesRef,
-    setNodes,
-    setEdges,
-    updateNodeData,
-    updateNodeLoadingState,
-    reactFlowInstance,
-    addToHistory,
-    refreshSubscriptionStatus,
-    canvasId,
-  });
 
   // ========== EDIT NODE HANDLERS ==========
   // Handlers para gerenciar operações de edição de imagens
@@ -1884,8 +1862,6 @@ export const useCanvasNodeHandlers = (
   // Update handlersRef and separate refs when handlers change
   useEffect(() => {
     handlersRef.current = {
-      handleMergeGenerate,
-      handleMergeGeneratePrompt,
       handleEditApply,
       handleUpscale,
       handleMockupGenerate,
@@ -1923,8 +1899,7 @@ export const useCanvasNodeHandlers = (
       handleSavePrompt,
     };
     handleUploadImageRef.current = handleUploadImage;
-  }, [handleMergeGenerate,
-    handleMergeGeneratePrompt,
+  }, [
     handleEditApply,
     handleUpscale,
     handleMockupGenerate,
@@ -2197,8 +2172,6 @@ export const useCanvasNodeHandlers = (
   // Retorna todos os handlers e refs necessários para uso nos componentes
 
   return {
-    handleMergeGenerate,
-    handleMergeGeneratePrompt,
     handleEditApply,
     handleUpscale,
     handleMockupGenerate,

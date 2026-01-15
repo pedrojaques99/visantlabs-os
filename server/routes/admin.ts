@@ -571,16 +571,28 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req, res) => {
       { $sort: { '_id.date': 1 } }
     ]).toArray();
 
-    // Calculate cost per date
+    // Calculate cost per date and generations per date/model
     const costByDateMap: Record<string, number> = {};
+    const generationsByDateMap: Record<string, Record<string, number>> = {};
+
     for (const item of costByDateAgg) {
       const date = item._id.date;
-      const model = item._id.model || '';
+      const model = item._id.model || 'unknown';
       const resolution = item._id.resolution || '';
       const type = item._id.type || '';
       const imageCount = item.totalImages || 0;
       const videoCount = item.totalVideos || 0;
+      const totalGenerations = imageCount + videoCount;
 
+      // 1. Calculate Generations Map
+      if (totalGenerations > 0) {
+        if (!generationsByDateMap[date]) {
+          generationsByDateMap[date] = {};
+        }
+        generationsByDateMap[date][model] = (generationsByDateMap[date][model] || 0) + totalGenerations;
+      }
+
+      // 2. Calculate Cost Map
       if (!costByDateMap[date]) {
         costByDateMap[date] = 0;
       }
@@ -604,10 +616,10 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req, res) => {
       }
     }
 
-    // Convert to cumulative array
-    const sortedCostDates = Object.keys(costByDateMap).sort();
+    // Convert to cumulative array for costs
+    const sortedDates = Object.keys(costByDateMap).sort();
     let cumulativeCost = 0;
-    const costTimeSeries = sortedCostDates.map(date => {
+    const costTimeSeries = sortedDates.map(date => {
       cumulativeCost += costByDateMap[date];
       return {
         date,
@@ -615,6 +627,14 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req, res) => {
         cumulative: cumulativeCost
       };
     });
+
+    // Convert to array format for generations (for Recharts)
+    const generationsTimeSeries = Object.entries(generationsByDateMap)
+      .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
+      .map(([date, models]) => ({
+        date,
+        ...models
+      }));
 
     return res.json({
       totalUsers: formattedUsers.length,
@@ -648,7 +668,8 @@ router.get('/users', adminUsersLimiter, validateAdmin, async (_req, res) => {
         byFeature
       },
       revenueTimeSeries,
-      costTimeSeries
+      costTimeSeries,
+      generationsTimeSeries
     });
   } catch (error) {
     console.error('Failed to load admin users:', error);

@@ -1,7 +1,7 @@
 import express from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma, verifyPrismaConnectionWithDetails } from '../db/prisma.js';
-import { uploadCanvasImage, uploadCanvasPdf, uploadCanvasVideo, isR2Configured, generateCanvasImageUploadUrl, generateCanvasVideoUploadUrl } from '@/services/r2Service.js';
+import { uploadCanvasImage, uploadCanvasPdf, uploadCanvasVideo, isR2Configured, generateCanvasImageUploadUrl, generateCanvasVideoUploadUrl } from '../services/r2Service.js';
 import { compressPdfSimple } from '../utils/pdfCompression.js';
 import { validateAdminOrPremium, requireEditAccess, requireViewAccess } from '../middleware/canvasAuth.js';
 import { Liveblocks } from '@liveblocks/node';

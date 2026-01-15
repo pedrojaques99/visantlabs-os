@@ -92,6 +92,11 @@ interface CostTimeSeriesItem {
   cumulative: number;
 }
 
+interface GenerationsTimeSeriesItem {
+  date: string;
+  [model: string]: any; // Allow dynamic model names as keys
+}
+
 interface AdminResponse {
   totalUsers: number;
   totalMockupsGenerated: number;
@@ -110,6 +115,7 @@ interface AdminResponse {
   generationStats?: GenerationStats;
   revenueTimeSeries?: RevenueTimeSeriesItem[];
   costTimeSeries?: CostTimeSeriesItem[];
+  generationsTimeSeries?: GenerationsTimeSeriesItem[];
 }
 
 const ADMIN_API = '/api/admin/users';
@@ -508,6 +514,50 @@ export const AdminPage: React.FC = () => {
     return [...imageStats, ...videoStats].sort((a, b) => b.count - a.count);
   }, [data]);
 
+  // Generations over time data
+  const generationsTimeSeriesData = useMemo(() => {
+    if (!data?.generationsTimeSeries) return [];
+    return data.generationsTimeSeries;
+  }, [data]);
+
+  // Extract all unique models from generations history to build dynamic chart config
+  const uniqueModels = useMemo(() => {
+    if (!data?.generationsTimeSeries) return [];
+    const models = new Set<string>();
+    data.generationsTimeSeries.forEach(item => {
+      Object.keys(item).forEach(key => {
+        if (key !== 'date') models.add(key);
+      });
+    });
+    return Array.from(models);
+  }, [data]);
+
+  // Dynamic Chart Config for models
+  const modelChartConfig = useMemo(() => {
+    const config: ChartConfig = {};
+    const colors = [
+      "hsl(var(--chart-1))",
+      "hsl(var(--chart-2))",
+      "hsl(var(--chart-3))",
+      "hsl(var(--chart-4))",
+      "hsl(var(--chart-5))",
+      "#52ddeb", // brand-cyan
+      "#22c55e", // green-500
+      "#f97316", // orange-500
+      "#a855f7", // purple-500
+      "#ec4899", // pink-500
+    ];
+
+    uniqueModels.forEach((model, index) => {
+      config[model] = {
+        label: model.replace('gemini-', '').replace('-image', '').replace('-preview', ''),
+        color: colors[index % colors.length]
+      };
+    });
+
+    return config;
+  }, [uniqueModels]);
+
   // Chart Config
   const chartConfig = {
     users: {
@@ -529,7 +579,8 @@ export const AdminPage: React.FC = () => {
     cost: {
       label: "Cost (USD)",
       color: "#f97316", // orange-500
-    }
+    },
+    ...modelChartConfig
   } satisfies ChartConfig
 
   const userLookup = useMemo(() => {
