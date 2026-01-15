@@ -1343,9 +1343,11 @@ const MockupMachinePageContent: React.FC = () => {
   const runGeneration = useCallback(async (indexToUpdate?: number, promptOverride?: string, appendMode: boolean = false) => {
     // Prevent multiple simultaneous calls to runGeneration
     // Check if any generation is currently in progress
-    if (isLoading.some(Boolean)) {
+    // Prevent multiple simultaneous calls to runGeneration ONLY if not in append mode
+    // We want to allow concurrent generations if we are adding new images
+    if (isLoading.some(Boolean) && !appendMode && indexToUpdate === undefined) {
       if (isLocalDevelopment()) {
-        console.warn('[runGeneration] Generation already in progress, ignoring duplicate call');
+        console.warn('[runGeneration] Generation already in progress and not in append mode, ignoring duplicate call');
       }
       return;
     }
@@ -1470,40 +1472,64 @@ const MockupMachinePageContent: React.FC = () => {
       await generateAndSet(indexToUpdate);
     } else {
       if (appendMode) {
-        // Append mode: add new slots at the end without replacing existing ones
+        // Append mode (Prepend logic): add new slots at the BEGINNING
         // Get current length before adding new slots
         const currentLength = mockups.length;
-        const newStartIndex = currentLength;
 
+        // We need to shift saved indices and IDs because we are inserting at 0
+        // This must happen synchronously before async operations
+
+        // Shift saved indices
+        setSavedIndices(prev => {
+          const newSet = new Set<number>();
+          prev.forEach(index => {
+            newSet.add(index + mockupCount);
+          });
+          return newSet;
+        });
+
+        // Shift saved mockup IDs
+        setSavedMockupIds(prev => {
+          const newMap = new Map<number, string>();
+          prev.forEach((id, index) => {
+            newMap.set(index + mockupCount, id);
+          });
+          return newMap;
+        });
+
+        // Shift liked status
+        setMockupLikedStatus(prev => {
+          const newMap = new Map<number, boolean>();
+          prev.forEach((status, index) => {
+            newMap.set(index + mockupCount, status);
+          });
+          return newMap;
+        });
+
+        // Insert available slots at the beginning
         setMockups(prev => {
           const newMockups = [...prev];
-          // Add new slots for the generation (based on mockupCount)
-          for (let i = 0; i < mockupCount; i++) {
-            newMockups.push(null);
-          }
-          return newMockups;
+          // Add new slots at the beginning
+          const newSlots = Array(mockupCount).fill(null);
+          return [...newSlots, ...newMockups];
         });
 
         setIsLoading(prev => {
           const newLoading = [...prev];
-          // Add loading state for new slots
-          for (let i = 0; i < mockupCount; i++) {
-            newLoading.push(true);
-          }
-          return newLoading;
+          const newSlots = Array(mockupCount).fill(true);
+          return [...newSlots, ...newLoading];
         });
 
         setPromptSuggestions([]);
 
         // Generate all new mockups in parallel
+        // The indices for the NEW items are 0 to mockupCount-1
         const promises = Array.from({ length: mockupCount }, (_, i) =>
-          generateAndSet(newStartIndex + i)
+          generateAndSet(i)
         );
         await Promise.allSettled(promises);
 
         // Refresh subscription status after all generations complete
-        // Note: Usage tracking is handled in generateAndSet for each image
-        // In local development, credits aren't deducted so no need to refresh
         const isLocal = isLocalDevelopment();
         if (!isLocal) {
           try {
@@ -2755,7 +2781,9 @@ Generate the new mockup image with the requested changes applied.`;
   const designTypeSelected = !!designType;
   const brandingComplete = selectedBrandingTags.length > 0;
   const categoriesComplete = selectedTags.length > 0;
-  const isGenerating = isLoading.some(Boolean);
+
+  // const isGenerating = isLoading.some(Boolean); // Removed to allow concurrent operations
+  const isGenerating = false; // Always allow interactions that support queuing
 
   useEffect(() => {
     if (autoGenerateTimeoutRef.current) {
@@ -2797,15 +2825,15 @@ Generate the new mockup image with the requested changes applied.`;
     // Only trigger if:
     // 1. Source is 'surprise'
     // 2. Prompt is ready (generated)
-    // 3. Not currently generating images
-    if (autoGenerateSource === 'surprise' && isPromptReady && !isGenerating && !isGeneratingPrompt) {
+    // 3. Not currently generating prompt (allow concurrent image generation)
+    if (autoGenerateSource === 'surprise' && isPromptReady && !isGeneratingPrompt) {
       // Clear source first to prevent potential loops (although dependence on isPromptReady helps)
       setAutoGenerateSource(null);
 
       // Trigger generation
       runGeneration(undefined, undefined, true);
     }
-  }, [autoGenerateSource, isPromptReady, isGenerating, isGeneratingPrompt, runGeneration]);
+  }, [autoGenerateSource, isPromptReady, isGeneratingPrompt, runGeneration]);
 
   const displayBrandingTags = [...new Set([...AVAILABLE_BRANDING_TAGS, ...selectedBrandingTags])];
   const displaySuggestedTags = [...new Set([...suggestedTags, ...selectedTags])];
@@ -2842,9 +2870,10 @@ Generate the new mockup image with the requested changes applied.`;
   }, [subscriptionStatus]);
 
   // Disable button for: auth checking, not authenticated, currently generating, insufficient credits, or 0 credits
+  // Disable button for: auth checking, not authenticated, currently generating prompt, insufficient credits, or 0 credits
+  // We allow isGenerating (image generation) to enable queuing/concurrent generation
   const isGenerateDisabled = isCheckingAuth ||
     isAuthenticated !== true ||
-    isGenerating ||
     isGeneratingPrompt ||
     isSuggestingPrompts ||
     !hasAnyCredits ||

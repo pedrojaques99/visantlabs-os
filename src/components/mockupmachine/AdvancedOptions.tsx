@@ -3,6 +3,7 @@ import { X, Plus, ChevronDown, ChevronUp } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { translateTag } from '@/utils/localeUtils';
+import { Tag } from '@/components/shared/Tag';
 import type { DesignType } from '@/types/types';
 
 interface AdvancedOptionsProps {
@@ -176,16 +177,13 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
       >
         {/* Custom tag input/button - always first */}
         {!isEditingCustom ? (
-          <button
-            onClick={handleCustomTagClick}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border inline-flex items-center gap-1 cursor-pointer ${theme === 'dark'
-              ? 'bg-neutral-800/50 text-neutral-400 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
-              : 'bg-neutral-100 text-neutral-700 border-neutral-300 hover:border-neutral-400 hover:text-neutral-900'
-              }`}
+          <Tag
+            label={t('mockup.customTagLabel')}
+            onToggle={handleCustomTagClick}
+            className="gap-1"
           >
             <Plus size={14} />
-            <span>{t('mockup.customTagLabel')}</span>
-          </button>
+          </Tag>
         ) : (
           <input
             ref={inputRef}
@@ -231,24 +229,14 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
             const hasSelection = selectedTags.length > 0;
 
             return (
-              <button
+              <Tag
                 key={tag}
-                onClick={() => onTagToggle(tag)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border cursor-pointer ${isSelected
-                  ? theme === 'dark'
-                    ? 'bg-brand-cyan/20 text-brand-cyan border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
-                    : 'bg-brand-cyan/20 text-neutral-800 border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
-                  : theme === 'dark'
-                    ? isSuggested
-                      ? 'bg-neutral-800/80 text-neutral-300 border-brand-cyan/50 hover:border-brand-cyan/70 hover:text-white animate-pulse-subtle'
-                      : 'bg-neutral-800/50 text-neutral-400 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
-                    : isSuggested
-                      ? 'bg-brand-cyan/10 text-neutral-800 border-brand-cyan/50 shadow-sm shadow-brand-cyan/5 animate-pulse-subtle'
-                      : 'bg-neutral-100 text-neutral-700 border-neutral-300 hover:border-neutral-400 hover:text-neutral-900'
-                  } ${hasSelection && !isSelected ? 'opacity-40' : ''}`}
-              >
-                {translateTag(tag)}
-              </button>
+                label={translateTag(tag)}
+                selected={isSelected}
+                suggested={isSuggested}
+                onToggle={() => onTagToggle(tag)}
+                disabled={hasSelection && !isSelected}
+              />
             );
           });
         })()}

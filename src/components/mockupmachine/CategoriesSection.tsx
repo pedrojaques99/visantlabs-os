@@ -6,9 +6,11 @@ import { useTheme } from '@/hooks/useTheme';
 import { translateTag } from '@/utils/localeUtils';
 import { organizeTagsByGroup, CATEGORY_GROUPS } from '@/utils/categoryGroups';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Tag } from '@/components/shared/Tag';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { MockupTagCategory } from '@/services/mockupTagService';
+import { MockupPreset } from '../../types/mockupPresets';
 
 interface CategoriesSectionProps {
   suggestedTags: string[];
@@ -24,6 +26,8 @@ interface CategoriesSectionProps {
   onRandomize: () => void;
   isComplete: boolean;
   displaySuggestedTags: string[];
+  tagCategories: MockupTagCategory[];
+  mockupPresets?: MockupPreset[];
 }
 
 export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
@@ -39,7 +43,9 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
   onAddCustomTag,
   onRandomize,
   isComplete,
-  displaySuggestedTags
+  displaySuggestedTags,
+  tagCategories,
+  mockupPresets = []
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
@@ -103,55 +109,81 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
   // Merge available tags with suggested tags (default tags first, then AI suggested tags)
   const mergedTags = [...new Set([...availableTags, ...displaySuggestedTags])];
 
-  // Organize tags by group
-  const organizedTags = useMemo(() => {
-    return organizeTagsByGroup(mergedTags);
-  }, [mergedTags]);
+  // Organize tags by category from database
+  const dynamicGroups = useMemo(() => {
+    if (!tagCategories || tagCategories.length === 0) {
+      // Fallback to legacy grouping
+      const organized = organizeTagsByGroup(mergedTags);
+      return CATEGORY_GROUPS.map(cg => ({
+        id: cg.id,
+        key: cg.id, // standardized property name
+        tags: organized.get(cg.id) || []
+      })).filter(g => g.tags.length > 0);
+    }
 
-  // Filter out empty groups and maintain order, separating drinkware and other for special layout
-  const groupsToDisplay = useMemo(() => {
-    return CATEGORY_GROUPS.filter(group => {
-      const tags = organizedTags.get(group.id);
-      return tags && tags.length > 0 && group.id !== 'drinkware' && group.id !== 'other';
+    // Map merged tags to their database categories
+    const groups = tagCategories.map(cat => {
+      const dbTagNames = cat.tags.map(t => t.name);
+
+      // Also include presets that belong to this category based on their mockupCategoryId
+      const presetNamesInCategory = (mockupPresets || [])
+        .filter(p => p.mockupCategoryId === cat.id)
+        .map(p => p.name);
+
+      return {
+        id: cat.id,
+        key: cat.name, // the translation key
+        tags: mergedTags.filter(tag =>
+          dbTagNames.includes(tag) || presetNamesInCategory.includes(tag)
+        )
+      };
     });
-  }, [organizedTags]);
 
-  // Get drinkware and other groups separately for special layout
-  const drinkwareGroup = CATEGORY_GROUPS.find(g => g.id === 'drinkware');
-  const otherGroup = CATEGORY_GROUPS.find(g => g.id === 'other');
-  const drinkwareTags = drinkwareGroup ? (organizedTags.get('drinkware') || []) : [];
-  const otherTags = otherGroup ? (organizedTags.get('other') || []) : [];
+    return groups.filter(g => g.tags.length > 0);
+  }, [tagCategories, mergedTags]);
+
+  // Tags that didn't fit into any deliberate category
+  const strayTags = useMemo(() => {
+    if (!tagCategories || tagCategories.length === 0) return [];
+
+    const allCategorizedTags = tagCategories.flatMap(c => c.tags.map(t => t.name));
+
+    // Also consider preset names categorized by ID as "categorized"
+    const allCategorizedPresets = (mockupPresets || [])
+      .filter(p => p.mockupCategoryId && tagCategories.some(c => c.id === p.mockupCategoryId))
+      .map(p => p.name);
+
+    return mergedTags.filter(tag =>
+      !allCategorizedTags.includes(tag) && !allCategorizedPresets.includes(tag)
+    );
+  }, [tagCategories, mergedTags]);
+
+  const groupsToDisplay = useMemo(() => {
+    return dynamicGroups.filter(g => g.id !== 'drinkware' && g.id !== 'other');
+  }, [dynamicGroups]);
+
+  const drinkwareGroup = useMemo(() => dynamicGroups.find(g => g.id === 'drinkware'), [dynamicGroups]);
+  const otherGroup = useMemo(() => dynamicGroups.find(g => g.id === 'other'), [dynamicGroups]);
+
+  const drinkwareTags = drinkwareGroup?.tags || [];
+  const otherTags = [...(otherGroup?.tags || []), ...strayTags];
+
   const hasFinalSection = drinkwareTags.length > 0 || otherTags.length > 0;
 
   const renderTagButton = (tag: string) => {
     const isSelected = selectedTags.includes(tag);
     const isSuggested = displaySuggestedTags.includes(tag);
     const hasSelection = selectedTags.length > 0;
-    const unselectedClass = theme === 'dark'
-      ? isSuggested
-        ? 'bg-neutral-800/50 text-neutral-300 border-[brand-cyan]/50 hover:border-[brand-cyan]/70 hover:text-white'
-        : 'bg-neutral-800/50 text-neutral-400 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
-      : isSuggested
-        ? 'bg-neutral-100 text-neutral-700 border-neutral-300 hover:border-neutral-400 hover:text-neutral-900'
-        : 'bg-neutral-100 text-neutral-700 border-neutral-300 hover:border-neutral-400 hover:text-neutral-900';
 
     return (
-      <Badge
+      <Tag
         key={tag}
-        onClick={() => onTagToggle(tag)}
-        variant="outline"
-        className={cn(
-          "text-xs font-medium transition-all duration-200 cursor-pointer",
-          isSelected
-            ? theme === 'dark'
-              ? 'bg-brand-cyan/20 text-brand-cyan border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
-              : 'bg-brand-cyan/20 text-neutral-800 border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
-            : unselectedClass,
-          hasSelection && !isSelected && 'opacity-40'
-        )}
-      >
-        {translateTag(tag)}
-      </Badge>
+        label={translateTag(tag)}
+        selected={isSelected}
+        suggested={isSuggested}
+        onToggle={() => onTagToggle(tag)}
+        disabled={hasSelection && !isSelected}
+      />
     );
   };
 
@@ -169,7 +201,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
       <div className={isComplete ? 'opacity-80' : ''}>
         <div className="grid grid-cols-2 gap-3">
           {groupsToDisplay.map((group) => {
-            const groupTags = organizedTags.get(group.id) || [];
+            const groupTags = group.tags || [];
             if (groupTags.length === 0) return null;
 
             return (
@@ -177,7 +209,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                 {/* Subtle group label */}
                 <div className="flex items-center gap-2">
                   <span className="text-[9px] font-mono uppercase tracking-wider text-neutral-500/60">
-                    {t(`mockup.categoryGroups.${group.id}`)}
+                    {t(`mockup.categoryGroups.${group.key}`)}
                   </span>
                   <div className="flex-1 h-px bg-neutral-800/30"></div>
                 </div>
@@ -229,19 +261,14 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                 {!isComplete && (
                   <>
                     {!isEditingCustom ? (
-                      <Badge
-                        onClick={handleCustomTagClick}
-                        variant="outline"
-                        className={cn(
-                          "text-xs font-medium transition-all duration-200 gap-1 cursor-pointer",
-                          theme === 'dark'
-                            ? 'bg-neutral-800/50 text-neutral-400 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
-                            : 'bg-neutral-100 text-neutral-700 border-neutral-300 hover:border-neutral-400 hover:text-neutral-900'
-                        )}
+                      <Tag
+                        label={t('mockup.customCategoryLabel')}
+                        onToggle={handleCustomTagClick}
+                        removable={false}
+                        className="gap-1"
                       >
                         <Plus size={14} />
-                        <span>{t('mockup.customCategoryLabel')}</span>
-                      </Badge>
+                      </Tag>
                     ) : (
                       <Input
                         ref={inputRef}
@@ -270,19 +297,13 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
           {!hasFinalSection && !isComplete && (
             <div className="col-span-2 flex flex-wrap gap-2 mt-3">
               {!isEditingCustom ? (
-                <Badge
-                  onClick={handleCustomTagClick}
-                  variant="outline"
-                  className={cn(
-                    "text-xs font-medium transition-all duration-200 gap-1 cursor-pointer",
-                    theme === 'dark'
-                      ? 'bg-neutral-800/50 text-neutral-400 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
-                      : 'bg-neutral-100 text-neutral-700 border-neutral-300 hover:border-neutral-400 hover:text-neutral-900'
-                  )}
+                <Tag
+                  label={t('mockup.customCategoryLabel')}
+                  onToggle={handleCustomTagClick}
+                  className="gap-1"
                 >
                   <Plus size={14} />
-                  <span>{t('mockup.customCategoryLabel')}</span>
-                </Badge>
+                </Tag>
               ) : (
                 <input
                   ref={inputRef}

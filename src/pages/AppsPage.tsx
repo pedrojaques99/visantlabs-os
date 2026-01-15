@@ -1,10 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
-import { usePremiumAccess } from '@/hooks/usePremiumAccess';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
-import { LinearGradientBackground } from '../components/ui/LinearGradientBackground';
-import { Pickaxe, Palette, FileText, Layers, ArrowRight, Grid } from 'lucide-react';
 import { SEO } from '../components/SEO';
 import { Card, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
@@ -18,77 +15,188 @@ import {
   BreadcrumbSeparator,
 } from "../components/ui/breadcrumb";
 import { cn } from '../lib/utils';
+import { ImageOff, ExternalLink } from 'lucide-react';
+import { usePremiumAccess } from '@/hooks/usePremiumAccess';
+import { useLayout } from '@/hooks/useLayout';
+import { RenderAppGrid } from '../components/RenderAppGrid';
 
 export const AppsPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { hasAccess, isLoading: isLoadingAccess } = usePremiumAccess();
+  const { hasAccess, isLoading: isAccessLoading } = usePremiumAccess();
+  const { onSubscriptionModalOpen } = useLayout();
 
-  const apps = [
+  const appsData = useMemo(() => [
     {
-      id: 'mockup',
+      id: 'mockup-machine',
       name: t('apps.mockupMachine.name'),
-      description: t('apps.mockupMachine.description'),
-      route: '/',
-      icon: Pickaxe,
-      color: 'brand-cyan',
-      badge: t('apps.badge.free') || 'Free',
-      isExternal: false,
+      desc: t('apps.mockupMachine.description'),
+      link: '/',
+      badge: t('apps.badge.featured'),
+      badgeVariant: 'featured',
+      category: 'mockup',
+      free: false
     },
     {
-      id: 'branding',
+      id: 'branding-machine',
       name: t('apps.brandingMachine.name'),
-      description: t('apps.brandingMachine.description'),
-      route: '/branding-machine',
-      icon: Palette,
-      color: 'brand-cyan',
-      badge: 'Premium Users Only',
-      requiresPremium: true,
-      isExternal: false,
+      desc: t('apps.brandingMachine.description'),
+      link: '/branding-machine',
+      badge: t('apps.badge.premium'),
+      badgeVariant: 'premium',
+      category: 'branding',
+      free: false
     },
     {
-      id: 'budget',
+      id: 'budget-machine',
       name: t('apps.budgetMachine.name'),
-      description: t('apps.budgetMachine.description'),
-      route: '/budget-machine',
-      icon: FileText,
-      color: 'brand-cyan',
-      badge: 'Coming Soon',
-      isExternal: false,
-      disabled: true,
+      desc: t('apps.budgetMachine.description'),
+      link: '/budget-machine',
+      badge: t('apps.badge.comingSoon'),
+      badgeVariant: 'comingSoon',
+      category: 'branding',
+      free: false
     },
     {
       id: 'canvas',
       name: t('apps.canvas.name'),
-      description: t('apps.canvas.description'),
-      route: '/canvas',
-      icon: Layers,
-      color: 'brand-cyan',
-      badge: 'Featured',
-      requiresPremium: true,
-      isExternal: false,
+      desc: t('apps.canvas.description'),
+      link: '/canvas',
+      badge: t('apps.badge.premium'),
+      badgeVariant: 'premium',
+      free: false
     },
     {
       id: 'colorfy',
-      name: 'Colorfy',
-      description: 'A gradient generator for your projects.',
-      route: 'https://gradient-machine.vercel.app/',
-      icon: Palette, // Using Palette as placeholder/reuse if specific paint icon not available instantly, but user suggested paint bucket
-      color: 'brand-cyan',
-      badge: 'Beta',
+      name: t('apps.colorfy.name'),
+      desc: t('apps.colorfy.description'),
+      link: 'https://gradient-machine.vercel.app/',
+      badge: t('apps.badge.free'),
+      badgeVariant: 'free',
+      thumbnail: '/tools/color-extractor.png',
+      category: 'branding',
       isExternal: true,
+      free: true
     },
     {
-      id: 'halftone',
-      name: 'Halftone Machine',
-      description: 'Create halftone effects from your images.',
-      route: 'https://pedrojaques99.github.io/halftone-machine/',
-      icon: Grid, // Need to import Grid
-      color: 'brand-cyan',
-      badge: 'Beta',
+      id: 'halftone-machine',
+      name: t('apps.halftoneMachine.name'),
+      desc: t('apps.halftoneMachine.description'),
+      link: 'https://pedrojaques99.github.io/halftone-machine/',
+      badge: t('apps.badge.free'),
+      badgeVariant: 'free',
+      thumbnail: '/tools/halftone-machine.png',
       isExternal: true,
+      category: 'effects',
+      free: true
     },
-  ];
+    {
+      id: 'youtube-mixer',
+      name: t('apps.youtubeMixer.name'),
+      desc: t('apps.youtubeMixer.description'),
+      link: '/youtube-mixer',
+      thumbnail: '/tools/youtube-mixer.png',
+      badge: t('apps.badge.free'),
+      badgeVariant: 'free',
+      category: 'audio',
+      free: true
+    },
+    {
+      id: 'ascii-vortex',
+      name: t('apps.asciiVortex.name'),
+      desc: t('apps.asciiVortex.description'),
+      link: '/ascii-vortex',
+      thumbnail: '/tools/ascii-vortex.png',
+      badge: t('apps.badge.free'),
+      badgeVariant: 'free',
+      category: 'effects',
+      free: true
+    },
+    {
+      id: 'grid-paint',
+      name: t('apps.gridPaint.name'),
+      desc: t('apps.gridPaint.description'),
+      link: '/grid-paint',
+      thumbnail: '/tools/gridpaint.png',
+      badge: t('apps.badge.free'),
+      badgeVariant: 'free',
+      category: 'effects',
+      free: true
+    },
+    {
+      id: 'ellipse-audio',
+      name: t('apps.ellipseAudio.name'),
+      desc: t('apps.ellipseAudio.description'),
+      link: '/elipse-audio-freq',
+      thumbnail: '/tools/elipse-audio.png',
+      badge: t('apps.badge.free'),
+      badgeVariant: 'free',
+      free: true,
+      category: 'audio'
+    },
+    {
+      id: 'vsn-labs',
+      name: t('apps.vsnLabs.name'),
+      desc: t('apps.vsnLabs.description'),
+      link: 'https://vsn-labs.vercel.app/',
+      thumbnail: '/tools/vsn-labs.png',
+      badge: t('apps.badge.free'),
+      badgeVariant: 'free',
+      showExternalLink: true,
+      category: 'experimental',
+      isExternal: true,
+      free: true
+    }
+  ], [t]);
+
+  const categorizedApps = useMemo(() => {
+    const core: any[] = [];
+    const branding: any[] = [];
+    const effects: any[] = [];
+    const audio: any[] = [];
+    const experimental: any[] = [];
+
+    appsData.forEach(app => {
+      // Featured, Premium, and Coming Soon items stay in the prominent "Core" section
+      const isProminent = app.badgeVariant === 'featured' || app.badgeVariant === 'premium' || app.badgeVariant === 'comingSoon';
+
+      if (isProminent) {
+        core.push(app);
+      } else {
+        switch (app.category) {
+          case 'branding':
+            branding.push(app);
+            break;
+          case 'effects':
+            effects.push(app);
+            break;
+          case 'audio':
+            audio.push(app);
+            break;
+          case 'experimental':
+            experimental.push(app);
+            break;
+          default:
+            core.push(app);
+        }
+      }
+    });
+
+    core.sort((a, b) => {
+      const isAProminent = a.badgeVariant === 'featured' || a.badgeVariant === 'premium';
+      const isBProminent = b.badgeVariant === 'featured' || b.badgeVariant === 'premium';
+
+      if (isAProminent && !isBProminent) return -1;
+      if (!isAProminent && isBProminent) return 1;
+
+      if (a.badgeVariant === 'comingSoon' && b.badgeVariant !== 'comingSoon') return 1;
+      if (a.badgeVariant !== 'comingSoon' && b.badgeVariant === 'comingSoon') return -1;
+
+      return 0;
+    });
+
+    return { core, branding, effects, audio, experimental };
+  }, [appsData]);
 
   return (
     <>
@@ -102,7 +210,6 @@ export const AppsPage: React.FC = () => {
           <GridDotsBackground />
         </div>
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-16 relative z-10">
-          {/* Breadcrumb */}
           <div className="mb-8">
             <Breadcrumb>
               <BreadcrumbList>
@@ -119,7 +226,6 @@ export const AppsPage: React.FC = () => {
             </Breadcrumb>
           </div>
 
-          {/* Header */}
           <div className="mb-12">
             <div className="mb-4">
               <h1 className="text-3xl md:text-4xl font-semibold font-manrope text-neutral-200 mb-2">
@@ -129,113 +235,152 @@ export const AppsPage: React.FC = () => {
                 {t('apps.subtitle')}
               </p>
             </div>
-            <Separator className="mt-6" />
+            <Separator className="mt-6 border-neutral-800/50" />
           </div>
 
-          <div className="space-y-8">
+          <div className="space-y-16">
+            {/* Core Grid: Featured and Premium items */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 auto-rows-fr">
+              {categorizedApps.core.map((app) => {
+                const isProminent = app.badgeVariant === 'featured' || app.badgeVariant === 'premium';
+                const isComingSoon = app.badgeVariant === 'comingSoon';
 
+                return (
+                  <Card
+                    key={app.id}
+                    onClick={() => {
+                      if (isComingSoon) return;
 
-            {/* Outros Apps - Grid de 3 colunas */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {apps
-                .map((app) => {
-                  const Icon = app.icon;
-                  const handleClick = () => {
-                    if (app.disabled) return;
-
-                    if (app.isExternal) {
-                      window.open(app.route, '_blank');
-                      return;
-                    }
-
-                    // Mockup Machine is always accessible
-                    if (app.id === 'mockup') {
-                      navigate(app.route);
-                      return;
-                    }
-
-                    // Check access for premium apps
-                    if (app.requiresPremium) {
-                      if (!isLoadingAccess && hasAccess) {
-                        navigate(app.route);
-                      } else {
-                        navigate('/waitlist');
+                      // Check for premium access
+                      if (app.badgeVariant === 'premium' && !hasAccess) {
+                        onSubscriptionModalOpen();
+                        return;
                       }
-                      return;
-                    }
 
-                    navigate(app.route);
-                  };
-
-                  return (
-                    <Card
-                      key={app.id}
-                      onClick={handleClick}
-                      className={cn(
-                        "group relative overflow-hidden border-neutral-800/50 bg-card/50",
-                        !app.disabled && "hover:border-brand-cyan/50 hover:bg-card/70 hover:shadow-lg hover:shadow-brand-cyan/10 hover:scale-[1.02] active:scale-[0.98] cursor-pointer",
-                        app.disabled && "opacity-60 cursor-not-allowed",
-                        "transition-all duration-300"
-                      )}
-                    >
-                      <CardContent className="p-6 md:p-8">
-                        <div className="flex flex-col items-start space-y-5">
-                          <div className="flex items-center justify-between w-full">
-                            <div
+                      if (app.isExternal) {
+                        window.open(app.link, '_blank');
+                        return;
+                      }
+                      navigate(app.link);
+                    }}
+                    className={cn(
+                      "group relative overflow-hidden border-neutral-800/40 bg-card/30 flex flex-col transition-all duration-500",
+                      isProminent ? "md:col-span-3 h-auto border-brand-cyan/20 bg-brand-cyan/[0.03]" : "col-span-1",
+                      !isComingSoon ? "hover:border-neutral-700 hover:bg-card/50 cursor-pointer" : "opacity-60 cursor-default grayscale"
+                    )}
+                  >
+                    <div className={cn("flex flex-col", isProminent && "md:flex-row")}>
+                      <div className={cn(
+                        "relative overflow-hidden bg-neutral-900/50 transition-colors shrink-0",
+                        isProminent ? "aspect-[21/9] md:aspect-video md:w-1/2" : "aspect-video border-b border-neutral-800/50"
+                      )}>
+                        {app.thumbnail ? (
+                          <img
+                            src={app.thumbnail}
+                            alt={app.name}
+                            className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-700"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-neutral-900/80">
+                            <ImageOff size={isProminent ? 84 : 48} className="text-neutral-800/50 group-hover:text-neutral-700/50 transition-colors" />
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-60" />
+                        {app.badge && (
+                          <div className="absolute top-4 right-4 z-20">
+                            <Badge
+                              variant="outline"
                               className={cn(
-                                "p-4 rounded-xl border transition-all duration-300",
-                                "bg-brand-cyan/10 border-brand-cyan/20",
-                                !app.disabled && "group-hover:bg-brand-cyan/20 group-hover:border-brand-cyan/40"
+                                "text-[10px] uppercase font-mono tracking-widest py-1 px-3 bg-black/60 backdrop-blur-md border-neutral-800/80 text-neutral-400",
+                                app.badgeVariant === 'featured' && "border-brand-cyan/40 text-brand-cyan bg-brand-cyan/10",
+                                app.badgeVariant === 'premium' && "border-brand-cyan/40 text-brand-cyan/90",
+                                app.badgeVariant === 'comingSoon' && "border-neutral-800 text-neutral-500",
+                                app.badgeVariant === 'free' && "border-neutral-700 text-neutral-300"
                               )}
                             >
-                              <Icon
-                                size={32}
-                                className={cn(
-                                  "text-brand-cyan transition-transform duration-300",
-                                  !app.disabled && "group-hover:scale-110"
-                                )}
-                              />
-                            </div>
-                            {app.badge && (
-                              <Badge
-                                variant="outline"
-                                className={cn(
-                                  "text-xs border-neutral-700/50 text-neutral-400",
-                                  app.id === 'branding' && "border-brand-cyan/30 text-brand-cyan",
-                                  app.id === 'canvas' && "border-brand-cyan/30 text-brand-cyan"
-                                )}
-                              >
-                                {app.badge}
-                              </Badge>
-                            )}
+                              {app.badge}
+                            </Badge>
                           </div>
-                          <div className="flex-1 w-full">
-                            <h3 className={cn(
-                              "text-xl font-semibold text-neutral-200 mb-2 font-manrope transition-colors",
-                              !app.disabled && "group-hover:text-brand-cyan/90"
-                            )}>
-                              {app.name}
-                            </h3>
-                            <p className="text-sm text-neutral-400 font-mono leading-relaxed">
-                              {app.description}
-                            </p>
+                        )}
+                        {app.isExternal && (
+                          <div className="absolute bottom-4 right-4 z-20">
+                            <ExternalLink size={14} className="text-neutral-500 opacity-60 group-hover:opacity-100 transition-opacity" />
                           </div>
-                          {!app.disabled && (
-                            <div className="flex items-center gap-2 text-xs font-mono text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-full">
-                              <span>{app.isExternal ? 'Visit' : 'Explore'}</span>
-                              <ArrowRight className="w-3 h-3" />
+                        )}
+
+                        {/* Premium CTA Overlay */}
+                        {app.badgeVariant === 'premium' && !hasAccess && !isAccessLoading && (
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-30">
+                            <span className="bg-brand-cyan text-black px-6 py-2 rounded-full font-bold text-sm tracking-wider transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                              {t('apps.subscribeNow')}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      <CardContent className={cn("p-6 flex flex-col flex-1 justify-center", isProminent && "md:p-10")}>
+                        <div className="space-y-4">
+                          <h3 className={cn(
+                            "font-semibold text-neutral-200 font-manrope transition-colors leading-tight",
+                            isProminent ? "text-3xl md:text-5xl tracking-tighter" : "text-lg",
+                            "group-hover:text-white"
+                          )}>
+                            {app.name}
+                          </h3>
+                          <p className={cn(
+                            "text-neutral-500 font-mono leading-relaxed",
+                            isProminent ? "text-sm md:text-base max-w-xl" : "text-xs line-clamp-2"
+                          )}>
+                            {app.desc}
+                          </p>
+                          {isProminent && (
+                            <div className="pt-4 hidden md:block">
+                              <span className="text-brand-cyan font-mono text-xs uppercase tracking-widest border border-brand-cyan/20 px-4 py-2 rounded-md bg-brand-cyan/5 group-hover:bg-brand-cyan/10 transition-colors">
+                                EXPLORE APP //
+                              </span>
                             </div>
                           )}
                         </div>
                       </CardContent>
-                    </Card>
-                  );
-                })}
+                    </div>
+                  </Card>
+                );
+              })}
             </div>
+
+            {/* Categorized Tool Sections */}
+            <RenderAppGrid
+              title={t('apps.brandingTools')}
+              apps={categorizedApps.branding}
+              hasAccess={hasAccess}
+              isAccessLoading={isAccessLoading}
+              onSubscriptionModalOpen={onSubscriptionModalOpen}
+            />
+            <RenderAppGrid
+              title={t('apps.effectsTools')}
+              apps={categorizedApps.effects}
+              hasAccess={hasAccess}
+              isAccessLoading={isAccessLoading}
+              onSubscriptionModalOpen={onSubscriptionModalOpen}
+            />
+            <RenderAppGrid
+              title={t('apps.audioTools')}
+              apps={categorizedApps.audio}
+              hasAccess={hasAccess}
+              isAccessLoading={isAccessLoading}
+              onSubscriptionModalOpen={onSubscriptionModalOpen}
+            />
+            {categorizedApps.experimental.length > 0 && (
+              <RenderAppGrid
+                title="EXPERIMENTAL LABS //"
+                apps={categorizedApps.experimental}
+                hasAccess={hasAccess}
+                isAccessLoading={isAccessLoading}
+                onSubscriptionModalOpen={onSubscriptionModalOpen}
+              />
+            )}
           </div>
         </div>
       </div>
     </>
   );
 };
-

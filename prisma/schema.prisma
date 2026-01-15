@@ -363,3 +363,26 @@ model SurpriseMePreset {
   @@index([userId])
   @@map("surprise_me_presets")
 }
+
+model MockupTagCategory {
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  name         String      @unique
+  displayOrder Int         @default(0)
+  tags         MockupTag[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@map("mockup_tag_categories")
+}
+
+model MockupTag {
+  id         String            @id @default(auto()) @map("_id") @db.ObjectId
+  name       String            @unique
+  categoryId String            @db.ObjectId
+  category   MockupTagCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  @@index([categoryId])
+  @@map("mockup_tags")
+}

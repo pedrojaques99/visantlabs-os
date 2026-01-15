@@ -68,11 +68,40 @@ const MockupCard: React.FC<{
   const [showReImaginePanel, setShowReImaginePanel] = useState(false);
   const [localIsLiked, setLocalIsLiked] = useState(isLiked);
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const loadingStartTimeRef = useRef<number | null>(null);
 
   // Sync local state with prop
   useEffect(() => {
     setLocalIsLiked(isLiked);
   }, [isLiked]);
+
+  // Timer for loading state
+  useEffect(() => {
+    if (isLoading && !base64Image) {
+      // Start timer when loading begins
+      if (loadingStartTimeRef.current === null) {
+        loadingStartTimeRef.current = Date.now();
+        setElapsedTime(0);
+      }
+
+      // Update timer every second
+      const interval = setInterval(() => {
+        if (loadingStartTimeRef.current !== null) {
+          const elapsed = Math.floor((Date.now() - loadingStartTimeRef.current) / 1000);
+          setElapsedTime(elapsed);
+        }
+      }, 1000);
+
+      return () => {
+        clearInterval(interval);
+      };
+    } else {
+      // Reset timer when loading ends or image appears
+      loadingStartTimeRef.current = null;
+      setElapsedTime(0);
+    }
+  }, [isLoading, base64Image]);
 
   // Use centralized like hook if mockupId is available
   const { toggleLike: handleToggleLikeHook } = useMockupLike({
@@ -226,6 +255,15 @@ const MockupCard: React.FC<{
           <ImageIcon size={40} strokeWidth={1} className="opacity-50" aria-hidden="true" />
           <div className="absolute inset-0 w-full h-full bg-transparent -translate-x-full animate-shimmer shimmer-glow"></div>
           <span className="sr-only">Generating mockup, please wait...</span>
+        </div>
+      )}
+
+      {/* Generation Timer */}
+      {isLoading && elapsedTime > 0 && !base64Image && (
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 pointer-events-none">
+          <span className="text-neutral-500/60 text-[10px] font-mono">
+            {Math.floor(elapsedTime / 60)}:{(elapsedTime % 60).toString().padStart(2, '0')}
+          </span>
         </div>
       )}
       {/* Like button - top right corner */}

@@ -190,7 +190,9 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
     availableAngleTags,
     availableLightingTags,
     availableEffectTags,
-    availableMaterialTags
+    availableMaterialTags,
+    tagCategories,
+    mockupPresets
   } = useMockupTags();
 
   // Helper values
@@ -572,6 +574,8 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
                     onRandomize={handleRandomizeCategories}
                     isComplete={categoriesComplete}
                     displaySuggestedTags={displaySuggestedTags}
+                    tagCategories={tagCategories}
+                    mockupPresets={mockupPresets}
                   />
                 </div>
               )}
@@ -716,7 +720,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
                         <div className="flex items-center gap-2">
                           <Button
                             onClick={handleSurpriseMe}
-                            disabled={isGenerating || isGeneratingPrompt}
+                            disabled={isGeneratingPrompt}
                             variant="sidebarAction"
                             size="sidebar"
                             className={cn("flex-1 justify-center", isDiceAnimating && 'dice-button-clicked')}
@@ -728,7 +732,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
                           {onOpenSurpriseMeSettings && (
                             <Button
                               onClick={onOpenSurpriseMeSettings}
-                              disabled={isGenerating || isGeneratingPrompt}
+                              disabled={isGeneratingPrompt}
                               variant="sidebarAction"
                               size="sidebar"
                               className="w-[48px] justify-center"

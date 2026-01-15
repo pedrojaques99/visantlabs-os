@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { MockupPreset } from '../types/mockupPresets.js';
 import { useMockup } from '../components/mockupmachine/MockupContext';
 import {
     AVAILABLE_TAGS,
@@ -16,6 +17,7 @@ import { anglePresetsService } from '@/services/anglePresetsService';
 import { ambiencePresetsService } from '@/services/ambiencePresetsService';
 import { luminancePresetsService } from '@/services/luminancePresetsService';
 import { texturePresetsService } from '@/services/texturePresetsService';
+import { mockupTagService, MockupTagCategory } from '@/services/mockupTagService';
 
 export const useMockupTags = () => {
     const {
@@ -43,6 +45,8 @@ export const useMockupTags = () => {
     const [availableLightingTags, setAvailableLightingTags] = useState<string[]>(AVAILABLE_LIGHTING_TAGS);
     const [availableEffectTags, setAvailableEffectTags] = useState<string[]>(AVAILABLE_EFFECT_TAGS);
     const [availableMaterialTags, setAvailableMaterialTags] = useState<string[]>(AVAILABLE_MATERIAL_TAGS);
+    const [mockupPresets, setMockupPresets] = useState<MockupPreset[]>([]);
+    const [tagCategories, setTagCategories] = useState<MockupTagCategory[]>([]);
 
     // Fetch dynamic tags on mount
     useEffect(() => {
@@ -56,7 +60,9 @@ export const useMockupTags = () => {
                     ambiencePresets,
                     luminancePresets,
                     effectPresets,
-                    texturePresets
+                    texturePresets,
+                    dynamicMockupPresets,
+                    dynamicTagCategories
                 ] = await Promise.all([
                     brandingPresetsService.getAllAsync(),
                     mockupPresetsService.getCategoriesAsync(), // Use new categorized method
@@ -64,14 +70,17 @@ export const useMockupTags = () => {
                     ambiencePresetsService.getAllAsync(),
                     luminancePresetsService.getAllAsync(),
                     effectPresetsService.getAllAsync(),
-                    texturePresetsService.getAllAsync()
+                    texturePresetsService.getAllAsync(),
+                    mockupPresetsService.getCategoriesAsync(),
+                    mockupTagService.getCategoriesAsync()
                 ]);
 
                 if (brandingPresets.length > 0) {
                     setAvailableBrandingTags(brandingPresets.map(p => p.name));
                 }
-                if (mockupPresets.length > 0) {
-                    const uniqueCategories = Array.from(new Set(mockupPresets.map(p => p.name))) as string[];
+                if (dynamicMockupPresets.length > 0) {
+                    setMockupPresets(dynamicMockupPresets);
+                    const uniqueCategories = Array.from(new Set(dynamicMockupPresets.map(p => p.name))) as string[];
                     setAvailableMockupTags(uniqueCategories);
                 }
                 if (ambiencePresets.length > 0) {
@@ -88,6 +97,11 @@ export const useMockupTags = () => {
                 }
                 if (texturePresets.length > 0) {
                     setAvailableMaterialTags(texturePresets.map(p => p.name));
+                }
+
+                // Add the new tagCategories result
+                if (dynamicTagCategories && dynamicTagCategories.length > 0) {
+                    setTagCategories(dynamicTagCategories);
                 }
 
             } catch (error) {
@@ -290,6 +304,8 @@ export const useMockupTags = () => {
         availableAngleTags,
         availableLightingTags,
         availableEffectTags,
-        availableMaterialTags
+        availableMaterialTags,
+        mockupPresets,
+        tagCategories
     };
 };

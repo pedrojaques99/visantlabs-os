@@ -660,7 +660,7 @@ router.get('/presets/public', async (_req, res) => {
     await connectToMongoDB();
     const db = getDb();
 
-    const [mockupPresets, anglePresets, texturePresets, ambiencePresets, luminancePresets, brandingPresets, effectPresets] = await Promise.all([
+    const [mockupPresets, anglePresets, texturePresets, ambiencePresets, luminancePresets, brandingPresets, effectPresets, categories] = await Promise.all([
       db.collection('mockup_presets').find({}).toArray(),
       db.collection('angle_presets').find({}).toArray(),
       db.collection('texture_presets').find({}).toArray(),
@@ -668,11 +668,18 @@ router.get('/presets/public', async (_req, res) => {
       db.collection('luminance_presets').find({}).toArray(),
       db.collection('branding_presets').find({}).toArray(),
       db.collection('effect_presets').find({}).toArray(),
+      db.collection('mockup_tag_categories').find({}).toArray(),
     ]);
 
+    // Map category names to mockup presets
+    const categoryMap = new Map(categories.map((c: any) => [c._id.toString(), c.name]));
+    const mockupPresetsWithCategory = mockupPresets.map((p: any) => ({
+      ...p,
+      mockupCategoryName: p.mockupCategoryId ? categoryMap.get(p.mockupCategoryId.toString()) : undefined
+    }));
 
     return res.json({
-      mockupPresets,
+      mockupPresets: mockupPresetsWithCategory,
       anglePresets,
       texturePresets,
       ambiencePresets,
@@ -692,7 +699,7 @@ router.get('/presets', validateAdmin, async (_req, res) => {
     await connectToMongoDB();
     const db = getDb();
 
-    const [mockupPresets, anglePresets, texturePresets, ambiencePresets, luminancePresets, brandingPresets, effectPresets] = await Promise.all([
+    const [mockupPresets, anglePresets, texturePresets, ambiencePresets, luminancePresets, brandingPresets, effectPresets, categories] = await Promise.all([
       db.collection('mockup_presets').find({}).toArray(),
       db.collection('angle_presets').find({}).toArray(),
       db.collection('texture_presets').find({}).toArray(),
@@ -700,10 +707,18 @@ router.get('/presets', validateAdmin, async (_req, res) => {
       db.collection('luminance_presets').find({}).toArray(),
       db.collection('branding_presets').find({}).toArray(),
       db.collection('effect_presets').find({}).toArray(),
+      db.collection('mockup_tag_categories').find({}).toArray(),
     ]);
 
+    // Map category names to mockup presets
+    const categoryMap = new Map(categories.map((c: any) => [c._id.toString(), c.name]));
+    const mockupPresetsWithCategory = mockupPresets.map((p: any) => ({
+      ...p,
+      mockupCategoryName: p.mockupCategoryId ? categoryMap.get(p.mockupCategoryId.toString()) : undefined
+    }));
+
     return res.json({
-      mockupPresets,
+      mockupPresets: mockupPresetsWithCategory,
       anglePresets,
       texturePresets,
       ambiencePresets,
@@ -740,7 +755,7 @@ router.post('/presets/mockup', validateAdmin, async (req, res) => {
     await connectToMongoDB();
     const db = getDb();
 
-    const { id, name, description, prompt, referenceImageUrl, aspectRatio, model, tags } = req.body;
+    const { id, name, description, prompt, referenceImageUrl, aspectRatio, model, tags, mockupCategoryId } = req.body;
 
     // Validation
     if (!id || !name || !description || !prompt || !aspectRatio) {
@@ -762,6 +777,7 @@ router.post('/presets/mockup', validateAdmin, async (req, res) => {
       aspectRatio,
       model: model || undefined,
       tags: normalizeTags(tags),
+      mockupCategoryId: mockupCategoryId || undefined,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -868,6 +884,7 @@ router.post('/presets/mockup/batch', validateAdmin, async (req, res) => {
         aspectRatio: preset.aspectRatio,
         model: preset.model || undefined,
         tags: normalizeTags(preset.tags),
+        mockupCategoryId: preset.mockupCategoryId || undefined,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
@@ -952,7 +969,7 @@ router.put('/presets/mockup/:id', validateAdmin, async (req, res) => {
     await connectToMongoDB();
     const db = getDb();
 
-    const { name, description, prompt, referenceImageUrl, aspectRatio, model, tags } = req.body;
+    const { name, description, prompt, referenceImageUrl, aspectRatio, model, tags, mockupCategoryId } = req.body;
 
     // Validation
     if (!name || !description || !prompt || !aspectRatio) {
@@ -966,6 +983,7 @@ router.put('/presets/mockup/:id', validateAdmin, async (req, res) => {
       referenceImageUrl: referenceImageUrl || '',
       aspectRatio,
       model: model || undefined,
+      mockupCategoryId: mockupCategoryId !== undefined ? mockupCategoryId : undefined,
       updatedAt: new Date().toISOString(),
     };
 

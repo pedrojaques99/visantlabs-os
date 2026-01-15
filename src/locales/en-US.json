@@ -146,9 +146,47 @@
       "name": "Canvas",
       "description": "Visual flow-based image editor"
     },
-    "badge": {
-      "free": "Free"
+    "colorfy": {
+      "name": "Colorfy",
+      "description": "A gradient generator for your projects"
     },
+    "halftoneMachine": {
+      "name": "Halftone Machine",
+      "description": "Create halftone effects from your images"
+    },
+    "youtubeMixer": {
+      "name": "YouTube Mixer",
+      "description": "Connect multiple YouTube videos simultaneously and create mixes"
+    },
+    "asciiVortex": {
+      "name": "Image ASCII Vortex",
+      "description": "Transform images into interactive ASCII art"
+    },
+    "gridPaint": {
+      "name": "Grid Paint",
+      "description": "Minimalist vector drawing tool with precision"
+    },
+    "ellipseAudio": {
+      "name": "Ellipse Audio Freq",
+      "description": "Circular audio spectrum analyzer"
+    },
+    "vsnLabs": {
+      "name": "VSN Labs",
+      "description": "Experimental interactive effects laboratory"
+    },
+    "badge": {
+      "free": "Free",
+      "premium": "Premium Only",
+      "comingSoon": "Coming Soon",
+      "featured": "Featured",
+      "beta": "Beta",
+      "audio": "Audio",
+      "moreTools": "More Tools"
+    },
+    "subscribeNow": "SUBSCRIBE NOW",
+    "brandingTools": "BRANDING TOOLS //",
+    "effectsTools": "EFFECTS TOOLS //",
+    "audioTools": "AUDIO TOOLS //",
     "home": "Home"
   },
   "surpriseMeSettings": {

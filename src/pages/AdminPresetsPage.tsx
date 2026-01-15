@@ -80,6 +80,7 @@ interface PresetFormData {
   aspectRatio: AspectRatio;
   model?: GeminiModel;
   tags?: string[];
+  mockupCategoryId?: string;
 }
 
 export const AdminPresetsPage: React.FC = () => {
@@ -101,6 +102,7 @@ export const AdminPresetsPage: React.FC = () => {
     aspectRatio: '16:9',
     model: 'gemini-2.5-flash-image',
     tags: [],
+    mockupCategoryId: '',
   });
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [imageUploadError, setImageUploadError] = useState<string | null>(null);
@@ -116,6 +118,7 @@ export const AdminPresetsPage: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [tagInput, setTagInput] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+  const [mockupCategories, setMockupCategories] = useState<{ id: string; name: string }[]>([]);
 
 
 
@@ -161,6 +164,7 @@ export const AdminPresetsPage: React.FC = () => {
           referenceImageUrl: '',
           aspectRatio: '16:9',
           model: 'gemini-2.5-flash-image',
+          mockupCategoryId: '',
         });
         setImageUploadError(null);
         setIsEditModalOpen(false);
@@ -192,12 +196,6 @@ export const AdminPresetsPage: React.FC = () => {
     const id = preset.id;
 
     try {
-      // Construct the body based on the existing preset, only updating one field
-      // We need to send required fields usually, or use PATCH if supported. 
-      // Assuming PUT requires all fields, we construct a "best effort" complete object from the row data.
-      // Ideally, the backend supports PATCH. If not, we just send what we have.
-      // Based on handleSave, we use PUT.
-
       const body: any = {
         id: preset.id,
         name: preset.name,
@@ -206,7 +204,56 @@ export const AdminPresetsPage: React.FC = () => {
         aspectRatio: preset.aspectRatio,
         model: preset.model,
         tags: preset.tags,
-        referenceImageUrl: preset.referenceImageUrl
+        referenceImageUrl: preset.referenceImageUrl,
+        mockupCategoryId: preset.mockupCategoryId
+      };
+
+      // Update the modified field
+      body[field] = value;
+
+      const response = await fetch(`${ADMIN_API}/${type}/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        throw new Error(t('adminPresets.saveError'));
+      }
+
+      toast.success(t('adminPresets.saveSuccess'));
+      handleFetch(); // Refresh data
+    } catch (error) {
+      toast.error(t('adminPresets.saveError'));
+      console.error(error);
+    }
+  };
+
+  const handleInlineSaveCategory = async (preset: CommunityPrompt, field: string, value: any) => {
+    // This specifically handles choice from select dropdown
+    const token = authService.getToken();
+    if (!token) {
+      toast.error(t('adminPresets.unauthorized'));
+      return;
+    }
+
+    const type = (preset as any).category || 'mockup';
+    const id = preset.id;
+
+    try {
+      const body: any = {
+        id: preset.id,
+        name: preset.name,
+        description: preset.description,
+        prompt: preset.prompt,
+        aspectRatio: preset.aspectRatio,
+        model: preset.model,
+        tags: preset.tags,
+        referenceImageUrl: preset.referenceImageUrl,
+        mockupCategoryId: preset.mockupCategoryId
       };
 
       // Update the modified field
@@ -291,7 +338,7 @@ export const AdminPresetsPage: React.FC = () => {
     },
     {
       accessorKey: "category",
-      header: t('adminPresets.table.category'),
+      header: "Tipo",
       cell: ({ row }) => {
         const category = row.original.category;
         const config = CATEGORY_CONFIG[category] || CATEGORY_CONFIG['presets'];
@@ -304,7 +351,24 @@ export const AdminPresetsPage: React.FC = () => {
           </Badge>
         );
       },
-      size: 120,
+      size: 100,
+    },
+    {
+      accessorKey: "mockupCategoryId",
+      header: "Categoria Mockup",
+      cell: ({ row }) => {
+        if (row.original.category !== 'mockup') return null;
+        return (
+          <DataTableEditableCell
+            row={row}
+            field="mockupCategoryId"
+            type="select"
+            options={mockupCategories.map(c => ({ value: c.id, label: c.name }))}
+            onSave={handleInlineSaveCategory}
+          />
+        );
+      },
+      size: 150,
     },
     {
       accessorKey: "model",
@@ -347,7 +411,7 @@ export const AdminPresetsPage: React.FC = () => {
       },
       size: 100,
     },
-  ], [t]);
+  ], [t, mockupCategories]);
 
   const handleFetch = async () => {
     const token = authService.getToken();
@@ -374,6 +438,20 @@ export const AdminPresetsPage: React.FC = () => {
 
       const result = (await response.json()) as PresetsData;
       setData(result);
+
+      // Fetch categories
+      const categoriesResponse = await fetch('/api/mockup-tags/categories', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (categoriesResponse.ok) {
+        const categoriesResult = await categoriesResponse.json();
+        setMockupCategories(categoriesResult.map((c: any) => ({
+          id: c.id || c._id,
+          name: c.name
+        })));
+      }
     } catch (fetchError: any) {
       console.error('Erro ao carregar dados do admin:', fetchError);
       setData(null);
@@ -519,6 +597,7 @@ export const AdminPresetsPage: React.FC = () => {
         aspectRatio: formData.aspectRatio,
         model: formData.model,
         tags: formData.tags && formData.tags.length > 0 ? formData.tags : undefined,
+        mockupCategoryId: formData.mockupCategoryId || undefined,
       };
 
       if (type === 'mockup' && formData.referenceImageUrl !== undefined) {
@@ -1711,7 +1790,6 @@ export const AdminPresetsPage: React.FC = () => {
                           ))}
                         </select>
                       </div>
-
                       <div>
                         <label className="block text-sm text-neutral-400 font-mono mb-2">
                           Model (opcional)
@@ -1729,6 +1807,26 @@ export const AdminPresetsPage: React.FC = () => {
                           ))}
                         </select>
                       </div>
+
+                      {effectiveEditType === 'mockup' && (
+                        <div>
+                          <label className="block text-sm text-neutral-400 font-mono mb-2">
+                            Categoria Mockup (opcional)
+                          </label>
+                          <select
+                            value={formData.mockupCategoryId || ''}
+                            onChange={(e) => setFormData({ ...formData, mockupCategoryId: e.target.value })}
+                            className="w-full px-4 py-2 bg-black/40 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
+                          >
+                            <option value="">Nenhuma</option>
+                            {mockupCategories.map((c) => (
+                              <option key={c.id} value={c.id}>
+                                {c.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
 
                       <div className="md:col-span-2">
                         <label className="block text-sm text-neutral-400 font-mono mb-2">
@@ -1820,10 +1918,11 @@ export const AdminPresetsPage: React.FC = () => {
                   </CardContent>
                 </Card>
               </div>
-            )}
-          </Tabs>
+            )
+            }
+          </Tabs >
         )}
-      </div>
+      </div >
     </div >
   );
 };
