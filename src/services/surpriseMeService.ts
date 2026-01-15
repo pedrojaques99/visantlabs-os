@@ -1,5 +1,5 @@
 import { authService } from './authService';
-import { SurpriseMeSelectedTags } from '@/utils/surpriseMeSettings';
+import { SurpriseMeSelectedTags } from '../utils/surpriseMeSettings';
 
 export interface SurpriseMePreset {
     id: string;

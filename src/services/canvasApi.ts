@@ -1,7 +1,7 @@
 import { authService } from './authService';
 import type { Node, Edge } from '@xyflow/react';
 import type { FlowNodeData } from '../types/reactFlow';
-import { compressImage } from '@/utils/imageCompression.js';
+import { compressImage } from '../utils/imageCompression.js';
 
 // Get API URL from environment or use current origin for production
 const getApiBaseUrl = () => {

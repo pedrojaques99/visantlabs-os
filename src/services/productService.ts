@@ -1,4 +1,4 @@
-import { CREDIT_PACKAGES } from '@/utils/creditPackages';
+import { CREDIT_PACKAGES } from '../utils/creditPackages';
 
 export interface Product {
     id: string;

@@ -1,6 +1,6 @@
 import { GoogleGenAI, Modality, Type } from "@google/genai";
 import type { UploadedImage, AspectRatio, DesignType, GeminiModel, Resolution } from '../types/types.js';
-import { buildGeminiPromptInstructionsTemplate } from '@/utils/mockupPromptFormat.js';
+import { buildGeminiPromptInstructionsTemplate } from '../utils/mockupPromptFormat.js';
 import {
   AVAILABLE_TAGS,
   AVAILABLE_BRANDING_TAGS,
@@ -9,7 +9,7 @@ import {
   AVAILABLE_LIGHTING_TAGS,
   AVAILABLE_EFFECT_TAGS,
   AVAILABLE_MATERIAL_TAGS
-} from '@/utils/mockupConstants.js';
+} from '../utils/mockupConstants.js';
 
 // Lazy initialization to avoid breaking app startup if API key is not configured
 let ai: GoogleGenAI | null = null;
