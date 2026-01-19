@@ -12,6 +12,8 @@ interface GenerateButtonProps {
   isGenerating: boolean;
   isPromptReady: boolean;
   variant?: 'sidebar' | 'floating';
+  /** When true with variant=floating, omits fixed positioning so it can sit inside a shared flex container */
+  embed?: boolean;
   buttonRef?: React.RefObject<HTMLButtonElement>;
   creditsRequired?: number;
 }
@@ -23,6 +25,7 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
   isGenerating,
   isPromptReady,
   variant = 'sidebar',
+  embed = false,
   buttonRef,
   creditsRequired
 }) => {
@@ -41,9 +44,12 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
       <Button
         onClick={handleClick}
         disabled={disabled}
-        variant="brand"
+        variant={embed ? "default" : "brand"}
         className={cn(
-          "fixed bottom-4 md:bottom-8 right-4 md:right-8 mb-10 z-30 flex-col gap-0.5 md:gap-1 font-semibold py-2 md:py-3 px-4 md:px-6 text-xs md:text-sm shadow-2xl transform active:scale-95 animate-fade-in-up",
+          !embed && "fixed bottom-4 md:bottom-8 right-4 md:right-8 mb-10 z-30",
+          embed
+            ? "h-12 px-4 py-2 gap-2 text-sm font-semibold bg-brand-cyan hover:bg-brand-cyan/90 text-black shadow-lg hover:shadow-xl transform active:scale-95"
+            : "flex-col gap-0.5 md:gap-1 font-semibold py-2 md:py-3 px-4 md:px-6 text-xs md:text-sm shadow-2xl transform active:scale-95 animate-fade-in-up",
           "focus:ring-offset-[#0C0C0C]"
         )}
         aria-label={isGeneratingPrompt ? t('mockup.generatingPrompt') : isGenerating ? t('mockup.generatingOutputs') : isPromptReady ? t('mockup.generateOutputs') : t('mockup.generatePrompt')}
@@ -84,7 +90,7 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <RefreshCcw size={12} className="md:w-4 md:h-4" />
+            <RefreshCcw size={embed ? 16 : 12} className={!embed ? "md:w-4 md:h-4" : undefined} />
             <span className="hidden sm:inline">{t('mockup.generatePrompt')}</span>
             <span className="sm:hidden">{t('mockup.promptShort')}</span>
           </div>

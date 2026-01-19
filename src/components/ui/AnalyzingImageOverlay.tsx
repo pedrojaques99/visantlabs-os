@@ -33,7 +33,7 @@ export const AnalyzingImageOverlay: React.FC<AnalyzingImageOverlayProps> = ({ is
 
         const intervalId = setInterval(() => {
             setMessageIndex((prev) => (prev + 1) % statusMessages.length);
-        }, 2500);
+        }, 1500);
 
         return () => clearInterval(intervalId);
     }, [isVisible, statusMessages]);
@@ -52,8 +52,6 @@ export const AnalyzingImageOverlay: React.FC<AnalyzingImageOverlayProps> = ({ is
                         : '0 0 20px rgba(82, 221, 235, 0.15), inset 0 0 30px rgba(255, 255, 255, 0.5)'
                 }}>
 
-
-
                 {/* ASCII Background */}
                 <div className="absolute inset-0 opacity-15 pointer-events-none overflow-hidden">
                     <InteractiveASCII
@@ -69,9 +67,6 @@ export const AnalyzingImageOverlay: React.FC<AnalyzingImageOverlayProps> = ({ is
                     {/* Compact Header */}
                     <div className="flex items-center gap-3">
                         <GlitchLoader size={16} />
-                        <span className="text-sm font-redhatmono font-bold uppercase tracking-widest text-brand-cyan">
-                            {t('mockup.analyzingImage')}
-                        </span>
                     </div>
 
                     {/* Status Message */}

@@ -35,20 +35,20 @@ export async function compressImage(
 
   return new Promise((resolve, reject) => {
     const img = new Image();
-    
+
     img.onload = () => {
       try {
         // Calculate new dimensions while maintaining aspect ratio
         let width = img.width;
         let height = img.height;
         const originalSize = (width * height * 4) / 1024 / 1024; // Approximate size in MB (RGBA)
-        
+
         // If image is very large, reduce dimensions more aggressively
         if (originalSize > 10) {
           // For very large images, reduce max dimensions further
           const adjustedMaxWidth = Math.min(maxWidth, 1280);
           const adjustedMaxHeight = Math.min(maxHeight, 1280);
-          
+
           if (width > adjustedMaxWidth || height > adjustedMaxHeight) {
             const aspectRatio = width / height;
             if (width > height) {
@@ -61,7 +61,7 @@ export async function compressImage(
           }
         } else if (width > maxWidth || height > maxHeight) {
           const aspectRatio = width / height;
-          
+
           if (width > height) {
             width = Math.min(width, maxWidth);
             height = width / aspectRatio;
@@ -76,7 +76,7 @@ export async function compressImage(
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d');
-        
+
         if (!ctx) {
           reject(new Error('Failed to get canvas context'));
           return;
@@ -88,42 +88,42 @@ export async function compressImage(
         // Determine output format
         const inputMimeType = options.mimeType || getMimeTypeFromBase64(base64Image) || 'image/jpeg';
         const outputMimeType = inputMimeType === 'image/png' ? 'image/png' : 'image/jpeg';
-        
+
         // Try different quality levels if image is still too large
         let currentQuality = quality;
         let compressedBase64 = '';
         let attempts = 0;
         const maxAttempts = 5;
-        
+
         while (attempts < maxAttempts) {
           // Convert to base64
           compressedBase64 = canvas.toDataURL(outputMimeType, currentQuality);
-          
+
           // Calculate size (base64 is ~33% larger than binary)
           const base64Data = compressedBase64.split(',')[1];
           if (!base64Data) {
             reject(new Error('Failed to compress image'));
             return;
           }
-          
+
           // Approximate binary size from base64
           const binarySize = (base64Data.length * 3) / 4;
-          
+
           // If size is acceptable, return
           if (binarySize <= maxSizeBytes) {
             resolve(compressedBase64);
             return;
           }
-          
+
           // Reduce quality and try again
           currentQuality = Math.max(0.3, currentQuality - 0.15);
           attempts++;
         }
-        
+
         // If still too large after quality reduction, check final size
         const finalBase64Data = compressedBase64.split(',')[1];
         const finalBinarySize = finalBase64Data ? (finalBase64Data.length * 3) / 4 : 0;
-        
+
         // This ensures we always return something, even if slightly over limit
         if (finalBinarySize > maxSizeBytes) {
           console.warn(`Image compression: Final size (${(finalBinarySize / 1024 / 1024).toFixed(2)}MB) exceeds target (${(maxSizeBytes / 1024 / 1024).toFixed(2)}MB) after ${maxAttempts} attempts`);
@@ -133,14 +133,14 @@ export async function compressImage(
         reject(new Error(`Failed to compress image: ${error.message}`));
       }
     };
-    
+
     img.onerror = () => {
       reject(new Error('Failed to load image for compression'));
     };
-    
+
     // Load image from base64
-    const dataUrl = base64Image.startsWith('data:') 
-      ? base64Image 
+    const dataUrl = base64Image.startsWith('data:')
+      ? base64Image
       : `data:image/jpeg;base64,${base64Image}`;
     img.src = dataUrl;
   });
@@ -164,12 +164,14 @@ function getMimeTypeFromBase64(base64: string): string | null {
  * @returns true if image exceeds max size
  */
 export function needsCompression(base64Image: string, maxSizeBytes: number = DEFAULT_MAX_SIZE_BYTES): boolean {
-  const base64Data = base64Image.includes(',') 
-    ? base64Image.split(',')[1] 
+  if (!base64Image) return false;
+
+  const base64Data = base64Image.includes(',')
+    ? base64Image.split(',')[1]
     : base64Image;
-  
+
   if (!base64Data) return false;
-  
+
   // Approximate binary size from base64 (base64 is ~33% larger)
   const binarySize = (base64Data.length * 3) / 4;
   return binarySize > maxSizeBytes;
@@ -179,12 +181,12 @@ export function needsCompression(base64Image: string, maxSizeBytes: number = DEF
  * Get approximate size of base64 image in bytes
  */
 export function getBase64ImageSize(base64Image: string): number {
-  const base64Data = base64Image.includes(',') 
-    ? base64Image.split(',')[1] 
+  const base64Data = base64Image.includes(',')
+    ? base64Image.split(',')[1]
     : base64Image;
-  
+
   if (!base64Data) return 0;
-  
+
   // Approximate binary size from base64
   return (base64Data.length * 3) / 4;
 }
@@ -207,21 +209,21 @@ export async function compressImageFile(
   return new Promise((resolve, reject) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
-    
+
     img.onload = () => {
       try {
         URL.revokeObjectURL(url);
-        
+
         // Calculate new dimensions while maintaining aspect ratio
         let width = img.width;
         let height = img.height;
         const originalSize = (width * height * 4) / 1024 / 1024; // Approximate size in MB (RGBA)
-        
+
         // If image is very large, reduce dimensions more aggressively
         if (originalSize > 10) {
           const adjustedMaxWidth = Math.min(maxWidth, 1280);
           const adjustedMaxHeight = Math.min(maxHeight, 1280);
-          
+
           if (width > adjustedMaxWidth || height > adjustedMaxHeight) {
             const aspectRatio = width / height;
             if (width > height) {
@@ -234,7 +236,7 @@ export async function compressImageFile(
           }
         } else if (width > maxWidth || height > maxHeight) {
           const aspectRatio = width / height;
-          
+
           if (width > height) {
             width = Math.min(width, maxWidth);
             height = width / aspectRatio;
@@ -249,7 +251,7 @@ export async function compressImageFile(
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d');
-        
+
         if (!ctx) {
           reject(new Error('Failed to get canvas context'));
           return;
@@ -261,12 +263,12 @@ export async function compressImageFile(
         // Determine output format
         const inputMimeType = options.mimeType || file.type || 'image/jpeg';
         const outputMimeType = inputMimeType === 'image/png' ? 'image/png' : 'image/jpeg';
-        
+
         // Try different quality levels if image is still too large
         let currentQuality = quality;
         let attempts = 0;
         const maxAttempts = 5;
-        
+
         const tryCompress = (): void => {
           canvas.toBlob(
             (blob) => {
@@ -274,7 +276,7 @@ export async function compressImageFile(
                 reject(new Error('Failed to compress image'));
                 return;
               }
-              
+
               // If size is acceptable, return
               if (blob.size <= maxSizeBytes || attempts >= maxAttempts) {
                 if (blob.size > maxSizeBytes) {
@@ -283,7 +285,7 @@ export async function compressImageFile(
                 resolve(blob);
                 return;
               }
-              
+
               // Reduce quality and try again
               currentQuality = Math.max(0.3, currentQuality - 0.15);
               attempts++;
@@ -293,18 +295,18 @@ export async function compressImageFile(
             currentQuality
           );
         };
-        
+
         tryCompress();
       } catch (error: any) {
         reject(new Error(`Failed to compress image: ${error.message}`));
       }
     };
-    
+
     img.onerror = () => {
       URL.revokeObjectURL(url);
       reject(new Error('Failed to load image for compression'));
     };
-    
+
     img.src = url;
   });
 }

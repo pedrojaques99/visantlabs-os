@@ -11,6 +11,7 @@ import {
   applyThemeToMockup,
 } from '../services/geminiService.js';
 import { getGeminiApiKey } from '../utils/geminiApiKey.js';
+import { getAllAvailableTags } from '../services/tagService.js';
 import type { UploadedImage, GeminiModel, Resolution } from '../../src/types/types.js';
 import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { createUsageRecord } from '../utils/usageTracking.js';
@@ -102,7 +103,7 @@ router.post('/describe-image', authenticate, async (req: AuthRequest, res, next)
     let imageInput: UploadedImage | string;
     if (typeof image === 'string') {
       imageInput = image;
-    } else if (image.base64 && image.mimeType) {
+    } else if ((image.base64 || image.url) && image.mimeType) {
       imageInput = image as UploadedImage;
     } else {
       return res.status(400).json({ error: 'Invalid image format' });
@@ -159,7 +160,7 @@ router.post('/suggest-categories', authenticate, async (req: AuthRequest, res, n
   try {
     const { baseImage, brandingTags } = req.body;
 
-    if (!baseImage || !baseImage.base64 || !baseImage.mimeType) {
+    if (!baseImage || (!baseImage.base64 && !baseImage.url) || !baseImage.mimeType) {
       return res.status(400).json({ error: 'Base image is required' });
     }
 
@@ -221,60 +222,39 @@ router.post('/suggest-categories', authenticate, async (req: AuthRequest, res, n
  * Comprehensive analysis of an image to suggest tags for all mockup sections
  */
 router.post('/analyze-setup', authenticate, async (req: AuthRequest, res, next) => {
+  const t0 = Date.now();
+  if (process.env.NODE_ENV === 'development') console.log('[dev] analyze-setup: start');
   try {
-    const { baseImage } = req.body;
+    const { baseImage, instructions, userContext } = req.body;
 
-    if (!baseImage || !baseImage.base64 || !baseImage.mimeType) {
+    if (!baseImage || (!baseImage.base64 && !baseImage.url) || !baseImage.mimeType) {
       return res.status(400).json({ error: 'Base image is required' });
     }
 
-    // Try to use user's API key first, fallback to system key
+    // Run API key and tags fetch in parallel to reduce latency
     let userApiKey: string | undefined;
-    try {
-      userApiKey = await getGeminiApiKey(req.userId!);
-    } catch (error) {
-      // User doesn't have API key
-    }
+    const [apiKeyResult, availableTags] = await Promise.all([
+      (async () => {
+        try {
+          return await getGeminiApiKey(req.userId!);
+        } catch {
+          return undefined;
+        }
+      })(),
+      getAllAvailableTags(),
+    ]);
+    userApiKey = apiKeyResult;
+    if (process.env.NODE_ENV === 'development') console.log('[dev] analyze-setup: getGeminiApiKey + getAllAvailableTags done', ((Date.now() - t0) / 1000).toFixed(2) + 's');
 
-    // Fetch all available tags/presets from database
-    let availableTags: any = undefined;
-    try {
-      await connectToMongoDB();
-      const db = getDb();
-
-      const [
-        brandingDocs,
-        mockupDocs,
-        locationDocs,
-        angleDocs,
-        lightingDocs,
-        effectDocs,
-        textureDocs
-      ] = await Promise.all([
-        db.collection('branding_presets').find({}, { projection: { name: 1 } }).toArray(),
-        db.collection('mockup_presets').find({}, { projection: { name: 1 } }).toArray(),
-        db.collection('ambience_presets').find({}, { projection: { name: 1 } }).toArray(),
-        db.collection('angle_presets').find({}, { projection: { name: 1 } }).toArray(),
-        db.collection('luminance_presets').find({}, { projection: { name: 1 } }).toArray(),
-        db.collection('effect_presets').find({}, { projection: { name: 1 } }).toArray(),
-        db.collection('texture_presets').find({}, { projection: { name: 1 } }).toArray()
-      ]);
-
-      availableTags = {
-        branding: brandingDocs.map(d => d.name),
-        categories: [...new Set(mockupDocs.map(d => d.name))], // Mockup presets usually mapped to categories
-        locations: locationDocs.map(d => d.name),
-        angles: angleDocs.map(d => d.name),
-        lighting: lightingDocs.map(d => d.name),
-        effects: effectDocs.map(d => d.name),
-        materials: textureDocs.map(d => d.name)
-      };
-    } catch (dbError) {
-      console.warn('Failed to fetch dynamic tags for analysis, falling back to defaults:', dbError);
-      // availableTags stays undefined, service uses defaults
-    }
-
-    const result = await analyzeMockupSetup(baseImage as UploadedImage, userApiKey, availableTags);
+    if (process.env.NODE_ENV === 'development') console.log('[dev] analyze-setup: calling analyzeMockupSetup');
+    const result = await analyzeMockupSetup(
+      baseImage as UploadedImage,
+      userApiKey,
+      availableTags,
+      instructions,
+      userContext
+    );
+    if (process.env.NODE_ENV === 'development') console.log('[dev] analyze-setup: analyzeMockupSetup done', ((Date.now() - t0) / 1000).toFixed(2) + 's');
 
     // Track usage asynchronously
     (async () => {
@@ -308,6 +288,7 @@ router.post('/analyze-setup', authenticate, async (req: AuthRequest, res, next) 
       }
     })();
 
+    if (process.env.NODE_ENV === 'development') console.log('[dev] analyze-setup: res.json', ((Date.now() - t0) / 1000).toFixed(2) + 's');
     res.json(result);
   } catch (error: any) {
     console.error('Error analyzing mockup setup:', error);
@@ -337,6 +318,7 @@ router.post('/generate-smart-prompt', authenticate, async (req: AuthRequest, res
       enhanceTexture,
       negativePrompt,
       additionalPrompt,
+      instructions,
     } = req.body;
 
     if (!designType) {
@@ -367,6 +349,7 @@ router.post('/generate-smart-prompt', authenticate, async (req: AuthRequest, res
       enhanceTexture: enhanceTexture || false,
       negativePrompt: negativePrompt || '',
       additionalPrompt: additionalPrompt || '',
+      instructions: instructions || '',
     }, userApiKey);
 
     // Track total tokens
@@ -456,7 +439,7 @@ router.post('/change-object', authenticate, async (req: AuthRequest, res, next) 
   try {
     const { baseImage, newObject, model, resolution } = req.body;
 
-    if (!baseImage || !baseImage.base64 || !baseImage.mimeType) {
+    if (!baseImage || (!baseImage.base64 && !baseImage.url) || !baseImage.mimeType) {
       return res.status(400).json({ error: 'Base image is required' });
     }
 
@@ -505,7 +488,7 @@ router.post('/apply-theme', authenticate, async (req: AuthRequest, res, next) =>
   try {
     const { baseImage, themes, model, resolution } = req.body;
 
-    if (!baseImage || !baseImage.base64 || !baseImage.mimeType) {
+    if (!baseImage || (!baseImage.base64 && !baseImage.url) || !baseImage.mimeType) {
       return res.status(400).json({ error: 'Base image is required' });
     }
 

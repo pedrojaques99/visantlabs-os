@@ -10,13 +10,7 @@ import {
     AVAILABLE_EFFECT_TAGS,
     AVAILABLE_MATERIAL_TAGS
 } from '@/utils/mockupConstants';
-import { brandingPresetsService } from '@/services/brandingPresetsService';
-import { effectPresetsService } from '@/services/effectPresetsService';
 import { mockupPresetsService } from '@/services/mockupPresetsService';
-import { anglePresetsService } from '@/services/anglePresetsService';
-import { ambiencePresetsService } from '@/services/ambiencePresetsService';
-import { luminancePresetsService } from '@/services/luminancePresetsService';
-import { texturePresetsService } from '@/services/texturePresetsService';
 import { mockupTagService, MockupTagCategory } from '@/services/mockupTagService';
 import { saveSurpriseMeSelectedTags, type SurpriseMeSelectedTags } from '@/utils/surpriseMeSettings';
 
@@ -49,58 +43,44 @@ export const useMockupTags = () => {
     const [mockupPresets, setMockupPresets] = useState<MockupPreset[]>([]);
     const [tagCategories, setTagCategories] = useState<MockupTagCategory[]>([]);
 
-    // Fetch dynamic tags on mount
+    // Fetch dynamic tags on mount (unified endpoint)
     useEffect(() => {
         const fetchTags = async () => {
             try {
-                // Fetch all presets in parallel
-                const [
-                    brandingPresets,
-                    mockupPresets,
-                    anglePresets,
-                    ambiencePresets,
-                    luminancePresets,
-                    effectPresets,
-                    texturePresets,
-                    dynamicMockupPresets,
-                    dynamicTagCategories
-                ] = await Promise.all([
-                    brandingPresetsService.getAllAsync(),
-                    mockupPresetsService.getCategoriesAsync(), // Use new categorized method
-                    anglePresetsService.getAllAsync(),
-                    ambiencePresetsService.getAllAsync(),
-                    luminancePresetsService.getAllAsync(),
-                    effectPresetsService.getAllAsync(),
-                    texturePresetsService.getAllAsync(),
-                    mockupPresetsService.getCategoriesAsync(),
-                    mockupTagService.getCategoriesAsync()
+                // Fetch all tags from unified endpoint + additional data needed
+                const [availableTags, dynamicMockupPresets, dynamicTagCategories] = await Promise.all([
+                    mockupTagService.getAvailableTagsAsync(),
+                    mockupPresetsService.getCategoriesAsync(), // For mockupPresets state
+                    mockupTagService.getCategoriesAsync() // For tagCategories state
                 ]);
 
-                if (brandingPresets.length > 0) {
-                    setAvailableBrandingTags(brandingPresets.map(p => p.name));
+                // Map unified tags to state
+                if (availableTags.branding.length > 0) {
+                    setAvailableBrandingTags(availableTags.branding);
                 }
-                if (dynamicMockupPresets.length > 0) {
-                    setMockupPresets(dynamicMockupPresets);
-                    const uniqueCategories = Array.from(new Set(dynamicMockupPresets.map(p => p.name))) as string[];
-                    setAvailableMockupTags(uniqueCategories);
+                if (availableTags.categories.length > 0) {
+                    setAvailableMockupTags(availableTags.categories);
                 }
-                if (ambiencePresets.length > 0) {
-                    setAvailableLocationTags(ambiencePresets.map(p => p.name));
+                if (availableTags.locations.length > 0) {
+                    setAvailableLocationTags(availableTags.locations);
                 }
-                if (anglePresets.length > 0) {
-                    setAvailableAngleTags(anglePresets.map(p => p.name));
+                if (availableTags.angles.length > 0) {
+                    setAvailableAngleTags(availableTags.angles);
                 }
-                if (luminancePresets.length > 0) {
-                    setAvailableLightingTags(luminancePresets.map(p => p.name));
+                if (availableTags.lighting.length > 0) {
+                    setAvailableLightingTags(availableTags.lighting);
                 }
-                if (effectPresets.length > 0) {
-                    setAvailableEffectTags(effectPresets.map(p => p.name));
+                if (availableTags.effects.length > 0) {
+                    setAvailableEffectTags(availableTags.effects);
                 }
-                if (texturePresets.length > 0) {
-                    setAvailableMaterialTags(texturePresets.map(p => p.name));
+                if (availableTags.materials.length > 0) {
+                    setAvailableMaterialTags(availableTags.materials);
                 }
 
-                // Add the new tagCategories result
+                // Set mockup presets and categories (still needed for UI)
+                if (dynamicMockupPresets.length > 0) {
+                    setMockupPresets(dynamicMockupPresets);
+                }
                 if (dynamicTagCategories && dynamicTagCategories.length > 0) {
                     setTagCategories(dynamicTagCategories);
                 }

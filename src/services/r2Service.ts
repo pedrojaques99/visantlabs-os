@@ -1403,3 +1403,175 @@ export async function checkStorageLimit(
   };
 }
 
+
+/**
+ * Upload temporary image to R2 storage
+ * These images should be cleaned up periodically (e.g. every hour)
+ * @param base64Image - Base64 encoded image string
+ * @param userId - User ID
+ * @returns Public URL of the uploaded image
+ */
+export async function uploadTemporaryImage(
+  base64Image: string,
+  userId: string
+): Promise<string> {
+  const bucketName = process.env.R2_BUCKET_NAME;
+  if (!bucketName) {
+    throw new Error('R2_BUCKET_NAME environment variable is not set.');
+  }
+
+  const publicUrl = process.env.R2_PUBLIC_URL;
+  if (!publicUrl) {
+    throw new Error('R2_PUBLIC_URL environment variable is not set.');
+  }
+
+  // Remove data URL prefix if present
+  const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
+
+  // Convert base64 to buffer
+  const buffer = Buffer.from(base64Data, 'base64');
+
+  // Note: We do NOT check storage limits for temporary uploads as they are transient
+
+  // Generate file path: temp/userId/temp-timestamp.png
+  const timestamp = Date.now();
+  const randomSuffix = Math.random().toString(36).substring(2, 8);
+  const key = `temp/${userId}/temp-${timestamp}-${randomSuffix}.png`;
+
+  const client = getR2Client();
+
+  try {
+    await client.send(
+      new PutObjectCommand({
+        Bucket: bucketName,
+        Key: key,
+        Body: buffer,
+        ContentType: 'image/png',
+        // Start with 1 hour cache control since it's temporary
+        CacheControl: 'max-age=3600'
+      })
+    );
+
+    // Note: We do NOT increment user storage counter for temporary files
+
+    return `${publicUrl}/${key}`;
+  } catch (error: any) {
+    console.error('Error uploading temporary image to R2:', error);
+    throw new Error(`Failed to upload temporary image to R2: ${error.message || error}`);
+  }
+}
+
+/**
+ * Generate presigned URL for direct temporary image upload to R2
+ * @param userId - User ID
+ * @param contentType - Content type (default: image/png)
+ * @param expiresIn - URL expiration time in seconds (default: 3600 = 1 hour)
+ * @returns Object with presignedUrl and finalUrl
+ */
+export async function generateTemporaryImageUploadUrl(
+  userId: string,
+  contentType: string = 'image/png',
+  expiresIn: number = 3600
+): Promise<{ presignedUrl: string; finalUrl: string; key: string }> {
+  const bucketName = process.env.R2_BUCKET_NAME;
+  if (!bucketName) {
+    throw new Error('R2_BUCKET_NAME environment variable is not set.');
+  }
+
+  const publicUrl = process.env.R2_PUBLIC_URL;
+  if (!publicUrl) {
+    throw new Error('R2_PUBLIC_URL environment variable is not set.');
+  }
+
+  // Generate file path: temp/userId/temp-timestamp.{ext}
+  let extension = 'png';
+  if (contentType.includes('jpeg') || contentType.includes('jpg')) {
+    extension = 'jpg';
+  } else if (contentType.includes('webp')) {
+    extension = 'webp';
+  }
+
+  const timestamp = Date.now();
+  const randomSuffix = Math.random().toString(36).substring(2, 8);
+  const key = `temp/${userId}/temp-${timestamp}-${randomSuffix}.${extension}`;
+
+  const client = getR2Client();
+
+  try {
+    const command = new PutObjectCommand({
+      Bucket: bucketName,
+      Key: key,
+      ContentType: contentType,
+      CacheControl: 'max-age=3600'
+    });
+
+    const presignedUrl = await getSignedUrl(client, command, { expiresIn });
+
+    return {
+      presignedUrl,
+      finalUrl: `${publicUrl}/${key}`,
+      key,
+    };
+  } catch (error: any) {
+    console.error('Error generating presigned URL for temp image:', error);
+    throw new Error(`Failed to generate presigned URL: ${error.message || error}`);
+  }
+}
+
+/**
+ * Delete old temporary images from R2
+ * Deletes files in temp/ directory older than specified max age
+ * @param maxAgeMs - Maximum age in milliseconds (default: 1 hour)
+ * @returns Number of files deleted
+ */
+export async function deleteOldTemporaryImages(maxAgeMs: number = 60 * 60 * 1000): Promise<number> {
+  const bucketName = process.env.R2_BUCKET_NAME;
+  if (!bucketName) return 0;
+
+  const client = getR2Client();
+  const prefix = 'temp/';
+  let deletedCount = 0;
+  const now = Date.now();
+
+  try {
+    let continuationToken: string | undefined;
+
+    do {
+      const command = new ListObjectsV2Command({
+        Bucket: bucketName,
+        Prefix: prefix,
+        ContinuationToken: continuationToken,
+      });
+
+      const response = await client.send(command);
+
+      if (response.Contents) {
+        for (const object of response.Contents) {
+          if (object.LastModified) {
+            const age = now - object.LastModified.getTime();
+            if (age > maxAgeMs && object.Key) {
+              await client.send(
+                new DeleteObjectCommand({
+                  Bucket: bucketName,
+                  Key: object.Key,
+                })
+              );
+              deletedCount++;
+            }
+          }
+        }
+      }
+
+      continuationToken = response.NextContinuationToken;
+    } while (continuationToken);
+
+    if (deletedCount > 0) {
+      console.log(`[R2 Cleanup] Deleted ${deletedCount} old temporary files.`);
+    }
+
+    return deletedCount;
+  } catch (error: any) {
+    console.error('Error cleaning up temporary R2 files:', error);
+    return deletedCount;
+  }
+}

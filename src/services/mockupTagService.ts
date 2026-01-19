@@ -13,9 +13,31 @@ export interface MockupTagCategory {
     tags: MockupTag[];
 }
 
+export interface AvailableTags {
+    branding: string[];
+    categories: string[];
+    locations: string[];
+    angles: string[];
+    lighting: string[];
+    effects: string[];
+    materials: string[];
+}
+
 const API_BASE = '/api/mockup-tags';
 
 export const mockupTagService = {
+    /**
+     * Get all available tags from all collections (unified endpoint)
+     * Replaces multiple individual service calls with a single request
+     */
+    async getAvailableTagsAsync(): Promise<AvailableTags> {
+        const response = await fetch(`${API_BASE}/available`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch available tags');
+        }
+        return response.json();
+    },
+
     async getCategoriesAsync(): Promise<MockupTagCategory[]> {
         const response = await fetch(`${API_BASE}/categories`);
         if (!response.ok) {

@@ -17,6 +17,7 @@ interface BrandingSectionProps {
   onAddCustomTag: () => void;
   isComplete: boolean;
   suggestedTags?: string[];
+  hasAnalyzed?: boolean;
 }
 
 export const BrandingSection: React.FC<BrandingSectionProps> = ({
@@ -27,7 +28,8 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
   onCustomInputChange,
   onAddCustomTag,
   isComplete,
-  suggestedTags = []
+  suggestedTags = [],
+  hasAnalyzed = false
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
@@ -91,17 +93,20 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
     }, 150);
   };
 
+  // If analyzed, only show selected tags
+  const tagsToDisplay = hasAnalyzed ? selectedTags : tags;
+
   return (
-    <section id="branding-section" className={isComplete ? 'pb-0' : ''}>
-      <h2 className={`font-semibold font-mono uppercase tracking-widest mb-3 transition-all duration-300 ${isComplete ? 'text-[10px] mb-1' : 'text-sm'} ${isComplete ? (theme === 'dark' ? 'text-neutral-600' : 'text-neutral-500') : (theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600')}`}>
+    <section id="branding-section" className={isComplete || hasAnalyzed ? 'pb-0' : ''}>
+      <h2 className={`font-semibold font-mono uppercase tracking-widest mb-3 transition-all duration-300 ${(isComplete || hasAnalyzed) ? 'text-[10px] mb-1' : 'text-sm'} ${(isComplete || hasAnalyzed) ? (theme === 'dark' ? 'text-neutral-600' : 'text-neutral-500') : (theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600')}`}>
         {t('mockup.branding')}
       </h2>
-      {!isComplete && (
+      {!isComplete && !hasAnalyzed && (
         <p className={`text-xs mb-3 font-mono ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.brandingComment')}</p>
       )}
       <div>
         <div className="flex flex-wrap gap-2 cursor-pointer">
-          {tags.map(tag => {
+          {tagsToDisplay.map(tag => {
             const isSelected = selectedTags.includes(tag);
             const isSuggested = suggestedTags.includes(tag);
             const limitReached = selectedTags.length >= 3;
@@ -110,10 +115,11 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
             return (
               <Badge
                 key={tag}
-                onClick={() => onTagToggle(tag)}
+                onClick={hasAnalyzed ? undefined : () => onTagToggle(tag)}
                 variant="outline"
                 className={cn(
-                  "text-xs font-medium transition-all duration-200 cursor-pointer",
+                  "text-xs font-medium transition-all duration-200",
+                  !hasAnalyzed && "cursor-pointer",
                   isSelected
                     ? theme === 'dark'
                       ? 'bg-brand-cyan/20 text-brand-cyan border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
@@ -132,7 +138,7 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
               </Badge>
             );
           })}
-          {!isEditingCustom ? (
+          {!isEditingCustom && !hasAnalyzed && (
             <Badge
               onClick={handleCustomTagClick}
               variant="outline"
@@ -150,7 +156,8 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
               <Plus size={14} />
               <span>{t('mockup.customTagLabel')}</span>
             </Badge>
-          ) : (
+          )}
+          {isEditingCustom && !hasAnalyzed && (
             <Input
               ref={inputRef}
               type="text"
@@ -171,6 +178,7 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
         </div>
       </div>
     </section>
+
   );
 };
 

@@ -607,6 +607,15 @@ export const canvasApi = {
         // Handle 413 Payload Too Large errors with a user-friendly message
         if (response.status === 413) {
           errorMessage = 'Imagem muito grande para upload. O tamanho máximo é 50MB. Por favor, use uma imagem menor.';
+        } else if (response.status === 403) {
+          // Handle Storage Limit Exceeded (and other permission errors)
+          try {
+            const errorData = JSON.parse(errorText);
+            // Prefer the specific message from server if available
+            errorMessage = errorData.message || 'Limite de armazenamento excedido. Faça upgrade para continuar fazendo upload.';
+          } catch {
+            errorMessage = 'Permissão negada ou limite de armazenamento excedido.';
+          }
         } else {
           try {
             const errorData = JSON.parse(errorText);

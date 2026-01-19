@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Plus, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, Plus, ChevronDown, ChevronUp, Dices } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { translateTag } from '@/utils/localeUtils';
@@ -100,35 +100,9 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
   const { t } = useTranslation();
   const { theme } = useTheme();
   const [isEditingCustom, setIsEditingCustom] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const blurTimeoutRef = useRef<number | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Calculate if content overflows (more than 1 row)
-  const [hasOverflow, setHasOverflow] = useState(false);
-
-  useEffect(() => {
-    const checkOverflow = () => {
-      if (containerRef.current && !isExpanded) {
-        const container = containerRef.current;
-        const children = Array.from(container.children) as HTMLElement[];
-        if (children.length === 0) {
-          setHasOverflow(false);
-          return;
-        }
-
-        // Check if tags wrap to more than one line
-        let firstRowBottom = children[0]?.offsetTop + children[0]?.offsetHeight;
-        const hasMultipleRows = children.some(child => child.offsetTop > firstRowBottom);
-        setHasOverflow(hasMultipleRows);
-      }
-    };
-
-    checkOverflow();
-    window.addEventListener('resize', checkOverflow);
-    return () => window.removeEventListener('resize', checkOverflow);
-  }, [tags, selectedTags, isExpanded]);
 
   useEffect(() => {
     if (isEditingCustom && inputRef.current) {
@@ -144,6 +118,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
 
   const handleCustomTagClick = () => {
     setIsEditingCustom(true);
+    if (!isExpanded) setIsExpanded(true);
   };
 
   const handleCustomTagSubmit = () => {
@@ -182,107 +157,109 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
     }, 150);
   };
 
+  const hasSelection = selectedTags.length > 0;
+  const selectionSummary = selectedTags.length > 0
+    ? selectedTags.map(tag => translateTag(tag)).join(', ')
+    : '';
+
   return (
-    <div className={`p-4 rounded-xl border transition-all duration-200 ${theme === 'dark' ? 'bg-black/20 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
-      <div className="mb-2">
-        <h4 className={`text-xs font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{title}</h4>
-      </div>
-
-      <div
-        ref={containerRef}
-        className={`flex flex-wrap gap-2 cursor-pointer transition-all duration-500 ease-in-out ${!isExpanded ? 'max-h-[2.5rem] overflow-hidden' : 'max-h-[500px]'}`}
-        style={{
-          transition: 'max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease-in-out'
-        }}
+    <div className={`rounded-lg border transition-all duration-200 ${theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200'}`}>
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 hover:bg-neutral-800/10 ${isExpanded ? (theme === 'dark' ? 'bg-neutral-800/20' : 'bg-neutral-100/50') : ''}`}
       >
-        {/* Custom tag input/button - always first */}
-        {!isEditingCustom ? (
-          <Tag
-            label={t('mockup.customTagLabel')}
-            onToggle={handleCustomTagClick}
-            className="gap-1"
-          >
-            <Plus size={14} />
-          </Tag>
-        ) : (
-          <input
-            ref={inputRef}
-            type="text"
-            value={customInput}
-            onChange={(e) => onCustomInputChange(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onBlur={handleBlur}
-            placeholder={t('mockup.customCategoryPlaceholder')}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border border-[brand-cyan]/30 focus:outline-none focus:ring-0 min-w-[120px] font-mono ${theme === 'dark'
-              ? 'bg-brand-cyan/20 text-brand-cyan'
-              : 'bg-brand-cyan/20 text-neutral-800'
-              }`}
-            autoFocus
-          />
-        )}
+        <div className="flex flex-col gap-0.5 overflow-hidden">
+          <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{title}</span>
+          {!isExpanded && hasSelection && (
+            <span className="text-[10px] text-brand-cyan font-mono truncate max-w-[200px]">{selectionSummary}</span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {isSurpriseMeMode && <Dices size={12} className="text-brand-cyan/60" />}
+          {isExpanded ? <ChevronUp size={16} className="text-neutral-500" /> : <ChevronDown size={16} className="text-neutral-500" />}
+        </div>
+      </button>
 
-        {/* Regular tags */}
-        {(() => {
-          const allDisplayTags = [...new Set([...tags, ...selectedTags, ...suggestedTags])];
-
-          // Sort tags: suggested first, then selected, then others
-          const sortedTags = [...allDisplayTags].sort((a, b) => {
-            const aIsSuggested = suggestedTags.includes(a);
-            const bIsSuggested = suggestedTags.includes(b);
-            const aIsSelected = selectedTags.includes(a);
-            const bIsSelected = selectedTags.includes(b);
-
-            // Suggested tags first
-            if (aIsSuggested && !bIsSuggested) return -1;
-            if (!aIsSuggested && bIsSuggested) return 1;
-
-            // Then selected tags
-            if (aIsSelected && !bIsSelected) return -1;
-            if (!aIsSelected && bIsSelected) return 1;
-
-            return 0;
-          });
-
-          return sortedTags.map(tag => {
-            const isSelected = selectedTags.includes(tag);
-            const isSuggested = suggestedTags.includes(tag);
-            const hasSelection = selectedTags.length > 0;
-            const isInPool = isSurpriseMeMode && poolTags.includes(tag);
-
-            // In Surprise Me Mode, clicking toggles pool membership
-            const handleClick = () => {
-              if (isSurpriseMeMode && onPoolToggle) {
-                onPoolToggle(tag);
-              } else {
-                onTagToggle(tag);
-              }
-            };
-
-            return (
+      {isExpanded && (
+        <div className={`p-3 pt-0 animate-fade-in`}>
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            {/* Custom tag input/button - always first */}
+            {!isEditingCustom ? (
               <Tag
-                key={tag}
-                label={translateTag(tag)}
-                selected={!isSurpriseMeMode && isSelected}
-                suggested={!isSurpriseMeMode && isSuggested}
-                inPool={isInPool}
-                onToggle={handleClick}
-                disabled={!isSurpriseMeMode && hasSelection && !isSelected}
+                label={t('mockup.customTagLabel')}
+                onToggle={handleCustomTagClick}
+                className="gap-1 scale-90 origin-left"
+              >
+                <Plus size={12} />
+              </Tag>
+            ) : (
+              <input
+                ref={inputRef}
+                type="text"
+                value={customInput}
+                onChange={(e) => onCustomInputChange(e.target.value)}
+                onKeyDown={handleKeyDown}
+                onBlur={handleBlur}
+                placeholder={t('mockup.customCategoryPlaceholder')}
+                className={`px-3 py-1.5 text-[10px] font-medium rounded-md transition-all duration-200 border border-[brand-cyan]/30 focus:outline-none focus:ring-0 min-w-[120px] font-mono ${theme === 'dark'
+                  ? 'bg-brand-cyan/10 text-brand-cyan'
+                  : 'bg-brand-cyan/5 text-neutral-800'
+                  }`}
+                autoFocus
               />
-            );
-          });
-        })()}
-      </div>
+            )}
 
-      {/* Expand/Collapse button - outside overflow container */}
-      {hasOverflow && (
-        <div className="flex justify-center mt-2">
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className={`p-1.5 rounded transition-all duration-200 ${theme === 'dark' ? 'hover:bg-neutral-800/50 text-neutral-500 hover:text-neutral-400' : 'hover:bg-neutral-200/50 text-neutral-600 hover:text-neutral-700'}`}
-            aria-label={isExpanded ? t('common.collapse') : t('common.expand')}
-          >
-            {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-          </button>
+            {/* Regular tags */}
+            {(() => {
+              const allDisplayTags = [...new Set([...tags, ...selectedTags, ...suggestedTags])];
+
+              // Sort tags: suggested first, then selected, then others
+              const sortedTags = [...allDisplayTags].sort((a, b) => {
+                const aIsSuggested = suggestedTags.includes(a);
+                const bIsSuggested = suggestedTags.includes(b);
+                const aIsSelected = selectedTags.includes(a);
+                const bIsSelected = selectedTags.includes(b);
+
+                // Suggested tags first
+                if (aIsSuggested && !bIsSuggested) return -1;
+                if (!aIsSuggested && bIsSuggested) return 1;
+
+                // Then selected tags
+                if (aIsSelected && !bIsSelected) return -1;
+                if (!aIsSelected && bIsSelected) return 1;
+
+                return 0;
+              });
+
+              return sortedTags.map(tag => {
+                const isSelected = selectedTags.includes(tag);
+                const isSuggested = suggestedTags.includes(tag);
+                const isInPool = isSurpriseMeMode && poolTags.includes(tag);
+
+                // In Surprise Me Mode, clicking toggles pool membership
+                const handleClick = () => {
+                  if (isSurpriseMeMode && onPoolToggle) {
+                    onPoolToggle(tag);
+                  } else {
+                    onTagToggle(tag);
+                  }
+                };
+
+                return (
+                  <Tag
+                    key={tag}
+                    label={translateTag(tag)}
+                    selected={!isSurpriseMeMode && isSelected}
+                    suggested={!isSurpriseMeMode && isSuggested}
+                    inPool={isInPool}
+                    onToggle={handleClick}
+                    disabled={!isSurpriseMeMode && hasSelection && !isSelected}
+                    className="scale-90 origin-left"
+                  />
+                );
+              });
+            })()}
+          </div>
         </div>
       )}
     </div>
@@ -352,145 +329,12 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
-
-  const handleColorInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value;
-    // Remove todos os # existentes e adiciona um no início se houver conteúdo
-    if (value) {
-      value = value.replace(/#/g, '');
-      if (value.length > 0) {
-        value = '#' + value;
-      }
-    }
-    // Cria um evento sintético com o valor modificado
-    const syntheticEvent = {
-      ...e,
-      target: {
-        ...e.target,
-        value: value
-      }
-    } as React.ChangeEvent<HTMLInputElement>;
-    onColorInputChange(syntheticEvent);
-  };
+  const [isNegativeExpanded, setIsNegativeExpanded] = useState(false);
+  const [isAdditionalExpanded, setIsAdditionalExpanded] = useState(false);
 
   return (
-    <div className="space-y-4 pt-4 animate-fade-in-down">
-      <div className={`p-4 rounded-xl border transition-all duration-200 ${theme === 'dark' ? 'bg-black/20 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
-        <h4 className={`text-xs font-mono mb-3 uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.colorPalette')}</h4>
+    <div className="space-y-2 pt-4 animate-fade-in-down">
 
-        {/* Two-column layout: Input on left, Suggestions on right */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Left column: Color input */}
-          <div className="space-y-2">
-            <div className="flex gap-2">
-              <div className="flex-grow relative flex items-center">
-                <input
-                  type="text"
-                  value={colorInput}
-                  onChange={handleColorInputChange}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      onAddColor();
-                    }
-                  }}
-                  className={`w-full p-2 rounded-md border focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs font-mono transition-colors duration-200 pl-8 ${theme === 'dark'
-                    ? 'bg-black/40 border-neutral-700/50 text-neutral-400'
-                    : 'bg-neutral-50 border-neutral-300 text-neutral-700'
-                    }`}
-                  placeholder="#52ddeb"
-                />
-                {(isValidColor || !colorInput) && (
-                  <span
-                    className="absolute left-2.5 w-4 h-4 rounded-md border border-neutral-600"
-                    style={{ backgroundColor: isValidColor ? colorInput : '#52ddeb' }}
-                  ></span>
-                )}
-              </div>
-              <button
-                onClick={onAddColor}
-                disabled={!isValidColor}
-                className={`px-3 rounded-md border text-xs font-mono transition-all ${isValidColor
-                  ? theme === 'dark'
-                    ? 'bg-neutral-700/50 text-neutral-400 border-neutral-700/50 hover:bg-neutral-600/50 hover:text-neutral-300 cursor-pointer'
-                    : 'bg-neutral-200 text-neutral-700 border-neutral-300 hover:bg-neutral-300 hover:text-neutral-900 cursor-pointer'
-                  : 'bg-neutral-800/30 text-neutral-600 border-neutral-700/30 cursor-not-allowed opacity-50'
-                  }`}
-              >
-                {t('common.add')}
-              </button>
-            </div>
-
-            {/* Selected colors */}
-            {selectedColors.length > 0 && (
-              <div className="flex flex-wrap gap-2 min-h-[26px]">
-                {selectedColors.map(color => (
-                  <div key={color} className={`flex items-center gap-1.5 pl-2 pr-1 py-0.5 rounded-md border text-xs ${theme === 'dark'
-                    ? 'bg-neutral-900/80 border-neutral-700'
-                    : 'bg-neutral-200 border-neutral-300'
-                    }`}>
-                    <span
-                      className="w-3 h-3 rounded-md border border-white/10"
-                      style={{ backgroundColor: color }}
-                    ></span>
-                    <span className="font-mono">{color}</span>
-                    <button onClick={() => onRemoveColor(color)} className={`rounded-md cursor-pointer ${theme === 'dark' ? 'text-neutral-500 hover:text-white' : 'text-neutral-600 hover:text-neutral-900'
-                      }`}>
-                      <X size={14} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Right column: Suggested Colors */}
-          {suggestedColors.length > 0 && (
-            <div className="space-y-2">
-              <div className="flex flex-wrap gap-2">
-                {suggestedColors.map(color => {
-                  const isSelected = selectedColors.includes(color);
-                  const limitReached = selectedColors.length >= 5;
-                  const isDisabled = limitReached && !isSelected;
-
-                  return (
-                    <button
-                      key={color}
-                      onClick={() => {
-                        if (!isDisabled) {
-                          if (isSelected) {
-                            onRemoveColor(color);
-                          } else {
-                            // Auto-add color directly
-                            const syntheticEvent = {
-                              target: { value: color }
-                            } as React.ChangeEvent<HTMLInputElement>;
-                            onColorInputChange(syntheticEvent);
-                            // Small delay to ensure state is updated
-                            setTimeout(() => onAddColor(), 10);
-                          }
-                        }
-                      }}
-                      className={`group relative w-8 h-8 rounded-md border transition-all duration-200 ${isSelected
-                        ? 'border-brand-cyan ring-2 ring-brand-cyan/30 scale-110 z-10'
-                        : 'border-white/10 hover:border-brand-cyan/50 hover:scale-105'
-                        } ${isDisabled ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}`}
-                      style={{ backgroundColor: color }}
-                      title={color}
-                    >
-                      {isSelected && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-md">
-                          <div className="w-2 h-2 bg-white rounded-full shadow-sm"></div>
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
       <div id="location-section">
         <CollapsableTagSection
           title={t('mockup.location')}
@@ -560,31 +404,68 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
           onPoolToggle={onMaterialPoolToggle}
         />
       )}
-      <div className={`p-4 rounded-xl border transition-all duration-200 ${theme === 'dark' ? 'bg-black/20 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
-        <h4 className={`text-xs font-mono mb-2 uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.negativePrompt')}</h4>
-        <textarea
-          value={negativePrompt}
-          onChange={onNegativePromptChange}
-          rows={2}
-          className={`w-full p-2 rounded-md border focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y ${theme === 'dark'
-            ? 'bg-black/40 border-neutral-700/50 text-neutral-400'
-            : 'bg-neutral-50 border-neutral-300 text-neutral-700'
-            }`}
-          placeholder={t('mockup.negativePromptPlaceholder')}
-        />
-      </div>
-      <div className={`p-4 rounded-xl border transition-all duration-200 ${theme === 'dark' ? 'bg-black/20 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
-        <h4 className={`text-xs font-mono mb-2 uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.additionalPrompt')}</h4>
-        <textarea
-          value={additionalPrompt}
-          onChange={onAdditionalPromptChange}
-          rows={2}
-          className={`w-full p-2 rounded-md border focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y ${theme === 'dark'
-            ? 'bg-black/40 border-neutral-700/50 text-neutral-400'
-            : 'bg-neutral-50 border-neutral-300 text-neutral-700'
-            }`}
-          placeholder={t('mockup.additionalPromptPlaceholder')}
-        />
+
+      {/* Prompts Section */}
+      <div className="space-y-2">
+        <div className={`rounded-lg border transition-all duration-200 ${theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200'}`}>
+          <button
+            onClick={() => setIsNegativeExpanded(!isNegativeExpanded)}
+            className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 hover:bg-neutral-800/10 ${isNegativeExpanded ? (theme === 'dark' ? 'bg-neutral-800/20' : 'bg-neutral-100/50') : ''}`}
+          >
+            <div className="flex flex-col gap-0.5 overflow-hidden">
+              <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.negativePrompt')}</span>
+              {!isNegativeExpanded && negativePrompt && (
+                <span className="text-[10px] text-neutral-500 font-mono truncate max-w-[200px]">{negativePrompt}</span>
+              )}
+            </div>
+            {isNegativeExpanded ? <ChevronUp size={16} className="text-neutral-500" /> : <ChevronDown size={16} className="text-neutral-500" />}
+          </button>
+
+          {isNegativeExpanded && (
+            <div className="p-3 pt-0">
+              <textarea
+                value={negativePrompt}
+                onChange={onNegativePromptChange}
+                rows={2}
+                className={`w-full p-2.5 mt-2 rounded-md border focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y h-[80px] ${theme === 'dark'
+                  ? 'bg-black/40 border-neutral-700/50 text-neutral-400'
+                  : 'bg-neutral-50 border-neutral-300 text-neutral-700'
+                  }`}
+                placeholder={t('mockup.negativePromptPlaceholder')}
+              />
+            </div>
+          )}
+        </div>
+
+        <div className={`rounded-lg border transition-all duration-200 ${theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200'}`}>
+          <button
+            onClick={() => setIsAdditionalExpanded(!isAdditionalExpanded)}
+            className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 hover:bg-neutral-800/10 ${isAdditionalExpanded ? (theme === 'dark' ? 'bg-neutral-800/20' : 'bg-neutral-100/50') : ''}`}
+          >
+            <div className="flex flex-col gap-0.5 overflow-hidden">
+              <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.additionalPrompt')}</span>
+              {!isAdditionalExpanded && additionalPrompt && (
+                <span className="text-[10px] text-neutral-500 font-mono truncate max-w-[200px]">{additionalPrompt}</span>
+              )}
+            </div>
+            {isAdditionalExpanded ? <ChevronUp size={16} className="text-neutral-500" /> : <ChevronDown size={16} className="text-neutral-500" />}
+          </button>
+
+          {isAdditionalExpanded && (
+            <div className="p-3 pt-0">
+              <textarea
+                value={additionalPrompt}
+                onChange={onAdditionalPromptChange}
+                rows={2}
+                className={`w-full p-2.5 mt-2 rounded-md border focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y h-[80px] ${theme === 'dark'
+                  ? 'bg-black/40 border-neutral-700/50 text-neutral-400'
+                  : 'bg-neutral-50 border-neutral-300 text-neutral-700'
+                  }`}
+                placeholder={t('mockup.additionalPromptPlaceholder')}
+              />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

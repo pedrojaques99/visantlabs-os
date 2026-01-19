@@ -1,15 +1,15 @@
 import React, { useMemo } from 'react';
 import { Image, X, Pickaxe } from 'lucide-react';
-import { GlitchLoader } from './ui/GlitchLoader';
+import { GlitchLoader } from '../ui/GlitchLoader';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getCreditsRequired } from '@/utils/creditCalculator';
-import type { UploadedImage, GeminiModel, Resolution } from '../types/types';
-import { Card, CardContent } from './ui/card';
-import { Textarea } from './ui/textarea';
-import { Button } from './ui/button';
-import { Select } from './ui/select';
-import { Badge } from './ui/badge';
-import { cn } from '../lib/utils';
+import type { UploadedImage, GeminiModel, Resolution } from '../../types/types';
+import { Card, CardContent } from '../ui/card';
+import { Textarea } from '../ui/textarea';
+import { Button } from '../ui/button';
+import { Select } from '../ui/select';
+import { Badge } from '../ui/badge';
+import { cn } from '../../lib/utils';
 
 interface ChatInputProps {
   // Prompt

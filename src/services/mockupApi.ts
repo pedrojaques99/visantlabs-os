@@ -151,6 +151,49 @@ export const mockupApi = {
     return response.json();
   },
 
+  async getTempUploadUrl(contentType: string): Promise<{ presignedUrl: string; finalUrl: string; key: string }> {
+    const response = await fetch(`${API_BASE_URL}/mockups/upload-temp-url`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ contentType }),
+    });
+    if (!response.ok) throw new Error('Failed to get temp upload URL');
+    return response.json();
+  },
+
+  async uploadTempImage(base64Image: string, mimeType: string): Promise<string> {
+    try {
+      // Get presigned URL
+      const { presignedUrl, finalUrl } = await this.getTempUploadUrl(mimeType);
+
+      // Convert base64 to blob
+      const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
+      const byteCharacters = atob(base64Data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: mimeType });
+
+      // Upload to R2
+      const uploadRes = await fetch(presignedUrl, {
+        method: 'PUT',
+        body: blob,
+        headers: {
+          'Content-Type': mimeType,
+        },
+      });
+
+      if (!uploadRes.ok) throw new Error('Failed to upload image to R2');
+
+      return finalUrl;
+    } catch (error) {
+      console.error('Error uploading temp image:', error);
+      throw error;
+    }
+  },
+
   async getById(id: string): Promise<Mockup> {
     const response = await fetch(`${API_BASE_URL}/mockups/${id}`, {
       headers: getAuthHeaders(),
@@ -229,11 +272,11 @@ export const mockupApi = {
   // Generate mockup image via backend (validates and deducts credits BEFORE generation)
   async generate(params: {
     promptText: string;
-    baseImage?: { base64: string; mimeType: string };
+    baseImage?: { base64?: string; url?: string; mimeType: string };
     model: string;
     resolution?: string;
     aspectRatio?: string;
-    referenceImages?: Array<{ base64: string; mimeType: string }>;
+    referenceImages?: Array<{ base64?: string; url?: string; mimeType: string }>;
     imagesCount?: number;
     feature?: 'mockupmachine' | 'canvas';
     uniqueId?: string | number; // Optional unique identifier for parallel batch requests (e.g., slot index)
@@ -322,7 +365,12 @@ export const mockupApi = {
     }
 
     // Helper to upload image if it's too large for the payload
-    const uploadIfNecessary = async (img: { base64: string; mimeType: string }) => {
+    const uploadIfNecessary = async (img: { base64?: string; url?: string; mimeType: string }) => {
+      // If already has URL, use it
+      if (img.url) return img;
+
+      if (!img.base64) return img;
+
       // Threshold: 1MB (base64 is ~1.33x original size)
       // Vercel limit is 4.5MB. Let's use 1.5MB as threshold for base64 size
       const SIZE_THRESHOLD = 1.5 * 1024 * 1024;
@@ -373,9 +421,6 @@ export const mockupApi = {
         params.referenceImages.map(img => uploadIfNecessary(img))
       ) as any;
     }
-
-
-
     // Create the request promise
     const requestPromise = (async () => {
       try {
