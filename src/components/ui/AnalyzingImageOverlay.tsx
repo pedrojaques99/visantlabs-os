@@ -52,16 +52,6 @@ export const AnalyzingImageOverlay: React.FC<AnalyzingImageOverlayProps> = ({ is
                         : '0 0 20px rgba(82, 221, 235, 0.15), inset 0 0 30px rgba(255, 255, 255, 0.5)'
                 }}>
 
-                {/* ASCII Background */}
-                <div className="absolute inset-0 opacity-15 pointer-events-none overflow-hidden">
-                    <InteractiveASCII
-                        isDarkMode={theme === 'dark'}
-                        fullHeight={true}
-                        className="scale-50"
-                        color="#52ddeb"
-                    />
-                </div>
-
                 {/* Content */}
                 <div className="relative p-6 flex flex-col items-center gap-3">
                     {/* Compact Header */}
