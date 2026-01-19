@@ -1423,6 +1423,16 @@ router.post('/image/upload', authenticate, async (req: AuthRequest, res) => {
     } catch (uploadError: any) {
       console.error('Error uploading canvas image to R2:', uploadError);
 
+      if (uploadError.name === 'StorageLimitExceededError') {
+        const usedMB = (uploadError.used / 1024 / 1024).toFixed(2);
+        const limitMB = (uploadError.limit / 1024 / 1024).toFixed(2);
+        return res.status(403).json({
+          error: 'Storage Limit Exceeded',
+          message: `Você excedeu seu limite de armazenamento (${usedMB}MB / ${limitMB}MB). Faça upgrade para Premium para ter mais espaço.`,
+          code: 'STORAGE_LIMIT_EXCEEDED'
+        });
+      }
+
       // Handle 413 errors from R2 or other services
       if (uploadError.message?.includes('too large') || uploadError.message?.includes('413')) {
         return res.status(413).json({

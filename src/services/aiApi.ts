@@ -80,19 +80,28 @@ export const aiApi = {
     return data.categories;
   },
 
-  async analyzeSetup(baseImage: UploadedImage): Promise<MockupSetupAnalysis> {
+  async analyzeSetup(
+    baseImage: UploadedImage,
+    instructions?: string,
+    userContext?: { selectedBrandingTags?: string[] }
+  ): Promise<MockupSetupAnalysis> {
+    const t0 = Date.now();
+    if (import.meta.env.DEV) console.log('[dev] aiApi.analyzeSetup: fetch start');
     const response = await fetch(`${API_BASE_URL}/ai/analyze-setup`, {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ baseImage }),
+      body: JSON.stringify({ baseImage, instructions, userContext }),
     });
+    if (import.meta.env.DEV) console.log('[dev] aiApi.analyzeSetup: fetch end', ((Date.now() - t0) / 1000).toFixed(2) + 's', 'ok=', response.ok, 'status=', response.status);
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: 'Failed to analyze setup' }));
       throw new Error(error.error || 'Failed to analyze setup');
     }
 
-    return await response.json();
+    const data = await response.json();
+    if (import.meta.env.DEV) console.log('[dev] aiApi.analyzeSetup: parse done', ((Date.now() - t0) / 1000).toFixed(2) + 's');
+    return data;
   },
 
   /**
@@ -114,6 +123,7 @@ export const aiApi = {
     enhanceTexture: boolean;
     negativePrompt: string;
     additionalPrompt: string;
+    instructions: string;
   }): Promise<{ prompt: string; inputTokens?: number; outputTokens?: number }> {
     const response = await fetch(`${API_BASE_URL}/ai/generate-smart-prompt`, {
       method: 'POST',

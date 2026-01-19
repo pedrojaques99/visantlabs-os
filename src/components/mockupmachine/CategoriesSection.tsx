@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Plus, Dices } from 'lucide-react';
+import { Plus, Dices, ChevronDown, ChevronUp } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
@@ -32,7 +32,74 @@ interface CategoriesSectionProps {
   isSurpriseMeMode?: boolean;
   categoriesPool?: string[];
   onPoolToggle?: (tag: string) => void;
+  hasAnalyzed?: boolean;
 }
+
+interface CollapsableCategoryGroupProps {
+  title: string;
+  tags: string[];
+  selectedTags: string[];
+  renderTagButton: (tag: string) => React.ReactNode;
+  theme: string;
+  t: (key: string) => string;
+  className?: string;
+  isSurpriseMeMode?: boolean;
+}
+
+const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
+  title,
+  tags,
+  selectedTags,
+  renderTagButton,
+  theme,
+  t,
+  className,
+  isSurpriseMeMode
+}) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const groupSelectedTags = tags.filter(tag => selectedTags.includes(tag));
+  const hasSelection = groupSelectedTags.length > 0;
+  const selectionSummary = hasSelection
+    ? groupSelectedTags.map(tag => translateTag(tag)).join(', ')
+    : '';
+
+  return (
+    <div className={cn(
+      `rounded-lg border transition-all duration-200 ${theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200'}`,
+      className
+    )}>
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 hover:bg-neutral-800/10 ${isExpanded ? (theme === 'dark' ? 'bg-neutral-800/20' : 'bg-neutral-100/50') : ''}`}
+      >
+        <div className="flex flex-col gap-0.5 overflow-hidden">
+          <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>
+            {title}
+          </span>
+          {!isExpanded && hasSelection && (
+            <span className="text-[10px] text-brand-cyan font-mono truncate max-w-[200px]">{selectionSummary}</span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {isSurpriseMeMode && <Dices size={12} className="text-brand-cyan/60" />}
+          {isExpanded ? <ChevronUp size={16} className="text-neutral-500" /> : <ChevronDown size={16} className="text-neutral-500" />}
+        </div>
+      </button>
+
+      {isExpanded && (
+        <div className="p-3 pt-0 animate-fade-in">
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            {tags.map(tag => (
+              <React.Fragment key={tag}>
+                {renderTagButton(tag)}
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
   suggestedTags,
@@ -53,11 +120,14 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
   // Surprise Me Mode props
   isSurpriseMeMode = false,
   categoriesPool = [],
-  onPoolToggle
+  onPoolToggle,
+  hasAnalyzed = false
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
+
   const [isEditingCustom, setIsEditingCustom] = useState(false);
+  const [isFinalExpanded, setIsFinalExpanded] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const blurTimeoutRef = useRef<number | null>(null);
 
@@ -75,6 +145,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
 
   const handleCustomTagClick = () => {
     setIsEditingCustom(true);
+    if (!isFinalExpanded) setIsFinalExpanded(true);
   };
 
   const handleCustomTagSubmit = () => {
@@ -175,17 +246,21 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
 
   const drinkwareTags = drinkwareGroup?.tags || [];
   const otherTags = [...(otherGroup?.tags || []), ...strayTags];
+  const finalTags = [...drinkwareTags, ...otherTags];
 
-  const hasFinalSection = drinkwareTags.length > 0 || otherTags.length > 0;
+  const hasFinalSection = finalTags.length > 0 || !isComplete;
+  const finalSelectedTags = finalTags.filter(tag => selectedTags.includes(tag));
+  const hasFinalSelection = finalSelectedTags.length > 0;
 
   const renderTagButton = (tag: string) => {
     const isSelected = selectedTags.includes(tag);
     const isSuggested = displaySuggestedTags.includes(tag);
-    const hasSelection = selectedTags.length > 0;
+    const hasAnySelection = selectedTags.length > 0;
     const isInPool = isSurpriseMeMode && categoriesPool.includes(tag);
 
     // In Surprise Me Mode, clicking toggles pool membership
     const handleClick = () => {
+      if (hasAnalyzed) return; // Disable clicking after analysis in minimal mode
       if (isSurpriseMeMode && onPoolToggle) {
         onPoolToggle(tag);
       } else {
@@ -201,148 +276,135 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
         suggested={!isSurpriseMeMode && isSuggested}
         inPool={isInPool}
         onToggle={handleClick}
-        disabled={!isSurpriseMeMode && hasSelection && !isSelected}
+        disabled={!hasAnalyzed && !isSurpriseMeMode && hasAnySelection && !isSelected}
+        className={cn("scale-90 origin-left", hasAnalyzed ? "cursor-default" : "cursor-pointer")}
       />
     );
   };
 
+  const renderCustomTagButton = () => {
+    if (isComplete) return null;
+
+    return !isEditingCustom ? (
+      <Tag
+        label={t('mockup.customCategoryLabel')}
+        onToggle={handleCustomTagClick}
+        removable={false}
+        className="gap-1 scale-90 origin-left"
+      >
+        <Plus size={12} />
+      </Tag>
+    ) : (
+      <Input
+        ref={inputRef}
+        type="text"
+        value={customInput}
+        onChange={(e) => onCustomInputChange(e.target.value)}
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
+        placeholder={t('mockup.customCategoryPlaceholder')}
+        className={cn(
+          "px-3 py-1.5 text-[10px] h-7 transition-all duration-200 border-[brand-cyan]/30 focus:ring-0 min-w-[120px] font-mono",
+          theme === 'dark'
+            ? 'bg-brand-cyan/20 text-brand-cyan'
+            : 'bg-brand-cyan/20 text-neutral-800'
+        )}
+        autoFocus
+      />
+    );
+  };
+
+  if (hasAnalyzed) {
+    return (
+      <section id="categories-section" className="animate-fade-in pb-0">
+        <h3 className={cn(
+          "text-[10px] font-mono uppercase tracking-wider mb-3",
+          theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'
+        )}>
+          {t('mockup.categories')}
+        </h3>
+
+        <div className="flex flex-wrap gap-2">
+          {selectedTags.map(tag => renderTagButton(tag))}
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section id="categories-section" className={`animate-fade-in ${isComplete ? 'pb-0' : ''}`}>
-      <div className={`flex justify-between items-center ${isComplete ? 'mb-1' : 'mb-3'}`}>
-        <h2 className="font-semibold font-mono uppercase tracking-widest text-sm text-neutral-400 transition-all duration-300">
-          {t('mockup.categories')}
-        </h2>
-        {isAnalyzing && <GlitchLoader size={16} color="#71717a" />}
-      </div>
-      {!isComplete && (
-        <p className="text-xs text-neutral-500 mb-3 font-mono">{t('mockup.categoriesComment')}</p>
-      )}
-      <div className={isComplete ? 'opacity-80' : ''}>
-        <div className="grid grid-cols-2 gap-3">
-          {groupsToDisplay.map((group) => {
-            const groupTags = group.tags || [];
-            if (groupTags.length === 0) return null;
-
-            return (
-              <div key={group.id} className="space-y-2">
-                {/* Subtle group label */}
-                <div className="flex items-center gap-2">
-                  <span className="text-[9px] font-mono uppercase tracking-wider text-neutral-500/60">
-                    {t(`mockup.categoryGroups.${group.key}`)}
-                  </span>
-                  <div className="flex-1 h-px bg-neutral-800/30"></div>
-                </div>
-
-                {/* Tags in this group */}
-                <div className="flex flex-wrap gap-2 cursor-pointer">
-                  {groupTags.map(tag => renderTagButton(tag))}
-                </div>
-              </div>
-            );
-          })}
-
-          {/* Final section: Drinkware + Other + Custom - full width */}
-          {hasFinalSection && (
-            <div className="col-span-2 space-y-2 mt-3">
-              {/* Combined labels for drinkware and other */}
-              <div className="flex items-center gap-2">
-                {drinkwareTags.length > 0 && (
-                  <>
-                    <span className="text-[9px] font-mono uppercase tracking-wider text-neutral-500/60">
-                      {t(`mockup.categoryGroups.drinkware`)}
-                    </span>
-                    {otherTags.length > 0 && (
-                      <>
-                        <span className="text-[9px] font-mono uppercase tracking-wider text-neutral-500/60">
-                          /
-                        </span>
-                        <span className="text-[9px] font-mono uppercase tracking-wider text-neutral-500/60">
-                          {t(`mockup.categoryGroups.other`)}
-                        </span>
-                      </>
-                    )}
-                  </>
-                )}
-                {drinkwareTags.length === 0 && otherTags.length > 0 && (
-                  <span className="text-[9px] font-mono uppercase tracking-wider text-neutral-500/60">
-                    {t(`mockup.categoryGroups.other`)}
-                  </span>
-                )}
-                <div className="flex-1 h-px bg-neutral-800/30"></div>
-              </div>
-
-              {/* Tags: drinkware + other + custom */}
-              <div className="flex flex-wrap gap-2 cursor-pointer">
-                {drinkwareTags.map(tag => renderTagButton(tag))}
-                {otherTags.map(tag => renderTagButton(tag))}
-
-                {/* Custom category input - inline with other tags */}
-                {!isComplete && (
-                  <>
-                    {!isEditingCustom ? (
-                      <Tag
-                        label={t('mockup.customCategoryLabel')}
-                        onToggle={handleCustomTagClick}
-                        removable={false}
-                        className="gap-1"
-                      >
-                        <Plus size={14} />
-                      </Tag>
-                    ) : (
-                      <Input
-                        ref={inputRef}
-                        type="text"
-                        value={customInput}
-                        onChange={(e) => onCustomInputChange(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        onBlur={handleBlur}
-                        placeholder={t('mockup.customCategoryPlaceholder')}
-                        className={cn(
-                          "px-3 py-1.5 text-xs font-medium transition-all duration-200 border-[brand-cyan]/30 focus:ring-0 min-w-[120px] font-mono",
-                          theme === 'dark'
-                            ? 'bg-brand-cyan/20 text-brand-cyan'
-                            : 'bg-brand-cyan/20 text-neutral-800'
-                        )}
-                        autoFocus
-                      />
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Fallback: if no drinkware/other but custom exists */}
-          {!hasFinalSection && !isComplete && (
-            <div className="col-span-2 flex flex-wrap gap-2 mt-3">
-              {!isEditingCustom ? (
-                <Tag
-                  label={t('mockup.customCategoryLabel')}
-                  onToggle={handleCustomTagClick}
-                  className="gap-1"
-                >
-                  <Plus size={14} />
-                </Tag>
-              ) : (
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={customInput}
-                  onChange={(e) => onCustomInputChange(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  onBlur={handleBlur}
-                  placeholder={t('mockup.customCategoryPlaceholder')}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 border border-[brand-cyan]/30 focus:outline-none focus:ring-0 min-w-[120px] font-mono ${theme === 'dark'
-                    ? 'bg-brand-cyan/20 text-brand-cyan'
-                    : 'bg-brand-cyan/20 text-neutral-800'
-                    }`}
-                  autoFocus
-                />
-              )}
-            </div>
-          )}
+      <button
+        onClick={onToggleAllCategories}
+        className={`w-full flex justify-between items-center text-left text-sm font-semibold font-mono uppercase tracking-widest p-3 rounded-md border transition-all cursor-pointer ${theme === 'dark'
+          ? 'text-neutral-400 bg-neutral-800/30 border-neutral-700/50 hover:border-neutral-600/80'
+          : 'text-neutral-700 bg-neutral-100 border-neutral-300 hover:border-neutral-400'
+          }`}
+      >
+        <div className="flex items-center gap-3">
+          <span>{t('mockup.categories')}</span>
+          {isAnalyzing && <GlitchLoader size={16} color="#71717a" />}
         </div>
-      </div>
+        {isAllCategoriesOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+      </button>
+
+      {isAllCategoriesOpen && (
+        <div className="mt-4 space-y-2">
+          {!isComplete && (
+            <p className="text-[10px] text-neutral-500 mb-2 font-mono px-1 uppercase tracking-tighter">{t('mockup.categoriesComment')}</p>
+          )}
+
+          <div className={`grid grid-cols-1 gap-2 transition-opacity duration-300 ${isComplete ? 'opacity-80' : ''}`}>
+            {groupsToDisplay.map((group) => (
+              <CollapsableCategoryGroup
+                key={group.id}
+                title={t(`mockup.categoryGroups.${group.key}`)}
+                tags={group.tags}
+                selectedTags={selectedTags}
+                renderTagButton={renderTagButton}
+                theme={theme}
+                t={t}
+                isSurpriseMeMode={isSurpriseMeMode}
+              />
+            ))}
+
+            {hasFinalSection && (
+              <div className={`rounded-lg border transition-all duration-200 ${theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200'}`}>
+                <button
+                  onClick={() => setIsFinalExpanded(!isFinalExpanded)}
+                  className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 hover:bg-neutral-800/10 ${isFinalExpanded ? (theme === 'dark' ? 'bg-neutral-800/20' : 'bg-neutral-100/50') : ''}`}
+                >
+                  <div className="flex flex-col gap-0.5 overflow-hidden">
+                    <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>
+                      {drinkwareTags.length > 0
+                        ? t(`mockup.categoryGroups.drinkware`) + (otherTags.length > 0 ? ` / ${t(`mockup.categoryGroups.other`)}` : '')
+                        : t(`mockup.categoryGroups.other`)}
+                    </span>
+                    {!isFinalExpanded && hasFinalSelection && (
+                      <span className="text-[10px] text-brand-cyan font-mono truncate max-w-[200px]">
+                        {finalSelectedTags.map(tag => translateTag(tag)).join(', ')}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {isSurpriseMeMode && <Dices size={12} className="text-brand-cyan/60" />}
+                    {isFinalExpanded ? <ChevronUp size={16} className="text-neutral-500" /> : <ChevronDown size={16} className="text-neutral-500" />}
+                  </div>
+                </button>
+
+                {isFinalExpanded && (
+                  <div className="p-3 pt-0 animate-fade-in">
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {drinkwareTags.map(tag => renderTagButton(tag))}
+                      {otherTags.map(tag => renderTagButton(tag))}
+                      {renderCustomTagButton()}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </section>
   );
 };

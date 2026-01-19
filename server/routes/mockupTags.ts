@@ -1,8 +1,20 @@
 import { Router } from 'express';
 import { prisma } from '../db/prisma.js';
 import { authenticate } from '../middleware/auth.js';
+import { getAllAvailableTags } from '../services/tagService.js';
 
 const router = Router();
+
+// Get all available tags from all collections (unified endpoint)
+router.get('/available', async (req, res) => {
+    try {
+        const tags = await getAllAvailableTags();
+        res.json(tags);
+    } catch (error) {
+        console.error('Error fetching available tags:', error);
+        res.status(500).json({ error: 'Failed to fetch available tags' });
+    }
+});
 
 // Get all categorized tags
 router.get('/categories', async (req, res) => {

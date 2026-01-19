@@ -1,19 +1,19 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useBlocker, useLocation } from 'react-router-dom';
 import { Menu, Pickaxe } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { ImageUploader } from '../components/ui/ImageUploader';
 import { normalizeImageToBase64, detectMimeType } from '../services/reactFlowService';
 import { MockupDisplay } from '../components/mockupmachine/MockupDisplay';
 import { FullScreenViewer } from '../components/FullScreenViewer';
 import { WelcomeScreen } from './WelcomeScreen';
-import { SidebarOrchestrator } from '../components/SidebarOrchestrator';
+import { SidebarOrchestrator } from '../components/mockupmachine/SidebarOrchestrator';
 import { FloatingActionButtons } from '../components/mockupmachine/FloatingActionButtons';
 import { GenerateButton } from '../components/ui/GenerateButton';
 import { ConfirmationModal } from '../components/ConfirmationModal';
 import { Button } from '../components/ui/button';
 import { AnalyzingImageOverlay } from '../components/ui/AnalyzingImageOverlay';
 import { aiApi } from '../services/aiApi';
-import { RateLimitError, ModelOverloadedError } from '../services/geminiService';
 import { getCreditsRequired } from '@/utils/creditCalculator';
 import { subscriptionService } from '../services/subscriptionService';
 import { authService } from '../services/authService';
@@ -24,7 +24,6 @@ import { toast } from 'sonner';
 import { useTranslation } from '@/hooks/useTranslation';
 import { SEO } from '../components/SEO';
 import { SoftwareApplicationSchema, WebSiteSchema } from '../components/StructuredData';
-import { compressImage, getBase64ImageSize, needsCompression } from '@/utils/imageCompression';
 import { saveMockupState, loadMockupState, clearMockupState } from '@/utils/mockupStatePersistence';
 import { getAllAnglePresetsAsync } from '../services/anglePresetsService';
 import { getAllTexturePresetsAsync } from '../services/texturePresetsService';
@@ -38,6 +37,11 @@ import { SurpriseMeSettingsModal } from '../components/SurpriseMeSettingsModal';
 import { getSurpriseMeSelectedTags } from '@/utils/surpriseMeSettings';
 import { MockupProvider, useMockup } from '../components/mockupmachine/MockupContext';
 import { useMockupTags } from '@/hooks/useMockupTags';
+import { useAuthGuard } from '@/hooks/useAuthGuard';
+import { useCreditValidation } from '@/hooks/useCreditValidation';
+import { useAnalysisOverlay } from '@/hooks/useAnalysisOverlay';
+import { formatMockupError } from '@/utils/mockupErrorHandling';
+import { compressImage } from '@/utils/imageCompression';
 
 const MOCKUP_COUNT = 2;
 
@@ -52,13 +56,11 @@ import {
   AVAILABLE_MATERIAL_TAGS
 } from '@/utils/mockupConstants';
 import {
-  getBackgroundDescription,
-  getLightingDescription,
-  getEffectDescription,
   getBackgroundsForBranding,
   filterPresetsByBranding,
   selectRandomBackground
 } from '@/utils/promptHelpers';
+
 
 
 
@@ -134,8 +136,17 @@ const MockupMachinePageContent: React.FC = () => {
     customMaterialInput, setCustomMaterialInput,
     resetAll,
     hasAnalyzed,
-    setHasAnalyzed
+    setHasAnalyzed,
+    isAnalysisOverlayVisible,
+    setIsAnalysisOverlayVisible,
+    instructions,
+    setInstructions
   } = useMockup();
+
+  // Custom hooks for common operations (after getting mockupCount from context)
+  const { requireAuth } = useAuthGuard();
+  const { hasEnoughCredits, validateCredits } = useCreditValidation(mockupCount, onCreditPackagesModalOpen);
+  const { showOverlay, hideOverlay, showTemporaryOverlay } = useAnalysisOverlay();
 
   const {
     handleTagToggle,
@@ -251,6 +262,7 @@ const MockupMachinePageContent: React.FC = () => {
         setSuggestedEffectTags(persistedState.suggestedEffectTags || []);
         setSuggestedMaterialTags(persistedState.suggestedMaterialTags || []);
         setSuggestedColors(persistedState.suggestedColors || []);
+        setInstructions(persistedState.instructions || '');
 
         // Hide welcome screen and show mockups
         setShowWelcome(false);
@@ -371,6 +383,8 @@ const MockupMachinePageContent: React.FC = () => {
           suggestedEffectTags,
           suggestedMaterialTags,
           suggestedColors,
+          instructions,
+          timestamp: Date.now()
         });
       } catch (error) {
         // Silently fail - don't break UX if localStorage fails
@@ -414,6 +428,7 @@ const MockupMachinePageContent: React.FC = () => {
     suggestedEffectTags,
     suggestedMaterialTags,
     suggestedColors,
+    instructions,
   ]);
 
   const buildPrompt = useCallback(() => {
@@ -427,36 +442,6 @@ const MockupMachinePageContent: React.FC = () => {
     }
     let basePrompt = '';
 
-    // Special handling for Letterhead - elegant A4 paper on minimalist clipboard, contract-style document
-    const isLetterhead = selectedTags.includes('Letterhead');
-
-    if (designType === 'blank') {
-      if (isLetterhead) {
-        basePrompt = `${baseQuality} ${aspectInstruction} of an elegant A4 paper letterhead mockup placed on a minimalist clipboard or document holder. The scene should feature a clean, professional contract-style document aesthetic with the paper elegantly displayed. The clipboard should be minimalist and modern, creating a sophisticated business document presentation. The scene should be clean, minimalist, and ready for a design to be placed on the letterhead. Emphasize authentic paper texture, subtle shadows, and professional product photography lighting with sharp focus. There should be absolutely no text, logos, or any other graphic elements on the mockup surfaces.`;
-      } else {
-        basePrompt = `${baseQuality} ${aspectInstruction} of a blank white ${selectedTags.join(' and ')} mockup. The scene should be clean, minimalist, and ready for a design to be placed on it. Emphasize authentic materials, subtle surface details, and professional product photography lighting with sharp focus. There should be absolutely no text, logos, or any other graphic elements on the mockup surfaces.`;
-      }
-    } else {
-      const designTerm = designType === 'logo' ? 'logo' : 'design';
-      if (isLetterhead) {
-        basePrompt = `${baseQuality} ${aspectInstruction} of an elegant A4 paper letterhead mockup placed on a minimalist clipboard or document holder featuring the provided ${designTerm}. The scene should feature a clean, professional contract-style document aesthetic with the paper elegantly displayed. The clipboard should be minimalist and modern, creating a sophisticated business document presentation. Emphasize authentic paper texture, subtle shadows, and professional product photography lighting with sharp focus.`;
-      } else {
-        basePrompt = `${baseQuality} ${aspectInstruction} of a ${selectedTags.join(' and ')} mockup featuring the provided ${designTerm}. Emphasize authentic materials, subtle surface details, and professional product photography lighting with sharp focus.`;
-      }
-    }
-
-    if (selectedBrandingTags.length > 0) basePrompt += ` The brand's style is: ${selectedBrandingTags.join(', ')}.`;
-    if (selectedLocationTags.length > 0) {
-      // Special handling for Minimalist Studio
-      if (selectedLocationTags.includes('Minimalist Studio')) {
-        basePrompt += ` The scene should be set in a professional photography studio with infinite white wall background, studio lighting, clean and minimalist aesthetic.`;
-        basePrompt += ` The scene should include a plant in the setting.`;
-      } else if (selectedLocationTags.includes('Light Box')) {
-        basePrompt += ` The scene should be set in a professional lightbox photography environment with seamless white or neutral background, even diffused lighting, completely neutral and minimal aesthetic. This is a professional product photography setup with no decorative elements, plants, or distractions - purely focused on showcasing the product with clean, professional lighting.`;
-      } else {
-        basePrompt += ` The scene should be set in or evoke the aesthetic of: ${selectedLocationTags.join(', ')}.`;
-      }
-    }
     if (selectedAngleTags.length > 0) basePrompt += ` The camera angle should be: ${selectedAngleTags.join(', ')}.`;
     if (selectedLightingTags.length > 0) basePrompt += ` The lighting should be: ${selectedLightingTags.join(', ')}.`;
     if (selectedEffectTags.length > 0) basePrompt += ` Apply a visual effect of: ${selectedEffectTags.join(', ')}.`;
@@ -471,15 +456,15 @@ const MockupMachinePageContent: React.FC = () => {
     if (designType !== 'blank') {
       if (designType === 'logo') {
         if (generateText) basePrompt += " If appropriate for the mockup type, generate plausible placeholder text to make the scene more realistic.";
-        else basePrompt += " No additional text, words, or letters should be generated. The design is the sole graphic element.";
+        else basePrompt += " No additional text or letters should be generated. The design is the sole graphic element.";
       }
 
-      basePrompt += " Place the design exactly as provided, without modification, cropping, or re-drawing.";
+      basePrompt += " Place the design exactly as provided, without modification.";
     }
 
     if (designType === 'logo') {
       basePrompt += " When placing the design, ensure a comfortable safe area or 'breathing room' around it. The design must never touch or be clipped by the edges of the mockup surface (e.g., the edges of a business card or a book cover).";
-      basePrompt += " CRITICAL: Analyze the provided logo image and ensure proper contrast between the logo and the mockup substrate. If the logo is light/white (transparent PNG), it must NEVER be placed on a light/white substrate - use dark or colored substrates instead. If the logo is dark, it must NEVER be placed on a dark substrate - use light or colored substrates instead. Always ensure the logo is clearly visible and has sufficient contrast with the background.";
+      basePrompt += " CRITICAL: Analyze the provided logo image and ensure proper contrast between the logo and the mockup substrate. If the logo is white, it must never be placed on a white substrate - use dark or colored substrates instead.";
     }
 
     if (withHuman) {
@@ -496,6 +481,9 @@ const MockupMachinePageContent: React.FC = () => {
     }
     if (negativePrompt.trim()) {
       basePrompt += ` AVOID THE FOLLOWING: ${negativePrompt.trim()}.`;
+    }
+    if (instructions.trim()) {
+      basePrompt += ` ADDITIONAL INSTRUCTIONS: ${instructions.trim()}.`;
     }
 
     return basePrompt;
@@ -534,33 +522,9 @@ const MockupMachinePageContent: React.FC = () => {
     }
 
     try {
-      // Compress image if it's too large for the API
+      // Image compression removed as requested by user
       let imageToSend = uploadedImage;
-      if (uploadedImage && needsCompression(uploadedImage.base64, 3.5 * 1024 * 1024)) { // Limit to 3.5MB for API safely
-        try {
-          if (isLocalDevelopment()) {
-            console.log('🖼️ Compressing image for Smart Prompt API...');
-          }
-          const compressedBase64 = await compressImage(uploadedImage.base64, {
-            maxSizeBytes: 3.5 * 1024 * 1024, // 3.5MB target
-            maxWidth: 3072,
-            maxHeight: 3072,
-            quality: 0.8
-          });
 
-          imageToSend = {
-            ...uploadedImage,
-            base64: compressedBase64,
-            size: getBase64ImageSize(compressedBase64)
-          };
-
-          if (isLocalDevelopment()) {
-            console.log(`✅ Image compressed: ${(uploadedImage.size / 1024 / 1024).toFixed(2)}MB -> ${(imageToSend.size / 1024 / 1024).toFixed(2)}MB`);
-          }
-        } catch (compressionError) {
-          console.warn('Failed to compress image for API, sending original:', compressionError);
-        }
-      }
 
       const smartPromptResult = await aiApi.generateSmartPrompt({
         baseImage: imageToSend,
@@ -578,6 +542,7 @@ const MockupMachinePageContent: React.FC = () => {
         enhanceTexture: enhanceTexture,
         negativePrompt: negativePrompt,
         additionalPrompt: additionalPrompt,
+        instructions: instructions,
       });
 
       // Handle both old string format and new object format
@@ -642,8 +607,9 @@ const MockupMachinePageContent: React.FC = () => {
         }
       }, 800);
     } catch (err) {
-      if (err instanceof RateLimitError) {
-        toast.error(t('messages.rateLimit'), { duration: 5000 });
+      const errorInfo = formatMockupError(err, t);
+      if (errorInfo.message === t('messages.rateLimit')) {
+        toast.error(errorInfo.message, { duration: 5000 });
       } else {
         if (isLocalDevelopment()) {
           console.error("Error generating smart prompt:", err);
@@ -654,7 +620,28 @@ const MockupMachinePageContent: React.FC = () => {
     } finally {
       setIsGeneratingPrompt(false);
     }
-  }, [uploadedImage, designType, selectedTags, selectedBrandingTags, selectedLocationTags, selectedAngleTags, selectedLightingTags, selectedEffectTags, selectedColors, aspectRatio, generateText, withHuman, enhanceTexture, negativePrompt, additionalPrompt, buildPrompt, t, isGeneratingPrompt, referenceImages]);
+  }, [
+    uploadedImage,
+    designType,
+    selectedTags,
+    selectedBrandingTags,
+    selectedLocationTags,
+    selectedAngleTags,
+    selectedLightingTags,
+    selectedEffectTags,
+    selectedColors,
+    aspectRatio,
+    generateText,
+    withHuman,
+    enhanceTexture,
+    negativePrompt,
+    additionalPrompt,
+    instructions,
+    buildPrompt,
+    t,
+    isGeneratingPrompt,
+    referenceImages
+  ]);
 
   useEffect(() => {
     // Tags changed - reset prompt ready state and track that it was reset
@@ -673,7 +660,8 @@ const MockupMachinePageContent: React.FC = () => {
     aspectRatio,
     generateText,
     withHuman,
-    enhanceTexture
+    enhanceTexture,
+    instructions
   ]);
 
 
@@ -722,36 +710,28 @@ const MockupMachinePageContent: React.FC = () => {
     setMockupLikedStatus(new Map());
     setUploadedImage(null);
     setIsImagelessMode(false);
+    setInstructions('');
     // Clear localStorage when resetting
     clearMockupState();
   }, [mockupCount]);
 
   const handleImageUpload = useCallback(async (image: UploadedImage) => {
-    // Check authentication using context state first
-    if (isAuthenticated === false) {
-      toast.error(t('messages.authenticationRequired'), { duration: 5000 });
-      return;
-    }
-
-    // If still checking auth, verify with cache
-    if (isAuthenticated === null || isCheckingAuth) {
-      try {
-        const user = await authService.verifyToken(); // Use verifyToken with cache
-        if (!user) {
-          toast.error(t('messages.authenticationRequired'), { duration: 5000 });
-          return;
-        }
-      } catch (error) {
-        toast.error(t('messages.authenticationError'), { duration: 5000 });
-        return;
-      }
-    }
-
-    // isAuthenticated === true, safe to proceed
+    // Check authentication
+    if (!(await requireAuth())) return;
 
     // Se estiver no modo blank mockup, a imagem é apenas referência visual
     if (designType === 'blank') {
       setReferenceImage(image);
+      // Upload to temp R2 for reference image to save storage
+      if (image.base64 && !image.url) {
+        mockupApi.uploadTempImage(image.base64, image.mimeType)
+          .then(url => {
+            setReferenceImage(prev => prev ? ({ ...prev, url, base64: undefined }) : null);
+          })
+          .catch(err => {
+            if (isLocalDevelopment()) console.error('Failed to upload reference temp image:', err);
+          });
+      }
       // Não reseta o estado, apenas atualiza a referência visual
       return;
     }
@@ -764,6 +744,18 @@ const MockupMachinePageContent: React.FC = () => {
     resetControls();
     // Agora seta uploadedImage DEPOIS do reset para que não seja sobrescrito
     setUploadedImage(image);
+
+    // Upload to temp R2 to save storage
+    if (image.base64 && !image.url) {
+      mockupApi.uploadTempImage(image.base64, image.mimeType)
+        .then(url => {
+          setUploadedImage(prev => prev ? ({ ...prev, url, base64: undefined }) : null);
+        })
+        .catch(err => {
+          if (isLocalDevelopment()) console.error('Failed to upload temp image:', err);
+        });
+    }
+
     setSelectedModel(null);
     setResolution('1K');
     // Por último, esconde welcome screen para garantir que fique false
@@ -807,11 +799,8 @@ const MockupMachinePageContent: React.FC = () => {
   };
 
   const handleProceedWithoutImage = useCallback(async () => {
-    // Check authentication from context
-    if (isAuthenticated !== true) {
-      toast.error(t('messages.authenticationRequired'), { duration: 5000 });
-      return;
-    }
+    // Check authentication
+    if (!(await requireAuth())) return;
     // Hide welcome screen first
     setShowWelcome(false);
     // Set blank mockup mode
@@ -924,42 +913,46 @@ const MockupMachinePageContent: React.FC = () => {
   }, [selectedTags.length, selectedLocationTags]);
 
   const handleAnalyze = useCallback(async () => {
+    const t0 = Date.now();
+    if (import.meta.env.DEV) console.log('[dev] analyze: handleAnalyze start');
     if (!uploadedImage || designType === 'blank') {
+      if (import.meta.env.DEV) console.log('[dev] analyze: skip (no image or blank)');
       return;
     }
 
     setIsAnalyzing(true);
+    showOverlay();
 
     try {
       // 1. Semantic Analysis via Gemini (tags for all sections)
       let imageToAnalyze = uploadedImage;
-      if (uploadedImage && needsCompression(uploadedImage.base64, 3.5 * 1024 * 1024)) { // 3.5MB binary (safe for 4.5MB payload)
+
+      // Compress image for analyze only: smaller payload = faster Gemini (style/category analysis does not need full res)
+      if (uploadedImage.base64) {
         try {
-          if (isLocalDevelopment()) {
-            console.log('🔍 Compressing image for Analysis API...');
-          }
-          const compressedBase64 = await compressImage(uploadedImage.base64, {
-            maxSizeBytes: 3.5 * 1024 * 1024,
-            maxWidth: 3072, // 3K resolution
-            maxHeight: 3072,
-            quality: 0.8
+          const dataUrl = await compressImage(uploadedImage.base64.includes(',') ? uploadedImage.base64 : `data:${uploadedImage.mimeType};base64,${uploadedImage.base64}`, {
+            maxWidth: 1024,
+            maxHeight: 1024,
+            maxSizeBytes: 500 * 1024,
+            mimeType: uploadedImage.mimeType,
           });
-
-          imageToAnalyze = {
-            ...uploadedImage,
-            base64: compressedBase64,
-            size: getBase64ImageSize(compressedBase64)
-          };
-
-          if (isLocalDevelopment()) {
-            console.log(`✅ Image compressed for analysis: ${(uploadedImage.size / 1024 / 1024).toFixed(2)}MB -> ${(imageToAnalyze.size / 1024 / 1024).toFixed(2)}MB`);
-          }
-        } catch (compressionError) {
-          console.warn('Failed to compress image for analysis, sending original:', compressionError);
+          const comma = dataUrl.indexOf(',');
+          const b64 = comma >= 0 ? dataUrl.slice(comma + 1) : dataUrl;
+          const mime = /^data:([^;]+);/.exec(dataUrl)?.[1] || uploadedImage.mimeType;
+          imageToAnalyze = { base64: b64, mimeType: mime };
+        } catch {
+          // keep original if compression fails
         }
       }
 
-      const analysis = await aiApi.analyzeSetup(imageToAnalyze);
+      // Send user context (selected branding tags) to help AI suggest complementary tags
+      const userContext = selectedBrandingTags.length > 0
+        ? { selectedBrandingTags }
+        : undefined;
+
+      if (import.meta.env.DEV) console.log('[dev] analyze: aiApi.analyzeSetup start', ((Date.now() - t0) / 1000).toFixed(2) + 's');
+      const analysis = await aiApi.analyzeSetup(imageToAnalyze, instructions, userContext);
+      if (import.meta.env.DEV) console.log('[dev] analyze: aiApi.analyzeSetup done', ((Date.now() - t0) / 1000).toFixed(2) + 's');
 
       setSuggestedBrandingTags(analysis.branding);
       setSuggestedTags(analysis.categories);
@@ -971,15 +964,20 @@ const MockupMachinePageContent: React.FC = () => {
 
       // Automatically set design type based on AI analysis
       // Fallback to 'logo' if AI doesn't return designType
-      setDesignType(analysis.designType || 'logo');
+      setDesignType(analysis.designType || 'logo' || 'layout');
 
       // 2. Color Extraction (Local processing for speed and cost-benefit)
-      try {
-        const { extractColors } = await import('@/utils/colorExtraction');
-        const colorResult = await extractColors(uploadedImage.base64, uploadedImage.mimeType, 8);
-        setSuggestedColors(colorResult.colors);
-      } catch (colorErr) {
-        console.error("Error extracting colors:", colorErr);
+      // Only possible if we have base64 data locally
+      if (uploadedImage.base64) {
+        try {
+          if (import.meta.env.DEV) console.log('[dev] analyze: extractColors start', ((Date.now() - t0) / 1000).toFixed(2) + 's');
+          const { extractColors } = await import('@/utils/colorExtraction');
+          const colorResult = await extractColors(uploadedImage.base64, uploadedImage.mimeType, 8);
+          setSuggestedColors(colorResult.colors);
+          if (import.meta.env.DEV) console.log('[dev] analyze: extractColors done', ((Date.now() - t0) / 1000).toFixed(2) + 's');
+        } catch (colorErr) {
+          console.error("Error extracting colors:", colorErr);
+        }
       }
 
       // 3. Auto-expand sections to display all suggested tags
@@ -991,9 +989,12 @@ const MockupMachinePageContent: React.FC = () => {
         setSelectedModel('gemini-2.5-flash-image');
       }
 
+      setHasAnalyzed(true);
+      if (import.meta.env.DEV) console.log('[dev] analyze: handleAnalyze success', ((Date.now() - t0) / 1000).toFixed(2) + 's');
     } catch (err) {
-      if (err instanceof RateLimitError) {
-        toast.error(t('messages.rateLimit'), { duration: 5000 });
+      const errorInfo = formatMockupError(err, t);
+      if (errorInfo.message === t('messages.rateLimit')) {
+        toast.error(errorInfo.message, { duration: 5000 });
       } else {
         if (isLocalDevelopment()) {
           console.error("Error getting full analysis:", err);
@@ -1001,10 +1002,11 @@ const MockupMachinePageContent: React.FC = () => {
         toast.error(t('messages.aiCouldntGenerateSuggestions'), { duration: 5000 });
       }
     } finally {
+      if (import.meta.env.DEV) console.log('[dev] analyze: handleAnalyze finally', ((Date.now() - t0) / 1000).toFixed(2) + 's');
       setIsAnalyzing(false);
-      setHasAnalyzed(true);
+      hideOverlay();
     }
-  }, [uploadedImage, designType, t]);
+  }, [uploadedImage, designType, instructions, selectedBrandingTags, t]);
 
   useEffect(() => {
     if (prevBrandingTagsLength.current === 0 && selectedBrandingTags.length === 1) {
@@ -1104,8 +1106,9 @@ const MockupMachinePageContent: React.FC = () => {
       const suggestions = await aiApi.suggestPromptVariations(promptPreview);
       setPromptSuggestions(suggestions);
     } catch (err) {
-      if (err instanceof RateLimitError) {
-        toast.error(t('messages.rateLimit'), { duration: 5000 });
+      const errorInfo = formatMockupError(err, t);
+      if (errorInfo.message === t('messages.rateLimit')) {
+        toast.error(errorInfo.message, { duration: 5000 });
       } else {
         if (isLocalDevelopment()) {
           console.error("Error suggesting prompts:", err);
@@ -1117,151 +1120,6 @@ const MockupMachinePageContent: React.FC = () => {
     }
   };
 
-  // Helper function to compress images before sending
-  const compressImageIfNeeded = useCallback(async (image: UploadedImage | null | undefined): Promise<UploadedImage | undefined> => {
-    if (!image || !image.base64) return undefined;
-
-    try {
-      // Check if compression is needed (larger than 4.5MB)
-      // Vercel limit is ~4.5MB for body, but with 10MB limit in WelcomeScreen, we want to allow as much as possible
-      // We'll use 4.5MB as the trigger, which is close to the limit (binary size)
-      // Note: 4.5MB binary is ~6MB base64 which might fail Vercel (4.5MB limit applies to body).
-      // Wait, Vercel limit is 4.5MB *Body Size*. 
-      // 3MB binary = 4MB Base64. 4.5MB Body Limit.
-      // So 3.5MB is the absolute max safe binary size.
-      const maxSizeBytes = 3.5 * 1024 * 1024; // 3.5MB (Safe limit for 4.5MB payload)
-      if (needsCompression(image.base64, maxSizeBytes)) {
-        if (isLocalDevelopment()) {
-          console.log('[MockupMachinePage] Compressing image before sending...', {
-            originalSize: (getBase64ImageSize(image.base64) / 1024 / 1024).toFixed(2) + 'MB',
-            targetLimit: '3.5MB'
-          });
-        }
-
-        const compressedBase64 = await compressImage(image.base64, {
-          maxWidth: 3072, // 3K resolution (preserve more detail)
-          maxHeight: 3072,
-          maxSizeBytes: maxSizeBytes,
-          quality: 0.85,
-          mimeType: image.mimeType
-        });
-
-        // Extract base64 data and mime type from compressed result
-        const base64Data = compressedBase64.includes(',')
-          ? compressedBase64.split(',')[1]
-          : compressedBase64;
-        const mimeType = compressedBase64.startsWith('data:')
-          ? compressedBase64.match(/data:([^;]+);/)?.[1] || image.mimeType
-          : image.mimeType;
-
-        const compressedSize = (getBase64ImageSize(compressedBase64) / 1024 / 1024).toFixed(2);
-        if (isLocalDevelopment()) {
-          console.log('[MockupMachinePage] Image compressed successfully', {
-            compressedSize: compressedSize + 'MB'
-          });
-        }
-
-        return {
-          base64: base64Data,
-          mimeType: mimeType
-        };
-      }
-
-      return image;
-    } catch (error) {
-      if (isLocalDevelopment()) {
-        console.error('[MockupMachinePage] Failed to compress image, using original:', error);
-      }
-      return image;
-    }
-  }, []);
-
-  // Helper function to check if user has enough credits
-  const hasEnoughCredits = useCallback((creditsNeeded: number): boolean => {
-    // In local development, always allow operations
-    if (isLocalDevelopment()) {
-      return true;
-    }
-
-    // If no subscription status available, consider as no credits
-    if (!subscriptionStatus) {
-      return false;
-    }
-
-    // Check if user has enough credits
-    const totalCredits = subscriptionStatus.totalCredits || 0;
-
-    // Block if user has 0 credits available
-    if (totalCredits === 0) {
-      return false;
-    }
-
-    return totalCredits >= creditsNeeded;
-  }, [subscriptionStatus]);
-
-  const validateAuthAndSubscription = useCallback(async (
-    creditsNeeded?: number,
-    model?: GeminiModel | null,
-    resolution?: Resolution
-  ): Promise<boolean> => {
-    let actualCreditsNeeded = creditsNeeded;
-    if (actualCreditsNeeded === undefined && model) {
-      const creditsPerImage = getCreditsRequired(model, resolution);
-      actualCreditsNeeded = mockupCount * creditsPerImage;
-    } else if (actualCreditsNeeded === undefined) {
-      actualCreditsNeeded = 1;
-    }
-    if (!isLocalDevelopment()) {
-      // Check authentication from context
-      if (isAuthenticated !== true) {
-        toast.error(t('messages.authenticationRequired'), { duration: 5000 });
-        return false;
-      }
-    }
-
-    if (!isLocalDevelopment()) {
-      // Only check if user has enough credits available
-      // Don't block based on subscription status - allow users without subscription to try
-      if (subscriptionStatus) {
-        // totalCredits already includes both earned credits (purchased) and monthly credits remaining
-        // So we should use it directly for both subscribed and free users
-        const totalCredits = subscriptionStatus.totalCredits || 0;
-        const remaining = totalCredits;
-
-        // Only show error if user has no credits available
-        if (remaining < actualCreditsNeeded) {
-          const resetDate = subscriptionStatus.creditsResetDate ? new Date(subscriptionStatus.creditsResetDate).toLocaleDateString() : t('messages.yourNextBillingCycle');
-          const message = subscriptionStatus.hasActiveSubscription
-            ? t('messages.needCreditsSubscription', {
-              creditsNeeded: actualCreditsNeeded,
-              plural: actualCreditsNeeded > 1 ? 's' : '',
-              remaining,
-              pluralRemaining: remaining > 1 ? 's' : '',
-              resetDate
-            })
-            : t('messages.needCreditsButHave', {
-              creditsNeeded: actualCreditsNeeded,
-              plural: actualCreditsNeeded > 1 ? 's' : '',
-              remaining,
-              pluralRemaining: remaining > 1 ? 's' : ''
-            });
-
-          toast.error(message, { duration: 5000 });
-          // Open credit packages modal first (default for users without credits)
-          onCreditPackagesModalOpen();
-          return false;
-        }
-      } else {
-        // If no subscription status available, assume user has no credits
-        toast.error(t('messages.needCredits', { creditsNeeded: actualCreditsNeeded, plural: actualCreditsNeeded > 1 ? 's' : '' }), { duration: 5000 });
-        // Open credit packages modal first (default for users without credits)
-        onCreditPackagesModalOpen();
-        return false;
-      }
-    }
-
-    return true;
-  }, [subscriptionStatus, mockupCount, onSubscriptionModalOpen, isAuthenticated, t]);
 
   const executeImageEditOperation = useCallback(async (params: {
     base64Image: string;
@@ -1275,7 +1133,7 @@ const MockupMachinePageContent: React.FC = () => {
     const modelToUse = selectedModel || 'gemini-2.5-flash-image';
     const resolutionToUse = modelToUse === 'gemini-3-pro-image-preview' ? resolution : undefined;
 
-    const canProceed = await validateAuthAndSubscription(undefined, modelToUse, resolutionToUse);
+    const canProceed = await validateCredits({ model: modelToUse, resolution: resolutionToUse });
     if (!canProceed) return;
 
     setIsLoading(true);
@@ -1290,43 +1148,38 @@ const MockupMachinePageContent: React.FC = () => {
         mimeType: mimeType
       };
 
-      // Compress reference image if needed to prevent payload too large errors
-      const compressedReferenceImage = await compressImageIfNeeded(referenceImage);
-      if (!compressedReferenceImage) {
+      // Process reference image if needed (compression disabled)
+      const processedReferenceImage = referenceImage || undefined;
+      if (!processedReferenceImage) {
         throw new Error(t('messages.failedToProcessReferenceImage'));
       }
 
-      // Compress reference images if available
-      let compressedReferenceImages: UploadedImage[] | undefined;
-      if (referenceImages.length > 0) {
-        const compressionPromises = referenceImages.map(img => compressImageIfNeeded(img));
-        const compressed = await Promise.all(compressionPromises);
-        compressedReferenceImages = compressed.filter((img): img is UploadedImage => img !== undefined);
-      }
+      // Process reference images if available (compression disabled)
+      const processedReferenceImages = referenceImages.length > 0 ? referenceImages : undefined;
 
       // Use reference images if available (Pro: up to 3, HD: up to 1)
-      const referenceImagesToUse = compressedReferenceImages && compressedReferenceImages.length > 0
-        ? compressedReferenceImages
+      const referenceImagesToUse = processedReferenceImages && processedReferenceImages.length > 0
+        ? processedReferenceImages
         : undefined;
 
       // CRITICAL: Use backend endpoint which validates and deducts credits BEFORE generation
+      // Prefer url over base64 for referenceImages so Gemini can read when we only have R2 URL
       const result = await mockupApi.generate({
         promptText: prompt,
         baseImage: {
-          base64: compressedReferenceImage.base64,
-          mimeType: compressedReferenceImage.mimeType
+          base64: processedReferenceImage.base64,
+          mimeType: processedReferenceImage.mimeType
         },
         model: modelToUse,
         resolution: resolutionToUse,
         aspectRatio: aspectRatio,
-        referenceImages: referenceImagesToUse?.map(img => ({
-          base64: img.base64,
-          mimeType: img.mimeType
-        })),
+        referenceImages: referenceImagesToUse?.map(img =>
+          img.url ? { url: img.url, mimeType: img.mimeType } : { base64: img.base64, mimeType: img.mimeType }
+        ),
         imagesCount: 1
       });
 
-      onSuccess(result.imageBase64);
+      onSuccess(result.imageUrl || result.imageBase64 || '');
 
       // Show credit deduction notification
       if (result.isAdmin) {
@@ -1354,7 +1207,7 @@ const MockupMachinePageContent: React.FC = () => {
       if (isLocalDevelopment()) {
         console.error('Error in image edit operation:', err);
       }
-      const errorInfo = getErrorMessage(err);
+      const errorInfo = formatMockupError(err, t);
       toast.error(errorInfo.message, {
         description: errorInfo.suggestion,
         duration: 7000,
@@ -1362,7 +1215,9 @@ const MockupMachinePageContent: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [validateAuthAndSubscription, selectedModel, resolution, aspectRatio, onSubscriptionModalOpen, setSubscriptionStatus, compressImageIfNeeded, referenceImages, t]);
+  }, [validateCredits, selectedModel, resolution, aspectRatio, onSubscriptionModalOpen, setSubscriptionStatus, referenceImages, t]);
+
+
 
   const runGeneration = useCallback(async (indexToUpdate?: number, promptOverride?: string, appendMode: boolean = false) => {
     // Prevent multiple simultaneous calls to runGeneration
@@ -1384,7 +1239,7 @@ const MockupMachinePageContent: React.FC = () => {
     const modelToUse = selectedModel || 'gemini-2.5-flash-image';
     const resolutionToUse = modelToUse === 'gemini-3-pro-image-preview' ? resolution : undefined;
 
-    const canProceed = await validateAuthAndSubscription(undefined, modelToUse, resolutionToUse);
+    const canProceed = await validateCredits({ model: modelToUse, resolution: resolutionToUse });
     if (!canProceed) return;
 
     const promptToUse = promptOverride || promptPreview;
@@ -1408,20 +1263,15 @@ const MockupMachinePageContent: React.FC = () => {
         // No modo blank, não passa imagem (apenas referência visual)
         const baseImageForGeneration = designType === 'blank' ? undefined : (uploadedImage || undefined);
 
-        // Compress base image if needed to prevent payload too large errors
-        const compressedBaseImage = await compressImageIfNeeded(baseImageForGeneration);
+        // Process base image if needed (compression disabled)
+        const processedBaseImage = baseImageForGeneration || undefined;
 
-        // Compress reference images if needed
-        let compressedReferenceImages: UploadedImage[] | undefined;
-        if (referenceImages.length > 0) {
-          const compressionPromises = referenceImages.map(img => compressImageIfNeeded(img));
-          const compressed = await Promise.all(compressionPromises);
-          compressedReferenceImages = compressed.filter((img): img is UploadedImage => img !== undefined);
-        }
+        // Use reference images directly (compression disabled)
+        const processedReferenceImages = referenceImages.length > 0 ? referenceImages : undefined;
 
         // Use reference images if available (Pro: up to 3, HD: up to 1)
-        const referenceImagesToUse = compressedReferenceImages && compressedReferenceImages.length > 0
-          ? compressedReferenceImages
+        const referenceImagesToUse = processedReferenceImages && processedReferenceImages.length > 0
+          ? processedReferenceImages
           : undefined;
 
         // CRITICAL: Use backend endpoint which validates and deducts credits BEFORE generation
@@ -1429,25 +1279,36 @@ const MockupMachinePageContent: React.FC = () => {
         // Pass slot index as uniqueId to allow parallel batch requests with same parameters
         const result = await mockupApi.generate({
           promptText: promptToUse,
-          baseImage: compressedBaseImage ? {
-            base64: compressedBaseImage.base64,
-            mimeType: compressedBaseImage.mimeType
-          } : undefined,
+          baseImage: processedBaseImage
+            ? processedBaseImage.url
+              ? { url: processedBaseImage.url, mimeType: processedBaseImage.mimeType }
+              : { base64: processedBaseImage.base64, mimeType: processedBaseImage.mimeType }
+            : undefined,
           model: modelToUse,
           resolution: resolutionToUse,
           aspectRatio: aspectRatio,
-          referenceImages: referenceImagesToUse?.map(img => ({
-            base64: img.base64,
-            mimeType: img.mimeType
-          })),
+          referenceImages: referenceImagesToUse?.map(img =>
+            img.url ? { url: img.url, mimeType: img.mimeType } : { base64: img.base64, mimeType: img.mimeType }
+          ),
           imagesCount: 1,
           feature: 'mockupmachine',
           uniqueId: index // Use slot index to differentiate parallel batch requests
         });
 
-        // Image successfully generated - set it in state (prefer URL from R2 if available)
+        // Image successfully generated - set it in state (prefer URL; if only base64, try client-side upload)
         imageGenerated = true;
-        const finalImage = result.imageUrl || result.imageBase64;
+        let finalImage: string | null;
+        if (result.imageUrl) {
+          finalImage = result.imageUrl;
+        } else if (result.imageBase64) {
+          try {
+            finalImage = await mockupApi.uploadTempImage(result.imageBase64, 'image/png');
+          } catch {
+            finalImage = result.imageBase64; // persistence will null it; still show in UI
+          }
+        } else {
+          finalImage = null;
+        }
         setMockups(prev => { const newMockups = [...prev]; newMockups[index] = finalImage; return newMockups; });
 
         // Show credit deduction notification
@@ -1476,7 +1337,7 @@ const MockupMachinePageContent: React.FC = () => {
         if (isLocalDevelopment()) {
           console.error(`Error generating mockup for slot ${index}:`, err);
         }
-        const errorInfo = getErrorMessage(err);
+        const errorInfo = formatMockupError(err, t);
 
         // Only show error if image wasn't generated
         if (!imageGenerated) {
@@ -1633,7 +1494,7 @@ const MockupMachinePageContent: React.FC = () => {
         }
       }
     }
-  }, [uploadedImage, selectedTags, selectedBrandingTags, promptPreview, hasGenerated, designType, mockupCount, subscriptionStatus, aspectRatio, selectedModel, resolution, validateAuthAndSubscription, onSubscriptionModalOpen, setSubscriptionStatus, mockups, referenceImages, compressImageIfNeeded, t]);
+  }, [uploadedImage, selectedTags, selectedBrandingTags, promptPreview, hasGenerated, designType, mockupCount, subscriptionStatus, aspectRatio, selectedModel, resolution, validateCredits, onSubscriptionModalOpen, setSubscriptionStatus, mockups, referenceImages, t]);
 
   const handleSurpriseMe = useCallback(async (autoGenerate: boolean = false) => {
     // Ensure model is selected (default to gemini-2.5-flash-image if not set)
@@ -1957,10 +1818,7 @@ const MockupMachinePageContent: React.FC = () => {
   }, [aspectRatio, designType, selectedModel, selectedBrandingTags, generateText, withHuman, additionalPrompt, negativePrompt, runGeneration, mockups]);
 
   const handleSaveAllUnsaved = useCallback(async () => {
-    if (!isAuthenticated) {
-      toast.error(t('messages.authenticationRequired'), { duration: 5000 });
-      return;
-    }
+    if (!(await requireAuth())) return;
 
     const unsavedIndices = mockups
       .map((mockup, index) => (mockup !== null && !savedIndices.has(index) ? index : null))
@@ -2070,27 +1928,8 @@ const MockupMachinePageContent: React.FC = () => {
   }, [registerResetHandler, resetControls]);
 
   const handleGenerateClick = useCallback(async () => {
-    // Check authentication using context state first
-    if (isAuthenticated === false) {
-      toast.error(t('messages.authenticationRequired'), { duration: 5000 });
-      return;
-    }
-
-    // If still checking auth, verify with cache
-    if (isAuthenticated === null || isCheckingAuth) {
-      try {
-        const user = await authService.verifyToken(); // Use verifyToken with cache
-        if (!user) {
-          toast.error(t('messages.authenticationRequired'), { duration: 5000 });
-          return;
-        }
-      } catch (error) {
-        toast.error(t('messages.authenticationError'), { duration: 5000 });
-        return;
-      }
-    }
-
-    // isAuthenticated === true, safe to proceed
+    // Check authentication
+    if (!(await requireAuth())) return;
 
     // Check if prompt is ready (was generated and tags haven't changed)
     // OR if prompt exists and was manually edited (user wants to use their custom prompt)
@@ -2137,30 +1976,11 @@ const MockupMachinePageContent: React.FC = () => {
       // Hide sidebar on mobile after generation
       setIsSidebarVisibleMobile(false);
     }
-  }, [promptPreview, selectedTags, designType, referenceImages, handleGenerateSmartPrompt, runGeneration, mockups, savedIndices, handleSaveAllUnsaved, isAuthenticated, isCheckingAuth, t]);
+  }, [promptPreview, selectedTags, designType, referenceImages, handleGenerateSmartPrompt, runGeneration, mockups, savedIndices, handleSaveAllUnsaved, requireAuth, t]);
 
   const handleGenerateSuggestion = useCallback(async (suggestion: string) => {
-    // Check authentication using context state first
-    if (isAuthenticated === false) {
-      toast.error(t('messages.authenticationRequired'), { duration: 5000 });
-      return;
-    }
-
-    // If still checking auth, verify with cache
-    if (isAuthenticated === null || isCheckingAuth) {
-      try {
-        const user = await authService.verifyToken(); // Use verifyToken with cache
-        if (!user) {
-          toast.error(t('messages.authenticationRequired'), { duration: 5000 });
-          return;
-        }
-      } catch (error) {
-        toast.error(t('messages.authenticationError'), { duration: 5000 });
-        return;
-      }
-    }
-
-    // isAuthenticated === true, safe to proceed
+    // Check authentication
+    if (!(await requireAuth())) return;
 
     if (!selectedModel) {
       toast.error(t('messages.selectModelBeforeGenerating'), { duration: 5000 });
@@ -2177,7 +1997,7 @@ const MockupMachinePageContent: React.FC = () => {
 
     // Generate using the suggestion prompt in append mode (adds to existing mockups)
     await runGeneration(undefined, suggestion, true);
-  }, [selectedModel, designType, uploadedImage, referenceImages, selectedTags, runGeneration, isAuthenticated, isCheckingAuth, t]);
+  }, [selectedModel, designType, uploadedImage, referenceImages, selectedTags, runGeneration, requireAuth, t]);
 
   const handleSaveMockup = useCallback(async (index: number, imageBase64: string) => {
     if (!isAuthenticated) {
@@ -2235,10 +2055,7 @@ const MockupMachinePageContent: React.FC = () => {
 
   // Fallback handler for when hook is not used (items without mockupId)
   const handleToggleLike = useCallback(async (index: number) => {
-    if (!isAuthenticated) {
-      toast.error(t('messages.authenticationRequired'), { duration: 5000 });
-      return;
-    }
+    if (!(await requireAuth())) return;
 
     const mockupId = savedMockupIds.get(index);
     const currentIsLiked = mockupLikedStatus.get(index) ?? false;
@@ -2409,10 +2226,7 @@ const MockupMachinePageContent: React.FC = () => {
     handleNewLightingFromOutputWithPreset(index, lighting);
   };
 
-  const handleNewAngleFromOutput = useCallback(async (index: number, angle: string) => {
-    const outputImage = mockups[index];
-    if (!outputImage || isLoading[index] || isGeneratingPrompt) return;
-
+  const prepareForNewMockupSlot = useCallback(() => {
     // Close fullscreen modal immediately
     handleCloseFullScreen();
 
@@ -2433,6 +2247,15 @@ const MockupMachinePageContent: React.FC = () => {
     // Append new slot
     setMockups(prev => [...prev, null]);
     setIsLoading(prev => [...prev, true]);
+
+    return newIndex;
+  }, [handleCloseFullScreen, hasGenerated, isSidebarVisibleMobile, mockups.length]);
+
+  const handleNewAngleFromOutput = useCallback(async (index: number, angle: string) => {
+    const outputImage = mockups[index];
+    if (!outputImage || isLoading[index] || isGeneratingPrompt) return;
+
+    const newIndex = prepareForNewMockupSlot();
 
     const anglePrompt = `${buildPrompt()} The camera angle should be changed to: ${angle}. Keep the same product, design, and overall composition, but change only the camera perspective. It is critical that all design elements in the image, including any text, logos, graphics, and branding elements, are preserved exactly as they appear in the original image. Do not modify, re-draw, alter, or recreate any text, logos, or design elements. They must remain identical to the original image.`;
 
@@ -2464,32 +2287,13 @@ const MockupMachinePageContent: React.FC = () => {
       },
       promptLength: anglePrompt.length
     });
-  }, [mockups, isLoading, isGeneratingPrompt, buildPrompt, executeImageEditOperation, handleCloseFullScreen, isSidebarVisibleMobile, hasGenerated]);
+  }, [mockups, isLoading, isGeneratingPrompt, buildPrompt, executeImageEditOperation, prepareForNewMockupSlot]);
 
   const handleNewBackgroundFromOutput = useCallback(async (index: number) => {
     const outputImage = mockups[index];
     if (!outputImage || isLoading[index] || isGeneratingPrompt) return;
 
-    // Close fullscreen modal immediately
-    handleCloseFullScreen();
-
-    // Ensure we stay on MockupMachinePage (not WelcomeScreen)
-    setShowWelcome(false);
-    if (!hasGenerated) {
-      setHasGenerated(true);
-    }
-
-    // Open sidebar on mobile if it's closed
-    if (!isSidebarVisibleMobile) {
-      setIsSidebarVisibleMobile(true);
-    }
-
-    // Calculate new index before appending
-    const newIndex = mockups.length;
-
-    // Append new slot
-    setMockups(prev => [...prev, null]);
-    setIsLoading(prev => [...prev, true]);
+    const newIndex = prepareForNewMockupSlot();
 
     const currentEnv = selectedLocationTags[0];
     const availableEnvs = currentEnv
@@ -2527,32 +2331,13 @@ const MockupMachinePageContent: React.FC = () => {
       },
       promptLength: backgroundPrompt.length
     });
-  }, [mockups, isLoading, isGeneratingPrompt, buildPrompt, selectedLocationTags, executeImageEditOperation, handleCloseFullScreen, isSidebarVisibleMobile, hasGenerated]);
+  }, [mockups, isLoading, isGeneratingPrompt, buildPrompt, selectedLocationTags, executeImageEditOperation, prepareForNewMockupSlot]);
 
   const handleNewBackgroundFromOutputWithPreset = useCallback(async (index: number, background: string) => {
     const outputImage = mockups[index];
     if (!outputImage || isLoading[index] || isGeneratingPrompt) return;
 
-    // Close fullscreen modal immediately
-    handleCloseFullScreen();
-
-    // Ensure we stay on MockupMachinePage (not WelcomeScreen)
-    setShowWelcome(false);
-    if (!hasGenerated) {
-      setHasGenerated(true);
-    }
-
-    // Open sidebar on mobile if it's closed
-    if (!isSidebarVisibleMobile) {
-      setIsSidebarVisibleMobile(true);
-    }
-
-    // Calculate new index before appending
-    const newIndex = mockups.length;
-
-    // Append new slot
-    setMockups(prev => [...prev, null]);
-    setIsLoading(prev => [...prev, true]);
+    const newIndex = prepareForNewMockupSlot();
 
     // Use the selected background preset
     const newEnv = background;
@@ -2592,32 +2377,13 @@ const MockupMachinePageContent: React.FC = () => {
       },
       promptLength: backgroundPrompt.length
     });
-  }, [mockups, isLoading, isGeneratingPrompt, buildPrompt, executeImageEditOperation, handleCloseFullScreen, isSidebarVisibleMobile, hasGenerated]);
+  }, [mockups, isLoading, isGeneratingPrompt, buildPrompt, executeImageEditOperation, prepareForNewMockupSlot]);
 
   const handleNewLightingFromOutputWithPreset = useCallback(async (index: number, lighting: string) => {
     const outputImage = mockups[index];
     if (!outputImage || isLoading[index] || isGeneratingPrompt) return;
 
-    // Close fullscreen modal immediately
-    handleCloseFullScreen();
-
-    // Ensure we stay on MockupMachinePage (not WelcomeScreen)
-    setShowWelcome(false);
-    if (!hasGenerated) {
-      setHasGenerated(true);
-    }
-
-    // Open sidebar on mobile if it's closed
-    if (!isSidebarVisibleMobile) {
-      setIsSidebarVisibleMobile(true);
-    }
-
-    // Calculate new index before appending
-    const newIndex = mockups.length;
-
-    // Append new slot
-    setMockups(prev => [...prev, null]);
-    setIsLoading(prev => [...prev, true]);
+    const newIndex = prepareForNewMockupSlot();
 
     // Use the selected lighting preset
     const newLighting = lighting;
@@ -2649,32 +2415,13 @@ const MockupMachinePageContent: React.FC = () => {
       },
       promptLength: lightingPrompt.length
     });
-  }, [mockups, isLoading, isGeneratingPrompt, buildPrompt, executeImageEditOperation, handleCloseFullScreen, isSidebarVisibleMobile, hasGenerated]);
+  }, [mockups, isLoading, isGeneratingPrompt, buildPrompt, executeImageEditOperation, prepareForNewMockupSlot]);
 
   const handleZoomInFromOutput = useCallback(async (index: number) => {
     const outputImage = mockups[index];
     if (!outputImage || isLoading[index] || isGeneratingPrompt) return;
 
-    // Close fullscreen modal immediately
-    handleCloseFullScreen();
-
-    // Ensure we stay on MockupMachinePage (not WelcomeScreen)
-    setShowWelcome(false);
-    if (!hasGenerated) {
-      setHasGenerated(true);
-    }
-
-    // Open sidebar on mobile if it's closed
-    if (!isSidebarVisibleMobile) {
-      setIsSidebarVisibleMobile(true);
-    }
-
-    // Calculate new index before appending
-    const newIndex = mockups.length;
-
-    // Append new slot
-    setMockups(prev => [...prev, null]);
-    setIsLoading(prev => [...prev, true]);
+    const newIndex = prepareForNewMockupSlot();
 
     const zoomInPrompt = `${buildPrompt()} Apply a zoom in effect. Move the camera closer to the subject/product while maintaining the same angle, lighting, and overall composition style. Keep the same product and design, but show more detail and a tighter framing. It is critical that all design elements in the image, including any text, logos, graphics, and branding elements, are preserved exactly as they appear in the original image. Do not modify, re-draw, alter, or recreate any text, logos, or design elements. They must remain identical to the original image.`;
 
@@ -2703,32 +2450,13 @@ const MockupMachinePageContent: React.FC = () => {
       },
       promptLength: zoomInPrompt.length
     });
-  }, [mockups, isLoading, isGeneratingPrompt, buildPrompt, executeImageEditOperation, handleCloseFullScreen, isSidebarVisibleMobile, hasGenerated]);
+  }, [mockups, isLoading, isGeneratingPrompt, buildPrompt, executeImageEditOperation, prepareForNewMockupSlot]);
 
   const handleZoomOutFromOutput = useCallback(async (index: number) => {
     const outputImage = mockups[index];
     if (!outputImage || isLoading[index] || isGeneratingPrompt) return;
 
-    // Close fullscreen modal immediately
-    handleCloseFullScreen();
-
-    // Ensure we stay on MockupMachinePage (not WelcomeScreen)
-    setShowWelcome(false);
-    if (!hasGenerated) {
-      setHasGenerated(true);
-    }
-
-    // Open sidebar on mobile if it's closed
-    if (!isSidebarVisibleMobile) {
-      setIsSidebarVisibleMobile(true);
-    }
-
-    // Calculate new index before appending
-    const newIndex = mockups.length;
-
-    // Append new slot
-    setMockups(prev => [...prev, null]);
-    setIsLoading(prev => [...prev, true]);
+    const newIndex = prepareForNewMockupSlot();
 
     const zoomOutPrompt = `${buildPrompt()} Apply a zoom out effect. Move the camera further away from the subject/product while maintaining the same angle, lighting, and overall composition style. Keep the same product and design, but show more of the surrounding environment and a wider framing. It is critical that all design elements in the image, including any text, logos, graphics, and branding elements, are preserved exactly as they appear in the original image. Do not modify, re-draw, alter, or recreate any text, logos, or design elements. They must remain identical to the original image.`;
 
@@ -2757,32 +2485,13 @@ const MockupMachinePageContent: React.FC = () => {
       },
       promptLength: zoomOutPrompt.length
     });
-  }, [mockups, isLoading, isGeneratingPrompt, buildPrompt, executeImageEditOperation, handleCloseFullScreen, isSidebarVisibleMobile, hasGenerated]);
+  }, [mockups, isLoading, isGeneratingPrompt, buildPrompt, executeImageEditOperation, prepareForNewMockupSlot]);
 
   const handleReImagineFromOutput = useCallback(async (index: number, reimaginePrompt: string) => {
     const outputImage = mockups[index];
     if (!outputImage || isLoading[index] || isGeneratingPrompt) return;
 
-    // Close fullscreen modal immediately
-    handleCloseFullScreen();
-
-    // Ensure we stay on MockupMachinePage (not WelcomeScreen)
-    setShowWelcome(false);
-    if (!hasGenerated) {
-      setHasGenerated(true);
-    }
-
-    // Open sidebar on mobile if it's closed
-    if (!isSidebarVisibleMobile) {
-      setIsSidebarVisibleMobile(true);
-    }
-
-    // Calculate new index before appending
-    const newIndex = mockups.length;
-
-    // Append new slot
-    setMockups(prev => [...prev, null]);
-    setIsLoading(prev => [...prev, true]);
+    const newIndex = prepareForNewMockupSlot();
 
     // Intelligent prompt that combines the original context with user's requested changes
     const intelligentPrompt = `You are helping a user refine and reimagine their mockup design. 
@@ -2840,7 +2549,7 @@ Generate the new mockup image with the requested changes applied.`;
       },
       promptLength: intelligentPrompt.length
     });
-  }, [mockups, isLoading, isGeneratingPrompt, promptPreview, designType, selectedTags, selectedBrandingTags, selectedLocationTags, selectedAngleTags, selectedLightingTags, selectedEffectTags, executeImageEditOperation, handleCloseFullScreen, isSidebarVisibleMobile, hasGenerated]);
+  }, [mockups, isLoading, isGeneratingPrompt, promptPreview, designType, selectedTags, selectedBrandingTags, selectedLocationTags, selectedAngleTags, selectedLightingTags, selectedEffectTags, executeImageEditOperation, prepareForNewMockupSlot, t]);
 
   const designTypeSelected = !!designType;
   const brandingComplete = selectedBrandingTags.length > 0;
@@ -2966,130 +2675,6 @@ Generate the new mockup image with the requested changes applied.`;
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isGenerateDisabled, handleGenerateClick]);
 
-  const getErrorMessage = useCallback((err: any): { message: string; suggestion?: string } => {
-    if (err instanceof RateLimitError) {
-      return {
-        message: t('messages.rateLimit'),
-        suggestion: t('messages.tryAgainIn10Minutes'),
-      };
-    }
-
-    if (err instanceof ModelOverloadedError) {
-      return {
-        message: err.message || t('messages.modelOverloaded'),
-        suggestion: t('messages.modelOverloadedSuggestion'),
-      };
-    }
-
-    try {
-      const errorStr = err?.message || err?.toString() || '';
-      const status = err?.status;
-
-      // Check for payload too large errors (413)
-      if (status === 413 || errorStr.includes('413') || errorStr.includes('Payload Too Large') || errorStr.includes('Request Entity Too Large') || errorStr.includes('FUNCTION_PAYLOAD_TOO_LARGE')) {
-        return {
-          message: 'Arquivo muito grande para processar',
-          suggestion: 'O tamanho do arquivo excede o limite permitido. Tente reduzir a resolução da imagem, usar um formato mais compacto (como JPEG) ou remover imagens de referência desnecessárias. As imagens são comprimidas automaticamente, mas algumas podem ainda ser muito grandes.',
-        };
-      }
-
-      // Check for model overloaded messages
-      if (errorStr.includes('model is overloaded') || errorStr.includes('model overloaded') || errorStr.includes('overloaded')) {
-        return {
-          message: t('messages.modelOverloaded'),
-          suggestion: t('messages.modelOverloadedSuggestion'),
-        };
-      }
-
-      if (errorStr.includes('503') || errorStr.includes('Service Unavailable')) {
-        return {
-          message: t('messages.serviceUnavailable'),
-          suggestion: t('messages.serviceUnavailableSuggestion'),
-        };
-      }
-
-      if (errorStr.includes('timeout')) {
-        return {
-          message: t('messages.requestTimeout'),
-          suggestion: t('messages.requestTimeoutSuggestion'),
-        };
-      }
-
-      if (errorStr.includes('Unable to process input image')) {
-        return {
-          message: t('messages.unableToProcessImage'),
-          suggestion: t('messages.unableToProcessImageSuggestion'),
-        };
-      }
-
-      if (errorStr.includes('INVALID_ARGUMENT')) {
-        return {
-          message: t('messages.invalidImageFormat'),
-          suggestion: t('messages.invalidImageFormatSuggestion'),
-        };
-      }
-
-      if (errorStr.includes('429') || errorStr.includes('rate limit')) {
-        return {
-          message: t('messages.rateLimit'),
-          suggestion: t('messages.tryAgainIn10Minutes'),
-        };
-      }
-
-      if (errorStr.includes('network') || errorStr.includes('fetch')) {
-        return {
-          message: t('messages.networkError'),
-          suggestion: t('messages.networkErrorSuggestion'),
-        };
-      }
-
-      if (errorStr.includes('{"error"')) {
-        const jsonMatch = errorStr.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          const errorObj = JSON.parse(jsonMatch[0]);
-          if (errorObj?.error?.message) {
-            const apiMessage = errorObj.error.message;
-            if (apiMessage.includes('Unable to process input image')) {
-              return {
-                message: t('messages.unableToProcessImage'),
-                suggestion: t('messages.unableToProcessImageSuggestion'),
-              };
-            }
-            if (apiMessage.includes('Payload Too Large') || apiMessage.includes('413')) {
-              return {
-                message: 'Arquivo muito grande para processar',
-                suggestion: 'O tamanho do arquivo excede o limite permitido. Tente reduzir a resolução da imagem, usar um formato mais compacto (como JPEG) ou remover imagens de referência desnecessárias. As imagens são comprimidas automaticamente, mas algumas podem ainda ser muito grandes.',
-              };
-            }
-            return { message: apiMessage };
-          }
-        }
-      }
-
-      if (err?.error?.message) {
-        const apiMessage = err.error.message;
-        if (apiMessage.includes('Unable to process input image')) {
-          return {
-            message: t('messages.unableToProcessImage'),
-            suggestion: t('messages.unableToProcessImageSuggestion'),
-          };
-        }
-        if (apiMessage.includes('Payload Too Large') || apiMessage.includes('413')) {
-          return {
-            message: 'Arquivo muito grande para processar',
-            suggestion: 'O tamanho do arquivo excede o limite permitido. Tente reduzir a resolução da imagem, usar um formato mais compacto (como JPEG) ou remover imagens de referência desnecessárias. As imagens são comprimidas automaticamente, mas algumas podem ainda ser muito grandes.',
-          };
-        }
-        return { message: apiMessage };
-      }
-    } catch (parseError) {
-    }
-
-    return {
-      message: t('messages.generationError'),
-      suggestion: t('messages.generationErrorSuggestion'),
-    };
-  }, [t]);
 
 
 
@@ -3099,6 +2684,11 @@ Generate the new mockup image with the requested changes applied.`;
 
   // Logic to show generation button (matches SidebarOrchestrator logic)
   const shouldShowGenerateButton = isPromptReady || hasUserChanges;
+
+  // --- View State Helpers ---
+  const isSetupMode = !hasAnalyzed;
+  const isDashboardMode = hasAnalyzed;
+  const shouldShowWelcome = showWelcome || (!uploadedImage && !isImagelessMode && designType !== 'blank');
 
   return (
     <>
@@ -3113,60 +2703,33 @@ Generate the new mockup image with the requested changes applied.`;
         applicationCategory="DesignApplication"
       />
       <WebSiteSchema />
-      <AnalyzingImageOverlay isVisible={isAnalyzing} />
+      <AnalyzingImageOverlay isVisible={isAnalysisOverlayVisible} />
 
-      {showWelcome || (!uploadedImage && !isImagelessMode && designType !== 'blank') ? (
+      {shouldShowWelcome ? (
         <WelcomeScreen
           onImageUpload={handleImageUpload}
           onBlankMockup={handleProceedWithoutImage}
         />
       ) : (
-        <div className="pt-12 md:pt-14">
-          <div className={`flex flex-col lg:flex-row h-[calc(100vh-2.5rem-120px)] md:h-[calc(100vh-5rem)] ${!hasGenerated ? 'justify-center py-4 md:py-8' : ''} ${hasGenerated ? 'relative' : ''}`}>
+        <div className="pt-12 md:pt-14 overflow-hidden bg-background">
+          <div className={cn(
+            "flex h-[calc(100vh-3rem)] md:h-[calc(100vh-3.5rem)] transition-all duration-500",
+            isSetupMode ? "flex-col items-center justify-center p-4 md:p-8" : "flex-row"
+          )}>
 
-            {/* Collapse/Expand Toggle Button */}
-            {hasGenerated && (
-              <Button
-                onClick={() => {
-                  // Check if we are on mobile or desktop based on visibility state or window width
-                  // Since we don't track window width here, we use a heuristic or simple toggle
-                  // If sidebar is visible on mobile, close it.
-                  if (isSidebarVisibleMobile) {
-                    setIsSidebarVisibleMobile(false);
-                  } else {
-                    // Desktop toggle
-                    setIsSidebarCollapsed(!isSidebarCollapsed);
-                  }
-                }}
-                variant="outline"
-                size="icon"
-                className={`z-30 shadow-md bg-background border-border hover:bg-accent text-muted-foreground
-                        ${isSidebarVisibleMobile
-                    ? 'fixed top-20 right-4 lg:hidden' /* Mobile Close: Fixed top-right */
-                    : 'absolute top-4 left-4 lg:static lg:mr-4 lg:mt-0 transition-all' /* Desktop Toggle: In flow or absolute */
-                  }
-                        /* On desktop, we want it in the Main area flow but absolute helps if we want it "outside" sidebar */
-                        ${!isSidebarVisibleMobile ? 'lg:absolute lg:left-0 lg:ml-2 lg:top-4' : ''}
-                        /* When collapsed on desktop, move it to left edge */
-                    `}
-                style={{
-                  /* Dynamic positioning for desktop if needed, but flex layout handles main area */
-                }}
-              >
-                {isSidebarVisibleMobile || !isSidebarCollapsed ? (
-                  <Menu className="h-4 w-4 rotate-180" /> /* Close/Collapse Icon */
-                ) : (
-                  <Menu className="h-4 w-4" /> /* Expand Icon */
-                )}
-              </Button>
-            )}
-
-            <div className={`${hasGenerated && !isSidebarVisibleMobile ? (isSidebarCollapsed ? 'hidden' : 'hidden lg:flex') : hasGenerated ? 'flex' : ''} ${hasGenerated ? 'h-full' : ''}`}>
+            {/* Sidebar Orchestrator Container */}
+            <div className={cn(
+              "z-30 transition-all duration-500 ease-in-out",
+              isSetupMode ? "w-full" : [
+                "fixed inset-0 lg:relative lg:inset-auto",
+                isSidebarVisibleMobile ? "flex bg-background/95 backdrop-blur-md pt-8" : "hidden lg:flex",
+                isSidebarCollapsed ? "lg:w-0 lg:opacity-0 lg:pointer-events-none" : "lg:w-auto lg:opacity-100"
+              ]
+            )}>
               <SidebarOrchestrator
                 sidebarWidth={sidebarWidth}
                 sidebarRef={sidebarRef}
                 onSidebarWidthChange={setSidebarWidth}
-                // onCloseMobile removed to use external button
                 onSurpriseMe={handleSurpriseMe}
                 onImageUpload={handleImageUpload}
                 onReferenceImagesChange={setReferenceImages}
@@ -3184,17 +2747,67 @@ Generate the new mockup image with the requested changes applied.`;
                 onBlankMockup={handleProceedWithoutImage}
               />
             </div>
-            {hasGenerated && (
-              <>
-                <main className={`flex-1 p-2 md:p-4 lg:p-8 overflow-y-auto min-w-0 h-full ${!isSidebarVisibleMobile ? 'w-full' : ''} relative`}>
 
+            {/* Dashboard Main Area */}
+            {isDashboardMode && (
+              <main className={cn(
+                "flex-1 min-w-0 h-full relative overflow-hidden transition-all duration-500",
+                "p-2 md:p-6 lg:p-8 custom-scrollbar",
+                isSidebarCollapsed && "lg:pl-16 shadow-[inset_20px_0_30px_-20px_rgba(0,0,0,0.3)]"
+              )}>
 
+                {/* Desktop Sidebar Toggle */}
+                <div className="hidden lg:block absolute left-4 top-6 z-40">
+                  <Button
+                    onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                    variant="ghost"
+                    size="icon"
+                    className="w-10 h-10 rounded-xl bg-neutral-900/50 backdrop-blur-md border border-white/5 hover:bg-neutral-800 hover:border-brand-cyan/30 text-neutral-400 hover:text-brand-cyan shadow-xl transition-all group"
+                  >
+                    <Menu className={cn(
+                      "h-5 w-5 transition-transform duration-500",
+                      !isSidebarCollapsed ? "rotate-180" : "group-hover:scale-110"
+                    )} />
+                  </Button>
+                </div>
+
+                {/* Mobile Sidebar Toggle (Visible only when sidebar is hidden) */}
+                {!isSidebarVisibleMobile && (
+                  <div className="lg:hidden fixed bottom-6 left-6 z-40">
+                    <Button
+                      onClick={() => setIsSidebarVisibleMobile(true)}
+                      variant="default"
+                      size="icon"
+                      className="w-12 h-12 rounded-full bg-brand-cyan text-black shadow-2xl shadow-brand-cyan/20 hover:scale-110 active:scale-95 transition-all"
+                    >
+                      <Menu className="h-6 w-6" />
+                    </Button>
+                  </div>
+                )}
+
+                {/* Top Action Bar (Mobile Only - Closes Sidebar) */}
+                {isSidebarVisibleMobile && (
+                  <div className="lg:hidden fixed top-6 right-6 z-50">
+                    <Button
+                      onClick={() => setIsSidebarVisibleMobile(false)}
+                      variant="outline"
+                      size="icon"
+                      className="w-10 h-10 rounded-full bg-neutral-900 shadow-xl border-white/10"
+                    >
+                      <Menu className="h-5 w-5 rotate-180" />
+                    </Button>
+                  </div>
+                )}
+
+                {/* Content Rendering */}
+                <div className="h-full w-full min-w-0 animate-fade-in-up overflow-hidden">
                   <MockupDisplay
                     mockups={mockups}
                     isLoading={isLoading}
+                    isSidebarCollapsed={isSidebarCollapsed}
                     onRedraw={handleRedrawClick}
                     onView={handleOpenFullScreen}
-                    onNewAngle={(index, angle) => handleNewAngleFromOutput(index, angle)}
+                    onNewAngle={handleNewAngleFromOutput}
                     onNewBackground={handleNewBackgroundFromOutput}
                     onReImagine={handleReImagineFromOutput}
                     onSave={handleSaveMockup}
@@ -3211,13 +2824,14 @@ Generate the new mockup image with the requested changes applied.`;
                     editButtonsDisabled={isEditOperationDisabled}
                     creditsPerOperation={creditsNeededForEdit}
                   />
-                </main>
-              </>
+                </div>
+              </main>
             )}
           </div>
         </div>
       )}
 
+      {/* Overlays / Modals / Portals */}
       {fullScreenImageIndex !== null && (
         <FullScreenViewer
           showActions={true}
@@ -3240,7 +2854,6 @@ Generate the new mockup image with the requested changes applied.`;
           mockupId={savedMockupIds.get(fullScreenImageIndex)}
           onToggleLike={() => handleToggleLike(fullScreenImageIndex)}
           onLikeStateChange={(newIsLiked) => {
-            // Sync state when hook updates it
             setMockupLikedStatus(prev => new Map(prev).set(fullScreenImageIndex, newIsLiked));
           }}
           isLiked={mockupLikedStatus.get(fullScreenImageIndex) ?? false}
@@ -3249,38 +2862,37 @@ Generate the new mockup image with the requested changes applied.`;
         />
       )}
 
-      {hasGenerated && !isSidebarVisibleMobile && shouldShowGenerateButton && (
-        <div className="lg:hidden">
-          <GenerateButton
-            onClick={handleGenerateClick}
-            disabled={isGenerateDisabled || (isPromptReady && isGenerating)}
-            isGeneratingPrompt={isGeneratingPrompt}
-            isGenerating={isGenerating}
-            isPromptReady={isPromptReady}
-            variant="floating"
-            creditsRequired={selectedModel && isPromptReady ? mockupCount * getCreditsRequired(selectedModel, resolution) : undefined}
-          />
-        </div>
-      )}
-
+      {/* Unified floating actions: GERAR PROMPT + Surpreenda-me (mobile only) */}
       <FloatingActionButtons
-        isVisible={(hasGenerated || hasAnalyzed) && !isSidebarVisibleMobile}
+        isVisible={!isSidebarVisibleMobile && ((isDashboardMode && shouldShowGenerateButton) || hasAnalyzed)}
         onSurpriseMe={() => handleSurpriseMe(true)}
         isGeneratingPrompt={isGeneratingPrompt}
         isGenerating={isGenerating}
         hasAnalyzed={hasAnalyzed}
+        generateButton={
+          isDashboardMode && shouldShowGenerateButton ? (
+            <GenerateButton
+              onClick={handleGenerateClick}
+              disabled={isGenerateDisabled || (isPromptReady && isGenerating)}
+              isGeneratingPrompt={isGeneratingPrompt}
+              isGenerating={isGenerating}
+              isPromptReady={isPromptReady}
+              variant="floating"
+              embed
+              creditsRequired={selectedModel && isPromptReady ? mockupCount * getCreditsRequired(selectedModel, resolution) : undefined}
+            />
+          ) : undefined
+        }
       />
 
+      {/* Confirmation & Settings Modals */}
       {showUnsavedDialog && unsavedDialogConfig && (
         <ConfirmationModal
           isOpen={showUnsavedDialog}
           onClose={() => {
             setShowUnsavedDialog(false);
             setUnsavedDialogConfig(null);
-            // Reset blocker if it was blocked
-            if (blocker.state === 'blocked') {
-              blocker.reset();
-            }
+            if (blocker.state === 'blocked') blocker.reset();
           }}
           onConfirm={unsavedDialogConfig.onConfirm}
           onSaveAll={unsavedDialogConfig.onSaveAll}

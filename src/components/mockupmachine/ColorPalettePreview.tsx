@@ -42,7 +42,6 @@ export const ColorPalettePreview: React.FC<ColorPalettePreviewProps> = ({
 
     const handleHexInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         let value = e.target.value.trim();
-        // Auto-add # if user forgets
         if (value && !value.startsWith('#')) {
             value = '#' + value;
         }
@@ -69,157 +68,85 @@ export const ColorPalettePreview: React.FC<ColorPalettePreviewProps> = ({
     }, [handleAddCustomColor]);
 
     const limitReached = selectedColors.length >= maxColors;
-
-    // Combine suggested and selected colors (avoid duplicates)
     const allColors = [...new Set([...suggestedColors, ...selectedColors])];
 
     return (
-        <section className={cn(
-            "space-y-3",
-            disabled && "opacity-60 pointer-events-none"
-        )}>
-            <h2 className={cn(
-                "font-semibold font-mono uppercase tracking-widest text-sm transition-all duration-300",
-                theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-            )}>
-                {t('mockup.colorPaletteSection')}
-            </h2>
+        <section className={cn("space-y-3", disabled && "opacity-60 pointer-events-none")}>
+            <div className="flex items-center justify-between mb-1">
+                <h4 className={cn("text-[12px] font-mono uppercase tracking-widest", theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600')}>
+                    {t('mockup.colorPaletteSection')}
+                </h4>
+                <span className="text-[12px] font-mono text-neutral-600">
+                    {selectedColors.length}/{maxColors}
+                </span>
+            </div>
 
-            <p className={cn(
-                "text-xs mb-3 font-mono",
-                theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
-            )}>
-                {t('mockup.colorPaletteComment')}
-            </p>
+            <div className="flex flex-wrap items-center gap-2 w-full">
+                {/* Hex Input Group */}
+                <div className="flex gap-2 flex-1 min-w-[120px]">
+                    <input
+                        type="text"
+                        value={hexInput}
+                        onChange={handleHexInputChange}
+                        onKeyDown={handleKeyDown}
+                        placeholder="#HEX"
+                        disabled={disabled || limitReached}
+                        maxLength={7}
+                        className={cn(
+                            "w-full px-2 py-1.5 text-[12px] font-mono rounded bg-black/40 border border-neutral-700/50 focus:outline-none focus:border-brand-cyan/50",
+                            isValidHex && "border-brand-cyan/30"
+                        )}
+                    />
+                    <button
+                        type="button"
+                        onClick={handleAddCustomColor}
+                        disabled={disabled || !isValidHex || limitReached}
+                        className={cn(
+                            "px-2 py-1 text-[12px] font-mono rounded border border-neutral-700/50 transition-all",
+                            isValidHex && !limitReached ? "bg-brand-cyan/20 border-brand-cyan/30 text-brand-cyan hover:bg-brand-cyan/30" : "bg-neutral-800/30 text-neutral-600"
+                        )}
+                    >
+                        {t('common.add')}
+                    </button>
+                </div>
 
-            {/* Suggested Colors Grid */}
-            {allColors.length > 0 && (
-                <div className="flex flex-wrap gap-2">
+                {/* Color Squares */}
+                <div className="flex flex-wrap gap-1.5">
                     {allColors.map((color) => {
                         const isSelected = selectedColors.includes(color);
                         return (
                             <button
                                 key={color}
                                 type="button"
-                                onClick={() => {
-                                    if (isSelected) {
-                                        onRemoveColor(color);
-                                    } else if (!limitReached) {
-                                        onColorToggle(color);
-                                    }
-                                }}
+                                onClick={() => isSelected ? onRemoveColor(color) : (!limitReached && onColorToggle(color))}
                                 disabled={disabled || (!isSelected && limitReached)}
                                 className={cn(
-                                    "relative group w-10 h-10 rounded-lg border-2 transition-all duration-200 cursor-pointer",
-                                    "hover:scale-110 hover:shadow-lg active:scale-95",
-                                    isSelected
-                                        ? "border-brand-cyan shadow-md shadow-brand-cyan/20 ring-2 ring-brand-cyan/30"
-                                        : theme === 'dark'
-                                            ? "border-neutral-600 hover:border-neutral-400"
-                                            : "border-neutral-300 hover:border-neutral-500",
-                                    (!isSelected && limitReached) && "opacity-40 cursor-not-allowed hover:scale-100"
+                                    "w-8 h-8 rounded border-1 transition-all flex items-center justify-center cursor-pointer hover:border-neutral-500/50 hover:opacity-50",
+                                    isSelected ? "border-neutral-500/50" : "border-neutral-700/20",
+                                    (!isSelected && limitReached) && "opacity-30 cursor-not-allowed"
                                 )}
                                 style={{ backgroundColor: color }}
                                 title={color}
-                                aria-label={`${isSelected ? t('common.deselect') : t('common.select')} ${color}`}
                             >
-                                {/* Selection indicator */}
-                                {isSelected && (
-                                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-brand-cyan rounded-full flex items-center justify-center">
-                                        <X size={10} className="text-black" />
-                                    </div>
-                                )}
+                                {isSelected && <div className="w-1 h-1 bg-white rounded-full shadow-sm" />}
                             </button>
                         );
                     })}
                 </div>
-            )}
+            </div>
 
-            {/* Selected Colors Display */}
+            {/* Selection tags (Optional, keeping it very small) */}
             {selectedColors.length > 0 && (
-                <div className={cn(
-                    "flex flex-wrap gap-1.5 p-2 rounded-lg border",
-                    theme === 'dark' ? 'bg-black/20 border-white/5' : 'bg-white/50 border-neutral-200'
-                )}>
-                    <span className={cn(
-                        "text-[10px] font-mono uppercase tracking-wider mr-2 self-center",
-                        theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
-                    )}>
-                        {t('mockup.selected')}:
-                    </span>
-                    {selectedColors.map((color) => (
-                        <div
-                            key={color}
-                            className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-brand-cyan/10 border border-brand-cyan/30"
-                        >
-                            <div
-                                className="w-3 h-3 rounded-full border border-white/20"
-                                style={{ backgroundColor: color }}
-                            />
-                            <span className="text-[10px] font-mono text-brand-cyan">{color}</span>
-                            <button
-                                type="button"
-                                onClick={() => onRemoveColor(color)}
-                                disabled={disabled}
-                                className="ml-0.5 hover:text-red-400 transition-colors"
-                                aria-label={`${t('common.remove')} ${color}`}
-                            >
-                                <X size={10} />
-                            </button>
+                <div className="flex flex-wrap gap-2 mt-1">
+                    {selectedColors.map(color => (
+                        <div key={color} className="flex items-center gap-2 pl-1.5 pr-2 py-1 rounded bg-neutral-800/5 border border-neutral-700/20 text-[9px] font-mono hover:bg-neutral-800/10 hover:border-neutral-500/30 transition-all">
+                            <span className="w-4 h-4 rounded-full" style={{ backgroundColor: color }} />
+                            <span className="text-neutral-400">{color}</span>
+                            <X size={8} className="cursor-pointer hover:text-brand-cyan" onClick={() => onRemoveColor(color)} />
                         </div>
                     ))}
                 </div>
             )}
-
-            {/* Hex Color Input */}
-            <div className="flex gap-2">
-                <div className="relative flex-1">
-                    <Pipette
-                        size={14}
-                        className={cn(
-                            "absolute left-3 top-1/2 -translate-y-1/2",
-                            theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'
-                        )}
-                    />
-                    <Input
-                        type="text"
-                        value={hexInput}
-                        onChange={handleHexInputChange}
-                        onKeyDown={handleKeyDown}
-                        placeholder="#FFFFFF"
-                        disabled={disabled || limitReached}
-                        maxLength={7}
-                        className={cn(
-                            "pl-9 font-mono text-sm",
-                            isValidHex && "border-brand-cyan/50 focus:border-brand-cyan"
-                        )}
-                    />
-                </div>
-                <Button
-                    type="button"
-                    onClick={handleAddCustomColor}
-                    disabled={disabled || !isValidHex || limitReached}
-                    variant="outline"
-                    size="sm"
-                    className={cn(
-                        "gap-1",
-                        isValidHex && !limitReached && "border-brand-cyan/50 text-brand-cyan hover:bg-brand-cyan/10"
-                    )}
-                >
-                    <Plus size={14} />
-                    {t('common.add')}
-                </Button>
-            </div>
-
-            {/* Limit indicator */}
-            <p className={cn(
-                "text-[10px] font-mono",
-                limitReached
-                    ? 'text-amber-500'
-                    : theme === 'dark' ? 'text-neutral-600' : 'text-neutral-500'
-            )}>
-                {selectedColors.length}/{maxColors} {t('mockup.colorsSelected')}
-            </p>
         </section>
     );
 };

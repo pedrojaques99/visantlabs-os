@@ -170,13 +170,13 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
             : 'bg-white border-neutral-300 text-neutral-700'
             } ${isGeneratingPrompt ? 'opacity-50' : ''}`}
           placeholder={t('mockup.promptPlaceholder')}
-          style={{ minHeight: '48px', maxHeight: '600px' }}
+          style={{ minHeight: '100px', maxHeight: '600px' }}
           disabled={isGeneratingPrompt}
         />
         {isGeneratingPrompt && (
-          <div className={`absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-md ${theme === 'dark' ? 'bg-black/60' : 'bg-white/60'
+          <div className={`absolute h-min-[100px] inset-0 flex flex-col items-center justify-center gap-2 rounded-md ${theme === 'dark' ? 'bg-black/60' : 'bg-white/60'
             } backdrop-blur-sm`}>
-            <GlitchLoader size={16} />
+            <GlitchLoader size={12} />
             <span className="text-xs font-mono font-semibold text-brand-cyan uppercase tracking-wider">
               GENERATING PROMPT...
             </span>

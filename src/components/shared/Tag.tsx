@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { X } from 'lucide-react';
+import { X, Shuffle } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 
 export interface TagProps extends React.PropsWithChildren {
@@ -13,6 +13,7 @@ export interface TagProps extends React.PropsWithChildren {
     onRemove?: () => void;
     className?: string;
     disabled?: boolean;
+    size?: 'sm' | 'md';
 }
 
 export const Tag: React.FC<TagProps> = ({
@@ -26,10 +27,16 @@ export const Tag: React.FC<TagProps> = ({
     onRemove,
     className,
     disabled = false,
+    size = 'md',
 }) => {
     const { theme } = useTheme();
 
-    const baseStyles = "h-7 px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 border cursor-pointer inline-flex items-center gap-1.5 select-none box-border whitespace-nowrap";
+    const sizeStyles = size === 'sm' ? "h-6 px-2 py-1 text-[10px]" : "h-7 px-3 py-1.5 text-xs";
+    const baseStyles = cn(
+        "font-medium rounded-full transition-all duration-200 border inline-flex items-center gap-1.5 select-none box-border whitespace-nowrap",
+        sizeStyles,
+        (!disabled && (onToggle || removable)) ? "cursor-pointer" : "cursor-default"
+    );
 
     // Pool mode styling - dashed border for tags in the pool
     const poolStyles = inPool
@@ -57,6 +64,7 @@ export const Tag: React.FC<TagProps> = ({
             onClick={!disabled ? onToggle : undefined}
             className={cn(baseStyles, themeStyles, disabledStyles, className)}
         >
+            {inPool && <Shuffle size={10} className="mr-0.5 opacity-70" />}
             {children}
             {label && <span>{label}</span>}
             {removable && onRemove && (

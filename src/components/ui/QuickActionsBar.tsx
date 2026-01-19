@@ -69,61 +69,6 @@ export const QuickActionsBar: React.FC<QuickActionsBarProps> = ({
             {t('mockup.surpriseMe')}
           </button>
         </Tooltip>
-        <div className="flex items-center gap-2.5">
-          {/* Auto Generate Toggle */}
-          <Tooltip content={t('mockup.autoGenerateTooltip')} position="top">
-            <div
-              className={`group flex items-center gap-1.5 cursor-pointer opacity-40 hover:opacity-100 transition-opacity duration-200 ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'}`}
-              onClick={() => onAutoGenerateChange(!autoGenerate)}
-            >
-              <div className={`w-3 h-3 rounded-md flex items-center justify-center border transition-all duration-200 ${autoGenerate
-                ? 'bg-brand-cyan/80 border-brand-cyan opacity-100'
-                : theme === 'dark'
-                  ? 'bg-neutral-700/50 border-neutral-600/50 group-hover:border-neutral-500 group-hover:bg-neutral-700'
-                  : 'bg-white/50 border-neutral-400/50 group-hover:border-neutral-400 group-hover:bg-white'
-                }`}>
-                {autoGenerate && (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-2 w-2 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
-              </div>
-              <label className={`text-[10px] select-none cursor-pointer font-mono group-hover:text-[11px] transition-all ${theme === 'dark' ? 'text-neutral-500 group-hover:text-neutral-400' : 'text-neutral-500 group-hover:text-neutral-600'}`}>
-                {t('mockup.autoGenerate')}
-              </label>
-            </div>
-          </Tooltip>
-
-          {/* Surprise Me Mode Toggle */}
-          <Tooltip content={isSurpriseMeMode ? t('mockup.surpriseMeModeDisableTooltip') : t('mockup.surpriseMeModeEnableTooltip')} position="top">
-            <div
-              className={`group flex items-center gap-1.5 cursor-pointer transition-opacity duration-200 ${isSurpriseMeMode
-                  ? 'opacity-100'
-                  : 'opacity-40 hover:opacity-100'
-                } ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'}`}
-              onClick={() => onSurpriseMeModeChange(!isSurpriseMeMode)}
-            >
-              <div className={`w-3 h-3 rounded-md flex items-center justify-center border transition-all duration-200 ${isSurpriseMeMode
-                ? 'bg-brand-cyan/80 border-brand-cyan'
-                : theme === 'dark'
-                  ? 'bg-neutral-700/50 border-neutral-600/50 group-hover:border-neutral-500 group-hover:bg-neutral-700'
-                  : 'bg-white/50 border-neutral-400/50 group-hover:border-neutral-400 group-hover:bg-white'
-                }`}>
-                {isSurpriseMeMode && (
-                  <Shuffle size={8} className="text-black" />
-                )}
-              </div>
-              <label className={`text-[10px] select-none cursor-pointer font-mono group-hover:text-[11px] transition-all ${isSurpriseMeMode
-                  ? 'text-brand-cyan'
-                  : theme === 'dark'
-                    ? 'text-neutral-500 group-hover:text-neutral-400'
-                    : 'text-neutral-500 group-hover:text-neutral-600'
-                }`}>
-                {t('mockup.surpriseMeMode')}
-              </label>
-            </div>
-          </Tooltip>
-        </div>
       </div>
       <div className={`flex-grow border-t border-dashed ${theme === 'dark' ? 'border-neutral-700/50' : 'border-neutral-300/50'}`}></div>
     </div>

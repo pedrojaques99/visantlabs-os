@@ -633,6 +633,28 @@ router.post('/upload-url', authenticate, async (req: AuthRequest, res) => {
   }
 });
 
+// Generate temporary image upload URL (for direct client uploads)
+router.post('/upload-temp-url', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const { contentType } = req.body;
+    const r2Service = await import('../../src/services/r2Service.js');
+
+    if (!req.userId) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
+
+    if (!r2Service.isR2Configured()) {
+      return res.status(503).json({ error: 'R2 storage not configured' });
+    }
+
+    const result = await r2Service.generateTemporaryImageUploadUrl(req.userId, contentType);
+    res.json(result);
+  } catch (error: any) {
+    console.error('Error generating temporary upload URL:', error);
+    res.status(500).json({ error: 'Failed to generate upload URL', details: error.message });
+  }
+});
+
 // Generate mockup image (NEW: validates and deducts credits BEFORE generation)
 // CRITICAL: This endpoint validates and deducts credits atomically before calling Gemini API
 router.post('/generate', authenticate, checkSubscription, async (req: SubscriptionRequest, res, next) => {

@@ -20,6 +20,7 @@ interface MockupContextState {
     hasGenerated: boolean;
     hasAnalyzed: boolean;
     isAnalyzing: boolean;
+    isAnalysisOverlayVisible: boolean;
 
     // Selection State
     selectedTags: string[];
@@ -74,6 +75,9 @@ interface MockupContextState {
     // Surprise Me Mode State
     isSurpriseMeMode: boolean;
     surpriseMePool: SurpriseMeSelectedTags;
+
+    // Additional Instructions
+    instructions: string;
 }
 
 interface MockupContextActions {
@@ -90,6 +94,7 @@ interface MockupContextActions {
     setHasGenerated: Dispatch<SetStateAction<boolean>>;
     setHasAnalyzed: Dispatch<SetStateAction<boolean>>;
     setIsAnalyzing: Dispatch<SetStateAction<boolean>>;
+    setIsAnalysisOverlayVisible: Dispatch<SetStateAction<boolean>>;
     setIsGeneratingPrompt: Dispatch<SetStateAction<boolean>>;
     setSelectedTags: Dispatch<SetStateAction<string[]>>;
     setSelectedBrandingTags: Dispatch<SetStateAction<string[]>>;
@@ -133,6 +138,7 @@ interface MockupContextActions {
     setMockupCount: Dispatch<SetStateAction<number>>;
     setIsSurpriseMeMode: Dispatch<SetStateAction<boolean>>;
     setSurpriseMePool: Dispatch<SetStateAction<SurpriseMeSelectedTags>>;
+    setInstructions: Dispatch<SetStateAction<string>>;
     resetAll: () => void;
 }
 
@@ -156,6 +162,7 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const [hasGenerated, setHasGenerated] = useState(false);
     const [hasAnalyzed, setHasAnalyzed] = useState(false);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [isAnalysisOverlayVisible, setIsAnalysisOverlayVisible] = useState(false);
     const [isGeneratingPrompt, setIsGeneratingPrompt] = useState(false);
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [selectedBrandingTags, setSelectedBrandingTags] = useState<string[]>([]);
@@ -201,6 +208,7 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     // Surprise Me Mode State - load initial pool from localStorage
     const [isSurpriseMeMode, setIsSurpriseMeMode] = useState(false);
     const [surpriseMePool, setSurpriseMePool] = useState<SurpriseMeSelectedTags>(() => getSurpriseMeSelectedTags());
+    const [instructions, setInstructions] = useState('');
 
     const resetAll = () => {
         setUploadedImage(null);
@@ -229,7 +237,10 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         setIsLoading(Array(mockupCount).fill(false));
         setHasGenerated(false);
         setHasAnalyzed(false);
+        setHasAnalyzed(false);
         setIsSurpriseMeMode(false);
+        setIsAnalysisOverlayVisible(false);
+        setInstructions('');
     };
 
     const value = useMemo(() => ({
@@ -246,6 +257,7 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         hasGenerated, setHasGenerated,
         hasAnalyzed, setHasAnalyzed,
         isAnalyzing, setIsAnalyzing,
+        isAnalysisOverlayVisible, setIsAnalysisOverlayVisible,
         isGeneratingPrompt, setIsGeneratingPrompt,
         selectedTags, setSelectedTags,
         selectedBrandingTags, setSelectedBrandingTags,
@@ -289,6 +301,7 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         mockupCount, setMockupCount,
         isSurpriseMeMode, setIsSurpriseMeMode,
         surpriseMePool, setSurpriseMePool,
+        instructions, setInstructions,
         resetAll
     }), [
         uploadedImage, referenceImage, referenceImages, isImagelessMode, designType,
@@ -304,7 +317,8 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         isPromptReady, promptSuggestions, isSuggestingPrompts, customBrandingInput,
         customCategoryInput, customLocationInput, customAngleInput, customLightingInput,
         customEffectInput, customMaterialInput, colorInput, isValidColor,
-        fullScreenImageIndex, mockupCount, isSurpriseMeMode, surpriseMePool, resetAll
+        fullScreenImageIndex, mockupCount, isSurpriseMeMode, surpriseMePool,
+        instructions, resetAll
     ]);
 
     return (

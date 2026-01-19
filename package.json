@@ -99,6 +99,7 @@
     "jsonwebtoken": "^9.0.2",
     "jspdf": "^3.0.4",
     "katex": "^0.16.25",
+    "knip": "^5.82.1",
     "lucide-react": "^0.418.0",
     "mongodb": "^6.21.0",
     "pdf-lib": "^1.17.1",

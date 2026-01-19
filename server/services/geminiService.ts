@@ -1,6 +1,7 @@
 import { GoogleGenAI, Modality, Type } from "@google/genai";
 import type { UploadedImage, AspectRatio, DesignType, GeminiModel, Resolution } from '../../src/types/types.js';
 import { buildGeminiPromptInstructionsTemplate } from '../../src/utils/mockupPromptFormat.js';
+import type { AvailableTags } from './tagService.js';
 import {
   AVAILABLE_TAGS,
   AVAILABLE_BRANDING_TAGS,
@@ -68,6 +69,32 @@ const DEFAULT_RETRIES: Record<string, number> = {
   'gemini-3-pro-image-preview': 10, // More retries for Gemini 3 Pro
   'gemini-2.5-flash-image': 5, // Fewer retries for other models
   'gemini-2.5-flash': 5, // Fewer retries for text models
+};
+
+// Resolves to base64 only for this request (URL→base64 when needed); no persistent cache.
+const resolveImageBase64 = async (image: UploadedImage): Promise<string> => {
+  if (image.base64 && image.base64.length > 0) {
+    if (process.env.NODE_ENV === 'development') console.log('[dev] resolveImageBase64: using base64, len=', image.base64.length);
+    return image.base64;
+  }
+
+  if (image.url) {
+    try {
+      const t0 = Date.now();
+      if (process.env.NODE_ENV === 'development') console.log('[dev] resolveImageBase64: fetch start', image.url);
+      const response = await fetch(image.url);
+      if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
+      const arrayBuffer = await response.arrayBuffer();
+      const b64 = Buffer.from(arrayBuffer).toString('base64');
+      if (process.env.NODE_ENV === 'development') console.log('[dev] resolveImageBase64: fetch done', ((Date.now() - t0) / 1000).toFixed(2) + 's');
+      return b64;
+    } catch (error) {
+      console.error('Error resolving image from URL:', error);
+      throw new Error('Failed to download image content for AI processing');
+    }
+  }
+
+  throw new Error('Image has no base64 data or URL');
 };
 
 const withRetry = async <T>(
@@ -202,17 +229,16 @@ export const generateMockup = async (
 
     // Add main base image if provided
     if (baseImage) {
-      // Validate base64 is not empty
-      if (!baseImage.base64 || baseImage.base64.trim().length === 0) {
-        throw new Error('Base image data is empty');
-      }
       // Validate mimeType
       if (!baseImage.mimeType || baseImage.mimeType.trim().length === 0) {
         throw new Error('Base image MIME type is missing');
       }
+
+      const base64Data = await resolveImageBase64(baseImage);
+
       parts.push({
         inlineData: {
-          data: baseImage.base64,
+          data: base64Data,
           mimeType: baseImage.mimeType,
         },
       });
@@ -225,14 +251,15 @@ export const generateMockup = async (
       const maxReferenceImages = model === 'gemini-3-pro-image-preview' ? 3 : 1;
       const imagesToAdd = referenceImages.slice(0, maxReferenceImages);
 
-      imagesToAdd.forEach((img) => {
+      for (const img of imagesToAdd) {
+        const refBase64 = await resolveImageBase64(img);
         parts.push({
           inlineData: {
-            data: img.base64,
+            data: refBase64,
             mimeType: img.mimeType,
           },
         });
-      });
+      }
     }
 
     // Validate prompt is not empty
@@ -292,13 +319,25 @@ export const generateMockup = async (
       config: config,
     });
 
+    let textResponse = '';
     for (const part of response.candidates?.[0]?.content?.parts || []) {
       if (part.inlineData) {
         return part.inlineData.data as string;
       }
+      if (part.text) {
+        textResponse += part.text + ' ';
+      }
     }
 
-    throw new Error("No image was generated in the response.");
+    // Check if the model refused due to safety ratings
+    const safetyRatings = response.candidates?.[0]?.safetyRatings;
+    const blockedRating = safetyRatings?.find(r => r.probability === 'HIGH' || r.probability === 'MEDIUM');
+
+    if (blockedRating) {
+      throw new Error(`Generation blocked by safety filters (${blockedRating.category}: ${blockedRating.probability}). Text: ${textResponse.trim()}`);
+    }
+
+    throw new Error(`No image was generated in the response. Model response: ${textResponse.trim() || 'Empty response'}`);
   }, {
     model,
     onRetry
@@ -322,13 +361,15 @@ export const suggestCategories = async (
     Based on this, suggest a list of 5 to 10 highly relevant professional mockup categories where this design would look best.
     Return ONLY a comma-separated list of suggested categories (e.g., T-Shirt, Mug, Poster, Business Card). Do not include any other text or explanation.`;
 
+    const base64Data = await resolveImageBase64(baseImage);
+
     const response = await getAI(apiKey).models.generateContent({
       model: 'gemini-2.5-flash',
       contents: {
         parts: [
           {
             inlineData: {
-              data: baseImage.base64,
+              data: base64Data,
               mimeType: baseImage.mimeType,
             },
           },
@@ -386,49 +427,38 @@ export const analyzeMockupSetup = async (
     lighting: string[];
     effects: string[];
     materials: string[];
+  },
+  instructions?: string,
+  userContext?: {
+    selectedBrandingTags?: string[];
   }
 ): Promise<AnalyzeMockupSetupResult> => {
   return withRetry(async () => {
-    const promptToGemini = `Você é um especialista em mockup e fotografia.
-Analise esta imagem base e sugira as melhores tags para cada categoria para criar um mockup perfeito.
-Se disponível, escolha preferencialmente entre as tags existentes.
+    const t0 = Date.now();
+    if (process.env.NODE_ENV === 'development') console.log('[dev] analyzeMockupSetup: start');
+    // Import prompt builder and tag service
+    const { buildAnalysisPrompt } = await import('../utils/analysisPromptBuilder.js');
+    const { validateTags } = await import('../services/tagService.js');
 
-${availableTags ? `Tags existentes por categoria:
-- Branding/Estilo: ${availableTags.branding.join(', ')}
-- Categorias de Mockup: ${availableTags.categories.join(', ')}
-- Locais/Ambientes: ${availableTags.locations.join(', ')}
-- Ângulos: ${availableTags.angles.join(', ')}
-- Iluminação: ${availableTags.lighting.join(', ')}
-- Efeitos: ${availableTags.effects.join(', ')}
-- Materiais/Texturas: ${availableTags.materials.join(', ')}` : ''}
+    // Build prompt using reusable template
+    const promptToGemini = buildAnalysisPrompt({
+      availableTags: availableTags as AvailableTags | undefined,
+      instructions,
+      userContext,
+    });
+    if (process.env.NODE_ENV === 'development') console.log('[dev] analyzeMockupSetup: buildAnalysisPrompt done', ((Date.now() - t0) / 1000).toFixed(2) + 's');
 
-Sugira:
-1. Pelo menos 4 tags de "branding" que descrevam o estilo visual.
-2. Pelo menos 3 "categories" de mockup que combinem com a imagem.
-3. Pelo menos 3 "locations" onde o mockup poderia estar.
-4. Os 2 melhores "angles" de visualização.
-5. As 2 melhores opções de "lighting".
-6. 2 "effects" visuais interessantes.
-7. 2 "materials" (texturas) adequados.
+    const base64Data = await resolveImageBase64(baseImage);
+    if (process.env.NODE_ENV === 'development') console.log('[dev] analyzeMockupSetup: resolveImageBase64 done', ((Date.now() - t0) / 1000).toFixed(2) + 's');
 
-Retorne em formato JSON JSON:
-{
-  "branding": [...],
-  "categories": [...],
-  "locations": [...],
-  "angles": [...],
-  "lighting": [...],
-  "effects": [...],
-  "materials": [...]
-}`;
-
+    if (process.env.NODE_ENV === 'development') console.log('[dev] analyzeMockupSetup: Gemini generateContent start');
     const response = await getAI(userApiKey).models.generateContent({
       model: 'gemini-2.5-flash',
       contents: {
         parts: [
           {
             inlineData: {
-              data: baseImage.base64,
+              data: base64Data,
               mimeType: baseImage.mimeType,
             },
           },
@@ -451,6 +481,7 @@ Retorne em formato JSON JSON:
         },
       },
     });
+    if (process.env.NODE_ENV === 'development') console.log('[dev] analyzeMockupSetup: Gemini generateContent done', ((Date.now() - t0) / 1000).toFixed(2) + 's');
 
     // Extract usage metadata
     const usageMetadata = (response as any).usageMetadata;
@@ -474,7 +505,7 @@ Retorne em formato JSON JSON:
 
     try {
       const result = JSON.parse(jsonString);
-      return {
+      const suggestedTags: Partial<AvailableTags> = {
         branding: result.branding || [],
         categories: result.categories || [],
         locations: result.locations || [],
@@ -482,6 +513,25 @@ Retorne em formato JSON JSON:
         lighting: result.lighting || [],
         effects: result.effects || [],
         materials: result.materials || [],
+      };
+
+      // Validate tags against available tags (if provided)
+      const validatedTags = availableTags
+        ? validateTags(suggestedTags, availableTags as AvailableTags, {
+            fuzzyMatching: true,
+            logInvalid: true,
+          })
+        : suggestedTags;
+      if (process.env.NODE_ENV === 'development') console.log('[dev] analyzeMockupSetup: validate/parse done', ((Date.now() - t0) / 1000).toFixed(2) + 's');
+
+      return {
+        branding: validatedTags.branding || [],
+        categories: validatedTags.categories || [],
+        locations: validatedTags.locations || [],
+        angles: validatedTags.angles || [],
+        lighting: validatedTags.lighting || [],
+        effects: validatedTags.effects || [],
+        materials: validatedTags.materials || [],
         inputTokens,
         outputTokens,
       };
@@ -520,6 +570,7 @@ interface SmartPromptParams {
   enhanceTexture: boolean;
   negativePrompt: string;
   additionalPrompt: string;
+  instructions: string;
 }
 
 interface SmartPromptResult {
@@ -553,14 +604,16 @@ export const generateSmartPrompt = async (params: SmartPromptParams, apiKey?: st
       .replace('[GENERATE_TEXT]', isBlankMockup ? 'No (Blank Mockup)' : (params.generateText ? 'Yes' : 'No'))
       .replace('[WITH_HUMAN]', params.withHuman ? 'Yes' : 'No')
       .replace('[ADDITIONAL_PROMPT]', params.additionalPrompt || 'Not specified')
+      .replace('[INSTRUCTIONS]', params.instructions || 'Not specified')
       .replace('[ASPECT_RATIO]', params.aspectRatio)
       .replace('[NEGATIVE_PROMPT]', params.negativePrompt || 'Not specified');
 
     const parts = [];
     if (!isBlankMockup && params.baseImage) {
+      const base64Data = await resolveImageBase64(params.baseImage);
       parts.push({
         inlineData: {
-          data: params.baseImage.base64,
+          data: base64Data,
           mimeType: params.baseImage.mimeType,
         },
       });
@@ -621,14 +674,15 @@ export const generateMergePrompt = async (images: UploadedImage[]): Promise<Gene
     const parts: any[] = [];
 
     // Add all images
-    images.forEach((img) => {
+    for (const img of images) {
+      const base64Data = await resolveImageBase64(img);
       parts.push({
         inlineData: {
-          data: img.base64,
+          data: base64Data,
           mimeType: img.mimeType,
         },
       });
-    });
+    }
 
     parts.push({ text: promptToGemini });
 
@@ -778,10 +832,12 @@ export const changeObjectInMockup = async (
   return withRetry(async () => {
     const prompt = `Keep the same background, environment, lighting, and camera angle, but replace the main object in the image with ${newObject}. The new object should be placed in the same position and orientation as the original object, maintaining the same perspective and composition. The environment, background, and all other elements should remain exactly the same.`;
 
+    const base64Data = await resolveImageBase64(baseImage);
+
     const parts: any[] = [
       {
         inlineData: {
-          data: baseImage.base64,
+          data: base64Data,
           mimeType: baseImage.mimeType,
         },
       },
@@ -834,10 +890,12 @@ export const applyThemeToMockup = async (
     const themesText = themes.join(', ');
     const prompt = `Apply ${themesText} theme to the scene while keeping the same composition, camera angle, and main object. Transform the background, lighting, colors, and environmental elements to reflect the ${themesText} theme, but maintain the exact same perspective, object placement, and overall structure of the original image.`;
 
+    const base64Data = await resolveImageBase64(baseImage);
+
     const parts: any[] = [
       {
         inlineData: {
-          data: baseImage.base64,
+          data: base64Data,
           mimeType: baseImage.mimeType,
         },
       },
@@ -910,8 +968,8 @@ export const describeImage = async (
         mimeType = 'image/png';
       }
     } else {
-      imageBase64 = (image as UploadedImage).base64 || '';
-      mimeType = (image as UploadedImage).mimeType;
+      imageBase64 = await resolveImageBase64(image);
+      mimeType = image.mimeType;
     }
 
     const prompt = `Analise esta imagem em detalhes.
