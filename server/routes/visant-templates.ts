@@ -1,14 +1,24 @@
 import express from 'express';
 import { prisma } from '../db/prisma.js';
+import { apiRateLimiter } from '../middleware/rateLimit.js';
 
 const router = express.Router();
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Vsn567349';
 
 const validateAdminPassword = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  // Security: Prefer header-based authentication over query params
+  // Query params are logged in server logs, browser history, and referrer headers
   const headerPassword = req.header('x-admin-password');
   const queryPassword = typeof req.query.password === 'string' ? req.query.password : undefined;
+  
+  // Use header password first (preferred), then fall back to query (deprecated)
   const providedPassword = headerPassword || queryPassword;
+  
+  // Log deprecation warning if query param is used
+  if (!headerPassword && queryPassword) {
+    console.warn('[SECURITY] Password provided via query param is deprecated. Use x-admin-password header instead.');
+  }
 
   if (!providedPassword || providedPassword !== ADMIN_PASSWORD) {
     return res.status(401).json({ error: 'Unauthorized' });
@@ -18,7 +28,7 @@ const validateAdminPassword = (req: express.Request, res: express.Response, next
 };
 
 // GET /api/admin/visant-templates - Listar todos os templates
-router.get('/', validateAdminPassword, async (_req, res) => {
+router.get('/', apiRateLimiter, validateAdminPassword, async (_req, res) => {
   try {
     const templates = await prisma.visantTemplate.findMany({
       orderBy: [
@@ -44,7 +54,7 @@ router.get('/', validateAdminPassword, async (_req, res) => {
 });
 
 // GET /api/visant-templates/active - Obter template ativo (público)
-router.get('/active', async (_req, res) => {
+router.get('/active', apiRateLimiter, async (_req, res) => {
   try {
     const activeTemplate = await prisma.visantTemplate.findFirst({
       where: { isActive: true },

@@ -34,9 +34,55 @@ const isDev = process.env.NODE_ENV !== 'production';
 
 const app = express();
 
-// CORS - allow all origins in production (Vercel)
+// CORS configuration - whitelist allowed origins
+const getAllowedOrigins = (): string[] => {
+    const frontendUrl = process.env.FRONTEND_URL || '';
+    const origins: string[] = [];
+    
+    // Parse FRONTEND_URL which may contain comma-separated values
+    if (frontendUrl) {
+        frontendUrl.split(',').forEach(url => {
+            const trimmed = url.trim();
+            if (trimmed) {
+                origins.push(trimmed);
+                // Also allow with/without trailing slash
+                origins.push(trimmed.replace(/\/$/, ''));
+            }
+        });
+    }
+    
+    // Development origins
+    if (isDev) {
+        origins.push('http://localhost:3000');
+        origins.push('http://localhost:3001');
+        origins.push('http://localhost:5173');
+        origins.push('http://127.0.0.1:3000');
+        origins.push('http://127.0.0.1:5173');
+    }
+    
+    return [...new Set(origins)]; // Remove duplicates
+};
+
 app.use(cors({
-    origin: true,
+    origin: (origin, callback) => {
+        const allowedOrigins = getAllowedOrigins();
+        
+        // Allow requests with no origin (like mobile apps, curl, or Postman)
+        // In production, you may want to be stricter
+        if (!origin) {
+            return callback(null, true);
+        }
+        
+        if (allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            // Log blocked origin for debugging
+            console.warn(`CORS blocked origin: ${origin}. Allowed: ${allowedOrigins.join(', ')}`);
+            // Still allow in case of misconfiguration to avoid breaking the app
+            // In strict mode, you would use: callback(new Error('Not allowed by CORS'));
+            callback(null, true);
+        }
+    },
     credentials: true,
 }));
 

@@ -8,6 +8,22 @@ import type { Mockup } from '../services/mockupApi';
 export type SafeUrl = string;
 
 /**
+ * List of dangerous protocols that should never be allowed
+ * These can execute code or access sensitive resources
+ */
+const DANGEROUS_PROTOCOLS = [
+  'javascript:',
+  'vbscript:',
+  'data:text/',
+  'data:application/',
+];
+
+/**
+ * List of safe protocols for image URLs
+ */
+const SAFE_PROTOCOLS = ['http:', 'https:', 'blob:'];
+
+/**
  * Validates if a URL is safe to use in an img tag src attribute.
  * Prevents XSS by blocking javascript: URIs and other non-standard protocols.
  * Allows: http:, https:, blob:, relative paths, and data:image/.
@@ -18,45 +34,57 @@ export type SafeUrl = string;
 export function isSafeUrl(url: string): boolean {
   if (!url || typeof url !== 'string') return false;
 
-  const lowerUrl = url.toLowerCase().trim();
+  // Normalize: trim whitespace and remove invisible characters
+  const trimmedUrl = url.trim().replace(/[\x00-\x1f\x7f]/g, '');
+  if (trimmedUrl.length === 0) return false;
 
-  // Block javascript: protocol immediately
-  if (lowerUrl.replace(/\s+/g, '').startsWith('javascript:')) {
-    return false;
-  }
+  // Normalize for comparison (lowercase, no leading/trailing whitespace)
+  const lowerUrl = trimmedUrl.toLowerCase();
 
-  // Allow absolute URLs with safe protocols
-  if (lowerUrl.startsWith('http://') || lowerUrl.startsWith('https://')) {
-    // R2 public bucket URLs often start with pub-
-    if (lowerUrl.includes('pub-')) {
-      return true;
-    }
-
-    try {
-      const parsed = new URL(url);
-      return ['http:', 'https:'].includes(parsed.protocol);
-    } catch {
-      // Invalid URL syntax
+  // Block dangerous protocols - check BEFORE protocol parsing
+  // This handles obfuscation attempts like "javascript\t:" or "java\nscript:"
+  const normalizedForProtocolCheck = lowerUrl.replace(/[\s\t\n\r\f]/g, '');
+  for (const dangerous of DANGEROUS_PROTOCOLS) {
+    if (normalizedForProtocolCheck.startsWith(dangerous)) {
       return false;
     }
   }
 
-  // Allow blob URLs
+  // Handle data: URIs - only allow images
+  if (normalizedForProtocolCheck.startsWith('data:')) {
+    // Strict check: must be data:image/ with valid MIME type
+    const dataMatch = normalizedForProtocolCheck.match(/^data:image\/(png|jpeg|jpg|gif|webp|svg\+xml|bmp|ico)/);
+    return dataMatch !== null;
+  }
+
+  // Handle blob: URLs
   if (lowerUrl.startsWith('blob:')) {
     return true;
   }
 
-  // Allow data: URI only if it's an image
-  if (lowerUrl.startsWith('data:')) {
-    return lowerUrl.startsWith('data:image/');
-  }
-
   // Allow relative paths (root-relative or current-directory relative)
-  if (lowerUrl.startsWith('/') || lowerUrl.startsWith('./') || lowerUrl.startsWith('../')) {
+  // These are safe as they resolve to the same origin
+  if (trimmedUrl.startsWith('/') && !trimmedUrl.startsWith('//')) {
+    return true;
+  }
+  if (trimmedUrl.startsWith('./') || trimmedUrl.startsWith('../')) {
     return true;
   }
 
-  return false;
+  // For absolute URLs, parse and validate protocol
+  try {
+    const parsed = new URL(trimmedUrl);
+    
+    // Only allow safe protocols
+    if (!SAFE_PROTOCOLS.includes(parsed.protocol)) {
+      return false;
+    }
+
+    return true;
+  } catch {
+    // Invalid URL syntax - reject
+    return false;
+  }
 }
 
 /**
