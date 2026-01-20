@@ -1,10 +1,12 @@
 import express from 'express';
 import { prisma } from '../db/prisma.js';
+import { isValidEmail } from '../utils/validation.js';
+import { apiRateLimiter } from '../middleware/rateLimit.js';
 
 const router = express.Router();
 
 // Join waitlist
-router.post('/', async (req, res) => {
+router.post('/', apiRateLimiter, async (req, res) => {
   try {
     const { email } = req.body;
 
@@ -12,9 +14,8 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Email is required' });
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    // Validate email format (ReDoS-safe validation)
+    if (!isValidEmail(email)) {
       return res.status(400).json({ error: 'Invalid email format' });
     }
 

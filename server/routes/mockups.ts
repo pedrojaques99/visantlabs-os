@@ -8,6 +8,8 @@ import { generateMockup, RateLimitError } from '../../src/services/geminiService
 import { createUsageRecord, getCreditsRequired } from '../utils/usageTracking.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
 import { validateExternalUrl, getErrorMessage } from '../utils/securityValidation.js';
+import { isValidObjectId, sanitizeMongoQuery, sanitizeLogValue } from '../utils/validation.js';
+import { mockupRateLimiter, apiRateLimiter } from '../middleware/rateLimit.js';
 import type { UploadedImage, AspectRatio, GeminiModel, Resolution } from '../../src/types/types.js';
 
 const router = express.Router();
@@ -464,7 +466,7 @@ interface MockupData {
 }
 
 // Get all mockups publicly (no authentication required)
-router.get('/public', async (req, res, next) => {
+router.get('/public', apiRateLimiter, async (req, res, next) => {
   try {
     // Set a timeout for the entire operation (connection + query)
     const operationTimeout = 15000; // 15 seconds total
@@ -538,7 +540,7 @@ router.get('/public', async (req, res, next) => {
 });
 
 // Get all mockups for authenticated user
-router.get('/', authenticate, async (req: AuthRequest, res, next) => {
+router.get('/', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     // Ensure MongoDB connection is established
     await connectToMongoDB();
@@ -594,8 +596,13 @@ router.get('/', authenticate, async (req: AuthRequest, res, next) => {
 });
 
 // Get a single mockup by ID
-router.get('/:id', authenticate, async (req: AuthRequest, res, next) => {
+router.get('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
+    // Validate ObjectId to prevent NoSQL injection
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid mockup ID format' });
+    }
+
     await connectToMongoDB();
     const db = getDb();
     const mockup = await db.collection('mockups').findOne({
@@ -617,7 +624,7 @@ router.get('/:id', authenticate, async (req: AuthRequest, res, next) => {
 });
 
 // Get presigned URL for direct mockup image upload
-router.post('/upload-url', authenticate, async (req: AuthRequest, res) => {
+router.post('/upload-url', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const { contentType } = req.body;
     const { generateMockupImageUploadUrl } = await import('../../src/services/r2Service.js');
@@ -635,7 +642,7 @@ router.post('/upload-url', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Generate temporary image upload URL (for direct client uploads)
-router.post('/upload-temp-url', authenticate, async (req: AuthRequest, res) => {
+router.post('/upload-temp-url', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const { contentType } = req.body;
     const r2Service = await import('../../src/services/r2Service.js');
@@ -658,7 +665,7 @@ router.post('/upload-temp-url', authenticate, async (req: AuthRequest, res) => {
 
 // Generate mockup image (NEW: validates and deducts credits BEFORE generation)
 // CRITICAL: This endpoint validates and deducts credits atomically before calling Gemini API
-router.post('/generate', authenticate, checkSubscription, async (req: SubscriptionRequest, res, next) => {
+router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, async (req: SubscriptionRequest, res, next) => {
   const logPrefix = '[CREDIT]';
   let creditsDeducted = false;
   let creditsToDeduct = 0;
@@ -1228,7 +1235,7 @@ router.post('/generate', authenticate, checkSubscription, async (req: Subscripti
 // cause duplicate credit deduction. The /generate endpoint already handles credit deduction
 // and usage record creation atomically.
 // Track prompt generation usage
-router.post('/track-prompt-generation', authenticate, async (req: AuthRequest, res, next) => {
+router.post('/track-prompt-generation', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     await connectToMongoDB();
     const db = getDb();
@@ -1285,7 +1292,7 @@ router.post('/track-prompt-generation', authenticate, async (req: AuthRequest, r
   }
 });
 
-router.post('/track-usage', authenticate, async (req: AuthRequest, res, next) => {
+router.post('/track-usage', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     await connectToMongoDB();
     const db = getDb();
@@ -1443,7 +1450,7 @@ router.post('/track-usage', authenticate, async (req: AuthRequest, res, next) =>
 });
 
 // Save a mockup
-router.post('/', authenticate, async (req: AuthRequest, res, next) => {
+router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     console.log('Save mockup request received:', {
       userId: req.userId,
@@ -1566,8 +1573,13 @@ router.post('/', authenticate, async (req: AuthRequest, res, next) => {
 });
 
 // Update a mockup
-router.put('/:id', authenticate, async (req: AuthRequest, res, next) => {
+router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
+    // Validate ObjectId to prevent NoSQL injection
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid mockup ID format' });
+    }
+
     await connectToMongoDB();
     const db = getDb();
     const userId = req.userId!;
@@ -1590,9 +1602,10 @@ router.put('/:id', authenticate, async (req: AuthRequest, res, next) => {
       }
     }
 
-    // Prepare update data - remove imageBase64 and _id, add imageUrl if uploaded
+    // Prepare update data - sanitize to prevent NoSQL injection, remove dangerous fields
+    const sanitizedBody = sanitizeMongoQuery(req.body);
     const updateData: any = {
-      ...req.body,
+      ...sanitizedBody,
       updatedAt: new Date(),
     };
     delete updateData._id;
@@ -1678,8 +1691,13 @@ router.put('/:id', authenticate, async (req: AuthRequest, res, next) => {
 });
 
 // Delete a mockup
-router.delete('/:id', authenticate, async (req: AuthRequest, res, next) => {
+router.delete('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
+    // Validate ObjectId to prevent NoSQL injection
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid mockup ID format' });
+    }
+
     await connectToMongoDB();
     const db = getDb();
 
@@ -1776,7 +1794,7 @@ router.get('/usage/stats', authenticate, async (req: AuthRequest, res, next) => 
 });
 
 // Get current billing period usage
-router.get('/usage/current', authenticate, async (req: AuthRequest, res, next) => {
+router.get('/usage/current', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     await connectToMongoDB();
     const db = getDb();

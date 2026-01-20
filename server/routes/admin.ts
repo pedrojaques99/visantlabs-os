@@ -6,6 +6,7 @@ import { validateAdmin } from '../middleware/adminAuth.js';
 import { AuthRequest } from '../middleware/auth.js';
 import { rateLimit } from 'express-rate-limit';
 import { calculateImageCost, calculateVideoCost, getImagePricing } from '../../src/utils/pricing.js';
+import { isSafeId, isValidObjectId, sanitizeMongoQuery } from '../utils/validation.js';
 
 const router = express.Router();
 

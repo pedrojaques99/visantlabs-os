@@ -4,11 +4,12 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '../db/prisma.js';
 import bcrypt from 'bcryptjs';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
-import { signupRateLimiter, signinRateLimiter, getClientIp } from '../middleware/rateLimit.js';
+import { signupRateLimiter, signinRateLimiter, getClientIp, oauthRateLimiter, passwordResetRateLimiter } from '../middleware/rateLimit.js';
 // CAPTCHA middleware import removed - CAPTCHA is disabled
 // import { captchaMiddleware } from '../middleware/captcha.js';
 import { detectAbuse, recordSignupAttempt } from '../utils/abuseDetection.js';
 import { JWT_SECRET } from '../utils/jwtSecret.js';
+import { isValidEmail } from '../utils/validation.js';
 
 const router = express.Router();
 
@@ -200,7 +201,7 @@ const logError = (error: any, context: LogErrorContext = {}) => {
 };
 
 // Get Google OAuth URL
-router.get('/google', (req, res) => {
+router.get('/google', oauthRateLimiter, (req, res) => {
   try {
     if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
       console.error('Missing Google OAuth credentials');
@@ -262,7 +263,7 @@ router.get('/google/link', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Google OAuth callback
-router.get('/google/callback', async (req, res) => {
+router.get('/google/callback', oauthRateLimiter, async (req, res) => {
   try {
     const { code, state } = req.query;
 
@@ -524,9 +525,8 @@ router.post('/signup', signupRateLimiter, async (req, res) => {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    // Validate email format (ReDoS-safe validation)
+    if (!isValidEmail(email)) {
       await recordSignupAttempt(email, ipAddress, false);
       return res.status(400).json({ error: 'Invalid email format' });
     }
@@ -758,7 +758,7 @@ router.post('/logout', (req, res) => {
 });
 
 // Forgot Password - Request password reset
-router.post('/forgot-password', async (req, res) => {
+router.post('/forgot-password', passwordResetRateLimiter, async (req, res) => {
   try {
     const { email } = req.body;
 
@@ -766,9 +766,8 @@ router.post('/forgot-password', async (req, res) => {
       return res.status(400).json({ error: 'Email is required' });
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    // Validate email format (ReDoS-safe validation)
+    if (!isValidEmail(email)) {
       return res.status(400).json({ error: 'Invalid email format' });
     }
 
@@ -986,9 +985,8 @@ router.put('/profile', authenticate, async (req: AuthRequest, res) => {
 
     // If email is being changed, validate it and check uniqueness
     if (email !== undefined && email !== currentUser.email) {
-      // Validate email format
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
+      // Validate email format (ReDoS-safe validation)
+      if (!isValidEmail(email)) {
         return res.status(400).json({ error: 'Invalid email format' });
       }
 

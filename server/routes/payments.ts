@@ -7,6 +7,8 @@ import { ObjectId } from 'mongodb';
 import { getCreditsByAmount, getCreditPackage, getCreditPackagePrice } from '../../src/utils/creditPackages.js';
 import { abacatepayService } from '../services/abacatepayService.js';
 import { prisma } from '../db/prisma.js';
+import { paymentRateLimiter, apiRateLimiter, webhookRateLimiter } from '../middleware/rateLimit.js';
+import { isValidObjectId } from '../utils/validation.js';
 
 const router = express.Router();
 
@@ -287,7 +289,7 @@ const calculateCreditsResetDate = (subscription: Stripe.Subscription): Date => {
 };
 
 // Create checkout session for subscription
-router.post('/create-checkout-session', verifyBotId, authenticate, async (req: AuthRequest, res, next) => {
+router.post('/create-checkout-session', paymentRateLimiter, verifyBotId, authenticate, async (req: AuthRequest, res, next) => {
   try {
     if (!stripe) {
       console.error('❌ Stripe is not configured');
@@ -387,7 +389,7 @@ router.post('/create-checkout-session', verifyBotId, authenticate, async (req: A
 });
 
 // Create customer portal session
-router.post('/create-portal-session', verifyBotId, authenticate, async (req: AuthRequest, res, next) => {
+router.post('/create-portal-session', paymentRateLimiter, verifyBotId, authenticate, async (req: AuthRequest, res, next) => {
   try {
     if (!stripe) {
       return res.status(500).json({ error: 'Stripe is not configured. Please set STRIPE_SECRET_KEY in your environment variables.' });
@@ -414,7 +416,7 @@ router.post('/create-portal-session', verifyBotId, authenticate, async (req: Aut
 });
 
 // Get subscription status
-router.get('/subscription-status', authenticate, async (req: AuthRequest, res, next) => {
+router.get('/subscription-status', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     await connectToMongoDB();
     const db = getDb();
@@ -458,7 +460,7 @@ router.get('/subscription-status', authenticate, async (req: AuthRequest, res, n
 });
 
 // Get available plans from Stripe
-router.get('/plans', async (req, res, next) => {
+router.get('/plans', apiRateLimiter, async (req, res, next) => {
   try {
     if (!stripe) {
       console.error('❌ Stripe is not configured');
@@ -531,7 +533,7 @@ router.get('/plans', async (req, res, next) => {
 });
 
 // Get all active products (credit packages and subscription plans) from database
-router.get('/products', async (_req, res, next) => {
+router.get('/products', apiRateLimiter, async (_req, res, next) => {
   try {
     const products = await prisma.product.findMany({
       where: { isActive: true },
@@ -585,7 +587,7 @@ router.get('/usage', authenticate, async (req: AuthRequest, res, next) => {
 });
 
 // Get transactions history
-router.get('/transactions', authenticate, async (req: AuthRequest, res, next) => {
+router.get('/transactions', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     const userId = req.userId;
     if (!userId) {
@@ -623,7 +625,7 @@ router.get('/transactions', authenticate, async (req: AuthRequest, res, next) =>
 });
 
 // Verify subscription manually (fallback when webhook fails)
-router.post('/verify-subscription', authenticate, async (req: AuthRequest, res, next) => {
+router.post('/verify-subscription', paymentRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     if (!stripe) {
       return res.status(500).json({ error: 'Stripe is not configured' });
@@ -748,7 +750,7 @@ router.post('/verify-subscription', authenticate, async (req: AuthRequest, res, 
 });
 
 // Create PIX checkout session for credit purchase
-router.post('/create-pix-checkout', verifyBotId, authenticate, async (req: AuthRequest, res, next) => {
+router.post('/create-pix-checkout', paymentRateLimiter, verifyBotId, authenticate, async (req: AuthRequest, res, next) => {
   try {
     if (!stripe) {
       console.error('❌ Stripe is not configured');
@@ -1211,7 +1213,7 @@ router.post('/create-credit-checkout', verifyBotId, authenticate, async (req: Au
 });
 
 // Get PIX QR Code and payment details from session
-router.get('/pix-qrcode/:sessionId', authenticate, async (req: AuthRequest, res, next) => {
+router.get('/pix-qrcode/:sessionId', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     if (!stripe) {
       return res.status(500).json({ error: 'Stripe is not configured' });
@@ -1297,7 +1299,7 @@ router.get('/pix-qrcode/:sessionId', authenticate, async (req: AuthRequest, res,
 });
 
 // Stripe webhook handler
-router.post('/webhook', async (req, res) => {
+router.post('/webhook', webhookRateLimiter, async (req, res) => {
   // Check if this is an AbacatePay webhook (has webhookSecret query param or missing stripe-signature)
   const webhookSecretQuery = req.query.webhookSecret || req.query.secret;
   const sig = req.headers['stripe-signature'];
@@ -2263,7 +2265,7 @@ router.post('/webhook', async (req, res) => {
 // ========== ABACATEPAY ENDPOINTS ==========
 
 // Create PIX payment using AbacatePay (alternative to Stripe PIX)
-router.post('/create-abacate-pix', verifyBotId, authenticate, async (req: AuthRequest, res, next) => {
+router.post('/create-abacate-pix', paymentRateLimiter, verifyBotId, authenticate, async (req: AuthRequest, res, next) => {
   try {
     // Check if AbacatePay is configured
     if (!abacatepayService.isConfigured()) {
@@ -2418,7 +2420,7 @@ router.post('/create-abacate-pix', verifyBotId, authenticate, async (req: AuthRe
 });
 
 // Get AbacatePay payment status and PIX details
-router.get('/abacate-pix-status/:billId', authenticate, async (req: AuthRequest, res, next) => {
+router.get('/abacate-pix-status/:billId', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     const { billId } = req.params;
     const userId = req.userId!;
@@ -2481,7 +2483,7 @@ router.get('/abacate-pix-status/:billId', authenticate, async (req: AuthRequest,
 });
 
 // AbacatePay webhook handler
-router.post('/abacate-webhook', async (req, res) => {
+router.post('/abacate-webhook', webhookRateLimiter, async (req, res) => {
   try {
     // Validate webhook secret if configured
     // AbacatePay sends the secret as a query parameter in the URL
@@ -2559,7 +2561,7 @@ router.get('/pending-payments', authenticate, async (req: AuthRequest, res, next
 });
 
 // Resolve pending payment (associate with user)
-router.post('/resolve-pending-payment', authenticate, async (req: AuthRequest, res, next) => {
+router.post('/resolve-pending-payment', paymentRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     await connectToMongoDB();
     const db = getDb();

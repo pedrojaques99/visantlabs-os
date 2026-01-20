@@ -2,12 +2,18 @@ import express from 'express';
 import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { ObjectId } from 'mongodb';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
-import { uploadImageRateLimiter } from '../middleware/rateLimit.js';
+import { uploadImageRateLimiter, apiRateLimiter } from '../middleware/rateLimit.js';
+import { isSafeId, sanitizeMongoQuery } from '../utils/validation.js';
 
 const router = express.Router();
 
 // Helper function to check if preset ID exists in any collection (admin or community)
 async function checkPresetIdExists(id: string): Promise<boolean> {
+  // Validate ID format to prevent injection
+  if (!isSafeId(id)) {
+    return false;
+  }
+
   await connectToMongoDB();
   const db = getDb();
 
