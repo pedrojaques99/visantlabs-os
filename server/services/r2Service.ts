@@ -1,6 +1,7 @@
 import { S3Client, PutObjectCommand, DeleteObjectCommand, ListObjectsV2Command, HeadObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { prisma } from '../db/prisma.js';
+import { getErrorMessage } from '../utils/securityValidation.js';
 
 // R2 configuration using S3-compatible API
 const getR2Client = () => {
@@ -80,8 +81,8 @@ export async function uploadImage(
 
         await incrementUserStorage(userId, buffer.length);
         return `${publicUrl}/${key}`;
-    } catch (error: any) {
-        throw new Error(`Failed to upload image to R2: ${error.message}`);
+    } catch (error: unknown) {
+        throw new Error(`Failed to upload image to R2: ${getErrorMessage(error)}`);
     }
 }
 
@@ -115,8 +116,8 @@ export async function deleteImage(imageUrl: string): Promise<void> {
             }
             await decrementUserStorage(userId, fileSize);
         }
-    } catch (error: any) {
-        throw new Error(`Failed to delete image from R2: ${error.message}`);
+    } catch (error: unknown) {
+        throw new Error(`Failed to delete image from R2: ${getErrorMessage(error)}`);
     }
 }
 
@@ -153,8 +154,8 @@ export async function uploadProfilePicture(
 
         await incrementUserStorage(userId, buffer.length);
         return `${publicUrl}/${key}`;
-    } catch (error: any) {
-        throw new Error(`Failed to upload profile picture to R2: ${error.message}`);
+    } catch (error: unknown) {
+        throw new Error(`Failed to upload profile picture to R2: ${getErrorMessage(error)}`);
     }
 }
 
@@ -194,8 +195,8 @@ export async function uploadBrandLogo(
 
         await incrementUserStorage(userId, buffer.length);
         return `${publicUrl}/${key}`;
-    } catch (error: any) {
-        throw new Error(`Failed to upload brand logo to R2: ${error.message}`);
+    } catch (error: unknown) {
+        throw new Error(`Failed to upload brand logo to R2: ${getErrorMessage(error)}`);
     }
 }
 
@@ -237,8 +238,8 @@ export async function uploadGiftImage(
 
         await incrementUserStorage(userId, buffer.length);
         return `${publicUrl}/${key}`;
-    } catch (error: any) {
-        throw new Error(`Failed to upload gift image to R2: ${error.message}`);
+    } catch (error: unknown) {
+        throw new Error(`Failed to upload gift image to R2: ${getErrorMessage(error)}`);
     }
 }
 
@@ -278,8 +279,8 @@ export async function uploadBudgetPdf(
 
         await incrementUserStorage(userId, buffer.length);
         return `${publicUrl}/${key}`;
-    } catch (error: any) {
-        throw new Error(`Failed to upload PDF to R2: ${error.message}`);
+    } catch (error: unknown) {
+        throw new Error(`Failed to upload PDF to R2: ${getErrorMessage(error)}`);
     }
 }
 
@@ -318,8 +319,8 @@ export async function uploadCustomPdfPreset(
 
         await incrementUserStorage(userId, buffer.length);
         return `${publicUrl}/${key}`;
-    } catch (error: any) {
-        throw new Error(`Failed to upload PDF preset to R2: ${error.message}`);
+    } catch (error: unknown) {
+        throw new Error(`Failed to upload PDF preset to R2: ${getErrorMessage(error)}`);
     }
 }
 
@@ -359,8 +360,8 @@ export async function uploadCanvasImage(
 
         await incrementUserStorage(userId, buffer.length);
         return `${publicUrl}/${key}`;
-    } catch (error: any) {
-        throw new Error(`Failed to upload canvas image to R2: ${error.message}`);
+    } catch (error: unknown) {
+        throw new Error(`Failed to upload canvas image to R2: ${getErrorMessage(error)}`);
     }
 }
 
@@ -401,8 +402,8 @@ export async function uploadCanvasPdf(
 
         await incrementUserStorage(userId, buffer.length);
         return `${publicUrl}/${key}`;
-    } catch (error: any) {
-        throw new Error(`Failed to upload canvas PDF to R2: ${error.message}`);
+    } catch (error: unknown) {
+        throw new Error(`Failed to upload canvas PDF to R2: ${getErrorMessage(error)}`);
     }
 }
 
@@ -439,8 +440,8 @@ export async function uploadCoverImage(
 
         await incrementUserStorage(userId, buffer.length);
         return `${publicUrl}/${key}`;
-    } catch (error: any) {
-        throw new Error(`Failed to upload cover image to R2: ${error.message}`);
+    } catch (error: unknown) {
+        throw new Error(`Failed to upload cover image to R2: ${getErrorMessage(error)}`);
     }
 }
 
@@ -488,8 +489,8 @@ export async function uploadCanvasVideo(
 
         await incrementUserStorage(userId, buffer.length);
         return `${publicUrl}/${key}`;
-    } catch (error: any) {
-        throw new Error(`Failed to upload canvas video to R2: ${error.message}`);
+    } catch (error: unknown) {
+        throw new Error(`Failed to upload canvas video to R2: ${getErrorMessage(error)}`);
     }
 }
 
@@ -536,8 +537,8 @@ export async function generateCanvasImageUploadUrl(
             finalUrl: `${publicUrl}/${key}`,
             key,
         };
-    } catch (error: any) {
-        throw new Error(`Failed to generate presigned URL: ${error.message}`);
+    } catch (error: unknown) {
+        throw new Error(`Failed to generate presigned URL: ${getErrorMessage(error)}`);
     }
 }
 
@@ -580,8 +581,8 @@ export async function generateMockupImageUploadUrl(
             finalUrl: `${publicUrl}/${key}`,
             key,
         };
-    } catch (error: any) {
-        throw new Error(`Failed to generate presigned URL: ${error.message}`);
+    } catch (error: unknown) {
+        throw new Error(`Failed to generate presigned URL: ${getErrorMessage(error)}`);
     }
 }
 
@@ -630,8 +631,8 @@ export async function generateCanvasVideoUploadUrl(
             finalUrl: `${publicUrl}/${key}`,
             key,
         };
-    } catch (error: any) {
-        throw new Error(`Failed to generate presigned URL: ${error.message}`);
+    } catch (error: unknown) {
+        throw new Error(`Failed to generate presigned URL: ${getErrorMessage(error)}`);
     }
 }
 
@@ -694,9 +695,9 @@ export async function syncUserStorage(userId: string): Promise<number> {
 
         console.log(`[Storage Sync] Synced storage for user ${userId}: ${actualStorage} bytes`);
         return actualStorage;
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Error syncing user storage:', error);
-        throw new Error(`Failed to sync user storage: ${error.message || error}`);
+        throw new Error(`Failed to sync user storage: ${getErrorMessage(error)}`);
     }
 }
 
@@ -752,9 +753,9 @@ export async function calculateUserStorage(userId: string): Promise<number> {
         }
 
         return totalSize;
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Error calculating user storage:', error);
-        throw new Error(`Failed to calculate user storage: ${error.message || error}`);
+        throw new Error(`Failed to calculate user storage: ${getErrorMessage(error)}`);
     }
 }
 

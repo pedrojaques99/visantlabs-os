@@ -1,4 +1,5 @@
 import express from 'express';
+import { validateExternalUrl, getErrorMessage } from '../utils/securityValidation';
 
 const router = express.Router();
 
@@ -22,20 +23,11 @@ router.get('/proxy', async (req, res) => {
       });
     }
 
-    // Validate URL format
-    let imageUrl: URL;
-    try {
-      imageUrl = new URL(url);
-    } catch (error) {
+    // Validate URL format and SSRF protection
+    const urlValidation = validateExternalUrl(url);
+    if (!urlValidation.valid) {
       return res.status(400).json({
-        error: 'Invalid URL format',
-      });
-    }
-
-    // Only allow http/https protocols
-    if (imageUrl.protocol !== 'http:' && imageUrl.protocol !== 'https:') {
-      return res.status(400).json({
-        error: 'Invalid URL protocol. Only http and https are allowed',
+        error: urlValidation.error || 'Invalid URL',
       });
     }
 
@@ -48,11 +40,11 @@ router.get('/proxy', async (req, res) => {
           'User-Agent': 'VSN-Mockup-Machine/1.0',
         },
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching image from URL:', error);
       return res.status(500).json({
         error: 'Failed to fetch image from URL',
-        message: error.message || 'Network error',
+        message: getErrorMessage(error),
       });
     }
 
@@ -91,11 +83,11 @@ router.get('/proxy', async (req, res) => {
       base64,
       mimeType: contentType,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in image proxy:', error);
     res.status(500).json({
       error: 'Internal server error',
-      message: error.message || 'Unknown error',
+      message: getErrorMessage(error),
     });
   }
 });
@@ -114,22 +106,16 @@ router.get('/video-proxy', async (req, res) => {
       });
     }
 
-    // Validate URL format
-    let videoUrl: URL;
-    try {
-      videoUrl = new URL(url);
-    } catch (error) {
+    // Validate URL format and SSRF protection
+    const urlValidation = validateExternalUrl(url);
+    if (!urlValidation.valid) {
       return res.status(400).json({
-        error: 'Invalid URL format',
+        error: urlValidation.error || 'Invalid URL',
       });
     }
 
-    // Only allow http/https protocols
-    if (videoUrl.protocol !== 'http:' && videoUrl.protocol !== 'https:') {
-      return res.status(400).json({
-        error: 'Invalid URL protocol. Only http and https are allowed',
-      });
-    }
+    // Parse URL for hostname check (already validated above)
+    const videoUrl = new URL(url);
 
     // Get Google API key for authentication
     const apiKey = getGoogleApiKey();
@@ -150,11 +136,11 @@ router.get('/video-proxy', async (req, res) => {
         method: 'GET',
         headers,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching video from URL:', error);
       return res.status(500).json({
         error: 'Failed to fetch video from URL',
-        message: error.message || 'Network error',
+        message: getErrorMessage(error),
       });
     }
 
@@ -197,11 +183,11 @@ router.get('/video-proxy', async (req, res) => {
       base64,
       mimeType: contentType,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in video proxy:', error);
     res.status(500).json({
       error: 'Internal server error',
-      message: error.message || 'Unknown error',
+      message: getErrorMessage(error),
     });
   }
 });
@@ -221,17 +207,10 @@ router.get('/stream', async (req, res) => {
       return res.status(400).send('Missing using url parameter');
     }
 
-    // Validate URL format
-    let imageUrl: URL;
-    try {
-      imageUrl = new URL(url);
-    } catch (error) {
-      return res.status(400).send('Invalid URL format');
-    }
-
-    // Only allow http/https protocols
-    if (imageUrl.protocol !== 'http:' && imageUrl.protocol !== 'https:') {
-      return res.status(400).send('Invalid URL protocol');
+    // Validate URL format and SSRF protection
+    const urlValidation = validateExternalUrl(url);
+    if (!urlValidation.valid) {
+      return res.status(400).send(urlValidation.error || 'Invalid URL');
     }
 
     // Fetch the image from the URL
@@ -272,7 +251,7 @@ router.get('/stream', async (req, res) => {
       res.end();
     }
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in image stream proxy:', error);
     if (!res.headersSent) {
       res.status(500).send('Internal server error');
