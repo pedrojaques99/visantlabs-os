@@ -226,7 +226,7 @@ router.get('/google', oauthRateLimiter, (req, res) => {
 });
 
 // Get Google OAuth URL for linking account (requires authentication)
-router.get('/google/link', authenticate, async (req: AuthRequest, res) => {
+router.get('/google/link', oauthRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
       console.error('Missing Google OAuth credentials');
@@ -357,7 +357,7 @@ router.get('/google/callback', oauthRateLimiter, async (req, res) => {
 });
 
 // Google OAuth callback for linking account
-router.get('/google/link-callback', authenticate, async (req: AuthRequest, res) => {
+router.get('/google/link-callback', oauthRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const { code, state } = req.query;
     const userId = req.userId!;

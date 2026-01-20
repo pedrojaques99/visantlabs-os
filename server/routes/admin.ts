@@ -764,7 +764,7 @@ router.get('/presets/mockup/:id', validateAdmin, async (req, res) => {
     }
     await connectToMongoDB();
     const db = getDb();
-    const preset = await db.collection('mockup_presets').findOne({ id: req.params.id });
+    const preset = await db.collection('mockup_presets').findOne(sanitizeMongoQuery({ id: req.params.id }));
 
     if (!preset) {
       return res.status(404).json({ error: 'Preset not found' });
@@ -801,7 +801,7 @@ router.post('/presets/mockup', validateAdmin, async (req, res) => {
     await connectToMongoDB();
     const db = getDb();
 
-    const existing = await db.collection('mockup_presets').findOne({ id });
+    const existing = await db.collection('mockup_presets').findOne(sanitizeMongoQuery({ id }));
     if (existing) {
       return res.status(409).json({ error: 'Preset with this ID already exists' });
     }
@@ -1045,7 +1045,7 @@ router.put('/presets/mockup/:id', validateAdmin, async (req, res) => {
     }
 
     const result = await db.collection('mockup_presets').findOneAndUpdate(
-      { id: req.params.id },
+      sanitizeMongoQuery({ id: req.params.id }),
       { $set: update },
       { returnDocument: 'after' }
     );
@@ -1071,7 +1071,7 @@ router.delete('/presets/mockup/:id', validateAdmin, async (req, res) => {
     await connectToMongoDB();
     const db = getDb();
 
-    const result = await db.collection('mockup_presets').deleteOne({ id: req.params.id });
+    const result = await db.collection('mockup_presets').deleteOne(sanitizeMongoQuery({ id: req.params.id }));
 
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Preset not found' });
@@ -1126,7 +1126,7 @@ router.get('/presets/angle/:id', validateAdmin, async (req, res) => {
     }
     await connectToMongoDB();
     const db = getDb();
-    const preset = await db.collection('angle_presets').findOne({ id: req.params.id });
+    const preset = await db.collection('angle_presets').findOne(sanitizeMongoQuery({ id: req.params.id }));
 
     if (!preset) {
       return res.status(404).json({ error: 'Preset not found' });
@@ -1154,7 +1154,7 @@ router.post('/presets/angle', validateAdmin, async (req, res) => {
     await connectToMongoDB();
     const db = getDb();
 
-    const existing = await db.collection('angle_presets').findOne({ id });
+    const existing = await db.collection('angle_presets').findOne(sanitizeMongoQuery({ id }));
     if (existing) {
       return res.status(409).json({ error: 'Preset with this ID already exists' });
     }
@@ -1221,7 +1221,7 @@ router.put('/presets/angle/:id', validateAdmin, async (req, res) => {
     }
 
     const result = await db.collection('angle_presets').findOneAndUpdate(
-      { id: req.params.id },
+      sanitizeMongoQuery({ id: req.params.id }),
       { $set: update },
       { returnDocument: 'after' }
     );
@@ -1247,7 +1247,7 @@ router.delete('/presets/angle/:id', validateAdmin, async (req, res) => {
     await connectToMongoDB();
     const db = getDb();
 
-    const result = await db.collection('angle_presets').deleteOne({ id: req.params.id });
+    const result = await db.collection('angle_presets').deleteOne(sanitizeMongoQuery({ id: req.params.id }));
 
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Preset not found' });
@@ -1268,7 +1268,7 @@ router.get('/presets/texture/:id', validateAdmin, async (req, res) => {
     }
     await connectToMongoDB();
     const db = getDb();
-    const preset = await db.collection('texture_presets').findOne({ id: req.params.id });
+    const preset = await db.collection('texture_presets').findOne(sanitizeMongoQuery({ id: req.params.id }));
 
     if (!preset) {
       return res.status(404).json({ error: 'Preset not found' });
@@ -1296,7 +1296,7 @@ router.post('/presets/texture', validateAdmin, async (req, res) => {
     await connectToMongoDB();
     const db = getDb();
 
-    const existing = await db.collection('texture_presets').findOne({ id });
+    const existing = await db.collection('texture_presets').findOne(sanitizeMongoQuery({ id }));
     if (existing) {
       return res.status(409).json({ error: 'Preset with this ID already exists' });
     }
@@ -1362,7 +1362,7 @@ router.put('/presets/texture/:id', validateAdmin, async (req, res) => {
     }
 
     const result = await db.collection('texture_presets').findOneAndUpdate(
-      { id: req.params.id },
+      sanitizeMongoQuery({ id: req.params.id }),
       { $set: update },
       { returnDocument: 'after' }
     );
@@ -1388,7 +1388,7 @@ router.delete('/presets/texture/:id', validateAdmin, async (req, res) => {
     await connectToMongoDB();
     const db = getDb();
 
-    const result = await db.collection('texture_presets').deleteOne({ id: req.params.id });
+    const result = await db.collection('texture_presets').deleteOne(sanitizeMongoQuery({ id: req.params.id }));
 
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Preset not found' });
@@ -1409,7 +1409,7 @@ router.get('/presets/ambience/:id', validateAdmin, async (req, res) => {
     }
     await connectToMongoDB();
     const db = getDb();
-    const preset = await db.collection('ambience_presets').findOne({ id: req.params.id });
+    const preset = await db.collection('ambience_presets').findOne(sanitizeMongoQuery({ id: req.params.id }));
 
     if (!preset) {
       return res.status(404).json({ error: 'Preset not found' });
@@ -1437,7 +1437,7 @@ router.post('/presets/ambience', validateAdmin, async (req, res) => {
     await connectToMongoDB();
     const db = getDb();
 
-    const existing = await db.collection('ambience_presets').findOne({ id });
+    const existing = await db.collection('ambience_presets').findOne(sanitizeMongoQuery({ id }));
     if (existing) {
       return res.status(409).json({ error: 'Preset with this ID already exists' });
     }
@@ -1503,7 +1503,7 @@ router.put('/presets/ambience/:id', validateAdmin, async (req, res) => {
     }
 
     const result = await db.collection('ambience_presets').findOneAndUpdate(
-      { id: req.params.id },
+      sanitizeMongoQuery({ id: req.params.id }),
       { $set: update },
       { returnDocument: 'after' }
     );
@@ -1529,7 +1529,7 @@ router.delete('/presets/ambience/:id', validateAdmin, async (req, res) => {
     await connectToMongoDB();
     const db = getDb();
 
-    const result = await db.collection('ambience_presets').deleteOne({ id: req.params.id });
+    const result = await db.collection('ambience_presets').deleteOne(sanitizeMongoQuery({ id: req.params.id }));
 
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Preset not found' });
@@ -1550,7 +1550,7 @@ router.get('/presets/luminance/:id', validateAdmin, async (req, res) => {
     }
     await connectToMongoDB();
     const db = getDb();
-    const preset = await db.collection('luminance_presets').findOne({ id: req.params.id });
+    const preset = await db.collection('luminance_presets').findOne(sanitizeMongoQuery({ id: req.params.id }));
 
     if (!preset) {
       return res.status(404).json({ error: 'Preset not found' });
@@ -1578,7 +1578,7 @@ router.post('/presets/luminance', validateAdmin, async (req, res) => {
     await connectToMongoDB();
     const db = getDb();
 
-    const existing = await db.collection('luminance_presets').findOne({ id });
+    const existing = await db.collection('luminance_presets').findOne(sanitizeMongoQuery({ id }));
     if (existing) {
       return res.status(409).json({ error: 'Preset with this ID already exists' });
     }
@@ -1642,7 +1642,7 @@ router.put('/presets/luminance/:id', validateAdmin, async (req, res) => {
     }
 
     const result = await db.collection('luminance_presets').findOneAndUpdate(
-      { id: req.params.id },
+      sanitizeMongoQuery({ id: req.params.id }),
       { $set: update },
       { returnDocument: 'after' }
     );
@@ -1666,7 +1666,7 @@ router.delete('/presets/luminance/:id', validateAdmin, async (req, res) => {
     await connectToMongoDB();
     const db = getDb();
 
-    const result = await db.collection('luminance_presets').deleteOne({ id: req.params.id });
+    const result = await db.collection('luminance_presets').deleteOne(sanitizeMongoQuery({ id: req.params.id }));
 
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Preset not found' });
@@ -1688,7 +1688,7 @@ router.delete('/community-presets/:id', validateAdmin, async (req, res) => {
     await connectToMongoDB();
     const db = getDb();
 
-    const result = await db.collection('community_presets').deleteOne({ id: req.params.id });
+    const result = await db.collection('community_presets').deleteOne(sanitizeMongoQuery({ id: req.params.id }));
 
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Community preset not found' });
@@ -1713,7 +1713,7 @@ router.put('/community-presets/:id/approve', validateAdmin, async (req, res) => 
     const isApprovedVal = ab === undefined ? true : ab;
 
     const result = await db.collection('community_presets').updateOne(
-      { id: req.params.id },
+      sanitizeMongoQuery({ id: req.params.id }),
       { $set: { isApproved: isApprovedVal, updatedAt: new Date().toISOString() } }
     );
 
@@ -1721,7 +1721,7 @@ router.put('/community-presets/:id/approve', validateAdmin, async (req, res) => 
       return res.status(404).json({ error: 'Community preset not found' });
     }
 
-    const updated = await db.collection('community_presets').findOne({ id: req.params.id });
+    const updated = await db.collection('community_presets').findOne(sanitizeMongoQuery({ id: req.params.id }));
 
     return res.json(updated);
   } catch (error) {
@@ -1880,7 +1880,7 @@ router.post('/presets/branding', validateAdmin, async (req, res) => {
     await connectToMongoDB();
     const db = getDb();
 
-    const existing = await db.collection('branding_presets').findOne({ id });
+    const existing = await db.collection('branding_presets').findOne(sanitizeMongoQuery({ id }));
     if (existing) {
       return res.status(409).json({ error: 'Preset with this ID already exists' });
     }
@@ -1937,7 +1937,7 @@ router.put('/presets/branding/:id', validateAdmin, async (req, res) => {
     if (tags !== undefined) updateData.tags = normalizeTags(tags);
 
     const result = await db.collection('branding_presets').findOneAndUpdate(
-      { id: req.params.id },
+      sanitizeMongoQuery({ id: req.params.id }),
       { $set: updateData },
       { returnDocument: 'after' }
     );
@@ -1959,7 +1959,7 @@ router.delete('/presets/branding/:id', validateAdmin, async (req, res) => {
     }
     await connectToMongoDB();
     const db = getDb();
-    const result = await db.collection('branding_presets').deleteOne({ id: req.params.id });
+    const result = await db.collection('branding_presets').deleteOne(sanitizeMongoQuery({ id: req.params.id }));
 
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Preset not found' });
@@ -1987,7 +1987,7 @@ router.post('/presets/effect', validateAdmin, async (req, res) => {
     await connectToMongoDB();
     const db = getDb();
 
-    const existing = await db.collection('effect_presets').findOne({ id });
+    const existing = await db.collection('effect_presets').findOne(sanitizeMongoQuery({ id }));
     if (existing) {
       return res.status(409).json({ error: 'Preset with this ID already exists' });
     }
@@ -2044,7 +2044,7 @@ router.put('/presets/effect/:id', validateAdmin, async (req, res) => {
     if (tags !== undefined) updateData.tags = normalizeTags(tags);
 
     const result = await db.collection('effect_presets').findOneAndUpdate(
-      { id: req.params.id },
+      sanitizeMongoQuery({ id: req.params.id }),
       { $set: updateData },
       { returnDocument: 'after' }
     );
@@ -2066,7 +2066,7 @@ router.delete('/presets/effect/:id', validateAdmin, async (req, res) => {
     }
     await connectToMongoDB();
     const db = getDb();
-    const result = await db.collection('effect_presets').deleteOne({ id: req.params.id });
+    const result = await db.collection('effect_presets').deleteOne(sanitizeMongoQuery({ id: req.params.id }));
 
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Preset not found' });
@@ -2098,12 +2098,12 @@ router.get('/users/:id/history', adminUsersLimiter, validateAdmin, async (req: A
 
     const [records, total] = await Promise.all([
       db.collection('usage_records')
-        .find({ userId: id })
+        .find(sanitizeMongoQuery({ userId: id }))
         .sort({ timestamp: -1 })
         .skip(offset)
         .limit(limit)
         .toArray(),
-      db.collection('usage_records').countDocuments({ userId: id })
+      db.collection('usage_records').countDocuments(sanitizeMongoQuery({ userId: id }))
     ]);
 
     const formattedRecords = records.map((record: any) => ({
