@@ -43,6 +43,7 @@ const BLOCKED_HOSTNAMES = [
 interface UrlValidationResult {
   valid: boolean;
   error?: string;
+  url?: string;
 }
 
 /**
@@ -50,6 +51,10 @@ interface UrlValidationResult {
  * Blocks internal IPs, localhost, and cloud metadata endpoints
  */
 export function validateExternalUrl(url: string): UrlValidationResult {
+  if (typeof url !== 'string' || !url.trim()) {
+    return { valid: false, error: 'URL must be a non-empty string' };
+  }
+
   // Parse URL
   let parsedUrl: URL;
   try {
@@ -112,7 +117,7 @@ export function validateExternalUrl(url: string): UrlValidationResult {
     }
   }
 
-  return { valid: true };
+  return { valid: true, url: parsedUrl.href };
 }
 
 /**

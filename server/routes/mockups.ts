@@ -696,12 +696,12 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       if (img.url) {
         // Validate URL for SSRF protection
         const urlValidation = validateExternalUrl(img.url);
-        if (!urlValidation.valid) {
-          throw new Error(`Invalid image URL: ${urlValidation.error}`);
+        if (!urlValidation.valid || !urlValidation.url) {
+          throw new Error(`Invalid image URL: ${urlValidation.error || 'Invalid URL'}`);
         }
         try {
           console.log(`${logPrefix} [IMAGE PROCESSING] Downloading image from URL:`, img.url.substring(0, 100));
-          const response = await fetch(img.url);
+          const response = await fetch(urlValidation.url);
           if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
           const arrayBuffer = await response.arrayBuffer();
           const buffer = Buffer.from(arrayBuffer);

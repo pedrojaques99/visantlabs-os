@@ -849,7 +849,7 @@ export const abacatepayService = {
         // Use direct API endpoint to get PIX QRCode status
         console.log('🔍 Detected PIX QRCode ID, using direct endpoint...');
         try {
-          const pixQrCodeUrl = `https://api.abacatepay.com/v1/pixQrCode/${billId}`;
+          const pixQrCodeUrl = `https://api.abacatepay.com/v1/pixQrCode/${encodeURIComponent(billId)}`;
           const pixResponse = await fetch(pixQrCodeUrl, {
             method: 'GET',
             headers: {
