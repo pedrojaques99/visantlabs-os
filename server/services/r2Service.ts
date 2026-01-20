@@ -39,7 +39,7 @@ async function checkStorageLimitIfNeeded(
     isAdmin?: boolean,
     customLimitBytes?: number | null
 ): Promise<void> {
-    if (isAdmin) return;
+    if (isAdmin === true) return;
 
     const storageCheck = await checkStorageLimit(userId, fileSizeBytes, subscriptionTier, isAdmin, customLimitBytes);
     if (!storageCheck.allowed) {
@@ -508,12 +508,15 @@ export async function generateCanvasImageUploadUrl(
     const publicUrl = process.env.R2_PUBLIC_URL;
     if (!bucketName || !publicUrl) throw new Error('R2 configuration missing.');
 
+    const ct = typeof contentType === 'string' ? contentType : 'image/png';
+    const exp = (typeof expiresIn === 'number' && Number.isFinite(expiresIn) && expiresIn > 0) ? Math.min(Math.floor(expiresIn), 86400) : 3600;
+
     let extension = 'png';
-    if (contentType.includes('jpeg') || contentType.includes('jpg')) {
+    if (ct.includes('jpeg') || ct.includes('jpg')) {
         extension = 'jpg';
-    } else if (contentType.includes('webp')) {
+    } else if (ct.includes('webp')) {
         extension = 'webp';
-    } else if (contentType.includes('gif')) {
+    } else if (ct.includes('gif')) {
         extension = 'gif';
     }
 
@@ -527,10 +530,10 @@ export async function generateCanvasImageUploadUrl(
         const command = new PutObjectCommand({
             Bucket: bucketName,
             Key: key,
-            ContentType: contentType,
+            ContentType: ct,
         });
 
-        const presignedUrl = await getSignedUrl(client, command, { expiresIn });
+        const presignedUrl = await getSignedUrl(client, command, { expiresIn: exp });
 
         return {
             presignedUrl,
@@ -554,10 +557,13 @@ export async function generateMockupImageUploadUrl(
     const publicUrl = process.env.R2_PUBLIC_URL;
     if (!bucketName || !publicUrl) throw new Error('R2 configuration missing.');
 
+    const ct = typeof contentType === 'string' ? contentType : 'image/png';
+    const exp = (typeof expiresIn === 'number' && Number.isFinite(expiresIn) && expiresIn > 0) ? Math.min(Math.floor(expiresIn), 86400) : 3600;
+
     let extension = 'png';
-    if (contentType.includes('jpeg') || contentType.includes('jpg')) {
+    if (ct.includes('jpeg') || ct.includes('jpg')) {
         extension = 'jpg';
-    } else if (contentType.includes('webp')) {
+    } else if (ct.includes('webp')) {
         extension = 'webp';
     }
 
@@ -571,10 +577,10 @@ export async function generateMockupImageUploadUrl(
         const command = new PutObjectCommand({
             Bucket: bucketName,
             Key: key,
-            ContentType: contentType,
+            ContentType: ct,
         });
 
-        const presignedUrl = await getSignedUrl(client, command, { expiresIn });
+        const presignedUrl = await getSignedUrl(client, command, { expiresIn: exp });
 
         return {
             presignedUrl,
@@ -600,14 +606,17 @@ export async function generateCanvasVideoUploadUrl(
     const publicUrl = process.env.R2_PUBLIC_URL;
     if (!bucketName || !publicUrl) throw new Error('R2 configuration missing.');
 
+    const ct = typeof contentType === 'string' ? contentType : 'video/mp4';
+    const exp = (typeof expiresIn === 'number' && Number.isFinite(expiresIn) && expiresIn > 0) ? Math.min(Math.floor(expiresIn), 86400) : 3600;
+
     let extension = 'mp4';
-    if (contentType.includes('webm')) {
+    if (ct.includes('webm')) {
         extension = 'webm';
-    } else if (contentType.includes('mov')) {
+    } else if (ct.includes('mov')) {
         extension = 'mov';
-    } else if (contentType.includes('avi')) {
+    } else if (ct.includes('avi')) {
         extension = 'avi';
-    } else if (contentType.includes('quicktime')) {
+    } else if (ct.includes('quicktime')) {
         extension = 'mov';
     }
 
@@ -621,10 +630,10 @@ export async function generateCanvasVideoUploadUrl(
         const command = new PutObjectCommand({
             Bucket: bucketName,
             Key: key,
-            ContentType: contentType,
+            ContentType: ct,
         });
 
-        const presignedUrl = await getSignedUrl(client, command, { expiresIn });
+        const presignedUrl = await getSignedUrl(client, command, { expiresIn: exp });
 
         return {
             presignedUrl,
@@ -649,9 +658,9 @@ export class StorageLimitExceededError extends Error {
 }
 
 export function getUserStorageLimit(subscriptionTier?: string, isAdmin?: boolean, customLimitBytes?: number | null): number {
-    if (customLimitBytes) return customLimitBytes;
-    if (isAdmin) return STORAGE_LIMIT_ADMIN;
-    const tier = subscriptionTier?.toLowerCase() || 'free';
+    if (typeof customLimitBytes === 'number' && Number.isFinite(customLimitBytes) && customLimitBytes >= 0) return customLimitBytes;
+    if (isAdmin === true) return STORAGE_LIMIT_ADMIN;
+    const tier = typeof subscriptionTier === 'string' ? subscriptionTier.toLowerCase() : 'free';
     return (tier === 'premium' || tier === 'active') ? STORAGE_LIMIT_PREMIUM : STORAGE_LIMIT_FREE;
 }
 
@@ -661,18 +670,21 @@ export async function getUserStorageUsed(userId: string): Promise<number> {
 }
 
 export async function incrementUserStorage(userId: string, bytes: number): Promise<void> {
+    if (typeof bytes !== 'number' || !Number.isFinite(bytes) || bytes < 0) throw new Error('Invalid bytes');
     try {
         await prisma.user.update({ where: { id: userId }, data: { storageUsedBytes: { increment: bytes } } });
     } catch (e) { }
 }
 
 export async function decrementUserStorage(userId: string, bytes: number): Promise<void> {
+    if (typeof bytes !== 'number' || !Number.isFinite(bytes) || bytes < 0) throw new Error('Invalid bytes');
     try {
         await prisma.user.update({ where: { id: userId }, data: { storageUsedBytes: { decrement: bytes } } });
     } catch (e) { }
 }
 
 export async function checkStorageLimit(userId: string, fileSizeBytes: number, subscriptionTier?: string, isAdmin?: boolean, customLimitBytes?: number | null) {
+    if (typeof fileSizeBytes !== 'number' || !Number.isFinite(fileSizeBytes) || fileSizeBytes < 0) throw new Error('Invalid file size');
     const limit = getUserStorageLimit(subscriptionTier, isAdmin, customLimitBytes);
     const used = await getUserStorageUsed(userId);
     const allowed = used + fileSizeBytes <= limit;
@@ -742,9 +754,8 @@ export async function calculateUserStorage(userId: string): Promise<number> {
 
                 if (response.Contents) {
                     for (const object of response.Contents) {
-                        if (object.Size !== undefined) {
-                            totalSize += object.Size;
-                        }
+                        const size = object.Size;
+                        if (typeof size === 'number' && Number.isFinite(size) && size >= 0) totalSize += size;
                     }
                 }
 

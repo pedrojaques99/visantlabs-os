@@ -1,5 +1,6 @@
 import { GoogleGenAI, Modality, Type } from "@google/genai";
 import type { UploadedImage, AspectRatio, DesignType, GeminiModel, Resolution } from '../../src/types/types.js';
+import { validateExternalUrl } from '../utils/securityValidation.js';
 import { buildGeminiPromptInstructionsTemplate } from '../../src/utils/mockupPromptFormat.js';
 import type { AvailableTags } from './tagService.js';
 import {
@@ -79,10 +80,13 @@ const resolveImageBase64 = async (image: UploadedImage): Promise<string> => {
   }
 
   if (image.url) {
+    if (typeof image.url !== 'string' || !image.url.trim()) throw new Error('Invalid image URL');
+    const urlValidation = validateExternalUrl(image.url);
+    if (!urlValidation.valid || !urlValidation.url) throw new Error('Invalid image URL');
     try {
       const t0 = Date.now();
       if (process.env.NODE_ENV === 'development') console.log('[dev] resolveImageBase64: fetch start', image.url);
-      const response = await fetch(image.url);
+      const response = await fetch(urlValidation.url);
       if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
       const arrayBuffer = await response.arrayBuffer();
       const b64 = Buffer.from(arrayBuffer).toString('base64');

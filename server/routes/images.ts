@@ -34,7 +34,7 @@ router.get('/proxy', async (req, res) => {
     // Fetch the image from the URL
     let response: Response;
     try {
-      response = await fetch(url, {
+      response = await fetch(urlValidation.url!, {
         method: 'GET',
         headers: {
           'User-Agent': 'VSN-Mockup-Machine/1.0',
@@ -115,12 +115,12 @@ router.get('/video-proxy', async (req, res) => {
     }
 
     // Parse URL for hostname check (already validated above)
-    const videoUrl = new URL(url);
+    const videoUrl = new URL(urlValidation.url!);
 
     // Get Google API key for authentication
     const apiKey = getGoogleApiKey();
 
-    // Fetch the video from the URL with authentication if it's a Google Cloud Storage URL
+    // Fetch the video from the validated URL with authentication if it's a Google Cloud Storage URL
     let response: Response;
     try {
       const headers: Record<string, string> = {
@@ -132,7 +132,7 @@ router.get('/video-proxy', async (req, res) => {
         headers['x-goog-api-key'] = apiKey;
       }
 
-      response = await fetch(url, {
+      response = await fetch(urlValidation.url!, {
         method: 'GET',
         headers,
       });
@@ -213,8 +213,8 @@ router.get('/stream', async (req, res) => {
       return res.status(400).send(urlValidation.error || 'Invalid URL');
     }
 
-    // Fetch the image from the URL
-    const response = await fetch(url, {
+    // Fetch the image from the validated URL
+    const response = await fetch(urlValidation.url!, {
       method: 'GET',
       headers: {
         'User-Agent': 'VSN-Mockup-Machine/1.0',
