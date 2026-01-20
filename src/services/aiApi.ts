@@ -95,8 +95,11 @@ export const aiApi = {
     if (import.meta.env.DEV) console.log('[dev] aiApi.analyzeSetup: fetch end', ((Date.now() - t0) / 1000).toFixed(2) + 's', 'ok=', response.ok, 'status=', response.status);
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Failed to analyze setup' }));
-      throw new Error(error.error || 'Failed to analyze setup');
+      const body = await response.json().catch(() => ({}));
+      const msg = body?.error || (response.status === 500 ? 'Internal server error' : 'Failed to analyze setup');
+      const e = new Error(msg) as Error & { status?: number };
+      e.status = response.status;
+      throw e;
     }
 
     const data = await response.json();
