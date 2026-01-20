@@ -7,6 +7,7 @@ import { checkSubscription, SubscriptionRequest } from '../middleware/subscripti
 import { generateMockup, RateLimitError } from '../../src/services/geminiService.js';
 import { createUsageRecord, getCreditsRequired } from '../utils/usageTracking.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
+import { validateExternalUrl, getErrorMessage } from '../utils/securityValidation.js';
 import type { UploadedImage, AspectRatio, GeminiModel, Resolution } from '../../src/types/types.js';
 
 const router = express.Router();
@@ -686,6 +687,11 @@ router.post('/generate', authenticate, checkSubscription, async (req: Subscripti
       if (!img) return null;
       if (img.base64) return img;
       if (img.url) {
+        // Validate URL for SSRF protection
+        const urlValidation = validateExternalUrl(img.url);
+        if (!urlValidation.valid) {
+          throw new Error(`Invalid image URL: ${urlValidation.error}`);
+        }
         try {
           console.log(`${logPrefix} [IMAGE PROCESSING] Downloading image from URL:`, img.url.substring(0, 100));
           const response = await fetch(img.url);
@@ -696,9 +702,9 @@ router.post('/generate', authenticate, checkSubscription, async (req: Subscripti
             base64: buffer.toString('base64'),
             mimeType: img.mimeType || response.headers.get('content-type') || 'image/png'
           };
-        } catch (error: any) {
+        } catch (error: unknown) {
           console.error(`${logPrefix} [IMAGE PROCESSING] Error downloading image:`, error);
-          throw new Error(`Failed to process image URL: ${error.message}`);
+          throw new Error(`Failed to process image URL: ${getErrorMessage(error)}`);
         }
       }
       return null;

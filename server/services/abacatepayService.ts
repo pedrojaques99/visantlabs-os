@@ -2,6 +2,7 @@ import AbacatePayModule from 'abacatepay-nodejs-sdk';
 import { getCreditPackage, getAbacateBillId, getCreditsByAmount } from '../../src/utils/creditPackages.js';
 import { ObjectId } from 'mongodb';
 import { sendCreditsPurchasedEmail, isEmailConfigured } from './emailService.js';
+import { validateSafeId } from '../utils/securityValidation.js';
 
 // Support both ABACATEPAY_API_KEY and ABACATE_API_KEY for compatibility
 const ABACATEPAY_API_KEY = process.env.ABACATEPAY_API_KEY || process.env.ABACATE_API_KEY || '';
@@ -834,6 +835,12 @@ export const abacatepayService = {
     }
 
     try {
+      // Validate billId format to prevent path traversal/SSRF attacks
+      const billIdValidation = validateSafeId(billId);
+      if (!billIdValidation.valid) {
+        throw new Error(`Invalid bill ID format: ${billIdValidation.error}`);
+      }
+
       // Check if this is a PIX QRCode ID (created via direct endpoint)
       // PIX QRCode IDs start with "pix_char_"
       const isPixQrCodeId = billId.startsWith('pix_char_');
