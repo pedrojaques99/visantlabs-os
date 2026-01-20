@@ -2,8 +2,8 @@ import express from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { getUserIdFromToken } from '../utils/auth.js';
 import { prisma } from '../db/prisma.js';
-import { InputJsonValue } from '@prisma/client/runtime/library';
-
+import { ensureOptionalBoolean, ensureString, isValidObjectId } from '../utils/validation.js';
+import { InputJsonValue } from '@prisma/client/runtime/library.js';
 
 const router = express.Router();
 
@@ -41,9 +41,8 @@ router.get('/public', async (req, res) => {
             isApproved: true,
         };
 
-        if (category && category !== 'all') {
-            where.category = category;
-        }
+        const cat = category && category !== 'all' ? ensureString(category, 100) : null;
+        if (cat) where.category = cat;
 
         const workflows = await prisma.canvasWorkflow.findMany({
             where,
@@ -137,28 +136,32 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
 
         const { name, description, category, tags, nodes, edges, thumbnailUrl, isPublic } = req.body;
 
-        // Validate required fields
-        if (!name || !description || !nodes || !edges) {
+        const nameVal = ensureString(name, 500);
+        const descVal = ensureString(description, 5000);
+        if (!nameVal || !descVal || !nodes || !edges) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
-
-        // Validate nodes and edges are arrays
         if (!Array.isArray(nodes) || !Array.isArray(edges)) {
             return res.status(400).json({ error: 'Nodes and edges must be arrays' });
         }
 
+        const catVal = ensureString(category, 100) || 'general';
+        const tagsVal = Array.isArray(tags) ? tags.filter((t: unknown) => typeof t === 'string').map((t: string) => String(t).substring(0, 200)) : [];
+        const thumbVal = thumbnailUrl != null ? ensureString(thumbnailUrl, 2000) ?? undefined : undefined;
+        const isPub = ensureOptionalBoolean(isPublic);
+
         const workflow = await prisma.canvasWorkflow.create({
             data: {
                 userId: req.userId,
-                name,
-                description,
-                category: category || 'general',
-                tags: tags || [],
+                name: nameVal,
+                description: descVal,
+                category: catVal,
+                tags: tagsVal,
                 nodes,
                 edges,
-                thumbnailUrl,
-                isPublic: isPublic || false,
-                isApproved: false, // Admin approval required for public workflows
+                thumbnailUrl: thumbVal,
+                isPublic: isPub ?? false,
+                isApproved: false,
             },
         });
 
@@ -177,9 +180,11 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
         }
 
         const { id } = req.params;
+        if (!isValidObjectId(id)) {
+            return res.status(400).json({ error: 'Invalid workflow ID format' });
+        }
         const { name, description, category, tags, nodes, edges, thumbnailUrl, isPublic } = req.body;
 
-        // Check ownership
         const existingWorkflow = await prisma.canvasWorkflow.findUnique({
             where: { id },
         });
@@ -192,18 +197,24 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
             return res.status(403).json({ error: 'Access denied' });
         }
 
+        const data: Record<string, unknown> = {};
+        const n = name !== undefined ? ensureString(name, 500) : null;
+        if (n) data.name = n;
+        const d = description !== undefined ? ensureString(description, 5000) : null;
+        if (d) data.description = d;
+        const c = category !== undefined ? ensureString(category, 100) : null;
+        if (c) data.category = c;
+        if (tags !== undefined && Array.isArray(tags)) data.tags = tags.filter((t: unknown) => typeof t === 'string').map((t: string) => String(t).substring(0, 200));
+        if (nodes !== undefined && Array.isArray(nodes)) data.nodes = nodes;
+        if (edges !== undefined && Array.isArray(edges)) data.edges = edges;
+        const t = thumbnailUrl !== undefined ? ensureString(thumbnailUrl, 2000) : null;
+        if (t != null) data.thumbnailUrl = t;
+        const ip = ensureOptionalBoolean(isPublic);
+        if (ip !== undefined) data.isPublic = ip;
+
         const workflow = await prisma.canvasWorkflow.update({
             where: { id },
-            data: {
-                ...(name && { name }),
-                ...(description && { description }),
-                ...(category && { category }),
-                ...(tags && { tags }),
-                ...(nodes && { nodes }),
-                ...(edges && { edges }),
-                ...(thumbnailUrl !== undefined && { thumbnailUrl }),
-                ...(isPublic !== undefined && { isPublic }),
-            },
+            data: data as any,
         });
 
         res.json({ workflow });
@@ -221,8 +232,10 @@ router.delete('/:id', authenticate, async (req: AuthRequest, res) => {
         }
 
         const { id } = req.params;
+        if (!isValidObjectId(id)) {
+            return res.status(400).json({ error: 'Invalid workflow ID format' });
+        }
 
-        // Check ownership
         const workflow = await prisma.canvasWorkflow.findUnique({
             where: { id },
         });
@@ -254,8 +267,10 @@ router.post('/:id/like', authenticate, async (req: AuthRequest, res) => {
         }
 
         const { id } = req.params;
+        if (!isValidObjectId(id)) {
+            return res.status(400).json({ error: 'Invalid workflow ID format' });
+        }
 
-        // Check if workflow exists
         const workflow = await prisma.canvasWorkflow.findUnique({
             where: { id },
         });
@@ -329,8 +344,10 @@ router.post('/:id/duplicate', authenticate, async (req: AuthRequest, res) => {
         }
 
         const { id } = req.params;
+        if (!isValidObjectId(id)) {
+            return res.status(400).json({ error: 'Invalid workflow ID format' });
+        }
 
-        // Get original workflow
         const originalWorkflow = await prisma.canvasWorkflow.findUnique({
             where: { id },
         });
@@ -381,6 +398,9 @@ router.post('/:id/duplicate', authenticate, async (req: AuthRequest, res) => {
 router.post('/:id/use', async (req, res) => {
     try {
         const { id } = req.params;
+        if (!isValidObjectId(id)) {
+            return res.status(400).json({ error: 'Invalid workflow ID format' });
+        }
 
         await prisma.canvasWorkflow.update({
             where: { id },

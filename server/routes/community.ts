@@ -3,7 +3,7 @@ import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { ObjectId } from 'mongodb';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { uploadImageRateLimiter, apiRateLimiter } from '../middleware/rateLimit.js';
-import { isSafeId, sanitizeMongoQuery } from '../utils/validation.js';
+import { ensureString, isSafeId, sanitizeMongoQuery } from '../utils/validation.js';
 
 const router = express.Router();
 
@@ -95,23 +95,24 @@ function migratePresetIfNeeded(preset: any): any {
 // Create community preset
 router.post('/presets', authenticate, async (req: AuthRequest, res) => {
   try {
-    await connectToMongoDB();
-    const db = getDb();
-
     const { id, name, description, prompt, referenceImageUrl, aspectRatio, model, tags, difficulty, context, useCase, examples } = req.body;
 
-    // Validation - campos obrigatórios
-    if (!id || !name || !description || !prompt || !aspectRatio) {
+    if (!isSafeId(id)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
+    const nameVal = ensureString(name, 500);
+    const descVal = ensureString(description, 5000);
+    const promptVal = ensureString(prompt, 50000);
+    const arVal = ensureString(aspectRatio, 20);
+    if (!nameVal || !descVal || !promptVal || !arVal) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // Normalizar category e presetType
     const categoryData = normalizeCategoryAndPresetType(req.body);
     if (categoryData.error) {
       return res.status(400).json({ error: categoryData.error });
     }
 
-    // Check if ID already exists globally
     const idExists = await checkPresetIdExists(id);
     if (idExists) {
       return res.status(409).json({ error: 'Preset with this ID already exists' });
@@ -131,37 +132,42 @@ router.post('/presets', authenticate, async (req: AuthRequest, res) => {
     const needsReferenceImage = (categoryData.category === 'presets' && categoryData.presetType === 'mockup')
       || (categoryData.category !== 'presets' && referenceImageUrl);
 
+    const refUrl = referenceImageUrl != null ? ensureString(referenceImageUrl, 2000) : null;
+    const modelVal = model != null ? ensureString(model, 100) ?? undefined : undefined;
+    const diffVal = difficulty != null ? ensureString(difficulty, 100) ?? undefined : undefined;
+    const ctxVal = context != null ? ensureString(context, 100) ?? undefined : undefined;
+    const ucVal = useCase != null ? ensureString(useCase, 1000) ?? undefined : undefined;
+
     const preset: any = {
       userId: new ObjectId(req.userId!),
       category: categoryData.category,
       id,
-      name,
-      description,
-      prompt,
-      aspectRatio,
-      model: model || undefined,
+      name: nameVal,
+      description: descVal,
+      prompt: promptVal,
+      aspectRatio: arVal,
+      model: modelVal,
       tags: normalizedTags.length > 0 ? normalizedTags : undefined,
-      isApproved: req.body.isApproved !== undefined ? req.body.isApproved : true, // Respect flag or auto-approval
+      isApproved: req.body.isApproved !== undefined ? req.body.isApproved : true,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
-    // Adicionar presetType apenas se category for 'presets'
     if (categoryData.presetType) {
       preset.presetType = categoryData.presetType;
     }
 
-    // Adicionar referenceImageUrl se necessário
-    if (needsReferenceImage && referenceImageUrl) {
-      preset.referenceImageUrl = referenceImageUrl;
+    if (needsReferenceImage && refUrl) {
+      preset.referenceImageUrl = refUrl;
     }
 
-    // Adicionar novos campos opcionais
-    if (difficulty) preset.difficulty = difficulty;
-    if (context) preset.context = context;
-    if (useCase) preset.useCase = useCase;
+    if (diffVal) preset.difficulty = diffVal;
+    if (ctxVal) preset.context = ctxVal;
+    if (ucVal) preset.useCase = ucVal;
     if (normalizedExamples && normalizedExamples.length > 0) preset.examples = normalizedExamples;
 
+    await connectToMongoDB();
+    const db = getDb();
     await db.collection('community_presets').insertOne(preset);
 
     // Create indexes if they don't exist
@@ -357,13 +363,15 @@ router.get('/presets/my', authenticate, async (req: AuthRequest, res) => {
 // Update user's own preset
 router.put('/presets/:id', authenticate, async (req: AuthRequest, res) => {
   try {
+    const presetId = req.params.id;
+    if (!isSafeId(presetId)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
     await connectToMongoDB();
     const db = getDb();
 
-    const presetId = req.params.id;
     const { name, description, prompt, referenceImageUrl, aspectRatio, model, tags, category, presetType, difficulty, context, useCase, examples } = req.body;
 
-    // Find preset and verify ownership
     const preset = await db.collection('community_presets').findOne({ id: presetId });
 
     if (!preset) {
@@ -403,29 +411,36 @@ router.put('/presets/:id', authenticate, async (req: AuthRequest, res) => {
       if (categoryData.presetType) update.presetType = categoryData.presetType;
     }
 
-    if (name !== undefined) update.name = name;
-    if (description !== undefined) update.description = description;
-    if (prompt !== undefined) update.prompt = prompt;
-    if (aspectRatio !== undefined) update.aspectRatio = aspectRatio;
-    if (model !== undefined) update.model = model;
+    const n = name !== undefined ? ensureString(name, 500) : null;
+    if (n != null) update.name = n;
+    const d = description !== undefined ? ensureString(description, 5000) : null;
+    if (d != null) update.description = d;
+    const p = prompt !== undefined ? ensureString(prompt, 50000) : null;
+    if (p != null) update.prompt = p;
+    const ar = aspectRatio !== undefined ? ensureString(aspectRatio, 20) : null;
+    if (ar != null) update.aspectRatio = ar;
+    const m = model !== undefined ? ensureString(model, 100) : null;
+    if (m != null) update.model = m;
     if (normalizedTags !== undefined) {
       update.tags = normalizedTags.length > 0 ? normalizedTags : undefined;
     }
 
-    // Determinar se precisa de referenceImageUrl
     const currentCategory = category || preset.category || (preset.presetType ? 'presets' : undefined);
     const currentPresetType = presetType || preset.presetType;
+    const refUrl = referenceImageUrl !== undefined ? ensureString(referenceImageUrl, 2000) : null;
     const needsReferenceImage = (currentCategory === 'presets' && currentPresetType === 'mockup')
-      || (currentCategory && currentCategory !== 'presets' && referenceImageUrl);
+      || (currentCategory && currentCategory !== 'presets' && refUrl);
 
-    if (needsReferenceImage && referenceImageUrl !== undefined) {
-      update.referenceImageUrl = referenceImageUrl;
+    if (needsReferenceImage && refUrl != null) {
+      update.referenceImageUrl = refUrl;
     }
 
-    // Novos campos opcionais
-    if (difficulty !== undefined) update.difficulty = difficulty;
-    if (context !== undefined) update.context = context;
-    if (useCase !== undefined) update.useCase = useCase;
+    const diff = difficulty !== undefined ? ensureString(difficulty, 100) : null;
+    if (diff != null) update.difficulty = diff;
+    const ctx = context !== undefined ? ensureString(context, 100) : null;
+    if (ctx != null) update.context = ctx;
+    const uc = useCase !== undefined ? ensureString(useCase, 1000) : null;
+    if (uc != null) update.useCase = uc;
     if (normalizedExamples !== undefined) {
       update.examples = normalizedExamples.length > 0 ? normalizedExamples : undefined;
     }
@@ -447,12 +462,13 @@ router.put('/presets/:id', authenticate, async (req: AuthRequest, res) => {
 // Delete user's own preset
 router.delete('/presets/:id', authenticate, async (req: AuthRequest, res) => {
   try {
+    const presetId = req.params.id;
+    if (!isSafeId(presetId)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
     await connectToMongoDB();
     const db = getDb();
 
-    const presetId = req.params.id;
-
-    // Find preset and verify ownership
     const preset = await db.collection('community_presets').findOne({ id: presetId });
 
     if (!preset) {
@@ -475,10 +491,13 @@ router.delete('/presets/:id', authenticate, async (req: AuthRequest, res) => {
 // Toggle like on a preset
 router.post('/presets/:id/like', authenticate, async (req: AuthRequest, res) => {
   try {
+    const presetId = req.params.id;
+    if (!isSafeId(presetId)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
     await connectToMongoDB();
     const db = getDb();
 
-    const presetId = req.params.id;
     const userId = new ObjectId(req.userId!);
 
     // Verify preset exists
@@ -554,6 +573,9 @@ router.post('/upload-image', authenticate, uploadImageRateLimiter, async (req: A
     if (!base64Image) {
       return res.status(400).json({ error: 'base64Image is required' });
     }
+    if (id != null && !isSafeId(id)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
 
     // Use provided ID or generate a temporary one if creating a new preset
     const presetId = id || `temp-${Date.now()}`;
@@ -582,18 +604,16 @@ router.post('/upload-image', authenticate, uploadImageRateLimiter, async (req: A
 // Upload preset reference image to R2 (for mockup presets)
 router.post('/presets/:id/upload-image', authenticate, async (req: AuthRequest, res) => {
   try {
-    const { base64Image } = req.body;
     const presetId = req.params.id;
+    if (!isSafeId(presetId)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
+    const { base64Image } = req.body;
 
     if (!base64Image) {
       return res.status(400).json({ error: 'base64Image is required' });
     }
 
-    if (!presetId) {
-      return res.status(400).json({ error: 'Preset ID is required' });
-    }
-
-    // Verify preset exists and belongs to user
     await connectToMongoDB();
     const db = getDb();
     const preset = await db.collection('community_presets').findOne({ id: presetId });

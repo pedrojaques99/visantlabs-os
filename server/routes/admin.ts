@@ -6,7 +6,7 @@ import { validateAdmin } from '../middleware/adminAuth.js';
 import { AuthRequest } from '../middleware/auth.js';
 import { rateLimit } from 'express-rate-limit';
 import { calculateImageCost, calculateVideoCost, getImagePricing } from '../../src/utils/pricing.js';
-import { isSafeId, isValidObjectId, sanitizeMongoQuery } from '../utils/validation.js';
+import { ensureOptionalBoolean, ensureString, isSafeId, isValidAspectRatio, isValidObjectId, isValidPositiveInt, sanitizeMongoQuery, VALID_ASPECT_RATIOS } from '../utils/validation.js';
 
 const router = express.Router();
 
@@ -759,6 +759,9 @@ router.get('/presets', validateAdmin, async (_req, res) => {
 // Mockup Presets
 router.get('/presets/mockup/:id', validateAdmin, async (req, res) => {
   try {
+    if (!isSafeId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
     await connectToMongoDB();
     const db = getDb();
     const preset = await db.collection('mockup_presets').findOne({ id: req.params.id });
@@ -776,17 +779,28 @@ router.get('/presets/mockup/:id', validateAdmin, async (req, res) => {
 
 router.post('/presets/mockup', validateAdmin, async (req, res) => {
   try {
+    const { id, name, description, prompt, referenceImageUrl, aspectRatio, model, tags, mockupCategoryId } = req.body;
+
+    if (!isSafeId(id)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
+    const nameVal = ensureString(name, 500);
+    const descVal = ensureString(description, 5000);
+    const promptVal = ensureString(prompt, 50000);
+    const arVal = ensureString(aspectRatio, 20);
+    if (!nameVal || !descVal || !promptVal || !arVal) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+    if (!isValidAspectRatio(arVal)) {
+      return res.status(400).json({ error: `Invalid aspectRatio. Must be one of: ${VALID_ASPECT_RATIOS.join(', ')}` });
+    }
+    const refUrl = referenceImageUrl != null ? (ensureString(referenceImageUrl, 2000) ?? '') : '';
+    const modelVal = model != null ? ensureString(model, 100) ?? undefined : undefined;
+    const mcat = mockupCategoryId != null && isValidObjectId(mockupCategoryId) ? mockupCategoryId : undefined;
+
     await connectToMongoDB();
     const db = getDb();
 
-    const { id, name, description, prompt, referenceImageUrl, aspectRatio, model, tags, mockupCategoryId } = req.body;
-
-    // Validation
-    if (!id || !name || !description || !prompt || !aspectRatio) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
-
-    // Check if ID already exists
     const existing = await db.collection('mockup_presets').findOne({ id });
     if (existing) {
       return res.status(409).json({ error: 'Preset with this ID already exists' });
@@ -794,14 +808,14 @@ router.post('/presets/mockup', validateAdmin, async (req, res) => {
 
     const preset = {
       id,
-      name,
-      description,
-      prompt,
-      referenceImageUrl: referenceImageUrl || '',
-      aspectRatio,
-      model: model || undefined,
+      name: nameVal,
+      description: descVal,
+      prompt: promptVal,
+      referenceImageUrl: refUrl,
+      aspectRatio: arVal,
+      model: modelVal,
       tags: normalizeTags(tags),
-      mockupCategoryId: mockupCategoryId || undefined,
+      mockupCategoryId: mcat,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -841,7 +855,6 @@ router.post('/presets/mockup/batch', validateAdmin, async (req, res) => {
       return res.status(400).json({ error: 'presets array cannot be empty' });
     }
 
-    const validAspectRatios = ['9:16', '21:9', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '16:9', '1:1'];
     const validModels = ['gemini-2.5-flash-image', 'gemini-3-pro-image-preview'];
 
     const errors: Array<{ index: number; id?: string; error: string }> = [];
@@ -853,9 +866,12 @@ router.post('/presets/mockup/batch', validateAdmin, async (req, res) => {
       const preset = presets[i];
       const index = i + 1; // 1-based index for user-friendly error messages
 
-      // Check required fields
       if (!preset.id || typeof preset.id !== 'string') {
         errors.push({ index, error: 'Missing or invalid id field' });
+        continue;
+      }
+      if (!isSafeId(preset.id)) {
+        errors.push({ index, id: preset.id, error: 'Invalid preset ID format' });
         continue;
       }
 
@@ -886,9 +902,8 @@ router.post('/presets/mockup/batch', validateAdmin, async (req, res) => {
       }
       seenIds.add(preset.id);
 
-      // Validate aspect ratio
-      if (!validAspectRatios.includes(preset.aspectRatio)) {
-        errors.push({ index, id: preset.id, error: `Invalid aspectRatio. Must be one of: ${validAspectRatios.join(', ')}` });
+      if (!isValidAspectRatio(preset.aspectRatio)) {
+        errors.push({ index, id: preset.id, error: `Invalid aspectRatio. Must be one of: ${VALID_ASPECT_RATIOS.join(', ')}` });
         continue;
       }
 
@@ -898,17 +913,17 @@ router.post('/presets/mockup/batch', validateAdmin, async (req, res) => {
         continue;
       }
 
-      // Build valid preset object
+      const mcat = preset.mockupCategoryId != null && isValidObjectId(preset.mockupCategoryId) ? preset.mockupCategoryId : undefined;
       validPresets.push({
         id: preset.id,
         name: preset.name,
         description: preset.description,
         prompt: preset.prompt,
-        referenceImageUrl: preset.referenceImageUrl || '',
+        referenceImageUrl: typeof preset.referenceImageUrl === 'string' ? preset.referenceImageUrl.substring(0, 2000) : '',
         aspectRatio: preset.aspectRatio,
         model: preset.model || undefined,
         tags: normalizeTags(preset.tags),
-        mockupCategoryId: preset.mockupCategoryId || undefined,
+        mockupCategoryId: mcat,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
@@ -1000,19 +1015,28 @@ router.put('/presets/mockup/:id', validateAdmin, async (req, res) => {
 
     const { name, description, prompt, referenceImageUrl, aspectRatio, model, tags, mockupCategoryId } = req.body;
 
-    // Validation
-    if (!name || !description || !prompt || !aspectRatio) {
+    const nameVal = ensureString(name, 500);
+    const descVal = ensureString(description, 5000);
+    const promptVal = ensureString(prompt, 50000);
+    const arVal = ensureString(aspectRatio, 20);
+    if (!nameVal || !descVal || !promptVal || !arVal) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
+    if (!isValidAspectRatio(arVal)) {
+      return res.status(400).json({ error: `Invalid aspectRatio. Must be one of: ${VALID_ASPECT_RATIOS.join(', ')}` });
+    }
+    const refUrl = referenceImageUrl != null ? (ensureString(referenceImageUrl, 2000) ?? '') : '';
+    const modelVal = model != null ? ensureString(model, 100) ?? undefined : undefined;
+    const mcat = mockupCategoryId != null && isValidObjectId(mockupCategoryId) ? mockupCategoryId : undefined;
 
     const update: any = {
-      name,
-      description,
-      prompt,
-      referenceImageUrl: referenceImageUrl || '',
-      aspectRatio,
-      model: model || undefined,
-      mockupCategoryId: mockupCategoryId !== undefined ? mockupCategoryId : undefined,
+      name: nameVal,
+      description: descVal,
+      prompt: promptVal,
+      referenceImageUrl: refUrl,
+      aspectRatio: arVal,
+      model: modelVal,
+      mockupCategoryId: mcat,
       updatedAt: new Date().toISOString(),
     };
 
@@ -1063,15 +1087,14 @@ router.delete('/presets/mockup/:id', validateAdmin, async (req, res) => {
 // Upload preset reference image to R2
 router.post('/presets/mockup/:id/upload-image', validateAdmin, async (req, res) => {
   try {
-    const { base64Image } = req.body;
     const presetId = req.params.id;
+    if (!isSafeId(presetId)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
+    const { base64Image } = req.body;
 
     if (!base64Image) {
       return res.status(400).json({ error: 'base64Image is required' });
-    }
-
-    if (!presetId) {
-      return res.status(400).json({ error: 'Preset ID is required' });
     }
 
     const r2Service = await import('../../src/services/r2Service.js');
@@ -1098,6 +1121,9 @@ router.post('/presets/mockup/:id/upload-image', validateAdmin, async (req, res) 
 // Angle Presets
 router.get('/presets/angle/:id', validateAdmin, async (req, res) => {
   try {
+    if (!isSafeId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
     await connectToMongoDB();
     const db = getDb();
     const preset = await db.collection('angle_presets').findOne({ id: req.params.id });
@@ -1115,18 +1141,19 @@ router.get('/presets/angle/:id', validateAdmin, async (req, res) => {
 
 router.post('/presets/angle', validateAdmin, async (req, res) => {
   try {
-    await connectToMongoDB();
-    const db = getDb();
-
     const { id, name, description, prompt, aspectRatio, model, tags } = req.body;
 
-    // Validation
-    // Validation - ID and Name are minimal requirements
-    if (!id || !name) {
+    if (!isSafeId(id)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
+    const nameVal = ensureString(name, 500);
+    if (!nameVal) {
       return res.status(400).json({ error: 'Missing required fields (id, name)' });
     }
 
-    // Check if ID already exists
+    await connectToMongoDB();
+    const db = getDb();
+
     const existing = await db.collection('angle_presets').findOne({ id });
     if (existing) {
       return res.status(409).json({ error: 'Preset with this ID already exists' });
@@ -1134,11 +1161,11 @@ router.post('/presets/angle', validateAdmin, async (req, res) => {
 
     const preset = {
       id,
-      name,
-      description,
-      prompt,
-      aspectRatio,
-      model: model || undefined,
+      name: nameVal,
+      description: ensureString(description, 5000) ?? undefined,
+      prompt: ensureString(prompt, 50000) ?? undefined,
+      aspectRatio: ensureString(aspectRatio, 20) ?? undefined,
+      model: ensureString(model, 100) ?? undefined,
       tags: normalizeTags(tags),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -1175,17 +1202,17 @@ router.put('/presets/angle/:id', validateAdmin, async (req, res) => {
 
     const { name, description, prompt, aspectRatio, model, tags } = req.body;
 
-    // Validation
-    if (!name) {
+    const nameVal = ensureString(name, 500);
+    if (!nameVal) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
     const update: any = {
-      name,
-      description,
-      prompt,
-      aspectRatio,
-      model: model || undefined,
+      name: nameVal,
+      description: ensureString(description, 5000) ?? undefined,
+      prompt: ensureString(prompt, 50000) ?? undefined,
+      aspectRatio: ensureString(aspectRatio, 20) ?? undefined,
+      model: ensureString(model, 100) ?? undefined,
       updatedAt: new Date().toISOString(),
     };
 
@@ -1236,6 +1263,9 @@ router.delete('/presets/angle/:id', validateAdmin, async (req, res) => {
 // Texture Presets
 router.get('/presets/texture/:id', validateAdmin, async (req, res) => {
   try {
+    if (!isSafeId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
     await connectToMongoDB();
     const db = getDb();
     const preset = await db.collection('texture_presets').findOne({ id: req.params.id });
@@ -1253,15 +1283,18 @@ router.get('/presets/texture/:id', validateAdmin, async (req, res) => {
 
 router.post('/presets/texture', validateAdmin, async (req, res) => {
   try {
-    await connectToMongoDB();
-    const db = getDb();
-
     const { id, name, description, prompt, aspectRatio, model, tags } = req.body;
 
-    // Validation - ID and Name are minimal requirements
-    if (!id || !name) {
+    if (!isSafeId(id)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
+    const nameVal = ensureString(name, 500);
+    if (!nameVal) {
       return res.status(400).json({ error: 'Missing required fields (id, name)' });
     }
+
+    await connectToMongoDB();
+    const db = getDb();
 
     const existing = await db.collection('texture_presets').findOne({ id });
     if (existing) {
@@ -1270,11 +1303,11 @@ router.post('/presets/texture', validateAdmin, async (req, res) => {
 
     const preset = {
       id,
-      name,
-      description,
-      prompt,
-      aspectRatio,
-      model: model || undefined,
+      name: nameVal,
+      description: ensureString(description, 5000) ?? undefined,
+      prompt: ensureString(prompt, 50000) ?? undefined,
+      aspectRatio: ensureString(aspectRatio, 20) ?? undefined,
+      model: ensureString(model, 100) ?? undefined,
       tags: normalizeTags(tags),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -1310,16 +1343,17 @@ router.put('/presets/texture/:id', validateAdmin, async (req, res) => {
 
     const { name, description, prompt, aspectRatio, model, tags } = req.body;
 
-    if (!name) {
+    const nameVal = ensureString(name, 500);
+    if (!nameVal) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
     const update: any = {
-      name,
-      description,
-      prompt,
-      aspectRatio,
-      model: model || undefined,
+      name: nameVal,
+      description: ensureString(description, 5000) ?? undefined,
+      prompt: ensureString(prompt, 50000) ?? undefined,
+      aspectRatio: ensureString(aspectRatio, 20) ?? undefined,
+      model: ensureString(model, 100) ?? undefined,
       updatedAt: new Date().toISOString(),
     };
 
@@ -1370,6 +1404,9 @@ router.delete('/presets/texture/:id', validateAdmin, async (req, res) => {
 // Ambience Presets
 router.get('/presets/ambience/:id', validateAdmin, async (req, res) => {
   try {
+    if (!isSafeId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
     await connectToMongoDB();
     const db = getDb();
     const preset = await db.collection('ambience_presets').findOne({ id: req.params.id });
@@ -1387,15 +1424,18 @@ router.get('/presets/ambience/:id', validateAdmin, async (req, res) => {
 
 router.post('/presets/ambience', validateAdmin, async (req, res) => {
   try {
-    await connectToMongoDB();
-    const db = getDb();
-
     const { id, name, description, prompt, aspectRatio, model, tags } = req.body;
 
-    // Validation - ID and Name are minimal requirements
-    if (!id || !name) {
+    if (!isSafeId(id)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
+    const nameVal = ensureString(name, 500);
+    if (!nameVal) {
       return res.status(400).json({ error: 'Missing required fields (id, name)' });
     }
+
+    await connectToMongoDB();
+    const db = getDb();
 
     const existing = await db.collection('ambience_presets').findOne({ id });
     if (existing) {
@@ -1404,11 +1444,11 @@ router.post('/presets/ambience', validateAdmin, async (req, res) => {
 
     const preset = {
       id,
-      name,
-      description,
-      prompt,
-      aspectRatio,
-      model: model || undefined,
+      name: nameVal,
+      description: ensureString(description, 5000) ?? undefined,
+      prompt: ensureString(prompt, 50000) ?? undefined,
+      aspectRatio: ensureString(aspectRatio, 20) ?? undefined,
+      model: ensureString(model, 100) ?? undefined,
       tags: normalizeTags(tags),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -1444,16 +1484,17 @@ router.put('/presets/ambience/:id', validateAdmin, async (req, res) => {
 
     const { name, description, prompt, aspectRatio, model, tags } = req.body;
 
-    if (!name) {
+    const nameVal = ensureString(name, 500);
+    if (!nameVal) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
     const update: any = {
-      name,
-      description,
-      prompt,
-      aspectRatio,
-      model: model || undefined,
+      name: nameVal,
+      description: ensureString(description, 5000) ?? undefined,
+      prompt: ensureString(prompt, 50000) ?? undefined,
+      aspectRatio: ensureString(aspectRatio, 20) ?? undefined,
+      model: ensureString(model, 100) ?? undefined,
       updatedAt: new Date().toISOString(),
     };
 
@@ -1504,6 +1545,9 @@ router.delete('/presets/ambience/:id', validateAdmin, async (req, res) => {
 // Luminance Presets
 router.get('/presets/luminance/:id', validateAdmin, async (req, res) => {
   try {
+    if (!isSafeId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
     await connectToMongoDB();
     const db = getDb();
     const preset = await db.collection('luminance_presets').findOne({ id: req.params.id });
@@ -1521,15 +1565,18 @@ router.get('/presets/luminance/:id', validateAdmin, async (req, res) => {
 
 router.post('/presets/luminance', validateAdmin, async (req, res) => {
   try {
-    await connectToMongoDB();
-    const db = getDb();
-
     const { id, name, description, prompt, aspectRatio, model, tags } = req.body;
 
-    // Validation - ID and Name are minimal requirements
-    if (!id || !name) {
+    if (!isSafeId(id)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
+    const nameVal = ensureString(name, 500);
+    if (!nameVal) {
       return res.status(400).json({ error: 'Missing required fields (id, name)' });
     }
+
+    await connectToMongoDB();
+    const db = getDb();
 
     const existing = await db.collection('luminance_presets').findOne({ id });
     if (existing) {
@@ -1538,11 +1585,11 @@ router.post('/presets/luminance', validateAdmin, async (req, res) => {
 
     const preset = {
       id,
-      name,
-      description,
-      prompt,
-      aspectRatio,
-      model: model || undefined,
+      name: nameVal,
+      description: ensureString(description, 5000) ?? undefined,
+      prompt: ensureString(prompt, 50000) ?? undefined,
+      aspectRatio: ensureString(aspectRatio, 20) ?? undefined,
+      model: ensureString(model, 100) ?? undefined,
       tags: normalizeTags(tags),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -1568,21 +1615,25 @@ router.post('/presets/luminance', validateAdmin, async (req, res) => {
 
 router.put('/presets/luminance/:id', validateAdmin, async (req, res) => {
   try {
+    if (!isSafeId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
     await connectToMongoDB();
     const db = getDb();
 
     const { name, description, prompt, aspectRatio, model, tags } = req.body;
 
-    if (!name) {
+    const nameVal = ensureString(name, 500);
+    if (!nameVal) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
     const update: any = {
-      name,
-      description,
-      prompt,
-      aspectRatio,
-      model: model || undefined,
+      name: nameVal,
+      description: ensureString(description, 5000) ?? undefined,
+      prompt: ensureString(prompt, 50000) ?? undefined,
+      aspectRatio: ensureString(aspectRatio, 20) ?? undefined,
+      model: ensureString(model, 100) ?? undefined,
       updatedAt: new Date().toISOString(),
     };
 
@@ -1609,6 +1660,9 @@ router.put('/presets/luminance/:id', validateAdmin, async (req, res) => {
 
 router.delete('/presets/luminance/:id', validateAdmin, async (req, res) => {
   try {
+    if (!isSafeId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
     await connectToMongoDB();
     const db = getDb();
 
@@ -1628,6 +1682,9 @@ router.delete('/presets/luminance/:id', validateAdmin, async (req, res) => {
 // Community Presets Moderation
 router.delete('/community-presets/:id', validateAdmin, async (req, res) => {
   try {
+    if (!isSafeId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
     await connectToMongoDB();
     const db = getDb();
 
@@ -1646,14 +1703,18 @@ router.delete('/community-presets/:id', validateAdmin, async (req, res) => {
 
 router.put('/community-presets/:id/approve', validateAdmin, async (req, res) => {
   try {
+    if (!isSafeId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
     await connectToMongoDB();
     const db = getDb();
 
-    const { isApproved } = req.body;
+    const ab = ensureOptionalBoolean(req.body.isApproved);
+    const isApprovedVal = ab === undefined ? true : ab;
 
     const result = await db.collection('community_presets').updateOne(
       { id: req.params.id },
-      { $set: { isApproved: isApproved !== false, updatedAt: new Date().toISOString() } }
+      { $set: { isApproved: isApprovedVal, updatedAt: new Date().toISOString() } }
     );
 
     if (result.matchedCount === 0) {
@@ -1738,6 +1799,9 @@ router.post('/products', validateAdmin, async (req, res) => {
 
 router.put('/products/:id', validateAdmin, async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid product ID format' });
+    }
     const {
       productId,
       type,
@@ -1756,25 +1820,26 @@ router.put('/products/:id', validateAdmin, async (req, res) => {
       displayOrder,
     } = req.body;
 
+    const data: Record<string, unknown> = {};
+    if (productId !== undefined) { const v = ensureString(productId, 200); if (v === null) return res.status(400).json({ error: 'Invalid productId' }); data.productId = v; }
+    if (type !== undefined) { const v = ensureString(type, 100); if (v === null) return res.status(400).json({ error: 'Invalid type' }); data.type = v; }
+    if (name !== undefined) { const v = ensureString(name, 500); if (v === null) return res.status(400).json({ error: 'Invalid name' }); data.name = v; }
+    if (description !== undefined) { const v = ensureString(description, 2000); if (v === null) return res.status(400).json({ error: 'Invalid description' }); data.description = v; }
+    if (credits !== undefined) data.credits = parseInt(String(credits), 10);
+    if (priceBRL !== undefined) data.priceBRL = parseFloat(String(priceBRL));
+    if (priceUSD === null) data.priceUSD = null; else if (priceUSD !== undefined && priceUSD !== '') data.priceUSD = parseFloat(String(priceUSD));
+    if (stripeProductId !== undefined) { const v = ensureString(stripeProductId, 500); if (v === null) return res.status(400).json({ error: 'Invalid stripeProductId' }); data.stripeProductId = v; }
+    if (abacateProductId !== undefined) { const v = ensureString(abacateProductId, 500); if (v === null) return res.status(400).json({ error: 'Invalid abacateProductId' }); data.abacateProductId = v; }
+    if (abacateBillId !== undefined) { const v = ensureString(abacateBillId, 500); if (v === null) return res.status(400).json({ error: 'Invalid abacateBillId' }); data.abacateBillId = v; }
+    if (paymentLinkBRL !== undefined) { const v = ensureString(paymentLinkBRL, 1000); if (v === null) return res.status(400).json({ error: 'Invalid paymentLinkBRL' }); data.paymentLinkBRL = v; }
+    if (paymentLinkUSD !== undefined) { const v = ensureString(paymentLinkUSD, 1000); if (v === null) return res.status(400).json({ error: 'Invalid paymentLinkUSD' }); data.paymentLinkUSD = v; }
+    if (metadata !== undefined) data.metadata = metadata;
+    if (isActive !== undefined) data.isActive = isActive;
+    if (displayOrder !== undefined) data.displayOrder = parseInt(String(displayOrder), 10);
+
     const product = await prisma.product.update({
       where: { id: req.params.id },
-      data: {
-        productId,
-        type,
-        name,
-        description,
-        credits: credits !== undefined ? parseInt(credits.toString(), 10) : undefined,
-        priceBRL: priceBRL !== undefined ? parseFloat(priceBRL.toString()) : undefined,
-        priceUSD: priceUSD === null ? null : (priceUSD !== undefined && priceUSD !== '' ? parseFloat(priceUSD.toString()) : undefined),
-        stripeProductId,
-        abacateProductId,
-        abacateBillId,
-        paymentLinkBRL,
-        paymentLinkUSD,
-        metadata,
-        isActive: isActive !== undefined ? isActive : undefined,
-        displayOrder: displayOrder !== undefined ? parseInt(displayOrder.toString(), 10) : undefined,
-      },
+      data: data as Record<string, unknown>,
     });
 
     return res.json(product);
@@ -1786,6 +1851,9 @@ router.put('/products/:id', validateAdmin, async (req, res) => {
 
 router.delete('/products/:id', validateAdmin, async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid product ID format' });
+    }
     await prisma.product.delete({
       where: { id: req.params.id },
     });
@@ -1799,15 +1867,18 @@ router.delete('/products/:id', validateAdmin, async (req, res) => {
 // Branding Presets
 router.post('/presets/branding', validateAdmin, async (req, res) => {
   try {
-    await connectToMongoDB();
-    const db = getDb();
-
     const { id, name, description, prompt, aspectRatio, model, tags } = req.body;
 
-    // Validation - ID and Name are minimal requirements
-    if (!id || !name) {
+    if (!isSafeId(id)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
+    const nameVal = ensureString(name, 500);
+    if (!nameVal) {
       return res.status(400).json({ error: 'Missing required fields (id, name)' });
     }
+
+    await connectToMongoDB();
+    const db = getDb();
 
     const existing = await db.collection('branding_presets').findOne({ id });
     if (existing) {
@@ -1816,11 +1887,11 @@ router.post('/presets/branding', validateAdmin, async (req, res) => {
 
     const preset = {
       id,
-      name,
-      description,
-      prompt,
-      aspectRatio,
-      model: model || undefined,
+      name: nameVal,
+      description: ensureString(description, 5000) ?? undefined,
+      prompt: ensureString(prompt, 50000) ?? undefined,
+      aspectRatio: ensureString(aspectRatio, 20) ?? undefined,
+      model: ensureString(model, 100) ?? undefined,
       tags: normalizeTags(tags),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -1844,20 +1915,25 @@ router.post('/presets/branding', validateAdmin, async (req, res) => {
 
 router.put('/presets/branding/:id', validateAdmin, async (req, res) => {
   try {
+    if (!isSafeId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
     await connectToMongoDB();
     const db = getDb();
 
     const { name, description, prompt, aspectRatio, model, tags } = req.body;
 
-    const updateData: any = {
-      updatedAt: new Date().toISOString(),
-    };
-
-    if (name) updateData.name = name;
-    if (description) updateData.description = description;
-    if (prompt) updateData.prompt = prompt;
-    if (aspectRatio !== undefined) updateData.aspectRatio = aspectRatio;
-    if (model !== undefined) updateData.model = model;
+    const updateData: any = { updatedAt: new Date().toISOString() };
+    const n = ensureString(name, 500);
+    if (n) updateData.name = n;
+    const d = ensureString(description, 5000);
+    if (d != null) updateData.description = d;
+    const p = ensureString(prompt, 50000);
+    if (p != null) updateData.prompt = p;
+    const ar = ensureString(aspectRatio, 20);
+    if (ar != null) updateData.aspectRatio = ar;
+    const m = ensureString(model, 100);
+    if (m != null) updateData.model = m;
     if (tags !== undefined) updateData.tags = normalizeTags(tags);
 
     const result = await db.collection('branding_presets').findOneAndUpdate(
@@ -1878,6 +1954,9 @@ router.put('/presets/branding/:id', validateAdmin, async (req, res) => {
 
 router.delete('/presets/branding/:id', validateAdmin, async (req, res) => {
   try {
+    if (!isSafeId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
     await connectToMongoDB();
     const db = getDb();
     const result = await db.collection('branding_presets').deleteOne({ id: req.params.id });
@@ -1895,15 +1974,18 @@ router.delete('/presets/branding/:id', validateAdmin, async (req, res) => {
 // Effect Presets
 router.post('/presets/effect', validateAdmin, async (req, res) => {
   try {
-    await connectToMongoDB();
-    const db = getDb();
-
     const { id, name, description, prompt, aspectRatio, model, tags } = req.body;
 
-    // Validation - ID and Name are minimal requirements
-    if (!id || !name) {
+    if (!isSafeId(id)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
+    const nameVal = ensureString(name, 500);
+    if (!nameVal) {
       return res.status(400).json({ error: 'Missing required fields (id, name)' });
     }
+
+    await connectToMongoDB();
+    const db = getDb();
 
     const existing = await db.collection('effect_presets').findOne({ id });
     if (existing) {
@@ -1912,11 +1994,11 @@ router.post('/presets/effect', validateAdmin, async (req, res) => {
 
     const preset = {
       id,
-      name,
-      description,
-      prompt,
-      aspectRatio,
-      model: model || undefined,
+      name: nameVal,
+      description: ensureString(description, 5000) ?? undefined,
+      prompt: ensureString(prompt, 50000) ?? undefined,
+      aspectRatio: ensureString(aspectRatio, 20) ?? undefined,
+      model: ensureString(model, 100) ?? undefined,
       tags: normalizeTags(tags),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -1940,20 +2022,25 @@ router.post('/presets/effect', validateAdmin, async (req, res) => {
 
 router.put('/presets/effect/:id', validateAdmin, async (req, res) => {
   try {
+    if (!isSafeId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
     await connectToMongoDB();
     const db = getDb();
 
     const { name, description, prompt, aspectRatio, model, tags } = req.body;
 
-    const updateData: any = {
-      updatedAt: new Date().toISOString(),
-    };
-
-    if (name) updateData.name = name;
-    if (description) updateData.description = description;
-    if (prompt) updateData.prompt = prompt;
-    if (aspectRatio !== undefined) updateData.aspectRatio = aspectRatio;
-    if (model !== undefined) updateData.model = model;
+    const updateData: any = { updatedAt: new Date().toISOString() };
+    const n = ensureString(name, 500);
+    if (n) updateData.name = n;
+    const d = ensureString(description, 5000);
+    if (d != null) updateData.description = d;
+    const p = ensureString(prompt, 50000);
+    if (p != null) updateData.prompt = p;
+    const ar = ensureString(aspectRatio, 20);
+    if (ar != null) updateData.aspectRatio = ar;
+    const m = ensureString(model, 100);
+    if (m != null) updateData.model = m;
     if (tags !== undefined) updateData.tags = normalizeTags(tags);
 
     const result = await db.collection('effect_presets').findOneAndUpdate(
@@ -1974,6 +2061,9 @@ router.put('/presets/effect/:id', validateAdmin, async (req, res) => {
 
 router.delete('/presets/effect/:id', validateAdmin, async (req, res) => {
   try {
+    if (!isSafeId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
     await connectToMongoDB();
     const db = getDb();
     const result = await db.collection('effect_presets').deleteOne({ id: req.params.id });
@@ -1995,8 +2085,13 @@ router.delete('/presets/effect/:id', validateAdmin, async (req, res) => {
 router.get('/users/:id/history', adminUsersLimiter, validateAdmin, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
-    const limit = parseInt(req.query.limit as string) || 50;
-    const offset = parseInt(req.query.offset as string) || 0;
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ error: 'Invalid user ID format' });
+    }
+    const limitRaw = parseInt(String(req.query.limit || 50), 10);
+    const limit = isValidPositiveInt(limitRaw, 1, 100) ? limitRaw : 50;
+    const offsetRaw = parseInt(String(req.query.offset || 0), 10);
+    const offset = Number.isInteger(offsetRaw) && offsetRaw >= 0 ? Math.min(offsetRaw, 10000) : 0;
 
     await connectToMongoDB();
     const db = getDb();
