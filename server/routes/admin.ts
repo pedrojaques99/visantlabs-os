@@ -990,6 +990,11 @@ router.post('/presets/mockup/batch', validateAdmin, async (req, res) => {
 
 router.put('/presets/mockup/:id', validateAdmin, async (req, res) => {
   try {
+    // Validate preset ID to prevent injection
+    if (!isSafeId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
+
     await connectToMongoDB();
     const db = getDb();
 
@@ -1034,6 +1039,11 @@ router.put('/presets/mockup/:id', validateAdmin, async (req, res) => {
 
 router.delete('/presets/mockup/:id', validateAdmin, async (req, res) => {
   try {
+    // Validate preset ID to prevent injection
+    if (!isSafeId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
+
     await connectToMongoDB();
     const db = getDb();
 
@@ -1155,12 +1165,16 @@ router.post('/presets/angle', validateAdmin, async (req, res) => {
 
 router.put('/presets/angle/:id', validateAdmin, async (req, res) => {
   try {
+    // Validate preset ID to prevent injection
+    if (!isSafeId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
+
     await connectToMongoDB();
     const db = getDb();
 
     const { name, description, prompt, aspectRatio, model, tags } = req.body;
 
-    // Validation
     // Validation
     if (!name) {
       return res.status(400).json({ error: 'Missing required fields' });
@@ -1198,6 +1212,11 @@ router.put('/presets/angle/:id', validateAdmin, async (req, res) => {
 
 router.delete('/presets/angle/:id', validateAdmin, async (req, res) => {
   try {
+    // Validate preset ID to prevent injection
+    if (!isSafeId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
+
     await connectToMongoDB();
     const db = getDb();
 
@@ -1281,6 +1300,11 @@ router.post('/presets/texture', validateAdmin, async (req, res) => {
 
 router.put('/presets/texture/:id', validateAdmin, async (req, res) => {
   try {
+    // Validate preset ID to prevent injection
+    if (!isSafeId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
+
     await connectToMongoDB();
     const db = getDb();
 
@@ -1322,6 +1346,11 @@ router.put('/presets/texture/:id', validateAdmin, async (req, res) => {
 
 router.delete('/presets/texture/:id', validateAdmin, async (req, res) => {
   try {
+    // Validate preset ID to prevent injection
+    if (!isSafeId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
+
     await connectToMongoDB();
     const db = getDb();
 
@@ -1405,6 +1434,11 @@ router.post('/presets/ambience', validateAdmin, async (req, res) => {
 
 router.put('/presets/ambience/:id', validateAdmin, async (req, res) => {
   try {
+    // Validate preset ID to prevent injection
+    if (!isSafeId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
+
     await connectToMongoDB();
     const db = getDb();
 
@@ -1446,6 +1480,11 @@ router.put('/presets/ambience/:id', validateAdmin, async (req, res) => {
 
 router.delete('/presets/ambience/:id', validateAdmin, async (req, res) => {
   try {
+    // Validate preset ID to prevent injection
+    if (!isSafeId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid preset ID format' });
+    }
+
     await connectToMongoDB();
     const db = getDb();
 
