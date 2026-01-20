@@ -715,6 +715,94 @@ const MockupMachinePageContent: React.FC = () => {
     clearMockupState();
   }, [mockupCount]);
 
+  const handleAnalyze = useCallback(async (imageOverride?: UploadedImage, silent?: boolean) => {
+    const imageToUse = imageOverride ?? uploadedImage;
+    const t0 = Date.now();
+    if (import.meta.env.DEV) console.log('[dev] analyze: handleAnalyze start', silent ? '(silent)' : '');
+    if (!imageToUse || designType === 'blank') {
+      if (import.meta.env.DEV) console.log('[dev] analyze: skip (no image or blank)');
+      return;
+    }
+
+    if (!silent) {
+      setIsAnalyzing(true);
+      showOverlay();
+    }
+
+    try {
+      let imageToAnalyze = imageToUse;
+      if (imageToUse.base64) {
+        try {
+          const dataUrl = await compressImage(imageToUse.base64.includes(',') ? imageToUse.base64 : `data:${imageToUse.mimeType};base64,${imageToUse.base64}`, {
+            maxWidth: 1024,
+            maxHeight: 1024,
+            maxSizeBytes: 500 * 1024,
+            mimeType: imageToUse.mimeType,
+          });
+          const comma = dataUrl.indexOf(',');
+          const b64 = comma >= 0 ? dataUrl.slice(comma + 1) : dataUrl;
+          const mime = /^data:([^;]+);/.exec(dataUrl)?.[1] || imageToUse.mimeType;
+          imageToAnalyze = { base64: b64, mimeType: mime };
+        } catch {
+          /* keep original if compression fails */
+        }
+      }
+
+      const userContext = selectedBrandingTags.length > 0 ? { selectedBrandingTags } : undefined;
+      if (import.meta.env.DEV) console.log('[dev] analyze: aiApi.analyzeSetup start', ((Date.now() - t0) / 1000).toFixed(2) + 's');
+      const analysis = await aiApi.analyzeSetup(imageToAnalyze, instructions, userContext);
+      if (import.meta.env.DEV) console.log('[dev] analyze: aiApi.analyzeSetup done', ((Date.now() - t0) / 1000).toFixed(2) + 's');
+
+      setSuggestedBrandingTags(analysis.branding);
+      setSuggestedTags(analysis.categories);
+      setSuggestedLocationTags(analysis.locations);
+      setSuggestedAngleTags(analysis.angles);
+      setSuggestedLightingTags(analysis.lighting);
+      setSuggestedEffectTags(analysis.effects);
+      setSuggestedMaterialTags(analysis.materials);
+      setDesignType(analysis.designType || 'logo' || 'layout');
+
+      if (imageToUse.base64) {
+        try {
+          if (import.meta.env.DEV) console.log('[dev] analyze: extractColors start', ((Date.now() - t0) / 1000).toFixed(2) + 's');
+          const { extractColors } = await import('@/utils/colorExtraction');
+          const colorResult = await extractColors(imageToUse.base64, imageToUse.mimeType, 8);
+          setSuggestedColors(colorResult.colors);
+          if (import.meta.env.DEV) console.log('[dev] analyze: extractColors done', ((Date.now() - t0) / 1000).toFixed(2) + 's');
+        } catch (colorErr) {
+          console.error("Error extracting colors:", colorErr);
+        }
+      }
+
+      if (!silent) {
+        setIsAllCategoriesOpen(true);
+        setIsAdvancedOpen(true);
+        setHasAnalyzed(true);
+      }
+      if (!selectedModel) setSelectedModel('gemini-2.5-flash-image');
+      if (import.meta.env.DEV) console.log('[dev] analyze: handleAnalyze success', ((Date.now() - t0) / 1000).toFixed(2) + 's');
+    } catch (err) {
+      const errorInfo = formatMockupError(err, t);
+      if (errorInfo.message === t('messages.rateLimit')) {
+        toast.error(errorInfo.message, { duration: 5000 });
+      } else {
+        if (isLocalDevelopment()) console.error("Error getting full analysis:", err);
+        toast.error(t('messages.aiCouldntGenerateSuggestions'), { duration: 5000 });
+      }
+    } finally {
+      if (import.meta.env.DEV) console.log('[dev] analyze: handleAnalyze finally', ((Date.now() - t0) / 1000).toFixed(2) + 's');
+      if (!silent) {
+        setIsAnalyzing(false);
+        hideOverlay();
+      }
+    }
+  }, [uploadedImage, designType, instructions, selectedBrandingTags, t]);
+
+  const handleAnalyzeButtonClick = useCallback(() => {
+    showTemporaryOverlay(800);
+    window.setTimeout(() => setHasAnalyzed(true), 800);
+  }, [showTemporaryOverlay, setHasAnalyzed]);
+
   const handleImageUpload = useCallback(async (image: UploadedImage) => {
     // Check authentication
     if (!(await requireAuth())) return;
@@ -775,7 +863,14 @@ const MockupMachinePageContent: React.FC = () => {
       }
       // Non-critical - don't block UX if color extraction fails
     }
-  }, [designType, resetControls, isAuthenticated, isCheckingAuth, t]);
+
+    // Background AI analysis (tags, branding, designType) – silent, no overlay, no step change
+    try {
+      await handleAnalyze(image, true);
+    } catch {
+      // Error already handled in handleAnalyze (toast)
+    }
+  }, [designType, resetControls, handleAnalyze, isAuthenticated, isCheckingAuth, t]);
 
   const handleStartOver = () => {
     setUploadedImage(null);
@@ -911,102 +1006,6 @@ const MockupMachinePageContent: React.FC = () => {
       setAutoGenerateSource('environments');
     }, 300);
   }, [selectedTags.length, selectedLocationTags]);
-
-  const handleAnalyze = useCallback(async () => {
-    const t0 = Date.now();
-    if (import.meta.env.DEV) console.log('[dev] analyze: handleAnalyze start');
-    if (!uploadedImage || designType === 'blank') {
-      if (import.meta.env.DEV) console.log('[dev] analyze: skip (no image or blank)');
-      return;
-    }
-
-    setIsAnalyzing(true);
-    showOverlay();
-
-    try {
-      // 1. Semantic Analysis via Gemini (tags for all sections)
-      let imageToAnalyze = uploadedImage;
-
-      // Compress image for analyze only: smaller payload = faster Gemini (style/category analysis does not need full res)
-      if (uploadedImage.base64) {
-        try {
-          const dataUrl = await compressImage(uploadedImage.base64.includes(',') ? uploadedImage.base64 : `data:${uploadedImage.mimeType};base64,${uploadedImage.base64}`, {
-            maxWidth: 1024,
-            maxHeight: 1024,
-            maxSizeBytes: 500 * 1024,
-            mimeType: uploadedImage.mimeType,
-          });
-          const comma = dataUrl.indexOf(',');
-          const b64 = comma >= 0 ? dataUrl.slice(comma + 1) : dataUrl;
-          const mime = /^data:([^;]+);/.exec(dataUrl)?.[1] || uploadedImage.mimeType;
-          imageToAnalyze = { base64: b64, mimeType: mime };
-        } catch {
-          // keep original if compression fails
-        }
-      }
-
-      // Send user context (selected branding tags) to help AI suggest complementary tags
-      const userContext = selectedBrandingTags.length > 0
-        ? { selectedBrandingTags }
-        : undefined;
-
-      if (import.meta.env.DEV) console.log('[dev] analyze: aiApi.analyzeSetup start', ((Date.now() - t0) / 1000).toFixed(2) + 's');
-      const analysis = await aiApi.analyzeSetup(imageToAnalyze, instructions, userContext);
-      if (import.meta.env.DEV) console.log('[dev] analyze: aiApi.analyzeSetup done', ((Date.now() - t0) / 1000).toFixed(2) + 's');
-
-      setSuggestedBrandingTags(analysis.branding);
-      setSuggestedTags(analysis.categories);
-      setSuggestedLocationTags(analysis.locations);
-      setSuggestedAngleTags(analysis.angles);
-      setSuggestedLightingTags(analysis.lighting);
-      setSuggestedEffectTags(analysis.effects);
-      setSuggestedMaterialTags(analysis.materials);
-
-      // Automatically set design type based on AI analysis
-      // Fallback to 'logo' if AI doesn't return designType
-      setDesignType(analysis.designType || 'logo' || 'layout');
-
-      // 2. Color Extraction (Local processing for speed and cost-benefit)
-      // Only possible if we have base64 data locally
-      if (uploadedImage.base64) {
-        try {
-          if (import.meta.env.DEV) console.log('[dev] analyze: extractColors start', ((Date.now() - t0) / 1000).toFixed(2) + 's');
-          const { extractColors } = await import('@/utils/colorExtraction');
-          const colorResult = await extractColors(uploadedImage.base64, uploadedImage.mimeType, 8);
-          setSuggestedColors(colorResult.colors);
-          if (import.meta.env.DEV) console.log('[dev] analyze: extractColors done', ((Date.now() - t0) / 1000).toFixed(2) + 's');
-        } catch (colorErr) {
-          console.error("Error extracting colors:", colorErr);
-        }
-      }
-
-      // 3. Auto-expand sections to display all suggested tags
-      setIsAllCategoriesOpen(true);
-      setIsAdvancedOpen(true);
-
-      // 4. Auto-select default model if not already selected
-      if (!selectedModel) {
-        setSelectedModel('gemini-2.5-flash-image');
-      }
-
-      setHasAnalyzed(true);
-      if (import.meta.env.DEV) console.log('[dev] analyze: handleAnalyze success', ((Date.now() - t0) / 1000).toFixed(2) + 's');
-    } catch (err) {
-      const errorInfo = formatMockupError(err, t);
-      if (errorInfo.message === t('messages.rateLimit')) {
-        toast.error(errorInfo.message, { duration: 5000 });
-      } else {
-        if (isLocalDevelopment()) {
-          console.error("Error getting full analysis:", err);
-        }
-        toast.error(t('messages.aiCouldntGenerateSuggestions'), { duration: 5000 });
-      }
-    } finally {
-      if (import.meta.env.DEV) console.log('[dev] analyze: handleAnalyze finally', ((Date.now() - t0) / 1000).toFixed(2) + 's');
-      setIsAnalyzing(false);
-      hideOverlay();
-    }
-  }, [uploadedImage, designType, instructions, selectedBrandingTags, t]);
 
   useEffect(() => {
     if (prevBrandingTagsLength.current === 0 && selectedBrandingTags.length === 1) {
@@ -2741,7 +2740,7 @@ Generate the new mockup image with the requested changes applied.`;
                 onRegenerate={() => runGeneration()}
                 onGenerateClick={handleGenerateClick}
                 onGenerateSuggestion={handleGenerateSuggestion}
-                onAnalyze={handleAnalyze}
+                onAnalyze={handleAnalyzeButtonClick}
                 generateOutputsButtonRef={generateOutputsButtonRef}
                 authenticationRequiredMessage={t('messages.authenticationRequired')}
                 onBlankMockup={handleProceedWithoutImage}
