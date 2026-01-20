@@ -50,7 +50,8 @@
     "fix:stripe-customer-id": "tsx server/scripts/fix-stripe-customer-id.ts",
     "create:resend-templates": "tsx server/scripts/create-resend-templates.ts",
     "prisma:generate": "prisma generate",
-    "prisma:push": "prisma db push"
+    "prisma:push": "prisma db push",
+    "test:validation": "tsx server/utils/validation.test.ts"
   },
   "dependencies": {
     "@ai-sdk/gateway": "^2.0.13",

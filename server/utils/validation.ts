@@ -205,3 +205,39 @@ export function pickAllowedFields<T extends Record<string, unknown>>(
   
   return result;
 }
+
+/**
+ * Ensures a value is a string within max length. Prevents $set/insert value injection.
+ * @param val - Value to validate
+ * @param maxLen - Maximum allowed length (default 50000)
+ * @returns The string if valid, else null
+ */
+export function ensureString(val: unknown, maxLen = 50000): string | null {
+  if (val === null || val === undefined) return null;
+  if (typeof val !== 'string') return null;
+  if (val.length > maxLen) return null;
+  return val;
+}
+
+/**
+ * Ensures a value is a boolean when provided. For optional booleans in $set.
+ * @param val - Value to validate
+ * @returns true/false if boolean, else undefined
+ */
+export function ensureOptionalBoolean(val: unknown): boolean | undefined {
+  if (typeof val === 'boolean') return val;
+  return undefined;
+}
+
+/** Allowed aspect ratio values for presets */
+export const VALID_ASPECT_RATIOS = ['9:16', '21:9', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '16:9', '1:1'] as const;
+
+/**
+ * Validates aspect ratio is in the allowed whitelist
+ * @param ar - Aspect ratio string to validate
+ * @returns true if valid
+ */
+export function isValidAspectRatio(ar: string): boolean {
+  if (!ar || typeof ar !== 'string') return false;
+  return VALID_ASPECT_RATIOS.includes(ar as (typeof VALID_ASPECT_RATIOS)[number]);
+}

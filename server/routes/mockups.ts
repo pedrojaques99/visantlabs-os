@@ -8,7 +8,7 @@ import { generateMockup, RateLimitError } from '../../src/services/geminiService
 import { createUsageRecord, getCreditsRequired } from '../utils/usageTracking.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
 import { validateExternalUrl, getErrorMessage } from '../utils/securityValidation.js';
-import { isValidObjectId, sanitizeMongoQuery, sanitizeLogValue } from '../utils/validation.js';
+import { ensureOptionalBoolean, ensureString, isValidObjectId, sanitizeLogValue } from '../utils/validation.js';
 import { mockupRateLimiter, apiRateLimiter } from '../middleware/rateLimit.js';
 import type { UploadedImage, AspectRatio, GeminiModel, Resolution } from '../../src/types/types.js';
 
@@ -1602,30 +1602,31 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res, n
       }
     }
 
-    // Prepare update data - sanitize to prevent NoSQL injection, remove dangerous fields
-    const sanitizedBody = sanitizeMongoQuery(req.body);
-    const updateData: any = {
-      ...sanitizedBody,
-      updatedAt: new Date(),
-    };
-    delete updateData._id;
-    delete updateData.userId;
-    delete updateData.imageBase64; // Never save base64 in updates
+    // Whitelist of allowed fields; validate types to prevent $set value injection
+    const updateData: any = { updatedAt: new Date() };
 
-    // Ensure isLiked is always a boolean if provided
-    // Convert truthy/falsy values to explicit boolean
-    if ('isLiked' in updateData) {
-      // Handle various truthy/falsy values and convert to boolean
-      const isLikedValue = updateData.isLiked;
-      if (isLikedValue === true || isLikedValue === 'true' || isLikedValue === 1) {
-        updateData.isLiked = true;
-      } else {
-        updateData.isLiked = false;
-      }
-      console.log(`[Update] Updating like status for mockup ${req.params.id}: isLiked=${updateData.isLiked} (from ${typeof isLikedValue} value: ${isLikedValue})`);
+    const p = req.body.prompt !== undefined ? ensureString(req.body.prompt, 50000) : null;
+    if (p != null) updateData.prompt = p;
+    const dt = req.body.designType !== undefined ? ensureString(req.body.designType, 100) : null;
+    if (dt != null) updateData.designType = dt;
+    const ar = req.body.aspectRatio !== undefined ? ensureString(req.body.aspectRatio, 20) : null;
+    if (ar != null) updateData.aspectRatio = ar;
+    const iu = req.body.imageUrl !== undefined ? ensureString(req.body.imageUrl, 2000) : null;
+    if (iu != null) updateData.imageUrl = iu;
+
+    if (Array.isArray(req.body.tags)) {
+      updateData.tags = req.body.tags.filter((t: unknown) => typeof t === 'string').map((t: string) => String(t).trim().substring(0, 200)).filter(Boolean);
+    }
+    if (Array.isArray(req.body.brandingTags)) {
+      updateData.brandingTags = req.body.brandingTags.filter((t: unknown) => typeof t === 'string').map((t: string) => String(t).trim().substring(0, 200)).filter(Boolean);
     }
 
-    // If we uploaded to R2, use the new imageUrl
+    const isLikedVal = ensureOptionalBoolean(req.body.isLiked);
+    if (isLikedVal !== undefined) {
+      updateData.isLiked = isLikedVal;
+      console.log(`[Update] Updating like status for mockup ${req.params.id}: isLiked=${updateData.isLiked}`);
+    }
+
     if (imageUrl) {
       updateData.imageUrl = imageUrl;
     }

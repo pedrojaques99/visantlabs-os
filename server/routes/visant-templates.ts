@@ -1,6 +1,7 @@
 import express from 'express';
 import { prisma } from '../db/prisma.js';
 import { apiRateLimiter } from '../middleware/rateLimit.js';
+import { ensureOptionalBoolean, ensureString, isValidObjectId } from '../utils/validation.js';
 
 const router = express.Router();
 
@@ -84,12 +85,11 @@ router.post('/', validateAdminPassword, async (req, res) => {
   try {
     const { name, layout, isDefault = false } = req.body;
 
-    if (!name || !layout) {
+    const nameVal = ensureString(name, 200);
+    if (!nameVal || !layout) {
       return res.status(400).json({ error: 'Name and layout are required' });
     }
-
-    // Validate layout structure
-    if (!layout.pages || typeof layout.pages !== 'object') {
+    if (!layout || typeof layout !== 'object' || !layout.pages || typeof layout.pages !== 'object') {
       return res.status(400).json({ error: 'Invalid layout structure' });
     }
 
@@ -103,9 +103,9 @@ router.post('/', validateAdminPassword, async (req, res) => {
 
     const template = await prisma.visantTemplate.create({
       data: {
-        name,
+        name: nameVal,
         layout: layout as any,
-        isDefault,
+        isDefault: ensureOptionalBoolean(isDefault) ?? false,
         isActive: false,
       },
     });
@@ -129,6 +129,9 @@ router.post('/', validateAdminPassword, async (req, res) => {
 router.put('/:id', validateAdminPassword, async (req, res) => {
   try {
     const { id } = req.params;
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ error: 'Invalid template ID format' });
+    }
     const { name, layout, isDefault } = req.body;
 
     const existingTemplate = await prisma.visantTemplate.findUnique({
@@ -156,15 +159,16 @@ router.put('/:id', validateAdminPassword, async (req, res) => {
       updatedAt: new Date(),
     };
 
-    if (name !== undefined) updateData.name = name;
+    const n = name !== undefined ? ensureString(name, 200) : null;
+    if (n != null) updateData.name = n;
     if (layout !== undefined) {
-      // Validate layout structure
-      if (!layout.pages || typeof layout.pages !== 'object') {
+      if (!layout || typeof layout !== 'object' || !layout.pages || typeof layout.pages !== 'object') {
         return res.status(400).json({ error: 'Invalid layout structure' });
       }
       updateData.layout = layout;
     }
-    if (isDefault !== undefined) updateData.isDefault = isDefault;
+    const idDefault = ensureOptionalBoolean(isDefault);
+    if (idDefault !== undefined) updateData.isDefault = idDefault;
 
     const template = await prisma.visantTemplate.update({
       where: { id },
@@ -230,6 +234,9 @@ router.delete('/:id', validateAdminPassword, async (req, res) => {
 router.post('/:id/activate', validateAdminPassword, async (req, res) => {
   try {
     const { id } = req.params;
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ error: 'Invalid template ID format' });
+    }
 
     const template = await prisma.visantTemplate.findUnique({
       where: { id },
