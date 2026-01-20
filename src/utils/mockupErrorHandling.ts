@@ -1,5 +1,6 @@
 import { RateLimitError, ModelOverloadedError } from '@/services/geminiService';
-import type { TFunction } from '@/hooks/useTranslation';
+
+export type TFunction = (key: string, params?: Record<string, string | number>) => string;
 
 export type MockupErrorType =
   | 'rateLimit'
@@ -11,6 +12,7 @@ export type MockupErrorType =
   | 'invalidImageFormat'
   | 'networkError'
   | 'apiError'
+  | 'serverError'
   | 'unknown';
 
 export interface MockupErrorInfo {
@@ -76,6 +78,10 @@ export function parseMockupErrorType(err: any): MockupErrorType {
 
   if (errorStr.includes('network') || errorStr.includes('fetch')) {
     return 'networkError';
+  }
+
+  if (status === 500 || errorStr.includes('500') || errorStr.includes('Internal server error') || errorStr.includes('ANALYZE_SETUP_FAILED')) {
+    return 'serverError';
   }
 
   // Check for JSON error objects
@@ -200,10 +206,16 @@ export function getErrorMessageForType(
       return { message: apiMessage || t('messages.generationError') };
     }
 
+    case 'serverError':
+      return {
+        message: err?.message || t('messages.serverError'),
+        suggestion: t('messages.serverErrorSuggestion'),
+      };
+
     case 'unknown':
     default:
       return {
-        message: t('messages.generationError'),
+        message: err?.message || t('messages.generationError'),
         suggestion: t('messages.generationErrorSuggestion'),
       };
   }
@@ -221,10 +233,7 @@ export function getErrorMessageForType(
  * const errorInfo = formatMockupError(error, t);
  * toast.error(errorInfo.message, { description: errorInfo.suggestion });
  */
-export function formatMockupError(
-  err: any,
-  t: TFunction
-): MockupErrorInfo {
+export function formatMockupError(err: any, t: TFunction): MockupErrorInfo {
   const errorType = parseMockupErrorType(err);
   return getErrorMessageForType(errorType, err, t);
 }

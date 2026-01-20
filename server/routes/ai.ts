@@ -291,8 +291,17 @@ router.post('/analyze-setup', authenticate, async (req: AuthRequest, res, next) 
     if (process.env.NODE_ENV === 'development') console.log('[dev] analyze-setup: res.json', ((Date.now() - t0) / 1000).toFixed(2) + 's');
     res.json(result);
   } catch (error: any) {
-    console.error('Error analyzing mockup setup:', error);
-    next(error);
+    const msg = (typeof error?.message === 'string' ? error.message : null) || 'Internal server error';
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[analyze-setup]', msg, error?.stack || '');
+    } else {
+      console.error('[analyze-setup]', msg);
+    }
+    if (!res.headersSent) {
+      res.status(500).json({ error: msg, code: 'ANALYZE_SETUP_FAILED' });
+    } else {
+      next(error);
+    }
   }
 });
 

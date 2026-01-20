@@ -787,7 +787,7 @@ const MockupMachinePageContent: React.FC = () => {
         toast.error(errorInfo.message, { duration: 5000 });
       } else {
         if (isLocalDevelopment()) console.error("Error getting full analysis:", err);
-        toast.error(t('messages.aiCouldntGenerateSuggestions'), { duration: 5000 });
+        toast.error(errorInfo.message, { description: errorInfo.suggestion, duration: 5000 });
       }
     } finally {
       if (import.meta.env.DEV) console.log('[dev] analyze: handleAnalyze finally', ((Date.now() - t0) / 1000).toFixed(2) + 's');

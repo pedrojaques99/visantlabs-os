@@ -8,9 +8,14 @@ import type { UploadedImage, AspectRatio, DesignType, GeminiModel, Resolution } 
 const STORAGE_KEY = 'mockup-machine-state';
 const MAX_STATE_SIZE_BYTES = 4 * 1024 * 1024; // 4MB (Browser limit is usually 5MB)
 const MAX_AGE_DAYS = 7; // Maximum age of saved state in days
+const MAX_SUGGESTED_ITEMS = 40; // Cap array size to reduce quota usage
+const MAX_PROMPT_PREVIEW_LENGTH = 4000;
 
 const isHttpUrl = (s: string | undefined): s is string =>
   !!s && (s.startsWith('http://') || s.startsWith('https://'));
+
+const cap = <T>(arr: T[] | undefined, n: number): T[] =>
+  (arr || []).slice(0, n);
 
 export interface PersistedMockupState {
   mockups: (string | null)[];
@@ -79,7 +84,6 @@ export const saveMockupState = (state: PersistedMockupState): void => {
     // This is more memory efficient and safer against large data leaks
 
     const sanitizedState: PersistedMockupState = {
-      // Primitive fields - safe to copy directly
       designType: state.designType,
       selectedTags: state.selectedTags,
       selectedBrandingTags: state.selectedBrandingTags,
@@ -88,15 +92,17 @@ export const saveMockupState = (state: PersistedMockupState): void => {
       selectedLightingTags: state.selectedLightingTags,
       selectedEffectTags: state.selectedEffectTags,
       selectedColors: state.selectedColors,
-      suggestedTags: state.suggestedTags,
-      suggestedBrandingTags: state.suggestedBrandingTags,
-      suggestedLocationTags: state.suggestedLocationTags,
-      suggestedAngleTags: state.suggestedAngleTags,
-      suggestedLightingTags: state.suggestedLightingTags,
-      suggestedEffectTags: state.suggestedEffectTags,
-      suggestedMaterialTags: state.suggestedMaterialTags,
-      suggestedColors: state.suggestedColors,
-      promptPreview: state.promptPreview,
+      suggestedTags: cap(state.suggestedTags, MAX_SUGGESTED_ITEMS),
+      suggestedBrandingTags: cap(state.suggestedBrandingTags, MAX_SUGGESTED_ITEMS),
+      suggestedLocationTags: cap(state.suggestedLocationTags, MAX_SUGGESTED_ITEMS),
+      suggestedAngleTags: cap(state.suggestedAngleTags, MAX_SUGGESTED_ITEMS),
+      suggestedLightingTags: cap(state.suggestedLightingTags, MAX_SUGGESTED_ITEMS),
+      suggestedEffectTags: cap(state.suggestedEffectTags, MAX_SUGGESTED_ITEMS),
+      suggestedMaterialTags: cap(state.suggestedMaterialTags, MAX_SUGGESTED_ITEMS),
+      suggestedColors: cap(state.suggestedColors, MAX_SUGGESTED_ITEMS),
+      promptPreview: typeof state.promptPreview === 'string'
+        ? state.promptPreview.slice(0, MAX_PROMPT_PREVIEW_LENGTH)
+        : '',
       aspectRatio: state.aspectRatio,
       selectedModel: state.selectedModel,
       resolution: state.resolution,
@@ -146,8 +152,12 @@ export const saveMockupState = (state: PersistedMockupState): void => {
     localStorage.setItem(STORAGE_KEY, serializedState);
   } catch (error) {
     if (error instanceof Error && (error.name === 'QuotaExceededError' || error.message?.includes('quota'))) {
-      console.error('Storage quota exceeded even after sanitization, clearing state');
-      localStorage.removeItem(STORAGE_KEY);
+      console.warn('Storage quota exceeded, clearing saved mockup state');
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch {
+        // ignore
+      }
     } else {
       console.error('Failed to save mockup state:', error);
     }
