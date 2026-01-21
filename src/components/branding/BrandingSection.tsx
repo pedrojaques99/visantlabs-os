@@ -6,7 +6,7 @@ import { translateTag } from '@/utils/localeUtils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
+import { cn, sectionTitleClass } from '@/lib/utils';
 
 interface BrandingSectionProps {
   tags: string[];
@@ -98,7 +98,7 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
 
   return (
     <section id="branding-section" className={isComplete || hasAnalyzed ? 'pb-0' : ''}>
-      <h2 className={`font-semibold font-mono uppercase tracking-widest mb-3 transition-all duration-300 ${(isComplete || hasAnalyzed) ? 'text-[10px] mb-1' : 'text-sm'} ${(isComplete || hasAnalyzed) ? (theme === 'dark' ? 'text-neutral-600' : 'text-neutral-500') : (theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600')}`}>
+      <h2 className={cn(sectionTitleClass(theme === 'dark'), (isComplete || hasAnalyzed) ? 'mb-1' : 'mb-3', 'transition-all duration-300')}>
         {t('mockup.branding')}
       </h2>
       {!isComplete && !hasAnalyzed && (

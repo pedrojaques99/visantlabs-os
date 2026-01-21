@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { DesignType, GeminiModel, Resolution, AspectRatio } from '@/types/types';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
+import { sectionTitleClass } from '@/lib/utils';
 
 interface OutputConfigSectionProps {
   mockupCount: number;
@@ -57,7 +58,7 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
 
   return (
     <section className="space-y-6 pt-4 border-t border-neutral-800/20 pb-6">
-      <h2 className={`text-sm font-semibold font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}`}>{t('mockup.outputConfig')}</h2>
+      <h2 className={sectionTitleClass(theme === 'dark')}>{t('mockup.outputConfig')}</h2>
 
       <div className="space-y-5">
 

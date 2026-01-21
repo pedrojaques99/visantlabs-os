@@ -4,9 +4,10 @@ import { GlitchLoader } from '../ui/GlitchLoader';
 import type { UploadedImage, DesignType, GeminiModel } from '@/types/types';
 import { toast } from 'sonner';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useTheme } from '@/hooks/useTheme';
 import { formatImageTo16_9 } from '@/utils/fileUtils';
 import { isSafeUrl } from '@/utils/imageUtils';
-import { cn } from '@/lib/utils';
+import { cn, sectionTitleClass } from '@/lib/utils';
 
 interface InputSectionProps {
   uploadedImage: UploadedImage | null;
@@ -36,6 +37,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
   className = ""
 }) => {
   const { t } = useTranslation();
+  const { theme } = useTheme();
   // No modo blank, usa referenceImage; caso contrário, usa uploadedImage
   const displayImage = designType === 'blank' ? referenceImage : uploadedImage;
   const isReferenceOnly = designType === 'blank' && referenceImage !== null;
@@ -123,10 +125,10 @@ export const InputSection: React.FC<InputSectionProps> = ({
   const capacityUsage = Math.round(Math.min(((displayImage ? 1 : 0) + referenceImages.length) / 4 * 100, 100));
 
   return (
-    <section className={cn("flex flex-col gap-6 min-h-0", className)}>
+    <section className={cn("flex flex-col gap-3 sm:gap-4 md:gap-6 min-h-0", className)}>
       {/* Files Header */}
       <div className="flex items-center justify-between flex-shrink-0">
-        <h2 className="text-[11px] font-mono uppercase tracking-widest text-neutral-400">
+        <h2 className={sectionTitleClass(theme === 'dark')}>
           {t('mockup.files')}
         </h2>
         {!isLoadingImage && (
@@ -137,49 +139,49 @@ export const InputSection: React.FC<InputSectionProps> = ({
       </div>
 
       {/* Capacity Progress Section */}
-      <div className="space-y-2 flex-shrink-0">
-        <div className="h-1 w-full bg-neutral-800 rounded-full overflow-hidden">
+      <div className="space-y-1 sm:space-y-2 flex-shrink-0">
+        <div className="h-0.5 sm:h-1 w-full bg-neutral-800 rounded-full overflow-hidden">
           <div
             className="h-full bg-brand-cyan transition-all duration-500"
             style={{ width: `${capacityUsage}%` }}
           />
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest">
+          <span className="text-[9px] sm:text-[10px] font-mono text-neutral-400 uppercase tracking-widest">
             {capacityUsage}% {t('mockup.capacityUsed')}
           </span>
-          <Info size={12} className="text-neutral-500 opacity-50" />
+          <Info size={12} className="text-neutral-500 opacity-50 flex-shrink-0" />
         </div>
       </div>
 
       {/* Compact Files Grid */}
-      <div className="grid grid-cols-2 gap-2 flex-1 min-h-0 content-start">
+      <div className="grid grid-cols-2 gap-1.5 sm:gap-2 flex-1 min-h-0 content-start">
         {/* Main Image Card */}
         {displayImage && (
-          <div className={`relative flex flex-col p-2 rounded-lg border transition-all h-full group min-w-0 ${hasAnalyzed ? 'bg-brand-cyan/5 border-brand-cyan/20' : 'border-white/5'}`}>
-            <div className="relative w-full aspect-square rounded-md overflow-hidden mb-2 flex items-center justify-center bg-neutral-800/30">
+          <div className={`relative flex flex-col p-1.5 sm:p-2 rounded-lg border transition-all h-full group min-w-0 ${hasAnalyzed ? 'bg-brand-cyan/5 border-brand-cyan/20' : 'border-white/5'}`}>
+            <div className="relative w-full aspect-[4/3] sm:aspect-[4/3] rounded-md overflow-hidden mb-1 sm:mb-2 flex items-center justify-center bg-neutral-800/30">
               <img
                 src={getImageSrc(displayImage)}
                 alt="Main"
-                className="w-full h-full object-cover scale-90 sm:scale-95 md:scale-100 transition-transform duration-200"
+                className="w-full h-[full] object-fit transition-transform duration-200"
               />
               {hasAnalyzed && (
                 <div className="absolute inset-0 flex items-center justify-center bg-brand-cyan/10">
-                  <CheckCircle2 size={16} className="text-brand-cyan" />
+                  <CheckCircle2 size={12} className="text-brand-cyan" />
                 </div>
               )}
             </div>
 
-            <div className="flex-1 min-w-0 mb-2 transition-opacity duration-200 gap-2">
-              <p className="text-[12px] font-mono font-medium text-neutral-300">
+            <div className="flex-1 min-w-0 mb-1 sm:mb-2 transition-opacity duration-200 gap-2">
+              <p className="text-[11px] sm:text-[12px] font-mono font-medium text-neutral-300 truncate">
                 {isReferenceOnly ? t('mockup.referenceOnly') : t('mockup.mainFile')}
               </p>
-              <p className="text-[12px] font-mono text-neutral-500 uppercase tracking-tighter">
+              <p className="text-[10px] sm:text-[12px] font-mono text-neutral-500 uppercase tracking-tighter truncate">
                 {displayImage.mimeType?.split('/')[1] || 'IMAGE'} • {displayImage.size ? `${(displayImage.size / 1024).toFixed(0)}KB` : '---'}
               </p>
             </div>
 
-            <div className="flex items-center justify-between mt-auto pt-2 border-t border-white/5 duration-200">
+            <div className="flex items-center justify-between mt-auto pt-1.5 sm:pt-2 border-t border-white/5 duration-200">
               <label htmlFor="image-upload-blank" className="p-1 hover:bg-white/5 rounded-md transition-colors text-neutral-500 hover:text-white cursor-pointer">
                 <Plus size={14} />
               </label>
@@ -195,25 +197,25 @@ export const InputSection: React.FC<InputSectionProps> = ({
 
         {/* Reference Images List */}
         {referenceImages.map((img, index) => (
-          <div key={index} className="flex flex-col p-2 rounded-lg border border-white/5 group animate-in slide-in-from-bottom-2 duration-200 h-full gap-2 min-w-0">
-            <div className="w-full aspect-square rounded-md overflow-hidden mb-2 flex items-center justify-center bg-neutral-800/30">
+          <div key={index} className="flex flex-col p-1.5 sm:p-2 rounded-lg border border-white/5 group animate-in slide-in-from-bottom-2 duration-200 h-full gap-2 min-w-0">
+            <div className="w-full aspect-[4/3] sm:aspect-square rounded-md overflow-hidden mb-1 sm:mb-2 flex items-center justify-center bg-neutral-800/30">
               <img
                 src={getImageSrc(img)}
                 alt={`Ref ${index + 1}`}
-                className="w-full h-full object-cover scale-90 sm:scale-95 md:scale-100 transition-transform duration-200"
+                className="w-full h-[full] object-fit transition-transform duration-200"
               />
             </div>
 
-            <div className="flex-1 min-w-0 mb-2 transition-opacity duration-200 gap-2">
-              <p className="text-[12px] font-mono font-medium text-neutral-400 truncate">
+            <div className="flex-1 min-w-0 mb-1 sm:mb-2 transition-opacity duration-200 gap-2">
+              <p className="text-[11px] sm:text-[12px] font-mono font-medium text-neutral-400 truncate">
                 REF {index + 1}
               </p>
-              <p className="text-[12px] font-mono text-neutral-400 uppercase tracking-tighter">
+              <p className="text-[10px] sm:text-[12px] font-mono text-neutral-400 uppercase tracking-tighter truncate">
                 {img.mimeType?.split('/')[1] || 'IMAGE'} • {img.size ? `${(img.size / 1024).toFixed(0)}KB` : '---'}
               </p>
             </div>
 
-            <div className="flex justify-end mt-auto pt-2 border-t border-white/5 duration-200">
+            <div className="flex justify-end mt-auto pt-1.5 sm:pt-2 border-t border-white/5 duration-200">
               <button
                 onClick={() => handleRemoveReferenceImage(index)}
                 className="p-1 hover:bg-red-500/10 rounded-md transition-colors text-neutral-500 hover:text-red-400"
@@ -228,12 +230,12 @@ export const InputSection: React.FC<InputSectionProps> = ({
         {canAddMoreReferences && !isLoadingImage && displayImage && (
           <label
             htmlFor="multiple-image-upload"
-            className="flex flex-col items-center justify-center h-full min-h-[120px] rounded-lg border border-dashed border-white/5 hover:border-white/20 hover:bg-white/5 transition-all cursor-pointer group min-w-0"
+            className="flex flex-col items-center justify-center h-full min-h-[72px] sm:min-h-[96px] md:min-h-[96px] rounded-lg border border-dashed border-white/5 hover:border-white/20 hover:bg-white/5 transition-all cursor-pointer group min-w-0"
           >
-            <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center mb-1 group-hover:bg-white/10 transition-colors">
-              <Plus size={14} className="text-neutral-500" />
+            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white/5 flex items-center justify-center mb-0.5 sm:mb-1 group-hover:bg-white/10 transition-colors">
+              <Plus size={12} className="text-neutral-500" />
             </div>
-            <span className="text-[8px] font-mono text-neutral-500 uppercase tracking-wider text-center px-1">{t('mockup.addMore')}</span>
+            <span className="text-[7px] sm:text-[8px] font-mono text-neutral-500 uppercase tracking-wider text-center px-1">{t('mockup.addMore')}</span>
           </label>
         )}
       </div>
