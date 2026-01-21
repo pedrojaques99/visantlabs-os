@@ -81,7 +81,7 @@ router.get('/active', apiRateLimiter, async (_req, res) => {
 });
 
 // POST /api/admin/visant-templates - Criar novo template
-router.post('/', validateAdminPassword, async (req, res) => {
+router.post('/', apiRateLimiter, validateAdminPassword, async (req, res) => {
   try {
     const { name, layout, isDefault = false } = req.body;
 
@@ -126,7 +126,7 @@ router.post('/', validateAdminPassword, async (req, res) => {
 });
 
 // PUT /api/admin/visant-templates/:id - Atualizar template
-router.put('/:id', validateAdminPassword, async (req, res) => {
+router.put('/:id', apiRateLimiter, validateAdminPassword, async (req, res) => {
   try {
     const { id } = req.params;
     if (!isValidObjectId(id)) {
@@ -231,7 +231,7 @@ router.delete('/:id', validateAdminPassword, async (req, res) => {
 });
 
 // POST /api/admin/visant-templates/:id/activate - Ativar template
-router.post('/:id/activate', validateAdminPassword, async (req, res) => {
+router.post('/:id/activate', apiRateLimiter, validateAdminPassword, async (req, res) => {
   try {
     const { id } = req.params;
     if (!isValidObjectId(id)) {

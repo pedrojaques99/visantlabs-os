@@ -1,11 +1,12 @@
 import express from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../db/prisma.js';
+import { apiRateLimiter } from '../middleware/rateLimit.js';
 
 const router = express.Router();
 
 // Save branding example feedback (thumbs up)
-router.post('/branding', authenticate, async (req: AuthRequest, res) => {
+router.post('/branding', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const { prompt, step, output, rating } = req.body;
 
@@ -131,7 +132,7 @@ router.post('/mockup', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Get mockup examples (for RAG - no auth required for reading examples)
-router.get('/mockup-examples', async (req, res) => {
+router.get('/mockup-examples', apiRateLimiter, async (req, res) => {
   try {
     const { designType, limit = 10 } = req.query;
 

@@ -4,12 +4,13 @@ import { getUserIdFromToken } from '../utils/auth.js';
 import { prisma } from '../db/prisma.js';
 import { ensureOptionalBoolean, ensureString, isValidObjectId } from '../utils/validation.js';
 import { InputJsonValue } from '@prisma/client/runtime/library.js';
+import { apiRateLimiter } from '../middleware/rateLimit.js';
 
 const router = express.Router();
 
 
 // List user's workflows
-router.get('/', authenticate, async (req: AuthRequest, res) => {
+router.get('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
     try {
         if (!req.userId) {
             return res.status(401).json({ error: 'User not authenticated' });
@@ -32,7 +33,7 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Get public/community workflows
-router.get('/public', async (req, res) => {
+router.get('/public', apiRateLimiter, async (req, res) => {
     try {
         const { category } = req.query;
 
@@ -128,7 +129,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create new workflow
-router.post('/', authenticate, async (req: AuthRequest, res) => {
+router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
     try {
         if (!req.userId) {
             return res.status(401).json({ error: 'User not authenticated' });
@@ -225,7 +226,7 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Delete workflow
-router.delete('/:id', authenticate, async (req: AuthRequest, res) => {
+router.delete('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
     try {
         if (!req.userId) {
             return res.status(401).json({ error: 'User not authenticated' });
@@ -260,7 +261,7 @@ router.delete('/:id', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Like/unlike workflow
-router.post('/:id/like', authenticate, async (req: AuthRequest, res) => {
+router.post('/:id/like', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
     try {
         if (!req.userId) {
             return res.status(401).json({ error: 'User not authenticated' });
@@ -395,7 +396,7 @@ router.post('/:id/duplicate', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Increment usage count (called when loading a workflow)
-router.post('/:id/use', async (req, res) => {
+router.post('/:id/use', apiRateLimiter, async (req, res) => {
     try {
         const { id } = req.params;
         if (!isValidObjectId(id)) {

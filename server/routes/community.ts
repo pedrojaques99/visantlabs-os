@@ -93,7 +93,7 @@ function migratePresetIfNeeded(preset: any): any {
 }
 
 // Create community preset
-router.post('/presets', authenticate, async (req: AuthRequest, res) => {
+router.post('/presets', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const { id, name, description, prompt, referenceImageUrl, aspectRatio, model, tags, difficulty, context, useCase, examples } = req.body;
 
@@ -275,7 +275,7 @@ router.get('/presets/public', async (req, res) => {
 });
 
 // Get global community stats
-router.get('/stats', async (req, res) => {
+router.get('/stats', apiRateLimiter, async (req, res) => {
   try {
     const { prisma } = await import('../db/prisma.js');
     await connectToMongoDB();
@@ -328,7 +328,7 @@ async function getPresetsLikesData(db: any, presetIds: string[], userId?: string
 }
 
 // Get user's own presets
-router.get('/presets/my', authenticate, async (req: AuthRequest, res) => {
+router.get('/presets/my', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     await connectToMongoDB();
     const db = getDb();
@@ -361,7 +361,7 @@ router.get('/presets/my', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Update user's own preset
-router.put('/presets/:id', authenticate, async (req: AuthRequest, res) => {
+router.put('/presets/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const presetId = req.params.id;
     if (!isSafeId(presetId)) {
@@ -489,7 +489,7 @@ router.delete('/presets/:id', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Toggle like on a preset
-router.post('/presets/:id/like', authenticate, async (req: AuthRequest, res) => {
+router.post('/presets/:id/like', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const presetId = req.params.id;
     if (!isSafeId(presetId)) {
@@ -602,7 +602,7 @@ router.post('/upload-image', authenticate, uploadImageRateLimiter, async (req: A
 });
 
 // Upload preset reference image to R2 (for mockup presets)
-router.post('/presets/:id/upload-image', authenticate, async (req: AuthRequest, res) => {
+router.post('/presets/:id/upload-image', uploadImageRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const presetId = req.params.id;
     if (!isSafeId(presetId)) {

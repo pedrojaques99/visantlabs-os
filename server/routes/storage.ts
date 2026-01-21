@@ -2,6 +2,7 @@ import express from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../db/prisma.js';
 import { getUserStorageLimit, syncUserStorage, calculateUserStorage } from '../services/r2Service.js';
+import { apiRateLimiter } from '../middleware/rateLimit.js';
 
 const router = express.Router();
 
@@ -119,7 +120,7 @@ router.get('/usage', authenticate, async (req: AuthRequest, res, next) => {
  * POST /api/storage/sync
  * This endpoint calculates the actual storage used in R2 and updates the database counter
  */
-router.post('/sync', authenticate, async (req: AuthRequest, res, next) => {
+router.post('/sync', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     const userId = req.userId!;
 

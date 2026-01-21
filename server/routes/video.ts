@@ -8,6 +8,7 @@ import { generateVideo } from '../services/videoService.js';
 import { getVideoCreditsRequired } from '../utils/usageTracking.js';
 import { uploadCanvasVideo, isR2Configured } from '../services/r2Service.js';
 import { calculateVideoCost } from '../../src/utils/pricing.js';
+import { apiRateLimiter, mockupRateLimiter } from '../middleware/rateLimit.js';
 
 // Helper function to refund credits if generation fails
 // Uses deduction source information to properly refund credits to their original source
@@ -101,7 +102,7 @@ async function refundCredits(
 const router = express.Router();
 
 // Test route to verify video routes are working
-router.get('/test', (req, res) => {
+router.get('/test', apiRateLimiter, (req, res) => {
   res.json({ message: 'Video routes are working', timestamp: new Date().toISOString() });
 });
 
@@ -231,7 +232,7 @@ async function deductCreditsAtomically(
 }
 
 // Generate video (validates and deducts credits BEFORE generation)
-router.post('/generate', authenticate, checkSubscription, async (req: SubscriptionRequest, res, next) => {
+router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, async (req: SubscriptionRequest, res, next) => {
   const logPrefix = '[VIDEO GENERATE]';
   console.log(`${logPrefix} Route called - Method: ${req.method}, URL: ${req.url}, Path: ${req.path}`);
 
