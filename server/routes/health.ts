@@ -1,10 +1,11 @@
 import express from 'express';
 import { getDb } from '../db/mongodb.js';
+import { apiRateLimiter } from '../middleware/rateLimit.js';
 
 const router = express.Router();
 
 // Database health check
-router.get('/db', async (req, res) => {
+router.get('/db', apiRateLimiter, async (req, res) => {
   try {
     const db = getDb();
     // Test connection by running a simple command
@@ -33,7 +34,7 @@ router.get('/db', async (req, res) => {
 });
 
 // R2 storage health check
-router.get('/r2', async (req, res) => {
+router.get('/r2', apiRateLimiter, async (req, res) => {
   try {
     const r2Service = await import('../../src/services/r2Service.js');
 

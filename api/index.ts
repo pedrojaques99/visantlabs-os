@@ -3,6 +3,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { rateLimit } from 'express-rate-limit';
 import { connectToMongoDB } from '../server/db/mongodb.js';
 import mockupRoutes from '../server/routes/mockups.js';
 import mockupTagRoutes from '../server/routes/mockupTags.js';
@@ -186,7 +187,16 @@ if (isDev) console.log('✅ AI routes registered at /ai');
 app.use('/workflows', workflowRoutes);
 if (isDev) console.log('✅ Workflow routes registered at /workflows');
 
-app.get('/health', (req, res) => {
+// Health check rate limiter
+const healthCheckLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 30, // 30 requests per minute
+  message: { error: 'Too many health check requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.get('/health', healthCheckLimiter, (req, res) => {
     res.json({ status: 'ok', message: 'Server is running' });
 });
 

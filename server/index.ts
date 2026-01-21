@@ -17,6 +17,7 @@ register({
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { rateLimit } from 'express-rate-limit';
 import mockupRoutes from './routes/mockups.js';
 import mockupTagRoutes from './routes/mockupTags.js';
 import authRoutes from './routes/auth.js';
@@ -178,8 +179,17 @@ app.use(`${routePrefix}/ai`, aiRoutes);
 import surpriseMeRoutes from './routes/surprise-me.js';
 app.use(`${routePrefix}/surprise-me`, surpriseMeRoutes);
 
+// Health check rate limiter
+const healthCheckLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 30, // 30 requests per minute
+  message: { error: 'Too many health check requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Basic health check
-app.get(`${routePrefix}/health`, (req, res) => {
+app.get(`${routePrefix}/health`, healthCheckLimiter, (req, res) => {
   res.json({ status: 'ok', message: 'Server is running' });
 });
 
