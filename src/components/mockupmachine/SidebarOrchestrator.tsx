@@ -5,7 +5,7 @@ import type { UploadedImage, DesignType } from '../../types/types';
 import { useMockup } from './MockupContext';
 import { useSidebarEffects } from '@/hooks/useSidebarEffects';
 import { useAnalysisOverlay } from '@/hooks/useAnalysisOverlay';
-import { SidebarSetupSection } from './SidebarSetupSection';
+import { SetupModal } from './SetupModal';
 import { SidebarGenerationConfig } from './SidebarGenerationConfig';
 
 interface SidebarOrchestratorProps {
@@ -68,9 +68,15 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
   } = useMockup();
 
   const [isDiceAnimating, setIsDiceAnimating] = useState(false);
+  const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
 
   // Use analysis overlay hook
   const { showTemporaryOverlay } = useAnalysisOverlay();
+
+  // Open setup modal when not analyzed, close when analyzed
+  useEffect(() => {
+    setIsSetupModalOpen(!hasAnalyzed);
+  }, [hasAnalyzed]);
 
   // Use extracted effects hook
   const { isLargeScreen, resizerRef } = useSidebarEffects({
@@ -160,15 +166,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
           </div>
         )}
         <div className="space-y-3 sm:space-y-4 md:space-y-6 lg:space-y-8">
-          {!hasAnalyzed ? (
-            <SidebarSetupSection
-              onImageUpload={onImageUpload}
-              onReferenceImagesChange={onReferenceImagesChange}
-              onStartOver={onStartOver}
-              onDesignTypeChange={onDesignTypeChange}
-              onAnalyze={onAnalyze}
-            />
-          ) : (
+          {hasAnalyzed && (
             <SidebarGenerationConfig
               onGenerateClick={onGenerateClick}
               onRegenerate={onRegenerate}
@@ -197,6 +195,23 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
           <div className="w-px h-full mx-auto bg-sidebar-border group-hover:bg-brand-cyan/50 dark:group-hover:bg-brand-cyan/50 transition-colors duration-200"></div>
         </div>
       )}
+
+      {/* Setup Modal */}
+      <SetupModal
+        isOpen={isSetupModalOpen}
+        canClose={hasAnalyzed}
+        onClose={() => {
+          // Only allow closing if hasAnalyzed is true (setup is complete)
+          if (hasAnalyzed) {
+            setIsSetupModalOpen(false);
+          }
+        }}
+        onImageUpload={onImageUpload}
+        onReferenceImagesChange={onReferenceImagesChange}
+        onStartOver={onStartOver}
+        onDesignTypeChange={onDesignTypeChange}
+        onAnalyze={onAnalyze}
+      />
     </>
   );
 };

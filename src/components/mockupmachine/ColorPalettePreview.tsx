@@ -83,7 +83,7 @@ export const ColorPalettePreview: React.FC<ColorPalettePreviewProps> = ({
 
             <div className="flex flex-wrap items-center gap-2 w-full">
                 {/* Hex Input Group */}
-                <div className="flex gap-2 flex-1 min-w-[120px]">
+                <div className="flex gap-2 flex-1 w-full min-w-[180px]">
                     <input
                         type="text"
                         value={hexInput}
@@ -93,7 +93,7 @@ export const ColorPalettePreview: React.FC<ColorPalettePreviewProps> = ({
                         disabled={disabled || limitReached}
                         maxLength={7}
                         className={cn(
-                            "w-full px-2 py-1.5 text-[12px] font-mono rounded bg-black/40 border border-neutral-700/50 focus:outline-none focus:border-brand-cyan/50",
+                            "w-full px-2 py-1.5 text-[12px] font-mono rounded bg-neutral-900/40 border border-neutral-700/50 focus:outline-none focus:border-brand-cyan/50",
                             isValidHex && "border-brand-cyan/30"
                         )}
                     />
