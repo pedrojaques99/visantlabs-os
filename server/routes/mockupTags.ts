@@ -3,11 +3,12 @@ import { prisma } from '../db/prisma.js';
 import { authenticate } from '../middleware/auth.js';
 import { getAllAvailableTags } from '../services/tagService.js';
 import { ensureString, isValidObjectId } from '../utils/validation.js';
+import { apiRateLimiter } from '../middleware/rateLimit.js';
 
 const router = Router();
 
 // Get all available tags from all collections (unified endpoint)
-router.get('/available', async (req, res) => {
+router.get('/available', apiRateLimiter, async (req, res) => {
     try {
         const tags = await getAllAvailableTags();
         res.json(tags);
@@ -18,7 +19,7 @@ router.get('/available', async (req, res) => {
 });
 
 // Get all categorized tags
-router.get('/categories', async (req, res) => {
+router.get('/categories', apiRateLimiter, async (req, res) => {
     try {
         const categories = await prisma.mockupTagCategory.findMany({
             orderBy: { displayOrder: 'asc' },
@@ -61,7 +62,7 @@ router.post('/categories', authenticate, async (req, res) => {
 });
 
 // Admin only: add a tag to a category
-router.post('/tags', authenticate, async (req, res) => {
+router.post('/tags', apiRateLimiter, authenticate, async (req, res) => {
     if (!(req as any).user?.isAdmin) {
         return res.status(403).json({ error: 'Admin access required' });
     }

@@ -1,5 +1,6 @@
 import express from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
+import { apiRateLimiter } from '../middleware/rateLimit.js';
 import {
   improvePrompt,
   describeImage,
@@ -23,7 +24,7 @@ const router = express.Router();
  * POST /api/ai/improve-prompt
  * Improve a text prompt using AI
  */
-router.post('/improve-prompt', authenticate, async (req: AuthRequest, res, next) => {
+router.post('/improve-prompt', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     const { prompt } = req.body;
 
@@ -83,7 +84,7 @@ router.post('/improve-prompt', authenticate, async (req: AuthRequest, res, next)
  * POST /api/ai/describe-image
  * Generate a description of an image
  */
-router.post('/describe-image', authenticate, async (req: AuthRequest, res, next) => {
+router.post('/describe-image', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     const { image } = req.body;
 
@@ -156,7 +157,7 @@ router.post('/describe-image', authenticate, async (req: AuthRequest, res, next)
  * POST /api/ai/suggest-categories
  * Suggest mockup categories based on an image and branding tags
  */
-router.post('/suggest-categories', authenticate, async (req: AuthRequest, res, next) => {
+router.post('/suggest-categories', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     const { baseImage, brandingTags } = req.body;
 
@@ -309,7 +310,7 @@ router.post('/analyze-setup', authenticate, async (req: AuthRequest, res, next) 
  * POST /api/ai/generate-smart-prompt
  * Generate a smart prompt based on user selections
  */
-router.post('/generate-smart-prompt', authenticate, async (req: AuthRequest, res, next) => {
+router.post('/generate-smart-prompt', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     const {
       baseImage,
@@ -384,7 +385,7 @@ router.post('/generate-smart-prompt', authenticate, async (req: AuthRequest, res
  * POST /api/ai/suggest-prompt-variations
  * Generate variations of a prompt
  */
-router.post('/suggest-prompt-variations', authenticate, async (req: AuthRequest, res, next) => {
+router.post('/suggest-prompt-variations', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     const { prompt } = req.body;
 
@@ -444,7 +445,7 @@ router.post('/suggest-prompt-variations', authenticate, async (req: AuthRequest,
  * POST /api/ai/change-object
  * Change an object in a mockup image
  */
-router.post('/change-object', authenticate, async (req: AuthRequest, res, next) => {
+router.post('/change-object', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     const { baseImage, newObject, model, resolution } = req.body;
 
@@ -493,7 +494,7 @@ router.post('/change-object', authenticate, async (req: AuthRequest, res, next) 
  * POST /api/ai/apply-theme
  * Apply a theme to a mockup image
  */
-router.post('/apply-theme', authenticate, async (req: AuthRequest, res, next) => {
+router.post('/apply-theme', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     const { baseImage, themes, model, resolution } = req.body;
 

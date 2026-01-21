@@ -84,7 +84,7 @@ router.post('/', apiRateLimiter, async (req, res) => {
 });
 
 // Get all waitlist entries (admin only - optional, for future use)
-router.get('/', async (req, res) => {
+router.get('/', apiRateLimiter, async (req, res) => {
   try {
     const waitlist = await prisma.waitlist.findMany({
       orderBy: { createdAt: 'desc' },

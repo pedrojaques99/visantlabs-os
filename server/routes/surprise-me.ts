@@ -1,13 +1,13 @@
 import express from 'express';
 import { prisma } from '../db/prisma.js';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
-
+import { apiRateLimiter } from '../middleware/rateLimit.js';
 
 const SurpriseMePreset = prisma.surpriseMePreset;
 const router = express.Router();
 
 // GET /api/surprise-me - Get all presets for the current user
-router.get('/', authenticate, async (req: AuthRequest, res) => {
+router.get('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
     try {
         const presets = await prisma.surpriseMePreset.findMany({
             where: { userId: req.userId },
@@ -55,7 +55,7 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
 });
 
 // DELETE /api/surprise-me/:id - Delete a preset
-router.delete('/:id', authenticate, async (req: AuthRequest, res) => {
+router.delete('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
     try {
         const { id } = req.params;
 

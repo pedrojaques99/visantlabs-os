@@ -547,7 +547,7 @@ router.get('/products', apiRateLimiter, async (_req, res, next) => {
 });
 
 // Get usage info
-router.get('/usage', authenticate, async (req: AuthRequest, res, next) => {
+router.get('/usage', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     await connectToMongoDB();
     const db = getDb();
@@ -970,7 +970,7 @@ router.post('/create-pix-checkout', paymentRateLimiter, verifyBotId, authenticat
 });
 
 // Create credit checkout session for card payments (dynamic checkout for authenticated users)
-router.post('/create-credit-checkout', verifyBotId, authenticate, async (req: AuthRequest, res, next) => {
+router.post('/create-credit-checkout', paymentRateLimiter, verifyBotId, authenticate, async (req: AuthRequest, res, next) => {
   try {
     if (!stripe) {
       console.error('❌ Stripe is not configured');

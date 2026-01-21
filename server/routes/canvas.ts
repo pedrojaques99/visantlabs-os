@@ -5,6 +5,7 @@ import { uploadCanvasImage, uploadCanvasPdf, uploadCanvasVideo, isR2Configured, 
 import { compressPdfSimple } from '../utils/pdfCompression.js';
 import { validateAdminOrPremium, requireEditAccess, requireViewAccess } from '../middleware/canvasAuth.js';
 import { Liveblocks } from '@liveblocks/node';
+import { apiRateLimiter, uploadImageRateLimiter } from '../middleware/rateLimit.js';
 
 const router = express.Router();
 
@@ -699,7 +700,7 @@ async function processCanvasNodesForR2(
 }
 
 // List user's canvas projects
-router.get('/', authenticate, async (req: AuthRequest, res) => {
+router.get('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     if (!req.userId) {
       return res.status(401).json({ error: 'User not authenticated' });
@@ -806,7 +807,7 @@ router.get('/shared/:shareId', async (req, res) => {
 });
 
 // Get canvas project by ID
-router.get('/:id', authenticate, async (req: AuthRequest, res) => {
+router.get('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
 
@@ -907,7 +908,7 @@ router.get('/:id', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Create new canvas project
-router.post('/', authenticate, async (req: AuthRequest, res) => {
+router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const { name, nodes, edges, drawings } = req.body;
 
@@ -1279,7 +1280,7 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Get presigned URL for direct upload to R2 (supports up to 10MB)
-router.get('/image/upload-url', authenticate, async (req: AuthRequest, res) => {
+router.get('/image/upload-url', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const { canvasId, nodeId, contentType } = req.query;
 
@@ -1321,7 +1322,7 @@ router.get('/image/upload-url', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Get presigned URL for direct video upload to R2 (for large videos)
-router.get('/video/upload-url', authenticate, async (req: AuthRequest, res) => {
+router.get('/video/upload-url', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const { canvasId, nodeId, contentType } = req.query;
 
@@ -1363,7 +1364,7 @@ router.get('/video/upload-url', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Upload canvas image to R2 (legacy endpoint - still used for smaller images)
-router.post('/image/upload', authenticate, async (req: AuthRequest, res) => {
+router.post('/image/upload', uploadImageRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     // Check request size early to prevent 413 errors
     const contentLength = req.headers['content-length'];
@@ -1506,7 +1507,7 @@ router.post('/pdf/upload', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Upload canvas video to R2
-router.post('/video/upload', authenticate, async (req: AuthRequest, res) => {
+router.post('/video/upload', uploadImageRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     // Check request size early to prevent 413 errors
     const contentLength = req.headers['content-length'];
@@ -1642,7 +1643,7 @@ router.delete('/image', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Delete canvas project
-router.delete('/:id', authenticate, async (req: AuthRequest, res) => {
+router.delete('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
 
@@ -1778,7 +1779,7 @@ router.post('/:id/liveblocks-auth', authenticate, validateAdminOrPremium, requir
 });
 
 // Share project (generate shareId and enable collaboration)
-router.post('/:id/share', authenticate, validateAdminOrPremium, async (req: AuthRequest, res) => {
+router.post('/:id/share', apiRateLimiter, authenticate, validateAdminOrPremium, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
     const { canEdit = [], canView = [] } = req.body;
@@ -1890,7 +1891,7 @@ router.put('/:id/share-settings', authenticate, async (req: AuthRequest, res) =>
 });
 
 // Remove sharing (disable collaboration)
-router.delete('/:id/share', authenticate, async (req: AuthRequest, res) => {
+router.delete('/:id/share', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
 

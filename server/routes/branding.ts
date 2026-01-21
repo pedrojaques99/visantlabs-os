@@ -7,6 +7,7 @@ import * as brandingService from '../services/brandingService.js';
 import type { BrandingData } from '../../src/types/branding.js';
 import { checkSubscription, SubscriptionRequest } from '../middleware/subscription.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
+import { apiRateLimiter, mockupRateLimiter } from '../middleware/rateLimit.js';
 
 const router = express.Router();
 
@@ -144,7 +145,7 @@ async function refundCredits(userId: string, creditsToRefund: number): Promise<v
 
 // Generate content for a specific step
 // CRITICAL: Validate and deduct credits BEFORE generation to prevent abuse
-router.post('/generate-step', authenticate, checkSubscription, async (req: SubscriptionRequest, res) => {
+router.post('/generate-step', mockupRateLimiter, authenticate, checkSubscription, async (req: SubscriptionRequest, res) => {
   let creditsDeducted = false;
   const creditsToDeduct = 1; // Each branding step costs 1 credit
   const { step, prompt, previousData } = req.body;
@@ -629,7 +630,7 @@ router.post('/track-usage', authenticate, async (req: AuthRequest, res, next) =>
 });
 
 // Save branding project (create or update)
-router.post('/save', authenticate, async (req: AuthRequest, res) => {
+router.post('/save', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const { prompt, data, projectId, name } = req.body;
 
@@ -709,7 +710,7 @@ router.post('/save', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Get branding project by ID
-router.get('/:id', authenticate, async (req: AuthRequest, res) => {
+router.get('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
 
@@ -815,7 +816,7 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Delete branding project
-router.delete('/:id', authenticate, async (req: AuthRequest, res) => {
+router.delete('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
 

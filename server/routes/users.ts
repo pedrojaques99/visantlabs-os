@@ -4,6 +4,7 @@ import { ObjectId } from 'mongodb';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { getUserIdFromToken } from '../utils/auth.js';
 import { prisma } from '../db/prisma.js';
+import { apiRateLimiter } from '../middleware/rateLimit.js';
 
 const router = express.Router();
 
@@ -50,7 +51,7 @@ function getUserObjectId(userId: string): ObjectId {
 }
 
 // Get user profile by username or ID
-router.get('/:identifier', async (req, res) => {
+router.get('/:identifier', apiRateLimiter, async (req, res) => {
   try {
     await connectToMongoDB();
     const { identifier } = req.params;
@@ -102,7 +103,7 @@ router.get('/:identifier', async (req, res) => {
 });
 
 // Get user's public mockups
-router.get('/:identifier/mockups', async (req, res) => {
+router.get('/:identifier/mockups', apiRateLimiter, async (req, res) => {
   try {
     await connectToMongoDB();
     const { identifier } = req.params;
@@ -217,7 +218,7 @@ router.get('/:identifier/presets', async (req, res) => {
 });
 
 // Get user's public workflows
-router.get('/:identifier/workflows', async (req, res) => {
+router.get('/:identifier/workflows', apiRateLimiter, async (req, res) => {
   try {
     await connectToMongoDB();
     const { identifier } = req.params;
@@ -424,7 +425,7 @@ router.put('/profile', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Save/Update Gemini API Key
-router.put('/settings/gemini-api-key', authenticate, async (req: AuthRequest, res) => {
+router.put('/settings/gemini-api-key', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const userId = req.userId!;
 
@@ -518,7 +519,7 @@ router.delete('/settings/gemini-api-key', authenticate, async (req: AuthRequest,
 });
 
 // Check if user has API key (returns boolean only, not the key itself)
-router.get('/settings/gemini-api-key', authenticate, async (req: AuthRequest, res) => {
+router.get('/settings/gemini-api-key', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const userId = req.userId!;
 
@@ -580,7 +581,7 @@ router.get('/settings/canvas', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Update user canvas settings
-router.put('/settings/canvas', authenticate, async (req: AuthRequest, res) => {
+router.put('/settings/canvas', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const userId = req.userId!;
 
