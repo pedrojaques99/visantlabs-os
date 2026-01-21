@@ -72,8 +72,3 @@ export function saveSurpriseMeSelectedTags(tags: SurpriseMeSelectedTags): boolea
     return false;
   }
 }
-
-// Backward compatibility or legacy name support if needed
-export type SurpriseMeExcludedTags = SurpriseMeSelectedTags;
-export const getSurpriseMeExcludedTags = getSurpriseMeSelectedTags;
-export const saveSurpriseMeExcludedTags = saveSurpriseMeSelectedTags;

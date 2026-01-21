@@ -159,15 +159,15 @@ export const MockupCard: React.FC<MockupCardProps> = ({
                 </div>
             )}
 
-            {/* Action Overlay */}
+            {/* Action Overlay - pointer-events-none so image stays clickable; only buttons get pointer-events-auto */}
             {canInteract && (
                 <div className="absolute inset-0 z-20 pointer-events-none">
-                    {/* Top Buttons: Remove & Like */}
-                    <div className="absolute top-0 inset-x-0 p-4 flex justify-between items-start opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-y-2 group-hover:translate-y-0 pointer-events-auto">
+                    {/* Top Buttons: Remove & Like - only the buttons block clicks, not the full row */}
+                    <div className="absolute top-3 left-3 right-3 flex justify-between items-start opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-y-2 group-hover:translate-y-0">
                         {onRemove && (
                             <button
                                 onClick={(e) => { e.stopPropagation(); onRemove(); }}
-                                className="p-2.5 rounded-xl bg-black/60 backdrop-blur-md text-neutral-400 hover:bg-red-500/20 hover:text-red-400 border border-white/5 transition-all shadow-lg"
+                                className="p-2 rounded-lg bg-black/60 backdrop-blur-md text-neutral-400 hover:bg-red-500/20 hover:text-red-400 border border-white/5 transition-all shadow-lg pointer-events-auto"
                                 title="Remove"
                             >
                                 <X size={12} />
@@ -176,7 +176,7 @@ export const MockupCard: React.FC<MockupCardProps> = ({
                         {handleToggleLike && (
                             <button
                                 onClick={(e) => { e.stopPropagation(); handleToggleLike(); }}
-                                className={`p-2.5 rounded-xl backdrop-blur-md border transition-all shadow-lg ${localIsLiked
+                                className={`p-2 rounded-lg backdrop-blur-md border transition-all shadow-lg pointer-events-auto ${localIsLiked
                                     ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/30 hover:bg-brand-cyan/30'
                                     : 'bg-black/60 text-neutral-400 border-white/5 hover:text-white hover:bg-black/80'
                                     }`}
@@ -187,14 +187,14 @@ export const MockupCard: React.FC<MockupCardProps> = ({
                         )}
                     </div>
 
-                    {/* Bottom Toolbar: Download, Redraw, Reimagine */}
-                    <div className="absolute bottom-0 inset-x-0 p-2 flex justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0 pointer-events-auto">
-                        <div className="flex items-center gap-1 p-1 bg-neutral-900/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl">
+                    {/* Bottom Toolbar - only the pill blocks clicks, not the full bottom band */}
+                    <div className="absolute bottom-3 left-0 right-0 flex justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+                        <div className="flex items-center gap-1 p-1 bg-neutral-900/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl pointer-events-auto">
                             <Tooltip content={t('mockup.download') || "Download"} position="top">
                                 <a
                                     href={imageUrl}
                                     download={`mockup-${Date.now()}.png`}
-                                    className="p-2 w-8 h-8 flex items-center justify-center rounded-xl text-neutral-400 hover:text-white hover:bg-white/10 transition-all"
+                                    className="p-1.5 w-7 h-7 flex items-center justify-center rounded-lg text-neutral-400 hover:text-white hover:bg-white/10 transition-all"
                                     onClick={async (e) => {
                                         e.stopPropagation();
                                         e.preventDefault();
@@ -228,7 +228,7 @@ export const MockupCard: React.FC<MockupCardProps> = ({
                                 <button
                                     onClick={(e) => { e.stopPropagation(); onRedraw(); }}
                                     disabled={editButtonsDisabled || isRedrawing}
-                                    className={`p-2.5 rounded-xl flex items-center gap-2 transition-all ${editButtonsDisabled || isRedrawing
+                                    className={`p-1.5 rounded-lg flex items-center gap-1.5 transition-all min-w-0 ${editButtonsDisabled || isRedrawing
                                         ? 'text-neutral-600 cursor-not-allowed opacity-50'
                                         : 'text-neutral-400 hover:text-white hover:bg-white/10'
                                         }`}
@@ -247,7 +247,7 @@ export const MockupCard: React.FC<MockupCardProps> = ({
                                     <button
                                         onClick={(e) => { e.stopPropagation(); setShowReImaginePanel(true); }}
                                         disabled={editButtonsDisabled || isRedrawing}
-                                        className={`p-2.5 rounded-xl flex items-center gap-2 transition-all ${editButtonsDisabled || isRedrawing
+                                        className={`p-1.5 rounded-lg flex items-center gap-1.5 transition-all min-w-0 ${editButtonsDisabled || isRedrawing
                                             ? 'text-neutral-600 cursor-not-allowed opacity-50'
                                             : 'text-brand-cyan hover:bg-brand-cyan/20'
                                             }`}

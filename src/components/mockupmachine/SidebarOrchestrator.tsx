@@ -64,15 +64,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
     selectedBrandingTags,
     selectedTags,
     isSurpriseMeMode,
-    surpriseMePool,
-    setSelectedTags,
-    setSelectedLocationTags,
-    setSelectedAngleTags,
-    setSelectedLightingTags,
-    setSelectedEffectTags,
-    setSelectedMaterialTags,
     isGeneratingPrompt,
-    // Overlay control is now handled by useAnalysisOverlay hook
   } = useMockup();
 
   const [isDiceAnimating, setIsDiceAnimating] = useState(false);
@@ -94,51 +86,12 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
   const handleSurpriseMe = (autoGenerate: boolean = true) => {
     setIsDiceAnimating(true);
 
-    // Show "fake" analysis overlay for 1 second
+    // Show "fake" analysis overlay briefly
     showTemporaryOverlay(300);
 
-    // If pool mode is active, use the pool for randomization
-    if (isSurpriseMeMode && Object.values(surpriseMePool).some(arr => arr.length > 0)) {
-      // Helper to pick one random tag from an array
-      const pickRandom = (tags: string[]): string | null => {
-        if (tags.length === 0) return null;
-        return tags[Math.floor(Math.random() * tags.length)];
-      };
-
-      // Randomize from pool - set one tag from each pool section
-      if (surpriseMePool.selectedCategoryTags?.length > 0) {
-        const tag = pickRandom(surpriseMePool.selectedCategoryTags);
-        if (tag) setSelectedTags([tag]);
-      }
-      if (surpriseMePool.selectedLocationTags?.length > 0) {
-        const tag = pickRandom(surpriseMePool.selectedLocationTags);
-        if (tag) setSelectedLocationTags([tag]);
-      }
-      if (surpriseMePool.selectedAngleTags?.length > 0) {
-        const tag = pickRandom(surpriseMePool.selectedAngleTags);
-        if (tag) setSelectedAngleTags([tag]);
-      }
-      if (surpriseMePool.selectedLightingTags?.length > 0) {
-        const tag = pickRandom(surpriseMePool.selectedLightingTags);
-        if (tag) setSelectedLightingTags([tag]);
-      }
-      if (surpriseMePool.selectedEffectTags?.length > 0) {
-        const tag = pickRandom(surpriseMePool.selectedEffectTags);
-        if (tag) setSelectedEffectTags([tag]);
-      }
-      if (surpriseMePool.selectedMaterialTags?.length > 0) {
-        const tag = pickRandom(surpriseMePool.selectedMaterialTags);
-        if (tag) setSelectedMaterialTags([tag]);
-      }
-
-      // Still call onSurpriseMe for auto-generation if enabled, but without full randomization
-      if (autoGenerate) {
-        onSurpriseMe(autoGenerate);
-      }
-    } else {
-      // Normal behavior - call the external handler
-      onSurpriseMe(autoGenerate);
-    }
+    // All Pool Mode logic is now handled in MockupMachinePage.handleSurpriseMe
+    // Just call the external handler which will use the Context pool when Pool Mode is active
+    onSurpriseMe(autoGenerate);
 
     // Scroll to Generate button
     setTimeout(() => {

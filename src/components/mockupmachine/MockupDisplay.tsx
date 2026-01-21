@@ -122,8 +122,8 @@ export const MockupDisplay: React.FC<MockupDisplayProps> = ({
   const getGridClasses = () => {
     const gap = "gap-3 sm:gap-4 md:gap-6";
     const cols = isSidebarCollapsed
-      ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-2"
-      : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-2";
+      ? "grid-cols-1 sm:grid-cols-1 md:grid-cols-1 xl:grid-cols-1"
+      : "grid-cols-1 sm:grid-cols-1 lg:grid-cols-1 2xl:grid-cols-1";
     const maxW = isSidebarCollapsed ? "max-w-[2000px]" : "max-w-[1800px]";
     return `grid w-full mx-auto ${cols} ${gap} ${maxW}`;
   };
