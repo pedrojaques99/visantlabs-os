@@ -40,6 +40,13 @@ const BLOCKED_HOSTNAMES = [
   'kubernetes.default.svc',       // Kubernetes internal
 ];
 
+export class SSRFValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'SSRFValidationError';
+  }
+}
+
 interface UrlValidationResult {
   valid: boolean;
   error?: string;
@@ -118,6 +125,18 @@ export function validateExternalUrl(url: string): UrlValidationResult {
   }
 
   return { valid: true, url: parsedUrl.href };
+}
+
+/**
+ * Fetches from a URL only after validating it is safe for server-side requests (SSRF protection).
+ * Combines validateExternalUrl with fetch so user-provided URLs never reach fetch without validation.
+ */
+export async function safeFetch(url: string, options?: RequestInit): Promise<Response> {
+  const validation = validateExternalUrl(url);
+  if (!validation.valid || !validation.url) {
+    throw new SSRFValidationError(validation.error || 'Invalid URL');
+  }
+  return fetch(validation.url, options);
 }
 
 /**

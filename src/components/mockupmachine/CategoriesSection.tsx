@@ -44,6 +44,7 @@ interface CollapsableCategoryGroupProps {
   t: (key: string) => string;
   className?: string;
   isSurpriseMeMode?: boolean;
+  categoriesPool?: string[];
 }
 
 const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
@@ -54,7 +55,8 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
   theme,
   t,
   className,
-  isSurpriseMeMode
+  isSurpriseMeMode,
+  categoriesPool = []
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const groupSelectedTags = tags.filter(tag => selectedTags.includes(tag));
@@ -62,6 +64,7 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
   const selectionSummary = hasSelection
     ? groupSelectedTags.map(tag => translateTag(tag)).join(', ')
     : '';
+  const poolCount = isSurpriseMeMode ? tags.filter(t => categoriesPool.includes(t)).length : 0;
 
   return (
     <div className={cn(
@@ -76,8 +79,12 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
           <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>
             {title}
           </span>
-          {!isExpanded && hasSelection && (
-            <span className="text-[10px] text-brand-cyan font-mono truncate max-w-[200px]">{selectionSummary}</span>
+          {!isExpanded && (hasSelection || poolCount > 0) && (
+            <span className="text-[10px] font-mono truncate max-w-[200px]">
+              {hasSelection && <span className="text-brand-cyan">{selectionSummary}</span>}
+              {hasSelection && poolCount > 0 && <span className="text-neutral-500"> · </span>}
+              {poolCount > 0 && <span className="text-neutral-500">{poolCount} {t('mockup.inPool')}</span>}
+            </span>
           )}
         </div>
         <div className="flex items-center gap-2">
@@ -251,6 +258,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
   const hasFinalSection = finalTags.length > 0 || !isComplete;
   const finalSelectedTags = finalTags.filter(tag => selectedTags.includes(tag));
   const hasFinalSelection = finalSelectedTags.length > 0;
+  const finalPoolCount = isSurpriseMeMode ? finalTags.filter(t => categoriesPool.includes(t)).length : 0;
 
   const renderTagButton = (tag: string) => {
     const isSelected = selectedTags.includes(tag);
@@ -272,7 +280,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
       <Tag
         key={tag}
         label={translateTag(tag)}
-        selected={!isSurpriseMeMode && isSelected}
+        selected={isSelected}
         suggested={!isSurpriseMeMode && isSuggested}
         inPool={isInPool}
         onToggle={handleClick}
@@ -364,6 +372,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                 theme={theme}
                 t={t}
                 isSurpriseMeMode={isSurpriseMeMode}
+                categoriesPool={categoriesPool}
               />
             ))}
 
@@ -379,9 +388,11 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                         ? t(`mockup.categoryGroups.drinkware`) + (otherTags.length > 0 ? ` / ${t(`mockup.categoryGroups.other`)}` : '')
                         : t(`mockup.categoryGroups.other`)}
                     </span>
-                    {!isFinalExpanded && hasFinalSelection && (
-                      <span className="text-[10px] text-brand-cyan font-mono truncate max-w-[200px]">
-                        {finalSelectedTags.map(tag => translateTag(tag)).join(', ')}
+                    {!isFinalExpanded && (hasFinalSelection || finalPoolCount > 0) && (
+                      <span className="text-[10px] font-mono truncate max-w-[200px]">
+                        {hasFinalSelection && <span className="text-brand-cyan">{finalSelectedTags.map(tag => translateTag(tag)).join(', ')}</span>}
+                        {hasFinalSelection && finalPoolCount > 0 && <span className="text-neutral-500"> · </span>}
+                        {finalPoolCount > 0 && <span className="text-neutral-500">{finalPoolCount} {t('mockup.inPool')}</span>}
                       </span>
                     )}
                   </div>

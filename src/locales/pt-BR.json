@@ -864,6 +864,7 @@
     "colorsSelected": "cores selecionadas",
     "setupAndAnalysis": "CONFIGURAÇÃO & ANÁLISE",
     "generationConfig": "TAGS SELECIONADAS",
+    "inPool": "no pool",
     "sectionLocked": "Seção bloqueada após análise",
     "addCustomTag": "Adicionar tag personalizada...",
     "tagAlreadyExists": "Tag já existe"

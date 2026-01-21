@@ -161,6 +161,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
   const selectionSummary = selectedTags.length > 0
     ? selectedTags.map(tag => translateTag(tag)).join(', ')
     : '';
+  const poolCount = isSurpriseMeMode ? tags.filter(t => poolTags.includes(t)).length : 0;
 
   return (
     <div className={`rounded-lg border transition-all duration-200 ${theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200'}`}>
@@ -170,8 +171,12 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
       >
         <div className="flex flex-col gap-0.5 overflow-hidden">
           <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{title}</span>
-          {!isExpanded && hasSelection && (
-            <span className="text-[10px] text-brand-cyan font-mono truncate max-w-[200px]">{selectionSummary}</span>
+          {!isExpanded && (hasSelection || poolCount > 0) && (
+            <span className="text-[10px] font-mono truncate max-w-[200px]">
+              {hasSelection && <span className="text-brand-cyan">{selectionSummary}</span>}
+              {hasSelection && poolCount > 0 && <span className="text-neutral-500"> · </span>}
+              {poolCount > 0 && <span className="text-neutral-500">{poolCount} {t('mockup.inPool')}</span>}
+            </span>
           )}
         </div>
         <div className="flex items-center gap-2">
@@ -249,7 +254,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
                   <Tag
                     key={tag}
                     label={translateTag(tag)}
-                    selected={!isSurpriseMeMode && isSelected}
+                    selected={isSelected}
                     suggested={!isSurpriseMeMode && isSuggested}
                     inPool={isInPool}
                     onToggle={handleClick}

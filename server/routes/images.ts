@@ -1,5 +1,6 @@
 import express from 'express';
-import { validateExternalUrl, getErrorMessage } from '../utils/securityValidation';
+import { validateExternalUrl, getErrorMessage, safeFetch, SSRFValidationError } from '../utils/securityValidation.js';
+import { apiRateLimiter } from '../middleware/rateLimit.js';
 
 const router = express.Router();
 
@@ -13,7 +14,7 @@ const getGoogleApiKey = (): string | null => {
  * This bypasses CORS restrictions by fetching server-side
  * GET /api/images/proxy?url=<encoded-r2-url>
  */
-router.get('/proxy', async (req, res) => {
+router.get('/proxy', apiRateLimiter, async (req, res) => {
   try {
     const { url } = req.query;
 
@@ -23,24 +24,18 @@ router.get('/proxy', async (req, res) => {
       });
     }
 
-    // Validate URL format and SSRF protection
-    const urlValidation = validateExternalUrl(url);
-    if (!urlValidation.valid) {
-      return res.status(400).json({
-        error: urlValidation.error || 'Invalid URL',
-      });
-    }
-
-    // Fetch the image from the URL
     let response: Response;
     try {
-      response = await fetch(urlValidation.url!, {
+      response = await safeFetch(url, {
         method: 'GET',
         headers: {
           'User-Agent': 'VSN-Mockup-Machine/1.0',
         },
       });
     } catch (error: unknown) {
+      if (error instanceof SSRFValidationError) {
+        return res.status(400).json({ error: error.message });
+      }
       console.error('Error fetching image from URL:', error);
       return res.status(500).json({
         error: 'Failed to fetch image from URL',
@@ -96,7 +91,7 @@ router.get('/proxy', async (req, res) => {
  * Proxy endpoint to fetch videos from Google Cloud Storage with authentication
  * GET /api/images/video-proxy?url=<encoded-video-url>
  */
-router.get('/video-proxy', async (req, res) => {
+router.get('/video-proxy', apiRateLimiter, async (req, res) => {
   try {
     const { url } = req.query;
 
@@ -106,7 +101,6 @@ router.get('/video-proxy', async (req, res) => {
       });
     }
 
-    // Validate URL format and SSRF protection
     const urlValidation = validateExternalUrl(url);
     if (!urlValidation.valid) {
       return res.status(400).json({
@@ -114,29 +108,26 @@ router.get('/video-proxy', async (req, res) => {
       });
     }
 
-    // Parse URL for hostname check (already validated above)
     const videoUrl = new URL(urlValidation.url!);
-
-    // Get Google API key for authentication
     const apiKey = getGoogleApiKey();
 
-    // Fetch the video from the validated URL with authentication if it's a Google Cloud Storage URL
+    const headers: Record<string, string> = {
+      'User-Agent': 'VSN-Mockup-Machine/1.0',
+    };
+    if (apiKey && (videoUrl.hostname.includes('googleapis.com') || videoUrl.hostname.includes('storage.googleapis.com'))) {
+      headers['x-goog-api-key'] = apiKey;
+    }
+
     let response: Response;
     try {
-      const headers: Record<string, string> = {
-        'User-Agent': 'VSN-Mockup-Machine/1.0',
-      };
-
-      // Add API key if available (for Google Cloud Storage)
-      if (apiKey && (videoUrl.hostname.includes('googleapis.com') || videoUrl.hostname.includes('storage.googleapis.com'))) {
-        headers['x-goog-api-key'] = apiKey;
-      }
-
-      response = await fetch(urlValidation.url!, {
+      response = await safeFetch(url, {
         method: 'GET',
         headers,
       });
     } catch (error: unknown) {
+      if (error instanceof SSRFValidationError) {
+        return res.status(400).json({ error: error.message });
+      }
       console.error('Error fetching video from URL:', error);
       return res.status(500).json({
         error: 'Failed to fetch video from URL',
@@ -199,7 +190,7 @@ export default router;
  * This is used for <img src="..." /> tags where we need CORS headers
  * GET /api/images/stream?url=<encoded-r2-url>
  */
-router.get('/stream', async (req, res) => {
+router.get('/stream', apiRateLimiter, async (req, res) => {
   try {
     const { url } = req.query;
 
@@ -207,19 +198,20 @@ router.get('/stream', async (req, res) => {
       return res.status(400).send('Missing using url parameter');
     }
 
-    // Validate URL format and SSRF protection
-    const urlValidation = validateExternalUrl(url);
-    if (!urlValidation.valid) {
-      return res.status(400).send(urlValidation.error || 'Invalid URL');
+    let response: Response;
+    try {
+      response = await safeFetch(url, {
+        method: 'GET',
+        headers: {
+          'User-Agent': 'VSN-Mockup-Machine/1.0',
+        },
+      });
+    } catch (error: unknown) {
+      if (error instanceof SSRFValidationError) {
+        return res.status(400).send(error.message);
+      }
+      throw error;
     }
-
-    // Fetch the image from the validated URL
-    const response = await fetch(urlValidation.url!, {
-      method: 'GET',
-      headers: {
-        'User-Agent': 'VSN-Mockup-Machine/1.0',
-      },
-    });
 
     if (!response.ok) {
       return res.status(response.status).send(`Failed to fetch image: ${response.statusText}`);
