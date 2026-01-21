@@ -38,14 +38,19 @@ export const Tag: React.FC<TagProps> = ({
         (!disabled && (onToggle || removable)) ? "cursor-pointer" : "cursor-default"
     );
 
-    // Pool mode styling - dashed border for tags in the pool
-    const poolStyles = inPool
-        ? theme === 'dark'
-            ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/60 border-dashed shadow-sm shadow-brand-cyan/5'
-            : 'bg-brand-cyan/10 text-neutral-800 border-brand-cyan/60 border-dashed shadow-sm shadow-brand-cyan/5'
-        : '';
+    // Pool: subtle dashed. Selected: strong. inPool+selected: "active in pool" (solid, stronger)
+    const poolStyles = theme === 'dark'
+        ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/60 border-dashed shadow-sm shadow-brand-cyan/5'
+        : 'bg-brand-cyan/10 text-neutral-800 border-brand-cyan/60 border-dashed shadow-sm shadow-brand-cyan/5';
+    const poolActiveStyles = theme === 'dark'
+        ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan shadow-sm shadow-brand-cyan/10'
+        : 'bg-brand-cyan/20 text-neutral-800 border-brand-cyan shadow-sm shadow-brand-cyan/10';
 
-    const themeStyles = inPool ? poolStyles : (theme === 'dark'
+    const themeStyles = inPool && selected
+        ? poolActiveStyles
+        : inPool
+            ? poolStyles
+            : (theme === 'dark'
         ? selected
             ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/40 shadow-sm shadow-brand-cyan/10'
             : suggested

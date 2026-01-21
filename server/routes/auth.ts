@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '../db/prisma.js';
 import bcrypt from 'bcryptjs';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
-import { signupRateLimiter, signinRateLimiter, getClientIp, oauthRateLimiter, passwordResetRateLimiter } from '../middleware/rateLimit.js';
+import { signupRateLimiter, signinRateLimiter, getClientIp, oauthRateLimiter, passwordResetRateLimiter, apiRateLimiter, uploadImageRateLimiter } from '../middleware/rateLimit.js';
 // CAPTCHA middleware import removed - CAPTCHA is disabled
 // import { captchaMiddleware } from '../middleware/captcha.js';
 import { detectAbuse, recordSignupAttempt } from '../utils/abuseDetection.js';
@@ -427,7 +427,7 @@ router.get('/google/link-callback', oauthRateLimiter, authenticate, async (req: 
 });
 
 // Verify token
-router.get('/verify', async (req, res) => {
+router.get('/verify', apiRateLimiter, async (req, res) => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
 
@@ -753,7 +753,7 @@ router.post('/signin', signinRateLimiter, async (req, res) => {
 });
 
 // Logout (client-side token removal, but we can add token blacklisting here if needed)
-router.post('/logout', (req, res) => {
+router.post('/logout', apiRateLimiter, (req, res) => {
   res.json({ message: 'Logged out successfully' });
 });
 
@@ -836,7 +836,7 @@ router.post('/forgot-password', passwordResetRateLimiter, async (req, res) => {
 });
 
 // Reset Password - Reset password with token
-router.post('/reset-password', async (req, res) => {
+router.post('/reset-password', passwordResetRateLimiter, async (req, res) => {
   try {
     const { token, password } = req.body;
 
@@ -906,7 +906,7 @@ router.post('/reset-password', async (req, res) => {
 });
 
 // Upload profile picture
-router.post('/profile/picture', authenticate, async (req: AuthRequest, res) => {
+router.post('/profile/picture', uploadImageRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const { imageBase64 } = req.body;
     const userId = req.userId!;
@@ -954,7 +954,7 @@ router.post('/profile/picture', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Update user profile
-router.put('/profile', authenticate, async (req: AuthRequest, res) => {
+router.put('/profile', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const { name, email, picture } = req.body;
     const userId = req.userId!;

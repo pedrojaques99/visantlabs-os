@@ -7,7 +7,7 @@ import { checkSubscription, SubscriptionRequest } from '../middleware/subscripti
 import { generateMockup, RateLimitError } from '../../src/services/geminiService.js';
 import { createUsageRecord, getCreditsRequired } from '../utils/usageTracking.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
-import { validateExternalUrl, getErrorMessage } from '../utils/securityValidation.js';
+import { safeFetch, getErrorMessage } from '../utils/securityValidation.js';
 import { ensureOptionalBoolean, ensureString, isValidObjectId, sanitizeLogValue } from '../utils/validation.js';
 import { mockupRateLimiter, apiRateLimiter } from '../middleware/rateLimit.js';
 import type { UploadedImage, AspectRatio, GeminiModel, Resolution } from '../../src/types/types.js';
@@ -694,14 +694,9 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       if (!img) return null;
       if (img.base64) return img;
       if (img.url) {
-        // Validate URL for SSRF protection
-        const urlValidation = validateExternalUrl(img.url);
-        if (!urlValidation.valid || !urlValidation.url) {
-          throw new Error(`Invalid image URL: ${urlValidation.error || 'Invalid URL'}`);
-        }
         try {
           console.log(`${logPrefix} [IMAGE PROCESSING] Downloading image from URL:`, img.url.substring(0, 100));
-          const response = await fetch(urlValidation.url);
+          const response = await safeFetch(img.url);
           if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
           const arrayBuffer = await response.arrayBuffer();
           const buffer = Buffer.from(arrayBuffer);
