@@ -4,7 +4,8 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '../db/prisma.js';
 import bcrypt from 'bcryptjs';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
-import { signupRateLimiter, signinRateLimiter, getClientIp, oauthRateLimiter, passwordResetRateLimiter, apiRateLimiter, uploadImageRateLimiter } from '../middleware/rateLimit.js';
+import { signupRateLimiter, signinRateLimiter, getClientIp, passwordResetRateLimiter, apiRateLimiter, uploadImageRateLimiter } from '../middleware/rateLimit.js';
+import { rateLimit } from 'express-rate-limit';
 // CAPTCHA middleware import removed - CAPTCHA is disabled
 // import { captchaMiddleware } from '../middleware/captcha.js';
 import { detectAbuse, recordSignupAttempt } from '../utils/abuseDetection.js';
@@ -199,6 +200,26 @@ const logError = (error: any, context: LogErrorContext = {}) => {
 
   return errorInfo;
 };
+
+// OAuth rate limiter - prevent brute force on OAuth endpoints
+// Using express-rate-limit for CodeQL recognition
+const oauthRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_OAUTH_WINDOW_MS || '300000', 10), // 5 minutes default
+  max: parseInt(process.env.RATE_LIMIT_MAX_OAUTH || '20', 10), // 20 OAuth requests per 5 minutes
+  message: { error: 'Too many OAuth requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Token verification rate limiter - prevent brute force on token verification
+// Using express-rate-limit for CodeQL recognition
+const verifyRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS || '60000', 10), // 1 minute default
+  max: parseInt(process.env.RATE_LIMIT_MAX_API || '60', 10), // 60 requests per minute
+  message: { error: 'Too many verification requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // Get Google OAuth URL
 router.get('/google', oauthRateLimiter, (req, res) => {
@@ -427,7 +448,7 @@ router.get('/google/link-callback', oauthRateLimiter, authenticate, async (req: 
 });
 
 // Verify token
-router.get('/verify', apiRateLimiter, async (req, res) => {
+router.get('/verify', verifyRateLimiter, async (req, res) => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
 

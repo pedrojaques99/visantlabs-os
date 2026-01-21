@@ -1736,7 +1736,7 @@ router.delete('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res
 });
 
 // Get usage statistics for billing
-router.get('/usage/stats', authenticate, async (req: AuthRequest, res, next) => {
+router.get('/usage/stats', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     await connectToMongoDB();
     const db = getDb();
