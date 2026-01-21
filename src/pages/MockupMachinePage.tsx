@@ -2728,7 +2728,7 @@ Generate the new mockup image with the requested changes applied.`;
               "z-30 transition-all duration-500 ease-in-out",
               isSetupMode ? "w-full" : [
                 "fixed inset-0 lg:relative lg:inset-auto",
-                isSidebarVisibleMobile ? "flex bg-background/95 backdrop-blur-md pt-8" : "hidden lg:flex",
+                isSidebarVisibleMobile ? "flex bg-background/95 backdrop-blur-md" : "hidden lg:flex",
                 isSidebarCollapsed ? "lg:w-0 lg:opacity-0 lg:pointer-events-none" : "lg:w-auto lg:opacity-100"
               ]
             )}>
@@ -2876,7 +2876,7 @@ Generate the new mockup image with the requested changes applied.`;
         isGenerating={isGenerating}
         hasAnalyzed={hasAnalyzed}
         generateButton={
-          isDashboardMode && shouldShowGenerateButton ? (
+          !isSurpriseMeMode && isDashboardMode && shouldShowGenerateButton ? (
             <GenerateButton
               onClick={handleGenerateClick}
               disabled={isGenerateDisabled || (isPromptReady && isGenerating)}

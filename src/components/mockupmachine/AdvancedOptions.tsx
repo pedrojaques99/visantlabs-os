@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Plus, ChevronDown, ChevronUp, Dices } from 'lucide-react';
+import { X, Plus, ChevronDown, ChevronUp, Dices, MapPin, Camera, Lightbulb, Sparkles, Layers, XCircle, FilePlus } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { translateTag } from '@/utils/localeUtils';
@@ -81,6 +81,7 @@ interface CollapsableTagSectionProps {
   isSurpriseMeMode?: boolean;
   poolTags?: string[];
   onPoolToggle?: (tag: string) => void;
+  icon?: React.ReactNode;
 }
 
 const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
@@ -95,7 +96,8 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
   // Surprise Me Mode props
   isSurpriseMeMode = false,
   poolTags = [],
-  onPoolToggle
+  onPoolToggle,
+  icon
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
@@ -169,8 +171,10 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
         onClick={() => setIsExpanded(!isExpanded)}
         className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 hover:bg-neutral-800/10 ${isExpanded ? (theme === 'dark' ? 'bg-neutral-800/20' : 'bg-neutral-100/50') : ''}`}
       >
-        <div className="flex flex-col gap-0.5 overflow-hidden">
-          <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{title}</span>
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          {icon && <div className="flex-shrink-0">{icon}</div>}
+          <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
+            <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{title}</span>
           {!isExpanded && (hasSelection || poolCount > 0) && (
             <span className="text-[10px] font-mono truncate max-w-[200px]">
               {hasSelection && <span className="text-brand-cyan">{selectionSummary}</span>}
@@ -178,8 +182,9 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
               {poolCount > 0 && <span className="text-neutral-500">{poolCount} {t('mockup.inPool')}</span>}
             </span>
           )}
+          </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           {isSurpriseMeMode && <Dices size={12} className="text-brand-cyan/60" />}
           {isExpanded ? <ChevronUp size={16} className="text-neutral-500" /> : <ChevronDown size={16} className="text-neutral-500" />}
         </div>
@@ -353,6 +358,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
           isSurpriseMeMode={isSurpriseMeMode}
           poolTags={locationPool}
           onPoolToggle={onLocationPoolToggle}
+          icon={<MapPin size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />}
         />
       </div>
       <CollapsableTagSection
@@ -367,6 +373,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
         isSurpriseMeMode={isSurpriseMeMode}
         poolTags={anglePool}
         onPoolToggle={onAnglePoolToggle}
+        icon={<Camera size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />}
       />
       <CollapsableTagSection
         title={t('mockup.lightingMood')}
@@ -380,6 +387,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
         isSurpriseMeMode={isSurpriseMeMode}
         poolTags={lightingPool}
         onPoolToggle={onLightingPoolToggle}
+        icon={<Lightbulb size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />}
       />
       <CollapsableTagSection
         title={t('mockup.visualEffects')}
@@ -393,6 +401,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
         isSurpriseMeMode={isSurpriseMeMode}
         poolTags={effectPool}
         onPoolToggle={onEffectPoolToggle}
+        icon={<Sparkles size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />}
       />
       {designType === 'logo' && (
         <CollapsableTagSection
@@ -407,6 +416,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
           isSurpriseMeMode={isSurpriseMeMode}
           poolTags={materialPool}
           onPoolToggle={onMaterialPoolToggle}
+          icon={<Layers size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />}
         />
       )}
 
@@ -417,13 +427,18 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
             onClick={() => setIsNegativeExpanded(!isNegativeExpanded)}
             className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 hover:bg-neutral-800/10 ${isNegativeExpanded ? (theme === 'dark' ? 'bg-neutral-800/20' : 'bg-neutral-100/50') : ''}`}
           >
-            <div className="flex flex-col gap-0.5 overflow-hidden">
-              <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.negativePrompt')}</span>
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <XCircle size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
+              <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
+                <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.negativePrompt')}</span>
               {!isNegativeExpanded && negativePrompt && (
                 <span className="text-[10px] text-neutral-500 font-mono truncate max-w-[200px]">{negativePrompt}</span>
               )}
+              </div>
             </div>
-            {isNegativeExpanded ? <ChevronUp size={16} className="text-neutral-500" /> : <ChevronDown size={16} className="text-neutral-500" />}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {isNegativeExpanded ? <ChevronUp size={16} className="text-neutral-500" /> : <ChevronDown size={16} className="text-neutral-500" />}
+            </div>
           </button>
 
           {isNegativeExpanded && (
@@ -447,13 +462,18 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
             onClick={() => setIsAdditionalExpanded(!isAdditionalExpanded)}
             className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 hover:bg-neutral-800/10 ${isAdditionalExpanded ? (theme === 'dark' ? 'bg-neutral-800/20' : 'bg-neutral-100/50') : ''}`}
           >
-            <div className="flex flex-col gap-0.5 overflow-hidden">
-              <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.additionalPrompt')}</span>
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <FilePlus size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
+              <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
+                <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.additionalPrompt')}</span>
               {!isAdditionalExpanded && additionalPrompt && (
                 <span className="text-[10px] text-neutral-500 font-mono truncate max-w-[200px]">{additionalPrompt}</span>
               )}
+              </div>
             </div>
-            {isAdditionalExpanded ? <ChevronUp size={16} className="text-neutral-500" /> : <ChevronDown size={16} className="text-neutral-500" />}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {isAdditionalExpanded ? <ChevronUp size={16} className="text-neutral-500" /> : <ChevronDown size={16} className="text-neutral-500" />}
+            </div>
           </button>
 
           {isAdditionalExpanded && (

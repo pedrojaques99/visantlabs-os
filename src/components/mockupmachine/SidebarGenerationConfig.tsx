@@ -448,7 +448,8 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
 
             <div className="flex flex-col gap-2 mt-6">
                 {/* Generate Button - Only show if prompt is ready OR user has valid setup (Generate Prompt) */}
-                {(isPromptReady || designTypeSelected || brandingComplete || categoriesComplete || hasReferenceImage || (uploadedImage && !isImagelessMode)) && (
+                {/* Hide when pool mode (isSurpriseMeMode) is active */}
+                {!isSurpriseMeMode && (isPromptReady || designTypeSelected || brandingComplete || categoriesComplete || hasReferenceImage || (uploadedImage && !isImagelessMode)) && (
                     <GenerateButton
                         onClick={onGenerateClick}
                         disabled={isGenerateDisabled || (isPromptReady && isGenerating)}

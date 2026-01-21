@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Plus, Dices, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Dices, ChevronDown, ChevronUp, FileText, Package, Shirt, Smartphone, MapPin, CupSoda, Palette, Grid3x3 } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
@@ -45,6 +45,7 @@ interface CollapsableCategoryGroupProps {
   className?: string;
   isSurpriseMeMode?: boolean;
   categoriesPool?: string[];
+  icon?: React.ReactNode;
 }
 
 const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
@@ -56,7 +57,8 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
   t,
   className,
   isSurpriseMeMode,
-  categoriesPool = []
+  categoriesPool = [],
+  icon
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const groupSelectedTags = tags.filter(tag => selectedTags.includes(tag));
@@ -75,10 +77,12 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
         onClick={() => setIsExpanded(!isExpanded)}
         className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 hover:bg-neutral-800/10 ${isExpanded ? (theme === 'dark' ? 'bg-neutral-800/20' : 'bg-neutral-100/50') : ''}`}
       >
-        <div className="flex flex-col gap-0.5 overflow-hidden">
-          <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>
-            {title}
-          </span>
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          {icon && <div className="flex-shrink-0">{icon}</div>}
+          <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
+            <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>
+              {title}
+            </span>
           {!isExpanded && (hasSelection || poolCount > 0) && (
             <span className="text-[10px] font-mono truncate max-w-[200px]">
               {hasSelection && <span className="text-brand-cyan">{selectionSummary}</span>}
@@ -86,8 +90,9 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
               {poolCount > 0 && <span className="text-neutral-500">{poolCount} {t('mockup.inPool')}</span>}
             </span>
           )}
+          </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           {isSurpriseMeMode && <Dices size={12} className="text-brand-cyan/60" />}
           {isExpanded ? <ChevronUp size={16} className="text-neutral-500" /> : <ChevronDown size={16} className="text-neutral-500" />}
         </div>
@@ -255,6 +260,36 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
   const otherTags = [...(otherGroup?.tags || []), ...strayTags];
   const finalTags = [...drinkwareTags, ...otherTags];
 
+  // Icon mapping for categories
+  const getCategoryIcon = (group: { id: string | number; key: string }) => {
+    // Try to match by id first (for legacy categories), then by key (for database categories)
+    const categoryId = typeof group.id === 'string' ? group.id : group.key.toLowerCase();
+    
+    const iconMap: Record<string, React.ReactNode> = {
+      'stationery': <FileText size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />,
+      'packaging': <Package size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />,
+      'apparel': <Shirt size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />,
+      'devices': <Smartphone size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />,
+      'signage': <MapPin size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />,
+      'drinkware': <CupSoda size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />,
+      'art': <Palette size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />,
+      'other': <Grid3x3 size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
+    };
+    
+    // Try direct match first
+    if (iconMap[categoryId]) return iconMap[categoryId];
+    
+    // Try matching by key (for database categories that might have different names)
+    const keyLower = group.key.toLowerCase();
+    for (const [key, icon] of Object.entries(iconMap)) {
+      if (keyLower.includes(key) || keyLower === key) {
+        return icon;
+      }
+    }
+    
+    return null;
+  };
+
   const hasFinalSection = finalTags.length > 0 || !isComplete;
   const finalSelectedTags = finalTags.filter(tag => selectedTags.includes(tag));
   const hasFinalSelection = finalSelectedTags.length > 0;
@@ -373,6 +408,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                 t={t}
                 isSurpriseMeMode={isSurpriseMeMode}
                 categoriesPool={categoriesPool}
+                icon={getCategoryIcon(group)}
               />
             ))}
 
@@ -382,12 +418,18 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                   onClick={() => setIsFinalExpanded(!isFinalExpanded)}
                   className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 hover:bg-neutral-800/10 ${isFinalExpanded ? (theme === 'dark' ? 'bg-neutral-800/20' : 'bg-neutral-100/50') : ''}`}
                 >
-                  <div className="flex flex-col gap-0.5 overflow-hidden">
-                    <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>
-                      {drinkwareTags.length > 0
-                        ? t(`mockup.categoryGroups.drinkware`) + (otherTags.length > 0 ? ` / ${t(`mockup.categoryGroups.other`)}` : '')
-                        : t(`mockup.categoryGroups.other`)}
-                    </span>
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    {drinkwareTags.length > 0 ? (
+                      <CupSoda size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
+                    ) : (
+                      <Grid3x3 size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
+                    )}
+                    <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
+                      <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>
+                        {drinkwareTags.length > 0
+                          ? t(`mockup.categoryGroups.drinkware`) + (otherTags.length > 0 ? ` / ${t(`mockup.categoryGroups.other`)}` : '')
+                          : t(`mockup.categoryGroups.other`)}
+                      </span>
                     {!isFinalExpanded && (hasFinalSelection || finalPoolCount > 0) && (
                       <span className="text-[10px] font-mono truncate max-w-[200px]">
                         {hasFinalSelection && <span className="text-brand-cyan">{finalSelectedTags.map(tag => translateTag(tag)).join(', ')}</span>}
@@ -395,8 +437,9 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                         {finalPoolCount > 0 && <span className="text-neutral-500">{finalPoolCount} {t('mockup.inPool')}</span>}
                       </span>
                     )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     {isSurpriseMeMode && <Dices size={12} className="text-brand-cyan/60" />}
                     {isFinalExpanded ? <ChevronUp size={16} className="text-neutral-500" /> : <ChevronDown size={16} className="text-neutral-500" />}
                   </div>

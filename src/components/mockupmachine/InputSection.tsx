@@ -125,7 +125,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
   const capacityUsage = Math.round(Math.min(((displayImage ? 1 : 0) + referenceImages.length) / 4 * 100, 100));
 
   return (
-    <section className={cn("flex flex-col gap-3 sm:gap-4 md:gap-6 min-h-0", className)}>
+    <section className={cn("flex flex-col gap-3 sm:gap-4 md:gap-6 w-full", className)}>
       {/* Files Header */}
       <div className="flex items-center justify-between flex-shrink-0">
         <h2 className={sectionTitleClass(theme === 'dark')}>

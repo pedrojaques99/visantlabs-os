@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Sliders } from 'lucide-react';
 import { AdvancedOptions } from './AdvancedOptions';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
@@ -131,7 +131,10 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
           : 'text-neutral-700 bg-neutral-100 border-neutral-300 hover:border-neutral-400'
           }`}
       >
-        <span>{t('mockup.refine')}</span>
+        <div className="flex items-center gap-2">
+          <Sliders size={16} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
+          <span>{t('mockup.refine')}</span>
+        </div>
         {isAdvancedOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
       </button>
 
