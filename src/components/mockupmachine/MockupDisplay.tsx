@@ -118,12 +118,12 @@ export const MockupDisplay: React.FC<MockupDisplayProps> = ({
     );
   }
 
-  // Multi-image grid: 1–4 cols. Com sidebar visível, atrasa 3–4 cols (lg/2xl) para compensar a largura do SidebarOrchestrator.
+  // Multi-image grid: 1–2 cols.
   const getGridClasses = () => {
     const gap = "gap-3 sm:gap-4 md:gap-6";
     const cols = isSidebarCollapsed
-      ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
-      : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4";
+      ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-2"
+      : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-2";
     const maxW = isSidebarCollapsed ? "max-w-[2000px]" : "max-w-[1800px]";
     return `grid w-full mx-auto ${cols} ${gap} ${maxW}`;
   };
