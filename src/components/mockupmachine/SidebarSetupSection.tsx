@@ -7,6 +7,7 @@ import { BrandingSection } from '../branding/BrandingSection';
 import { ColorPalettePreview } from './ColorPalettePreview';
 import { useMockup } from './MockupContext';
 import { useMockupTags } from '@/hooks/useMockupTags';
+import { sectionTitleClass } from '@/lib/utils';
 import type { UploadedImage, DesignType } from '../../types/types';
 
 interface SidebarSetupSectionProps {
@@ -136,7 +137,7 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
                     {/* Instructions Section - Grouped with Branding aspects */}
                     <div className={`p-4 rounded-xl border transition-all duration-200 ${theme === 'dark' ? 'bg-black/10 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
                         <div className="flex items-center justify-between mb-3">
-                            <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-400">
+                            <span className={sectionTitleClass(theme === 'dark')}>
                                 {t('mockup.instructions')}
                             </span>
                             <button

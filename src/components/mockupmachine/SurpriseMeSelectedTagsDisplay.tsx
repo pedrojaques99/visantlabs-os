@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
@@ -16,8 +15,7 @@ export const SurpriseMeSelectedTagsDisplay: React.FC = () => {
         selectedLightingTags,
         selectedEffectTags,
         selectedMaterialTags,
-        selectedColors,
-        isSurpriseMeMode
+        selectedColors
     } = useMockup();
 
     // Check if we have any tags to display
@@ -32,33 +30,15 @@ export const SurpriseMeSelectedTagsDisplay: React.FC = () => {
 
     if (!hasTags) return null;
 
-    const renderTagGroup = (titleKey: string, tags: string[], isColor = false) => {
-        if (tags.length === 0) return null;
-
-        return (
-            <div className="flex flex-col gap-2 min-w-0">
-                <div className="flex flex-wrap gap-1.5">
-                    {tags.map((tag) => (
-                        <Tag
-                            key={tag}
-                            label={!isColor ? translateTag(tag) : tag}
-                            selected={true}
-                            // Make them non-interactive as this is a display summary
-                            className={isColor ? 'font-mono' : ''}
-                            size="sm"
-                        >
-                            {isColor && (
-                                <div
-                                    className="w-3 h-3 rounded-full border border-white/20 mr-1"
-                                    style={{ backgroundColor: tag }}
-                                />
-                            )}
-                        </Tag>
-                    ))}
-                </div>
-            </div>
-        );
-    };
+    const allTags: { tag: string; isColor: boolean }[] = [
+        ...selectedTags.map((tag) => ({ tag, isColor: false })),
+        ...selectedLocationTags.map((tag) => ({ tag, isColor: false })),
+        ...selectedAngleTags.map((tag) => ({ tag, isColor: false })),
+        ...selectedLightingTags.map((tag) => ({ tag, isColor: false })),
+        ...selectedEffectTags.map((tag) => ({ tag, isColor: false })),
+        ...selectedMaterialTags.map((tag) => ({ tag, isColor: false })),
+        ...selectedColors.map((tag) => ({ tag, isColor: true }))
+    ];
 
     return (
         <div className={`
@@ -69,19 +49,21 @@ export const SurpriseMeSelectedTagsDisplay: React.FC = () => {
         `}>
             {/* Header */}
             <div className="flex items-center gap-2 mb-2 opacity-70">
-                <h3 className={`text-[8px] font-mono uppercase tracking-widest font-medium ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                <h3 className={`text-[10px] font-mono uppercase tracking-widest font-medium ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'}`}>
                     {t('mockup.generationConfig')}
                 </h3>
             </div>
 
-            <div className="grid gap-2 justify-items-center text-[8px]">
-                {renderTagGroup('mockup.categories', selectedTags)}
-                {renderTagGroup('mockup.location', selectedLocationTags)}
-                {renderTagGroup('mockup.cameraAngle', selectedAngleTags)}
-                {renderTagGroup('mockup.lightingMood', selectedLightingTags)}
-                {renderTagGroup('mockup.visualEffects', selectedEffectTags)}
-                {renderTagGroup('mockup.material', selectedMaterialTags)}
-                {renderTagGroup('mockup.colors', selectedColors, true)}
+            <div className="flex flex-wrap gap-1.5">
+                {allTags.map(({ tag, isColor }) => (
+                    <Tag
+                        key={isColor ? `color-${tag}` : tag}
+                        label={!isColor ? translateTag(tag) : tag}
+                        selected={true}
+                        className="text-neutral-500 bg-neutral-800/50 border-neutral-700/50 shadow-sm shadow-neutral-800/50 hover:border-neutral-600 hover:text-neutral-400"
+                        size="sm"
+                    />
+                ))}
             </div>
         </div>
     );

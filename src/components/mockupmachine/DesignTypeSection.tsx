@@ -1,8 +1,9 @@
 import React from 'react';
 import type { DesignType, UploadedImage } from '@/types/types';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { cn, sectionTitleClass } from '@/lib/utils';
 
 interface DesignTypeSectionProps {
   designType: DesignType | null;
@@ -21,10 +22,11 @@ export const DesignTypeSection: React.FC<DesignTypeSectionProps> = ({
 }) => {
   const isComplete = !!designType;
   const { t } = useTranslation();
+  const { theme } = useTheme();
 
   return (
     <section className={isComplete ? 'pb-0' : ''}>
-      <h2 className={`font-semibold font-mono uppercase tracking-widest mb-3 transition-all duration-300 ${isComplete ? 'text-[10px] text-neutral-600 mb-1' : 'text-sm text-neutral-400'}`}>
+      <h2 className={cn(sectionTitleClass(theme === 'dark'), isComplete ? 'mb-1' : 'mb-3', 'transition-all duration-300')}>
         {t('mockup.designType')}
       </h2>
       {!isComplete && (

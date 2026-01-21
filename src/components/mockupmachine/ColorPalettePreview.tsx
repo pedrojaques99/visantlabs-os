@@ -4,7 +4,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { cn, sectionTitleClass } from '@/lib/utils';
 
 interface ColorPalettePreviewProps {
     suggestedColors: string[];
@@ -73,7 +73,7 @@ export const ColorPalettePreview: React.FC<ColorPalettePreviewProps> = ({
     return (
         <section className={cn("space-y-3", disabled && "opacity-60 pointer-events-none")}>
             <div className="flex items-center justify-between mb-1">
-                <h4 className={cn("text-[12px] font-mono uppercase tracking-widest", theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600')}>
+                <h4 className={sectionTitleClass(theme === 'dark')}>
                     {t('mockup.colorPaletteSection')}
                 </h4>
                 <span className="text-[12px] font-mono text-neutral-600">
