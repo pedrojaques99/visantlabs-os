@@ -765,7 +765,7 @@ router.get('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
 
 // Get shared project by shareId (no auth required)
 // MUST be before /:id route to avoid route conflicts
-router.get('/shared/:shareId', async (req, res) => {
+router.get('/shared/:shareId', apiRateLimiter, async (req, res) => {
   try {
     const { shareId } = req.params;
 
@@ -972,7 +972,7 @@ router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => 
 });
 
 // Update canvas project
-router.put('/:id', authenticate, async (req: AuthRequest, res) => {
+router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     // Check request size early to prevent 413 errors
     const contentLength = req.headers['content-length'];
@@ -1466,7 +1466,7 @@ router.post('/image/upload', uploadImageRateLimiter, authenticate, async (req: A
 });
 
 // Upload canvas PDF to R2
-router.post('/pdf/upload', authenticate, async (req: AuthRequest, res) => {
+router.post('/pdf/upload', uploadImageRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const { pdfBase64, canvasId, nodeId } = req.body;
 

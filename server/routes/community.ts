@@ -192,7 +192,7 @@ router.post('/presets', apiRateLimiter, authenticate, async (req: AuthRequest, r
 });
 
 // Get public approved community presets (with optional auth for likes)
-router.get('/presets/public', async (req, res) => {
+router.get('/presets/public', apiRateLimiter, async (req, res) => {
   try {
     await connectToMongoDB();
     const db = getDb();

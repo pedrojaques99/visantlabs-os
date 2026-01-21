@@ -83,7 +83,7 @@ router.get('/public', apiRateLimiter, async (req, res) => {
 });
 
 // Get workflow by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', apiRateLimiter, async (req, res) => {
     try {
         const { id } = req.params;
 

@@ -136,7 +136,7 @@ router.get('/:identifier/mockups', apiRateLimiter, async (req, res) => {
 });
 
 // Get user's public presets
-router.get('/:identifier/presets', async (req, res) => {
+router.get('/:identifier/presets', apiRateLimiter, async (req, res) => {
   try {
     await connectToMongoDB();
     const { identifier } = req.params;
