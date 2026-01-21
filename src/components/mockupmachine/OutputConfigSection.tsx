@@ -134,7 +134,7 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
                     }`}
                 >
                   <div className={`${isSquare ? 'w-5 h-5' : isLandscape ? 'w-7 h-4' : 'w-4 h-7'} border ${isSelected ? 'border-brand-cyan/60' : 'border-neutral-600/50'
-                    } rounded-sm`} />
+                    } rounded-[4px]`} />
                   <span className="text-[10px] font-mono mt-1">{ratio}</span>
                 </button>
               );

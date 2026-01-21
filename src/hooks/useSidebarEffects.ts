@@ -40,7 +40,7 @@ export const useSidebarEffects = ({
 
     // Setup resizer functionality
     useEffect(() => {
-        if (!hasAnalyzed) return;
+        if (!hasAnalyzed || !isLargeScreen) return;
         if (!resizerRef.current || !sidebarRef.current) return;
 
         const resizer = resizerRef.current;
@@ -54,6 +54,18 @@ export const useSidebarEffects = ({
             document.body.style.cursor = 'col-resize';
             document.body.style.userSelect = 'none';
 
+            // Use requestAnimationFrame for smooth, optimized updates
+            let rafId: number | null = null;
+            let pendingWidth: number | null = null;
+
+            const updateWidth = () => {
+                if (pendingWidth !== null) {
+                    onSidebarWidthChange(pendingWidth);
+                    pendingWidth = null;
+                }
+                rafId = null;
+            };
+
             const handleMouseMove = (moveEvent: MouseEvent) => {
                 const dx = moveEvent.clientX - startX;
                 const newWidth = startWidth + dx;
@@ -62,11 +74,36 @@ export const useSidebarEffects = ({
                 const maxWidth = 1040;
 
                 if (newWidth >= minWidth && newWidth <= maxWidth) {
-                    onSidebarWidthChange(newWidth);
+                    // Disable transitions during resize for smooth dragging
+                    sidebar.style.transition = 'none';
+                    
+                    // Apply width directly to DOM for immediate visual feedback
+                    sidebar.style.width = `${newWidth}px`;
+                    
+                    // Queue state update via requestAnimationFrame (only once per frame)
+                    pendingWidth = newWidth;
+                    if (rafId === null) {
+                        rafId = requestAnimationFrame(updateWidth);
+                    }
                 }
             };
 
             const handleMouseUp = () => {
+                // Cancel any pending animation frame
+                if (rafId !== null) {
+                    cancelAnimationFrame(rafId);
+                    rafId = null;
+                }
+                
+                // Ensure final state is updated
+                if (pendingWidth !== null) {
+                    onSidebarWidthChange(pendingWidth);
+                    pendingWidth = null;
+                }
+
+                // Re-enable transitions after resize is complete
+                sidebar.style.transition = '';
+                
                 document.body.style.cursor = '';
                 document.body.style.userSelect = '';
                 window.removeEventListener('mousemove', handleMouseMove);
@@ -82,7 +119,7 @@ export const useSidebarEffects = ({
         return () => {
             resizer.removeEventListener('mousedown', handleMouseDown);
         };
-    }, [hasAnalyzed, sidebarRef, onSidebarWidthChange]);
+    }, [hasAnalyzed, isLargeScreen, sidebarRef, onSidebarWidthChange]);
 
     // Auto-scroll to branding section when design type is selected
     useEffect(() => {

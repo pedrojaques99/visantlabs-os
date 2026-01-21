@@ -34,19 +34,20 @@ export const LinearGradientBackground: React.FC<LinearGradientBackgroundProps> =
   
   const styleOpacity = opacity === 1 ? undefined : opacity;
 
-  // Animation classes for slide and fade-in
-  const animationClasses = 'animate-gradient-slide animate-gradient-fade-in';
+  // Check if className contains 'rounded-md' (likely modal usage) to disable animations
+  const isModal = className.includes('rounded-md');
+  const animationClasses = isModal ? '' : 'animate-gradient-slide animate-gradient-fade-in';
 
   if (fullHeight) {
     return (
       <div
-        className={`absolute inset-0 w-full min-h-full ${opacityClasses} ${animationClasses} ${className}`}
+        className={`absolute inset-0 w-full ${opacityClasses} ${animationClasses} ${className}`}
         style={{
           opacity: styleOpacity,
           background: gradientStyle,
           backgroundSize: direction === 'vertical' ? '100% 200%' : '200% 100%',
-          height: '100%',
           minHeight: '100%',
+          height: '100%',
         }}
       />
     );

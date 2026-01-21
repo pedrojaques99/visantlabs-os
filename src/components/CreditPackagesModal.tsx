@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, CreditCard, Plus, Minus, Pickaxe, QrCode, Info, FileText, CheckCircle2 } from 'lucide-react';
+import { X, CreditCard, Plus, Minus, Pickaxe, QrCode, Info, FileText, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import { getUserLocale, formatPrice, type CurrencyInfo } from '@/utils/localeUtils';
 import { CREDIT_PACKAGES, getCreditPackageLink, getCreditPackagePrice } from '@/utils/creditPackages';
@@ -97,7 +97,9 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
   const navigate = useNavigate();
   const [currencyInfo, setCurrencyInfo] = useState<CurrencyInfo | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [activeTab, setActiveTab] = useState<'buy' | 'credits'>(initialTab);
+  // Default to 'credits' if user has subscription, otherwise 'buy'
+  const defaultTab = subscriptionStatus ? 'credits' : 'buy';
+  const [activeTab, setActiveTab] = useState<'buy' | 'credits'>(initialTab || defaultTab);
   const [buySection, setBuySection] = useState<'credits' | 'subscriptions'>('credits');
   const [subscriptionPlans, setSubscriptionPlans] = useState<Product[]>([]);
   const [selectedPlanIndex, setSelectedPlanIndex] = useState(0);
@@ -245,67 +247,70 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-2 sm:p-4">
-      <div className="border border-neutral-800/50 rounded-md w-full mx-auto relative min-h-[500px] sm:min-h-[600px] md:min-h-[700px] max-h-[98vh] sm:max-h-[95vh] md:max-h-[90vh] overflow-y-auto overflow-x-hidden flex flex-col">
-        <LinearGradientBackground className="rounded-md" fullHeight />
-        <div className="relative p-4 sm:p-6 z-10 flex-1">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-6 md:p-8">
+      <div className="border border-neutral-800/50 rounded-md w-[90%] mx-auto relative max-h-[97%] overflow-y-auto overflow-x-hidden flex flex-col">
+        <div className="relative flex-1 h-full w-full">
+          <LinearGradientBackground className="rounded-md" fullHeight />
+          <div className="relative p-4 sm:p-6 md:p-8 z-10 w-full min-h-full">
           <button
             onClick={onClose}
-            className="absolute top-3 right-3 sm:top-4 sm:right-4 text-neutral-500 hover:text-neutral-300 transition-colors z-20 p-1"
+            className="absolute top-4 right-2 sm:top-4 sm:right-4 md:top-4 md:right-4 text-neutral-500 hover:text-neutral-300 transition-colors z-20 p-1"
           >
-            <X size={18} className="sm:w-5 sm:h-5" />
+            <X size={16} className="sm:w-4 sm:h-4" />
           </button>
 
-          <div className="space-y-4 sm:space-y-6">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <CreditCard size={18} className="sm:w-5 sm:h-5 text-neutral-500" />
-              <h2 className="text-sm sm:text-base font-medium font-mono text-neutral-400">
-                {t('creditsPackages.title') || 'CREDITS'}
-              </h2>
-            </div>
-
-            {/* Tabs */}
-            <div className="grid grid-cols-2 bg-neutral-900/50 p-1 rounded-lg border border-neutral-800/50">
-              <button
-                onClick={() => {
-                  playClickSound();
-                  setActiveTab('credits');
-                }}
-                className={`px-3 sm:px-4 py-2 text-xs font-mono uppercase tracking-wider transition-all rounded-md ${activeTab === 'credits'
-                  ? 'bg-neutral-800 text-white shadow-sm'
-                  : 'text-neutral-500 hover:text-neutral-300'
-                  }`}
-              >
-                {t('credits.title') || 'Créditos'}
-              </button>
-
-              <button
-                onClick={() => {
-                  playClickSound();
-                  setActiveTab('buy');
-                }}
-                className={`px-3 sm:px-4 py-2 text-xs font-mono uppercase tracking-wider transition-all rounded-md ${activeTab === 'buy'
-                  ? 'bg-neutral-800 text-white shadow-sm'
-                  : 'text-neutral-500 hover:text-neutral-300'
-                  }`}
-              >
-                {t('creditsPackages.buy') || 'Comprar'}
-              </button>
+          <div className="space-y-4 sm:space-y-5 md:space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <CreditCard size={16} className="sm:w-4 sm:h-4 text-neutral-500" />
+                <h2 className="text-xs sm:text-sm font-medium font-mono text-neutral-400">
+                  {activeTab === 'credits' 
+                    ? (t('credits.title') || 'CRÉDITOS')
+                    : (t('creditsPackages.title') || 'COMPRAR')
+                  }
+                </h2>
+              </div>
+              
+              {/* Subtle navigation button */}
+              {activeTab === 'buy' && subscriptionStatus && (
+                <button
+                  onClick={() => {
+                    playClickSound();
+                    setActiveTab('credits');
+                  }}
+                  className="text-xs text-neutral-500 hover:text-neutral-300 font-mono uppercase tracking-wider transition-colors flex items-center gap-1 px-2 py-1 hover:bg-neutral-800/30 rounded"
+                >
+                  <span>←</span>
+                  {t('credits.title') || 'Créditos'}
+                </button>
+              )}
+              {activeTab === 'credits' && (
+                <button
+                  onClick={() => {
+                    playClickSound();
+                    setActiveTab('buy');
+                  }}
+                  className="text-xs text-neutral-500 hover:text-neutral-300 font-mono uppercase tracking-wider transition-colors flex items-center gap-1 px-2 py-1 hover:bg-neutral-800/30 rounded"
+                >
+                  {t('creditsPackages.buy') || 'Comprar'}
+                  <span>→</span>
+                </button>
+              )}
             </div>
 
             {/* Tab Content */}
-            <div className="relative min-h-[400px] sm:min-h-[500px] overflow-hidden">
+            <div className="relative overflow-hidden">
               {activeTab === 'buy' && (
-                <div className="py-4 sm:py-6 animate-slide-in-right transition-all duration-300 ease-in-out">
-                  {/* Sub-tabs for Buy section */}
-                  <div className="flex justify-center mb-6">
-                    <div className="grid grid-cols-2 bg-neutral-900/50 p-1 rounded-lg border border-neutral-800/50 w-full max-w-xs">
+                <div className="animate-slide-in-right transition-all duration-300 ease-in-out">
+                  {/* Unified Tabs: Créditos/Assinaturas */}
+                  <div className="flex justify-center">
+                    <div className="grid grid-cols-2 bg-neutral-900/50 p-1 rounded-lg border border-neutral-800/50 w-full sm:w-auto sm:min-w-[200px]">
                       <button
                         onClick={() => {
                           playClickSound();
                           setBuySection('credits');
                         }}
-                        className={`px-4 py-2 text-xs font-mono uppercase tracking-wider transition-all rounded-md ${buySection === 'credits'
+                        className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs font-mono uppercase tracking-wider transition-all rounded-md ${buySection === 'credits'
                           ? 'bg-neutral-800 text-white shadow-sm'
                           : 'text-neutral-500 hover:text-neutral-300'
                           }`}
@@ -317,7 +322,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                           playClickSound();
                           setBuySection('subscriptions');
                         }}
-                        className={`px-4 py-2 text-xs font-mono uppercase tracking-wider transition-all rounded-md ${buySection === 'subscriptions'
+                        className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs font-mono uppercase tracking-wider transition-all rounded-md ${buySection === 'subscriptions'
                           ? 'bg-neutral-800 text-white shadow-sm'
                           : 'text-neutral-500 hover:text-neutral-300'
                           }`}
@@ -329,12 +334,14 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
 
                   {/* Credits Section */}
                   {buySection === 'credits' && (
-                    <div className="flex flex-col items-center justify-center py-4 sm:py-8 animate-fade-in transition-all duration-300 ease-in-out">
+                    <div className="flex flex-col items-center justify-center py-4 sm:py-5 md:py-6 animate-fade-in transition-all duration-300 ease-in-out">
                       {/* Package Selector */}
-                      <div className="flex items-center justify-center mb-4 sm:mb-6 w-full">
+                      <div className="flex items-center justify-center mb-4 sm:mb-5 md:mb-6 w-full">
                         {/* Current Package Display */}
-                        <div className="bg-neutral-900 border border-neutral-800/30 rounded-xl p-4 sm:p-6 md:p-10 w-full max-w-[280px] sm:max-w-[420px] text-center shadow-sm">
-                      <div className="space-y-4">
+                        <div className="bg-neutral-900/40 border border-neutral-800/50 rounded-xl p-4 sm:p-6 md:p-8 w-full max-w-[320px] sm:max-w-[380px] md:max-w-[420px] text-center shadow-sm relative overflow-hidden group">
+                          <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                          
+                          <div className="relative z-10 space-y-4 sm:space-y-6">
                         <div>
                           {/* Credits Display with Pickaxe and +/- buttons */}
                           <div className="flex items-center justify-center gap-3 mb-3">
@@ -448,7 +455,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                   </div>
 
                       {/* Package Indicator */}
-                      <div className="flex gap-2 mb-4 sm:mb-6 justify-center">
+                      <div className="flex gap-2 mb-4 sm:mb-5 md:mb-6 justify-center">
                         {CREDIT_PACKAGES.map((_, index) => (
                           <button
                             key={index}
@@ -473,56 +480,33 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
 
                   {/* Subscriptions Section */}
                   {buySection === 'subscriptions' && (
-                    <div className="py-4 sm:py-6 animate-fade-in transition-all duration-300 ease-in-out">
-                      {/* Billing Cycle Toggle */}
-                      <div className="flex justify-center mb-6 sm:mb-8">
-                        <div className="bg-neutral-900/50 p-1 rounded-full border border-neutral-800 inline-flex relative">
-                          <div
-                            className={`absolute inset-y-1 rounded-full bg-brand-cyan transition-all duration-300 ease-out ${
-                              billingCycle === 'monthly' ? "left-1 w-[calc(50%-4px)]" : "left-[50%] w-[calc(50%-4px)]"
-                            }`}
-                          />
-                          <button
-                            onClick={() => {
-                              playClickSound();
-                              setBillingCycle('monthly');
-                            }}
-                            className={`relative z-10 px-4 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full transition-colors duration-200 min-w-[80px] sm:min-w-[100px] ${
-                              billingCycle === 'monthly' ? "text-black font-bold" : "text-neutral-400 hover:text-neutral-200"
-                            }`}
-                          >
-                            {t('pricing.monthly') || 'Mensal'}
-                          </button>
-                          <button
-                            onClick={() => {
-                              playClickSound();
-                              setBillingCycle('yearly');
-                            }}
-                            className={`relative z-10 px-4 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full transition-colors duration-200 min-w-[80px] sm:min-w-[100px] flex items-center justify-center gap-1 sm:gap-2 ${
-                              billingCycle === 'yearly' ? "text-black font-bold" : "text-neutral-400 hover:text-neutral-200"
-                            }`}
-                          >
-                            {t('pricing.yearly') || 'Anual'}
-                            <span className={`text-[8px] sm:text-[9px] px-1 sm:px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider ${
-                              billingCycle === 'yearly' ? "bg-black/20 text-black" : "bg-brand-cyan/20 text-brand-cyan"
-                            }`}>
-                              {t('pricing.yearlyDiscount') || '-16%'}
-                            </span>
-                          </button>
-                        </div>
-                      </div>
-
+                    <div className="py-2 sm:py-4 animate-fade-in transition-all duration-300 ease-in-out">
                       {filteredPlans.length > 0 && currentPlan ? (
                         <div className="flex flex-col items-center justify-center">
-                          {/* Plan Display */}
-                          <div className="flex items-center justify-center mb-4 sm:mb-6 w-full">
-                            <div className="bg-neutral-900/40 border border-neutral-800/50 rounded-xl p-4 sm:p-6 md:p-8 w-full max-w-[320px] sm:max-w-[420px] text-center shadow-sm relative overflow-hidden group">
+                          {/* Plan Display with Arrows */}
+                          <div className="flex items-center justify-center gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 w-full">
+                            {/* Left Arrow */}
+                            <button
+                              onClick={handlePreviousPlan}
+                              disabled={selectedPlanIndex === 0}
+                              className={`p-2 sm:p-2.5 md:p-3 transition-all duration-200 rounded-md active:scale-[0.95] flex-shrink-0 ${
+                                selectedPlanIndex === 0
+                                  ? 'text-neutral-600 cursor-not-allowed opacity-50'
+                                  : 'text-neutral-400 hover:text-brand-cyan hover:bg-neutral-800/50 hover:scale-110 cursor-pointer'
+                              }`}
+                              aria-label="Previous plan"
+                            >
+                              <ChevronLeft size={20} className="sm:w-6 sm:h-6 md:w-7 md:h-7" />
+                            </button>
+
+                            {/* Plan Card */}
+                            <div className="bg-neutral-900/40 border border-neutral-800/50 rounded-xl p-4 sm:p-6 md:p-8 w-full max-w-[320px] sm:max-w-[380px] md:max-w-[420px] text-center shadow-sm relative overflow-hidden group">
                               <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                               
                               {/* Popular Badge */}
                               {currentPlan.displayOrder === 1 && (
                                 <div className="absolute -top-1 left-1/2 -translate-x-1/2 z-10">
-                                  <Badge className="bg-brand-cyan text-black font-bold text-[9px] sm:text-[10px] uppercase tracking-widest px-2 sm:px-3 py-0.5 rounded-full">
+                                  <Badge className="bg-brand-cyan text-black font-bold text-[8px] sm:text-[9px] uppercase tracking-widest px-2 sm:px-3 py-0.5 rounded-full">
                                     {t('pricing.popular') || 'Popular'}
                                   </Badge>
                                 </div>
@@ -534,6 +518,44 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                   <h3 className="text-xl sm:text-2xl font-bold text-neutral-100 tracking-tight mt-2">
                                     {currentPlan.name}
                                   </h3>
+                                </div>
+
+                                {/* Billing Cycle Toggle - Inside card */}
+                                <div className="flex justify-center">
+                                  <div className="bg-neutral-900/50 p-1 rounded-full border border-neutral-800 inline-flex relative w-full max-w-[180px]">
+                                    <div
+                                      className={`absolute inset-y-1 rounded-full bg-brand-cyan transition-all duration-300 ease-out ${
+                                        billingCycle === 'monthly' ? "left-1 w-[calc(50%-3px)]" : "left-[50%] w-[calc(50%-3px)]"
+                                      }`}
+                                    />
+                                    <button
+                                      onClick={() => {
+                                        playClickSound();
+                                        setBillingCycle('monthly');
+                                      }}
+                                      className={`relative z-10 px-4 sm:px-5 py-1 sm:py-1.5 text-sm font-medium rounded-full transition-colors duration-200 flex-1 ${
+                                        billingCycle === 'monthly' ? "text-black font-bold" : "text-neutral-400 hover:text-neutral-200"
+                                      }`}
+                                    >
+                                      {t('pricing.monthly') || 'Mensal'}
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        playClickSound();
+                                        setBillingCycle('yearly');
+                                      }}
+                                      className={`relative z-10 px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-medium rounded-full transition-colors duration-200 flex-1 flex items-center justify-center gap-1 sm:gap-2 ${
+                                        billingCycle === 'yearly' ? "text-black font-bold" : "text-neutral-400 hover:text-neutral-200"
+                                      }`}
+                                    >
+                                      {t('pricing.yearly') || 'Anual'}
+                                      <span className={`text-[7px] sm:text-[8px] px-0.5 sm:px-1 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                                        billingCycle === 'yearly' ? "bg-black/20 text-black" : "bg-brand-cyan/20 text-brand-cyan"
+                                      }`}>
+                                        {t('pricing.yearlyDiscount') || '-16%'}
+                                      </span>
+                                    </button>
+                                  </div>
                                 </div>
 
                                 {/* Price */}
@@ -592,58 +614,43 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                 </div>
                               </div>
                             </div>
-                          </div>
 
-                          {/* Navigation Arrows */}
-                          <div className="flex items-center justify-center gap-3 sm:gap-4 mb-4 sm:mb-6">
-                            <button
-                              onClick={handlePreviousPlan}
-                              disabled={selectedPlanIndex === 0}
-                              className={`p-1.5 sm:p-2 md:p-2.5 transition-all duration-200 rounded-md active:scale-[0.95] ${
-                                selectedPlanIndex === 0
-                                  ? 'text-neutral-600 cursor-not-allowed opacity-50'
-                                  : 'text-neutral-400 hover:text-brand-cyan hover:bg-neutral-800/50 hover:scale-110 cursor-pointer'
-                              }`}
-                              aria-label="Previous plan"
-                            >
-                              <Minus size={18} className="sm:w-5 sm:h-5 md:w-5 md:h-5" />
-                            </button>
-
-                            {/* Plan Indicator */}
-                            <div className="flex gap-1.5 sm:gap-2">
-                              {filteredPlans.map((_, index) => (
-                                <button
-                                  key={index}
-                                  onClick={() => {
-                                    playClickSound();
-                                    setSelectedPlanIndex(index);
-                                  }}
-                                  className={`h-2 rounded-md transition-all duration-300 ease-out ${
-                                    index === selectedPlanIndex
-                                      ? 'bg-brand-cyan w-8 shadow-[0_0_8px_rgba(82,221,235,0.4)]'
-                                      : 'bg-neutral-600 hover:bg-neutral-500 w-2 hover:scale-125'
-                                  }`}
-                                  aria-label={`Select plan ${index + 1}`}
-                                />
-                              ))}
-                            </div>
-
+                            {/* Right Arrow */}
                             <button
                               onClick={handleNextPlan}
                               disabled={selectedPlanIndex === filteredPlans.length - 1}
-                              className={`p-1.5 sm:p-2 md:p-2.5 transition-all duration-200 rounded-md active:scale-[0.95] ${
+                              className={`p-2 sm:p-2.5 md:p-3 transition-all duration-200 rounded-md active:scale-[0.95] flex-shrink-0 ${
                                 selectedPlanIndex === filteredPlans.length - 1
                                   ? 'text-neutral-600 cursor-not-allowed opacity-50'
                                   : 'text-neutral-400 hover:text-brand-cyan hover:bg-neutral-800/50 hover:scale-110 cursor-pointer'
                               }`}
                               aria-label="Next plan"
                             >
-                              <Plus size={18} className="sm:w-5 sm:h-5 md:w-5 md:h-5" />
+                              <ChevronRight size={20} className="sm:w-6 sm:h-6 md:w-7 md:h-7" />
                             </button>
                           </div>
+
+                          {/* Plan Indicator */}
+                          <div className="flex gap-1.5 sm:gap-2 mb-2 sm:mb-3 md:mb-4">
+                            {filteredPlans.map((_, index) => (
+                              <button
+                                key={index}
+                                onClick={() => {
+                                  playClickSound();
+                                  setSelectedPlanIndex(index);
+                                }}
+                                className={`h-2 rounded-md transition-all duration-300 ease-out ${
+                                  index === selectedPlanIndex
+                                    ? 'bg-brand-cyan w-8 shadow-[0_0_8px_rgba(82,221,235,0.4)]'
+                                    : 'bg-neutral-600 hover:bg-neutral-500 w-2 hover:scale-125'
+                                }`}
+                                aria-label={`Select plan ${index + 1}`}
+                              />
+                            ))}
+                          </div>
                         </div>
-                      ) : (
-                        <div className="text-center py-12 sm:py-20 text-neutral-600 font-mono italic text-sm sm:text-base">
+                        ) : (
+                        <div className="text-center py-10 sm:py-14 md:py-16 text-neutral-600 font-mono italic text-sm sm:text-base">
                           {t('pricing.noPlansFound') || 'Nenhum plano disponível no momento.'}
                         </div>
                       )}
@@ -679,9 +686,9 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                 } as CSSProperties;
 
                 return (
-                  <div className="flex flex-col items-center justify-center py-4 sm:py-8 animate-slide-in-left transition-all duration-300 ease-in-out">
+                  <div className="flex flex-col items-center justify-center py-4 sm:py-6 md:py-8 animate-slide-in-left transition-all duration-300 ease-in-out">
                     {/* Available Credits Box */}
-                    <div className="bg-black/20 backdrop-blur-sm border border-neutral-800/30 rounded-xl p-4 sm:p-6 md:p-10 w-full max-w-[280px] sm:max-w-[420px] text-center shadow-sm mb-6 sm:mb-8">
+                    <div className="bg-black/20 backdrop-blur-sm border border-neutral-800/30 rounded-xl p-5 sm:p-6 md:p-8 w-full max-w-[280px] sm:max-w-[420px] text-center shadow-sm mb-6 sm:mb-8 md:mb-10">
                       <div className="space-y-4">
                         <div>
                           {/* Credits Display */}
@@ -721,7 +728,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                             className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-brand-cyan/80 hover:bg-brand-cyan text-black font-semibold rounded-md text-xs sm:text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-[brand-cyan]/20"
                           >
                             <CreditCard size={14} className="sm:w-4 sm:h-4" />
-                            {t('credits.buyCredits')}
+                            {t('credits.buyCredits') || 'Comprar Créditos'}
                           </button>
                           <button
                             onClick={() => {
@@ -748,16 +755,26 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                 );
               })()}
 
-              {/* Show message if no subscription status */}
+              {/* Show message if trying to view credits but no subscription status */}
               {activeTab === 'credits' && !subscriptionStatus && (
                 <div className="flex flex-col items-center justify-center py-8 text-center">
-                  <div className="text-neutral-400 font-mono text-sm">
-                    {t('credits.loading') || 'Carregando informações...'}
+                  <div className="text-neutral-400 font-mono text-sm mb-4">
+                    {t('credits.noSubscription') || 'Faça login para ver seus créditos disponíveis'}
                   </div>
+                  <button
+                    onClick={() => {
+                      playClickSound();
+                      setActiveTab('buy');
+                    }}
+                    className="text-xs text-brand-cyan hover:text-brand-cyan/80 font-mono uppercase tracking-wider transition-colors px-3 py-2 hover:bg-neutral-800/30 rounded"
+                  >
+                    {t('creditsPackages.buy') || 'Comprar'} →
+                  </button>
                 </div>
               )}
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>

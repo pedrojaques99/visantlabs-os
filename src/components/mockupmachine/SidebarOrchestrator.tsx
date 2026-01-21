@@ -187,8 +187,8 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
         </div>
       </aside>
 
-      {/* Resizer - only show on large screens when hasGenerated */}
-      {isLargeScreen && (
+      {/* Resizer - only show on large screens when hasAnalyzed (sidebar is in resizable panel state) */}
+      {isLargeScreen && hasAnalyzed && (
         <div
           ref={resizerRef}
           id="sidebar-resizer"
