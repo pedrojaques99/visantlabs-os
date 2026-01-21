@@ -33,8 +33,7 @@ import type { AnglePreset } from '../types/anglePresets';
 import type { TexturePreset } from '../types/texturePresets';
 import type { AmbiencePreset } from '../types/ambiencePresets';
 import type { LuminancePreset } from '../types/luminancePresets';
-import { SurpriseMeSettingsModal } from '../components/SurpriseMeSettingsModal';
-import { getSurpriseMeSelectedTags } from '@/utils/surpriseMeSettings';
+import type { SurpriseMeSelectedTags } from '@/utils/surpriseMeSettings';
 import { MockupProvider, useMockup } from '../components/mockupmachine/MockupContext';
 import { useMockupTags } from '@/hooks/useMockupTags';
 import { useAuthGuard } from '@/hooks/useAuthGuard';
@@ -140,7 +139,9 @@ const MockupMachinePageContent: React.FC = () => {
     isAnalysisOverlayVisible,
     setIsAnalysisOverlayVisible,
     instructions,
-    setInstructions
+    setInstructions,
+    isSurpriseMeMode,
+    surpriseMePool
   } = useMockup();
 
   // Custom hooks for common operations (after getting mockupCount from context)
@@ -179,7 +180,6 @@ const MockupMachinePageContent: React.FC = () => {
     message: string;
     showSaveAll?: boolean;
   } | null>(null);
-  const [isSurpriseMeSettingsOpen, setIsSurpriseMeSettingsOpen] = useState(false);
 
   // Check if there are unsaved images for navigation blocker
   const hasUnsavedImages = mockups.some((mockup, index) =>
@@ -1512,8 +1512,15 @@ const MockupMachinePageContent: React.FC = () => {
     // Use current branding tags from state
     const brandingTagsToUse = selectedBrandingTags.length > 0 ? selectedBrandingTags : [];
 
-    // Load selected tags from settings
-    const selectedTagsSettings = getSurpriseMeSelectedTags();
+    // Use pool from Context when Pool Mode is active, otherwise use empty arrays (no restrictions)
+    const selectedTagsSettings: SurpriseMeSelectedTags = isSurpriseMeMode ? surpriseMePool : {
+      selectedCategoryTags: [],
+      selectedLocationTags: [],
+      selectedAngleTags: [],
+      selectedLightingTags: [],
+      selectedEffectTags: [],
+      selectedMaterialTags: [],
+    };
 
     // 1. Categories: Prioritize AI suggestions
     let selectedCategory: string;
@@ -1814,7 +1821,7 @@ const MockupMachinePageContent: React.FC = () => {
         }
       }, 2000); // Increased delay to allow users to see selected tags
     }
-  }, [aspectRatio, designType, selectedModel, selectedBrandingTags, generateText, withHuman, additionalPrompt, negativePrompt, runGeneration, mockups]);
+  }, [aspectRatio, designType, selectedModel, selectedBrandingTags, generateText, withHuman, additionalPrompt, negativePrompt, runGeneration, mockups, isSurpriseMeMode, surpriseMePool]);
 
   const handleSaveAllUnsaved = useCallback(async () => {
     if (!(await requireAuth())) return;
@@ -2903,11 +2910,6 @@ Generate the new mockup image with the requested changes applied.`;
           showSaveAll={unsavedDialogConfig.showSaveAll}
         />
       )}
-
-      <SurpriseMeSettingsModal
-        isOpen={isSurpriseMeSettingsOpen}
-        onClose={() => setIsSurpriseMeSettingsOpen(false)}
-      />
     </>
   );
 };
