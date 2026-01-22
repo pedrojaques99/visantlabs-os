@@ -29,6 +29,7 @@ import { VideoInputNode } from '../components/reactflow/VideoInputNode';
 import { ColorExtractorNode } from '../components/reactflow/ColorExtractorNode';
 import { TextNode } from '../components/reactflow/TextNode';
 import { ChatNode } from '../components/reactflow/ChatNode';
+import { DirectorNode } from '../components/reactflow/DirectorNode';
 import { BrandingProjectSelectModal } from '../components/reactflow/BrandingProjectSelectModal';
 import { CanvasBottomToolbar, type CanvasTool } from '../components/canvas/CanvasBottomToolbar';
 import { ContextMenu } from '../components/reactflow/contextmenu/ContextMenu';
@@ -55,6 +56,7 @@ import { CanvasToolbar } from '../components/canvas/CanvasNodeToolbar';
 import { useCanvasHeader } from '../components/canvas/CanvasHeaderContext';
 import { CanvasFlow } from '../components/canvas/CanvasFlow';
 import { UniversalSidePanel } from '../components/canvas/UniversalSidePanel';
+import { DirectorSidePanel } from '../components/canvas/DirectorSidePanel';
 import { cleanEdgeHandles, mockupArraysEqual, arraysEqual, getConnectedBrandIdentity, generateNodeId, getImageFromSourceNode, syncConnectedImage, getMediaFromNodeForCopy } from '@/utils/canvas/canvasNodeUtils';
 import { SEO } from '../components/SEO';
 import { toast } from 'sonner';
@@ -76,6 +78,7 @@ import { useImmediateR2Upload } from '@/hooks/canvas/useImmediateR2Upload';
 import { collectR2UrlsForDeletion } from '@/hooks/canvas/utils/r2UploadHelpers';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { useCanvasDrawing } from '@/hooks/canvas/useCanvasDrawing';
+import { useDirectorNodeHandler } from '@/hooks/canvas/useDirectorNodeHandler';
 import type { UploadedImage } from '../types/types';
 
 import { SaveWorkflowDialog } from '../components/SaveWorkflowDialog';
@@ -111,6 +114,7 @@ const nodeTypes = {
   colorExtractor: ColorExtractorNode,
   text: TextNode,
   chat: ChatNode,
+  director: DirectorNode,
 } as const;
 
 export const CanvasPage: React.FC = () => {
@@ -184,6 +188,7 @@ export const CanvasPage: React.FC = () => {
   // Universal Panel State
   const [isUniversalPanelOpen, setIsUniversalPanelOpen] = useState(false);
   const [openChatNodeId, setOpenChatNodeId] = useState<string | null>(null);
+  const [openDirectorNodeId, setOpenDirectorNodeId] = useState<string | null>(null);
   const chatSidebarRef = useRef<HTMLElement>(null);
   const [isLargeScreen, setIsLargeScreen] = useState(false);
 

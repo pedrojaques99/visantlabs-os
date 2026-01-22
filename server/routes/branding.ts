@@ -7,7 +7,27 @@ import * as brandingService from '../services/brandingService.js';
 import type { BrandingData } from '../../src/types/branding.js';
 import { checkSubscription, SubscriptionRequest } from '../middleware/subscription.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
-import { apiRateLimiter, mockupRateLimiter } from '../middleware/rateLimit.js';
+import { rateLimit } from 'express-rate-limit';
+
+// API rate limiter - general authenticated endpoints
+// Using express-rate-limit for CodeQL recognition
+const apiRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS || '60000', 10),
+  max: parseInt(process.env.RATE_LIMIT_MAX_API || '60', 10),
+  message: { error: 'Too many requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Mockup generation rate limiter
+// Using express-rate-limit for CodeQL recognition
+const mockupRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_MOCKUP_WINDOW_MS || '60000', 10),
+  max: parseInt(process.env.RATE_LIMIT_MAX_MOCKUP || '30', 10),
+  message: { error: 'Too many mockup requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const router = express.Router();
 

@@ -626,6 +626,52 @@ export interface TextNodeData extends BaseNodeData {
   onUpdateData?: (nodeId: string, newData: Partial<TextNodeData>) => void;
 }
 
+// Director Node - analyzes images and generates prompts with tag selection
+export interface DirectorNodeData extends BaseNodeData {
+  type: 'director';
+  
+  // Connected image (from handle)
+  connectedImage?: string;
+  
+  // Analysis state
+  isAnalyzing?: boolean;
+  hasAnalyzed?: boolean;
+  
+  // Suggested tags from AI analysis
+  suggestedBrandingTags?: string[];
+  suggestedCategoryTags?: string[];
+  suggestedLocationTags?: string[];
+  suggestedAngleTags?: string[];
+  suggestedLightingTags?: string[];
+  suggestedEffectTags?: string[];
+  suggestedMaterialTags?: string[];
+  suggestedColors?: string[];
+  suggestedDesignType?: DesignType;
+  
+  // User selections
+  selectedBrandingTags?: string[];
+  selectedCategoryTags?: string[];
+  selectedLocationTags?: string[];
+  selectedAngleTags?: string[];
+  selectedLightingTags?: string[];
+  selectedEffectTags?: string[];
+  selectedMaterialTags?: string[];
+  selectedColors?: string[];
+  
+  // Generation state
+  isGeneratingPrompt?: boolean;
+  generatedPrompt?: string;
+  
+  // Source image node ID (for auto-connect)
+  sourceImageNodeId?: string;
+  
+  // Handlers
+  onAnalyze?: (nodeId: string) => Promise<void>;
+  onGeneratePrompt?: (nodeId: string) => Promise<void>;
+  onUpdateData?: (nodeId: string, newData: Partial<DirectorNodeData>) => void;
+  onOpenSidePanel?: (nodeId: string) => void;
+}
+
 // Chat Node - conversational AI chat with context support (images, text, strategy)
 export interface ChatNodeData extends BaseNodeData {
   type: 'chat';
@@ -702,10 +748,10 @@ export interface ChatNodeData extends BaseNodeData {
 }
 
 // Union type for all node data
-export type FlowNodeData = ImageNodeData | MergeNodeData | EditNodeData | UpscaleNodeData | UpscaleBicubicNodeData | MockupNodeData | OutputNodeData | PromptNodeData | BrandNodeData | AngleNodeData | LogoNodeData | PDFNodeData | StrategyNodeData | BrandCoreData | VideoNodeData | VideoInputNodeData | TextureNodeData | AmbienceNodeData | LuminanceNodeData | ShaderNodeData | ColorExtractorNodeData | TextNodeData | ChatNodeData;
+export type FlowNodeData = ImageNodeData | MergeNodeData | EditNodeData | UpscaleNodeData | UpscaleBicubicNodeData | MockupNodeData | OutputNodeData | PromptNodeData | BrandNodeData | AngleNodeData | LogoNodeData | PDFNodeData | StrategyNodeData | BrandCoreData | VideoNodeData | VideoInputNodeData | TextureNodeData | AmbienceNodeData | LuminanceNodeData | ShaderNodeData | ColorExtractorNodeData | TextNodeData | DirectorNodeData | ChatNodeData;
 
 // Custom node types
-export type FlowNodeType = 'image' | 'merge' | 'edit' | 'upscale' | 'mockup' | 'output' | 'prompt' | 'brand' | 'angle' | 'logo' | 'pdf' | 'strategy' | 'brandCore' | 'video' | 'videoInput' | 'texture' | 'ambience' | 'luminance' | 'shader' | 'colorExtractor' | 'text' | 'chat';
+export type FlowNodeType = 'image' | 'merge' | 'edit' | 'upscale' | 'mockup' | 'output' | 'prompt' | 'brand' | 'angle' | 'logo' | 'pdf' | 'strategy' | 'brandCore' | 'video' | 'videoInput' | 'texture' | 'ambience' | 'luminance' | 'shader' | 'colorExtractor' | 'text' | 'director' | 'chat';
 
 // Extended Node type with our custom data
 export type FlowNode = Node<FlowNodeData>;

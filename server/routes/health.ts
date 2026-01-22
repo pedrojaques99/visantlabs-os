@@ -1,6 +1,16 @@
 import express from 'express';
 import { getDb } from '../db/mongodb.js';
-import { apiRateLimiter } from '../middleware/rateLimit.js';
+import { rateLimit } from 'express-rate-limit';
+
+// API rate limiter - general authenticated endpoints
+// Using express-rate-limit for CodeQL recognition
+const apiRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS || '60000', 10),
+  max: parseInt(process.env.RATE_LIMIT_MAX_API || '60', 10),
+  message: { error: 'Too many requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const router = express.Router();
 
