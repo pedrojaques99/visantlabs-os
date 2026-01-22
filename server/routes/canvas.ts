@@ -5,7 +5,27 @@ import { uploadCanvasImage, uploadCanvasPdf, uploadCanvasVideo, isR2Configured, 
 import { compressPdfSimple } from '../utils/pdfCompression.js';
 import { validateAdminOrPremium, requireEditAccess, requireViewAccess } from '../middleware/canvasAuth.js';
 import { Liveblocks } from '@liveblocks/node';
-import { apiRateLimiter, uploadImageRateLimiter } from '../middleware/rateLimit.js';
+import { rateLimit } from 'express-rate-limit';
+
+// API rate limiter - general authenticated endpoints
+// Using express-rate-limit for CodeQL recognition
+const apiRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS || '60000', 10),
+  max: parseInt(process.env.RATE_LIMIT_MAX_API || '60', 10),
+  message: { error: 'Too many requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Upload image rate limiter
+// Using express-rate-limit for CodeQL recognition
+const uploadImageRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_UPLOAD_WINDOW_MS || '900000', 10),
+  max: parseInt(process.env.RATE_LIMIT_MAX_UPLOAD || '10', 10),
+  message: { error: 'Too many upload attempts. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const router = express.Router();
 

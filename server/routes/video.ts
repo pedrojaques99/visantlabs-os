@@ -8,7 +8,27 @@ import { generateVideo } from '../services/videoService.js';
 import { getVideoCreditsRequired } from '../utils/usageTracking.js';
 import { uploadCanvasVideo, isR2Configured } from '../services/r2Service.js';
 import { calculateVideoCost } from '../../src/utils/pricing.js';
-import { apiRateLimiter, mockupRateLimiter } from '../middleware/rateLimit.js';
+import { rateLimit } from 'express-rate-limit';
+
+// API rate limiter - general authenticated endpoints
+// Using express-rate-limit for CodeQL recognition
+const apiRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS || '60000', 10),
+  max: parseInt(process.env.RATE_LIMIT_MAX_API || '60', 10),
+  message: { error: 'Too many requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Mockup generation rate limiter (used for video generation)
+// Using express-rate-limit for CodeQL recognition
+const mockupRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_MOCKUP_WINDOW_MS || '60000', 10),
+  max: parseInt(process.env.RATE_LIMIT_MAX_MOCKUP || '30', 10),
+  message: { error: 'Too many generation requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // Helper function to refund credits if generation fails
 // Uses deduction source information to properly refund credits to their original source

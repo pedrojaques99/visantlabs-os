@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '../db/prisma.js';
 import bcrypt from 'bcryptjs';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
-import { signupRateLimiter, signinRateLimiter, getClientIp, passwordResetRateLimiter, apiRateLimiter, uploadImageRateLimiter } from '../middleware/rateLimit.js';
+import { getClientIp } from '../middleware/rateLimit.js';
 import { rateLimit } from 'express-rate-limit';
 // CAPTCHA middleware import removed - CAPTCHA is disabled
 // import { captchaMiddleware } from '../middleware/captcha.js';
@@ -217,6 +217,56 @@ const verifyRateLimiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS || '60000', 10), // 1 minute default
   max: parseInt(process.env.RATE_LIMIT_MAX_API || '60', 10), // 60 requests per minute
   message: { error: 'Too many verification requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Password reset rate limiter - strict to prevent enumeration/brute force
+// Using express-rate-limit for CodeQL recognition
+const resetPasswordRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_PASSWORD_RESET_WINDOW_MS || '3600000', 10), // 1 hour default
+  max: parseInt(process.env.RATE_LIMIT_MAX_PASSWORD_RESET || '5', 10), // 5 password reset attempts per hour
+  message: { error: 'Too many password reset attempts. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Signup rate limiter - prevent mass account creation
+// Using express-rate-limit for CodeQL recognition
+const signupRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '3600000', 10), // 1 hour default
+  max: parseInt(process.env.RATE_LIMIT_MAX_SIGNUP || '3', 10), // 3 signups per hour
+  message: { error: 'Too many signup attempts. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Signin rate limiter - prevent brute force attacks
+// Using express-rate-limit for CodeQL recognition
+const signinRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '3600000', 10), // 1 hour default
+  max: parseInt(process.env.RATE_LIMIT_MAX_SIGNIN || '10', 10), // 10 signin attempts per hour
+  message: { error: 'Too many signin attempts. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// API rate limiter - general authenticated endpoints
+// Using express-rate-limit for CodeQL recognition
+const apiRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS || '60000', 10), // 1 minute default
+  max: parseInt(process.env.RATE_LIMIT_MAX_API || '60', 10), // 60 requests per minute
+  message: { error: 'Too many requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Upload image rate limiter
+// Using express-rate-limit for CodeQL recognition
+const uploadImageRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_UPLOAD_WINDOW_MS || '900000', 10), // 15 minutes default
+  max: parseInt(process.env.RATE_LIMIT_MAX_UPLOAD || '10', 10), // 10 uploads per 15 minutes
+  message: { error: 'Too many upload attempts. Please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -857,7 +907,7 @@ router.post('/forgot-password', passwordResetRateLimiter, async (req, res) => {
 });
 
 // Reset Password - Reset password with token
-router.post('/reset-password', passwordResetRateLimiter, async (req, res) => {
+router.post('/reset-password', resetPasswordRateLimiter, async (req, res) => {
   try {
     const { token, password } = req.body;
 

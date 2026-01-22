@@ -7,7 +7,37 @@ import { ObjectId } from 'mongodb';
 import { getCreditsByAmount, getCreditPackage, getCreditPackagePrice } from '../../src/utils/creditPackages.js';
 import { abacatepayService } from '../services/abacatepayService.js';
 import { prisma } from '../db/prisma.js';
-import { paymentRateLimiter, apiRateLimiter, webhookRateLimiter } from '../middleware/rateLimit.js';
+import { rateLimit } from 'express-rate-limit';
+
+// API rate limiter - general authenticated endpoints
+// Using express-rate-limit for CodeQL recognition
+const apiRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS || '60000', 10),
+  max: parseInt(process.env.RATE_LIMIT_MAX_API || '60', 10),
+  message: { error: 'Too many requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Payment endpoints rate limiter - strict limits for financial operations
+// Using express-rate-limit for CodeQL recognition
+const paymentRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_PAYMENT_WINDOW_MS || '60000', 10),
+  max: parseInt(process.env.RATE_LIMIT_MAX_PAYMENT || '10', 10),
+  message: { error: 'Too many payment requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Webhook rate limiter - for incoming webhooks
+// Using express-rate-limit for CodeQL recognition
+const webhookRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_WEBHOOK_WINDOW_MS || '60000', 10),
+  max: parseInt(process.env.RATE_LIMIT_MAX_WEBHOOK || '100', 10),
+  message: { error: 'Too many webhook requests.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 import { isValidObjectId } from '../utils/validation.js';
 
 const router = express.Router();
