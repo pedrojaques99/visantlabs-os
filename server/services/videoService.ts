@@ -319,7 +319,20 @@ export const generateVideo = async (
         if (videoFile.uri) {
           try {
             // Check if URI is from Google (requires authentication)
-            const isGoogleUri = videoFile.uri.includes('googleapis.com') || videoFile.uri.includes('storage.googleapis.com');
+            // Whitelist of allowed Google Cloud Storage hostnames
+            const allowedGoogleHosts = [
+              'storage.googleapis.com',
+              'googleapis.com',
+            ];
+            
+            let isGoogleUri = false;
+            try {
+              const parsedUri = new URL(videoFile.uri);
+              isGoogleUri = allowedGoogleHosts.includes(parsedUri.hostname);
+            } catch {
+              // Invalid URL format - not a Google URI
+              isGoogleUri = false;
+            }
 
             // For Google URIs, use server proxy endpoint to handle authentication
             if (isGoogleUri) {

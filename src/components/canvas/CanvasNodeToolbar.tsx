@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   Image as ImageIcon,
   Camera,
@@ -24,6 +24,7 @@ import {
 import { useTranslation } from '@/hooks/useTranslation';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { cn } from '@/lib/utils';
+import { getTextColors, lightenColor } from '@/utils/colorUtils';
 
 interface CanvasToolbarProps {
   onAddMerge: () => void;
@@ -54,6 +55,8 @@ interface CanvasToolbarProps {
   isCollapsed?: boolean;
   onCollapseChange?: (collapsed: boolean) => void;
   onClose?: () => void;
+  backgroundColor?: string;
+  onToggleToolbar?: () => void;
 }
 
 interface ToolItem {
@@ -95,10 +98,22 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
   isCollapsed: externalIsCollapsed,
   onCollapseChange,
   onClose,
+  backgroundColor = '#0C0C0C',
+  onToggleToolbar,
 }) => {
   const { t } = useTranslation();
   const [internalIsCollapsed, setInternalIsCollapsed] = useState(false);
   const toolbarRef = useRef<HTMLDivElement>(null);
+
+  // Calculate text colors based on canvas background
+  const textColors = useMemo(() => getTextColors(backgroundColor), [backgroundColor]);
+  const isLight = textColors.primary === '#000000';
+  const toolbarBg = useMemo(() => {
+    if (isLight) {
+      return lightenColor(backgroundColor, 0.02);
+    }
+    return '#0a0a0a';
+  }, [backgroundColor, isLight]);
 
   // Use external state if provided, otherwise use internal state
   const isCollapsed = externalIsCollapsed !== undefined ? externalIsCollapsed : internalIsCollapsed;
@@ -264,14 +279,34 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
             onClick={tool.onClick}
             className={cn(
               "w-10 h-10 flex items-center justify-center",
-              "bg-neutral-900/50 backdrop-blur-md",
+              "backdrop-blur-md",
               "border rounded-md",
               "transition-colors duration-150",
               "cursor-grab active:cursor-grabbing",
               isActive
-                ? "border-[brand-cyan] text-brand-cyan bg-brand-cyan/10"
-                : "border-neutral-800/40 text-neutral-400 hover:text-brand-cyan hover:border-[brand-cyan]/40 hover:bg-neutral-800/50"
+                ? "border-[brand-cyan] bg-brand-cyan/10"
+                : isLight
+                  ? "border-neutral-300/40 hover:border-[brand-cyan]/40 hover:bg-neutral-200/50"
+                  : "border-neutral-800/40 hover:border-[brand-cyan]/40 hover:bg-neutral-800/50"
             )}
+            style={{
+              backgroundColor: isActive 
+                ? undefined 
+                : isLight 
+                  ? 'rgba(255, 255, 255, 0.3)' 
+                  : 'rgba(0, 0, 0, 0.3)',
+              color: isActive ? 'var(--brand-cyan)' : textColors.muted,
+            }}
+            onMouseEnter={(e) => {
+              if (!isActive) {
+                e.currentTarget.style.color = 'var(--brand-cyan)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isActive) {
+                e.currentTarget.style.color = textColors.muted;
+              }
+            }}
             aria-label={tool.label}
           >
             {tool.icon}
@@ -286,22 +321,47 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
           draggable
           onDragStart={(e) => handleDragStart(e, tool.id)}
           onClick={tool.onClick}
-          className={cn(
-            "w-full px-2 py-1.5",
-            "bg-neutral-900/50 backdrop-blur-md",
-            "border rounded-md",
-            "transition-colors duration-150",
-            "flex items-center gap-2 cursor-grab active:cursor-grabbing",
-            isActive
-              ? "border-[brand-cyan] text-brand-cyan bg-brand-cyan/10"
-              : "border-neutral-800/40 text-neutral-400 hover:text-neutral-200 hover:border-[brand-cyan]/40 hover:bg-neutral-800/50"
-          )}
+            className={cn(
+              "w-full px-2 py-1.5",
+              "backdrop-blur-md",
+              "border rounded-md",
+              "transition-colors duration-150",
+              "flex items-center gap-2 cursor-grab active:cursor-grabbing",
+              isActive
+                ? "border-[brand-cyan] bg-brand-cyan/10"
+                : isLight
+                  ? "border-neutral-300/40 hover:border-[brand-cyan]/40 hover:bg-neutral-200/50"
+                  : "border-neutral-800/40 hover:border-[brand-cyan]/40 hover:bg-neutral-800/50"
+            )}
+            style={{
+              backgroundColor: isActive 
+                ? undefined 
+                : isLight 
+                  ? 'rgba(255, 255, 255, 0.3)' 
+                  : 'rgba(0, 0, 0, 0.3)',
+              color: isActive ? 'var(--brand-cyan)' : textColors.muted,
+            }}
+            onMouseEnter={(e) => {
+              if (!isActive) {
+                e.currentTarget.style.color = textColors.primary;
+                e.currentTarget.style.borderColor = 'var(--brand-cyan)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isActive) {
+                e.currentTarget.style.color = textColors.muted;
+                e.currentTarget.style.borderColor = '';
+              }
+            }}
           aria-label={tool.label}
         >
           <span className="flex-shrink-0">
             {tool.icon}
           </span>
-          <span className="text-[11px] font-medium whitespace-nowrap flex-1 text-left tracking-wide">
+          <span 
+            className="text-[11px] font-medium whitespace-nowrap flex-1 text-left tracking-wide"
+            style={{ color: 'inherit' }}
+          >
             {tool.label}
           </span>
         </button>
@@ -325,8 +385,11 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
     return (
       <div className="space-y-1">
         <div className="flex items-center gap-1.5 px-1 py-1">
-          <span className="text-neutral-500">{icon}</span>
-          <span className="text-[9px] font-semibold text-neutral-500 uppercase tracking-wider">
+          <span style={{ color: textColors.subtle }}>{icon}</span>
+          <span 
+            className="text-[9px] font-semibold uppercase tracking-wider"
+            style={{ color: textColors.subtle }}
+          >
             {title}
           </span>
         </div>
@@ -350,8 +413,9 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
       className={cn(
         getPositionClasses(),
         "z-40",
-        "backdrop-blur-md border border-neutral-800/50",
-        "rounded-2xl shadow-2xl bg-neutral-950/80",
+        "backdrop-blur-md border",
+        isLight ? "border-neutral-300/50" : "border-neutral-800/50",
+        "rounded-2xl shadow-2xl",
         "transition-all duration-300 ease-out",
         "flex flex-col",
       )}
@@ -359,25 +423,79 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
         width: `${EXPANDED_WIDTH}px`,
         height: 'auto',
         maxHeight: 'calc(100vh - 97px)',
+        backgroundColor: isLight ? `${toolbarBg}dd` : `${toolbarBg}cc`,
+        color: textColors.primary,
       }}
     >
       {/* Expanded State - Full Content with Sections */}
       <div className="w-full flex flex-col h-full overflow-hidden">
-        {/* Header with Close Button */}
-        <div className="flex items-center justify-between border-b border-neutral-800/30 relative bg-transparent rounded-t-2xl">
+        {/* Header with Toggle and Close Button */}
+        <div 
+          className={cn(
+            "flex items-center justify-between border-b relative bg-transparent rounded-t-2xl",
+            isLight ? "border-neutral-300/30" : "border-neutral-800/30"
+          )}
+          style={{ color: textColors.primary }}
+        >
           <div className="flex items-center gap-1.5 px-3 py-3">
-            <h2 className="text-xs font-semibold text-neutral-300 tracking-wide">
+            <h2 
+              className="text-xs font-semibold tracking-wide"
+              style={{ color: textColors.primary }}
+            >
               {t('canvasToolbar.title')}
             </h2>
           </div>
-          {onClose && (
-            <button
-              onClick={onClose}
-              className="p-3 text-neutral-500 hover:text-neutral-200 border-l border-neutral-800/50 hover:bg-neutral-800/50 transition-colors h-full rounded-tr-2xl"
-            >
-              <X size={16} />
-            </button>
-          )}
+          <div className="flex items-center">
+            {/* Toggle Toolbar Button */}
+            {onToggleToolbar && (
+              <Tooltip 
+                content={isCollapsed 
+                  ? (t('canvasToolbar.expandToolbar') || 'Expand Toolbar')
+                  : (t('canvasToolbar.collapseToolbar') || 'Collapse Toolbar')
+                } 
+                position="bottom"
+              >
+                <button
+                  onClick={onToggleToolbar}
+                  className={cn(
+                    "p-2 transition-colors h-full",
+                    isLight
+                      ? "hover:bg-neutral-200/50"
+                      : "hover:bg-neutral-800/50"
+                  )}
+                  style={{ color: textColors.muted }}
+                  onMouseEnter={(e) => e.currentTarget.style.color = textColors.primary}
+                  onMouseLeave={(e) => e.currentTarget.style.color = textColors.muted}
+                  aria-label={isCollapsed ? 'Expand Toolbar' : 'Collapse Toolbar'}
+                >
+                  <ChevronLeft 
+                    size={14} 
+                    className={cn(
+                      "transition-transform duration-150",
+                      isCollapsed && "rotate-180"
+                    )}
+                  />
+                </button>
+              </Tooltip>
+            )}
+            {/* Close Button */}
+            {onClose && (
+              <button
+                onClick={onClose}
+                className={cn(
+                  "p-2 border-l transition-colors h-full rounded-tr-2xl",
+                  isLight 
+                    ? "border-neutral-300/50 hover:bg-neutral-200/50" 
+                    : "border-neutral-800/50 hover:bg-neutral-800/50"
+                )}
+                style={{ color: textColors.muted }}
+                onMouseEnter={(e) => e.currentTarget.style.color = textColors.primary}
+                onMouseLeave={(e) => e.currentTarget.style.color = textColors.muted}
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Scrollable Content */}

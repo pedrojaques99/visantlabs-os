@@ -24,7 +24,7 @@ import {
   getMediaType
 } from '@/utils/canvasConstants';
 import { DrawingLayer } from './DrawingLayer';
-import { lightenColor, getContrastTextColor, getMutedTextColor, getSubtleTextColor } from '@/utils/colorUtils';
+import { lightenColor, getTextColors } from '@/utils/colorUtils';
 
 
 interface CanvasFlowProps {
@@ -91,6 +91,7 @@ interface CanvasFlowProps {
   } | null;
   edgeStyle?: 'solid' | 'dashed';
   edgeStrokeWidth?: 'normal' | 'thin';
+  brandCyan?: string;
 }
 
 export const CanvasFlow: React.FC<CanvasFlowProps> = ({
@@ -143,7 +144,44 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
   shapePreview = null,
   edgeStyle = 'solid',
   edgeStrokeWidth = 'normal',
+  brandCyan = '#00d9ff',
 }) => {
+  // Get actual brand color value (convert from CSS variable if needed)
+  const actualBrandColor = useMemo(() => {
+    if (!brandCyan || brandCyan.startsWith('#')) {
+      return brandCyan || '#00d9ff';
+    }
+    
+    // If it's a name like "brand-cyan", get from CSS variable
+    if (typeof document !== 'undefined') {
+      try {
+        const root = document.documentElement;
+        const tempEl = document.createElement('div');
+        tempEl.style.color = `var(--${brandCyan})`;
+        root.appendChild(tempEl);
+        const computed = getComputedStyle(tempEl).color;
+        root.removeChild(tempEl);
+        
+        // Convert rgb/rgba to hex
+        if (computed && computed.startsWith('rgb')) {
+          const rgbMatch = computed.match(/\d+/g);
+          if (rgbMatch && rgbMatch.length >= 3) {
+            const r = parseInt(rgbMatch[0]);
+            const g = parseInt(rgbMatch[1]);
+            const b = parseInt(rgbMatch[2]);
+            return `#${[r, g, b].map(x => {
+              const hex = x.toString(16);
+              return hex.length === 1 ? '0' + hex : hex;
+            }).join('')}`;
+          }
+        }
+      } catch {
+        // Fall through
+      }
+    }
+    
+    return '#00d9ff'; // Default fallback
+  }, [brandCyan]);
   const { t } = useTranslation();
   const [isDragging, setIsDragging] = useState(false);
   const [isShaderSidebarCollapsed, setIsShaderSidebarCollapsed] = useState(false);
@@ -889,20 +927,20 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
         
         /* Node background color - slightly lighter than canvas background */
         .react-flow {
-          --node-bg-color: ${lightenColor(backgroundColor, 0.12)};
-          --node-bg-color-dragging: ${lightenColor(backgroundColor, 0.15)};
+          --node-bg-color: ${lightenColor(backgroundColor, 0.06)};
+          --node-bg-color-dragging: ${lightenColor(backgroundColor, 0.08)};
         }
         
         /* Node text colors - automatically adjust based on contrast */
         .react-flow {
-          --node-text-color: ${getContrastTextColor(lightenColor(backgroundColor, 0.12))};
-          --node-text-color-muted: ${getMutedTextColor(lightenColor(backgroundColor, 0.12))};
-          --node-text-color-subtle: ${getSubtleTextColor(lightenColor(backgroundColor, 0.12))};
-          --node-bg-color-hex: ${lightenColor(backgroundColor, 0.12)};
+          --node-text-color: ${getTextColors(lightenColor(backgroundColor, 0.06), actualBrandColor).primary};
+          --node-text-color-muted: ${getTextColors(lightenColor(backgroundColor, 0.06), actualBrandColor).muted};
+          --node-text-color-subtle: ${getTextColors(lightenColor(backgroundColor, 0.06), actualBrandColor).subtle};
+          --node-text-accent: ${getTextColors(lightenColor(backgroundColor, 0.06), actualBrandColor).accent};
         }
         
         /* Add class to react-flow when background is light (for button/textarea contrast) */
-        ${getContrastTextColor(lightenColor(backgroundColor, 0.12)) === '#000000' ? `
+        ${getTextColors(lightenColor(backgroundColor, 0.06), actualBrandColor).primary === '#000000' ? `
         .react-flow[data-node-bg-light="true"] {
           /* This will be set via className on ReactFlow component */
         }
@@ -911,7 +949,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
         /* ReactFlow native selection disabled - using custom selection box for drawings */
       `}</style>
       <ReactFlow
-        data-node-bg-light={getContrastTextColor(lightenColor(backgroundColor, 0.12)) === '#000000' ? 'true' : undefined}
+        data-node-bg-light={getTextColors(lightenColor(backgroundColor, 0.06), actualBrandColor).primary === '#000000' ? 'true' : undefined}
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}

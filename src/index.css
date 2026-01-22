@@ -1015,25 +1015,27 @@
   background-color: rgba(136, 136, 136, 0.1);
 }
 
-/* ReactFlow resize controls - neutral colors */
+/* ReactFlow resize controls - use brand color */
 .react-flow__resize-control {
-  background: #888888 !important;
-  border-color: rgba(136, 136, 136, 0.5) !important;
+  background: var(--brand-cyan, #888888) !important;
+  border-color: var(--brand-cyan, rgba(136, 136, 136, 0.5)) !important;
+  opacity: 0.6;
 }
 
 .react-flow__resize-control:hover {
-  background: #999999 !important;
-  border-color: rgba(153, 153, 153, 0.6) !important;
+  background: var(--brand-cyan, #999999) !important;
+  border-color: var(--brand-cyan, rgba(153, 153, 153, 0.6)) !important;
+  opacity: 0.8;
 }
 
 .react-flow__resize-control::before,
 .react-flow__resize-control::after {
-  background: #888888 !important;
+  background: var(--brand-cyan, #888888) !important;
 }
 
 .react-flow__resize-control:hover::before,
 .react-flow__resize-control:hover::after {
-  background: #999999 !important;
+  background: var(--brand-cyan, #999999) !important;
 }
 
 .resizing {
@@ -1140,6 +1142,12 @@
 .react-flow__node.selected>div,
 .react-flow__node[data-selected="true"]>div {
   box-shadow: none;
+}
+
+/* Node selected border - use accent color */
+.react-flow__node.selected .node-container,
+.react-flow__node[data-selected="true"] .node-container {
+  border-color: var(--node-text-accent, #00d9ff) !important;
 }
 
 /* Handles - Pixel perfect positioning */
@@ -1396,9 +1404,9 @@
   opacity: 0.8;
 }
 
-/* Edges */
+/* Edges - use user configured brand color */
 .react-flow__edge-path {
-  stroke: var(--brand-cyan);
+  stroke: var(--brand-cyan, #00d9ff);
   stroke-width: 0.75;
   stroke-dasharray: 15 6;
   animation: edge-dash-scroll 2s ease-in-out infinite;
@@ -1497,24 +1505,82 @@
   color: var(--node-text-color-subtle, #6b7280) !important;
 }
 
+.node-text-accent {
+  color: var(--brand-cyan, var(--node-text-accent, #00d9ff)) !important;
+}
+
 /* Auto-contrast text colors for nodes */
 .react-flow__node .node-container {
   color: var(--node-text-color, #e5e7eb);
 }
 
 /* Override text-neutral-* classes inside nodes */
-.react-flow__node .node-container .text-neutral-200:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]),
-.react-flow__node .node-container .text-neutral-300:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]) {
+.react-flow__node .node-container .text-neutral-200,
+.react-flow__node .node-container .text-neutral-300 {
   color: var(--node-text-color, #e5e7eb) !important;
 }
 
-.react-flow__node .node-container .text-neutral-400:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]),
-.react-flow__node .node-container .text-neutral-500:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]) {
+.react-flow__node .node-container .text-neutral-400,
+.react-flow__node .node-container .text-neutral-500 {
   color: var(--node-text-color-muted, #9ca3af) !important;
 }
 
-.react-flow__node .node-container .text-neutral-600:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]) {
+.react-flow__node .node-container .text-neutral-600 {
   color: var(--node-text-color-subtle, #6b7280) !important;
+}
+
+/* Override all brand-cyan references inside nodes to use user configured brand color */
+.react-flow__node .node-container .text-brand-cyan,
+.react-flow__node .node-container [class*="text-brand-cyan"],
+.react-flow__node .node-container svg.text-brand-cyan,
+.react-flow__node .node-container svg[class*="text-brand-cyan"] {
+  color: var(--brand-cyan) !important;
+}
+
+/* Override border-brand-cyan inside nodes */
+.react-flow__node .node-container [class*="border-[brand-cyan]"],
+.react-flow__node .node-container [class*="border-brand-cyan"] {
+  border-color: var(--brand-cyan) !important;
+}
+
+/* Override bg-brand-cyan inside nodes (solid, not with opacity) */
+.react-flow__node .node-container [class*="bg-brand-cyan"]:not([class*="/"]),
+.react-flow__node .node-container [class*="bg-[brand-cyan]"]:not([class*="/"]) {
+  background-color: var(--brand-cyan) !important;
+}
+
+/* Node selected border - use brand color */
+.react-flow__node.selected .node-container,
+.react-flow__node[data-selected="true"] .node-container {
+  border-color: var(--brand-cyan) !important;
+}
+
+/* Override focus rings and other brand-cyan references */
+.react-flow__node .node-container [class*="ring-[brand-cyan]"],
+.react-flow__node .node-container [class*="ring-brand-cyan"] {
+  --tw-ring-color: var(--brand-cyan) !important;
+}
+
+.react-flow__node .node-container [class*="focus:border-[brand-cyan]"],
+.react-flow__node .node-container [class*="focus:border-brand-cyan"],
+.react-flow__node .node-container [class*="focus:ring-[brand-cyan]"],
+.react-flow__node .node-container [class*="focus:ring-brand-cyan"] {
+  border-color: var(--brand-cyan) !important;
+  --tw-ring-color: var(--brand-cyan) !important;
+}
+
+/* Override hover states with brand-cyan */
+.react-flow__node .node-container [class*="hover:text-brand-cyan"]:hover {
+  color: var(--brand-cyan) !important;
+}
+
+.react-flow__node .node-container [class*="hover:border-[brand-cyan]"]:hover,
+.react-flow__node .node-container [class*="hover:border-brand-cyan"]:hover {
+  border-color: var(--brand-cyan) !important;
+}
+
+.react-flow__node .node-container [class*="hover:bg-brand-cyan"]:not([class*="/"]):hover {
+  background-color: var(--brand-cyan) !important;
 }
 
 /* Auto-contrast for buttons and textareas */
@@ -1527,34 +1593,28 @@
 }
 
 /* Buttons with dark backgrounds */
-.react-flow__node .node-container button[class*="bg-neutral-900"]:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]):not([class*="text-black"]):not([class*="text-white"]),
-.react-flow__node .node-container button[class*="bg-neutral-800"]:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]):not([class*="text-black"]):not([class*="text-white"]),
-.react-flow__node .node-container button[class*="bg-neutral-950"]:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]):not([class*="text-black"]):not([class*="text-white"]) {
+.react-flow__node .node-container button[class*="bg-neutral-900"],
+.react-flow__node .node-container button[class*="bg-neutral-800"],
+.react-flow__node .node-container button[class*="bg-neutral-950"] {
   color: var(--node-text-color-muted, #9ca3af) !important;
 }
 
 /* Buttons with light backgrounds */
-.react-flow__node .node-container button[class*="bg-brand-cyan/20"]:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]):not([class*="text-black"]):not([class*="text-white"]) {
+.react-flow__node .node-container button[class*="bg-brand-cyan/20"],
+.react-flow__node .node-container button[class*="bg-brand-cyan/10"] {
   color: #00d9ff;
 }
 
-.react-flow__node .node-container button[class*="bg-brand-cyan/10"]:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]):not([class*="text-black"]):not([class*="text-white"]) {
-  color: #00d9ff;
-}
-
-.react-flow__node .node-container button[class*="bg-green-500/5"]:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]):not([class*="text-black"]):not([class*="text-white"]),
-.react-flow__node .node-container button[class*="bg-green-500/10"]:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]):not([class*="text-black"]):not([class*="text-white"]) {
+.react-flow__node .node-container button[class*="bg-green-500/5"],
+.react-flow__node .node-container button[class*="bg-green-500/10"] {
   color: var(--node-text-color, #e5e7eb);
 }
 
 /* Light background: use dark text on light button backgrounds */
-.react-flow__node[data-node-bg-light="true"] .node-container button[class*="bg-brand-cyan/20"]:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]),
-.react-flow__node[data-node-bg-light="true"] .node-container button[class*="bg-brand-cyan/10"]:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]) {
-  color: #000000 !important;
-}
-
-.react-flow__node[data-node-bg-light="true"] .node-container button[class*="bg-green-500/5"]:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]),
-.react-flow__node[data-node-bg-light="true"] .node-container button[class*="bg-green-500/10"]:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]) {
+.react-flow__node[data-node-bg-light="true"] .node-container button[class*="bg-brand-cyan/20"],
+.react-flow__node[data-node-bg-light="true"] .node-container button[class*="bg-brand-cyan/10"],
+.react-flow__node[data-node-bg-light="true"] .node-container button[class*="bg-green-500/5"],
+.react-flow__node[data-node-bg-light="true"] .node-container button[class*="bg-green-500/10"] {
   color: #000000 !important;
 }
 

@@ -18,7 +18,7 @@ const NodeHeader = React.forwardRef<HTMLDivElement, NodeHeaderProps>(
           className
         )}
       >
-        <Icon size={20} className="text-brand-cyan" />
+        <Icon size={20} className="text-brand-cyan" style={{ color: 'var(--brand-cyan)' }} />
         <h3 className="text-sm font-semibold node-text-primary font-mono uppercase">{title}</h3>
       </div>
     )

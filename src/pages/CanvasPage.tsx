@@ -3576,6 +3576,7 @@ export const CanvasPage: React.FC = () => {
                   edgeStyle={edgeStyle}
                   edgeStrokeWidth={edgeStrokeWidth}
                   cursorColor={cursorColor}
+                  brandCyan={brandCyan}
                   isDrawingMode={drawing.drawingState.isDrawingMode}
                   drawingType={drawing.drawingState.drawingType}
                   onDrawingStart={drawing.startDrawing}
@@ -3734,6 +3735,7 @@ export const CanvasPage: React.FC = () => {
           }}
           onToggleToolbar={() => setIsToolbarCollapsed(!isToolbarCollapsed)}
           isToolbarCollapsed={isToolbarCollapsed}
+          backgroundColor={backgroundColor}
         />
 
         {/* Full Screen Viewer */}
@@ -4244,6 +4246,7 @@ export const CanvasPage: React.FC = () => {
           setExportPanel(null);
         }}
         onUpdateNode={updateNodeData}
+        backgroundColor={backgroundColor}
         overridePanel={exportPanel ? {
           type: 'export',
           data: exportPanel,
@@ -4312,6 +4315,8 @@ export const CanvasPage: React.FC = () => {
           isDrawingMode={drawing.drawingState.isDrawingMode}
           isCollapsed={isToolbarCollapsed}
           onCollapseChange={setIsToolbarCollapsed}
+          backgroundColor={backgroundColor}
+          onToggleToolbar={() => setIsToolbarCollapsed(!isToolbarCollapsed)}
         />
       </div>
     </>
@@ -4354,6 +4359,7 @@ const CollaborativeCanvas: React.FC<{
   edgeStyle?: 'solid' | 'dashed';
   edgeStrokeWidth?: 'normal' | 'thin';
   cursorColor?: string;
+  brandCyan?: string;
   isDrawingMode?: boolean;
   drawingType?: 'freehand' | 'text' | 'shape';
   onDrawingStart?: (event: React.MouseEvent | React.TouchEvent) => void;
@@ -4422,6 +4428,7 @@ const CollaborativeCanvas: React.FC<{
   edgeStyle = 'solid',
   edgeStrokeWidth = 'normal',
   cursorColor = '#FFFFFF',
+  brandCyan,
   isDrawingMode = false,
   drawingType = 'freehand',
   onDrawingStart,
@@ -4614,6 +4621,7 @@ const CollaborativeCanvas: React.FC<{
           onDropNode={onDropNode}
           reactFlowInstance={reactFlowInstance}
           cursorColor={cursorColor}
+          brandCyan={brandCyan || undefined}
           isDrawingMode={isDrawingMode}
           drawingType={drawingType}
           onDrawingStart={onDrawingStart}

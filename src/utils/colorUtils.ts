@@ -65,13 +65,162 @@ export function getContrastColor(backgroundColor: string): 'white' | 'black' {
 }
 
 /**
+ * Normalize color string to hex (handles Tailwind color names, hex values, oklch, etc)
+ * @param color - Color string (hex, Tailwind name, oklch, or CSS variable)
+ * @returns Hex color string
+ */
+function normalizeColorToHex(color: string): string {
+  if (!color) return '#00d9ff'; // Default brand-cyan
+  
+  // If already hex, return as is
+  if (color.startsWith('#')) {
+    return color;
+  }
+  
+  // If it's a CSS variable reference, try to get computed value
+  if (color.startsWith('var(') || color.startsWith('--')) {
+    // Try to get computed value from document
+    if (typeof document !== 'undefined') {
+      try {
+        const root = document.documentElement;
+        const varName = color.startsWith('var(') 
+          ? color.replace('var(', '').replace(')', '').trim()
+          : color;
+        const computed = getComputedStyle(root).getPropertyValue(varName).trim();
+        if (computed) {
+          return normalizeColorToHex(computed); // Recursively normalize
+        }
+      } catch {
+        // Fall through to default
+      }
+    }
+    return '#00d9ff';
+  }
+  
+  // Handle oklch format - try to get from CSS variable if it's brand-cyan
+  if (color.startsWith('oklch')) {
+    // If it's the default brand-cyan oklch, try to get computed value
+    if (typeof document !== 'undefined') {
+      try {
+        const root = document.documentElement;
+        const computed = getComputedStyle(root).getPropertyValue('--brand-cyan').trim();
+        if (computed && computed.startsWith('#')) {
+          return computed;
+        }
+      } catch {
+        // Fall through
+      }
+    }
+    return '#00d9ff';
+  }
+  
+  // Map common Tailwind color names to hex or try to get from CSS variable
+  if (color === 'brand-cyan') {
+    // Try to get from CSS variable and convert to hex
+    if (typeof document !== 'undefined') {
+      try {
+        const root = document.documentElement;
+        const tempEl = document.createElement('div');
+        tempEl.style.color = 'var(--brand-cyan)';
+        root.appendChild(tempEl);
+        const computed = getComputedStyle(tempEl).color;
+        root.removeChild(tempEl);
+        
+        // Convert rgb/rgba to hex
+        if (computed && computed.startsWith('rgb')) {
+          const rgbMatch = computed.match(/\d+/g);
+          if (rgbMatch && rgbMatch.length >= 3) {
+            const r = parseInt(rgbMatch[0]);
+            const g = parseInt(rgbMatch[1]);
+            const b = parseInt(rgbMatch[2]);
+            return `#${[r, g, b].map(x => {
+              const hex = x.toString(16);
+              return hex.length === 1 ? '0' + hex : hex;
+            }).join('')}`;
+          }
+        }
+      } catch {
+        // Fall through to default
+      }
+    }
+    return '#00d9ff';
+  }
+  
+  // If it's not a known format, try to use as-is (might be hex without #)
+  // If it looks like it could be a color, try to parse it
+  return color;
+}
+
+/**
+ * Get accent color based on background contrast and user brand color
+ * @param backgroundColor - Hex color string
+ * @param brandColor - User configured brand color (hex, name, or CSS variable)
+ * @returns Accent color that works with the background
+ */
+function getAccentColor(backgroundColor: string, brandColor?: string): string {
+  const isDark = getContrastColor(backgroundColor) === 'white';
+  
+  // Normalize brand color to hex
+  let normalizedBrand = '#00d9ff'; // Default
+  if (brandColor) {
+    normalizedBrand = normalizeColorToHex(brandColor);
+    // If normalization didn't work (still not hex), try to get from CSS
+    if (!normalizedBrand.startsWith('#')) {
+      normalizedBrand = '#00d9ff';
+    }
+  }
+  
+  if (isDark) {
+    // For dark backgrounds, use the brand color as-is
+    return normalizedBrand;
+  } else {
+    // For light backgrounds, darken the brand color for better contrast
+    try {
+      const [r, g, b] = hexToRgb(normalizedBrand);
+      // Darken by 40% for light backgrounds
+      const darkenedR = Math.round(r * 0.6);
+      const darkenedG = Math.round(g * 0.6);
+      const darkenedB = Math.round(b * 0.6);
+      
+      return `#${[darkenedR, darkenedG, darkenedB].map(x => {
+        const hex = x.toString(16);
+        return hex.length === 1 ? '0' + hex : hex;
+      }).join('')}`;
+    } catch {
+      return '#0066cc'; // Fallback
+    }
+  }
+}
+
+/**
+ * Get all text colors based on background contrast
+ * @param backgroundColor - Hex color string (e.g., "#0C0C0C" or "0C0C0C")
+ * @param brandColor - Optional user configured brand color
+ * @returns Object with primary, muted, subtle, and accent text colors
+ */
+export function getTextColors(backgroundColor: string, brandColor?: string): {
+  primary: string;
+  muted: string;
+  subtle: string;
+  accent: string;
+} {
+  const isDark = getContrastColor(backgroundColor) === 'white';
+  
+  return {
+    primary: isDark ? '#FFFFFF' : '#000000',
+    muted: isDark ? '#9ca3af' : '#4b5563',
+    subtle: isDark ? '#6b7280' : '#9ca3af',
+    accent: getAccentColor(backgroundColor, brandColor),
+  };
+}
+
+/**
  * Get contrast text color as hex value
  * @param backgroundColor - Hex color string (e.g., "#0C0C0C" or "0C0C0C")
  * @returns '#FFFFFF' for dark backgrounds, '#000000' for light backgrounds
  */
 export function getContrastTextColor(backgroundColor: string): string {
-  const contrast = getContrastColor(backgroundColor);
-  return contrast === 'white' ? '#FFFFFF' : '#000000';
+  return getTextColors(backgroundColor).primary;
 }
 
 /**
@@ -80,9 +229,7 @@ export function getContrastTextColor(backgroundColor: string): string {
  * @returns Muted text color (lighter gray for dark bg, darker gray for light bg)
  */
 export function getMutedTextColor(backgroundColor: string): string {
-  const contrast = getContrastColor(backgroundColor);
-  // For dark backgrounds, use light gray. For light backgrounds, use dark gray
-  return contrast === 'white' ? '#9ca3af' : '#4b5563';
+  return getTextColors(backgroundColor).muted;
 }
 
 /**
@@ -91,9 +238,7 @@ export function getMutedTextColor(backgroundColor: string): string {
  * @returns Subtle text color (darker gray for dark bg, lighter gray for light bg)
  */
 export function getSubtleTextColor(backgroundColor: string): string {
-  const contrast = getContrastColor(backgroundColor);
-  // For dark backgrounds, use darker gray. For light backgrounds, use lighter gray
-  return contrast === 'white' ? '#6b7280' : '#9ca3af';
+  return getTextColors(backgroundColor).subtle;
 }
 
 /**

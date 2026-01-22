@@ -80,7 +80,7 @@ export const DirectorNode = memo(({ data, selected, id, dragging }: NodeProps<an
   const getStatusColor = () => {
     if (isGeneratingPrompt) return 'text-amber-400';
     if (generatedPrompt) return 'text-green-400';
-    if (hasAnalyzed) return 'text-brand-cyan';
+    if (hasAnalyzed) return 'node-text-accent';
     if (isAnalyzing) return 'text-amber-400';
     if (connectedImage) return 'node-text-muted';
     return 'node-text-subtle';
@@ -159,7 +159,7 @@ export const DirectorNode = memo(({ data, selected, id, dragging }: NodeProps<an
             'flex items-center justify-center gap-2',
             'text-xs font-mono uppercase tracking-wide',
             connectedImage
-              ? 'bg-brand-cyan/10 border-[brand-cyan]/30 text-brand-cyan hover:bg-brand-cyan/20 hover:border-[brand-cyan]/50'
+              ? 'bg-brand-cyan/10 border-[brand-cyan]/30 node-text-accent hover:bg-brand-cyan/20 hover:border-[brand-cyan]/50'
               : 'bg-neutral-800/50 border-neutral-700/50 text-neutral-500 cursor-not-allowed',
             'node-interactive'
           )}
