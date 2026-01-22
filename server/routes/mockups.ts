@@ -1639,7 +1639,11 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res, n
     const isLikedVal = ensureOptionalBoolean(req.body.isLiked);
     if (isLikedVal !== undefined) {
       updateData.isLiked = isLikedVal;
-      console.log(`[Update] Updating like status for mockup ${req.params.id}: isLiked=${updateData.isLiked}`);
+      // Use structured logging to avoid format string vulnerability
+      console.log('[Update] Updating like status for mockup:', {
+        mockupId: String(req.params.id),
+        isLiked: updateData.isLiked,
+      });
     }
 
     if (imageUrl) {
@@ -1647,7 +1651,9 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res, n
     }
 
     // Log what we're updating
-    console.log(`[Update] Updating mockup ${req.params.id} with data:`, {
+    // Use structured logging to avoid format string vulnerability
+    console.log('[Update] Updating mockup with data:', {
+      mockupId: String(req.params.id),
       userId,
       updateData,
       isLikedInUpdate: 'isLiked' in updateData,
@@ -1664,7 +1670,10 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res, n
     }
 
     if (result.modifiedCount === 0) {
-      console.warn(`[Update] Mockup ${req.params.id} was matched but not modified. This might indicate the data is the same.`);
+      // Use structured logging to avoid format string vulnerability
+      console.warn('[Update] Mockup was matched but not modified. This might indicate the data is the same:', {
+        mockupId: String(req.params.id),
+      });
     }
 
     // Verify the update by fetching the updated mockup (only once)
@@ -1673,7 +1682,9 @@ router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res, n
       userId: req.userId
     });
 
-    console.log(`[Update] Successfully updated mockup ${req.params.id}`, {
+    // Use structured logging to avoid format string vulnerability
+    console.log('[Update] Successfully updated mockup:', {
+      mockupId: String(req.params.id),
       matchedCount: result.matchedCount,
       modifiedCount: result.modifiedCount,
       isLikedInUpdate: 'isLiked' in updateData,

@@ -2489,7 +2489,10 @@ router.get('/abacate-pix-status/:billId', apiRateLimiter, authenticate, async (r
     } catch (error: any) {
       // If billing not found, return expired status instead of error
       if (error.message && error.message.includes('not found')) {
-        console.warn(`⚠️ Billing ${billId} not found - returning expired status`);
+        // Use structured logging to avoid format string vulnerability
+        console.warn('⚠️ Billing not found - returning expired status:', {
+          billId: String(billId),
+        });
         return res.json({
           billId,
           sessionId: billId,

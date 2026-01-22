@@ -884,11 +884,19 @@ export const abacatepayService = {
             };
           } else {
             const errorData = await pixResponse.json().catch(() => ({}));
-            console.warn(`⚠️ PIX QRCode ${billId} not found via direct endpoint (status: ${pixResponse.status}):`, errorData);
+            // Use structured logging to avoid format string vulnerability
+            console.warn('⚠️ PIX QRCode not found via direct endpoint:', {
+              billId: String(billId),
+              status: String(pixResponse.status),
+              errorData,
+            });
             // Fall through to return expired status
           }
         } catch (pixError: any) {
-          console.warn(`⚠️ Error fetching PIX QRCode status: ${pixError.message}`);
+          // Use structured logging to avoid format string vulnerability
+          console.warn('⚠️ Error fetching PIX QRCode status:', {
+            error: pixError?.message || String(pixError),
+          });
           // Fall through to return expired status
         }
       } else {
@@ -962,7 +970,10 @@ export const abacatepayService = {
       }
 
       // If we get here, the payment was not found
-      console.warn(`⚠️ Payment ${billId} not found - may have expired or been deleted`);
+      // Use structured logging to avoid format string vulnerability
+      console.warn('⚠️ Payment not found - may have expired or been deleted:', {
+        billId: String(billId),
+      });
       return {
         id: billId,
         status: 'expired',
@@ -975,7 +986,10 @@ export const abacatepayService = {
     } catch (error: any) {
       // If it's a "not found" error, return expired status instead of throwing
       if (error.message && error.message.includes('not found')) {
-        console.warn(`⚠️ Payment ${billId} not found - returning expired status`);
+        // Use structured logging to avoid format string vulnerability
+        console.warn('⚠️ Payment not found - returning expired status:', {
+          billId: String(billId),
+        });
         return {
           id: billId,
           status: 'expired',

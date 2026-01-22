@@ -937,6 +937,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
           --node-text-color-muted: ${getTextColors(lightenColor(backgroundColor, 0.06), actualBrandColor).muted};
           --node-text-color-subtle: ${getTextColors(lightenColor(backgroundColor, 0.06), actualBrandColor).subtle};
           --node-text-accent: ${getTextColors(lightenColor(backgroundColor, 0.06), actualBrandColor).accent};
+          --node-text-accent-secondary: ${getTextColors(lightenColor(backgroundColor, 0.06), actualBrandColor).secondaryAccent};
         }
         
         /* Add class to react-flow when background is light (for button/textarea contrast) */
