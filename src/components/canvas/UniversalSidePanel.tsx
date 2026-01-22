@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
 import type { Node } from '@xyflow/react';
 import type { FlowNodeData } from '@/types/reactFlow';
 import { MessageSquare, Settings, X, Share, Brush } from 'lucide-react';
+import { getTextColors, lightenColor } from '@/utils/colorUtils';
 
 // Import child components
 import { ShaderControlsSidebar } from './ShaderControlsSidebar';
@@ -31,6 +32,7 @@ interface UniversalSidePanelProps {
         data: any;
         onClose: () => void;
     } | null;
+    backgroundColor?: string;
 }
 
 const DEFAULT_WIDTH = 320;
@@ -75,7 +77,8 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
     onUpdateNode,
     overridePanel,
     activeSidePanel,
-    onImportCommunityPreset
+    onImportCommunityPreset,
+    backgroundColor = '#0C0C0C',
 }) => {
     const { t } = useTranslation();
     const [panelWidth, setPanelWidth] = useState(width);
@@ -83,6 +86,16 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
     const resizerRef = useRef<HTMLDivElement>(null);
     const sidebarRef = useRef<HTMLDivElement>(null);
     const [isResizing, setIsResizing] = useState(false);
+
+    // Calculate text colors based on canvas background
+    const textColors = useMemo(() => getTextColors(backgroundColor), [backgroundColor]);
+    const isLight = textColors.primary === '#000000';
+    const sidebarBg = useMemo(() => {
+        if (isLight) {
+            return lightenColor(backgroundColor, 0.02);
+        }
+        return '#0a0a0a';
+    }, [backgroundColor, isLight]);
 
     // Filter selected nodes to those that have a registered panel
     const validNodes = selectedNodes.filter(node => PANEL_REGISTRY[node.type || '']);
@@ -143,12 +156,22 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
                 const { nodeId, nodeName, imageUrl, nodeType } = overridePanel.data;
                 return (
                     <div className="h-full flex flex-col">
-                        <div className="flex items-center justify-between p-4 border-b border-neutral-700/30">
+                        <div 
+                            className={cn(
+                                "flex items-center justify-between p-4 border-b",
+                                isLight ? "border-neutral-300/30" : "border-neutral-700/30"
+                            )}
+                        >
                             <div className="flex items-center gap-2">
-                                <Share size={16} className="text-brand-cyan" />
-                                <h3 className="text-sm font-semibold text-neutral-200">Export</h3>
+                                <Share size={16} style={{ color: 'var(--brand-cyan)' }} />
+                                <h3 className="text-sm font-semibold" style={{ color: textColors.primary }}>Export</h3>
                             </div>
-                            <button onClick={overridePanel.onClose} className="text-neutral-400 hover:text-neutral-200">
+                            <button 
+                                onClick={overridePanel.onClose} 
+                                style={{ color: textColors.muted }}
+                                onMouseEnter={(e) => e.currentTarget.style.color = textColors.primary}
+                                onMouseLeave={(e) => e.currentTarget.style.color = textColors.muted}
+                            >
                                 <X size={16} />
                             </button>
                         </div>
@@ -182,11 +205,11 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
 
         if (validNodes.length === 0) {
             return (
-                <div className="h-full flex flex-col items-center justify-center text-neutral-500 p-8 text-center gap-4">
+                <div className="h-full flex flex-col items-center justify-center p-8 text-center gap-4" style={{ color: textColors.subtle }}>
                     <Brush size={32} className="opacity-20" />
                     <div className="flex flex-col gap-1">
-                        <h3 className="text-sm font-medium text-neutral-400">No node selected</h3>
-                        <p className="text-xs">Select a supported node to view its controls</p>
+                        <h3 className="text-sm font-medium" style={{ color: textColors.muted }}>No node selected</h3>
+                        <p className="text-xs" style={{ color: textColors.subtle }}>Select a supported node to view its controls</p>
                     </div>
                 </div>
             );
@@ -222,27 +245,36 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
             ref={sidebarRef}
             className={cn(
                 "fixed right-4 top-[65px] z-40",
-                "backdrop-blur-xl border border-neutral-800/50",
+                "backdrop-blur-xl border",
+                isLight ? "border-neutral-300/50" : "border-neutral-800/50",
                 "rounded-2xl shadow-2xl",
                 "transition-all duration-300 ease-out flex flex-col",
-                "bg-neutral-950/70",
                 isResizing ? "transition-none select-none" : ""
             )}
             style={{
                 width: `${panelWidth}px`,
                 height: 'calc(100vh - 97px)',
-                backgroundColor: 'var(--sidebar)',
+                backgroundColor: isLight ? `${sidebarBg}dd` : `${sidebarBg}cc`,
+                color: textColors.primary,
             }}
         >
             {/* Resizer Handle */}
             <div
                 ref={resizerRef}
-                className="absolute left-0 top-0 w-1 h-full cursor-col-resize hover:bg-neutral-500/50 transition-colors z-50 rounded-l-2xl"
+                className={cn(
+                    "absolute left-0 top-0 w-1 h-full cursor-col-resize transition-colors z-50 rounded-l-2xl",
+                    isLight ? "hover:bg-neutral-400/50" : "hover:bg-neutral-500/50"
+                )}
             />
 
             {/* Tabs / Header */}
             {!overridePanel && activeSidePanel !== 'community-presets' && (
-                <div className="flex items-center justify-between border-b border-neutral-800/50 bg-transparent rounded-t-2xl overflow-hidden">
+                <div 
+                    className={cn(
+                        "flex items-center justify-between border-b bg-transparent rounded-t-2xl overflow-hidden",
+                        isLight ? "border-neutral-300/50" : "border-neutral-800/50"
+                    )}
+                >
                     <div className="flex items-center overflow-x-auto scrollbar-hide flex-1 h-[41px]"> {/* Fixed height for consistency */}
                         {validNodes.length > 0 ? (
                             validNodes.map(node => {
@@ -255,11 +287,31 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
                                         key={node.id}
                                         onClick={() => setActiveTabId(node.id)}
                                         className={cn(
-                                            "flex items-center gap-2 px-4 py-3 text-xs font-medium border-r border-neutral-800/50 transition-colors min-w-[100px] h-full",
+                                            "flex items-center gap-2 px-4 py-3 text-xs font-medium border-r transition-colors min-w-[100px] h-full",
+                                            isLight 
+                                                ? "border-neutral-300/50" 
+                                                : "border-neutral-800/50",
                                             isActive
-                                                ? "text-neutral-400 bg-neutral-800/5"
-                                                : "text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50"
+                                                ? isLight
+                                                    ? "bg-neutral-200/30"
+                                                    : "bg-neutral-800/5"
+                                                : isLight
+                                                    ? "hover:bg-neutral-200/50"
+                                                    : "hover:bg-neutral-800/50"
                                         )}
+                                        style={{
+                                            color: isActive ? textColors.primary : textColors.muted,
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            if (!isActive) {
+                                                e.currentTarget.style.color = textColors.primary;
+                                            }
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            if (!isActive) {
+                                                e.currentTarget.style.color = textColors.muted;
+                                            }
+                                        }}
                                     >
                                         <Icon size={14} />
                                         <span className="truncate max-w-[80px]">{node.data.label || conf?.title || 'Node'}</span>
@@ -267,7 +319,10 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
                                 );
                             })
                         ) : (
-                            <div className="px-4 text-xs font-medium text-neutral-500 italic">
+                            <div 
+                                className="px-4 text-xs font-medium italic"
+                                style={{ color: textColors.subtle }}
+                            >
                                 Controls
                             </div>
                         )}
@@ -275,7 +330,15 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
                     {/* Close Button */}
                     <button
                         onClick={onClose}
-                        className="p-3 text-neutral-500 hover:text-neutral-200 border-l border-neutral-800/50 hover:bg-neutral-800/50 transition-colors h-full rounded-tr-2xl"
+                        className={cn(
+                            "p-3 border-l transition-colors h-full rounded-tr-2xl",
+                            isLight
+                                ? "border-neutral-300/50 hover:bg-neutral-200/50"
+                                : "border-neutral-800/50 hover:bg-neutral-800/50"
+                        )}
+                        style={{ color: textColors.muted }}
+                        onMouseEnter={(e) => e.currentTarget.style.color = textColors.primary}
+                        onMouseLeave={(e) => e.currentTarget.style.color = textColors.muted}
                     >
                         <X size={16} />
                     </button>
@@ -284,15 +347,31 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
 
             {/* Global Panel Header for Community Presets */}
             {activeSidePanel === 'community-presets' && (
-                <div className="flex items-center justify-between border-b border-neutral-800/50 bg-transparent rounded-t-2xl overflow-hidden h-[41px]">
-                    <div className="flex items-center px-4 gap-2 text-neutral-200 font-medium text-xs">
+                <div 
+                    className={cn(
+                        "flex items-center justify-between border-b bg-transparent rounded-t-2xl overflow-hidden h-[41px]",
+                        isLight ? "border-neutral-300/50" : "border-neutral-800/50"
+                    )}
+                >
+                    <div 
+                        className="flex items-center px-4 gap-2 font-medium text-xs"
+                        style={{ color: textColors.primary }}
+                    >
                         {/* We need Users icon imported */}
-                        <span className="text-brand-cyan">❖</span>
+                        <span style={{ color: 'var(--brand-cyan)' }}>❖</span>
                         Community Presets
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-3 text-neutral-500 hover:text-neutral-200 border-l border-neutral-800/50 hover:bg-neutral-800/50 transition-colors h-full rounded-tr-2xl"
+                        className={cn(
+                            "p-3 border-l transition-colors h-full rounded-tr-2xl",
+                            isLight
+                                ? "border-neutral-300/50 hover:bg-neutral-200/50"
+                                : "border-neutral-800/50 hover:bg-neutral-800/50"
+                        )}
+                        style={{ color: textColors.muted }}
+                        onMouseEnter={(e) => e.currentTarget.style.color = textColors.primary}
+                        onMouseLeave={(e) => e.currentTarget.style.color = textColors.muted}
                     >
                         <X size={16} />
                     </button>

@@ -121,10 +121,16 @@ router.get('/video-proxy', apiRateLimiter, async (req, res) => {
     const videoUrl = new URL(urlValidation.url!);
     const apiKey = getGoogleApiKey();
 
+    // Whitelist of allowed Google Cloud Storage hostnames
+    const allowedGoogleHosts = [
+      'storage.googleapis.com',
+      'googleapis.com',
+    ];
+
     const headers: Record<string, string> = {
       'User-Agent': 'VSN-Mockup-Machine/1.0',
     };
-    if (apiKey && (videoUrl.hostname.includes('googleapis.com') || videoUrl.hostname.includes('storage.googleapis.com'))) {
+    if (apiKey && allowedGoogleHosts.includes(videoUrl.hostname)) {
       headers['x-goog-api-key'] = apiKey;
     }
 
