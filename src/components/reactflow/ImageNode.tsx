@@ -5,7 +5,7 @@ import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { ImageNodeData } from '@/types/reactFlow';
 import { getImageUrl } from '@/utils/imageUtils';
 import { cn } from '@/lib/utils';
-import { mockupApi } from '@/services/mockupApi';
+import { mockupApi, type Mockup } from '@/services/mockupApi';
 import { aiApi } from '@/services/aiApi';
 import { normalizeImageToBase64 } from '@/services/reactFlowService';
 import { toast } from 'sonner';
@@ -34,8 +34,9 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
   const { setNodes, getNode, getZoom } = useReactFlow();
   const nodeData = data as ImageNodeData;
   const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
-  const imageUrl = getImageUrl(nodeData.mockup);
-  const mockupId = nodeData.mockup._id || '';
+  const mockup = nodeData?.mockup ?? ({} as Mockup);
+  const imageUrl = getImageUrl(mockup);
+  const mockupId = mockup._id || '';
   const nodeRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
@@ -47,7 +48,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
   const [localDescription, setLocalDescription] = useState(nodeData.description || '');
   const [imageScale, setImageScale] = useState(nodeData.imageScale ?? 1.0);
   const isSaved = !!mockupId;
-  const isLiked = nodeData.mockup.isLiked || false;
+  const isLiked = mockup.isLiked || false;
   const isGenerating = nodeData.isGenerating || false;
   const isDescribing = nodeData.isDescribing || false;
   const description = nodeData.description || localDescription;
@@ -55,12 +56,12 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
   // Use centralized like hook
   const { toggleLike: handleToggleLike } = useMockupLike({
-    mockupId: nodeData.mockup._id || undefined,
+    mockupId: mockup._id || undefined,
     isLiked,
     onLikeStateChange: (newIsLiked) => {
       if (nodeData.onUpdateData) {
         nodeData.onUpdateData(String(id), {
-          mockup: { ...nodeData.mockup, isLiked: newIsLiked },
+          mockup: { ...mockup, isLiked: newIsLiked },
         } as any);
       }
     },
@@ -231,18 +232,18 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
     try {
       const savedMockup = await mockupApi.save({
         imageUrl: imageUrl, // Use only R2 URL, no base64
-        prompt: nodeData.mockup.prompt || t('canvasNodes.imageNode.canvasImage'),
-        designType: nodeData.mockup.designType || 'other',
-        tags: nodeData.mockup.tags || [],
-        brandingTags: nodeData.mockup.brandingTags || [],
-        aspectRatio: nodeData.mockup.aspectRatio || '16:9',
+        prompt: mockup.prompt || t('canvasNodes.imageNode.canvasImage'),
+        designType: mockup.designType || 'other',
+        tags: mockup.tags || [],
+        brandingTags: mockup.brandingTags || [],
+        aspectRatio: mockup.aspectRatio || '16:9',
         isLiked: isLiked,
       });
 
       // Update node data with saved mockup ID
       if (nodeData.onUpdateData) {
         nodeData.onUpdateData(String(id), {
-          mockup: { ...nodeData.mockup, _id: savedMockup._id, imageUrl: imageUrl, isLiked: isLiked },
+          mockup: { ...mockup, _id: savedMockup._id, imageUrl: imageUrl, isLiked: isLiked },
         } as any);
       }
 
@@ -253,7 +254,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
     } finally {
       setIsSaving(false);
     }
-  }, [imageUrl, isSaving, isSaved, isLiked, nodeData, id]);
+  }, [imageUrl, isSaving, isSaved, isLiked, nodeData, id, mockup]);
 
 
   const handleDescribe = useCallback(async () => {
@@ -263,39 +264,37 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
     let imageInput: string | { base64: string; mimeType: string };
 
     // Prefer imageBase64 from mockup if available
-    if (nodeData.mockup.imageBase64) {
-      const base64 = nodeData.mockup.imageBase64.trim();
+    const rawBase64 = mockup.imageBase64;
+    if (typeof rawBase64 === 'string' && rawBase64.trim().length > 0) {
+      const base64 = rawBase64.trim();
       // Remove data URL prefix if present
-      const cleanBase64 = base64.startsWith('data:') ? base64.split(',')[1] : base64;
-      imageInput = {
-        base64: cleanBase64,
-        mimeType: nodeData.mockup.mimeType || 'image/png',
-      };
-    } else if (imageUrl.startsWith('data:')) {
-      // Already a data URL, use directly
-      imageInput = imageUrl;
-    } else {
-      // Convert URL to base64 using utility function (with base64 fallback if available)
-      try {
-        const base64Fallback = nodeData.mockup.imageBase64;
-        const base64 = await normalizeImageToBase64(imageUrl, base64Fallback);
-        // Try to detect mimeType from URL or default to png
-        let mimeType = 'image/png';
-        if (imageUrl.includes('.jpg') || imageUrl.includes('.jpeg')) {
-          mimeType = 'image/jpeg';
-        } else if (imageUrl.includes('.webp')) {
-          mimeType = 'image/webp';
-        } else if (imageUrl.includes('.gif')) {
-          mimeType = 'image/gif';
-        }
+      const cleanBase64 = base64.startsWith('data:') && base64.includes(',')
+        ? base64.split(',')[1]
+        : base64;
+      if (cleanBase64) {
         imageInput = {
-          base64: base64,
-          mimeType: mimeType,
+          base64: cleanBase64,
+          mimeType: mockup.mimeType || 'image/png',
         };
-      } catch (error: any) {
-        toast.error(error?.message || t('canvas.failedToLoadImageForAnalysis'), { duration: 3000 });
-        console.error('Failed to convert image to base64:', error);
-        return;
+      }
+    }
+    if (!imageInput) {
+      if (imageUrl.startsWith('data:')) {
+        imageInput = imageUrl;
+      } else {
+        try {
+          const base64Fallback = typeof mockup.imageBase64 === 'string' ? mockup.imageBase64 : undefined;
+          const base64 = await normalizeImageToBase64(imageUrl, base64Fallback);
+          let mimeType = 'image/png';
+          if (imageUrl.includes('.jpg') || imageUrl.includes('.jpeg')) mimeType = 'image/jpeg';
+          else if (imageUrl.includes('.webp')) mimeType = 'image/webp';
+          else if (imageUrl.includes('.gif')) mimeType = 'image/gif';
+          imageInput = { base64, mimeType };
+        } catch (error: any) {
+          toast.error(error?.message || t('canvas.failedToLoadImageForAnalysis'), { duration: 3000 });
+          console.error('Failed to convert image to base64:', error);
+          return;
+        }
       }
     }
 
@@ -363,7 +362,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
         nodeData.onUpdateData(String(id), { isDescribing: false });
       }
     }
-  }, [imageUrl, isDescribing, nodeData, id, nodes]);
+  }, [imageUrl, isDescribing, nodeData, id, nodes, mockup]);
 
   const handleDescriptionChange = useCallback((value: string) => {
     setLocalDescription(value);
@@ -433,7 +432,12 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
     try {
       const imageData = await fileToBase64(file);
-      nodeData.onUpload(id, imageData.base64);
+      const b64 = imageData?.base64;
+      if (typeof b64 !== 'string' || !b64.trim()) {
+        toast.error(t('upload.couldNotProcess') || 'Failed to process image', { duration: 3000 });
+        return;
+      }
+      nodeData.onUpload(id, b64.trim());
       toast.success(t('canvasNodes.imageNode.uploadImageTitle') || 'Image uploaded successfully!', { duration: 2000 });
     } catch (error: any) {
       toast.error(error?.message || t('upload.couldNotProcess') || 'Failed to process image', { duration: 5000 });
@@ -605,10 +609,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       {!dragging && imageUrl && (
         <NodeActionBar selected={selected} getZoom={getZoom}>
           <ImageNodeActionButtons
-            onView={() => {
-              const nodeData = data as ImageNodeData;
-              nodeData.onView?.(nodeData.mockup);
-            }}
+            onView={() => nodeData.onView?.(mockup)}
             showView={!!(data as ImageNodeData).onView}
             onDownload={handleDownload}
             isDownloading={isDownloading}

@@ -9,13 +9,11 @@ import { PromptInput } from '@/components/PromptInput';
 import { ConnectedImagesDisplay } from './ConnectedImagesDisplay';
 import { BrandIdentityPanel } from '@/components/ui/BrandIdentityPanel';
 import { NodeContainer } from './shared/NodeContainer';
-import { Select } from '@/components/ui/select';
 import { NodeInput } from './shared/node-input';
 import { NodeLabel } from './shared/node-label';
 import { NodeHeader } from './shared/node-header';
 import { LabeledHandle } from './shared/LabeledHandle';
 import { AspectRatioSelector } from './shared/AspectRatioSelector';
-import { ResolutionSelector } from './shared/ResolutionSelector';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getCreditsRequired } from '@/utils/creditCalculator';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
@@ -41,6 +39,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   const [connectedImage4, setConnectedImage4] = useState<string | undefined>(nodeData.connectedImage4);
   const [pdfPageReference, setPdfPageReference] = useState<string>(nodeData.pdfPageReference || '');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Context Menu state
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
@@ -318,6 +317,79 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     debouncedUpdateData({ pdfPageReference: value || undefined });
   };
 
+  // Unified HD/1K/2K/4K resolution handler
+  const handleResolutionClick = (res: 'HD' | Resolution) => {
+    const previousModel = model;
+    
+    if (res === 'HD') {
+      setModel('gemini-2.5-flash-image');
+      
+      if (!nodeData.onUpdateData) return;
+      
+      const updates: Partial<PromptNodeData> = { 
+        model: 'gemini-2.5-flash-image',
+        resolution: undefined,
+        aspectRatio: undefined
+      };
+
+      // If switching from Pro to Flash, clear images 3 and 4
+      if (previousModel === 'gemini-3-pro-image-preview') {
+        updates.connectedImage3 = undefined;
+        updates.connectedImage4 = undefined;
+
+        if (nodeData.onRemoveEdge) {
+          if (connectedImage3) nodeData.onRemoveEdge(id, 'input-3');
+          if (connectedImage4) nodeData.onRemoveEdge(id, 'input-4');
+        }
+
+        setConnectedImage3(undefined);
+        setConnectedImage4(undefined);
+      }
+
+      nodeData.onUpdateData(id, updates);
+    } else {
+      setModel('gemini-3-pro-image-preview');
+      setResolution(res);
+      
+      if (!nodeData.onUpdateData) return;
+      
+      const updates: Partial<PromptNodeData> = { 
+        model: 'gemini-3-pro-image-preview',
+        resolution: res
+      };
+      
+      if (!nodeData.aspectRatio) {
+        updates.aspectRatio = '16:9';
+        setAspectRatio('16:9');
+      }
+
+      nodeData.onUpdateData(id, updates);
+    }
+  };
+
+  const currentActiveResolution = isProModel ? resolution : 'HD';
+
+  // Debounced fit-to-content: update node size when container content changes
+  const debouncedFitToContent = useDebouncedCallback(() => {
+    const el = containerRef.current;
+    if (!el || !nodeData.onResize) return;
+    const w = Math.max(el.scrollWidth, el.offsetWidth);
+    const h = Math.max(el.scrollHeight, el.offsetHeight);
+    if (w > 0 && h > 0) {
+      fitToContent(id, w, h, nodeData.onResize);
+    }
+  }, 150);
+
+  // ResizeObserver: auto-fit node when prompt text grows or aspect ratio section toggles
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => debouncedFitToContent());
+    ro.observe(el);
+    debouncedFitToContent();
+    return () => ro.disconnect();
+  }, [id, debouncedFitToContent]);
+
   // Handle resize from NodeResizer (com debounce - aplica apenas quando soltar o mouse)
   const handleResize = useCallback((width: number, height: number) => {
     handleResizeWithDebounce(id, width, height, nodeData.onResize);
@@ -347,6 +419,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
 
   return (
     <NodeContainer
+      containerRef={containerRef}
       selected={selected}
       dragging={dragging}
       warning={nodeData.oversizedWarning}
@@ -514,8 +587,8 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               disabled={isLoading}
               className={cn(
                 'flex items-center gap-1.5 px-2 py-1 rounded-md border text-[10px] font-mono transition-all',
-                'bg-neutral-800/50 border-neutral-700/50 hover:bg-neutral-700/50 hover:border-[brand-cyan]/30',
-                'text-neutral-400 hover:text-brand-cyan',
+                'bg-neutral-800/50 border-neutral-700/50 hover:bg-neutral-700/50 hover:border-neutral-500',
+                'text-neutral-400 hover:text-neutral-200',
                 'node-interactive'
               )}
               title={t('canvasNodes.promptNode.loadPreset') || 'Load Preset'}
@@ -537,8 +610,8 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
             disabled={isLoading || !prompt.trim()}
             className={cn(
               'flex items-center gap-1.5 px-2 py-1 rounded-md border text-[10px] font-mono transition-all',
-              'bg-neutral-800/50 border-neutral-700/50 hover:bg-neutral-700/50 hover:border-[brand-cyan]/30',
-              'text-neutral-400 hover:text-brand-cyan',
+              'bg-neutral-800/50 border-neutral-700/50 hover:bg-neutral-700/50 hover:border-neutral-500',
+              'text-neutral-400 hover:text-neutral-200',
               'disabled:opacity-50 disabled:cursor-not-allowed',
               'node-interactive'
             )}
@@ -573,8 +646,8 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               disabled={isLoading || isSuggestingPrompts || !prompt.trim()}
               className={cn(
                 'absolute top-2 right-2 p-1.5 rounded border transition-all',
-                'bg-neutral-800/50 hover:bg-neutral-700/50 border-neutral-700/50 hover:border-[brand-cyan]/40',
-                'text-neutral-400 hover:text-brand-cyan',
+                'bg-neutral-800/50 hover:bg-neutral-700/50 border-neutral-700/50 hover:border-neutral-500',
+                'text-neutral-400 hover:text-neutral-200',
                 'disabled:opacity-50 disabled:cursor-not-allowed',
                 'node-interactive'
               )}
@@ -610,8 +683,8 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
                 }}
                 className={cn(
                   'w-full text-left p-1.5 text-[11px] font-mono rounded border transition-all',
-                  'bg-neutral-800/30 hover:bg-neutral-800/50 border-neutral-700/30 hover:border-[brand-cyan]/40',
-                  'text-neutral-300 hover:text-brand-cyan',
+                  'bg-neutral-800/30 hover:bg-neutral-800/50 border-neutral-700/30 hover:border-neutral-500',
+                  'text-neutral-300 hover:text-neutral-100',
                   'node-interactive'
                 )}
                 onMouseDown={(e) => e.stopPropagation()}
@@ -623,154 +696,60 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         )}
       </div>
 
-      {/* Settings Section - Compact and organized */}
+      {/* Settings Section - Compact */}
       <div className="mb-3 space-y-2.5">
-        {/* Model Selector */}
+        {/* Unified Resolution/Model Selection: HD | 1K | 2K | 4K */}
         <div>
           <NodeLabel className="mb-1.5 text-[10px]">
             {t('canvasNodes.promptNode.model')}
           </NodeLabel>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                const newModel: GeminiModel = 'gemini-2.5-flash-image';
-                const previousModel = model;
-
-                setModel(newModel);
-
-                if (nodeData.onUpdateData) {
-                  const updates: Partial<PromptNodeData> = { model: newModel };
-
-                  // Clear resolution and aspectRatio when switching to Flash
-                  updates.resolution = undefined;
-                  updates.aspectRatio = undefined;
-
-                  // If switching from Pro to Flash, clear images 3 and 4
-                  if (previousModel === 'gemini-3-pro-image-preview') {
-                    updates.connectedImage3 = undefined;
-                    updates.connectedImage4 = undefined;
-
-                    // Remove edges for input-3 and input-4
-                    if (nodeData.onRemoveEdge) {
-                      if (connectedImage3) {
-                        nodeData.onRemoveEdge(id, 'input-3');
-                      }
-                      if (connectedImage4) {
-                        nodeData.onRemoveEdge(id, 'input-4');
-                      }
-                    }
-
-                    setConnectedImage3(undefined);
-                    setConnectedImage4(undefined);
-                  }
-
-                  nodeData.onUpdateData(id, updates);
-                }
-              }}
-              onMouseDown={(e) => e.stopPropagation()}
-              disabled={isLoading}
-              className={cn(
-                'p-2 rounded border transition-all text-left node-interactive',
-                model === 'gemini-2.5-flash-image'
-                  ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
-                  : 'bg-neutral-900/50 border-neutral-700/50 text-neutral-400 hover:bg-neutral-800/50 hover:border-neutral-600/50',
-                isLoading && 'opacity-50 cursor-not-allowed'
-              )}
-            >
-              <div className="text-[11px] font-mono font-semibold">
-                {t('canvasNodes.promptNode.modelHD')}
-              </div>
-              <div className="text-[9px] font-mono opacity-70 mt-0.5">
-                {getCreditsRequired('gemini-2.5-flash-image')} {t('canvasNodes.promptNode.credits')}
-              </div>
-            </button>
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                const newModel: GeminiModel = 'gemini-3-pro-image-preview';
-
-                setModel(newModel);
-
-                if (nodeData.onUpdateData) {
-                  const updates: Partial<PromptNodeData> = { model: newModel };
-
-                  // Set default resolution and aspectRatio if not set
-                  if (!nodeData.resolution) {
-                    updates.resolution = '4K';
-                    setResolution('4K');
-                  }
-                  if (!nodeData.aspectRatio) {
-                    updates.aspectRatio = '16:9';
-                    setAspectRatio('16:9');
-                  }
-
-                  nodeData.onUpdateData(id, updates);
-                }
-              }}
-              onMouseDown={(e) => e.stopPropagation()}
-              disabled={isLoading}
-              className={cn(
-                'p-2 rounded border transition-all text-left node-interactive',
-                model === 'gemini-3-pro-image-preview'
-                  ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
-                  : 'bg-neutral-900/50 border-neutral-700/50 text-neutral-400 hover:bg-neutral-800/50 hover:border-neutral-600/50',
-                isLoading && 'opacity-50 cursor-not-allowed'
-              )}
-            >
-              <div className="text-[11px] font-mono font-semibold">
-                {t('canvasNodes.promptNode.model4K')}
-              </div>
-              <div className="text-[9px] font-mono opacity-70 mt-0.5">
-                {getCreditsRequired('gemini-3-pro-image-preview', resolution)} {t('canvasNodes.promptNode.credits')}
-              </div>
-            </button>
+          <div 
+            className="flex gap-1" 
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            {(['HD', '1K', '2K', '4K'] as const).map(res => {
+              const isActive = currentActiveResolution === res;
+              return (
+                <button
+                  key={res}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleResolutionClick(res);
+                  }}
+                  disabled={isLoading}
+                  className={cn(
+                    'flex-1 py-2 text-[10px] font-mono rounded border transition-all node-interactive',
+                    isActive
+                      ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/40 font-bold'
+                      : 'bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300',
+                    isLoading && 'opacity-50 cursor-not-allowed'
+                  )}
+                >
+                  {res}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Pro Model Settings - Grouped in a row */}
+        {/* Aspect Ratio - Only for Pro model */}
         {isProModel && (
-          <div className="grid grid-cols-2 gap-2.5">
-            {/* Aspect Ratio Selector */}
-            <div>
-              <NodeLabel className="mb-1.5 text-[10px]">
-                {t('canvasNodes.promptNode.aspectRatio')}
-              </NodeLabel>
-              <div onMouseDown={(e) => e.stopPropagation()}>
-                <AspectRatioSelector
-                  value={aspectRatio}
-                  onChange={(ratio) => {
-                    setAspectRatio(ratio);
-                    if (nodeData.onUpdateData) {
-                      nodeData.onUpdateData(id, { aspectRatio: ratio });
-                    }
-                  }}
-                  disabled={isLoading}
-                  compact
-                />
-              </div>
-            </div>
-
-            {/* Resolution Selector */}
-            <div>
-              <NodeLabel className="mb-1.5 text-[10px]">
-                {t('canvasNodes.promptNode.resolution')}
-              </NodeLabel>
-              <div onMouseDown={(e) => e.stopPropagation()}>
-                <ResolutionSelector
-                  value={resolution}
-                  onChange={(res) => {
-                    setResolution(res);
-                    if (nodeData.onUpdateData) {
-                      nodeData.onUpdateData(id, { resolution: res });
-                    }
-                  }}
-                  model={model}
-                  disabled={isLoading}
-                  compact
-                />
-              </div>
+          <div>
+            <NodeLabel className="mb-1.5 text-[10px]">
+              {t('canvasNodes.promptNode.aspectRatio')}
+            </NodeLabel>
+            <div onMouseDown={(e) => e.stopPropagation()}>
+              <AspectRatioSelector
+                value={aspectRatio}
+                onChange={(ratio) => {
+                  setAspectRatio(ratio);
+                  if (nodeData.onUpdateData) {
+                    nodeData.onUpdateData(id, { aspectRatio: ratio });
+                  }
+                }}
+                disabled={isLoading}
+                compact
+              />
             </div>
           </div>
         )}

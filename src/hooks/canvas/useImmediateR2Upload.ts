@@ -26,6 +26,7 @@ interface UseImmediateR2UploadParams {
   isAuthenticated: boolean;
   setNodes: (nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])) => void;
   handlersRef: React.MutableRefObject<any>;
+  onStorageLimitError?: (usedMB: string, limitMB: string) => void;
 }
 
 /**
@@ -38,49 +39,41 @@ export const useImmediateR2Upload = ({
   isAuthenticated,
   setNodes,
   handlersRef,
+  onStorageLimitError,
 }: UseImmediateR2UploadParams): void => {
   // Ref para rastrear uploads em progresso (evita duplicatas)
   const uploadingRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    // Validações básicas
     if (!canvasId || !isAuthenticated) {
       uploadingRef.current.clear();
       return;
     }
 
-    // Detectar nodes que precisam de upload
     const nodesNeedingUpload = detectNodesNeedingUpload(nodes);
+    const userUploadRef = handlersRef.current?.userUploadInProgressRef?.current;
 
-    // Filtrar nodes que já estão em processo de upload
-    const nodesToUpload = nodesNeedingUpload.filter(
-      info => !uploadingRef.current.has(info.nodeId)
-    );
-
-    if (nodesToUpload.length === 0) {
-      return;
-    }
-
-    // Processar cada node que precisa de upload
-    nodesToUpload.forEach((uploadInfo: NodeUploadInfo) => {
-      const { nodeId, uploadType, base64Data, nodeKey } = uploadInfo;
-
-      // Marcar como fazendo upload
-      uploadingRef.current.add(nodeId);
-
-      // Executar upload baseado no tipo
-      const uploadPromise = performUpload(uploadInfo, canvasId, setNodes, handlersRef);
-
-      // Limpar flag após upload (sucesso ou erro)
-      uploadPromise
-        .finally(() => {
-          uploadingRef.current.delete(nodeId);
-        })
-        .catch((error) => {
-          // Erro já foi logado em performUpload, apenas limpar flag
-          console.warn(`Upload failed for node ${nodeId}, type ${uploadType}:`, error);
-        });
+    const nodesToUpload = nodesNeedingUpload.filter((info) => {
+      if (uploadingRef.current.has(info.nodeId)) return false;
+      if (userUploadRef?.has(info.nodeId)) return false;
+      return true;
     });
+
+    if (nodesToUpload.length === 0) return;
+
+    (async () => {
+      for (const uploadInfo of nodesToUpload) {
+        const { nodeId, uploadType } = uploadInfo;
+        uploadingRef.current.add(nodeId);
+        try {
+          await performUpload(uploadInfo, canvasId, setNodes, handlersRef, onStorageLimitError);
+        } catch (e) {
+          console.warn(`Upload failed for node ${nodeId}, type ${uploadType}:`, e);
+        } finally {
+          uploadingRef.current.delete(nodeId);
+        }
+      }
+    })();
   }, [nodes, canvasId, isAuthenticated, setNodes, handlersRef]);
 };
 
@@ -91,7 +84,8 @@ async function performUpload(
   uploadInfo: NodeUploadInfo,
   canvasId: string,
   setNodes: (nodes: Node<FlowNodeData>[] | ((prev: Node<FlowNodeData>[]) => Node<FlowNodeData>[])) => void,
-  handlersRef: React.MutableRefObject<any>
+  handlersRef: React.MutableRefObject<any>,
+  onStorageLimitError?: (usedMB: string, limitMB: string) => void
 ): Promise<void> {
   const { nodeId, uploadType, base64Data, nodeKey } = uploadInfo;
 
@@ -177,6 +171,10 @@ async function performUpload(
         console.warn(`Unknown upload type: ${uploadType} for node ${nodeId}`);
     }
   } catch (error: any) {
+    // Check if it's a storage limit error
+    if (error?.isStorageLimitError && onStorageLimitError && error.usedMB && error.limitMB) {
+      onStorageLimitError(error.usedMB, error.limitMB);
+    }
     // Log erro mas não propagar (mantém base64 como fallback)
     console.warn(`Failed to upload ${uploadType} for node ${nodeId}:`, error);
     throw error; // Re-throw para que o finally no useEffect seja executado

@@ -1144,10 +1144,10 @@
   box-shadow: none;
 }
 
-/* Node selected border - use accent color */
+/* Node selected border - use neutral color */
 .react-flow__node.selected .node-container,
 .react-flow__node[data-selected="true"] .node-container {
-  border-color: var(--node-text-accent, #00d9ff) !important;
+  border-color: var(--node-text-accent, #737373) !important;
 }
 
 /* Handles - Pixel perfect positioning */
@@ -1549,10 +1549,10 @@
   background-color: var(--brand-cyan) !important;
 }
 
-/* Node selected border - use brand color */
+/* Node selected border - use neutral color */
 .react-flow__node.selected .node-container,
 .react-flow__node[data-selected="true"] .node-container {
-  border-color: var(--brand-cyan) !important;
+  border-color: #737373 !important;
 }
 
 /* Override focus rings and other brand-cyan references */

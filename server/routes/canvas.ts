@@ -1435,11 +1435,30 @@ router.post('/image/upload', uploadImageRateLimiter, authenticate, async (req: A
     // Use provided canvasId or generate a temporary one
     const finalCanvasId = canvasId || `temp-${Date.now()}`;
 
+    // Get user info for storage limit check (isAdmin and subscriptionTier)
+    let subscriptionTier = 'free';
+    let isAdmin = false;
+
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: req.userId },
+        select: { subscriptionTier: true, isAdmin: true },
+      });
+
+      if (user) {
+        subscriptionTier = user.subscriptionTier || 'free';
+        isAdmin = user.isAdmin || false;
+      }
+    } catch (userError) {
+      console.warn('Could not fetch user info for storage limit check:', userError);
+      // Continue with defaults (free tier, not admin)
+    }
+
     try {
       // Upload to R2 - NO compression on server side
       // The image is stored as-is to preserve maximum quality for designers
       // Compression (if needed) is done on client side with high quality settings (0.95)
-      const imageUrl = await uploadCanvasImage(base64Image, req.userId, finalCanvasId, nodeId);
+      const imageUrl = await uploadCanvasImage(base64Image, req.userId, finalCanvasId, nodeId, subscriptionTier, isAdmin);
       res.json({ imageUrl });
     } catch (uploadError: any) {
       console.error('Error uploading canvas image to R2:', uploadError);
@@ -1450,7 +1469,9 @@ router.post('/image/upload', uploadImageRateLimiter, authenticate, async (req: A
         return res.status(403).json({
           error: 'Storage Limit Exceeded',
           message: `Você excedeu seu limite de armazenamento (${usedMB}MB / ${limitMB}MB). Faça upgrade para Premium para ter mais espaço.`,
-          code: 'STORAGE_LIMIT_EXCEEDED'
+          code: 'STORAGE_LIMIT_EXCEEDED',
+          usedMB,
+          limitMB
         });
       }
 

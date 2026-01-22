@@ -76,6 +76,10 @@ export const useCanvasNodeHandlers = (
   // Separate refs for handlers used in node creation to avoid circular dependency
   const handleUploadImageRef = useRef<((nodeId: string, imageBase64: string) => Promise<void>) | null>(null);
 
+  /** Nodes currently being uploaded via explicit user action (file select, paste, etc.).
+   * useImmediateR2Upload skips these to avoid duplicate uploads. */
+  const userUploadInProgressRef = useRef<Set<string>>(new Set());
+
   // Ref to prevent infinite loops in useEffect
   const isUpdatingNodesRef = useRef(false);
 
@@ -388,27 +392,29 @@ export const useCanvasNodeHandlers = (
 
   // Handle upload image to existing node
   const handleUploadImage = useCallback(async (nodeId: string, imageBase64: string) => {
-    // Update node immediately with base64
-    setNodes((nds: Node<FlowNodeData>[]) => {
-      return nds.map((n: Node<FlowNodeData>) => {
-        if (n.id === nodeId && n.type === 'image') {
-          const data = n.data as ImageNodeData;
-          const updatedMockup: Mockup = {
-            ...data.mockup,
-            imageBase64,
-            prompt: 'Uploaded image',
-          };
-          return {
-            ...n,
-            data: {
-              ...data,
-              mockup: updatedMockup,
-            } as ImageNodeData,
-          } as Node<FlowNodeData>;
-        }
-        return n;
+    userUploadInProgressRef.current.add(nodeId);
+    try {
+      // Update node immediately with base64
+      setNodes((nds: Node<FlowNodeData>[]) => {
+        return nds.map((n: Node<FlowNodeData>) => {
+          if (n.id === nodeId && n.type === 'image') {
+            const data = n.data as ImageNodeData;
+            const updatedMockup: Mockup = {
+              ...data.mockup,
+              imageBase64,
+              prompt: 'Uploaded image',
+            };
+            return {
+              ...n,
+              data: {
+                ...data,
+                mockup: updatedMockup,
+              } as ImageNodeData,
+            } as Node<FlowNodeData>;
+          }
+          return n;
+        });
       });
-    });
 
     // Try to upload to R2 in the background (non-blocking)
     if (canvasId) {
@@ -443,10 +449,13 @@ export const useCanvasNodeHandlers = (
       }
     }
 
-    toast.success('Image uploaded!', {
-      id: `upload-image-${nodeId}`,
-      duration: 2000
-    });
+      toast.success('Image uploaded!', {
+        id: `upload-image-${nodeId}`,
+        duration: 2000
+      });
+    } finally {
+      userUploadInProgressRef.current.delete(nodeId);
+    }
   }, [setNodes, canvasId]);
 
   // ========== EDIT NODE DATA UPDATE HANDLERS ==========
@@ -1862,6 +1871,7 @@ export const useCanvasNodeHandlers = (
   // Update handlersRef and separate refs when handlers change
   useEffect(() => {
     handlersRef.current = {
+      userUploadInProgressRef,
       handleEditApply,
       handleUpscale,
       handleMockupGenerate,
