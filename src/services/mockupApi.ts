@@ -163,11 +163,25 @@ export const mockupApi = {
 
   async uploadTempImage(base64Image: string, mimeType: string): Promise<string> {
     try {
+      // Validate input
+      if (!base64Image || typeof base64Image !== 'string') {
+        throw new Error('Invalid base64Image: must be a non-empty string');
+      }
+      if (!mimeType || typeof mimeType !== 'string') {
+        throw new Error('Invalid mimeType: must be a non-empty string');
+      }
+
       // Get presigned URL
       const { presignedUrl, finalUrl } = await this.getTempUploadUrl(mimeType);
 
-      // Convert base64 to blob
+      // Convert base64 to blob - remove data URL prefix if present
       const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
+      
+      // Validate base64 string
+      if (!base64Data || base64Data.length === 0) {
+        throw new Error('Invalid base64 data: empty after removing prefix');
+      }
+
       const byteCharacters = atob(base64Data);
       const byteNumbers = new Array(byteCharacters.length);
       for (let i = 0; i < byteCharacters.length; i++) {

@@ -27,6 +27,7 @@ interface SidebarGenerationConfigProps {
     generateOutputsButtonRef: React.RefObject<HTMLButtonElement>;
     isDiceAnimating: boolean;
     onStartOver: () => void; /* Used for reset all? No, resetAll comes from context */
+    onReplaceImage?: (image: UploadedImage) => void;
     authenticationRequiredMessage: string;
 }
 
@@ -40,6 +41,7 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
     onGenerateSuggestion,
     generateOutputsButtonRef,
     isDiceAnimating,
+    onReplaceImage,
     authenticationRequiredMessage,
 }) => {
     const { t } = useTranslation();
@@ -231,6 +233,7 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
                     selectedBrandingTags={selectedBrandingTags}
                     selectedColors={selectedColors}
                     onStartOver={resetAll}
+                    onReplaceImage={onReplaceImage}
                 />
 
                 {/* Unified Surprise Me Container */}

@@ -872,6 +872,90 @@ const MockupMachinePageContent: React.FC = () => {
     }
   }, [designType, resetControls, handleAnalyze, isAuthenticated, isCheckingAuth, t]);
 
+  const handleReplaceImage = useCallback(async (image: UploadedImage) => {
+    // Check authentication
+    if (!(await requireAuth())) return;
+
+    // Validate image data
+    if (!image || (!image.base64 && !image.url)) {
+      console.error('Invalid image: missing base64 or url');
+      return;
+    }
+
+    // Ensure base64 is a string
+    const base64String = typeof image.base64 === 'string' ? image.base64 : '';
+    const mimeType = image.mimeType || 'image/png';
+
+    // Se estiver no modo blank mockup, apenas atualiza a referência visual
+    if (designType === 'blank') {
+      const validImage: UploadedImage = base64String ? { base64: base64String, mimeType } : { url: image.url!, mimeType };
+      setReferenceImage(validImage);
+      if (base64String && !image.url) {
+        mockupApi.uploadTempImage(base64String, mimeType)
+          .then(url => {
+            setReferenceImage(prev => prev ? ({ ...prev, url, base64: undefined }) : null);
+          })
+          .catch(err => {
+            if (isLocalDevelopment()) console.error('Failed to upload reference temp image:', err);
+          });
+      }
+      return;
+    }
+
+    // Para outros modos, substitui a imagem mantendo o setup
+    const validImage: UploadedImage = base64String ? { base64: base64String, mimeType } : { url: image.url!, mimeType };
+    setUploadedImage(validImage);
+
+    // Upload to temp R2 to save storage
+    if (base64String && !image.url) {
+      mockupApi.uploadTempImage(base64String, mimeType)
+        .then(url => {
+          setUploadedImage(prev => prev ? ({ ...prev, url, base64: undefined }) : null);
+        })
+        .catch(err => {
+          if (isLocalDevelopment()) console.error('Failed to upload temp image:', err);
+        });
+    }
+
+    // Auto-extract colors from uploaded image (only if we have base64)
+    if (base64String) {
+      try {
+        const { extractColors } = await import('@/utils/colorExtraction');
+        const colorResult = await extractColors(base64String, mimeType, 8);
+        setSuggestedColors(colorResult.colors);
+        if (isLocalDevelopment()) {
+          console.log('🎨 Auto-extracted colors:', colorResult.colors);
+        }
+      } catch (colorErr) {
+        if (isLocalDevelopment()) {
+          console.error("Error auto-extracting colors:", colorErr);
+        }
+      }
+    }
+
+    // Background AI analysis (tags, branding) – silent, mantém designType e outras configurações
+    // Only analyze if we have base64 data or URL
+    if (base64String || validImage.url) {
+      try {
+        // Ensure we have a valid image object for analysis
+        const imageForAnalysis: UploadedImage = base64String 
+          ? { base64: base64String, mimeType } 
+          : { url: validImage.url!, mimeType };
+        
+        await handleAnalyze(imageForAnalysis, true);
+      } catch (err) {
+        // Error already handled in handleAnalyze (toast)
+        if (isLocalDevelopment()) {
+          console.error('Error in handleAnalyze during replace:', err);
+        }
+      }
+    } else {
+      if (isLocalDevelopment()) {
+        console.warn('Cannot analyze: image has no base64 or url');
+      }
+    }
+  }, [designType, handleAnalyze, isAuthenticated, isCheckingAuth, t]);
+
   const handleStartOver = () => {
     setUploadedImage(null);
     setReferenceImage(null);
@@ -2738,6 +2822,7 @@ Generate the new mockup image with the requested changes applied.`;
                 onSidebarWidthChange={setSidebarWidth}
                 onSurpriseMe={handleSurpriseMe}
                 onImageUpload={handleImageUpload}
+                onReplaceImage={handleReplaceImage}
                 onReferenceImagesChange={setReferenceImages}
                 onStartOver={handleStartOver}
                 onDesignTypeChange={handleDesignTypeChange}

@@ -19,6 +19,7 @@ interface SidebarOrchestratorProps {
   // External Logic / Triggers
   onSurpriseMe: (autoGenerate: boolean) => void;
   onImageUpload: (image: UploadedImage) => void;
+  onReplaceImage?: (image: UploadedImage) => void;
   onReferenceImagesChange: (images: UploadedImage[]) => void;
   onStartOver: () => void;
   onDesignTypeChange: (type: DesignType) => void;
@@ -42,6 +43,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
   onCloseMobile,
   onSurpriseMe,
   onImageUpload,
+  onReplaceImage,
   onReferenceImagesChange,
   onStartOver,
   onDesignTypeChange,
@@ -179,6 +181,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
               generateOutputsButtonRef={generateOutputsButtonRef}
               isDiceAnimating={isDiceAnimating}
               onStartOver={onStartOver}
+              onReplaceImage={onReplaceImage}
               authenticationRequiredMessage={authenticationRequiredMessage}
             />
           )}
