@@ -5,6 +5,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { InputSection } from './InputSection';
 import { BrandingSection } from '../branding/BrandingSection';
 import { ColorPalettePreview } from './ColorPalettePreview';
+import { DesignTypeSection } from './DesignTypeSection';
 import { useMockup } from './MockupContext';
 import { useMockupTags } from '@/hooks/useMockupTags';
 import { sectionTitleClass } from '@/lib/utils';
@@ -22,6 +23,7 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
     onImageUpload,
     onReferenceImagesChange,
     onStartOver,
+    onDesignTypeChange,
     onAnalyze,
 }) => {
     const { t } = useTranslation();
@@ -64,11 +66,30 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
         [availableBrandingTags, selectedBrandingTags]
     );
 
+    const handleScrollToSection = (sectionId: string) => {
+        // Scroll to section within the modal
+        const section = document.getElementById(sectionId);
+        if (section) {
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    };
+
     return (
         <div
             id="section-setup"
             className="transition-all duration-300 space-y-6 sm:space-y-8"
         >
+            {/* Design Type Selection - Always visible */}
+            <div className={`p-4 rounded-xl border transition-all duration-200 ${theme === 'dark' ? 'bg-black/10 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
+                <DesignTypeSection
+                    designType={designType}
+                    onDesignTypeChange={onDesignTypeChange}
+                    uploadedImage={uploadedImage}
+                    isImagelessMode={isImagelessMode}
+                    onScrollToSection={handleScrollToSection}
+                />
+            </div>
+
             {/* Active Grid View - 2 Column Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-start">
                 {/* COLUMN 1: Input Media */}

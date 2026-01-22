@@ -25,10 +25,12 @@ export const DesignTypeSection: React.FC<DesignTypeSectionProps> = ({
   const { theme } = useTheme();
 
   return (
-    <section className={isComplete ? 'pb-0' : ''}>
-      <h2 className={cn(sectionTitleClass(theme === 'dark'), isComplete ? 'mb-1' : 'mb-3', 'transition-all duration-300')}>
-        {t('mockup.designType')}
-      </h2>
+    <section>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className={cn(sectionTitleClass(theme === 'dark'), 'transition-all duration-300')}>
+          {t('mockup.designType')}
+        </h2>
+      </div>
       {!isComplete && (
         <p className="text-xs text-neutral-500 mb-3 font-mono">{t('mockup.designTypeComment')}</p>
       )}
@@ -42,10 +44,10 @@ export const DesignTypeSection: React.FC<DesignTypeSectionProps> = ({
             disabled={isImagelessMode}
             variant="outline"
             className={cn(
-              "w-full flex flex-col items-center justify-center gap-1 p-4 text-xs font-mono",
+              "w-full flex flex-col items-center justify-center gap-1 p-4 text-xs font-mono transition-all",
               designType === 'logo'
-                ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
-                : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50'
+                ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40 shadow-sm'
+                : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50 hover:bg-neutral-800/40'
             )}
           >
             <span className="text-2xl">🖼️</span>
@@ -59,10 +61,10 @@ export const DesignTypeSection: React.FC<DesignTypeSectionProps> = ({
             disabled={isImagelessMode}
             variant="outline"
             className={cn(
-              "w-full flex flex-col items-center justify-center gap-1 p-4 text-xs font-mono",
+              "w-full flex flex-col items-center justify-center gap-1 p-4 text-xs font-mono transition-all",
               designType === 'layout'
-                ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
-                : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50'
+                ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40 shadow-sm'
+                : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50 hover:bg-neutral-800/40'
             )}
           >
             <span className="text-2xl">🎨</span>
@@ -74,10 +76,10 @@ export const DesignTypeSection: React.FC<DesignTypeSectionProps> = ({
             onClick={() => onDesignTypeChange('blank')}
             variant="outline"
             className={cn(
-              "w-full flex items-center gap-2 px-3 py-2 text-xs font-mono",
+              "w-full flex items-center gap-2 px-3 py-2 text-xs font-mono transition-all",
               designType === 'blank'
-                ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
-                : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50'
+                ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40 shadow-sm'
+                : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50 hover:bg-neutral-800/40'
             )}
           >
             <span className="text-lg">📄</span>

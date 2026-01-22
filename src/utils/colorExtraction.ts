@@ -86,6 +86,16 @@ export async function extractColors(
   shouldRandomize: boolean = false
 ): Promise<ColorExtractionResult> {
   return new Promise((resolve, reject) => {
+    // Validate input
+    if (!base64 || typeof base64 !== 'string') {
+      reject(new Error('Invalid base64: must be a non-empty string'));
+      return;
+    }
+    if (!mimeType || typeof mimeType !== 'string') {
+      reject(new Error('Invalid mimeType: must be a non-empty string'));
+      return;
+    }
+
     const img = new Image();
     const dataUrl = base64.startsWith('data:') ? base64 : `data:${mimeType};base64,${base64}`;
 
