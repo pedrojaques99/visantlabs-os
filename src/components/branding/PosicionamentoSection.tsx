@@ -52,7 +52,7 @@ export const PosicionamentoSection: React.FC<PosicionamentoSectionProps> = ({
   if (!safeContent.trim()) {
     return (
       <div className={`border rounded-xl p-4 md:p-6 transition-colors ${theme === 'dark'
-        ? 'bg-black/40 border-neutral-800/60'
+        ? 'bg-neutral-950/70 border-neutral-800/60'
         : 'bg-neutral-100 border-neutral-300'
         }`}>
         <div className={`text-sm font-manrope italic ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'
@@ -78,7 +78,7 @@ export const PosicionamentoSection: React.FC<PosicionamentoSectionProps> = ({
           <div
             key={index}
             className={`border rounded-xl p-4 md:p-6 transition-colors ${theme === 'dark'
-              ? 'bg-black/40 border-neutral-800/60 hover:border-neutral-700/60'
+              ? 'bg-neutral-950/70 border-neutral-800/60 hover:border-neutral-700/60'
               : 'bg-neutral-100 border-neutral-300 hover:border-neutral-400'
               }`}
           >
@@ -95,7 +95,7 @@ export const PosicionamentoSection: React.FC<PosicionamentoSectionProps> = ({
   // Render as a single block of text with proper line breaks
   return (
     <div className={`border rounded-xl p-4 md:p-6 transition-colors ${theme === 'dark'
-      ? 'bg-black/40 border-neutral-800/60 hover:border-neutral-700/60'
+      ? 'bg-neutral-950/70 border-neutral-800/60 hover:border-neutral-700/60'
       : 'bg-neutral-100 border-neutral-300 hover:border-neutral-400'
       }`}>
       <div className={`text-sm font-manrope leading-relaxed whitespace-pre-wrap ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'

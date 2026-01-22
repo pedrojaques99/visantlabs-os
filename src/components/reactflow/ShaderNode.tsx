@@ -643,7 +643,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
           {/* Floating Processing Indicator - subtle icon button */}
           {isLoading && (
             <div className="absolute top-3 left-3 z-20">
-              <div className="p-1.5 rounded-md bg-black/60 backdrop-blur-sm border border-[brand-cyan]/30 shadow-lg">
+              <div className="p-1.5 rounded-md bg-neutral-950/60 backdrop-blur-sm border border-[brand-cyan]/30 shadow-lg">
                 <GlitchLoader size={14} color="brand-cyan" />
               </div>
             </div>
@@ -961,7 +961,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
                 }
               }}
               onMouseDown={(e) => e.stopPropagation()}
-              className="p-1.5 rounded-md bg-black/60 hover:bg-black/80 text-neutral-300 hover:text-white border border-neutral-700/50 hover:border-neutral-600/70 transition-all"
+              className="p-1.5 rounded-md bg-neutral-950/60 hover:bg-neutral-950/80 text-neutral-300 hover:text-white border border-neutral-700/50 hover:border-neutral-600/70 transition-all"
               title={t('common.viewFullscreen')}
             >
               <Maximize2 size={14} strokeWidth={2} />
@@ -969,7 +969,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
             <button
               onClick={handleDownload}
               onMouseDown={(e) => e.stopPropagation()}
-              className="p-1.5 rounded-md bg-black/60 hover:bg-black/80 text-neutral-300 hover:text-white border border-neutral-700/50 hover:border-neutral-600/70 transition-all"
+              className="p-1.5 rounded-md bg-neutral-950/60 hover:bg-neutral-950/80 text-neutral-300 hover:text-white border border-neutral-700/50 hover:border-neutral-600/70 transition-all"
               title={hasVideoResult ? t('common.downloadVideo') : t('common.downloadImage')}
             >
               <Download size={14} strokeWidth={2} />

@@ -66,11 +66,11 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-black/50 backdrop-blur-sm overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-neutral-950/50 backdrop-blur-sm overflow-y-auto"
       onClick={onClose}
     >
       <div
-        className="bg-black/95 backdrop-blur-xl border border-neutral-800/50 rounded-md p-6 w-full max-w-lg mx-4 shadow-xl"
+        className="bg-neutral-950/95 backdrop-blur-xl border border-neutral-800/50 rounded-md p-6 w-full max-w-lg mx-4 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start gap-4 mb-4">

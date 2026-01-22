@@ -649,6 +649,7 @@ export interface DirectorNodeData extends BaseNodeData {
   suggestedDesignType?: DesignType;
   
   // User selections
+  selectedDesignType?: DesignType;
   selectedBrandingTags?: string[];
   selectedCategoryTags?: string[];
   selectedLocationTags?: string[];
@@ -664,6 +665,17 @@ export interface DirectorNodeData extends BaseNodeData {
   
   // Source image node ID (for auto-connect)
   sourceImageNodeId?: string;
+  
+  // Pool mode (Surprise Me Mode)
+  isSurpriseMeMode?: boolean;
+  surpriseMePool?: {
+    selectedCategoryTags: string[];
+    selectedLocationTags: string[];
+    selectedAngleTags: string[];
+    selectedLightingTags: string[];
+    selectedEffectTags: string[];
+    selectedMaterialTags: string[];
+  };
   
   // Handlers
   onAnalyze?: (nodeId: string) => Promise<void>;

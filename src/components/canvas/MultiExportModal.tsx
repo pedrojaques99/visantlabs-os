@@ -191,7 +191,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-neutral-950/60 backdrop-blur-sm p-4">
             <div className="bg-[#1a1a1a] border border-neutral-800 rounded-xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-800/50">
@@ -288,20 +288,20 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                                         "absolute inset-0 transition-opacity flex flex-col justify-between p-2",
                                         selectedImages.has(img.id)
                                             ? "bg-[brand-cyan]/10"
-                                            : "bg-black/0 group-hover:bg-black/40 opacity-0 group-hover:opacity-100"
+                                            : "bg-neutral-950/0 group-hover:bg-neutral-950/70 opacity-0 group-hover:opacity-100"
                                     )}>
                                         <div className="flex justify-end">
                                             <div className={cn(
                                                 "w-5 h-5 rounded-full flex items-center justify-center border transition-all",
                                                 selectedImages.has(img.id)
                                                     ? "bg-[brand-cyan] border-[brand-cyan] text-black"
-                                                    : "bg-black/40 border-white/20 text-transparent"
+                                                    : "bg-neutral-950/70 border-white/20 text-transparent"
                                             )}>
                                                 <Check size={12} strokeWidth={3} />
                                             </div>
                                         </div>
 
-                                        <div className="bg-black/60 backdrop-blur-md rounded-lg p-2 translate-y-1 group-hover:translate-y-0 transition-transform">
+                                        <div className="bg-neutral-950/60 backdrop-blur-md rounded-lg p-2 translate-y-1 group-hover:translate-y-0 transition-transform">
                                             <p className="text-[10px] text-neutral-200 font-mono truncate" title={img.name}>
                                                 {img.name}
                                             </p>

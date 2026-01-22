@@ -372,13 +372,13 @@ export const MockupsPage: React.FC = () => {
               <div className="relative flex-shrink-0">
                 <button
                   onClick={() => setShowSearch(!showSearch)}
-                  className="p-2 text-neutral-500 hover:text-brand-cyan transition-colors rounded-md hover:bg-black/20"
+                  className="p-2 text-neutral-500 hover:text-brand-cyan transition-colors rounded-md hover:bg-neutral-950/20"
                   title={t('mockupsPage.search')}
                 >
                   <Search size={20} />
                 </button>
                 {showSearch && (
-                  <div className="absolute top-12 right-0 bg-black/90 backdrop-blur-sm border border-neutral-700/30 rounded-md p-2 min-w-[240px] shadow-lg animate-[fadeInScale_0.2s_ease-out] z-50">
+                  <div className="absolute top-12 right-0 bg-neutral-950/90 backdrop-blur-sm border border-neutral-700/30 rounded-md p-2 min-w-[240px] shadow-lg animate-[fadeInScale_0.2s_ease-out] z-50">
                     <div className="relative">
                       <input
                         type="text"
@@ -410,7 +410,7 @@ export const MockupsPage: React.FC = () => {
           {/* Floating Column Control */}
           {filteredMockups.length > 0 && !isMobile && (
             <div className="fixed bottom-4 md:bottom-6 left-4 md:left-6 z-30">
-              <div className="flex items-center gap-1 bg-black/50 backdrop-blur-md border border-neutral-800/60 rounded-md p-1.5 shadow-lg">
+              <div className="flex items-center gap-1 bg-neutral-950/50 backdrop-blur-md border border-neutral-800/60 rounded-md p-1.5 shadow-lg">
                 <button
                   onClick={() => handleColumnsChange(columns - 1)}
                   disabled={columns <= 1}
@@ -458,7 +458,7 @@ export const MockupsPage: React.FC = () => {
                 return (
                   <div
                     key={mockup._id}
-                    className="group relative bg-black/30 backdrop-blur-sm border border-neutral-800/60 rounded-md overflow-hidden hover:border-[brand-cyan]/50 transition-all duration-300"
+                    className="group relative bg-neutral-950/30 backdrop-blur-sm border border-neutral-800/60 rounded-md overflow-hidden hover:border-[brand-cyan]/50 transition-all duration-300"
                   >
                     {/* Image */}
                     <div

@@ -221,7 +221,7 @@ export const MyBudgetsPage: React.FC = () => {
             <div className="flex items-center gap-2 flex-shrink-0">
               <button
                 onClick={() => navigate('/budget-machine')}
-                className="px-3 py-1.5 bg-black/40 border border-neutral-800/60 hover:border-brand-cyan/50 hover:text-brand-cyan rounded-md text-xs font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 cursor-pointer"
+                className="px-3 py-1.5 bg-neutral-950/70 border border-neutral-800/60 hover:border-brand-cyan/50 hover:text-brand-cyan rounded-md text-xs font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 cursor-pointer"
               >
                 <Layout className="h-3.5 w-3.5" />
                 {t('budget.selectTemplate') || 'Ver Templates'}
@@ -295,7 +295,7 @@ export const MyBudgetsPage: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleEditPreset(presetId)}
-                            className="flex-1 px-4 py-2 bg-black/40 border border-neutral-800/60 hover:border-brand-cyan/50 hover:text-brand-cyan rounded-md text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+                            className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-brand-cyan/50 hover:text-brand-cyan rounded-md text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
                           >
                             <Edit className="h-4 w-4" />
                             {t('budget.edit') || 'Edit'}
@@ -303,7 +303,7 @@ export const MyBudgetsPage: React.FC = () => {
                           <button
                             onClick={(e) => handleDeletePresetClick(presetId, e)}
                             disabled={deletingPresetId === presetId}
-                            className="px-4 py-2 bg-black/40 border border-neutral-800/60 hover:border-red-500/50 hover:text-red-400 rounded-md text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                            className="px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-red-500/50 hover:text-red-400 rounded-md text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
@@ -367,7 +367,7 @@ export const MyBudgetsPage: React.FC = () => {
                         e.stopPropagation();
                         handleView(budget);
                       }}
-                      className="flex-1 px-4 py-2 bg-black/40 border border-neutral-800/60 hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+                      className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Eye className="h-4 w-4" />
                       {t('budget.view') || 'View'}
@@ -375,7 +375,7 @@ export const MyBudgetsPage: React.FC = () => {
                     <button
                       onClick={(e) => handleDeleteClick(budget._id, e)}
                       disabled={deletingId === budget._id}
-                      className="px-4 py-2 bg-black/40 border border-neutral-800/60 hover:border-red-500/50 hover:text-red-400 rounded-xl text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                      className="px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-red-500/50 hover:text-red-400 rounded-xl text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>

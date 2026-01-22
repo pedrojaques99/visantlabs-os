@@ -48,7 +48,7 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
       disabled={isGenerating || isBlocked}
       className={`aspect-square border-2 rounded-xl p-4 md:p-6 active:scale-[0.98] transition-all duration-200 relative flex flex-col items-center justify-center gap-3 w-full ${isBlocked
         ? theme === 'dark'
-          ? 'bg-black/30 border-neutral-700/50 cursor-not-allowed opacity-60'
+          ? 'bg-neutral-950/30 border-neutral-700/50 cursor-not-allowed opacity-60'
           : 'bg-neutral-50 border-neutral-300/50 cursor-not-allowed opacity-60'
         : theme === 'dark'
           ? 'bg-black border-white/10 hover:border-white/20 hover:bg-white/5 active:bg-white/10 cursor-pointer group'
@@ -109,7 +109,7 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
 
       {/* Loading overlay */}
       {isGenerating && (
-        <div className={`absolute inset-0 rounded-xl flex items-center justify-center z-10 ${theme === 'dark' ? 'bg-black/80' : 'bg-white/90'
+        <div className={`absolute inset-0 rounded-xl flex items-center justify-center z-10 ${theme === 'dark' ? 'bg-neutral-950/80' : 'bg-white/90'
           }`}>
           <div className={`w-6 h-6 border-2 rounded-md animate-spin ${theme === 'dark'
             ? 'border-white/30 border-t-white'

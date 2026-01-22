@@ -236,13 +236,13 @@ export function DataTable<TData, TValue>({
                 onChange={(event) =>
                   table.getColumn(searchKey)?.setFilterValue(event.target.value)
                 }
-                className="pl-10 bg-black/40 border-neutral-800/50 text-neutral-300 placeholder:text-neutral-500 focus:ring-[brand-cyan]/30 focus:border-[brand-cyan]/50"
+                className="pl-10 bg-neutral-950/70 border-neutral-800/50 text-neutral-300 placeholder:text-neutral-500 focus:ring-[brand-cyan]/30 focus:border-[brand-cyan]/50"
               />
             </div>
           )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="ml-auto bg-black/40 border-neutral-800/50 text-neutral-300">
+              <Button variant="outline" className="ml-auto bg-neutral-950/70 border-neutral-800/50 text-neutral-300">
                 Columns <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -293,7 +293,7 @@ export function DataTable<TData, TValue>({
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
-                    className="border-neutral-800/30 hover:bg-black/20 transition-colors"
+                    className="border-neutral-800/30 hover:bg-neutral-950/20 transition-colors"
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell

@@ -102,7 +102,7 @@ export const TransactionsModal: React.FC<TransactionsModalProps> = ({ isOpen, on
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-8 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/70 px-4 py-8 backdrop-blur-sm">
       <div className="w-full max-w-3xl bg-[#0F0F0F] border border-neutral-800/60 rounded-xl shadow-2xl relative">
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-800/60">
           <div>
@@ -144,7 +144,7 @@ export const TransactionsModal: React.FC<TransactionsModalProps> = ({ isOpen, on
                   {items.map((transaction) => (
                     <div
                       key={`${transaction.id}-${transaction.createdAt}`}
-                      className="bg-black/40 border border-neutral-800/60 rounded-md p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+                      className="bg-neutral-950/70 border border-neutral-800/60 rounded-md p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
                     >
                       <div className="flex items-start gap-3">
                         <div className="w-10 h-10 rounded-md bg-brand-cyan/10 flex items-center justify-center text-brand-cyan">

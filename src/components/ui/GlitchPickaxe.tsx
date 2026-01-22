@@ -33,7 +33,7 @@ export function GlitchPickaxe({
 
     return (
         <div className={cn(
-            "inline-flex items-center justify-center rounded-md bg-black/30 px-3 py-2 border border-white/5 relative overflow-visible",
+            "inline-flex items-center justify-center rounded-md bg-neutral-950/30 px-3 py-2 border border-white/5 relative overflow-visible",
             className
         )}>
             <Pickaxe

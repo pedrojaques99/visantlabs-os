@@ -153,7 +153,7 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
 
           {/* Modal para salvar preset */}
           {showSavePresetModal && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="fixed inset-0 bg-neutral-950/50 flex items-center justify-center z-50">
               <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 max-w-md w-full mx-4">
                 <h4 className="text-lg font-semibold font-mono text-neutral-200 mb-4">
                   Salvar como Preset
@@ -163,7 +163,7 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
                   value={presetName}
                   onChange={(e) => setPresetName(e.target.value)}
                   placeholder="Nome do preset"
-                  className="w-full px-4 py-2 bg-black/20 border border-neutral-800 rounded-md text-neutral-200 font-mono mb-4 focus:outline-none focus:border-[brand-cyan]"
+                  className="w-full px-4 py-2 bg-neutral-950/20 border border-neutral-800 rounded-md text-neutral-200 font-mono mb-4 focus:outline-none focus:border-[brand-cyan]"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       handleSavePreset();
@@ -193,7 +193,7 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
                   <Button
                     onClick={handleSkipPreset}
                     variant="outline"
-                    className="border border-neutral-800 bg-black/20 hover:bg-black/30 text-neutral-400"
+                    className="border border-neutral-800 bg-neutral-950/20 hover:bg-neutral-950/30 text-neutral-400"
                   >
                     Usar sem Salvar
                   </Button>
@@ -203,7 +203,7 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
           )}
 
           {isUploading || isSavingPreset ? (
-            <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-neutral-800 rounded-xl bg-black/20">
+            <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-neutral-800 rounded-xl bg-neutral-950/20">
               <GlitchLoader size={48} color="brand-cyan" className="mb-4" />
               <p className="text-sm text-neutral-400 font-mono">
                 {isSavingPreset ? 'Salvando preset...' : 'Enviando PDF...'}
@@ -211,7 +211,7 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-neutral-800 rounded-xl bg-black/20 hover:border-[brand-cyan]/50 transition-colors">
+              <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-neutral-800 rounded-xl bg-neutral-950/20 hover:border-[brand-cyan]/50 transition-colors">
                 <Upload className="h-16 w-16 text-neutral-600 mb-4" />
                 <p className="text-sm text-neutral-400 font-mono mb-4 text-center">
                   Arraste e solte seu PDF aqui ou clique para selecionar

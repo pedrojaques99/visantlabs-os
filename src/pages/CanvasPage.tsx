@@ -319,6 +319,20 @@ export const CanvasPage: React.FC = () => {
       const hasMockup = selected.some(n => n.type === 'mockup');
       const hasShader = selected.some(n => n.type === 'shader');
       const hasChat = selected.some(n => n.type === 'chat');
+      const hasDirector = selected.some(n => n.type === 'director');
+
+      // Handle Director Node auto-open/close
+      if (hasDirector) {
+        const directorNode = selected.find(n => n.type === 'director');
+        if (directorNode && openDirectorNodeId !== directorNode.id) {
+          setOpenDirectorNodeId(directorNode.id);
+        }
+      } else {
+        // Close Director side panel if no Director node is selected
+        if (openDirectorNodeId) {
+          setOpenDirectorNodeId(null);
+        }
+      }
 
       if (hasMockup) {
         // If it's a mockup, we want to open the Community Presets panel
@@ -346,7 +360,7 @@ export const CanvasPage: React.FC = () => {
         setIsUniversalPanelOpen(false);
       }
     }
-  }, [nodes, setSelectedNodesCountInContext, canvasHeader.activeSidePanel]);
+  }, [nodes, setSelectedNodesCountInContext, canvasHeader.activeSidePanel, openDirectorNodeId, setOpenDirectorNodeId]);
 
   // Effect to auto-open the panel when activeSidePanel is set externally (e.g. from header button)
   useEffect(() => {
@@ -1980,6 +1994,11 @@ export const CanvasPage: React.FC = () => {
       setOpenChatNodeId(null);
     }
 
+    // Clear openDirectorNodeId if the deleted node was the open one
+    if (openDirectorNodeId === nodeId) {
+      setOpenDirectorNodeId(null);
+    }
+
     setNodes(newNodes);
     setEdges(newEdges);
 
@@ -3329,6 +3348,61 @@ export const CanvasPage: React.FC = () => {
     }
   }, [nodes, openChatNodeId]);
 
+  // Manage openDirectorNodeId - clear when deleted or deselected
+  useEffect(() => {
+    // Clear openDirectorNodeId if the node was deleted
+    if (openDirectorNodeId && !nodes.find(n => n.id === openDirectorNodeId)) {
+      setOpenDirectorNodeId(null);
+      return;
+    }
+
+    // Clear openDirectorNodeId if the node is not selected
+    if (openDirectorNodeId) {
+      const directorNode = nodes.find(n => n.id === openDirectorNodeId);
+      if (directorNode && !directorNode.selected) {
+        setOpenDirectorNodeId(null);
+      }
+    }
+  }, [nodes, openDirectorNodeId]);
+
+  // Auto-analyze Director nodes when image is connected
+  const autoAnalyzeRef = useRef<Set<string>>(new Set());
+  
+  useEffect(() => {
+    const directorNodes = nodes.filter(n => n.type === 'director');
+    const timeoutIds: NodeJS.Timeout[] = [];
+    
+    directorNodes.forEach(node => {
+      const directorData = node.data as DirectorNodeData;
+      const hasImage = !!directorData.connectedImage;
+      const notAnalyzing = !directorData.isAnalyzing;
+      const notAnalyzed = !directorData.hasAnalyzed;
+      const alreadyTriggered = autoAnalyzeRef.current.has(node.id);
+      
+      // Auto-analyze if image is connected and hasn't been analyzed yet
+      if (hasImage && notAnalyzing && notAnalyzed && !alreadyTriggered && handleDirectorAnalyze) {
+        // Mark as triggered to prevent duplicate calls
+        autoAnalyzeRef.current.add(node.id);
+        
+        // Small delay to ensure node data is fully updated
+        const timeoutId = setTimeout(() => {
+          handleDirectorAnalyze(node.id);
+        }, 200);
+        
+        timeoutIds.push(timeoutId);
+      }
+      
+      // Remove from ref if image is disconnected or already analyzed
+      if ((!hasImage || directorData.hasAnalyzed) && alreadyTriggered) {
+        autoAnalyzeRef.current.delete(node.id);
+      }
+    });
+    
+    return () => {
+      timeoutIds.forEach(id => clearTimeout(id));
+    };
+  }, [nodes, handleDirectorAnalyze]);
+
   // Disable page scroll permanently on this page
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -3389,7 +3463,7 @@ export const CanvasPage: React.FC = () => {
   // Show loading state while checking access
   if (isLoadingAccess) {
     return (
-      <div className="min-h-screen bg-[#0C0C0C] text-neutral-300 flex items-center justify-center">
+      <div className="min-h-screen bg-neutral-950 text-neutral-300 flex items-center justify-center">
         <GlitchLoader />
       </div>
     );
@@ -3452,8 +3526,8 @@ export const CanvasPage: React.FC = () => {
           <GridDotsBackground />
         </div>
 
-        {/* Main Canvas Container with Sidebar Layout - Starts below header (81px) */}
-        <div className="flex relative w-full" style={{ height: 'calc(100vh - 81px)', paddingTop: '0px', justifyContent: 'flex-start' }}>
+        {/* Main Canvas Container with Sidebar Layout - Starts below header (65px) */}
+        <div className="flex relative w-full" style={{ height: 'calc(100vh - 65px)', paddingTop: '0px', justifyContent: 'flex-start' }}>
           {/* Canvas Area - Adjusts width when sidebar is open */}
           <div
             className="flex-1 transition-all duration-300 ease-out relative"
@@ -4133,7 +4207,7 @@ export const CanvasPage: React.FC = () => {
 
       {/* Auth Modal - shown when user is not authenticated, overlaid on canvas */}
       {showAuthModal && isAuthenticated === false && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center">
+        <div className="fixed inset-0 z-50 bg-neutral-950/80 backdrop-blur-sm flex items-center justify-center">
           <AuthModal
             isOpen={showAuthModal}
             onClose={() => {
@@ -4208,7 +4282,7 @@ export const CanvasPage: React.FC = () => {
       />
 
       {/* Canvas Toolbar - Always visible, independent from ShaderControlsSidebar */}
-      <div className="fixed left-4 top-[81px] z-40">
+      <div className="fixed left-4 top-[65px] z-40">
         <CanvasToolbar
           variant="stacked"
           position="left"

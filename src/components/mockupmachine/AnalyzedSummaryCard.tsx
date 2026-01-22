@@ -74,7 +74,7 @@ export const AnalyzedSummaryCard: React.FC<AnalyzedSummaryCardProps> = ({
                                     />
                                     <button
                                         onClick={() => fileInputRef.current?.click()}
-                                        className="absolute top-2 right-2 p-2 bg-black/70 hover:bg-black/90 backdrop-blur-sm border border-white/10 rounded-md transition-all duration-200 hover:border-brand-cyan/50 group/btn"
+                                        className="absolute top-2 right-2 p-2 bg-neutral-950/70 hover:bg-neutral-950/90 backdrop-blur-sm border border-white/10 rounded-md transition-all duration-200 hover:border-brand-cyan/50 group/btn"
                                         title={t('mockup.replaceImage') || 'Replace Image'}
                                         aria-label="Replace Image"
                                     >

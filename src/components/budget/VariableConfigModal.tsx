@@ -133,7 +133,7 @@ export const VariableConfigModal: React.FC<VariableConfigModalProps> = ({
   }, [isOpen, onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/60 backdrop-blur-sm">
       <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 w-full max-w-md mx-4">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold font-mono text-neutral-200">
@@ -154,7 +154,7 @@ export const VariableConfigModal: React.FC<VariableConfigModalProps> = ({
               <label className="block text-xs text-neutral-400 mb-2 font-mono">
                 Valor Atual
               </label>
-              <div className="p-3 bg-black/40 border border-neutral-800 rounded-md text-sm text-neutral-300 font-mono">
+              <div className="p-3 bg-neutral-950/70 border border-neutral-800 rounded-md text-sm text-neutral-300 font-mono">
                 {defaultValue}
               </div>
             </div>

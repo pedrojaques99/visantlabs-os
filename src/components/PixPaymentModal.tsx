@@ -291,7 +291,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/80 backdrop-blur-sm p-4">
       <div className="bg-neutral-900 border border-neutral-800/50 rounded-xl p-6 md:p-8 max-w-md w-full mx-4 relative max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
@@ -331,7 +331,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
           )}
 
           {!isCheckingUserTaxId && showTaxIdForm && !isLoading && (
-            <div className="relative rounded-xl overflow-hidden bg-black/40 border border-neutral-800/50">
+            <div className="relative rounded-xl overflow-hidden bg-neutral-950/70 border border-neutral-800/50">
               <form onSubmit={handleTaxIdSubmit} className="relative z-10 space-y-4 p-6">
                 <div className="space-y-2">
                   <label className="text-sm text-neutral-300 font-mono block">
@@ -346,7 +346,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                       setError(null);
                     }}
                     placeholder={t('pix.taxIdPlaceholder') || 'Digite seu CPF ou CNPJ'}
-                    className="w-full bg-black/40 backdrop-blur-sm border border-neutral-700/50 rounded-md p-3 font-mono text-sm text-neutral-200 focus:outline-none focus:border-[brand-cyan] focus:ring-1 focus:ring-[brand-cyan] transition-all"
+                    className="w-full bg-neutral-950/70 backdrop-blur-sm border border-neutral-700/50 rounded-md p-3 font-mono text-sm text-neutral-200 focus:outline-none focus:border-[brand-cyan] focus:ring-1 focus:ring-[brand-cyan] transition-all"
                     maxLength={18}
                     required
                   />
@@ -426,7 +426,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
           {/* QR Code Modal */}
           {showQrCodeModal && (qrCode || pixCode) && (
             <div
-              className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
+              className="fixed inset-0 z-[60] flex items-center justify-center bg-neutral-950/90 backdrop-blur-sm p-4"
               onClick={(e) => {
                 if (e.target === e.currentTarget) {
                   setShowQrCodeModal(false);

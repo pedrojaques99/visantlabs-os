@@ -79,7 +79,7 @@ export const Tag: React.FC<TagProps> = ({
                         onRemove();
                     }}
                     className={cn(
-                        "rounded-full p-0.5 hover:bg-black/10 transition-colors",
+                        "rounded-full p-0.5 hover:bg-neutral-950/10 transition-colors",
                         theme === 'dark' ? "text-neutral-500 hover:text-white" : "text-neutral-600 hover:text-neutral-900"
                     )}
                 >

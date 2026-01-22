@@ -1278,7 +1278,7 @@ export const AdminPage: React.FC = () => {
                                     feature === 'brandingmachine' ? <Type className="h-6 w-6 text-brand-cyan" /> :
                                       <Palette className="h-6 w-6 text-brand-cyan" />}
                                 </div>
-                                <Badge variant="outline" className="text-[10px] bg-black/40 border-[brand-cyan]/30 text-brand-cyan">
+                                <Badge variant="outline" className="text-[10px] bg-neutral-950/70 border-[brand-cyan]/30 text-brand-cyan">
                                   {total} total
                                 </Badge>
                               </div>
@@ -1373,7 +1373,7 @@ export const AdminPage: React.FC = () => {
                                     <p className="text-[10px] text-neutral-500 font-mono mb-2 uppercase">Resoluções:</p>
                                     <div className="flex flex-wrap gap-1">
                                       {Object.entries(stats.byResolution).map(([resolution, count]) => (
-                                        <Badge key={resolution} variant="outline" className="text-[10px] px-1.5 py-0.5 h-5 bg-black/40 border-neutral-700/50 text-neutral-400">
+                                        <Badge key={resolution} variant="outline" className="text-[10px] px-1.5 py-0.5 h-5 bg-neutral-950/70 border-neutral-700/50 text-neutral-400">
                                           {resolution}: {count}
                                         </Badge>
                                       ))}
@@ -1408,7 +1408,7 @@ export const AdminPage: React.FC = () => {
                             <p className="text-xs text-neutral-500 font-mono mb-3 uppercase">{t('admin.byModel')}:</p>
                             <div className="flex flex-wrap gap-2">
                               {Object.entries(data.generationStats.videos.byModel).map(([model, count]) => (
-                                <Badge key={model} variant="outline" className="text-xs bg-black/10 border-neutral-700/50 text-neutral-300 px-3 py-1">
+                                <Badge key={model} variant="outline" className="text-xs bg-neutral-950/10 border-neutral-700/50 text-neutral-300 px-3 py-1">
                                   {model}: {count}
                                 </Badge>
                               ))}
@@ -1666,7 +1666,7 @@ export const AdminPage: React.FC = () => {
                         <div className="p-3 bg-orange-500/10 rounded-lg">
                           <Database className="h-6 w-6 text-orange-500" />
                         </div>
-                        <Badge variant="outline" className="text-[10px] bg-black/40 border-orange-500/30 text-orange-500">
+                        <Badge variant="outline" className="text-[10px] bg-neutral-950/70 border-orange-500/30 text-orange-500">
                           {t('admin.estimated')}
                         </Badge>
                       </div>
@@ -1690,7 +1690,7 @@ export const AdminPage: React.FC = () => {
                         <div className={`p-3 rounded-lg ${profitStats.isPositive ? 'bg-blue-500/10' : 'bg-red-500/10'}`}>
                           <TrendingUp className={`h-6 w-6 ${profitStats.isPositive ? 'text-blue-500' : 'text-red-500'}`} />
                         </div>
-                        <Badge variant="outline" className={`text-[10px] bg-black/40 ${profitStats.isPositive ? 'border-blue-500/30 text-blue-500' : 'border-red-500/30 text-red-500'}`}>
+                        <Badge variant="outline" className={`text-[10px] bg-neutral-950/70 ${profitStats.isPositive ? 'border-blue-500/30 text-blue-500' : 'border-red-500/30 text-red-500'}`}>
                           {profitStats.isPositive ? 'POSITIVO' : 'NEGATIVO'}
                         </Badge>
                       </div>
@@ -1993,7 +1993,7 @@ export const AdminPage: React.FC = () => {
 
       {/* Usage History Modal */}
       {isHistoryModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-neutral-950/60 backdrop-blur-sm animate-in fade-in duration-200">
           <Card className="w-full max-w-4xl bg-neutral-900 border-neutral-800 shadow-2xl max-h-[85vh] flex flex-col">
             <CardHeader className="border-b border-neutral-800 pb-4">
               <div className="flex items-center justify-between">
@@ -2111,7 +2111,7 @@ export const AdminPage: React.FC = () => {
                 </div>
               )}
             </CardContent>
-            <CardFooter className="border-t border-neutral-800 py-3 bg-black/20 flex justify-between text-[10px] font-mono text-neutral-500">
+            <CardFooter className="border-t border-neutral-800 py-3 bg-neutral-950/20 flex justify-between text-[10px] font-mono text-neutral-500">
               <span>Total de registros: {historyPagination.total}</span>
               <span>Todos os tipos de geração incluídos</span>
             </CardFooter>

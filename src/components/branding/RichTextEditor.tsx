@@ -147,7 +147,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           type="button"
           onClick={handleBold}
           className={`p-2 rounded transition-colors hover:text-brand-cyan ${theme === 'dark'
-            ? 'hover:bg-black/40 text-neutral-300'
+            ? 'hover:bg-neutral-950/70 text-neutral-300'
             : 'hover:bg-neutral-200 text-neutral-700'
             }`}
           title="Negrito (Ctrl+B)"
@@ -158,7 +158,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           type="button"
           onClick={handleItalic}
           className={`p-2 rounded transition-colors hover:text-brand-cyan ${theme === 'dark'
-            ? 'hover:bg-black/40 text-neutral-300'
+            ? 'hover:bg-neutral-950/70 text-neutral-300'
             : 'hover:bg-neutral-200 text-neutral-700'
             }`}
           title="Itálico (Ctrl+I)"
@@ -169,7 +169,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           type="button"
           onClick={handleBullet}
           className={`p-2 rounded transition-colors hover:text-brand-cyan ${theme === 'dark'
-            ? 'hover:bg-black/40 text-neutral-300'
+            ? 'hover:bg-neutral-950/70 text-neutral-300'
             : 'hover:bg-neutral-200 text-neutral-700'
             }`}
           title="Lista com marcadores"
@@ -181,7 +181,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             type="button"
             onClick={() => setShowColorPicker(!showColorPicker)}
             className={`p-2 rounded transition-colors hover:text-brand-cyan ${theme === 'dark'
-              ? 'hover:bg-black/40 text-neutral-300'
+              ? 'hover:bg-neutral-950/70 text-neutral-300'
               : 'hover:bg-neutral-200 text-neutral-700'
               }`}
             title="Cor do texto"

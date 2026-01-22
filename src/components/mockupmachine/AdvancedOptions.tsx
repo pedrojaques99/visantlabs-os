@@ -448,7 +448,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
                 onChange={onNegativePromptChange}
                 rows={2}
                 className={`w-full p-2.5 mt-2 rounded-md border focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y h-[80px] ${theme === 'dark'
-                  ? 'bg-black/40 border-neutral-700/50 text-neutral-400'
+                  ? 'bg-neutral-950/70 border-neutral-700/50 text-neutral-400'
                   : 'bg-neutral-50 border-neutral-300 text-neutral-700'
                   }`}
                 placeholder={t('mockup.negativePromptPlaceholder')}
@@ -483,7 +483,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
                 onChange={onAdditionalPromptChange}
                 rows={2}
                 className={`w-full p-2.5 mt-2 rounded-md border focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y h-[80px] ${theme === 'dark'
-                  ? 'bg-black/40 border-neutral-700/50 text-neutral-400'
+                  ? 'bg-neutral-950/70 border-neutral-700/50 text-neutral-400'
                   : 'bg-neutral-50 border-neutral-300 text-neutral-700'
                   }`}
                 placeholder={t('mockup.additionalPromptPlaceholder')}

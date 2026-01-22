@@ -55,10 +55,9 @@ export const NodeContainer: React.FC<NodeContainerProps> = ({
       ref={containerRef}
       onDoubleClick={handleDoubleClick}
       className={cn(
-        dragging ? 'bg-[#0A0A0A]' : 'bg-[#0A0A0A]/80',
         // Keep all visual styles consistent during dragging
-        'border rounded-xl relative node-container flex flex-col',
-        'min-w-[140px] min-h-[140px] min-h-full rounded-xl',
+        'border border-neutral-800/50 rounded-xl relative node-container flex flex-col backdrop-blur-[4px]',
+        'min-w-[200px] min-h-[200px] min-h-full rounded-xl',
         // Border color - maintain border even when dragging
         selected ? 'border-[brand-cyan]' : warning ? 'border-neutral-600/40' : 'border-gray-700/30',
         dragging && 'pointer-events-none',
@@ -69,7 +68,19 @@ export const NodeContainer: React.FC<NodeContainerProps> = ({
         'transition-all duration-200 ease-out',
         className
       )}
-      style={style}
+      style={{
+        ...style,
+        // Use CSS custom property for background color (set by CanvasFlow)
+        // Falls back to neutral-950 if not available
+        backgroundColor: dragging 
+          ? 'var(--node-bg-color-dragging, #0a0a0a)' 
+          : 'var(--node-bg-color, #0a0a0a)',
+        opacity: dragging ? 1 : 0.8,
+        // Pass through text color variables for button/textarea contrast
+        '--node-text-color': 'var(--node-text-color, #e5e7eb)',
+        '--node-text-color-muted': 'var(--node-text-color-muted, #9ca3af)',
+        '--node-text-color-subtle': 'var(--node-text-color-subtle, #6b7280)',
+      } as React.CSSProperties}
       onContextMenu={onContextMenu}
     >
       {/* Warning indicator for oversized content */}

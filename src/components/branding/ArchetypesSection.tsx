@@ -165,7 +165,7 @@ const ArchetypeCard: React.FC<{
   };
 
   return (
-    <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 ${theme === 'dark' ? 'bg-black/40 border-neutral-800/60' : 'bg-white border-neutral-300'
+    <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 ${theme === 'dark' ? 'bg-neutral-950/70 border-neutral-800/60' : 'bg-white border-neutral-300'
       } border rounded-xl p-6`}>
       {/* Coluna 1: Card de Imagem */}
       <div className="flex items-center justify-center">
@@ -224,7 +224,7 @@ const ArchetypeCard: React.FC<{
                 value={localArchetype.description}
                 onChange={(e) => handleDescriptionChange(e.target.value)}
                 className={`min-h-[100px] font-manrope ${theme === 'dark'
-                  ? 'bg-black/40 border-neutral-700 text-neutral-300'
+                  ? 'bg-neutral-950/70 border-neutral-700 text-neutral-300'
                   : 'bg-neutral-50 border-neutral-300 text-neutral-800'
                   }`}
               />
@@ -242,7 +242,7 @@ const ArchetypeCard: React.FC<{
                       value={example}
                       onChange={(e) => handleExampleChange(index, e.target.value)}
                       className={`flex-1 px-3 py-2 rounded-md text-sm font-manrope ${theme === 'dark'
-                        ? 'bg-black/40 border-neutral-700 text-neutral-300'
+                        ? 'bg-neutral-950/70 border-neutral-700 text-neutral-300'
                         : 'bg-neutral-50 border-neutral-300 text-neutral-800'
                         } border`}
                       placeholder="Exemplo de marca"
@@ -386,7 +386,7 @@ export const ArchetypesSection: React.FC<ArchetypesSectionProps> = ({
       />
 
       {/* Reasoning */}
-      <Card className={theme === 'dark' ? 'bg-black/40 border-neutral-800/60' : 'bg-white border-neutral-300'}>
+      <Card className={theme === 'dark' ? 'bg-neutral-950/70 border-neutral-800/60' : 'bg-white border-neutral-300'}>
         <CardContent className="p-4">
           <h4 className={`text-xs font-semibold font-manrope mb-2 ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
             }`}>

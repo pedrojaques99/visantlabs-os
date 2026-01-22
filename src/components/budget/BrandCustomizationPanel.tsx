@@ -238,7 +238,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                     onClick={() => handleContentWidthChange(595)}
                     className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${data.contentWidth === 595
                       ? 'bg-brand-cyan/20 border-[brand-cyan] text-brand-cyan'
-                      : 'bg-black/40 border-neutral-800 text-neutral-300 hover:border-neutral-700'
+                      : 'bg-neutral-950/70 border-neutral-800 text-neutral-300 hover:border-neutral-700'
                       }`}
                   >
                     A4
@@ -249,7 +249,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                     onClick={() => handleContentWidthChange(842)}
                     className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${data.contentWidth === 842
                       ? 'bg-brand-cyan/20 border-[brand-cyan] text-brand-cyan'
-                      : 'bg-black/40 border-neutral-800 text-neutral-300 hover:border-neutral-700'
+                      : 'bg-neutral-950/70 border-neutral-800 text-neutral-300 hover:border-neutral-700'
                       }`}
                   >
                     A3
@@ -260,7 +260,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                     onClick={() => handleContentWidthChange(612)}
                     className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${data.contentWidth === 612
                       ? 'bg-brand-cyan/20 border-[brand-cyan] text-brand-cyan'
-                      : 'bg-black/40 border-neutral-800 text-neutral-300 hover:border-neutral-700'
+                      : 'bg-neutral-950/70 border-neutral-800 text-neutral-300 hover:border-neutral-700'
                       }`}
                   >
                     Letter
@@ -271,7 +271,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                     onClick={() => handleContentWidthChange(800)}
                     className={`px-3 py-2 rounded-md border text-xs font-mono transition-all ${(data.contentWidth === 800 || !data.contentWidth)
                       ? 'bg-brand-cyan/20 border-[brand-cyan] text-brand-cyan'
-                      : 'bg-black/40 border-neutral-800 text-neutral-300 hover:border-neutral-700'
+                      : 'bg-neutral-950/70 border-neutral-800 text-neutral-300 hover:border-neutral-700'
                       }`}
                   >
                     Custom
@@ -315,7 +315,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
                         }
                       }}
                       placeholder="Auto"
-                      className="w-20 px-2 py-1 bg-black/40 border border-neutral-800 rounded-xl text-xs text-neutral-200 font-mono focus:outline-none focus:border-[brand-cyan]/70 transition-all duration-300"
+                      className="w-20 px-2 py-1 bg-neutral-950/70 border border-neutral-800 rounded-xl text-xs text-neutral-200 font-mono focus:outline-none focus:border-[brand-cyan]/70 transition-all duration-300"
                     />
                     <span className="text-xs text-neutral-500">px</span>
                     {data.contentHeight && (
@@ -382,7 +382,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
 
       {/* Save Template Modal */}
       {showSaveModal && (
-        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-neutral-950/50 z-[60] flex items-center justify-center p-4">
           <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 max-w-md w-full">
             <h3 className="text-lg font-semibold text-neutral-200 font-mono mb-4">
               Salvar como Template
@@ -426,7 +426,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
 
       {/* Load Template Modal */}
       {showLoadModal && (
-        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-neutral-950/50 z-[60] flex items-center justify-center p-4">
           <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 max-w-md w-full max-h-[80vh] overflow-hidden flex flex-col">
             <h3 className="text-lg font-semibold text-neutral-200 font-mono mb-4">
               Carregar Template
@@ -486,7 +486,7 @@ export const BrandCustomizationPanel: React.FC<BrandCustomizationPanelProps> = (
       {/* Overlay when panel is open (mobile) */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 sm:hidden"
+          className="fixed inset-0 bg-neutral-950/50 z-40 sm:hidden"
           onClick={togglePanel}
           aria-hidden="true"
         />

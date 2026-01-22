@@ -1012,7 +1012,28 @@
 }
 
 .resize-handle:hover {
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: rgba(136, 136, 136, 0.1);
+}
+
+/* ReactFlow resize controls - neutral colors */
+.react-flow__resize-control {
+  background: #888888 !important;
+  border-color: rgba(136, 136, 136, 0.5) !important;
+}
+
+.react-flow__resize-control:hover {
+  background: #999999 !important;
+  border-color: rgba(153, 153, 153, 0.6) !important;
+}
+
+.react-flow__resize-control::before,
+.react-flow__resize-control::after {
+  background: #888888 !important;
+}
+
+.react-flow__resize-control:hover::before,
+.react-flow__resize-control:hover::after {
+  background: #999999 !important;
 }
 
 .resizing {
@@ -1115,23 +1136,13 @@
   cursor: grabbing;
 }
 
-/* Node selected state - customize border and shadow here */
+/* Node selected state */
 .react-flow__node.selected>div,
 .react-flow__node[data-selected="true"]>div {
   box-shadow: none;
-  /* Remove shadow when selected */
-  /* You can customize the shadow here if you want a different one */
-  /* box-shadow: 0 0 0 1px rgba(82, 221, 235, 0.3); */
 }
 
-/* ============================================
-   HANDLES - Posicionamento Pixel Perfect
-   ============================================
-   Handles: centro na borda do node para edges perfeitos
-   - Tamanho visual: 6px
-   - Área clicável: padding 6px (total 12px)
-   - Posicionamento: left/right/top/bottom 0, margin metade do tamanho
-   ============================================ */
+/* Handles - Pixel perfect positioning */
 .react-flow__handle {
   width: 6px;
   height: 6px;
@@ -1142,17 +1153,16 @@
   padding: 6px;
   /* Área clicável expandida */
   transform-origin: center;
-  transition: all 0.2s;
+  transition: opacity 0.15s ease;
 }
 
 /* Handles à esquerda: centro na borda esquerda */
 .react-flow__handle[data-handlepos="left"] {
   left: 0 !important;
   margin-left: -3px !important;
-  /* Metade da largura (6px/2) para centralizar na borda */
 }
 
-/* Handles à direita: centro na borda direita */
+/* Right handles */
 .react-flow__handle[data-handlepos="right"] {
   right: 0 !important;
   margin-right: -3px !important;
@@ -1163,17 +1173,15 @@
 .react-flow__handle[data-handlepos="top"] {
   top: 0 !important;
   margin-top: -3px !important;
-  /* Metade da altura (6px/2) para centralizar na borda */
 }
 
-/* Handles embaixo: centro na borda inferior */
+/* Bottom handles */
 .react-flow__handle[data-handlepos="bottom"] {
   bottom: 0 !important;
   margin-bottom: -3px !important;
-  /* Metade da altura (6px/2) para centralizar na borda */
 }
 
-/* Allow explicit top/left/right/bottom values in inline style to override - keep margin for centering */
+/* Allow explicit positioning via inline styles */
 .react-flow__handle[style*="top:"] {
   margin-top: -3px !important;
 }
@@ -1190,7 +1198,7 @@
   margin-bottom: -3px !important;
 }
 
-/* Handles mais sutis em nodes menores - detectados por tipo de node específico */
+/* Smaller handles for compact nodes */
 .react-flow__node-upscale .react-flow__handle:not(.react-flow__resize-control),
 .react-flow__node-logo .react-flow__handle:not(.react-flow__resize-control),
 .react-flow__node-pdf .react-flow__handle:not(.react-flow__resize-control),
@@ -1216,7 +1224,7 @@
   border: 0.5px solid rgba(119, 119, 119, 0.4);
 }
 
-/* Handles conectados em nodes menores - manter visibilidade mas mais sutis */
+/* Connected handles for compact nodes */
 .react-flow__node-upscale .react-flow__handle.connected:not(.react-flow__resize-control),
 .react-flow__node-upscale .react-flow__handle[data-connected="true"]:not(.react-flow__resize-control),
 .react-flow__node-logo .react-flow__handle.connected:not(.react-flow__resize-control),
@@ -1227,13 +1235,13 @@
 .react-flow__node-merge .react-flow__handle[data-connected="true"]:not(.react-flow__resize-control),
 .react-flow__node-edit:not(.min-w-\[600px\]) .react-flow__handle.connected:not(.react-flow__resize-control),
 .react-flow__node-edit:not(.min-w-\[600px\]) .react-flow__handle[data-connected="true"]:not(.react-flow__resize-control) {
-  background: var(--brand-cyan) !important;
-  border: 0.5px solid rgba(var(--brand-cyan), 0.5) !important;
-  box-shadow: 0 0 0 1px rgba(var(--brand-cyan), 0.3), 0 0 4px rgba(var(--brand-cyan), 0.4);
-  opacity: 0.8;
+  background: #777777 !important;
+  border: 0.5px solid rgba(119, 119, 119, 0.4) !important;
+  box-shadow: none;
+  opacity: 0.6;
 }
 
-/* Handles não conectados - sempre cinza */
+/* Unconnected handles hover */
 .react-flow__handle:hover:not(.connected):not([data-connected="true"]) {
   width: 14px;
   height: 14px;
@@ -1243,7 +1251,7 @@
   border: 0.5px solid rgba(136, 136, 136, 0.5);
 }
 
-/* Labeled handles - show all labels on node hover */
+/* Show handle labels on node hover */
 .react-flow__node:hover .handle-label {
   opacity: 1;
 }
@@ -1267,21 +1275,25 @@
 .react-flow__handle.handle-image[data-connected="true"],
 .react-flow__handle.handle-video.connected,
 .react-flow__handle.handle-video[data-connected="true"] {
-  background: var(--brand-cyan) !important;
-  border: 0.5px solid rgba(82, 221, 235, 0.6) !important;
-  box-shadow: 0 0 0 2px rgba(82, 221, 235, 0.4), 0 0 8px rgba(82, 221, 235, 0.6);
+  background: #888888 !important;
+  border: 0.5px solid rgba(136, 136, 136, 0.5) !important;
+  box-shadow: none;
+  opacity: 0.7;
 }
 
 .react-flow__handle.handle-image.connected:hover,
 .react-flow__handle.handle-image[data-connected="true"]:hover,
 .react-flow__handle.handle-video.connected:hover,
 .react-flow__handle.handle-video[data-connected="true"]:hover {
-  background: #3dd5e6 !important;
-  border: 0.5px solid rgba(61, 213, 230, 0.7) !important;
-  box-shadow: 0 0 0 3px rgba(61, 213, 230, 0.5), 0 0 12px rgba(61, 213, 230, 0.8);
+  width: 6px;
+  height: 6px;
+  background: #999999 !important;
+  border: 0.5px solid rgba(153, 153, 153, 0.6) !important;
+  box-shadow: none;
+  opacity: 0.8;
 }
 
-/* Text handles - lighter gray */
+/* Text handles */
 .react-flow__handle.handle-text {
   background: #999999 !important;
   border: 0.5px solid rgba(153, 153, 153, 0.4) !important;
@@ -1294,12 +1306,13 @@
 
 .react-flow__handle.handle-text.connected,
 .react-flow__handle.handle-text[data-connected="true"] {
-  background: var(--brand-cyan) !important;
-  border: 0.5px solid rgba(82, 221, 235, 0.6) !important;
-  box-shadow: 0 0 0 2px rgba(82, 221, 235, 0.4), 0 0 8px rgba(82, 221, 235, 0.6);
+  background: #888888 !important;
+  border: 0.5px solid rgba(136, 136, 136, 0.5) !important;
+  box-shadow: none;
+  opacity: 0.7;
 }
 
-/* Strategy handles - darker gray */
+/* Strategy handles */
 .react-flow__handle.handle-strategy {
   background: #666666 !important;
   border: 0.5px solid rgba(102, 102, 102, 0.4) !important;
@@ -1312,12 +1325,13 @@
 
 .react-flow__handle.handle-strategy.connected,
 .react-flow__handle.handle-strategy[data-connected="true"] {
-  background: var(--brand-cyan) !important;
-  border: 0.5px solid rgba(82, 221, 235, 0.6) !important;
-  box-shadow: 0 0 0 2px rgba(82, 221, 235, 0.4), 0 0 8px rgba(82, 221, 235, 0.6);
+  background: #888888 !important;
+  border: 0.5px solid rgba(136, 136, 136, 0.5) !important;
+  box-shadow: none;
+  opacity: 0.7;
 }
 
-/* Generic handles - default gray */
+/* Generic handles */
 .react-flow__handle.handle-generic {
   background: #777777 !important;
   border: 0.5px solid rgba(119, 119, 119, 0.4) !important;
@@ -1328,12 +1342,11 @@
   border: 0.5px solid rgba(136, 136, 136, 0.5) !important;
 }
 
-/* Text handle - same visual as image handler but with different background color */
+/* Text inverted handles */
 .react-flow__handle.handle-text-inverted {
   width: 6px !important;
   height: 6px !important;
   background: #999999 !important;
-  /* Lighter gray to distinguish from image handlers */
   border: 0.5px solid rgba(102, 102, 102, 0.4) !important;
 }
 
@@ -1348,54 +1361,48 @@
 
 .react-flow__handle.handle-text-inverted.connected,
 .react-flow__handle.handle-text-inverted[data-connected="true"] {
-  background: var(--brand-cyan) !important;
-  border: 0.5px solid rgba(82, 221, 235, 0.6) !important;
-  box-shadow: 0 0 0 2px rgba(82, 221, 235, 0.4), 0 0 8px rgba(82, 221, 235, 0.6);
+  background: #888888 !important;
+  border: 0.5px solid rgba(136, 136, 136, 0.5) !important;
+  box-shadow: none;
+  opacity: 0.7;
 }
 
 .react-flow__handle.handle-text-inverted.connected:hover,
 .react-flow__handle.handle-text-inverted[data-connected="true"]:hover {
-  width: 14px !important;
-  height: 14px !important;
-  max-width: 15px !important;
-  max-height: 15px !important;
-  background: #3dd5e6 !important;
-  border: 0.5px solid rgba(61, 213, 230, 0.7) !important;
-  box-shadow: 0 0 0 3px rgba(61, 213, 230, 0.5), 0 0 12px rgba(61, 213, 230, 0.8);
+  width: 6px !important;
+  height: 6px !important;
+  background: #999999 !important;
+  border: 0.5px solid rgba(153, 153, 153, 0.6) !important;
+  box-shadow: none;
+  opacity: 0.8;
 }
 
-/* Connected handles - visual indicator (azul apenas quando conectado) */
+/* Connected handles - visual indicator (sutil e neutro) */
 .react-flow__handle.connected,
 .react-flow__handle[data-connected="true"] {
-  background: var(--brand-cyan) !important;
-  border: 0.5px solid rgba(82, 221, 235, 0.6) !important;
-  box-shadow: 0 0 0 2px rgba(82, 221, 235, 0.4), 0 0 8px rgba(82, 221, 235, 0.6);
+  background: #888888 !important;
+  border: 0.5px solid rgba(136, 136, 136, 0.5) !important;
+  box-shadow: none;
+  opacity: 0.7;
 }
 
 .react-flow__handle.connected:hover,
 .react-flow__handle[data-connected="true"]:hover {
-  width: 14px;
-  height: 14px;
-  max-width: 15px;
-  max-height: 15px;
-  background: #3dd5e6 !important;
-  border: 0.5px solid rgba(61, 213, 230, 0.7) !important;
-  box-shadow: 0 0 0 3px rgba(61, 213, 230, 0.5), 0 0 12px rgba(61, 213, 230, 0.8);
+  width: 6px;
+  height: 6px;
+  background: #999999 !important;
+  border: 0.5px solid rgba(153, 153, 153, 0.6) !important;
+  box-shadow: none;
+  opacity: 0.8;
 }
 
-/* ============================================
-   EDGES - Conexão Pixel Perfect
-   ============================================
-   Edges conectam exatamente no centro dos handles,
-   que estão alinhados na borda dos nodes
-   ============================================ */
+/* Edges */
 .react-flow__edge-path {
   stroke: var(--brand-cyan);
   stroke-width: 0.75;
   stroke-dasharray: 15 6;
   animation: edge-dash-scroll 2s ease-in-out infinite;
   transition: stroke-width 0.5s;
-  /* Garantir que edges comecem/terminem no centro dos handles */
   stroke-linecap: round;
   stroke-linejoin: round;
 }
@@ -1410,7 +1417,7 @@
   }
 }
 
-/* Edge Style Variants - controlled by Canvas settings */
+/* Edge style variants */
 .edge-style-solid .react-flow__edge-path {
   stroke-dasharray: none !important;
   animation: none !important;
@@ -1444,6 +1451,14 @@
   opacity: 1;
 }
 
+.react-flow__panel.react-flow__attribution {
+  display: none !important;
+}
+
+.react-flow__pane {
+  margin-bottom: 0 !important;
+}
+
 /* Override .dragging styles for React Flow nodes */
 /* Allow React Flow to control transform and opacity for drag preview */
 .react-flow__node.dragging {
@@ -1454,25 +1469,7 @@
   transform-origin: center center;
 }
 
-/* Remove white background from node wrappers */
-.react-flow__node-output,
-.react-flow__node-image,
-.react-flow__node-merge,
-.react-flow__node-edit,
-.react-flow__node-upscale,
-.react-flow__node-mockup,
-.react-flow__node-print,
-.react-flow__node-prompt,
-.react-flow__node-logo,
-.react-flow__node-pdf,
-.react-flow__node-strategy,
-.react-flow__node-brandCore {
-  background: transparent !important;
-  /* Don't override width/height - let ReactFlow control node sizes */
-}
-
-/* React Flow Node Component Utilities */
-/* Node container utilities */
+/* Node utilities */
 .node-wrapper {
   list-style: none;
   margin: 0;
@@ -1481,10 +1478,84 @@
 
 .node-container {
   position: relative;
-  /* Apply default padding from CSS variable */
   padding: var(--node-padding);
-  /* Inherit height from ReactFlow wrapper */
   height: 100%;
+  /* Text color based on contrast - automatically adjusts */
+  color: var(--node-text-color, #e5e7eb);
+}
+
+/* Node text color utilities - use CSS variables for automatic contrast */
+.node-text-primary {
+  color: var(--node-text-color, #e5e7eb) !important;
+}
+
+.node-text-muted {
+  color: var(--node-text-color-muted, #9ca3af) !important;
+}
+
+.node-text-subtle {
+  color: var(--node-text-color-subtle, #6b7280) !important;
+}
+
+/* Auto-contrast text colors for nodes */
+.react-flow__node .node-container {
+  color: var(--node-text-color, #e5e7eb);
+}
+
+/* Override text-neutral-* classes inside nodes */
+.react-flow__node .node-container .text-neutral-200:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]),
+.react-flow__node .node-container .text-neutral-300:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]) {
+  color: var(--node-text-color, #e5e7eb) !important;
+}
+
+.react-flow__node .node-container .text-neutral-400:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]),
+.react-flow__node .node-container .text-neutral-500:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]) {
+  color: var(--node-text-color-muted, #9ca3af) !important;
+}
+
+.react-flow__node .node-container .text-neutral-600:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]) {
+  color: var(--node-text-color-subtle, #6b7280) !important;
+}
+
+/* Auto-contrast for buttons and textareas */
+.react-flow__node .node-container textarea {
+  color: var(--node-text-color, #e5e7eb) !important;
+}
+
+.react-flow__node .node-container textarea::placeholder {
+  color: var(--node-text-color-muted, #9ca3af) !important;
+}
+
+/* Buttons with dark backgrounds */
+.react-flow__node .node-container button[class*="bg-neutral-900"]:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]):not([class*="text-black"]):not([class*="text-white"]),
+.react-flow__node .node-container button[class*="bg-neutral-800"]:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]):not([class*="text-black"]):not([class*="text-white"]),
+.react-flow__node .node-container button[class*="bg-neutral-950"]:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]):not([class*="text-black"]):not([class*="text-white"]) {
+  color: var(--node-text-color-muted, #9ca3af) !important;
+}
+
+/* Buttons with light backgrounds */
+.react-flow__node .node-container button[class*="bg-brand-cyan/20"]:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]):not([class*="text-black"]):not([class*="text-white"]) {
+  color: #00d9ff;
+}
+
+.react-flow__node .node-container button[class*="bg-brand-cyan/10"]:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]):not([class*="text-black"]):not([class*="text-white"]) {
+  color: #00d9ff;
+}
+
+.react-flow__node .node-container button[class*="bg-green-500/5"]:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]):not([class*="text-black"]):not([class*="text-white"]),
+.react-flow__node .node-container button[class*="bg-green-500/10"]:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]):not([class*="text-black"]):not([class*="text-white"]) {
+  color: var(--node-text-color, #e5e7eb);
+}
+
+/* Light background: use dark text on light button backgrounds */
+.react-flow__node[data-node-bg-light="true"] .node-container button[class*="bg-brand-cyan/20"]:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]),
+.react-flow__node[data-node-bg-light="true"] .node-container button[class*="bg-brand-cyan/10"]:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]) {
+  color: #000000 !important;
+}
+
+.react-flow__node[data-node-bg-light="true"] .node-container button[class*="bg-green-500/5"]:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]),
+.react-flow__node[data-node-bg-light="true"] .node-container button[class*="bg-green-500/10"]:not([class*="text-brand"]):not([class*="text-green"]):not([class*="text-amber"]):not([class*="text-red"]) {
+  color: #000000 !important;
 }
 
 .node-gap {
@@ -1591,10 +1662,6 @@
 select.w-full.font-mono.node-interactive {
   font-family: "Red Hat Mono", monospace;
   border-radius: 10px;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
-  border-bottom-right-radius: 10px;
-  border-bottom-left-radius: 10px;
   text-align: left;
   background-color: rgba(33, 33, 33, 1);
 }

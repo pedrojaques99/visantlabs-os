@@ -237,11 +237,11 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         )}
       </div>
 
-      {/* Output Handle - Enhanced styling */}
+      {/* Output Handle - Subtle styling */}
       <Handle
         type="source"
         position={Position.Right}
-        className="node-handle handle-text !w-3 !h-3 !bg-brand-cyan/80 !border-brand-cyan/40 hover:!bg-brand-cyan hover:!border-brand-cyan/60 transition-all"
+        className="node-handle handle-text !w-3 !h-3"
         data-handle-type="text"
       />
     </NodeContainer>

@@ -868,7 +868,7 @@ export const CommunityPresetsPage: React.FC = () => {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder={t('communityPresets.search.placeholder') || 'Search presets...'}
-                    className="bg-black/40 backdrop-blur-sm border border-neutral-700/30 rounded-md pl-8 pr-8 py-2 w-48 md:w-64 focus:outline-none focus:border-[brand-cyan]/50 text-xs text-neutral-300 font-mono"
+                    className="bg-neutral-950/70 backdrop-blur-sm border border-neutral-700/30 rounded-md pl-8 pr-8 py-2 w-48 md:w-64 focus:outline-none focus:border-[brand-cyan]/50 text-xs text-neutral-300 font-mono"
                   />
                   <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-neutral-500" size={14} />
                   {searchQuery && (
@@ -1121,7 +1121,7 @@ const PresetDetailModal: React.FC<{
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/90 backdrop-blur-sm p-4"
       onClick={onClose}
     >
       <div
@@ -1197,7 +1197,7 @@ const PresetDetailModal: React.FC<{
                       e.stopPropagation();
                       setIsImageFullscreen(true);
                     }}
-                    className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-black/80 backdrop-blur-sm border border-neutral-700/50 rounded-md text-neutral-300 hover:text-white transition-all opacity-0 group-hover:opacity-100"
+                    className="absolute top-2 right-2 p-1.5 bg-neutral-950/60 hover:bg-neutral-950/80 backdrop-blur-sm border border-neutral-700/50 rounded-md text-neutral-300 hover:text-white transition-all opacity-0 group-hover:opacity-100"
                     title="View fullscreen"
                   >
                     <Maximize2 size={14} />
@@ -1330,7 +1330,7 @@ const PresetDetailModal: React.FC<{
       {/* Fullscreen Image Modal */}
       {isImageFullscreen && hasImage && (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-neutral-950/95 backdrop-blur-sm p-4"
           onClick={() => setIsImageFullscreen(false)}
         >
           <button

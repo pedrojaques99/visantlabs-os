@@ -45,7 +45,7 @@ export const ReImaginePanel: React.FC<ReImaginePanelProps> = ({
   const status = isLoading ? 'submitted' : 'ready';
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-30 flex items-center justify-center p-4 animate-fade-in">
+    <div className="fixed inset-0 bg-neutral-950/80 backdrop-blur-sm z-30 flex items-center justify-center p-4 animate-fade-in">
       <div className="w-full max-w-2xl bg-neutral-900 rounded-xl border border-neutral-800/50 shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-neutral-800/50">

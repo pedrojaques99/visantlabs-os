@@ -1,16 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Sparkles, Globe, Lock } from 'lucide-react';
+import { X, Sparkles, Globe, Lock } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { toast } from 'sonner';
-import { useTranslation } from '@/hooks/useTranslation';
-import { FormField } from '@/components/ui/form-field';
-import { FormInput } from '@/components/ui/form-input';
-import { FormTextarea } from '@/components/ui/form-textarea';
 import { authService } from '@/services/authService';
 import { clearCommunityPresetsCache } from '@/services/communityPresetsService';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 
 interface SavePromptModalProps {
     isOpen: boolean;
@@ -28,7 +22,6 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
     prompt,
     initialData,
 }) => {
-    const { t } = useTranslation();
     const [name, setName] = useState(initialData?.name || '');
     const [description, setDescription] = useState(initialData?.description || '');
     const [isPublic, setIsPublic] = useState(false);
@@ -139,7 +132,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
 
     return (
         <div
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-neutral-950/70 backdrop-blur-sm animate-fade-in"
             onClick={onClose}
         >
             <div
@@ -147,97 +140,95 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-neutral-800/60 bg-neutral-900/20 backdrop-blur-sm">
-                    <div className="flex items-center gap-4">
-                        <div className="p-2 bg-brand-cyan/10 rounded-lg border border-brand-cyan/20">
-                            <Save className="h-5 w-5 text-brand-cyan" />
-                        </div>
-                        <div>
-                            <h2 className="text-lg font-semibold text-neutral-200 font-manrope tracking-tight">Salvar Prompt</h2>
-                            <p className="text-xs text-neutral-500 font-mono mt-0.5">Salve seu prompt para reutilizar ou compartilhar</p>
-                        </div>
-                    </div>
+                <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-800/60">
+                    <h2 className="text-lg font-semibold text-neutral-100">Salvar Prompt</h2>
                     <button
                         onClick={onClose}
-                        className="p-2 rounded-lg hover:bg-neutral-800/50 text-neutral-400 hover:text-neutral-200 transition-all hover:scale-110 active:scale-95"
+                        className="p-1.5 rounded-md hover:bg-neutral-800 text-neutral-400 hover:text-neutral-200 transition-colors"
                     >
-                        <X size={20} />
+                        <X size={18} />
                     </button>
                 </div>
 
                 {/* Content */}
-                <div className="p-6 space-y-5 flex-1 overflow-y-auto max-h-[70vh]">
+                <div className="px-6 py-5 flex-1 overflow-y-auto max-h-[70vh]">
                     {error && (
-                        <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm font-mono flex items-center gap-2">
-                            <span className="shrink-0">⚠</span>
+                        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm flex items-center gap-2">
+                            <span>⚠</span>
                             <span>{error}</span>
                         </div>
                     )}
 
-                    <div className="space-y-4">
-                        <FormField label="Nome do Prompt" required>
-                            <FormInput
+                    <div className="space-y-5">
+                        {/* Name */}
+                        <div>
+                            <label className="block text-xs text-neutral-400 mb-1.5">Nome do Prompt *</label>
+                            <input
+                                type="text"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 placeholder="Ex: Minimalist Interior Design"
                                 autoFocus
+                                className="w-full px-3 py-2.5 bg-neutral-800/50 border border-neutral-700/50 rounded-lg text-neutral-200 text-sm placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600 transition-colors"
                             />
-                        </FormField>
+                        </div>
 
-                        <FormField label="Descrição (opcional)">
-                            <FormTextarea
+                        {/* Description */}
+                        <div>
+                            <label className="block text-xs text-neutral-400 mb-1.5">Descrição (opcional)</label>
+                            <textarea
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                                 placeholder="Uma breve descrição sobre o que esse prompt faz..."
-                                rows={3}
+                                rows={2}
+                                className="w-full px-3 py-2.5 bg-neutral-800/50 border border-neutral-700/50 rounded-lg text-neutral-200 text-sm placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600 transition-colors resize-none"
                             />
-                        </FormField>
+                        </div>
 
-                        <div className="pt-2">
-                            <label className="text-xs font-semibold text-neutral-400 font-mono mb-3 uppercase tracking-wider block">
-                                Privacidade
-                            </label>
+                        {/* Privacy */}
+                        <div>
+                            <label className="block text-xs text-neutral-400 mb-2">Privacidade</label>
                             <div className="grid grid-cols-2 gap-3">
                                 <button
                                     onClick={() => setIsPublic(false)}
                                     className={cn(
-                                        "flex flex-col items-start p-3 rounded-xl border transition-all text-left group",
+                                        "flex flex-col items-start p-3 rounded-lg border transition-all text-left",
                                         !isPublic
-                                            ? "bg-neutral-800/50 border-neutral-700 text-neutral-200"
-                                            : "bg-transparent border-neutral-800 text-neutral-500 hover:border-neutral-700 hover:bg-neutral-800/20"
+                                            ? "bg-neutral-800/60 border-neutral-600 text-neutral-200"
+                                            : "bg-transparent border-neutral-700/50 text-neutral-500 hover:border-neutral-600 hover:bg-neutral-800/30"
                                     )}
                                 >
                                     <div className="flex items-center gap-2 mb-1">
                                         <Lock size={14} className={!isPublic ? "text-brand-cyan" : ""} />
-                                        <span className="text-sm font-mono font-bold">Privado</span>
+                                        <span className="text-sm font-medium">Privado</span>
                                     </div>
-                                    <p className="text-[10px] opacity-70 leading-relaxed font-mono">Apenas você poderá ver e usar este prompt na sua biblioteca.</p>
+                                    <p className="text-[10px] opacity-70 leading-relaxed">Apenas você poderá ver e usar</p>
                                 </button>
 
                                 <button
                                     onClick={() => setIsPublic(true)}
                                     className={cn(
-                                        "flex flex-col items-start p-3 rounded-xl border transition-all text-left group",
+                                        "flex flex-col items-start p-3 rounded-lg border transition-all text-left",
                                         isPublic
-                                            ? "bg-brand-cyan/10 border-brand-cyan/30 text-brand-cyan"
-                                            : "bg-transparent border-neutral-800 text-neutral-500 hover:border-neutral-700 hover:bg-neutral-800/20"
+                                            ? "bg-brand-cyan/10 border-brand-cyan/40 text-brand-cyan"
+                                            : "bg-transparent border-neutral-700/50 text-neutral-500 hover:border-neutral-600 hover:bg-neutral-800/30"
                                     )}
                                 >
                                     <div className="flex items-center gap-2 mb-1">
                                         <Globe size={14} className={isPublic ? "text-brand-cyan" : ""} />
-                                        <span className="text-sm font-mono font-bold">Público</span>
+                                        <span className="text-sm font-medium">Público</span>
                                     </div>
-                                    <p className="text-[10px] opacity-70 leading-relaxed font-mono">Compartilhe com a comunidade na página explorar.</p>
+                                    <p className="text-[10px] opacity-70 leading-relaxed">Compartilhe com a comunidade</p>
                                 </button>
                             </div>
                         </div>
 
-                        <div className="pt-2">
-                            <label className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest ml-1 mb-2 block">
-                                Tags
-                            </label>
+                        {/* Tags */}
+                        <div>
+                            <label className="block text-xs text-neutral-400 mb-1.5">Tags</label>
                             <div className="flex gap-2">
-                                <FormInput
+                                <input
+                                    type="text"
                                     value={tagInput}
                                     onChange={(e) => setTagInput(e.target.value)}
                                     onKeyDown={(e) => {
@@ -247,41 +238,41 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                                         }
                                     }}
                                     placeholder="moderno, arquitetura..."
-                                    className="flex-1 bg-neutral-900/50 border-neutral-800 focus:border-brand-cyan/30"
+                                    className="flex-1 px-3 py-2.5 bg-neutral-800/50 border border-neutral-700/50 rounded-lg text-neutral-200 text-sm placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600 transition-colors"
                                 />
-                                <Button
-                                    variant="secondary"
+                                <button
                                     onClick={addTag}
-                                    className="px-4 font-mono text-xs"
+                                    className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-lg text-neutral-300 text-sm transition-colors"
                                 >
                                     Add
-                                </Button>
+                                </button>
                             </div>
                             {tags.length > 0 && (
-                                <div className="flex flex-wrap gap-2 mt-3 ml-1">
+                                <div className="flex flex-wrap gap-2 mt-3">
                                     {tags.map((tag, idx) => (
-                                        <Badge
+                                        <span
                                             key={idx}
-                                            variant="outline"
-                                            className="px-2 py-0.5 bg-neutral-800/40 border border-neutral-700/30 text-[10px] text-neutral-400 font-mono gap-1.5 group"
+                                            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-neutral-800/70 border border-neutral-700/50 rounded-md text-xs text-neutral-300"
                                         >
-                                            #{tag}
+                                            <span className="text-neutral-500">#</span>
+                                            {tag}
                                             <button
                                                 onClick={() => setTags(tags.filter((_, i) => i !== idx))}
-                                                className="text-neutral-500 hover:text-neutral-300 transition-colors"
+                                                className="text-neutral-500 hover:text-red-400 transition-colors ml-0.5"
                                             >
-                                                <X size={10} />
+                                                <X size={12} />
                                             </button>
-                                        </Badge>
+                                        </span>
                                     ))}
                                 </div>
                             )}
                         </div>
 
-                        <div className="pt-4 border-t border-neutral-800">
-                            <label className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest mb-2 block">Visualização do Prompt</label>
-                            <div className="p-3 bg-neutral-950/50 border border-neutral-800 rounded-lg max-h-32 overflow-y-auto">
-                                <p className="text-xs text-neutral-400 font-mono whitespace-pre-wrap leading-relaxed">
+                        {/* Prompt Preview */}
+                        <div className="pt-4 border-t border-neutral-800/50">
+                            <label className="block text-xs text-neutral-400 mb-1.5">Visualização do Prompt</label>
+                            <div className="p-3 bg-neutral-950/50 border border-neutral-800/50 rounded-lg max-h-28 overflow-y-auto">
+                                <p className="text-xs text-neutral-400 whitespace-pre-wrap leading-relaxed">
                                     {prompt}
                                 </p>
                             </div>
@@ -290,32 +281,30 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                 </div>
 
                 {/* Footer */}
-                <div className="p-6 border-t border-neutral-800/60 bg-neutral-900/20 backdrop-blur-sm flex gap-3">
-                    <Button
-                        variant="ghost"
+                <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-neutral-800/60 bg-neutral-900/50">
+                    <button
                         onClick={onClose}
-                        className="flex-1 font-mono text-neutral-400 hover:text-neutral-200"
+                        className="px-4 py-2 bg-transparent hover:bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-300 text-sm transition-colors"
                     >
                         Cancelar
-                    </Button>
-                    <Button
-                        variant="brand"
+                    </button>
+                    <button
                         onClick={handleSave}
                         disabled={isLoading || !name.trim()}
-                        className="flex-[1.5] font-mono shadow-lg shadow-brand-cyan/10"
+                        className="px-5 py-2 bg-brand-cyan hover:bg-brand-cyan/90 text-black font-medium rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                         {isLoading ? (
                             <>
-                                <GlitchLoader size={16} color="black" className="mr-2" />
+                                <GlitchLoader size={14} color="black" />
                                 <span>Salvando...</span>
                             </>
                         ) : (
                             <>
-                                <Sparkles size={16} className="mr-2" />
+                                <Sparkles size={14} />
                                 <span>Salvar Prompt</span>
                             </>
                         )}
-                    </Button>
+                    </button>
                 </div>
             </div>
         </div>

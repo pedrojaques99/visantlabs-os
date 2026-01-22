@@ -562,7 +562,7 @@ export const CanvasProjectsPage: React.FC = () => {
                           e.stopPropagation();
                           handleView(project);
                         }}
-                        className="flex-1 px-4 py-2 bg-black/40 border border-neutral-800/60 hover:border-brand-cyan/50 hover:text-brand-cyan rounded-md text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
+                        className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-brand-cyan/50 hover:text-brand-cyan rounded-md text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
                       >
                         <Eye className="h-4 w-4" />
                         {t('canvas.open') || 'Open'}
@@ -570,7 +570,7 @@ export const CanvasProjectsPage: React.FC = () => {
                       <button
                         onClick={(e) => handleDeleteClick(project._id, e)}
                         disabled={deletingId === project._id}
-                        className="px-4 py-2 bg-black/40 border border-neutral-800/60 hover:border-red-500/50 hover:text-red-400 rounded-xl text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        className="px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-red-500/50 hover:text-red-400 rounded-xl text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>

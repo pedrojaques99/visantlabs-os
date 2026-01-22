@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Globe, Sparkles, TrendingUp, Plus, Image as ImageIcon, Camera, Layers, MapPin, Sun, ArrowRight, ChevronDown, ChevronUp, Box, Settings, Palette, FolderOpen } from 'lucide-react';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
@@ -10,7 +10,8 @@ import { mockupApi } from '../services/mockupApi';
 import { cn } from '../lib/utils';
 import { Github } from 'lucide-react';
 import { getGithubUrl } from '../config/branding';
-import ClubHero3D from '../components/3d/club-hero3d';
+import ClubLogo3D from '../components/3d/club-logo3d';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import { CommunityPresetModal } from '../components/CommunityPresetModal';
 import { WorkflowLibraryModal } from '../components/WorkflowLibraryModal';
 import { canvasApi } from '../services/canvasApi';
@@ -98,6 +99,7 @@ export const CommunityPage: React.FC = () => {
 
   // Check if user is admin (you might need to fetch user details or get from context if available)
   const [isAdmin, setIsAdmin] = useState(false); // Placeholder, ideally get from authService/context
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
   const handleLoadWorkflow = async (workflow: CanvasWorkflow) => {
     try {
@@ -333,82 +335,96 @@ export const CommunityPage: React.FC = () => {
         </div>
 
         {/* Hero Section */}
-        <ClubHero3D
-          className="mb-16 rounded-3xl border border-neutral-800/50 min-h-[400px] h-auto"
-          color="brand-cyan"
-          starColor="brand-cyan"
-        >
-          <div className="relative z-10 p-6 md:p-8 h-full flex flex-col justify-between">
-            <div className="relative z-10 max-w-2xl pointer-events-auto">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="px-3 py-1 bg-brand-cyan/10 text-brand-cyan text-xs font-mono rounded-full border border-[brand-cyan]/20">
-                  COMUNIDADE ATIVA
+        <div className="relative mb-16 min-h-[500px] flex items-center overflow-hidden">
+          {/* 3D Object - Free floating, no container */}
+          <div className="absolute inset-0 w-full h-full pointer-events-none">
+            <Suspense fallback={null}>
+              <ClubLogo3D
+                isMobile={isMobile}
+                color="#1a1a1a"
+                starColor="#52ddeb"
+              />
+            </Suspense>
+          </div>
+
+          {/* Content */}
+          <div className="relative z-10 w-full max-w-6xl mx-auto px-4 py-12">
+            <div className="max-w-2xl">
+              {/* Label - More discreet */}
+              <div className="mb-4">
+                <span className="inline-block px-2.5 py-0.5 text-[10px] text-brand-cyan/70 font-mono uppercase tracking-widest border border-brand-cyan/20 rounded-md bg-brand-cyan/5">
+                  Comunidade Ativa
                 </span>
               </div>
-              <h1 className="text-3xl md:text-5xl font-bold font-manrope text-white mb-4 leading-tight">
+
+              {/* Title */}
+              <h1 className="text-4xl md:text-5xl font-semibold text-white mb-3 leading-tight">
                 {t('communityPresets.title')}
               </h1>
-              <p className="text-neutral-400 text-base md:text-lg font-mono mb-6 max-w-xl leading-relaxed">
+
+              {/* Description - More discreet */}
+              <p className="text-neutral-400 text-sm md:text-base mb-8 max-w-xl leading-relaxed">
                 {t('communityPresets.subtitle')}
               </p>
 
-              <div className="flex flex-wrap gap-3">
+              {/* Action Buttons - More discreet */}
+              <div className="flex flex-wrap gap-2.5">
                 <button
                   onClick={() => setIsCreateModalOpen(true)}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-brand-cyan hover:bg-brand-cyan/90 text-black font-semibold rounded-xl transition-all hover:scale-105 active:scale-95 shadow-lg shadow-[brand-cyan]/20"
+                  className="flex items-center gap-2 px-4 py-2 bg-brand-cyan hover:bg-brand-cyan/90 text-black font-medium rounded-lg text-sm transition-colors"
                 >
-                  <Plus size={18} />
-                  <span className="font-mono uppercase tracking-wider text-sm">Criar um novo prompt</span>
+                  <Plus size={16} />
+                  <span>Criar um novo prompt</span>
                 </button>
                 <button
                   onClick={() => navigate('/community/presets')}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-neutral-800/50 hover:bg-neutral-800 text-white font-semibold rounded-xl border border-neutral-700/50 transition-all hover:scale-105 active:scale-95 backdrop-blur-sm"
+                  className="flex items-center gap-2 px-4 py-2 bg-neutral-800/40 hover:bg-neutral-800/60 text-neutral-300 rounded-lg border border-neutral-700/40 text-sm transition-colors"
                 >
-                  <Globe size={18} />
-                  <span className="font-mono uppercase tracking-wider text-sm">Ver Tudo</span>
+                  <Globe size={16} />
+                  <span>Ver Tudo</span>
                 </button>
                 <button
                   onClick={() => setShowWorkflowLibrary(true)}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-neutral-800/50 hover:bg-neutral-800 text-white font-semibold rounded-xl border border-neutral-700/50 transition-all hover:scale-105 active:scale-95 backdrop-blur-sm"
+                  className="flex items-center gap-2 px-4 py-2 bg-neutral-800/40 hover:bg-neutral-800/60 text-neutral-300 rounded-lg border border-neutral-700/40 text-sm transition-colors"
                 >
-                  <FolderOpen size={18} />
-                  <span className="font-mono uppercase tracking-wider text-sm">{t('workflows.library.title') || 'Biblioteca'}</span>
+                  <FolderOpen size={16} />
+                  <span>{t('workflows.library.title') || 'Biblioteca'}</span>
                 </button>
               </div>
             </div>
 
-            {/* Global Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 relative z-10 pointer-events-auto">
-              <div className="bg-black/40 backdrop-blur-sm border border-neutral-800/50 rounded-xl p-4 transition-all hover:border-[brand-cyan]/30 group hover:bg-black/60">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-neutral-500 font-mono text-xs uppercase tracking-widest">Usuários</span>
-                  <TrendingUp size={14} className="text-brand-cyan" />
+            {/* Global Stats Cards - More discreet */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-12">
+              <div className="bg-neutral-900/30 backdrop-blur-sm border border-neutral-800/30 rounded-lg p-4 transition-all hover:border-neutral-700/50">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-neutral-500 font-mono text-[10px] uppercase tracking-wider">Usuários</span>
+                  <TrendingUp size={12} className="text-brand-cyan/60" />
                 </div>
-                <p className="text-3xl font-bold text-white font-mono group-hover:scale-110 transition-transform origin-left">
+                <p className="text-2xl font-semibold text-white font-mono">
                   {isLoading ? '...' : globalCommunityStats.totalUsers}
                 </p>
               </div>
-              <div className="bg-black/40 backdrop-blur-sm border border-neutral-800/50 rounded-xl p-4 transition-all hover:border-[brand-cyan]/30 group hover:bg-black/60">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-neutral-500 font-mono text-xs uppercase tracking-widest">Presets Criados</span>
-                  <Sparkles size={14} className="text-brand-cyan" />
+              <div className="bg-neutral-900/30 backdrop-blur-sm border border-neutral-800/30 rounded-lg p-4 transition-all hover:border-neutral-700/50">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-neutral-500 font-mono text-[10px] uppercase tracking-wider">Presets Criados</span>
+                  <Sparkles size={12} className="text-brand-cyan/60" />
                 </div>
-                <p className="text-3xl font-bold text-white font-mono group-hover:scale-110 transition-transform origin-left">
+                <p className="text-2xl font-semibold text-white font-mono">
                   {isLoading ? '...' : globalCommunityStats.totalPresets}
                 </p>
               </div>
-              <div className="bg-black/40 backdrop-blur-sm border border-neutral-800/50 rounded-xl p-4 transition-all hover:border-[brand-cyan]/30 group hover:bg-black/60">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-neutral-500 font-mono text-xs uppercase tracking-widest">Public Mockups</span>
-                  <ImageIcon size={14} className="text-brand-cyan" />
+              <div className="bg-neutral-900/30 backdrop-blur-sm border border-neutral-800/30 rounded-lg p-4 transition-all hover:border-neutral-700/50">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-neutral-500 font-mono text-[10px] uppercase tracking-wider">Public Mockups</span>
+                  <ImageIcon size={12} className="text-brand-cyan/60" />
                 </div>
-                <p className="text-3xl font-bold text-white font-mono group-hover:scale-110 transition-transform origin-left">
+                <p className="text-2xl font-semibold text-white font-mono">
                   {isLoading ? '...' : globalCommunityStats.totalBlankMockups}
                 </p>
               </div>
             </div>
           </div>
-        </ClubHero3D>
+        </div>
 
         {isCheckingAuth && (
           <div className="flex items-center justify-center py-20">

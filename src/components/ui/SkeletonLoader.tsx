@@ -69,7 +69,7 @@ export const SkeletonCard: React.FC<{ aspectRatio?: string }> = ({ aspectRatio =
       <div className="absolute inset-0 flex items-center justify-center">
         <span
           key={messageIndex}
-          className="text-xs font-mono uppercase tracking-wide text-white/70 bg-black/30 px-3 py-1 rounded-md backdrop-blur animate-fade-in"
+          className="text-xs font-mono uppercase tracking-wide text-white/70 bg-neutral-950/30 px-3 py-1 rounded-md backdrop-blur animate-fade-in"
         >
           {skeletonMessages[messageIndex]}
         </span>

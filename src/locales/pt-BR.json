@@ -519,7 +519,13 @@
     "invalidNodeType": "Tipo de node inválido: {nodeType}",
     "imageTooLargeDetailed": "A imagem \"{fileName}\" ({size}) excede o limite de {limit}.",
     "experimentalMode": "Modo Experimental",
-    "experimentalModeDesc": "Mostrar nodes de preview como Shader, Strategy, etc."
+    "experimentalModeDesc": "Mostrar nodes de preview como Shader, Strategy, etc.",
+    "edgeStyle": "Estilo da Borda",
+    "edgeWidth": "Largura da Borda",
+    "edgeStyleSolid": "Sólida",
+    "edgeStyleDash": "Tracejada",
+    "edgeWidthBold": "Grossa",
+    "edgeWidthThin": "Fina"
   },
   "canvasLoading": {
     "Project": "Carregando Projeto..."
@@ -2796,6 +2802,26 @@
       "systemPromptReset": "System prompt resetado para o padrão",
       "resetToDefault": "Resetar para Padrão",
       "save": "Salvar"
+    },
+    "directorNode": {
+      "title": "Diretor",
+      "imageInput": "Imagem",
+      "noImage": "Nenhuma imagem conectada",
+      "connectImage": "Conecte uma imagem",
+      "readyToAnalyze": "Pronto para analisar",
+      "analyzing": "Analisando...",
+      "tagsSelected": "tags selecionadas",
+      "generatingPrompt": "Gerando...",
+      "promptReady": "Prompt Pronto",
+      "openDirector": "Abrir Diretor",
+      "generatedPrompt": "Prompt Gerado",
+      "connectImageFirst": "Conecte uma imagem ao nó Diretor para começar",
+      "analyzeImage": "Analisar Imagem",
+      "selectTags": "Selecione tags para seu prompt",
+      "generating": "Gerando...",
+      "generatePrompt": "Gerar Prompt",
+      "generateAndCreate": "Gerar Prompt & Criar Nó",
+      "selectAtLeastOneTag": "Selecione pelo menos uma tag para gerar"
     }
   },
   "shaderControls": {
@@ -2889,6 +2915,7 @@
     "addBrandCore": "Adicionar Brand Core",
     "addChatNode": "Adicionar Chat Node",
     "addColorExtractorNode": "Adicionar Color Extractor",
+    "addDirectorNode": "Adicionar Director Node",
     "expandToolbar": "Expandir barra de ferramentas",
     "collapseToolbar": "Recolher barra de ferramentas",
     "labels": {
@@ -2904,6 +2931,7 @@
       "brandCore": "Brand Core",
       "chat": "Chat",
       "colorExtractor": "Color Extractor",
+      "director": "Diretor",
       "drawing": "Desenhar"
     },
     "toggleDrawingMode": "Alternar Modo de Desenho",

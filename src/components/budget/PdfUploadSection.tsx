@@ -157,7 +157,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
 
       {/* Modal para salvar preset */}
       {showSavePresetModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-neutral-950/50 flex items-center justify-center z-50 p-4">
           <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 sm:p-6 max-w-md w-full">
             <h4 className="text-lg font-semibold font-mono text-neutral-200 mb-4">
               Salvar como Preset
@@ -167,7 +167,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
               value={presetName}
               onChange={(e) => setPresetName(e.target.value)}
               placeholder="Nome do preset"
-              className="w-full px-4 py-2 bg-black/20 border border-neutral-800 rounded-md text-neutral-200 font-mono mb-4 focus:outline-none focus:border-[brand-cyan]"
+              className="w-full px-4 py-2 bg-neutral-950/20 border border-neutral-800 rounded-md text-neutral-200 font-mono mb-4 focus:outline-none focus:border-[brand-cyan]"
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   handleSavePreset();
@@ -197,7 +197,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
               <Button
                 onClick={handleSkipPreset}
                 variant="outline"
-                className="border border-neutral-800 bg-black/20 hover:bg-black/30 text-neutral-400"
+                className="border border-neutral-800 bg-neutral-950/20 hover:bg-neutral-950/30 text-neutral-400"
               >
                 Usar sem Salvar
               </Button>
@@ -207,14 +207,14 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
       )}
 
       {isUploading || isSavingPreset ? (
-        <div className="flex items-center gap-2 p-4 border border-neutral-800 rounded-xl bg-black/20">
+        <div className="flex items-center gap-2 p-4 border border-neutral-800 rounded-xl bg-neutral-950/20">
           <GlitchLoader size={16} color="brand-cyan" />
           <span className="text-sm text-neutral-400 font-mono">
             {isSavingPreset ? 'Salvando preset...' : 'Enviando PDF...'}
           </span>
         </div>
       ) : customPdfUrl ? (
-        <div className="relative p-4 border border-neutral-800 rounded-xl bg-black/20">
+        <div className="relative p-4 border border-neutral-800 rounded-xl bg-neutral-950/20">
           <div className="flex items-center gap-3">
             <FileText className="h-8 w-8 text-brand-cyan flex-shrink-0" />
             <div className="flex-1 min-w-0">
@@ -239,7 +239,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
                 variant="outline"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploading}
-                className="border border-neutral-800 bg-black/20 hover:bg-black/30 text-neutral-200 hover:text-brand-cyan transition-colors"
+                className="border border-neutral-800 bg-neutral-950/20 hover:bg-neutral-950/30 text-neutral-200 hover:text-brand-cyan transition-colors"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 <span className="hidden sm:inline">Substituir PDF</span>
@@ -272,7 +272,7 @@ export const PdfUploadSection: React.FC<PdfUploadSectionProps> = ({
             variant="outline"
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploading}
-            className="border border-neutral-800 bg-black/20 hover:bg-black/30 text-neutral-200 hover:text-brand-cyan"
+            className="border border-neutral-800 bg-neutral-950/20 hover:bg-neutral-950/30 text-neutral-200 hover:text-brand-cyan"
           >
             <Upload className="h-4 w-4" />
             Enviar PDF Customizado

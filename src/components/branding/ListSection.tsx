@@ -54,7 +54,7 @@ export const ListSection: React.FC<ListSectionProps> = ({
             <div
               key={index}
               className={`border rounded-xl p-4 hover:border-[brand-cyan]/50 transition-colors relative ${theme === 'dark'
-                ? 'bg-black/40 border-neutral-800/60'
+                ? 'bg-neutral-950/70 border-neutral-800/60'
                 : 'bg-neutral-100 border-neutral-300'
                 }`}
             >
@@ -81,7 +81,7 @@ export const ListSection: React.FC<ListSectionProps> = ({
         <button
           onClick={handleAddItem}
           className={`flex items-center gap-2 px-4 py-2 border hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-all duration-300 ${theme === 'dark'
-            ? 'bg-black/40 border-neutral-800/60 text-neutral-300'
+            ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300'
             : 'bg-neutral-100 border-neutral-300 text-neutral-800'
             }`}
         >
@@ -98,7 +98,7 @@ export const ListSection: React.FC<ListSectionProps> = ({
         <div
           key={index}
           className={`border rounded-xl p-4 transition-colors ${theme === 'dark'
-            ? 'bg-black/40 border-neutral-800/60 hover:border-neutral-700/60'
+            ? 'bg-neutral-950/70 border-neutral-800/60 hover:border-neutral-700/60'
             : 'bg-neutral-100 border-neutral-300 hover:border-neutral-400'
             }`}
         >

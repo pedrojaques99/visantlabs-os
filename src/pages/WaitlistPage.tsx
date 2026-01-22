@@ -149,7 +149,7 @@ export const WaitlistPage: React.FC = () => {
               <div className="pt-4 border-t border-neutral-800/50">
                 <button
                   onClick={() => navigate('/')}
-                  className="w-full px-6 py-3 bg-black/40 border border-neutral-800/60 hover:border-brand-cyan/50 hover:text-brand-cyan rounded-md text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                  className="w-full px-6 py-3 bg-neutral-950/70 border border-neutral-800/60 hover:border-brand-cyan/50 hover:text-brand-cyan rounded-md text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                 >
                   <Pickaxe size={16} />
                   {t('waitlist.tryMockupMachineNow') || 'Try Mockup Machine Now'}

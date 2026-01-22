@@ -17,7 +17,7 @@ export const EdgeContextMenu: React.FC<EdgeContextMenuProps> = ({
   return (
     <div
       data-context-menu
-      className="fixed z-50 bg-black/90 backdrop-blur-sm border border-neutral-700/30 rounded-md shadow-xl py-2 min-w-[180px] max-h-[80vh] overflow-y-auto"
+      className="fixed z-50 bg-neutral-950/90 backdrop-blur-sm border border-neutral-700/30 rounded-md shadow-xl py-2 min-w-[180px] max-h-[80vh] overflow-y-auto"
       style={{
         left: `${x}px`,
         top: `${y}px`,
@@ -26,7 +26,7 @@ export const EdgeContextMenu: React.FC<EdgeContextMenuProps> = ({
       onWheel={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
     >
-      <div className="px-2 py-1.5 border-b border-neutral-700/30 flex items-center justify-between sticky top-0 bg-black/90 backdrop-blur-sm z-10">
+      <div className="px-2 py-1.5 border-b border-neutral-700/30 flex items-center justify-between sticky top-0 bg-neutral-950/90 backdrop-blur-sm z-10">
         <span className="text-xs font-mono text-neutral-400 uppercase">Connection</span>
         <button
           onClick={onClose}

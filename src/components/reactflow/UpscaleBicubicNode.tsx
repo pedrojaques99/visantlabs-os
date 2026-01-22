@@ -491,8 +491,8 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
 
       {/* Floating Processing Indicator */}
       {isLoading && !hasResult && hasConnectedImage && (
-        <div className="relative mt-2 min-h-[200px] flex items-center justify-center bg-black/10 rounded-md border border-neutral-700/30">
-          <div className="p-2 rounded-md bg-black/60 backdrop-blur-sm border border-[brand-cyan]/30 shadow-lg">
+        <div className="relative mt-2 min-h-[200px] flex items-center justify-center bg-neutral-950/10 rounded-md border border-neutral-700/30">
+          <div className="p-2 rounded-md bg-neutral-950/60 backdrop-blur-sm border border-[brand-cyan]/30 shadow-lg">
             <GlitchLoader size={14} color="brand-cyan" />
           </div>
         </div>
@@ -521,7 +521,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
       {hasResult && !isLoading && (
         <div className="mt-3 space-y-2 flex-1 min-h-0 flex flex-col">
           {hasVideoResult ? (
-            <div className="relative w-full h-full bg-black/20 rounded-md overflow-hidden border border-neutral-700/50 flex-1 min-h-0">
+            <div className="relative w-full h-full bg-neutral-950/20 rounded-md overflow-hidden border border-neutral-700/50 flex-1 min-h-0">
               <video
                 src={resultVideoUrl || undefined}
                 controls
@@ -543,7 +543,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
               />
             </div>
           ) : resultImageUrl ? (
-            <div className="relative w-full h-full bg-black/20 rounded-md overflow-hidden border border-neutral-700/50 flex items-center justify-center flex-1 min-h-0">
+            <div className="relative w-full h-full bg-neutral-950/20 rounded-md overflow-hidden border border-neutral-700/50 flex items-center justify-center flex-1 min-h-0">
               <img
                 src={isSafeUrl(resultImageUrl) ? resultImageUrl : ''}
                 alt="Upscaled result"
@@ -583,7 +583,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
                 e.stopPropagation();
                 handleView();
               }}
-              className="p-1 bg-black/40 hover:bg-black/60 text-neutral-400 hover:text-neutral-200 rounded transition-colors backdrop-blur-sm border border-neutral-700/30 hover:border-neutral-600/50"
+              className="p-1 bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 rounded transition-colors backdrop-blur-sm border border-neutral-700/30 hover:border-neutral-600/50"
               title={t('canvasNodes.imageNode.viewFullScreen')}
               onMouseDown={(e) => e.stopPropagation()}
             >
@@ -592,7 +592,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
           )}
           <button
             onClick={handleDownload}
-            className="p-1 bg-black/40 hover:bg-black/60 text-neutral-400 hover:text-neutral-200 rounded transition-colors backdrop-blur-sm border border-neutral-700/30 hover:border-neutral-600/50"
+            className="p-1 bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 rounded transition-colors backdrop-blur-sm border border-neutral-700/30 hover:border-neutral-600/50"
             title={t('canvasNodes.imageNode.downloadImage')}
             onMouseDown={(e) => e.stopPropagation()}
           >
@@ -607,10 +607,10 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
             className={cn(
               "p-1 rounded transition-colors backdrop-blur-sm border",
               isSaving
-                ? "bg-black/40 text-neutral-500 cursor-wait border border-neutral-700/30"
+                ? "bg-neutral-950/70 text-neutral-500 cursor-wait border border-neutral-700/30"
                 : isLiked
                   ? "bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30 border border-[brand-cyan]/20"
-                  : "bg-black/40 hover:bg-black/60 text-neutral-400 hover:text-neutral-200 border border-neutral-700/30"
+                  : "bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 border border-neutral-700/30"
             )}
             title={isLiked ? t('canvasNodes.outputNode.removeFromFavorites') : t('canvasNodes.outputNode.saveToCollection')}
             onMouseDown={(e) => e.stopPropagation()}
@@ -640,7 +640,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
                 e.stopPropagation();
                 setShowBrandKitModal(true);
               }}
-              className="p-1 bg-black/40 hover:bg-black/60 text-neutral-400 hover:text-neutral-200 rounded transition-colors backdrop-blur-sm border border-neutral-700/30 hover:border-neutral-600/50"
+              className="p-1 bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 rounded transition-colors backdrop-blur-sm border border-neutral-700/30 hover:border-neutral-600/50"
               title={t('canvasNodes.imageNode.brandKit')}
               onMouseDown={(e) => e.stopPropagation()}
             >
@@ -657,7 +657,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
               "p-1 rounded transition-colors backdrop-blur-sm border",
               isDescribing || !resultImageUrl
                 ? "bg-neutral-700/20 text-neutral-500 cursor-not-allowed border-neutral-700/20"
-                : "bg-black/40 hover:bg-black/60 text-neutral-400 hover:text-neutral-200 border-neutral-700/30 hover:border-neutral-600/50"
+                : "bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 border-neutral-700/30 hover:border-neutral-600/50"
             )}
             title={isDescribing ? t('canvasNodes.imageNode.analyzingImage') : t('canvasNodes.imageNode.describeImageWithAI')}
             onMouseDown={(e) => e.stopPropagation()}

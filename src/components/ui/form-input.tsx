@@ -11,7 +11,7 @@ const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
         <input
           type={type}
           className={cn(
-            "w-full px-4 py-3 bg-black/40 border border-neutral-800 rounded-xl text-neutral-200 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/70 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50 placeholder:text-neutral-500",
+            "w-full px-4 py-3 bg-neutral-950/70 border border-neutral-800 rounded-xl text-neutral-200 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/70 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50 placeholder:text-neutral-500",
             type === 'color' && "color-picker-square",
             className
           )}

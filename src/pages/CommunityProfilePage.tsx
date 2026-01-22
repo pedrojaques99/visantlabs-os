@@ -601,7 +601,7 @@ export const CommunityProfilePage: React.FC = () => {
                           )}
 
                           {/* Overlay Actions */}
-                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
+                          <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
                             <Button
                               size="sm"
                               className="gap-2 bg-brand-cyan text-black hover:bg-brand-cyan/90 border-none"
@@ -624,7 +624,7 @@ export const CommunityProfilePage: React.FC = () => {
                           </div>
 
                           <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                            <Badge variant="secondary" className="bg-black/70 backdrop-blur-sm border-neutral-700 text-xs">
+                            <Badge variant="secondary" className="bg-neutral-950/70 backdrop-blur-sm border-neutral-700 text-xs">
                               {workflow.category}
                             </Badge>
                           </div>
@@ -708,7 +708,7 @@ export const CommunityProfilePage: React.FC = () => {
                             </div>
                           )}
                           <div className="absolute bottom-2 right-2">
-                            <Badge variant="secondary" className="bg-black/70 backdrop-blur-sm border-neutral-700 text-[10px] uppercase">
+                            <Badge variant="secondary" className="bg-neutral-950/70 backdrop-blur-sm border-neutral-700 text-[10px] uppercase">
                               {preset.presetType}
                             </Badge>
                           </div>

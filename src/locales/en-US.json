@@ -533,7 +533,13 @@
     "invalidNodeType": "Invalid node type: {nodeType}",
     "imageTooLargeDetailed": "Image \"{fileName}\" ({size}) exceeds the {limit} limit.",
     "experimentalMode": "Experimental Mode",
-    "experimentalModeDesc": "Show preview nodes like Shader, Strategy, etc."
+    "experimentalModeDesc": "Show preview nodes like Shader, Strategy, etc.",
+    "edgeStyle": "Edge Style",
+    "edgeWidth": "Edge Width",
+    "edgeStyleSolid": "Solid",
+    "edgeStyleDash": "Dash",
+    "edgeWidthBold": "Bold",
+    "edgeWidthThin": "Thin"
   },
   "canvasLoading": {
     "Project": "Loading Project..."
@@ -2807,6 +2813,26 @@
       "systemPromptReset": "System prompt reset to default",
       "resetToDefault": "Reset to Default",
       "save": "Save"
+    },
+    "directorNode": {
+      "title": "Director",
+      "imageInput": "Image",
+      "noImage": "No image connected",
+      "connectImage": "Connect an image",
+      "readyToAnalyze": "Ready to analyze",
+      "analyzing": "Analyzing...",
+      "tagsSelected": "tags selected",
+      "generatingPrompt": "Generating...",
+      "promptReady": "Prompt Ready",
+      "openDirector": "Open Director",
+      "generatedPrompt": "Generated Prompt",
+      "connectImageFirst": "Connect an image to the Director node to start",
+      "analyzeImage": "Analyze Image",
+      "selectTags": "Select tags for your prompt",
+      "generating": "Generating...",
+      "generatePrompt": "Generate Prompt",
+      "generateAndCreate": "Generate Prompt & Create Node",
+      "selectAtLeastOneTag": "Select at least one tag to generate"
     }
   },
   "shaderControls": {
@@ -2900,6 +2926,7 @@
     "addBrandCore": "Add Brand Core",
     "addChatNode": "Add Chat Node",
     "addColorExtractorNode": "Add Color Extractor",
+    "addDirectorNode": "Add Director Node",
     "expandToolbar": "Expand toolbar",
     "collapseToolbar": "Collapse toolbar",
     "labels": {
@@ -2915,6 +2942,7 @@
       "brandCore": "Brand Core",
       "chat": "Chat",
       "colorExtractor": "Color Extractor",
+      "director": "Director",
       "drawing": "Draw"
     },
     "toggleDrawingMode": "Toggle Drawing Mode",

@@ -198,7 +198,7 @@ export function GenericPresetModal<T extends string>({
         <div
             id="preset-modal"
             tabIndex={-1}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
+            className="fixed inset-0 bg-neutral-950/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
             style={{ animation: 'fadeIn 0.2s ease-out' }}
             onClick={onClose}
             role="dialog"
@@ -206,7 +206,7 @@ export function GenericPresetModal<T extends string>({
             aria-labelledby="preset-modal-title"
         >
             <div
-                className="relative max-w-4xl w-full max-h-[90vh] bg-black/95 backdrop-blur-xl border border-neutral-800/50 rounded-md shadow-2xl overflow-hidden flex flex-col"
+                className="relative max-w-4xl w-full max-h-[90vh] bg-neutral-950/95 backdrop-blur-xl border border-neutral-800/50 rounded-md shadow-2xl overflow-hidden flex flex-col"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}

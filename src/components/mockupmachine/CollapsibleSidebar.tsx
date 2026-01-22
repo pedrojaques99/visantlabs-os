@@ -80,7 +80,7 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
     return (
       <button
         onClick={onToggleCollapse}
-        className="w-full bg-black/30 backdrop-blur-sm border border-neutral-800/40 rounded-md px-3 py-2 opacity-70 hover:opacity-100 transition-opacity flex items-center gap-2 justify-center"
+        className="w-full bg-neutral-950/30 backdrop-blur-sm border border-neutral-800/40 rounded-md px-3 py-2 opacity-70 hover:opacity-100 transition-opacity flex items-center gap-2 justify-center"
         title="Show filters"
       >
         <Menu size={16} className="text-neutral-500 flex-shrink-0" />
@@ -90,7 +90,7 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
   }
 
   return (
-    <div className="relative bg-black/30 backdrop-blur-sm border border-neutral-800/40 rounded-md px-3 md:px-4 py-2.5 md:py-3 opacity-70 hover:opacity-90 transition-opacity w-full">
+    <div className="relative bg-neutral-950/30 backdrop-blur-sm border border-neutral-800/40 rounded-md px-3 md:px-4 py-2.5 md:py-3 opacity-70 hover:opacity-90 transition-opacity w-full">
       {/* Header with title, count and collapse button */}
       <div className="flex items-center justify-between gap-2 md:gap-3 mb-2">
         <div className="flex items-center gap-2 md:gap-3 flex-shrink-0 min-w-0">
@@ -114,7 +114,7 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
                     value={searchQuery}
                     onChange={(e) => onSearchChange?.(e.target.value)}
                     placeholder="Search..."
-                    className="bg-black/40 backdrop-blur-sm border border-neutral-700/30 rounded-md pl-7 pr-7 py-1.5 w-40 focus:outline-none focus:border-[brand-cyan]/50 text-xs text-neutral-300 font-mono"
+                    className="bg-neutral-950/70 backdrop-blur-sm border border-neutral-700/30 rounded-md pl-7 pr-7 py-1.5 w-40 focus:outline-none focus:border-[brand-cyan]/50 text-xs text-neutral-300 font-mono"
                     autoFocus
                   />
                   <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-neutral-500" size={12} />

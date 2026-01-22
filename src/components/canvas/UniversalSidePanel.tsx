@@ -221,11 +221,11 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
         <aside
             ref={sidebarRef}
             className={cn(
-                "fixed right-4 top-[81px] z-40",
+                "fixed right-4 top-[65px] z-40",
                 "backdrop-blur-xl border border-neutral-800/50",
                 "rounded-2xl shadow-2xl",
                 "transition-all duration-300 ease-out flex flex-col",
-                "bg-black/40",
+                "bg-neutral-950/70",
                 isResizing ? "transition-none select-none" : ""
             )}
             style={{
