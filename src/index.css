@@ -965,12 +965,8 @@
 /* Drop Indicator */
 .drop-indicator {
   height: 2px;
-  background: rgba(82, 221, 235, 0.4);
-  border-radius: 9999px;
   margin: 4px 8px;
-  transition: all 0.2s ease;
   box-shadow: 0 0 8px rgba(82, 221, 235, 0.5);
-  animation: dropPulse 1.5s ease-in-out infinite;
 }
 
 @keyframes dropPulse {
@@ -1132,6 +1128,7 @@
   cursor: grab;
   border-radius: 10px;
   border: none !important;
+  background: transparent !important;
 }
 
 .react-flow__node:active {
@@ -1150,7 +1147,7 @@
   border-color: var(--node-text-accent, #737373) !important;
 }
 
-/* Handles - Pixel perfect positioning */
+/* Handles - base, position, scale */
 .react-flow__handle {
   width: 6px;
   height: 6px;
@@ -1159,97 +1156,73 @@
   background: #666666;
   box-sizing: border-box;
   padding: 6px;
-  /* Área clicável expandida */
   transform-origin: center;
   transition: opacity 0.15s ease;
 }
 
-/* Handles à esquerda: centro na borda esquerda */
 .react-flow__handle[data-handlepos="left"] {
   left: 0 !important;
   margin-left: -3px !important;
 }
-
-/* Right handles */
 .react-flow__handle[data-handlepos="right"] {
   right: 0 !important;
   margin-right: -3px !important;
-  /* Metade da largura (6px/2) para centralizar na borda */
 }
-
-/* Handles no topo: centro na borda superior - only if position is Top */
 .react-flow__handle[data-handlepos="top"] {
   top: 0 !important;
   margin-top: -3px !important;
 }
-
-/* Bottom handles */
 .react-flow__handle[data-handlepos="bottom"] {
   bottom: 0 !important;
   margin-bottom: -3px !important;
 }
 
-/* Allow explicit positioning via inline styles */
-.react-flow__handle[style*="top:"] {
-  margin-top: -3px !important;
-}
+.react-flow__handle[style*="top:"] { margin-top: -3px !important; }
+.react-flow__handle[style*="left:"] { margin-left: -3px !important; }
+.react-flow__handle[style*="right:"] { margin-right: -3px !important; }
+.react-flow__handle[style*="bottom:"] { margin-bottom: -3px !important; }
 
-.react-flow__handle[style*="left:"] {
-  margin-left: -3px !important;
-}
-
-.react-flow__handle[style*="right:"] {
-  margin-right: -3px !important;
-}
-
-.react-flow__handle[style*="bottom:"] {
-  margin-bottom: -3px !important;
-}
-
-/* Smaller handles for compact nodes */
-.react-flow__node-upscale .react-flow__handle:not(.react-flow__resize-control),
-.react-flow__node-logo .react-flow__handle:not(.react-flow__resize-control),
-.react-flow__node-pdf .react-flow__handle:not(.react-flow__resize-control),
-.react-flow__node-merge .react-flow__handle:not(.react-flow__resize-control),
-.react-flow__node-edit:not(.min-w-\[600px\]) .react-flow__handle:not(.react-flow__resize-control) {
+/* Compact nodes: smaller handles */
+:is(
+  .react-flow__node-upscale,
+  .react-flow__node-logo,
+  .react-flow__node-pdf,
+  .react-flow__node-merge,
+  .react-flow__node-edit:not(.min-w-\[600px\])
+) .react-flow__handle:not(.react-flow__resize-control) {
   width: 3px;
   height: 3px;
   opacity: 0.5;
   border: 0.5px solid rgba(85, 85, 85, 0.3);
   background: #555555;
 }
-
-/* Hover em nodes menores - mais visível mas ainda sutil */
-.react-flow__node-upscale .react-flow__handle:hover:not(.connected):not([data-connected="true"]):not(.react-flow__resize-control),
-.react-flow__node-logo .react-flow__handle:hover:not(.connected):not([data-connected="true"]):not(.react-flow__resize-control),
-.react-flow__node-pdf .react-flow__handle:hover:not(.connected):not([data-connected="true"]):not(.react-flow__resize-control),
-.react-flow__node-merge .react-flow__handle:hover:not(.connected):not([data-connected="true"]):not(.react-flow__resize-control),
-.react-flow__node-edit:not(.min-w-\[600px\]) .react-flow__handle:hover:not(.connected):not([data-connected="true"]):not(.react-flow__resize-control) {
+:is(
+  .react-flow__node-upscale,
+  .react-flow__node-logo,
+  .react-flow__node-pdf,
+  .react-flow__node-merge,
+  .react-flow__node-edit:not(.min-w-\[600px\])
+) .react-flow__handle:hover:not(.connected):not([data-connected="true"]):not(.react-flow__resize-control) {
   width: 8px;
   height: 8px;
   opacity: 0.7;
   background: #777777;
   border: 0.5px solid rgba(119, 119, 119, 0.4);
 }
-
-/* Connected handles for compact nodes */
-.react-flow__node-upscale .react-flow__handle.connected:not(.react-flow__resize-control),
-.react-flow__node-upscale .react-flow__handle[data-connected="true"]:not(.react-flow__resize-control),
-.react-flow__node-logo .react-flow__handle.connected:not(.react-flow__resize-control),
-.react-flow__node-logo .react-flow__handle[data-connected="true"]:not(.react-flow__resize-control),
-.react-flow__node-pdf .react-flow__handle.connected:not(.react-flow__resize-control),
-.react-flow__node-pdf .react-flow__handle[data-connected="true"]:not(.react-flow__resize-control),
-.react-flow__node-merge .react-flow__handle.connected:not(.react-flow__resize-control),
-.react-flow__node-merge .react-flow__handle[data-connected="true"]:not(.react-flow__resize-control),
-.react-flow__node-edit:not(.min-w-\[600px\]) .react-flow__handle.connected:not(.react-flow__resize-control),
-.react-flow__node-edit:not(.min-w-\[600px\]) .react-flow__handle[data-connected="true"]:not(.react-flow__resize-control) {
+:is(
+  .react-flow__node-upscale,
+  .react-flow__node-logo,
+  .react-flow__node-pdf,
+  .react-flow__node-merge,
+  .react-flow__node-edit:not(.min-w-\[600px\])
+) :is(.react-flow__handle.connected, .react-flow__handle[data-connected="true"]):not(.react-flow__resize-control) {
   background: #777777 !important;
   border: 0.5px solid rgba(119, 119, 119, 0.4) !important;
   box-shadow: none;
   opacity: 0.6;
 }
 
-/* Unconnected handles hover */
+/* Unconnected hover: scale up (14px), default gray */
 .react-flow__handle:hover:not(.connected):not([data-connected="true"]) {
   width: 14px;
   height: 14px;
@@ -1259,133 +1232,59 @@
   border: 0.5px solid rgba(136, 136, 136, 0.5);
 }
 
-/* Show handle labels on node hover */
 .react-flow__node:hover .handle-label {
   opacity: 1;
 }
 
-/* Handle type differentiation - visual styles using gray tones */
-
-/* Image and Video handles - blue accent color */
+/* Handle type colors (default + unconnected hover only) */
 .react-flow__handle.handle-image,
 .react-flow__handle.handle-video {
   background: var(--brand-cyan) !important;
   border: 0.5px solid rgba(82, 221, 235, 0.4) !important;
 }
-
 .react-flow__handle.handle-image:hover:not(.connected):not([data-connected="true"]),
 .react-flow__handle.handle-video:hover:not(.connected):not([data-connected="true"]) {
   background: #3dd5e6 !important;
   border: 0.5px solid rgba(61, 213, 230, 0.6) !important;
 }
 
-.react-flow__handle.handle-image.connected,
-.react-flow__handle.handle-image[data-connected="true"],
-.react-flow__handle.handle-video.connected,
-.react-flow__handle.handle-video[data-connected="true"] {
-  background: #888888 !important;
-  border: 0.5px solid rgba(136, 136, 136, 0.5) !important;
-  box-shadow: none;
-  opacity: 0.7;
-}
-
-.react-flow__handle.handle-image.connected:hover,
-.react-flow__handle.handle-image[data-connected="true"]:hover,
-.react-flow__handle.handle-video.connected:hover,
-.react-flow__handle.handle-video[data-connected="true"]:hover {
-  width: 6px;
-  height: 6px;
-  background: #999999 !important;
-  border: 0.5px solid rgba(153, 153, 153, 0.6) !important;
-  box-shadow: none;
-  opacity: 0.8;
-}
-
-/* Text handles */
 .react-flow__handle.handle-text {
   background: #999999 !important;
   border: 0.5px solid rgba(153, 153, 153, 0.4) !important;
 }
-
 .react-flow__handle.handle-text:hover:not(.connected):not([data-connected="true"]) {
   background: #aaaaaa !important;
   border: 0.5px solid rgba(170, 170, 170, 0.6) !important;
 }
 
-.react-flow__handle.handle-text.connected,
-.react-flow__handle.handle-text[data-connected="true"] {
-  background: #888888 !important;
-  border: 0.5px solid rgba(136, 136, 136, 0.5) !important;
-  box-shadow: none;
-  opacity: 0.7;
-}
-
-/* Strategy handles */
 .react-flow__handle.handle-strategy {
   background: #666666 !important;
   border: 0.5px solid rgba(102, 102, 102, 0.4) !important;
 }
-
 .react-flow__handle.handle-strategy:hover:not(.connected):not([data-connected="true"]) {
   background: #777777 !important;
   border: 0.5px solid rgba(119, 119, 119, 0.6) !important;
 }
 
-.react-flow__handle.handle-strategy.connected,
-.react-flow__handle.handle-strategy[data-connected="true"] {
-  background: #888888 !important;
-  border: 0.5px solid rgba(136, 136, 136, 0.5) !important;
-  box-shadow: none;
-  opacity: 0.7;
-}
-
-/* Generic handles */
 .react-flow__handle.handle-generic {
   background: #777777 !important;
   border: 0.5px solid rgba(119, 119, 119, 0.4) !important;
 }
-
 .react-flow__handle.handle-generic:hover:not(.connected):not([data-connected="true"]) {
   background: #888888 !important;
   border: 0.5px solid rgba(136, 136, 136, 0.5) !important;
 }
 
-/* Text inverted handles */
 .react-flow__handle.handle-text-inverted {
-  width: 6px !important;
-  height: 6px !important;
   background: #999999 !important;
   border: 0.5px solid rgba(102, 102, 102, 0.4) !important;
 }
-
 .react-flow__handle.handle-text-inverted:hover:not(.connected):not([data-connected="true"]) {
-  width: 14px !important;
-  height: 14px !important;
-  max-width: 15px !important;
-  max-height: 15px !important;
   background: #aaaaaa !important;
   border: 0.5px solid rgba(136, 136, 136, 0.5) !important;
 }
 
-.react-flow__handle.handle-text-inverted.connected,
-.react-flow__handle.handle-text-inverted[data-connected="true"] {
-  background: #888888 !important;
-  border: 0.5px solid rgba(136, 136, 136, 0.5) !important;
-  box-shadow: none;
-  opacity: 0.7;
-}
-
-.react-flow__handle.handle-text-inverted.connected:hover,
-.react-flow__handle.handle-text-inverted[data-connected="true"]:hover {
-  width: 6px !important;
-  height: 6px !important;
-  background: #999999 !important;
-  border: 0.5px solid rgba(153, 153, 153, 0.6) !important;
-  box-shadow: none;
-  opacity: 0.8;
-}
-
-/* Connected handles - visual indicator (sutil e neutro) */
+/* Connected: single source (all types → gray) */
 .react-flow__handle.connected,
 .react-flow__handle[data-connected="true"] {
   background: #888888 !important;
@@ -1393,7 +1292,6 @@
   box-shadow: none;
   opacity: 0.7;
 }
-
 .react-flow__handle.connected:hover,
 .react-flow__handle[data-connected="true"]:hover {
   width: 6px;
@@ -1402,6 +1300,14 @@
   border: 0.5px solid rgba(153, 153, 153, 0.6) !important;
   box-shadow: none;
   opacity: 0.8;
+}
+
+/* Handles: low opacity when node not hovered, full on node hover */
+.react-flow__node .react-flow__handle:not(.react-flow__resize-control) {
+  opacity: 0.35;
+}
+.react-flow__node:hover .react-flow__handle:not(.react-flow__resize-control) {
+  opacity: 1;
 }
 
 /* Edges - use user configured brand color */

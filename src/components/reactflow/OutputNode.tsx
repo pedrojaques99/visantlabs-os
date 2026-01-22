@@ -457,6 +457,8 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     }
   }, [id, nodeData.imageWidth, nodeData.imageHeight, nodeData.onResize, fitToContent]);
 
+  const hasMedia = !!(imageUrl || videoUrl);
+
   return (
     <NodeContainer
       selected={selected}
@@ -465,9 +467,10 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       warning={nodeData.oversizedWarning}
       onFitToContent={handleFitToContent}
       className={cn(
-        'group node-wrapper min-w-[400px]',
+        'group min-w-[400px]',
         dragging ? 'node-dragging' : 'node-dragging-static'
       )}
+      style={hasMedia ? { opacity: 1 } : undefined}
       onContextMenu={(e) => {
         // Allow ReactFlow to handle the context menu event
       }}

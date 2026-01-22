@@ -50,6 +50,10 @@ export const NodeContainer: React.FC<NodeContainerProps> = ({
     }
   };
 
+  // Extract opacity from style prop if provided, otherwise use default
+  const customOpacity = style?.opacity;
+  const { opacity: _, ...styleWithoutOpacity } = style || {};
+
   return (
     <div
       ref={containerRef}
@@ -69,17 +73,19 @@ export const NodeContainer: React.FC<NodeContainerProps> = ({
         className
       )}
       style={{
-        ...style,
         // Use CSS custom property for background color (set by CanvasFlow)
         // Falls back to neutral-950 if not available
         backgroundColor: dragging 
           ? 'var(--node-bg-color-dragging, #0a0a0a)' 
           : 'var(--node-bg-color, #0a0a0a)',
-        opacity: dragging ? 1 : 0.8,
+        // Use opacity from style prop if provided, otherwise use default
+        opacity: customOpacity !== undefined ? customOpacity : (dragging ? 1 : 0.8),
         // Pass through text color variables for button/textarea contrast
         '--node-text-color': 'var(--node-text-color, #e5e7eb)',
         '--node-text-color-muted': 'var(--node-text-color-muted, #9ca3af)',
         '--node-text-color-subtle': 'var(--node-text-color-subtle, #6b7280)',
+        // Spread style prop (without opacity) to allow other overrides
+        ...styleWithoutOpacity,
       } as React.CSSProperties}
       onContextMenu={onContextMenu}
     >
