@@ -73,6 +73,7 @@ import { CollaborativeCursors } from '../components/canvas/CollaborativeCursors'
 import { applyPresetDataToNodes, PRESET_TYPE_TO_NODE_TYPE } from '../lib/presetImportUtils';
 import { useTranslation } from '@/hooks/useTranslation';
 import { AuthModal } from '../components/AuthModal';
+import { StorageLimitModal } from '../components/StorageLimitModal';
 import { useImageNodeHandlers } from '@/hooks/canvas/useImageNodeHandlers';
 import { useImmediateR2Upload } from '@/hooks/canvas/useImmediateR2Upload';
 import { collectR2UrlsForDeletion } from '@/hooks/canvas/utils/r2UploadHelpers';
@@ -222,6 +223,17 @@ export const CanvasPage: React.FC = () => {
 
   const [showSaveWorkflow, setShowSaveWorkflow] = useState(false);
   const [showMultiExportModal, setShowMultiExportModal] = useState(false);
+  
+  // Storage Limit Modal State
+  const [storageLimitModal, setStorageLimitModal] = useState<{
+    isOpen: boolean;
+    usedMB: string;
+    limitMB: string;
+  }>({
+    isOpen: false,
+    usedMB: '0',
+    limitMB: '0',
+  });
 
   // Save Prompt Modal State
   const [savePromptModalState, setSavePromptModalState] = useState<{
@@ -972,6 +984,13 @@ export const CanvasPage: React.FC = () => {
     isAuthenticated: isAuthenticated === true,
     setNodes,
     handlersRef,
+    onStorageLimitError: (usedMB, limitMB) => {
+      setStorageLimitModal({
+        isOpen: true,
+        usedMB,
+        limitMB,
+      });
+    },
   });
 
   // Create edgesRef for director handler
@@ -3925,6 +3944,13 @@ export const CanvasPage: React.FC = () => {
           nodes={nodes}
           edges={edges}
           t={t}
+        />
+
+        <StorageLimitModal
+          isOpen={storageLimitModal.isOpen}
+          onClose={() => setStorageLimitModal({ ...storageLimitModal, isOpen: false })}
+          usedMB={storageLimitModal.usedMB}
+          limitMB={storageLimitModal.limitMB}
         />
 
         <MultiExportModal

@@ -613,7 +613,20 @@ export const canvasApi = {
             const errorData = JSON.parse(errorText);
             // Prefer the specific message from server if available
             errorMessage = errorData.message || 'Limite de armazenamento excedido. Faça upgrade para continuar fazendo upload.';
-          } catch {
+            
+            // If it's a storage limit error, attach additional info for the modal
+            if (errorData.code === 'STORAGE_LIMIT_EXCEEDED') {
+              const error = new Error(errorMessage) as any;
+              error.isStorageLimitError = true;
+              error.usedMB = errorData.usedMB;
+              error.limitMB = errorData.limitMB;
+              throw error;
+            }
+          } catch (parseError: any) {
+            // If it's our custom error, re-throw it
+            if (parseError.isStorageLimitError) {
+              throw parseError;
+            }
             errorMessage = 'Permissão negada ou limite de armazenamento excedido.';
           }
         } else {

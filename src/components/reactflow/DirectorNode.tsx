@@ -1,6 +1,6 @@
 import React, { memo, useCallback } from 'react';
 import { type NodeProps, Position, useReactFlow } from '@xyflow/react';
-import { Compass, PanelRight, Sparkles, Image as ImageIcon, Check, Wand2 } from 'lucide-react';
+import { Compass, PanelRight, Sparkles, Image as ImageIcon, Check, Wand2, Dice1, Dices } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { DirectorNodeData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
@@ -15,7 +15,8 @@ export const DirectorNode = memo(({ data, selected, id, dragging }: NodeProps<an
   const { setNodes } = useReactFlow();
   const nodeData = data as DirectorNodeData;
 
-  const connectedImage = nodeData.connectedImage;
+  const rawConnected = nodeData.connectedImage;
+  const connectedImage = typeof rawConnected === 'string' && rawConnected.trim().length > 0 ? rawConnected.trim() : undefined;
   const isAnalyzing = nodeData.isAnalyzing || false;
   const hasAnalyzed = nodeData.hasAnalyzed || false;
   const isGeneratingPrompt = nodeData.isGeneratingPrompt || false;
@@ -125,27 +126,13 @@ export const DirectorNode = memo(({ data, selected, id, dragging }: NodeProps<an
             </div>
           </div>
         ) : (
-          <div className="w-full h-32 rounded-lg border border-dashed border-neutral-700/50 bg-neutral-900/30 flex flex-col items-center justify-center gap-2">
-            <ImageIcon size={24} className="text-neutral-600" />
+          <div className="w-full h-24 rounded-lg border border-dashed border-neutral-700/50 bg-neutral-900/30 flex flex-col items-center justify-center gap-2">
+            <ImageIcon size={16} className="text-neutral-600" />
             <span className="text-[10px] font-mono text-neutral-500">
               {t('canvasNodes.directorNode.noImage') || 'No image connected'}
             </span>
           </div>
         )}
-      </div>
-
-      {/* Status */}
-      <div className="flex items-center gap-2 mb-4">
-        {(isAnalyzing || isGeneratingPrompt) ? (
-          <GlitchLoader size={14} color="currentColor" className={getStatusColor()} />
-        ) : hasAnalyzed ? (
-          <Sparkles size={14} className={getStatusColor()} />
-        ) : (
-          <div className={cn('w-2 h-2 rounded-full', connectedImage ? 'bg-neutral-500' : 'bg-neutral-700')} />
-        )}
-        <span className={cn('text-xs font-mono', getStatusColor())}>
-          {getStatusLabel()}
-        </span>
       </div>
 
       {/* Action Buttons */}
@@ -192,7 +179,7 @@ export const DirectorNode = memo(({ data, selected, id, dragging }: NodeProps<an
               </>
             ) : (
               <>
-                <Wand2 size={14} />
+                <Dices size={14} />
                 <span>{t('canvasNodes.directorNode.generatePrompt') || 'Generate Prompt'}</span>
               </>
             )}
@@ -202,8 +189,8 @@ export const DirectorNode = memo(({ data, selected, id, dragging }: NodeProps<an
 
       {/* Generated Prompt Preview (if exists) */}
       {generatedPrompt && (
-        <div className="mt-3 p-2 rounded-lg border border-green-500/30 bg-green-500/5">
-          <div className="text-[10px] font-mono text-green-400 mb-1">
+        <div className="mt-3 p-2 rounded-lg border border-neutral-800/50 bg-neutral-900/5">
+          <div className="text-[10px] font-mono text-neutral-500 mb-1">
             {t('canvasNodes.directorNode.generatedPrompt') || 'Generated Prompt'}
           </div>
           <p className="text-xs node-text-primary line-clamp-3">{generatedPrompt}</p>
