@@ -22,7 +22,24 @@ const API_BASE_URL = getApiBaseUrl();
  * Check if URL is from R2 (Cloudflare R2 bucket)
  */
 const isR2Url = (url: string): boolean => {
-  return url.includes('.r2.dev');
+  // Whitelist of allowed R2 hostnames
+  const allowedR2Hosts = [
+    'r2.dev',
+    'r2.cloudflarestorage.com',
+  ];
+  
+  try {
+    const parsedUrl = new URL(url);
+    const hostname = parsedUrl.hostname.toLowerCase();
+    
+    // Check if hostname ends with allowed R2 domains (supports subdomains like pub-xxxxx.r2.dev)
+    return allowedR2Hosts.some(allowedHost => 
+      hostname === allowedHost || hostname.endsWith('.' + allowedHost)
+    );
+  } catch {
+    // Invalid URL format - not an R2 URL
+    return false;
+  }
 };
 
 /**

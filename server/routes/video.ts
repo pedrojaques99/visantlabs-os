@@ -254,7 +254,12 @@ async function deductCreditsAtomically(
 // Generate video (validates and deducts credits BEFORE generation)
 router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, async (req: SubscriptionRequest, res, next) => {
   const logPrefix = '[VIDEO GENERATE]';
-  console.log(`${logPrefix} Route called - Method: ${req.method}, URL: ${req.url}, Path: ${req.path}`);
+  // Use structured logging to avoid format string vulnerability
+  console.log(`${logPrefix} Route called:`, {
+    method: String(req.method),
+    url: String(req.url),
+    path: String(req.path),
+  });
 
   let creditsDeducted = false;
   let creditsToDeduct = 0;

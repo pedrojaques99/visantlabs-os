@@ -152,10 +152,58 @@ function normalizeColorToHex(color: string): string {
 }
 
 /**
+ * Calculate contrast ratio between two colors (WCAG 2.1)
+ * @param color1 - First color (hex)
+ * @param color2 - Second color (hex)
+ * @returns Contrast ratio (1.0 to 21.0)
+ */
+function getContrastRatio(color1: string, color2: string): number {
+  try {
+    const [r1, g1, b1] = hexToRgb(color1);
+    const [r2, g2, b2] = hexToRgb(color2);
+    
+    const lum1 = getLuminance(r1, g1, b1);
+    const lum2 = getLuminance(r2, g2, b2);
+    
+    const lighter = Math.max(lum1, lum2);
+    const darker = Math.min(lum1, lum2);
+    
+    return (lighter + 0.05) / (darker + 0.05);
+  } catch {
+    return 1; // Minimum contrast on error
+  }
+}
+
+/**
+ * Darken a color by a specified amount
+ * @param hexColor - Hex color string
+ * @param amount - Amount to darken (0-1, where 0.5 = 50% darker)
+ * @returns Darkened hex color string
+ */
+function darkenColor(hexColor: string, amount: number = 0.4): string {
+  if (!hexColor) return '#000000';
+  
+  try {
+    const [r, g, b] = hexToRgb(hexColor);
+    const darkenedR = Math.round(r * (1 - amount));
+    const darkenedG = Math.round(g * (1 - amount));
+    const darkenedB = Math.round(b * (1 - amount));
+    
+    return `#${[darkenedR, darkenedG, darkenedB].map(x => {
+      const hex = x.toString(16);
+      return hex.length === 1 ? '0' + hex : hex;
+    }).join('')}`;
+  } catch {
+    return hexColor;
+  }
+}
+
+/**
  * Get accent color based on background contrast and user brand color
+ * Automatically adjusts to ensure adequate contrast in both light and dark modes
  * @param backgroundColor - Hex color string
  * @param brandColor - User configured brand color (hex, name, or CSS variable)
- * @returns Accent color that works with the background
+ * @returns Accent color that works with the background with adequate contrast
  */
 function getAccentColor(backgroundColor: string, brandColor?: string): string {
   const isDark = getContrastColor(backgroundColor) === 'white';
@@ -170,25 +218,119 @@ function getAccentColor(backgroundColor: string, brandColor?: string): string {
     }
   }
   
+  // Target contrast ratio (WCAG AA requires 4.5:1 for normal text, 3:1 for large text)
+  // We aim for at least 3:1 for accent colors
+  const minContrast = 3.0;
+  
   if (isDark) {
-    // For dark backgrounds, use the brand color as-is
-    return normalizedBrand;
+    // For dark backgrounds, check if brand color has enough contrast
+    let contrast = getContrastRatio(normalizedBrand, backgroundColor);
+    
+    if (contrast >= minContrast) {
+      // Brand color has adequate contrast, use as-is
+      return normalizedBrand;
+    } else {
+      // Need to lighten the brand color for better contrast
+      // Try progressively lighter versions
+      for (let lightenAmount = 0.1; lightenAmount <= 0.8; lightenAmount += 0.1) {
+        const lightened = lightenColor(normalizedBrand, lightenAmount);
+        contrast = getContrastRatio(lightened, backgroundColor);
+        if (contrast >= minContrast) {
+          return lightened;
+        }
+      }
+      // Fallback: use a very light version
+      return lightenColor(normalizedBrand, 0.7);
+    }
   } else {
     // For light backgrounds, darken the brand color for better contrast
-    try {
-      const [r, g, b] = hexToRgb(normalizedBrand);
-      // Darken by 40% for light backgrounds
-      const darkenedR = Math.round(r * 0.6);
-      const darkenedG = Math.round(g * 0.6);
-      const darkenedB = Math.round(b * 0.6);
-      
-      return `#${[darkenedR, darkenedG, darkenedB].map(x => {
-        const hex = x.toString(16);
-        return hex.length === 1 ? '0' + hex : hex;
-      }).join('')}`;
-    } catch {
-      return '#0066cc'; // Fallback
+    let contrast = getContrastRatio(normalizedBrand, backgroundColor);
+    
+    if (contrast >= minContrast) {
+      // Brand color already has adequate contrast
+      return normalizedBrand;
+    } else {
+      // Need to darken the brand color for better contrast
+      // Try progressively darker versions
+      for (let darkenAmount = 0.2; darkenAmount <= 0.7; darkenAmount += 0.1) {
+        const darkened = darkenColor(normalizedBrand, darkenAmount);
+        contrast = getContrastRatio(darkened, backgroundColor);
+        if (contrast >= minContrast) {
+          return darkened;
+        }
+      }
+      // Fallback: use a very dark version
+      return darkenColor(normalizedBrand, 0.6);
     }
+  }
+}
+
+/**
+ * Get adaptive secondary brand color that automatically adjusts for contrast
+ * This creates a complementary/secondary accent color that works in both light and dark modes
+ * @param backgroundColor - Hex color string of the background
+ * @param brandColor - User configured primary brand color (hex, name, or CSS variable)
+ * @returns Secondary brand color that adapts to light/dark mode with adequate contrast
+ */
+export function getAdaptiveBrandColor(backgroundColor: string, brandColor?: string): string {
+  const isDark = getContrastColor(backgroundColor) === 'white';
+  
+  // Normalize brand color to hex
+  let normalizedBrand = '#00d9ff'; // Default
+  if (brandColor) {
+    normalizedBrand = normalizeColorToHex(brandColor);
+    if (!normalizedBrand.startsWith('#')) {
+      normalizedBrand = '#00d9ff';
+    }
+  }
+  
+  // For secondary brand color, we create a variation that:
+  // - In dark mode: slightly lighter/more saturated version
+  // - In light mode: darker/more muted version
+  // Both ensure adequate contrast
+  
+  const minContrast = 3.0;
+  
+  if (isDark) {
+    // Dark mode: create a lighter, more vibrant secondary color
+    // Start with a lighter version
+    let secondary = lightenColor(normalizedBrand, 0.15);
+    let contrast = getContrastRatio(secondary, backgroundColor);
+    
+    // If not enough contrast, lighten more
+    if (contrast < minContrast) {
+      for (let amount = 0.2; amount <= 0.5; amount += 0.1) {
+        secondary = lightenColor(normalizedBrand, amount);
+        contrast = getContrastRatio(secondary, backgroundColor);
+        if (contrast >= minContrast) {
+          return secondary;
+        }
+      }
+      // Fallback: very light version
+      return lightenColor(normalizedBrand, 0.4);
+    }
+    
+    return secondary;
+  } else {
+    // Light mode: create a darker, more muted secondary color
+    // Start with a darker version
+    let secondary = darkenColor(normalizedBrand, 0.3);
+    let contrast = getContrastRatio(secondary, backgroundColor);
+    
+    // If not enough contrast, darken more
+    if (contrast < minContrast) {
+      for (let amount = 0.4; amount <= 0.7; amount += 0.1) {
+        secondary = darkenColor(normalizedBrand, amount);
+        contrast = getContrastRatio(secondary, backgroundColor);
+        if (contrast >= minContrast) {
+          return secondary;
+        }
+      }
+      // Fallback: very dark version
+      return darkenColor(normalizedBrand, 0.6);
+    }
+    
+    return secondary;
   }
 }
 
@@ -196,13 +338,14 @@ function getAccentColor(backgroundColor: string, brandColor?: string): string {
  * Get all text colors based on background contrast
  * @param backgroundColor - Hex color string (e.g., "#0C0C0C" or "0C0C0C")
  * @param brandColor - Optional user configured brand color
- * @returns Object with primary, muted, subtle, and accent text colors
+ * @returns Object with primary, muted, subtle, accent, and secondaryAccent text colors
  */
 export function getTextColors(backgroundColor: string, brandColor?: string): {
   primary: string;
   muted: string;
   subtle: string;
   accent: string;
+  secondaryAccent: string;
 } {
   const isDark = getContrastColor(backgroundColor) === 'white';
   
@@ -211,6 +354,7 @@ export function getTextColors(backgroundColor: string, brandColor?: string): {
     muted: isDark ? '#9ca3af' : '#4b5563',
     subtle: isDark ? '#6b7280' : '#9ca3af',
     accent: getAccentColor(backgroundColor, brandColor),
+    secondaryAccent: getAdaptiveBrandColor(backgroundColor, brandColor),
   };
 }
 

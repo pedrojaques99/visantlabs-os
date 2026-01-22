@@ -105,7 +105,12 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 // Debug middleware to log all requests (only in development or when DEBUG is enabled)
 if (process.env.DEBUG || process.env.NODE_ENV !== 'production') {
   app.use((req, res, next) => {
-    console.log(`${req.method} ${req.url} - Original URL: ${req.originalUrl}`);
+    // Use structured logging to avoid format string vulnerability
+    console.log('Request:', {
+      method: String(req.method),
+      url: String(req.url),
+      originalUrl: String(req.originalUrl),
+    });
     next();
   });
 }
@@ -120,11 +125,21 @@ if (process.env.VERCEL) {
     // Only remove if it's at the start of the path
     if (req.url && req.url.startsWith('/api/')) {
       req.url = req.url.replace(/^\/api/, '');
-      console.log(`[Vercel Route Normalization] ${req.method} ${originalUrl} -> ${req.url}`);
+      // Use structured logging to avoid format string vulnerability
+      console.log('[Vercel Route Normalization]:', {
+        method: String(req.method),
+        originalUrl: String(originalUrl),
+        normalizedUrl: String(req.url),
+      });
     } else if (req.url && req.url.startsWith('/api')) {
       // Handle /api without trailing slash
       req.url = req.url.replace(/^\/api/, '') || '/';
-      console.log(`[Vercel Route Normalization] ${req.method} ${originalUrl} -> ${req.url}`);
+      // Use structured logging to avoid format string vulnerability
+      console.log('[Vercel Route Normalization]:', {
+        method: String(req.method),
+        originalUrl: String(originalUrl),
+        normalizedUrl: String(req.url),
+      });
     }
     next();
   });
