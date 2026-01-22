@@ -8,6 +8,7 @@ import { getCreditsByAmount, getCreditPackage, getCreditPackagePrice } from '../
 import { abacatepayService } from '../services/abacatepayService.js';
 import { prisma } from '../db/prisma.js';
 import { rateLimit } from 'express-rate-limit';
+import { validateSafeId } from '../utils/securityValidation.js';
 
 // API rate limiter - general authenticated endpoints
 // Using express-rate-limit for CodeQL recognition
@@ -1383,10 +1384,16 @@ router.post('/webhook', webhookRateLimiter, async (req, res) => {
           return res.status(400).json({ error: 'Bill ID is missing' });
         }
 
+        // Validate billId format to prevent NoSQL injection
+        const billIdValidation = validateSafeId(billId);
+        if (!billIdValidation.valid) {
+          return res.status(400).json({ error: `Invalid bill ID format: ${billIdValidation.error}` });
+        }
+
         await connectToMongoDB();
         const db = getDb();
 
-        // Find payment in database
+        // Find payment in database (billId is now validated)
         let payment = await db.collection('payments').findOne({ billId });
 
         // Use webhook data directly - it already contains payment status
@@ -2457,6 +2464,12 @@ router.get('/abacate-pix-status/:billId', apiRateLimiter, authenticate, async (r
 
     if (!billId) {
       return res.status(400).json({ error: 'Bill ID is required' });
+    }
+
+    // Validate billId format to prevent NoSQL injection
+    const billIdValidation = validateSafeId(billId);
+    if (!billIdValidation.valid) {
+      return res.status(400).json({ error: `Invalid bill ID format: ${billIdValidation.error}` });
     }
 
     // Verify user owns this payment
