@@ -1020,7 +1020,13 @@ export const abacatepayService = {
           return { success: false, message: 'Bill ID is missing' };
         }
 
-        // Find payment in database
+        // Validate billId format to prevent NoSQL injection
+        const billIdValidation = validateSafeId(billId);
+        if (!billIdValidation.valid) {
+          return { success: false, message: `Invalid bill ID format: ${billIdValidation.error}` };
+        }
+
+        // Find payment in database (billId is now validated)
         let payment = await db.collection('payments').findOne({ billId });
 
         // Get billing details from AbacatePay to get actual amount paid (supports coupons)
