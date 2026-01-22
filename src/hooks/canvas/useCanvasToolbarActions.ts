@@ -24,6 +24,7 @@ interface UseCanvasToolbarActionsProps {
         addBrandCoreNode: (pos?: { x: number; y: number }) => void;
         addChatNode: (pos?: { x: number; y: number }) => void;
         addColorExtractorNode: (pos?: { x: number; y: number }) => void;
+        addDirectorNode: (pos?: { x: number; y: number }) => string | undefined;
     };
 }
 
@@ -89,5 +90,6 @@ export const useCanvasToolbarActions = ({
         onAddBrandCore: () => handleSimpleAction(() => creators.addBrandCoreNode(getCenterPos())),
         onAddChat: () => handleSimpleAction(() => creators.addChatNode(getCenterPos())),
         onAddColorExtractor: () => handleSimpleAction(() => creators.addColorExtractorNode(getCenterPos())),
+        onAddDirector: () => handleNodeAction(() => creators.addDirectorNode(getCenterPos())),
     };
 };
