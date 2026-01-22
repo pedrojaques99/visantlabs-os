@@ -91,7 +91,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ items, onClose }
   return (
     <>
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+        className="fixed inset-0 bg-neutral-950/60 backdrop-blur-sm z-50"
         onClick={() => {
           setIsOpen(false);
           setSearchQuery('');

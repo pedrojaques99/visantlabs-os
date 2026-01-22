@@ -149,7 +149,7 @@ export const ForgotPasswordPage: React.FC = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full bg-black/40 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-neutral-300 font-mono"
+              className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-neutral-300 font-mono"
               placeholder={t('auth.passwordPlaceholder') || 'Enter new password'}
             />
             <p className="text-xs text-neutral-500 mt-1 font-mono">
@@ -167,7 +167,7 @@ export const ForgotPasswordPage: React.FC = () => {
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full bg-black/40 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-neutral-300 font-mono"
+              className="w-full bg-neutral-950/70 p-2 rounded-md border border-neutral-700/50 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-sm text-neutral-300 font-mono"
               placeholder={t('auth.confirmPasswordPlaceholder') || 'Confirm new password'}
             />
           </div>

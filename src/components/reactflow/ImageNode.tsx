@@ -554,7 +554,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       {description && (
         <div className={cn(
           "px-2 py-2 border-t border-neutral-700/30 flex-shrink-0",
-          imageUrl && "absolute bottom-0 left-0 w-full z-10 bg-black/60 backdrop-blur-md border-t-0"
+          imageUrl && "absolute bottom-0 left-0 w-full z-10 bg-neutral-950/60 backdrop-blur-md border-t-0"
         )}>
           <div className="flex items-center justify-between mb-1">
             <label className="text-xs text-neutral-400 font-mono">{t('canvasNodes.imageNode.description')}</label>

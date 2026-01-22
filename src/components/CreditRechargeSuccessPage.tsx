@@ -216,7 +216,7 @@ export const CreditRechargeSuccessPage: React.FC = () => {
         </div>
 
         {creditsConfirmed && (
-          <div className="bg-black/95 backdrop-blur-xl border border-neutral-800/50 rounded-md p-6 mb-8">
+          <div className="bg-neutral-950/95 backdrop-blur-xl border border-neutral-800/50 rounded-md p-6 mb-8">
             <div className="flex items-center gap-3 mb-6">
               <Pickaxe size={24} className="text-brand-cyan" />
               <h2 className="text-xl font-semibold font-mono text-neutral-200">

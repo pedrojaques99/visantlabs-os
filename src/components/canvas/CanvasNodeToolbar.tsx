@@ -237,10 +237,10 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
   // Determine position based on variant and position prop
   const getPositionClasses = () => {
     if (variant === 'standalone') {
-      return "fixed left-4 top-[81px]";
+      return "fixed left-4 top-[65px]";
     }
     if (position === 'left') {
-      return "fixed left-4 top-[81px]";
+      return "fixed left-4 top-[65px]";
     }
     // Default to left side for stacked variant
     return "relative";
@@ -350,17 +350,15 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
       className={cn(
         getPositionClasses(),
         "z-40",
-        "backdrop-blur-xl border border-neutral-800/50",
-        "rounded-2xl shadow-2xl",
+        "backdrop-blur-md border border-neutral-800/50",
+        "rounded-2xl shadow-2xl bg-neutral-950/80",
         "transition-all duration-300 ease-out",
         "flex flex-col",
-        "bg-black/40"
       )}
       style={{
         width: `${EXPANDED_WIDTH}px`,
         height: 'auto',
         maxHeight: 'calc(100vh - 97px)',
-        backgroundColor: 'var(--sidebar)',
       }}
     >
       {/* Expanded State - Full Content with Sections */}

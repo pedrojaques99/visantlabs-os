@@ -82,7 +82,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
   return (
     <div
       data-context-menu
-      className="fixed z-50 bg-neutral-900/95 backdrop-blur-md border border-neutral-700/50 rounded-lg shadow-2xl min-w-[180px] max-h-[80vh] overflow-y-auto"
+      className="fixed z-50 bg-neutral-950/70 backdrop-blur-xl border border-neutral-800/50 rounded-2xl shadow-2xl min-w-[180px] max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-400 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent"
       style={{
         left: `${x}px`,
         top: `${y}px`,
@@ -91,149 +91,152 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
       onWheel={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
     >
-      <div className="px-2 py-1.5 border-b border-neutral-700/30 flex items-center justify-between sticky top-0 bg-neutral-900/95 backdrop-blur-md z-10">
-        <span className="text-xs font-mono text-neutral-400 uppercase">Image Actions</span>
+      <div className="px-3 py-2.5 border-b border-neutral-800/30 flex items-center justify-between sticky top-0 bg-neutral-950/70 backdrop-blur-xl z-10 rounded-t-2xl">
+        <span className="text-xs font-semibold text-neutral-300 uppercase tracking-wider">Image Actions</span>
         <button
           onClick={onClose}
-          className="p-0.5 text-neutral-500 hover:text-neutral-300 transition-colors cursor-pointer"
+          className="p-1 text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800/50 rounded transition-colors duration-150 cursor-pointer"
         >
-          <X size={12} />
+          <X size={16} />
         </button>
       </div>
 
-      <button
-        onClick={() => {
-          onLike();
-          onClose();
-        }}
-        className="w-full px-3 py-2 text-left text-sm text-neutral-300 hover:bg-neutral-800/50 hover:text-brand-cyan transition-colors flex items-center gap-2 font-mono cursor-pointer"
-      >
-        <Heart size={14} className={isLiked ? "fill-current text-brand-cyan" : ""} />
-        {isLiked ? 'Unlike' : 'Like'}
-      </button>
+      <div className="p-2">
 
-      <button
-        onClick={handleDownload}
-        disabled={isDownloading}
-        className={cn(
-          "w-full px-3 py-2 text-left text-sm text-neutral-300 transition-colors flex items-center gap-2 font-mono cursor-pointer",
-          isDownloading ? "cursor-not-allowed opacity-50" : "hover:bg-neutral-800/50 hover:text-brand-cyan"
+        <button
+          onClick={() => {
+            onLike();
+            onClose();
+          }}
+          className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
+        >
+          <Heart size={16} className={cn("text-neutral-400", isLiked && "fill-current text-brand-cyan")} />
+          <span className="font-medium text-[11px] tracking-wide">{isLiked ? 'Unlike' : 'Like'}</span>
+        </button>
+
+        <button
+          onClick={handleDownload}
+          disabled={isDownloading}
+          className={cn(
+            "w-full px-3 py-2.5 text-left text-sm text-neutral-400 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md",
+            isDownloading ? "cursor-not-allowed opacity-50" : "hover:bg-neutral-800/50 hover:text-neutral-200"
+          )}
+        >
+          {isDownloading ? <GlitchLoader size={16} /> : <Download size={16} className="text-neutral-400" />}
+          <span className="font-medium text-[11px] tracking-wide">{isDownloading ? 'Downloading...' : 'Download'}</span>
+        </button>
+
+        {onExport && (
+          <button
+            onClick={() => {
+              onExport();
+              onClose();
+            }}
+            className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
+          >
+            <Upload size={16} className="text-neutral-400" />
+            <span className="font-medium text-[11px] tracking-wide">Export</span>
+          </button>
         )}
-      >
-        {isDownloading ? <GlitchLoader size={14} /> : <Download size={14} />}
-        {isDownloading ? 'Downloading...' : 'Download'}
-      </button>
 
-      {onExport && (
         <button
-          onClick={() => {
-            onExport();
-            onClose();
-          }}
-          className="w-full px-3 py-2 text-left text-sm text-neutral-300 hover:bg-neutral-800/50 hover:text-brand-cyan transition-colors flex items-center gap-2 font-mono cursor-pointer"
+          onClick={handleFullscreen}
+          className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
         >
-          <Upload size={14} />
-          Export
+          <Maximize2 size={16} className="text-neutral-400" />
+          <span className="font-medium text-[11px] tracking-wide">Fullscreen</span>
         </button>
-      )}
 
-      <button
-        onClick={handleFullscreen}
-        className="w-full px-3 py-2 text-left text-sm text-neutral-300 hover:bg-neutral-800/50 hover:text-brand-cyan transition-colors flex items-center gap-2 font-mono cursor-pointer"
-      >
-        <Maximize2 size={14} />
-        Fullscreen
-      </button>
+        {imageUrl && (
+          <button
+            onClick={() => {
+              window.open(imageUrl, '_blank', 'noopener,noreferrer');
+              onClose();
+            }}
+            className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
+          >
+            <ExternalLink size={16} className="text-neutral-400" />
+            <span className="font-medium text-[11px] tracking-wide">Open in New Tab</span>
+          </button>
+        )}
 
-      {imageUrl && (
         <button
           onClick={() => {
-            window.open(imageUrl, '_blank', 'noopener,noreferrer');
+            onCopy();
             onClose();
           }}
-          className="w-full px-3 py-2 text-left text-sm text-neutral-300 hover:bg-neutral-800/50 hover:text-brand-cyan transition-colors flex items-center gap-2 font-mono cursor-pointer"
+          className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
         >
-          <ExternalLink size={14} />
-          Open in New Tab
-        </button>
-      )}
-
-      <button
-        onClick={() => {
-          onCopy();
-          onClose();
-        }}
-        className="w-full px-3 py-2 text-left text-sm text-neutral-300 hover:bg-neutral-800/50 hover:text-brand-cyan transition-colors flex items-center gap-2 font-mono cursor-pointer"
-      >
-        <Copy size={14} />
-        <div className="flex-1 flex items-center justify-between gap-4">
-          <span>Copy</span>
-          <span className="text-[10px] text-neutral-500 bg-neutral-800 px-1 rounded">Ctrl+C</span>
-        </div>
-      </button>
-
-      {onCopyPNG && (
-        <button
-          onClick={() => {
-            onCopyPNG();
-            onClose();
-          }}
-          className="w-full px-3 py-2 text-left text-sm text-neutral-300 hover:bg-neutral-800/50 hover:text-brand-cyan transition-colors flex items-center gap-2 font-mono cursor-pointer"
-        >
-          <CopyIcon size={14} />
+          <Copy size={16} className="text-neutral-400" />
           <div className="flex-1 flex items-center justify-between gap-4">
-            <span>Copy as PNG</span>
-            <span className="text-[10px] text-neutral-500 bg-neutral-800 px-1 rounded">Ctrl+Shift+C</span>
+            <span className="font-medium text-[11px] tracking-wide">Copy</span>
+            <span className="text-[10px] text-neutral-500 bg-neutral-800/50 px-1.5 py-0.5 rounded">Ctrl+C</span>
           </div>
         </button>
-      )}
 
-      {onDescribe && (
-        <button
-          onClick={() => {
-            onDescribe();
-            onClose();
-          }}
-          className="w-full px-3 py-2 text-left text-sm text-neutral-300 hover:bg-neutral-800/50 hover:text-brand-cyan transition-colors flex items-center gap-2 font-mono cursor-pointer"
-        >
-          <FileText size={14} />
-          Describe Image
-        </button>
-      )}
+        {onCopyPNG && (
+          <button
+            onClick={() => {
+              onCopyPNG();
+              onClose();
+            }}
+            className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
+          >
+            <CopyIcon size={16} className="text-neutral-400" />
+            <div className="flex-1 flex items-center justify-between gap-4">
+              <span className="font-medium text-[11px] tracking-wide">Copy as PNG</span>
+              <span className="text-[10px] text-neutral-500 bg-neutral-800/50 px-1.5 py-0.5 rounded">Ctrl+Shift+C</span>
+            </div>
+          </button>
+        )}
 
-      <div className="px-2 py-1.5 border-t border-neutral-700/30 mt-1">
+        {onDescribe && (
+          <button
+            onClick={() => {
+              onDescribe();
+              onClose();
+            }}
+            className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
+          >
+            <FileText size={16} className="text-neutral-400" />
+            <span className="font-medium text-[11px] tracking-wide">Describe Image</span>
+          </button>
+        )}
+
+        <div className="h-px bg-neutral-800/30 my-1.5" />
+
         <button
           onClick={() => {
             onEditWithPrompt();
             onClose();
           }}
-          className="w-full px-3 py-2 text-left text-sm text-brand-cyan hover:bg-brand-cyan/10 transition-colors flex items-center gap-2 font-mono font-semibold cursor-pointer"
+          className="w-full px-3 py-2.5 text-left text-sm text-brand-cyan hover:bg-brand-cyan/10 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md font-semibold"
         >
-          <Wand2 size={14} />
-          Edit with Prompt
+          <Wand2 size={16} className="text-brand-cyan" />
+          <span className="text-[11px] tracking-wide">Edit with Prompt</span>
         </button>
-      </div>
 
-      <div className="px-2 py-1.5 border-t border-neutral-700/30 mt-1">
+        <div className="h-px bg-neutral-800/30 my-1.5" />
+
         <button
           onClick={() => {
             onDuplicate();
             onClose();
           }}
-          className="w-full px-3 py-2 text-left text-sm text-neutral-300 hover:bg-neutral-800/50 hover:text-brand-cyan transition-colors flex items-center gap-2 font-mono cursor-pointer"
+          className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
         >
-          <CopyIcon size={14} />
-          Duplicate
+          <CopyIcon size={16} className="text-neutral-400" />
+          <span className="font-medium text-[11px] tracking-wide">Duplicate</span>
         </button>
         <button
           onClick={() => {
             onDelete();
             onClose();
           }}
-          className="w-full px-3 py-2 text-left text-sm text-red-400 hover:bg-red-500/10 transition-colors flex items-center gap-2 font-mono cursor-pointer"
+          className="w-full px-3 py-2.5 text-left text-sm text-red-400 hover:bg-red-500/10 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
         >
-          <Trash2 size={14} />
-          Delete
+          <Trash2 size={16} className="text-red-400" />
+          <span className="font-medium text-[11px] tracking-wide">Delete</span>
         </button>
       </div>
     </div>

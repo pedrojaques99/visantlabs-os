@@ -460,7 +460,7 @@ export const AdminProductsPage: React.FC = () => {
 
             {/* Edit Modal / Slide-over */}
             {isEditModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/80 backdrop-blur-sm animate-in fade-in duration-300">
                     <div className="bg-neutral-950 border border-neutral-800 w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl slide-in-from-bottom duration-500">
                         <div className="p-6 border-b border-neutral-800 sticky top-0 bg-neutral-950 z-10 flex items-center justify-between">
                             <div>

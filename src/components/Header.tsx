@@ -161,7 +161,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-10 md:h-14 bg-black/95 backdrop-blur-[2px] border-b border-black/95 flex items-center justify-between px-2 md:px-6 z-50">
+    <header className="fixed top-0 left-0 right-0 h-10 md:h-14 bg-neutral-950/95 backdrop-blur-[2px] border-b border-black/95 flex items-center justify-between px-2 md:px-6 z-50">
       <button
         onClick={handleLogoClick}
         className="flex items-center gap-1.5 md:gap-2.5 hover:opacity-80 transition-opacity group cursor-pointer"

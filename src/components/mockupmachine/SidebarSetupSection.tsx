@@ -80,7 +80,7 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
             className="transition-all duration-300 space-y-6 sm:space-y-8"
         >
             {/* Design Type Selection - Always visible */}
-            <div className={`p-4 rounded-xl border transition-all duration-200 ${theme === 'dark' ? 'bg-black/10 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
+            <div className={`p-4 rounded-xl border transition-all duration-200 ${theme === 'dark' ? 'bg-neutral-950/10 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
                 <DesignTypeSection
                     designType={designType}
                     onDesignTypeChange={onDesignTypeChange}
@@ -115,7 +115,7 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
                 <div className="space-y-6">
                     {/* Branding Section */}
                     {(designTypeSelected || (uploadedImage && !isImagelessMode)) && (
-                        <div className={`p-4 rounded-xl border transition-all duration-200 ${theme === 'dark' ? 'bg-black/10 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
+                        <div className={`p-4 rounded-xl border transition-all duration-200 ${theme === 'dark' ? 'bg-neutral-950/10 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
                             <BrandingSection
                                 tags={displayBrandingTags}
                                 selectedTags={selectedBrandingTags}
@@ -132,7 +132,7 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
 
                     {/* Color Palette Preview */}
                     {uploadedImage && !isImagelessMode && (suggestedColorsFromAnalysis.length > 0 || selectedColors.length > 0) && (
-                        <div className={`p-4 rounded-xl border transition-all duration-200 ${theme === 'dark' ? 'bg-black/20 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
+                        <div className={`p-4 rounded-xl border transition-all duration-200 ${theme === 'dark' ? 'bg-neutral-950/20 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
                             <ColorPalettePreview
                                 suggestedColors={suggestedColorsFromAnalysis}
                                 selectedColors={selectedColors}
@@ -156,7 +156,7 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
                     )}
 
                     {/* Instructions Section - Grouped with Branding aspects */}
-                    <div className={`p-4 rounded-xl border transition-all duration-200 ${theme === 'dark' ? 'bg-black/10 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
+                    <div className={`p-4 rounded-xl border transition-all duration-200 ${theme === 'dark' ? 'bg-neutral-950/10 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
                         <div className="flex items-center justify-between mb-3">
                             <span className={sectionTitleClass(theme === 'dark')}>
                                 {t('mockup.instructions')}
@@ -175,7 +175,7 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
                                     value={instructions}
                                     onChange={(e) => setInstructions(e.target.value)}
                                     placeholder={t('mockup.instructionsPlaceholder')}
-                                    className="w-full min-h-[100px] p-3 text-sm font-mono bg-black/40 border border-white/10 rounded-lg focus:outline-none focus:border-brand-cyan/50 resize-none text-white scrollbar-thin"
+                                    className="w-full min-h-[100px] p-3 text-sm font-mono bg-neutral-950/70 border border-white/10 rounded-lg focus:outline-none focus:border-brand-cyan/50 resize-none text-white scrollbar-thin"
                                     autoFocus
                                 />
                                 <div className="flex justify-end">

@@ -427,7 +427,7 @@ export const ChatSidebar = ({
       data-chat-sidebar="true"
       className={cn(
         "relative",
-        variant === 'embedded' ? "border-none shadow-none bg-transparent" : "z-50 backdrop-blur-xl border-l border-neutral-800/50 shadow-2xl bg-black/40",
+        variant === 'embedded' ? "border-none shadow-none bg-transparent" : "z-50 backdrop-blur-xl border-l border-neutral-800/50 shadow-2xl bg-neutral-950/70",
         "transition-all duration-300 ease-out",
         "flex flex-col",
         "flex-shrink-0",

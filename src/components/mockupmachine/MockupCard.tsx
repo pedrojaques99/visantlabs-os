@@ -140,20 +140,20 @@ export const MockupCard: React.FC<MockupCardProps> = ({
             )}
 
             {isRedrawing && (
-                <div className="absolute inset-0 flex items-center justify-center z-30 bg-black/10 backdrop-blur-[2px]">
+                <div className="absolute inset-0 flex items-center justify-center z-30 bg-neutral-950/10 backdrop-blur-[2px]">
                     <GlitchLoader size={32} color="white" />
                 </div>
             )}
 
             {isLoading && !isRedrawing && !!base64Image && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[2px]">
+                <div className="absolute inset-0 flex items-center justify-center bg-neutral-950/20 backdrop-blur-[2px]">
                     <ImageIcon size={40} className="text-white/20 animate-pulse" />
                 </div>
             )}
 
             {isLoading && elapsedTime > 0 && !base64Image && (
                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
-                    <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/5 text-neutral-400 text-[10px] font-mono shadow-xl">
+                    <span className="px-3 py-1 rounded-full bg-neutral-950/60 backdrop-blur-md border border-white/5 text-neutral-400 text-[10px] font-mono shadow-xl">
                         {Math.floor(elapsedTime / 60)}:{(elapsedTime % 60).toString().padStart(2, '0')}
                     </span>
                 </div>
@@ -167,7 +167,7 @@ export const MockupCard: React.FC<MockupCardProps> = ({
                         {onRemove && (
                             <button
                                 onClick={(e) => { e.stopPropagation(); onRemove(); }}
-                                className="p-2 rounded-lg bg-black/60 backdrop-blur-md text-neutral-400 hover:bg-red-500/20 hover:text-red-400 border border-white/5 transition-all shadow-lg pointer-events-auto"
+                                className="p-2 rounded-lg bg-neutral-950/60 backdrop-blur-md text-neutral-400 hover:bg-red-500/20 hover:text-red-400 border border-white/5 transition-all shadow-lg pointer-events-auto"
                                 title="Remove"
                             >
                                 <X size={12} />
@@ -178,7 +178,7 @@ export const MockupCard: React.FC<MockupCardProps> = ({
                                 onClick={(e) => { e.stopPropagation(); handleToggleLike(); }}
                                 className={`p-2 rounded-lg backdrop-blur-md border transition-all shadow-lg pointer-events-auto ${localIsLiked
                                     ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/30 hover:bg-brand-cyan/30'
-                                    : 'bg-black/60 text-neutral-400 border-white/5 hover:text-white hover:bg-black/80'
+                                    : 'bg-neutral-950/60 text-neutral-400 border-white/5 hover:text-white hover:bg-neutral-950/80'
                                     }`}
                                 title={localIsLiked ? "Remover dos favoritos" : "Salvar nos favoritos"}
                             >

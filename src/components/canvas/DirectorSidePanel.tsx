@@ -1,12 +1,14 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { X, Compass, Sparkles, ChevronDown, ChevronUp, MapPin, Camera, Lightbulb, Layers, Palette, Package, Wand2 } from 'lucide-react';
+import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { X, Compass, Sparkles, ChevronDown, ChevronUp, MapPin, Camera, Lightbulb, Layers, Palette, Package, Wand2, FileText, Shirt, Smartphone, CupSoda, Grid3x3, Dices, Shuffle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { Tag } from '@/components/shared/Tag';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { translateTag } from '@/utils/localeUtils';
-import type { DirectorNodeData } from '@/types/reactFlow';
+import { organizeTagsByGroup, CATEGORY_GROUPS } from '@/utils/categoryGroups';
+import { DesignTypeSection } from '@/components/mockupmachine/DesignTypeSection';
+import type { DirectorNodeData, DesignType } from '@/types/reactFlow';
 import {
   AVAILABLE_TAGS,
   AVAILABLE_BRANDING_TAGS,
@@ -27,31 +29,32 @@ interface DirectorSidePanelProps {
   onUpdateData: (nodeId: string, newData: Partial<DirectorNodeData>) => void;
 }
 
-// Collapsible tag section component
-interface TagSectionProps {
+// Collapsable category group component (reused from CategoriesSection pattern)
+interface CollapsableCategoryGroupProps {
   title: string;
-  icon: React.ReactNode;
   tags: string[];
-  suggestedTags: string[];
   selectedTags: string[];
-  onTagToggle: (tag: string) => void;
+  renderTagButton: (tag: string) => React.ReactNode;
   theme: string;
   t: (key: string) => string;
+  icon?: React.ReactNode;
 }
 
-const TagSection: React.FC<TagSectionProps> = ({
+const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
   title,
-  icon,
   tags,
-  suggestedTags,
   selectedTags,
-  onTagToggle,
+  renderTagButton,
   theme,
-  t
+  t,
+  icon
 }) => {
-  const [isExpanded, setIsExpanded] = useState(suggestedTags.length > 0);
-  const selectedCount = selectedTags.length;
-  const selectionSummary = selectedTags.map(tag => translateTag(tag)).join(', ');
+  const [isExpanded, setIsExpanded] = useState(false);
+  const groupSelectedTags = tags.filter(tag => selectedTags.includes(tag));
+  const hasSelection = groupSelectedTags.length > 0;
+  const selectionSummary = hasSelection
+    ? groupSelectedTags.map(tag => translateTag(tag)).join(', ')
+    : '';
 
   return (
     <div className={cn(
@@ -67,7 +70,7 @@ const TagSection: React.FC<TagSectionProps> = ({
         )}
       >
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <div className="flex-shrink-0 text-neutral-500">{icon}</div>
+          {icon && <div className="flex-shrink-0">{icon}</div>}
           <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
             <span className={cn(
               'text-[10px] font-mono uppercase tracking-widest',
@@ -75,17 +78,17 @@ const TagSection: React.FC<TagSectionProps> = ({
             )}>
               {title}
             </span>
-            {!isExpanded && selectedCount > 0 && (
-              <span className="text-[10px] font-mono truncate text-brand-cyan">
+            {!isExpanded && hasSelection && (
+              <span className="text-[10px] font-mono truncate max-w-[200px] text-brand-cyan">
                 {selectionSummary}
               </span>
             )}
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          {selectedCount > 0 && (
+          {hasSelection && (
             <span className="text-[10px] font-mono text-brand-cyan bg-brand-cyan/10 px-1.5 py-0.5 rounded">
-              {selectedCount}
+              {groupSelectedTags.length}
             </span>
           )}
           {isExpanded ? (
@@ -98,37 +101,11 @@ const TagSection: React.FC<TagSectionProps> = ({
 
       {isExpanded && (
         <div className="p-3 pt-0 animate-fade-in">
-          {/* Suggested Tags */}
-          {suggestedTags.length > 0 && (
-            <div className="mb-2">
-              <span className="text-[9px] font-mono uppercase text-brand-cyan/70 mb-1 block">
-                {t('mockup.suggested') || 'Suggested'}
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {suggestedTags.map(tag => (
-                  <Tag
-                    key={tag}
-                    label={translateTag(tag)}
-                    selected={selectedTags.includes(tag)}
-                    suggested={!selectedTags.includes(tag)}
-                    onToggle={() => onTagToggle(tag)}
-                    size="sm"
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-          
-          {/* All Tags */}
           <div className="flex flex-wrap gap-1.5 mt-2">
-            {tags.filter(tag => !suggestedTags.includes(tag)).map(tag => (
-              <Tag
-                key={tag}
-                label={translateTag(tag)}
-                selected={selectedTags.includes(tag)}
-                onToggle={() => onTagToggle(tag)}
-                size="sm"
-              />
+            {tags.map(tag => (
+              <React.Fragment key={tag}>
+                {renderTagButton(tag)}
+              </React.Fragment>
             ))}
           </div>
         </div>
@@ -235,12 +212,16 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
   const { t } = useTranslation();
   const { theme } = useTheme();
   const panelRef = useRef<HTMLDivElement>(null);
+  const [isAllCategoriesOpen, setIsAllCategoriesOpen] = useState(false);
 
   const connectedImage = nodeData.connectedImage;
   const isAnalyzing = nodeData.isAnalyzing || false;
   const hasAnalyzed = nodeData.hasAnalyzed || false;
   const isGeneratingPrompt = nodeData.isGeneratingPrompt || false;
   const generatedPrompt = nodeData.generatedPrompt;
+
+  // Design type
+  const selectedDesignType = nodeData.selectedDesignType || nodeData.suggestedDesignType || null;
 
   // Tag selections
   const selectedBrandingTags = nodeData.selectedBrandingTags || [];
@@ -262,35 +243,141 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
   const suggestedMaterialTags = nodeData.suggestedMaterialTags || [];
   const suggestedColors = nodeData.suggestedColors || [];
 
-  // Tag toggle handlers
+  // Pool mode state
+  const isSurpriseMeMode = nodeData.isSurpriseMeMode || false;
+  const surpriseMePool = nodeData.surpriseMePool || {
+    selectedCategoryTags: [],
+    selectedLocationTags: [],
+    selectedAngleTags: [],
+    selectedLightingTags: [],
+    selectedEffectTags: [],
+    selectedMaterialTags: []
+  };
+
+  // Organize category tags by groups (like CategoriesSection)
+  const organizedCategories = useMemo(() => {
+    const mergedTags = [...new Set([...AVAILABLE_TAGS, ...suggestedCategoryTags])];
+    const organized = organizeTagsByGroup(mergedTags);
+    
+    return CATEGORY_GROUPS.map(cg => ({
+      id: cg.id,
+      key: cg.id,
+      tags: organized.get(cg.id) || []
+    })).filter(g => g.tags.length > 0);
+  }, [suggestedCategoryTags]);
+
+  // Get category icon
+  const getCategoryIcon = (groupId: string) => {
+    const iconMap: Record<string, React.ReactNode> = {
+      'stationery': <FileText size={14} className="text-neutral-500" />,
+      'packaging': <Package size={14} className="text-neutral-500" />,
+      'apparel': <Shirt size={14} className="text-neutral-500" />,
+      'devices': <Smartphone size={14} className="text-neutral-500" />,
+      'signage': <MapPin size={14} className="text-neutral-500" />,
+      'drinkware': <CupSoda size={14} className="text-neutral-500" />,
+      'art': <Palette size={14} className="text-neutral-500" />,
+      'other': <Grid3x3 size={14} className="text-neutral-500" />
+    };
+    return iconMap[groupId] || null;
+  };
+
+  // Pool toggle handler
+  const togglePoolTag = useCallback((
+    category: keyof typeof surpriseMePool,
+    tag: string
+  ) => {
+    const currentPool = surpriseMePool[category] || [];
+    const newPool = currentPool.includes(tag)
+      ? currentPool.filter(t => t !== tag)
+      : [...currentPool, tag];
+    
+    onUpdateData(nodeId, {
+      surpriseMePool: {
+        ...surpriseMePool,
+        [category]: newPool
+      }
+    });
+  }, [nodeId, onUpdateData, surpriseMePool]);
+
+  // Tag toggle handlers - with single selection logic for non-pool mode
   const createTagToggle = useCallback((
     field: keyof DirectorNodeData,
-    currentTags: string[]
+    currentTags: string[],
+    isSingleSelection: boolean = false,
+    poolCategory?: keyof typeof surpriseMePool
   ) => (tag: string) => {
-    const newTags = currentTags.includes(tag)
-      ? currentTags.filter(t => t !== tag)
-      : [...currentTags, tag];
-    onUpdateData(nodeId, { [field]: newTags });
+    if (isSurpriseMeMode && poolCategory) {
+      // In pool mode, toggle pool instead
+      togglePoolTag(poolCategory, tag);
+      return;
+    }
+
+    // Normal mode: single selection logic
+    if (isSingleSelection) {
+      // If clicking a selected tag, deselect it. Otherwise, replace selection.
+      const newTags = currentTags.includes(tag)
+        ? currentTags.filter(t => t !== tag)
+        : [tag];
+      onUpdateData(nodeId, { [field]: newTags });
+    } else {
+      // Multiple selection (branding, colors)
+      const newTags = currentTags.includes(tag)
+        ? currentTags.filter(t => t !== tag)
+        : [...currentTags, tag];
+      onUpdateData(nodeId, { [field]: newTags });
+    }
+  }, [nodeId, onUpdateData, isSurpriseMeMode, togglePoolTag]);
+
+  const toggleBrandingTag = createTagToggle('selectedBrandingTags', selectedBrandingTags, false);
+  const toggleCategoryTag = createTagToggle('selectedCategoryTags', selectedCategoryTags, true, 'selectedCategoryTags');
+  const toggleLocationTag = createTagToggle('selectedLocationTags', selectedLocationTags, true, 'selectedLocationTags');
+  const toggleAngleTag = createTagToggle('selectedAngleTags', selectedAngleTags, true, 'selectedAngleTags');
+  const toggleLightingTag = createTagToggle('selectedLightingTags', selectedLightingTags, true, 'selectedLightingTags');
+  const toggleEffectTag = createTagToggle('selectedEffectTags', selectedEffectTags, true, 'selectedEffectTags');
+  const toggleMaterialTag = createTagToggle('selectedMaterialTags', selectedMaterialTags, true, 'selectedMaterialTags');
+  const toggleColor = createTagToggle('selectedColors', selectedColors, false);
+
+  const handleDesignTypeChange = useCallback((type: DesignType) => {
+    onUpdateData(nodeId, { selectedDesignType: type });
   }, [nodeId, onUpdateData]);
 
-  const toggleBrandingTag = createTagToggle('selectedBrandingTags', selectedBrandingTags);
-  const toggleCategoryTag = createTagToggle('selectedCategoryTags', selectedCategoryTags);
-  const toggleLocationTag = createTagToggle('selectedLocationTags', selectedLocationTags);
-  const toggleAngleTag = createTagToggle('selectedAngleTags', selectedAngleTags);
-  const toggleLightingTag = createTagToggle('selectedLightingTags', selectedLightingTags);
-  const toggleEffectTag = createTagToggle('selectedEffectTags', selectedEffectTags);
-  const toggleMaterialTag = createTagToggle('selectedMaterialTags', selectedMaterialTags);
-  const toggleColor = createTagToggle('selectedColors', selectedColors);
+  const handleToggleSurpriseMeMode = useCallback(() => {
+    onUpdateData(nodeId, { isSurpriseMeMode: !isSurpriseMeMode });
+  }, [nodeId, onUpdateData, isSurpriseMeMode]);
+
+  // Render tag button for categories
+  const renderCategoryTagButton = useCallback((tag: string) => {
+    const isSelected = selectedCategoryTags.includes(tag);
+    const isSuggested = suggestedCategoryTags.includes(tag);
+    const isInPool = isSurpriseMeMode && surpriseMePool.selectedCategoryTags.includes(tag);
+    const hasAnySelection = selectedCategoryTags.length > 0;
+
+    return (
+      <Tag
+        key={tag}
+        label={translateTag(tag)}
+        selected={isSelected}
+        suggested={!isSurpriseMeMode && !isSelected && isSuggested}
+        inPool={isInPool}
+        onToggle={() => toggleCategoryTag(tag)}
+        disabled={!isSurpriseMeMode && hasAnySelection && !isSelected}
+        size="sm"
+      />
+    );
+  }, [selectedCategoryTags, suggestedCategoryTags, toggleCategoryTag, isSurpriseMeMode, surpriseMePool]);
 
   // Check if we have any selections for the generate button
-  const hasSelections = selectedBrandingTags.length > 0 ||
+  // Design type is required, plus at least one tag
+  const hasSelections = selectedDesignType !== null && (
+    selectedBrandingTags.length > 0 ||
     selectedCategoryTags.length > 0 ||
     selectedLocationTags.length > 0 ||
     selectedAngleTags.length > 0 ||
     selectedLightingTags.length > 0 ||
     selectedEffectTags.length > 0 ||
     selectedMaterialTags.length > 0 ||
-    selectedColors.length > 0;
+    selectedColors.length > 0
+  );
 
   // Close on escape
   useEffect(() => {
@@ -339,7 +426,13 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
         {connectedImage && (
           <div className="rounded-lg overflow-hidden border border-neutral-800/50">
             <img
-              src={connectedImage.startsWith('data:') ? connectedImage : `data:image/png;base64,${connectedImage}`}
+              src={
+                connectedImage.startsWith('data:') 
+                  ? connectedImage 
+                  : connectedImage.startsWith('http://') || connectedImage.startsWith('https://')
+                    ? connectedImage
+                    : `data:image/png;base64,${connectedImage}`
+              }
               alt="Connected"
               className="w-full h-48 object-cover"
             />
@@ -387,96 +480,571 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
         {/* Tag Selection Sections (after analysis) */}
         {hasAnalyzed && (
           <div className="space-y-3">
-            <div className="flex items-center gap-2 mb-2">
-              <Sparkles size={14} className="text-brand-cyan" />
-              <span className="text-xs font-mono text-brand-cyan">
-                {t('canvasNodes.directorNode.selectTags') || 'Select tags for your prompt'}
-              </span>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Sparkles size={14} className="text-brand-cyan" />
+                <span className="text-xs font-mono text-brand-cyan">
+                  {t('canvasNodes.directorNode.selectTags') || 'Select tags for your prompt'}
+                </span>
+              </div>
+              
+              {/* Pool Mode Toggle */}
+              <div
+                className={cn(
+                  'flex items-center gap-2 cursor-pointer transition-all duration-200 px-2 py-1 rounded',
+                  isSurpriseMeMode 
+                    ? 'bg-brand-cyan/10 border border-brand-cyan/30' 
+                    : 'hover:bg-neutral-800/30'
+                )}
+                onClick={handleToggleSurpriseMeMode}
+                title={isSurpriseMeMode ? t('mockup.surpriseMeModeDisableTooltip') : t('mockup.surpriseMeModeEnableTooltip')}
+              >
+                <div className={cn(
+                  'w-3 h-3 rounded flex items-center justify-center border transition-all duration-200',
+                  isSurpriseMeMode
+                    ? 'bg-brand-cyan border-brand-cyan'
+                    : 'bg-neutral-800 border-neutral-600'
+                )}>
+                  {isSurpriseMeMode && (
+                    <Shuffle size={8} className="text-black" />
+                  )}
+                </div>
+                <Dices size={12} className={cn(
+                  isSurpriseMeMode ? 'text-brand-cyan' : 'text-neutral-500'
+                )} />
+                <span className={cn(
+                  'text-[9px] font-mono uppercase tracking-widest',
+                  isSurpriseMeMode ? 'text-brand-cyan' : 'text-neutral-500'
+                )}>
+                  {t('mockup.surpriseMeMode') || 'Pool Mode'}
+                </span>
+              </div>
             </div>
 
-            {/* Branding Tags */}
-            <TagSection
-              title={t('mockup.branding') || 'Branding'}
-              icon={<Package size={14} />}
-              tags={AVAILABLE_BRANDING_TAGS}
-              suggestedTags={suggestedBrandingTags}
-              selectedTags={selectedBrandingTags}
-              onTagToggle={toggleBrandingTag}
-              theme={theme}
-              t={t}
+            {/* Design Type Section */}
+            <DesignTypeSection
+              designType={selectedDesignType}
+              onDesignTypeChange={handleDesignTypeChange}
+              uploadedImage={connectedImage ? (() => {
+                // Convert connectedImage string to UploadedImage format
+                if (connectedImage.startsWith('http://') || connectedImage.startsWith('https://')) {
+                  return { url: connectedImage, mimeType: 'image/png' };
+                } else if (connectedImage.startsWith('data:')) {
+                  const base64Part = connectedImage.split(',')[1];
+                  return { base64: base64Part, mimeType: connectedImage.split(';')[0].split(':')[1] || 'image/png' };
+                } else {
+                  return { base64: connectedImage, mimeType: 'image/png' };
+                }
+              })() : null}
+              isImagelessMode={!connectedImage}
+              onScrollToSection={() => {}}
             />
 
-            {/* Category Tags */}
-            <TagSection
-              title={t('mockup.categories') || 'Categories'}
-              icon={<Layers size={14} />}
-              tags={AVAILABLE_TAGS}
-              suggestedTags={suggestedCategoryTags}
-              selectedTags={selectedCategoryTags}
-              onTagToggle={toggleCategoryTag}
-              theme={theme}
-              t={t}
-            />
+            {/* Branding Tags */}
+            <div className="rounded-lg border border-neutral-800/50">
+              <button
+                onClick={() => {}}
+                className="w-full flex justify-between items-center text-left p-3 transition-all duration-200 hover:bg-neutral-800/10"
+              >
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <Package size={14} className="text-neutral-500" />
+                  <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+                      {t('mockup.branding') || 'Branding'}
+                    </span>
+                    {selectedBrandingTags.length > 0 && (
+                      <span className="text-[10px] font-mono truncate text-brand-cyan">
+                        {selectedBrandingTags.map(tag => translateTag(tag)).join(', ')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {selectedBrandingTags.length > 0 && (
+                    <span className="text-[10px] font-mono text-brand-cyan bg-brand-cyan/10 px-1.5 py-0.5 rounded">
+                      {selectedBrandingTags.length}
+                    </span>
+                  )}
+                </div>
+              </button>
+              <div className="p-3 pt-0">
+                {suggestedBrandingTags.length > 0 && (
+                  <div className="mb-2">
+                    <span className="text-[9px] font-mono uppercase text-brand-cyan/70 mb-1 block">
+                      {t('mockup.suggested') || 'Suggested'}
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {suggestedBrandingTags.map(tag => (
+                        <Tag
+                          key={tag}
+                          label={translateTag(tag)}
+                          selected={selectedBrandingTags.includes(tag)}
+                          suggested={!selectedBrandingTags.includes(tag)}
+                          onToggle={() => toggleBrandingTag(tag)}
+                          size="sm"
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {AVAILABLE_BRANDING_TAGS.filter(tag => !suggestedBrandingTags.includes(tag)).map(tag => (
+                    <Tag
+                      key={tag}
+                      label={translateTag(tag)}
+                      selected={selectedBrandingTags.includes(tag)}
+                      onToggle={() => toggleBrandingTag(tag)}
+                      size="sm"
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Categories Section - Organized by Groups */}
+            <div className="rounded-lg border border-neutral-800/50">
+              <button
+                onClick={() => setIsAllCategoriesOpen(!isAllCategoriesOpen)}
+                className={cn(
+                  'w-full flex justify-between items-center text-left p-3 transition-all duration-200',
+                  'hover:bg-neutral-800/10',
+                  isAllCategoriesOpen && 'bg-neutral-800/20'
+                )}
+              >
+                <div className="flex items-center gap-2">
+                  <Layers size={14} className="text-neutral-500" />
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+                    {t('mockup.categories') || 'Categories'}
+                  </span>
+                </div>
+                {isAllCategoriesOpen ? (
+                  <ChevronUp size={16} className="text-neutral-500" />
+                ) : (
+                  <ChevronDown size={16} className="text-neutral-500" />
+                )}
+              </button>
+
+              {isAllCategoriesOpen && (
+                <div className="p-3 pt-0 space-y-2">
+                  {/* Show suggested tags first */}
+                  {suggestedCategoryTags.length > 0 && (
+                    <div className="mb-3">
+                      <span className="text-[9px] font-mono uppercase text-brand-cyan/70 mb-2 block">
+                        {t('mockup.suggested') || 'Suggested'}
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {suggestedCategoryTags.map(tag => {
+                          const isSelected = selectedCategoryTags.includes(tag);
+                          const isInPool = isSurpriseMeMode && surpriseMePool.selectedCategoryTags.includes(tag);
+                          const hasAnySelection = selectedCategoryTags.length > 0;
+                          return (
+                            <Tag
+                              key={tag}
+                              label={translateTag(tag)}
+                              selected={isSelected}
+                              suggested={!isSurpriseMeMode && !isSelected}
+                              inPool={isInPool}
+                              onToggle={() => toggleCategoryTag(tag)}
+                              disabled={!isSurpriseMeMode && hasAnySelection && !isSelected}
+                              size="sm"
+                            />
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Category Groups */}
+                  {organizedCategories.map((group) => (
+                    <CollapsableCategoryGroup
+                      key={group.id}
+                      title={t(`mockup.categoryGroups.${group.key}`) || group.key}
+                      tags={group.tags}
+                      selectedTags={selectedCategoryTags}
+                      renderTagButton={renderCategoryTagButton}
+                      theme={theme}
+                      t={t}
+                      icon={getCategoryIcon(group.id)}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Location Tags */}
-            <TagSection
-              title={t('mockup.location') || 'Location'}
-              icon={<MapPin size={14} />}
-              tags={AVAILABLE_LOCATION_TAGS}
-              suggestedTags={suggestedLocationTags}
-              selectedTags={selectedLocationTags}
-              onTagToggle={toggleLocationTag}
-              theme={theme}
-              t={t}
-            />
+            <div className="rounded-lg border border-neutral-800/50">
+              <button
+                onClick={() => {}}
+                className="w-full flex justify-between items-center text-left p-3 transition-all duration-200 hover:bg-neutral-800/10"
+              >
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <MapPin size={14} className="text-neutral-500" />
+                  <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+                      {t('mockup.location') || 'Location'}
+                    </span>
+                    {selectedLocationTags.length > 0 && (
+                      <span className="text-[10px] font-mono truncate text-brand-cyan">
+                        {selectedLocationTags.map(tag => translateTag(tag)).join(', ')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {selectedLocationTags.length > 0 && (
+                    <span className="text-[10px] font-mono text-brand-cyan bg-brand-cyan/10 px-1.5 py-0.5 rounded">
+                      {selectedLocationTags.length}
+                    </span>
+                  )}
+                </div>
+              </button>
+              <div className="p-3 pt-0">
+                {suggestedLocationTags.length > 0 && (
+                  <div className="mb-2">
+                    <span className="text-[9px] font-mono uppercase text-brand-cyan/70 mb-1 block">
+                      {t('mockup.suggested') || 'Suggested'}
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {suggestedLocationTags.map(tag => {
+                        const isSelected = selectedLocationTags.includes(tag);
+                        const isInPool = isSurpriseMeMode && surpriseMePool.selectedLocationTags.includes(tag);
+                        const hasSelection = selectedLocationTags.length > 0;
+                        return (
+                          <Tag
+                            key={tag}
+                            label={translateTag(tag)}
+                            selected={isSelected}
+                            suggested={!isSurpriseMeMode && !isSelected}
+                            inPool={isInPool}
+                            onToggle={() => toggleLocationTag(tag)}
+                            disabled={!isSurpriseMeMode && hasSelection && !isSelected}
+                            size="sm"
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {AVAILABLE_LOCATION_TAGS.filter(tag => !suggestedLocationTags.includes(tag)).map(tag => {
+                    const isSelected = selectedLocationTags.includes(tag);
+                    const isInPool = isSurpriseMeMode && surpriseMePool.selectedLocationTags.includes(tag);
+                    const hasSelection = selectedLocationTags.length > 0;
+                    return (
+                      <Tag
+                        key={tag}
+                        label={translateTag(tag)}
+                        selected={isSelected}
+                        inPool={isInPool}
+                        onToggle={() => toggleLocationTag(tag)}
+                        disabled={!isSurpriseMeMode && hasSelection && !isSelected}
+                        size="sm"
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
 
             {/* Angle Tags */}
-            <TagSection
-              title={t('mockup.angle') || 'Angle'}
-              icon={<Camera size={14} />}
-              tags={AVAILABLE_ANGLE_TAGS}
-              suggestedTags={suggestedAngleTags}
-              selectedTags={selectedAngleTags}
-              onTagToggle={toggleAngleTag}
-              theme={theme}
-              t={t}
-            />
+            <div className="rounded-lg border border-neutral-800/50">
+              <button
+                onClick={() => {}}
+                className="w-full flex justify-between items-center text-left p-3 transition-all duration-200 hover:bg-neutral-800/10"
+              >
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <Camera size={14} className="text-neutral-500" />
+                  <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+                      {t('mockup.angle') || 'Angle'}
+                    </span>
+                    {selectedAngleTags.length > 0 && (
+                      <span className="text-[10px] font-mono truncate text-brand-cyan">
+                        {selectedAngleTags.map(tag => translateTag(tag)).join(', ')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {selectedAngleTags.length > 0 && (
+                    <span className="text-[10px] font-mono text-brand-cyan bg-brand-cyan/10 px-1.5 py-0.5 rounded">
+                      {selectedAngleTags.length}
+                    </span>
+                  )}
+                </div>
+              </button>
+              <div className="p-3 pt-0">
+                {suggestedAngleTags.length > 0 && (
+                  <div className="mb-2">
+                    <span className="text-[9px] font-mono uppercase text-brand-cyan/70 mb-1 block">
+                      {t('mockup.suggested') || 'Suggested'}
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {suggestedAngleTags.map(tag => {
+                        const isSelected = selectedAngleTags.includes(tag);
+                        const isInPool = isSurpriseMeMode && surpriseMePool.selectedAngleTags.includes(tag);
+                        const hasSelection = selectedAngleTags.length > 0;
+                        return (
+                          <Tag
+                            key={tag}
+                            label={translateTag(tag)}
+                            selected={isSelected}
+                            suggested={!isSurpriseMeMode && !isSelected}
+                            inPool={isInPool}
+                            onToggle={() => toggleAngleTag(tag)}
+                            disabled={!isSurpriseMeMode && hasSelection && !isSelected}
+                            size="sm"
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {AVAILABLE_ANGLE_TAGS.filter(tag => !suggestedAngleTags.includes(tag)).map(tag => {
+                    const isSelected = selectedAngleTags.includes(tag);
+                    const isInPool = isSurpriseMeMode && surpriseMePool.selectedAngleTags.includes(tag);
+                    const hasSelection = selectedAngleTags.length > 0;
+                    return (
+                      <Tag
+                        key={tag}
+                        label={translateTag(tag)}
+                        selected={isSelected}
+                        inPool={isInPool}
+                        onToggle={() => toggleAngleTag(tag)}
+                        disabled={!isSurpriseMeMode && hasSelection && !isSelected}
+                        size="sm"
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
 
             {/* Lighting Tags */}
-            <TagSection
-              title={t('mockup.lighting') || 'Lighting'}
-              icon={<Lightbulb size={14} />}
-              tags={AVAILABLE_LIGHTING_TAGS}
-              suggestedTags={suggestedLightingTags}
-              selectedTags={selectedLightingTags}
-              onTagToggle={toggleLightingTag}
-              theme={theme}
-              t={t}
-            />
+            <div className="rounded-lg border border-neutral-800/50">
+              <button
+                onClick={() => {}}
+                className="w-full flex justify-between items-center text-left p-3 transition-all duration-200 hover:bg-neutral-800/10"
+              >
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <Lightbulb size={14} className="text-neutral-500" />
+                  <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+                      {t('mockup.lighting') || 'Lighting'}
+                    </span>
+                    {selectedLightingTags.length > 0 && (
+                      <span className="text-[10px] font-mono truncate text-brand-cyan">
+                        {selectedLightingTags.map(tag => translateTag(tag)).join(', ')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {selectedLightingTags.length > 0 && (
+                    <span className="text-[10px] font-mono text-brand-cyan bg-brand-cyan/10 px-1.5 py-0.5 rounded">
+                      {selectedLightingTags.length}
+                    </span>
+                  )}
+                </div>
+              </button>
+              <div className="p-3 pt-0">
+                {suggestedLightingTags.length > 0 && (
+                  <div className="mb-2">
+                    <span className="text-[9px] font-mono uppercase text-brand-cyan/70 mb-1 block">
+                      {t('mockup.suggested') || 'Suggested'}
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {suggestedLightingTags.map(tag => {
+                        const isSelected = selectedLightingTags.includes(tag);
+                        const isInPool = isSurpriseMeMode && surpriseMePool.selectedLightingTags.includes(tag);
+                        const hasSelection = selectedLightingTags.length > 0;
+                        return (
+                          <Tag
+                            key={tag}
+                            label={translateTag(tag)}
+                            selected={isSelected}
+                            suggested={!isSurpriseMeMode && !isSelected}
+                            inPool={isInPool}
+                            onToggle={() => toggleLightingTag(tag)}
+                            disabled={!isSurpriseMeMode && hasSelection && !isSelected}
+                            size="sm"
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {AVAILABLE_LIGHTING_TAGS.filter(tag => !suggestedLightingTags.includes(tag)).map(tag => {
+                    const isSelected = selectedLightingTags.includes(tag);
+                    const isInPool = isSurpriseMeMode && surpriseMePool.selectedLightingTags.includes(tag);
+                    const hasSelection = selectedLightingTags.length > 0;
+                    return (
+                      <Tag
+                        key={tag}
+                        label={translateTag(tag)}
+                        selected={isSelected}
+                        inPool={isInPool}
+                        onToggle={() => toggleLightingTag(tag)}
+                        disabled={!isSurpriseMeMode && hasSelection && !isSelected}
+                        size="sm"
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
 
             {/* Effect Tags */}
-            <TagSection
-              title={t('mockup.effects') || 'Effects'}
-              icon={<Sparkles size={14} />}
-              tags={AVAILABLE_EFFECT_TAGS}
-              suggestedTags={suggestedEffectTags}
-              selectedTags={selectedEffectTags}
-              onTagToggle={toggleEffectTag}
-              theme={theme}
-              t={t}
-            />
+            <div className="rounded-lg border border-neutral-800/50">
+              <button
+                onClick={() => {}}
+                className="w-full flex justify-between items-center text-left p-3 transition-all duration-200 hover:bg-neutral-800/10"
+              >
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <Sparkles size={14} className="text-neutral-500" />
+                  <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+                      {t('mockup.effects') || 'Effects'}
+                    </span>
+                    {selectedEffectTags.length > 0 && (
+                      <span className="text-[10px] font-mono truncate text-brand-cyan">
+                        {selectedEffectTags.map(tag => translateTag(tag)).join(', ')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {selectedEffectTags.length > 0 && (
+                    <span className="text-[10px] font-mono text-brand-cyan bg-brand-cyan/10 px-1.5 py-0.5 rounded">
+                      {selectedEffectTags.length}
+                    </span>
+                  )}
+                </div>
+              </button>
+              <div className="p-3 pt-0">
+                {suggestedEffectTags.length > 0 && (
+                  <div className="mb-2">
+                    <span className="text-[9px] font-mono uppercase text-brand-cyan/70 mb-1 block">
+                      {t('mockup.suggested') || 'Suggested'}
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {suggestedEffectTags.map(tag => {
+                        const isSelected = selectedEffectTags.includes(tag);
+                        const isInPool = isSurpriseMeMode && surpriseMePool.selectedEffectTags.includes(tag);
+                        const hasSelection = selectedEffectTags.length > 0;
+                        return (
+                          <Tag
+                            key={tag}
+                            label={translateTag(tag)}
+                            selected={isSelected}
+                            suggested={!isSurpriseMeMode && !isSelected}
+                            inPool={isInPool}
+                            onToggle={() => toggleEffectTag(tag)}
+                            disabled={!isSurpriseMeMode && hasSelection && !isSelected}
+                            size="sm"
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {AVAILABLE_EFFECT_TAGS.filter(tag => !suggestedEffectTags.includes(tag)).map(tag => {
+                    const isSelected = selectedEffectTags.includes(tag);
+                    const isInPool = isSurpriseMeMode && surpriseMePool.selectedEffectTags.includes(tag);
+                    const hasSelection = selectedEffectTags.length > 0;
+                    return (
+                      <Tag
+                        key={tag}
+                        label={translateTag(tag)}
+                        selected={isSelected}
+                        inPool={isInPool}
+                        onToggle={() => toggleEffectTag(tag)}
+                        disabled={!isSurpriseMeMode && hasSelection && !isSelected}
+                        size="sm"
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
 
             {/* Material Tags */}
-            <TagSection
-              title={t('mockup.materials') || 'Materials'}
-              icon={<Layers size={14} />}
-              tags={AVAILABLE_MATERIAL_TAGS}
-              suggestedTags={suggestedMaterialTags}
-              selectedTags={selectedMaterialTags}
-              onTagToggle={toggleMaterialTag}
-              theme={theme}
-              t={t}
-            />
+            <div className="rounded-lg border border-neutral-800/50">
+              <button
+                onClick={() => {}}
+                className="w-full flex justify-between items-center text-left p-3 transition-all duration-200 hover:bg-neutral-800/10"
+              >
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <Layers size={14} className="text-neutral-500" />
+                  <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+                      {t('mockup.materials') || 'Materials'}
+                    </span>
+                    {selectedMaterialTags.length > 0 && (
+                      <span className="text-[10px] font-mono truncate text-brand-cyan">
+                        {selectedMaterialTags.map(tag => translateTag(tag)).join(', ')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {selectedMaterialTags.length > 0 && (
+                    <span className="text-[10px] font-mono text-brand-cyan bg-brand-cyan/10 px-1.5 py-0.5 rounded">
+                      {selectedMaterialTags.length}
+                    </span>
+                  )}
+                </div>
+              </button>
+              <div className="p-3 pt-0">
+                {suggestedMaterialTags.length > 0 && (
+                  <div className="mb-2">
+                    <span className="text-[9px] font-mono uppercase text-brand-cyan/70 mb-1 block">
+                      {t('mockup.suggested') || 'Suggested'}
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {suggestedMaterialTags.map(tag => {
+                        const isSelected = selectedMaterialTags.includes(tag);
+                        const isInPool = isSurpriseMeMode && surpriseMePool.selectedMaterialTags.includes(tag);
+                        const hasSelection = selectedMaterialTags.length > 0;
+                        return (
+                          <Tag
+                            key={tag}
+                            label={translateTag(tag)}
+                            selected={isSelected}
+                            suggested={!isSurpriseMeMode && !isSelected}
+                            inPool={isInPool}
+                            onToggle={() => toggleMaterialTag(tag)}
+                            disabled={!isSurpriseMeMode && hasSelection && !isSelected}
+                            size="sm"
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {AVAILABLE_MATERIAL_TAGS.filter(tag => !suggestedMaterialTags.includes(tag)).map(tag => {
+                    const isSelected = selectedMaterialTags.includes(tag);
+                    const isInPool = isSurpriseMeMode && surpriseMePool.selectedMaterialTags.includes(tag);
+                    const hasSelection = selectedMaterialTags.length > 0;
+                    return (
+                      <Tag
+                        key={tag}
+                        label={translateTag(tag)}
+                        selected={isSelected}
+                        inPool={isInPool}
+                        onToggle={() => toggleMaterialTag(tag)}
+                        disabled={!isSurpriseMeMode && hasSelection && !isSelected}
+                        size="sm"
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
 
             {/* Color Palette */}
             <ColorSection
@@ -532,7 +1100,10 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
           </button>
           {!hasSelections && (
             <p className="text-[10px] text-neutral-500 text-center mt-2 font-mono">
-              {t('canvasNodes.directorNode.selectAtLeastOneTag') || 'Select at least one tag to generate'}
+              {!selectedDesignType 
+                ? (t('mockup.pleaseSelectDesignType') || 'Please select a design type')
+                : (t('canvasNodes.directorNode.selectAtLeastOneTag') || 'Select at least one tag to generate')
+              }
             </p>
           )}
         </div>

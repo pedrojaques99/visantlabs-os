@@ -34,7 +34,7 @@ export const BrandingCompactCard: React.FC<BrandingCompactCardProps> = ({
         {stepTitle}
       </h3>
       {isGenerating && (
-        <div className={`absolute inset-0 rounded-2xl flex items-center justify-center ${theme === 'dark' ? 'bg-black/50' : 'bg-white/80'
+        <div className={`absolute inset-0 rounded-2xl flex items-center justify-center ${theme === 'dark' ? 'bg-neutral-950/50' : 'bg-white/80'
           }`}>
           <SkeletonLoader height="1rem" className="w-3/4" />
         </div>

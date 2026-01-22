@@ -293,7 +293,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                         </h2>
                         <button
                           onClick={() => setIsEditingName(true)}
-                          className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded ${theme === 'dark' ? 'hover:bg-black/40' : 'hover:bg-neutral-200'
+                          className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded ${theme === 'dark' ? 'hover:bg-neutral-950/70' : 'hover:bg-neutral-200'
                             }`}
                           title={t('branding.editProjectName') || 'Editar nome do projeto'}
                         >
@@ -319,7 +319,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                     onClick={onGenerateAll}
                     disabled={generatingSteps.size > 0}
                     className={`px-4 py-2 border rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 hover:border-[brand-cyan]/50 hover:text-brand-cyan ${theme === 'dark'
-                      ? 'bg-black/40 border-neutral-800/60 text-neutral-300 disabled:border-neutral-800/30 disabled:text-neutral-600'
+                      ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300 disabled:border-neutral-800/30 disabled:text-neutral-600'
                       : 'bg-neutral-100 border-neutral-300 text-neutral-800 disabled:border-neutral-200 disabled:text-neutral-400'
                       }`}
                   >
@@ -330,7 +330,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                 <button
                   onClick={handleGeneratePDF}
                   className={`px-4 py-2 border rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 hover:border-[brand-cyan]/50 hover:text-brand-cyan ${theme === 'dark'
-                    ? 'bg-black/40 border-neutral-800/60 text-neutral-300'
+                    ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300'
                     : 'bg-neutral-100 border-neutral-300 text-neutral-800'
                     }`}
                 >

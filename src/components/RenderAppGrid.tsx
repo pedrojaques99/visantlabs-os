@@ -68,7 +68,7 @@ export const RenderAppGrid: React.FC<RenderAppGridProps> = ({
 
                             {/* Premium CTA Overlay for small cards */}
                             {app.badgeVariant === 'premium' && !hasAccess && !isAccessLoading && (
-                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-30">
+                                <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-30">
                                     <span className="bg-brand-cyan text-black px-4 py-1.5 rounded-full font-bold text-[10px] tracking-wider uppercase">
                                         {t('apps.subscribeNow')}
                                     </span>

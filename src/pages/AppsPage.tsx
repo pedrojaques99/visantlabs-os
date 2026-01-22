@@ -291,7 +291,7 @@ export const AppsPage: React.FC = () => {
                             <Badge
                               variant="outline"
                               className={cn(
-                                "text-[10px] uppercase font-mono tracking-widest py-1 px-3 bg-black/60 backdrop-blur-md border-neutral-800/80 text-neutral-400",
+                                "text-[10px] uppercase font-mono tracking-widest py-1 px-3 bg-neutral-950/60 backdrop-blur-md border-neutral-800/80 text-neutral-400",
                                 app.badgeVariant === 'featured' && "border-brand-cyan/40 text-brand-cyan bg-brand-cyan/10",
                                 app.badgeVariant === 'premium' && "border-brand-cyan/40 text-brand-cyan/90",
                                 app.badgeVariant === 'comingSoon' && "border-neutral-800 text-neutral-500",
@@ -310,7 +310,7 @@ export const AppsPage: React.FC = () => {
 
                         {/* Premium CTA Overlay */}
                         {app.badgeVariant === 'premium' && !hasAccess && !isAccessLoading && (
-                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-30">
+                          <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-30">
                             <span className="bg-brand-cyan text-black px-6 py-2 rounded-full font-bold text-sm tracking-wider transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
                               {t('apps.subscribeNow')}
                             </span>

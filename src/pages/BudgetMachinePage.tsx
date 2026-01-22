@@ -558,7 +558,7 @@ export const BudgetMachinePage: React.FC = () => {
             {/* Overlay - Close sidebar when clicking outside */}
             {isSidebarOpen && (
               <div
-                className="fixed inset-0 bg-black/50 z-30 md:hidden"
+                className="fixed inset-0 bg-neutral-950/50 z-30 md:hidden"
                 onClick={() => setIsSidebarOpen(false)}
               />
             )}
@@ -568,7 +568,7 @@ export const BudgetMachinePage: React.FC = () => {
               {/* Toggle Sidebar Button */}
               <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="fixed top-12 md:top-16 z-50 p-1.5 bg-black/30 backdrop-blur-sm border border-neutral-700/20 rounded-md text-neutral-400 hover:text-neutral-300 hover:border-neutral-600/30 hover:bg-black/40 transition-all duration-200 shadow-sm"
+                className="fixed top-12 md:top-16 z-50 p-1.5 bg-neutral-950/30 backdrop-blur-sm border border-neutral-700/20 rounded-md text-neutral-400 hover:text-neutral-300 hover:border-neutral-600/30 hover:bg-neutral-950/70 transition-all duration-200 shadow-sm"
                 style={isSidebarOpen
                   ? (formWidth ? { left: `${formWidth + 16}px` } : { left: '416px' })
                   : { left: '16px' }
@@ -651,7 +651,7 @@ export const BudgetMachinePage: React.FC = () => {
                           }
                         }
                       }}
-                      className="flex-1 text-xl sm:text-2xl font-bold text-neutral-200 font-mono bg-transparent border-none outline-none focus:outline-none hover:bg-black/20 px-2 py-1 rounded transition-colors cursor-text"
+                      className="flex-1 text-xl sm:text-2xl font-bold text-neutral-200 font-mono bg-transparent border-none outline-none focus:outline-none hover:bg-neutral-950/20 px-2 py-1 rounded transition-colors cursor-text"
                       placeholder={t('budget.title') || 'Budget Machine'}
                     />
                   </div>
@@ -815,7 +815,7 @@ export const BudgetMachinePage: React.FC = () => {
                           type="text"
                           value={shareLink}
                           readOnly
-                          className="flex-1 px-3 py-2 bg-black/40 border border-neutral-800 rounded-md text-neutral-200 text-sm font-mono"
+                          className="flex-1 px-3 py-2 bg-neutral-950/70 border border-neutral-800 rounded-md text-neutral-200 text-sm font-mono"
                         />
                         <button
                           onClick={() => {

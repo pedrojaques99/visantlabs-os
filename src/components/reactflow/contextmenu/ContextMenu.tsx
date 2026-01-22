@@ -435,12 +435,12 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     <button
       onClick={item.onClick}
       className={cn(
-        "w-full px-3 py-2.5 text-left text-sm font-mono cursor-pointer",
+        "w-full px-3 py-2.5 text-left text-sm cursor-pointer",
         "rounded-md transition-colors duration-150",
         "flex items-center gap-3",
         item.highlight
           ? "text-brand-cyan hover:bg-brand-cyan/10"
-          : "text-neutral-300 hover:bg-neutral-800/50 hover:text-neutral-400"
+          : "text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 hover:border-[brand-cyan]/40"
       )}
     >
       <span className={cn(
@@ -449,7 +449,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       )}>
         {item.icon}
       </span>
-      <span className="flex-1">{highlightText(item.label, searchQuery)}</span>
+      <span className="flex-1 font-medium text-[11px] tracking-wide">{highlightText(item.label, searchQuery)}</span>
     </button>
   );
 
@@ -457,7 +457,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
 
   const GroupLabel: React.FC<{ title: string }> = ({ title }) => (
     <div className="px-3 py-1.5">
-      <span className="text-[10px] font-mono text-neutral-600 uppercase tracking-wider">
+      <span className="text-[9px] font-semibold text-neutral-500 uppercase tracking-wider">
         {title}
       </span>
     </div>
@@ -468,7 +468,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       ref={menuRef}
       data-context-menu
       className={cn(
-        "fixed z-50 bg-[#0A0A0A]/80 backdrop-blur-md border border-neutral-700/40 rounded-xl shadow-2xl",
+        "fixed z-50 bg-neutral-950/70 backdrop-blur-xl border border-neutral-800/50 rounded-2xl shadow-2xl",
         "min-w-[220px] max-w-[280px]",
         "transition-all duration-200 ease-out"
       )}
@@ -478,18 +478,18 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       onMouseDown={(e) => e.stopPropagation()}
     >
       {/* Header with Search */}
-      <div className="sticky top-0 bg-[#0A0A0A]/80 backdrop-blur-md border-b border-neutral-700/40 z-10 rounded-t-xl">
+      <div className="sticky top-0 bg-neutral-950/70 backdrop-blur-xl border-b border-neutral-800/30 z-10 rounded-t-2xl">
         <div className="px-3 py-2.5 flex items-center justify-between gap-2">
-          <span className="text-xs font-mono text-neutral-400 uppercase tracking-wider font-semibold">
+          <span className="text-xs font-semibold text-neutral-300 uppercase tracking-wider">
             Add Node
           </span>
           <button
             onClick={onClose}
-            className="p-1 text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/50 rounded transition-all duration-200 cursor-pointer"
+            className="p-1 text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800/50 rounded transition-colors duration-150 cursor-pointer"
             aria-label="Close menu"
             onMouseDown={(e) => e.stopPropagation()}
           >
-            <X size={14} />
+            <X size={16} />
           </button>
         </div>
 
@@ -503,7 +503,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search nodes..."
-              className="w-full pl-8 pr-2.5 py-1.5 text-xs font-mono bg-neutral-900/50 border border-neutral-700/30 rounded-md text-neutral-300 placeholder-neutral-600 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-1 focus:ring-[brand-cyan]/20 transition-all duration-200"
+              className="w-full pl-8 pr-2.5 py-1.5 text-xs bg-neutral-900/50 border border-neutral-800/40 rounded-md text-neutral-300 placeholder-neutral-600 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-1 focus:ring-[brand-cyan]/20 transition-all duration-150"
               aria-label="Search menu items"
               onMouseDown={(e) => e.stopPropagation()}
             />
@@ -512,11 +512,11 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       </div>
 
       {/* Menu Content */}
-      <div className="px-2 py-2 max-h-[60vh] overflow-y-auto">
+      <div className="px-2 py-2 max-h-[60vh] overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-400 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent">
         {filteredItems.length === 0 ? (
           <div className="px-3 py-8 text-center">
-            <p className="text-sm font-mono text-neutral-500">No results found</p>
-            <p className="text-xs font-mono text-neutral-600 mt-1">Try a different search term</p>
+            <p className="text-sm text-neutral-500">No results found</p>
+            <p className="text-xs text-neutral-600 mt-1">Try a different search term</p>
           </div>
         ) : (
           <div className="space-y-0.5">
@@ -530,7 +530,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
                 {viewItems.map((item, index) => (
                   <MenuItemButton key={item.id} item={item} index={editItems.length + index} />
                 ))}
-                <div className="h-px bg-neutral-700/30 my-1.5" />
+                <div className="h-px bg-neutral-800/30 my-1.5" />
               </>
             )}
 
@@ -542,7 +542,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
                   <MenuItemButton key={item.id} item={item} index={index} />
                 ))}
                 {(processingItems.length > 0 || exportItems.length > 0) && (
-                  <div className="h-px bg-neutral-700/30 my-1.5" />
+                  <div className="h-px bg-neutral-800/30 my-1.5" />
                 )}
               </>
             )}
@@ -563,14 +563,14 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
               return (
                 <React.Fragment key={category}>
                   {hasItemsBefore && (
-                    <div className="h-px bg-neutral-700/30 my-1.5" />
+                    <div className="h-px bg-neutral-800/30 my-1.5" />
                   )}
                   <GroupLabel title={category} />
                   {categoryItems.map((item) => (
                     <MenuItemButton key={item.id} item={item} index={0} />
                   ))}
                   {categoryIndex === categoryOrder.length - 1 && exportItems.length > 0 && (
-                    <div className="h-px bg-neutral-700/30 my-1.5" />
+                    <div className="h-px bg-neutral-800/30 my-1.5" />
                   )}
                 </React.Fragment>
               );
@@ -580,7 +580,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             {exportItems.length > 0 && (
               <>
                 {processingItems.length > 0 && (
-                  <div className="h-px bg-neutral-700/30 my-1.5" />
+                  <div className="h-px bg-neutral-800/30 my-1.5" />
                 )}
                 <GroupLabel title="Export" />
                 {exportItems.map((item, index) => (

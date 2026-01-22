@@ -1150,7 +1150,7 @@ export const DesignSystemPage: React.FC = () => {
                               <p className="text-sm text-neutral-400 mb-4">
                                 Standard structure for complex modals using Portal, Backdrop, Header, Content, and Footer.
                               </p>
-                              <code className="block p-3 bg-black/40 rounded border border-neutral-800/50 text-[10px] font-mono text-neutral-500 overflow-x-auto whitespace-pre">
+                              <code className="block p-3 bg-neutral-950/70 rounded border border-neutral-800/50 text-[10px] font-mono text-neutral-500 overflow-x-auto whitespace-pre">
                                 {`<div className="modal-backdrop">
   <div className="modal-container">
     <div className="modal-header">...</div>

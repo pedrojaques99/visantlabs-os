@@ -195,11 +195,11 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
   if (isCheckingAuth || isLoading) {
     return (
       <div
-        className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-black/50 backdrop-blur-sm overflow-y-auto"
+        className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-neutral-950/50 backdrop-blur-sm overflow-y-auto"
         onClick={onClose}
       >
         <div
-          className="bg-black/95 backdrop-blur-xl border border-neutral-800/50 rounded-md p-6 w-full max-w-2xl mx-4"
+          className="bg-neutral-950/95 backdrop-blur-xl border border-neutral-800/50 rounded-md p-6 w-full max-w-2xl mx-4"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex flex-col items-center gap-4">
@@ -213,11 +213,11 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
   if (!user || isAuthenticated === false) {
     return (
       <div
-        className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-black/50 backdrop-blur-sm overflow-y-auto"
+        className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-neutral-950/50 backdrop-blur-sm overflow-y-auto"
         onClick={onClose}
       >
         <div
-          className="bg-black/95 backdrop-blur-xl border border-neutral-800/50 rounded-md p-6 w-full max-w-2xl mx-4"
+          className="bg-neutral-950/95 backdrop-blur-xl border border-neutral-800/50 rounded-md p-6 w-full max-w-2xl mx-4"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="text-center">
@@ -238,12 +238,12 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-black/50 backdrop-blur-sm overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-neutral-950/50 backdrop-blur-sm overflow-y-auto"
       onClick={onClose}
     >
       <div
         className={`relative w-full max-w-2xl mx-4 my-8 ${theme === 'dark'
-          ? 'bg-black/95 backdrop-blur-xl border border-neutral-800/50'
+          ? 'bg-neutral-950/95 backdrop-blur-xl border border-neutral-800/50'
           : 'bg-white border border-neutral-200'
           } rounded-md shadow-2xl overflow-hidden`}
         onClick={(e) => e.stopPropagation()}
@@ -355,7 +355,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className={`w-full px-5 py-3.5 rounded-xl font-mono text-sm focus:outline-none focus:border-[brand-cyan]/70 transition ${theme === 'dark'
-                  ? 'bg-black/40 border border-neutral-800 text-neutral-200'
+                  ? 'bg-neutral-950/70 border border-neutral-800 text-neutral-200'
                   : 'bg-white border border-neutral-300 text-neutral-900'
                   }`}
               />
@@ -371,7 +371,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className={`w-full px-5 py-3.5 rounded-xl font-mono text-sm focus:outline-none focus:border-[brand-cyan]/70 transition ${theme === 'dark'
-                  ? 'bg-black/40 border border-neutral-800 text-neutral-200'
+                  ? 'bg-neutral-950/70 border border-neutral-800 text-neutral-200'
                   : 'bg-white border border-neutral-300 text-neutral-900'
                   }`}
               />

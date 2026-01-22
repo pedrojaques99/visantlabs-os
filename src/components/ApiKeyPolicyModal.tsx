@@ -26,7 +26,7 @@ export const ApiKeyPolicyModal: React.FC<ApiKeyPolicyModalProps> = ({ isOpen, on
 
   return (
     <div
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in overflow-y-auto"
+      className="fixed inset-0 bg-neutral-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in overflow-y-auto"
       onClick={onClose}
     >
       <div

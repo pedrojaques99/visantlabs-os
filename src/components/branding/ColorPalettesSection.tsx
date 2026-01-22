@@ -88,7 +88,7 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
           <div
             key={index}
             className={`border rounded-xl p-5 hover:border-[brand-cyan]/50 transition-colors relative ${theme === 'dark'
-              ? 'border-neutral-800/60 bg-black/40'
+              ? 'border-neutral-800/60 bg-neutral-950/70'
               : 'border-neutral-300 bg-neutral-100'
               }`}
           >
@@ -210,7 +210,7 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
         <button
           onClick={handleAddPalette}
           className={`flex items-center gap-2 px-4 py-2 border hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-all duration-300 ${theme === 'dark'
-            ? 'bg-black/40 border-neutral-800/60 text-neutral-300'
+            ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300'
             : 'bg-neutral-100 border-neutral-300 text-neutral-800'
             }`}
         >

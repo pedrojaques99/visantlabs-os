@@ -80,7 +80,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                   "flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
                   filterTag === null
                     ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/20'
-                    : 'text-neutral-500 border-neutral-800 hover:border-neutral-700 bg-black/20 hover:bg-black/40' // Darker bg for contrast inside container
+                    : 'text-neutral-500 border-neutral-800 hover:border-neutral-700 bg-neutral-950/20 hover:bg-neutral-950/70' // Darker bg for contrast inside container
                 )}
               >
                 {t('communityPresets.tags.all') || 'All'}
@@ -96,7 +96,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                     "flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs transition-all border group/tag",
                     filterTag === tag
                       ? 'bg-neutral-800 text-neutral-100 border-neutral-700'
-                      : 'text-neutral-400 border-neutral-800/50 hover:border-neutral-700 bg-black/20 hover:bg-black/40 hover:text-neutral-300'
+                      : 'text-neutral-400 border-neutral-800/50 hover:border-neutral-700 bg-neutral-950/20 hover:bg-neutral-950/70 hover:text-neutral-300'
                   )}
                 >
                   <span>#{tag}</span>

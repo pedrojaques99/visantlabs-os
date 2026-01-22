@@ -87,7 +87,7 @@ export const QRCodePage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Input Section */}
           <div className="space-y-6">
-            <div className="bg-black/40 border border-zinc-800 rounded-xl p-6 backdrop-blur-sm">
+            <div className="bg-neutral-950/70 border border-zinc-800 rounded-xl p-6 backdrop-blur-sm">
               <h2 className="text-xl font-semibold text-white mb-6">Settings</h2>
 
               {/* Text Input */}
@@ -128,7 +128,7 @@ export const QRCodePage: React.FC = () => {
                 <select
                   value={errorCorrectionLevel}
                   onChange={(e) => setErrorCorrectionLevel(e.target.value as ErrorCorrectionLevel)}
-                  className="w-full px-4 py-3 bg-black/40 border border-zinc-800 rounded-md text-zinc-200 font-mono text-sm focus:outline-none focus:border-brand-cyan/70 transition-all duration-300"
+                  className="w-full px-4 py-3 bg-neutral-950/70 border border-zinc-800 rounded-md text-zinc-200 font-mono text-sm focus:outline-none focus:border-brand-cyan/70 transition-all duration-300"
                 >
                   <option value="L">L - Low (~7%)</option>
                   <option value="M">M - Medium (~15%)</option>
@@ -183,7 +183,7 @@ export const QRCodePage: React.FC = () => {
 
           {/* QR Code Display */}
           <div className="space-y-6">
-            <div className="bg-black/40 border border-zinc-800 rounded-xl p-6 backdrop-blur-sm">
+            <div className="bg-neutral-950/70 border border-zinc-800 rounded-xl p-6 backdrop-blur-sm">
               <h2 className="text-xl font-semibold text-white mb-6">Preview</h2>
 
               <div className="flex flex-col items-center justify-center min-h-[400px]">

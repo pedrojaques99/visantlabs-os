@@ -186,7 +186,7 @@ export class ErrorBoundary extends Component<Props, State> {
       if (isChunkError && this.state.isRetrying) {
         return (
           <div className="min-h-screen bg-black text-neutral-300 flex items-center justify-center p-4">
-            <div className="max-w-md w-full bg-black/95 backdrop-blur-xl border border-neutral-800 rounded-xl p-6 md:p-8 space-y-4 text-center">
+            <div className="max-w-md w-full bg-neutral-950/95 backdrop-blur-xl border border-neutral-800 rounded-xl p-6 md:p-8 space-y-4 text-center">
               <div className="flex justify-center">
                 <RefreshCw className="h-8 w-8 text-brand-cyan animate-spin" />
               </div>
@@ -200,7 +200,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
       return (
         <div className="min-h-screen bg-black text-neutral-300 flex items-center justify-center p-4">
-          <div className="max-w-2xl w-full bg-black/95 backdrop-blur-xl border border-neutral-800 rounded-xl p-6 md:p-8 space-y-6">
+          <div className="max-w-2xl w-full bg-neutral-950/95 backdrop-blur-xl border border-neutral-800 rounded-xl p-6 md:p-8 space-y-6">
             <div className="flex items-center gap-3">
               <div className="p-3 bg-red-500/20 rounded-md">
                 <AlertTriangle className="h-6 w-6 text-red-400" />
@@ -215,7 +215,7 @@ export class ErrorBoundary extends Component<Props, State> {
               </div>
             </div>
 
-            <div className="bg-black/40 border border-neutral-800 rounded-md p-4 space-y-2">
+            <div className="bg-neutral-950/70 border border-neutral-800 rounded-md p-4 space-y-2">
               {!isChunkError && (
                 <p className="text-sm font-mono text-red-400 font-semibold">
                   {errorMessage}
@@ -236,7 +236,7 @@ export class ErrorBoundary extends Component<Props, State> {
                   <summary className="text-xs text-neutral-500 cursor-pointer hover:text-neutral-400 font-mono mb-2">
                     {translations.stackTrace || 'Stack Trace'}
                   </summary>
-                  <pre className="text-xs text-neutral-600 font-mono overflow-auto max-h-48 p-2 bg-black/40 rounded border border-neutral-800">
+                  <pre className="text-xs text-neutral-600 font-mono overflow-auto max-h-48 p-2 bg-neutral-950/70 rounded border border-neutral-800">
                     {this.state.errorInfo.componentStack}
                   </pre>
                 </details>

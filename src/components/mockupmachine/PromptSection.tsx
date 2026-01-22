@@ -113,7 +113,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
   };
 
   return (
-    <section id="prompt-section" className={`p-3 rounded-md border ${theme === 'dark' ? 'bg-black/20 border-neutral-700/50' : 'bg-neutral-50 border-neutral-300'}`}>
+    <section id="prompt-section" className={`p-3 rounded-md border ${theme === 'dark' ? 'bg-neutral-950/20 border-neutral-700/50' : 'bg-neutral-50 border-neutral-300'}`}>
       <div className="flex items-center justify-between mb-2">
         <h4 className={`flex items-center gap-2 text-xs font-mono ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>
           <Info size={14} /> {t('mockup.prompt')}
@@ -166,7 +166,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
           onChange={handleChange}
           rows={1}
           className={`w-full p-2 rounded-md border focus:outline-none focus:border-[brand-cyan]/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y ${theme === 'dark'
-            ? 'bg-black/40 border-neutral-700/50 text-neutral-400'
+            ? 'bg-neutral-950/70 border-neutral-700/50 text-neutral-400'
             : 'bg-white border-neutral-300 text-neutral-700'
             } ${isGeneratingPrompt ? 'opacity-50' : ''}`}
           placeholder={t('mockup.promptPlaceholder')}
@@ -174,7 +174,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
           disabled={isGeneratingPrompt}
         />
         {isGeneratingPrompt && (
-          <div className={`absolute h-min-[100px] inset-0 flex flex-col items-center justify-center gap-2 rounded-md ${theme === 'dark' ? 'bg-black/60' : 'bg-white/60'
+          <div className={`absolute h-min-[100px] inset-0 flex flex-col items-center justify-center gap-2 rounded-md ${theme === 'dark' ? 'bg-neutral-950/60' : 'bg-white/60'
             } backdrop-blur-sm`}>
             <GlitchLoader size={12} />
             <span className="text-xs font-mono font-semibold text-brand-cyan uppercase tracking-wider">

@@ -247,7 +247,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-6 md:p-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/80 backdrop-blur-sm p-4 sm:p-6 md:p-8">
       <div className="border border-neutral-800/50 rounded-md w-[90%] mx-auto relative max-h-[97%] overflow-y-auto overflow-x-hidden flex flex-col">
         <div className="relative flex-1 h-full w-full">
           <LinearGradientBackground className="rounded-md" fullHeight />
@@ -550,7 +550,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                     >
                                       {t('pricing.yearly') || 'Anual'}
                                       <span className={`text-[7px] sm:text-[8px] px-0.5 sm:px-1 py-0.5 rounded-full font-bold uppercase tracking-wider ${
-                                        billingCycle === 'yearly' ? "bg-black/20 text-black" : "bg-brand-cyan/20 text-brand-cyan"
+                                        billingCycle === 'yearly' ? "bg-neutral-950/20 text-black" : "bg-brand-cyan/20 text-brand-cyan"
                                       }`}>
                                         {t('pricing.yearlyDiscount') || '-16%'}
                                       </span>
@@ -688,7 +688,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                 return (
                   <div className="flex flex-col items-center justify-center py-4 sm:py-6 md:py-8 animate-slide-in-left transition-all duration-300 ease-in-out">
                     {/* Available Credits Box */}
-                    <div className="bg-black/20 backdrop-blur-sm border border-neutral-800/30 rounded-xl p-5 sm:p-6 md:p-8 w-full max-w-[280px] sm:max-w-[420px] text-center shadow-sm mb-6 sm:mb-8 md:mb-10">
+                    <div className="bg-neutral-950/20 backdrop-blur-sm border border-neutral-800/30 rounded-xl p-5 sm:p-6 md:p-8 w-full max-w-[280px] sm:max-w-[420px] text-center shadow-sm mb-6 sm:mb-8 md:mb-10">
                       <div className="space-y-4">
                         <div>
                           {/* Credits Display */}

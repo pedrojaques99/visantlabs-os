@@ -30,9 +30,9 @@ interface CanvasSettingsModalProps {
 export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
   isOpen,
   onClose,
-  backgroundColor = '#0C0C0C',
+  backgroundColor = 'neutral-900',
   onBackgroundColorChange,
-  gridColor = 'rgba(255, 255, 255, 0.1)',
+  gridColor = 'neutral-800/50',
   onGridColorChange,
   showGrid = true,
   onShowGridChange,
@@ -40,7 +40,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
   onShowMinimapChange,
   showControls = true,
   onShowControlsChange,
-  cursorColor = '#FFFFFF',
+  cursorColor = 'neutral-200',
   onCursorColorChange,
   brandCyan = 'brand-cyan',
   onBrandCyanChange,
@@ -104,11 +104,11 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-black/50 backdrop-blur-sm overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-neutral-950/50 backdrop-blur-sm overflow-y-auto"
       onClick={onClose}
     >
       <div
-        className="bg-neutral-900 border border-neutral-800/50 rounded-md p-4 w-full max-w-2xl mx-4 shadow-xl"
+        className="bg-neutral-950 border border-neutral-800/50 rounded-md p-4 w-full max-w-2xl mx-4 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
@@ -125,28 +125,8 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
 
         {/* Toggle Settings */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 mb-4">
-          {/* Grid Settings */}
-          <div className="flex items-center justify-between p-2 bg-black/40 border border-neutral-800/50 rounded-md">
-            <div className="flex items-center gap-2">
-              <Grid3x3 size={16} className="text-neutral-400 flex-shrink-0" />
-              <label className="text-xs font-mono text-neutral-300 cursor-pointer">
-                {t('canvas.showGrid') || 'Show Grid'}
-              </label>
-            </div>
-            <button
-              onClick={() => onShowGridChange?.(!showGrid)}
-              className={`relative w-10 h-5 rounded-md transition-colors cursor-pointer flex-shrink-0 ${showGrid ? 'bg-brand-cyan' : 'bg-neutral-700'
-                }`}
-            >
-              <span
-                className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-md transition-transform ${showGrid ? 'translate-x-5' : 'translate-x-0'
-                  }`}
-              />
-            </button>
-          </div>
-
           {/* Minimap Settings */}
-          <div className="flex items-center justify-between p-2 bg-black/40 border border-neutral-800/50 rounded-md">
+          <div className="flex items-center justify-between p-2 bg-neutral-900/50 border border-neutral-800/50 rounded-md">
             <div className="flex items-center gap-2">
               <Maximize2 size={16} className="text-neutral-400 flex-shrink-0" />
               <label className="text-xs font-mono text-neutral-300 cursor-pointer">
@@ -166,7 +146,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
           </div>
 
           {/* Controls Settings */}
-          <div className="flex items-center justify-between p-2 bg-black/40 border border-neutral-800/50 rounded-md">
+          <div className="flex items-center justify-between p-2 bg-neutral-900/50 border border-neutral-800/50 rounded-md">
             <div className="flex items-center gap-2">
               <ZoomIn size={16} className="text-neutral-400 flex-shrink-0" />
               <label className="text-xs font-mono text-neutral-300 cursor-pointer">
@@ -188,7 +168,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
 
         {/* Edge Settings */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 mb-4">
-          <div className="flex items-center justify-between p-2 bg-black/40 border border-neutral-800/50 rounded-md">
+          <div className="flex items-center justify-between p-2 bg-neutral-900/50 border border-neutral-800/50 rounded-md">
             <div className="flex items-center gap-2">
               <Link size={16} className="text-neutral-400 flex-shrink-0" />
               <div className="flex flex-col">
@@ -204,7 +184,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
                   ? 'bg-brand-cyan/20 border-brand-cyan/50 text-brand-cyan'
                   : 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:text-neutral-300'}`}
               >
-                Solid
+                {t('canvas.edgeStyleSolid') || 'Solid'}
               </button>
               <button
                 onClick={() => onEdgeStyleChange?.('dashed')}
@@ -212,12 +192,12 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
                   ? 'bg-brand-cyan/20 border-brand-cyan/50 text-brand-cyan'
                   : 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:text-neutral-300'}`}
               >
-                Dash
+                {t('canvas.edgeStyleDash') || 'Dash'}
               </button>
             </div>
           </div>
 
-          <div className="flex items-center justify-between p-2 bg-black/40 border border-neutral-800/50 rounded-md">
+          <div className="flex items-center justify-between p-2 bg-neutral-900/50 border border-neutral-800/50 rounded-md">
             <div className="flex items-center gap-2">
               <Link size={16} className="text-neutral-400 flex-shrink-0" />
               <div className="flex flex-col">
@@ -233,7 +213,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
                   ? 'bg-brand-cyan/20 border-brand-cyan/50 text-brand-cyan'
                   : 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:text-neutral-300'}`}
               >
-                Bold
+                {t('canvas.edgeWidthBold') || 'Bold'}
               </button>
               <button
                 onClick={() => onEdgeStrokeWidthChange?.('thin')}
@@ -241,7 +221,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
                   ? 'bg-brand-cyan/20 border-brand-cyan/50 text-brand-cyan'
                   : 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:text-neutral-300'}`}
               >
-                Thin
+                {t('canvas.edgeWidthThin') || 'Thin'}
               </button>
             </div>
           </div>
@@ -249,7 +229,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
 
         {/* Experimental Mode Toggle */}
         <div className="mb-4">
-          <div className="flex items-center justify-between p-2 bg-black/40 border border-neutral-800/50 rounded-md">
+          <div className="flex items-center justify-between p-2 bg-neutral-900/50 border border-neutral-800/50 rounded-md">
             <div className="flex items-center gap-2">
               <Beaker size={16} className="text-neutral-400 flex-shrink-0" />
               <div className="flex flex-col">
@@ -280,7 +260,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
         {/* Color Settings */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
           {/* Background Color Settings */}
-          <div className="p-2 bg-black/40 border border-neutral-800/50 rounded-md">
+          <div className="p-2 bg-neutral-900/50 border border-neutral-800/50 rounded-md">
             <div className="flex items-center gap-2 mb-2">
               <Palette size={16} className="text-neutral-400 flex-shrink-0" />
               <label className="text-xs font-mono text-neutral-300">
@@ -307,19 +287,32 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
                   setBgColor(newColor);
                   onBackgroundColorChange?.(newColor);
                 }}
-                className="flex-1 px-2 py-1.5 bg-black/40 border border-neutral-700/50 rounded text-xs text-neutral-300 font-mono focus:outline-none focus:border-[brand-cyan]/50"
+                className="flex-1 px-2 py-1.5 border border-neutral-700/50 rounded text-xs text-neutral-300 font-mono focus:outline focus:border-neutral-800/50"
                 placeholder="#0C0C0C"
               />
             </div>
           </div>
 
           {/* Grid Color Settings */}
-          <div className="p-2 bg-black/40 border border-neutral-800/50 rounded-md">
-            <div className="flex items-center gap-2 mb-2">
-              <Grid3x3 size={16} className="text-neutral-400 flex-shrink-0" />
-              <label className="text-xs font-mono text-neutral-300">
-                {t('canvas.gridColor') || 'Grid Color'}
-              </label>
+          <div className="p-2 bg-neutral-900/50 border border-neutral-800/50 rounded-md">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Grid3x3 size={16} className="text-neutral-400 flex-shrink-0" />
+                <label className="text-xs font-mono text-neutral-300">
+                  {t('canvas.gridColor') || 'Grid Color'}
+                </label>
+              </div>
+              <button
+                onClick={() => onShowGridChange?.(!showGrid)}
+                className={`relative w-8 h-4 rounded-md transition-colors cursor-pointer flex-shrink-0 ${showGrid ? 'bg-brand-cyan' : 'bg-neutral-700'
+                  }`}
+                title={showGrid ? t('canvas.hideGrid') || 'Hide Grid' : t('canvas.showGrid') || 'Show Grid'}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-md transition-transform ${showGrid ? 'translate-x-3.5' : 'translate-x-0'
+                    }`}
+                />
+              </button>
             </div>
             <div className="flex items-center gap-2">
               <input
@@ -346,14 +339,14 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
                   setGridCol(newColor);
                   onGridColorChange?.(newColor);
                 }}
-                className="flex-1 px-2 py-1.5 bg-black/40 border border-neutral-700/50 rounded text-xs text-neutral-300 font-mono focus:outline-none focus:border-[brand-cyan]/50"
+                className="flex-1 px-2 py-1.5 border border-neutral-700/50 rounded text-xs text-neutral-300 font-mono focus:outline focus:border-neutral-800/50"
                 placeholder="rgba(255, 255, 255, 0.1)"
               />
             </div>
           </div>
 
           {/* Cursor Color Settings */}
-          <div className="p-2 bg-black/40 border border-neutral-800/50 rounded-md">
+          <div className="p-2 bg-neutral-900/50 border border-neutral-800/50 rounded-md">
             <div className="flex items-center gap-2 mb-2">
               <MousePointer2 size={16} className="text-neutral-400 flex-shrink-0" />
               <label className="text-xs font-mono text-neutral-300">
@@ -372,14 +365,14 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
                 type="text"
                 value={curColor}
                 onChange={(e) => handleCursorColorChange(e.target.value)}
-                className="flex-1 px-2 py-1.5 bg-black/40 border border-neutral-700/50 rounded text-xs text-neutral-300 font-mono focus:outline-none focus:border-[brand-cyan]/50"
+                className="flex-1 px-2 py-1.5 border border-neutral-700/50 rounded text-xs text-neutral-300 font-mono focus:outline focus:border-neutral-800/50"
                 placeholder="#FFFFFF"
               />
             </div>
           </div>
 
           {/* Brand Cyan Color Settings */}
-          <div className="p-2 bg-black/40 border border-neutral-800/50 rounded-md">
+          <div className="p-2 bg-neutral-900/50 border border-neutral-800/50 rounded-md">
             <div className="flex items-center gap-2 mb-2">
               <Sparkles size={16} className="text-neutral-400 flex-shrink-0" />
               <label className="text-xs font-mono text-neutral-300">
@@ -398,7 +391,7 @@ export const CanvasSettingsModal: React.FC<CanvasSettingsModalProps> = ({
                 type="text"
                 value={brandCyanColor}
                 onChange={(e) => handleBrandCyanChange(e.target.value)}
-                className="flex-1 px-2 py-1.5 bg-black/40 border border-neutral-700/50 rounded text-xs text-neutral-300 font-mono focus:outline-none focus:border-[brand-cyan]/50"
+                className="flex-1 px-2 py-1.5 border border-neutral-700/50 rounded text-xs text-neutral-300 font-mono focus:outline focus:border-neutral-800/50"
                 placeholder="brand-cyan"
               />
             </div>

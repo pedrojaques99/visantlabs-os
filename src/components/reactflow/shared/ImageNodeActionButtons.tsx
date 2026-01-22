@@ -83,7 +83,7 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
       {showView && onView && (
         <button
           onClick={(e) => handleClick(e, onView)}
-          className="p-1 bg-black/40 hover:bg-black/60 text-neutral-400 hover:text-neutral-200 rounded transition-colors backdrop-blur-sm border border-neutral-700/30 hover:border-neutral-600/50"
+          className="p-1 bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 rounded transition-colors backdrop-blur-sm border border-neutral-700/30 hover:border-neutral-600/50"
           title={t(`${translationKeyPrefix}.viewFullScreen`) || 'View full screen'}
           onMouseDown={handleMouseDown}
         >
@@ -107,7 +107,7 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
             "p-1 rounded transition-colors backdrop-blur-sm border",
             isDownloading
               ? "bg-neutral-700/20 text-neutral-500 cursor-not-allowed border-neutral-700/20"
-              : "bg-black/40 hover:bg-black/60 text-neutral-400 hover:text-neutral-200 border border-neutral-700/30 hover:border-neutral-600/50"
+              : "bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 border border-neutral-700/30 hover:border-neutral-600/50"
           )}
           title={isDownloading ? t('canvasNodes.shared.downloading') || 'Downloading...' : t(`${translationKeyPrefix}.downloadImage`) || 'Download image'}
           onMouseDown={handleMouseDown}
@@ -139,7 +139,7 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
             "p-1 rounded transition-colors backdrop-blur-sm border",
             brandKitDisabled
               ? "bg-neutral-700/20 text-neutral-500 cursor-not-allowed border-neutral-700/20"
-              : "bg-black/40 hover:bg-black/60 text-neutral-400 hover:text-neutral-200 border-neutral-700/30 hover:border-neutral-600/50"
+              : "bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 border-neutral-700/30 hover:border-neutral-600/50"
           )}
           title={t(`${translationKeyPrefix}.brandKit`) || 'Brand Kit'}
           onMouseDown={handleMouseDown}
@@ -166,10 +166,10 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
           className={cn(
             "p-1 rounded transition-colors backdrop-blur-sm border",
             isSaving
-              ? "bg-black/40 text-neutral-500 cursor-wait border border-neutral-700/30"
+              ? "bg-neutral-950/70 text-neutral-500 cursor-wait border border-neutral-700/30"
               : isLiked
                 ? "bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30 border border-[brand-cyan]/20"
-                : "bg-black/40 hover:bg-black/60 text-neutral-400 hover:text-neutral-200 border border-neutral-700/30 hover:border-neutral-600/50"
+                : "bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 border border-neutral-700/30 hover:border-neutral-600/50"
           )}
           title={
             isLiked
@@ -196,7 +196,7 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
             "p-1 rounded transition-colors backdrop-blur-sm border",
             isDescribing || describeDisabled
               ? "bg-neutral-700/20 text-neutral-500 cursor-not-allowed border-neutral-700/20"
-              : "bg-black/40 hover:bg-black/60 text-neutral-400 hover:text-neutral-200 border-neutral-700/30 hover:border-neutral-600/50"
+              : "bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 border-neutral-700/30 hover:border-neutral-600/50"
           )}
           title={isDescribing ? t(`${translationKeyPrefix}.analyzingImage`) || 'Analyzing image...' : t(`${translationKeyPrefix}.describeImageWithAI`) || 'Describe image with AI'}
           onMouseDown={handleMouseDown}

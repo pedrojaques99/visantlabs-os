@@ -151,7 +151,7 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
           {t('budget.brandLogo')}
         </label>
         {isUploadingLogo ? (
-          <div className="flex items-center gap-2 p-4 border border-neutral-800 rounded-xl bg-black/20">
+          <div className="flex items-center gap-2 p-4 border border-neutral-800 rounded-xl bg-neutral-950/20">
             <GlitchLoader size={16} color="brand-cyan" />
             <span className="text-sm text-neutral-400 font-mono">
               {t('budget.uploadingLogo') || 'Uploading logo...'}
@@ -187,7 +187,7 @@ export const BrandCustomizationSection: React.FC<BrandCustomizationSectionProps>
               variant="outline"
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploadingLogo}
-              className="border border-neutral-800 bg-black/20 hover:bg-black/30 text-neutral-200 hover:text-brand-cyan"
+              className="border border-neutral-800 bg-neutral-950/20 hover:bg-neutral-950/30 text-neutral-200 hover:text-brand-cyan"
             >
               <Upload className="h-4 w-4" />
               {t('budget.uploadLogo') || 'Upload Logo'}

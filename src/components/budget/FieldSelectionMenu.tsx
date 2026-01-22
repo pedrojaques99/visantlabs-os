@@ -97,7 +97,7 @@ export const FieldSelectionMenu: React.FC<FieldSelectionMenuProps> = ({
   return (
     <div
       ref={menuRef}
-      className="fixed z-50 bg-black/95 backdrop-blur-xl border border-neutral-700 rounded-md shadow-2xl overflow-hidden min-w-[280px] max-w-[320px]"
+      className="fixed z-50 bg-neutral-950/95 backdrop-blur-xl border border-neutral-700 rounded-md shadow-2xl overflow-hidden min-w-[280px] max-w-[320px]"
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
@@ -126,7 +126,7 @@ export const FieldSelectionMenu: React.FC<FieldSelectionMenuProps> = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar campo..."
-            className="w-full pl-8 pr-3 py-1.5 bg-black/40 border border-neutral-800 rounded text-sm font-mono text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-[brand-cyan]/50"
+            className="w-full pl-8 pr-3 py-1.5 bg-neutral-950/70 border border-neutral-800 rounded text-sm font-mono text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-[brand-cyan]/50"
             aria-label="Buscar campo"
           />
         </div>

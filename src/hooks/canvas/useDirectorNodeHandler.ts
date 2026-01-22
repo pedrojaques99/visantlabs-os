@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { aiApi } from '@/services/aiApi';
 import { generateNodeId } from '@/utils/canvas/canvasNodeUtils';
 import { isLocalDevelopment } from '@/utils/env';
+import { normalizeImageToBase64, detectMimeType } from '@/services/reactFlowService';
 
 interface UseDirectorNodeHandlerParams {
   nodesRef: React.MutableRefObject<Node<FlowNodeData>[]>;
@@ -56,17 +57,26 @@ export const useDirectorNodeHandler = ({
 
     try {
       if (isLocalDevelopment()) {
-        console.log('[DirectorNode] Starting analysis...');
+        console.log('[DirectorNode] Starting analysis...', { 
+          connectedImage: connectedImage?.substring(0, 100) 
+        });
+      }
+
+      // Normalize image to base64 (handles both R2 URLs and base64)
+      const mimeType = detectMimeType(connectedImage);
+      const base64Data = await normalizeImageToBase64(connectedImage);
+
+      if (isLocalDevelopment()) {
+        console.log('[DirectorNode] Image normalized:', { 
+          mimeType, 
+          base64Length: base64Data?.length 
+        });
       }
 
       // Prepare image for analysis
       const imageData = {
-        base64: connectedImage.includes(',') 
-          ? connectedImage.split(',')[1] 
-          : connectedImage,
-        mimeType: connectedImage.includes('data:') 
-          ? connectedImage.split(';')[0].split(':')[1] 
-          : 'image/png'
+        base64: base64Data,
+        mimeType: mimeType
       };
 
       // Call AI analysis
@@ -80,7 +90,7 @@ export const useDirectorNodeHandler = ({
       let suggestedColors: string[] = [];
       try {
         const { extractColors } = await import('@/utils/colorExtraction');
-        const colorResult = await extractColors(imageData.base64, imageData.mimeType, 8);
+        const colorResult = await extractColors(base64Data, mimeType, 8);
         suggestedColors = colorResult.colors || [];
       } catch (colorErr) {
         if (isLocalDevelopment()) {
@@ -101,7 +111,8 @@ export const useDirectorNodeHandler = ({
         suggestedMaterialTags: analysis.materials || [],
         suggestedColors,
         suggestedDesignType: analysis.designType,
-        // Pre-select suggested tags
+        // Pre-select suggested design type and tags
+        selectedDesignType: analysis.designType,
         selectedBrandingTags: analysis.branding?.slice(0, 1) || [],
         selectedCategoryTags: analysis.categories?.slice(0, 1) || [],
       }, 'director');
@@ -167,21 +178,29 @@ export const useDirectorNodeHandler = ({
         });
       }
 
-      // Prepare image for prompt generation
+      // Prepare image for prompt generation (handle R2 URLs)
       const connectedImage = directorData.connectedImage;
-      const imageData = connectedImage ? {
-        base64: connectedImage.includes(',') 
-          ? connectedImage.split(',')[1] 
-          : connectedImage,
-        mimeType: connectedImage.includes('data:') 
-          ? connectedImage.split(';')[0].split(':')[1] 
-          : 'image/png'
-      } : null;
+      let imageData = null;
+      if (connectedImage) {
+        try {
+          const mimeType = detectMimeType(connectedImage);
+          const base64Data = await normalizeImageToBase64(connectedImage);
+          imageData = {
+            base64: base64Data,
+            mimeType: mimeType
+          };
+        } catch (imgErr) {
+          if (isLocalDevelopment()) {
+            console.error('[DirectorNode] Error normalizing image for prompt generation:', imgErr);
+          }
+          // Continue without image if conversion fails
+        }
+      }
 
       // Generate smart prompt
       const result = await aiApi.generateSmartPrompt({
         baseImage: imageData,
-        designType: directorData.suggestedDesignType || 'logo',
+        designType: directorData.selectedDesignType || directorData.suggestedDesignType || 'logo',
         brandingTags: directorData.selectedBrandingTags || [],
         categoryTags: directorData.selectedCategoryTags || [],
         locationTags: directorData.selectedLocationTags || [],

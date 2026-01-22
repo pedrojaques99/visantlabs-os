@@ -220,7 +220,7 @@ export const BrandingSectionCard: React.FC<BrandingSectionCardProps> = ({
                 onToggleCompact();
               }}
               onMouseDown={(e) => e.stopPropagation()}
-              className={`p-1 rounded transition-colors cursor-pointer ${theme === 'dark' ? 'hover:bg-black/40' : 'hover:bg-neutral-200'
+              className={`p-1 rounded transition-colors cursor-pointer ${theme === 'dark' ? 'hover:bg-neutral-950/70' : 'hover:bg-neutral-200'
                 }`}
               title={t('branding.collapse') || 'Collapse to compact'}
             >
@@ -249,7 +249,7 @@ export const BrandingSectionCard: React.FC<BrandingSectionCardProps> = ({
         <div
           ref={resizeRef}
           onMouseDown={handleResizeStart}
-          className={`absolute bottom-0 right-0 w-8 h-8 cursor-ns-resize flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-tl-lg ${theme === 'dark' ? 'hover:bg-black/20' : 'hover:bg-neutral-200'
+          className={`absolute bottom-0 right-0 w-8 h-8 cursor-ns-resize flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-tl-lg ${theme === 'dark' ? 'hover:bg-neutral-950/20' : 'hover:bg-neutral-200'
             }`}
           title={t('branding.resize') || 'Resize'}
         >

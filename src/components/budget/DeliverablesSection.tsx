@@ -133,7 +133,7 @@ export const DeliverablesSection: React.FC<DeliverablesSectionProps> = ({
                 <div className="flex justify-center pt-2">
                   <button
                     onClick={addDeliverable}
-                    className="flex items-center justify-center p-1.5 bg-black/30 hover:bg-black/50 border border-neutral-700/30 hover:border-neutral-600/50 rounded-md text-neutral-400 hover:text-neutral-300 transition-all duration-200"
+                    className="flex items-center justify-center p-1.5 bg-neutral-950/30 hover:bg-neutral-950/50 border border-neutral-700/30 hover:border-neutral-600/50 rounded-md text-neutral-400 hover:text-neutral-300 transition-all duration-200"
                     title={t('budget.addDeliverable') || 'Adicionar Entregável'}
                   >
                     <Plus size={16} />

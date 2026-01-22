@@ -65,7 +65,7 @@ export const EditWorkflowModal: React.FC<EditWorkflowModalProps> = ({
     if (!isOpen || !workflow) return null;
 
     return createPortal(
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[10000] flex items-center justify-center p-4 animate-fade-in" onClick={onClose}>
+        <div className="fixed inset-0 bg-neutral-950/80 backdrop-blur-sm z-[10000] flex items-center justify-center p-4 animate-fade-in" onClick={onClose}>
             <div className="relative max-w-md w-full bg-neutral-900 border border-neutral-800/60 rounded-xl shadow-2xl flex flex-col overflow-hidden animate-slide-up" onClick={e => e.stopPropagation()}>
                 <div className="flex items-center justify-between p-6 border-b border-neutral-800/60 bg-neutral-900/20">
                     <h2 className="text-lg font-semibold text-neutral-200 font-manrope tracking-tight">{t('workflows.edit.title') || 'Edit Workflow'}</h2>

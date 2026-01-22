@@ -278,7 +278,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
                                         onClick={() => setHistoryFilter(filter)}
                                         className={`px-3 py-1.5 rounded-md text-xs font-mono transition ${historyFilter === filter
                                             ? 'bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan'
-                                            : 'bg-black/40 border border-neutral-800 text-neutral-400 hover:bg-black/60'
+                                            : 'bg-neutral-950/70 border border-neutral-800 text-neutral-400 hover:bg-neutral-950/60'
                                             }`}
                                     >
                                         {filter === 'all' ? (t('usageHistory.all') || 'Todos') :
@@ -323,7 +323,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
                                     </TableHeader>
                                     <TableBody>
                                         {usageHistory.map((record) => (
-                                            <TableRow key={record.id} className="border-neutral-800/30 text-neutral-300 hover:bg-black/20 transition-colors">
+                                            <TableRow key={record.id} className="border-neutral-800/30 text-neutral-300 hover:bg-neutral-950/20 transition-colors">
                                                 <TableCell className="px-4 py-4 text-sm font-mono whitespace-nowrap">
                                                     {formatFriendlyDateTime(record.timestamp)}
                                                 </TableCell>
@@ -343,7 +343,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
                                                     {record.creditsDeducted}
                                                 </TableCell>
                                                 <TableCell className="px-4 py-4 text-sm text-neutral-400 font-mono">
-                                                    {record.model ? <Badge variant="outline" className="text-[10px] bg-black/40 border-neutral-700/50">{record.model}</Badge> : '-'}
+                                                    {record.model ? <Badge variant="outline" className="text-[10px] bg-neutral-950/70 border-neutral-700/50">{record.model}</Badge> : '-'}
                                                 </TableCell>
                                                 <TableCell className="px-4 py-4 text-sm text-neutral-400 font-mono">
                                                     <div className="flex flex-wrap gap-1">
@@ -376,14 +376,14 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
                                         <button
                                             onClick={() => setHistoryPagination(prev => ({ ...prev, offset: Math.max(0, prev.offset - prev.limit) }))}
                                             disabled={historyPagination.offset === 0}
-                                            className="px-3 py-1.5 bg-black/40 border border-neutral-800 text-neutral-300 rounded-md text-xs font-mono hover:bg-black/60 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                                            className="px-3 py-1.5 bg-neutral-950/70 border border-neutral-800 text-neutral-300 rounded-md text-xs font-mono hover:bg-neutral-950/60 disabled:opacity-50 disabled:cursor-not-allowed transition"
                                         >
                                             {t('usageHistory.previous') || 'Anterior'}
                                         </button>
                                         <button
                                             onClick={() => setHistoryPagination(prev => ({ ...prev, offset: prev.offset + prev.limit }))}
                                             disabled={!historyPagination.hasMore}
-                                            className="px-3 py-1.5 bg-black/40 border border-neutral-800 text-neutral-300 rounded-md text-xs font-mono hover:bg-black/60 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                                            className="px-3 py-1.5 bg-neutral-950/70 border border-neutral-800 text-neutral-300 rounded-md text-xs font-mono hover:bg-neutral-950/60 disabled:opacity-50 disabled:cursor-not-allowed transition"
                                         >
                                             {t('usageHistory.next') || 'Próximo'}
                                         </button>

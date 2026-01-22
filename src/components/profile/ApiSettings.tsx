@@ -165,7 +165,7 @@ export const ApiSettings: React.FC = () => {
                                 onKeyPress={handleKeyPress}
                                 placeholder={hasKey ? '••••••••••••••••••••••••••••••••' : (t('configuration.apiKeyPlaceholder') || 'Insira sua chave da API Gemini')}
                                 disabled={hasKey && !apiKey}
-                                className="w-full bg-black/40 px-4 py-3.5 pr-12 rounded-xl border border-neutral-800 focus:outline-none focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 text-sm text-neutral-200 font-mono placeholder:text-neutral-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-inner"
+                                className="w-full bg-neutral-950/70 px-4 py-3.5 pr-12 rounded-xl border border-neutral-800 focus:outline-none focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 text-sm text-neutral-200 font-mono placeholder:text-neutral-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-inner"
                                 autoComplete="off"
                             />
                             <button

@@ -24,6 +24,7 @@ import {
   getMediaType
 } from '@/utils/canvasConstants';
 import { DrawingLayer } from './DrawingLayer';
+import { lightenColor, getContrastTextColor, getMutedTextColor, getSubtleTextColor } from '@/utils/colorUtils';
 
 
 interface CanvasFlowProps {
@@ -700,7 +701,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
     <div
       ref={reactFlowWrapper}
       className={cn(
-        "w-full h-full transition-all duration-300 ease-in-out relative",
+        "w-full h-full transition-all duration-300 ease-in-out",
         isDragging && "is-dragging",
         `edge-style-${edgeStyle}`
       )}
@@ -731,7 +732,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
     >
       {/* Drag-over overlay with clear visual feedback */}
       {isDraggingOver && (
-        <div className="absolute inset-0 z-[9999] pointer-events-none flex items-center justify-center bg-black/70 backdrop-blur-sm">
+        <div className="absolute inset-0 z-[9999] pointer-events-none flex items-center justify-center bg-neutral-950/70 backdrop-blur-sm">
           <div className="text-center animate-pulse">
             <div className="w-32 h-32 mx-auto mb-6 rounded-full flex items-center justify-center bg-gradient-to-br from-brand-cyan to-blue-500 shadow-[0_0_40px_color-mix(in_srgb,var(--brand-cyan)_60%,transparent)]">
               <svg
@@ -762,7 +763,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
 
       {/* File processing overlay */}
       {isProcessingFiles && (
-        <div className="absolute inset-0 z-[9999] pointer-events-none flex items-center justify-center bg-black/80 backdrop-blur-md">
+        <div className="absolute inset-0 z-[9999] pointer-events-none flex items-center justify-center bg-neutral-950/80 backdrop-blur-md">
           <div className="text-center">
             <div className="w-20 h-20 mx-auto mb-4 rounded-full border-4 border-t-brand-cyan border-r-brand-cyan border-b-transparent border-l-transparent animate-spin" />
             <h3 className="text-xl font-bold mb-2 text-brand-cyan">
@@ -886,9 +887,31 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
           overflow: visible !important;
         }
         
+        /* Node background color - slightly lighter than canvas background */
+        .react-flow {
+          --node-bg-color: ${lightenColor(backgroundColor, 0.12)};
+          --node-bg-color-dragging: ${lightenColor(backgroundColor, 0.15)};
+        }
+        
+        /* Node text colors - automatically adjust based on contrast */
+        .react-flow {
+          --node-text-color: ${getContrastTextColor(lightenColor(backgroundColor, 0.12))};
+          --node-text-color-muted: ${getMutedTextColor(lightenColor(backgroundColor, 0.12))};
+          --node-text-color-subtle: ${getSubtleTextColor(lightenColor(backgroundColor, 0.12))};
+          --node-bg-color-hex: ${lightenColor(backgroundColor, 0.12)};
+        }
+        
+        /* Add class to react-flow when background is light (for button/textarea contrast) */
+        ${getContrastTextColor(lightenColor(backgroundColor, 0.12)) === '#000000' ? `
+        .react-flow[data-node-bg-light="true"] {
+          /* This will be set via className on ReactFlow component */
+        }
+        ` : ''}
+        
         /* ReactFlow native selection disabled - using custom selection box for drawings */
       `}</style>
       <ReactFlow
+        data-node-bg-light={getContrastTextColor(lightenColor(backgroundColor, 0.12)) === '#000000' ? 'true' : undefined}
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
@@ -910,7 +933,6 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
         }}
         nodeTypes={nodeTypes}
         fitView={false}
-        attributionPosition="bottom-left"
         onInit={(instance) => {
           reactFlowInstanceRef.current = instance;
           const initialViewport = instance.getViewport();

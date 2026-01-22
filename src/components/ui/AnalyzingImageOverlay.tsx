@@ -41,7 +41,7 @@ export const AnalyzingImageOverlay: React.FC<AnalyzingImageOverlayProps> = ({ is
     if (!isVisible) return null;
 
     return (
-        <div className={`fixed inset-0 z-50 flex items-center justify-center animate-fade-in ${theme === 'dark' ? 'bg-black/70' : 'bg-white/70'
+        <div className={`fixed inset-0 z-50 flex items-center justify-center animate-fade-in ${theme === 'dark' ? 'bg-neutral-950/70' : 'bg-white/70'
             }`}>
             {/* Compact Retro Container */}
             <div className={`relative w-80 mx-4 animate-fade-in border-2 bg-card ${theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-300/50'

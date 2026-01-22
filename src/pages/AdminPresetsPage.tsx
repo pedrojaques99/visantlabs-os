@@ -297,7 +297,7 @@ export const AdminPresetsPage: React.FC = () => {
             {imageUrl ? (
               <>
                 <img src={imageUrl} alt={row.getValue("name")} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer" onClick={() => {
+                <div className="absolute inset-0 bg-neutral-950/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer" onClick={() => {
                   handleEdit((row.original.category as PresetType) || 'mockup', row.original as any);
                 }}>
                   <Edit2 className="w-4 h-4 text-white" />
@@ -1533,7 +1533,7 @@ export const AdminPresetsPage: React.FC = () => {
             </div>
             {/* Batch Upload Modal */}
             {isBatchModalOpen && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/80 backdrop-blur-sm p-4">
                 <Card className="bg-neutral-900 border border-neutral-800/50 rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
                   <CardContent className="p-6 md:p-8">
                     <div className="flex items-center justify-between mb-6">
@@ -1561,7 +1561,7 @@ export const AdminPresetsPage: React.FC = () => {
                             setError(null);
                           }}
                           rows={12}
-                          className="w-full px-4 py-2 bg-black/40 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50 resize-none"
+                          className="w-full px-4 py-2 bg-neutral-950/70 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50 resize-none"
                           placeholder={`[\n  {\n    "id": "preset-id-1",\n    "name": "Nome do Preset 1",\n    "description": "Descrição do preset 1",\n    "prompt": "Prompt completo...",\n    "referenceImageUrl": "",\n    "aspectRatio": "16:9",\n    "model": "gemini-2.5-flash-image"\n  }\n]`}
                         />
                       </div>
@@ -1627,7 +1627,7 @@ export const AdminPresetsPage: React.FC = () => {
             {/* Edit/Create Preset Modal */}
             {isEditModalOpen && (
               <div
-                className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+                className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/80 backdrop-blur-sm p-4"
                 onClick={handleCancel}
               >
                 <Card
@@ -1734,7 +1734,7 @@ export const AdminPresetsPage: React.FC = () => {
                                   <img
                                     src={formData.referenceImageUrl}
                                     alt={t('adminPresets.reference')}
-                                    className="w-full max-h-64 object-contain rounded-md border border-neutral-700/50 bg-black/40"
+                                    className="w-full max-h-64 object-contain rounded-md border border-neutral-700/50 bg-neutral-950/70"
                                     onError={() => setImageUploadError('Erro ao carregar imagem. Verifique a URL.')}
                                   />
                                   <button
@@ -1743,7 +1743,7 @@ export const AdminPresetsPage: React.FC = () => {
                                       setFormData({ ...formData, referenceImageUrl: '' });
                                       setImageUploadError(null);
                                     }}
-                                    className="absolute top-2 right-2 p-1 bg-black/80 hover:bg-black text-neutral-300 rounded transition-colors"
+                                    className="absolute top-2 right-2 p-1 bg-neutral-950/80 hover:bg-black text-neutral-300 rounded transition-colors"
                                     title={t('adminPresets.removeImage')}
                                   >
                                     <X className="h-4 w-4" />
@@ -1770,7 +1770,7 @@ export const AdminPresetsPage: React.FC = () => {
                                 setFormData({ ...formData, referenceImageUrl: e.target.value });
                                 setImageUploadError(null);
                               }}
-                              className="w-full px-4 py-2 bg-black/40 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
+                              className="w-full px-4 py-2 bg-neutral-950/70 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
                               placeholder="https://..."
                             />
                           </div>
@@ -1784,7 +1784,7 @@ export const AdminPresetsPage: React.FC = () => {
                         <select
                           value={formData.aspectRatio}
                           onChange={(e) => setFormData({ ...formData, aspectRatio: e.target.value as AspectRatio })}
-                          className="w-full px-4 py-2 bg-black/40 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
+                          className="w-full px-4 py-2 bg-neutral-950/70 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
                         >
                           {ASPECT_RATIOS.map((ratio) => (
                             <option key={ratio} value={ratio}>
@@ -1800,7 +1800,7 @@ export const AdminPresetsPage: React.FC = () => {
                         <select
                           value={formData.model || ''}
                           onChange={(e) => setFormData({ ...formData, model: e.target.value as GeminiModel || undefined })}
-                          className="w-full px-4 py-2 bg-black/40 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
+                          className="w-full px-4 py-2 bg-neutral-950/70 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
                         >
                           <option value="">Nenhum</option>
                           {GEMINI_MODELS.map((model) => (
@@ -1819,7 +1819,7 @@ export const AdminPresetsPage: React.FC = () => {
                           <select
                             value={formData.mockupCategoryId || ''}
                             onChange={(e) => setFormData({ ...formData, mockupCategoryId: e.target.value })}
-                            className="w-full px-4 py-2 bg-black/40 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
+                            className="w-full px-4 py-2 bg-neutral-950/70 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
                           >
                             <option value="">Nenhuma</option>
                             {mockupCategories.map((c) => (
@@ -1855,7 +1855,7 @@ export const AdminPresetsPage: React.FC = () => {
                                 }
                               }}
                               placeholder="Digite uma tag e pressione Enter"
-                              className="flex-1 px-4 py-2 bg-black/40 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
+                              className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
                             />
                             <button
                               type="button"

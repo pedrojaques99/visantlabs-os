@@ -76,7 +76,7 @@ export const Tutorial: React.FC<TutorialProps> = ({ isOpen, onClose, onCreateMoc
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 backdrop-blur-md p-4 sm:p-6 py-6 sm:py-8 md:py-10 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-start justify-center bg-neutral-950/60 backdrop-blur-md p-4 sm:p-6 py-6 sm:py-8 md:py-10 overflow-y-auto"
       onClick={onClose}
     >
       <div

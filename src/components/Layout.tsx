@@ -494,7 +494,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           gap={12}
           toastOptions={{
             className: theme === 'dark'
-              ? 'bg-black/40 backdrop-blur-[2px] border border-neutral-800/10 !text-white/70 shadow-sm cursor-pointer hover:bg-black/50 transition-all duration-150 margin-2'
+              ? 'bg-neutral-950/70 backdrop-blur-[2px] border border-neutral-800/10 !text-white/70 shadow-sm cursor-pointer hover:bg-neutral-950/50 transition-all duration-150 margin-2'
               : 'bg-white/40 backdrop-blur-[2px] border border-neutral-200/10 text-neutral-800/70 shadow-sm cursor-pointer hover:bg-white/50 transition-all duration-150 margin-2',
             style: {
               background: theme === 'dark' ? 'rgba(18, 18, 18, 0.4)' : 'rgba(255, 255, 255, 0.4)',
@@ -506,18 +506,18 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             },
             classNames: {
               toast: theme === 'dark'
-                ? 'bg-black/40 border-neutral-800/10 !text-white/70 !shadow-sm !p-2 !text-[11px] !font-mono'
+                ? 'bg-neutral-950/70 border-neutral-800/10 !text-white/70 !shadow-sm !p-2 !text-[11px] !font-mono'
                 : 'bg-white/40 border-neutral-200/10 text-neutral-800/70 !shadow-sm !p-2 !text-[11px] !font-mono',
               title: theme === 'dark' ? '!text-white/70 !font-mono !text-[11px] !font-normal !leading-tight' : 'text-neutral-900/70 !font-mono !text-[11px] !font-normal !leading-tight',
               description: theme === 'dark' ? '!text-white/60 !font-mono !text-[10px] !leading-tight' : 'text-neutral-600/60 !font-mono !text-[10px] !leading-tight',
               success: theme === 'dark'
-                ? 'bg-black/40 border-brand-cyan/15 text-brand-cyan/70'
+                ? 'bg-neutral-950/70 border-brand-cyan/15 text-brand-cyan/70'
                 : 'bg-white/40 border-green-500/15 text-green-600/70',
               error: theme === 'dark'
-                ? 'bg-black/40 border-red-500/15 text-red-400/70'
+                ? 'bg-neutral-950/70 border-red-500/15 text-red-400/70'
                 : 'bg-white/40 border-red-500/15 text-red-600/70',
               info: theme === 'dark'
-                ? 'bg-black/40 border-blue-500/15 text-blue-400/70'
+                ? 'bg-neutral-950/70 border-blue-500/15 text-blue-400/70'
                 : 'bg-white/40 border-blue-500/15 text-blue-600/70',
               closeButton: theme === 'dark'
                 ? 'text-neutral-500/30 hover:text-neutral-400/50 opacity-30 hover:opacity-50 !w-3 !h-3'

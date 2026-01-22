@@ -62,7 +62,7 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                         {t('pricing.yearly') || 'Anual'}
                         <span className={cn(
                             "text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider",
-                            billingCycle === 'yearly' ? "bg-black/20 text-black" : "bg-brand-cyan/20 text-brand-cyan"
+                            billingCycle === 'yearly' ? "bg-neutral-950/20 text-black" : "bg-brand-cyan/20 text-brand-cyan"
                         )}>
                             {t('pricing.yearlyDiscount') || '-16%'}
                         </span>

@@ -7,6 +7,7 @@ import { UploadCloud } from 'lucide-react';
 interface AdminImageUploaderProps {
   onImageUpload: (image: UploadedImage) => void;
   disabled?: boolean;
+  compact?: boolean;
 }
 
 const SUPPORTED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
@@ -15,7 +16,8 @@ const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024;
 
 export const AdminImageUploader: React.FC<AdminImageUploaderProps> = ({
   onImageUpload,
-  disabled = false
+  disabled = false,
+  compact = false
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -70,6 +72,41 @@ export const AdminImageUploader: React.FC<AdminImageUploaderProps> = ({
     e.preventDefault();
     setIsDragging(false);
   };
+
+  // Compact mode renders as a simple button
+  if (compact) {
+    return (
+      <div className="inline-block">
+        <label
+          htmlFor="admin-file-upload-compact"
+          className={`inline-flex items-center gap-2 px-3 py-1.5 text-xs bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-md text-neutral-300 cursor-pointer transition-colors ${isProcessing || disabled ? 'cursor-wait opacity-50' : ''}`}
+        >
+          <input
+            id="admin-file-upload-compact"
+            type="file"
+            accept={SUPPORTED_MIME_TYPES.join(',')}
+            onChange={handleFileChange}
+            className="hidden"
+            disabled={isProcessing || disabled}
+          />
+          {isProcessing ? (
+            <>
+              <GlitchLoader size={12} color="brand-cyan" />
+              <span>Uploading...</span>
+            </>
+          ) : (
+            <>
+              <UploadCloud size={14} />
+              <span>Upload</span>
+            </>
+          )}
+        </label>
+        {error && (
+          <p className="text-red-400/80 text-xs mt-1">{error}</p>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">

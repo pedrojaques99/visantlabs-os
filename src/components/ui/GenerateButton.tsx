@@ -67,7 +67,7 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
               {[0, 1, 2].map((dot) => (
                 <span
                   key={dot}
-                  className="w-1.5 h-1.5 rounded-md bg-black/60 animate-pulse"
+                  className="w-1.5 h-1.5 rounded-md bg-neutral-950/60 animate-pulse"
                   style={{ animationDelay: `${dot * 150}ms` }}
                 />
               ))}

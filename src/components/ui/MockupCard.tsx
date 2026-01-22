@@ -55,7 +55,7 @@ export const MockupCard: React.FC<MockupCardProps> = ({
         {/* Hover Actions Overlay - Buttons compensate for zoom scale */}
         {(onEdit || onDelete || onView) && (
           <div
-            className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-md flex items-center justify-center gap-2 pointer-events-none overflow-visible origin-center will-change-[transform,opacity]"
+            className="absolute inset-0 bg-neutral-950/70 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-md flex items-center justify-center gap-2 pointer-events-none overflow-visible origin-center will-change-[transform,opacity]"
             style={{
               transform: `scale(${buttonScale})`,
             }}

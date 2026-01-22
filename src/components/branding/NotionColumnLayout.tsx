@@ -543,7 +543,7 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
       {/* Column Control - Only show on desktop and when onSetColumnCount is provided */}
       {isDesktop && onSetColumnCount && (
         <div className="flex items-center justify-end mb-4">
-          <div className="flex items-center gap-1 bg-black/20 backdrop-blur-sm border border-neutral-800/40 rounded-md p-1">
+          <div className="flex items-center gap-1 bg-neutral-950/20 backdrop-blur-sm border border-neutral-800/40 rounded-md p-1">
             <button
               onClick={() => handleColumnsChange(columns - 1)}
               disabled={columns <= 1}

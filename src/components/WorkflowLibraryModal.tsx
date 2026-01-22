@@ -192,12 +192,12 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
     const modalContent = (
         <>
             <div
-                className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
+                className="fixed inset-0 bg-neutral-950/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
                 style={{ animation: 'fadeIn 0.2s ease-out' }}
                 onClick={onClose}
             >
                 <div
-                    className="relative max-w-6xl w-full max-h-[90vh] bg-black/95 backdrop-blur-xl border border-neutral-800/50 rounded-md shadow-2xl overflow-hidden flex flex-col"
+                    className="relative max-w-6xl w-full max-h-[90vh] bg-neutral-950/95 backdrop-blur-xl border border-neutral-800/50 rounded-md shadow-2xl overflow-hidden flex flex-col"
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* Header */}
@@ -302,7 +302,7 @@ export const WorkflowLibraryModal: React.FC<WorkflowLibraryModalProps> = ({
                     </div>
 
                     {/* Content */}
-                    <div className="flex-1 overflow-y-auto p-4 relative custom-scrollbar bg-black/50">
+                    <div className="flex-1 overflow-y-auto p-4 relative custom-scrollbar bg-neutral-950/50">
                         {isLoading ? (
                             <div className="flex flex-col items-center justify-center h-64 gap-2">
                                 <div className="w-6 h-6 border-2 border-brand-cyan/30 border-t-brand-cyan rounded-full animate-spin"></div>

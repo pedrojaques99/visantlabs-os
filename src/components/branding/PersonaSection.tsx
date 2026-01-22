@@ -189,7 +189,7 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
                     onChange={(e) => handleDesireChange(index, e.target.value)}
                     placeholder="Digite um desejo..."
                     className={`font-manrope text-sm min-h-[60px] flex-1 ${theme === 'dark'
-                      ? 'bg-black/40 border-neutral-800/60 text-neutral-300'
+                      ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300'
                       : 'bg-neutral-100 border-neutral-300 text-neutral-800'
                       }`}
                   />
@@ -206,7 +206,7 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
               <button
                 onClick={handleAddDesire}
                 className={`flex items-center gap-2 px-4 py-2 border hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-all duration-300 ${theme === 'dark'
-                  ? 'bg-black/40 border-neutral-800/60 text-neutral-300'
+                  ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300'
                   : 'bg-neutral-100 border-neutral-300 text-neutral-800'
                   }`}
               >
@@ -220,7 +220,7 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
                 <div
                   key={index}
                   className={`border rounded-xl p-4 transition-colors ${theme === 'dark'
-                    ? 'bg-black/40 border-neutral-800/60 hover:border-neutral-700/60'
+                    ? 'bg-neutral-950/70 border-neutral-800/60 hover:border-neutral-700/60'
                     : 'bg-neutral-100 border-neutral-300 hover:border-neutral-400'
                     }`}
                 >
@@ -249,7 +249,7 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
                     onChange={(e) => handlePainChange(index, e.target.value)}
                     placeholder="Digite uma dor..."
                     className={`font-manrope text-sm min-h-[60px] flex-1 ${theme === 'dark'
-                      ? 'bg-black/40 border-neutral-800/60 text-neutral-300'
+                      ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300'
                       : 'bg-neutral-100 border-neutral-300 text-neutral-800'
                       }`}
                   />
@@ -266,7 +266,7 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
               <button
                 onClick={handleAddPain}
                 className={`flex items-center gap-2 px-4 py-2 border hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-all duration-300 ${theme === 'dark'
-                  ? 'bg-black/40 border-neutral-800/60 text-neutral-300'
+                  ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300'
                   : 'bg-neutral-100 border-neutral-300 text-neutral-800'
                   }`}
               >
@@ -280,7 +280,7 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
                 <div
                   key={index}
                   className={`border rounded-xl p-4 transition-colors ${theme === 'dark'
-                    ? 'bg-black/40 border-neutral-800/60 hover:border-neutral-700/60'
+                    ? 'bg-neutral-950/70 border-neutral-800/60 hover:border-neutral-700/60'
                     : 'bg-neutral-100 border-neutral-300 hover:border-neutral-400'
                     }`}
                 >

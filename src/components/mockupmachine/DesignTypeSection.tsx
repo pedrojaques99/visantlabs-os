@@ -44,13 +44,13 @@ export const DesignTypeSection: React.FC<DesignTypeSectionProps> = ({
             disabled={isImagelessMode}
             variant="outline"
             className={cn(
-              "w-full flex flex-col items-center justify-center gap-1 p-4 text-xs font-mono transition-all",
+              "w-full h-full flex flex-col items-center justify-center gap-1 p-4 text-xs font-mono transition-all",
               designType === 'logo'
                 ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40 shadow-sm'
                 : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50 hover:bg-neutral-800/40'
             )}
           >
-            <span className="text-2xl">🖼️</span>
+            <span className="text-sm">🖼️</span>
             <span className="font-semibold text-sm">{t('mockup.itsALogo')}</span>
           </Button>
           <Button
@@ -61,13 +61,13 @@ export const DesignTypeSection: React.FC<DesignTypeSectionProps> = ({
             disabled={isImagelessMode}
             variant="outline"
             className={cn(
-              "w-full flex flex-col items-center justify-center gap-1 p-4 text-xs font-mono transition-all",
+              "w-full h-full flex flex-col items-center justify-center gap-1 p-4 text-xs font-mono transition-all",
               designType === 'layout'
                 ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40 shadow-sm'
                 : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50 hover:bg-neutral-800/40'
             )}
           >
-            <span className="text-2xl">🎨</span>
+            <span className="text-sm">🎨</span>
             <span className="font-semibold text-sm">{t('mockup.itsALayout')}</span>
           </Button>
         </div>

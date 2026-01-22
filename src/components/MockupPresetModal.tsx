@@ -320,7 +320,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
     <div
       id="mockup-preset-modal"
       tabIndex={-1}
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
+      className="fixed inset-0 bg-neutral-950/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
       style={{ animation: 'fadeIn 0.2s ease-out' }}
       onClick={onClose}
       role="dialog"
@@ -328,7 +328,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
       aria-labelledby="mockup-preset-modal-title"
     >
       <div
-        className="relative max-w-4xl w-full max-h-[90vh] bg-black/95 backdrop-blur-xl border border-neutral-800/50 rounded-md shadow-2xl overflow-hidden flex flex-col"
+        className="relative max-w-4xl w-full max-h-[90vh] bg-neutral-950/95 backdrop-blur-xl border border-neutral-800/50 rounded-md shadow-2xl overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -449,7 +449,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
         </div>
 
         {/* Content */}
-        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden p-4 custom-scrollbar bg-black/50">
+        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden p-4 custom-scrollbar bg-neutral-950/50">
           {isLoadingPresets ? (
             <div className="flex flex-col items-center justify-center py-20 text-neutral-500 gap-2">
               <div className="w-6 h-6 border-2 border-brand-cyan/30 border-t-brand-cyan rounded-full animate-spin"></div>
