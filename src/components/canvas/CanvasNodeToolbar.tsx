@@ -19,6 +19,7 @@ import {
   Grid3x3,
   Pickaxe,
   X,
+  Compass,
 } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Tooltip } from '@/components/ui/Tooltip';
@@ -42,6 +43,7 @@ interface CanvasToolbarProps {
   onAddChat?: () => void;
   onAddShader?: () => void;
   onAddColorExtractor?: () => void;
+  onAddDirector?: () => void;
   onToggleDrawing?: () => void;
   isDrawingMode?: boolean;
   experimentalMode?: boolean;
@@ -82,6 +84,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
   onAddChat,
   onAddShader,
   onAddColorExtractor,
+  onAddDirector,
   onToggleDrawing,
   isDrawingMode = false,
   experimentalMode = false,
@@ -123,6 +126,14 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
       label: t('canvasToolbar.labels.prompt'),
       tooltip: t('canvasToolbar.addPromptNode'),
       onClick: onAddPrompt,
+      category: 'core' as const,
+    }] : []),
+    ...(onAddDirector ? [{
+      id: 'director',
+      icon: <Compass className="w-4 h-4" />,
+      label: t('canvasToolbar.labels.director') || 'Director',
+      tooltip: t('canvasToolbar.addDirectorNode') || 'Add Director Node',
+      onClick: onAddDirector,
       category: 'core' as const,
     }] : []),
     {

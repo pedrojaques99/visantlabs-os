@@ -223,7 +223,7 @@ const verifyRateLimiter = rateLimit({
 
 // Password reset rate limiter - strict to prevent enumeration/brute force
 // Using express-rate-limit for CodeQL recognition
-const resetPasswordRateLimiter = rateLimit({
+const passwordResetRateLimiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_PASSWORD_RESET_WINDOW_MS || '3600000', 10), // 1 hour default
   max: parseInt(process.env.RATE_LIMIT_MAX_PASSWORD_RESET || '5', 10), // 5 password reset attempts per hour
   message: { error: 'Too many password reset attempts. Please try again later.' },
@@ -907,7 +907,7 @@ router.post('/forgot-password', passwordResetRateLimiter, async (req, res) => {
 });
 
 // Reset Password - Reset password with token
-router.post('/reset-password', resetPasswordRateLimiter, async (req, res) => {
+router.post('/reset-password', passwordResetRateLimiter, async (req, res) => {
   try {
     const { token, password } = req.body;
 

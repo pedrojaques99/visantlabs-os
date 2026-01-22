@@ -1800,6 +1800,59 @@ export const useCanvasNodeCreation = (
     return newNode.id;
   }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef]);
 
+  const addDirectorNode = useCallback((customPosition?: { x: number; y: number }): string | undefined => {
+    if (!reactFlowInstance) {
+      toast.error('Canvas not ready. Please wait a moment and try again.');
+      return;
+    }
+
+    const screenPos = customPosition || {
+      x: window.innerWidth / 2,
+      y: window.innerHeight / 2,
+    };
+
+    let position;
+    try {
+      position = reactFlowInstance.screenToFlowPosition(screenPos);
+      if (!position || isNaN(position.x) || isNaN(position.y)) {
+        position = { x: 0, y: 0 };
+      }
+    } catch (error) {
+      console.error('Error converting screen position to flow position:', error);
+      position = { x: 0, y: 0 };
+    }
+
+    addToHistory(nodes, edges);
+
+    const newNode: Node<FlowNodeData> = {
+      id: generateNodeId('director'),
+      type: 'director',
+      position,
+      draggable: true,
+      connectable: true,
+      selectable: true,
+      data: {
+        type: 'director',
+        onAnalyze: handlersRef.current?.handleDirectorAnalyze || (() => Promise.resolve()),
+        onGeneratePrompt: handlersRef.current?.handleDirectorGeneratePrompt || (() => Promise.resolve()),
+        onUpdateData: handlersRef.current?.handleDirectorNodeDataUpdate || (() => {}),
+        onOpenSidePanel: handlersRef.current?.handleDirectorOpenSidebar || (() => {}),
+        onDelete: handleDelete,
+        onDuplicate: handleDuplicate,
+      },
+    };
+
+    setNodes((nds: Node<FlowNodeData>[]) => {
+      const newNodes = [...nds, newNode];
+      setTimeout(() => {
+        addToHistory(newNodes, edges);
+      }, 0);
+      return newNodes;
+    });
+
+    return newNode.id;
+  }, [reactFlowInstance, nodes, edges, addToHistory, setNodes, handlersRef, handleDelete, handleDuplicate]);
+
   // ========== UPDATE NODE CREATORS REF ==========
   // Keep nodeCreatorsRef updated with the latest node creation functions
   useEffect(() => {
@@ -1840,6 +1893,7 @@ export const useCanvasNodeCreation = (
     addColorExtractorNode,
     addTextNode,
     addChatNode,
+    addDirectorNode,
   };
 };
 

@@ -37,7 +37,7 @@ import { EdgeContextMenu } from '../components/reactflow/contextmenu/EdgeContext
 import { ImageContextMenu } from '../components/reactflow/contextmenu/ImageContextMenu';
 import { NodeContextMenu } from '../components/reactflow/contextmenu/NodeContextMenu';
 import { usePasteImage } from '@/hooks/usePasteImage';
-import type { FlowNodeData, ImageNodeData, MergeNodeData, EditNodeData, UpscaleNodeData, UpscaleBicubicNodeData, PromptNodeData, OutputNodeData, BrandNodeData, MockupNodeData, LogoNodeData, PDFNodeData, StrategyNodeData, BrandCoreData, VideoNodeData, VideoInputNodeData, AngleNodeData, TextureNodeData, AmbienceNodeData, LuminanceNodeData, ShaderNodeData, ColorExtractorNodeData, TextNodeData, ChatNodeData } from '../types/reactFlow';
+import type { FlowNodeData, ImageNodeData, MergeNodeData, EditNodeData, UpscaleNodeData, UpscaleBicubicNodeData, PromptNodeData, OutputNodeData, BrandNodeData, MockupNodeData, LogoNodeData, PDFNodeData, StrategyNodeData, BrandCoreData, VideoNodeData, VideoInputNodeData, AngleNodeData, TextureNodeData, AmbienceNodeData, LuminanceNodeData, ShaderNodeData, ColorExtractorNodeData, TextNodeData, ChatNodeData, DirectorNodeData } from '../types/reactFlow';
 import type { Mockup } from '../services/mockupApi';
 import { mockupApi } from '../services/mockupApi';
 import { FullScreenViewer } from '../components/FullScreenViewer';
@@ -960,6 +960,27 @@ export const CanvasPage: React.FC = () => {
     handlersRef,
   });
 
+  // Create edgesRef for director handler
+  const edgesRef = useRef<Edge[]>(edges);
+  useEffect(() => {
+    edgesRef.current = edges;
+  }, [edges]);
+
+  // Director Node handlers
+  const {
+    handleDirectorAnalyze,
+    handleDirectorGeneratePrompt,
+    handleDirectorNodeDataUpdate,
+  } = useDirectorNodeHandler({
+    nodesRef,
+    edgesRef,
+    updateNodeData,
+    setNodes,
+    setEdges,
+    addToHistory,
+    handlersRef,
+  });
+
   // Canvas tool state
   const [activeTool, setActiveTool] = useState<CanvasTool>('select');
   const [isToolbarCollapsed, setIsToolbarCollapsed] = useState(false);
@@ -1123,6 +1144,7 @@ export const CanvasPage: React.FC = () => {
     addBrandCoreNode,
     addTextNode,
     addChatNode,
+    addDirectorNode,
   } = nodeCreators;
 
   const handleImportCommunityPreset = useCallback((preset: CommunityPrompt, type: string) => {
@@ -1260,6 +1282,7 @@ export const CanvasPage: React.FC = () => {
       addBrandCoreNode,
       addChatNode,
       addColorExtractorNode,
+      addDirectorNode,
     }
   });
 
@@ -1908,6 +1931,11 @@ export const CanvasPage: React.FC = () => {
     setOpenChatNodeId(nodeId);
   }, []);
 
+  // Handler to open DirectorNode sidebar
+  const handleDirectorOpenSidebar = useCallback((nodeId: string) => {
+    setOpenDirectorNodeId(nodeId);
+  }, []);
+
   // Perform actual node deletion
   const performNodeDeletion = useCallback(async (nodeId: string) => {
     const node = nodes.find(n => n.id === nodeId);
@@ -2134,12 +2162,13 @@ export const CanvasPage: React.FC = () => {
         (n.type === 'brand' && (!(n.data as BrandNodeData).onAnalyze || !(n.data as BrandNodeData).onUploadLogo || !(n.data as BrandNodeData).onUpdateData || !handlersRef.current?.handleBrandAnalyze)) ||
         (n.type === 'strategy' && (!(n.data as StrategyNodeData).onOpenProjectModal || !(n.data as StrategyNodeData).onGenerate || !(n.data as StrategyNodeData).onGenerateSection || !(n.data as StrategyNodeData).onGenerateAll || !(n.data as StrategyNodeData).onInitialAnalysis || !(n.data as StrategyNodeData).onCancelGeneration || !(n.data as StrategyNodeData).onGeneratePDF || !(n.data as StrategyNodeData).onSave || !(n.data as StrategyNodeData).onUpdateData || !handlersRef.current?.handleStrategyNodeGenerate || !handlersRef.current?.handleStrategyNodeDataUpdate)) ||
         (n.type === 'brandCore' && (!(n.data as BrandCoreData).onAnalyze || !(n.data as BrandCoreData).onUpdateData || !(n.data as BrandCoreData).onUploadPdfToR2 || !(n.data as BrandCoreData).onCancelAnalyze || !handlersRef.current?.handleBrandCoreAnalyze || !handlersRef.current?.handleBrandCoreDataUpdate || !handlersRef.current?.handleBrandCoreUploadPdfToR2 || !handlersRef.current?.handleBrandCoreCancelAnalyze)) ||
-        (n.type === 'chat' && (!(n.data as ChatNodeData).onSendMessage || !(n.data as ChatNodeData).onUpdateData || !(n.data as ChatNodeData).onClearHistory || !(n.data as ChatNodeData).onAddPromptNode || !(n.data as ChatNodeData).onCreateNode || !(n.data as ChatNodeData).onOpenSidebar || !handlersRef.current?.handleChatSendMessage || !handlersRef.current?.handleChatUpdateData))
+        (n.type === 'chat' && (!(n.data as ChatNodeData).onSendMessage || !(n.data as ChatNodeData).onUpdateData || !(n.data as ChatNodeData).onClearHistory || !(n.data as ChatNodeData).onAddPromptNode || !(n.data as ChatNodeData).onCreateNode || !(n.data as ChatNodeData).onOpenSidebar || !handlersRef.current?.handleChatSendMessage || !handlersRef.current?.handleChatUpdateData)) ||
+        (n.type === 'director' && (!(n.data as DirectorNodeData).onAnalyze || !(n.data as DirectorNodeData).onGeneratePrompt || !(n.data as DirectorNodeData).onUpdateData || !(n.data as DirectorNodeData).onOpenSidePanel))
       );
 
       // Check if there are edges connected to nodes that need image synchronization
       // This ensures we always sync images when edges change, even if handlers are already present
-      const nodeTypesNeedingImageSync = ['edit', 'mockup', 'prompt', 'upscale', 'upscaleBicubic', 'merge'] as const;
+      const nodeTypesNeedingImageSync = ['edit', 'mockup', 'prompt', 'upscale', 'upscaleBicubic', 'merge', 'director'] as const;
       const hasEdgesNeedingImageSync = edges.some(edge => {
         const targetNode = nds.find(n => n.id === edge.target);
         return targetNode && nodeTypesNeedingImageSync.includes(targetNode.type as typeof nodeTypesNeedingImageSync[number]);
@@ -2709,6 +2738,42 @@ export const CanvasPage: React.FC = () => {
             } as Node<FlowNodeData>;
           }
         }
+        if (n.type === 'director') {
+          const directorData = n.data as DirectorNodeData;
+          
+          // Sync connected image using helper
+          const newConnectedImage = syncConnectedImage(n.id, edges, nds);
+          const currentConnectedImage = directorData.connectedImage || undefined;
+          const connectedImageChanged = currentConnectedImage !== newConnectedImage;
+          
+          // Find source image node ID for auto-connect
+          const sourceEdge = edges.find(e => e.target === n.id && e.targetHandle === 'image-input');
+          const sourceImageNodeId = sourceEdge?.source;
+          const sourceNodeChanged = directorData.sourceImageNodeId !== sourceImageNodeId;
+          
+          const needsUpdate = !directorData.onAnalyze ||
+            !directorData.onGeneratePrompt ||
+            !directorData.onUpdateData ||
+            !directorData.onOpenSidePanel ||
+            connectedImageChanged ||
+            sourceNodeChanged;
+          if (needsUpdate) {
+            hasChanges = true;
+            return {
+              ...n,
+              data: {
+                ...directorData,
+                onAnalyze: handleDirectorAnalyze,
+                onGeneratePrompt: handleDirectorGeneratePrompt,
+                onUpdateData: handleDirectorNodeDataUpdate,
+                onOpenSidePanel: handleDirectorOpenSidebar,
+                onDelete: handleDeleteNodeById,
+                connectedImage: newConnectedImage,
+                sourceImageNodeId: sourceImageNodeId,
+              } as DirectorNodeData,
+            } as Node<FlowNodeData>;
+          }
+        }
         if (n.type === 'brand') {
           const brandData = n.data as BrandNodeData;
           const needsHandlerUpdate = !brandData.onAnalyze || !brandData.onUploadLogo || !brandData.onUpdateData || !handlersRef.current?.handleBrandAnalyze;
@@ -3055,7 +3120,7 @@ export const CanvasPage: React.FC = () => {
       previousEdgesRef.current = edges;
       return nds;
     });
-  }, [nodes, edges, setNodes, handleView, handleEdit, handleEditOutput, handleDelete, subscriptionStatus, handlersRef, handleMergeNodeDataUpdate, handlePromptNodeDataUpdate, handlePromptRemoveEdge, userMockups, handleBrandKit, handleDeleteNodeById, handleChatOpenSidebar]);
+  }, [nodes, edges, setNodes, handleView, handleEdit, handleEditOutput, handleDelete, subscriptionStatus, handlersRef, handleMergeNodeDataUpdate, handlePromptNodeDataUpdate, handlePromptRemoveEdge, userMockups, handleBrandKit, handleDeleteNodeById, handleChatOpenSidebar, handleDirectorOpenSidebar, handleDirectorAnalyze, handleDirectorGeneratePrompt, handleDirectorNodeDataUpdate]);
 
   // Validate and fix node positions to prevent NaN errors
   useEffect(() => {
@@ -4116,6 +4181,24 @@ export const CanvasPage: React.FC = () => {
         } : null}
       />
 
+      {/* Director Side Panel */}
+      {openDirectorNodeId && (() => {
+        const directorNode = nodes.find(n => n.id === openDirectorNodeId && n.type === 'director');
+        if (!directorNode) return null;
+        const directorData = directorNode.data as DirectorNodeData;
+        return (
+          <DirectorSidePanel
+            isOpen={true}
+            onClose={() => setOpenDirectorNodeId(null)}
+            nodeData={directorData}
+            nodeId={openDirectorNodeId}
+            onAnalyze={() => handleDirectorAnalyze(openDirectorNodeId)}
+            onGeneratePrompt={() => handleDirectorGeneratePrompt(openDirectorNodeId)}
+            onUpdateData={handleDirectorNodeDataUpdate}
+          />
+        );
+      })()}
+
       {/* Save Prompt Modal */}
       <SavePromptModal
         isOpen={savePromptModalState.isOpen}
@@ -4148,6 +4231,7 @@ export const CanvasPage: React.FC = () => {
           onAddPrompt={toolbarActions.onAddPrompt}
           onAddColorExtractor={toolbarActions.onAddColorExtractor}
           onAddShader={toolbarActions.onAddShader}
+          onAddDirector={toolbarActions.onAddDirector}
           onToggleDrawing={() => {
             drawing.setIsDrawingMode(!drawing.drawingState.isDrawingMode);
           }}
