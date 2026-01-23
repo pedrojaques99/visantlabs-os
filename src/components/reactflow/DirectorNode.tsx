@@ -210,6 +210,8 @@ export const DirectorNode = memo(({ data, selected, id, dragging }: NodeProps<an
       prevData.generatedPrompt !== nextData.generatedPrompt ||
       prevData.selectedBrandingTags?.length !== nextData.selectedBrandingTags?.length ||
       prevData.selectedCategoryTags?.length !== nextData.selectedCategoryTags?.length ||
+      prevData.onOpenSidePanel !== nextData.onOpenSidePanel ||
+      prevData.onGeneratePrompt !== nextData.onGeneratePrompt ||
       prevProps.selected !== nextProps.selected ||
       prevProps.dragging !== nextProps.dragging) {
     return false; // Re-render

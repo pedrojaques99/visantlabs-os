@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
-import { X, Compass, Sparkles, ChevronDown, ChevronUp, MapPin, Camera, Lightbulb, Layers, Palette, Package, Wand2, FileText, Shirt, Smartphone, CupSoda, Grid3x3, Dices, Shuffle } from 'lucide-react';
+import { X, Compass, Sparkles, ChevronDown, ChevronUp, MapPin, Camera, Lightbulb, Layers, Palette, Package, Wand2, FileText, Shirt, Smartphone, CupSoda, Grid3x3, Dices, Shuffle, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
@@ -114,6 +114,266 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
   );
 };
 
+// Collapsable tag section with custom tag input support
+interface CollapsableTagSectionProps {
+  title: string;
+  tags: string[];
+  selectedTags: string[];
+  suggestedTags: string[];
+  onTagToggle: (tag: string) => void;
+  customInput: string;
+  onCustomInputChange: (value: string) => void;
+  onAddCustomTag: () => void;
+  theme: string;
+  t: (key: string) => string;
+  icon?: React.ReactNode;
+  isSurpriseMeMode?: boolean;
+  poolTags?: string[];
+  onPoolToggle?: (tag: string) => void;
+  isSingleSelection?: boolean;
+}
+
+const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
+  title,
+  tags,
+  selectedTags,
+  suggestedTags,
+  onTagToggle,
+  customInput,
+  onCustomInputChange,
+  onAddCustomTag,
+  theme,
+  t,
+  icon,
+  isSurpriseMeMode = false,
+  poolTags = [],
+  onPoolToggle,
+  isSingleSelection = false
+}) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isEditingCustom, setIsEditingCustom] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const blurTimeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (isEditingCustom && inputRef.current) {
+      inputRef.current.focus();
+    }
+
+    return () => {
+      if (blurTimeoutRef.current) {
+        clearTimeout(blurTimeoutRef.current);
+      }
+    };
+  }, [isEditingCustom]);
+
+  const handleCustomTagClick = () => {
+    setIsEditingCustom(true);
+    if (!isExpanded) setIsExpanded(true);
+  };
+
+  const handleCustomTagSubmit = () => {
+    if (customInput.trim()) {
+      onAddCustomTag();
+      setIsEditingCustom(false);
+    } else {
+      handleCustomTagCancel();
+    }
+  };
+
+  const handleCustomTagCancel = () => {
+    onCustomInputChange('');
+    setIsEditingCustom(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (blurTimeoutRef.current) {
+        clearTimeout(blurTimeoutRef.current);
+      }
+      handleCustomTagSubmit();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      if (blurTimeoutRef.current) {
+        clearTimeout(blurTimeoutRef.current);
+      }
+      handleCustomTagCancel();
+    }
+  };
+
+  const handleBlur = () => {
+    blurTimeoutRef.current = window.setTimeout(() => {
+      handleCustomTagSubmit();
+    }, 150);
+  };
+
+  const hasSelection = selectedTags.length > 0;
+  const selectionSummary = hasSelection
+    ? selectedTags.map(tag => translateTag(tag)).join(', ')
+    : '';
+  const poolCount = isSurpriseMeMode ? tags.filter(t => poolTags?.includes(t)).length : 0;
+
+  // Get all display tags (available + selected + suggested)
+  const allDisplayTags = [...new Set([...tags, ...selectedTags, ...suggestedTags])];
+
+  // Sort tags: suggested first, then selected, then others
+  const sortedTags = [...allDisplayTags].sort((a, b) => {
+    const aIsSuggested = suggestedTags.includes(a);
+    const bIsSuggested = suggestedTags.includes(b);
+    const aIsSelected = selectedTags.includes(a);
+    const bIsSelected = selectedTags.includes(b);
+
+    if (aIsSuggested && !bIsSuggested) return -1;
+    if (!aIsSuggested && bIsSuggested) return 1;
+    if (aIsSelected && !bIsSelected) return -1;
+    if (!aIsSelected && bIsSelected) return 1;
+
+    return 0;
+  });
+
+  return (
+    <div className={cn(
+      'rounded-lg border transition-all duration-200',
+      theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200'
+    )}>
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className={cn(
+          'w-full flex justify-between items-center text-left p-3 transition-all duration-200',
+          'hover:bg-neutral-800/10',
+          isExpanded && (theme === 'dark' ? 'bg-neutral-800/20' : 'bg-neutral-100/50')
+        )}
+      >
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          {icon && <div className="flex-shrink-0">{icon}</div>}
+          <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
+            <span className={cn(
+              'text-[10px] font-mono uppercase tracking-widest',
+              theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
+            )}>
+              {title}
+            </span>
+            {!isExpanded && (hasSelection || poolCount > 0) && (
+              <span className="text-[10px] font-mono truncate max-w-[200px] text-brand-cyan">
+                {selectionSummary}
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {isSurpriseMeMode && <Dices size={12} className="text-brand-cyan/60" />}
+          {hasSelection && (
+            <span className="text-[10px] font-mono text-brand-cyan bg-brand-cyan/10 px-1.5 py-0.5 rounded">
+              {selectedTags.length}
+            </span>
+          )}
+          {isExpanded ? (
+            <ChevronUp size={16} className="text-neutral-500" />
+          ) : (
+            <ChevronDown size={16} className="text-neutral-500" />
+          )}
+        </div>
+      </button>
+
+      {isExpanded && (
+        <div className="p-3 pt-0 animate-fade-in">
+          {/* Suggested tags section */}
+          {suggestedTags.length > 0 && (
+            <div className="mb-2">
+              <span className="text-[9px] font-mono uppercase text-brand-cyan/70 mb-1 block">
+                {t('mockup.suggested') || 'Suggested'}
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {suggestedTags.map(tag => {
+                  const isSelected = selectedTags.includes(tag);
+                  const isInPool = isSurpriseMeMode && poolTags?.includes(tag);
+                  const hasSelection = selectedTags.length > 0;
+                  return (
+                    <Tag
+                      key={tag}
+                      label={translateTag(tag)}
+                      selected={isSelected}
+                      suggested={!isSurpriseMeMode && !isSelected}
+                      inPool={isInPool}
+                      onToggle={() => {
+                        if (isSurpriseMeMode && onPoolToggle) {
+                          onPoolToggle(tag);
+                        } else {
+                          onTagToggle(tag);
+                        }
+                      }}
+                      disabled={!isSurpriseMeMode && hasSelection && !isSelected && isSingleSelection}
+                      size="sm"
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            {/* Custom tag input/button - always first */}
+            {!isEditingCustom ? (
+              <Tag
+                label={t('mockup.customTagLabel')}
+                onToggle={handleCustomTagClick}
+                className="gap-1 scale-90 origin-left"
+              >
+                <Plus size={12} />
+              </Tag>
+            ) : (
+              <input
+                ref={inputRef}
+                type="text"
+                value={customInput}
+                onChange={(e) => onCustomInputChange(e.target.value)}
+                onKeyDown={handleKeyDown}
+                onBlur={handleBlur}
+                placeholder={t('mockup.customCategoryPlaceholder')}
+                className={cn(
+                  'px-3 py-1.5 text-[10px] font-medium rounded-md transition-all duration-200 border border-[brand-cyan]/30 focus:outline-none focus:ring-0 min-w-[120px] font-mono',
+                  theme === 'dark'
+                    ? 'bg-brand-cyan/10 text-brand-cyan'
+                    : 'bg-brand-cyan/5 text-neutral-800'
+                )}
+                autoFocus
+              />
+            )}
+
+            {/* Regular tags */}
+            {sortedTags
+              .filter(tag => !suggestedTags.includes(tag))
+              .map(tag => {
+                const isSelected = selectedTags.includes(tag);
+                const isInPool = isSurpriseMeMode && poolTags?.includes(tag);
+                const hasSelection = selectedTags.length > 0;
+
+                return (
+                  <Tag
+                    key={tag}
+                    label={translateTag(tag)}
+                    selected={isSelected}
+                    inPool={isInPool}
+                    onToggle={() => {
+                      if (isSurpriseMeMode && onPoolToggle) {
+                        onPoolToggle(tag);
+                      } else {
+                        onTagToggle(tag);
+                      }
+                    }}
+                    disabled={!isSurpriseMeMode && hasSelection && !isSelected && isSingleSelection}
+                    size="sm"
+                  />
+                );
+              })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Color palette section
 interface ColorSectionProps {
   suggestedColors: string[];
@@ -213,6 +473,22 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
   const { theme } = useTheme();
   const panelRef = useRef<HTMLDivElement>(null);
   const [isAllCategoriesOpen, setIsAllCategoriesOpen] = useState(false);
+  
+  // Custom input states
+  const [customBrandingInput, setCustomBrandingInput] = useState('');
+  const [customLocationInput, setCustomLocationInput] = useState('');
+  const [customAngleInput, setCustomAngleInput] = useState('');
+  const [customLightingInput, setCustomLightingInput] = useState('');
+  const [customEffectInput, setCustomEffectInput] = useState('');
+  const [customMaterialInput, setCustomMaterialInput] = useState('');
+  
+  // Section expanded states
+  const [isBrandingExpanded, setIsBrandingExpanded] = useState(false);
+  const [isLocationExpanded, setIsLocationExpanded] = useState(false);
+  const [isAngleExpanded, setIsAngleExpanded] = useState(false);
+  const [isLightingExpanded, setIsLightingExpanded] = useState(false);
+  const [isEffectExpanded, setIsEffectExpanded] = useState(false);
+  const [isMaterialExpanded, setIsMaterialExpanded] = useState(false);
 
   const connectedImage = nodeData.connectedImage;
   const isAnalyzing = nodeData.isAnalyzing || false;
@@ -344,6 +620,61 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
   const handleToggleSurpriseMeMode = useCallback(() => {
     onUpdateData(nodeId, { isSurpriseMeMode: !isSurpriseMeMode });
   }, [nodeId, onUpdateData, isSurpriseMeMode]);
+
+  // Custom tag handlers
+  const handleAddCustomBrandingTag = useCallback(() => {
+    if (customBrandingInput.trim() && !selectedBrandingTags.includes(customBrandingInput.trim())) {
+      onUpdateData(nodeId, {
+        selectedBrandingTags: [...selectedBrandingTags, customBrandingInput.trim()]
+      });
+      setCustomBrandingInput('');
+    }
+  }, [customBrandingInput, selectedBrandingTags, nodeId, onUpdateData]);
+
+  const handleAddCustomLocationTag = useCallback(() => {
+    if (customLocationInput.trim() && !selectedLocationTags.includes(customLocationInput.trim())) {
+      onUpdateData(nodeId, {
+        selectedLocationTags: [customLocationInput.trim()] // Single selection
+      });
+      setCustomLocationInput('');
+    }
+  }, [customLocationInput, selectedLocationTags, nodeId, onUpdateData]);
+
+  const handleAddCustomAngleTag = useCallback(() => {
+    if (customAngleInput.trim() && !selectedAngleTags.includes(customAngleInput.trim())) {
+      onUpdateData(nodeId, {
+        selectedAngleTags: [customAngleInput.trim()] // Single selection
+      });
+      setCustomAngleInput('');
+    }
+  }, [customAngleInput, selectedAngleTags, nodeId, onUpdateData]);
+
+  const handleAddCustomLightingTag = useCallback(() => {
+    if (customLightingInput.trim() && !selectedLightingTags.includes(customLightingInput.trim())) {
+      onUpdateData(nodeId, {
+        selectedLightingTags: [customLightingInput.trim()] // Single selection
+      });
+      setCustomLightingInput('');
+    }
+  }, [customLightingInput, selectedLightingTags, nodeId, onUpdateData]);
+
+  const handleAddCustomEffectTag = useCallback(() => {
+    if (customEffectInput.trim() && !selectedEffectTags.includes(customEffectInput.trim())) {
+      onUpdateData(nodeId, {
+        selectedEffectTags: [customEffectInput.trim()] // Single selection
+      });
+      setCustomEffectInput('');
+    }
+  }, [customEffectInput, selectedEffectTags, nodeId, onUpdateData]);
+
+  const handleAddCustomMaterialTag = useCallback(() => {
+    if (customMaterialInput.trim() && !selectedMaterialTags.includes(customMaterialInput.trim())) {
+      onUpdateData(nodeId, {
+        selectedMaterialTags: [customMaterialInput.trim()] // Single selection
+      });
+      setCustomMaterialInput('');
+    }
+  }, [customMaterialInput, selectedMaterialTags, nodeId, onUpdateData]);
 
   // Render tag button for categories
   const renderCategoryTagButton = useCallback((tag: string) => {
@@ -541,65 +872,20 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
             />
 
             {/* Branding Tags */}
-            <div className="rounded-lg border border-neutral-800/50">
-              <button
-                onClick={() => {}}
-                className="w-full flex justify-between items-center text-left p-3 transition-all duration-200 hover:bg-neutral-800/10"
-              >
-                <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <Package size={14} className="text-neutral-500" />
-                  <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
-                      {t('mockup.branding') || 'Branding'}
-                    </span>
-                    {selectedBrandingTags.length > 0 && (
-                      <span className="text-[10px] font-mono truncate text-brand-cyan">
-                        {selectedBrandingTags.map(tag => translateTag(tag)).join(', ')}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  {selectedBrandingTags.length > 0 && (
-                    <span className="text-[10px] font-mono text-brand-cyan bg-brand-cyan/10 px-1.5 py-0.5 rounded">
-                      {selectedBrandingTags.length}
-                    </span>
-                  )}
-                </div>
-              </button>
-              <div className="p-3 pt-0">
-                {suggestedBrandingTags.length > 0 && (
-                  <div className="mb-2">
-                    <span className="text-[9px] font-mono uppercase text-brand-cyan/70 mb-1 block">
-                      {t('mockup.suggested') || 'Suggested'}
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {suggestedBrandingTags.map(tag => (
-                        <Tag
-                          key={tag}
-                          label={translateTag(tag)}
-                          selected={selectedBrandingTags.includes(tag)}
-                          suggested={!selectedBrandingTags.includes(tag)}
-                          onToggle={() => toggleBrandingTag(tag)}
-                          size="sm"
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {AVAILABLE_BRANDING_TAGS.filter(tag => !suggestedBrandingTags.includes(tag)).map(tag => (
-                    <Tag
-                      key={tag}
-                      label={translateTag(tag)}
-                      selected={selectedBrandingTags.includes(tag)}
-                      onToggle={() => toggleBrandingTag(tag)}
-                      size="sm"
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
+            <CollapsableTagSection
+              title={t('mockup.branding') || 'Branding'}
+              tags={AVAILABLE_BRANDING_TAGS}
+              selectedTags={selectedBrandingTags}
+              suggestedTags={suggestedBrandingTags}
+              onTagToggle={toggleBrandingTag}
+              customInput={customBrandingInput}
+              onCustomInputChange={setCustomBrandingInput}
+              onAddCustomTag={handleAddCustomBrandingTag}
+              theme={theme}
+              t={t}
+              icon={<Package size={14} className="text-neutral-500" />}
+              isSingleSelection={false}
+            />
 
             {/* Categories Section - Organized by Groups */}
             <div className="rounded-lg border border-neutral-800/50">
@@ -672,379 +958,99 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
             </div>
 
             {/* Location Tags */}
-            <div className="rounded-lg border border-neutral-800/50">
-              <button
-                onClick={() => {}}
-                className="w-full flex justify-between items-center text-left p-3 transition-all duration-200 hover:bg-neutral-800/10"
-              >
-                <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <MapPin size={14} className="text-neutral-500" />
-                  <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
-                      {t('mockup.location') || 'Location'}
-                    </span>
-                    {selectedLocationTags.length > 0 && (
-                      <span className="text-[10px] font-mono truncate text-brand-cyan">
-                        {selectedLocationTags.map(tag => translateTag(tag)).join(', ')}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  {selectedLocationTags.length > 0 && (
-                    <span className="text-[10px] font-mono text-brand-cyan bg-brand-cyan/10 px-1.5 py-0.5 rounded">
-                      {selectedLocationTags.length}
-                    </span>
-                  )}
-                </div>
-              </button>
-              <div className="p-3 pt-0">
-                {suggestedLocationTags.length > 0 && (
-                  <div className="mb-2">
-                    <span className="text-[9px] font-mono uppercase text-brand-cyan/70 mb-1 block">
-                      {t('mockup.suggested') || 'Suggested'}
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {suggestedLocationTags.map(tag => {
-                        const isSelected = selectedLocationTags.includes(tag);
-                        const isInPool = isSurpriseMeMode && surpriseMePool.selectedLocationTags.includes(tag);
-                        const hasSelection = selectedLocationTags.length > 0;
-                        return (
-                          <Tag
-                            key={tag}
-                            label={translateTag(tag)}
-                            selected={isSelected}
-                            suggested={!isSurpriseMeMode && !isSelected}
-                            inPool={isInPool}
-                            onToggle={() => toggleLocationTag(tag)}
-                            disabled={!isSurpriseMeMode && hasSelection && !isSelected}
-                            size="sm"
-                          />
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {AVAILABLE_LOCATION_TAGS.filter(tag => !suggestedLocationTags.includes(tag)).map(tag => {
-                    const isSelected = selectedLocationTags.includes(tag);
-                    const isInPool = isSurpriseMeMode && surpriseMePool.selectedLocationTags.includes(tag);
-                    const hasSelection = selectedLocationTags.length > 0;
-                    return (
-                      <Tag
-                        key={tag}
-                        label={translateTag(tag)}
-                        selected={isSelected}
-                        inPool={isInPool}
-                        onToggle={() => toggleLocationTag(tag)}
-                        disabled={!isSurpriseMeMode && hasSelection && !isSelected}
-                        size="sm"
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
+            <CollapsableTagSection
+              title={t('mockup.location') || 'Location'}
+              tags={AVAILABLE_LOCATION_TAGS}
+              selectedTags={selectedLocationTags}
+              suggestedTags={suggestedLocationTags}
+              onTagToggle={toggleLocationTag}
+              customInput={customLocationInput}
+              onCustomInputChange={setCustomLocationInput}
+              onAddCustomTag={handleAddCustomLocationTag}
+              theme={theme}
+              t={t}
+              icon={<MapPin size={14} className="text-neutral-500" />}
+              isSurpriseMeMode={isSurpriseMeMode}
+              poolTags={surpriseMePool.selectedLocationTags}
+              onPoolToggle={(tag) => togglePoolTag('selectedLocationTags', tag)}
+              isSingleSelection={true}
+            />
 
             {/* Angle Tags */}
-            <div className="rounded-lg border border-neutral-800/50">
-              <button
-                onClick={() => {}}
-                className="w-full flex justify-between items-center text-left p-3 transition-all duration-200 hover:bg-neutral-800/10"
-              >
-                <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <Camera size={14} className="text-neutral-500" />
-                  <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
-                      {t('mockup.angle') || 'Angle'}
-                    </span>
-                    {selectedAngleTags.length > 0 && (
-                      <span className="text-[10px] font-mono truncate text-brand-cyan">
-                        {selectedAngleTags.map(tag => translateTag(tag)).join(', ')}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  {selectedAngleTags.length > 0 && (
-                    <span className="text-[10px] font-mono text-brand-cyan bg-brand-cyan/10 px-1.5 py-0.5 rounded">
-                      {selectedAngleTags.length}
-                    </span>
-                  )}
-                </div>
-              </button>
-              <div className="p-3 pt-0">
-                {suggestedAngleTags.length > 0 && (
-                  <div className="mb-2">
-                    <span className="text-[9px] font-mono uppercase text-brand-cyan/70 mb-1 block">
-                      {t('mockup.suggested') || 'Suggested'}
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {suggestedAngleTags.map(tag => {
-                        const isSelected = selectedAngleTags.includes(tag);
-                        const isInPool = isSurpriseMeMode && surpriseMePool.selectedAngleTags.includes(tag);
-                        const hasSelection = selectedAngleTags.length > 0;
-                        return (
-                          <Tag
-                            key={tag}
-                            label={translateTag(tag)}
-                            selected={isSelected}
-                            suggested={!isSurpriseMeMode && !isSelected}
-                            inPool={isInPool}
-                            onToggle={() => toggleAngleTag(tag)}
-                            disabled={!isSurpriseMeMode && hasSelection && !isSelected}
-                            size="sm"
-                          />
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {AVAILABLE_ANGLE_TAGS.filter(tag => !suggestedAngleTags.includes(tag)).map(tag => {
-                    const isSelected = selectedAngleTags.includes(tag);
-                    const isInPool = isSurpriseMeMode && surpriseMePool.selectedAngleTags.includes(tag);
-                    const hasSelection = selectedAngleTags.length > 0;
-                    return (
-                      <Tag
-                        key={tag}
-                        label={translateTag(tag)}
-                        selected={isSelected}
-                        inPool={isInPool}
-                        onToggle={() => toggleAngleTag(tag)}
-                        disabled={!isSurpriseMeMode && hasSelection && !isSelected}
-                        size="sm"
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
+            <CollapsableTagSection
+              title={t('mockup.angle') || 'Angle'}
+              tags={AVAILABLE_ANGLE_TAGS}
+              selectedTags={selectedAngleTags}
+              suggestedTags={suggestedAngleTags}
+              onTagToggle={toggleAngleTag}
+              customInput={customAngleInput}
+              onCustomInputChange={setCustomAngleInput}
+              onAddCustomTag={handleAddCustomAngleTag}
+              theme={theme}
+              t={t}
+              icon={<Camera size={14} className="text-neutral-500" />}
+              isSurpriseMeMode={isSurpriseMeMode}
+              poolTags={surpriseMePool.selectedAngleTags}
+              onPoolToggle={(tag) => togglePoolTag('selectedAngleTags', tag)}
+              isSingleSelection={true}
+            />
 
             {/* Lighting Tags */}
-            <div className="rounded-lg border border-neutral-800/50">
-              <button
-                onClick={() => {}}
-                className="w-full flex justify-between items-center text-left p-3 transition-all duration-200 hover:bg-neutral-800/10"
-              >
-                <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <Lightbulb size={14} className="text-neutral-500" />
-                  <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
-                      {t('mockup.lighting') || 'Lighting'}
-                    </span>
-                    {selectedLightingTags.length > 0 && (
-                      <span className="text-[10px] font-mono truncate text-brand-cyan">
-                        {selectedLightingTags.map(tag => translateTag(tag)).join(', ')}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  {selectedLightingTags.length > 0 && (
-                    <span className="text-[10px] font-mono text-brand-cyan bg-brand-cyan/10 px-1.5 py-0.5 rounded">
-                      {selectedLightingTags.length}
-                    </span>
-                  )}
-                </div>
-              </button>
-              <div className="p-3 pt-0">
-                {suggestedLightingTags.length > 0 && (
-                  <div className="mb-2">
-                    <span className="text-[9px] font-mono uppercase text-brand-cyan/70 mb-1 block">
-                      {t('mockup.suggested') || 'Suggested'}
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {suggestedLightingTags.map(tag => {
-                        const isSelected = selectedLightingTags.includes(tag);
-                        const isInPool = isSurpriseMeMode && surpriseMePool.selectedLightingTags.includes(tag);
-                        const hasSelection = selectedLightingTags.length > 0;
-                        return (
-                          <Tag
-                            key={tag}
-                            label={translateTag(tag)}
-                            selected={isSelected}
-                            suggested={!isSurpriseMeMode && !isSelected}
-                            inPool={isInPool}
-                            onToggle={() => toggleLightingTag(tag)}
-                            disabled={!isSurpriseMeMode && hasSelection && !isSelected}
-                            size="sm"
-                          />
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {AVAILABLE_LIGHTING_TAGS.filter(tag => !suggestedLightingTags.includes(tag)).map(tag => {
-                    const isSelected = selectedLightingTags.includes(tag);
-                    const isInPool = isSurpriseMeMode && surpriseMePool.selectedLightingTags.includes(tag);
-                    const hasSelection = selectedLightingTags.length > 0;
-                    return (
-                      <Tag
-                        key={tag}
-                        label={translateTag(tag)}
-                        selected={isSelected}
-                        inPool={isInPool}
-                        onToggle={() => toggleLightingTag(tag)}
-                        disabled={!isSurpriseMeMode && hasSelection && !isSelected}
-                        size="sm"
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
+            <CollapsableTagSection
+              title={t('mockup.lighting') || 'Lighting'}
+              tags={AVAILABLE_LIGHTING_TAGS}
+              selectedTags={selectedLightingTags}
+              suggestedTags={suggestedLightingTags}
+              onTagToggle={toggleLightingTag}
+              customInput={customLightingInput}
+              onCustomInputChange={setCustomLightingInput}
+              onAddCustomTag={handleAddCustomLightingTag}
+              theme={theme}
+              t={t}
+              icon={<Lightbulb size={14} className="text-neutral-500" />}
+              isSurpriseMeMode={isSurpriseMeMode}
+              poolTags={surpriseMePool.selectedLightingTags}
+              onPoolToggle={(tag) => togglePoolTag('selectedLightingTags', tag)}
+              isSingleSelection={true}
+            />
 
             {/* Effect Tags */}
-            <div className="rounded-lg border border-neutral-800/50">
-              <button
-                onClick={() => {}}
-                className="w-full flex justify-between items-center text-left p-3 transition-all duration-200 hover:bg-neutral-800/10"
-              >
-                <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <Sparkles size={14} className="text-neutral-500" />
-                  <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
-                      {t('mockup.effects') || 'Effects'}
-                    </span>
-                    {selectedEffectTags.length > 0 && (
-                      <span className="text-[10px] font-mono truncate text-brand-cyan">
-                        {selectedEffectTags.map(tag => translateTag(tag)).join(', ')}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  {selectedEffectTags.length > 0 && (
-                    <span className="text-[10px] font-mono text-brand-cyan bg-brand-cyan/10 px-1.5 py-0.5 rounded">
-                      {selectedEffectTags.length}
-                    </span>
-                  )}
-                </div>
-              </button>
-              <div className="p-3 pt-0">
-                {suggestedEffectTags.length > 0 && (
-                  <div className="mb-2">
-                    <span className="text-[9px] font-mono uppercase text-brand-cyan/70 mb-1 block">
-                      {t('mockup.suggested') || 'Suggested'}
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {suggestedEffectTags.map(tag => {
-                        const isSelected = selectedEffectTags.includes(tag);
-                        const isInPool = isSurpriseMeMode && surpriseMePool.selectedEffectTags.includes(tag);
-                        const hasSelection = selectedEffectTags.length > 0;
-                        return (
-                          <Tag
-                            key={tag}
-                            label={translateTag(tag)}
-                            selected={isSelected}
-                            suggested={!isSurpriseMeMode && !isSelected}
-                            inPool={isInPool}
-                            onToggle={() => toggleEffectTag(tag)}
-                            disabled={!isSurpriseMeMode && hasSelection && !isSelected}
-                            size="sm"
-                          />
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {AVAILABLE_EFFECT_TAGS.filter(tag => !suggestedEffectTags.includes(tag)).map(tag => {
-                    const isSelected = selectedEffectTags.includes(tag);
-                    const isInPool = isSurpriseMeMode && surpriseMePool.selectedEffectTags.includes(tag);
-                    const hasSelection = selectedEffectTags.length > 0;
-                    return (
-                      <Tag
-                        key={tag}
-                        label={translateTag(tag)}
-                        selected={isSelected}
-                        inPool={isInPool}
-                        onToggle={() => toggleEffectTag(tag)}
-                        disabled={!isSurpriseMeMode && hasSelection && !isSelected}
-                        size="sm"
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
+            <CollapsableTagSection
+              title={t('mockup.effects') || 'Effects'}
+              tags={AVAILABLE_EFFECT_TAGS}
+              selectedTags={selectedEffectTags}
+              suggestedTags={suggestedEffectTags}
+              onTagToggle={toggleEffectTag}
+              customInput={customEffectInput}
+              onCustomInputChange={setCustomEffectInput}
+              onAddCustomTag={handleAddCustomEffectTag}
+              theme={theme}
+              t={t}
+              icon={<Sparkles size={14} className="text-neutral-500" />}
+              isSurpriseMeMode={isSurpriseMeMode}
+              poolTags={surpriseMePool.selectedEffectTags}
+              onPoolToggle={(tag) => togglePoolTag('selectedEffectTags', tag)}
+              isSingleSelection={true}
+            />
 
             {/* Material Tags */}
-            <div className="rounded-lg border border-neutral-800/50">
-              <button
-                onClick={() => {}}
-                className="w-full flex justify-between items-center text-left p-3 transition-all duration-200 hover:bg-neutral-800/10"
-              >
-                <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <Layers size={14} className="text-neutral-500" />
-                  <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
-                      {t('mockup.materials') || 'Materials'}
-                    </span>
-                    {selectedMaterialTags.length > 0 && (
-                      <span className="text-[10px] font-mono truncate text-brand-cyan">
-                        {selectedMaterialTags.map(tag => translateTag(tag)).join(', ')}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  {selectedMaterialTags.length > 0 && (
-                    <span className="text-[10px] font-mono text-brand-cyan bg-brand-cyan/10 px-1.5 py-0.5 rounded">
-                      {selectedMaterialTags.length}
-                    </span>
-                  )}
-                </div>
-              </button>
-              <div className="p-3 pt-0">
-                {suggestedMaterialTags.length > 0 && (
-                  <div className="mb-2">
-                    <span className="text-[9px] font-mono uppercase text-brand-cyan/70 mb-1 block">
-                      {t('mockup.suggested') || 'Suggested'}
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {suggestedMaterialTags.map(tag => {
-                        const isSelected = selectedMaterialTags.includes(tag);
-                        const isInPool = isSurpriseMeMode && surpriseMePool.selectedMaterialTags.includes(tag);
-                        const hasSelection = selectedMaterialTags.length > 0;
-                        return (
-                          <Tag
-                            key={tag}
-                            label={translateTag(tag)}
-                            selected={isSelected}
-                            suggested={!isSurpriseMeMode && !isSelected}
-                            inPool={isInPool}
-                            onToggle={() => toggleMaterialTag(tag)}
-                            disabled={!isSurpriseMeMode && hasSelection && !isSelected}
-                            size="sm"
-                          />
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {AVAILABLE_MATERIAL_TAGS.filter(tag => !suggestedMaterialTags.includes(tag)).map(tag => {
-                    const isSelected = selectedMaterialTags.includes(tag);
-                    const isInPool = isSurpriseMeMode && surpriseMePool.selectedMaterialTags.includes(tag);
-                    const hasSelection = selectedMaterialTags.length > 0;
-                    return (
-                      <Tag
-                        key={tag}
-                        label={translateTag(tag)}
-                        selected={isSelected}
-                        inPool={isInPool}
-                        onToggle={() => toggleMaterialTag(tag)}
-                        disabled={!isSurpriseMeMode && hasSelection && !isSelected}
-                        size="sm"
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
+            <CollapsableTagSection
+              title={t('mockup.materials') || 'Materials'}
+              tags={AVAILABLE_MATERIAL_TAGS}
+              selectedTags={selectedMaterialTags}
+              suggestedTags={suggestedMaterialTags}
+              onTagToggle={toggleMaterialTag}
+              customInput={customMaterialInput}
+              onCustomInputChange={setCustomMaterialInput}
+              onAddCustomTag={handleAddCustomMaterialTag}
+              theme={theme}
+              t={t}
+              icon={<Layers size={14} className="text-neutral-500" />}
+              isSurpriseMeMode={isSurpriseMeMode}
+              poolTags={surpriseMePool.selectedMaterialTags}
+              onPoolToggle={(tag) => togglePoolTag('selectedMaterialTags', tag)}
+              isSingleSelection={true}
+            />
 
             {/* Color Palette */}
             <ColorSection
@@ -1054,6 +1060,95 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
               theme={theme}
               t={t}
             />
+
+            {/* Surprise Me Selected Tags Display */}
+            {hasAnalyzed && (() => {
+              const sectionData = {
+                categories: selectedCategoryTags,
+                location: selectedLocationTags,
+                angle: selectedAngleTags,
+                lighting: selectedLightingTags,
+                effects: selectedEffectTags,
+                material: selectedMaterialTags,
+                colors: selectedColors,
+              };
+
+              const sections = [
+                { key: 'categories', labelKey: 'mockup.categories', isColor: false },
+                { key: 'location', labelKey: 'mockup.location', isColor: false },
+                { key: 'angle', labelKey: 'mockup.cameraAngle', isColor: false },
+                { key: 'lighting', labelKey: 'mockup.lightingMood', isColor: false },
+                { key: 'effects', labelKey: 'mockup.visualEffects', isColor: false },
+                { key: 'material', labelKey: 'mockup.material', isColor: false },
+                { key: 'colors', labelKey: 'mockup.colorPalette', isColor: true },
+              ];
+
+              const groups = sections.filter(({ key }) => sectionData[key as keyof typeof sectionData].length > 0);
+
+              if (groups.length === 0) return null;
+
+              return (
+                <div className={cn(
+                  'rounded-xl p-3 animate-fade-in transition-all duration-300 mt-4',
+                  theme === 'dark' ? 'bg-neutral-900/20' : 'bg-neutral-50/40',
+                  theme === 'dark' ? 'border-neutral-800/40' : 'border-neutral-200/60',
+                  'border'
+                )}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className={cn(
+                      'text-[10px] font-mono uppercase tracking-widest font-medium',
+                      theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'
+                    )}>
+                      {t('mockup.generationConfig')}
+                    </h3>
+                    {isSurpriseMeMode && (
+                      <span className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-brand-cyan/10 border border-brand-cyan/20">
+                        <Dices size={10} className="text-brand-cyan/80" />
+                        <span className="text-[9px] font-mono text-brand-cyan/90 uppercase">Director</span>
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    {groups.map(({ key, labelKey, isColor }) => {
+                      const tags = sectionData[key as keyof typeof sectionData];
+                      if (tags.length === 0) return null;
+                      return (
+                        <div key={key} className="flex flex-wrap items-center gap-1.5">
+                          <span className={cn(
+                            'text-[9px] font-mono uppercase tracking-wider mr-1 shrink-0',
+                            theme === 'dark' ? 'text-neutral-600' : 'text-neutral-400'
+                          )}>
+                            {t(labelKey)}:
+                          </span>
+                          {tags.map((tag) => (
+                            <Tag
+                              key={isColor ? `color-${tag}` : tag}
+                              label={!isColor ? translateTag(tag) : tag}
+                              selected={true}
+                              size="sm"
+                              className={cn(
+                                'text-[10px] border',
+                                theme === 'dark'
+                                  ? 'bg-neutral-800/50 text-neutral-400 border-neutral-700/50'
+                                  : 'bg-white/80 text-neutral-600 border-neutral-200'
+                              )}
+                            >
+                              {isColor && (
+                                <div
+                                  className="w-2.5 h-2.5 rounded-full border border-white/20 shrink-0"
+                                  style={{ backgroundColor: tag }}
+                                />
+                              )}
+                            </Tag>
+                          ))}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         )}
 

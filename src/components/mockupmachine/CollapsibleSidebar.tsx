@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
-import { Menu, ChevronUp, Search, X } from 'lucide-react';
+import { Menu, ChevronUp, Search } from 'lucide-react';
 import { BackButton } from '@/components/ui/BackButton';
+import { SearchBar } from '@/components/ui/SearchBar';
 
 interface CollapsibleSidebarProps {
   isCollapsed: boolean;
@@ -108,25 +109,15 @@ export const CollapsibleSidebar: React.FC<CollapsibleSidebarProps> = ({
           {onToggleSearch && (
             <>
               {showSearch ? (
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => onSearchChange?.(e.target.value)}
-                    placeholder="Search..."
-                    className="bg-neutral-950/70 backdrop-blur-sm border border-neutral-700/30 rounded-md pl-7 pr-7 py-1.5 w-40 focus:outline-none focus:border-[brand-cyan]/50 text-xs text-neutral-300 font-mono"
-                    autoFocus
-                  />
-                  <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-neutral-500" size={12} />
-                  {searchQuery && (
-                    <button
-                      onClick={() => onSearchChange?.('')}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-neutral-500 hover:text-neutral-300"
-                    >
-                      <X size={12} />
-                    </button>
-                  )}
-                </div>
+                <SearchBar
+                  value={searchQuery || ''}
+                  onChange={(value) => onSearchChange?.(value)}
+                  placeholder="Search..."
+                  iconSize={12}
+                  className="bg-neutral-950/70 backdrop-blur-sm border-neutral-700/30 w-40 text-xs font-mono"
+                  containerClassName="w-40"
+                  autoFocus
+                />
               ) : (
                 <button
                   onClick={onToggleSearch}

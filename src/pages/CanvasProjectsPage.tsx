@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { SkeletonLoader } from '../components/ui/SkeletonLoader';
@@ -13,6 +13,7 @@ import { FolderKanban, Calendar, Eye, Trash2, Plus, Pickaxe, FolderOpen } from '
 import { SEO } from '../components/SEO';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
+import { SearchBar } from '../components/ui/SearchBar';
 import type { Node } from '@xyflow/react';
 import type { FlowNodeData, OutputNodeData, ImageNodeData } from '../types/reactFlow';
 import { getImageUrl } from '@/utils/imageUtils';
@@ -83,6 +84,7 @@ export const CanvasProjectsPage: React.FC = () => {
   const [editingName, setEditingName] = useState<string>('');
   const editingInputRef = useRef<HTMLInputElement>(null);
   const hasLoadedProjectsRef = useRef(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const isLoadingRef = useRef(false);
   const [showWorkflowLibrary, setShowWorkflowLibrary] = useState(false);
@@ -325,6 +327,17 @@ export const CanvasProjectsPage: React.FC = () => {
     });
   };
 
+  // Filter projects based on search query
+  const filteredProjects = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return projects;
+    }
+    const query = searchQuery.toLowerCase();
+    return projects.filter(project =>
+      project.name?.toLowerCase().includes(query)
+    );
+  }, [projects, searchQuery]);
+
   // Show loading state while checking access
   if (isLoadingAccess || isLoading) {
     return (
@@ -432,38 +445,76 @@ export const CanvasProjectsPage: React.FC = () => {
               <h1 className="text-3xl md:text-4xl font-semibold font-manrope text-neutral-300 mb-2">
                 {t('canvas.projects') || 'Projects'}
               </h1>
-              <p className="text-neutral-500 font-mono text-sm md:text-base">
+              <p className="text-neutral-500 font-mono text-sm md:text-base mb-4">
                 {projects.length === 0
                   ? (t('canvas.noProjectsYet') || 'No projects yet')
                   : (() => {
-                    const count = projects.length;
+                    const count = filteredProjects.length;
+                    const total = projects.length;
                     const isSingular = count === 1;
-                    if (locale === 'pt-BR') {
-                      return `${count} ${isSingular ? 'projeto' : 'projetos'}`;
+                    if (searchQuery.trim()) {
+                      if (locale === 'pt-BR') {
+                        return `${count} de ${total} ${isSingular ? 'projeto' : 'projetos'}`;
+                      } else {
+                        return `${count} of ${total} ${isSingular ? 'project' : 'projects'}`;
+                      }
                     } else {
-                      return `${count} ${isSingular ? 'project' : 'projects'}`;
+                      if (locale === 'pt-BR') {
+                        return `${count} ${isSingular ? 'projeto' : 'projetos'}`;
+                      } else {
+                        return `${count} ${isSingular ? 'project' : 'projects'}`;
+                      }
                     }
                   })()}
               </p>
+              {projects.length > 0 && (
+                <div className="max-w-md">
+                  <SearchBar
+                    value={searchQuery}
+                    onChange={setSearchQuery}
+                    placeholder={t('canvas.searchProjects') || 'Search projects...'}
+                    iconSize={16}
+                    className="bg-neutral-950/70 border-neutral-800/50 text-neutral-300 placeholder:text-neutral-500"
+                  />
+                </div>
+              )}
             </div>
-            <button
-              onClick={handleCreateNew}
-              className="px-4 py-2 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 flex-shrink-0"
-            >
-              <Plus className="h-4 w-4" />
-              {t('canvas.newProject') || 'New Project'}
-            </button>
-            <button
-              onClick={() => setShowWorkflowLibrary(true)}
-              className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-700 hover:border-neutral-600 font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 flex-shrink-0"
-            >
-              <FolderOpen className="h-4 w-4" />
-              {t('workflows.importWorkflow') || 'Import workflow'}
-            </button>
+            <div className="flex flex-col gap-2 flex-shrink-0">
+              <button
+                onClick={handleCreateNew}
+                className="px-4 py-2 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                {t('canvas.newProject') || 'New Project'}
+              </button>
+              <button
+                onClick={() => setShowWorkflowLibrary(true)}
+                className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-700 hover:border-neutral-600 font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2"
+              >
+                <FolderOpen className="h-4 w-4" />
+                {t('workflows.importWorkflow') || 'Import workflow'}
+              </button>
+            </div>
           </div>
 
           {/* Projects Grid */}
-          {projects.length === 0 ? (
+          {filteredProjects.length === 0 && projects.length > 0 ? (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+              <FolderKanban size={64} className="text-neutral-700 mb-4" strokeWidth={1} />
+              <h2 className="text-xl font-semibold font-mono uppercase text-neutral-500 mb-2">
+                {t('canvas.noProjectsFound')?.toUpperCase() || 'NO PROJECTS FOUND'}
+              </h2>
+              <p className="text-sm text-neutral-600 font-mono mb-6">
+                {t('canvas.noProjectsMatchSearch') || 'No projects match your search query.'}
+              </p>
+              <button
+                onClick={() => setSearchQuery('')}
+                className="px-6 py-3 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-700 hover:border-neutral-600 font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95"
+              >
+                {t('canvas.clearSearch') || 'Clear Search'}
+              </button>
+            </div>
+          ) : projects.length === 0 ? (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
               <FolderKanban size={64} className="text-neutral-700 mb-4" strokeWidth={1} />
               <h2 className="text-xl font-semibold font-mono uppercase text-neutral-500 mb-2">
@@ -482,7 +533,7 @@ export const CanvasProjectsPage: React.FC = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-              {projects.map((project) => {
+              {filteredProjects.map((project) => {
                 const nodeCount = Array.isArray(project.nodes) ? project.nodes.length : 0;
                 const edgeCount = Array.isArray(project.edges) ? project.edges.length : 0;
 

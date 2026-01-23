@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
-import { Pickaxe, Settings, Maximize2, X, Image as ImageIcon, Wand2, Palette, Target, Dna, FileDown, Camera, Upload, FileText, Video, Layers, MapPin, Sun, Search, Sparkles, MessageSquare, Clipboard, LayoutTemplate } from 'lucide-react';
+import { Pickaxe, Settings, Maximize2, X, Image as ImageIcon, Wand2, Palette, Target, Dna, FileDown, Camera, Upload, FileText, Video, Layers, MapPin, Sun, Sparkles, MessageSquare, Clipboard, LayoutTemplate } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SearchBar } from '@/components/ui/SearchBar';
 import type { Node } from '@xyflow/react';
 import type { FlowNodeData } from '@/types/reactFlow';
 
@@ -495,19 +496,15 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
 
         {/* Search Input */}
         <div className="px-3 pb-2.5" onMouseDown={(e) => e.stopPropagation()}>
-          <div className="relative">
-            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-500" />
-            <input
-              ref={searchInputRef}
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search nodes..."
-              className="w-full pl-8 pr-2.5 py-1.5 text-xs bg-neutral-900/50 border border-neutral-800/40 rounded-md text-neutral-300 placeholder-neutral-600 focus:outline-none focus:border-[brand-cyan]/50 focus:ring-1 focus:ring-[brand-cyan]/20 transition-all duration-150"
-              aria-label="Search menu items"
-              onMouseDown={(e) => e.stopPropagation()}
-            />
-          </div>
+          <SearchBar
+            ref={searchInputRef}
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Search nodes..."
+            iconSize={14}
+            className="text-xs"
+            onMouseDown={(e) => e.stopPropagation()}
+          />
         </div>
       </div>
 

@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { ArrowUpDown, ArrowUp, ArrowDown, Search, ChevronDown, GripVertical } from "lucide-react"
+import { ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, GripVertical } from "lucide-react"
 
 // Drag and drop imports
 import {
@@ -49,7 +49,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Input } from "@/components/ui/input"
+import { SearchBar } from "@/components/ui/SearchBar"
 import { cn } from "@/lib/utils"
 
 interface DataTableProps<TData, TValue> {
@@ -228,15 +228,16 @@ export function DataTable<TData, TValue>({
         )}
         <div className="flex items-center gap-2 w-full md:w-auto">
           {searchKey && (
-            <div className="relative w-full md:w-auto md:min-w-[300px]">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-500" />
-              <Input
+            <div className="w-full md:w-auto md:min-w-[300px]">
+              <SearchBar
                 placeholder={searchPlaceholder || "Search..."}
                 value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
-                onChange={(event) =>
-                  table.getColumn(searchKey)?.setFilterValue(event.target.value)
+                onChange={(value) =>
+                  table.getColumn(searchKey)?.setFilterValue(value)
                 }
-                className="pl-10 bg-neutral-950/70 border-neutral-800/50 text-neutral-300 placeholder:text-neutral-500 focus:ring-[brand-cyan]/30 focus:border-[brand-cyan]/50"
+                iconSize={16}
+                className="bg-neutral-950/70 border-neutral-800/50 text-neutral-300 placeholder:text-neutral-500 focus:ring-[brand-cyan]/30 focus:border-[brand-cyan]/50"
+                containerClassName="w-full"
               />
             </div>
           )}

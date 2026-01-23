@@ -3,9 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
     ShieldCheck, Plus, Edit2, Trash2, X, Save,
     CreditCard, Package, Link2, DollarSign,
-    RefreshCw, Settings, Search, CheckCircle2,
+    RefreshCw, Settings, CheckCircle2,
     AlertCircle, ChevronRight, Layout
 } from 'lucide-react';
+import { SearchBar } from '../components/ui/SearchBar';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
@@ -373,13 +374,14 @@ export const AdminProductsPage: React.FC = () => {
                                 </TabsTrigger>
                             </TabsList>
 
-                            <div className="relative w-full md:w-64">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-500" />
-                                <Input
-                                    placeholder="Buscar produto..."
+                            <div className="w-full md:w-64">
+                                <SearchBar
                                     value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="pl-9 bg-neutral-900 border-neutral-800 focus:border-brand-cyan/50"
+                                    onChange={setSearchQuery}
+                                    placeholder="Buscar produto..."
+                                    iconSize={16}
+                                    className="bg-neutral-900 border-neutral-800 focus:border-brand-cyan/50"
+                                    containerClassName="w-full"
                                 />
                             </div>
                         </div>

@@ -28,6 +28,8 @@ import { PresetCard, CATEGORY_CONFIG } from '../components/PresetCard';
 import { NavigationSidebar, type NavigationItem } from '../components/ui/NavigationSidebar';
 import { ConfirmationModal } from '../components/ConfirmationModal';
 import { CommandPalette } from '../components/ui/CommandPalette';
+import { SearchBar } from '../components/ui/SearchBar';
+import { Modal } from '../components/ui/Modal';
 import { toast } from 'sonner';
 import { cn } from '../lib/utils';
 import type { CommunityPrompt } from '../types/communityPrompts';
@@ -191,6 +193,8 @@ export const DesignSystemPage: React.FC = () => {
   const [selectValue, setSelectValue] = useState('option1');
   const [switchChecked, setSwitchChecked] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSharedModal, setShowSharedModal] = useState(false);
 
   const navigationItems: NavigationItem[] = [
     {
@@ -223,6 +227,7 @@ export const DesignSystemPage: React.FC = () => {
       sections: [
         { id: 'buttons', label: t('designSystem.components.buttons.title') },
         { id: 'inputs', label: t('designSystem.components.inputs.title') },
+        { id: 'searchbar', label: t('designSystem.components.searchbar.title') || 'Search Bar' },
         { id: 'textarea', label: t('designSystem.components.textarea.title') },
         { id: 'select', label: t('designSystem.components.select.title') },
         { id: 'switch', label: t('designSystem.components.switch.title') },
@@ -826,6 +831,57 @@ export const DesignSystemPage: React.FC = () => {
                       </CardContent>
                     </Card>
 
+                    {/* SearchBar */}
+                    <Card id="searchbar">
+                      <CardHeader>
+                        <CardTitle>{t('designSystem.components.searchbar.title') || 'Search Bar'}</CardTitle>
+                        <CardDescription>
+                          {t('designSystem.components.searchbar.description') || 'Reusable search input component with icon and clear button'}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-4">
+                          <div>
+                            <p className="text-xs font-mono text-neutral-500 mb-2">Default:</p>
+                            <SearchBar
+                              value={searchQuery}
+                              onChange={setSearchQuery}
+                              placeholder="Search..."
+                            />
+                          </div>
+                          <div>
+                            <p className="text-xs font-mono text-neutral-500 mb-2">Custom placeholder:</p>
+                            <SearchBar
+                              value={searchQuery}
+                              onChange={setSearchQuery}
+                              placeholder="Search nodes..."
+                            />
+                          </div>
+                          <div>
+                            <p className="text-xs font-mono text-neutral-500 mb-2">Without clear button:</p>
+                            <SearchBar
+                              value={searchQuery}
+                              onChange={setSearchQuery}
+                              showClearButton={false}
+                              placeholder="Search..."
+                            />
+                          </div>
+                        </div>
+                        <Separator />
+                        <div className="p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
+                          <p className="text-sm text-neutral-400 mb-2">
+                            Features:
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            <Badge variant="outline">Icon</Badge>
+                            <Badge variant="outline">Clear Button</Badge>
+                            <Badge variant="outline">Customizable</Badge>
+                            <Badge variant="outline">Accessible</Badge>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
                     {/* Textarea */}
                     <Card id="textarea">
                       <CardHeader>
@@ -1122,11 +1178,30 @@ export const DesignSystemPage: React.FC = () => {
                       <CardHeader>
                         <CardTitle>{t('designSystem.components.modal.title') || 'Modal'}</CardTitle>
                         <CardDescription>
-                          {t('designSystem.components.modal.description') || 'Consistent modal patterns for the application'}
+                          {t('designSystem.components.modal.description') || 'Shared modal base component and specialized modals'}
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-4">
+                            <h3 className="text-sm font-semibold text-neutral-200 font-mono">Shared Modal Base</h3>
+                            <div className="p-6 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
+                              <p className="text-sm text-neutral-400 mb-4">
+                                Reusable modal component with consistent styling, keyboard handling, and accessibility.
+                              </p>
+                              <div className="flex flex-wrap gap-2 mb-4">
+                                <Badge variant="outline">Portal</Badge>
+                                <Badge variant="outline">Escape Key</Badge>
+                                <Badge variant="outline">Backdrop Click</Badge>
+                                <Badge variant="outline">Sizes</Badge>
+                                <Badge variant="outline">Footer</Badge>
+                              </div>
+                              <Button onClick={() => setShowSharedModal(true)} variant="outline" size="sm">
+                                Open Shared Modal
+                              </Button>
+                            </div>
+                          </div>
+
                           <div className="space-y-4">
                             <h3 className="text-sm font-semibold text-neutral-200 font-mono">Confirmation Modal</h3>
                             <div className="p-6 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
@@ -1143,25 +1218,61 @@ export const DesignSystemPage: React.FC = () => {
                               </Button>
                             </div>
                           </div>
+                        </div>
 
-                          <div className="space-y-4">
-                            <h3 className="text-sm font-semibold text-neutral-200 font-mono">Custom Content Modal Pattern</h3>
-                            <div className="p-6 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
-                              <p className="text-sm text-neutral-400 mb-4">
-                                Standard structure for complex modals using Portal, Backdrop, Header, Content, and Footer.
-                              </p>
-                              <code className="block p-3 bg-neutral-950/70 rounded border border-neutral-800/50 text-[10px] font-mono text-neutral-500 overflow-x-auto whitespace-pre">
-                                {`<div className="modal-backdrop">
-  <div className="modal-container">
-    <div className="modal-header">...</div>
-    <div className="modal-content">...</div>
-    <div className="modal-footer">...</div>
-  </div>
-</div>`}
-                              </code>
+                        <Separator />
+
+                        <div className="space-y-4">
+                          <h3 className="text-sm font-semibold text-neutral-200 font-mono">Modal Sizes</h3>
+                          <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                            <div className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md text-center">
+                              <div className="text-xs font-mono text-neutral-500 mb-1">sm</div>
+                              <div className="text-xs font-mono text-neutral-400">max-w-md</div>
+                            </div>
+                            <div className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md text-center">
+                              <div className="text-xs font-mono text-neutral-500 mb-1">md</div>
+                              <div className="text-xs font-mono text-neutral-400">max-w-lg</div>
+                            </div>
+                            <div className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md text-center">
+                              <div className="text-xs font-mono text-neutral-500 mb-1">lg</div>
+                              <div className="text-xs font-mono text-neutral-400">max-w-2xl</div>
+                            </div>
+                            <div className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md text-center">
+                              <div className="text-xs font-mono text-neutral-500 mb-1">xl</div>
+                              <div className="text-xs font-mono text-neutral-400">max-w-4xl</div>
+                            </div>
+                            <div className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md text-center">
+                              <div className="text-xs font-mono text-neutral-500 mb-1">full</div>
+                              <div className="text-xs font-mono text-neutral-400">max-w-[90vw]</div>
                             </div>
                           </div>
                         </div>
+
+                        <Modal
+                          isOpen={showSharedModal}
+                          onClose={() => setShowSharedModal(false)}
+                          title="Shared Modal Example"
+                          description="This is an example of the shared Modal component"
+                          size="md"
+                          footer={
+                            <>
+                              <Button variant="outline" size="sm" onClick={() => setShowSharedModal(false)}>
+                                Cancel
+                              </Button>
+                              <Button variant="default" size="sm" onClick={() => {
+                                toast.success('Action confirmed!');
+                                setShowSharedModal(false);
+                              }}>
+                                Confirm
+                              </Button>
+                            </>
+                          }
+                        >
+                          <p className="text-sm text-neutral-400 font-mono">
+                            This modal uses the shared Modal base component. It provides consistent styling,
+                            keyboard handling (Escape to close), backdrop click to close, and accessibility features.
+                          </p>
+                        </Modal>
 
                         <ConfirmationModal
                           isOpen={showModal}
