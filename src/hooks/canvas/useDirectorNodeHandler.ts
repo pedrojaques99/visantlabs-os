@@ -144,8 +144,8 @@ export const useDirectorNodeHandler = ({
 
     const directorData = node.data as DirectorNodeData;
 
-    // Validate we have selections
-    const hasSelections = 
+    // Validate we have selections (or pool has items in pool mode)
+    let hasSelections = 
       (directorData.selectedBrandingTags?.length || 0) > 0 ||
       (directorData.selectedCategoryTags?.length || 0) > 0 ||
       (directorData.selectedLocationTags?.length || 0) > 0 ||
@@ -155,8 +155,20 @@ export const useDirectorNodeHandler = ({
       (directorData.selectedMaterialTags?.length || 0) > 0 ||
       (directorData.selectedColors?.length || 0) > 0;
 
+    // In pool mode, check if pool has at least one tag
+    if (!hasSelections && directorData.isSurpriseMeMode && directorData.surpriseMePool) {
+      const pool = directorData.surpriseMePool;
+      hasSelections = 
+        pool.selectedCategoryTags.length > 0 ||
+        pool.selectedLocationTags.length > 0 ||
+        pool.selectedAngleTags.length > 0 ||
+        pool.selectedLightingTags.length > 0 ||
+        pool.selectedEffectTags.length > 0 ||
+        pool.selectedMaterialTags.length > 0;
+    }
+
     if (!hasSelections) {
-      toast.error('Please select at least one tag');
+      toast.error('Please select at least one tag' + (directorData.isSurpriseMeMode ? ' or add tags to the pool' : ''));
       return;
     }
 
@@ -197,16 +209,56 @@ export const useDirectorNodeHandler = ({
         }
       }
 
+      // Helper function to randomly select from pool or use selected tags
+      const getRandomFromPool = (pool: string[]): string[] => {
+        if (pool.length === 0) return [];
+        const randomIndex = Math.floor(Math.random() * pool.length);
+        return [pool[randomIndex]];
+      };
+
+      // If pool mode is active, randomly select from pools
+      let categoryTags = directorData.selectedCategoryTags || [];
+      let locationTags = directorData.selectedLocationTags || [];
+      let angleTags = directorData.selectedAngleTags || [];
+      let lightingTags = directorData.selectedLightingTags || [];
+      let effectTags = directorData.selectedEffectTags || [];
+      let materialTags = directorData.selectedMaterialTags || [];
+
+      if (directorData.isSurpriseMeMode && directorData.surpriseMePool) {
+        const pool = directorData.surpriseMePool;
+        
+        // Randomly select from pools if they have items, otherwise use selected tags
+        if (pool.selectedCategoryTags.length > 0) {
+          categoryTags = getRandomFromPool(pool.selectedCategoryTags);
+        }
+        if (pool.selectedLocationTags.length > 0) {
+          locationTags = getRandomFromPool(pool.selectedLocationTags);
+        }
+        if (pool.selectedAngleTags.length > 0) {
+          angleTags = getRandomFromPool(pool.selectedAngleTags);
+        }
+        if (pool.selectedLightingTags.length > 0) {
+          lightingTags = getRandomFromPool(pool.selectedLightingTags);
+        }
+        if (pool.selectedEffectTags.length > 0) {
+          effectTags = getRandomFromPool(pool.selectedEffectTags);
+        }
+        if (pool.selectedMaterialTags.length > 0) {
+          materialTags = getRandomFromPool(pool.selectedMaterialTags);
+        }
+      }
+
       // Generate smart prompt
       const result = await aiApi.generateSmartPrompt({
         baseImage: imageData,
         designType: directorData.selectedDesignType || directorData.suggestedDesignType || 'logo',
         brandingTags: directorData.selectedBrandingTags || [],
-        categoryTags: directorData.selectedCategoryTags || [],
-        locationTags: directorData.selectedLocationTags || [],
-        angleTags: directorData.selectedAngleTags || [],
-        lightingTags: directorData.selectedLightingTags || [],
-        effectTags: directorData.selectedEffectTags || [],
+        categoryTags,
+        locationTags,
+        angleTags,
+        lightingTags,
+        effectTags,
+        materialTags,
         selectedColors: directorData.selectedColors || [],
         aspectRatio: '16:9',
         generateText: false,

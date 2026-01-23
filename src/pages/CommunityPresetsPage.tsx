@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { Users, Plus, Edit2, Trash2, X, Save, Image as ImageIcon, Camera, Layers, MapPin, Sun, Heart, Maximize2, ExternalLink, Copy, Globe, User, LayoutGrid, Box, Settings, Palette, Sparkles, Download, Search, Clipboard } from 'lucide-react';
+import { Users, Plus, Edit2, Trash2, X, Save, Image as ImageIcon, Camera, Layers, MapPin, Sun, Heart, Maximize2, ExternalLink, Copy, Globe, User, LayoutGrid, Box, Settings, Palette, Sparkles, Download, Clipboard } from 'lucide-react';
+import { SearchBar } from '../components/ui/SearchBar';
 
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 
@@ -862,24 +863,14 @@ export const CommunityPresetsPage: React.FC = () => {
 
               <div className="flex items-center gap-2">
                 {/* Search Bar */}
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder={t('communityPresets.search.placeholder') || 'Search presets...'}
-                    className="bg-neutral-950/70 backdrop-blur-sm border border-neutral-700/30 rounded-md pl-8 pr-8 py-2 w-48 md:w-64 focus:outline-none focus:border-[brand-cyan]/50 text-xs text-neutral-300 font-mono"
-                  />
-                  <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-neutral-500" size={14} />
-                  {searchQuery && (
-                    <button
-                      onClick={() => setSearchQuery('')}
-                      className="absolute right-2.5 top-1/2 transform -translate-y-1/2 text-neutral-500 hover:text-neutral-300 transition-colors"
-                    >
-                      <X size={14} />
-                    </button>
-                  )}
-                </div>
+                <SearchBar
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  placeholder={t('communityPresets.search.placeholder') || 'Search presets...'}
+                  iconSize={14}
+                  className="bg-neutral-950/70 backdrop-blur-sm border-neutral-700/30 w-48 md:w-64 text-xs font-mono"
+                  containerClassName="w-48 md:w-64"
+                />
 
                 {!isEditing && isAuthenticated && (
                   <button

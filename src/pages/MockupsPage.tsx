@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Search, X, ImageIcon, Minus, Plus } from 'lucide-react';
+import { Search, ImageIcon, Minus, Plus } from 'lucide-react';
+import { SearchBar } from '../components/ui/SearchBar';
 import { GlitchLoader } from '../components/ui/GlitchLoader';
 import { mockupApi, type Mockup } from '../services/mockupApi';
 import { FullScreenViewer } from '../components/FullScreenViewer';
@@ -379,25 +380,15 @@ export const MockupsPage: React.FC = () => {
                 </button>
                 {showSearch && (
                   <div className="absolute top-12 right-0 bg-neutral-950/90 backdrop-blur-sm border border-neutral-700/30 rounded-md p-2 min-w-[240px] shadow-lg animate-[fadeInScale_0.2s_ease-out] z-50">
-                    <div className="relative">
-                      <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder={t('mockupsPage.searchPlaceholder')}
-                        className="w-full bg-transparent pl-7 pr-8 py-2 rounded-md border border-neutral-700/30 focus:outline-none focus:border-[brand-cyan]/50 text-sm text-neutral-300 font-mono"
-                        autoFocus
-                      />
-                      <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-neutral-500" size={14} />
-                      {searchQuery && (
-                        <button
-                          onClick={() => setSearchQuery('')}
-                          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-neutral-500 hover:text-neutral-300 transition-colors"
-                        >
-                          <X size={14} />
-                        </button>
-                      )}
-                    </div>
+                    <SearchBar
+                      value={searchQuery}
+                      onChange={setSearchQuery}
+                      placeholder={t('mockupsPage.searchPlaceholder')}
+                      iconSize={14}
+                      className="bg-transparent border-neutral-700/30 text-sm font-mono"
+                      containerClassName="w-full"
+                      autoFocus
+                    />
                   </div>
                 )}
               </div>

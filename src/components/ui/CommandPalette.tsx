@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, X, Command } from 'lucide-react';
+import { Command } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
+import { SearchBar } from './SearchBar';
 
 interface SearchResult {
   id: string;
@@ -104,15 +105,16 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ items, onClose }
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center gap-3 px-4 py-3 border-b border-neutral-800/50">
-            <Search className="w-5 h-5 text-neutral-400" />
-            <input
+            <SearchBar
               ref={inputRef}
-              type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={setSearchQuery}
               onKeyDown={handleKeyDown}
               placeholder={t('designSystem.commandPalette.placeholder') || 'Search components, colors, typography...'}
-              className="flex-1 bg-transparent text-neutral-200 placeholder:text-neutral-500 focus:outline-none font-mono text-sm"
+              iconSize={20}
+              showClearButton={false}
+              className="flex-1 bg-transparent border-0 text-neutral-200 placeholder:text-neutral-500 focus:outline-none font-mono text-sm focus:ring-0 focus:ring-offset-0"
+              containerClassName="flex-1"
             />
             <div className="flex items-center gap-1 px-2 py-1 bg-neutral-900/50 rounded border border-neutral-800/50">
               <Command className="w-3 h-3 text-neutral-500" />
