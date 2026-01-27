@@ -151,7 +151,7 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
                 {/* COLUMN 2: Configuration Sections */}
                 <div className="space-y-4">
                     {/* Branding Section */}
-                    {uploadedImage && hasAnalyzed && (
+                    {uploadedImage && (
                         <CollapsibleSection
                             title={t('mockup.identity')}
                             icon={Target}
@@ -187,7 +187,7 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
                     )}
 
                     {/* Color Palette Preview */}
-                    {uploadedImage && (suggestedColorsFromAnalysis.length > 0 || selectedColors.length > 0) && (
+                    {uploadedImage && (
                         <CollapsibleSection
                             title={t('mockup.colorPalette')}
                             icon={Palette}
@@ -210,7 +210,7 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
                                 onRemoveColor={(color) => {
                                     setSelectedColors(selectedColors.filter(c => c !== color));
                                 }}
-                                disabled={hasAnalyzed}
+                                disabled={false}
                                 maxColors={5}
                                 hideTitle={true}
                             />
