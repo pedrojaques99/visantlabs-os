@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Modal } from '@/components/ui/Modal';
 import { SidebarSetupSection } from './SidebarSetupSection';
+import { useMockup } from './MockupContext';
 import type { UploadedImage, DesignType } from '../../types/types';
 
 interface SetupModalProps {
@@ -26,11 +27,39 @@ export const SetupModal: React.FC<SetupModalProps> = ({
     canClose = true,
 }) => {
     const { t } = useTranslation();
+    const { uploadedImage, hasAnalyzed, isAnalyzing } = useMockup();
+
+    const canAnalyze = uploadedImage && !hasAnalyzed;
+
+    const analyzeButton = canAnalyze ? (
+        <button
+            onClick={() => {
+                if (import.meta.env.DEV) console.log('[dev] analyze: modal header button click');
+                onAnalyze();
+            }}
+            disabled={isAnalyzing}
+            className={`
+            relative overflow-hidden group
+            px-4 py-1.5 rounded-md 
+            bg-brand-cyan 
+            text-neutral-900 font-medium text-xs tracking-wide
+            hover:bg-brand-cyan/90
+            transition-all duration-200
+            flex items-center gap-2
+            opacity-100 animate-fade-in`}
+        >
+            {isAnalyzing ? (
+                <span className="animate-pulse">{t('mockup.analyzing')}...</span>
+            ) : (
+                <span>{t('mockup.analyzeProject')}</span>
+            )}
+        </button>
+    ) : null;
 
     return (
         <Modal
             isOpen={isOpen}
-            onClose={canClose ? onClose : () => {}}
+            onClose={canClose ? onClose : () => { }}
             title={t('mockup.setup') || 'Setup'}
             size="xl"
             showCloseButton={canClose}
@@ -38,6 +67,7 @@ export const SetupModal: React.FC<SetupModalProps> = ({
             closeOnEscape={canClose}
             id="setup-modal"
             contentClassName="h-[90%] max-h-[90vh] bg-neutral-900"
+            headerAction={analyzeButton}
         >
             <SidebarSetupSection
                 onImageUpload={onImageUpload}

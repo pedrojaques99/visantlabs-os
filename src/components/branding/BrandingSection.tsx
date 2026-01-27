@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, ChevronDown, ChevronUp } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { translateTag } from '@/utils/localeUtils';
@@ -18,7 +18,12 @@ interface BrandingSectionProps {
   isComplete: boolean;
   suggestedTags?: string[];
   hasAnalyzed?: boolean;
+  suggestionSource?: string;
+  hideTitle?: boolean;
+  isEditingCustom?: boolean;
+  onSetIsEditingCustom?: (value: boolean) => void;
 }
+
 
 export const BrandingSection: React.FC<BrandingSectionProps> = ({
   tags,
@@ -29,17 +34,28 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
   onAddCustomTag,
   isComplete,
   suggestedTags = [],
-  hasAnalyzed = false
+  hasAnalyzed = false,
+  hideTitle = false,
+  isEditingCustom = false,
+  onSetIsEditingCustom
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
-  const [isEditingCustom, setIsEditingCustom] = useState(false);
+
+  // Local state for expansion
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // Local state for editing if not provided via props (fallback)
+  const [internalIsEditing, setInternalIsEditing] = useState(false);
+  const isEditing = onSetIsEditingCustom !== undefined ? isEditingCustom : internalIsEditing;
+  const setEditing = onSetIsEditingCustom || setInternalIsEditing;
+
   const inputRef = useRef<HTMLInputElement>(null);
   const blurTimeoutRef = useRef<number | null>(null);
   const limitReached = selectedTags.length >= 3;
 
   useEffect(() => {
-    if (isEditingCustom && inputRef.current) {
+    if (isEditing && inputRef.current) {
       inputRef.current.focus();
     }
 
@@ -48,18 +64,12 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
         clearTimeout(blurTimeoutRef.current);
       }
     };
-  }, [isEditingCustom]);
-
-  const handleCustomTagClick = () => {
-    if (!limitReached) {
-      setIsEditingCustom(true);
-    }
-  };
+  }, [isEditing]);
 
   const handleCustomTagSubmit = () => {
     if (customInput.trim() && !limitReached) {
       onAddCustomTag();
-      setIsEditingCustom(false);
+      setEditing(false);
     } else {
       handleCustomTagCancel();
     }
@@ -67,7 +77,7 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
 
   const handleCustomTagCancel = () => {
     onCustomInputChange('');
-    setIsEditingCustom(false);
+    setEditing(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -93,19 +103,39 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
     }, 150);
   };
 
-  // If analyzed, only show selected tags
-  const tagsToDisplay = hasAnalyzed ? selectedTags : tags;
+  // Logic: Sort suggested tags first, then others
+  const sortedTags = React.useMemo(() => {
+    const suggested = tags.filter(t => suggestedTags.includes(t));
+    const others = tags.filter(t => !suggestedTags.includes(t));
+    // Also prioritize selected tags if desired, but user asked for "Suggested"
+    // Usually selected tags are already "interesting".
+    // Let's stick to Suggested -> Others.
+    return [...suggested, ...others];
+  }, [tags, suggestedTags]);
+
+  const tagsToDisplay = hasAnalyzed ? selectedTags : sortedTags;
+
+  // "3 lines" approximation involves limits. Let's start with a rough number or use CSS
+  // Since CSS line clamp is hard with flex-wrap badges, we'll try a container max-height.
+  // 3 lines * ~32px/line = ~96px.
 
   return (
     <section id="branding-section" className={isComplete || hasAnalyzed ? 'pb-0' : ''}>
-      <h2 className={cn(sectionTitleClass(theme === 'dark'), (isComplete || hasAnalyzed) ? 'mb-1' : 'mb-3', 'transition-all duration-300')}>
-        {t('mockup.branding')}
-      </h2>
+      {!hideTitle && (
+        <h2 className={cn(sectionTitleClass(theme === 'dark'), (isComplete || hasAnalyzed) ? 'mb-1' : 'mb-3', 'transition-all duration-300')}>
+          {t('mockup.branding')}
+        </h2>
+      )}
       {!isComplete && !hasAnalyzed && (
         <p className={`text-xs mb-3 font-mono ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.brandingComment')}</p>
       )}
       <div>
-        <div className="flex flex-wrap gap-2 cursor-pointer">
+        <div
+          className={cn(
+            "flex flex-wrap gap-2 cursor-pointer transition-all duration-500 relative overflow-hidden",
+            !isExpanded && !hasAnalyzed && "max-h-[105px]" // Limits to approx 3 lines (32px * 3 + gap)
+          )}
+        >
           {tagsToDisplay.map(tag => {
             const isSelected = selectedTags.includes(tag);
             const isSuggested = suggestedTags.includes(tag);
@@ -138,26 +168,9 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
               </Badge>
             );
           })}
-          {!isEditingCustom && !hasAnalyzed && (
-            <Badge
-              onClick={handleCustomTagClick}
-              variant="outline"
-              className={cn(
-                "text-xs font-medium transition-all duration-200 gap-1 cursor-pointer",
-                limitReached
-                  ? theme === 'dark'
-                    ? 'opacity-40 bg-neutral-800/50 text-neutral-400 border-neutral-700/50 cursor-not-allowed'
-                    : 'opacity-40 bg-neutral-100 text-neutral-500 border-neutral-300 cursor-not-allowed'
-                  : theme === 'dark'
-                    ? 'bg-neutral-800/50 text-neutral-400 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
-                    : 'bg-neutral-100 text-neutral-700 border-neutral-300 hover:border-neutral-400 hover:text-neutral-900'
-              )}
-            >
-              <Plus size={14} />
-              <span>{t('mockup.customTagLabel')}</span>
-            </Badge>
-          )}
-          {isEditingCustom && !hasAnalyzed && (
+
+          {/* Internal Custom Input (When triggered via Header) */}
+          {isEditing && !hasAnalyzed && (
             <Input
               ref={inputRef}
               type="text"
@@ -175,10 +188,42 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
               autoFocus
             />
           )}
+
+          {/* Gradient Overlay when collapsed */}
+          {!isExpanded && !hasAnalyzed && tagsToDisplay.length > 12 && ( // Only show gradient if enough tags
+            <div className={cn(
+              "absolute bottom-0 left-0 right-0 h-8 pointer-events-none",
+              theme === 'dark'
+                ? "bg-gradient-to-t from-neutral-950 to-transparent"
+                : "bg-gradient-to-t from-white to-transparent"
+            )} />
+          )}
+
         </div>
+
+        {/* Expand/Collapse Button */}
+        {!hasAnalyzed && (tagsToDisplay.length > 12) && (
+          <div className="flex justify-center mt-2">
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="text-[10px] uppercase font-mono tracking-wider text-neutral-500 hover:text-neutral-300 transition-colors flex items-center gap-1"
+            >
+              {isExpanded ? (
+                <>
+                  <ChevronUp size={12} />
+                  {t('common.collapse')}
+                </>
+              ) : (
+                <>
+                  <ChevronDown size={12} />
+                  {t('common.expand')}
+                </>
+              )}
+            </button>
+          </div>
+        )}
       </div>
     </section>
-
   );
 };
 

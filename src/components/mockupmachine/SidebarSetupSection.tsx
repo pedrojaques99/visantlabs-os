@@ -1,11 +1,10 @@
-import React, { useMemo } from 'react';
-import { Pencil } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Pencil, ChevronDown, ChevronUp, Palette, Target, FileText, type LucideIcon, Plus } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/hooks/useTranslation';
 import { InputSection } from './InputSection';
 import { BrandingSection } from '../branding/BrandingSection';
 import { ColorPalettePreview } from './ColorPalettePreview';
-import { DesignTypeSection } from './DesignTypeSection';
 import { useMockup } from './MockupContext';
 import { useMockupTags } from '@/hooks/useMockupTags';
 import { sectionTitleClass } from '@/lib/utils';
@@ -18,6 +17,55 @@ interface SidebarSetupSectionProps {
     onDesignTypeChange: (type: DesignType) => void;
     onAnalyze: () => void;
 }
+
+const CollapsibleSection = ({
+    title,
+    icon: Icon,
+    children,
+    defaultExpanded = false,
+    theme,
+    headerAction
+}: {
+    title: string,
+    icon: LucideIcon,
+    children: React.ReactNode,
+    defaultExpanded?: boolean,
+    theme: string,
+    headerAction?: React.ReactNode
+}) => {
+    const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+
+    return (
+        <div className={`rounded-xl border transition-all duration-200 overflow-hidden ${theme === 'dark' ? 'bg-neutral-950/10 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
+            <div
+                className={`w-full flex items-center justify-between p-4 transition-colors ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'}`}
+            >
+                <button
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    className="flex-1 flex items-center gap-2 text-left"
+                >
+                    <Icon size={16} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
+                    <span className={sectionTitleClass(theme === 'dark')}>{title}</span>
+                </button>
+                <div className="flex items-center gap-2">
+                    {headerAction}
+                    <button onClick={() => setIsExpanded(!isExpanded)}>
+                        {isExpanded ?
+                            <ChevronUp size={16} className="text-neutral-500" /> :
+                            <ChevronDown size={16} className="text-neutral-500" />
+                        }
+                    </button>
+                </div>
+            </div>
+
+            {isExpanded && (
+                <div className="px-4 pb-4 animate-in slide-in-from-top-2 fade-in duration-200">
+                    {children}
+                </div>
+            )}
+        </div>
+    );
+};
 
 export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
     onImageUpload,
@@ -34,7 +82,6 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
         referenceImage,
         referenceImages,
         designType,
-        isImagelessMode,
         selectedModel,
         selectedBrandingTags,
         customBrandingInput,
@@ -55,7 +102,7 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
         availableBrandingTags,
     } = useMockupTags();
 
-    const [isEditingInstructions, setIsEditingInstructions] = React.useState(false);
+    const [isEditingCustomBranding, setIsEditingCustomBranding] = React.useState(false);
 
     // Helper values
     const designTypeSelected = !!designType;
@@ -79,17 +126,6 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
             id="section-setup"
             className="transition-all duration-300 space-y-6 sm:space-y-8"
         >
-            {/* Design Type Selection - Always visible */}
-            <div className={`p-4 rounded-xl border transition-all duration-200 ${theme === 'dark' ? 'bg-neutral-950/10 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
-                <DesignTypeSection
-                    designType={designType}
-                    onDesignTypeChange={onDesignTypeChange}
-                    uploadedImage={uploadedImage}
-                    isImagelessMode={isImagelessMode}
-                    onScrollToSection={handleScrollToSection}
-                />
-            </div>
-
             {/* Active Grid View - 2 Column Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-start">
                 {/* COLUMN 1: Input Media */}
@@ -104,18 +140,35 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
                             onImageUpload={onImageUpload}
                             onReferenceImagesChange={onReferenceImagesChange}
                             onStartOver={onStartOver}
-                            isImagelessMode={isImagelessMode}
                             hasAnalyzed={hasAnalyzed}
                             className="w-full"
+                            onDesignTypeChange={onDesignTypeChange}
+                            onScrollToSection={handleScrollToSection}
                         />
                     </div>
                 </div>
 
                 {/* COLUMN 2: Configuration Sections */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                     {/* Branding Section */}
-                    {(designTypeSelected || (uploadedImage && !isImagelessMode)) && (
-                        <div className={`p-4 rounded-xl border transition-all duration-200 ${theme === 'dark' ? 'bg-neutral-950/10 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
+                    {uploadedImage && hasAnalyzed && (
+                        <CollapsibleSection
+                            title={t('mockup.identity')}
+                            icon={Target}
+                            theme={theme}
+                            defaultExpanded={false}
+                            headerAction={
+                                <div className="flex items-center">
+                                    <button
+                                        onClick={() => setIsEditingCustomBranding(true)}
+                                        className="p-1 hover:bg-white/10 rounded-md transition-colors text-neutral-500 hover:text-brand-cyan"
+                                        title={t('mockup.customTagLabel')}
+                                    >
+                                        <Plus size={14} />
+                                    </button>
+                                </div>
+                            }
+                        >
                             <BrandingSection
                                 tags={displayBrandingTags}
                                 selectedTags={selectedBrandingTags}
@@ -126,13 +179,21 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
                                 onAddCustomTag={handleAddCustomBrandingTag}
                                 isComplete={brandingComplete}
                                 hasAnalyzed={hasAnalyzed}
+                                hideTitle={true}
+                                isEditingCustom={isEditingCustomBranding}
+                                onSetIsEditingCustom={setIsEditingCustomBranding}
                             />
-                        </div>
+                        </CollapsibleSection>
                     )}
 
                     {/* Color Palette Preview */}
-                    {uploadedImage && !isImagelessMode && (suggestedColorsFromAnalysis.length > 0 || selectedColors.length > 0) && (
-                        <div className={`p-4 rounded-xl border transition-all duration-200 ${theme === 'dark' ? 'bg-neutral-950/20 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
+                    {uploadedImage && (suggestedColorsFromAnalysis.length > 0 || selectedColors.length > 0) && (
+                        <CollapsibleSection
+                            title={t('mockup.colorPalette')}
+                            icon={Palette}
+                            theme={theme}
+                            defaultExpanded={false}
+                        >
                             <ColorPalettePreview
                                 suggestedColors={suggestedColorsFromAnalysis}
                                 selectedColors={selectedColors}
@@ -151,80 +212,31 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
                                 }}
                                 disabled={hasAnalyzed}
                                 maxColors={5}
+                                hideTitle={true}
                             />
-                        </div>
+                        </CollapsibleSection>
                     )}
 
                     {/* Instructions Section - Grouped with Branding aspects */}
-                    <div className={`p-4 rounded-xl border transition-all duration-200 ${theme === 'dark' ? 'bg-neutral-950/10 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
-                        <div className="flex items-center justify-between mb-3">
-                            <span className={sectionTitleClass(theme === 'dark')}>
-                                {t('mockup.instructions')}
-                            </span>
-                            <button
-                                onClick={() => setIsEditingInstructions(!isEditingInstructions)}
-                                className="p-1 hover:bg-white/5 rounded-md transition-colors text-neutral-500 hover:text-white"
-                            >
-                                <Pencil size={12} />
-                            </button>
+                    <CollapsibleSection
+                        title={t('mockup.instructions')}
+                        icon={FileText}
+                        theme={theme}
+                        defaultExpanded={false}
+                    >
+                        <div className="space-y-3 pt-2">
+                            <textarea
+                                value={instructions}
+                                onChange={(e) => setInstructions(e.target.value)}
+                                placeholder={t('mockup.instructionsPlaceholder')}
+                                className="w-full min-h-[100px] p-3 text-sm font-mono bg-neutral-950/70 border border-white/10 rounded-lg focus:outline-none focus:border-brand-cyan/50 resize-none text-white scrollbar-thin"
+                                autoFocus
+                            />
                         </div>
-
-                        {isEditingInstructions ? (
-                            <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
-                                <textarea
-                                    value={instructions}
-                                    onChange={(e) => setInstructions(e.target.value)}
-                                    placeholder={t('mockup.instructionsPlaceholder')}
-                                    className="w-full min-h-[100px] p-3 text-sm font-mono bg-neutral-950/70 border border-white/10 rounded-lg focus:outline-none focus:border-brand-cyan/50 resize-none text-white scrollbar-thin"
-                                    autoFocus
-                                />
-                                <div className="flex justify-end">
-                                    <button
-                                        onClick={() => setIsEditingInstructions(false)}
-                                        className="text-[10px] font-mono uppercase tracking-wider px-3 py-1.5 bg-brand-cyan text-black rounded-md hover:bg-brand-cyan/80 transition-all font-bold"
-                                    >
-                                        {t('common.done')}
-                                    </button>
-                                </div>
-                            </div>
-                        ) : (
-                            <div
-                                onClick={() => setIsEditingInstructions(true)}
-                                className="cursor-pointer group"
-                            >
-                                <p className={`text-sm leading-relaxed transition-colors ${instructions ? 'text-neutral-300' : 'text-neutral-500 italic'}`}>
-                                    {instructions || t('mockup.noInstructions')}
-                                </p>
-                            </div>
-                        )}
-                    </div>
+                    </CollapsibleSection>
                 </div>
             </div>
-            {/* Manual Analyze Button */}
-            {uploadedImage && !hasAnalyzed && !isImagelessMode && (
-                <div className="flex justify-center pt-4 animate-fade-in">
-                    <button
-                        onClick={() => {
-                          if (import.meta.env.DEV) console.log('[dev] analyze: button click');
-                          onAnalyze();
-                        }}
-                        disabled={isAnalyzing}
-                        className={`
-                        relative overflow-hidden group
-                        px-8 py-3 rounded-md 
-                        bg-brand-cyan 
-                        text-neutral-900 font-medium text-sm tracking-wide
-                        hover:scale-[1.02]
-                        active:scale-[0.98]
-                        transition-all duration-300
-                        flex items-center gap-2
-                        w-full lg:w-auto justify-center`}
-                    >
-                        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                        <span className="relative">{t('mockup.analyzeImage')}</span>
-                    </button>
-                </div>
-            )}
+            {/* Manual Analyze Button moved to Modal Header, removed from here */}
         </div>
     );
 };

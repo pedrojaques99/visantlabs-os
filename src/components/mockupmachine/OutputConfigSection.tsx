@@ -77,7 +77,7 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
                 onChange={(e) => onMockupCountChange(Math.min(Math.max(parseInt(e.target.value) || 1, 1), 4))}
                 className={`w-full p-2.5 bg-transparent border-none focus:outline-none focus:ring-0 text-xs font-monoSync ${theme === 'dark' ? 'text-neutral-100' : 'text-neutral-900'}`}
               />
-              <div className="absolute right-3 pointer-events-none">
+              <div className="absolute right-8 pointer-events-none">
                 <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-tighter">outputs</span>
               </div>
             </div>
@@ -127,10 +127,10 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
                   key={ratio}
                   onClick={() => onAspectRatioChange(ratio)}
                   className={`flex flex-col items-center justify-center gap-1 py-3 px-1 w-full rounded-sm transition-all duration-200 border cursor-pointer ${isSelected
-                      ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40 shadow-[0_0_10px_-5px_#22d3ee]'
-                      : theme === 'dark'
-                        ? 'bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
-                        : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:border-neutral-300 hover:text-neutral-700'
+                    ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40 shadow-[0_0_10px_-5px_#22d3ee]'
+                    : theme === 'dark'
+                      ? 'bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
+                      : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:border-neutral-300 hover:text-neutral-700'
                     }`}
                 >
                   <div className={`${isSquare ? 'w-5 h-5' : isLandscape ? 'w-7 h-4' : 'w-4 h-7'} border ${isSelected ? 'border-brand-cyan/60' : 'border-neutral-600/50'
@@ -143,10 +143,10 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
             <button
               onClick={() => setShowOther(!showOther)}
               className={`flex flex-col items-center justify-center gap-1 py-3 px-1 w-full rounded-sm transition-all duration-200 border cursor-pointer ${isOtherSelected
-                  ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40 shadow-[0_0_10px_-5px_#22d3ee]'
-                  : theme === 'dark'
-                    ? 'bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
-                    : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:border-neutral-300 hover:text-neutral-700'
+                ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40 shadow-[0_0_10px_-5px_#22d3ee]'
+                : theme === 'dark'
+                  ? 'bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
+                  : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:border-neutral-300 hover:text-neutral-700'
                 }`}
             >
               <span className="text-[10px] font-mono uppercase tracking-widest">{t('mockup.otherAspectRatio') || 'OUTROS'}</span>
@@ -169,10 +169,10 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
                       setShowOther(false);
                     }}
                     className={`flex flex-col items-center justify-center gap-1 py-2 px-1 w-full rounded-sm transition-all duration-200 border cursor-pointer ${isSelected
-                        ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40 shadow-[0_0_10px_-5px_#22d3ee]'
-                        : theme === 'dark'
-                          ? 'bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
-                          : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:border-neutral-300 hover:text-neutral-700'
+                      ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40 shadow-[0_0_10px_-5px_#22d3ee]'
+                      : theme === 'dark'
+                        ? 'bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
+                        : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:border-neutral-300 hover:text-neutral-700'
                       }`}
                   >
                     <div className={`${isSquare ? 'w-5 h-5' : isLandscape ? 'w-7 h-4' : 'w-4 h-7'} border ${isSelected ? 'border-brand-cyan/60' : 'border-neutral-600/50'
