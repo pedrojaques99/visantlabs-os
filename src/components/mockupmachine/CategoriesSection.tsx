@@ -83,13 +83,13 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
             <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>
               {title}
             </span>
-          {!isExpanded && (hasSelection || poolCount > 0) && (
-            <span className="text-[10px] font-mono truncate max-w-[200px]">
-              {hasSelection && <span className="text-brand-cyan">{selectionSummary}</span>}
-              {hasSelection && poolCount > 0 && <span className="text-neutral-500"> · </span>}
-              {poolCount > 0 && <span className="text-neutral-500">{poolCount} {t('mockup.inPool')}</span>}
-            </span>
-          )}
+            {!isExpanded && (hasSelection || poolCount > 0) && (
+              <span className="text-[10px] font-mono truncate max-w-[200px]">
+                {hasSelection && <span className="text-brand-cyan">{selectionSummary}</span>}
+                {hasSelection && poolCount > 0 && <span className="text-neutral-500"> · </span>}
+                {poolCount > 0 && <span className="text-neutral-500">{poolCount} {t('mockup.inPool')}</span>}
+              </span>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -157,7 +157,6 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
 
   const handleCustomTagClick = () => {
     setIsEditingCustom(true);
-    if (!isFinalExpanded) setIsFinalExpanded(true);
   };
 
   const handleCustomTagSubmit = () => {
@@ -264,7 +263,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
   const getCategoryIcon = (group: { id: string | number; key: string }) => {
     // Try to match by id first (for legacy categories), then by key (for database categories)
     const categoryId = typeof group.id === 'string' ? group.id : group.key.toLowerCase();
-    
+
     const iconMap: Record<string, React.ReactNode> = {
       'stationery': <FileText size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />,
       'packaging': <Package size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />,
@@ -275,10 +274,10 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
       'art': <Palette size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />,
       'other': <Grid3x3 size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
     };
-    
+
     // Try direct match first
     if (iconMap[categoryId]) return iconMap[categoryId];
-    
+
     // Try matching by key (for database categories that might have different names)
     const keyLower = group.key.toLowerCase();
     for (const [key, icon] of Object.entries(iconMap)) {
@@ -286,11 +285,11 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
         return icon;
       }
     }
-    
+
     return null;
   };
 
-  const hasFinalSection = finalTags.length > 0 || !isComplete;
+  const hasFinalSection = finalTags.length > 0;
   const finalSelectedTags = finalTags.filter(tag => selectedTags.includes(tag));
   const hasFinalSelection = finalSelectedTags.length > 0;
   const finalPoolCount = isSurpriseMeMode ? finalTags.filter(t => categoriesPool.includes(t)).length : 0;
@@ -321,38 +320,6 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
         onToggle={handleClick}
         disabled={!hasAnalyzed && !isSurpriseMeMode && hasAnySelection && !isSelected}
         className={cn("scale-90 origin-left", hasAnalyzed ? "cursor-default" : "cursor-pointer")}
-      />
-    );
-  };
-
-  const renderCustomTagButton = () => {
-    if (isComplete) return null;
-
-    return !isEditingCustom ? (
-      <Tag
-        label={t('mockup.customCategoryLabel')}
-        onToggle={handleCustomTagClick}
-        removable={false}
-        className="gap-1 scale-90 origin-left"
-      >
-        <Plus size={12} />
-      </Tag>
-    ) : (
-      <Input
-        ref={inputRef}
-        type="text"
-        value={customInput}
-        onChange={(e) => onCustomInputChange(e.target.value)}
-        onKeyDown={handleKeyDown}
-        onBlur={handleBlur}
-        placeholder={t('mockup.customCategoryPlaceholder')}
-        className={cn(
-          "px-3 py-1.5 text-[10px] h-7 transition-all duration-200 border-[brand-cyan]/30 focus:ring-0 min-w-[120px] font-mono",
-          theme === 'dark'
-            ? 'bg-brand-cyan/20 text-brand-cyan'
-            : 'bg-brand-cyan/20 text-neutral-800'
-        )}
-        autoFocus
       />
     );
   };
@@ -393,7 +360,39 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
       {isAllCategoriesOpen && (
         <div className="mt-4 space-y-2">
           {!isComplete && (
-            <p className="text-[10px] text-neutral-500 mb-2 font-mono px-1 uppercase tracking-tighter">{t('mockup.categoriesComment')}</p>
+            <div className="flex items-center justify-between mb-2 px-1 h-7">
+              <p className="text-[10px] text-neutral-500 font-mono uppercase tracking-tighter">{t('mockup.categoriesComment')}</p>
+
+              {/* Custom Input / Add Button */}
+              {isEditingCustom ? (
+                <div className="animate-in fade-in slide-in-from-right-5 duration-200">
+                  <Input
+                    ref={inputRef}
+                    type="text"
+                    value={customInput}
+                    onChange={(e) => onCustomInputChange(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    onBlur={handleBlur}
+                    placeholder={t('mockup.customCategoryPlaceholder')}
+                    className={cn(
+                      "px-3 py-1 text-[10px] h-6 transition-all duration-200 focus:ring-0 w-[140px] font-mono",
+                      theme === 'dark'
+                        ? 'bg-neutral-800/50 border-neutral-700/50 text-neutral-200 placeholder:text-neutral-500 focus:border-neutral-600'
+                        : 'bg-neutral-100 border-neutral-300 text-neutral-900 placeholder:text-neutral-500 focus:border-neutral-400'
+                    )}
+                    autoFocus
+                  />
+                </div>
+              ) : (
+                <button
+                  onClick={handleCustomTagClick}
+                  className="p-1 text-neutral-500 hover:text-brand-cyan hover:bg-white/5 rounded transition-all duration-200 group"
+                  title={t('mockup.addCustomCategory')}
+                >
+                  <Plus size={14} className="group-hover:rotate-90 transition-transform duration-300" />
+                </button>
+              )}
+            </div>
           )}
 
           <div className={`grid grid-cols-1 gap-2 transition-opacity duration-300 ${isComplete ? 'opacity-80' : ''}`}>
@@ -430,13 +429,13 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                           ? t(`mockup.categoryGroups.drinkware`) + (otherTags.length > 0 ? ` / ${t(`mockup.categoryGroups.other`)}` : '')
                           : t(`mockup.categoryGroups.other`)}
                       </span>
-                    {!isFinalExpanded && (hasFinalSelection || finalPoolCount > 0) && (
-                      <span className="text-[10px] font-mono truncate max-w-[200px]">
-                        {hasFinalSelection && <span className="text-brand-cyan">{finalSelectedTags.map(tag => translateTag(tag)).join(', ')}</span>}
-                        {hasFinalSelection && finalPoolCount > 0 && <span className="text-neutral-500"> · </span>}
-                        {finalPoolCount > 0 && <span className="text-neutral-500">{finalPoolCount} {t('mockup.inPool')}</span>}
-                      </span>
-                    )}
+                      {!isFinalExpanded && (hasFinalSelection || finalPoolCount > 0) && (
+                        <span className="text-[10px] font-mono truncate max-w-[200px]">
+                          {hasFinalSelection && <span className="text-brand-cyan">{finalSelectedTags.map(tag => translateTag(tag)).join(', ')}</span>}
+                          {hasFinalSelection && finalPoolCount > 0 && <span className="text-neutral-500"> · </span>}
+                          {finalPoolCount > 0 && <span className="text-neutral-500">{finalPoolCount} {t('mockup.inPool')}</span>}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
@@ -450,7 +449,6 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                     <div className="flex flex-wrap gap-1.5 mt-2">
                       {drinkwareTags.map(tag => renderTagButton(tag))}
                       {otherTags.map(tag => renderTagButton(tag))}
-                      {renderCustomTagButton()}
                     </div>
                   </div>
                 )}

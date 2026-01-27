@@ -8,6 +8,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { formatImageTo16_9 } from '@/utils/fileUtils';
 import { isSafeUrl } from '@/utils/imageUtils';
 import { cn, sectionTitleClass } from '@/lib/utils';
+import { DesignTypeSection } from './DesignTypeSection';
 
 interface InputSectionProps {
   uploadedImage: UploadedImage | null;
@@ -18,9 +19,11 @@ interface InputSectionProps {
   onImageUpload: (image: UploadedImage) => void;
   onReferenceImagesChange: (images: UploadedImage[]) => void;
   onStartOver: () => void;
-  isImagelessMode: boolean;
   hasAnalyzed?: boolean;
   className?: string; // Add className
+  // Design Type Props
+  onDesignTypeChange: (type: DesignType) => void;
+  onScrollToSection: (sectionId: string) => void;
 }
 
 export const InputSection: React.FC<InputSectionProps> = ({
@@ -32,9 +35,10 @@ export const InputSection: React.FC<InputSectionProps> = ({
   onImageUpload,
   onReferenceImagesChange,
   onStartOver,
-  isImagelessMode,
   hasAnalyzed = false,
-  className = ""
+  className = "",
+  onDesignTypeChange,
+  onScrollToSection
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
@@ -126,6 +130,8 @@ export const InputSection: React.FC<InputSectionProps> = ({
 
   return (
     <section className={cn("flex flex-col gap-3 sm:gap-4 md:gap-6 w-full", className)}>
+      {/* Design Type Section - Integrated into Card Footer */}
+
       {/* Files Header */}
       <div className="flex items-center justify-between flex-shrink-0">
         <h2 className={sectionTitleClass(theme === 'dark')}>
@@ -138,21 +144,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
         )}
       </div>
 
-      {/* Capacity Progress Section */}
-      <div className="space-y-1 sm:space-y-2 flex-shrink-0">
-        <div className="h-0.5 sm:h-1 w-full bg-neutral-800 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-brand-cyan transition-all duration-500"
-            style={{ width: `${capacityUsage}%` }}
-          />
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-[9px] sm:text-[10px] font-mono text-neutral-400 uppercase tracking-widest">
-            {capacityUsage}% {t('mockup.capacityUsed')}
-          </span>
-          <Info size={12} className="text-neutral-500 opacity-50 flex-shrink-0" />
-        </div>
-      </div>
+
 
       {/* Compact Files Grid */}
       <div className="grid grid-cols-2 gap-1.5 sm:gap-2 flex-1 min-h-0 content-start">
@@ -181,16 +173,47 @@ export const InputSection: React.FC<InputSectionProps> = ({
               </p>
             </div>
 
-            <div className="flex items-center justify-between mt-auto pt-1.5 sm:pt-2 border-t border-white/5 duration-200">
-              <label htmlFor="image-upload-blank" className="p-1 hover:bg-white/5 rounded-md transition-colors text-neutral-500 hover:text-white cursor-pointer">
-                <Plus size={14} />
-              </label>
-              <button
-                onClick={onStartOver}
-                className="p-1 hover:bg-red-500/10 rounded-md transition-colors text-neutral-500 hover:text-red-400"
-              >
-                <X size={14} />
-              </button>
+            {/* Footer with Design Type Switcher */}
+            <div className="flex items-center justify-between mt-auto pt-1.5 sm:pt-2 border-t border-white/5 gap-2">
+              <div className="flex items-center bg-neutral-900/50 rounded-md p-0.5 border border-white/5">
+                <button
+                  onClick={() => onDesignTypeChange('logo')}
+                  className={cn(
+                    "px-2 py-1 text-[10px] font-mono rounded transition-colors",
+                    designType === 'logo'
+                      ? "bg-brand-cyan text-black font-semibold"
+                      : "text-neutral-500 hover:text-neutral-300"
+                  )}
+                  title={t('mockup.itsALogo')}
+                >
+                  {t('mockup.typeLogo') || 'LOGO'}
+                </button>
+                <button
+                  onClick={() => onDesignTypeChange('layout')}
+                  className={cn(
+                    "px-2 py-1 text-[10px] font-mono rounded transition-colors",
+                    designType === 'layout'
+                      ? "bg-brand-cyan text-black font-semibold"
+                      : "text-neutral-500 hover:text-neutral-300"
+                  )}
+                  title={t('mockup.itsALayout')}
+                >
+                  {t('mockup.typeLayout') || 'LAYOUT'}
+                </button>
+              </div>
+
+              <div className="flex items-center gap-1">
+                <label htmlFor="image-upload-blank" className="p-1 hover:bg-white/5 rounded-md transition-colors text-neutral-500 hover:text-white cursor-pointer" title={t('mockup.replaceImage')}>
+                  <Plus size={14} />
+                </label>
+                <button
+                  onClick={onStartOver}
+                  className="p-1 hover:bg-red-500/10 rounded-md transition-colors text-neutral-500 hover:text-red-400"
+                  title={t('common.remove')}
+                >
+                  <X size={14} />
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -293,6 +316,19 @@ export const InputSection: React.FC<InputSectionProps> = ({
         className="hidden text-black"
         disabled={isLoadingImage}
       />
+
+      {/* Minimal Capacity Indicator (Bottom) */}
+      <div className="flex items-center gap-2 pt-2 border-t border-white/5 mt-auto">
+        <div className="h-0.5 w-16 bg-neutral-800 rounded-full overflow-hidden flex-shrink-0">
+          <div
+            className="h-full bg-brand-cyan/50 transition-all duration-500"
+            style={{ width: `${capacityUsage}%` }}
+          />
+        </div>
+        <span className="text-[9px] font-mono text-neutral-600 uppercase tracking-wider truncate">
+          {t('mockup.capacityUsed', { percentage: capacityUsage })}
+        </span>
+      </div>
     </section>
   );
 };

@@ -81,7 +81,6 @@ export interface EditNodeData extends BaseNodeData {
   uploadedImage?: UploadedImage | null;
   referenceImage?: UploadedImage | null;
   referenceImages?: UploadedImage[];
-  isImagelessMode?: boolean;
   promptPreview?: string;
   isSmartPromptActive?: boolean;
   isPromptManuallyEdited?: boolean;
@@ -629,14 +628,14 @@ export interface TextNodeData extends BaseNodeData {
 // Director Node - analyzes images and generates prompts with tag selection
 export interface DirectorNodeData extends BaseNodeData {
   type: 'director';
-  
+
   // Connected image (from handle)
   connectedImage?: string;
-  
+
   // Analysis state
   isAnalyzing?: boolean;
   hasAnalyzed?: boolean;
-  
+
   // Suggested tags from AI analysis
   suggestedBrandingTags?: string[];
   suggestedCategoryTags?: string[];
@@ -647,7 +646,7 @@ export interface DirectorNodeData extends BaseNodeData {
   suggestedMaterialTags?: string[];
   suggestedColors?: string[];
   suggestedDesignType?: DesignType;
-  
+
   // User selections
   selectedDesignType?: DesignType;
   selectedBrandingTags?: string[];
@@ -658,14 +657,14 @@ export interface DirectorNodeData extends BaseNodeData {
   selectedEffectTags?: string[];
   selectedMaterialTags?: string[];
   selectedColors?: string[];
-  
+
   // Generation state
   isGeneratingPrompt?: boolean;
   generatedPrompt?: string;
-  
+
   // Source image node ID (for auto-connect)
   sourceImageNodeId?: string;
-  
+
   // Pool mode (Surprise Me Mode)
   isSurpriseMeMode?: boolean;
   surpriseMePool?: {
@@ -676,7 +675,7 @@ export interface DirectorNodeData extends BaseNodeData {
     selectedEffectTags: string[];
     selectedMaterialTags: string[];
   };
-  
+
   // Handlers
   onAnalyze?: (nodeId: string) => Promise<void>;
   onGeneratePrompt?: (nodeId: string) => Promise<void>;

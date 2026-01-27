@@ -8,7 +8,8 @@ import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { translateTag } from '@/utils/localeUtils';
 import { organizeTagsByGroup, CATEGORY_GROUPS } from '@/utils/categoryGroups';
 import { DesignTypeSection } from '@/components/mockupmachine/DesignTypeSection';
-import type { DirectorNodeData, DesignType } from '@/types/reactFlow';
+import type { DirectorNodeData } from '@/types/reactFlow';
+import type { DesignType } from '@/types/types';
 import {
   AVAILABLE_TAGS,
   AVAILABLE_BRANDING_TAGS,
@@ -473,7 +474,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
   const { theme } = useTheme();
   const panelRef = useRef<HTMLDivElement>(null);
   const [isAllCategoriesOpen, setIsAllCategoriesOpen] = useState(false);
-  
+
   // Custom input states
   const [customBrandingInput, setCustomBrandingInput] = useState('');
   const [customLocationInput, setCustomLocationInput] = useState('');
@@ -481,7 +482,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
   const [customLightingInput, setCustomLightingInput] = useState('');
   const [customEffectInput, setCustomEffectInput] = useState('');
   const [customMaterialInput, setCustomMaterialInput] = useState('');
-  
+
   // Section expanded states
   const [isBrandingExpanded, setIsBrandingExpanded] = useState(false);
   const [isLocationExpanded, setIsLocationExpanded] = useState(false);
@@ -534,7 +535,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
   const organizedCategories = useMemo(() => {
     const mergedTags = [...new Set([...AVAILABLE_TAGS, ...suggestedCategoryTags])];
     const organized = organizeTagsByGroup(mergedTags);
-    
+
     return CATEGORY_GROUPS.map(cg => ({
       id: cg.id,
       key: cg.id,
@@ -566,7 +567,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
     const newPool = currentPool.includes(tag)
       ? currentPool.filter(t => t !== tag)
       : [...currentPool, tag];
-    
+
     onUpdateData(nodeId, {
       surpriseMePool: {
         ...surpriseMePool,
@@ -758,8 +759,8 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
           <div className="rounded-lg overflow-hidden border border-neutral-800/50">
             <img
               src={
-                connectedImage.startsWith('data:') 
-                  ? connectedImage 
+                connectedImage.startsWith('data:')
+                  ? connectedImage
                   : connectedImage.startsWith('http://') || connectedImage.startsWith('https://')
                     ? connectedImage
                     : `data:image/png;base64,${connectedImage}`
@@ -818,13 +819,13 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                   {t('canvasNodes.directorNode.selectTags') || 'Select tags for your prompt'}
                 </span>
               </div>
-              
+
               {/* Pool Mode Toggle */}
               <div
                 className={cn(
                   'flex items-center gap-2 cursor-pointer transition-all duration-200 px-2 py-1 rounded',
-                  isSurpriseMeMode 
-                    ? 'bg-brand-cyan/10 border border-brand-cyan/30' 
+                  isSurpriseMeMode
+                    ? 'bg-brand-cyan/10 border border-brand-cyan/30'
                     : 'hover:bg-neutral-800/30'
                 )}
                 onClick={handleToggleSurpriseMeMode}
@@ -867,8 +868,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                   return { base64: connectedImage, mimeType: 'image/png' };
                 }
               })() : null}
-              isImagelessMode={!connectedImage}
-              onScrollToSection={() => {}}
+              onScrollToSection={() => { }}
             />
 
             {/* Branding Tags */}
@@ -1195,7 +1195,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
           </button>
           {!hasSelections && (
             <p className="text-[10px] text-neutral-500 text-center mt-2 font-mono">
-              {!selectedDesignType 
+              {!selectedDesignType
                 ? (t('mockup.pleaseSelectDesignType') || 'Please select a design type')
                 : (t('canvasNodes.directorNode.selectAtLeastOneTag') || 'Select at least one tag to generate')
               }

@@ -9,7 +9,6 @@ interface DesignTypeSectionProps {
   designType: DesignType | null;
   onDesignTypeChange: (type: DesignType) => void;
   uploadedImage: UploadedImage | null;
-  isImagelessMode: boolean;
   onScrollToSection: (sectionId: string) => void;
 }
 
@@ -17,7 +16,6 @@ export const DesignTypeSection: React.FC<DesignTypeSectionProps> = ({
   designType,
   onDesignTypeChange,
   uploadedImage,
-  isImagelessMode,
   onScrollToSection
 }) => {
   const isComplete = !!designType;
@@ -41,7 +39,6 @@ export const DesignTypeSection: React.FC<DesignTypeSectionProps> = ({
               onDesignTypeChange('logo');
               onScrollToSection('branding-section');
             }}
-            disabled={isImagelessMode}
             variant="outline"
             className={cn(
               "w-full h-full flex flex-col items-center justify-center gap-1 p-4 text-xs font-mono transition-all",
@@ -58,7 +55,6 @@ export const DesignTypeSection: React.FC<DesignTypeSectionProps> = ({
               onDesignTypeChange('layout');
               onScrollToSection('branding-section');
             }}
-            disabled={isImagelessMode}
             variant="outline"
             className={cn(
               "w-full h-full flex flex-col items-center justify-center gap-1 p-4 text-xs font-mono transition-all",
@@ -71,21 +67,7 @@ export const DesignTypeSection: React.FC<DesignTypeSectionProps> = ({
             <span className="font-semibold text-sm">{t('mockup.itsALayout')}</span>
           </Button>
         </div>
-        {!uploadedImage && (
-          <Button
-            onClick={() => onDesignTypeChange('blank')}
-            variant="outline"
-            className={cn(
-              "w-full flex items-center gap-2 px-3 py-2 text-xs font-mono transition-all",
-              designType === 'blank'
-                ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40 shadow-sm'
-                : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50 hover:bg-neutral-800/40'
-            )}
-          >
-            <span className="text-lg">📄</span>
-            <span className="font-semibold">{t('mockup.blankMockup')}</span>
-          </Button>
-        )}
+
       </div>
     </section>
   );

@@ -24,7 +24,6 @@ const isDev = import.meta.env.DEV;
 
 interface WelcomeScreenProps {
   onImageUpload: (image: UploadedImage) => void;
-  onBlankMockup: () => void;
 }
 
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) => {

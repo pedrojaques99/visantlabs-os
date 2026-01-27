@@ -7,7 +7,6 @@ interface MockupContextState {
     uploadedImage: UploadedImage | null;
     referenceImage: UploadedImage | null;
     referenceImages: UploadedImage[];
-    isImagelessMode: boolean;
     designType: DesignType | null;
     selectedModel: GeminiModel | null;
     resolution: Resolution;
@@ -84,7 +83,6 @@ interface MockupContextActions {
     setUploadedImage: Dispatch<SetStateAction<UploadedImage | null>>;
     setReferenceImage: Dispatch<SetStateAction<UploadedImage | null>>;
     setReferenceImages: Dispatch<SetStateAction<UploadedImage[]>>;
-    setIsImagelessMode: Dispatch<SetStateAction<boolean>>;
     setDesignType: Dispatch<SetStateAction<DesignType | null>>;
     setSelectedModel: Dispatch<SetStateAction<GeminiModel | null>>;
     setResolution: Dispatch<SetStateAction<Resolution>>;
@@ -152,7 +150,6 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(null);
     const [referenceImage, setReferenceImage] = useState<UploadedImage | null>(null);
     const [referenceImages, setReferenceImages] = useState<UploadedImage[]>([]);
-    const [isImagelessMode, setIsImagelessMode] = useState(false);
     const [designType, setDesignType] = useState<DesignType | null>(null);
     const [selectedModel, setSelectedModel] = useState<GeminiModel | null>(null);
     const [resolution, setResolution] = useState<Resolution>('1K');
@@ -214,7 +211,6 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         setUploadedImage(null);
         setReferenceImage(null);
         setReferenceImages([]);
-        setIsImagelessMode(false);
         setDesignType(null);
         setSelectedTags([]);
         setSelectedBrandingTags([]);
@@ -247,7 +243,6 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         uploadedImage, setUploadedImage,
         referenceImage, setReferenceImage,
         referenceImages, setReferenceImages,
-        isImagelessMode, setIsImagelessMode,
         designType, setDesignType,
         selectedModel, setSelectedModel,
         resolution, setResolution,
@@ -304,7 +299,7 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         instructions, setInstructions,
         resetAll
     }), [
-        uploadedImage, referenceImage, referenceImages, isImagelessMode, designType,
+        uploadedImage, referenceImage, referenceImages, designType,
         selectedModel, resolution, aspectRatio, mockups, isLoading, hasGenerated,
         isAnalyzing, isGeneratingPrompt, selectedTags, selectedBrandingTags,
         selectedLocationTags, selectedAngleTags, selectedLightingTags, selectedEffectTags,

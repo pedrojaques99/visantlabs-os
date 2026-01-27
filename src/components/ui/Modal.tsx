@@ -21,6 +21,7 @@ export interface ModalProps {
   id?: string;
   'aria-labelledby'?: string;
   'aria-describedby'?: string;
+  headerAction?: React.ReactNode;
 }
 
 const sizeClasses = {
@@ -49,6 +50,7 @@ export const Modal: React.FC<ModalProps> = ({
   id = 'modal',
   'aria-labelledby': ariaLabelledBy,
   'aria-describedby': ariaDescribedBy,
+  headerAction,
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -122,6 +124,11 @@ export const Modal: React.FC<ModalProps> = ({
                 </p>
               )}
             </div>
+            {headerAction && (
+              <div className="flex-shrink-0 ml-4">
+                {headerAction}
+              </div>
+            )}
             {showCloseButton && (
               <button
                 onClick={onClose}

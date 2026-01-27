@@ -28,7 +28,6 @@ interface SidebarOrchestratorProps {
   onGenerateSmartPrompt: () => void;
   onSimplify: () => void;
   onRegenerate: () => void;
-  onBlankMockup?: () => void;
   onGenerateSuggestion: (suggestion: string) => void;
   onAnalyze: () => void;
 
@@ -52,7 +51,6 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
   onGenerateSmartPrompt,
   onSimplify,
   onRegenerate,
-  onBlankMockup,
   onGenerateSuggestion,
   onAnalyze,
   generateOutputsButtonRef,
@@ -75,9 +73,11 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
   // Use analysis overlay hook
   const { showTemporaryOverlay } = useAnalysisOverlay();
 
-  // Open setup modal when not analyzed, close when analyzed
+  // Open setup modal when not analyzed (e.g., on reset/start over)
   useEffect(() => {
-    setIsSetupModalOpen(!hasAnalyzed);
+    if (!hasAnalyzed) {
+      setIsSetupModalOpen(true);
+    }
   }, [hasAnalyzed]);
 
   // Use extracted effects hook
@@ -160,10 +160,9 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
       >
         {/* Pool Mode Status Badge */}
         {isSurpriseMeMode && (
-          <div className="absolute top-6 right-8 flex items-center gap-2 px-2 py-1 rounded bg-brand-cyan/10 border border-brand-cyan/20 animate-fade-in z-20">
-            <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan animate-pulse" />
+          <div className="fixed top-6 right-8 flex items-center gap-2 px-2 py-1 rounded bg-brand-cyan/10 border border-brand-cyan/20 backdrop-blur animate-fade-in z-40">
             <span className="text-[9px] font-mono font-bold text-brand-cyan tracking-[0.2em] uppercase">
-              {t('mockup.surpriseMeMode')} Active
+              {t('mockup.surpriseMeMode')}
             </span>
           </div>
         )}
@@ -182,6 +181,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
               isDiceAnimating={isDiceAnimating}
               onStartOver={onStartOver}
               onReplaceImage={onReplaceImage}
+              onReferenceImagesChange={onReferenceImagesChange}
               authenticationRequiredMessage={authenticationRequiredMessage}
             />
           )}

@@ -134,14 +134,21 @@ export const MockupDisplay: React.FC<MockupDisplayProps> = ({
         {Array.from({ length: mockups.length }).map((_, index) => {
           const mockupId = savedMockupIds?.get(index);
           const isLiked = getIsLiked(index);
+          const hasImage = !!mockups[index];
+          const isItemLoading = isLoading[index];
+
+          // Hide card if it has no image and is not loading (empty placeholder)
+          if (!hasImage && !isItemLoading) {
+            return null;
+          }
 
           return (
             <MockupCard
               key={index}
               className="min-w-0 w-full"
               base64Image={mockups[index]}
-              isLoading={isLoading[index] && !mockups[index]}
-              isRedrawing={isLoading[index] && !!mockups[index]}
+              isLoading={isItemLoading && !mockups[index]}
+              isRedrawing={isItemLoading && !!mockups[index]}
               onRedraw={() => onRedraw(index)}
               onView={() => onView(index)}
               onNewAngle={(angle) => onNewAngle(index, angle)}

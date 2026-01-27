@@ -83,7 +83,7 @@ const MockupMachinePageContent: React.FC = () => {
     uploadedImage, setUploadedImage,
     referenceImage, setReferenceImage,
     referenceImages, setReferenceImages,
-    isImagelessMode, setIsImagelessMode,
+
     selectedModel, setSelectedModel,
     resolution, setResolution,
     designType, setDesignType,
@@ -126,13 +126,6 @@ const MockupMachinePageContent: React.FC = () => {
     suggestedEffectTags, setSuggestedEffectTags,
     suggestedMaterialTags, setSuggestedMaterialTags,
     suggestedColors, setSuggestedColors,
-    customBrandingInput, setCustomBrandingInput,
-    customCategoryInput, setCustomCategoryInput,
-    customLocationInput, setCustomLocationInput,
-    customAngleInput, setCustomAngleInput,
-    customLightingInput, setCustomLightingInput,
-    customEffectInput, setCustomEffectInput,
-    customMaterialInput, setCustomMaterialInput,
     resetAll,
     hasAnalyzed,
     setHasAnalyzed,
@@ -150,17 +143,6 @@ const MockupMachinePageContent: React.FC = () => {
   const { showOverlay, hideOverlay, showTemporaryOverlay } = useAnalysisOverlay();
 
   const {
-    handleTagToggle,
-    handleBrandingTagToggle,
-    handleLocationTagToggle,
-    handleAngleTagToggle,
-    handleLightingTagToggle,
-    handleEffectTagToggle,
-    handleMaterialTagToggle,
-    handleAddCustomBrandingTag,
-    handleAddCustomCategoryTag,
-    handleRandomizeCategories,
-    scrollToSection,
     availableMockupTags,
     availableLocationTags
   } = useMockupTags();
@@ -168,7 +150,7 @@ const MockupMachinePageContent: React.FC = () => {
   const promptWasReadyBeforeEditRef = useRef<boolean>(false);
   const [showWelcome, setShowWelcome] = useState(true);
   const [shouldAutoGenerate, setShouldAutoGenerate] = useState(false);
-  const [autoGenerateSource, setAutoGenerateSource] = useState<'surprise' | 'angles' | 'environments' | null>(null);
+  const [autoGenerateSource, setAutoGenerateSource] = useState<'surprise' | 'angles' | 'environments' | 'surprise-prompt-only' | null>(null);
   const [isAutoGenerateMode, setIsAutoGenerateMode] = useState(false);
   const [savedIndices, setSavedIndices] = useState<Set<number>>(new Set());
   const [mockupLikedStatus, setMockupLikedStatus] = useState<Map<number, boolean>>(new Map()); // Map index -> isLiked
@@ -331,7 +313,6 @@ const MockupMachinePageContent: React.FC = () => {
       !uploadedImage &&
       !referenceImage &&
       mockups.every(m => m === null) &&
-      !isImagelessMode &&
       isPromptReady &&
       designType !== 'blank' &&
       !hasGenerated &&
@@ -341,7 +322,7 @@ const MockupMachinePageContent: React.FC = () => {
       // Explicitly keep welcome screen hidden if we have generated mockups
       setShowWelcome(false);
     }
-  }, [location.pathname, uploadedImage, referenceImage, mockups, isImagelessMode, designType, hasGenerated]);
+  }, [location.pathname, uploadedImage, referenceImage, mockups, designType, hasGenerated]);
 
   // Save state to localStorage when mockups are generated (with debounce)
   useEffect(() => {
@@ -709,7 +690,6 @@ const MockupMachinePageContent: React.FC = () => {
     setSavedMockupIds(new Map());
     setMockupLikedStatus(new Map());
     setUploadedImage(null);
-    setIsImagelessMode(false);
     setInstructions('');
     // Clear localStorage when resetting
     clearMockupState();
@@ -719,7 +699,7 @@ const MockupMachinePageContent: React.FC = () => {
     const imageToUse = imageOverride ?? uploadedImage;
     const t0 = Date.now();
     if (import.meta.env.DEV) console.log('[dev] analyze: handleAnalyze start', silent ? '(silent)' : '');
-    if (!imageToUse || designType === 'blank') {
+    if (!imageToUse) {
       if (import.meta.env.DEV) console.log('[dev] analyze: skip (no image or blank)');
       return;
     }
@@ -760,7 +740,7 @@ const MockupMachinePageContent: React.FC = () => {
       setSuggestedLightingTags(analysis.lighting);
       setSuggestedEffectTags(analysis.effects);
       setSuggestedMaterialTags(analysis.materials);
-      setDesignType(analysis.designType || 'logo' || 'layout');
+      // Design type is now manually selected by user, not auto-set from analysis
 
       if (imageToUse.base64) {
         try {
@@ -828,7 +808,6 @@ const MockupMachinePageContent: React.FC = () => {
     // Reset controls primeiro (ele vai resetar uploadedImage, mas vamos setar depois)
     setReferenceImage(null);
     setReferenceImages([]);
-    setIsImagelessMode(false);
     resetControls();
     // Agora seta uploadedImage DEPOIS do reset para que não seja sobrescrito
     setUploadedImage(image);
@@ -867,6 +846,7 @@ const MockupMachinePageContent: React.FC = () => {
     // Background AI analysis (tags, branding, designType) – silent, no overlay, no step change
     try {
       await handleAnalyze(image, true);
+      setHasAnalyzed(true);
     } catch {
       // Error already handled in handleAnalyze (toast)
     }
@@ -886,21 +866,7 @@ const MockupMachinePageContent: React.FC = () => {
     const base64String = typeof image.base64 === 'string' ? image.base64 : '';
     const mimeType = image.mimeType || 'image/png';
 
-    // Se estiver no modo blank mockup, apenas atualiza a referência visual
-    if (designType === 'blank') {
-      const validImage: UploadedImage = base64String ? { base64: base64String, mimeType } : { url: image.url!, mimeType };
-      setReferenceImage(validImage);
-      if (base64String && !image.url) {
-        mockupApi.uploadTempImage(base64String, mimeType)
-          .then(url => {
-            setReferenceImage(prev => prev ? ({ ...prev, url, base64: undefined }) : null);
-          })
-          .catch(err => {
-            if (isLocalDevelopment()) console.error('Failed to upload reference temp image:', err);
-          });
-      }
-      return;
-    }
+
 
     // Para outros modos, substitui a imagem mantendo o setup
     const validImage: UploadedImage = base64String ? { base64: base64String, mimeType } : { url: image.url!, mimeType };
@@ -938,10 +904,10 @@ const MockupMachinePageContent: React.FC = () => {
     if (base64String || validImage.url) {
       try {
         // Ensure we have a valid image object for analysis
-        const imageForAnalysis: UploadedImage = base64String 
-          ? { base64: base64String, mimeType } 
+        const imageForAnalysis: UploadedImage = base64String
+          ? { base64: base64String, mimeType }
           : { url: validImage.url!, mimeType };
-        
+
         await handleAnalyze(imageForAnalysis, true);
       } catch (err) {
         // Error already handled in handleAnalyze (toast)
@@ -960,7 +926,7 @@ const MockupMachinePageContent: React.FC = () => {
     setUploadedImage(null);
     setReferenceImage(null);
     setReferenceImages([]);
-    setIsImagelessMode(false);
+    setReferenceImages([]);
     resetControls();
     setShowWelcome(true);
     // Clear persisted state from localStorage
@@ -970,73 +936,8 @@ const MockupMachinePageContent: React.FC = () => {
 
   const handleDesignTypeChange = (type: DesignType) => {
     // Se mudar de blank para outro tipo, limpar referenceImage
-    if (designType === 'blank' && type !== 'blank') {
-      setReferenceImage(null);
-      setReferenceImages([]);
-    }
+
     setDesignType(type);
-  };
-
-  const handleProceedWithoutImage = useCallback(async () => {
-    // Check authentication
-    if (!(await requireAuth())) return;
-    // Hide welcome screen first
-    setShowWelcome(false);
-    // Set blank mockup mode
-    setIsImagelessMode(true);
-    setDesignType('blank');
-    // Reset necessary controls without resetting designType
-    setSelectedModel(null);
-    setResolution('1K');
-    setMockups(Array(mockupCount).fill(null));
-    setIsLoading(Array(mockupCount).fill(false));
-    setSelectedTags([]);
-    setSelectedBrandingTags([]);
-    setSelectedLocationTags([]);
-    setSelectedAngleTags([]);
-    setSelectedLightingTags([]);
-    setSelectedEffectTags([]);
-    setSelectedColors([]);
-    setColorInput('');
-    setIsValidColor(false);
-    setIsAdvancedOpen(false);
-    setIsAllCategoriesOpen(false);
-    setSuggestedTags([]);
-    setHasGenerated(false);
-    setNegativePrompt('');
-    setAdditionalPrompt('');
-    setGenerateText(false);
-    setWithHuman(false);
-    setIsSmartPromptActive(true);
-    setPromptSuggestions([]);
-    setPromptPreview('');
-    setIsPromptManuallyEdited(false);
-    setIsPromptReady(false);
-    setReferenceImage(null);
-    setReferenceImages([]);
-    setSavedIndices(new Set());
-    setSavedMockupIds(new Map());
-    setMockupLikedStatus(new Map());
-    setUploadedImage(null);
-  }, [isAuthenticated, mockupCount]);
-
-  const handleColorInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newColor = e.target.value.trim();
-    setColorInput(newColor);
-    setIsValidColor(/^#([0-9A-F]{3}){1,2}$/i.test(newColor));
-  };
-
-  const handleAddColor = () => {
-    const sanitizedColor = colorInput.trim().toUpperCase();
-    if (isValidColor && !selectedColors.includes(sanitizedColor) && selectedColors.length < 5) {
-      setSelectedColors([...selectedColors, sanitizedColor]);
-      setColorInput('');
-      setIsValidColor(false);
-    }
-  };
-
-  const handleRemoveColor = (colorToRemove: string) => {
-    setSelectedColors(selectedColors.filter(color => color !== colorToRemove));
   };
 
 
@@ -1884,8 +1785,29 @@ const MockupMachinePageContent: React.FC = () => {
           generateOutputsButtonRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       }, 2200);
+    } else if (isSurpriseMeMode) {
+      // Manual mode WITH Director Mode: Set tags -> Auto Generate Prompt -> Wait for user
+      // We set source to 'surprise-prompt-only' to trigger prompt generation but SKIP image generation
+      setTimeout(() => {
+        setShouldAutoGenerate(true);
+        setAutoGenerateSource('surprise-prompt-only');
+      }, 2000);
+
+      // Scroll to generate outputs button (or prompt section) so user can see the generated prompt
+      setTimeout(() => {
+        if (generateOutputsButtonRef.current && sidebarRef.current) {
+          const buttonRect = generateOutputsButtonRef.current.getBoundingClientRect();
+          const sidebarRect = sidebarRef.current.getBoundingClientRect();
+          const relativeTop = buttonRect.top - sidebarRect.top + sidebarRef.current.scrollTop;
+
+          sidebarRef.current.scrollTo({
+            top: relativeTop - 20,
+            behavior: 'smooth'
+          });
+        }
+      }, 2200);
     } else {
-      // Manual mode: Set tags -> Wait for user review
+      // Manual mode WITHOUT Director Mode: Set tags -> Wait for user review
       // We set source to 'surprise' so that WHEN they click generate, it proceeds to image generation automatically
       setTimeout(() => {
         setAutoGenerateSource('surprise');
@@ -2770,7 +2692,7 @@ Generate the new mockup image with the requested changes applied.`;
 
   // Helper values for GenerateButton visibility
 
-  const hasUserChanges = designTypeSelected || brandingComplete || categoriesComplete || referenceImages.length > 0 || (uploadedImage && !isImagelessMode);
+  const hasUserChanges = designTypeSelected || brandingComplete || categoriesComplete || referenceImages.length > 0 || (!!uploadedImage);
 
   // Logic to show generation button (matches SidebarOrchestrator logic)
   const shouldShowGenerateButton = isPromptReady || hasUserChanges;
@@ -2778,7 +2700,7 @@ Generate the new mockup image with the requested changes applied.`;
   // --- View State Helpers ---
   const isSetupMode = !hasAnalyzed;
   const isDashboardMode = hasAnalyzed;
-  const shouldShowWelcome = showWelcome || (!uploadedImage && !isImagelessMode && designType !== 'blank');
+  const shouldShowWelcome = showWelcome || (!uploadedImage && designType !== 'blank');
 
   return (
     <>
@@ -2798,12 +2720,11 @@ Generate the new mockup image with the requested changes applied.`;
       {shouldShowWelcome ? (
         <WelcomeScreen
           onImageUpload={handleImageUpload}
-          onBlankMockup={handleProceedWithoutImage}
         />
       ) : (
-        <div className="pt-12 md:pt-14 overflow-hidden bg-background">
+        <div className="h-screen w-full pt-12 md:pt-14 overflow-hidden bg-background">
           <div className={cn(
-            "flex h-[calc(100vh-3rem)] md:h-[calc(100vh-3.5rem)] transition-all duration-500",
+            "flex h-full transition-all duration-500",
             isSetupMode ? "flex-col items-center justify-center p-4 md:p-8" : "flex-row"
           )}>
 
@@ -2835,7 +2756,6 @@ Generate the new mockup image with the requested changes applied.`;
                 onAnalyze={handleAnalyzeButtonClick}
                 generateOutputsButtonRef={generateOutputsButtonRef}
                 authenticationRequiredMessage={t('messages.authenticationRequired')}
-                onBlankMockup={handleProceedWithoutImage}
               />
             </div>
 

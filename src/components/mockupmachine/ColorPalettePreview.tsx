@@ -14,7 +14,15 @@ interface ColorPalettePreviewProps {
     onRemoveColor: (color: string) => void;
     disabled?: boolean;
     maxColors?: number;
+    hideTitle?: boolean;
 }
+
+/**
+ * ColorPalettePreview - Displays extracted colors with selection and hex input
+ * 
+ * Shows suggested colors from image analysis, allows user to select/deselect,
+ * and add custom colors via hex input.
+ */
 
 /**
  * ColorPalettePreview - Displays extracted colors with selection and hex input
@@ -29,7 +37,8 @@ export const ColorPalettePreview: React.FC<ColorPalettePreviewProps> = ({
     onAddColor,
     onRemoveColor,
     disabled = false,
-    maxColors = 5
+    maxColors = 5,
+    hideTitle = false
 }) => {
     const { t } = useTranslation();
     const { theme } = useTheme();
@@ -73,10 +82,13 @@ export const ColorPalettePreview: React.FC<ColorPalettePreviewProps> = ({
     return (
         <section className={cn("space-y-3", disabled && "opacity-60 pointer-events-none")}>
             <div className="flex items-center justify-between mb-1">
-                <h4 className={sectionTitleClass(theme === 'dark')}>
-                    {t('mockup.colorPaletteSection')}
-                </h4>
-                <span className="text-[12px] font-mono text-neutral-600">
+                {!hideTitle && (
+                    <h4 className={sectionTitleClass(theme === 'dark')}>
+                        {/* Use generic palette title if specialized key missing */}
+                        {t('mockup.colorPaletteSection') || t('mockup.colorPalette')}
+                    </h4>
+                )}
+                <span className={cn("text-[12px] font-mono", theme === 'dark' ? "text-neutral-500" : "text-neutral-600", hideTitle && "ml-auto")}>
                     {selectedColors.length}/{maxColors}
                 </span>
             </div>
