@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { BrandingWelcomeScreen } from '../components/branding/BrandingWelcomeScreen';
 import { BrandingMoodboard } from '../components/branding/BrandingMoodboard';
-import { GeneratingPromptOverlay } from '../components/ui/GeneratingPromptOverlay';
 import { ConfirmationModal } from '../components/ConfirmationModal';
 import { Target as BowArrow } from 'lucide-react';
 import { authService } from '../services/authService';
@@ -760,8 +759,6 @@ export const BrandingMachinePage: React.FC = () => {
         description="Crie estratégias completas de branding com inteligência artificial. Gere identidades visuais profissionais passo a passo."
         applicationCategory="DesignApplication"
       />
-      <GeneratingPromptOverlay isVisible={isGeneratingInitial} />
-
       {showDependencyModal && pendingGeneration && (
         <ConfirmationModal
           isOpen={showDependencyModal}

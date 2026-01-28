@@ -103,7 +103,8 @@ export const Modal: React.FC<ModalProps> = ({
     >
       <div
         className={cn(
-          'relative w-full max-h-[90vh] bg-neutral-950/95 backdrop-blur-xl border border-neutral-800/50 rounded-md shadow-2xl overflow-hidden flex flex-col',
+          'relative max-h-[90vh] bg-neutral-950/95 backdrop-blur-xl border border-neutral-800/50 rounded-md shadow-2xl overflow-hidden flex flex-col',
+          id === 'setup-modal' ? 'w-fit px-[15px] py-[10px] justify-center' : 'w-full',
           sizeClasses[size],
           contentClassName
         )}

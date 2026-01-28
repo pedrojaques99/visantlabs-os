@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo, Dispatch, SetStateAction } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo, useCallback, Dispatch, SetStateAction } from 'react';
 import type { UploadedImage, AspectRatio, DesignType, GeminiModel, Resolution } from '@/types/types';
-import { getSurpriseMeSelectedTags, type SurpriseMeSelectedTags } from '@/utils/surpriseMeSettings';
+import { getSurpriseMeSelectedTags, saveSurpriseMeSelectedTags, type SurpriseMeSelectedTags } from '@/utils/surpriseMeSettings';
 
 interface MockupContextState {
     // Image State
@@ -138,6 +138,7 @@ interface MockupContextActions {
     setSurpriseMePool: Dispatch<SetStateAction<SurpriseMeSelectedTags>>;
     setInstructions: Dispatch<SetStateAction<string>>;
     resetAll: () => void;
+    clearAllTags: () => void;
 }
 
 export type MockupContextValue = MockupContextState & MockupContextActions;
@@ -203,9 +204,23 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const [mockupCount, setMockupCount] = useState(initialMockupCount);
 
     // Surprise Me Mode State - load initial pool from localStorage
-    const [isSurpriseMeMode, setIsSurpriseMeMode] = useState(false);
+    const [isSurpriseMeModeState, setIsSurpriseMeModeState] = useState(false);
     const [surpriseMePool, setSurpriseMePool] = useState<SurpriseMeSelectedTags>(() => getSurpriseMeSelectedTags());
     const [instructions, setInstructions] = useState('');
+
+    // Wrapper to clear selected tags when entering pool mode
+    const setIsSurpriseMeMode = useCallback((value: boolean) => {
+        // When entering pool mode, clear all selected tags
+        if (value) {
+            setSelectedTags([]);
+            setSelectedLocationTags([]);
+            setSelectedAngleTags([]);
+            setSelectedLightingTags([]);
+            setSelectedEffectTags([]);
+            setSelectedMaterialTags([]);
+        }
+        setIsSurpriseMeModeState(value);
+    }, []);
 
     const resetAll = () => {
         setUploadedImage(null);
@@ -234,10 +249,35 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         setHasGenerated(false);
         setHasAnalyzed(false);
         setHasAnalyzed(false);
-        setIsSurpriseMeMode(false);
+        setIsSurpriseMeModeState(false);
         setIsAnalysisOverlayVisible(false);
         setInstructions('');
     };
+
+    // Clear all tags (both normal mode and pool mode) without resetting everything
+    const clearAllTags = useCallback(() => {
+        // Clear normal mode tags (categories, location, angle, lighting, effects, materials)
+        setSelectedTags([]);
+        setSelectedLocationTags([]);
+        setSelectedAngleTags([]);
+        setSelectedLightingTags([]);
+        setSelectedEffectTags([]);
+        setSelectedMaterialTags([]);
+        setSelectedBrandingTags([]);
+        setSelectedColors([]);
+        
+        // Clear pool mode tags
+        const emptyPool: SurpriseMeSelectedTags = {
+            selectedCategoryTags: [],
+            selectedLocationTags: [],
+            selectedAngleTags: [],
+            selectedLightingTags: [],
+            selectedEffectTags: [],
+            selectedMaterialTags: [],
+        };
+        setSurpriseMePool(emptyPool);
+        saveSurpriseMeSelectedTags(emptyPool);
+    }, []);
 
     const value = useMemo(() => ({
         uploadedImage, setUploadedImage,
@@ -294,10 +334,12 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         isValidColor, setIsValidColor,
         fullScreenImageIndex, setFullScreenImageIndex,
         mockupCount, setMockupCount,
-        isSurpriseMeMode, setIsSurpriseMeMode,
+        isSurpriseMeMode: isSurpriseMeModeState,
+        setIsSurpriseMeMode,
         surpriseMePool, setSurpriseMePool,
         instructions, setInstructions,
-        resetAll
+        resetAll,
+        clearAllTags
     }), [
         uploadedImage, referenceImage, referenceImages, designType,
         selectedModel, resolution, aspectRatio, mockups, isLoading, hasGenerated,
@@ -312,8 +354,8 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         isPromptReady, promptSuggestions, isSuggestingPrompts, customBrandingInput,
         customCategoryInput, customLocationInput, customAngleInput, customLightingInput,
         customEffectInput, customMaterialInput, colorInput, isValidColor,
-        fullScreenImageIndex, mockupCount, isSurpriseMeMode, surpriseMePool,
-        instructions, resetAll
+        fullScreenImageIndex, mockupCount, isSurpriseMeModeState, surpriseMePool,
+        instructions, resetAll, clearAllTags
     ]);
 
     return (

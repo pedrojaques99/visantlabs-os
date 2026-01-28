@@ -3,7 +3,7 @@ import { Info, Pickaxe, Wand2, ArrowLeftRight } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { useTranslation } from '@/hooks/useTranslation';
-
+import { Textarea } from '@/components/ui/textarea';
 import { useTheme } from '@/hooks/useTheme';
 import { getTranslations } from '@/utils/localeUtils';
 import { useMockup } from './MockupContext';
@@ -11,6 +11,7 @@ import { useMockup } from './MockupContext';
 interface PromptSectionProps {
   promptPreview: string;
   onPromptChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  onPromptUpdate: (value: string) => void;
   promptSuggestions: string[];
   isGeneratingPrompt: boolean;
   isSuggestingPrompts: boolean;
@@ -33,6 +34,7 @@ interface PromptSectionProps {
 export const PromptSection: React.FC<PromptSectionProps> = ({
   promptPreview,
   onPromptChange,
+  onPromptUpdate,
   promptSuggestions,
   isGeneratingPrompt,
   isSuggestingPrompts,
@@ -81,12 +83,24 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
     }
   };
 
+  // Default instruction snippets that come from the prompt builder and should be
+  // visually treated like "removable tags" (click to remove from prompt).
+  const builderInstructionSnippets = useMemo(
+    () => [
+      'There should be no human interaction in the image.',
+      'The design should be the sole focus, with absolutely no additional text, words, or letters generated anywhere in the image. Avoid text or letters.',
+      'It is crucial that the provided design is placed on the mockup surfaces exactly as it is, without any modification or re-drawing of the original design.',
+    ],
+    []
+  );
+
   const renderHighlightedText = (text: string) => {
     if (!text) return null;
-    if (allSelectedTags.length === 0) return text;
+    const tagsToHighlight = [...allSelectedTags, ...builderInstructionSnippets];
+    if (tagsToHighlight.length === 0) return text;
 
     // Escape regex special chars in tags
-    const escapedTags = allSelectedTags.map(tag => tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    const escapedTags = tagsToHighlight.map(tag => tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
     if (escapedTags.length === 0) return text;
 
     const regex = new RegExp(`(${escapedTags.join('|')})`, 'gi');
@@ -94,15 +108,47 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
 
     return parts.map((part, i) => {
       // Check if this part matches one of the tags (case-insensitive check)
-      const isMatch = allSelectedTags.some(tag => tag.toLowerCase() === part.toLowerCase());
-      if (isMatch) {
+      const isMatch = tagsToHighlight.some(tag => tag.toLowerCase() === part.toLowerCase());
+      if (!isMatch) return part;
+
+      const isBuilderSnippet = builderInstructionSnippets.some(
+        tag => tag.toLowerCase() === part.toLowerCase()
+      );
+
+      if (isBuilderSnippet) {
+        const removeLabel =
+          t('mockup.removeInstructionHint') ||
+          'Clique para remover esta instrução padrão do prompt.';
+
+        const handleRemove = (e: React.MouseEvent) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const next = text.replace(part, '').replace(/\s+/g, ' ').trim();
+          onPromptUpdate(next);
+        };
+
         return (
-          <span key={1} className="underline decoration-1 underline-offset-2 hover:text-brand-cyan">
-            {part}
+          <span
+            key={i}
+            className="relative inline-flex items-center gap-1 group cursor-pointer"
+            title={removeLabel}
+            onClick={handleRemove}
+          >
+            <span className="underline decoration-1 underline-offset-2 transition-colors">
+              {part}
+            </span>
           </span>
         );
       }
-      return part;
+
+      return (
+        <span
+          key={i}
+          className="underline decoration-1 underline-offset-2 hover:text-brand-cyan"
+        >
+          {part}
+        </span>
+      );
     });
   };
 
@@ -214,44 +260,38 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
             lineHeight: '1.5', // Assuming default or verify
           }}
         >
-          {renderHighlightedText(promptPreview)}
-          {/* Add a trailing space match to ensure alignment if prompts ends with newline */}
-          {promptPreview.endsWith('\n') && <br />}
+          {promptPreview ? (
+            <>
+              {renderHighlightedText(promptPreview)}
+              {/* Add a trailing space match to ensure alignment if prompts ends with newline */}
+              {promptPreview.endsWith('\n') && <br />}
+            </>
+          ) : (
+            isGeneratingPrompt && (
+              <div className="text-[11px] leading-relaxed space-y-1">
+                <div className="flex items-center gap-1">
+                  <GlitchLoader size={10} className="text-brand-cyan" />
+                </div>
+              </div>
+            )
+          )}
         </div>
 
-        <textarea
+        <Textarea
           ref={textareaRef}
           value={promptPreview}
           onChange={handleChange}
           onScroll={handleScroll} // Sync scroll
           rows={1}
-          className={`relative z-10 w-full p-2 rounded-md border focus:outline-none focus:border-brand-cyan/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 resize-y bg-transparent ${theme === 'dark'
+          className={`relative z-10 w-full p-2 rounded-md border focus:outline-none focus:border-brand-cyan/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 bg-transparent ${theme === 'dark'
             ? 'border-neutral-700/50 text-transparent caret-neutral-400'
             : 'border-neutral-300 text-transparent caret-neutral-700'
-            } ${isGeneratingPrompt ? 'opacity-50' : ''} selection:bg-brand-cyan/20 selection:text-transparent`} // Text transparent to show backdrop
-          placeholder={t('mockup.promptPlaceholder')}
+            } ${isGeneratingPrompt ? 'opacity-70' : ''} selection:bg-brand-cyan/20 selection:text-transparent`} // Text transparent to show backdrop
+          placeholder={isGeneratingPrompt && !promptPreview ? '' : t('mockup.promptPlaceholder')}
           style={{ minHeight: '100px', maxHeight: '600px', lineHeight: '1.5' }} // Explicit line-height
           disabled={isGeneratingPrompt}
           spellCheck={false} // Avoid red squiggles interfering
         />
-
-        {isGeneratingPrompt && (
-          <div className={`absolute h-min-[100px] inset-0 flex flex-col items-center justify-center gap-2 rounded-md ${theme === 'dark' ? 'bg-neutral-950/60' : 'bg-white/60'
-            } backdrop-blur-sm`}>
-            <GlitchLoader size={12} />
-            <span className="text-xs font-mono font-semibold text-brand-cyan uppercase tracking-wider">
-              {t('mockup.generatingPrompt') || 'GENERATING PROMPT...'}
-            </span>
-            <div className="h-4 text-[10px] font-mono uppercase tracking-wide text-foreground overflow-hidden">
-              <span
-                key={messageIndex}
-                className="block animate-fade-in text-center"
-              >
-                {statusMessages[messageIndex]}
-              </span>
-            </div>
-          </div>
-        )}
       </div>
       {
         promptSuggestions.length > 0 && (

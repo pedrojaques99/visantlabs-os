@@ -8,8 +8,7 @@ import { MockupDisplay } from '../components/mockupmachine/MockupDisplay';
 import { FullScreenViewer } from '../components/FullScreenViewer';
 import { WelcomeScreen } from './WelcomeScreen';
 import { SidebarOrchestrator } from '../components/mockupmachine/SidebarOrchestrator';
-import { FloatingActionButtons } from '../components/mockupmachine/FloatingActionButtons';
-import { GenerateButton } from '../components/ui/GenerateButton';
+import { SurpriseMeControl } from '../components/mockupmachine/SurpriseMeControl';
 import { ConfirmationModal } from '../components/ConfirmationModal';
 import { Button } from '../components/ui/button';
 import { AnalyzingImageOverlay } from '../components/ui/AnalyzingImageOverlay';
@@ -134,13 +133,14 @@ const MockupMachinePageContent: React.FC = () => {
     instructions,
     setInstructions,
     isSurpriseMeMode,
+    setIsSurpriseMeMode,
     surpriseMePool
   } = useMockup();
 
   // Custom hooks for common operations (after getting mockupCount from context)
   const { requireAuth } = useAuthGuard();
   const { hasEnoughCredits, validateCredits } = useCreditValidation(mockupCount, onCreditPackagesModalOpen);
-  const { showOverlay, hideOverlay, showTemporaryOverlay } = useAnalysisOverlay();
+  const { showTemporaryOverlay, hideOverlay } = useAnalysisOverlay();
 
   const {
     availableMockupTags,
@@ -156,6 +156,29 @@ const MockupMachinePageContent: React.FC = () => {
   const [mockupLikedStatus, setMockupLikedStatus] = useState<Map<number, boolean>>(new Map()); // Map index -> isLiked
   const [savedMockupIds, setSavedMockupIds] = useState<Map<number, string>>(new Map()); // Map index -> mockup ID
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
+  const [isDiceAnimatingFloating, setIsDiceAnimatingFloating] = useState(false);
+  const [autoGenerateFloating, setAutoGenerateFloating] = useState(true);
+
+  // React to external tag changes (e.g. SurpriseMeSelectedTagsDisplay reroll)
+  useEffect(() => {
+    const handler = () => {
+      // Invalidate current prompt so it regenerates based on new tags
+      setIsPromptReady(false);
+      setPromptPreview('');
+      setShouldAutoGenerate(true);
+      setAutoGenerateSource('surprise-prompt-only');
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('mockup:tagsChanged', handler as EventListener);
+    }
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('mockup:tagsChanged', handler as EventListener);
+      }
+    };
+  }, []);
   const [unsavedDialogConfig, setUnsavedDialogConfig] = useState<{
     onConfirm: () => void;
     onSaveAll?: () => Promise<void>;
@@ -478,10 +501,19 @@ const MockupMachinePageContent: React.FC = () => {
       return;
     }
 
-    // Allow prompt generation if: has reference images OR (has design type AND (blank mode OR has uploaded image))
+    // Require a design type before generating any prompt
+    if (!designType) {
+      toast.error(t('messages.selectDesignTypeFirst') || 'Selecione o tipo (logo ou layout) antes de gerar o prompt.');
+      return;
+    }
+
+    // Allow prompt generation only if we have a design type AND (blank mode OR uploaded image / reference)
     const hasRefImagesForSmartPrompt = referenceImages.length > 0;
-    const hasValidDesignSetup = designType && (designType === 'blank' || uploadedImage);
-    if (!hasRefImagesForSmartPrompt && !hasValidDesignSetup) return;
+    const hasValidDesignSetup = designType && (designType === 'blank' || uploadedImage || hasRefImagesForSmartPrompt);
+    if (!hasValidDesignSetup) {
+      toast.error(t('messages.completeSteps') || 'Complete as etapas de configuração antes de gerar o prompt.');
+      return;
+    }
 
     setIsGeneratingPrompt(true);
     setPromptSuggestions([]);
@@ -704,9 +736,22 @@ const MockupMachinePageContent: React.FC = () => {
       return;
     }
 
+    let nextStepTimeoutId: number | null = null;
+    const nextStepShownRef = { current: false };
+
     if (!silent) {
       setIsAnalyzing(true);
-      showOverlay();
+      showTemporaryOverlay(5000); // Mostrar overlay por no máximo 5 segundos
+      
+      // Após 5 segundos, mostrar o próximo passo mesmo que a análise não tenha completado
+      nextStepTimeoutId = window.setTimeout(() => {
+        if (import.meta.env.DEV) console.log('[dev] analyze: showing next step after 5s (analysis may still be running)');
+        nextStepShownRef.current = true;
+        setIsAllCategoriesOpen(true);
+        setIsAdvancedOpen(true);
+        setHasAnalyzed(true);
+        if (!selectedModel) setSelectedModel('gemini-2.5-flash-image');
+      }, 5000);
     }
 
     try {
@@ -754,12 +799,21 @@ const MockupMachinePageContent: React.FC = () => {
         }
       }
 
+      // Se a análise terminou antes de 5 segundos, mostrar o próximo passo agora
+      // Se terminou depois de 5 segundos, o timeout já terá mostrado o próximo passo
       if (!silent) {
-        setIsAllCategoriesOpen(true);
-        setIsAdvancedOpen(true);
-        setHasAnalyzed(true);
+        // Se o timeout ainda não executou, cancelar e mostrar o próximo passo agora
+        if (nextStepTimeoutId !== null && !nextStepShownRef.current) {
+          clearTimeout(nextStepTimeoutId);
+          nextStepTimeoutId = null;
+          setIsAllCategoriesOpen(true);
+          setIsAdvancedOpen(true);
+          setHasAnalyzed(true);
+          if (!selectedModel) setSelectedModel('gemini-2.5-flash-image');
+        }
+        // Se o timeout já executou (passou de 5s), apenas atualizar os dados
+        // (hasAnalyzed já está true, então o conteúdo já está visível)
       }
-      if (!selectedModel) setSelectedModel('gemini-2.5-flash-image');
       if (import.meta.env.DEV) console.log('[dev] analyze: handleAnalyze success', ((Date.now() - t0) / 1000).toFixed(2) + 's');
     } catch (err) {
       const errorInfo = formatMockupError(err, t);
@@ -773,15 +827,22 @@ const MockupMachinePageContent: React.FC = () => {
       if (import.meta.env.DEV) console.log('[dev] analyze: handleAnalyze finally', ((Date.now() - t0) / 1000).toFixed(2) + 's');
       if (!silent) {
         setIsAnalyzing(false);
+        // Garantir que o overlay seja ocultado quando a análise terminar
+        // (mesmo que ainda não tenham passado os 5 segundos)
         hideOverlay();
+        
+        // Limpar timeout se ainda existir
+        if (nextStepTimeoutId !== null) {
+          clearTimeout(nextStepTimeoutId);
+        }
       }
     }
-  }, [uploadedImage, designType, instructions, selectedBrandingTags, t]);
+  }, [uploadedImage, designType, instructions, selectedBrandingTags, t, showTemporaryOverlay, hideOverlay]);
 
+  // Botão explícito de análise (dispara a análise completa com overlay)
   const handleAnalyzeButtonClick = useCallback(() => {
-    showTemporaryOverlay(800);
-    window.setTimeout(() => setHasAnalyzed(true), 800);
-  }, [showTemporaryOverlay, setHasAnalyzed]);
+    void handleAnalyze();
+  }, [handleAnalyze]);
 
   const handleImageUpload = useCallback(async (image: UploadedImage) => {
     // Check authentication
@@ -828,7 +889,7 @@ const MockupMachinePageContent: React.FC = () => {
     // Por último, esconde welcome screen para garantir que fique false
     setShowWelcome(false);
 
-    // Auto-extract colors from uploaded image
+    // Auto-extract colors from uploaded image (local only, sem chamar análise de IA)
     try {
       const { extractColors } = await import('@/utils/colorExtraction');
       const colorResult = await extractColors(image.base64, image.mimeType, 8);
@@ -842,15 +903,7 @@ const MockupMachinePageContent: React.FC = () => {
       }
       // Non-critical - don't block UX if color extraction fails
     }
-
-    // Background AI analysis (tags, branding, designType) – silent, no overlay, no step change
-    try {
-      await handleAnalyze(image, true);
-      setHasAnalyzed(true);
-    } catch {
-      // Error already handled in handleAnalyze (toast)
-    }
-  }, [designType, resetControls, handleAnalyze, isAuthenticated, isCheckingAuth, t]);
+  }, [designType, resetControls, isAuthenticated, isCheckingAuth, t]);
 
   const handleReplaceImage = useCallback(async (image: UploadedImage) => {
     // Check authentication
@@ -899,28 +952,7 @@ const MockupMachinePageContent: React.FC = () => {
       }
     }
 
-    // Background AI analysis (tags, branding) – silent, mantém designType e outras configurações
-    // Only analyze if we have base64 data or URL
-    if (base64String || validImage.url) {
-      try {
-        // Ensure we have a valid image object for analysis
-        const imageForAnalysis: UploadedImage = base64String
-          ? { base64: base64String, mimeType }
-          : { url: validImage.url!, mimeType };
-
-        await handleAnalyze(imageForAnalysis, true);
-      } catch (err) {
-        // Error already handled in handleAnalyze (toast)
-        if (isLocalDevelopment()) {
-          console.error('Error in handleAnalyze during replace:', err);
-        }
-      }
-    } else {
-      if (isLocalDevelopment()) {
-        console.warn('Cannot analyze: image has no base64 or url');
-      }
-    }
-  }, [designType, handleAnalyze, isAuthenticated, isCheckingAuth, t]);
+  }, [designType, isAuthenticated, isCheckingAuth, t]);
 
   const handleStartOver = () => {
     setUploadedImage(null);
@@ -1763,71 +1795,30 @@ const MockupMachinePageContent: React.FC = () => {
     const randomWithHuman = Math.random() < 0.5;
     setWithHuman(randomWithHuman);
 
-    if (autoGenerate) {
-      // Auto-generate mode: Set tags -> Auto Generate Prompt -> Auto Generate Output
-      setTimeout(() => {
-        setShouldAutoGenerate(true);
+    // Always generate prompt automatically
+    // The autoGenerate checkbox only controls if outputs are also generated automatically
+    setTimeout(() => {
+      setShouldAutoGenerate(true);
+      if (autoGenerate) {
+        // Auto-generate mode: Set tags -> Auto Generate Prompt -> Auto Generate Output
         setAutoGenerateSource('surprise');
-      }, 2000); // Increased delay to allow users to see selected tags
-
-      // Scroll to generate outputs button after state changes are applied
-      setTimeout(() => {
-        if (generateOutputsButtonRef.current && sidebarRef.current) {
-          const buttonRect = generateOutputsButtonRef.current.getBoundingClientRect();
-          const sidebarRect = sidebarRef.current.getBoundingClientRect();
-          const relativeTop = buttonRect.top - sidebarRect.top + sidebarRef.current.scrollTop;
-
-          sidebarRef.current.scrollTo({
-            top: relativeTop - 20,
-            behavior: 'smooth'
-          });
-        } else {
-          generateOutputsButtonRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }, 2200);
-    } else if (isSurpriseMeMode) {
-      // Manual mode WITH Director Mode: Set tags -> Auto Generate Prompt -> Wait for user
-      // We set source to 'surprise-prompt-only' to trigger prompt generation but SKIP image generation
-      setTimeout(() => {
-        setShouldAutoGenerate(true);
+      } else {
+        // Prompt-only mode: Set tags -> Auto Generate Prompt -> Wait for user
         setAutoGenerateSource('surprise-prompt-only');
-      }, 2000);
-
-      // Scroll to generate outputs button (or prompt section) so user can see the generated prompt
-      setTimeout(() => {
-        if (generateOutputsButtonRef.current && sidebarRef.current) {
-          const buttonRect = generateOutputsButtonRef.current.getBoundingClientRect();
-          const sidebarRect = sidebarRef.current.getBoundingClientRect();
-          const relativeTop = buttonRect.top - sidebarRect.top + sidebarRef.current.scrollTop;
-
-          sidebarRef.current.scrollTo({
-            top: relativeTop - 20,
-            behavior: 'smooth'
-          });
-        }
-      }, 2200);
-    } else {
-      // Manual mode WITHOUT Director Mode: Set tags -> Wait for user review
-      // We set source to 'surprise' so that WHEN they click generate, it proceeds to image generation automatically
-      setTimeout(() => {
-        setAutoGenerateSource('surprise');
-
-        // Scroll to the categories section so user can review the surprised tags
-        const categoriesSection = document.getElementById('categories-section');
-        const sidebar = document.getElementById('sidebar');
-        if (categoriesSection && sidebar) {
-          const sidebarRect = sidebar.getBoundingClientRect();
-          const elementRect = categoriesSection.getBoundingClientRect();
-          const relativeTop = elementRect.top - sidebarRect.top + sidebar.scrollTop;
-
-          sidebar.scrollTo({
-            top: relativeTop - 20,
-            behavior: 'smooth'
-          });
-        }
-      }, 2000); // Increased delay to allow users to see selected tags
-    }
+      }
+    }, 2000); // Increased delay to allow users to see selected tags
   }, [aspectRatio, designType, selectedModel, selectedBrandingTags, generateText, withHuman, additionalPrompt, negativePrompt, runGeneration, mockups, isSurpriseMeMode, surpriseMePool]);
+
+  const handleSurpriseMeWithDice = useCallback((autoGen: boolean) => {
+    setIsDiceAnimatingFloating(true);
+    showTemporaryOverlay(300);
+    handleSurpriseMe(autoGen);
+    setTimeout(() => setIsDiceAnimatingFloating(false), 800);
+  }, [handleSurpriseMe, showTemporaryOverlay]);
+
+  useEffect(() => {
+    if (isGeneratingPrompt) setIsDiceAnimatingFloating(false);
+  }, [isGeneratingPrompt]);
 
   const handleSaveAllUnsaved = useCallback(async () => {
     if (!(await requireAuth())) return;
@@ -1947,26 +1938,26 @@ const MockupMachinePageContent: React.FC = () => {
     // OR if prompt exists and was manually edited (user wants to use their custom prompt)
     const hasPrompt = promptPreview.trim().length > 0;
 
-    // Check if we have valid setup (reference images or design type selected)
+    // Check if we have valid setup (design type selected and optionally reference images)
     const hasReferenceImagesForPrompt = referenceImages.length > 0;
-    const hasValidSetupForPrompt = hasReferenceImagesForPrompt || designType;
+    const hasValidSetupForPrompt = !!designType && (designType === 'blank' || uploadedImage || hasReferenceImagesForPrompt);
 
     if (!isPromptReady && !hasPrompt) {
-      // No prompt exists and not ready - generate smart prompt if conditions are met
-      if (hasValidSetupForPrompt) {
-        await handleGenerateSmartPrompt();
-      } else {
-        toast.error(t('messages.completeSteps'), { duration: 5000 });
+      // No prompt exists and not ready - require valid setup
+      if (!hasValidSetupForPrompt) {
+        toast.error(t('messages.selectDesignTypeFirst') || t('messages.completeSteps'), { duration: 5000 });
+        return;
       }
+      await handleGenerateSmartPrompt();
     } else if (!isPromptReady && hasPrompt) {
       // Prompt exists but tags changed (isPromptReady is false due to useEffect)
       // Force user to regenerate prompt to ensure it matches current tags
-      if (hasValidSetupForPrompt) {
-        toast.info(t('messages.tagsChanged'), { duration: 4000 });
-        await handleGenerateSmartPrompt();
-      } else {
-        toast.error(t('messages.completeSteps'), { duration: 5000 });
+      if (!hasValidSetupForPrompt) {
+        toast.error(t('messages.selectDesignTypeFirst') || t('messages.completeSteps'), { duration: 5000 });
+        return;
       }
+      toast.info(t('messages.tagsChanged'), { duration: 4000 });
+      await handleGenerateSmartPrompt();
     } else {
       // Prompt is ready (isPromptReady is true) - generate outputs directly
       // This means tags haven't changed since last prompt generation
@@ -2576,9 +2567,9 @@ Generate the new mockup image with the requested changes applied.`;
       autoGenerateTimeoutRef.current = null;
     }
 
-    // Allow auto-generate if: has reference images OR design type is selected
+    // Allow auto-generate only if design type is selected and setup is valid
     const hasRefImagesForAuto = referenceImages.length > 0;
-    const canAutoGenerate = hasRefImagesForAuto || designType;
+    const canAutoGenerate = !!designType && (designType === 'blank' || uploadedImage || hasRefImagesForAuto);
 
     if (shouldAutoGenerate && !isGeneratingPrompt && !promptPreview.trim() && !isAutoGeneratingRef.current) {
       if (canAutoGenerate) {
@@ -2722,7 +2713,7 @@ Generate the new mockup image with the requested changes applied.`;
           onImageUpload={handleImageUpload}
         />
       ) : (
-        <div className="h-screen w-full pt-12 md:pt-14 overflow-hidden bg-background">
+        <div className="h-full w-full pt-12 md:pt-14 overflow-hidden bg-background">
           <div className={cn(
             "flex h-full transition-all duration-500",
             isSetupMode ? "flex-col items-center justify-center p-4 md:p-8" : "flex-row"
@@ -2753,7 +2744,7 @@ Generate the new mockup image with the requested changes applied.`;
                 onRegenerate={() => runGeneration()}
                 onGenerateClick={handleGenerateClick}
                 onGenerateSuggestion={handleGenerateSuggestion}
-                onAnalyze={handleAnalyzeButtonClick}
+            onAnalyze={handleAnalyzeButtonClick}
                 generateOutputsButtonRef={generateOutputsButtonRef}
                 authenticationRequiredMessage={t('messages.authenticationRequired')}
               />
@@ -2798,7 +2789,7 @@ Generate the new mockup image with the requested changes applied.`;
 
                 {/* Top Action Bar (Mobile Only - Closes Sidebar) */}
                 {isSidebarVisibleMobile && (
-                  <div className="lg:hidden fixed top-6 right-6 z-50">
+                  <div className="lg:hidden fixed top-6 right-6 z-50 mt-[30px]">
                     <Button
                       onClick={() => setIsSidebarVisibleMobile(false)}
                       variant="outline"
@@ -2873,28 +2864,31 @@ Generate the new mockup image with the requested changes applied.`;
         />
       )}
 
-      {/* Unified floating actions: GERAR PROMPT + Surpreenda-me (mobile only) */}
-      <FloatingActionButtons
-        isVisible={!isSidebarVisibleMobile && ((isDashboardMode && shouldShowGenerateButton) || hasAnalyzed)}
-        onSurpriseMe={() => handleSurpriseMe(true)}
-        isGeneratingPrompt={isGeneratingPrompt}
-        isGenerating={isGenerating}
-        hasAnalyzed={hasAnalyzed}
-        generateButton={
-          !isSurpriseMeMode && isDashboardMode && shouldShowGenerateButton ? (
-            <GenerateButton
-              onClick={handleGenerateClick}
-              disabled={isGenerateDisabled || (isPromptReady && isGenerating)}
-              isGeneratingPrompt={isGeneratingPrompt}
-              isGenerating={isGenerating}
-              isPromptReady={isPromptReady}
-              variant="floating"
-              embed
-              creditsRequired={selectedModel && isPromptReady ? mockupCount * getCreditsRequired(selectedModel, resolution) : undefined}
-            />
-          ) : undefined
-        }
-      />
+      {/* Floating SurpriseMeControl (mobile only, when sidebar hidden) */}
+      {!isSidebarVisibleMobile && ((isDashboardMode && shouldShowGenerateButton) || hasAnalyzed) && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 lg:hidden animate-in fade-in slide-in-from-bottom-4 duration-300 max-w-[min(100vw-3rem,420px)]">
+          <SurpriseMeControl
+            onSurpriseMe={handleSurpriseMeWithDice}
+            isGeneratingPrompt={isGeneratingPrompt}
+            isDiceAnimating={isDiceAnimatingFloating}
+            isSurpriseMeMode={isSurpriseMeMode}
+            setIsSurpriseMeMode={setIsSurpriseMeMode}
+            autoGenerate={autoGenerateFloating}
+            setAutoGenerate={setAutoGenerateFloating}
+            selectedModel={selectedModel}
+            mockupCount={mockupCount}
+            resolution={resolution}
+            showBackground
+            containerClassName="shadow-lg"
+            onGeneratePrompt={handleGenerateSmartPrompt}
+            onGenerateOutputs={handleGenerateClick}
+            isGenerateDisabled={isGenerateDisabled}
+            isGeneratingOutputs={isLoading.some(Boolean)}
+            isPromptReady={isPromptReady}
+            showGenerateButtons
+          />
+        </div>
+      )}
 
       {/* Confirmation & Settings Modals */}
       {showUnsavedDialog && unsavedDialogConfig && (

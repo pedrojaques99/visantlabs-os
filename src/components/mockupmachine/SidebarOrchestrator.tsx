@@ -101,22 +101,6 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
     // Just call the external handler which will use the Context pool when Pool Mode is active
     onSurpriseMe(autoGenerate);
 
-    // Scroll to Generate button
-    setTimeout(() => {
-      const sidebar = document.getElementById('sidebar');
-      const generateButton = generateOutputsButtonRef.current;
-      if (sidebar && generateButton) {
-        const sidebarRect = sidebar.getBoundingClientRect();
-        const buttonRect = generateButton.getBoundingClientRect();
-        const relativeTop = buttonRect.top - sidebarRect.top + sidebar.scrollTop;
-
-        sidebar.scrollTo({
-          top: relativeTop - 20,
-          behavior: 'smooth'
-        });
-      }
-    }, 200);
-
     // Reset animation after it completes
     setTimeout(() => {
       setIsDiceAnimating(false);
@@ -213,7 +197,12 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
         onReferenceImagesChange={onReferenceImagesChange}
         onStartOver={onStartOver}
         onDesignTypeChange={onDesignTypeChange}
-        onAnalyze={onAnalyze}
+        onAnalyze={() => {
+          // Start analysis (this will show the overlay via handleAnalyze)
+          onAnalyze();
+          // Close setup modal immediately to go to next step
+          setIsSetupModalOpen(false);
+        }}
       />
     </>
   );

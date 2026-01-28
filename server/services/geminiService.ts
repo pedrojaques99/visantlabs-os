@@ -275,7 +275,9 @@ export const generateMockup = async (
       responseModalities: [Modality.IMAGE],
     };
 
-    // Configure resolution for Gemini 3 Pro
+    // Configure resolution / aspect ratio for image models
+    // - Gemini 3 Pro: uses explicit resolution (1K/2K/4K) + optional aspectRatio
+    // - Gemini 2.5 Flash Image (HD): when aspectRatio is provided, also respect it via outputImageDimensions
     if (model === 'gemini-3-pro-image-preview' && resolution) {
       // Map resolution to output dimensions
       // According to docs: 1K=1210px, 2K=1210px, 4K=2000px max dimension
@@ -311,6 +313,28 @@ export const generateMockup = async (
           height: maxDimension,
         };
       }
+    } else if (model === 'gemini-2.5-flash-image' && aspectRatio) {
+      // HD mode: we still respect the selected aspect ratio even though
+      // we don't expose 1K/2K/4K options. Use a safe default max dimension.
+      const maxDimension = 1210;
+      const [widthRatio, heightRatio] = aspectRatio.split(':').map(Number);
+      const ratio = widthRatio / heightRatio;
+
+      let width: number, height: number;
+      if (ratio >= 1) {
+        // Landscape or square
+        width = maxDimension;
+        height = Math.round(maxDimension / ratio);
+      } else {
+        // Portrait
+        height = maxDimension;
+        width = Math.round(maxDimension * ratio);
+      }
+
+      config.outputImageDimensions = {
+        width,
+        height,
+      };
     }
 
     const response = await getAI(apiKey).models.generateContent({

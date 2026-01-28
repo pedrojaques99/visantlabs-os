@@ -43,7 +43,6 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
   const { theme } = useTheme();
 
   // Local state for expansion
-  const [isExpanded, setIsExpanded] = useState(false);
 
   // Local state for editing if not provided via props (fallback)
   const [internalIsEditing, setInternalIsEditing] = useState(false);
@@ -132,8 +131,7 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
       <div>
         <div
           className={cn(
-            "flex flex-wrap gap-2 cursor-pointer transition-all duration-500 relative overflow-hidden",
-            !isExpanded && !hasAnalyzed && "max-h-[105px]" // Limits to approx 3 lines (32px * 3 + gap)
+            "flex flex-wrap gap-2 cursor-pointer transition-all duration-500 relative"
           )}
         >
           {tagsToDisplay.map(tag => {
@@ -156,10 +154,10 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
                       : 'bg-brand-cyan/20 text-neutral-800 border-[brand-cyan]/30 shadow-sm shadow-[brand-cyan]/10'
                     : theme === 'dark'
                       ? isSuggested
-                        ? 'bg-neutral-800/80 text-neutral-300 border-brand-cyan/50 hover:border-brand-cyan/70 hover:text-white animate-pulse-subtle'
+                        ? 'bg-neutral-800/80 text-neutral-300 border-brand-cyan/30 hover:border-brand-cyan/50 hover:text-white'
                         : 'bg-neutral-800/50 text-neutral-400 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
                       : isSuggested
-                        ? 'bg-brand-cyan/10 text-neutral-800 border-brand-cyan/50 shadow-sm shadow-brand-cyan/5 animate-pulse-subtle'
+                        ? 'bg-brand-cyan/5 text-neutral-800 border-brand-cyan/30 shadow-sm shadow-brand-cyan/5'
                         : 'bg-neutral-100 text-neutral-700 border-neutral-300 hover:border-neutral-400 hover:text-neutral-900',
                   isDisabled && 'opacity-40 cursor-not-allowed'
                 )}
@@ -189,39 +187,7 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
             />
           )}
 
-          {/* Gradient Overlay when collapsed */}
-          {!isExpanded && !hasAnalyzed && tagsToDisplay.length > 12 && ( // Only show gradient if enough tags
-            <div className={cn(
-              "absolute bottom-0 left-0 right-0 h-8 pointer-events-none",
-              theme === 'dark'
-                ? "bg-gradient-to-t from-neutral-950 to-transparent"
-                : "bg-gradient-to-t from-white to-transparent"
-            )} />
-          )}
-
         </div>
-
-        {/* Expand/Collapse Button */}
-        {!hasAnalyzed && (tagsToDisplay.length > 12) && (
-          <div className="flex justify-center mt-2">
-            <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="text-[10px] uppercase font-mono tracking-wider text-neutral-500 hover:text-neutral-300 transition-colors flex items-center gap-1"
-            >
-              {isExpanded ? (
-                <>
-                  <ChevronUp size={12} />
-                  {t('common.collapse')}
-                </>
-              ) : (
-                <>
-                  <ChevronDown size={12} />
-                  {t('common.expand')}
-                </>
-              )}
-            </button>
-          </div>
-        )}
       </div>
     </section>
   );

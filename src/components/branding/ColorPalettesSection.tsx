@@ -155,7 +155,13 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
                     </div>
                   ) : (
                     <>
-                      <div
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (typeof window !== 'undefined') {
+                            window.dispatchEvent(new CustomEvent('mockup:paletteColorSelected', { detail: color }));
+                          }
+                        }}
                         className={`w-full aspect-square rounded-md border transition-all duration-300 hover:scale-[1.05] hover:shadow-lg hover:shadow-[brand-cyan]/20 mb-2 ${theme === 'dark' ? 'border-neutral-800/60' : 'border-neutral-300'
                           }`}
                         style={{ backgroundColor: color }}
@@ -206,6 +212,24 @@ export const ColorPalettesSection: React.FC<ColorPalettesSectionProps> = ({
           </div>
         ))}
       </div>
+      {/* Open color picker in Mockup Machine refine section */}
+      {!isEditing && (
+        <button
+          type="button"
+          onClick={() => {
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('mockup:openColorPicker'));
+            }
+          }}
+          className={`mt-2 inline-flex items-center gap-1 px-2 py-1 rounded-full border text-[10px] font-mono transition-colors ${theme === 'dark'
+            ? 'border-neutral-700/60 text-neutral-500 hover:border-brand-cyan/50 hover:text-brand-cyan'
+            : 'border-neutral-400/60 text-neutral-600 hover:border-brand-cyan/60 hover:text-brand-cyan'
+            }`}
+        >
+          <span className="w-2 h-2 rounded-full bg-brand-cyan/60" />
+          <span>Color Picker</span>
+        </button>
+      )}
       {isEditing && onContentChange && (
         <button
           onClick={handleAddPalette}
