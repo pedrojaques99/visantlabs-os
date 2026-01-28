@@ -2866,7 +2866,7 @@ Generate the new mockup image with the requested changes applied.`;
 
       {/* Floating SurpriseMeControl (mobile only, when sidebar hidden) */}
       {!isSidebarVisibleMobile && ((isDashboardMode && shouldShowGenerateButton) || hasAnalyzed) && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 lg:hidden animate-in fade-in slide-in-from-bottom-4 duration-300 max-w-[min(100vw-3rem,420px)]">
+        <div className="fixed bottom-0 right-0 left-0 z-[60] lg:hidden animate-in fade-in slide-in-from-bottom-4 duration-300 bg-background px-4 md:px-6">
           <SurpriseMeControl
             onSurpriseMe={handleSurpriseMeWithDice}
             isGeneratingPrompt={isGeneratingPrompt}
@@ -2879,7 +2879,7 @@ Generate the new mockup image with the requested changes applied.`;
             mockupCount={mockupCount}
             resolution={resolution}
             showBackground
-            containerClassName="shadow-lg"
+            containerClassName="shadow-lg !pb-0 rounded-b-none"
             onGeneratePrompt={handleGenerateSmartPrompt}
             onGenerateOutputs={handleGenerateClick}
             isGenerateDisabled={isGenerateDisabled}

@@ -595,6 +595,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
         {!location.pathname.startsWith('/canvas/') && (
           <ASCIIFooter
+            className={location.pathname === '/' ? 'hidden lg:block' : ''}
             onPrivacyClick={() => {
               navigate('/privacy');
             }}

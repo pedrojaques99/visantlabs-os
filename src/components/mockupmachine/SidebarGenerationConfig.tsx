@@ -455,9 +455,9 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
                 className={cn(
                     'z-30 pt-4 animate-fade-in',
                     'fixed bottom-0 left-0 right-0 px-4 pb-[max(1rem,env(safe-area-inset-bottom))]',
-                    'lg:relative lg:left-auto lg:right-auto lg:px-0 lg:pb-0 lg:sticky lg:bottom-0'
+                    'lg:relative lg:left-auto lg:right-auto lg:px-0 lg:pb-0 lg:pt-0 lg:sticky lg:bottom-0',
+                    'lg:flex lg:justify-center'
                 )}
-                style={{ background: 'linear-gradient(to top, var(--sidebar) 80%, transparent)' }}
             >
                 <SurpriseMeControl
                     onSurpriseMe={handleSurpriseMe}
@@ -471,7 +471,7 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
                     mockupCount={mockupCount}
                     resolution={resolution}
                     showBackground={true}
-                    containerClassName="shadow-lg"
+                    containerClassName="shadow-lg !pb-0 rounded-b-none"
                     onGeneratePrompt={onGenerateSmartPrompt}
                     onGenerateOutputs={onGenerateClick}
                     isGenerateDisabled={isGenerateDisabled}
