@@ -166,10 +166,10 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
   const poolCount = isSurpriseMeMode ? tags.filter(t => poolTags.includes(t)).length : 0;
 
   return (
-    <div className={`rounded-lg border transition-all duration-200 ${theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200'}`}>
+    <div className={`rounded-xl border transition-all duration-200 overflow-hidden ${theme === 'dark' ? 'bg-neutral-900/30 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 hover:bg-neutral-800/10 ${isExpanded ? (theme === 'dark' ? 'bg-neutral-800/20' : 'bg-neutral-100/50') : ''}`}
+        className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'}`}
       >
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {icon && <div className="flex-shrink-0">{icon}</div>}
@@ -432,10 +432,10 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
 
       {/* Prompts Section */}
       <div className="space-y-2">
-        <div className={`rounded-lg border transition-all duration-200 ${theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200'}`}>
+        <div className={`rounded-xl border transition-all duration-200 overflow-hidden ${theme === 'dark' ? 'bg-neutral-900/30 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
           <button
             onClick={() => setIsNegativeExpanded(!isNegativeExpanded)}
-            className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 hover:bg-neutral-800/10 ${isNegativeExpanded ? (theme === 'dark' ? 'bg-neutral-800/20' : 'bg-neutral-100/50') : ''}`}
+            className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'}`}
           >
             <div className="flex items-center gap-2 flex-1 min-w-0">
               <XCircle size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
@@ -467,10 +467,10 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
           )}
         </div>
 
-        <div className={`rounded-lg border transition-all duration-200 ${theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200'}`}>
+        <div className={`rounded-xl border transition-all duration-200 overflow-hidden ${theme === 'dark' ? 'bg-neutral-900/30 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
           <button
             onClick={() => setIsAdditionalExpanded(!isAdditionalExpanded)}
-            className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 hover:bg-neutral-800/10 ${isAdditionalExpanded ? (theme === 'dark' ? 'bg-neutral-800/20' : 'bg-neutral-100/50') : ''}`}
+            className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'}`}
           >
             <div className="flex items-center gap-2 flex-1 min-w-0">
               <FilePlus size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
