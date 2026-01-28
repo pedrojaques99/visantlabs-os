@@ -6,12 +6,21 @@
     "target": "ES2022",
     "outDir": "./dist",
     "rootDir": "../",
+    "baseUrl": "../",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
     "esModuleInterop": true,
     "skipLibCheck": true,
     "strict": true
   },
-  "include": ["**/*.ts", "../services/**/*.ts", "../types.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "**/*.ts",
+    "../src/services/**/*.ts",
+    "../types/types.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }
-
-

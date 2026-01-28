@@ -1,7 +1,18 @@
 import express from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../db/prisma.js';
-import { getUserStorageLimit, syncUserStorage, calculateUserStorage } from '../../services/r2Service.js';
+import { getUserStorageLimit, syncUserStorage, calculateUserStorage } from '../services/r2Service.js';
+import { rateLimit } from 'express-rate-limit';
+
+// API rate limiter - general authenticated endpoints
+// Using express-rate-limit for CodeQL recognition
+const apiRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS || '60000', 10),
+  max: parseInt(process.env.RATE_LIMIT_MAX_API || '60', 10),
+  message: { error: 'Too many requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const router = express.Router();
 
@@ -12,12 +23,12 @@ function formatBytes(bytes: number): { value: number; unit: string; formatted: s
   if (bytes === 0) {
     return { value: 0, unit: 'B', formatted: '0 B' };
   }
-  
+
   const k = 1024;
   const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
   const i = Math.min(Math.floor(Math.log(bytes) / Math.log(k)), sizes.length - 1);
   const value = parseFloat((bytes / Math.pow(k, i)).toFixed(2));
-  
+
   return {
     value,
     unit: sizes[i],
@@ -33,7 +44,7 @@ router.get('/usage', authenticate, async (req: AuthRequest, res, next) => {
   try {
     const userId = req.userId!;
     const shouldSync = req.query.sync === 'true';
-    
+
     // Get user information to determine tier and storage
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -54,7 +65,7 @@ router.get('/usage', authenticate, async (req: AuthRequest, res, next) => {
     const customLimitBytes = user.storageLimitBytes;
 
     let used = user.storageUsedBytes || 0;
-    
+
     // If sync is requested, calculate actual storage from R2 and update counter
     if (shouldSync) {
       try {
@@ -81,10 +92,10 @@ router.get('/usage', authenticate, async (req: AuthRequest, res, next) => {
         }
       }
     }
-    
+
     // Get storage limit (respects custom limit if set)
     const limit = getUserStorageLimit(subscriptionTier, isAdmin, customLimitBytes);
-    
+
     // Calculate remaining
     const remaining = Math.max(0, limit - used);
     const percentage = limit > 0 ? (used / limit) * 100 : 0;
@@ -119,13 +130,13 @@ router.get('/usage', authenticate, async (req: AuthRequest, res, next) => {
  * POST /api/storage/sync
  * This endpoint calculates the actual storage used in R2 and updates the database counter
  */
-router.post('/sync', authenticate, async (req: AuthRequest, res, next) => {
+router.post('/sync', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     const userId = req.userId!;
-    
+
     // Calculate actual storage from R2 and update counter
     const actualStorage = await syncUserStorage(userId);
-    
+
     // Get user information for limit calculation
     const user = await prisma.user.findUnique({
       where: { id: userId },

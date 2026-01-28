@@ -4,11 +4,13 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '../db/prisma.js';
 import bcrypt from 'bcryptjs';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
-import { signupRateLimiter, signinRateLimiter, getClientIp } from '../middleware/rateLimit.js';
+import { getClientIp } from '../middleware/rateLimit.js';
+import { rateLimit } from 'express-rate-limit';
 // CAPTCHA middleware import removed - CAPTCHA is disabled
 // import { captchaMiddleware } from '../middleware/captcha.js';
 import { detectAbuse, recordSignupAttempt } from '../utils/abuseDetection.js';
 import { JWT_SECRET } from '../utils/jwtSecret.js';
+import { isValidEmail } from '../utils/validation.js';
 
 const router = express.Router();
 
@@ -199,18 +201,88 @@ const logError = (error: any, context: LogErrorContext = {}) => {
   return errorInfo;
 };
 
+// OAuth rate limiter - prevent brute force on OAuth endpoints
+// Using express-rate-limit for CodeQL recognition
+const oauthRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_OAUTH_WINDOW_MS || '300000', 10), // 5 minutes default
+  max: parseInt(process.env.RATE_LIMIT_MAX_OAUTH || '20', 10), // 20 OAuth requests per 5 minutes
+  message: { error: 'Too many OAuth requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Token verification rate limiter - prevent brute force on token verification
+// Using express-rate-limit for CodeQL recognition
+const verifyRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS || '60000', 10), // 1 minute default
+  max: parseInt(process.env.RATE_LIMIT_MAX_API || '60', 10), // 60 requests per minute
+  message: { error: 'Too many verification requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Password reset rate limiter - strict to prevent enumeration/brute force
+// Using express-rate-limit for CodeQL recognition
+const passwordResetRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_PASSWORD_RESET_WINDOW_MS || '3600000', 10), // 1 hour default
+  max: parseInt(process.env.RATE_LIMIT_MAX_PASSWORD_RESET || '5', 10), // 5 password reset attempts per hour
+  message: { error: 'Too many password reset attempts. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Signup rate limiter - prevent mass account creation
+// Using express-rate-limit for CodeQL recognition
+const signupRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '3600000', 10), // 1 hour default
+  max: parseInt(process.env.RATE_LIMIT_MAX_SIGNUP || '3', 10), // 3 signups per hour
+  message: { error: 'Too many signup attempts. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Signin rate limiter - prevent brute force attacks
+// Using express-rate-limit for CodeQL recognition
+const signinRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '3600000', 10), // 1 hour default
+  max: parseInt(process.env.RATE_LIMIT_MAX_SIGNIN || '10', 10), // 10 signin attempts per hour
+  message: { error: 'Too many signin attempts. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// API rate limiter - general authenticated endpoints
+// Using express-rate-limit for CodeQL recognition
+const apiRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS || '60000', 10), // 1 minute default
+  max: parseInt(process.env.RATE_LIMIT_MAX_API || '60', 10), // 60 requests per minute
+  message: { error: 'Too many requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Upload image rate limiter
+// Using express-rate-limit for CodeQL recognition
+const uploadImageRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_UPLOAD_WINDOW_MS || '900000', 10), // 15 minutes default
+  max: parseInt(process.env.RATE_LIMIT_MAX_UPLOAD || '10', 10), // 10 uploads per 15 minutes
+  message: { error: 'Too many upload attempts. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Get Google OAuth URL
-router.get('/google', (req, res) => {
+router.get('/google', oauthRateLimiter, (req, res) => {
   try {
     if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
       console.error('Missing Google OAuth credentials');
       return res.status(500).json({ error: 'OAuth configuration missing' });
     }
-    
+
     // Get referral code from query param if provided
     const referralCode = req.query.ref as string | undefined;
     const state = referralCode ? `ref:${referralCode}` : undefined;
-    
+
     const authUrl = client.generateAuthUrl({
       access_type: 'offline',
       scope: ['profile', 'email'],
@@ -225,35 +297,35 @@ router.get('/google', (req, res) => {
 });
 
 // Get Google OAuth URL for linking account (requires authentication)
-router.get('/google/link', authenticate, async (req: AuthRequest, res) => {
+router.get('/google/link', oauthRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
       console.error('Missing Google OAuth credentials');
       return res.status(500).json({ error: 'OAuth configuration missing' });
     }
-    
+
     const userId = req.userId!;
-    
+
     // Check if user already has Google linked
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { googleId: true },
     });
-    
+
     if (user?.googleId) {
       return res.status(400).json({ error: 'Google account already linked' });
     }
-    
+
     // Generate auth URL with state containing userId for linking
     const state = `link:${userId}`;
-    
+
     const authUrl = client.generateAuthUrl({
       access_type: 'offline',
       scope: ['profile', 'email'],
       prompt: 'consent',
       state: state,
     });
-    
+
     res.json({ authUrl });
   } catch (error: any) {
     console.error('Error generating link auth URL:', error);
@@ -262,10 +334,10 @@ router.get('/google/link', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Google OAuth callback
-router.get('/google/callback', async (req, res) => {
+router.get('/google/callback', oauthRateLimiter, async (req, res) => {
   try {
     const { code, state } = req.query;
-    
+
     if (!code) {
       return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth?error=no_code`);
     }
@@ -285,18 +357,18 @@ router.get('/google/callback', async (req, res) => {
 
     // Extract referral code from state parameter (if provided)
     // State format: "ref:ABC123" or just the referral code
-    const referralCode = state ? (state as string).startsWith('ref:') 
-      ? (state as string).substring(4) 
-      : (state as string) 
+    const referralCode = state ? (state as string).startsWith('ref:')
+      ? (state as string).substring(4)
+      : (state as string)
       : undefined;
 
     // Find or create user
     let user = await prisma.user.findUnique({
       where: { email: payload.email },
     });
-    
+
     const isNewUser = !user;
-    
+
     if (!user) {
       user = await prisma.user.create({
         data: {
@@ -356,11 +428,11 @@ router.get('/google/callback', async (req, res) => {
 });
 
 // Google OAuth callback for linking account
-router.get('/google/link-callback', authenticate, async (req: AuthRequest, res) => {
+router.get('/google/link-callback', oauthRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const { code, state } = req.query;
     const userId = req.userId!;
-    
+
     if (!code) {
       return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/profile?error=no_code`);
     }
@@ -426,10 +498,10 @@ router.get('/google/link-callback', authenticate, async (req: AuthRequest, res) 
 });
 
 // Verify token
-router.get('/verify', async (req, res) => {
+router.get('/verify', verifyRateLimiter, async (req, res) => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
-    
+
     if (!token) {
       return res.status(401).json({ error: 'No token provided' });
     }
@@ -524,9 +596,8 @@ router.post('/signup', signupRateLimiter, async (req, res) => {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    // Validate email format (ReDoS-safe validation)
+    if (!isValidEmail(email)) {
       await recordSignupAttempt(email, ipAddress, false);
       return res.status(400).json({ error: 'Invalid email format' });
     }
@@ -607,7 +678,7 @@ router.post('/signup', signupRateLimiter, async (req, res) => {
     // Send welcome email
     try {
       const { sendWelcomeEmail, isEmailConfigured } = await import('../services/emailService.js');
-      
+
       if (isEmailConfigured()) {
         await sendWelcomeEmail({
           email: user.email,
@@ -658,7 +729,7 @@ router.post('/signup', signupRateLimiter, async (req, res) => {
     // Handle specific Prisma errors
     if (error?.code === 'P2002') {
       // Unique constraint violation (email already exists)
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'User with this email already exists',
         message: 'Este email já está cadastrado. Tente fazer login ou use outro email.'
       });
@@ -666,14 +737,14 @@ router.post('/signup', signupRateLimiter, async (req, res) => {
 
     if (error?.code?.startsWith('P')) {
       // Other Prisma errors
-      return res.status(500).json({ 
+      return res.status(500).json({
         error: 'Database error',
         message: errorInfo.userMessage || 'Erro ao criar conta. Tente novamente mais tarde.'
       });
     }
 
     // Generic error response
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to create account',
       message: process.env.NODE_ENV === 'development' ? error.message : 'Erro ao criar conta. Tente novamente mais tarde.'
     });
@@ -699,8 +770,8 @@ router.post('/signin', signinRateLimiter, async (req, res) => {
 
     // Check if user has a password (might be OAuth-only user)
     if (!user.password) {
-      return res.status(401).json({ 
-        error: 'This account was created with Google. Please sign in with Google instead.' 
+      return res.status(401).json({
+        error: 'This account was created with Google. Please sign in with Google instead.'
       });
     }
 
@@ -738,14 +809,14 @@ router.post('/signin', signinRateLimiter, async (req, res) => {
 
     // Handle Prisma errors
     if (error?.code?.startsWith('P')) {
-      return res.status(500).json({ 
+      return res.status(500).json({
         error: 'Database error',
         message: errorInfo.userMessage || 'Erro ao fazer login. Tente novamente mais tarde.'
       });
     }
 
     // Generic error response
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to sign in',
       message: process.env.NODE_ENV === 'development' ? error.message : 'Erro ao fazer login. Tente novamente mais tarde.'
     });
@@ -753,12 +824,12 @@ router.post('/signin', signinRateLimiter, async (req, res) => {
 });
 
 // Logout (client-side token removal, but we can add token blacklisting here if needed)
-router.post('/logout', (req, res) => {
+router.post('/logout', apiRateLimiter, (req, res) => {
   res.json({ message: 'Logged out successfully' });
 });
 
 // Forgot Password - Request password reset
-router.post('/forgot-password', async (req, res) => {
+router.post('/forgot-password', passwordResetRateLimiter, async (req, res) => {
   try {
     const { email } = req.body;
 
@@ -766,9 +837,8 @@ router.post('/forgot-password', async (req, res) => {
       return res.status(400).json({ error: 'Email is required' });
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    // Validate email format (ReDoS-safe validation)
+    if (!isValidEmail(email)) {
       return res.status(400).json({ error: 'Invalid email format' });
     }
 
@@ -802,7 +872,7 @@ router.post('/forgot-password', async (req, res) => {
       // Send email
       try {
         const { sendPasswordResetEmail, isEmailConfigured } = await import('../services/emailService.js');
-        
+
         if (!isEmailConfigured()) {
           console.warn('Email service not configured. Password reset email not sent.');
           // In development, log the token for testing
@@ -837,7 +907,7 @@ router.post('/forgot-password', async (req, res) => {
 });
 
 // Reset Password - Reset password with token
-router.post('/reset-password', async (req, res) => {
+router.post('/reset-password', passwordResetRateLimiter, async (req, res) => {
   try {
     const { token, password } = req.body;
 
@@ -854,7 +924,7 @@ router.post('/reset-password', async (req, res) => {
     let decoded: { userId: string; email: string; type?: string };
     try {
       decoded = jwt.verify(token, JWT_SECRET) as { userId: string; email: string; type?: string };
-      
+
       // Verify token type
       if (decoded.type !== 'password-reset') {
         return res.status(400).json({ error: 'Invalid token type' });
@@ -907,7 +977,7 @@ router.post('/reset-password', async (req, res) => {
 });
 
 // Upload profile picture
-router.post('/profile/picture', authenticate, async (req: AuthRequest, res) => {
+router.post('/profile/picture', uploadImageRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const { imageBase64 } = req.body;
     const userId = req.userId!;
@@ -921,10 +991,10 @@ router.post('/profile/picture', authenticate, async (req: AuthRequest, res) => {
     }
 
     // Upload to R2
-    const r2Service = await import('../../services/r2Service.js');
-    
+    const r2Service = await import('../../src/services/r2Service.js');
+
     if (!r2Service.isR2Configured()) {
-      return res.status(500).json({ 
+      return res.status(500).json({
         error: 'R2 storage is not configured',
         details: 'Please configure R2 environment variables.'
       });
@@ -955,7 +1025,7 @@ router.post('/profile/picture', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Update user profile
-router.put('/profile', authenticate, async (req: AuthRequest, res) => {
+router.put('/profile', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const { name, email, picture } = req.body;
     const userId = req.userId!;
@@ -986,9 +1056,8 @@ router.put('/profile', authenticate, async (req: AuthRequest, res) => {
 
     // If email is being changed, validate it and check uniqueness
     if (email !== undefined && email !== currentUser.email) {
-      // Validate email format
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
+      // Validate email format (ReDoS-safe validation)
+      if (!isValidEmail(email)) {
         return res.status(400).json({ error: 'Invalid email format' });
       }
 

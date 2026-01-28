@@ -1,0 +1,3505 @@
+{
+  "branding": {
+    "loadingProject": "Carregando projeto...",
+    "seoTitle": "Branding Machine com IA",
+    "seoDescription": "Crie estratégias completas de branding com inteligência artificial. Gere identidades visuais profissionais passo a passo.",
+    "seoKeywords": "branding machine, AI branding, identidade visual, estratégia de marca, design de marca",
+    "myBrandings": {
+      "seoTitle": "Meus Brandings",
+      "seoDescription": "Gerencie seus projetos de branding.",
+      "title": "Meus Projetos de Branding",
+      "noProjects": "Nenhum projeto ainda",
+      "createNew": "Criar Novo",
+      "view": "Visualizar",
+      "emptyTitle": "NENHUM PROJETO AINDA",
+      "emptyDescription": "Crie seu primeiro projeto de branding para vê-lo aqui.",
+      "createFirst": "Criar Seu Primeiro Projeto",
+      "confirmDelete": "Tem certeza que deseja excluir este projeto? Esta ação não pode ser desfeita.",
+      "confirmDeleteTitle": "Excluir Projeto",
+      "delete": "Excluir",
+      "cancel": "Cancelar",
+      "deleted": "Projeto excluído com sucesso",
+      "errors": {
+        "failedToLoad": "Falha ao carregar projetos de branding",
+        "failedToDelete": "Falha ao excluir projeto"
+      }
+    },
+    "title": "Branding Machine",
+    "subtitle": "Análise completa de branding em 10 etapas",
+    "describeYourBrand": "Descreva a ideia",
+    "describeYourBrandDescription": "Digite uma descrição detalhada da marca, produto ou ideia de negócio.",
+    "promptPlaceholder": "Exemplo: Uma marca de moda sustentável voltada para millennials conscientes, focando em designs minimalistas e produção ética...",
+    "startAnalysis": "Iniciar Análise de Branding",
+    "starting": "Iniciando...",
+    "steps": {
+      "mercadoNicho": "Mercado e Nicho",
+      "publicoAlvo": "Público Alvo",
+      "posicionamento": "Posicionamento",
+      "insights": "Insights",
+      "marketResearch": "Pesquisa de Mercado",
+      "competitors": "Concorrentes",
+      "references": "Referências",
+      "swotAnalysis": "Análise SWOT",
+      "colorPalettes": "Paletas de Cores",
+      "visualElements": "Elementos Visuais",
+      "persona": "Persona",
+      "mockupIdeas": "Ideias de Mockup",
+      "moodCanvas": "MoodCanvas",
+      "archetypes": "Arquétipos"
+    },
+    "step": "Etapa",
+    "generating": "Gerando",
+    "noContentAvailable": "Nenhum conteúdo disponível",
+    "approveContinue": "Aprovar e Continuar",
+    "regenerate": "Regenerar",
+    "previous": "Anterior",
+    "backToPreviousStep": "Voltar à Etapa Anterior",
+    "finalMoodCanvas": "Branding Completo",
+    "edit": "Editar",
+    "cancelEdit": "Cancelar Edição",
+    "saveProject": "Salvar Projeto",
+    "save": "Salvar",
+    "saving": "Salvando...",
+    "copy": "Copiar texto",
+    "copied": "Copiado!",
+    "copyFailed": "Falha ao copiar",
+    "copyEmpty": "Nenhum conteúdo para copiar",
+    "collapse": "Recolher",
+    "expand": "Expandir",
+    "dragToReorder": "Arrastar para reorganizar",
+    "resize": "Redimensionar",
+    "editProjectName": "Editar nome do projeto",
+    "projectNamePlaceholder": "Nome do projeto",
+    "generatePDF": "Gerar PDF",
+    "marketResearch": "Pesquisa de Mercado",
+    "competitors": "Concorrentes",
+    "colorPalettes": "Paletas de Cores",
+    "swotAnalysis": "SWOT Analysis",
+    "targetPersona": "Persona Alvo",
+    "demographics": "Demografia",
+    "desires": "Desejos",
+    "whatPersonaDesires": "O que a persona realmente deseja?",
+    "pains": "Dores e frustrações",
+    "painPoints": "Pontos de Dor",
+    "visualElements": "Elementos Visuais",
+    "mockupIdeas": "Ideias de Mockup",
+    "moodCanvasSummary": "Resumo do MoodCanvas",
+    "summary": "Resumo",
+    "visualDirection": "Direção Visual",
+    "keyElements": "Elementos Chave",
+    "strengths": "Forças",
+    "weaknesses": "Fraquezas",
+    "opportunities": "Oportunidades",
+    "threats": "Ameaças",
+    "success": {
+      "projectSaved": "Projeto de branding salvo com sucesso!"
+    },
+    "creditsRequired": "Créditos necessários",
+    "creditsPerStep": "{count} crédito{plural} por etapa",
+    "sectionNotGenerated": "Esta seção ainda não foi gerada",
+    "requires": "Requer",
+    "generate": "Gerar",
+    "generateAll": "Gerar Todas",
+    "generatingAllSections": "Gerando {count} seções...",
+    "generatingStep": "Gerando {step}...",
+    "generatingDependency": "Gerando dependência necessária: {step}",
+    "allSectionsGenerated": "Todas as seções já foram geradas",
+    "allSectionsGeneratedSuccess": "Todas as seções geradas com sucesso!",
+    "dependencyModalTitle": "Gerar Dependências Necessárias",
+    "dependencyModalMessage": "Falta gerar: {dependencies}",
+    "generateDependencies": "Gerar Dependências",
+    "cancel": "Cancelar",
+    "errors": {
+      "enterBrandDescription": "Por favor, digite uma descrição da marca",
+      "signInRequired": "Por favor, entre para usar a Branding Machine",
+      "insufficientCredits": "Créditos insuficientes. Por favor, compre créditos para continuar.",
+      "failedToCheckCredits": "Falha ao verificar créditos",
+      "failedToGenerateStep": "Falha ao gerar etapa",
+      "failedToSaveProject": "Falha ao salvar projeto",
+      "signInToSave": "Por favor, entre para salvar projetos",
+      "missingDependencies": "Dependências necessárias faltando: {steps}",
+      "failedToGenerateDependency": "Falha ao gerar dependência necessária: {step}",
+      "failedToLoadProject": "Falha ao carregar projeto",
+      "trackingFailedButContentGenerated": "Seu conteúdo foi gerado com sucesso! Houve um pequeno problema ao atualizar seus créditos, mas seu trabalho está seguro."
+    },
+    "projectLoaded": "Projeto carregado com sucesso"
+  },
+  "apps": {
+    "title": "Aplicativos",
+    "subtitle": "Escolha um aplicativo para começar",
+    "seoTitle": "Aplicativos Criativos",
+    "seoDescription": "Escolha entre nossas ferramentas criativas: Mockup Machine, Branding Machine, Budget Machine e Canvas Editor.",
+    "seoKeywords": "apps, aplicativos, ferramentas criativas, mockup, branding, budget, canvas",
+    "mockupMachine": {
+      "name": "Mockup Machine",
+      "description": "Gere mockups profissionais com IA"
+    },
+    "brandingMachine": {
+      "name": "Branding Machine",
+      "description": "Crie estratégias completas de branding"
+    },
+    "budgetMachine": {
+      "name": "Budget Machine",
+      "description": "Crie e gerencie orçamentos profissionais"
+    },
+    "canvas": {
+      "name": "Canvas",
+      "description": "Editor de imagens baseado em fluxo visual"
+    },
+    "colorfy": {
+      "name": "Colorfy",
+      "description": "Um gerador de gradientes para seus projetos"
+    },
+    "halftoneMachine": {
+      "name": "Halftone Machine",
+      "description": "Crie efeitos halftone a partir das suas imagens"
+    },
+    "youtubeMixer": {
+      "name": "YouTube Mixer",
+      "description": "Conecte múltiplos vídeos simultaneamente e crie mixes"
+    },
+    "asciiVortex": {
+      "name": "Image ASCII Vortex",
+      "description": "Transforme imagens em arte ASCII interativa"
+    },
+    "gridPaint": {
+      "name": "Grid Paint",
+      "description": "Ferramenta de desenho vetorial minimalista com precisão"
+    },
+    "ellipseAudio": {
+      "name": "Ellipse Audio Freq",
+      "description": "Analisador de espectro de áudio circular"
+    },
+    "vsnLabs": {
+      "name": "VSN Labs",
+      "description": "Laboratório de efeitos interativos experimentais"
+    },
+    "badge": {
+      "free": "Gratuito",
+      "premium": "Somente Premium",
+      "comingSoon": "Em Breve",
+      "featured": "Destaque",
+      "beta": "Beta",
+      "audio": "Áudio",
+      "moreTools": "Mais Ferramentas"
+    },
+    "subscribeNow": "ASSINAR AGORA",
+    "brandingTools": "BRANDING TOOLS //",
+    "effectsTools": "EFFECTS TOOLS //",
+    "audioTools": "AUDIO TOOLS //",
+    "home": "Início"
+  },
+  "common": {
+    "search": "Buscar",
+    "nodeCreated": "Node criado com sucesso",
+    "loading": "Carregando...",
+    "verifyingAuth": "Verificando autenticação...",
+    "cancel": "Cancelar",
+    "done": "Pronto",
+    "month": "mês",
+    "year": "ano",
+    "back": "Voltar",
+    "close": "Fechar",
+    "save": "Salvar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "add": "ADICIONAR",
+    "submit": "Enviar",
+    "processing": "Processando...",
+    "analysing": "Analisando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "confirm": "Confirmar",
+    "noImage": "Sem Imagem",
+    "today": "Hoje",
+    "tomorrow": "Amanhã",
+    "yesterday": "Ontem",
+    "uploadVideo": "Enviar vídeo",
+    "fullscreenPreview": "Visualização em tela cheia",
+    "shaderResult": "Resultado do shader",
+    "authenticationRequired": "Autenticação necessária",
+    "uploadFailed": "Falha ao enviar",
+    "home": "Home",
+    "community": "Comunidade",
+    "presets": "Presets",
+    "unsupportedFileType": "Tipo de arquivo não suportado. Por favor, use JPG, PNG, WEBP, GIF, MP4, WEBM, OGG, MOV ou AVI.",
+    "unsupportedImageType": "Tipo de imagem não suportado. Por favor, use JPG, PNG, WEBP ou GIF.",
+    "unsupportedVideoType": "Tipo de vídeo não suportado. Por favor, use MP4, WEBM, OGG, MOV ou AVI.",
+    "failedToUploadImage": "Falha ao enviar imagem",
+    "failedToUploadVideo": "Falha ao enviar vídeo",
+    "unknownError": "Erro desconhecido",
+    "decreaseColumns": "Diminuir colunas",
+    "increaseColumns": "Aumentar colunas",
+    "imageTooLarge": "Imagem muito grande. Tamanho máximo é {maxSize}MB.",
+    "videoTooLarge": "Vídeo muito grande. Tamanho máximo é {maxSize}MB.",
+    "imageUploadedSuccess": "Imagem enviada com sucesso!",
+    "videoUploadedSuccess": "Vídeo enviado com sucesso!",
+    "uploadingVideo": "Enviando vídeo para R2...",
+    "zoomOut": "Diminuir zoom (-)",
+    "zoomIn": "Aumentar zoom (+)",
+    "rotate": "Rotacionar (R)",
+    "download": "Baixar",
+    "closeEsc": "Fechar (Esc)",
+    "resetView": "Redefinir visualização (0)",
+    "reset": "Redefinir",
+    "profile": "Perfil",
+    "cover": "Capa",
+    "user": "Usuário",
+    "reference": "Referência",
+    "viewFullscreen": "Ver em tela cheia",
+    "downloadImage": "Baixar imagem",
+    "downloadVideo": "Baixar vídeo",
+    "pleaseSelectVideoFile": "Por favor, selecione um arquivo de vídeo",
+    "videoFileSizeExceeds": "Tamanho do arquivo de vídeo excede o limite (50MB). Por favor, use um vídeo menor.",
+    "failedToProcessVideo": "Falha ao processar vídeo enviado",
+    "failedToUploadPicture": "Falha ao enviar foto",
+    "checkoutCanceled": "Checkout foi cancelado",
+    "failedToSaveImage": "Falha ao salvar imagem",
+    "profileUpdatedSuccess": "Perfil atualizado com sucesso",
+    "failedToReloadProfile": "Falha ao recarregar perfil",
+    "dismissMessage": "Fechar mensagem",
+    "tabs": {
+      "overview": "Dashboard",
+      "history": "Histórico",
+      "configuration": "Configurações"
+    },
+    "loadError": "Falha ao carregar perfil",
+    "notAuthenticated": "Por favor, entre para ver seu perfil",
+    "selectImageFile": "Por favor, selecione um arquivo de imagem",
+    "imageSizeLimit": "Imagem muito grande. Limite é 5MB",
+    "pictureUploadError": "Falha ao enviar foto de perfil",
+    "pictureUploadSuccess": "Foto de perfil atualizada com sucesso",
+    "breadcrumb": "Perfil",
+    "subtitle": "Gerencie sua conta e assinatura"
+  },
+  "communityPresets": {
+    "title": "Presets da Comunidade",
+    "subtitle": "Descubra e compartilhe presets criados pela comunidade",
+    "createNew": "Criar Novo",
+    "new": "Novo",
+    "noPresets": "Nenhum preset disponível",
+    "myPresets": "Meus Presets",
+    "allPresets": "Todos os Presets",
+    "myPresetsSubtitle": "Gerencie e edite seus presets da comunidade",
+    "viewAll": "Todos",
+    "viewMy": "Meus Presets",
+    "openInCanvas": "Abrir no Canvas",
+    "tabs": {
+      "all": "Todos",
+      "3d": "3D",
+      "presets": "Presets",
+      "aesthetics": "Estéticas",
+      "themes": "Temas",
+      "mockup": "Mockup",
+      "angle": "Ângulo",
+      "texture": "Textura",
+      "ambience": "Ambiente",
+      "luminance": "Iluminação"
+    },
+    "category": "Categoria",
+    "difficulty": "Dificuldade",
+    "difficultyBeginner": "Iniciante",
+    "difficultyIntermediate": "Intermediário",
+    "difficultyAdvanced": "Avançado",
+    "context": "Contexto",
+    "contextCanvas": "Canvas",
+    "contextMockup": "Mockup",
+    "contextBranding": "Branding",
+    "contextGeneral": "Geral",
+    "useCase": "Caso de Uso",
+    "useCasePlaceholder": "Descreva quando e como usar este prompt",
+    "examples": "Exemplos",
+    "addExample": "Adicionar Exemplo",
+    "examplePlaceholder": "Digite uma variação de exemplo",
+    "removeExample": "Remover",
+    "table": {
+      "noPresets": "Nenhum preset ainda"
+    },
+    "actions": {
+      "refresh": "Atualizar",
+      "duplicate": "Duplicar",
+      "duplicateConfirm": "Duplicar Preset",
+      "duplicateMessage": "Tem certeza de que deseja duplicar este preset? Ele será adicionado à sua coleção pessoal.",
+      "duplicateButton": "Duplicar",
+      "cancel": "Cancelar",
+      "edit": "Editar",
+      "delete": "Excluir",
+      "save": "Salvar",
+      "like": "Curtir",
+      "unlike": "Descurtir"
+    },
+    "messages": {
+      "presetCreated": "Preset criado com sucesso!",
+      "presetUpdated": "Preset atualizado com sucesso!",
+      "presetDeleted": "Preset excluído com sucesso!",
+      "presetDuplicated": "Preset duplicado com sucesso",
+      "presetDeleteConfirm": "Tem certeza que deseja excluir este preset? Esta ação não pode ser desfeita.",
+      "imageUploaded": "Imagem enviada com sucesso!"
+    },
+    "errors": {
+      "failedToLoad": "Falha ao carregar presets",
+      "failedToCreate": "Falha ao criar preset",
+      "failedToUpdate": "Falha ao atualizar preset",
+      "failedToDelete": "Falha ao excluir preset",
+      "failedToToggleLike": "Falha ao atualizar status de curtida",
+      "mustBeAuthenticated": "Você deve estar autenticado para visualizar presets",
+      "mustBeAuthenticatedToCreate": "Você deve estar autenticado para criar presets",
+      "failedToUploadImage": "Falha ao enviar imagem",
+      "invalidImage": "Formato de imagem inválido",
+      "missingFields": "Por favor, preencha todos os campos obrigatórios"
+    },
+    "createPreset": "Criar Preset",
+    "editPreset": "Editar Preset",
+    "presetType": "Tipo de Preset",
+    "presetId": "ID do Preset",
+    "presetIdRequired": "ID do Preset (obrigatório)",
+    "presetIdPlaceholder": "ex.: meu-preset-personalizado",
+    "presetIdDisabled": "ID não pode ser alterado após a criação",
+    "nameRequired": "Nome (obrigatório)",
+    "descriptionRequired": "Descrição (obrigatória)",
+    "promptRequired": "Prompt (obrigatório)",
+    "referenceImage": "Imagem de Referência",
+    "referenceImageManual": "URL da Imagem de Referência (manual)",
+    "referenceImageUrlPlaceholder": "https://...",
+    "uploadingImage": "Enviando imagem...",
+    "setIdBeforeUpload": "Defina o ID do Preset antes de enviar a imagem",
+    "uploadNewImage": "Enviar nova imagem",
+    "removeImage": "Remover imagem",
+    "aspectRatioRequired": "Proporção (obrigatória)",
+    "modelOptional": "Modelo (opcional)",
+    "noModel": "Sem modelo",
+    "tags": {
+      "label": "Tags (opcional)",
+      "placeholder": "Digite uma tag e pressione Enter",
+      "add": "Adicionar",
+      "title": "Tags",
+      "all": "Todas as Tags"
+    },
+    "search": {
+      "title": "Buscar",
+      "placeholder": "Buscar presets...",
+      "noResults": "Nenhum preset encontrado para",
+      "clear": "Limpar busca"
+    },
+    "filters": {
+      "title": "Filtros",
+      "show": "Mostrar filtros",
+      "collapse": "Recolher"
+    },
+    "categories": {
+      "all": "Todos",
+      "3d": "3D",
+      "presets": "Presets",
+      "aesthetics": "Estéticas",
+      "themes": "Temas",
+      "mockup": "Mockup",
+      "angle": "Ângulo",
+      "texture": "Textura",
+      "ambience": "Ambiente",
+      "luminance": "Iluminação",
+      "title": "Categorias",
+      "effect": "Efeitos",
+      "branding": "Brandings"
+    },
+    "referenceImageAlt": "Referência",
+    "sidebarTitle": "Meus Presets",
+    "presetLabel": "preset",
+    "presetsLabel": "presets",
+    "optional": "opcional",
+    "descriptionOptional": "Descrição (opcional)",
+    "descriptionPlaceholder": "Breve descrição deste preset",
+    "aspectRatioOptional": "Proporção (opcional)",
+    "aspectRatioPlaceholder": "Selecione a proporção",
+    "autoGeneratedId": "ID",
+    "typeCannotBeChanged": "Tipo não pode ser alterado após a criação",
+    "describeWhatToGenerate": "Descreva o que você quer gerar",
+    "enterPresetNameFirst": "Por favor, digite um nome para o preset primeiro",
+    "pressEnterToAddTags": "Pressione Enter ou clique em Adicionar para criar tags"
+  },
+  "canvas": {
+    "seoTitle": "Editor Canvas",
+    "seoDescription": "Editor visual baseado em fluxos para criação de designs. Colabore em tempo real e crie projetos visuais profissionais.",
+    "seoKeywords": "editor canvas, editor visual, editor de design, colaboração, editor de fluxo visual",
+    "title": "Canvas",
+    "projects": "Projetos",
+    "newProject": "Novo Projeto",
+    "noProjectsYet": "Nenhum projeto ainda",
+    "createFirstProject": "Crie seu primeiro projeto canvas para começar a trabalhar com nodes.",
+    "createFirstProjectButton": "Criar Seu Primeiro Projeto",
+    "clickToEdit": "Clique para editar",
+    "untitled": "Sem título",
+    "open": "Abrir",
+    "deleteProject": "Deletar Projeto",
+    "deleteProjectMessage": "Tem certeza que deseja deletar este projeto? Esta ação não pode ser desfeita.",
+    "delete": "Deletar",
+    "loadingProject": "Carregando projeto...",
+    "projectNameUpdated": "Nome do projeto atualizado com sucesso",
+    "projectDeletedSuccessfully": "Projeto deletado com sucesso",
+    "failedToLoadProjects": "Falha ao carregar projetos canvas",
+    "invalidProjectId": "ID do projeto inválido",
+    "failedToCreateProject": "Falha ao criar novo projeto",
+    "failedToDeleteProject": "Falha ao deletar projeto",
+    "failedToUpdateProjectName": "Falha ao atualizar nome do projeto",
+    "addedToFavorites": "Adicionado aos favoritos",
+    "removedFromFavorites": "Removido dos favoritos",
+    "outputImagePrompt": "Imagem de saída",
+    "droppedImagePrompt": "Imagem adicionada",
+    "imageDropped": "Imagem adicionada!",
+    "nodeDuplicated": "{count} Node{plural} duplicado{plural}",
+    "nodeDuplicatedSingular": "Node duplicado",
+    "nodeDeleted": "Node excluído",
+    "shaderEffect": "Efeito Shader",
+    "creatingMockups": "Criando {count} mockup{plural}...",
+    "mockupImportedToCanvas": "Mockup importado para o Canvas!",
+    "failedToDeleteMockup": "Falha ao excluir mockup",
+    "noImageAvailableToExport": "Nenhuma imagem disponível para exportar",
+    "sourceNodeNotFound": "Node de origem não encontrado ou tipo inválido",
+    "failedToLoadImage": "Falha ao carregar imagem",
+    "noImageDataAvailable": "Nenhum dado de imagem disponível",
+    "failedToGenerateMockup": "Falha ao gerar mockup para {presetId}",
+    "invalidMockupDataFormat": "Formato de dados de mockup inválido",
+    "invalidMockupData": "Dados de mockup inválidos",
+    "mockupMissingImageData": "Mockup sem dados de imagem",
+    "storageQuotaExceeded": "Cota de armazenamento excedida. Por favor, limpe alguns dados e tente novamente.",
+    "failedToUpdateLikeStatus": "Falha ao atualizar status de favorito",
+    "imageDownloaded": "Imagem baixada!",
+    "failedToDownloadImage": "Falha ao baixar imagem",
+    "nodeNotFound": "Node não encontrado",
+    "noImageAvailableToDownload": "Nenhuma imagem disponível para download",
+    "failedToProcessImage": "Falha ao processar imagem",
+    "imageDownloadStarted": "Download da imagem iniciado",
+    "imageCopiedToClipCanvas": "Imagem copiada para a área de transferência!",
+    "failedToCopyImage": "Falha ao copiar imagem para a área de transferência",
+    "noImageAvailableToDescribe": "Nenhuma imagem disponível para descrever",
+    "failedToLoadImageForAnalysis": "Falha ao carregar imagem para análise",
+    "imageDescriptionGenerated": "Descrição da imagem gerada!",
+    "failedToGenerateDescription": "Falha ao gerar descrição",
+    "nodeOversizedWarning": "Imagem muito grande para salvar. Reduza a resolução ou número de imagens no canvas.",
+    "projectTooLargeOnce": "Seu projeto ainda está muito grande ({size}MB) mesmo após otimização. Reduza o número de imagens ou elementos no canvas.",
+    "projectTooLargeNoR2": "Seu projeto está muito grande ({size}MB) para salvar. Configure o armazenamento R2 para projetos grandes.",
+    "openedExistingPromptNode": "Abrindo Prompt Node existente",
+    "createdAndConnectedPromptNode": "Criando e conectando Prompt Node",
+    "pleaseSaveImageFirst": "Por favor, salve a imagem primeiro",
+    "savedToFavorites": "Salvo nos favoritos!",
+    "failedToSaveToFavorites": "Falha ao salvar nos favoritos",
+    "projectLoadedSuccessfully": "Projeto carregado com sucesso",
+    "failedToLoadProject": "Falha ao carregar projeto",
+    "saveCanvasProject": "Salvar Projeto?",
+    "unsavedCanvasProject": "Você tem um projeto não salvo. Deseja salvá-lo como um novo projeto?",
+    "saveProject": "Salvar Projeto",
+    "discard": "Descartar",
+    "nodeSelected": "{count} Node{plural} selecionado{plural}",
+    "share": "Compartilhar",
+    "settings": "Configurações",
+    "projectsCount": "{count} {count, plural, =1 {projeto} other {projetos}}",
+    "showGrid": "Mostrar Grade",
+    "showGridDescription": "Exibir grade de fundo",
+    "showMinimap": "Mostrar Minimapa",
+    "showMinimapDescription": "Exibir navegação do minimapa",
+    "showControls": "Mostrar Controles",
+    "showControlsDescription": "Exibir controles de zoom",
+    "backgroundColor": "Cor de Fundo",
+    "backgroundColorDescription": "Alterar cor de fundo do canvas",
+    "gridColor": "Cor da Grade",
+    "gridColorDescription": "Alterar cor dos pontos da grade",
+    "cursorColor": "Cor do Cursor",
+    "cursorColorDescription": "Alterar cor do cursor",
+    "brandCyanColor": "Cor Brand Cyan",
+    "brandCyanColorDescription": "Alterar cor de destaque da marca usada em todo o app",
+    "selectColor": "Selecionar cor",
+    "nodeBeingMovedBy": "Node está sendo movido por {userName}",
+    "nodeBeingMovedByAnother": "Node está sendo movido por outro usuário",
+    "imageTooLargeWithName": "A imagem \"{fileName}\" é muito grande. O tamanho máximo é 10MB.",
+    "failedToProcessImageWithName": "Falha ao processar a imagem \"{fileName}\": {errorMessage}",
+    "mediaTypeNotSupported": "Arquivos {mediaType} ainda não são suportados. Apenas imagens podem ser soltas. Arquivo: {fileName}",
+    "dropHere": "Solte Aqui",
+    "dropHint": "Solte para adicionar imagens ou nodes ao canvas",
+    "processingFiles": "Processando Arquivos...",
+    "processingProgress": "Processando {current} de {total} imagens...",
+    "invalidNodeType": "Tipo de node inválido: {nodeType}",
+    "imageTooLargeDetailed": "A imagem \"{fileName}\" ({size}) excede o limite de {limit}.",
+    "experimentalMode": "Modo Experimental",
+    "experimentalModeDesc": "Mostrar nodes de preview como Shader, Strategy, etc.",
+    "edgeStyle": "Estilo da Borda",
+    "edgeWidth": "Largura da Borda",
+    "edgeStyleSolid": "Sólida",
+    "edgeStyleDash": "Tracejada",
+    "edgeWidthBold": "Grossa",
+    "edgeWidthThin": "Fina"
+  },
+  "canvasLoading": {
+    "Project": "Carregando Projeto..."
+  },
+  "myOutputs": {
+    "seoTitle": "Salvos",
+    "seoDescription": "Visualize e gerencie seus outputs gerados."
+  },
+  "community": {
+    "profileTitle": "{name} - Perfil da Comunidade",
+    "viewProfile": "Ver mockups e presets de {name}",
+    "instagram": "Instagram",
+    "youtube": "YouTube",
+    "twitter": "X (Twitter)",
+    "website": "Website"
+  },
+  "usageHistory": {
+    "title": "Histórico de Uso",
+    "subtitle": "Visualize seu histórico de uso e consumo de créditos",
+    "noRecords": "Nenhum registro de uso encontrado",
+    "totalRecords": "Total de Usos",
+    "totalCreditsUsed": "Créditos Gastos",
+    "mockupMachine": "Mockup Machine",
+    "canvas": "Canvas",
+    "brandingMachine": "Branding Machine",
+    "all": "Todos",
+    "details": "Detalhes",
+    "date": "Data",
+    "feature": "Funcionalidade",
+    "credits": "Créditos",
+    "model": "Modelo",
+    "showing": "Mostrando",
+    "of": "de",
+    "previous": "Anterior",
+    "next": "Próximo",
+    "loadError": "Falha ao carregar histórico de uso",
+    "step": "Etapa"
+  },
+  "header": {
+    "pricing": "Preços",
+    "join": "Assinar",
+    "register": "Registrar",
+    "createNewMockup": "Criar Mockup",
+    "communityMockups": "Mockups da Comunidade"
+  },
+  "welcome": {
+    "title": "MOCKUP MACHINE®",
+    "version": "v1.0",
+    "uploadImage": "ENVIAR IMAGEM",
+    "blankMockup": "MOCKUP VAZIO",
+    "newBlankMockup": "",
+    "exploreMockups": "Explorar",
+    "by": "por",
+    "brand": "visant labs®",
+    "pasteTip": "Dica: Você pode dar ctrl+v para colar imagens",
+    "viewAllApps": "Ver Todos os Apps"
+  },
+  "upload": {
+    "clickToUpload": "Envie sua imagem",
+    "supportedFormats": "PNG, JPG, WEBP",
+    "dropImageHere": "Solte sua imagem aqui",
+    "releaseToUpload": "Solte para enviar",
+    "processingImage": "Processando imagem...",
+    "pleaseWait": "Por favor, aguarde",
+    "startBlankMockup": "Começar com um Mockup Vazio",
+    "blankMockupDescription": "Gere uma cena sem um design de entrada.",
+    "unsupportedFileType": "Tipo de arquivo não suportado. Por favor, envie um PNG, JPG, WEBP ou GIF.",
+    "imageTooLarge": "Imagem muito grande ({size} MB). Tamanho máximo é {max} MB. Por favor, comprima ou use uma imagem menor.",
+    "couldNotProcess": "Não foi possível processar o arquivo. Por favor, tente outra imagem."
+  },
+  "tutorial": {
+    "createNewMockup": "Comece criando um novo mockup",
+    "uploadImage": "Envie seu design ou logo isolado",
+    "surpriseMe": "Clique em 'Me Surpreenda!' para inspiração instantânea, ou personalize com categorias e tags",
+    "categoriesHint": "Você também pode configurar selecionando categorias e tags",
+    "skip": "Pular",
+    "next": "Avançar",
+    "gotIt": "Entendi!",
+    "title": "Como Usar o Mockup Machine®",
+    "subtitle": "Guia rápido para você começar a criar mockups",
+    "step1": {
+      "title": "1. Comece seu projeto",
+      "description": "Envie uma imagem do seu design. Pode arrastar ou colar uma imagem diretamente."
+    },
+    "step2": {
+      "title": "2. Escolha o modelo",
+      "description": "Selecione o modelo de geração de mockups, entre HD ou 4K."
+    },
+    "step3": {
+      "title": "3. Defina o tipo de design",
+      "description": "Escolha se é um logo isolado ou um layout / design completo. Isso nos ajuda a entender melhor seu projeto."
+    },
+    "step4": {
+      "title": "4. Descreva a personalidade da sua marca",
+      "description": "Descreva a personalidade da sua marca (ex: minimalista, moderno, luxo). Ou adicione um estilo personalizado."
+    },
+    "step5": {
+      "title": "5. Escolha a categoria do Mockup",
+      "description": "Selecione onde seu design será aplicado (ex: cartão de visita, embalagem, camiseta). Vamos sugerir categorias baseadas no seu design, ou você adiciona a sua categoria."
+    },
+    "step6": {
+      "title": "6. Refine com opções avançadas (opcional)",
+      "description": "Personalize paleta de cores, localização, ângulo da câmera, iluminação e efeitos visuais. Adicione prompts negativos e adicionais para mais controle."
+    },
+    "step7": {
+      "title": "7. Configure a saída",
+      "description": "Defina o número de imagens, proporção (automática no HD) e opções como texto contextual ou interação humana."
+    },
+    "step8": {
+      "title": "8. Gere o prompt",
+      "description": "Clique em 'GERAR PROMPT' para a IA criar uma descrição otimizada do seu mockup, ou escreva seu próprio prompt."
+    },
+    "step9": {
+      "title": "9. Gere os resultados",
+      "description": "Revise o prompt gerado, ajuste se necessário, e clique em 'GERAR RESULTADOS' para criar seus mockups profissionais."
+    },
+    "tip": "💡 Dica: Use 'Me Surpreenda!' para criar mockups instantâneos!",
+    "quickStart": "Início Rápido",
+    "fullGuide": "Guia Completo",
+    "newStep1": {
+      "description": "Envie seu logo ou arte de layout"
+    },
+    "newStep2": {
+      "description": "Selecione a categoria da marca"
+    },
+    "newStep3": {
+      "description": "Crie seu mockup perfeito, configurando iluminação, ambiente, cores e aspectos visuais para conseguir resultados cereteiros."
+    },
+    "newStep4": {
+      "description": "Aperte o botão para curtir os melhores resultados e baixe para não perder as gerações."
+    },
+    "videoStep": {
+      "description": "Assista ao vídeo tutorial para começar a usar o Mockup Machine®"
+    },
+    "close": "Fechar",
+    "tutorialVideo": "Vídeo tutorial",
+    "step": "Passo",
+    "createMockup": "Criar Mockup"
+  },
+  "mockup": {
+    "seoTitle": "Mockup Generator com IA",
+    "seoDescription": "Gere mockups profissionais com inteligência artificial. Crie apresentações visuais impressionantes para seus designs.",
+    "seoKeywords": "gerador de mockup, mockup IA, mockup de design, mockup de produto, apresentação visual",
+    "awaitingGeneration": "Aguardando Geração",
+    "awaitingGenerationDescription": "Configure os parâmetros na barra lateral e clique em gerar para criar mockups profissionais.",
+    "input": "INPUT_",
+    "mainImageLabel": "DESIGN",
+    "referenceAreaLabel": "REFERÊNCIA",
+    "instructions": "INSTRUÇÕES_",
+    "instructionsPlaceholder": "Digite instruções específicas da sua marca (ex: 'produtora de audiovisual', 'marca orgânica', 'marca esportiva de luxo')...",
+    "noInstructions": "Clique para adicionar instruções específicas para seu projeto...",
+    "files": "ARQUIVOS_",
+    "capacityUsed": "{percentage}% da capacidade do projeto utilizada",
+    "mainFile": "ARQUIVO_PRINCIPAL",
+    "addMoreReferences": "ADD_REFERÊNCIA",
+    "uploadMainFile": "ENVIAR_ARQUIVO_PRINCIPAL",
+    "referenceImagesLabel": "IMAGENS DE REFERÊNCIA ({count}/3)",
+    "loadingImage": "Carregando imagem...",
+    "referenceImageAlt": "Imagem de referência",
+    "uploadedDesignAlt": "Design enviado",
+    "clickToChange": "Clique para alterar",
+    "clickToChangeReference": "Clique para alterar a referência",
+    "replaceImage": "Substituir imagem",
+    "editInstructions": "Editar instruções",
+    "editIdentity": "Editar identidade",
+    "editIdentityDescription": "Editar a identidade do design",
+    "referenceOnly": "Somente referência",
+    "clickToUploadReference": "Clique para enviar referência",
+    "removeImage": "Remover imagem",
+    "addReferenceImage": "Adicionar imagem de referência ({count}/3)",
+    "imageFormatTip": "Dica: As imagens geradas utilizam o mesmo tamanho e proporção da imagem enviada. Experimente já enviar uma imagem com o formato desejado.",
+    "maxReferenceImages": "Limite de 3 imagens de referência atingido",
+    "referenceImages": "Imagens de Referência",
+    "addImage": "Adicionar Imagem",
+    "addMore": "Adicionar Mais",
+    "designType": "1. TIPO_DESIGN_",
+    "designTypeComment": "É um logo isolado ou um layout completo?",
+    "itsALogo": "É um Logo",
+    "itsALayout": "É um Layout",
+    "typeLogo": "LOGO",
+    "typeLayout": "LAYOUT",
+    "blankMockup": "Mockup Vazio",
+    "modelSelection": "0. MODELO_",
+    "modelSelectionDescription": "Escolha o modelo de IA para a geração.",
+    "selectModel": "Selecionar modelo",
+    "models": {
+      "gemini-2.5-flash-image": {
+        "emoji": "⛏️",
+        "name": "Mockup Machine® HD",
+        "version": "HD",
+        "features": [
+          "Geração rápida",
+          "1 crédito por imagem",
+          "Proporção automática"
+        ]
+      },
+      "gemini-3-pro-image-preview": {
+        "emoji": "⛏️",
+        "name": "Mockup Machine® 4K",
+        "version": "4K",
+        "features": [
+          "Resolução 4K",
+          "Ferramentas avançadas",
+          "Qualidade superior"
+        ],
+        "credits": "3-10 créditos"
+      }
+    },
+    "surpriseMe": "Me Surpreenda!",
+    "surpriseMeTooltip": "Seleciona aleatoriamente branding, categorias e estilos para inspiração rápida!",
+    "surpriseMeSettings": "Configurações do Me Surpreenda",
+    "surpriseMeSettingsTooltip": "Configure quais tags escolher no Me Surpreenda",
+    "surpriseMePresets": "Presets do Me Surpreenda",
+    "saveAsPreset": "Salvar como Preset",
+    "presetName": "Nome do Preset",
+    "presetNamePlaceholder": "Ex: Minimalista Dark",
+    "savePreset": "Salvar Preset",
+    "loadPreset": "Carregar Preset",
+    "deletePreset": "Excluir Preset",
+    "presetSaved": "Preset salvo com sucesso!",
+    "presetDeleted": "Preset excluído com sucesso!",
+    "confirmDeletePreset": "Tem certeza que deseja excluir este preset?",
+    "noPresets": "Nenhum preset salvo ainda",
+    "surpriseMeMode": "Modo Diretor",
+    "surpriseMeModeEnableTooltip": "Ativar Modo Diretor (mantém as tags ao clicar)",
+    "surpriseMeModeDisableTooltip": "Desativar Modo Diretor",
+    "surpriseMeModeActiveTooltip": "Modo Diretor Ativo",
+    "autoGenerate": "Auto Gerar",
+    "autoGenerateTooltip": "Gera automaticamente os outputs após o prompt ser criado",
+    "newAngles": "Novos Ângulos",
+    "newEnvironments": "Novos Ambientes",
+    "regenerating": "Regenerando...",
+    "branding": "IDENTIDADE_",
+    "brandingComment": "Selecione tags que descrevem o estilo da sua marca (máx. 3).",
+    "orAddCustomStyle": "Ou adicione um estilo personalizado...",
+    "customTagLabel": "Personalizado",
+    "customStylePlaceholder": "Digite o estilo...",
+    "categories": "TIPOS DE MOCKUPS_",
+    "categoriesComment": "Escolha um tipo de mockup para aplicar seu design.",
+    "aiSuggested": "SUGERIDAS PELA IA:",
+    "suggestedColors": "CORES SUGERIDAS",
+    "allCategories": "TODAS_CATEGORIAS",
+    "orAddCustomCategory": "Ou adicione uma categoria personalizada...",
+    "customCategoryLabel": "Personalizado",
+    "customCategoryPlaceholder": "Digite a categoria...",
+    "categoryGroups": {
+      "stationery": "papelaria",
+      "packaging": "embalagens",
+      "apparel": "vestuário",
+      "devices": "dispositivos",
+      "signage": "sinalização",
+      "drinkware": "utensílios",
+      "art": "arte",
+      "other": "outros"
+    },
+    "refine": "REFINAR_",
+    "advancedOptions": "OPÇÕES_AVANÇADAS_",
+    "colorPalette": "PALETA DE CORES_",
+    "location": "LOCALIZAÇÃO_",
+    "cameraAngle": "ÂNGULO_DA_CÂMERA_",
+    "lightingMood": "ILUMINAÇÃO_",
+    "visualEffects": "EFEITOS_VISUAIS_",
+    "material": "MATERIA_",
+    "negativePrompt": "PROMPT NEGATIVO (EVITAR...)",
+    "materialCategory": "MATERIAL",
+    "negativePromptPlaceholder": "ex.: texto, pessoas, marcas d'água, embaçado",
+    "additionalPrompt": "PROMPT ADICIONAL (DEVE TER...)",
+    "additionalPromptPlaceholder": "ex.: em uma mesa de madeira, sombras suaves",
+    "outputConfig": "CONFIG_",
+    "numberOfImages": "NÚMERO DE IMAGENS_",
+    "resolution4kOnly": "RESOLUÇÃO_",
+    "generateContextualText": "Gerar texto placeholder",
+    "includeHumanInteraction": "Incluir interação humana",
+    "enhanceTexture": "Realçar textura",
+    "aspectRatio": "PROPORÇÃO_",
+    "aspectRatioTitle": "PROPORÇÃO_",
+    "autoAspectRatioTitle": "PROPORÇÃO_AUTOMÁTICA_",
+    "autoAspectRatioDescription": "A proporção é determinada automaticamente pela imagem de entrada.",
+    "aspectRatioAutoTooltip": "Determinado automaticamente para o Mockup Machine® HD",
+    "aspectRatioValue": "Proporção {ratio}",
+    "otherAspectRatio": "OUTROS",
+    "prompt": "PROMPT_",
+    "identity": "IDENTIDADE",
+    "setup": "Configuração",
+    "analyzeProject": "Analisar Projeto",
+    "analyzing": "Analisando...",
+    "suggest": "SUGERIR",
+    "suggestTooltip": "Sugerir variações de prompt",
+    "regenerate": "REGENERAR",
+    "regenerateTooltip": "Regenerar resultados usando o prompt atual",
+    "simplify": "SIMPLIFICAR",
+    "simplifyTooltip": "Simplificar para um prompt básico",
+    "generateSmartPrompt": "GERAR PROMPT INTELIGENTE",
+    "generateSmartPromptTooltip": "Gerar um prompt inteligente",
+    "download": "Baixar",
+    "redrawTooltip": "Re-desenhar (Gerar uma nova variação)",
+    "reimagineTooltip": "Re-imaginar com IA",
+    "insufficientCredits": "Créditos insuficientes para gerar",
+    "aiSuggestions": "SUGESTÕES DA IA:",
+    "promptPlaceholder": "Descreva o mockup que você quer criar...",
+    "generatingPrompt": "GERANDO PROMPT...",
+    "generatingOutputs": "GERANDO RESULTADOS...",
+    "generatingPromptShort": "PROMPT...",
+    "generatingOutputsShort": "GERANDO",
+    "outputsShort": "RESULTADOS",
+    "promptShort": "PROMPT",
+    "analyzeImage": "ANALISAR PROJETO",
+    "analyzingImage": "ANALISANDO PROJETO...",
+    "analysisStatusMessages": [
+      "escaneando cores e contrastes",
+      "identificando estilo visual",
+      "detectando categorias",
+      "otimizando sugestões",
+      "analisando projeto",
+      "burilando prompt"
+    ],
+    "promptStatusMessages": [
+      "entendendo seu design",
+      "buscando as melhores soluções visuais",
+      "pensando como um designer gráfico sênior",
+      "refinando prompt"
+    ],
+    "skeletonStatusMessages": [
+      "renderizando conceitos...",
+      "desenhando composições...",
+      "buscando equilíbrio visual...",
+      "polindo detalhes...",
+      "quase lá...",
+      "burilando prompt..."
+    ],
+    "generatePrompt": "GERAR PROMPT",
+    "generateOutputs": "GERAR RESULTADOS",
+    "generatePromptShortcut": "Pressione Ctrl/Cmd + Enter para gerar um prompt",
+    "generateOutputsShortcut": "Pressione Ctrl/Cmd + Enter para gerar resultados",
+    "creditUnitSingular": "crédito",
+    "creditUnitPlural": "créditos",
+    "clearAll": "LIMPAR TUDO",
+    "creditsWillBeUsed": "{count} crédito{plural} será usado",
+    "creditsRequired": "Créditos necessários:",
+    "customCategories": "Categorias personalizadas",
+    "startOver": "Começar de Novo",
+    "showSidebar": "Mostrar barra lateral",
+    "closeSidebar": "Fechar barra lateral",
+    "openSidebar": "Abrir Painel",
+    "openSidebarTooltip": "Abrir painel de controles",
+    "floatingGeneratePrompt": "Gerar Prompt",
+    "floatingSurpriseMe": "SURPRISE-ME",
+    "surpriseMeAgain": "Clique novamente para tags diferentes",
+    "savePoolAsPreset": "Salvar Pool como Preset",
+    "colorPaletteSection": "PALETA DE CORES_",
+    "colorPaletteComment": "Selecione as cores do seu design ou adicione cores hex personalizadas (máx 5).",
+    "selected": "SELECIONADO",
+    "colorsSelected": "cores selecionadas",
+    "setupAndAnalysis": "CONFIGURAÇÃO & ANÁLISE",
+    "generationConfig": "TAGS SELECIONADAS",
+    "inPool": "no pool",
+    "sectionLocked": "Seção bloqueada após análise",
+    "addCustomTag": "Adicionar tag personalizada...",
+    "addCustomCategoryLabel": "Adicionar categoria personalizada...",
+    "addCustomCategoryHint": "Personalize ainda mais seu mockup",
+    "tagAlreadyExists": "Tag já existe"
+  },
+  "pricing": {
+    "title": "PREÇOS",
+    "subtitle": "Escolha o plano que funciona para você",
+    "free": "GRÁTIS",
+    "premium": "PREMIUM",
+    "popular": "POPULAR",
+    "monthly": "Mensal",
+    "yearly": "Anual",
+    "yearlyDiscount": "-16%",
+    "perMonth": "/mês",
+    "perYear": "/ano",
+    "currentPlan": "PLANO ATUAL",
+    "subscribe": "ASSINAR",
+    "freePlanFeatures": {
+      "feature1": "3 gerações de mockup por mês",
+      "feature2": "Recursos básicos",
+      "feature3": "Sem necessidade de cartão de crédito"
+    },
+    "premiumPlanFeatures": {
+      "feature1": "{credits} gerações de mockup por mês",
+      "feature2": "Prompts ilimitados",
+      "feature3": "Todos os recursos premium",
+      "feature4": "Cancele a qualquer momento"
+    },
+    "allPlansInclude": "Todos os planos incluem acesso às nossas ferramentas de geração de mockup",
+    "creditsPerInterval": "{credits} créditos por {interval}",
+    "loading": "Carregando...",
+    "tabs": {
+      "subscriptions": "Assinaturas",
+      "credits": "Créditos"
+    },
+    "creditsSubtitle": "Compre pacotes de créditos sem assinatura",
+    "creditsLabel": "Créditos",
+    "buyCredits": "Comprar",
+    "creditsNote": "Créditos nunca expiram e podem ser usados a qualquer momento",
+    "oneTimePayment": "Pagamento único",
+    "noPlansFound": "Nenhum plano disponível no momento."
+  },
+  "subscription": {
+    "upgradeToPremium": "FAZER UPGRADE PARA PREMIUM",
+    "upgradeTo": "FAZER UPGRADE PARA {tier}",
+    "creditsPerInterval": "{credits} créditos por {interval}",
+    "mockupGenerationsPerInterval": "{credits} gerações de mockup por {interval}",
+    "tierFeatures": "Recursos do nível {tier}",
+    "cancelAnytime": "Cancele a qualquer momento",
+    "subscribeNow": "Assinar Agora",
+    "subscribe": "Assinar",
+    "freeGenerationsRemaining": "Gerações grátis restantes: {remaining} / 3",
+    "subscribeForUnlimited": "Assine para gerações ilimitadas",
+    "upgrade": "Fazer Upgrade",
+    "allFreeGenerationsUsed": "Todas as gerações grátis usadas ({used} / 3)",
+    "subscribeToContinue": "Assine para continuar gerando mockups",
+    "paymentCanceled": "Pagamento cancelado",
+    "failedToLoad": "Falha ao carregar informações de assinatura",
+    "loadingPlanInfo": "Carregando informações do plano...",
+    "checkoutCanceled": "Checkout foi cancelado",
+    "subscriptionActivated": "Assinatura ativada! Bem-vindo ao Premium! 🎉",
+    "orBuyCredits": "Ou compre créditos",
+    "orSubscribe": "Ou assine o premium"
+  },
+  "subscriptionStatus": {
+    "free": "Grátis",
+    "premium": "Premium",
+    "pro": "Pro",
+    "manage": "Gerenciar",
+    "manageSubscription": "Gerenciar assinatura",
+    "credits": "{remaining}/{total} créditos",
+    "active": "Ativo",
+    "renews": "Renova em {date}",
+    "resets": "Reseta em {date}",
+    "portalError": "Falha ao abrir portal de assinatura",
+    "failedToOpen": "Falha ao abrir gerenciamento de assinatura. Por favor, tente novamente."
+  },
+  "credits": {
+    "title": "CRÉDITOS",
+    "loading": "Carregando...",
+    "available": "Disponíveis",
+    "used": "Gastos",
+    "monthlyUsage": "Uso Mensal",
+    "manualCredits": "Créditos",
+    "freeGenerationsUsed": "Gerações Grátis Usadas",
+    "renews": "Renova em {date}",
+    "resets": "Reseta em {date}",
+    "buyCredits": "Comprar",
+    "notificationUsed": "{count} crédito{plural} usado{plural}",
+    "notificationUsedAdmin": "Nenhum crédito deduzido (administrador)",
+    "notificationRemaining": "{remaining} crédito{plural} restante{plural}",
+    "storage": "Armazenamento",
+    "active": "Ativo"
+  },
+  "adminPresets": {
+    "title": "Administração de Presets",
+    "subtitle": "Gerencie presets de mockup e gerações",
+    "populateDefaults": "Popular Padrões",
+    "populateMockups": "Popular Mockups Padrão",
+    "batchUpload": "Batch Upload",
+    "new": "Novo",
+    "viewGrid": "Grade",
+    "viewTable": "Tabela",
+    "noPresets": "Nenhum preset encontrado",
+    "deleteConfirmTitle": "Excluir Preset",
+    "deleteConfirmMessage": "Tem certeza que deseja excluir este preset? Esta ação não pode ser desfeita.",
+    "deleteSuccess": "Preset excluído com sucesso",
+    "createSuccess": "Preset criado com sucesso",
+    "updateSuccess": "Preset atualizado com sucesso",
+    "populateSuccess": "Presets padrão populados com sucesso",
+    "populateError": "Erro ao popular presets",
+    "table": {
+      "image": "Imagem",
+      "id": "ID",
+      "name": "Nome",
+      "category": "Categoria",
+      "dimensions": "Dimensões",
+      "model": "Modelo",
+      "actions": "Ações"
+    },
+    "batchTitle": "Importar Batch de Mockup Presets",
+    "batchPasteLabel": "Cole o JSON com os presets (array de objetos)",
+    "validateJson": "Validar JSON",
+    "sending": "Enviando...",
+    "sendBatch": "Enviar Batch",
+    "close": "Fechar",
+    "createTitle": "Criar Novo Preset",
+    "editTitle": "Editar Preset",
+    "idRequired": "ID (obrigatório)",
+    "nameRequired": "Nome (obrigatório)",
+    "descriptionRequired": "Descrição (obrigatório)",
+    "promptRequired": "Prompt (obrigatório)",
+    "validJson": "JSON válido com {count} presets.",
+    "validationError": "Erro na validação do JSON.",
+    "failedToSendBatch": "Falha ao enviar batch.",
+    "importedSuccess": "{count} presets importados com sucesso!",
+    "failedToImportPresets": "Falha ao importar presets padrão.",
+    "failedToUploadImage": "Falha ao enviar imagem.",
+    "failedToSavePreset": "Falha ao salvar preset.",
+    "failedToDeletePreset": "Falha ao deletar preset.",
+    "confirmPopulate": "Tem certeza que deseja popular {count} presets a partir das tags?",
+    "unauthorized": "Você precisa estar autenticado como administrador.",
+    "saveError": "Falha ao salvar alteração",
+    "saveSuccess": "Atualizado com sucesso",
+    "empty": "Vazio"
+  },
+  "creditsPackages": {
+    "title": "COMPRAR CRÉDITOS",
+    "subtitle": "Escolha um pacote de créditos que funciona para você",
+    "credits": "Créditos",
+    "buy": "Comprar",
+    "note": "Créditos nunca expiram e podem ser usados a qualquer momento",
+    "purchaseSuccess": "Créditos adicionados com sucesso!",
+    "viewPlans": "Ver planos de assinatura"
+  },
+  "thankYou": {
+    "title": "Obrigado por Assinar!",
+    "subtitle": "Sua assinatura foi ativada com sucesso",
+    "subscriptionActive": "Assinatura {plan} Ativa",
+    "whatsNext": "O que você pode fazer agora:",
+    "benefit1": "{credits} créditos por {interval}",
+    "benefit2": "Prompts ilimitados para suas criações",
+    "benefit3": "Acesso a todos os recursos premium",
+    "benefitPro": "Suporte Prioritário e 20GB de Armazenamento",
+    "benefitVision": "Suporte Rápido e 100GB de Armazenamento",
+    "creditsAvailable": "Créditos disponíveis",
+    "getStarted": "Começar a Criar",
+    "support": "Precisa de ajuda? Entre em contato conosco."
+  },
+  "creditRechargeSuccess": {
+    "title": "Créditos Adicionados com Sucesso!",
+    "subtitle": "Seus créditos foram adicionados à sua conta",
+    "creditsPurchased": "Créditos comprados",
+    "previousCredits": "Créditos anteriores",
+    "totalCredits": "Total de créditos disponíveis",
+    "getStarted": "Começar a Criar",
+    "support": "Precisa de ajuda? Entre em contato conosco.",
+    "verifying": "Verificando créditos...",
+    "loading": "Carregando..."
+  },
+  "profile": {
+    "title": "Perfil",
+    "seoTitle": "Perfil",
+    "seoDescription": "Gerencie seu perfil e configurações",
+    "subtitle": "Gerencie sua conta e assinatura",
+    "name": "Seu nome",
+    "uploadPicture": "Clique para enviar foto",
+    "edit": "Editar perfil",
+    "viewPublicProfile": "Ver Perfil Público",
+    "myMockups": "Meus Mockups",
+    "totalCreditsUsed": "USADOS",
+    "viewAllTransactions": "Transações",
+    "manageSubscription": "Gerenciar",
+    "noSubscriptionData": "Dados de assinatura indisponíveis.",
+    "breadcrumb": "Perfil",
+    "loadError": "Falha ao carregar perfil",
+    "notAuthenticated": "Por favor, entre para ver seu perfil",
+    "selectImageFile": "Por favor, selecione um arquivo de imagem",
+    "imageSizeLimit": "Imagem muito grande. Limite é 5MB",
+    "pictureUploadError": "Falha ao enviar foto de perfil",
+    "pictureUploadSuccess": "Foto de perfil atualizada com sucesso",
+    "tabs": {
+      "overview": "Dashboard",
+      "history": "Histórico",
+      "configuration": "Configurações"
+    },
+    "email": "Email",
+    "pictureUrl": "URL da Foto de Perfil",
+    "subscription": "Assinatura",
+    "subscriptionDescription": "Gerencie sua assinatura, cobranças e métodos de pagamento",
+    "updateSuccess": "Perfil atualizado com sucesso",
+    "updateError": "Falha ao atualizar perfil",
+    "noChanges": "Nenhuma alteração para salvar",
+    "portalError": "Falha ao abrir gerenciamento de assinatura. Por favor, tente novamente.",
+    "viewOutputs": "Ver resultados",
+    "myBrandings": "Meus Brandings",
+    "myBudgets": "Meus Orçamentos",
+    "myProjects": "Meus Projetos",
+    "completeProfile": "Complete os detalhes do seu perfil",
+    "editTitle": "Editar Perfil",
+    "editSubtitle": "Mantenha seus dados pessoais atualizados",
+    "editHint": "As alterações serão refletidas instantaneamente em toda a plataforma.",
+    "currentEmail": "Conectado como",
+    "backToProfile": "Voltar ao perfil",
+    "fileReadError": "Falha ao ler arquivo",
+    "linkingGoogle": "Conectando...",
+    "google": "Google",
+    "googleLinked": "Google Conectado",
+    "googleLinkSuccess": "Conta Google conectada com sucesso!",
+    "googleLinkError": "Falha ao conectar conta Google",
+    "googleAlreadyLinked": "Esta conta Google já está conectada a outra conta",
+    "googleEmailMismatch": "O email da conta Google não corresponde ao email da sua conta",
+    "invalidLinkRequest": "Solicitação de conexão inválida. Por favor, tente novamente.",
+    "node": "nó",
+    "nodes": "nós",
+    "edge": "aresta",
+    "edges": "arestas",
+    "authenticationRequired": "Autenticação necessária",
+    "uploadFailed": "Falha no envio"
+  },
+  "referral": {
+    "title": "INDICAÇÃO",
+    "description": "Compartilhe seu link e ganhe créditos bônus quando amigos entrarem.",
+    "yourLink": "SEU LINK DE INDICAÇÃO",
+    "friendsReferred": "AMIGOS INDICADOS",
+    "totalEarned": "TOTAL DE CRÉDITOS GANHOS",
+    "generating": "Gerando código...",
+    "noCode": "Código de indicação não disponível",
+    "linkCopied": "Link de indicação copiado!",
+    "copyFailed": "Falha ao copiar link",
+    "copy": "Copiar",
+    "generatingCode": "Gerando link de indicação..."
+  },
+  "auth": {
+    "signIn": "ENTRAR",
+    "signUp": "CRIAR CONTA",
+    "signInWithEmail": "Entrar com Email",
+    "email": "Email",
+    "emailPlaceholder": "seu@email.com",
+    "password": "Senha",
+    "passwordPlaceholder": "••••••",
+    "name": "Nome (opcional)",
+    "namePlaceholder": "Seu nome",
+    "minimumCharacters": "Mínimo de 6 caracteres",
+    "signingIn": "Entrando...",
+    "creatingAccount": "Criando Conta...",
+    "alreadyHaveAccount": "Já tem uma conta? Entre",
+    "dontHaveAccount": "Não tem uma conta? Criar conta",
+    "logout": "Sair",
+    "authenticationFailed": "Falha na autenticação. Por favor, tente novamente.",
+    "authError": "Erro de autenticação. Por favor, entre novamente.",
+    "signInRequired": "Por favor, entre para gerar mockups.",
+    "backendNotRunning": "Backend não está rodando! Por favor, inicie o servidor com: npm run dev:server ou npm run dev:all",
+    "forgotPassword": "Esqueci minha senha",
+    "resetPassword": "Redefinir Senha",
+    "sendResetLink": "Enviar Link de Recuperação",
+    "resetEmailSent": "Email de recuperação enviado!",
+    "resetEmailSentMessage": "Se uma conta com esse email existir, um link de recuperação de senha foi enviado.",
+    "checkEmailInstructions": "Verifique sua caixa de entrada e siga as instruções para redefinir sua senha.",
+    "forgotPasswordInstructions": "Digite seu email e enviaremos um link para redefinir sua senha.",
+    "backToLogin": "Voltar para Login",
+    "sending": "Enviando...",
+    "enterNewPassword": "Digite sua nova senha abaixo",
+    "newPassword": "Nova Senha",
+    "confirmPassword": "Confirmar Senha",
+    "confirmPasswordPlaceholder": "Confirme a nova senha",
+    "passwordsDoNotMatch": "As senhas não coincidem",
+    "passwordMinLength": "A senha deve ter pelo menos 6 caracteres",
+    "passwordResetSuccess": "Senha redefinida com sucesso!",
+    "redirectingToLogin": "Redirecionando para login...",
+    "invalidResetLink": "Link de Recuperação Inválido",
+    "invalidResetLinkMessage": "Este link de recuperação de senha é inválido ou expirou. Por favor, solicite uma nova recuperação de senha.",
+    "invalidOrExpiredToken": "Token inválido ou expirado. Por favor, solicite uma nova recuperação de senha.",
+    "resetting": "Redefinindo...",
+    "backToHome": "Voltar para Início",
+    "signInWithGoogle": "Google",
+    "signingInWithGoogle": "Conectando...",
+    "accountCreatedSuccess": "Conta criada com sucesso!",
+    "signedInSuccess": "Login realizado com sucesso!",
+    "failedToConnectGoogle": "Falha ao conectar com Google. Por favor, tente novamente.",
+    "or": "ou",
+    "profile": "Perfil",
+    "userMenu": "Menu do usuário",
+    "availableCredits": "Créditos disponíveis: {count}. Clique para ver detalhes.",
+    "creditsAvailable": "{count} créditos disponíveis",
+    "completeCaptcha": "Por favor, complete a verificação CAPTCHA.",
+    "tooManyAttempts": "Muitas tentativas. Por favor, tente novamente mais tarde.",
+    "community": "Comunidade",
+    "adminPanel": "Admin",
+    "configuration": "Configuração",
+    "bySigningUp": "Ao criar uma conta, você concorda com nossos",
+    "termsOfService": "Termos de Serviço",
+    "and": "e",
+    "privacyPolicy": "Política de Privacidade",
+    "loginRequired": "Por favor, entre para curtir workflows"
+  },
+  "configuration": {
+    "title": "Configuração",
+    "subtitle": "Gerencie suas chaves de API e conexões externas",
+    "geminiApiKey": "Chave da API Gemini",
+    "apiKeyPlaceholder": "Insira sua chave da API Gemini",
+    "save": "Salvar Alterações",
+    "delete": "Remover Chave",
+    "deleteConfirmTitle": "Excluir Chave da API",
+    "deleteConfirmMessage": "Tem certeza de que deseja excluir sua chave de API? Você precisará inseri-la novamente para usar sua própria cota.",
+    "menuTitle": "Chaves de API",
+    "saved": "Chave da API salva com sucesso",
+    "deleted": "Chave da API removida com sucesso",
+    "error": "Falha ao salvar chave da API",
+    "saveError": "Falha ao salvar chave da API",
+    "deleteError": "Falha ao remover a chave da API",
+    "emptyError": "A chave da API não pode estar vazia",
+    "getApiKey": "Obter chave",
+    "policyLink": "Política de Privacidade e Segurança",
+    "warning": "Sua chave é criptografada e armazenada com segurança. Apenas você pode acessá-la.",
+    "privateKey": "Sua chave é mantida privada",
+    "info": "Usar sua própria chave de API permite que você utilize sua própria cota e créditos do Google.",
+    "updateHint": "Para atualizar, basta colar sua nova chave acima."
+  },
+  "errors": {
+    "completeSteps": "Por favor, complete todos os passos antes de gerar.",
+    "subscriptionRequired": "Assinatura necessária. Por favor, faça upgrade para continuar gerando mockups.",
+    "authenticationRequired": "Por favor, entre para gerar mockups.",
+    "authenticationError": "Erro de autenticação. Por favor, entre novamente.",
+    "generationError": "Ocorreu um erro durante a geração. Por favor, tente novamente ou ajuste seu prompt.",
+    "promptGenerationTimeout": "Geração de prompt expirou. Por favor, tente novamente.",
+    "promptGenerationFailed": "Falha na geração de prompt. Por favor, tente novamente.",
+    "rateLimit": "A IA está muito popular agora! Por favor, aguarde cerca de 10 minutos e tente novamente. Isso nos ajuda a garantir acesso justo para todos. 🤖",
+    "aiBusy": "A IA está um pouco ocupada. Mudamos para um prompt mais simples que você pode editar manualmente, ou tente regenerar.",
+    "couldNotGenerateSuggestions": "A IA não conseguiu gerar sugestões agora. Por favor, escolha da lista abaixo.",
+    "couldNotBrainstorm": "A IA não conseguiu pensar em novas ideias. Por favor, tente novamente em um momento.",
+    "needCredits": "Você precisa de {needed} crédito{plural} mas só tem {remaining} restantes. Os créditos serão renovados em {date}.",
+    "needGenerations": "Você precisa de {needed} geração{plural} mas só tem {remaining} restantes. Por favor, assine para continuar.",
+    "nextBillingCycle": "seu próximo ciclo de cobrança",
+    "unableToProcessImage": "Não foi possível processar a imagem enviada. Por favor, tente uma imagem diferente ou verifique se o arquivo está corrompido.",
+    "invalidImageFormat": "Formato de imagem inválido. Por favor, envie uma imagem PNG, JPG ou WEBP válida.",
+    "failedToStartCheckout": "Falha ao iniciar checkout. Por favor, tente novamente.",
+    "paymentLinkNotConfigured": "Link de pagamento não configurado para esta moeda",
+    "storageLimitExceeded": "Limite de armazenamento excedido. Você está usando {used} de {limit}. Este arquivo ({fileSize}) excederia seu limite.",
+    "storageLimitExceededMB": "Limite de armazenamento excedido. Você está usando {used} MB de {limit} MB. Este arquivo ({fileSize} MB) excederia seu limite.",
+    "storageLimitExceededGB": "Limite de armazenamento excedido. Você está usando {used} MB de {limit} GB. Este arquivo ({fileSize} MB) excederia seu limite.",
+    "storageLimitExceededDescription": "Por favor, exclua alguns arquivos ou faça upgrade do seu plano para continuar fazendo upload."
+  },
+  "tags": {
+    "businessCard": "Cartão de Visita",
+    "letterhead": "Papel Timbrado",
+    "bookCover": "Capa de Livro",
+    "magazineCover": "Capa de Revista",
+    "poster": "Poster",
+    "flyer": "Folheto",
+    "boxPackaging": "Embalagem de Caixa",
+    "bagPackaging": "Embalagem de Sacola",
+    "pouchPackaging": "Embalagem de Saquinho",
+    "bottleLabel": "Rótulo de Garrafa",
+    "canLabel": "Rótulo de Lata",
+    "tshirt": "Camiseta",
+    "hoodie": "Moletom",
+    "cap": "Boné",
+    "hat": "Chapéu",
+    "toteBag": "Sacola",
+    "phoneScreen": "Tela de Celular",
+    "laptopScreen": "Tela de Notebook",
+    "websiteUI": "Interface Web",
+    "billboard": "Outdoor",
+    "billCanvas": "Outdoor",
+    "signage": "Sinalização",
+    "mug": "Caneca",
+    "cup": "Copo",
+    "wallArt": "Arte de Parede",
+    "framedArt": "Arte Emoldurada",
+    "thickCardPaper": "Papel cartão grosso",
+    "leatherLogoEngrave": "Gravação de logo em couro",
+    "signageOnWall": "Sinalização em parede de concreto/madeira",
+    "floatingBusinessCard": "Cartão de visita flutuante",
+    "deviceScreen": "Tela de dispositivo",
+    "branding": {
+      "agriculture": "Agricultura",
+      "casual": "Casual",
+      "corporate": "Corporativo",
+      "creative": "Criativo",
+      "cryptoWeb3": "Crypto/Web3",
+      "ecofriendly": "Ecológico",
+      "energetic": "Energético",
+      "exclusive": "Exclusivo",
+      "fashion": "Moda",
+      "feminine": "Feminino",
+      "food": "Alimentação",
+      "friendly": "Amigável",
+      "handmade": "Artesanal",
+      "healthWellness": "Saúde e Bem-estar",
+      "industrial": "Industrial",
+      "kidsBaby": "Infantil",
+      "luxury": "Luxo",
+      "minimalist": "Minimalista",
+      "modern": "Moderno",
+      "playful": "Descontraído",
+      "sport": "Esportivo",
+      "tech": "Tecnologia",
+      "travelHospitality": "Viagens e Hospitalidade",
+      "vintage": "Vintage",
+      "elegant": "Elegante"
+    },
+    "location": {
+      "tokyo": "Tokyo",
+      "newYork": "New York",
+      "brazil": "Brasil",
+      "paris": "Paris",
+      "london": "Londres",
+      "nordic": "Nórdico",
+      "californiaCoast": "Costa da Califórnia",
+      "minimalistStudio": "Estúdio Minimalista",
+      "lightBox": "Light Box",
+      "natureLandscape": "Paisagem Natural",
+      "urbanCity": "Cidade Urbana",
+      "workspace": "Espaço de Trabalho",
+      "grassLawn": "Gramado",
+      "concrete": "Concreto",
+      "woodenSlatWall": "Parede de Ripado",
+      "woodenTable": "Mesa de Madeira",
+      "glassEnvironment": "Ambiente com Vidros",
+      "modernOffice": "Escritório Moderno",
+      "brutalistConcrete": "Concreto Brutalista",
+      "texturedBoucleSofa": "Sofá Bouclé Texturizado",
+      "limestoneSurfaces": "Superfícies de Calcário",
+      "urbanLoft": "Loft Urbano"
+    },
+    "angle": {
+      "eyeLevel": "Nível dos Olhos",
+      "highAngle": "Ângulo Alto",
+      "lowAngle": "Ângulo Baixo",
+      "topDownFlatLay": "Vista Superior (Flat Lay)",
+      "dutchAngle": "Ângulo Holandês",
+      "wormsEyeView": "Vista de Baixo para Cima",
+      "45Angle": "Ângulo 45°",
+      "threeQuarterView": "Vista Três Quartos",
+      "sideView": "Vista Lateral",
+      "profile": "Perfil",
+      "closeUp": "Close-Up",
+      "detailShot": "Plano Detalhe",
+      "wideShot": "Plano Aberto",
+      "establishingShot": "Plano Geral",
+      "macro100mm": "Macro 100mm",
+      "heroAngle": "Ângulo Heroico",
+      "isometricView": "Vista Isométrica"
+    },
+    "lighting": {
+      "studioLighting": "Iluminação de Estúdio",
+      "goldenHour": "Hora Dourada",
+      "blueHour": "Hora Azul",
+      "overcast": "Nublado",
+      "directSunlight": "Luz Solar Direta",
+      "nightScene": "Cena Noturna",
+      "cinematic": "Cinematográfico",
+      "shadowOverlay": "Sobreposição de Sombras",
+      "softLight": "Luz Suave",
+      "diffused": "Difusa",
+      "naturalLight": "Luz Natural",
+      "hardSunlight": "Luz Solar Intensa",
+      "globalIllumination": "Iluminação Global",
+      "chiaroscuro": "Chiaroscuro",
+      "rimLight": "Luz de Contorno",
+      "causticLighting": "Iluminação Cáustica"
+    },
+    "effect": {
+      "bokeh": "Bokeh",
+      "motionBlur": "Desfoque de Movimento",
+      "vintageFilm": "Filme Vintage",
+      "monochrome": "Monocromático",
+      "longExposure": "Longa Exposição",
+      "lensFlare": "Lens Flare",
+      "highContrast": "Alto Contraste",
+      "fisheyeLens": "Lente Olho de Peixe",
+      "halftone": "Retícula",
+      "rayTracing": "Ray-tracing",
+      "subsurfaceScattering": "Dispersão Subsuperficial",
+      "microContrast": "Micro-contraste",
+      "8kResolution": "Resolução 8K",
+      "anamorphicFlare": "Flare Anamórfico"
+    },
+    "material": {
+      "frostedGlass": "Vidro Fosco",
+      "brushedAluminum": "Alumínio Escovado",
+      "rawLinen": "Linho Cru",
+      "liquidChrome": "Cromo Líquido",
+      "softTouchPlastic": "Plástico Soft-touch",
+      "embossed": "Relevo",
+      "debossed": "Baixo-relevo",
+      "tactilePaperGrain": "Textura de Papel Tátil",
+      "ceramic": "Cerâmica",
+      "metallicPlatinum": "Platina Metálica",
+      "liquidGlass": "Vidro Líquido",
+      "condensationDroplets": "Gotas de Condensação"
+    }
+  },
+  "messages": {
+    "surpriseSelectionGenerated": "Seleção surpresa gerada! 🎲",
+    "newAngleGenerated": "Novo ângulo gerado! 📷",
+    "newEnvironmentGenerated": "Novo ambiente gerado! 🌍",
+    "promptGeneratedSuccessfully": "Prompt gerado com sucesso!",
+    "rateLimit": "A IA está muito popular agora! Por favor, aguarde cerca de 10 minutos e tente novamente. Isso nos ajuda a garantir acesso justo para todos. 🤖",
+    "aiBusy": "A IA está um pouco ocupada. Mudamos para um prompt mais simples que você pode editar manualmente, ou tente regenerar.",
+    "aiCouldntGenerateSuggestions": "A IA não conseguiu gerar sugestões no momento. Por favor, escolha da lista abaixo.",
+    "aiCouldntBrainstorm": "A IA não conseguiu criar novas ideias. Por favor, tente novamente em um momento.",
+    "completeSteps": "Por favor, complete todos os passos antes de gerar.",
+    "subscriptionRequired": "Assinatura necessária. Por favor, faça upgrade para continuar gerando mockups.",
+    "authenticationRequired": "Por favor, entre para gerar mockups.",
+    "authenticationError": "Erro de autenticação. Por favor, entre novamente.",
+    "generationError": "Ocorreu um erro durante a geração. Por favor, tente novamente ou ajuste seu prompt.",
+    "generationErrorSuggestion": "Verifique sua conexão e tente novamente. Se o problema persistir, consulte os logs do servidor.",
+    "serverError": "Erro no servidor ao analisar a imagem.",
+    "serverErrorSuggestion": "Verifique se a chave da API Gemini está configurada e consulte os logs do servidor (terminal do backend) para mais detalhes.",
+    "promptGenerationTimeout": "A geração do prompt expirou. Por favor, tente novamente.",
+    "promptGenerationFailed": "A geração do prompt falhou. Por favor, tente novamente.",
+    "switchedToHD": "Mudado para Mockup Machine® HD. Controle de resolução desabilitado.",
+    "switchedTo4K": "Mudado para Mockup Machine® 4K. Controle de resolução habilitado.",
+    "modelChanged": "Modelo alterado. Você pode precisar regenerar o prompt.",
+    "tagsChanged": "As tags foram alteradas. Por favor, regenere o prompt para corresponder às suas seleções atuais.",
+    "modelRequiresCredits": "Mockup Machine® 4K requer pelo menos {minCredits} créditos. Você tem {remaining}.",
+    "selectModelBeforeGenerating": "Por favor, selecione um modelo antes de gerar.",
+    "failedToProcessReferenceImage": "Falha ao processar imagem de referência.",
+    "failedToSaveMockup": "Falha ao salvar mockup.",
+    "needCredits": "Você precisa de {creditsNeeded} crédito{plural} para gerar. Por favor, compre créditos para continuar.",
+    "needCreditsButHave": "Você precisa de {creditsNeeded} crédito{plural} mas só tem {remaining} restante{pluralRemaining}. Por favor, compre créditos para continuar.",
+    "needCreditsSubscription": "Você precisa de {creditsNeeded} crédito{plural} mas só tem {remaining} restante{pluralRemaining}. Os créditos serão renovados em {resetDate}.",
+    "savedOutputs": "Salvo {count} resultado{plural} na sua coleção!",
+    "failedToSaveOutputs": "Falha ao salvar alguns resultados. Por favor, tente novamente.",
+    "outputRemoved": "Resultado removido da exibição",
+    "mockupReimagined": "Mockup reimaginado com sucesso!",
+    "yourNextBillingCycle": "seu próximo ciclo de cobrança",
+    "tryAgainIn10Minutes": "Tente novamente em cerca de 10 minutos. Isso nos ajuda a garantir acesso justo para todos.",
+    "modelOverloaded": "O modelo de IA está sobrecarregado no momento.",
+    "modelOverloadedSuggestion": "Este é um problema temporário. Seus créditos não foram deduzidos. Por favor, tente novamente em alguns minutos.",
+    "serviceUnavailable": "O serviço de IA está temporariamente indisponível.",
+    "serviceUnavailableSuggestion": "O serviço está com alta carga. Seus créditos não foram deduzidos. Por favor, tente novamente em alguns minutos.",
+    "requestTimeout": "A solicitação expirou.",
+    "requestTimeoutSuggestion": "O serviço de IA está demorando mais que o esperado. Isso pode ser devido à alta carga. Seus créditos não foram deduzidos. Por favor, tente novamente.",
+    "unableToProcessImage": "Não foi possível processar a imagem enviada.",
+    "unableToProcessImageSuggestion": "Por favor, tente um formato de imagem diferente (PNG, JPG ou WEBP) ou verifique se o arquivo está corrompido.",
+    "invalidImageFormat": "Formato de imagem inválido.",
+    "invalidImageFormatSuggestion": "Por favor, envie uma imagem PNG, JPG ou WEBP válida. O tamanho máximo do arquivo é 10MB.",
+    "networkError": "Ocorreu um erro de rede.",
+    "networkErrorSuggestion": "Por favor, verifique sua conexão com a internet e tente novamente.",
+    "unsavedOutputsTitle": "Saídas Não Salvas",
+    "unsavedOutputsMessage": "Você tem {count} saída{plural} não salva{plural}. Se você descartar, perderá {plural, select, s {elas} other {ela}} permanentemente. Tem certeza?",
+    "resetAnyway": "Descartar",
+    "saveAll": "Salvar Tudo",
+    "leave": "Cancelar",
+    "dontCare": "Não me importo",
+    "unsavedOutputRemoveMessage": "Esta saída não está salva. Se você remover, perderá permanentemente. Tem certeza?"
+  },
+  "privacy": {
+    "title": "Política de Privacidade — Visant Labs Mockup Machine",
+    "lastUpdated": "Última atualização: {date}",
+    "backToHome": "Voltar para Início",
+    "overview": "A Visant Labs está comprometida em proteger sua privacidade. Esta Política explica como coletamos, usamos e protegemos suas informações ao usar o <strong>Mockup Machine</strong>, nossa plataforma de geração e edição de imagens com IA.",
+    "sections": {
+      "informationWeCollect": {
+        "title": "1. INFORMAÇÕES QUE COLETAMOS",
+        "accountInfo": {
+          "title": "1.1 Informações da Conta",
+          "items": [
+            "Nome",
+            "Endereço de e-mail",
+            "ID do usuário",
+            "Foto de perfil (quando fornecida)",
+            "Dados de autenticação via provedores (Google/Apple/E-mail)"
+          ]
+        },
+        "paymentInfo": {
+          "title": "1.2 Informações de Pagamento",
+          "items": [
+            "Dados de assinatura (plano ativo, renovações, histórico)",
+            "Identificadores de cobrança via provedores terceirizados (Pagar.me, PagSeguro, Stripe ou outros)",
+            "Nunca armazenamos dados completos do cartão."
+          ]
+        },
+        "usageData": {
+          "title": "1.3 Dados de Uso",
+          "items": [
+            "Número de imagens geradas",
+            "Prompts enviados pelos usuários",
+            "Tempo de uso da plataforma",
+            "Logs de erro para manutenção"
+          ]
+        },
+        "technicalData": {
+          "title": "1.4 Dados Técnicos",
+          "items": [
+            "Endereço IP",
+            "Tipo de dispositivo",
+            "Navegador",
+            "Preferências de idioma"
+          ]
+        },
+        "googleAuth": {
+          "title": "1.5 Dados de Autenticação do Google",
+          "permissionsIntro": "Quando você escolhe fazer login com o Google, solicitamos as seguintes permissões (escopos OAuth 2.0):",
+          "permissions": [
+            "email — Acesso ao endereço de e-mail da sua conta do Google",
+            "profile — Acesso às suas informações básicas de perfil"
+          ],
+          "dataIntro": "Os dados específicos que coletamos da sua conta do Google incluem:",
+          "dataItems": [
+            "Endereço de e-mail — Usado como identificador principal da sua conta",
+            "Nome completo — Usado para personalizar seu perfil",
+            "Foto de perfil — Usada como avatar da sua conta (opcional)",
+            "ID do Usuário do Google (sub) — Usado para autenticação e vinculação de conta"
+          ],
+          "important": "Importante: Não acessamos seus contatos do Google, calendário, arquivos do Drive ou qualquer outro serviço do Google além das informações básicas de perfil listadas acima."
+        },
+        "apiKeys": {
+          "title": "1.6 Chaves de API",
+          "intro": "Se você optar por usar sua própria chave de API do Gemini com nosso serviço, coletamos e armazenamos:",
+          "items": [
+            "Sua chave de API do Gemini criptografada — Armazenada com segurança usando criptografia AES-256-GCM",
+            "Metadados da chave de API — Associados à sua conta para rastreamento de uso"
+          ],
+          "important": "Importante: Fornecer sua própria chave de API é completamente opcional. Se você optar por fornecer uma, ela será criptografada imediatamente ao salvar e nunca será armazenada em texto simples."
+        }
+      },
+      "howWeUseData": {
+        "title": "2. COMO USAMOS SEUS DADOS",
+        "intro": "Usamos seus dados para:",
+        "items": [
+          "Operar e melhorar o Mockup Machine",
+          "Processar assinaturas e pagamentos",
+          "Monitorar limites de uso do plano",
+          "Personalizar sua experiência",
+          "Prevenir uso abusivo ou fraudulento",
+          "Cumprir obrigações legais"
+        ],
+        "googleAuth": {
+          "title": "2.1 Uso dos Dados de Autenticação do Google",
+          "intro": "Usamos os dados coletados da sua conta do Google exclusivamente para:",
+          "items": [
+            "Criar e gerenciar sua conta no Mockup Machine",
+            "Autenticar sua identidade quando você faz login",
+            "Vincular sua conta do Google à sua conta existente (se aplicável)",
+            "Pré-preencher suas informações de perfil (nome e foto de perfil)",
+            "Prevenir contas duplicadas e atividades fraudulentas"
+          ],
+          "note": "Não usamos seus dados do Google para publicidade, marketing ou qualquer outro propósito além do gerenciamento de conta e autenticação. Suas credenciais do Google nunca são armazenadas por nós; apenas armazenamos as informações de perfil fornecidas pelo serviço OAuth do Google."
+        },
+        "aiTraining": {
+          "title": "2.2 Uso para Treinamento de IA",
+          "note": "Prompts e imagens geradas <strong>não são usados</strong> para treinar os modelos internos da Visant Labs, a menos que você forneça consentimento explícito."
+        },
+        "apiKeys": {
+          "title": "2.3 Uso de Chaves de API",
+          "intro": "Se você fornecer sua própria chave de API do Gemini, usamos exclusivamente para:",
+          "items": [
+            "Processar suas solicitações de geração de imagens com IA",
+            "Usar sua cota e créditos do Google Cloud em vez da chave padrão do nosso sistema",
+            "Priorizar sua chave sobre a chave padrão para as solicitações da sua conta"
+          ],
+          "important": "Importante: Nunca usamos sua chave de API para qualquer outro propósito além de processar suas solicitações. Todas as chamadas de API feitas com sua chave são cobradas na sua conta do Google Cloud, não na nossa. Nunca compartilhamos suas chaves de API com terceiros ou as usamos para qualquer outro propósito."
+        }
+      },
+      "dataSharing": {
+        "title": "3. COMPARTILHAMENTO DE DADOS",
+        "intro": "Podemos compartilhar informações com:",
+        "serviceProviders": {
+          "title": "3.1 Provedores de Serviços",
+          "items": [
+            "APIs de geração de imagens com IA de terceiros",
+            "Provedores de pagamento",
+            "Serviços de hospedagem e armazenamento",
+            "Serviços de autenticação (MongoDBAuth)",
+            "Serviços de análise (Google Analytics) — apenas para estatísticas de uso do site"
+          ],
+          "note": "Compartilhamos apenas o mínimo necessário para a operação do serviço. Os dados de análise compartilhados com o Google Analytics são anonimizados e não incluem informações pessoalmente identificáveis."
+        },
+        "googleData": {
+          "title": "3.2 Compartilhamento de Dados do Google",
+          "intro": "Não compartilhamos os dados da sua conta do Google com terceiros. Os dados que coletamos do Google (e-mail, nome, foto de perfil e ID do Usuário do Google) são:",
+          "items": [
+            "Armazenados com segurança em nosso próprio banco de dados",
+            "Usados exclusivamente para autenticação e gerenciamento de conta",
+            "Não vendidos, alugados ou compartilhados com anunciantes ou parceiros de marketing",
+            "Não usados para qualquer propósito além do necessário para operar o serviço Mockup Machine"
+          ],
+          "exception": "A única exceção é quando exigido por autoridades policiais ou ordem judicial (consulte a seção 3.3)."
+        },
+        "legalObligations": {
+          "title": "3.3 Obrigações Legais",
+          "note": "Podemos divulgar informações (incluindo dados de autenticação do Google) se exigido por lei ou ordem judicial."
+        },
+        "apiKeySharing": {
+          "title": "3.4 Compartilhamento de Chaves de API",
+          "intro": "Não compartilhamos suas chaves de API com terceiros. Suas chaves de API são:",
+          "items": [
+            "Armazenadas com segurança em nosso banco de dados criptografado",
+            "Usadas exclusivamente para processar suas solicitações",
+            "Nunca vendidas, alugadas ou compartilhadas com anunciantes, parceiros de marketing ou provedores de serviços",
+            "Nunca expostas em respostas de API, logs ou qualquer outra saída",
+            "Descriptografadas apenas na memória quando necessárias para chamadas de API, depois imediatamente descartadas"
+          ],
+          "exception": "A única exceção é quando exigido por autoridades policiais ou ordem judicial (consulte a seção 3.3)."
+        }
+      },
+      "storageAndSecurity": {
+        "title": "4. ARMAZENAMENTO E SEGURANÇA",
+        "intro": "Todos os dados, incluindo dados de autenticação do Google, são protegidos usando medidas de segurança padrão da indústria:",
+        "items": [
+          "Seus dados são armazenados em servidores seguros com criptografia em repouso e em trânsito.",
+          "Usamos MongoDB, DigitalOcean e Vercel como nossa infraestrutura principal.",
+          "Aplicamos autenticação reforçada, RLS e melhores práticas de segurança.",
+          "Tokens OAuth são tratados com segurança e nunca armazenados em texto simples.",
+          "Todas as conexões de banco de dados usam canais criptografados (TLS/SSL)."
+        ],
+        "googleAuth": {
+          "title": "4.1 Segurança de Autenticação do Google",
+          "items": [
+            "Usamos OAuth 2.0, o protocolo de autenticação padrão da indústria.",
+            "Tokens de acesso do Google nunca são armazenados em nosso banco de dados.",
+            "Armazenamos apenas o ID do Usuário do Google (sub) e as informações de perfil fornecidas pelo Google após autenticação bem-sucedida.",
+            "Sua senha do Google nunca é acessível por nós e permanece segura com o Google.",
+            "Você pode revogar nosso acesso à sua conta do Google a qualquer momento através das configurações da sua conta do Google."
+          ]
+        },
+        "apiKeySecurity": {
+          "title": "4.2 Segurança de Chaves de API",
+          "intro": "Implementamos medidas de segurança de nível militar para proteger suas chaves de API:",
+          "items": [
+            "Criptografia: Usamos criptografia AES-256-GCM, um padrão de criptografia de nível militar, para criptografar suas chaves de API antes do armazenamento",
+            "Chave Mestra: As chaves de criptografia são armazenadas com segurança em variáveis de ambiente, nunca em código ou controle de versão",
+            "Sem Armazenamento em Texto Simples: Sua chave de API nunca é armazenada em texto simples em nosso banco de dados, logs ou em qualquer outro lugar",
+            "Descriptografia na Memória: As chaves de API são descriptografadas apenas na memória quando necessárias para chamadas de API, depois imediatamente descartadas",
+            "Isolamento de Usuário: Cada usuário pode acessar apenas sua própria chave de API criptografada",
+            "Autenticação Necessária: Apenas usuários autenticados podem salvar ou acessar suas próprias chaves de API",
+            "Sem Exposição: Nunca retornamos chaves de API descriptografadas em respostas de API — apenas confirmamos operações bem-sucedidas",
+            "Rastreamento de Auditoria: Operações de chave de API (salvar/excluir) são registradas para auditoria de segurança"
+          ],
+          "responsibilities": "Suas Responsabilidades: Mantenha sua chave de API segura, nunca a compartilhe com outros e considere rotacioná-la periodicamente. Monitore seu Console do Google Cloud para uso ou cobranças inesperadas. Configure restrições de chave de API no Google AI Studio para limitar onde ela pode ser usada."
+        }
+      },
+      "yourRights": {
+        "title": "5. SEUS DIREITOS",
+        "intro": "Você pode:",
+        "items": [
+          "Acessar seus dados",
+          "Corrigir informações",
+          "Solicitar exclusão de conta",
+          "Exportar seus dados",
+          "Revogar consentimentos"
+        ],
+        "contact": "Para exercer seus direitos, entre em contato com o suporte da Visant Labs."
+      },
+      "cookiesAndTracking": {
+        "title": "6. COOKIES E TECNOLOGIAS DE RASTREAMENTO",
+        "intro": "Usamos cookies para:",
+        "items": [
+          "Autenticação",
+          "Preferências de interface",
+          "Métricas internas"
+        ],
+        "googleAnalytics": {
+          "title": "6.1 Google Analytics",
+          "intro": "Usamos o Google Analytics para entender como os visitantes interagem com nosso site. O Google Analytics coleta:",
+          "collected": [
+            "Visualizações de página e padrões de navegação",
+            "Profundidade de rolagem e interações do usuário",
+            "Cliques externos",
+            "Informações de dispositivo e navegador",
+            "Localização geográfica geral (nível de país/cidade)"
+          ],
+          "howItWorks": "O Google Analytics usa cookies e tecnologias similares. Os dados coletados são processados pelo Google de acordo com sua Política de Privacidade. Você pode:",
+          "options": [
+            "Desativar o Google Analytics instalando o Complemento do Navegador de Desativação do Google Analytics",
+            "Gerenciar preferências de cookies através das configurações do seu navegador",
+            "Usar extensões do navegador que bloqueiam rastreamento"
+          ],
+          "note": "Não enviamos informações pessoalmente identificáveis (PII) para o Google Analytics. Configuramos o Google Analytics para respeitar a privacidade do usuário e cumprir os regulamentos de proteção de dados."
+        },
+        "noAdvertising": "Não usamos cookies de publicidade ou pixels de rastreamento para fins de marketing."
+      },
+      "dataRetention": {
+        "title": "7. RETENÇÃO E EXCLUSÃO DE DADOS",
+        "general": {
+          "title": "7.1 Retenção Geral de Dados",
+          "items": [
+            "Os dados da conta são retidos enquanto sua assinatura estiver ativa.",
+            "Logs e métricas podem ser retidos por até 12 meses.",
+            "Os dados podem ser anonimizados para análise interna."
+          ]
+        },
+        "googleAuth": {
+          "title": "7.2 Retenção de Dados de Autenticação do Google",
+          "intro": "Os dados de autenticação do Google (e-mail, nome, foto de perfil, ID do Usuário do Google) são retidos:",
+          "items": [
+            "Enquanto sua conta no Mockup Machine estiver ativa",
+            "Por até 90 dias após a exclusão da conta (para fins de segurança e prevenção de fraudes)",
+            "Conforme exigido por lei ou obrigações legais"
+          ]
+        },
+        "apiKeys": {
+          "title": "7.3 Retenção de Dados de Chaves de API",
+          "intro": "Suas chaves de API criptografadas são retidas:",
+          "items": [
+            "Enquanto sua conta no Mockup Machine estiver ativa e você optar por usar sua própria chave de API",
+            "Até que você exclua explicitamente sua chave de API do nosso sistema",
+            "Removidas permanentemente imediatamente após a exclusão — sem período de retenção"
+          ]
+        },
+        "requestingDeletion": {
+          "title": "7.4 Solicitação de Exclusão de Dados",
+          "intro": "Você tem o direito de solicitar a exclusão de seus dados, incluindo dados de autenticação do Google e chaves de API:",
+          "items": [
+            "Você pode excluir sua chave de API diretamente através das configurações do Mockup Machine a qualquer momento",
+            "Você pode excluir sua conta diretamente através das configurações do Mockup Machine",
+            "Entre em contato conosco em contato@visant.co para solicitar exclusão imediata",
+            "Após a exclusão da chave de API, sua chave criptografada é permanentemente removida de nossos sistemas imediatamente",
+            "Após a exclusão da conta, seu ID do Usuário do Google e dados de perfil associados serão permanentemente removidos de nossos sistemas",
+            "Para revogar o acesso OAuth do Google, visite as configurações da sua Conta do Google em myaccount.google.com/permissions"
+          ],
+          "note": "Nota: Alguns dados podem ser retidos por até 90 dias após a exclusão para fins de segurança, prevenção de fraudes ou conformidade legal, mas não serão usados para qualquer outro propósito durante este período. As chaves de API são uma exceção e são excluídas imediatamente sem período de retenção."
+        }
+      },
+      "changesToPolicy": {
+        "title": "8. ALTERAÇÕES NESTA POLÍTICA",
+        "note": "Podemos atualizar esta política periodicamente. Alterações substanciais serão comunicadas por e-mail ou dentro do aplicativo."
+      },
+      "contact": {
+        "title": "9. CONTATO",
+        "company": "Visant Labs ®",
+        "support": "E-mail de suporte: contato@visant.co"
+      },
+      "agreement": "Ao usar o Mockup Machine, você concorda com esta Política de Privacidade."
+    }
+  },
+  "terms": {
+    "title": "Termos de Serviço — Visant Labs Mockup Machine",
+    "lastUpdated": "Última atualização: {date}",
+    "overview": "Bem-vindo ao <strong>Mockup Machine</strong>, uma plataforma de geração e edição de imagens com IA operada pela Visant Labs. Ao acessar ou usar nosso serviço, você concorda em estar vinculado a estes Termos de Serviço.",
+    "sections": {
+      "acceptance": {
+        "title": "1. Aceitação dos Termos",
+        "content": "Ao criar uma conta, acessar ou usar o Mockup Machine, você reconhece que leu, entendeu e concorda em estar vinculado a estes Termos de Serviço e nossa Política de Privacidade. Se você não concordar com estes termos, não poderá usar nosso serviço."
+      },
+      "description": {
+        "title": "2. Descrição do Serviço",
+        "intro": "O Mockup Machine é uma plataforma que permite aos usuários:",
+        "items": [
+          "Gerar mockups fotorrealistas usando tecnologia de IA",
+          "Enviar e aplicar designs em vários modelos de mockup",
+          "Personalizar mockups com branding, localização, iluminação e outros parâmetros",
+          "Exportar imagens geradas para uso pessoal ou comercial"
+        ]
+      },
+      "userAccounts": {
+        "title": "3. Contas de Usuário",
+        "accountCreation": {
+          "title": "3.1 Criação de Conta",
+          "intro": "Para usar certos recursos do serviço, você deve criar uma conta. Você concorda em:",
+          "items": [
+            "Fornecer informações precisas, atuais e completas",
+            "Manter e atualizar suas informações de conta",
+            "Manter a segurança de suas credenciais de conta",
+            "Aceitar responsabilidade por todas as atividades em sua conta"
+          ]
+        },
+        "accountTermination": {
+          "title": "3.2 Encerramento de Conta",
+          "content": "Reservamo-nos o direito de suspender ou encerrar sua conta a qualquer momento por violação destes termos, atividade fraudulenta ou qualquer outro motivo que consideremos necessário para proteger nosso serviço e usuários."
+        }
+      },
+      "subscription": {
+        "title": "4. Assinatura e Pagamento",
+        "freeTier": {
+          "title": "4.1 Plano Gratuito",
+          "content": "Oferecemos um plano gratuito limitado com um número restrito de gerações de imagens. As limitações do plano gratuito podem mudar a qualquer momento."
+        },
+        "paidSubscriptions": {
+          "title": "4.2 Assinaturas Pagas",
+          "items": [
+            "As assinaturas são cobradas de forma recorrente (mensal ou anual)",
+            "Todas as taxas são não reembolsáveis, exceto conforme exigido por lei",
+            "Os preços podem mudar com aviso prévio de 30 dias para assinantes existentes",
+            "Você pode cancelar sua assinatura a qualquer momento",
+            "O cancelamento entra em vigor no final do período de cobrança atual"
+          ]
+        },
+        "paymentProcessing": {
+          "title": "4.3 Processamento de Pagamento",
+          "content": "Os pagamentos são processados por provedores terceirizados (Stripe, Pagar.me, PagSeguro ou outros). Você concorda com seus termos e condições. Não armazenamos informações completas do cartão de pagamento."
+        }
+      },
+      "acceptableUse": {
+        "title": "5. Uso Aceitável",
+        "intro": "Você concorda em não:",
+        "items": [
+          "Usar o serviço para qualquer finalidade ilegal ou em violação de quaisquer leis",
+          "Gerar conteúdo difamatório, prejudicial, abusivo ou que viole os direitos de outros",
+          "Enviar conteúdo que infrinja direitos de propriedade intelectual",
+          "Tentar fazer engenharia reversa, descompilar ou extrair o código-fonte",
+          "Usar sistemas automatizados (bots, raspadores) para acessar o serviço",
+          "Compartilhar suas credenciais de conta com outros",
+          "Interferir ou interromper o serviço ou servidores",
+          "Gerar conteúdo que promova discurso de ódio, violência ou atividades ilegais"
+        ]
+      },
+      "intellectualProperty": {
+        "title": "6. Propriedade Intelectual",
+        "yourContent": {
+          "title": "6.1 Seu Conteúdo",
+          "intro": "Você mantém a propriedade de designs e conteúdo que você envia. Ao usar o serviço, você nos concede uma licença para:",
+          "items": [
+            "Processar e armazenar seu conteúdo para fornecer o serviço",
+            "Gerar mockups com base em seu conteúdo",
+            "Usar seu conteúdo para melhorar o serviço (com seu consentimento explícito)"
+          ]
+        },
+        "generatedImages": {
+          "title": "6.2 Imagens Geradas",
+          "intro": "Você é proprietário das imagens de mockup geradas através do serviço. Você pode usá-las para:",
+          "items": [
+            "Projetos pessoais",
+            "Projetos comerciais",
+            "Trabalho para clientes",
+            "Materiais de marketing e promoção"
+          ],
+          "restriction": "No entanto, você não pode revender as imagens de mockup como produtos independentes ou usá-las para treinar modelos de IA concorrentes."
+        },
+        "ourService": {
+          "title": "6.3 Nosso Serviço",
+          "content": "A plataforma Mockup Machine, incluindo seu design, funcionalidade e tecnologia subjacente, é propriedade da Visant Labs e protegida por leis de propriedade intelectual."
+        }
+      },
+      "serviceAvailability": {
+        "title": "7. Disponibilidade do Serviço",
+        "intro": "Nos esforçamos para manter alta disponibilidade, mas não garantimos:",
+        "items": [
+          "Serviço ininterrupto ou livre de erros",
+          "Tempos de resposta específicos ou velocidades de geração",
+          "Disponibilidade de todos os recursos o tempo todo"
+        ],
+        "maintenance": "Podemos realizar manutenção, atualizações ou modificações que afetem temporariamente a disponibilidade do serviço. Forneceremos aviso razoável quando possível."
+      },
+      "rateLimits": {
+        "title": "8. Limites de Taxa e Uso",
+        "intro": "Para garantir acesso justo e qualidade do serviço:",
+        "items": [
+          "Implementamos limites de taxa com base no seu nível de assinatura",
+          "Usuários do plano gratuito têm gerações limitadas por período",
+          "Uso excessivo pode resultar em restrições temporárias",
+          "Reservamo-nos o direito de modificar limites com aviso"
+        ]
+      },
+      "disclaimers": {
+        "title": "9. Isenções e Limitações",
+        "asIs": {
+          "title": "9.1 Serviço \"Como Está\"",
+          "content": "O serviço é fornecido \"como está\" e \"conforme disponível\" sem garantias de qualquer tipo, expressas ou implícitas, incluindo, mas não se limitando a garantias de comercialização, adequação a uma finalidade específica ou não violação."
+        },
+        "aiGenerated": {
+          "title": "9.2 Conteúdo Gerado por IA",
+          "content": "O conteúdo gerado por IA pode conter erros, imprecisões ou resultados inesperados. Não garantimos a precisão, qualidade ou adequação das imagens geradas para qualquer finalidade específica."
+        },
+        "limitation": {
+          "title": "9.3 Limitação de Responsabilidade",
+          "content": "Na máxima extensão permitida por lei, a Visant Labs não será responsável por quaisquer danos indiretos, incidentais, especiais, consequenciais ou punitivos, ou qualquer perda de lucros ou receitas, sejam incorridos direta ou indiretamente, ou qualquer perda de dados, uso, boa vontade ou outras perdas intangíveis."
+        }
+      },
+      "indemnification": {
+        "title": "10. Indenização",
+        "content": "Você concorda em indenizar e isentar a Visant Labs, seus diretores, funcionários e agentes de quaisquer reivindicações, danos, perdas, responsabilidades e despesas (incluindo honorários advocatícios) decorrentes ou relacionados ao seu uso do serviço, violação destes termos ou violação de quaisquer direitos de outro."
+      },
+      "modifications": {
+        "title": "11. Modificações nos Termos",
+        "content": "Reservamo-nos o direito de modificar estes Termos de Serviço a qualquer momento. Alterações materiais serão comunicadas por e-mail ou dentro do aplicativo. O uso continuado do serviço após as alterações constitui aceitação dos termos modificados."
+      },
+      "termination": {
+        "title": "12. Encerramento",
+        "intro": "Qualquer uma das partes pode encerrar este acordo:",
+        "items": [
+          "Você pode cancelar sua conta a qualquer momento",
+          "Podemos suspender ou encerrar contas que violem estes termos",
+          "Após o encerramento, seu direito de usar o serviço cessa imediatamente",
+          "Podemos excluir os dados da sua conta de acordo com nossa Política de Privacidade"
+        ]
+      },
+      "governingLaw": {
+        "title": "13. Lei Aplicável",
+        "content": "Estes Termos de Serviço serão regidos e interpretados de acordo com as leis aplicáveis. Quaisquer disputas decorrentes destes termos ou do seu uso do serviço serão resolvidas através dos canais legais apropriados."
+      },
+      "contact": {
+        "title": "14. Contato",
+        "company": "Visant Labs ®",
+        "support": "E-mail de suporte: suporte@visantlabs.com"
+      },
+      "agreement": "Ao usar o Mockup Machine, você reconhece que leu, entendeu e concorda em estar vinculado a estes Termos de Serviço."
+    }
+  },
+  "refund": {
+    "title": "Política de Reembolso — Visant Labs Mockup Machine",
+    "lastUpdated": "Última atualização: {date}",
+    "overview": "Esta Política de Reembolso está em conformidade com o <strong>Código de Defesa do Consumidor (CDC - Lei nº 8.078/1990)</strong> e estabelece os procedimentos para solicitação de reembolso de assinaturas e créditos adquiridos na plataforma <strong>Mockup Machine</strong>, operada pela Visant Labs.",
+    "sections": {
+      "rightOfWithdrawal": {
+        "title": "1. Direito de Arrependimento",
+        "content": "Conforme o <strong>artigo 49 do Código de Defesa do Consumidor</strong>, você tem o direito de desistir da compra de assinatura ou créditos em até <strong>7 (sete) dias corridos</strong> contados a partir da data da confirmação da compra, <strong>sem necessidade de justificativa</strong>.",
+        "applicable": "Este direito é aplicável tanto para assinaturas mensais/anuais quanto para créditos avulsos adquiridos em nossa plataforma."
+      },
+      "procedure": {
+        "title": "2. Procedimento para Solicitação de Reembolso",
+        "howToRequest": {
+          "title": "2.1 Como Solicitar",
+          "intro": "Para exercer seu direito de arrependimento e solicitar reembolso, você deve:",
+          "items": [
+            "Enviar e-mail para contato@visant.co dentro do prazo de 7 dias corridos",
+            "Informar o número da transação ou identificação da compra",
+            "Indicar o motivo da solicitação (não é obrigatório, mas ajuda a melhorarmos nossos serviços)",
+            "Fornecer os dados bancários ou da conta para reembolso, quando aplicável"
+          ]
+        },
+        "processing": {
+          "title": "2.2 Processamento",
+          "content": "Após receber sua solicitação, analisaremos seu pedido e responderemos em até <strong>2 (dois) dias úteis</strong>. O reembolso será processado conforme o método de pagamento utilizado na compra original."
+        }
+      },
+      "subscriptionRefund": {
+        "title": "3. Reembolso de Assinaturas",
+        "partial": {
+          "title": "3.1 Reembolso Parcial",
+          "intro": "Para assinaturas mensais ou anuais canceladas dentro do prazo de 7 dias:",
+          "items": [
+            "O reembolso será calculado proporcionalmente ao período não utilizado",
+            "Créditos utilizados durante o período não serão reembolsados",
+            "O reembolso será creditado conforme o método de pagamento original"
+          ]
+        },
+        "full": {
+          "title": "3.2 Reembolso Integral",
+          "content": "Se nenhum crédito foi utilizado desde a compra, você terá direito ao <strong>reembolso integral</strong> da assinatura."
+        }
+      },
+      "creditRefund": {
+        "title": "4. Reembolso de Créditos",
+        "unused": {
+          "title": "4.1 Créditos Não Utilizados",
+          "content": "Créditos adquiridos e não utilizados podem ser reembolsados integralmente dentro do prazo de arrependimento de 7 dias."
+        },
+        "partiallyUsed": {
+          "title": "4.2 Créditos Parcialmente Utilizados",
+          "content": "Se você utilizou parte dos créditos adquiridos, o reembolso será calculado apenas sobre o <strong>valor dos créditos não utilizados</strong>."
+        }
+      },
+      "processingTimes": {
+        "title": "5. Prazos para Processamento do Reembolso",
+        "intro": "Após a aprovação da solicitação, os prazos para processamento variam conforme o método de pagamento:",
+        "items": [
+          "Cartão de Crédito: O estorno aparecerá na fatura seguinte ou subsequente, dependendo da administradora (prazo médio: 5 a 15 dias úteis)",
+          "PIX: Reembolso processado em até 1 (um) dia útil",
+          "Boleto Bancário: Reembolso processado via transferência bancária em até 5 (cinco) dias úteis após confirmação",
+          "Cartão de Débito: Reembolso processado em até 3 (três) dias úteis"
+        ]
+      },
+      "specialCases": {
+        "title": "6. Casos Especiais",
+        "technicalIssues": {
+          "title": "6.1 Problemas Técnicos",
+          "content": "Caso ocorram problemas técnicos que impeçam o uso adequado dos serviços, e esses problemas persistirem por mais de 48 horas, você poderá solicitar reembolso mesmo após o prazo de 7 dias, desde que o problema tenha sido reportado imediatamente."
+        },
+        "purchaseError": {
+          "title": "6.2 Erro na Compra",
+          "content": "Em caso de erro na compra (valor incorreto, produto errado, duplicidade), o reembolso será processado imediatamente, independentemente do prazo de 7 dias."
+        }
+      },
+      "exceptions": {
+        "title": "7. Exceções",
+        "intro": "O direito de arrependimento <strong>não se aplica</strong> nos seguintes casos:",
+        "items": [
+          "Créditos ou assinaturas adquiridos como presente/brinde",
+          "Produtos ou serviços personalizados ou customizados especificamente para você",
+          "Quando o serviço foi totalmente prestado e consumido pelo cliente"
+        ]
+      },
+      "cancellation": {
+        "title": "8. Cancelamento de Assinatura",
+        "content": "Você pode cancelar sua assinatura a qualquer momento através das configurações da sua conta. O cancelamento entrará em vigor ao final do período pago atual, e você continuará tendo acesso aos serviços até essa data.",
+        "refundNote": "Se o cancelamento ocorrer dentro dos 7 dias de arrependimento, aplicam-se as regras de reembolso descritas nesta política."
+      },
+      "contact": {
+        "title": "9. Contato e Suporte",
+        "intro": "Para solicitar reembolso, tirar dúvidas ou reportar problemas, entre em contato conosco:",
+        "email": "E-mail: contato@visant.co",
+        "responseTime": "Prazo de Resposta: Até 2 (dois) dias úteis"
+      },
+      "changes": {
+        "title": "10. Alterações nesta Política",
+        "content": "Reservamo-nos o direito de atualizar esta Política de Reembolso periodicamente. Alterações significativas serão comunicadas por e-mail ou através de aviso em nossa plataforma. A versão atualizada estará sempre disponível nesta página com a data de última atualização."
+      },
+      "legalNote": "Nota Legal: Esta política está em conformidade com o Código de Defesa do Consumidor brasileiro (Lei nº 8.078/1990) e não limita os direitos garantidos por lei. Em caso de dúvidas sobre seus direitos como consumidor, recomendamos consultar o PROCON de sua região ou um advogado especializado em Direito do Consumidor."
+    }
+  },
+  "usage": {
+    "title": "Política de Uso — Visant Labs Mockup Machine",
+    "lastUpdated": "Última atualização: {date}",
+    "overview": "Esta Política de Uso divulga a tecnologia de IA e os serviços usados pelo <strong>Mockup Machine</strong> para fornecer capacidades de geração de imagens. Ao usar nosso serviço, você reconhece que entende e concorda com estes detalhes técnicos.",
+    "sections": {
+      "aiTechnology": {
+        "title": "1. Divulgação de Tecnologia de IA",
+        "intro": "O Mockup Machine utiliza os modelos de IA Gemini do Google para geração de imagens. O serviço fornece dois níveis de qualidade distintos, cada um alimentado por diferentes modelos Google Gemini:",
+        "hd": {
+          "name": "Mockup Machine® HD",
+          "model": "Alimentado por Google Gemini 2.5 Flash",
+          "features": [
+            "Otimizado para geração rápida",
+            "1 crédito por imagem",
+            "Detecção automática de proporção",
+            "Saída de menor resolução adequada para a maioria dos casos de uso"
+          ]
+        },
+        "4k": {
+          "name": "Mockup Machine® 4K",
+          "model": "Alimentado por Google Gemini 3 Pro Preview",
+          "features": [
+            "Saída de alta resolução até 4K",
+            "3-10 créditos por imagem (varia conforme a resolução)",
+            "Controle manual de proporção",
+            "Qualidade e detalhe avançados de imagem",
+            "Suporte para múltiplas imagens de referência"
+          ]
+        }
+      },
+      "serviceProvider": {
+        "title": "2. Provedor de Serviços",
+        "intro": "As capacidades de geração de imagens com IA são fornecidas através de:",
+        "items": [
+          "Google Cloud AI / Google AI — Provedor de modelos de IA Gemini",
+          "Acesso à API do Google Gemini 2.5 Flash para geração HD",
+          "Acesso à API do Google Gemini 3 Pro Preview para geração 4K",
+          "Todas as solicitações de geração de imagens são processadas pelos servidores do Google"
+        ],
+        "note": "O Mockup Machine atua como um serviço intermediário que se conecta com os modelos de IA do Google para fornecer capacidades de geração de imagens. Seu uso do Mockup Machine também está sujeito aos Termos de Serviço e Política de Privacidade do Google para seus serviços de IA."
+      },
+      "capabilities": {
+        "title": "3. Capacidades e Limitações do Modelo",
+        "resolution": {
+          "title": "3.1 Resolução e Qualidade",
+          "items": [
+            "Mockup Machine® HD: Resolução fixa otimizada para velocidade e eficiência",
+            "Mockup Machine® 4K: Opções de resolução configuráveis (1K, 2K, 4K)",
+            "Resoluções mais altas consomem mais créditos e podem levar mais tempo para gerar",
+            "A qualidade real da saída depende dos parâmetros de entrada e das capacidades do modelo"
+          ]
+        },
+        "processingTimes": {
+          "title": "3.2 Tempos de Processamento",
+          "items": [
+            "A geração HD normalmente é concluída em segundos",
+            "A geração 4K pode levar significativamente mais tempo, especialmente em resoluções mais altas",
+            "Os tempos de processamento dependem da disponibilidade e carga da API do Google",
+            "Sem tempos de resposta garantidos — a disponibilidade do serviço está sujeita ao status da API de terceiros"
+          ]
+        },
+        "features": {
+          "title": "3.3 Diferenças de Recursos",
+          "items": [
+            "O modelo HD suporta proporção automática com base na imagem de entrada",
+            "O modelo 4K suporta seleção manual de proporção e múltiplas imagens de referência",
+            "Ambos os modelos suportam as mesmas opções de personalização de prompt",
+            "Recursos avançados podem estar disponíveis apenas no modelo 4K"
+          ]
+        }
+      },
+      "dataUsage": {
+        "title": "4. Uso de Dados e Privacidade",
+        "intro": "Quando você gera imagens usando o Mockup Machine:",
+        "items": [
+          "Suas imagens enviadas e prompts são enviados para a API Gemini do Google para processamento",
+          "Os dados da imagem são transmitidos com segurança para a infraestrutura do Google Cloud",
+          "O Google pode usar esses dados de acordo com sua Política de Privacidade e Termos de Serviço",
+          "As imagens geradas são retornadas ao Mockup Machine e armazenadas de acordo com nossa Política de Privacidade",
+          "Não controlamos como o Google usa ou armazena dados enviados através de sua API"
+        ],
+        "note": "Para detalhes sobre o tratamento de dados, revise nossa Política de Privacidade e a Política de Privacidade dos Serviços de IA do Google."
+      },
+      "rateLimits": {
+        "title": "5. Limites de Taxa e Cotas",
+        "intro": "A geração de imagens está sujeita a limites de taxa impostos por:",
+        "items": [
+          "Limites de taxa do Mockup Machine: Com base no seu nível de assinatura e saldo de créditos",
+          "Limites de taxa da API do Google: Impostos pelo Google Cloud no uso da API",
+          "Exceder os limites de taxa pode resultar em indisponibilidade temporária do serviço",
+          "Os limites de taxa podem variar com base na carga atual da API e nas políticas do Google",
+          "Reservamo-nos o direito de implementar limitação de taxa adicional para garantir acesso justo"
+        ]
+      },
+      "technicalSpecs": {
+        "title": "6. Especificações Técnicas",
+        "creditCosts": {
+          "title": "6.1 Custos de Crédito",
+          "items": [
+            "Mockup Machine® HD: 1 crédito por imagem",
+            "Mockup Machine® 4K: 3-7 créditos por imagem (varia conforme a resolução selecionada)",
+            "Os custos de crédito são definidos pelo Mockup Machine e podem mudar com aviso",
+            "Os créditos são consumidos após a geração bem-sucedida, não na solicitação"
+          ]
+        },
+        "inputRequirements": {
+          "title": "6.2 Requisitos de Entrada",
+          "items": [
+            "Formatos de imagem suportados: PNG, JPG, WEBP",
+            "Tamanho máximo de arquivo: 10MB por imagem",
+            "Limitações de comprimento de prompt podem se aplicar",
+            "O modelo 4K suporta até 3 imagens de referência simultaneamente"
+          ]
+        },
+        "outputFormats": {
+          "title": "6.3 Formatos de Saída",
+          "items": [
+            "As imagens geradas são fornecidas em formato PNG",
+            "A resolução de saída varia conforme o modelo e configurações selecionados",
+            "As dimensões reais podem variar ligeiramente das proporções solicitadas"
+          ]
+        }
+      },
+      "userResponsibilities": {
+        "title": "7. Responsabilidades do Usuário",
+        "intro": "Ao usar os recursos com IA do Mockup Machine, você concorda em:",
+        "items": [
+          "Usar conteúdo gerado em conformidade com leis e regulamentos aplicáveis",
+          "Respeitar os direitos de propriedade intelectual de outros",
+          "Não usar o serviço para gerar conteúdo prejudicial, ilegal ou inadequado",
+          "Entender que o conteúdo gerado por IA pode conter erros ou resultados inesperados",
+          "Revisar imagens geradas antes de usá-las em projetos comerciais",
+          "Cumprir a Política de Uso Aceitável do Google para seus serviços de IA"
+        ]
+      },
+      "serviceAvailability": {
+        "title": "8. Disponibilidade do Serviço",
+        "intro": "A disponibilidade do Mockup Machine depende de:",
+        "items": [
+          "Disponibilidade e status operacional da API do Google Cloud",
+          "Conectividade de rede entre nossos servidores e a infraestrutura do Google",
+          "Limites de taxa e cotas da API do Google",
+          "Status de nossa própria infraestrutura"
+        ],
+        "note": "Não podemos garantir serviço ininterrupto, pois depende parcialmente da infraestrutura de terceiros. Interrupções de serviço, manutenção ou alterações na API pelo Google podem afetar temporariamente a disponibilidade. Faremos esforços razoáveis para comunicar quaisquer problemas conhecidos."
+      },
+      "modelChanges": {
+        "title": "9. Alterações e Atualizações do Modelo",
+        "intro": "O Google pode atualizar, modificar ou descontinuar seus modelos Gemini a qualquer momento. O Mockup Machine reserva o direito de:",
+        "items": [
+          "Atualizar quais modelos do Google são usados para cada nível",
+          "Migrar para versões mais recentes do modelo conforme ficam disponíveis",
+          "Ajustar preços e custos de crédito se os preços do Google mudarem",
+          "Modificar recursos ou capacidades com base em atualizações do modelo",
+          "Fornecer aviso razoável de alterações significativas quando possível"
+        ]
+      },
+      "contentPolicies": {
+        "title": "10. Políticas de Conteúdo",
+        "intro": "Tanto o Mockup Machine quanto o Google têm políticas de conteúdo que restringem:",
+        "items": [
+          "Geração de conteúdo ilegal",
+          "Geração de conteúdo prejudicial ou abusivo",
+          "Geração de conteúdo que viole direitos de propriedade intelectual",
+          "Tentativas de contornar filtros de segurança ou políticas de conteúdo"
+        ],
+        "note": "Solicitações que violem essas políticas serão rejeitadas. Violações repetidas podem resultar em suspensão ou encerramento da conta."
+      },
+      "disclaimers": {
+        "title": "11. Isenções",
+        "intro": "Por favor, entenda que:",
+        "items": [
+          "O conteúdo gerado por IA pode conter erros, imprecisões ou resultados inesperados",
+          "Não garantimos que as imagens geradas atenderão aos seus requisitos específicos",
+          "As capacidades e limitações do modelo são determinadas pelo Google, não pelo Mockup Machine",
+          "A qualidade e disponibilidade do serviço dependem da infraestrutura de terceiros",
+          "O Google pode modificar, descontinuar ou alterar seus modelos sem aviso"
+        ]
+      },
+      "contact": {
+        "title": "12. Contato",
+        "company": "Visant Labs ®",
+        "support": "Para perguntas sobre esta Política de Uso ou detalhes técnicos: contato@visant.co"
+      },
+      "agreement": "Ao usar o Mockup Machine, você reconhece que leu e entende esta Política de Uso, incluindo a divulgação de que o serviço usa modelos de IA Google Gemini para geração de imagens."
+    }
+  },
+  "transactions": {
+    "title": "Transações",
+    "subtitle": "Histórico de créditos e assinaturas",
+    "empty": "Nenhuma transação encontrada ainda.",
+    "loadError": "Falha ao carregar transações",
+    "credits": "{count} créditos",
+    "type": {
+      "purchase": "Compra de créditos",
+      "subscription": "Assinatura"
+    },
+    "status": {
+      "completed": "Concluída",
+      "pending": "Pendente",
+      "failed": "Falhou",
+      "paid": "Paga",
+      "requires_payment_method": "Requer método de pagamento",
+      "canceled": "Cancelada",
+      "past_due": "Em atraso",
+      "unpaid": "Não paga"
+    }
+  },
+  "support": {
+    "button": "SAC",
+    "title": "Suporte / Reportar Bug",
+    "contactType": "Tipo de contato",
+    "customerService": "Atendimento ao Cliente",
+    "reportBug": "Reportar Bug",
+    "name": "Nome",
+    "email": "Email",
+    "subject": "Assunto",
+    "message": "Mensagem",
+    "send": "Enviar",
+    "sending": "Enviando...",
+    "success": "Mensagem enviada com sucesso!",
+    "error": "Erro ao enviar mensagem",
+    "optional": "Opcional",
+    "namePlaceholder": "Seu nome",
+    "emailPlaceholder": "seu@email.com",
+    "subjectPlaceholder": "Breve descrição",
+    "messagePlaceholder": "Descreva sua dúvida ou problema...",
+    "subjectRequired": "Assunto é obrigatório",
+    "messageRequired": "Mensagem é obrigatória",
+    "invalidEmail": "Formato de email inválido",
+    "notProvided": "Não informado"
+  },
+  "budget": {
+    "title": "Budget Machine",
+    "selectTemplate": "Selecionar Template",
+    "clientName": "Nome do Cliente",
+    "projectName": "Nome do Projeto",
+    "projectDescription": "Descrição do Projeto",
+    "startDate": "Data de Início",
+    "endDate": "Data de Término",
+    "deliverables": "Entregáveis",
+    "deliverableName": "Nome do Entregável",
+    "deliverableDescription": "Descrição",
+    "quantity": "Quantidade",
+    "unitValue": "Valor por Unidade",
+    "addDeliverable": "Adicionar Entregável",
+    "removeDeliverable": "Remover",
+    "total": "Total",
+    "subtotal": "Subtotal",
+    "observations": "Observações",
+    "links": "Links Úteis e Contato",
+    "website": "Site",
+    "instagram": "Instagram",
+    "whatsapp": "WhatsApp",
+    "faq": "Dúvidas Frequentes",
+    "question": "Pergunta",
+    "answer": "Resposta",
+    "addFAQ": "Adicionar FAQ",
+    "removeFAQ": "Remover",
+    "brandCustomization": "Customização da Marca",
+    "brandName": "Nome da Marca",
+    "brandLogo": "Logotipo",
+    "brandColors": "Cores da Marca",
+    "brandBackgroundColor": "Cor de Fundo",
+    "brandAccentColor": "Cor de Destaque",
+    "addColor": "Adicionar Cor",
+    "uploadLogo": "Enviar Logo",
+    "uploadingLogo": "Enviando logo...",
+    "logoUploaded": "Logo enviado com sucesso",
+    "logoUploadError": "Erro ao enviar logo",
+    "preview": "Visualização",
+    "save": "Salvar Orçamento",
+    "saving": "Salvando...",
+    "generatePDF": "Gerar PDF",
+    "share": "Compartilhar",
+    "copyLink": "Copiar Link",
+    "linkCopied": "Link copiado para a área de transferência!",
+    "downloadPDF": "Baixar PDF",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "duplicate": "Duplicar",
+    "createNew": "Criar Novo Orçamento",
+    "myBudgets": {
+      "seoTitle": "Meus Orçamentos",
+      "seoDescription": "Gerencie seus orçamentos profissionais."
+    },
+    "noBudgets": "Nenhum orçamento ainda",
+    "emptyTitle": "NENHUM ORÇAMENTO AINDA",
+    "emptyDescription": "Crie seu primeiro orçamento para vê-lo aqui.",
+    "createFirst": "Criar Seu Primeiro Orçamento",
+    "view": "Visualizar",
+    "confirmDelete": "Tem certeza que deseja excluir este orçamento? Esta ação não pode ser desfeita.",
+    "confirmDeleteTitle": "Excluir Orçamento",
+    "deleted": "Orçamento excluído com sucesso",
+    "saved": "Orçamento salvo com sucesso",
+    "defaultTemplates": "Templates Padrão",
+    "myPdfTemplates": "Meus Templates PDF",
+    "noPresets": "Nenhum template PDF salvo ainda",
+    "presetDeleted": "Template excluído com sucesso",
+    "presetLoaded": "Template carregado com sucesso",
+    "confirmDeletePreset": "Tem certeza que deseja excluir este template? Esta ação não pode ser desfeita.",
+    "confirmDeletePresetTitle": "Excluir Template",
+    "errors": {
+      "failedToLoad": "Falha ao carregar orçamentos",
+      "failedToSave": "Falha ao salvar orçamento",
+      "failedToDelete": "Falha ao excluir orçamento",
+      "failedToShare": "Falha ao gerar link de compartilhamento",
+      "invalidDates": "Data de término deve ser posterior à data de início",
+      "requiredFields": "Por favor, preencha todos os campos obrigatórios",
+      "failedToLoadPresets": "Falha ao carregar templates",
+      "failedToDeletePreset": "Falha ao excluir template",
+      "failedToLoadPreset": "Falha ao carregar template",
+      "failedToLoadShared": "Falha ao carregar orçamento compartilhado",
+      "failedToLoadBudget": "Falha ao carregar orçamento",
+      "failedToGeneratePDF": "Falha ao gerar PDF",
+      "failedToCopyLink": "Falha ao copiar link"
+    },
+    "shared": {
+      "title": "Orçamento Compartilhado",
+      "budgetNotFound": "Orçamento Não Encontrado",
+      "budgetNotFoundDescription": "O orçamento que você está procurando não existe.",
+      "generatingPDF": "Gerando PDF...",
+      "pdfGeneratedSuccess": "PDF gerado com sucesso!",
+      "linkCopied": "Link copiado para a área de transferência!",
+      "templateNotSupported": "Template não suportado para visualização compartilhada",
+      "seoTitle": "Orçamento: {name}",
+      "seoDescription": "Orçamento compartilhado da Visant Labs®",
+      "seoTitleDefault": "Orçamento Compartilhado"
+    },
+    "timeline": "Timeline do Projeto",
+    "addMilestone": "Adicionar Milestone",
+    "day": "Dia",
+    "milestoneTitle": "Título",
+    "milestoneDescription": "Descrição",
+    "removeMilestone": "Remover milestone",
+    "noMilestones": "Nenhum milestone adicionado ainda",
+    "paymentInfo": "Informações de Pagamento",
+    "totalHours": "Total de Horas",
+    "hourlyRate": "Valor por Hora (R$)",
+    "pixKey": "Chave PIX",
+    "cashDiscountPercent": "Desconto à Vista (%)",
+    "paymentMethods": "Métodos de Pagamento",
+    "addPaymentMethod": "Adicionar Método",
+    "noPaymentMethods": "Nenhum método de pagamento adicionado",
+    "methodType": "Tipo",
+    "methodLabel": "Label",
+    "methodDescription": "Descrição",
+    "installments": "Parcelas",
+    "removePaymentMethod": "Remover método",
+    "signatures": "Assinaturas",
+    "addSignature": "Adicionar Assinatura",
+    "signatureName": "Nome",
+    "signatureRole": "Cargo",
+    "removeSignature": "Remover assinatura",
+    "noSignatures": "Nenhuma assinatura adicionada ainda",
+    "giftOptions": "Opções de Brinde",
+    "addGiftOption": "Adicionar Brinde",
+    "giftTitle": "Título",
+    "giftDescription": "Descrição",
+    "giftImageUrl": "URL da Imagem (opcional)",
+    "removeGiftOption": "Remover brinde",
+    "noGiftOptions": "Nenhuma opção de brinde adicionada ainda",
+    "projectDetailSections": "Seções de Descrição do Projeto",
+    "addSection": "Adicionar Seção",
+    "sectionTitle": "Título da Seção",
+    "paragraphs": "Parágrafos",
+    "addParagraph": "Parágrafo",
+    "removeSection": "Remover seção",
+    "noSections": "Nenhuma seção adicionada ainda",
+    "infoBoxes": "Caixas de Informação",
+    "addInfoBox": "Adicionar Caixa",
+    "infoBoxTitle": "Título",
+    "infoBoxContent": "Conteúdo",
+    "removeInfoBox": "Remover caixa",
+    "noInfoBoxes": "Nenhuma caixa de informação adicionada ainda",
+    "year": "Ano do Orçamento",
+    "finalCTAText": "Texto Final (CTA)",
+    "placeholders": {
+      "milestoneTitle": "Título do milestone",
+      "milestoneDescription": "Descrição do milestone",
+      "signatureName": "Nome do signatário",
+      "signatureRole": "Cargo/Função",
+      "giftTitle": "Título do brinde",
+      "giftDescription": "Descrição do brinde",
+      "giftImageUrl": "https://...",
+      "sectionTitle": "Título",
+      "paragraph": "Parágrafo...",
+      "infoBoxTitle": "Título da caixa",
+      "infoBoxContent": "Conteúdo da caixa...",
+      "finalCTAText": "VAMOS CONSTRUIR ALGO GRANDE JUNTOS?",
+      "clientName": "Digite o nome do cliente",
+      "projectName": "Digite o nome do projeto",
+      "projectDescription": "Descreva o projeto...",
+      "deliverableName": "Ex: Design de Website",
+      "deliverableDescription": "Descrição breve...",
+      "observations": "Observações adicionais...",
+      "website": "https://exemplo.com",
+      "instagram": "@usuario",
+      "whatsapp": "+55123456789",
+      "question": "Digite a pergunta...",
+      "answer": "Digite a resposta...",
+      "brandName": "Nome da Sua Marca",
+      "color": "#000000",
+      "brandBackgroundColor": "#000000",
+      "brandAccentColor": "brand-cyan"
+    }
+  },
+  "pix": {
+    "title": "PIX",
+    "credits": "créditos",
+    "creating": "Criando pagamento PIX...",
+    "code": "Código PIX",
+    "copy": "Copiar código",
+    "expiresIn": "Expira em",
+    "paid": "✓ Pagamento confirmado!",
+    "waiting": "Aguardando pagamento...",
+    "expired": "Pagamento expirado",
+    "instructions": "Como pagar:",
+    "step1": "Abra o app do seu banco",
+    "step2": "Escaneie o QR Code ou copie o código PIX",
+    "step3": "Confirme o pagamento no app",
+    "step4": "Aguarde a confirmação automática",
+    "openCheckout": "Abrir checkout do Stripe",
+    "payWithPix": "Pagar com PIX",
+    "taxId": "CPF ou CNPJ *",
+    "taxIdRequired": "Necessário para processar o pagamento PIX",
+    "continue": "Continuar",
+    "invalidTaxId": "CPF deve ter 11 dígitos ou CNPJ deve ter 14 dígitos",
+    "paymentError": "Não foi possível criar o pagamento PIX. Por favor, tente novamente mais tarde ou use outro método de pagamento.",
+    "generatingQrCode": "Gerando QR Code...",
+    "openPaymentLink": "Abrir link de pagamento",
+    "showQrCode": "Mostrar QR Code",
+    "qrCode": "QR Code PIX",
+    "checking": "Verificando dados...",
+    "copied": "Copiado!",
+    "taxIdPlaceholder": "Digite seu CPF ou CNPJ"
+  },
+  "canvasNodes": {
+    "promptNode": {
+      "title": "Prompt Node",
+      "presets": "Presets",
+      "loadPreset": "Carregar Preset",
+      "save": "Salvar",
+      "savePrompt": "Salvar Prompt",
+      "presetModal": {
+        "title": "Selecionar Preset de Mockup",
+        "titleMulti": "Selecionar Presets ({selected}/{max})",
+        "tabs": {
+          "official": "Oficiais ({count})",
+          "community": "Comunidade ({count})",
+          "custom": "Personalizados ({count})"
+        },
+        "loading": "Carregando presets...",
+        "loadingCommunity": "Carregando presets da comunidade...",
+        "noOfficial": "Nenhum preset oficial encontrado",
+        "noCommunity": "Nenhum preset da comunidade encontrado",
+        "noCustom": "Nenhum mockup personalizado encontrado",
+        "createNew": "Criar Novo",
+        "multiSelectMessage": "{selected} de {max} presets selecionados",
+        "multiSelectMessageEmpty": "Selecione até {max} presets",
+        "confirmSelection": "Confirmar Seleção",
+        "official": "Oficial"
+      },
+      "presetCard": {
+        "copied": "Prompt copiado para a área de transferência",
+        "copyFailed": "Falha ao copiar prompt",
+        "viewMore": "Ver mais",
+        "promptLabel": "Prompt:"
+      },
+      "referenceImages": "Imagens de Referência",
+      "logoFromBrandCore": "Logo da Marca",
+      "identityFromBrandCore": "Identidade da Marca",
+      "textDirectionFromBrandCore": "Direção de Texto",
+      "pdfReference": "Referência PDF",
+      "pdfReferencePlaceholder": "ex.: Página 3, Seção de cores, Diretrizes de tipografia",
+      "promptPlaceholder": "Descreva a imagem que você quer gerar...",
+      "model": "Modelo",
+      "modelHD": "HD",
+      "model4K": "4K",
+      "aspectRatio": "Proporção",
+      "resolution": "Resolução",
+      "textInput": "Texto",
+      "imageInput": "Imagem",
+      "output": "Saída",
+      "connectedToTextNode": "Conectado ao Text Node (sincronização em tempo real)",
+      "generating": "Gerando...",
+      "generateImage": "Gerar Imagem",
+      "credits": "créditos",
+      "suggestions": "Sugestões",
+      "aiSuggestions": "Sugestões de IA",
+      "suggestPrompts": "Obter sugestões de prompt",
+      "savedPromptName": "Prompt Salvo"
+    },
+    "videoNode": {
+      "title": "Gerador de Vídeo",
+      "referenceImage": "Imagem de Referência",
+      "promptPlaceholder": "Descreva o vídeo que você quer gerar...",
+      "model": "Modelo",
+      "generating": "Gerando...",
+      "generate": "Gerar Vídeo",
+      "result": "Vídeo Gerado",
+      "enterPrompt": "Digite um prompt para gerar vídeo",
+      "generateVideo": "Gerar vídeo"
+    },
+    "videoInputNode": {
+      "title": "Entrada de Vídeo",
+      "uploadVideo": "Enviar Vídeo",
+      "uploadedVideo": "Vídeo Enviado"
+    },
+    "strategyNode": {
+      "title": "Strategy Node",
+      "chooseOption": "Escolha uma opção",
+      "brandDescription": "Descrição da Marca",
+      "brandDescriptionPlaceholder": "Digite a descrição da marca...",
+      "generateSections": "Gerar Seções",
+      "generateAllSections": "Gerar todas as seções",
+      "sectionDeleted": "{section} excluída",
+      "generatingSection": "Gerando {section}...",
+      "cancelGeneration": "Cancelar geração",
+      "deleteSection": "Excluir {section}",
+      "openInNewTab": "Abrir em nova aba",
+      "downloadPDF": "Baixar PDF",
+      "save": "Salvar",
+      "sections": {
+        "marketResearch": "Pesquisa de Mercado",
+        "persona": "Persona",
+        "archetypes": "Arquétipos",
+        "competitors": "Concorrentes",
+        "references": "Referências",
+        "swot": "SWOT",
+        "colorPalettes": "Paletas de Cores",
+        "visualElements": "Elementos Visuais",
+        "mockupIdeas": "Ideias de Mockup"
+      },
+      "pleaseEnterBrandDescription": "Por favor, digite uma descrição da marca",
+      "strategySavedSuccessfully": "Estratégia salva com sucesso",
+      "pleaseSaveProjectFirst": "Por favor, salve o projeto primeiro",
+      "cancel": "Cancelar",
+      "analyzing": "Analisando...",
+      "pleaseWaitForSection": "Por favor, aguarde a seção atual terminar de gerar",
+      "failedToGenerateSection": "Falha ao gerar {section}",
+      "failedToGenerateAllSections": "Falha ao gerar todas as seções",
+      "section": "Seção",
+      "generating": "Gerando...",
+      "generateAll": "Gerar Todas",
+      "generatedSections": "Seções Geradas",
+      "collapseAll": "Recolher Todas",
+      "expandAll": "Expandir Todas",
+      "selectExistingProject": "Selecionar Projeto Existente",
+      "createNewProject": "Criar Novo Projeto",
+      "projectName": "Nome do Projeto",
+      "projectNamePlaceholder": "Digite o nome do projeto...",
+      "analyze": "Analisar",
+      "reAnalyze": "Re-analisar"
+    },
+    "brandCore": {
+      "title": "Núcleo da Marca",
+      "promptCopied": "Prompt copiado para a área de transferência!",
+      "uploadHandlerNotReady": "Handler de upload não está pronto. Por favor, tente novamente.",
+      "pleaseSelectImageFile": "Por favor, selecione um arquivo de imagem",
+      "fileSizeExceedsLimit": "Tamanho do arquivo excede o limite de 10MB",
+      "logoUploadedSuccessfully": "Logo enviado com sucesso!",
+      "pdfUploadedSuccessfully": "PDF enviado com sucesso!",
+      "pleaseUploadLogoFirst": "Por favor, envie um logo primeiro",
+      "pleaseUploadPdfOrPngFirst": "Por favor, envie um PDF ou PNG de guia de identidade primeiro",
+      "invalidIdentityType": "Tipo de identidade inválido",
+      "failedToLoadLogoImage": "Falha ao carregar imagem do logo",
+      "failedToLoadIdentityFile": "Falha ao carregar arquivo de identidade",
+      "removeLogo": "Remover logo",
+      "removeIdentityGuide": "Remover guia de identidade",
+      "cancelAnalysis": "Cancelar análise",
+      "logo": "Logo",
+      "identityGuide": "Guia de Identidade",
+      "uploadLogo": "Enviar Logo",
+      "orConnectLogoOrImageNode": "Ou conecte um Logo Node ou Image Node",
+      "pdfConnected": "PDF Conectado",
+      "pdfUploadedR2": "PDF enviado (R2)",
+      "uploaded": "enviado"
+    },
+    "imageNode": {
+      "noImage": "Sem imagem",
+      "collapse": "Recolher",
+      "expand": "Expandir",
+      "uploadImage": "Enviar uma imagem",
+      "uploadImageTitle": "Enviar Imagem",
+      "copyDescription": "Copiar descrição",
+      "clearDescription": "Limpar descrição",
+      "imageDescriptionPlaceholder": "A descrição da imagem aparecerá aqui...",
+      "viewFullScreen": "Ver em Tela Cheia",
+      "downloadImage": "Baixar Imagem",
+      "edit": "Editar",
+      "delete": "Excluir",
+      "brandKit": "Kit de Marca",
+      "deleteMockup": "Excluir Mockup",
+      "deleteMockupMessage": "Tem certeza que deseja excluir este mockup? Esta ação não pode ser desfeita.",
+      "deleteButton": "Excluir",
+      "cancelButton": "Cancelar",
+      "fileSizeExceedsLimitMessage": "Tamanho do arquivo excede o limite de 10MB. Por favor, escolha uma imagem menor.",
+      "pleaseUseImageFromR2": "Por favor, use uma imagem do armazenamento R2",
+      "imageSavedSuccessfully": "Imagem salva com sucesso!",
+      "failedToUpdateLikeStatus": "Falha ao atualizar status de favorito. Por favor, tente novamente.",
+      "descriptionCopied": "Descrição copiada para a área de transferência!",
+      "descriptionCleared": "Descrição limpa",
+      "analyzingImage": "Analisando imagem...",
+      "describeImageWithAI": "Descrever imagem com IA",
+      "addToFavorites": "Adicionar aos favoritos",
+      "removeFromFavorites": "Remover dos favoritos",
+      "description": "Descrição"
+    },
+    "outputNode": {
+      "noOutput": "Sem resultado",
+      "connectNodeToSeeResult": "Conecte um Node para ver o resultado",
+      "viewFullScreen": "Ver em Tela Cheia",
+      "downloadImage": "Baixar Imagem",
+      "pleaseUseImageFromR2": "Por favor, use uma imagem do armazenamento R2",
+      "failedToUpdateLikeStatus": "Falha ao atualizar status de favorito",
+      "imageSavedToFavorites": "Imagem salva nos favoritos!",
+      "imageDescriptionGenerated": "Descrição da imagem gerada!",
+      "analyzingImage": "Analisando imagem...",
+      "describeImageWithAI": "Descrever imagem com IA",
+      "removeFromFavorites": "Remover dos favoritos",
+      "saveToCollection": "Salvar na coleção"
+    },
+    "mockupNode": {
+      "title": "Preset de Mockup",
+      "logoRequired": "Logo é obrigatório. Conecte o Logo do Brand Core ou um Image Node.",
+      "logoFromBrandCore": "Logo (do Núcleo da Marca) - Foco Principal",
+      "inputImage": "Imagem de Entrada",
+      "colorPlaceholder": "brand-cyan",
+      "addAnotherMockupNode": "Adicionar outro Mockup Node",
+      "missingInput": "Entrada Ausente",
+      "missingInputConnectLogo": "• Conecte Logo do BrandCore (obrigatório, foco principal)",
+      "missingInputIdentityOptional": "• Identidade é opcional (contexto/cores/vibe)",
+      "missingInputOrImage": "• Ou conecte um nó de Imagem",
+      "selectPreset": "Selecionar preset",
+      "editPrompt": "Editar Prompt",
+      "advancedControls": "Controles Avançados",
+      "generateMockup": "Gerar Mockup",
+      "generating": "Gerando...",
+      "requires": "Requer: Logo do BrandCore (Identidade opcional para contexto)",
+      "colorPalette": "Paleta de Cores",
+      "add": "Adicionar",
+      "includeHumanInteraction": "Incluir Interação Humana",
+      "customPromptOverride": "Prompt personalizado substituirá o preset base. Cores e configurações de humano serão adicionadas se não estiverem presentes.",
+      "editPromptHint": "Edite o prompt acima. Cores e interação humana serão adicionadas automaticamente se habilitadas.",
+      "textDirectionFromBrandCore": "Direção de Texto (do BrandCore)",
+      "strategyDataFromBrandCore": "Dados de Estratégia (do BrandCore)",
+      "available": "Disponível",
+      "identityFromBrandCore": "Identidade (do BrandCore) - Contexto/Cores/Vibe",
+      "mockupAltText": "Mockup",
+      "enterCustomPrompt": "Digite um prompt personalizado...",
+      "colorSingular": "cor",
+      "colorsPlural": "cores",
+      "humanText": "humano",
+      "connectBrandCoreHint": "Conecte um Logo do BrandCore (obrigatório) ou um Image node para habilitar a geração. A Identidade é opcional para contexto de cor/vibe.",
+      "pdfLabel": "(PDF)",
+      "imageLabel": "(Imagem)",
+      "mockupResult": "Resultado do mockup"
+    },
+    "mergeNode": {
+      "title": "Mesclar Imagens",
+      "inputImages": "Imagens de Entrada",
+      "promptPlaceholder": "Descreva como combinar as imagens..."
+    },
+    "upscaleNode": {
+      "title": "Ampliar",
+      "inputImage": "Imagem de Entrada",
+      "pleaseUseImageFromR2": "Por favor, use uma imagem do armazenamento R2",
+      "imageSavedSuccessfully": "Imagem salva com sucesso!"
+    },
+    "angleNode": {
+      "inputImage": "Imagem de Entrada"
+    },
+    "shaderNode": {
+      "inputImage": "Imagem de Entrada",
+      "connectImage": "Conecte uma imagem ou vídeo",
+      "uploadImageOrVideo": "Enviar Imagem ou Vídeo"
+    },
+    "textNode": {
+      "title": "Text Node",
+      "placeholder": "Digite o texto aqui...",
+      "copy": "Copiar texto",
+      "copied": "Texto copiado!",
+      "copyFailed": "Falha ao copiar texto",
+      "characters": "caracteres",
+      "aiHint": "Clique na varinha para melhorar com IA",
+      "improvePrompt": "Melhorar com IA",
+      "improvingPrompt": "Melhorando prompt...",
+      "promptImproved": "Prompt melhorado!",
+      "errorImprovingPrompt": "Falha ao melhorar prompt"
+    },
+    "drawingNode": {
+      "freehand": "Desenho Livre",
+      "text": "Texto",
+      "shape": "Forma",
+      "drawing": "Desenho",
+      "textPlaceholder": "Clique para editar texto..."
+    },
+    "brandNode": {
+      "title": "Brand Node",
+      "pleaseSelectImageFile": "Por favor, selecione um arquivo de imagem",
+      "fileSizeExceedsLimit": "Tamanho do arquivo excede o limite de 10MB",
+      "logoUploadedSuccessfully": "Logo enviado com sucesso!",
+      "pleaseUploadLogoFirst": "Por favor, envie um logo primeiro",
+      "pleaseUploadPdfOrPngFirst": "Por favor, envie um PDF ou PNG de guia de identidade primeiro",
+      "removeLogo": "Remover logo",
+      "removeIdentityGuide": "Remover guia de identidade"
+    },
+    "logoNode": {
+      "title": "Logo Node",
+      "pleaseSelectImageFile": "Por favor, selecione um arquivo de imagem",
+      "fileSizeExceedsLimit": "Tamanho do arquivo excede o limite de 10MB",
+      "logoUploadedSuccessfully": "Logo enviado com sucesso!",
+      "removeLogo": "Remover logo",
+      "failedToProcessLogo": "Falha ao processar imagem do logo",
+      "logoAltText": "Logo",
+      "uploadLogo": "Enviar Logo"
+    },
+    "pdfNode": {
+      "title": "PDF Node",
+      "pleaseSelectPdfFile": "Por favor, selecione um arquivo PDF",
+      "pdfUploadedSuccessfully": "PDF enviado com sucesso!"
+    },
+    "brandingProjectSelectModal": {
+      "failedToLoadProjects": "Falha ao carregar projetos",
+      "searchProjectsPlaceholder": "Buscar projetos..."
+    },
+    "editNode": {
+      "title": "Mockup Machine",
+      "defaultPrompt": "Aplique as alterações solicitadas nesta imagem mantendo sua composição geral e qualidade.",
+      "editedResult": "Resultado editado"
+    },
+    "editNodeControls": {
+      "editHandlerNotAvailable": "Handler de edição não disponível. Por favor, tente atualizar a página."
+    },
+    "nodeContextMenu": {
+      "title": "Ações do Node",
+      "duplicate": "Duplicar",
+      "delete": "Excluir",
+      "savePrompt": "Salvar Prompt"
+    },
+    "shared": {
+      "imageDownloaded": "Imagem baixada!"
+    },
+    "textureNode": {
+      "title": "Preset de Textura",
+      "selectTexture": "Selecionar textura",
+      "inputImage": "Imagem de Entrada",
+      "connectImageNode": "Conecte um nó de imagem",
+      "generateTexture": "Gerar Textura",
+      "generating": "Gerando...",
+      "result": "Resultado da textura"
+    },
+    "ambienceNode": {
+      "title": "Preset de Ambiente",
+      "selectAmbience": "Selecionar ambiente",
+      "inputImage": "Imagem de Entrada",
+      "connectImageNode": "Conecte um nó de imagem",
+      "generateAmbience": "Gerar Ambiente",
+      "generating": "Gerando...",
+      "result": "Resultado do ambiente"
+    },
+    "luminanceNode": {
+      "title": "Preset de Iluminação",
+      "selectLuminance": "Selecionar Iluminação",
+      "inputImage": "Imagem de Entrada",
+      "connectImageNode": "Conecte um nó de imagem",
+      "generateLuminance": "Gerar Iluminação",
+      "generating": "Gerando...",
+      "result": "Resultado da Iluminação"
+    },
+    "chatNode": {
+      "title": "Chat Node",
+      "clearHistory": "Limpar histórico",
+      "messages": "Mensagens",
+      "nextCreditIn": "Próximo crédito em",
+      "message": "mensagem",
+      "messagesPlural": "mensagens",
+      "connectedContext": "Contexto Conectado",
+      "images": "Imagens",
+      "textContext": "Contexto de Texto",
+      "strategyData": "Dados de Estratégia",
+      "section": "seção",
+      "sections": "seções",
+      "chars": "caracteres",
+      "startConversationWithContext": "Inicie uma conversa sobre o contexto conectado.",
+      "chatWillUseImagesAndTexts": "O chat usará imagens e textos como referência.",
+      "startConversationWithAI": "Inicie uma conversa com a IA.",
+      "connectImagesOrTexts": "Conecte imagens ou textos para adicionar contexto às conversas.",
+      "thinking": "Pensando...",
+      "askAboutContext": "Pergunte sobre o contexto...",
+      "typeYourMessage": "Digite sua mensagem...",
+      "chatWillUse": "O chat usará",
+      "image": "imagem",
+      "imagesPlural": "imagens",
+      "and": "e",
+      "connectedContextAsReference": "contexto conectado como referência",
+      "suggestMockups": "Sugerir Mockups",
+      "detectedMockups": "MOCKUPS DETECTADOS",
+      "detectedActions": "AÇÕES DETECTADAS",
+      "createNode": "Criar Node",
+      "quickActions": "Ações Rápidas",
+      "attachMedia": "Anexar Imagem",
+      "mediaAttached": "Image node criado!",
+      "context": "Contexto",
+      "copyMessage": "Copiar mensagem",
+      "messageCopied": "Mensagem copiada para a área de transferência",
+      "copyFailed": "Falha ao copiar mensagem",
+      "systemPromptSettings": "Configurações de System Prompt",
+      "systemPrompt": "System Prompt (Personalidade do Agente)",
+      "systemPromptPlaceholder": "Digite um system prompt personalizado para personalizar a personalidade do agente. Deixe vazio para usar o padrão.",
+      "systemPromptHint": "Este prompt define como o assistente de IA se comporta. Use-o para personalizar tom, estilo e expertise.",
+      "systemPromptSaved": "System prompt salvo",
+      "systemPromptReset": "System prompt resetado para o padrão",
+      "resetToDefault": "Resetar para Padrão",
+      "save": "Salvar"
+    },
+    "directorNode": {
+      "title": "Diretor",
+      "imageInput": "Imagem",
+      "noImage": "Nenhuma imagem conectada",
+      "connectImage": "Conecte uma imagem",
+      "readyToAnalyze": "Pronto para analisar",
+      "analyzing": "Analisando...",
+      "tagsSelected": "tags selecionadas",
+      "generatingPrompt": "Gerando...",
+      "promptReady": "Prompt Pronto",
+      "openDirector": "Abrir Diretor",
+      "generatedPrompt": "Prompt Gerado",
+      "connectImageFirst": "Conecte uma imagem ao nó Diretor para começar",
+      "analyzeImage": "Analisar Imagem",
+      "selectTags": "Selecione tags para seu prompt",
+      "generating": "Gerando...",
+      "generatePrompt": "Gerar Prompt",
+      "generateAndCreate": "Gerar Prompt & Criar Nó",
+      "selectAtLeastOneTag": "Selecione pelo menos uma tag para gerar"
+    }
+  },
+  "shaderControls": {
+    "title": "Controles de Shader",
+    "collapse": "Recolher controles de shader",
+    "expand": "Expandir controles de shader",
+    "shaderType": "Tipo de Shader",
+    "halftoneVariant": "Variante de Halftone",
+    "shaderTypes": {
+      "halftone": "Halftone",
+      "vhs": "VHS",
+      "ascii": "ASCII",
+      "matrixDither": "Matrix Dither",
+      "dither": "Dither",
+      "duotone": "Duotone"
+    },
+    "halftoneVariants": {
+      "ellipse": "Elipse",
+      "square": "Quadrado",
+      "lines": "Linhas"
+    },
+    "labels": {
+      "dotSize": "Tamanho do Ponto",
+      "angle": "Ângulo",
+      "contrast": "Contraste",
+      "spacing": "Espaçamento",
+      "animation": "Animação",
+      "tapeWave": "Onda de Fita",
+      "tapeCrease": "Vinco de Fita",
+      "switchingNoise": "Ruído de Troca",
+      "bloom": "Bloom",
+      "acBeat": "Batida AC",
+      "characterSet": "Conjunto de Caracteres",
+      "characterSize": "Tamanho do Caractere",
+      "brightness": "Brilho",
+      "colored": "Colorido",
+      "invert": "Inverter",
+      "matrixSize": "Tamanho da Matriz",
+      "bias": "Viés",
+      "ditherSize": "Tamanho do Dither",
+      "offset": "Offset",
+      "bitDepth": "Profundidade de Bits",
+      "palette": "Paleta",
+      "shadowColor": "Cor de Sombra",
+      "highlightColor": "Cor de Destaque",
+      "intensity": "Intensidade"
+    },
+    "characterSets": {
+      "blocks": "Blocos (█▓▒░)",
+      "dots": "Pontos (●◉○)",
+      "lines": "Linhas (║│┃)",
+      "classic": "Clássico (@#%*)",
+      "matrix": "Matrix (01)",
+      "braille": "Braille (⣿⣶⣤)"
+    },
+    "matrixSizes": {
+      "coarse": "2x2 (Grosso)",
+      "medium": "4x4 (Médio)",
+      "fine": "8x8 (Fino)"
+    },
+    "palettes": {
+      "monochrome": "Monocromático",
+      "gameboy": "Gameboy",
+      "crtAmber": "CRT Âmbar",
+      "crtGreen": "CRT Verde",
+      "sepia": "Sépia"
+    },
+    "buttons": {
+      "pause": "Pausar",
+      "play": "Reproduzir",
+      "on": "Ligado",
+      "off": "Desligado"
+    },
+    "tooltips": {
+      "stopAnimation": "Parar animação",
+      "startAnimation": "Iniciar animação sutil"
+    }
+  },
+  "canvasToolbar": {
+    "title": "Ferramentas",
+    "addPromptEditNode": "Adicionar Prompt Node",
+    "addMockupPresetNode": "Adicionar Mockup Preset Node",
+    "addCameraAngleNode": "Adicionar Camera Angle Node",
+    "addBrandKit": "Gerar Brand Kit",
+    "addNode": "Adicionar Node",
+    "addPromptNode": "Adicionar Prompt Node",
+    "addShaderNode": "Adicionar Shader Node",
+    "addLogoNode": "Adicionar Logo Node",
+    "addPdfNode": "Adicionar PDF Node",
+    "addStrategyNode": "Adicionar Strategy Node",
+    "addBrandCore": "Adicionar Brand Core",
+    "addChatNode": "Adicionar Chat Node",
+    "addColorExtractorNode": "Adicionar Color Extractor",
+    "addDirectorNode": "Adicionar Director Node",
+    "expandToolbar": "Expandir barra de ferramentas",
+    "collapseToolbar": "Recolher barra de ferramentas",
+    "labels": {
+      "prompt": "Prompt",
+      "mockup": "Mockup",
+      "shader": "Shader",
+      "edit": "Edit",
+      "angle": "Angle",
+      "brandKit": "Brand Kit",
+      "logo": "Logo",
+      "pdf": "PDF",
+      "strategy": "Strategy",
+      "brandCore": "Brand Core",
+      "chat": "Chat",
+      "colorExtractor": "Color Extractor",
+      "director": "Diretor",
+      "drawing": "Desenhar"
+    },
+    "toggleDrawingMode": "Alternar Modo de Desenho",
+    "categories": {
+      "core": "Core",
+      "composition": "Composition",
+      "branding": "Branding"
+    }
+  },
+  "canvasBottomToolbar": {
+    "hand": "Mão",
+    "handTooltip": "Ferramenta de pan (Espaço)",
+    "select": "Selecionar",
+    "selectTooltip": "Ferramenta de seleção",
+    "draw": "Desenhar",
+    "drawTooltip": "Ferramenta de desenho",
+    "color": "Cor",
+    "colorTooltip": "Seletor de cor",
+    "type": "Texto",
+    "typeTooltip": "Ferramenta de texto",
+    "shapes": "Formas",
+    "shapesTooltip": "Ferramenta de formas"
+  },
+  "shareModal": {
+    "userEmailPlaceholder": "E-mail do usuário",
+    "usersWhoCanEdit": "Usuários que podem Editar",
+    "usersWhoCanView": "Usuários que podem Visualizar",
+    "add": "Adicionar",
+    "generateShareLink": "Gerar Link de Compartilhamento",
+    "linkCopied": "Link copiado!",
+    "shareProject": "Compartilhar Projeto",
+    "copy": "Copiar",
+    "copied": "Copiado!",
+    "errorRemovingShare": "Erro ao remover compartilhamento",
+    "errorCopyingLink": "Erro ao copiar link",
+    "shareLink": "Link de Compartilhamento",
+    "permissionsUpdated": "Permissões atualizadas!",
+    "errorUpdatingPermissions": "Erro ao atualizar permissões",
+    "confirmRemoveShare": "Tem certeza que deseja remover o compartilhamento?",
+    "shareRemoved": "Compartilhamento removido!"
+  },
+  "about": {
+    "exploreApps": "EXPLORAR APPS",
+    "labsApps": "LABS APPS //",
+    "title": "VISANT",
+    "tagline": "Laboratório de experimentos",
+    "seo": {
+      "title": "Sobre a Visant Labs®",
+      "description": "Agência brasileira independente. Laboratório de experimentos criando soluções personalizadas para designers gráficos e empreendedores.",
+      "keywords": "visant labs, sobre, agência, design, Brasil, creative tools"
+    },
+    "headerImage": {
+      "url": "/og-image.png",
+      "alt": "Visant Labs"
+    },
+    "description": {
+      "title": "Sobre a Visant",
+      "text": "Agência brasileira independente. Laboratório de experimentos criando soluções personalizadas para designers gráficos e empreendedores."
+    },
+    "founders": {
+      "title": "Criado por",
+      "pedroJaques": "Pedro Jaques",
+      "pedroXavier": "Pedro Xavier"
+    },
+    "openSource": {
+      "title": "Open Source",
+      "description": "Este projeto é open source e está disponível no GitHub.",
+      "viewOnGitHub": "Ver no GitHub"
+    },
+    "links": {
+      "title": "Links",
+      "portfolio": "Portfólio da Agência",
+      "alphaTests": "Alpha Tests"
+    }
+  },
+  "notFound": {
+    "title": "Página não encontrada",
+    "description": "Ops! A página que você está procurando não existe ou foi movida.",
+    "goHome": "Ir para a página inicial",
+    "goBack": "Voltar",
+    "helpfulLinks": "Links úteis:",
+    "mockupMachine": "Mockup Machine",
+    "brandingMachine": "Branding Machine",
+    "pricing": "Preços"
+  },
+  "waitlist": {
+    "title": "Closed Alpha // VSN Labs®",
+    "seoTitle": "Lista de Espera",
+    "seoDescription": "Junte-se à lista de espera para ter acesso antecipado às ferramentas premium da Visant Labs®.",
+    "seoKeywords": "lista de espera, waitlist, acesso antecipado, premium access",
+    "subtitle": "Seja um dos primeiros a acessar nossas ferramentas premium. Seja notificado quando abrirmos o acesso.",
+    "emailLabel": "Endereço de Email",
+    "emailPlaceholder": "seu.email@exemplo.com",
+    "joinWaitlist": "Entrar na Lista de Espera",
+    "joining": "Entrando...",
+    "addedToWaitlist": "✓ Você foi adicionado à lista de espera!",
+    "addAnotherEmail": "Adicionar outro email",
+    "or": "ou",
+    "joinWhatsAppGroup": "Entrar no Grupo do WhatsApp",
+    "tryMockupMachineNow": "Experimente o Mockup Machine Agora",
+    "errors": {
+      "invalidEmail": "Por favor, insira um endereço de email válido",
+      "failedToJoin": "Falha ao entrar na lista de espera. Por favor, tente novamente."
+    },
+    "success": {
+      "addedToWaitlist": "Obrigado! Você foi adicionado à lista de espera."
+    }
+  },
+  "mockupsPage": {
+    "loadingMockups": "Carregando mockups...",
+    "retry": "Tentar novamente",
+    "cannotConnectServer": "Não foi possível conectar ao servidor. Por favor, verifique sua conexão e tente novamente.",
+    "noMockupsYet": "AINDA NÃO HÁ MOCKUPS",
+    "noMatchesFound": "NENHUM RESULTADO ENCONTRADO",
+    "generateBlankMockups": "Gere mockups vazios para vê-los aqui.",
+    "tryAdjustingSearch": "Tente ajustar sua busca ou filtro.",
+    "search": "Buscar",
+    "searchPlaceholder": "Buscar..."
+  },
+  "errorBoundary": {
+    "retrying": "Tentando carregar novamente...",
+    "chunkErrorTitle": "Erro ao Carregar Página",
+    "unexpectedErrorTitle": "Erro Inesperado",
+    "chunkErrorDescription": "Não foi possível carregar os arquivos necessários",
+    "unexpectedErrorDescription": "Algo deu errado",
+    "chunkErrorMessage": "Ocorreu um problema ao carregar os arquivos da página. Isso geralmente é causado por problemas de rede ou cache.",
+    "chunkErrorHint": "Tente recarregar a página ou limpar o cache do navegador.",
+    "stackTrace": "Stack Trace",
+    "layoutError": "Este erro sugere que um componente está tentando usar o contexto de layout fora do componente Layout. Por favor, recarregue a página ou entre em contato com o suporte se o problema persistir.",
+    "reloadPage": "Recarregar Página",
+    "goHome": "Ir para Início",
+    "tryAgain": "Tentar Novamente",
+    "unexpectedError": "Ocorreu um erro inesperado"
+  },
+  "confirmationModal": {
+    "defaultTitle": "Confirmar Ação",
+    "defaultConfirm": "Continuar",
+    "defaultCancel": "Cancelar"
+  },
+  "router": {
+    "routeError": "Erro de Rota",
+    "routeErrorDescription": "Ocorreu um erro ao carregar esta rota.",
+    "goHome": "Ir para Início"
+  },
+  "admin": {
+    "title": "Admin",
+    "presetsTitle": "Presets",
+    "presetsSubtitle": "Gerencie os presets de mockups.",
+    "description": "Painel administrativo",
+    "accessDenied": "Acesso negado. Você precisa ser um administrador.",
+    "accessDeniedFull": "Acesso negado. Você precisa ser um administrador para acessar esta página.",
+    "failedToLoadData": "Não foi possível carregar os dados.",
+    "authRequired": "Você precisa estar autenticado para acessar esta página.",
+    "loginRequired": "Você precisa estar logado para acessar esta página.",
+    "unexpectedError": "Erro inesperado.",
+    "doLogin": "Fazer Login",
+    "panelTitle": "Painel Administrativo",
+    "panelSubtitle": "Visualize usuários, assinaturas e créditos em tempo real",
+    "users": "Usuários",
+    "presets": "Presets",
+    "designSystem": "Design System",
+    "products": "Produtos",
+    "dashboard": "Dashboard",
+    "generations": "Gerações",
+    "refresh": "Atualizar",
+    "analysisCost": "Custo Análise",
+    "textProcessing": "Processamento de Texto",
+    "brandingSteps": "Passos Branding",
+    "inputTokens": "Tokens Entrada",
+    "outputTokens": "Tokens Saída",
+    "promptGenTotal": "Total Prompts",
+    "promptInput": "Input Prompts",
+    "estimated": "ESTIMADO",
+    "estimatedCost": "Custo Estimado",
+    "basedOnUsage": "Baseado no uso (Gemini)",
+    "totalUsers": "Total Usuários",
+    "registeredInSystem": "Cadastrados no sistema",
+    "activeSubscriptions": "Assinaturas Ativas",
+    "recurringPlans": "Planos recorrentes",
+    "usersWithActivePlan": "Usuários com plano ativo",
+    "storage": "Armazenamento",
+    "totalDiskUsage": "Uso total em disco",
+    "totalRevenue": "Receita Total",
+    "completedTransactions": "Transações completadas",
+    "brazilianReal": "Real Brasileiro",
+    "usDollar": "Dólar Americano",
+    "apiCost": "Custo de API",
+    "geminiApiUsage": "Uso da API Gemini",
+    "totalEstimatedCost": "Custo total estimado",
+    "userGrowth": "Crescimento de Usuários",
+    "newUsersLast30Days": "Novos usuários nos últimos 30 dias",
+    "referrals": "Indicações",
+    "totalInvitesSent": "Total de convites enviados",
+    "referredUsers": "Usuários Indicados",
+    "newAccountsViaInvite": "Novas contas via convite",
+    "activeLinks": "Links Ativos",
+    "referralCodesInUse": "Códigos de referência em uso",
+    "generationsByModel": "Gerações por Modelo (Imagem + Vídeo)",
+    "byFeature": "Por Feature",
+    "images": "Imagens",
+    "videos": "Vídeos",
+    "textSteps": "Passos Texto",
+    "promptsGenerated": "Prompts Gerados",
+    "imagesByModel": "Imagens por Modelo",
+    "videosByModel": "Vídeos por Modelo",
+    "totalVideos": "Total de Vídeos",
+    "byModel": "Por Modelo",
+    "creditsDistributed": "Créditos Distribuídos",
+    "totalCreditsAssigned": "Total de créditos atribuídos",
+    "mockupsCreated": "Mockups Criados",
+    "totalMockupsGenerated": "Total de mockups gerados",
+    "searchUsers": "Buscar Usuários",
+    "usersFound": "{found} de {total} usuários encontrados",
+    "usersRegistered": "{count} usuários cadastrados",
+    "searchPlaceholder": "Buscar por nome ou email...",
+    "userList": "Lista de Usuários",
+    "user": "Usuário",
+    "subscription": "Assinatura",
+    "credits": "Créditos",
+    "transactions": "Transações",
+    "spent": "Gastos",
+    "apiCostColumn": "Custo API",
+    "createdAt": "Criado em",
+    "noUserFound": "Nenhum usuário encontrado",
+    "noName": "Sem nome",
+    "monthly": "Mensais",
+    "used": "Usados",
+    "remaining": "Restantes",
+    "manual": "Avulsos",
+    "made": "Feitas",
+    "code": "Código",
+    "referredBy": "Indicado por",
+    "directOrigin": "Origem direta",
+    "unknown": "Desconhecido",
+    "revenueOverTime": "Receita ao Longo do Tempo",
+    "cumulativeRevenue": "Receita acumulada (BRL)",
+    "costOverTime": "Custo Estimado ao Longo do Tempo",
+    "cumulativeCost": "Custo API acumulado (USD)",
+    "dailyCost": "Custo por Dia",
+    "dailyCostChart": "Custo Diário (USD)",
+    "averageDailyCost": "Custo Médio Diário",
+    "maxDailyCost": "Maior Custo Diário",
+    "last7DaysCost": "Últimos 7 Dias",
+    "last30DaysCost": "Últimos 30 Dias",
+    "financial": "Financeiro",
+    "profit": "Lucro",
+    "totalProfit": "Lucro Total",
+    "revenueMinusCost": "Receita - Custo"
+  },
+  "storage": {
+    "title": "Armazenamento",
+    "used": "Usado",
+    "remaining": "Restante",
+    "of": "de",
+    "unavailable": "Informações de armazenamento não disponíveis"
+  },
+  "surpriseMeSettings": {
+    "title": "Configurações do Me Surpreenda",
+    "info": "Escolha quais tags você deseja incluir ao usar o Me Surpreenda. Tags não selecionadas serão excluídas das gerações aleatórias.",
+    "categories": "Categorias",
+    "categoriesDescription": "Categorias de mockup",
+    "locations": "Localizações",
+    "locationsDescription": "Ambientes e locais",
+    "angles": "Ângulos",
+    "anglesDescription": "Ângulos de câmera",
+    "lighting": "Iluminação",
+    "lightingDescription": "Tipos de iluminação",
+    "effects": "Efeitos",
+    "effectsDescription": "Efeitos visuais",
+    "materials": "Materiais",
+    "materialsDescription": "Materiais e texturas",
+    "saved": "Configurações salvas com sucesso",
+    "saveError": "Falha ao salvar configurações",
+    "loadError": "Falha ao carregar configurações"
+  },
+  "designSystem": {
+    "title": "Design System",
+    "description": "Documentação de tokens de design, componentes e padrões",
+    "navigation": {
+      "title": "Navegação",
+      "previous": "Anterior",
+      "next": "Próximo"
+    },
+    "seo": {
+      "title": "Design System - Visant Labs",
+      "description": "Documentação do design system da Visant Labs",
+      "keywords": "design system, componentes UI, cores, tipografia"
+    },
+    "tabs": {
+      "home": "Início",
+      "colors": "Cores",
+      "typography": "Tipografia",
+      "components": "Componentes",
+      "spacing": "Espaçamentos"
+    },
+    "home": {
+      "welcome": "Bem-vindo ao Design System",
+      "description": "Um guia abrangente sobre nossos tokens de design, componentes e padrões",
+      "colorsDescription": "Paleta de cores e tokens",
+      "typographyDescription": "Fontes e estilos de texto",
+      "componentsDescription": "Componentes UI reutilizáveis",
+      "spacingDescription": "Escala e sistema de espaçamento",
+      "quickStart": "Início Rápido",
+      "quickStartDescription": "Comece com nosso design system explorando a paleta de cores, tipografia e componentes.",
+      "quickStart1": "Navegue pelos componentes e suas variantes",
+      "quickStart2": "Copie variáveis CSS e nomes de classes",
+      "quickStart3": "Entenda os padrões de espaçamento e layout",
+      "usage": "Uso",
+      "usageDescription": "Todos os componentes seguem padrões consistentes e podem ser personalizados usando variáveis CSS.",
+      "usageExample": "<Button variant=\"default\">Clique em mim</Button>"
+    },
+    "colors": {
+      "primary": {
+        "title": "Cores Principais",
+        "description": "Paleta de cores principal usada em toda a aplicação"
+      },
+      "chart": {
+        "title": "Cores de Gráficos",
+        "description": "Cores usadas para visualização de dados"
+      }
+    },
+    "typography": {
+      "fonts": {
+        "title": "Famílias de Fontes",
+        "description": "Sistema de tipografia e famílias de fontes"
+      },
+      "scale": {
+        "title": "Escala de Tipografia",
+        "description": "Hierarquia de tamanhos de texto"
+      }
+    },
+    "components": {
+      "buttons": {
+        "title": "Botões",
+        "description": "Variantes e tamanhos do componente de botão"
+      },
+      "inputs": {
+        "title": "Inputs",
+        "description": "Componentes de entrada de texto"
+      },
+      "textarea": {
+        "title": "Textarea",
+        "description": "Entrada de texto multilinha"
+      },
+      "select": {
+        "title": "Select",
+        "description": "Componente de seleção dropdown"
+      },
+      "switch": {
+        "title": "Switch",
+        "description": "Componente de toggle switch"
+      },
+      "badge": {
+        "title": "Badge",
+        "description": "Variantes do componente badge"
+      },
+      "card": {
+        "title": "Card",
+        "description": "Componente de container card"
+      },
+      "presetCard": {
+        "title": "Preset Card",
+        "description": "Componente de card para exibir presets da comunidade com imagem, metadados e ações"
+      },
+      "navigationSidebar": {
+        "title": "Navigation Sidebar",
+        "description": "Componente de sidebar de navegação reutilizável com seções colapsáveis e suporte mobile"
+      },
+      "modal": {
+        "title": "Modal",
+        "description": "Componente de modal de confirmação para confirmações e alertas do usuário"
+      },
+      "table": {
+        "title": "Tabela",
+        "description": "Componente de tabela básico para exibir dados estruturados"
+      },
+      "dataTable": {
+        "title": "Data Table",
+        "description": "Tabela de dados avançada com ordenação, filtragem e capacidades de busca"
+      },
+      "charts": {
+        "title": "Gráficos",
+        "description": "Componentes de gráficos construídos com Recharts para visualização de dados"
+      },
+      "breadcrumb": {
+        "title": "Breadcrumb",
+        "description": "Componente de breadcrumb de navegação com suporte a botão de voltar"
+      },
+      "skeletonLoader": {
+        "title": "Skeleton Loader",
+        "description": "Componente de placeholder de carregamento para melhor UX durante a busca de dados"
+      },
+      "gridDotsBackground": {
+        "title": "Grid Dots Background",
+        "description": "Padrão de fundo decorativo com pontos configuráveis"
+      },
+      "tabs": {
+        "title": "Tabs",
+        "description": "Componente de interface com abas para organizar conteúdo em seções"
+      },
+      "canvasToolbar": {
+        "title": "Barra de Ferramentas do Canvas",
+        "description": "Barra de ferramentas recolhível para criar e gerenciar nós do canvas com suporte a arrastar e soltar"
+      },
+      "canvasHeader": {
+        "title": "Cabeçalho do Canvas",
+        "description": "Componente de cabeçalho para páginas do canvas com edição de nome do projeto, configurações e recursos de colaboração"
+      },
+      "canvasFlow": {
+        "title": "Canvas Flow",
+        "description": "Componente principal do canvas React Flow com arrastar e soltar, gerenciamento de nós e manipulação de imagens"
+      }
+    },
+    "spacing": {
+      "scale": {
+        "title": "Escala de Espaçamentos",
+        "description": "Sistema de espaçamento consistente baseado na escala Tailwind"
+      },
+      "custom": {
+        "title": "Variáveis Customizadas",
+        "description": "Variáveis de espaçamento customizadas para casos específicos"
+      }
+    },
+    "commandPalette": {
+      "placeholder": "Buscar componentes, cores, tipografia...",
+      "noResults": "Nenhum resultado encontrado",
+      "search": "Buscar",
+      "searchShortcut": "Buscar (Ctrl+K)",
+      "tab": "Aba",
+      "section": "Seção"
+    },
+    "modal": {
+      "exampleTitle": "Modal de Exemplo",
+      "exampleMessage": "Este é um exemplo do componente ConfirmationModal.",
+      "confirmed": "Confirmado!"
+    },
+    "workflows": {
+      "importWorkflow": "Importar Workflow",
+      "library": {
+        "title": "Biblioteca de Workflows",
+        "description": "Navegue e carregue modelos de workflow reutilizáveis",
+        "search": "Buscar workflows...",
+        "noResults": "Nenhum workflow encontrado",
+        "noWorkflows": "Nenhum workflow ainda",
+        "noCommunityWorkflows": "Nenhum workflow da comunidade disponível",
+        "loadWorkflow": "Carregar Workflow",
+        "createWorkflow": "Criar Workflow",
+        "createNewWorkflow": "Criar Novo Workflow",
+        "tabs": {
+          "my": "Meus Workflows",
+          "community": "Comunidade",
+          "all": "Todos"
+        }
+      },
+      "stats": {
+        "nodes": "{count} nós",
+        "edges": "{count} conexões"
+      },
+      "actions": {
+        "duplicate": "Duplicar",
+        "addToLibrary": "Adicionar à Biblioteca",
+        "edit": "Editar",
+        "delete": "Excluir",
+        "like": "Curtir",
+        "unlike": "Descurtir"
+      },
+      "messages": {
+        "liked": "Workflow curtido!",
+        "unliked": "Workflow descurtido",
+        "duplicated": "Workflow adicionado à sua biblioteca!",
+        "deleted": "Workflow excluído",
+        "saved": "Workflow salvo com sucesso!",
+        "loaded": "Workflow carregado: {name}"
+      },
+      "errors": {
+        "failedToLoad": "Falha ao carregar workflows",
+        "mustBeAuthenticated": "Você deve estar logado para curtir workflows",
+        "failedToToggleLike": "Falha ao alternar curtida",
+        "failedToDuplicate": "Falha ao duplicar workflow",
+        "failedToDelete": "Falha ao excluir workflow",
+        "failedToSave": "Falha ao salvar workflow"
+      },
+      "deleteConfirmation": {
+        "title": "Excluir Workflow",
+        "message": "Tem certeza que deseja excluir '{workflowName}'? Esta ação não pode ser desfeita.",
+        "confirm": "Excluir",
+        "cancel": "Cancelar"
+      },
+      "saveWorkflow": "Salvar Workflow",
+      "loadWorkflow": "Carregar Workflow"
+    },
+    "saveDialog": {
+      "title": "Salvar Workflow",
+      "description": "Salve seu canvas como um modelo de workflow reutilizável",
+      "name": "Nome do Workflow",
+      "namePlaceholder": "ex: Workflow de Identidade Visual",
+      "descriptionPlaceholder": "Descreva o que este workflow faz...",
+      "category": "Categoria",
+      "tags": "Tags",
+      "tagsPlaceholder": "ex: branding, logo, identidade (separados por vírgula)",
+      "tagsHint": "Separe as tags com vírgulas",
+      "makePublic": "Tornar Público",
+      "makePublicHint": "Compartilhe este workflow com a comunidade (requer aprovação)",
+      "save": "Salvar Workflow",
+      "saving": "Salvando...",
+      "cancel": "Cancelar"
+    },
+    "actions": {
+      "duplicate": "Duplicar",
+      "addToLibrary": "Adicionar à Biblioteca",
+      "edit": "Editar",
+      "delete": "Excluir",
+      "like": "Curtir",
+      "unlike": "Descurtir"
+    },
+    "stats": {
+      "nodes": "{count} nodes",
+      "edges": "{count} conexões"
+    },
+    "deleteConfirmation": {
+      "title": "Excluir Workflow",
+      "message": "Tem certeza que deseja excluir este workflow? Esta ação não pode ser desfeita.",
+      "confirm": "Excluir",
+      "cancel": "Cancelar"
+    },
+    "messages": {
+      "liked": "Workflow curtido!",
+      "unliked": "Workflow descurtido",
+      "duplicated": "Workflow adicionado à sua biblioteca!",
+      "deleted": "Workflow excluído",
+      "saved": "Workflow salvo com sucesso!"
+    },
+    "errors": {
+      "failedToLoad": "Falha ao carregar workflows",
+      "mustBeAuthenticated": "Você deve estar logado para realizar esta ação",
+      "failedToToggleLike": "Falha ao atualizar curtida",
+      "failedToDuplicate": "Falha ao duplicar workflow",
+      "failedToDelete": "Falha ao excluir workflow",
+      "failedToSave": "Falha ao salvar workflow"
+    },
+    "edit": {
+      "title": "Editar Workflow",
+      "description": "Edite seu canvas como um modelo de workflow reutilizável",
+      "name": "Nome do Workflow",
+      "namePlaceholder": "ex: Workflow de Identidade Visual",
+      "descriptionPlaceholder": "Descreva o que este workflow faz...",
+      "category": "Categoria",
+      "tags": "Tags",
+      "tagsPlaceholder": "ex: branding, logo, identidade (separados por vírgula)",
+      "tagsHint": "Separe as tags com vírgulas",
+      "makePublic": "Tornar Público",
+      "makePublicHint": "Compartilhe este workflow com a comunidade (requer aprovação)",
+      "save": "Salvar Workflow",
+      "saving": "Salvando...",
+      "cancel": "Cancelar"
+    }
+  }
+}

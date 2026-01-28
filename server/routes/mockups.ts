@@ -4,9 +4,33 @@ import { ObjectId } from 'mongodb';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../db/prisma.js';
 import { checkSubscription, SubscriptionRequest } from '../middleware/subscription.js';
-import { generateMockup, RateLimitError } from '../../services/geminiService.js';
-import { getCreditsRequired } from '../utils/usageTracking.js';
-import type { UploadedImage, AspectRatio, GeminiModel, Resolution } from '../../types.js';
+import { generateMockup, RateLimitError } from '../../src/services/geminiService.js';
+import { createUsageRecord, getCreditsRequired } from '../utils/usageTracking.js';
+import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
+import { safeFetch, getErrorMessage } from '../utils/securityValidation.js';
+import { ensureOptionalBoolean, ensureString, isValidObjectId, sanitizeLogValue } from '../utils/validation.js';
+import { rateLimit } from 'express-rate-limit';
+
+// API rate limiter - general authenticated endpoints
+// Using express-rate-limit for CodeQL recognition
+const apiRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS || '60000', 10),
+  max: parseInt(process.env.RATE_LIMIT_MAX_API || '60', 10),
+  message: { error: 'Too many requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Mockup generation rate limiter
+// Using express-rate-limit for CodeQL recognition
+const mockupRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_MOCKUP_WINDOW_MS || '60000', 10),
+  max: parseInt(process.env.RATE_LIMIT_MAX_MOCKUP || '30', 10),
+  message: { error: 'Too many mockup requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+import type { UploadedImage, AspectRatio, GeminiModel, Resolution } from '../../src/types/types.js';
 
 const router = express.Router();
 
@@ -80,7 +104,7 @@ async function uploadImageToR2(
   userId: string,
   mockupId: string
 ): Promise<string> {
-  const r2Service = await import('../../services/r2Service.js');
+  const r2Service = await import('../../src/services/r2Service.js');
 
   // Check if R2 is configured - it's now required
   if (!r2Service.isR2Configured()) {
@@ -462,7 +486,7 @@ interface MockupData {
 }
 
 // Get all mockups publicly (no authentication required)
-router.get('/public', async (req, res, next) => {
+router.get('/public', apiRateLimiter, async (req, res, next) => {
   try {
     // Set a timeout for the entire operation (connection + query)
     const operationTimeout = 15000; // 15 seconds total
@@ -536,7 +560,7 @@ router.get('/public', async (req, res, next) => {
 });
 
 // Get all mockups for authenticated user
-router.get('/', authenticate, async (req: AuthRequest, res, next) => {
+router.get('/', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     // Ensure MongoDB connection is established
     await connectToMongoDB();
@@ -592,8 +616,13 @@ router.get('/', authenticate, async (req: AuthRequest, res, next) => {
 });
 
 // Get a single mockup by ID
-router.get('/:id', authenticate, async (req: AuthRequest, res, next) => {
+router.get('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
+    // Validate ObjectId to prevent NoSQL injection
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid mockup ID format' });
+    }
+
     await connectToMongoDB();
     const db = getDb();
     const mockup = await db.collection('mockups').findOne({
@@ -615,10 +644,10 @@ router.get('/:id', authenticate, async (req: AuthRequest, res, next) => {
 });
 
 // Get presigned URL for direct mockup image upload
-router.post('/upload-url', authenticate, async (req: AuthRequest, res) => {
+router.post('/upload-url', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const { contentType } = req.body;
-    const { generateMockupImageUploadUrl } = await import('../../services/r2Service.js');
+    const { generateMockupImageUploadUrl } = await import('../../src/services/r2Service.js');
 
     if (!req.userId) {
       return res.status(401).json({ error: 'User not authenticated' });
@@ -632,9 +661,31 @@ router.post('/upload-url', authenticate, async (req: AuthRequest, res) => {
   }
 });
 
+// Generate temporary image upload URL (for direct client uploads)
+router.post('/upload-temp-url', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    const { contentType } = req.body;
+    const r2Service = await import('../../src/services/r2Service.js');
+
+    if (!req.userId) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
+
+    if (!r2Service.isR2Configured()) {
+      return res.status(503).json({ error: 'R2 storage not configured' });
+    }
+
+    const result = await r2Service.generateTemporaryImageUploadUrl(req.userId, contentType);
+    res.json(result);
+  } catch (error: any) {
+    console.error('Error generating temporary upload URL:', error);
+    res.status(500).json({ error: 'Failed to generate upload URL', details: error.message });
+  }
+});
+
 // Generate mockup image (NEW: validates and deducts credits BEFORE generation)
 // CRITICAL: This endpoint validates and deducts credits atomically before calling Gemini API
-router.post('/generate', authenticate, checkSubscription, async (req: SubscriptionRequest, res, next) => {
+router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, async (req: SubscriptionRequest, res, next) => {
   const logPrefix = '[CREDIT]';
   let creditsDeducted = false;
   let creditsToDeduct = 0;
@@ -665,7 +716,7 @@ router.post('/generate', authenticate, checkSubscription, async (req: Subscripti
       if (img.url) {
         try {
           console.log(`${logPrefix} [IMAGE PROCESSING] Downloading image from URL:`, img.url.substring(0, 100));
-          const response = await fetch(img.url);
+          const response = await safeFetch(img.url);
           if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
           const arrayBuffer = await response.arrayBuffer();
           const buffer = Buffer.from(arrayBuffer);
@@ -673,9 +724,9 @@ router.post('/generate', authenticate, checkSubscription, async (req: Subscripti
             base64: buffer.toString('base64'),
             mimeType: img.mimeType || response.headers.get('content-type') || 'image/png'
           };
-        } catch (error: any) {
+        } catch (error: unknown) {
           console.error(`${logPrefix} [IMAGE PROCESSING] Error downloading image:`, error);
-          throw new Error(`Failed to process image URL: ${error.message}`);
+          throw new Error(`Failed to process image URL: ${getErrorMessage(error)}`);
         }
       }
       return null;
@@ -931,7 +982,7 @@ router.post('/generate', authenticate, checkSubscription, async (req: Subscripti
     let imageUrl: string | undefined;
 
     try {
-      const r2Service = await import('../../services/r2Service.js');
+      const r2Service = await import('../../src/services/r2Service.js');
       if (r2Service.isR2Configured()) {
         console.log(`${logPrefix} [R2] Uploading generated image to R2...`);
         // Use a new ID for the file name, or reuse requestId if unique enough
@@ -1040,6 +1091,16 @@ router.post('/generate', authenticate, checkSubscription, async (req: Subscripti
       // All retries failed - this is logged above but doesn't throw to avoid breaking the response
       // The generation succeeded, credits were deducted, but audit trail is incomplete
     };
+
+    // Track total generations for user stats (regardless of credits)
+    // This runs in the background to not delay the response
+    (async () => {
+      try {
+        await incrementUserGenerations(req.userId!, actualImagesCount, 0);
+      } catch (err) {
+        console.error(`${logPrefix} [Stats Tracking] Error incrementing total generations:`, err);
+      }
+    })();
 
     try {
       await createUsageRecordWithRetry(3);
@@ -1189,7 +1250,7 @@ router.post('/generate', authenticate, checkSubscription, async (req: Subscripti
 // cause duplicate credit deduction. The /generate endpoint already handles credit deduction
 // and usage record creation atomically.
 // Track prompt generation usage
-router.post('/track-prompt-generation', authenticate, async (req: AuthRequest, res, next) => {
+router.post('/track-prompt-generation', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     await connectToMongoDB();
     const db = getDb();
@@ -1246,7 +1307,7 @@ router.post('/track-prompt-generation', authenticate, async (req: AuthRequest, r
   }
 });
 
-router.post('/track-usage', authenticate, async (req: AuthRequest, res, next) => {
+router.post('/track-usage', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     await connectToMongoDB();
     const db = getDb();
@@ -1404,7 +1465,7 @@ router.post('/track-usage', authenticate, async (req: AuthRequest, res, next) =>
 });
 
 // Save a mockup
-router.post('/', authenticate, async (req: AuthRequest, res, next) => {
+router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     console.log('Save mockup request received:', {
       userId: req.userId,
@@ -1527,8 +1588,13 @@ router.post('/', authenticate, async (req: AuthRequest, res, next) => {
 });
 
 // Update a mockup
-router.put('/:id', authenticate, async (req: AuthRequest, res, next) => {
+router.put('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
+    // Validate ObjectId to prevent NoSQL injection
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid mockup ID format' });
+    }
+
     await connectToMongoDB();
     const db = getDb();
     const userId = req.userId!;
@@ -1551,35 +1617,43 @@ router.put('/:id', authenticate, async (req: AuthRequest, res, next) => {
       }
     }
 
-    // Prepare update data - remove imageBase64 and _id, add imageUrl if uploaded
-    const updateData: any = {
-      ...req.body,
-      updatedAt: new Date(),
-    };
-    delete updateData._id;
-    delete updateData.userId;
-    delete updateData.imageBase64; // Never save base64 in updates
+    // Whitelist of allowed fields; validate types to prevent $set value injection
+    const updateData: any = { updatedAt: new Date() };
 
-    // Ensure isLiked is always a boolean if provided
-    // Convert truthy/falsy values to explicit boolean
-    if ('isLiked' in updateData) {
-      // Handle various truthy/falsy values and convert to boolean
-      const isLikedValue = updateData.isLiked;
-      if (isLikedValue === true || isLikedValue === 'true' || isLikedValue === 1) {
-        updateData.isLiked = true;
-      } else {
-        updateData.isLiked = false;
-      }
-      console.log(`[Update] Updating like status for mockup ${req.params.id}: isLiked=${updateData.isLiked} (from ${typeof isLikedValue} value: ${isLikedValue})`);
+    const p = req.body.prompt !== undefined ? ensureString(req.body.prompt, 50000) : null;
+    if (p != null) updateData.prompt = p;
+    const dt = req.body.designType !== undefined ? ensureString(req.body.designType, 100) : null;
+    if (dt != null) updateData.designType = dt;
+    const ar = req.body.aspectRatio !== undefined ? ensureString(req.body.aspectRatio, 20) : null;
+    if (ar != null) updateData.aspectRatio = ar;
+    const iu = req.body.imageUrl !== undefined ? ensureString(req.body.imageUrl, 2000) : null;
+    if (iu != null) updateData.imageUrl = iu;
+
+    if (Array.isArray(req.body.tags)) {
+      updateData.tags = req.body.tags.filter((t: unknown) => typeof t === 'string').map((t: string) => String(t).trim().substring(0, 200)).filter(Boolean);
+    }
+    if (Array.isArray(req.body.brandingTags)) {
+      updateData.brandingTags = req.body.brandingTags.filter((t: unknown) => typeof t === 'string').map((t: string) => String(t).trim().substring(0, 200)).filter(Boolean);
     }
 
-    // If we uploaded to R2, use the new imageUrl
+    const isLikedVal = ensureOptionalBoolean(req.body.isLiked);
+    if (isLikedVal !== undefined) {
+      updateData.isLiked = isLikedVal;
+      // Use structured logging to avoid format string vulnerability
+      console.log('[Update] Updating like status for mockup:', {
+        mockupId: String(req.params.id),
+        isLiked: updateData.isLiked,
+      });
+    }
+
     if (imageUrl) {
       updateData.imageUrl = imageUrl;
     }
 
     // Log what we're updating
-    console.log(`[Update] Updating mockup ${req.params.id} with data:`, {
+    // Use structured logging to avoid format string vulnerability
+    console.log('[Update] Updating mockup with data:', {
+      mockupId: String(req.params.id),
       userId,
       updateData,
       isLikedInUpdate: 'isLiked' in updateData,
@@ -1596,7 +1670,10 @@ router.put('/:id', authenticate, async (req: AuthRequest, res, next) => {
     }
 
     if (result.modifiedCount === 0) {
-      console.warn(`[Update] Mockup ${req.params.id} was matched but not modified. This might indicate the data is the same.`);
+      // Use structured logging to avoid format string vulnerability
+      console.warn('[Update] Mockup was matched but not modified. This might indicate the data is the same:', {
+        mockupId: String(req.params.id),
+      });
     }
 
     // Verify the update by fetching the updated mockup (only once)
@@ -1605,7 +1682,9 @@ router.put('/:id', authenticate, async (req: AuthRequest, res, next) => {
       userId: req.userId
     });
 
-    console.log(`[Update] Successfully updated mockup ${req.params.id}`, {
+    // Use structured logging to avoid format string vulnerability
+    console.log('[Update] Successfully updated mockup:', {
+      mockupId: String(req.params.id),
       matchedCount: result.matchedCount,
       modifiedCount: result.modifiedCount,
       isLikedInUpdate: 'isLiked' in updateData,
@@ -1639,8 +1718,13 @@ router.put('/:id', authenticate, async (req: AuthRequest, res, next) => {
 });
 
 // Delete a mockup
-router.delete('/:id', authenticate, async (req: AuthRequest, res, next) => {
+router.delete('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
+    // Validate ObjectId to prevent NoSQL injection
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid mockup ID format' });
+    }
+
     await connectToMongoDB();
     const db = getDb();
 
@@ -1657,7 +1741,7 @@ router.delete('/:id', authenticate, async (req: AuthRequest, res, next) => {
     // Delete image from R2 if it exists
     if (mockup.imageUrl) {
       try {
-        const r2Service = await import('../../services/r2Service.js');
+        const r2Service = await import('../../src/services/r2Service.js');
         if (r2Service.isR2Configured()) {
           await r2Service.deleteImage(mockup.imageUrl);
         }
@@ -1683,7 +1767,7 @@ router.delete('/:id', authenticate, async (req: AuthRequest, res, next) => {
 });
 
 // Get usage statistics for billing
-router.get('/usage/stats', authenticate, async (req: AuthRequest, res, next) => {
+router.get('/usage/stats', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     await connectToMongoDB();
     const db = getDb();
@@ -1737,7 +1821,7 @@ router.get('/usage/stats', authenticate, async (req: AuthRequest, res, next) => 
 });
 
 // Get current billing period usage
-router.get('/usage/current', authenticate, async (req: AuthRequest, res, next) => {
+router.get('/usage/current', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     await connectToMongoDB();
     const db = getDb();
