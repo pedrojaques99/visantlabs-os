@@ -240,7 +240,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
             } backdrop-blur-sm`}>
             <GlitchLoader size={12} />
             <span className="text-xs font-mono font-semibold text-brand-cyan uppercase tracking-wider">
-              GENERATING PROMPT...
+              {t('mockup.generatingPrompt') || 'GENERATING PROMPT...'}
             </span>
             <div className="h-4 text-[10px] font-mono uppercase tracking-wide text-foreground overflow-hidden">
               <span
