@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useMemo, useState } from 'react';
-import { Info, Pickaxe, Wand2, ArrowLeftRight } from 'lucide-react';
+import { Info, Pickaxe, Wand2, ArrowLeftRight, PlusIcon } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -227,20 +227,8 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
                 className={`text-xs font-mono hover:text-brand-cyan transition-colors disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 ${theme === 'dark' ? 'text-neutral-500 disabled:text-neutral-600' : 'text-neutral-600 disabled:text-neutral-400'
                   }`}
               >
-                {isSuggestingPrompts ? <GlitchLoader size={12} /> : <Pickaxe size={12} />}
+                {isSuggestingPrompts ? <GlitchLoader size={12} /> : <PlusIcon size={12} />}
                 <span>{t('mockup.suggest')}</span>
-              </button>
-            </Tooltip>
-          )}
-          {(!hasGenerated || !mockups.some(m => m !== null)) && (
-            <Tooltip content={isGenerateDisabled ? t('mockup.insufficientCredits') || "Insufficient credits to generate" : t('mockup.generateSmartPromptTooltip')} position="top">
-              <button
-                onClick={onGenerateSmartPrompt}
-                disabled={isGeneratingPrompt || isSuggestingPrompts || isGenerateDisabled}
-                className={`text-xs font-mono hover:text-brand-cyan transition-colors disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 ${theme === 'dark' ? 'text-neutral-500 disabled:text-neutral-600' : 'text-neutral-600 disabled:text-neutral-400'
-                  }`}
-              >
-                <Wand2 size={12} />
               </button>
             </Tooltip>
           )}

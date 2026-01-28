@@ -246,14 +246,15 @@ export const InputSection: React.FC<InputSectionProps> = ({
 
             {/* Footer with Design Type Switcher */}
             <div className="flex items-center justify-between mt-auto pt-1.5 sm:pt-2 border-t border-white/5 gap-2">
-              <div className="flex items-center bg-neutral-900/50 rounded-md p-0.5 border border-white/5 gap-2">
+              <div className="flex items-center bg-neutral-900/50 rounded-lg p-1 border border-white/5 gap-1">
                 <button
                   onClick={() => onDesignTypeChange('logo')}
                   className={cn(
-                    "px-2 py-1 text-[10px] font-mono rounded transition-colors",
+                    "px-4 py-2 text-xs font-mono rounded-md transition-all duration-150",
+                    "focus:outline-none focus:ring-1 focus:ring-brand-cyan/50",
                     designType === 'logo'
-                      ? "bg-brand-cyan text-black font-semibold"
-                      : "text-neutral-500 hover:text-neutral-300"
+                      ? "bg-brand-cyan text-black font-semibold shadow-sm"
+                      : "text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50"
                   )}
                   title={t('mockup.itsALogo')}
                 >
@@ -262,10 +263,11 @@ export const InputSection: React.FC<InputSectionProps> = ({
                 <button
                   onClick={() => onDesignTypeChange('layout')}
                   className={cn(
-                    "px-2 py-1 text-[10px] font-mono rounded transition-colors",
+                    "px-4 py-2 text-xs font-mono rounded-md transition-all duration-150",
+                    "focus:outline-none focus:ring-1 focus:ring-brand-cyan/50",
                     designType === 'layout'
-                      ? "bg-brand-cyan text-black font-semibold"
-                      : "text-neutral-500 hover:text-neutral-300"
+                      ? "bg-brand-cyan text-black font-semibold shadow-sm"
+                      : "text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50"
                   )}
                   title={t('mockup.itsALayout')}
                 >

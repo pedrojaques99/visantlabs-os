@@ -122,7 +122,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
         className={cn(
           "relative flex-shrink-0 bg-sidebar text-sidebar-foreground overflow-y-auto overflow-x-hidden overscroll-contain min-h-0 z-10 transition-all duration-500",
           "max-h-[calc(100dvh-6rem)] sm:max-h-[calc(100dvh-7rem)] lg:max-h-full",
-          "p-3 sm:p-4 md:p-6 lg:p-8 pb-24 sm:pb-28 md:pb-32",
+          "p-3 sm:p-4 md:p-6 lg:p-8 pb-24 sm:pb-28 md:pb-32 lg:pb-8",
           "w-full", // Base width
           !hasAnalyzed ? [
             "rounded-md border",
@@ -133,7 +133,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
             "min-w-0"
           ] : [
             "max-w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl", // Sidebar panel state for Step 2
-            "h-full px-4 lg:px-6 py-10",
+            "h-full px-4 lg:px-6 py-10 lg:pb-0",
             isSurpriseMeMode
               ? "border-l border-brand-cyan/70 border-dashed shadow-[-10px_0_30px_rgba(0,210,255,0.05)]"
               : "border-r border-sidebar-border/10",
