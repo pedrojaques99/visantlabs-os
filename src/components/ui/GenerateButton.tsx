@@ -2,6 +2,7 @@ import React from 'react';
 import { Pickaxe, RefreshCcw } from 'lucide-react';
 import { GlitchLoader } from './GlitchLoader';
 import { Button } from './button';
+import { Tooltip } from './Tooltip';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -16,6 +17,8 @@ interface GenerateButtonProps {
   embed?: boolean;
   buttonRef?: React.RefObject<HTMLButtonElement>;
   creditsRequired?: number;
+  /** Optional message to show when button is disabled */
+  disabledReason?: string;
 }
 
 export const GenerateButton: React.FC<GenerateButtonProps> = ({
@@ -27,9 +30,16 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
   variant = 'sidebar',
   embed = false,
   buttonRef,
-  creditsRequired
+  creditsRequired,
+  disabledReason
 }) => {
   const { t } = useTranslation();
+
+  // Determine disabled reason if not provided
+  const computedDisabledReason = disabledReason || (disabled && !isGenerating && !isGeneratingPrompt
+    ? t('mockup.selectModelToGenerate') || 'Select a model to generate'
+    : undefined);
+
   if (variant === 'floating') {
     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
       // Only stop propagation to prevent event bubbling
@@ -108,7 +118,7 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
     }
   };
 
-  return (
+  const buttonElement = (
     <Button
       ref={buttonRef}
       onClick={handleClick}
@@ -149,5 +159,17 @@ export const GenerateButton: React.FC<GenerateButtonProps> = ({
       )}
     </Button>
   );
+
+  // Wrap with tooltip if disabled and has a reason
+  if (disabled && computedDisabledReason && !isGenerating && !isGeneratingPrompt) {
+    return (
+      <Tooltip content={computedDisabledReason} position="top">
+        <div className="w-full">{buttonElement}</div>
+      </Tooltip>
+    );
+  }
+
+  return buttonElement;
 };
+
 

@@ -16,6 +16,10 @@ import { SurpriseMeSelectedTagsDisplay } from './SurpriseMeSelectedTagsDisplay';
 import { AnalyzedSummaryCard } from './AnalyzedSummaryCard';
 import type { UploadedImage } from '@/types/types';
 import { SurpriseMeControl } from './SurpriseMeControl';
+import { BrandingSection } from '../branding/BrandingSection';
+import { ColorPalettePreview } from './ColorPalettePreview';
+import { Target, Palette as PaletteIcon, Plus, ChevronDown, ChevronUp } from 'lucide-react';
+import { sectionTitleClass } from '@/lib/utils';
 
 interface SidebarGenerationConfigProps {
     onGenerateClick: () => void;
@@ -102,6 +106,7 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
         setIsValidColor,
         setSelectedColors,
         suggestedTags,
+        suggestedBrandingTags,
         suggestedLocationTags,
         suggestedAngleTags,
         suggestedLightingTags,
@@ -112,6 +117,8 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
         setNegativePrompt,
         additionalPrompt,
         setAdditionalPrompt,
+        customBrandingInput,
+        setCustomBrandingInput,
         customLocationInput,
         customAngleInput,
         customLightingInput,
@@ -133,6 +140,9 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
     } = useMockup();
 
     const {
+        handleBrandingTagToggle,
+        handleAddCustomBrandingTag,
+        availableBrandingTags,
         handleTagToggle,
         handleAddCustomCategoryTag,
         handleRandomizeCategories,
@@ -165,6 +175,7 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
     const isGenerating = isLoading.some(l => l);
     const isGenerateDisabled = !selectedModel || isGenerating || isGeneratingPrompt || !designTypeSelected;
 
+    const displayBrandingTags = useMemo(() => [...new Set([...availableBrandingTags, ...selectedBrandingTags])], [availableBrandingTags, selectedBrandingTags]);
     const displayAvailableCategoryTags = useMemo(() => [...new Set([...availableMockupTags, ...selectedTags])], [availableMockupTags, selectedTags]);
     const displayLocationTags = useMemo(() => [...new Set([...availableLocationTags, ...selectedLocationTags])], [availableLocationTags, selectedLocationTags]);
     const displayAngleTags = useMemo(() => [...new Set([...availableAngleTags, ...selectedAngleTags])], [availableAngleTags, selectedAngleTags]);
@@ -227,6 +238,55 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
         return true;
     }, []);
 
+    const [isBrandingExpanded, setIsBrandingExpanded] = React.useState(false);
+    const [isColorExpanded, setIsColorExpanded] = React.useState(false);
+    const [isEditingCustomBranding, setIsEditingCustomBranding] = React.useState(false);
+
+    const CollapsibleSection = ({
+        title,
+        icon: Icon,
+        children,
+        isExpanded,
+        onToggle,
+        headerAction
+    }: {
+        title: string,
+        icon: any,
+        children: React.ReactNode,
+        isExpanded: boolean,
+        onToggle: () => void,
+        headerAction?: React.ReactNode
+    }) => (
+        <div className={`rounded-xl border transition-all duration-200 overflow-hidden ${theme === 'dark' ? 'bg-neutral-900/30 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
+            <div
+                className={`w-full flex items-center justify-between p-4 transition-colors ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'}`}
+            >
+                <button
+                    onClick={onToggle}
+                    className="flex-1 flex items-center gap-2 text-left"
+                >
+                    <Icon size={16} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
+                    <span className={sectionTitleClass(theme === 'dark')}>{title}</span>
+                </button>
+                <div className="flex items-center gap-2">
+                    {headerAction}
+                    <button onClick={onToggle}>
+                        {isExpanded ?
+                            <ChevronUp size={16} className="text-neutral-500" /> :
+                            <ChevronDown size={16} className="text-neutral-500" />
+                        }
+                    </button>
+                </div>
+            </div>
+
+            {isExpanded && (
+                <div className="px-4 pb-4 animate-in slide-in-from-top-2 fade-in duration-200">
+                    {children}
+                </div>
+            )}
+        </div>
+    );
+
     return (
         <div className="animate-fade-in justify-center" >
 
@@ -259,6 +319,74 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
                     resolution={resolution}
                     showBackground={true}
                 />
+
+                {/* Branding & Visual Identity - Moved from Setup */}
+                <div className="mt-4 space-y-3">
+                    <CollapsibleSection
+                        title={t('mockup.identity')}
+                        icon={Target}
+                        isExpanded={isBrandingExpanded}
+                        onToggle={() => setIsBrandingExpanded(!isBrandingExpanded)}
+                        headerAction={
+                            <div className="flex items-center">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setIsBrandingExpanded(true);
+                                        setIsEditingCustomBranding(true);
+                                    }}
+                                    className="p-1 hover:bg-white/10 rounded-md transition-colors text-neutral-500 hover:text-brand-cyan"
+                                    title={t('mockup.customTagLabel')}
+                                >
+                                    <Plus size={14} />
+                                </button>
+                            </div>
+                        }
+                    >
+                        <BrandingSection
+                            tags={displayBrandingTags}
+                            selectedTags={selectedBrandingTags}
+                            suggestedTags={suggestedBrandingTags}
+                            onTagToggle={handleBrandingTagToggle}
+                            customInput={customBrandingInput}
+                            onCustomInputChange={setCustomBrandingInput}
+                            onAddCustomTag={handleAddCustomBrandingTag}
+                            isComplete={brandingComplete}
+                            hasAnalyzed={true}
+                            hideTitle={true}
+                            isEditingCustom={isEditingCustomBranding}
+                            onSetIsEditingCustom={setIsEditingCustomBranding}
+                        />
+                    </CollapsibleSection>
+
+                    <CollapsibleSection
+                        title={t('mockup.colorPalette')}
+                        icon={PaletteIcon}
+                        isExpanded={isColorExpanded}
+                        onToggle={() => setIsColorExpanded(!isColorExpanded)}
+                    >
+                        <ColorPalettePreview
+                            suggestedColors={suggestedColorsFromAnalysis}
+                            selectedColors={selectedColors}
+                            onColorToggle={(color) => {
+                                if (!selectedColors.includes(color)) {
+                                    setSelectedColors([...selectedColors, color]);
+                                }
+                            }}
+                            onAddColor={(color) => {
+                                if (!selectedColors.includes(color) && selectedColors.length < 5) {
+                                    setSelectedColors([...selectedColors, color]);
+                                }
+                            }}
+                            onRemoveColor={(color) => {
+                                setSelectedColors(selectedColors.filter(c => c !== color));
+                            }}
+                            disabled={false}
+                            maxColors={5}
+                            hideTitle={true}
+                        />
+                    </CollapsibleSection>
+                </div>
             </div>
 
             {/* CategoriesSection - Mockup Types */}
@@ -401,11 +529,10 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
             <SurpriseMeSelectedTagsDisplay />
 
 
-
             <div className="flex flex-col gap-2 mt-6">
-                {/* Generate Button - Only show if prompt is ready OR user has valid setup (Generate Prompt) */}
-                {/* Hide when pool mode (isSurpriseMeMode) is active */}
-                {!isSurpriseMeMode && (isPromptReady || designTypeSelected || brandingComplete || categoriesComplete || hasReferenceImage || uploadedImage) && (
+                {/* Generate Button - Always visible, disabled when not ready */}
+                {/* Hidden only in Surprise Me Mode since dice controls generation */}
+                {!isSurpriseMeMode && (
                     <GenerateButton
                         onClick={onGenerateClick}
                         disabled={isGenerateDisabled || (isPromptReady && isGenerating)}
@@ -417,23 +544,6 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
                         creditsRequired={creditsRequired}
                     />
                 )}
-                <div className={`grid gap-2`}>
-                    <div className="flex items-center gap-2">
-                        <SurpriseMeControl
-                            onSurpriseMe={handleSurpriseMe}
-                            isGeneratingPrompt={isGeneratingPrompt}
-                            isDiceAnimating={isDiceAnimating}
-                            isSurpriseMeMode={isSurpriseMeMode}
-                            setIsSurpriseMeMode={setIsSurpriseMeMode}
-                            autoGenerate={autoGenerate}
-                            setAutoGenerate={setAutoGenerate}
-                            selectedModel={selectedModel}
-                            mockupCount={mockupCount}
-                            resolution={resolution}
-                            showBackground={false}
-                        />
-                    </div>
-                </div>
             </div>
 
             {(() => {
