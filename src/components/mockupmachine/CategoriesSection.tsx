@@ -70,12 +70,12 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
 
   return (
     <div className={cn(
-      `rounded-lg border transition-all duration-200 ${theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200'}`,
+      `rounded-xl border transition-all duration-200 overflow-hidden ${theme === 'dark' ? 'bg-neutral-900/30 border-white/5' : 'bg-white/50 border-neutral-200'}`,
       className
     )}>
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 hover:bg-neutral-800/10 ${isExpanded ? (theme === 'dark' ? 'bg-neutral-800/20' : 'bg-neutral-100/50') : ''}`}
+        className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'}`}
       >
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {icon && <div className="flex-shrink-0">{icon}</div>}
@@ -412,10 +412,10 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
             ))}
 
             {hasFinalSection && (
-              <div className={`rounded-lg border transition-all duration-200 ${theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200'}`}>
+              <div className={`rounded-xl border transition-all duration-200 overflow-hidden ${theme === 'dark' ? 'bg-neutral-900/30 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
                 <button
                   onClick={() => setIsFinalExpanded(!isFinalExpanded)}
-                  className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 hover:bg-neutral-800/10 ${isFinalExpanded ? (theme === 'dark' ? 'bg-neutral-800/20' : 'bg-neutral-100/50') : ''}`}
+                  className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'}`}
                 >
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     {drinkwareTags.length > 0 ? (
