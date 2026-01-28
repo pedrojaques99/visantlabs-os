@@ -176,7 +176,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
             )}
         >
             <div
-                className="flex flex-nowrap items-center gap-3 sm:gap-4 justify-center w-full select-none"
+                className="flex flex-nowrap items-center gap-3 sm:gap-4 justify-center w-full select-none py-2"
                 style={{ width: '100%' }}
             >
                 {showGenerateButtons && onGeneratePrompt &&
