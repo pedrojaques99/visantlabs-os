@@ -204,7 +204,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                             size="icon"
                             onClick={() => handleRemoveReferenceImage(index)}
                             className="absolute -top-1 -right-1 h-5 w-5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
-                            title={t('mockup.removeImage')}
+                            title={t('mockup.removeImage') || 'Remove image'}
                           >
                             <X size={10} />
                           </Button>

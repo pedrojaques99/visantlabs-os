@@ -184,9 +184,9 @@ export const useMockupTags = () => {
 
     const handleAddCustomCategoryTag = useCallback(() => {
         const newTag = customCategoryInput.trim();
-        if (newTag) {
+        if (newTag && !selectedTags.includes(newTag)) {
             const wasEmpty = selectedTags.length === 0;
-            setSelectedTags([newTag]);
+            setSelectedTags([...selectedTags, newTag]);
             setCustomCategoryInput('');
             if (wasEmpty) {
                 scrollToSection('refine-section');

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ImageOff, Info, X, Plus, CheckCircle2, ChevronRight } from 'lucide-react';
+import { ImageOff, Info, X, Plus, CheckCircle2, ChevronRight, ArrowLeftRight } from 'lucide-react';
 import { GlitchLoader } from '../ui/GlitchLoader';
 import type { UploadedImage, DesignType, GeminiModel } from '@/types/types';
 import { toast } from 'sonner';
@@ -8,7 +8,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { formatImageTo16_9 } from '@/utils/fileUtils';
 import { isSafeUrl } from '@/utils/imageUtils';
 import { cn, sectionTitleClass } from '@/lib/utils';
-import { DesignTypeSection } from './DesignTypeSection';
+import { useMockup } from './MockupContext';
 
 interface InputSectionProps {
   uploadedImage: UploadedImage | null;
@@ -42,6 +42,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
+
   // No modo blank, usa referenceImage; caso contrário, usa uploadedImage
   const displayImage = designType === 'blank' ? referenceImage : uploadedImage;
   const isReferenceOnly = designType === 'blank' && referenceImage !== null;
@@ -54,6 +55,47 @@ export const InputSection: React.FC<InputSectionProps> = ({
   const canAddMoreReferences = hasImage && referenceImages.length < maxReferences;
   const supportsReferences = !selectedModel || isProModel || isHDModel; // Enable before model selection
   const [isLoadingImage, setIsLoadingImage] = useState(false);
+
+  const handleSingleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsLoadingImage(true);
+    try {
+      const { mockupApi } = await import('@/services/mockupApi');
+      const reader = new FileReader();
+      
+      reader.onload = async () => {
+        try {
+          const base64 = (reader.result as string).split(',')[1];
+          const formatted = await formatImageTo16_9(base64, file.type);
+          const r2Url = await mockupApi.uploadTempImage(formatted.base64 || base64, formatted.mimeType);
+          onImageUpload({ url: r2Url, mimeType: formatted.mimeType });
+        } catch (error) {
+          console.error("Error processing/uploading image:", error);
+          const base64 = (reader.result as string).split(',')[1];
+          toast.error(t('errors.imageUploadFailed'));
+          onImageUpload({ base64, mimeType: file.type });
+        } finally {
+          setIsLoadingImage(false);
+          e.target.value = '';
+        }
+      };
+      
+      reader.onerror = () => {
+        toast.error(t('errors.uploadFailed'));
+        setIsLoadingImage(false);
+        e.target.value = '';
+      };
+      
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Error processing image:', error);
+      toast.error(t('errors.uploadFailed'));
+      setIsLoadingImage(false);
+      e.target.value = '';
+    }
+  };
 
   const handleMultipleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []) as File[];
@@ -130,35 +172,64 @@ export const InputSection: React.FC<InputSectionProps> = ({
 
   return (
     <section className={cn("flex flex-col gap-3 sm:gap-4 md:gap-6 w-full", className)}>
-      {/* Design Type Section - Integrated into Card Footer */}
-
       {/* Files Header */}
       <div className="flex items-center justify-between flex-shrink-0">
         <h2 className={sectionTitleClass(theme === 'dark')}>
           {t('mockup.files')}
         </h2>
         {!isLoadingImage && (
-          <label htmlFor={displayImage ? "multiple-image-upload" : "image-upload-blank"} className="cursor-pointer p-1.5 hover:bg-white/5 rounded-md transition-colors text-neutral-400 hover:text-white">
-            <Plus size={16} />
-          </label>
+          <div className="flex items-center gap-1">
+            {canAddMoreReferences && (
+              <label 
+                htmlFor="multiple-image-upload" 
+                className="cursor-pointer p-1.5 hover:bg-white/5 rounded-md transition-colors text-neutral-400 hover:text-white"
+                title={t('mockup.addReferenceImage', { count: referenceImages.length })}
+              >
+                <Plus size={16} />
+              </label>
+            )}
+            {displayImage && (
+              <>
+                <label
+                  htmlFor="image-upload-blank"
+                  className="p-1 hover:bg-white/5 rounded-md transition-colors text-neutral-500 hover:text-white cursor-pointer"
+                  title={t('mockup.replaceImage')}
+                >
+                  <ArrowLeftRight size={14} />
+                </label>
+              </>
+            )}
+            {!displayImage && (
+              <label 
+                htmlFor="image-upload-blank" 
+                className="cursor-pointer p-1.5 hover:bg-white/5 rounded-md transition-colors text-neutral-400 hover:text-white"
+                title={t('mockup.uploadMainFile')}
+              >
+                <Plus size={16} />
+              </label>
+            )}
+          </div>
         )}
       </div>
 
-
-
       {/* Compact Files Grid */}
-      <div className="grid grid-cols-2 gap-1.5 sm:gap-2 flex-1 min-h-0 content-start">
+      <div
+        className={cn(
+          "grid gap-1.5 sm:gap-2 w-full min-h-0 content-start",
+          displayImage && referenceImages.length === 0 ? "grid-cols-1" : "grid-cols-2"
+        )}
+      >
         {/* Main Image Card */}
         {displayImage && (
-          <div className={`relative flex flex-col p-1.5 sm:p-2 rounded-lg border transition-all h-full group min-w-0 ${hasAnalyzed ? 'bg-brand-cyan/5 border-brand-cyan/20' : 'border-white/5'}`}>
-            <div className="relative w-full aspect-[4/3] sm:aspect-[4/3] rounded-md overflow-hidden mb-1 sm:mb-2 flex items-center justify-center bg-neutral-800/30">
+          <div className={`relative flex flex-col p-1.5 sm:p-2 rounded-lg border transition-all group w-full ${hasAnalyzed ? 'bg-brand-cyan/1 border-brand-cyan/10' : 'border-white/5'}`}>
+            <div className="relative max-h-52 max-w-full rounded-md overflow-hidden mb-1 sm:mb-2 flex items-center justify-center">
               <img
                 src={getImageSrc(displayImage)}
                 alt="Main"
-                className="w-full h-[full] object-fit transition-transform duration-200"
+                className="max-h-52 max-w-full h-auto w-auto object-contain transition-transform duration-200"
               />
               {hasAnalyzed && (
-                <div className="absolute inset-0 flex items-center justify-center bg-brand-cyan/10">
+                <div className="absolute inset-0 flex items-center justify-center bg-brand-cyan/10 pointer-events-none">
                   <CheckCircle2 size={12} className="text-brand-cyan" />
                 </div>
               )}
@@ -175,7 +246,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
 
             {/* Footer with Design Type Switcher */}
             <div className="flex items-center justify-between mt-auto pt-1.5 sm:pt-2 border-t border-white/5 gap-2">
-              <div className="flex items-center bg-neutral-900/50 rounded-md p-0.5 border border-white/5">
+              <div className="flex items-center bg-neutral-900/50 rounded-md p-0.5 border border-white/5 gap-2">
                 <button
                   onClick={() => onDesignTypeChange('logo')}
                   className={cn(
@@ -201,31 +272,18 @@ export const InputSection: React.FC<InputSectionProps> = ({
                   {t('mockup.typeLayout') || 'LAYOUT'}
                 </button>
               </div>
-
-              <div className="flex items-center gap-1">
-                <label htmlFor="image-upload-blank" className="p-1 hover:bg-white/5 rounded-md transition-colors text-neutral-500 hover:text-white cursor-pointer" title={t('mockup.replaceImage')}>
-                  <Plus size={14} />
-                </label>
-                <button
-                  onClick={onStartOver}
-                  className="p-1 hover:bg-red-500/10 rounded-md transition-colors text-neutral-500 hover:text-red-400"
-                  title={t('common.remove')}
-                >
-                  <X size={14} />
-                </button>
-              </div>
             </div>
           </div>
         )}
 
         {/* Reference Images List */}
         {referenceImages.map((img, index) => (
-          <div key={index} className="flex flex-col p-1.5 sm:p-2 rounded-lg border border-white/5 group animate-in slide-in-from-bottom-2 duration-200 h-full gap-2 min-w-0">
-            <div className="w-full aspect-[4/3] sm:aspect-square rounded-md overflow-hidden mb-1 sm:mb-2 flex items-center justify-center bg-neutral-800/30">
+          <div key={index} className="flex flex-col p-1.5 sm:p-2 rounded-lg border border-white/5 group animate-in slide-in-from-bottom-2 duration-200 w-fit gap-2">
+            <div className="relative max-h-40 max-w-full rounded-md overflow-hidden mb-1 sm:mb-2 flex items-center justify-center">
               <img
                 src={getImageSrc(img)}
                 alt={`Ref ${index + 1}`}
-                className="w-full h-[full] object-fit transition-transform duration-200"
+                className="max-h-40 max-w-full h-auto w-auto object-contain transition-transform duration-200"
               />
             </div>
 
@@ -249,86 +307,26 @@ export const InputSection: React.FC<InputSectionProps> = ({
           </div>
         ))}
 
-        {/* Add Reference Button */}
-        {canAddMoreReferences && !isLoadingImage && displayImage && (
-          <label
-            htmlFor="multiple-image-upload"
-            className="flex flex-col items-center justify-center h-full min-h-[72px] sm:min-h-[96px] md:min-h-[96px] rounded-lg border border-dashed border-white/5 hover:border-white/20 hover:bg-white/5 transition-all cursor-pointer group min-w-0"
-          >
-            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white/5 flex items-center justify-center mb-0.5 sm:mb-1 group-hover:bg-white/10 transition-colors">
-              <Plus size={12} className="text-neutral-500" />
-            </div>
-            <span className="text-[7px] sm:text-[8px] font-mono text-neutral-500 uppercase tracking-wider text-center px-1">{t('mockup.addMore')}</span>
-          </label>
-        )}
       </div>
 
-      {/* Hidden Inputs */}
       <input
         id="image-upload-blank"
         type="file"
         accept="image/jpeg,image/png,image/webp,image/gif"
-        onChange={async (e) => {
-          const file = e.target.files?.[0];
-          if (file) {
-            setIsLoadingImage(true);
-            try {
-              const { mockupApi } = await import('@/services/mockupApi');
-              const reader = new FileReader();
-              const result = await new Promise<string>((resolve, reject) => {
-                reader.onload = () => {
-                  const base64 = (reader.result as string).split(',')[1];
-                  resolve(base64);
-                };
-                reader.onerror = () => reject(new Error('Failed to read file'));
-                reader.readAsDataURL(file);
-              });
-
-              const formatted = await formatImageTo16_9(result, file.type);
-              const r2Url = await mockupApi.uploadTempImage(formatted.base64 || result, formatted.mimeType);
-
-              onImageUpload({
-                url: r2Url,
-                mimeType: formatted.mimeType,
-                size: file.size,
-                base64: formatted.base64 || result, // Restore base64 for generation
-              });
-
-            } catch (error) {
-              console.error('Error processing/uploading image:', error);
-              const { toast } = await import('sonner');
-              toast.error(t('errors.imageUploadFailed'));
-            } finally {
-              setIsLoadingImage(false);
-            }
-          }
-          e.target.value = '';
-        }}
-        className="hidden text-black"
+        onChange={handleSingleImageUpload}
+        className="hidden"
+        disabled={isLoadingImage}
       />
-
       <input
         id="multiple-image-upload"
         type="file"
         accept="image/jpeg,image/png,image/webp,image/gif"
         multiple
         onChange={handleMultipleImageUpload}
-        className="hidden text-black"
+        className="hidden"
         disabled={isLoadingImage}
       />
 
-      {/* Minimal Capacity Indicator (Bottom) */}
-      <div className="flex items-center gap-2 pt-2 border-t border-white/5 mt-auto">
-        <div className="h-0.5 w-16 bg-neutral-800 rounded-full overflow-hidden flex-shrink-0">
-          <div
-            className="h-full bg-brand-cyan/50 transition-all duration-500"
-            style={{ width: `${capacityUsage}%` }}
-          />
-        </div>
-        <span className="text-[9px] font-mono text-neutral-600 uppercase tracking-wider truncate">
-          {t('mockup.capacityUsed', { percentage: capacityUsage })}
-        </span>
-      </div>
     </section>
   );
 };

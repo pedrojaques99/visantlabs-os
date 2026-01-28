@@ -163,10 +163,13 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
   const selectionSummary = selectedTags.length > 0
     ? selectedTags.map(tag => translateTag(tag)).join(', ')
     : '';
-  const poolCount = isSurpriseMeMode ? tags.filter(t => poolTags.includes(t)).length : 0;
+  const poolTagsList = isSurpriseMeMode ? tags.filter(t => poolTags.includes(t)) : [];
+  const poolTagsSummary = poolTagsList.length > 0
+    ? poolTagsList.map(tag => translateTag(tag)).join(', ')
+    : '';
 
   return (
-    <div className={`rounded-xl border transition-all duration-200 overflow-hidden ${theme === 'dark' ? 'bg-neutral-900/30 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
+    <div className={`rounded-xl border transition-all duration-200 overflow-hidden group ${theme === 'dark' ? 'bg-neutral-900/30 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'}`}
@@ -175,16 +178,35 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
           {icon && <div className="flex-shrink-0">{icon}</div>}
           <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
             <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{title}</span>
-            {!isExpanded && (hasSelection || poolCount > 0) && (
+            {!isExpanded && (hasSelection || poolTagsList.length > 0) && (
               <span className="text-[10px] font-mono truncate max-w-[200px]">
                 {hasSelection && <span className="text-brand-cyan">{selectionSummary}</span>}
-                {hasSelection && poolCount > 0 && <span className="text-neutral-500"> · </span>}
-                {poolCount > 0 && <span className="text-neutral-500">{poolCount} {t('mockup.inPool')}</span>}
+                {hasSelection && poolTagsList.length > 0 && <span className="text-neutral-500"> · </span>}
+                {poolTagsList.length > 0 && (
+                  <span className="text-neutral-500">
+                    {poolTagsSummary} {t('mockup.inPool')}
+                  </span>
+                )}
               </span>
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+          {/* Clear selection button (only on hover when there are selected tags) */}
+          {hasSelection && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                // Clear all selected tags for this section
+                selectedTags.forEach(tag => onTagToggle(tag));
+              }}
+              className="text-[9px] font-mono px-1.5 py-0.5 rounded-md text-neutral-500 hover:text-neutral-300 hover:bg-neutral-700/40"
+            >
+              {t('mockup.clearAll') || 'Clear all'}
+            </button>
+          )}
+
           <div
             onClick={(e) => {
               e.stopPropagation();

@@ -12,8 +12,8 @@ interface SetupModalProps {
     onReferenceImagesChange: (images: UploadedImage[]) => void;
     onStartOver: () => void;
     onDesignTypeChange: (type: DesignType) => void;
-    onAnalyze: () => void;
-    canClose?: boolean;
+  onAnalyze: () => void;
+  canClose?: boolean;
 }
 
 export const SetupModal: React.FC<SetupModalProps> = ({
@@ -23,38 +23,36 @@ export const SetupModal: React.FC<SetupModalProps> = ({
     onReferenceImagesChange,
     onStartOver,
     onDesignTypeChange,
-    onAnalyze,
-    canClose = true,
+  onAnalyze,
+  canClose = true,
 }) => {
     const { t } = useTranslation();
     const { uploadedImage, hasAnalyzed, isAnalyzing } = useMockup();
 
-    const canAnalyze = uploadedImage && !hasAnalyzed;
+  const canAnalyze = uploadedImage && !hasAnalyzed;
 
-    const analyzeButton = canAnalyze ? (
-        <button
-            onClick={() => {
-                if (import.meta.env.DEV) console.log('[dev] analyze: modal header button click');
-                onAnalyze();
-            }}
-            disabled={isAnalyzing}
-            className={`
+  const analyzeButton = canAnalyze ? (
+    <button
+      onClick={() => {
+        if (import.meta.env.DEV) console.log('[dev] analyze: modal header button click');
+        onAnalyze();
+      }}
+      disabled={isAnalyzing}
+      className={`
             relative overflow-hidden group
             px-4 py-1.5 rounded-md 
             bg-brand-cyan 
             text-neutral-900 font-medium text-xs tracking-wide
             hover:bg-brand-cyan/90
-            transition-all duration-200
+            transition-colors duration-150
             flex items-center gap-2
-            opacity-100 animate-fade-in`}
-        >
-            {isAnalyzing ? (
-                <span className="animate-pulse">{t('mockup.analyzing')}...</span>
-            ) : (
-                <span>{t('mockup.analyzeProject')}</span>
-            )}
-        </button>
-    ) : null;
+            opacity-100`}
+    >
+      <span className="text-xs">
+        {isAnalyzing ? t('mockup.analyzing') : t('mockup.analyzeProject')}
+      </span>
+    </button>
+  ) : null;
 
     return (
         <Modal
@@ -66,15 +64,14 @@ export const SetupModal: React.FC<SetupModalProps> = ({
             closeOnBackdropClick={canClose}
             closeOnEscape={canClose}
             id="setup-modal"
-            contentClassName="h-[90%] max-h-[90vh] bg-neutral-900"
-            headerAction={analyzeButton}
+            contentClassName="flex flex-col gap-4 bg-neutral-900"
+      headerAction={analyzeButton}
         >
             <SidebarSetupSection
                 onImageUpload={onImageUpload}
                 onReferenceImagesChange={onReferenceImagesChange}
                 onStartOver={onStartOver}
                 onDesignTypeChange={onDesignTypeChange}
-                onAnalyze={onAnalyze}
             />
         </Modal>
     );

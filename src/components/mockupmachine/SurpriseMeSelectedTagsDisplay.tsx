@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { useMockup } from './MockupContext';
@@ -19,6 +19,68 @@ const SECTIONS: { key: SectionKey; labelKey: string; isColor: boolean }[] = [
   { key: 'material', labelKey: 'mockup.material', isColor: false },
   { key: 'colors', labelKey: 'mockup.colorPalette', isColor: true },
 ];
+
+// Internal/metadata tags that should not be displayed
+const INTERNAL_TAGS = [
+  'human interaction',
+  'gerar texto contextual',
+  'generate contextual text',
+  'generate text',
+  'gerar texto',
+  'texto contextual',
+  'contextual text',
+  'placeholder text',
+  'texto placeholder',
+  'include human',
+  'with human',
+  'sem interação humana',
+  'no human interaction',
+  'no text',
+  'sem texto',
+].map(tag => tag.toLowerCase());
+
+/**
+ * Checks if a tag is an internal/metadata tag
+ */
+const isInternalTag = (tag: string): boolean => {
+  const lowerTag = tag.toLowerCase();
+  return INTERNAL_TAGS.some(internal => lowerTag.includes(internal));
+};
+
+/**
+ * Filters out internal/metadata tags and validates against available tags
+ * @param tags - Tags to filter
+ * @param availableTags - Available tags for validation
+ * @param isColor - Whether these are color tags
+ * @param strictValidation - If true, only show tags in available list. If false, only filter internal tags.
+ */
+const filterValidTags = (
+  tags: string[],
+  availableTags: string[],
+  isColor: boolean,
+  strictValidation: boolean = false
+): string[] => {
+  if (isColor) {
+    // Colors are validated differently (hex codes)
+    return tags.filter(tag => !isInternalTag(tag));
+  }
+
+  // For non-color tags, filter out internal/metadata tags
+  return tags.filter(tag => {
+    // Always filter out internal/metadata tags
+    if (isInternalTag(tag)) {
+      return false;
+    }
+    
+    // If strict validation is enabled, only show tags that exist in available tags list
+    if (strictValidation && availableTags.length > 0) {
+      const availableTagsLower = availableTags.map(t => t.toLowerCase());
+      return availableTagsLower.includes(tag.toLowerCase());
+    }
+    
+    return true;
+  });
+};
 
 export const SurpriseMeSelectedTagsDisplay: React.FC = () => {
   const { t } = useTranslation();
@@ -51,14 +113,15 @@ export const SurpriseMeSelectedTagsDisplay: React.FC = () => {
     availableMaterialTags,
   } = useMockupTags();
 
+  // Filter and validate tags before displaying (strict validation for display)
   const sectionData: Record<SectionKey, string[]> = {
-    categories: selectedTags,
-    location: selectedLocationTags,
-    angle: selectedAngleTags,
-    lighting: selectedLightingTags,
-    effects: selectedEffectTags,
-    material: selectedMaterialTags,
-    colors: selectedColors,
+    categories: filterValidTags(selectedTags, availableMockupTags, false, true),
+    location: filterValidTags(selectedLocationTags, availableLocationTags, false, true),
+    angle: filterValidTags(selectedAngleTags, availableAngleTags, false, true),
+    lighting: filterValidTags(selectedLightingTags, availableLightingTags, false, true),
+    effects: filterValidTags(selectedEffectTags, availableEffectTags, false, true),
+    material: filterValidTags(selectedMaterialTags, availableMaterialTags, false, true),
+    colors: filterValidTags(selectedColors, [], true, false),
   };
 
   const availableTagsMap: Record<SectionKey, string[]> = {
@@ -81,6 +144,43 @@ export const SurpriseMeSelectedTagsDisplay: React.FC = () => {
     colors: setSelectedColors,
   };
 
+  // Clean up internal tags from state when detected (only remove internal tags, not custom/missing ones)
+  useEffect(() => {
+    const cleanInternalTags = (
+      tags: string[],
+      setter: (tags: string[]) => void
+    ) => {
+      const filtered = tags.filter(tag => !isInternalTag(tag));
+      if (filtered.length !== tags.length) {
+        setter(filtered);
+      }
+    };
+
+    // Clean each section (only remove internal tags, preserve custom tags)
+    cleanInternalTags(selectedTags, setSelectedTags);
+    cleanInternalTags(selectedLocationTags, setSelectedLocationTags);
+    cleanInternalTags(selectedAngleTags, setSelectedAngleTags);
+    cleanInternalTags(selectedLightingTags, setSelectedLightingTags);
+    cleanInternalTags(selectedEffectTags, setSelectedEffectTags);
+    cleanInternalTags(selectedMaterialTags, setSelectedMaterialTags);
+    cleanInternalTags(selectedColors, setSelectedColors);
+  }, [
+    selectedTags,
+    selectedLocationTags,
+    selectedAngleTags,
+    selectedLightingTags,
+    selectedEffectTags,
+    selectedMaterialTags,
+    selectedColors,
+    setSelectedTags,
+    setSelectedLocationTags,
+    setSelectedAngleTags,
+    setSelectedLightingTags,
+    setSelectedEffectTags,
+    setSelectedMaterialTags,
+    setSelectedColors,
+  ]);
+
   const handleRerollTag = (sectionKey: SectionKey, currentTag: string) => {
     if (sectionKey === 'colors') return; // Skip colors for now
 
@@ -96,6 +196,10 @@ export const SurpriseMeSelectedTagsDisplay: React.FC = () => {
 
     if (setter) {
       setter([randomNewTag]);
+      // Disparar atualização automática de prompt para refletir a nova tag
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('mockup:tagsChanged'));
+      }
     }
   };
 
