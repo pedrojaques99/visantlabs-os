@@ -221,8 +221,8 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
       className={cn(
         "p-3 rounded-xl border transition-all duration-300",
         theme === 'dark'
-          ? 'bg-neutral-900/10 border-neutral-800/40 hover:bg-neutral-900/20 focus-within:border-brand-cyan/30'
-          : 'bg-neutral-50 border-neutral-200 hover:bg-neutral-100/50 focus-within:border-brand-cyan/30'
+          ? 'bg-neutral-900/10 border-neutral-800/40 hover:bg-neutral-900/20'
+          : 'bg-neutral-50 border-neutral-200 focus-within:border-brand-cyan/30'
       )}
     >
       <div className="flex items-center justify-between mb-2">
@@ -305,7 +305,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
               >
                 <button
                   onClick={() => onSuggestionClick(suggestion)}
-                  className={`w-full text-left text-xs font-mono transition-colors cursor-pointer ${theme === 'dark' ? 'text-neutral-400 hover:text-neutral-300' : 'text-neutral-700 hover:text-neutral-900'
+                  className={`w-full text-left text-xs font-mono transition-colors cursor-pointer ${theme === 'dark' ? 'text-neutral-200 hover:text-neutral-200' : 'text-neutral-700 hover:text-neutral-900'
                     }`}
                 >
                   {suggestion}
