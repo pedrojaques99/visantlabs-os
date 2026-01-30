@@ -33,7 +33,7 @@ export type Resolution = '1K' | '2K' | '4K' | '720p' | '1080p';
 
 export type AspectRatio = '9:16' | '21:9' | '2:3' | '3:2' | '3:4' | '4:3' | '4:5' | '5:4' | '16:9' | '1:1';
 
-export type DesignType = 'logo' | 'layout' | 'blank';
+export type DesignType = 'logo' | 'layout';
 
 export interface BrandingStep {
   id: string;

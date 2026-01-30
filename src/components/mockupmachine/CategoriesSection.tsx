@@ -143,7 +143,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
-  const { 
+  const {
     clearAllTags,
     selectedTags: allSelectedTags,
     selectedLocationTags,
@@ -155,9 +155,9 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
     selectedColors,
     surpriseMePool
   } = useMockup();
-  
+
   // Check if there are any tags selected (normal or pool mode)
-  const hasAnyTagsSelected = 
+  const hasAnyTagsSelected =
     allSelectedTags.length > 0 ||
     selectedLocationTags.length > 0 ||
     selectedAngleTags.length > 0 ||
@@ -399,7 +399,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
             </Tooltip>
             {isAnalyzing && <GlitchLoader size={16} color="#71717a" />}
           </div>
-          
+
           {/* Clear All Tags Button */}
           {hasAnyTagsSelected && (
             <Tooltip content={t('mockup.clearAllTags') || 'Limpar todas as tags selecionadas'} position="top">
@@ -422,6 +422,64 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
       </div>
 
       <div className="space-y-2">
+        {/* Smart Suggestion Input */}
+        <div className={cn(
+          "rounded-xl border p-3 transition-all duration-200",
+          theme === 'dark'
+            ? 'bg-neutral-900/50 border-neutral-800/50'
+            : 'bg-white/50 border-neutral-200'
+        )}>
+          <div className="flex flex-col gap-2">
+            <Input
+              type="text"
+              placeholder="Digite para buscar ou adicionar tags..."
+              value={customInput}
+              onChange={(e) => onCustomInputChange(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && customInput.trim()) {
+                  e.preventDefault();
+                  onAddCustomTag();
+                  onCustomInputChange('');
+                }
+              }}
+              className={cn(
+                "h-9 text-sm font-mono rounded-lg border transition-all duration-200 focus:ring-1",
+                theme === 'dark'
+                  ? 'bg-neutral-800/50 border-neutral-700/50 text-neutral-200 placeholder:text-neutral-500 focus:border-brand-cyan/50 focus:ring-brand-cyan/20'
+                  : 'bg-white border-neutral-300 text-neutral-900 placeholder:text-neutral-500 focus:border-brand-cyan/50 focus:ring-brand-cyan/20'
+              )}
+            />
+            {/* Smart Suggestions as Badges */}
+            {displaySuggestedTags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                <span className={cn(
+                  "text-[9px] font-mono uppercase tracking-widest self-center mr-1",
+                  theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'
+                )}>
+                  Sugestões:
+                </span>
+                {displaySuggestedTags.slice(0, 5).map((tag) => (
+                  <button
+                    key={tag}
+                    onClick={() => !selectedTags.includes(tag) && onTagToggle(tag)}
+                    disabled={selectedTags.includes(tag)}
+                    className={cn(
+                      "px-2 py-0.5 text-[10px] font-mono rounded-full border transition-all duration-200",
+                      selectedTags.includes(tag)
+                        ? 'bg-brand-cyan/20 border-brand-cyan/30 text-brand-cyan cursor-default'
+                        : theme === 'dark'
+                          ? 'bg-neutral-800/80 border-neutral-700/50 text-neutral-300 hover:bg-brand-cyan/10 hover:border-brand-cyan/30 hover:text-brand-cyan cursor-pointer'
+                          : 'bg-neutral-100 border-neutral-300 text-neutral-700 hover:bg-brand-cyan/10 hover:border-brand-cyan/30 hover:text-brand-cyan cursor-pointer'
+                    )}
+                  >
+                    {translateTag(tag)}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Comment */}
         {!isComplete && (
           <div className="mb-2 px-1">

@@ -92,11 +92,11 @@ export const ApiSettings: React.FC = () => {
 
     return (
         <div className="space-y-6 w-full mx-auto animate-in fade-in duration-500">
-            <Card className="bg-neutral-900 border border-neutral-800/50 rounded-2xl shadow-xl shadow-black/20">
+            <Card className="bg-neutral-900 border border-neutral-800/50 rounded-md shadow-xl shadow-black/20">
                 <CardHeader className="pb-4">
                     <div className="flex items-start justify-between">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-cyan/10 to-blue-500/10 border border-brand-cyan/20 flex items-center justify-center shadow-lg shadow-brand-cyan/5">
+                            <div className="w-12 h-12 rounded-md bg-gradient-to-br from-brand-cyan/10 to-blue-500/10 border border-brand-cyan/20 flex items-center justify-center shadow-lg shadow-brand-cyan/5">
                                 <Sparkles size={24} className="text-brand-cyan" />
                             </div>
                             <div>

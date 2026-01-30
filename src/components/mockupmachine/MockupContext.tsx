@@ -5,7 +5,6 @@ import { getSurpriseMeSelectedTags, saveSurpriseMeSelectedTags, type SurpriseMeS
 interface MockupContextState {
     // Image State
     uploadedImage: UploadedImage | null;
-    referenceImage: UploadedImage | null;
     referenceImages: UploadedImage[];
     designType: DesignType | null;
     selectedModel: GeminiModel | null;
@@ -81,7 +80,6 @@ interface MockupContextState {
 
 interface MockupContextActions {
     setUploadedImage: Dispatch<SetStateAction<UploadedImage | null>>;
-    setReferenceImage: Dispatch<SetStateAction<UploadedImage | null>>;
     setReferenceImages: Dispatch<SetStateAction<UploadedImage[]>>;
     setDesignType: Dispatch<SetStateAction<DesignType | null>>;
     setSelectedModel: Dispatch<SetStateAction<GeminiModel | null>>;
@@ -149,7 +147,6 @@ const initialMockupCount = 2;
 
 export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(null);
-    const [referenceImage, setReferenceImage] = useState<UploadedImage | null>(null);
     const [referenceImages, setReferenceImages] = useState<UploadedImage[]>([]);
     const [designType, setDesignType] = useState<DesignType | null>(null);
     const [selectedModel, setSelectedModel] = useState<GeminiModel | null>(null);
@@ -224,7 +221,6 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
     const resetAll = () => {
         setUploadedImage(null);
-        setReferenceImage(null);
         setReferenceImages([]);
         setDesignType(null);
         setSelectedTags([]);
@@ -245,9 +241,7 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         setCustomCategoryInput('');
         setMockups(Array(mockupCount).fill(null));
         setIsLoading(Array(mockupCount).fill(false));
-        setIsLoading(Array(mockupCount).fill(false));
         setHasGenerated(false);
-        setHasAnalyzed(false);
         setHasAnalyzed(false);
         setIsSurpriseMeModeState(false);
         setIsAnalysisOverlayVisible(false);
@@ -265,7 +259,7 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         setSelectedMaterialTags([]);
         setSelectedBrandingTags([]);
         setSelectedColors([]);
-        
+
         // Clear pool mode tags
         const emptyPool: SurpriseMeSelectedTags = {
             selectedCategoryTags: [],
@@ -281,7 +275,6 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
     const value = useMemo(() => ({
         uploadedImage, setUploadedImage,
-        referenceImage, setReferenceImage,
         referenceImages, setReferenceImages,
         designType, setDesignType,
         selectedModel, setSelectedModel,
@@ -341,7 +334,7 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         resetAll,
         clearAllTags
     }), [
-        uploadedImage, referenceImage, referenceImages, designType,
+        uploadedImage, referenceImages, designType,
         selectedModel, resolution, aspectRatio, mockups, isLoading, hasGenerated,
         isAnalyzing, isGeneratingPrompt, selectedTags, selectedBrandingTags,
         selectedLocationTags, selectedAngleTags, selectedLightingTags, selectedEffectTags,

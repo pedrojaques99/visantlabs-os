@@ -303,7 +303,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
             />
             <div
               onClick={handlePictureClick}
-              className={`relative w-28 h-28 rounded-2xl overflow-hidden flex items-center justify-center cursor-pointer transition-opacity hover:opacity-80 ${theme === 'dark'
+              className={`relative w-28 h-28 rounded-md overflow-hidden flex items-center justify-center cursor-pointer transition-opacity hover:opacity-80 ${theme === 'dark'
                 ? 'bg-neutral-800 border border-neutral-700'
                 : 'bg-neutral-200 border border-neutral-300'
                 } ${isUploadingPicture ? 'opacity-50 cursor-not-allowed' : ''}`}

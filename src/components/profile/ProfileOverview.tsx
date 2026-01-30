@@ -120,7 +120,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
     return (
         <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 animate-in fade-in duration-500">
             {/* Container 1: Profile Info - Top Left */}
-            <section className="bg-neutral-900 border border-neutral-800/50 rounded-2xl p-6 md:p-8 flex flex-col gap-6 shadow-lg shadow-black/20">
+            <section className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 md:p-8 flex flex-col gap-6 shadow-lg shadow-black/20">
                 <div className="flex flex-col items-center gap-4">
                     <input
                         ref={fileInputRef}
@@ -131,7 +131,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                         className="hidden"
                     />
                     <div
-                        className="relative w-28 h-28 rounded-2xl bg-[#0C0C0C] border border-neutral-800 focus-within:ring-2 ring-brand-cyan/20 overflow-hidden flex items-center justify-center cursor-pointer hover:opacity-80 transition-all duration-300 group shadow-lg"
+                        className="relative w-28 h-28 rounded-md bg-[#0C0C0C] border border-neutral-800 focus-within:ring-2 ring-brand-cyan/20 overflow-hidden flex items-center justify-center cursor-pointer hover:opacity-80 transition-all duration-300 group shadow-lg"
                         onClick={handlePictureClick}
                         title={t('profile.uploadPicture') || 'Clique para enviar foto'}
                     >
@@ -210,7 +210,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
             </section>
 
             {/* Container 2: Credits & Stats - Top Right */}
-            <section className="bg-neutral-900 border border-neutral-800/50 rounded-2xl p-6 md:p-8 flex flex-col gap-6 shadow-lg shadow-black/20">
+            <section className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 md:p-8 flex flex-col gap-6 shadow-lg shadow-black/20">
                 <div className="flex items-center gap-3 border-b border-neutral-800/50 pb-4">
                     <div className="p-2 bg-brand-cyan/10 rounded-lg">
                         <CreditCard size={20} className="text-brand-cyan" />
@@ -318,7 +318,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
             </section>
 
             {/* Container 3: Referral Program - Bottom Span */}
-            <section className="bg-neutral-900 border border-neutral-800/50 rounded-2xl p-6 md:p-8 flex flex-col gap-6 shadow-lg shadow-black/20">
+            <section className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 md:p-8 flex flex-col gap-6 shadow-lg shadow-black/20">
                 <div className="flex items-center gap-3 border-b border-neutral-800/50 pb-4">
                     <div className="p-2 bg-brand-cyan/10 rounded-lg">
                         <Share2 size={20} className="text-brand-cyan" />

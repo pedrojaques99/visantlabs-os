@@ -1116,7 +1116,7 @@ const PresetDetailModal: React.FC<{
       onClick={onClose}
     >
       <div
-        className="bg-[#0F0F0F] border border-neutral-800/60 rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+        className="bg-[#0F0F0F] border border-neutral-800/60 rounded-md max-w-5xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

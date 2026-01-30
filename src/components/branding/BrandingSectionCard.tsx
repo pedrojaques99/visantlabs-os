@@ -144,7 +144,7 @@ export const BrandingSectionCard: React.FC<BrandingSectionCardProps> = ({
   return (
     <div
       ref={cardRef}
-      className={`${colSpan} border rounded-2xl p-6 md:p-8 transition-all duration-200 group relative animate-fade-in-down ${theme === 'dark' ? 'bg-[#141414]' : 'bg-white'
+      className={`${colSpan} border rounded-md p-6 md:p-8 transition-all duration-200 group relative animate-fade-in-down ${theme === 'dark' ? 'bg-[#141414]' : 'bg-white'
         } ${isEditing
           ? 'border-[brand-cyan]/50 shadow-[0_0_0_1px_rgba(82,221,235,0.1)]'
           : theme === 'dark'

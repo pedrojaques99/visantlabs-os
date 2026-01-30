@@ -68,7 +68,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
   } = useMockup();
 
   const [isDiceAnimating, setIsDiceAnimating] = useState(false);
-  const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
+  const [isSetupModalOpen, setIsSetupModalOpen] = useState(!hasAnalyzed);
 
   // Use analysis overlay hook
   const { showTemporaryOverlay } = useAnalysisOverlay();

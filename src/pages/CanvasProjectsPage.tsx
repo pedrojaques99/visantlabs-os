@@ -363,7 +363,7 @@ export const CanvasProjectsPage: React.FC = () => {
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
                 key={i}
-                className="bg-[#141414] border border-neutral-800/60 rounded-2xl p-6 md:p-8"
+                className="bg-[#141414] border border-neutral-800/60 rounded-md p-6 md:p-8"
                 style={{ animationDelay: `${i * 100}ms` }}
               >
                 {/* Thumbnail Skeleton */}
@@ -540,7 +540,7 @@ export const CanvasProjectsPage: React.FC = () => {
                 return (
                   <div
                     key={project._id}
-                    className="bg-[#141414] border border-neutral-800/60 rounded-2xl p-6 md:p-8 hover:border-neutral-700/60 transition-all duration-300 group cursor-pointer overflow-hidden"
+                    className="bg-[#141414] border border-neutral-800/60 rounded-md p-6 md:p-8 hover:border-neutral-700/60 transition-all duration-300 group cursor-pointer overflow-hidden"
                     onClick={() => {
                       if (editingProjectId !== project._id) {
                         handleView(project);

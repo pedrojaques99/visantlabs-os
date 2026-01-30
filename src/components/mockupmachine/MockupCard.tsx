@@ -111,7 +111,7 @@ export const MockupCard: React.FC<MockupCardProps> = ({
 
     return (
         <div
-            className={`relative ${aspectRatioClass} bg-neutral-900/40 rounded-2xl overflow-hidden group border border-neutral-800/50 transition-all duration-500 hover:border-brand-cyan/30 hover:shadow-[0_0_40px_-10px_rgba(0,210,255,0.2)] hover:scale-[1.01] animate-fade-in ${className || 'w-full'}`}
+            className={`relative ${aspectRatioClass} bg-neutral-900/40 rounded-md overflow-hidden group border border-neutral-800/50 transition-all duration-500 hover:border-brand-cyan/30 hover:shadow-[0_0_40px_-10px_rgba(0,210,255,0.2)] hover:scale-[1.01] animate-fade-in ${className || 'w-full'}`}
             style={style}
         >
             {showSkeleton && (
@@ -189,7 +189,7 @@ export const MockupCard: React.FC<MockupCardProps> = ({
 
                     {/* Bottom Toolbar - only the pill blocks clicks, not the full bottom band */}
                     <div className="absolute bottom-3 left-0 right-0 flex justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
-                        <div className="flex items-center gap-1 p-1 bg-neutral-900/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl pointer-events-auto">
+                        <div className="flex items-center gap-1 p-1 bg-neutral-900/90 backdrop-blur-xl border border-white/10 rounded-md shadow-2xl pointer-events-auto">
                             <Tooltip content={t('mockup.download') || "Download"} position="top">
                                 <a
                                     href={imageUrl}

@@ -6,10 +6,11 @@
 import type { UploadedImage, AspectRatio, DesignType, GeminiModel, Resolution } from '../types/types';
 
 const STORAGE_KEY = 'mockup-machine-state';
-const MAX_STATE_SIZE_BYTES = 4 * 1024 * 1024; // 4MB (Browser limit is usually 5MB)
-const MAX_AGE_DAYS = 7; // Maximum age of saved state in days
-const MAX_SUGGESTED_ITEMS = 40; // Cap array size to reduce quota usage
-const MAX_PROMPT_PREVIEW_LENGTH = 4000;
+const MAX_STATE_SIZE_BYTES = 2 * 1024 * 1024; // 2MB (String length; browsers use 2 bytes per char, so 4MB actual storage)
+const MAX_AGE_DAYS = 7;
+const MAX_SUGGESTED_ITEMS = 25; // Further reduced from 40 to save space
+const MAX_PROMPT_PREVIEW_LENGTH = 2000;
+const MAX_IMAGE_BASE64_SIZE_BYTES = 150 * 1024; // 150KB limit for base64 in LocalStorage
 
 const isHttpUrl = (s: string | undefined): s is string =>
   !!s && (s.startsWith('http://') || s.startsWith('https://'));
@@ -20,7 +21,6 @@ const cap = <T>(arr: T[] | undefined, n: number): T[] =>
 export interface PersistedMockupState {
   mockups: (string | null)[];
   uploadedImage: UploadedImage | null;
-  referenceImage: UploadedImage | null;
   referenceImages: UploadedImage[];
   designType: DesignType | null;
   selectedTags: string[];
@@ -60,18 +60,24 @@ function isValidState(data: any): data is PersistedMockupState {
   if (!data || typeof data !== 'object') return false;
 
   // Check required fields
-  if (!Array.isArray(data.mockups)) return false;
   if (typeof data.timestamp !== 'number') return false;
 
-  // Check timestamp is not too old
+  // Check timestamp is not too old (max 7 days)
   const ageInDays = (Date.now() - data.timestamp) / (1000 * 60 * 60 * 24);
   if (ageInDays > MAX_AGE_DAYS) return false;
 
-  // Check if state has at least one mockup
-  const hasMockups = data.mockups.some((m: any) => m !== null);
-  if (!hasMockups) return false;
+  // State is valid if it has at least one of these:
+  // 1. Generated mockups
+  const hasMockups = Array.isArray(data.mockups) && data.mockups.some((m: any) => m !== null);
+  // 2. An uploaded primary image
+  const hasImage = !!data.uploadedImage && (isHttpUrl(data.uploadedImage.url) || !!data.uploadedImage.base64);
+  // 3. Any selected tags (user has started work)
+  const hasSelectedTags =
+    (Array.isArray(data.selectedTags) && data.selectedTags.length > 0) ||
+    (Array.isArray(data.selectedBrandingTags) && data.selectedBrandingTags.length > 0) ||
+    (Array.isArray(data.designType) && !!data.designType);
 
-  return true;
+  return hasMockups || hasImage || hasSelectedTags;
 }
 
 /**
@@ -117,46 +123,99 @@ export const saveMockupState = (state: PersistedMockupState): void => {
       timestamp: state.timestamp,
 
       // Complex fields - sanitization required
-      // Only persist HTTP(S) URLs; never base64 or data URLs
+      // We prioritize HTTP(S) URLs but allow base64 fallback if small
       mockups: Array.isArray(state.mockups)
         ? state.mockups.map(m => {
-            if (!m) return null;
-            if (typeof m === 'string' && (m.startsWith('http://') || m.startsWith('https://'))) return m;
-            return null;
-          })
+          if (!m) return null;
+          if (typeof m === 'string' && (m.startsWith('http://') || m.startsWith('https://'))) return m;
+          // Don't persist base64 mockups to save space
+          return null;
+        })
         : [],
 
-      // NEVER save base64. Only persist when url is http(s); data URLs are excluded.
-      uploadedImage: isHttpUrl(state.uploadedImage?.url)
-        ? { url: state.uploadedImage!.url, mimeType: state.uploadedImage!.mimeType, size: state.uploadedImage!.size }
+      // Persist uploaded image (URL or base64 if small)
+      uploadedImage: state.uploadedImage
+        ? {
+          url: isHttpUrl(state.uploadedImage.url) ? state.uploadedImage.url : undefined,
+          base64: (!isHttpUrl(state.uploadedImage.url) && state.uploadedImage.base64 && state.uploadedImage.base64.length < MAX_IMAGE_BASE64_SIZE_BYTES)
+            ? state.uploadedImage.base64
+            : undefined,
+          mimeType: state.uploadedImage.mimeType,
+          size: state.uploadedImage.size
+        }
         : null,
 
-      referenceImage: isHttpUrl(state.referenceImage?.url)
-        ? { url: state.referenceImage!.url, mimeType: state.referenceImage!.mimeType, size: state.referenceImage!.size }
-        : null,
-
-      referenceImages: state.referenceImages
-        .filter(img => isHttpUrl(img.url))
-        .map(img => ({ url: img.url!, mimeType: img.mimeType, size: img.size }))
+      referenceImages: (state.referenceImages || [])
+        .map(img => ({
+          url: isHttpUrl(img.url) ? img.url : undefined,
+          base64: (!isHttpUrl(img.url) && img.base64 && img.base64.length < MAX_IMAGE_BASE64_SIZE_BYTES)
+            ? img.base64
+            : undefined,
+          mimeType: img.mimeType,
+          size: img.size
+        }))
+        .filter(img => img.url || img.base64) // Keep only if we have some data
     };
 
-    const serializedState = JSON.stringify(sanitizedState);
-    const sizeInBytes = new Blob([serializedState]).size;
+    let serializedState = JSON.stringify(sanitizedState);
+    let sizeInBytes = new Blob([serializedState]).size;
+
+    // If still too large, try to remove reference image base64s first
+    if (sizeInBytes > MAX_STATE_SIZE_BYTES) {
+      sanitizedState.referenceImages = sanitizedState.referenceImages.map(img => ({
+        ...img,
+        base64: undefined // Remove base64 from refs
+      }));
+      serializedState = JSON.stringify(sanitizedState);
+      sizeInBytes = new Blob([serializedState]).size;
+    }
+
+    // If STILL too large, remove primary image base64 as last resort
+    if (sizeInBytes > MAX_STATE_SIZE_BYTES && sanitizedState.uploadedImage?.base64) {
+      console.warn('Mockup state primary image base64 too large for LocalStorage, removing to save other state');
+      sanitizedState.uploadedImage.base64 = undefined;
+      serializedState = JSON.stringify(sanitizedState);
+      sizeInBytes = new Blob([serializedState]).size;
+    }
 
     if (sizeInBytes > MAX_STATE_SIZE_BYTES) {
-      console.warn(`Mockup state too large (${(sizeInBytes / 1024 / 1024).toFixed(2)}MB), skipping save`);
-      localStorage.removeItem(STORAGE_KEY);
+      console.warn(`Mockup state still too large (${(sizeInBytes / 1024 / 1024).toFixed(2)}MB) even after slimming, skipping save`);
+      // We don't remove completely here because some basic state might be better than none,
+      // but if it exceeds limit it will fail anyway. 
       return;
     }
 
     localStorage.setItem(STORAGE_KEY, serializedState);
   } catch (error) {
     if (error instanceof Error && (error.name === 'QuotaExceededError' || error.message?.includes('quota'))) {
-      console.warn('Storage quota exceeded, clearing saved mockup state');
+      console.warn('LocalStorage quota exceeded, attempting to save minimal CORE state (tags only)');
       try {
+        // Guaranteed minimal state: only tags and settings, NO images, NO large suggestions
+        const minimalState: Partial<PersistedMockupState> = {
+          designType: state.designType,
+          selectedTags: state.selectedTags,
+          selectedBrandingTags: state.selectedBrandingTags,
+          selectedLocationTags: state.selectedLocationTags,
+          selectedAngleTags: state.selectedAngleTags,
+          selectedColors: state.selectedColors,
+          aspectRatio: state.aspectRatio,
+          selectedModel: state.selectedModel,
+          resolution: state.resolution,
+          hasGenerated: state.hasGenerated,
+          mockupCount: state.mockupCount,
+          instructions: state.instructions?.slice(0, 500),
+          timestamp: Date.now(),
+          mockups: [],
+          uploadedImage: null,
+          referenceImages: [],
+          suggestedTags: cap(state.suggestedTags, 5),
+          suggestedBrandingTags: cap(state.suggestedBrandingTags, 5),
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(minimalState));
+        console.log('Minimal core state saved successfully');
+      } catch (innerError) {
+        console.warn('Even minimal state failed to save - storage is completely full. Clearing key.');
         localStorage.removeItem(STORAGE_KEY);
-      } catch {
-        // ignore
       }
     } else {
       console.error('Failed to save mockup state:', error);

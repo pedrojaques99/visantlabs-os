@@ -385,15 +385,12 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
       </div>
       <div className="relative z-10 max-w-2xl w-full text-center space-y-8 animate-fade-in">
         <div className="space-y-4">
-          <div className="flex justify-center">
-          </div>
-          <div className="flex items-baseline justify-center gap-2">
-            <AnimatedTitle
-              text="MOCKUP MACHINE®"
-              className={`text-2xl md:text-3xl font-regular font-mono tracking-wider ${theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'}`}
-            />
-            <span className="text-brand-cyan text-sm font-mono transform -translate-y-1">v1.0</span>
-          </div>
+          <h1 className={`text-2xl md:text-3xl font-bold font-mono tracking-wide ${theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'}`}>
+            Envie seu logo ou layout
+          </h1>
+          <h3 className={`text-lg md:text-xl font-mono ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}`}>
+            e veja a mágica acontecer
+          </h3>
         </div>
         <div className="flex flex-col gap-4 justify-center items-center">
           <input
@@ -414,12 +411,16 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
               onClick={handleUploadClick}
               disabled={isProcessing || isCheckingAuth || isVerifyingAuth}
               data-tutorial-target="upload-image"
-              className="inline-flex items-center gap-3 bg-brand-cyan/80 hover:bg-brand-cyan disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed cursor-pointer text-black font-bold py-5 px-12 rounded-md transition-all duration-300 text-2xl md:text-3xl font-mono shadow-lg shadow-brand-cyan/20"
+              className="inline-flex flex-col items-center gap-1 bg-brand-cyan/80 hover:bg-brand-cyan disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed cursor-pointer text-black font-bold py-5 px-12 rounded-md transition-all duration-300 font-mono shadow-lg shadow-brand-cyan/20"
             >
-              <UploadCloud size={22} className="md:w-8 md:h-8" />
-              <span className="text-sm md:text-base">{t('welcome.uploadImage')}</span>
+              <div className="flex items-center gap-3">
+                <UploadCloud size={22} className="md:w-8 md:h-8" />
+                <span className="text-sm md:text-base">Enviar imagem</span>
+              </div>
             </button>
           </Tooltip>
+          <span className="text-[10px] md:text-xs font-normal opacity-70 hover:opacity-100">ou ctrl + v para colar</span>
+
           {isProcessing && (
             <div className={`flex items-center gap-2 font-mono text-sm ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
               }`}>

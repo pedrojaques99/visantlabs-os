@@ -454,7 +454,7 @@ export const CommunityPage: React.FC = () => {
                   <button
                     key={category.type}
                     onClick={() => navigate(`/community/presets?type=${category.type}`)}
-                    className="group relative bg-[#141414] border border-neutral-800/50 rounded-2xl p-6 flex flex-col h-full hover:border-[brand-cyan]/40 transition-all hover:-translate-y-1 active:translate-y-0 overflow-hidden"
+                    className="group relative bg-[#141414] border border-neutral-800/50 rounded-md p-6 flex flex-col h-full hover:border-[brand-cyan]/40 transition-all hover:-translate-y-1 active:translate-y-0 overflow-hidden"
                   >
                     <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-5 transition-opacity [mask-image:linear-gradient(to_bottom_left,black,transparent)]">
                       <category.icon size={500} className="text-brand-cyan" />
@@ -522,7 +522,7 @@ export const CommunityPage: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {workflowsLoading ? (
                   Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="bg-[#141414] border border-neutral-800/50 rounded-2xl p-6 animate-pulse">
+                    <div key={i} className="bg-[#141414] border border-neutral-800/50 rounded-md p-6 animate-pulse">
                       <div className="aspect-video bg-neutral-900 rounded-lg mb-4" />
                       <div className="h-4 bg-neutral-900 rounded mb-2" />
                       <div className="h-3 bg-neutral-900 rounded w-2/3" />
@@ -537,7 +537,7 @@ export const CommunityPage: React.FC = () => {
                       <button
                         key={workflow._id}
                         onClick={() => navigate('/canvas')}
-                        className="group relative bg-[#141414] border border-neutral-800/50 rounded-2xl p-6 flex flex-col h-full hover:border-[brand-cyan]/40 transition-all hover:-translate-y-1 active:translate-y-0 text-left"
+                        className="group relative bg-[#141414] border border-neutral-800/50 rounded-md p-6 flex flex-col h-full hover:border-[brand-cyan]/40 transition-all hover:-translate-y-1 active:translate-y-0 text-left"
                       >
                         {workflow.thumbnailUrl ? (
                           <div className="aspect-video rounded-lg overflow-hidden border border-neutral-700/30 bg-neutral-900/30 mb-4">
@@ -586,7 +586,7 @@ export const CommunityPage: React.FC = () => {
                     );
                   })
                 ) : (
-                  <div className="col-span-full py-20 text-center bg-[#141414] rounded-3xl border border-neutral-800/50 border-dashed">
+                  <div className="col-span-full py-20 text-center bg-[#141414] rounded-md border border-neutral-800/50 border-dashed">
                     <div className="flex flex-col items-center gap-4">
                       <Workflow size={48} className="text-neutral-800" />
                       <p className="text-neutral-500 font-mono text-sm">
@@ -631,14 +631,14 @@ export const CommunityPage: React.FC = () => {
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
                 {isLoading ? (
                   Array.from({ length: 10 }).map((_, i) => (
-                    <div key={i} className="aspect-square bg-neutral-900 rounded-2xl animate-pulse border border-neutral-800/50" />
+                    <div key={i} className="aspect-square bg-neutral-900 rounded-md animate-pulse border border-neutral-800/50" />
                   ))
                 ) : (isGalleryExpanded ? allPublicMockups : communityMockups).length > 0 ? (
                   (isGalleryExpanded ? allPublicMockups : communityMockups).map((mockup) => (
                     <Link
                       key={mockup._id}
                       to="/mockups"
-                      className="group relative aspect-square bg-[#141414] rounded-2xl overflow-hidden border border-neutral-800/50 hover:border-[brand-cyan]/50 transition-all hover:shadow-2xl hover:shadow-[brand-cyan]/5"
+                      className="group relative aspect-square bg-[#141414] rounded-md overflow-hidden border border-neutral-800/50 hover:border-[brand-cyan]/50 transition-all hover:shadow-2xl hover:shadow-[brand-cyan]/5"
                     >
                       {mockup.imageUrl || mockup.imageBase64 ? (
                         <img
@@ -664,7 +664,7 @@ export const CommunityPage: React.FC = () => {
                     </Link>
                   ))
                 ) : (
-                  <div className="col-span-full py-20 text-center bg-[#141414] rounded-3xl border border-neutral-800/50 border-dashed">
+                  <div className="col-span-full py-20 text-center bg-[#141414] rounded-md border border-neutral-800/50 border-dashed">
                     <div className="flex flex-col items-center gap-4">
                       <ImageIcon size={48} className="text-neutral-800" />
                       <p className="text-neutral-500 font-mono text-sm">
@@ -697,8 +697,8 @@ export const CommunityPage: React.FC = () => {
 
             {/* GitHub Ecosystem CTA */}
             <section className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-[brand-cyan]/5 to-transparent rounded-3xl" />
-              <div className="relative z-10 p-8 md:p-12 rounded-3xl border border-neutral-800/50 bg-[#141414] overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
+              <div className="absolute inset-0 bg-gradient-to-r from-[brand-cyan]/5 to-transparent rounded-md" />
+              <div className="relative z-10 p-8 md:p-12 rounded-md border border-neutral-800/50 bg-[#141414] overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
                 <div className="max-w-xl space-y-4 text-center md:text-left">
                   <div className="flex items-center justify-center md:justify-start gap-3 text-brand-cyan">
                     <Github size={24} />
@@ -716,7 +716,7 @@ export const CommunityPage: React.FC = () => {
                     href={getGithubUrl()}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group flex items-center gap-3 px-8 py-4 bg-white text-black font-bold rounded-2xl transition-all hover:scale-105 active:scale-95 shadow-xl hover:shadow-white/10"
+                    className="group flex items-center gap-3 px-8 py-4 bg-white text-black font-bold rounded-md transition-all hover:scale-105 active:scale-95 shadow-xl hover:shadow-white/10"
                   >
                     <Github size={22} className="group-hover:rotate-12 transition-transform" />
                     <span className="font-mono uppercase tracking-widest">Ver Repositório</span>
