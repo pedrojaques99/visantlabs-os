@@ -390,7 +390,7 @@ export const CommunityProfilePage: React.FC = () => {
             </div>
 
             {/* Profile Header Card */}
-            <div className="relative mb-8 rounded-2xl overflow-hidden bg-neutral-900/20 border border-neutral-800/50">
+            <div className="relative mb-8 rounded-md overflow-hidden bg-neutral-900/20 border border-neutral-800/50">
 
               {/* Cover Image */}
               <div className="h-48 md:h-64 relative w-full bg-neutral-900/50 overflow-hidden">
@@ -419,7 +419,7 @@ export const CommunityProfilePage: React.FC = () => {
 
                   {/* Avatar */}
                   <div className="relative group">
-                    <div className="w-32 h-32 md:w-36 md:h-36 rounded-2xl bg-neutral-900 border-4 border-[#0C0C0C] overflow-hidden flex items-center justify-center shadow-xl">
+                    <div className="w-32 h-32 md:w-36 md:h-36 rounded-md bg-neutral-900 border-4 border-[#0C0C0C] overflow-hidden flex items-center justify-center shadow-xl">
                       {profile.picture ? (
                         <img
                           src={profile.picture}

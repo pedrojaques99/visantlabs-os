@@ -32,7 +32,7 @@ export const Header: React.FC<HeaderProps> = ({ subscriptionStatus, onPricingCli
   const { theme, toggleTheme } = useTheme();
   const { t } = useTranslation();
   const location = useLocation();
-  const isOnWelcomeScreen = location.pathname === '/';
+  const isOnWelcomeScreen = location.pathname === '/' || location.pathname === '/mockupmachine';
   // Try to get layout context, but don't fail if not available
   let isAuthenticated: boolean | null = null;
   try {

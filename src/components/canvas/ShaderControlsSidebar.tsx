@@ -207,7 +207,7 @@ export const ShaderControlsSidebar = ({
       data-shader-sidebar="true"
       className={cn(
         variant === 'standalone' ? "fixed right-4 top-[81px]" : "relative h-full border-none shadow-none rounded-none bg-transparent backdrop-blur-none",
-        variant === 'standalone' && "z-50 backdrop-blur-xl border border-neutral-800/50 rounded-2xl shadow-2xl transition-all duration-300 ease-out bg-neutral-950/70",
+        variant === 'standalone' && "z-50 backdrop-blur-xl border border-neutral-800/50 rounded-md shadow-2xl transition-all duration-300 ease-out bg-neutral-950/70",
         "flex flex-col",
         isCollapsed ? "w-[56px] h-[56px]" : variant === 'standalone' ? "w-[280px] h-[calc(100vh-97px)]" : "w-full"
       )}

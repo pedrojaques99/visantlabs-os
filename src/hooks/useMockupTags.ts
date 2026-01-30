@@ -30,6 +30,7 @@ export const useMockupTags = () => {
         customLightingInput, setCustomLightingInput,
         customEffectInput, setCustomEffectInput,
         customMaterialInput, setCustomMaterialInput,
+        isSurpriseMeMode,
     } = useMockup();
 
     // Dynamic Tag State
@@ -113,12 +114,21 @@ export const useMockupTags = () => {
 
     const handleTagToggle = useCallback((tag: string) => {
         const wasEmpty = selectedTags.length === 0;
-        setSelectedTags(selectedTags.includes(tag) ? [] : [tag]);
+
+        if (isSurpriseMeMode) {
+            setSelectedTags(
+                selectedTags.includes(tag)
+                    ? selectedTags.filter(t => t !== tag)
+                    : [...selectedTags, tag]
+            );
+        } else {
+            setSelectedTags(selectedTags.includes(tag) ? [] : [tag]);
+        }
 
         if (wasEmpty && !selectedTags.includes(tag)) {
             scrollToSection('refine-section');
         }
-    }, [selectedTags, setSelectedTags, scrollToSection]);
+    }, [selectedTags, setSelectedTags, scrollToSection, isSurpriseMeMode]);
 
     const handleBrandingTagToggle = useCallback((tag: string) => {
         const wasEmpty = selectedBrandingTags.length === 0;
@@ -186,13 +196,17 @@ export const useMockupTags = () => {
         const newTag = customCategoryInput.trim();
         if (newTag && !selectedTags.includes(newTag)) {
             const wasEmpty = selectedTags.length === 0;
-            setSelectedTags([...selectedTags, newTag]);
+            if (isSurpriseMeMode) {
+                setSelectedTags([...selectedTags, newTag]);
+            } else {
+                setSelectedTags([newTag]);
+            }
             setCustomCategoryInput('');
             if (wasEmpty) {
                 scrollToSection('refine-section');
             }
         }
-    }, [customCategoryInput, selectedTags, setSelectedTags, setCustomCategoryInput, scrollToSection]);
+    }, [customCategoryInput, selectedTags, setSelectedTags, setCustomCategoryInput, scrollToSection, isSurpriseMeMode]);
 
     const handleRandomizeCategories = useCallback(() => {
         const shuffled = [...availableMockupTags].sort(() => 0.5 - Math.random());

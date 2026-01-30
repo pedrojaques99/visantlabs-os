@@ -13,11 +13,11 @@ function UniversalFooterComponent({ isDarkMode, className = '' }: UniversalFoote
   useEffect(() => {
     const glitchInterval = setInterval(() => {
       const glitchChars = '*•.'
-      const randomGlitch = Array.from({ length: 4 }, () =>
+      const randomGlitch = Array.from({ length: 2 }, () =>
         glitchChars[Math.floor(Math.random() * glitchChars.length)]
       ).join('')
       setGlitchText(randomGlitch)
-    }, 150)
+    }, 200)
 
     return () => clearInterval(glitchInterval)
   }, [])

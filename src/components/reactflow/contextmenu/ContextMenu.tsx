@@ -469,7 +469,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       ref={menuRef}
       data-context-menu
       className={cn(
-        "fixed z-50 bg-neutral-950/70 backdrop-blur-xl border border-neutral-800/50 rounded-2xl shadow-2xl",
+        "fixed z-50 bg-neutral-950/70 backdrop-blur-xl border border-neutral-800/50 rounded-md shadow-2xl",
         "min-w-[220px] max-w-[280px]",
         "transition-all duration-200 ease-out"
       )}

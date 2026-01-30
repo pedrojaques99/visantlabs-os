@@ -57,6 +57,7 @@ const App: React.FC = () => {
             <Suspense fallback={<LoadingFallback />}>
               <Routes>
                 <Route path="/" element={<MockupMachinePage />} />
+                <Route path="/mockupmachine" element={<MockupMachinePage />} />
                 <Route path="/pricing" element={<PricingPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/thank-you" element={<ThankYouPage />} />

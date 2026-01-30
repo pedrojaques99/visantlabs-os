@@ -156,7 +156,7 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
                 const { nodeId, nodeName, imageUrl, nodeType } = overridePanel.data;
                 return (
                     <div className="h-full flex flex-col">
-                        <div 
+                        <div
                             className={cn(
                                 "flex items-center justify-between p-4 border-b",
                                 isLight ? "border-neutral-300/30" : "border-neutral-700/30"
@@ -166,8 +166,8 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
                                 <Share size={16} style={{ color: 'var(--brand-cyan)' }} />
                                 <h3 className="text-sm font-semibold" style={{ color: textColors.primary }}>Export</h3>
                             </div>
-                            <button 
-                                onClick={overridePanel.onClose} 
+                            <button
+                                onClick={overridePanel.onClose}
                                 style={{ color: textColors.muted }}
                                 onMouseEnter={(e) => e.currentTarget.style.color = textColors.primary}
                                 onMouseLeave={(e) => e.currentTarget.style.color = textColors.muted}
@@ -247,7 +247,7 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
                 "fixed right-4 top-[65px] z-40",
                 "backdrop-blur-xl border",
                 isLight ? "border-neutral-300/50" : "border-neutral-800/50",
-                "rounded-2xl shadow-2xl",
+                "rounded-md shadow-2xl",
                 "transition-all duration-300 ease-out flex flex-col",
                 isResizing ? "transition-none select-none" : ""
             )}
@@ -269,7 +269,7 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
 
             {/* Tabs / Header */}
             {!overridePanel && activeSidePanel !== 'community-presets' && (
-                <div 
+                <div
                     className={cn(
                         "flex items-center justify-between border-b bg-transparent rounded-t-2xl overflow-hidden",
                         isLight ? "border-neutral-300/50" : "border-neutral-800/50"
@@ -288,8 +288,8 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
                                         onClick={() => setActiveTabId(node.id)}
                                         className={cn(
                                             "flex items-center gap-2 px-4 py-3 text-xs font-medium border-r transition-colors min-w-[100px] h-full",
-                                            isLight 
-                                                ? "border-neutral-300/50" 
+                                            isLight
+                                                ? "border-neutral-300/50"
                                                 : "border-neutral-800/50",
                                             isActive
                                                 ? isLight
@@ -319,7 +319,7 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
                                 );
                             })
                         ) : (
-                            <div 
+                            <div
                                 className="px-4 text-xs font-medium italic"
                                 style={{ color: textColors.subtle }}
                             >
@@ -347,13 +347,13 @@ export const UniversalSidePanel: React.FC<UniversalSidePanelProps> = ({
 
             {/* Global Panel Header for Community Presets */}
             {activeSidePanel === 'community-presets' && (
-                <div 
+                <div
                     className={cn(
                         "flex items-center justify-between border-b bg-transparent rounded-t-2xl overflow-hidden h-[41px]",
                         isLight ? "border-neutral-300/50" : "border-neutral-800/50"
                     )}
                 >
-                    <div 
+                    <div
                         className="flex items-center px-4 gap-2 font-medium text-xs"
                         style={{ color: textColors.primary }}
                     >

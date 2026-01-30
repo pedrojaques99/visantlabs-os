@@ -275,7 +275,7 @@ export const MyBudgetsPage: React.FC = () => {
                     return (
                       <div
                         key={presetId}
-                        className="bg-neutral-900 border border-neutral-800/60 rounded-2xl p-6 md:p-8 hover:border-neutral-700/60 transition-all duration-300"
+                        className="bg-neutral-900 border border-neutral-800/60 rounded-md p-6 md:p-8 hover:border-neutral-700/60 transition-all duration-300"
                       >
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex-1">
@@ -339,7 +339,7 @@ export const MyBudgetsPage: React.FC = () => {
               {budgets.map((budget) => (
                 <div
                   key={budget._id}
-                  className="bg-[#141414] border border-neutral-800/60 rounded-2xl p-6 md:p-8 hover:border-neutral-700/60 transition-all duration-300 group cursor-pointer"
+                  className="bg-[#141414] border border-neutral-800/60 rounded-md p-6 md:p-8 hover:border-neutral-700/60 transition-all duration-300 group cursor-pointer"
                   onClick={() => handleView(budget)}
                 >
                   <div className="flex items-start justify-between mb-4">

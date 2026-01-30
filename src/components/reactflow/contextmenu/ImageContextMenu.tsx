@@ -82,7 +82,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
   return (
     <div
       data-context-menu
-      className="fixed z-50 bg-neutral-950/70 backdrop-blur-xl border border-neutral-800/50 rounded-2xl shadow-2xl min-w-[180px] max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-400 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent"
+      className="fixed z-50 bg-neutral-950/70 backdrop-blur-xl border border-neutral-800/50 rounded-md shadow-2xl min-w-[180px] max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-400 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent"
       style={{
         left: `${x}px`,
         top: `${y}px`,

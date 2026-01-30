@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useBlocker, useLocation } from 'react-router-dom';
-import { Menu, Pickaxe } from 'lucide-react';
+import { Menu, Pickaxe, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ImageUploader } from '../components/ui/ImageUploader';
 import { normalizeImageToBase64, detectMimeType } from '../services/reactFlowService';
@@ -80,7 +80,6 @@ const MockupMachinePageContent: React.FC = () => {
 
   const {
     uploadedImage, setUploadedImage,
-    referenceImage, setReferenceImage,
     referenceImages, setReferenceImages,
 
     selectedModel, setSelectedModel,
@@ -238,7 +237,6 @@ const MockupMachinePageContent: React.FC = () => {
         // Restore all state
         setMockups(persistedState.mockups);
         setUploadedImage(persistedState.uploadedImage);
-        setReferenceImage(persistedState.referenceImage);
         setReferenceImages(persistedState.referenceImages);
         setDesignType(persistedState.designType);
         setSelectedTags(persistedState.selectedTags);
@@ -274,9 +272,6 @@ const MockupMachinePageContent: React.FC = () => {
 
         // Adjust loading array to match mockups length
         setIsLoading(Array(persistedState.mockups.length).fill(false));
-
-        // Clear persisted state after restoring (to avoid stale data)
-        clearMockupState();
       }
     } catch (error) {
       // Silently fail - don't break UX if restoration fails
@@ -332,20 +327,19 @@ const MockupMachinePageContent: React.FC = () => {
     // This prevents the welcome screen from reappearing after image upload
     // Also don't reset if we have generated mockups (hasGenerated is true or mockups array has non-null values)
     const hasAnyMockups = mockups.some(m => m !== null);
-    if (location.pathname === '/' &&
+    if ((location.pathname === '/' || location.pathname === '/mockupmachine') &&
       !uploadedImage &&
-      !referenceImage &&
       mockups.every(m => m === null) &&
       isPromptReady &&
-      designType !== 'blank' &&
       !hasGenerated &&
-      !hasAnyMockups) {
+      !hasAnyMockups &&
+      location.pathname !== '/mockupmachine') {
       setShowWelcome(true);
-    } else if (hasGenerated || hasAnyMockups) {
-      // Explicitly keep welcome screen hidden if we have generated mockups
+    } else if (hasGenerated || hasAnyMockups || location.pathname === '/mockupmachine') {
+      // Explicitly keep welcome screen hidden if we have generated mockups or are on the mockupmachine route
       setShowWelcome(false);
     }
-  }, [location.pathname, uploadedImage, referenceImage, mockups, designType, hasGenerated]);
+  }, [location.pathname, uploadedImage, mockups, designType, hasGenerated, isPromptReady]);
 
   // Save state to localStorage when mockups are generated (with debounce)
   useEffect(() => {
@@ -358,7 +352,6 @@ const MockupMachinePageContent: React.FC = () => {
         await saveMockupState({
           mockups,
           uploadedImage,
-          referenceImage,
           referenceImages,
           designType,
           selectedTags,
@@ -402,7 +395,6 @@ const MockupMachinePageContent: React.FC = () => {
   }, [
     mockups,
     uploadedImage,
-    referenceImage,
     referenceImages,
     designType,
     selectedTags,
@@ -457,14 +449,12 @@ const MockupMachinePageContent: React.FC = () => {
       basePrompt += ` IMPORTANT: The provided reference image${referenceImages.length > 1 ? 's' : ''} ${referenceImages.length > 1 ? 'are' : 'is'} included as style and composition guidance. Study ${referenceImages.length > 1 ? 'these images' : 'this image'} carefully and create a mockup that matches the aesthetic, mood, composition style, lighting approach, color palette, and overall visual feeling of ${referenceImages.length > 1 ? 'these reference mockups' : 'this reference mockup'}. Use ${referenceImages.length > 1 ? 'them' : 'it'} as inspiration for creating a similar visual quality and atmosphere.`;
     }
 
-    if (designType !== 'blank') {
-      if (designType === 'logo') {
-        if (generateText) basePrompt += " If appropriate for the mockup type, generate plausible placeholder text to make the scene more realistic.";
-        else basePrompt += " No additional text or letters should be generated. The design is the sole graphic element.";
-      }
-
-      basePrompt += " Place the design exactly as provided, without modification.";
+    if (designType === 'logo') {
+      if (generateText) basePrompt += " If appropriate for the mockup type, generate plausible placeholder text to make the scene more realistic.";
+      else basePrompt += " No additional text or letters should be generated. The design is the sole graphic element.";
     }
+
+    basePrompt += " Place the design exactly as provided, without modification.";
 
     if (designType === 'logo') {
       basePrompt += " When placing the design, ensure a comfortable safe area or 'breathing room' around it. The design must never touch or be clipped by the edges of the mockup surface (e.g., the edges of a business card or a book cover).";
@@ -473,11 +463,7 @@ const MockupMachinePageContent: React.FC = () => {
 
     if (withHuman) {
       const humanAction = Math.random() < 0.5 ? 'looking at' : 'interacting with';
-      if (designType === 'blank') {
-        basePrompt += ` The scene should include a human person naturally ${humanAction} the mockup.`;
-      } else {
-        basePrompt += ` The scene should include a human person naturally ${humanAction} the mockup product. Ensure the moment feels contextual for the product type.`;
-      }
+      basePrompt += ` The scene should include a human person naturally ${humanAction} the mockup product. Ensure the moment feels contextual for the product type.`;
     }
 
     if (additionalPrompt.trim()) {
@@ -507,9 +493,9 @@ const MockupMachinePageContent: React.FC = () => {
       return;
     }
 
-    // Allow prompt generation only if we have a design type AND (blank mode OR uploaded image / reference)
+    // Allow prompt generation only if we have a design type AND (uploaded image / reference)
     const hasRefImagesForSmartPrompt = referenceImages.length > 0;
-    const hasValidDesignSetup = designType && (designType === 'blank' || uploadedImage || hasRefImagesForSmartPrompt);
+    const hasValidDesignSetup = designType && (uploadedImage || hasRefImagesForSmartPrompt);
     if (!hasValidDesignSetup) {
       toast.error(t('messages.completeSteps') || 'Complete as etapas de configuração antes de gerar o prompt.');
       return;
@@ -716,7 +702,6 @@ const MockupMachinePageContent: React.FC = () => {
     setIsPromptReady(false);
     setMockups(Array(mockupCount).fill(null));
     setIsLoading(Array(mockupCount).fill(false));
-    setReferenceImage(null);
     setReferenceImages([]);
     setSavedIndices(new Set());
     setSavedMockupIds(new Map());
@@ -742,7 +727,7 @@ const MockupMachinePageContent: React.FC = () => {
     if (!silent) {
       setIsAnalyzing(true);
       showTemporaryOverlay(5000); // Mostrar overlay por no máximo 5 segundos
-      
+
       // Após 5 segundos, mostrar o próximo passo mesmo que a análise não tenha completado
       nextStepTimeoutId = window.setTimeout(() => {
         if (import.meta.env.DEV) console.log('[dev] analyze: showing next step after 5s (analysis may still be running)');
@@ -830,7 +815,7 @@ const MockupMachinePageContent: React.FC = () => {
         // Garantir que o overlay seja ocultado quando a análise terminar
         // (mesmo que ainda não tenham passado os 5 segundos)
         hideOverlay();
-        
+
         // Limpar timeout se ainda existir
         if (nextStepTimeoutId !== null) {
           clearTimeout(nextStepTimeoutId);
@@ -848,26 +833,8 @@ const MockupMachinePageContent: React.FC = () => {
     // Check authentication
     if (!(await requireAuth())) return;
 
-    // Se estiver no modo blank mockup, a imagem é apenas referência visual
-    if (designType === 'blank') {
-      setReferenceImage(image);
-      // Upload to temp R2 for reference image to save storage
-      if (image.base64 && !image.url) {
-        mockupApi.uploadTempImage(image.base64, image.mimeType)
-          .then(url => {
-            setReferenceImage(prev => prev ? ({ ...prev, url, base64: undefined }) : null);
-          })
-          .catch(err => {
-            if (isLocalDevelopment()) console.error('Failed to upload reference temp image:', err);
-          });
-      }
-      // Não reseta o estado, apenas atualiza a referência visual
-      return;
-    }
-
     // Para outros modos, a imagem é usada na geração
     // Reset controls primeiro (ele vai resetar uploadedImage, mas vamos setar depois)
-    setReferenceImage(null);
     setReferenceImages([]);
     resetControls();
     // Agora seta uploadedImage DEPOIS do reset para que não seja sobrescrito
@@ -888,6 +855,9 @@ const MockupMachinePageContent: React.FC = () => {
     setResolution('1K');
     // Por último, esconde welcome screen para garantir que fique false
     setShowWelcome(false);
+
+    // Navega para a rota /mockupmachine
+    navigate('/mockupmachine');
 
     // Auto-extract colors from uploaded image (local only, sem chamar análise de IA)
     try {
@@ -918,8 +888,6 @@ const MockupMachinePageContent: React.FC = () => {
     // Ensure base64 is a string
     const base64String = typeof image.base64 === 'string' ? image.base64 : '';
     const mimeType = image.mimeType || 'image/png';
-
-
 
     // Para outros modos, substitui a imagem mantendo o setup
     const validImage: UploadedImage = base64String ? { base64: base64String, mimeType } : { url: image.url!, mimeType };
@@ -956,8 +924,6 @@ const MockupMachinePageContent: React.FC = () => {
 
   const handleStartOver = () => {
     setUploadedImage(null);
-    setReferenceImage(null);
-    setReferenceImages([]);
     setReferenceImages([]);
     resetControls();
     setShowWelcome(true);
@@ -1060,8 +1026,8 @@ const MockupMachinePageContent: React.FC = () => {
 
   // Auto-collapse sections when reference images are uploaded
   useEffect(() => {
-    const hasReferenceImage = referenceImage !== null || referenceImages.length > 0;
-    const shouldCollapseSections = hasReferenceImage && uploadedImage !== null && designType !== 'blank';
+    const hasReferenceImage = referenceImages.length > 0;
+    const shouldCollapseSections = hasReferenceImage && uploadedImage !== null;
 
     if (shouldCollapseSections) {
       // Collapse categories and advanced options
@@ -1084,7 +1050,7 @@ const MockupMachinePageContent: React.FC = () => {
         }
       }, 300);
     }
-  }, [referenceImage, referenceImages, uploadedImage, designType]);
+  }, [referenceImages, uploadedImage, designType]);
 
 
   const handlePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -1259,9 +1225,9 @@ const MockupMachinePageContent: React.FC = () => {
     if (!canProceed) return;
 
     const promptToUse = promptOverride || promptPreview;
-    // Allow generation if: has reference images OR (has design type AND (blank mode OR has uploaded image)) AND has prompt
+    // Allow generation if: has reference images OR (has design type AND has uploaded image) AND has prompt
     const hasReferenceImages = referenceImages.length > 0;
-    const hasValidSetup = hasReferenceImages || (designType && (designType === 'blank' || uploadedImage));
+    const hasValidSetup = hasReferenceImages || (designType && uploadedImage);
     if (!hasValidSetup || !promptToUse.trim()) {
       toast.error(t('messages.completeSteps'), { duration: 5000 });
       return;
@@ -1276,8 +1242,8 @@ const MockupMachinePageContent: React.FC = () => {
         // Note: Credit validation and deduction now happens in backend endpoint
         // No need to validate here - backend will return error if insufficient credits
 
-        // No modo blank, não passa imagem (apenas referência visual)
-        const baseImageForGeneration = designType === 'blank' ? undefined : (uploadedImage || undefined);
+        // No modo normal, passa imagem (não existe mais modo blank)
+        const baseImageForGeneration = (uploadedImage || undefined);
 
         // Process base image if needed (compression disabled)
         const processedBaseImage = baseImageForGeneration || undefined;
@@ -1519,10 +1485,10 @@ const MockupMachinePageContent: React.FC = () => {
       setSelectedModel('gemini-2.5-flash-image');
     }
 
-    // Ensure designType is set (default to 'blank' if not set, since Surprise Me works without image)
-    const designTypeToUse = designType || 'blank';
+    // Ensure designType is set (default to 'logo' if not set, since Surprise Me works best with a type)
+    const designTypeToUse = designType || 'logo';
     if (!designType) {
-      setDesignType('blank');
+      setDesignType('logo');
     }
 
     // Keep existing branding tags - don't change them
@@ -1841,7 +1807,7 @@ const MockupMachinePageContent: React.FC = () => {
           const savedMockup = await mockupApi.save({
             imageBase64: imageBase64,
             prompt: promptPreview,
-            designType: designType || 'blank',
+            designType: designType || 'logo',
             tags: selectedTags,
             brandingTags: selectedBrandingTags,
             aspectRatio: aspectRatio,
@@ -1940,7 +1906,7 @@ const MockupMachinePageContent: React.FC = () => {
 
     // Check if we have valid setup (design type selected and optionally reference images)
     const hasReferenceImagesForPrompt = referenceImages.length > 0;
-    const hasValidSetupForPrompt = !!designType && (designType === 'blank' || uploadedImage || hasReferenceImagesForPrompt);
+    const hasValidSetupForPrompt = !!designType && (uploadedImage || hasReferenceImagesForPrompt);
 
     if (!isPromptReady && !hasPrompt) {
       // No prompt exists and not ready - require valid setup
@@ -1990,9 +1956,9 @@ const MockupMachinePageContent: React.FC = () => {
       return;
     }
 
-    // Allow generation if: has reference images OR (has design type AND (blank mode OR has uploaded image)) AND has suggestion
+    // Allow generation if: has reference images OR (has design type AND has uploaded image) AND has suggestion
     const hasRefImages = referenceImages.length > 0;
-    const hasValidSetupForSuggestion = hasRefImages || (designType && (designType === 'blank' || uploadedImage));
+    const hasValidSetupForSuggestion = hasRefImages || (designType && uploadedImage);
     if (!hasValidSetupForSuggestion || !suggestion.trim()) {
       toast.error(t('messages.completeSteps'), { duration: 5000 });
       return;
@@ -2014,7 +1980,7 @@ const MockupMachinePageContent: React.FC = () => {
       const savedMockup = await mockupApi.save({
         imageBase64: imageBase64,
         prompt: promptPreview,
-        designType: designType || 'blank',
+        designType: designType || 'logo',
         tags: selectedTags,
         brandingTags: selectedBrandingTags,
         aspectRatio: aspectRatio,
@@ -2087,7 +2053,7 @@ const MockupMachinePageContent: React.FC = () => {
         const savedMockup = await mockupApi.save({
           imageBase64: imageBase64,
           prompt: promptPreview,
-          designType: designType || 'blank',
+          designType: designType || 'logo',
           tags: selectedTags,
           brandingTags: selectedBrandingTags,
           aspectRatio: aspectRatio,
@@ -2233,7 +2199,7 @@ const MockupMachinePageContent: React.FC = () => {
     // Close fullscreen modal immediately
     handleCloseFullScreen();
 
-    // Ensure we stay on MockupMachinePage (not WelcomeScreen)
+    // Ensure we stay on MockupMachinePage
     setShowWelcome(false);
     if (!hasGenerated) {
       setHasGenerated(true);
@@ -2501,7 +2467,7 @@ const MockupMachinePageContent: React.FC = () => {
 
 CURRENT CONTEXT:
 - Original prompt: "${promptPreview}"
-- Design type: ${designType || 'mockup'}
+- Design type: ${designType || 'logo'}
 - Product categories: ${selectedTags.join(', ')}
 - Brand style: ${selectedBrandingTags.join(', ')}
 ${selectedLocationTags.length > 0 ? `- Environment: ${selectedLocationTags.join(', ')}` : ''}
@@ -2569,7 +2535,7 @@ Generate the new mockup image with the requested changes applied.`;
 
     // Allow auto-generate only if design type is selected and setup is valid
     const hasRefImagesForAuto = referenceImages.length > 0;
-    const canAutoGenerate = !!designType && (designType === 'blank' || uploadedImage || hasRefImagesForAuto);
+    const canAutoGenerate = !!designType && (uploadedImage || hasRefImagesForAuto);
 
     if (shouldAutoGenerate && !isGeneratingPrompt && !promptPreview.trim() && !isAutoGeneratingRef.current) {
       if (canAutoGenerate) {
@@ -2691,7 +2657,9 @@ Generate the new mockup image with the requested changes applied.`;
   // --- View State Helpers ---
   const isSetupMode = !hasAnalyzed;
   const isDashboardMode = hasAnalyzed;
-  const shouldShowWelcome = showWelcome || (!uploadedImage && designType !== 'blank');
+
+  // Se vazio, mostrar a WelcomeScreen por cima, pro user sempre upar a imagem pela WelcomeScreen
+  const shouldShowWelcome = !uploadedImage;
 
   return (
     <>
@@ -2744,7 +2712,7 @@ Generate the new mockup image with the requested changes applied.`;
                 onRegenerate={() => runGeneration()}
                 onGenerateClick={handleGenerateClick}
                 onGenerateSuggestion={handleGenerateSuggestion}
-            onAnalyze={handleAnalyzeButtonClick}
+                onAnalyze={handleAnalyzeButtonClick}
                 generateOutputsButtonRef={generateOutputsButtonRef}
                 authenticationRequiredMessage={t('messages.authenticationRequired')}
               />
@@ -2766,7 +2734,7 @@ Generate the new mockup image with the requested changes applied.`;
                     size="icon"
                     className="w-10 h-10 rounded-xl bg-neutral-900/50 backdrop-blur-md border border-white/5 hover:bg-neutral-800 hover:border-brand-cyan/30 text-neutral-400 hover:text-brand-cyan shadow-xl transition-all group"
                   >
-                    <Menu className={cn(
+                    <X className={cn(
                       "h-5 w-5 transition-transform duration-500",
                       !isSidebarCollapsed ? "rotate-180" : "group-hover:scale-110"
                     )} />

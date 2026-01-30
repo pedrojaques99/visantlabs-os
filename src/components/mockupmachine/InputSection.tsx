@@ -12,7 +12,6 @@ import { useMockup } from './MockupContext';
 
 interface InputSectionProps {
   uploadedImage: UploadedImage | null;
-  referenceImage: UploadedImage | null;
   referenceImages: UploadedImage[]; // Array de até 3 imagens para modelo Pro, até 1 para HD
   designType: DesignType | null;
   selectedModel: GeminiModel | null;
@@ -28,7 +27,6 @@ interface InputSectionProps {
 
 export const InputSection: React.FC<InputSectionProps> = ({
   uploadedImage,
-  referenceImage,
   referenceImages,
   designType,
   selectedModel,
@@ -43,9 +41,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
   const { t } = useTranslation();
   const { theme } = useTheme();
 
-  // No modo blank, usa referenceImage; caso contrário, usa uploadedImage
-  const displayImage = designType === 'blank' ? referenceImage : uploadedImage;
-  const isReferenceOnly = designType === 'blank' && referenceImage !== null;
+  const displayImage = uploadedImage;
   const hasImage = !!displayImage;
   const isProModel = selectedModel === 'gemini-3-pro-image-preview';
   const isHDModel = selectedModel === 'gemini-2.5-flash-image';
@@ -55,6 +51,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
   const canAddMoreReferences = hasImage && referenceImages.length < maxReferences;
   const supportsReferences = !selectedModel || isProModel || isHDModel; // Enable before model selection
   const [isLoadingImage, setIsLoadingImage] = useState(false);
+  const [replacingRefIndex, setReplacingRefIndex] = useState<number | null>(null);
 
   const handleSingleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -64,7 +61,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
     try {
       const { mockupApi } = await import('@/services/mockupApi');
       const reader = new FileReader();
-      
+
       reader.onload = async () => {
         try {
           const base64 = (reader.result as string).split(',')[1];
@@ -81,19 +78,55 @@ export const InputSection: React.FC<InputSectionProps> = ({
           e.target.value = '';
         }
       };
-      
+
       reader.onerror = () => {
         toast.error(t('errors.uploadFailed'));
         setIsLoadingImage(false);
         e.target.value = '';
       };
-      
+
       reader.readAsDataURL(file);
     } catch (error) {
       console.error('Error processing image:', error);
       toast.error(t('errors.uploadFailed'));
       setIsLoadingImage(false);
       e.target.value = '';
+    }
+  };
+
+  const handleReferenceReplace = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || replacingRefIndex === null) return;
+
+    setIsLoadingImage(true);
+    try {
+      const { mockupApi } = await import('@/services/mockupApi');
+      const reader = new FileReader();
+
+      reader.onload = async () => {
+        try {
+          const base64 = (reader.result as string).split(',')[1];
+          const formatted = await formatImageTo16_9(base64, file.type);
+          const r2Url = await mockupApi.uploadTempImage(formatted.base64 || base64, formatted.mimeType);
+
+          const newRefs = [...referenceImages];
+          newRefs[replacingRefIndex] = { url: r2Url, mimeType: formatted.mimeType };
+          onReferenceImagesChange(newRefs);
+        } catch (error) {
+          console.error("Error replacing reference image:", error);
+          toast.error(t('errors.imageUploadFailed'));
+        } finally {
+          setIsLoadingImage(false);
+          setReplacingRefIndex(null);
+          e.target.value = '';
+        }
+      };
+
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Error processing replacement:', error);
+      setIsLoadingImage(false);
+      setReplacingRefIndex(null);
     }
   };
 
@@ -170,167 +203,164 @@ export const InputSection: React.FC<InputSectionProps> = ({
 
   const capacityUsage = Math.round(Math.min(((displayImage ? 1 : 0) + referenceImages.length) / 4 * 100, 100));
 
+  // Reusable Image Card component for consistency
+  const ImageCard = ({
+    img,
+    label,
+    onReplace,
+    onRemove,
+    isAnalyzed = false,
+    highlight = false
+  }: {
+    img: UploadedImage,
+    label: string,
+    onReplace: () => void,
+    onRemove?: () => void,
+    isAnalyzed?: boolean,
+    highlight?: boolean
+  }) => (
+    <div className={cn(
+      "relative flex flex-col p-2.5 rounded-xl border transition-all group w-full animate-in fade-in zoom-in-95 duration-300",
+      highlight ? "bg-brand-cyan/[0.03] border-brand-cyan/20 shadow-lg shadow-brand-cyan/5" : "bg-neutral-900/40 border-white/[0.05] hover:border-white/10"
+    )}>
+      {/* Image Container */}
+      <div className="relative aspect-video w-full rounded-lg overflow-hidden bg-black/40 flex items-center justify-center group/img-container">
+        <img
+          src={getImageSrc(img)}
+          alt={label}
+          loading="lazy"
+          decoding="async"
+          className="max-h-full max-w-full h-auto w-auto object-contain transition-transform duration-500 group-hover/img-container:scale-[1.05]"
+        />
+
+        {/* Hover Overlay with Replace Action */}
+        <div className="absolute inset-0 bg-black/70 flex items-center justify-center opacity-0 group-hover/img-container:opacity-100 transition-all duration-300 backdrop-blur-[2px]">
+          <button
+            type="button"
+            onClick={onReplace}
+            className="flex flex-col items-center gap-2 cursor-pointer p-4 rounded-md hover:bg-white/10 transition-all transform translate-y-2 group-hover/img-container:translate-y-0 text-white"
+          >
+            <div className="p-3 rounded-full bg-white/10 border border-white/20 group-hover:bg-brand-cyan group-hover:text-black transition-all shadow-xl">
+              <ArrowLeftRight size={20} />
+            </div>
+            <span className="text-[10px] font-mono uppercase tracking-[0.2em] font-bold">{t('mockup.replace') || 'Substituir'}</span>
+          </button>
+        </div>
+
+        {/* Status Badge (Top Right) */}
+        {isAnalyzed && (
+          <div className="absolute top-2 right-2 flex items-center justify-center bg-brand-cyan text-black p-1 rounded-full shadow-lg border border-brand-cyan/50 z-10 animate-in zoom-in duration-500">
+            <CheckCircle2 size={12} strokeWidth={3} />
+          </div>
+        )}
+      </div>
+
+      {/* Info & Footer */}
+      <div className="mt-3 flex items-start justify-between gap-2">
+        <div className="flex-1 min-w-0">
+          <p className={cn(
+            "text-[11px] font-mono font-bold uppercase tracking-wider truncate mb-0.5",
+            highlight ? "text-brand-cyan" : "text-neutral-300"
+          )}>
+            {label}
+          </p>
+          <p className="text-[10px] font-mono text-neutral-500 uppercase tracking-tighter truncate opacity-80">
+            {img.mimeType?.split('/')[1] || 'IMG'} • {img.size ? `${(img.size / 1024).toFixed(0)}KB` : '---'}
+          </p>
+        </div>
+
+        {onRemove && (
+          <button
+            onClick={onRemove}
+            className="p-2 hover:bg-red-500/10 rounded-lg transition-colors text-neutral-600 hover:text-red-400 group/remove"
+            title={t('mockup.removeFileTitle') || "Remover arquivo"}
+          >
+            <X size={14} className="group-hover/remove:scale-110 transition-transform" />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+
   return (
-    <section className={cn("flex flex-col gap-3 sm:gap-4 md:gap-6 w-full", className)}>
+    <section className={cn("flex flex-col gap-5 w-full", className)}>
       {/* Files Header */}
       <div className="flex items-center justify-between flex-shrink-0">
-        <h2 className={sectionTitleClass(theme === 'dark')}>
-          {t('mockup.files')}
-        </h2>
+        <div className="flex flex-col gap-1">
+          <h2 className={sectionTitleClass(theme === 'dark')}>
+            {t('mockup.files')}
+          </h2>
+          {hasImage && (
+            <span className="text-[9px] font-mono text-neutral-600 uppercase tracking-widest">
+              {t('mockup.filesLoaded', { count: referenceImages.length + 1 }) || `${referenceImages.length + 1} Arquivo(s) carregados`}
+            </span>
+          )}
+        </div>
+
         {!isLoadingImage && (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             {canAddMoreReferences && (
-              <label 
-                htmlFor="multiple-image-upload" 
-                className="cursor-pointer p-1.5 hover:bg-white/5 rounded-md transition-colors text-neutral-400 hover:text-white"
+              <label
+                htmlFor="multiple-image-upload"
+                className="cursor-pointer px-3 py-1.5 bg-neutral-900 border border-white/5 hover:border-brand-cyan/30 hover:bg-brand-cyan/5 rounded-lg transition-all text-neutral-400 hover:text-brand-cyan flex items-center gap-2 group"
                 title={t('mockup.addReferenceImage', { count: referenceImages.length })}
               >
-                <Plus size={16} />
+                <Plus size={14} className="group-hover:rotate-90 transition-transform" />
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider">Ref</span>
               </label>
             )}
-            {displayImage && (
-              <>
-                <label
-                  htmlFor="image-upload-blank"
-                  className="p-1 hover:bg-white/5 rounded-md transition-colors text-neutral-500 hover:text-white cursor-pointer"
-                  title={t('mockup.replaceImage')}
-                >
-                  <ArrowLeftRight size={14} />
-                </label>
-              </>
-            )}
             {!displayImage && (
-              <label 
-                htmlFor="image-upload-blank" 
-                className="cursor-pointer p-1.5 hover:bg-white/5 rounded-md transition-colors text-neutral-400 hover:text-white"
-                title={t('mockup.uploadMainFile')}
+              <label
+                htmlFor="image-upload-blank"
+                className="cursor-pointer px-3 py-1.5 bg-brand-cyan/10 border border-brand-cyan/20 rounded-lg transition-all text-brand-cyan hover:bg-brand-cyan hover:text-black flex items-center gap-2 animate-pulse"
               >
-                <Plus size={16} />
+                <Plus size={14} />
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider">Upload</span>
               </label>
             )}
           </div>
         )}
       </div>
 
-      {/* Compact Files Grid */}
+      {/* Standardized Files Grid */}
       <div
         className={cn(
-          "grid gap-1.5 sm:gap-2 w-full min-h-0 content-start",
-          displayImage && referenceImages.length === 0 ? "grid-cols-1" : "grid-cols-2"
+          "grid gap-4 w-full min-h-0",
+          displayImage && referenceImages.length === 0 ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2"
         )}
       >
         {/* Main Image Card */}
         {displayImage && (
-          <div className={`relative flex flex-col p-1.5 sm:p-2 rounded-lg border transition-all group w-full ${hasAnalyzed ? 'bg-brand-cyan/1 border-brand-cyan/10' : 'border-white/5'}`}>
-            <div className="relative max-h-52 max-w-full rounded-md overflow-hidden mb-1 sm:mb-2 flex items-center justify-center">
-              <img
-                src={getImageSrc(displayImage)}
-                alt="Main"
-                className="max-h-52 max-w-full h-auto w-auto object-contain transition-transform duration-200"
-              />
-              {hasAnalyzed && (
-                <div className="absolute inset-0 flex items-center justify-center bg-brand-cyan/10 pointer-events-none">
-                  <CheckCircle2 size={12} className="text-brand-cyan" />
-                </div>
-              )}
-            </div>
-
-            <div className="flex-1 min-w-0 mb-1 sm:mb-2 transition-opacity duration-200 gap-2">
-              <p className="text-[11px] sm:text-[12px] font-mono font-medium text-neutral-300 truncate">
-                {isReferenceOnly ? t('mockup.referenceOnly') : t('mockup.mainFile')}
-              </p>
-              <p className="text-[10px] sm:text-[12px] font-mono text-neutral-500 uppercase tracking-tighter truncate">
-                {displayImage.mimeType?.split('/')[1] || 'IMAGE'} • {displayImage.size ? `${(displayImage.size / 1024).toFixed(0)}KB` : '---'}
-              </p>
-            </div>
-
-            {/* Footer with Design Type Switcher */}
-            <div className="flex items-center justify-between mt-auto pt-1.5 sm:pt-2 border-t border-white/5 gap-2">
-              <div className="flex items-center bg-neutral-900/50 rounded-lg p-1 border border-white/5 gap-1">
-                <button
-                  onClick={() => onDesignTypeChange('logo')}
-                  className={cn(
-                    "px-4 py-2 text-xs font-mono rounded-md transition-all duration-150",
-                    "focus:outline-none focus:ring-1 focus:ring-brand-cyan/50",
-                    designType === 'logo'
-                      ? "bg-brand-cyan text-black font-semibold shadow-sm"
-                      : "text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50"
-                  )}
-                  title={t('mockup.itsALogo')}
-                >
-                  {t('mockup.typeLogo') || 'LOGO'}
-                </button>
-                <button
-                  onClick={() => onDesignTypeChange('layout')}
-                  className={cn(
-                    "px-4 py-2 text-xs font-mono rounded-md transition-all duration-150",
-                    "focus:outline-none focus:ring-1 focus:ring-brand-cyan/50",
-                    designType === 'layout'
-                      ? "bg-brand-cyan text-black font-semibold shadow-sm"
-                      : "text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50"
-                  )}
-                  title={t('mockup.itsALayout')}
-                >
-                  {t('mockup.typeLayout') || 'LAYOUT'}
-                </button>
-              </div>
-            </div>
-          </div>
+          <ImageCard
+            img={displayImage}
+            label={t('mockup.mainFile')}
+            onReplace={() => document.getElementById('image-upload-blank')?.click()}
+            isAnalyzed={hasAnalyzed}
+            highlight={hasAnalyzed}
+          />
         )}
 
         {/* Reference Images List */}
         {referenceImages.map((img, index) => (
-          <div key={index} className="flex flex-col p-1.5 sm:p-2 rounded-lg border border-white/5 group animate-in slide-in-from-bottom-2 duration-200 w-fit gap-2">
-            <div className="relative max-h-40 max-w-full rounded-md overflow-hidden mb-1 sm:mb-2 flex items-center justify-center">
-              <img
-                src={getImageSrc(img)}
-                alt={`Ref ${index + 1}`}
-                className="max-h-40 max-w-full h-auto w-auto object-contain transition-transform duration-200"
-              />
-            </div>
-
-            <div className="flex-1 min-w-0 mb-1 sm:mb-2 transition-opacity duration-200 gap-2">
-              <p className="text-[11px] sm:text-[12px] font-mono font-medium text-neutral-400 truncate">
-                REF {index + 1}
-              </p>
-              <p className="text-[10px] sm:text-[12px] font-mono text-neutral-400 uppercase tracking-tighter truncate">
-                {img.mimeType?.split('/')[1] || 'IMAGE'} • {img.size ? `${(img.size / 1024).toFixed(0)}KB` : '---'}
-              </p>
-            </div>
-
-            <div className="flex justify-end mt-auto pt-1.5 sm:pt-2 border-t border-white/5 duration-200">
-              <button
-                onClick={() => handleRemoveReferenceImage(index)}
-                className="p-1 hover:bg-red-500/10 rounded-md transition-colors text-neutral-500 hover:text-red-400"
-              >
-                <X size={14} />
-              </button>
-            </div>
-          </div>
+          <ImageCard
+            key={index}
+            img={img}
+            label={t('mockup.referenceLabel', { order: index + 1 }) || `Referência ${index + 1}`}
+            onReplace={() => {
+              setReplacingRefIndex(index);
+              document.getElementById('replace-reference-upload')?.click();
+            }}
+            onRemove={() => handleRemoveReferenceImage(index)}
+          />
         ))}
+
 
       </div>
 
-      <input
-        id="image-upload-blank"
-        type="file"
-        accept="image/jpeg,image/png,image/webp,image/gif"
-        onChange={handleSingleImageUpload}
-        className="hidden"
-        disabled={isLoadingImage}
-      />
-      <input
-        id="multiple-image-upload"
-        type="file"
-        accept="image/jpeg,image/png,image/webp,image/gif"
-        multiple
-        onChange={handleMultipleImageUpload}
-        className="hidden"
-        disabled={isLoadingImage}
-      />
-
+      {/* Hidden Inputs */}
+      <input id="image-upload-blank" type="file" accept="image/*" onChange={handleSingleImageUpload} className="hidden" />
+      <input id="multiple-image-upload" type="file" accept="image/*" multiple onChange={handleMultipleImageUpload} className="hidden" />
+      <input id="replace-reference-upload" type="file" accept="image/*" onChange={handleReferenceReplace} className="hidden" />
     </section>
   );
 };
-
-

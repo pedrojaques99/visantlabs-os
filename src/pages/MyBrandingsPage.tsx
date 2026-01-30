@@ -199,7 +199,7 @@ export const MyBrandingsPage: React.FC = () => {
               {projects.map((project) => (
                 <div
                   key={project._id}
-                  className="bg-[#141414] border border-neutral-800/60 rounded-2xl p-6 md:p-8 hover:border-neutral-700/60 transition-all duration-300 group cursor-pointer"
+                  className="bg-[#141414] border border-neutral-800/60 rounded-md p-6 md:p-8 hover:border-neutral-700/60 transition-all duration-300 group cursor-pointer"
                   onClick={() => handleView(project)}
                 >
                   <div className="flex items-start justify-between mb-4">

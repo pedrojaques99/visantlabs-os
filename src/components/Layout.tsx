@@ -553,7 +553,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             getUnsavedOutputsInfo={getUnsavedOutputsInfo}
             navigateToHome={() => navigate('/')}
             onMockupsClick={() => navigate('/mockups')}
-            onCreateNewMockup={() => navigate('/')}
+            onCreateNewMockup={() => navigate('/mockupmachine')}
             onMyOutputsClick={() => navigate('/my-outputs')}
             onMyBrandingsClick={() => navigate('/my-brandings')}
           />
