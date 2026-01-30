@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useMemo, useState } from 'react';
 import { Info, Pickaxe, Wand2, ArrowLeftRight, PlusIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -144,7 +145,10 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
       return (
         <span
           key={i}
-          className="underline decoration-1 underline-offset-2 hover:text-brand-cyan"
+          className={cn(
+            "underline decoration-brand-cyan/30 underline-offset-4 transition-all duration-300",
+            "hover:text-brand-cyan hover:decoration-brand-cyan hover:bg-brand-cyan/10 px-0.5 rounded-sm"
+          )}
         >
           {part}
         </span>
@@ -212,7 +216,15 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
   };
 
   return (
-    <section id="prompt-section" className={`p-3 rounded-md border ${theme === 'dark' ? 'bg-neutral-950/20 border-neutral-700/50' : 'bg-neutral-50 border-neutral-300'}`}>
+    <section
+      id="prompt-section"
+      className={cn(
+        "p-3 rounded-xl border transition-all duration-300",
+        theme === 'dark'
+          ? 'bg-neutral-900/10 border-neutral-800/40 hover:bg-neutral-900/20 focus-within:border-brand-cyan/30'
+          : 'bg-neutral-50 border-neutral-200 hover:bg-neutral-100/50 focus-within:border-brand-cyan/30'
+      )}
+    >
       <div className="flex items-center justify-between mb-2">
         <h4 className={`flex items-center gap-2 text-xs font-mono ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>
           <Info size={14} /> {t('mockup.prompt')}

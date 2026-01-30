@@ -133,6 +133,8 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
         isSuggestingPrompts,
         aspectRatio,
         setAspectRatio,
+        imageProvider,
+        setImageProvider,
     } = useMockup();
 
     const {
@@ -397,6 +399,8 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
                     setSelectedModel={setSelectedModel}
                     aspectRatio={aspectRatio}
                     onAspectRatioChange={setAspectRatio}
+                    imageProvider={imageProvider}
+                    setImageProvider={setImageProvider}
                 />
 
                 {/* PromptSection sempre visível */}
@@ -430,7 +434,7 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
                 />
 
                 {/* Display Selected Tags (Surprise Me Result Visualization) */}
-                <SurpriseMeSelectedTagsDisplay />
+                <SurpriseMeSelectedTagsDisplay onRerollAll={() => handleSurpriseMe(false)} />
 
                 {(() => {
                     const hasToken = typeof window !== 'undefined' && localStorage.getItem('auth_token');

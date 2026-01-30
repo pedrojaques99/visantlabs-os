@@ -5,6 +5,7 @@ import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../db/prisma.js';
 import { checkSubscription, SubscriptionRequest } from '../middleware/subscription.js';
 import { generateMockup, RateLimitError } from '../../src/services/geminiService.js';
+import { generateSeedreamImage } from '../services/seedreamService.js';
 import { createUsageRecord, getCreditsRequired } from '../utils/usageTracking.js';
 import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
 import { safeFetch, getErrorMessage } from '../utils/securityValidation.js';
@@ -707,6 +708,7 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       aspectRatio,
       referenceImages,
       feature, // Optional: 'mockupmachine' | 'canvas'
+      provider = 'gemini', // 'gemini' | 'seedream'
     } = req.body;
 
     // Helper to download image from URL if base64 is not provided
@@ -965,18 +967,33 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       }
     }
 
-    // Generate mockup image using Gemini API
+    // Generate mockup image using selected provider
     // Note: We only generate one image per request
-    const imageBase64 = await generateMockup(
-      promptText,
-      finalBaseImage as any,
-      model as any,
-      resolution as any,
-      aspectRatio as any,
-      finalReferenceImages as any,
-      undefined,
-      userApiKey
-    );
+    let imageBase64: string;
+
+    if (provider === 'seedream') {
+      // Use Seedream via APIFree.ai
+      console.log(`${logPrefix} [GENERATION] Using Seedream provider`, { model, resolution, aspectRatio });
+      imageBase64 = await generateSeedreamImage({
+        prompt: promptText,
+        baseImage: finalBaseImage as any,
+        model: model as any,
+        resolution: resolution as any,
+        aspectRatio: aspectRatio as any,
+      });
+    } else {
+      // Use Gemini (default)
+      imageBase64 = await generateMockup(
+        promptText,
+        finalBaseImage as any,
+        model as any,
+        resolution as any,
+        aspectRatio as any,
+        finalReferenceImages as any,
+        undefined,
+        userApiKey
+      );
+    }
 
     // Try to upload to R2 if configured to avoid large payloads
     let imageUrl: string | undefined;

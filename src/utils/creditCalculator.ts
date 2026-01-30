@@ -1,13 +1,27 @@
-import type { GeminiModel, Resolution } from '../types/types';
+import type { GeminiModel, Resolution, SeedreamModel, ImageProvider } from '../types/types';
 
 /**
- * Get credits required for image generation based on model and resolution
+ * Get credits required for image generation based on model, resolution, and provider
  * This function matches the backend implementation in server/utils/usageTracking.ts
  */
 export function getCreditsRequired(
-  model: GeminiModel,
-  resolution?: Resolution
+  model: GeminiModel | SeedreamModel | string,
+  resolution?: Resolution,
+  provider?: ImageProvider
 ): number {
+  // Seedream models (via APIFree.ai)
+  if (provider === 'seedream' || model.startsWith('seedream')) {
+    switch (resolution) {
+      case '2K':
+        return 3;
+      case '4K':
+        return 5;
+      default:
+        return 3; // Default 2K
+    }
+  }
+
+  // Gemini models
   if (model === 'gemini-2.5-flash-image') {
     return 1;
   }
@@ -21,12 +35,11 @@ export function getCreditsRequired(
       case '4K':
         return 7;
       default:
-        // Default to 1K if resolution not specified
         return 3;
     }
   }
 
-  // Fallback to 1 credit for unknown models
+  // Fallback
   return 1;
 }
 
