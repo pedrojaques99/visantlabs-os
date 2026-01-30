@@ -640,5 +640,130 @@ router.put('/settings/canvas', apiRateLimiter, authenticate, async (req: AuthReq
   }
 });
 
+// Save/Update Seedream API Key
+router.put('/settings/seedream-api-key', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const { apiKey } = req.body;
+
+    if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length === 0) {
+      return res.status(400).json({ error: 'API key is required' });
+    }
+
+    // Basic validation
+    const trimmedKey = apiKey.trim();
+    if (trimmedKey.length < 10) { // Seedream/APIFree keys might be shorter or different format
+      return res.status(400).json({ error: 'Invalid API key format' });
+    }
+
+    // Check if encryption is configured
+    if (!process.env.API_KEY_ENCRYPTION_KEY) {
+      return res.status(500).json({
+        error: 'API key encryption is not configured',
+        details: 'Please contact support or configure API_KEY_ENCRYPTION_KEY environment variable.'
+      });
+    }
+
+    // Encrypt the API key
+    const { encryptApiKey } = await import('../utils/encryption.js');
+    const encryptedKey = encryptApiKey(trimmedKey);
+
+    // Update user with encrypted key
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        encryptedSeedreamApiKey: encryptedKey,
+      },
+    });
+
+    res.json({
+      success: true,
+      message: 'API key saved successfully'
+    });
+  } catch (error: any) {
+    console.error('Failed to save Seedream API key:', error);
+
+    // Don't leak encryption errors to client
+    if (error.message.includes('encrypt') || error.message.includes('decrypt')) {
+      return res.status(500).json({
+        error: 'Failed to save API key',
+        message: 'An encryption error occurred. Please try again.'
+      });
+    }
+
+    res.status(500).json({
+      error: 'Failed to save API key',
+      message: error.message
+    });
+  }
+});
+
+// Delete Seedream API Key
+router.delete('/settings/seedream-api-key', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    // Remove the encrypted key
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        encryptedSeedreamApiKey: null,
+      },
+    });
+
+    res.json({
+      success: true,
+      message: 'API key deleted successfully'
+    });
+  } catch (error: any) {
+    console.error('Failed to delete Seedream API key:', error);
+    res.status(500).json({
+      error: 'Failed to delete API key',
+      message: error.message
+    });
+  }
+});
+
+// Check if user has Seedream API key (returns boolean only)
+router.get('/settings/seedream-api-key', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        encryptedSeedreamApiKey: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({
+      hasApiKey: !!user.encryptedSeedreamApiKey
+    });
+  } catch (error: any) {
+    console.error('Failed to check Seedream API key:', error);
+    res.status(500).json({
+      error: 'Failed to check API key',
+      message: error.message
+    });
+  }
+});
+
 export default router;
 

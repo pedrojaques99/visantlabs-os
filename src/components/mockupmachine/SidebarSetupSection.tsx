@@ -123,7 +123,7 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
                         "w-full flex items-center justify-center gap-3 py-4 px-6 rounded-md font-mono text-base font-bold transition-all duration-500 group overflow-hidden relative border",
                         canAnalyze && !isAnalyzing
                             ? "bg-brand-cyan border-brand-cyan/50 text-black shadow-[0_10px_40px_rgba(var(--brand-cyan-rgb),0.2)] hover:scale-[1.01] active:scale-[0.99] hover:bg-brand-cyan/90"
-                            : "bg-neutral-900/80 border-white/5 text-neutral-600 cursor-not-allowed opacity-50 shadow-none translate-y-0.5"
+                            : "bg-neutral-800/60 border-neutral-600/40 text-neutral-500 cursor-not-allowed shadow-none"
                     )}
                 >
                     {isAnalyzing ? (
@@ -145,8 +145,13 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
                 </button>
 
                 {!canAnalyze && !isAnalyzing && !hasAnalyzed && (
-                    <p className="text-center mt-3 text-[9px] font-mono text-neutral-600 uppercase tracking-[0.3em] opacity-60">
-                        {t('mockup.uploadRequired') || 'Upload necessário'}
+                    <p className="text-center mt-3 text-[10px] font-mono text-neutral-500 uppercase tracking-[0.2em]">
+                        {!uploadedImage
+                            ? (t('mockup.uploadRequired') || 'Upload necessário')
+                            : !designType
+                                ? (t('mockup.selectDesignType') || 'Selecione o tipo de design')
+                                : null
+                        }
                     </p>
                 )}
             </div>

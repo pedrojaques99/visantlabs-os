@@ -1,35 +1,14 @@
 import type { UploadedImage, AspectRatio, SeedreamModel, Resolution } from '../../src/types/types.js';
 import { safeFetch } from '../utils/securityValidation.js';
 
-const APIFREE_ENDPOINT = 'https://api.apifree.ai/v1/images/generations';
+// APIFree.ai endpoints (async API with submit→poll pattern)
+const APIFREE_BASE = 'https://api.apifree.ai';
+const SUBMIT_ENDPOINT = `${APIFREE_BASE}/v1/image/submit`;
+const RESULT_ENDPOINT = (requestId: string) => `${APIFREE_BASE}/v1/image/${requestId}/result`;
 
-// Aspect ratio to Seedream size mapping (based on Seedream 4.5 docs)
-const ASPECT_RATIO_TO_SIZE: Record<string, string> = {
-    '1:1': '2048x2048',
-    '16:9': '2560x1440',
-    '9:16': '1440x2560',
-    '4:3': '2304x1728',
-    '3:4': '1728x2304',
-    '3:2': '2496x1664',
-    '2:3': '1664x2496',
-    '21:9': '3024x1296',
-    '4:5': '1638x2048',
-    '5:4': '2048x1638',
-};
-
-// Scale sizes for 4K resolution (multiply by ~1.4)
-const ASPECT_RATIO_TO_SIZE_4K: Record<string, string> = {
-    '1:1': '2880x2880',
-    '16:9': '3584x2016',
-    '9:16': '2016x3584',
-    '4:3': '3226x2419',
-    '3:4': '2419x3226',
-    '3:2': '3494x2330',
-    '2:3': '2330x3494',
-    '21:9': '4096x1755',
-    '4:5': '2294x2867',
-    '5:4': '2867x2294',
-};
+// Polling configuration
+const POLL_INTERVAL_MS = 2000; // 2 seconds between polls
+const MAX_POLL_ATTEMPTS = 60; // Max 2 minutes of polling
 
 interface SeedreamGenerateOptions {
     prompt: string;
@@ -38,28 +17,35 @@ interface SeedreamGenerateOptions {
     resolution?: Resolution;
     aspectRatio?: AspectRatio;
     watermark?: boolean;
+    apiKey?: string;
 }
 
 /**
- * Resolves image to base64 format
+ * Resolves image to base64 format with data URL prefix
  */
 async function resolveImageBase64(image: UploadedImage): Promise<string> {
-    if (image.base64 && image.base64.length > 0) {
-        return image.base64;
-    }
+    let base64Data: string;
 
-    if (image.url) {
+    if (image.base64 && image.base64.length > 0) {
+        base64Data = image.base64;
+    } else if (image.url) {
         const response = await safeFetch(image.url);
         if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
         const arrayBuffer = await response.arrayBuffer();
-        return Buffer.from(arrayBuffer).toString('base64');
+        base64Data = Buffer.from(arrayBuffer).toString('base64');
+    } else {
+        throw new Error('Image has no base64 data or URL');
     }
 
-    throw new Error('Image has no base64 data or URL');
+    // Return with data URL prefix if not already present
+    if (base64Data.startsWith('data:')) {
+        return base64Data;
+    }
+    return `data:${image.mimeType};base64,${base64Data}`;
 }
 
 /**
- * Generate image using Seedream via APIFree.ai
+ * Generate image using Seedream via APIFree.ai (async API)
  * Returns base64 image data
  */
 export async function generateSeedreamImage(options: SeedreamGenerateOptions): Promise<string> {
@@ -68,38 +54,32 @@ export async function generateSeedreamImage(options: SeedreamGenerateOptions): P
         baseImage,
         model = 'seedream-4.5',
         resolution = '2K',
-        aspectRatio = '1:1',
         watermark = false,
+        apiKey: specificApiKey,
     } = options;
 
-    const apiKey = process.env.APIFREE_API_KEY;
+    const apiKey = specificApiKey || process.env.APIFREE_API_KEY;
     if (!apiKey) {
-        throw new Error('APIFREE_API_KEY not configured. Please add it to your .env file.');
+        throw new Error('APIFREE_API_KEY not configured and no user key provided.');
     }
 
-    // Select size based on resolution and aspect ratio
-    const sizeMap = resolution === '4K' ? ASPECT_RATIO_TO_SIZE_4K : ASPECT_RATIO_TO_SIZE;
-    const size = sizeMap[aspectRatio] || ASPECT_RATIO_TO_SIZE[aspectRatio] || '2048x2048';
-
-    // Build request body
+    // Build request body for APIFree.ai
     const body: Record<string, any> = {
-        model: `bytedance/${model}`,
+        model: `bytedance/${model}`, // APIFree.ai format: bytedance/seedream-4.5
         prompt,
-        size,
-        n: 1,
-        response_format: 'b64_json',
-        watermark,
+        size: resolution, // "2K" or "4K"
     };
 
-    // Add reference image for img2img if provided
+    // Add reference image if provided (for img2img)
     if (baseImage) {
-        const imageBase64 = await resolveImageBase64(baseImage);
-        body.image = `data:${baseImage.mimeType};base64,${imageBase64}`;
+        const imageData = await resolveImageBase64(baseImage);
+        body.image = imageData;
     }
 
-    console.log(`[Seedream] Generating with model=${model}, size=${size}, aspectRatio=${aspectRatio}`);
+    console.log(`[Seedream] Submitting request: model=${body.model}, size=${resolution}`);
 
-    const response = await fetch(APIFREE_ENDPOINT, {
+    // Step 1: Submit the request
+    const submitResponse = await fetch(SUBMIT_ENDPOINT, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${apiKey}`,
@@ -108,45 +88,108 @@ export async function generateSeedreamImage(options: SeedreamGenerateOptions): P
         body: JSON.stringify(body),
     });
 
-    if (!response.ok) {
-        const errorText = await response.text();
-        console.error('[Seedream] API error:', response.status, errorText);
+    if (!submitResponse.ok) {
+        const errorText = await submitResponse.text();
+        console.error('[Seedream] Submit error status:', submitResponse.status);
+        console.error('[Seedream] Submit error text:', errorText);
 
-        if (response.status === 401) {
+        try {
+            // Try to parse JSON error if possible
+            const errorJson = JSON.parse(errorText);
+            console.error('[Seedream] Full error details:', JSON.stringify(errorJson, null, 2));
+        } catch (e) {
+            // Ignore parse error
+        }
+
+        if (submitResponse.status === 401) {
             throw new Error('Invalid APIFree.ai API key. Please check your APIFREE_API_KEY.');
         }
-        if (response.status === 429) {
-            throw new Error('Rate limit exceeded. Please wait before making more requests.');
-        }
-        if (response.status === 402) {
+        if (submitResponse.status === 402) {
             throw new Error('Insufficient APIFree.ai credits. Please top up your account.');
         }
 
-        throw new Error(`Seedream API error: ${response.status} - ${errorText}`);
+        throw new Error(`Seedream submit failed: ${submitResponse.status} - ${errorText}`);
     }
 
-    const data = await response.json();
+    const submitData = await submitResponse.json();
 
-    // OpenAI-compatible response format
-    if (data.data && data.data[0]) {
-        const imageData = data.data[0];
-
-        if (imageData.b64_json) {
-            console.log('[Seedream] Successfully generated image');
-            return imageData.b64_json;
-        }
-
-        // If URL returned instead of base64, fetch and convert
-        if (imageData.url) {
-            console.log('[Seedream] Fetching image from URL...');
-            const imgResponse = await safeFetch(imageData.url);
-            if (!imgResponse.ok) throw new Error('Failed to fetch generated image');
-            const arrayBuffer = await imgResponse.arrayBuffer();
-            return Buffer.from(arrayBuffer).toString('base64');
-        }
+    if (submitData.code !== 200) {
+        console.error('[Seedream] Full error response:', JSON.stringify(submitData, null, 2));
+        const errorMsg = submitData.code_msg ||
+            (submitData.resp_data && submitData.resp_data.error) ||
+            'Unknown error';
+        throw new Error(`Seedream API error (${submitData.code}): ${errorMsg}`);
     }
 
-    throw new Error('No image data in Seedream response');
+    const requestId = submitData.resp_data?.request_id;
+    if (!requestId) {
+        console.error('[Seedream] No request_id in response:', JSON.stringify(submitData, null, 2));
+        throw new Error('No request_id returned from Seedream API');
+    }
+
+    console.log(`[Seedream] Request submitted. ID: ${requestId}. Polling for result...`);
+
+    // Step 2: Poll for result
+    let attempts = 0;
+    while (attempts < MAX_POLL_ATTEMPTS) {
+        await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
+        attempts++;
+
+        const resultResponse = await fetch(RESULT_ENDPOINT(requestId), {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+            },
+        });
+
+        if (!resultResponse.ok) {
+            console.error('[Seedream] Poll error:', resultResponse.status);
+            continue; // Keep trying
+        }
+
+        const resultData = await resultResponse.json();
+
+        if (resultData.code !== 200) {
+            console.error('[Seedream] Result error code:', resultData.code);
+            console.error('[Seedream] Result error msg:', resultData.code_msg);
+            continue;
+        }
+
+        const status = resultData.resp_data?.status;
+        console.log(`[Seedream] Poll attempt ${attempts}: status=${status}`);
+
+        if (status === 'success') {
+            const imageList = resultData.resp_data?.image_list;
+            if (!imageList || imageList.length === 0) {
+                throw new Error('No images in Seedream response');
+            }
+
+            const imageUrl = imageList[0];
+            console.log(`[Seedream] Image generated successfully. Downloading...`);
+
+            // Download the image and convert to base64
+            const imageResponse = await safeFetch(imageUrl);
+            if (!imageResponse.ok) {
+                throw new Error('Failed to download generated image');
+            }
+
+            const arrayBuffer = await imageResponse.arrayBuffer();
+            const base64 = Buffer.from(arrayBuffer).toString('base64');
+
+            console.log(`[Seedream] Generation complete. Usage: $${resultData.resp_data?.usage?.cost || 0}`);
+            return base64;
+        }
+
+        if (status === 'error' || status === 'failed') {
+            const error = resultData.resp_data?.error || 'Unknown error';
+            console.error('[Seedream] Generation failed in polling:', error);
+            throw new Error(`Seedream generation failed: ${error}`);
+        }
+
+        // Status is 'queuing' or 'processing' - continue polling
+    }
+
+    throw new Error('Seedream generation timed out after 2 minutes');
 }
 
 /**

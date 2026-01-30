@@ -343,12 +343,22 @@ const MockupMachinePageContent: React.FC = () => {
   }, [location.pathname, uploadedImage, mockups, designType, hasGenerated, isPromptReady]);
 
   // Save state to localStorage when mockups are generated (with debounce)
+  // Using a longer debounce (1500ms) to prevent excessive saves and localStorage quota issues
   useEffect(() => {
     // Save if there are generated mockups OR if an image has been uploaded (to persist analysis)
     const hasAnyMockups = mockups.some(m => m !== null);
     if (!hasAnyMockups && !uploadedImage && !hasGenerated) return;
 
+    console.log('[🔄 SaveEffect] Persistence effect triggered', {
+      hasAnyMockups,
+      hasUploadedImage: !!uploadedImage,
+      hasGenerated,
+      mockupsCount: mockups.length,
+      timestamp: new Date().toISOString()
+    });
+
     const timeoutId = setTimeout(async () => {
+      console.log('[🔄 SaveEffect] Debounce completed, saving state...');
       try {
         await saveMockupState({
           mockups,
@@ -390,7 +400,7 @@ const MockupMachinePageContent: React.FC = () => {
           console.warn('Failed to save mockup state:', error);
         }
       }
-    }, 500); // Debounce 500ms
+    }, 1500); // Debounce 1500ms to reduce save frequency and prevent quota issues
 
     return () => clearTimeout(timeoutId);
   }, [
@@ -416,7 +426,7 @@ const MockupMachinePageContent: React.FC = () => {
     enhanceTexture,
     negativePrompt,
     additionalPrompt,
-    isPromptReady,
+    // Note: isPromptReady is intentionally excluded - it's not persisted and causes extra saves
     suggestedTags,
     suggestedBrandingTags,
     suggestedLocationTags,

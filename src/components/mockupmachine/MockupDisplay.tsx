@@ -29,7 +29,7 @@ interface MockupDisplayProps {
   isSidebarCollapsed?: boolean;
 }
 
-export const MockupDisplay: React.FC<MockupDisplayProps> = ({
+export const MockupDisplay: React.FC<MockupDisplayProps> = React.memo(({
   mockups,
   isLoading,
   onRedraw,
@@ -174,4 +174,4 @@ export const MockupDisplay: React.FC<MockupDisplayProps> = ({
       </div>
     </section>
   );
-};
+});

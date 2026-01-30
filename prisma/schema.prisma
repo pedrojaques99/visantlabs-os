@@ -44,6 +44,7 @@ model User {
   isAdmin              Boolean   @default(false)
   userCategory         String?   // Category for special access (e.g., 'tester')
   encryptedGeminiApiKey String?  // Encrypted Gemini API key for user's own quota
+  encryptedSeedreamApiKey String? // Encrypted Seedream API key (APIFree.ai)
   storageLimitBytes    Int?      // Custom storage limit in bytes (optional, overrides tier-based limit)
   storageUsedBytes     Int       @default(0) // Current storage used in bytes (calculated from uploads/deletes)
   canvasSettings       Json?     // User settings for the canvas (colors, grid, etc.)

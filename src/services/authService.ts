@@ -79,12 +79,12 @@ class AuthService {
       if (referralCode) {
         url.searchParams.set('ref', referralCode);
       }
-      
+
       const response = await fetch(url.toString(), {
         method: 'GET',
         credentials: 'include',
       });
-      
+
       // Check if response is JSON
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
@@ -92,13 +92,13 @@ class AuthService {
         console.error('Non-JSON response:', text.substring(0, 200));
         throw new Error(`Backend retornou resposta inválida. Verifique se a URL da API está correta: ${API_BASE_URL}`);
       }
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Auth URL error:', response.status, errorText);
         throw new Error(`Failed to get auth URL: ${response.status} ${response.statusText}`);
       }
-      
+
       const data = await response.json();
       return data.authUrl;
     } catch (error: any) {
@@ -134,7 +134,7 @@ class AuthService {
         // Try to parse error response
         let errorData: any = { error: 'Failed to sign up' };
         let errorMessage = 'Failed to sign up';
-        
+
         try {
           const contentType = response.headers.get('content-type');
           if (contentType && contentType.includes('application/json')) {
@@ -157,14 +157,14 @@ class AuthService {
         (error as any).status = response.status;
         (error as any).statusText = response.statusText;
         (error as any).response = errorData;
-        
+
         console.error('[authService] Signup error:', {
           status: response.status,
           statusText: response.statusText,
           error: errorMessage,
           response: errorData,
         });
-        
+
         throw error;
       }
 
@@ -174,15 +174,15 @@ class AuthService {
     } catch (error: any) {
       // Handle Event objects (from script loading errors, etc.) vs Error objects
       const isEventObject = error && typeof error === 'object' && 'type' in error && 'target' in error;
-      
+
       // Check if this is a BotID script loading error (404 on c.js with UUID pattern)
       const errorMessage = error?.message || String(error || '');
       const uuidPattern = /\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\//i;
-      const isBotId404Error = 
+      const isBotId404Error =
         (errorMessage.includes('404') || errorMessage.includes('ERR_ABORTED')) &&
-        (errorMessage.includes('/c.js') || uuidPattern.test(errorMessage) || 
-         errorMessage.match(uuidPattern)?.length >= 2);
-      
+        (errorMessage.includes('/c.js') || uuidPattern.test(errorMessage) ||
+          errorMessage.match(uuidPattern)?.length >= 2);
+
       if (isEventObject || isBotId404Error) {
         // This is likely a script loading error from BotID or similar - suppress it
         const target = isEventObject ? (error as Event).target as HTMLElement | null : null;
@@ -192,13 +192,13 @@ class AuthService {
         // Return a user-friendly error instead
         throw new Error('Erro de conexão. Por favor, tente novamente.');
       }
-      
+
       // Enhanced error logging with full context
-      const isNetworkError = 
+      const isNetworkError =
         error?.message?.includes('Failed to fetch') ||
         error?.name === 'TypeError' ||
         !error.status;
-      
+
       if (isNetworkError) {
         console.error('[authService] Signup network error:', {
           message: error?.message || 'Unknown network error',
@@ -214,7 +214,7 @@ class AuthService {
           response: error?.response,
         });
       }
-      
+
       throw error;
     }
   }
@@ -234,7 +234,7 @@ class AuthService {
         // Try to parse error response
         let errorData: any = { error: 'Failed to sign in' };
         let errorMessage = 'Failed to sign in';
-        
+
         try {
           const contentType = response.headers.get('content-type');
           if (contentType && contentType.includes('application/json')) {
@@ -257,14 +257,14 @@ class AuthService {
         (error as any).status = response.status;
         (error as any).statusText = response.statusText;
         (error as any).response = errorData;
-        
+
         console.error('[authService] Signin error:', {
           status: response.status,
           statusText: response.statusText,
           error: errorMessage,
           response: errorData,
         });
-        
+
         throw error;
       }
 
@@ -274,15 +274,15 @@ class AuthService {
     } catch (error: any) {
       // Handle Event objects (from script loading errors, etc.) vs Error objects
       const isEventObject = error && typeof error === 'object' && 'type' in error && 'target' in error;
-      
+
       // Check if this is a BotID script loading error (404 on c.js with UUID pattern)
       const errorMessage = error?.message || String(error || '');
       const uuidPattern = /\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\//i;
-      const isBotId404Error = 
+      const isBotId404Error =
         (errorMessage.includes('404') || errorMessage.includes('ERR_ABORTED')) &&
-        (errorMessage.includes('/c.js') || uuidPattern.test(errorMessage) || 
-         errorMessage.match(uuidPattern)?.length >= 2);
-      
+        (errorMessage.includes('/c.js') || uuidPattern.test(errorMessage) ||
+          errorMessage.match(uuidPattern)?.length >= 2);
+
       if (isEventObject || isBotId404Error) {
         // This is likely a script loading error from BotID or similar - suppress it
         const target = isEventObject ? (error as Event).target as HTMLElement | null : null;
@@ -292,13 +292,13 @@ class AuthService {
         // Return a user-friendly error instead
         throw new Error('Erro de conexão. Por favor, tente novamente.');
       }
-      
+
       // Enhanced error logging with full context
-      const isNetworkError = 
+      const isNetworkError =
         error?.message?.includes('Failed to fetch') ||
         error?.name === 'TypeError' ||
         !error.status;
-      
+
       if (isNetworkError) {
         console.error('[authService] Signin network error:', {
           message: error?.message || 'Unknown network error',
@@ -314,7 +314,7 @@ class AuthService {
           response: error?.response,
         });
       }
-      
+
       throw error;
     }
   }
@@ -375,7 +375,7 @@ class AuthService {
     // Se há resultado cacheado válido e está dentro do throttle, retorna cache
     const now = Date.now();
     const timeSinceLastVerify = now - this.lastVerifyTime;
-    
+
     if (timeSinceLastVerify < this.VERIFY_THROTTLE_MS && this.lastValidResult !== null) {
       // Retorna resultado cacheado se ainda está dentro do throttle
       return this.lastValidResult;
@@ -438,7 +438,7 @@ class AuthService {
           await new Promise(resolve => setTimeout(resolve, delay));
           return this._performVerify();
         }
-        
+
         // Esgotou retries - retorna cache se existir
         console.warn('Token verification failed with status:', response.status, '- keeping token for retry');
         this.retryCount = 0;
@@ -468,7 +468,7 @@ class AuthService {
         await new Promise(resolve => setTimeout(resolve, delay));
         return this._performVerify();
       }
-      
+
       // Esgotou retries - retorna cache se existir
       if (error?.name !== 'TypeError' && !error?.message?.includes('Failed to fetch')) {
         console.warn('Token verification error:', error);
@@ -497,6 +497,14 @@ class AuthService {
 
   isAuthenticated(): boolean {
     return !!this.token;
+  }
+
+  getUser(): User | null {
+    return this.lastValidResult;
+  }
+
+  isAdmin(): boolean {
+    return !!this.lastValidResult?.isAdmin;
   }
 
   async updateProfile(data: { name?: string; email?: string; picture?: string }): Promise<User> {

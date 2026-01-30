@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import type { DesignType, GeminiModel, Resolution, AspectRatio, ImageProvider } from '@/types/types';
+import { Cpu, Sparkles } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
-import { sectionTitleClass } from '@/lib/utils';
-import { Sparkles, Cpu } from 'lucide-react';
+import { authService } from '@/services/authService';
+
+import { ImageProvider, DesignType, GeminiModel, Resolution, AspectRatio } from '@/types/types';
 
 interface OutputConfigSectionProps {
   mockupCount: number;
@@ -12,18 +13,16 @@ interface OutputConfigSectionProps {
   selectedModel: GeminiModel | null;
   resolution: Resolution;
   onResolutionChange: (resolution: Resolution) => void;
-  setSelectedModel: (model: GeminiModel) => void;
+  setSelectedModel: (model: GeminiModel | null) => void;
   aspectRatio: AspectRatio;
   onAspectRatioChange: (ratio: AspectRatio) => void;
   imageProvider: ImageProvider;
   setImageProvider: (provider: ImageProvider) => void;
 }
 
-// Aspect ratios principais
-const MAIN_ASPECT_RATIOS: AspectRatio[] = ['16:9', '1:1', '4:3', '9:16'];
-
-// Outros aspect ratios disponíveis para o Mockup Machine® 4K
-const OTHER_ASPECT_RATIOS: AspectRatio[] = ['21:9', '2:3', '3:2', '3:4', '4:5', '5:4'];
+const MAIN_ASPECT_RATIOS: AspectRatio[] = ['1:1', '9:16', '16:9', '4:3', '3:4'];
+const OTHER_ASPECT_RATIOS: AspectRatio[] = ['2:3', '3:2', '4:5', '5:4', '21:9'];
+const resolutionOptions: Resolution[] = ['1K', '2K', '4K'];
 
 export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
   mockupCount,
@@ -36,85 +35,80 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
   aspectRatio,
   onAspectRatioChange,
   imageProvider,
-  setImageProvider
+  setImageProvider,
 }) => {
-  const isProModel = selectedModel === 'gemini-3-pro-image-preview';
   const { t } = useTranslation();
   const { theme } = useTheme();
   const [showOther, setShowOther] = useState(false);
 
-  // Check if selected aspect ratio is in the "Other" category
-  const isOtherSelected = !MAIN_ASPECT_RATIOS.includes(aspectRatio) && aspectRatio !== undefined;
+  // Check if user is admin to show Seedream
+  const isAdmin = authService.isAdmin();
 
-  // Unified Resolution/Model Logic
-  // HD -> gemini-2.5-flash-image
-  // 1K/2K/4K -> gemini-3-pro-image-preview with resolution set
+  // Also check if user has a specific Seedream key (pending implementation in userSettingsService, 
+  // but for now we rely on admin check as primary gate or if we want to allow users with keys later)
+  // For now, per requirement: "visible to admins"
 
-  const handleResolutionClick = (res: 'HD' | Resolution) => {
-    if (res === 'HD') {
-      setSelectedModel('gemini-2.5-flash-image');
-    } else {
-      setSelectedModel('gemini-3-pro-image-preview');
-      onResolutionChange(res);
-    }
-  };
-
-  const currentActiveResolution = isProModel ? resolution : 'HD';
-
-  // Seedream only supports 2K and 4K
   const isSeedream = imageProvider === 'seedream';
-  const resolutionOptions = isSeedream ? ['2K', '4K'] as const : ['HD', '1K', '2K', '4K'] as const;
+  const currentActiveResolution = resolution;
+
+  const sectionTitleClass = (isDark: boolean) =>
+    `text-[10px] font-mono uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-600'}`;
+
+  const isOtherSelected = OTHER_ASPECT_RATIOS.includes(aspectRatio);
 
   return (
     <section className="space-y-6 pt-4 border-t border-neutral-800/20 pb-6">
-      <h2 className={sectionTitleClass(theme === 'dark')}>{t('mockup.outputConfig')}</h2>
+      <h2 className={sectionTitleClass(theme === 'dark')}>{t('mockup.outputConfig') || 'PRODUÇÃO'}</h2>
 
       <div className="space-y-5">
 
-        {/* AI Provider Toggle */}
-        <div className="space-y-2">
-          <h4 className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>MODELO DE IA</h4>
-          <div className="flex gap-1.5">
-            <button
-              onClick={() => setImageProvider('gemini')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 text-[11px] font-mono rounded-md transition-all duration-200 border cursor-pointer ${imageProvider === 'gemini'
-                ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/40 shadow-[0_0_10px_-5px_#22d3ee]'
-                : theme === 'dark'
-                  ? 'bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
-                  : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:border-neutral-300 hover:text-neutral-700'
-                }`}
-            >
-              <Cpu className="w-3.5 h-3.5" />
-              <span>Gemini</span>
-            </button>
-            <button
-              onClick={() => {
-                setImageProvider('seedream');
-                // Switch to 2K minimum for Seedream
-                if (resolution !== '2K' && resolution !== '4K') {
-                  onResolutionChange('2K');
-                  setSelectedModel('gemini-3-pro-image-preview');
-                }
-              }}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 text-[11px] font-mono rounded-md transition-all duration-200 border cursor-pointer ${imageProvider === 'seedream'
-                ? 'bg-violet-500/20 text-violet-400 border-violet-500/40 shadow-[0_0_10px_-5px_#8b5cf6]'
-                : theme === 'dark'
-                  ? 'bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
-                  : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:border-neutral-300 hover:text-neutral-700'
-                }`}
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Seedream</span>
-            </button>
+        {/* AI Provider Toggle - Only visible for Admins */}
+        {isAdmin && (
+          <div className="space-y-2">
+            <h4 className={sectionTitleClass(theme === 'dark')}>MODELO DE IA</h4>
+            <div className="flex gap-1.5">
+              <button
+                onClick={() => setImageProvider('gemini')}
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 text-[11px] font-mono rounded-md transition-all duration-200 border cursor-pointer ${imageProvider === 'gemini'
+                  ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/40 shadow-[0_0_10px_-5px_#22d3ee]'
+                  : theme === 'dark'
+                    ? 'bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
+                    : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:border-neutral-300 hover:text-neutral-700'
+                  }`}
+              >
+                <Cpu className="w-3.5 h-3.5" />
+                <span>Gemini</span>
+              </button>
+              <button
+                onClick={() => {
+                  setImageProvider('seedream');
+                  // Switch to 2K minimum for Seedream if needed, though API supports others
+                  // forcing 2K/4K for better quality usually
+                  if (resolution !== '2K' && resolution !== '4K') {
+                    onResolutionChange('2K');
+                    // Seedream doesn't use gemini models, but we might keep state consistent
+                  }
+                }}
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 text-[11px] font-mono rounded-md transition-all duration-200 border cursor-pointer ${imageProvider === 'seedream'
+                  ? 'bg-violet-500/20 text-violet-400 border-violet-500/40 shadow-[0_0_10px_-5px_#8b5cf6]'
+                  : theme === 'dark'
+                    ? 'bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
+                    : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:border-neutral-300 hover:text-neutral-700'
+                  }`}
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Seedream</span>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Unified Config Row: Number of Images + Resolution */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
           {/* Number of Images */}
           <div className="space-y-2">
-            <h4 className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.numberOfImages')}</h4>
+            <h4 className={sectionTitleClass(theme === 'dark')}>{t('mockup.numberOfImages') || 'IMAGENS'}</h4>
             <div className={`relative flex items-center rounded-md border transition-all duration-200 overflow-hidden ${theme === 'dark' ? 'bg-neutral-800/50 border-neutral-700/50 hover:border-neutral-600' : 'bg-neutral-100 border-neutral-300 hover:border-neutral-400'}`}>
               <input
                 type="number"
@@ -132,18 +126,16 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
 
           {/* Unified Resolution Selection */}
           <div className="space-y-2">
-            <h4 className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>RESOLUÇÃO / QUALIDADE</h4>
+            <h4 className={sectionTitleClass(theme === 'dark')}>RESOLUÇÃO / QUALIDADE</h4>
             <div className="flex gap-1.5 h-[38px]"> {/* Fixed height to match input */}
               {resolutionOptions.map(res => {
-                const isActive = isSeedream
-                  ? resolution === res
-                  : currentActiveResolution === res;
-                const isHd = res === 'HD';
+                const isActive = resolution === res;
+                // const isHd = res === 'HD';
 
                 return (
                   <button
                     key={res}
-                    onClick={() => handleResolutionClick(res)}
+                    onClick={() => onResolutionChange(res)}
                     className={`flex-1 flex flex-col items-center justify-center text-[10px] font-mono rounded transition-all duration-200 border cursor-pointer relative group ${isActive
                       ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/40 shadow-[0_0_10px_-5px_#22d3ee]'
                       : theme === 'dark'
@@ -161,9 +153,9 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
           </div>
         </div>
 
-        {/* Aspect Ratio Section - Always visible now, controlled by model capabilities potentially, but let's show it for all as HD usually supports it too */}
+        {/* Aspect Ratio Section */}
         <div className="space-y-2 pt-2">
-          <h4 className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.aspectRatioTitle') || 'PROPORÇÃO_'}</h4>
+          <h4 className={sectionTitleClass(theme === 'dark')}>{t('mockup.aspectRatioTitle') || 'PROPORÇÃO'}</h4>
           <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
             {MAIN_ASPECT_RATIOS.map((ratio) => {
               const [w, h] = ratio.split(':').map(Number);
