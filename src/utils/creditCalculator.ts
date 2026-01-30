@@ -29,6 +29,7 @@ export function getCreditsRequired(
   if (model === 'gemini-3-pro-image-preview') {
     switch (resolution) {
       case '1K':
+      case 'HD':
         return 3;
       case '2K':
         return 5;
