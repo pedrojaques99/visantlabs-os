@@ -37,7 +37,7 @@ export interface MockupCardProps {
     style?: React.CSSProperties;
 }
 
-export const MockupCard: React.FC<MockupCardProps> = ({
+export const MockupCard: React.FC<MockupCardProps> = React.memo(({
     base64Image,
     isLoading,
     isRedrawing,
@@ -278,4 +278,4 @@ export const MockupCard: React.FC<MockupCardProps> = ({
             )}
         </div>
     );
-};
+});

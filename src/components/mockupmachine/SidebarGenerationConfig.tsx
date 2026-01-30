@@ -433,8 +433,10 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
                     isGenerateDisabled={isGenerateDisabled}
                 />
 
-                {/* Display Selected Tags (Surprise Me Result Visualization) */}
-                <SurpriseMeSelectedTagsDisplay onRerollAll={() => handleSurpriseMe(false)} />
+                {/* Display Selected Tags (only when prompt has content) */}
+                {promptPreview.trim().length > 0 && (
+                    <SurpriseMeSelectedTagsDisplay onRerollAll={() => handleSurpriseMe(false)} />
+                )}
 
                 {(() => {
                     const hasToken = typeof window !== 'undefined' && localStorage.getItem('auth_token');

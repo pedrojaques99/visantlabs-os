@@ -882,23 +882,40 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
     let updatedUser: any;
     let actualCreditsDeducted = 0;
 
-    // Check for user API key FIRST
+    // Check for user API key FIRST based on provider
     let userApiKey: string | undefined;
     let usingUserKey = false;
     let apiKeySource: 'user' | 'system' = 'system';
 
     try {
-      const { getGeminiApiKey } = await import('../utils/geminiApiKey.js');
-      // Try to get ONLY user key first (skip fallback)
-      userApiKey = await getGeminiApiKey(req.userId!, { skipFallback: true });
+      if (provider === 'seedream') {
+        // Check for Seedream API Key
+        const user = await db.collection('users').findOne({ _id: new ObjectId(req.userId!) });
+        if (user?.encryptedSeedreamApiKey) {
+          const { decryptApiKey } = await import('../utils/encryption.js');
+          // decryptApiKey might throw if key is invalid/corrupt
+          try {
+            userApiKey = decryptApiKey(user.encryptedSeedreamApiKey);
+            if (userApiKey) {
+              usingUserKey = true;
+              apiKeySource = 'user';
+              console.log(`${logPrefix} [API KEY] Using user Seedream API key`);
+            }
+          } catch (decryptError) {
+            console.error(`${logPrefix} [API KEY] Failed to decrypt Seedream key:`, decryptError);
+          }
+        }
+      } else {
+        // Check for Gemini API Key (Default)
+        const { getGeminiApiKey } = await import('../utils/geminiApiKey.js');
+        // Try to get ONLY user key first (skip fallback)
+        userApiKey = await getGeminiApiKey(req.userId!, { skipFallback: true });
 
-      if (userApiKey) {
-        usingUserKey = true;
-        apiKeySource = 'user';
-        console.log(`${logPrefix} [API KEY] Using user API key, will skip credit deduction`, {
-          userId: req.userId,
-          requestLength: userApiKey.length
-        });
+        if (userApiKey) {
+          usingUserKey = true;
+          apiKeySource = 'user';
+          console.log(`${logPrefix} [API KEY] Using user Gemini API key`);
+        }
       }
     } catch (apiKeyError: any) {
       console.warn(`${logPrefix} [API KEY] Error checking for user API key:`, apiKeyError);
@@ -973,13 +990,29 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
 
     if (provider === 'seedream') {
       // Use Seedream via APIFree.ai
-      console.log(`${logPrefix} [GENERATION] Using Seedream provider`, { model, resolution, aspectRatio });
+
+      // Sanitize model: if it's not a valid Seedream model (e.g. it's a Gemini model from the UI),
+      // default to the latest Seedream model to prevent "Unknown error (400)"
+      let seedreamModel = model;
+      if (!seedreamModel.startsWith('seedream-')) {
+        console.warn(`${logPrefix} [GENERATION] Invalid Seedream model "${model}" detected. Defaulting to "seedream-4.5"`);
+        seedreamModel = 'seedream-4.5';
+      }
+
+      console.log(`${logPrefix} [GENERATION] Using Seedream provider`, {
+        originalModel: model,
+        effectiveModel: seedreamModel,
+        resolution,
+        aspectRatio
+      });
+
       imageBase64 = await generateSeedreamImage({
         prompt: promptText,
         baseImage: finalBaseImage as any,
-        model: model as any,
+        model: seedreamModel as any,
         resolution: resolution as any,
         aspectRatio: aspectRatio as any,
+        apiKey: userApiKey, // Pass user API key if available
       });
     } else {
       // Use Gemini (default)

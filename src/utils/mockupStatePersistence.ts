@@ -85,6 +85,16 @@ function isValidState(data: any): data is PersistedMockupState {
  */
 export const saveMockupState = (state: PersistedMockupState): void => {
   try {
+    console.log('[💾 Persistence] saveMockupState called', {
+      hasMockups: state.mockups?.filter(m => m !== null).length || 0,
+      hasUploadedImage: !!state.uploadedImage,
+      uploadedImageHasUrl: !!state.uploadedImage?.url,
+      uploadedImageHasBase64: !!state.uploadedImage?.base64,
+      uploadedImageBase64Size: state.uploadedImage?.base64?.length || 0,
+      referenceImagesCount: state.referenceImages?.length || 0,
+      timestamp: new Date().toISOString()
+    });
+
     // SECURITY/QUOTA: NEVER save base64 strings to localStorage
     // Instead of deep cloning, we manually construct the sanitized state
     // This is more memory efficient and safer against large data leaks
@@ -157,38 +167,51 @@ export const saveMockupState = (state: PersistedMockupState): void => {
         .filter(img => img.url || img.base64) // Keep only if we have some data
     };
 
+    console.log('[💾 Persistence] Sanitized state prepared', {
+      mockupsKept: sanitizedState.mockups.filter(m => m !== null).length,
+      uploadedImageKept: !!sanitizedState.uploadedImage,
+      uploadedImageUrlKept: !!sanitizedState.uploadedImage?.url,
+      uploadedImageBase64Kept: !!sanitizedState.uploadedImage?.base64,
+      referenceImagesKept: sanitizedState.referenceImages.length
+    });
+
     let serializedState = JSON.stringify(sanitizedState);
     let sizeInBytes = new Blob([serializedState]).size;
 
+    console.log('[💾 Persistence] Initial size:', (sizeInBytes / 1024).toFixed(2) + 'KB',
+      'Max allowed:', (MAX_STATE_SIZE_BYTES / 1024).toFixed(0) + 'KB');
+
     // If still too large, try to remove reference image base64s first
     if (sizeInBytes > MAX_STATE_SIZE_BYTES) {
+      console.warn('[💾 Persistence] ⚠️ State too large, removing reference image base64s');
       sanitizedState.referenceImages = sanitizedState.referenceImages.map(img => ({
         ...img,
         base64: undefined // Remove base64 from refs
       }));
       serializedState = JSON.stringify(sanitizedState);
       sizeInBytes = new Blob([serializedState]).size;
+      console.log('[💾 Persistence] After removing ref base64s:', (sizeInBytes / 1024).toFixed(2) + 'KB');
     }
 
     // If STILL too large, remove primary image base64 as last resort
     if (sizeInBytes > MAX_STATE_SIZE_BYTES && sanitizedState.uploadedImage?.base64) {
-      console.warn('Mockup state primary image base64 too large for LocalStorage, removing to save other state');
+      console.warn('[💾 Persistence] ⚠️ Still too large, removing primary image base64');
       sanitizedState.uploadedImage.base64 = undefined;
       serializedState = JSON.stringify(sanitizedState);
       sizeInBytes = new Blob([serializedState]).size;
+      console.log('[💾 Persistence] After removing primary base64:', (sizeInBytes / 1024).toFixed(2) + 'KB');
     }
 
     if (sizeInBytes > MAX_STATE_SIZE_BYTES) {
-      console.warn(`Mockup state still too large (${(sizeInBytes / 1024 / 1024).toFixed(2)}MB) even after slimming, skipping save`);
-      // We don't remove completely here because some basic state might be better than none,
-      // but if it exceeds limit it will fail anyway. 
+      console.warn(`[💾 Persistence] ❌ State still too large (${(sizeInBytes / 1024 / 1024).toFixed(2)}MB) even after slimming, skipping save`);
       return;
     }
 
     localStorage.setItem(STORAGE_KEY, serializedState);
+    console.log('[💾 Persistence] ✅ State saved successfully', (sizeInBytes / 1024).toFixed(2) + 'KB');
   } catch (error) {
     if (error instanceof Error && (error.name === 'QuotaExceededError' || error.message?.includes('quota'))) {
-      console.warn('LocalStorage quota exceeded, attempting to save minimal CORE state (tags only)');
+      console.warn('[💾 Persistence] ⚠️ LocalStorage quota exceeded, attempting minimal CORE state save');
       try {
         // Guaranteed minimal state: only tags and settings, NO images, NO large suggestions
         const minimalState: Partial<PersistedMockupState> = {
@@ -212,13 +235,13 @@ export const saveMockupState = (state: PersistedMockupState): void => {
           suggestedBrandingTags: cap(state.suggestedBrandingTags, 5),
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(minimalState));
-        console.log('Minimal core state saved successfully');
+        console.log('[💾 Persistence] ✅ Minimal core state saved successfully');
       } catch (innerError) {
-        console.warn('Even minimal state failed to save - storage is completely full. Clearing key.');
+        console.error('[💾 Persistence] ❌ Even minimal state failed to save - storage is completely full. Clearing key.');
         localStorage.removeItem(STORAGE_KEY);
       }
     } else {
-      console.error('Failed to save mockup state:', error);
+      console.error('[💾 Persistence] ❌ Failed to save mockup state:', error);
     }
   }
 };
@@ -229,18 +252,34 @@ export const saveMockupState = (state: PersistedMockupState): void => {
 export function loadMockupState(): PersistedMockupState | null {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) return null;
+    if (!stored) {
+      console.log('[💾 Persistence] loadMockupState: No stored state found');
+      return null;
+    }
 
     const parsed = JSON.parse(stored);
+    const sizeInBytes = new Blob([stored]).size;
+
+    console.log('[💾 Persistence] loadMockupState: Found state', {
+      sizeKB: (sizeInBytes / 1024).toFixed(2),
+      hasMockups: parsed.mockups?.filter((m: any) => m !== null).length || 0,
+      hasUploadedImage: !!parsed.uploadedImage,
+      uploadedImageHasUrl: !!parsed.uploadedImage?.url,
+      uploadedImageHasBase64: !!parsed.uploadedImage?.base64,
+      referenceImagesCount: parsed.referenceImages?.length || 0,
+      ageMinutes: parsed.timestamp ? ((Date.now() - parsed.timestamp) / 60000).toFixed(1) : 'unknown'
+    });
 
     if (!isValidState(parsed)) {
+      console.warn('[💾 Persistence] loadMockupState: State invalid or expired, removing');
       localStorage.removeItem(STORAGE_KEY);
       return null;
     }
 
+    console.log('[💾 Persistence] ✅ loadMockupState: State loaded successfully');
     return parsed;
   } catch (error) {
-    console.warn('Failed to load mockup state:', error);
+    console.error('[💾 Persistence] ❌ loadMockupState: Failed to load state:', error);
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch {
@@ -255,8 +294,17 @@ export function loadMockupState(): PersistedMockupState | null {
  */
 export function clearMockupState(): void {
   try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const sizeInBytes = new Blob([stored]).size;
+      console.log('[💾 Persistence] clearMockupState: Clearing state', {
+        sizeKB: (sizeInBytes / 1024).toFixed(2)
+      });
+    }
     localStorage.removeItem(STORAGE_KEY);
+    console.log('[💾 Persistence] ✅ clearMockupState: State cleared');
   } catch (error) {
-    console.warn('Failed to clear mockup state:', error);
+    console.error('[💾 Persistence] ❌ clearMockupState: Failed to clear state:', error);
   }
 }
+

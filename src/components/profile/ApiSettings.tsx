@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ExternalLink, Lock, Eye, EyeOff, Sparkles, AlertTriangle } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
-import { saveGeminiApiKey, deleteGeminiApiKey, hasGeminiApiKey } from '@/services/userSettingsService';
+import { saveGeminiApiKey, deleteGeminiApiKey, hasGeminiApiKey, saveSeedreamApiKey, deleteSeedreamApiKey, hasSeedreamApiKey } from '@/services/userSettingsService';
 import { toast } from 'sonner';
 import { ConfirmationModal } from '../ConfirmationModal';
 import { ApiKeyPolicyModal } from '../ApiKeyPolicyModal';
@@ -17,6 +17,13 @@ export const ApiSettings: React.FC = () => {
     const [hasKey, setHasKey] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [showPolicyModal, setShowPolicyModal] = useState(false);
+
+    // Seedream State
+    const [seedreamKey, setSeedreamKey] = useState('');
+    const [showSeedreamKey, setShowSeedreamKey] = useState(false);
+    const [hasSeedreamKey, setHasSeedreamKey] = useState(false);
+    const [showSeedreamDeleteConfirm, setShowSeedreamDeleteConfirm] = useState(false);
+
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -26,11 +33,17 @@ export const ApiSettings: React.FC = () => {
     const checkApiKeyStatus = async () => {
         setIsChecking(true);
         try {
-            const hasSavedKey = await hasGeminiApiKey();
-            setHasKey(hasSavedKey);
-            if (hasSavedKey) {
-                setApiKey('');
-            }
+            const [hasGemini, hasSeedream] = await Promise.all([
+                hasGeminiApiKey(),
+                hasSeedreamApiKey()
+            ]);
+
+            setHasKey(hasGemini);
+            if (hasGemini) setApiKey('');
+
+            setHasSeedreamKey(hasSeedream);
+            if (hasSeedream) setSeedreamKey('');
+
         } catch (error) {
             console.error('Failed to check API key status:', error);
         } finally {
@@ -59,6 +72,27 @@ export const ApiSettings: React.FC = () => {
         }
     };
 
+    const handleSaveSeedream = async () => {
+        if (!seedreamKey.trim()) {
+            toast.error(t('configuration.error') || 'A chave da API não pode estar vazia');
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            await saveSeedreamApiKey(seedreamKey.trim());
+            toast.success(t('configuration.saved') || 'Chave Seedream salva com sucesso');
+            setSeedreamKey('');
+            setHasSeedreamKey(true);
+        } catch (error) {
+            console.error('Failed to save Seedream key:', error);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            toast.error(errorMessage || t('configuration.error') || 'Falha ao salvar chave Seedream');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const handleDelete = async () => {
         setIsLoading(true);
         try {
@@ -71,6 +105,23 @@ export const ApiSettings: React.FC = () => {
             console.error('Failed to delete API key:', error);
             const errorMessage = error instanceof Error ? error.message : String(error);
             toast.error(errorMessage || 'Falha ao remover a chave da API');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleDeleteSeedream = async () => {
+        setIsLoading(true);
+        try {
+            await deleteSeedreamApiKey();
+            toast.success(t('configuration.deleted') || 'Chave Seedream removida com sucesso');
+            setHasSeedreamKey(false);
+            setSeedreamKey('');
+            setShowSeedreamDeleteConfirm(false);
+        } catch (error) {
+            console.error('Failed to delete Seedream key:', error);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            toast.error(errorMessage || 'Falha ao remover a chave Seedream');
         } finally {
             setIsLoading(false);
         }
@@ -222,6 +273,103 @@ export const ApiSettings: React.FC = () => {
                             )}
                         </button>
                     </div>
+                    {/* Seedream API Key Section */}
+                    <div className="pt-6 border-t border-neutral-800/50 space-y-6">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <Sparkles size={16} className="text-violet-400" />
+                                <h3 className="text-lg font-bold font-manrope text-neutral-200">
+                                    Seedream (APIFree.ai)
+                                </h3>
+                            </div>
+                            {hasSeedreamKey && (
+                                <div className="px-3 py-1 bg-green-500/10 border border-green-500/20 rounded-full flex items-center gap-1.5">
+                                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                                    <span className="text-xs font-mono text-green-400 font-medium">Ativo</span>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <label htmlFor="seedream-key-input" className="text-sm font-semibold text-neutral-300 font-manrope">
+                                    {t('configuration.seedreamApiKey') || 'Chave da API Seedream'}
+                                </label>
+                                <button
+                                    type="button"
+                                    onClick={() => window.open('https://www.apifree.ai/console', '_blank')}
+                                    className="flex items-center gap-1.5 text-xs text-brand-cyan hover:text-brand-cyan/80 font-mono transition-colors group"
+                                >
+                                    <span>{t('configuration.getApiKey') || 'Obter chave'}</span>
+                                    <ExternalLink size={12} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                                </button>
+                            </div>
+
+                            <div className="relative group">
+                                <input
+                                    id="seedream-key-input"
+                                    type={showSeedreamKey ? 'text' : 'password'}
+                                    value={seedreamKey}
+                                    onChange={(e) => setSeedreamKey(e.target.value)}
+                                    placeholder={hasSeedreamKey ? '••••••••••••••••••••••••••••••••' : (t('configuration.seedreamPlaceholder') || 'Insira sua chave da API Seedream')}
+                                    disabled={hasSeedreamKey && !seedreamKey}
+                                    className="w-full bg-neutral-950/70 px-4 py-3.5 pr-12 rounded-xl border border-neutral-800 focus:outline-none focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/20 text-sm text-neutral-200 font-mono placeholder:text-neutral-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-inner"
+                                    autoComplete="off"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowSeedreamKey(!showSeedreamKey)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-300 p-1.5 rounded-lg hover:bg-neutral-800/50 transition-all duration-150"
+                                    aria-label={showSeedreamKey ? 'Ocultar chave' : 'Mostrar chave'}
+                                    tabIndex={-1}
+                                >
+                                    {showSeedreamKey ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                            </div>
+                            {hasSeedreamKey && !seedreamKey && (
+                                <p className="text-xs text-neutral-500 font-mono pl-1">
+                                    {t('configuration.updateHint') || 'Para atualizar, basta colar sua nova chave acima.'}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Seedream Actions */}
+                        <div className="flex items-center gap-3">
+                            {hasSeedreamKey && (
+                                <button
+                                    type="button"
+                                    onClick={() => setShowSeedreamDeleteConfirm(true)}
+                                    disabled={isLoading}
+                                    className="px-4 py-2.5 bg-neutral-900/50 hover:bg-red-500/10 disabled:bg-neutral-900/30 disabled:text-neutral-600 disabled:cursor-not-allowed text-neutral-400 hover:text-red-400 border border-neutral-800/50 hover:border-red-500/30 font-medium rounded-xl transition-all duration-200 text-xs font-mono"
+                                >
+                                    {t('configuration.delete') || 'Remover Chave'}
+                                </button>
+                            )}
+                            <div className="flex-1" />
+                            <button
+                                type="button"
+                                onClick={handleSaveSeedream}
+                                disabled={isLoading || !seedreamKey.trim()}
+                                className="px-8 py-2.5 bg-brand-cyan hover:bg-brand-cyan/90 disabled:bg-neutral-800 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-bold rounded-xl transition-all duration-200 text-sm font-mono shadow-lg shadow-brand-cyan/20 hover:shadow-brand-cyan/30 disabled:shadow-none min-w-[100px] flex items-center justify-center"
+                            >
+                                {isLoading ? (
+                                    <GlitchLoader size={16} />
+                                ) : (
+                                    t('configuration.save') || 'Salvar Alterações'
+                                )}
+                            </button>
+                        </div>
+                    </div>
+
+                    <ConfirmationModal
+                        isOpen={showSeedreamDeleteConfirm}
+                        onClose={() => setShowSeedreamDeleteConfirm(false)}
+                        onConfirm={handleDeleteSeedream}
+                        title={t('configuration.deleteSeedream') || 'Excluir Chave Seedream'}
+                        message={t('configuration.deleteSeedreamConfirm') || "Tem certeza que deseja excluir sua chave Seedream?"}
+                        variant="danger"
+                    />
+
                 </CardContent>
             </Card>
 

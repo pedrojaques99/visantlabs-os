@@ -139,3 +139,77 @@ export async function updateCanvasSettings(settings: any): Promise<void> {
 
 
 
+/**
+ * Save user's Seedream API key (encrypted on backend)
+ */
+export async function saveSeedreamApiKey(apiKey: string): Promise<void> {
+  const token = authService.getToken();
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  const response = await fetch(`${API_BASE_URL}/users/settings/seedream-api-key`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ apiKey }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ error: 'Failed to save API key' }));
+    throw new Error(errorData.error || errorData.message || 'Failed to save API key');
+  }
+}
+
+/**
+ * Delete user's Seedream API key
+ */
+export async function deleteSeedreamApiKey(): Promise<void> {
+  const token = authService.getToken();
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  const response = await fetch(`${API_BASE_URL}/users/settings/seedream-api-key`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ error: 'Failed to delete API key' }));
+    throw new Error(errorData.error || errorData.message || 'Failed to delete API key');
+  }
+}
+
+/**
+ * Check if user has a saved Seedream API key
+ */
+export async function hasSeedreamApiKey(): Promise<boolean> {
+  const token = authService.getToken();
+  if (!token) {
+    return false;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/users/settings/seedream-api-key`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      return false;
+    }
+
+    const data = await response.json();
+    return data.hasApiKey === true;
+  } catch (error) {
+    console.error('Failed to check API key:', error);
+    return false;
+  }
+}
