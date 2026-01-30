@@ -125,7 +125,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
           "w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg text-[10px] font-mono transition-all duration-200 border",
           selectedTag
             ? theme === 'dark'
-              ? 'bg-neutral-800/60 text-brand-cyan border-brand-cyan/30 hover:border-brand-cyan/50'
+              ? 'bg-neutral-800/60 text-neutral-400 border-neutral-700/50 hover:border-neutral-600'
               : 'bg-white text-brand-cyan border-brand-cyan/40 hover:border-brand-cyan/60'
             : theme === 'dark'
               ? 'bg-neutral-800/40 text-neutral-500 border-neutral-700/50 hover:border-neutral-600'
