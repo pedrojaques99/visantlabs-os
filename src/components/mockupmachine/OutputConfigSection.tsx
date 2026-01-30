@@ -22,6 +22,7 @@ interface OutputConfigSectionProps {
 
 const MAIN_ASPECT_RATIOS: AspectRatio[] = ['1:1', '9:16', '16:9', '4:3', '3:4'];
 const OTHER_ASPECT_RATIOS: AspectRatio[] = ['2:3', '3:2', '4:5', '5:4', '21:9'];
+// Base resolution options - will be augmented dynamically
 const resolutionOptions: Resolution[] = ['1K', '2K', '4K'];
 
 export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
@@ -128,14 +129,14 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
           <div className="space-y-2">
             <h4 className={sectionTitleClass(theme === 'dark')}>RESOLUÇÃO / QUALIDADE</h4>
             <div className="flex gap-1.5 h-[38px]"> {/* Fixed height to match input */}
-              {resolutionOptions.map(res => {
+              {(imageProvider === 'gemini' ? ['HD', '1K', '2K', '4K'] : ['2K', '4K']).map((res) => {
                 const isActive = resolution === res;
                 // const isHd = res === 'HD';
 
                 return (
                   <button
                     key={res}
-                    onClick={() => onResolutionChange(res)}
+                    onClick={() => onResolutionChange(res as Resolution)}
                     className={`flex-1 flex flex-col items-center justify-center text-[10px] font-mono rounded transition-all duration-200 border cursor-pointer relative group ${isActive
                       ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/40 shadow-[0_0_10px_-5px_#22d3ee]'
                       : theme === 'dark'

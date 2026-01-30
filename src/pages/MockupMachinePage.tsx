@@ -135,6 +135,7 @@ const MockupMachinePageContent: React.FC = () => {
     setIsSurpriseMeMode,
     surpriseMePool,
     imageProvider,
+    setImageProvider,
   } = useMockup();
 
   // Custom hooks for common operations (after getting mockupCount from context)
@@ -2857,6 +2858,9 @@ Generate the new mockup image with the requested changes applied.`;
             autoGenerate={autoGenerateFloating}
             setAutoGenerate={setAutoGenerateFloating}
             selectedModel={selectedModel}
+            setSelectedModel={setSelectedModel}
+            imageProvider={imageProvider}
+            setImageProvider={setImageProvider}
             mockupCount={mockupCount}
             resolution={resolution}
             showBackground

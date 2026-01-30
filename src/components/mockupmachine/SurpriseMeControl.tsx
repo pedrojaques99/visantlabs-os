@@ -1,10 +1,11 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Dices, PenLine, Pickaxe, Check, Settings } from 'lucide-react';
+import { Select } from '@/components/ui/select';
+import { Dices, PenLine, Pickaxe, Check, Settings, Sparkles, Cpu, Zap, Film } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
-import { GeminiModel, Resolution } from '@/types/types';
+import { GeminiModel, Resolution, ImageProvider } from '@/types/types';
 import { getCreditsRequired } from '@/utils/creditCalculator';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
@@ -18,6 +19,9 @@ interface SurpriseMeControlProps {
     autoGenerate: boolean;
     setAutoGenerate: (value: boolean) => void;
     selectedModel: GeminiModel | null;
+    setSelectedModel: (model: GeminiModel | null) => void;
+    imageProvider?: ImageProvider;
+    setImageProvider?: (provider: ImageProvider) => void;
     mockupCount: number;
     resolution: Resolution;
     containerClassName?: string;
@@ -101,6 +105,9 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
     autoGenerate,
     setAutoGenerate,
     selectedModel,
+    setSelectedModel,
+    imageProvider,
+    setImageProvider,
     mockupCount,
     resolution,
     containerClassName,
@@ -119,8 +126,8 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
     const promptDisabled = !!(isGeneratingPrompt || isGenerateDisabled);
     const outputsDisabled = !!(isGeneratingPrompt || isGeneratingOutputs || isGenerateDisabled || !isPromptReady);
     const creditsOutputs =
-        selectedModel && isPromptReady ? mockupCount * getCreditsRequired(selectedModel, resolution) : 0;
-    const creditsSurpriseMe = selectedModel ? mockupCount * getCreditsRequired(selectedModel, resolution) : 0;
+        selectedModel && isPromptReady ? mockupCount * getCreditsRequired(selectedModel, resolution, imageProvider) : 0;
+    const creditsSurpriseMe = selectedModel ? mockupCount * getCreditsRequired(selectedModel, resolution, imageProvider) : 0;
 
     const promptTooltip = () => {
         if (!promptDisabled) return t('mockup.generatePromptShortcut');
@@ -180,19 +187,20 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                     !disabled && isPrompt
                         ? 'bg-white border-white text-black shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:scale-[1.02] active:scale-[0.98] hover:bg-white/90'
 
-                        : // Active state (Non-primary)
-                        !disabled && isActive
-                            ? 'bg-brand-cyan/20 border-brand-cyan/40 text-brand-cyan shadow-[0_0_20px_rgba(var(--brand-cyan-rgb),0.2)]'
+                        : // Primary state (Brand Cyan) - Vivid shadow
+                        !disabled && isPrimaryAction
+                            ? cn(
+                                'text-black',
+                                'shadow-[0_8px_30px_rgba(var(--brand-cyan-rgb),0.25)] hover:scale-[1.02] active:scale-[0.98] font-black',
+                                isPrimarySurprise
+                                    ? 'bg-gradient-to-br from-brand-cyan to-foreground border-brand-cyan/50 hover:opacity-90'
+                                    : 'bg-brand-cyan border-brand-cyan/50 hover:bg-brand-cyan/90',
+                                isPrimarySurprise && isActive && 'ring-2 ring-brand-cyan ring-offset-2 ring-offset-black'
+                            )
 
-                            : // Primary state (Brand Cyan) - Vivid shadow
-                            !disabled && isPrimaryAction
-                                ? cn(
-                                    'text-black shadow-[0_8px_30px_rgba(var(--brand-cyan-rgb),0.25)] hover:scale-[1.02] active:scale-[0.98] font-black',
-                                    isPrimarySurprise
-                                        ? 'bg-gradient-to-br from-brand-cyan to-foreground border-brand-cyan/50 hover:opacity-90'
-                                        : 'bg-brand-cyan border-brand-cyan/50 hover:bg-brand-cyan/90',
-                                    isPrimarySurprise && isActive && 'ring-2 ring-brand-cyan ring-offset-2 ring-offset-black'
-                                )
+                            : // Active state (Non-primary)
+                            !disabled && isActive
+                                ? 'bg-brand-cyan/20 border-brand-cyan/40 text-brand-cyan shadow-[0_0_20px_rgba(var(--brand-cyan-rgb),0.2)]'
 
                                 : // Secondary/Default state (Glass) - Subtle shadow
                                 isLight
@@ -369,35 +377,62 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
 
                     {/* Settings Feedback/Menu Overlay */}
                     {showSettings && (
-                        <div className="absolute bottom-full right-0 mb-3 w-64 p-4 rounded-md bg-neutral-900/95 border border-white/10 backdrop-blur-xl shadow-2xl animate-in fade-in slide-in-from-bottom-2 duration-200 z-50">
-                            <div className="space-y-4">
-                                <div className="space-y-1 pb-2 border-b border-white/5">
-                                    <h5 className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 font-bold">
-                                        {t('mockup.aiSettings') || 'Ajustes de IA'}
-                                    </h5>
+                        <div className="absolute bottom-full right-0 mb-3 w-72 p-4 rounded-xl bg-neutral-900/95 border border-white/10 backdrop-blur-xl shadow-2xl animate-in fade-in slide-in-from-bottom-2 duration-200 z-50">
+                            <div className="space-y-5">
+                                <div className="space-y-3 pb-4 border-b border-white/5">
+                                    <div className="flex items-center justify-between">
+                                        <h5 className="text-[10px] font-mono uppercase tracking-widest text-neutral-400 font-bold flex items-center gap-2">
+                                            <Sparkles size={12} className="text-brand-cyan" />
+                                            {t('mockup.aiSettings') || 'MODELO & AJUSTES'}
+                                        </h5>
+                                        {selectedModel && (
+                                            <Badge variant="outline" className="text-[9px] h-5 px-1.5 border-white/10 text-neutral-400 font-mono">
+                                                {getCreditsRequired(selectedModel, resolution)} 💎 / img
+                                            </Badge>
+                                        )}
+                                    </div>
+
+                                    <label className="text-[9px] font-mono uppercase text-neutral-500 ml-1">Modelo de IA</label>
+                                    <Select
+                                        value={imageProvider === 'seedream' ? 'seedream-4.5' : 'gemini-pro'}
+                                        onChange={(val) => {
+                                            if (val === 'seedream-4.5') {
+                                                if (setImageProvider) setImageProvider('seedream');
+                                            } else {
+                                                if (setImageProvider) setImageProvider('gemini');
+                                                if (setSelectedModel) setSelectedModel('gemini-3-pro-image-preview');
+                                            }
+                                        }}
+                                        options={[
+                                            { value: 'gemini-pro', label: 'Gemini Pro' },
+                                            { value: 'seedream-4.5', label: 'Seedream 4.5' }
+                                        ]}
+                                        className="w-full bg-black/40 border-white/10 text-[11px]"
+                                        variant="default"
+                                    />
                                 </div>
+                            </div>
 
-                                <ToggleRow
-                                    checked={autoGenerate}
-                                    onClick={() => setAutoGenerate(!autoGenerate)}
-                                    label={t('mockup.autoGenerateLabel') || 'Auto-Gerar Mockups'}
-                                    dark={dark}
-                                    tooltip={t('mockup.autoGenerateDescription') || 'Gera automaticamente após criar o prompt'}
-                                />
+                            <ToggleRow
+                                checked={autoGenerate}
+                                onClick={() => setAutoGenerate(!autoGenerate)}
+                                label={t('mockup.autoGenerateLabel') || 'Auto-Gerar Mockups'}
+                                dark={dark}
+                                tooltip={t('mockup.autoGenerateDescription') || 'Gera automaticamente após criar o prompt'}
+                            />
 
-                                <ToggleRow
-                                    checked={isSurpriseMeMode}
-                                    onClick={() => setIsSurpriseMeMode(!isSurpriseMeMode)}
-                                    label={t('mockup.directorModeLabel') || 'Modo Diretor'}
-                                    dark={dark}
-                                    tooltip={t('mockup.directorModeDescription') || 'Selecione e defina quais tags poderão ser escolhidas ao gerar'}
-                                />
+                            <ToggleRow
+                                checked={isSurpriseMeMode}
+                                onClick={() => setIsSurpriseMeMode(!isSurpriseMeMode)}
+                                label={t('mockup.directorModeLabel') || 'Modo Diretor'}
+                                dark={dark}
+                                tooltip={t('mockup.directorModeDescription') || 'Selecione e defina quais tags poderão ser escolhidas ao gerar'}
+                            />
 
-                                <div className="pt-2 text-[9px] font-mono text-neutral-600 leading-tight">
-                                    {autoGenerate
-                                        ? (t('mockup.autoGenerateActive') || 'Imagens serão geradas instantaneamente.')
-                                        : (t('mockup.autoGenerateInactive') || 'Gera apenas o prompt para sua revisão.')}
-                                </div>
+                            <div className="pt-2 text-[9px] font-mono text-neutral-600 leading-tight">
+                                {autoGenerate
+                                    ? (t('mockup.autoGenerateActive') || 'Imagens serão geradas instantaneamente.')
+                                    : (t('mockup.autoGenerateInactive') || 'Gera apenas o prompt para sua revisão.')}
                             </div>
                         </div>
                     )}

@@ -482,6 +482,9 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
                         isGenerateDisabled={isGenerateDisabled}
                         isGeneratingOutputs={isGenerating}
                         isPromptReady={isPromptReady}
+                        setSelectedModel={setSelectedModel}
+                        imageProvider={imageProvider}
+                        setImageProvider={setImageProvider}
                     />
                 </div>
             </div>
