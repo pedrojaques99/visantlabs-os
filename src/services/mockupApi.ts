@@ -46,6 +46,7 @@ const createRequestKey = (params: any, uniqueId?: string | number): string => {
     params.model || '',
     params.resolution || '',
     params.aspectRatio || '',
+    params.provider || 'gemini',
     params.imagesCount || 1,
     params.feature || '',
     params.baseImage ? 'hasBaseImage' : 'noBaseImage',
@@ -176,7 +177,7 @@ export const mockupApi = {
 
       // Convert base64 to blob - remove data URL prefix if present
       const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
-      
+
       // Validate base64 string
       if (!base64Data || base64Data.length === 0) {
         throw new Error('Invalid base64 data: empty after removing prefix');
@@ -293,6 +294,7 @@ export const mockupApi = {
     referenceImages?: Array<{ base64?: string; url?: string; mimeType: string }>;
     imagesCount?: number;
     feature?: 'mockupmachine' | 'canvas';
+    provider?: 'gemini' | 'seedream'; // Image generation provider
     uniqueId?: string | number; // Optional unique identifier for parallel batch requests (e.g., slot index)
   }): Promise<{ imageBase64?: string; imageUrl?: string; creditsDeducted: number; creditsRemaining: number; isAdmin: boolean }> {
     // Generate unique request ID for tracking

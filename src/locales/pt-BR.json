@@ -901,7 +901,8 @@
     "addCustomTag": "Adicionar tag personalizada...",
     "addCustomCategoryLabel": "Adicionar categoria personalizada...",
     "addCustomCategoryHint": "Personalize ainda mais seu mockup",
-    "tagAlreadyExists": "Tag já existe"
+    "tagAlreadyExists": "Tag já existe",
+    "selectOption": "Selecione..."
   },
   "pricing": {
     "title": "PREÇOS",

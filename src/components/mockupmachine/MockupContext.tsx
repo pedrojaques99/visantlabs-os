@@ -1,15 +1,15 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useMemo, useCallback, Dispatch, SetStateAction } from 'react';
-import type { UploadedImage, AspectRatio, DesignType, GeminiModel, Resolution } from '@/types/types';
+import type { UploadedImage, AspectRatio, DesignType, GeminiModel, Resolution, ImageProvider } from '@/types/types';
 import { getSurpriseMeSelectedTags, saveSurpriseMeSelectedTags, type SurpriseMeSelectedTags } from '@/utils/surpriseMeSettings';
 
 interface MockupContextState {
-    // Image State
     uploadedImage: UploadedImage | null;
     referenceImages: UploadedImage[];
     designType: DesignType | null;
     selectedModel: GeminiModel | null;
     resolution: Resolution;
     aspectRatio: AspectRatio;
+    imageProvider: ImageProvider;
 
     // Generation State
     mockups: (string | null)[];
@@ -85,6 +85,7 @@ interface MockupContextActions {
     setSelectedModel: Dispatch<SetStateAction<GeminiModel | null>>;
     setResolution: Dispatch<SetStateAction<Resolution>>;
     setAspectRatio: Dispatch<SetStateAction<AspectRatio>>;
+    setImageProvider: Dispatch<SetStateAction<ImageProvider>>;
     setMockups: Dispatch<SetStateAction<(string | null)[]>>;
     setIsLoading: Dispatch<SetStateAction<boolean[]>>;
     setHasGenerated: Dispatch<SetStateAction<boolean>>;
@@ -152,6 +153,31 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const [selectedModel, setSelectedModel] = useState<GeminiModel | null>(null);
     const [resolution, setResolution] = useState<Resolution>('1K');
     const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
+
+    // Image provider state with localStorage persistence
+    const [imageProvider, setImageProviderState] = useState<ImageProvider>(() => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('visantlabs-image-provider');
+            return (saved === 'seedream' ? 'seedream' : 'gemini') as ImageProvider;
+        }
+        return 'gemini';
+    });
+
+    // Wrapper to persist imageProvider to localStorage
+    const setImageProvider = useCallback((value: ImageProvider | ((prev: ImageProvider) => ImageProvider)) => {
+        setImageProviderState(prev => {
+            const newValue = typeof value === 'function' ? value(prev) : value;
+            if (typeof window !== 'undefined') {
+                try {
+                    localStorage.setItem('visantlabs-image-provider', newValue);
+                } catch (e) {
+                    // Ignore localStorage quota errors
+                    console.warn('Failed to persist image provider to localStorage:', e);
+                }
+            }
+            return newValue;
+        });
+    }, []);
     const [mockups, setMockups] = useState<(string | null)[]>(Array(initialMockupCount).fill(null));
     const [isLoading, setIsLoading] = useState<boolean[]>(Array(initialMockupCount).fill(false));
     const [hasGenerated, setHasGenerated] = useState(false);
@@ -280,6 +306,7 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         selectedModel, setSelectedModel,
         resolution, setResolution,
         aspectRatio, setAspectRatio,
+        imageProvider, setImageProvider,
         mockups, setMockups,
         isLoading, setIsLoading,
         hasGenerated, setHasGenerated,
@@ -335,7 +362,7 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         clearAllTags
     }), [
         uploadedImage, referenceImages, designType,
-        selectedModel, resolution, aspectRatio, mockups, isLoading, hasGenerated,
+        selectedModel, resolution, aspectRatio, imageProvider, mockups, isLoading, hasGenerated,
         isAnalyzing, isGeneratingPrompt, selectedTags, selectedBrandingTags,
         selectedLocationTags, selectedAngleTags, selectedLightingTags, selectedEffectTags,
         selectedMaterialTags, selectedColors, suggestedTags,

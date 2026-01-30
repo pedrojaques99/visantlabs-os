@@ -180,18 +180,19 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                     !disabled && isPrompt
                         ? 'bg-white border-white text-black shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:scale-[1.02] active:scale-[0.98] hover:bg-white/90'
 
-                        : // Primary state (Brand Cyan) - Vivid shadow
-                        !disabled && isPrimaryAction
-                            ? cn(
-                                'text-black shadow-[0_8px_30px_rgba(var(--brand-cyan-rgb),0.25)] hover:scale-[1.02] active:scale-[0.98] font-black',
-                                isPrimarySurprise
-                                    ? 'bg-gradient-to-br from-brand-cyan to-foreground border-brand-cyan/50 hover:opacity-90'
-                                    : 'bg-brand-cyan border-brand-cyan/50 hover:bg-brand-cyan/90'
-                            )
+                        : // Active state (Non-primary)
+                        !disabled && isActive
+                            ? 'bg-brand-cyan/20 border-brand-cyan/40 text-brand-cyan shadow-[0_0_20px_rgba(var(--brand-cyan-rgb),0.2)]'
 
-                            : // Active state (Non-primary)
-                            !disabled && isActive
-                                ? 'bg-brand-cyan/20 border-brand-cyan/40 text-brand-cyan shadow-lg shadow-brand-cyan/10'
+                            : // Primary state (Brand Cyan) - Vivid shadow
+                            !disabled && isPrimaryAction
+                                ? cn(
+                                    'text-black shadow-[0_8px_30px_rgba(var(--brand-cyan-rgb),0.25)] hover:scale-[1.02] active:scale-[0.98] font-black',
+                                    isPrimarySurprise
+                                        ? 'bg-gradient-to-br from-brand-cyan to-foreground border-brand-cyan/50 hover:opacity-90'
+                                        : 'bg-brand-cyan border-brand-cyan/50 hover:bg-brand-cyan/90',
+                                    isPrimarySurprise && isActive && 'ring-2 ring-brand-cyan ring-offset-2 ring-offset-black'
+                                )
 
                                 : // Secondary/Default state (Glass) - Subtle shadow
                                 isLight
@@ -235,10 +236,11 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
     return (
         <div
             className={cn(
-                'w-fit bg-transparent',
-                showBackground && !isFixedBottom && `pt-4 transition-all duration-200`,
+                'w-fit bg-transparent transition-all duration-500',
+                showBackground && !isFixedBottom && `pt-4`,
                 showBackground && !isFixedBottom && 'px-5 md:px-6',
-                showBackground && isFixedBottom && 'pt-4 !pb-4 px-4 md:px-5 rounded-t-xl transition-all duration-200',
+                showBackground && isFixedBottom && 'pt-4 !pb-4 px-4 md:px-5 rounded-t-xl',
+                isSurpriseMeMode && 'drop-shadow-[0_0_15px_rgba(var(--brand-cyan-rgb),0.3)]',
                 containerClassName
             )}
         >
@@ -254,7 +256,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                         () => onSurpriseMe(autoGenerate),
                         isGeneratingPrompt || isGeneratingOutputs || isDiceAnimating,
                         <Dices size={20} className={cn("transition-transform duration-700", isDiceAnimating && "rotate-[360deg]")} />,
-                        false,
+                        isSurpriseMeMode,
                         surpriseTooltip(),
                         autoGenerate && creditsSurpriseMe > 0 && (
                             <div className="absolute -top-1.5 -right-1.5 z-20 animate-in zoom-in duration-300">

@@ -133,7 +133,8 @@ const MockupMachinePageContent: React.FC = () => {
     setInstructions,
     isSurpriseMeMode,
     setIsSurpriseMeMode,
-    surpriseMePool
+    surpriseMePool,
+    imageProvider,
   } = useMockup();
 
   // Custom hooks for common operations (after getting mockupCount from context)
@@ -1158,7 +1159,8 @@ const MockupMachinePageContent: React.FC = () => {
         referenceImages: referenceImagesToUse?.map(img =>
           img.url ? { url: img.url, mimeType: img.mimeType } : { base64: img.base64, mimeType: img.mimeType }
         ),
-        imagesCount: 1
+        imagesCount: 1,
+        provider: imageProvider,
       });
 
       onSuccess(result.imageUrl || result.imageBase64 || '');
@@ -1274,7 +1276,8 @@ const MockupMachinePageContent: React.FC = () => {
           ),
           imagesCount: 1,
           feature: 'mockupmachine',
-          uniqueId: index // Use slot index to differentiate parallel batch requests
+          uniqueId: index, // Use slot index to differentiate parallel batch requests
+          provider: imageProvider,
         });
 
         // Image successfully generated - set it in state (prefer URL; if only base64, try client-side upload)

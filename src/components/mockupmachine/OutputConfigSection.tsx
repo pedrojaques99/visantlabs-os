@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import type { DesignType, GeminiModel, Resolution, AspectRatio } from '@/types/types';
+import type { DesignType, GeminiModel, Resolution, AspectRatio, ImageProvider } from '@/types/types';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { sectionTitleClass } from '@/lib/utils';
+import { Sparkles, Cpu } from 'lucide-react';
 
 interface OutputConfigSectionProps {
   mockupCount: number;
@@ -14,6 +15,8 @@ interface OutputConfigSectionProps {
   setSelectedModel: (model: GeminiModel) => void;
   aspectRatio: AspectRatio;
   onAspectRatioChange: (ratio: AspectRatio) => void;
+  imageProvider: ImageProvider;
+  setImageProvider: (provider: ImageProvider) => void;
 }
 
 // Aspect ratios principais
@@ -31,7 +34,9 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
   onResolutionChange,
   setSelectedModel,
   aspectRatio,
-  onAspectRatioChange
+  onAspectRatioChange,
+  imageProvider,
+  setImageProvider
 }) => {
   const isProModel = selectedModel === 'gemini-3-pro-image-preview';
   const { t } = useTranslation();
@@ -56,11 +61,53 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
 
   const currentActiveResolution = isProModel ? resolution : 'HD';
 
+  // Seedream only supports 2K and 4K
+  const isSeedream = imageProvider === 'seedream';
+  const resolutionOptions = isSeedream ? ['2K', '4K'] as const : ['HD', '1K', '2K', '4K'] as const;
+
   return (
     <section className="space-y-6 pt-4 border-t border-neutral-800/20 pb-6">
       <h2 className={sectionTitleClass(theme === 'dark')}>{t('mockup.outputConfig')}</h2>
 
       <div className="space-y-5">
+
+        {/* AI Provider Toggle */}
+        <div className="space-y-2">
+          <h4 className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>MODELO DE IA</h4>
+          <div className="flex gap-1.5">
+            <button
+              onClick={() => setImageProvider('gemini')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 text-[11px] font-mono rounded-md transition-all duration-200 border cursor-pointer ${imageProvider === 'gemini'
+                ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/40 shadow-[0_0_10px_-5px_#22d3ee]'
+                : theme === 'dark'
+                  ? 'bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
+                  : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:border-neutral-300 hover:text-neutral-700'
+                }`}
+            >
+              <Cpu className="w-3.5 h-3.5" />
+              <span>Gemini</span>
+            </button>
+            <button
+              onClick={() => {
+                setImageProvider('seedream');
+                // Switch to 2K minimum for Seedream
+                if (resolution !== '2K' && resolution !== '4K') {
+                  onResolutionChange('2K');
+                  setSelectedModel('gemini-3-pro-image-preview');
+                }
+              }}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 text-[11px] font-mono rounded-md transition-all duration-200 border cursor-pointer ${imageProvider === 'seedream'
+                ? 'bg-violet-500/20 text-violet-400 border-violet-500/40 shadow-[0_0_10px_-5px_#8b5cf6]'
+                : theme === 'dark'
+                  ? 'bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
+                  : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:border-neutral-300 hover:text-neutral-700'
+                }`}
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Seedream</span>
+            </button>
+          </div>
+        </div>
 
         {/* Unified Config Row: Number of Images + Resolution */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -87,8 +134,10 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
           <div className="space-y-2">
             <h4 className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>RESOLUÇÃO / QUALIDADE</h4>
             <div className="flex gap-1.5 h-[38px]"> {/* Fixed height to match input */}
-              {(['HD', '1K', '2K', '4K'] as const).map(res => {
-                const isActive = currentActiveResolution === res;
+              {resolutionOptions.map(res => {
+                const isActive = isSeedream
+                  ? resolution === res
+                  : currentActiveResolution === res;
                 const isHd = res === 'HD';
 
                 return (

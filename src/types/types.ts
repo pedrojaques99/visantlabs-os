@@ -15,6 +15,12 @@ export type GeminiModel =
   | 'veo-3.1-generate-preview'
   | 'veo-3.1-fast-generate-preview';
 
+// Seedream models via APIFree.ai
+export type SeedreamModel = 'seedream-4.5' | 'seedream-4.0';
+
+// Image generation provider
+export type ImageProvider = 'gemini' | 'seedream';
+
 export enum VeoModel {
   VEO_3_1 = 'veo-3.1-generate-preview',
   VEO_3_1_FAST = 'veo-3.1-fast-generate-preview',

@@ -905,7 +905,8 @@
     "setupAndAnalysis": "SETUP & ANALYSIS",
     "generationConfig": "GENERATION CONFIG",
     "inPool": "in pool",
-    "sectionLocked": "Section locked after analysis"
+    "sectionLocked": "Section locked after analysis",
+    "selectOption": "Select..."
   },
   "adminPresets": {
     "title": "Preset Administration",
