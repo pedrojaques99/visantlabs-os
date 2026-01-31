@@ -80,9 +80,10 @@ export function buildGeminiPromptInstructionsTemplate(params: {
   isBlankMockup: boolean;
   withHuman: boolean;
   enhanceTexture: boolean;
+  removeText: boolean;
   locationTags: string[];
 }): string {
-  const { designType, isBlankMockup, withHuman, enhanceTexture, locationTags } = params;
+  const { designType, isBlankMockup, withHuman, enhanceTexture, removeText, locationTags } = params;
 
   const designTypeDescription = isBlankMockup
     ? 'A blank mockup (no design provided)'
@@ -94,7 +95,7 @@ export function buildGeminiPromptInstructionsTemplate(params: {
 
   const textGenerationInstruction = isBlankMockup
     ? `9.  **Text Generation:** The user wants a blank mockup. Explicitly state "Absolutely no text, letters, or words should be generated in the image."`
-    : `9.  **Text Generation:** If "Generate Placeholder Text" is Yes, include a phrase like "with plausible placeholder text for realism". If No, state "The design should be the sole focus, with absolutely no additional text, words, or letters generated anywhere in the image. Avoid text or letters.".`;
+    : `9.  **Text Generation:** If "Generate Placeholder Text" is Yes, include a phrase like "with plausible placeholder text for realism". If "Remove Text" is Yes, state "The design should be the sole focus, with absolutely no additional text, words, or letters generated anywhere in the image. Avoid text or letters.".`;
 
   const humanInteractionInstruction = withHuman
     ? (isBlankMockup
@@ -128,6 +129,7 @@ export function buildGeminiPromptInstructionsTemplate(params: {
 -   **Lighting Style:** [LIGHTING_TAGS]
 -   **Visual Effects:** [EFFECT_TAGS]
 -   **Generate Placeholder Text:** [GENERATE_TEXT]
+-   **Remove Text:** [REMOVE_TEXT]
 -   **Include Human Interaction:** [WITH_HUMAN]
 -   **Additional Details (MUST HAVE):** [ADDITIONAL_PROMPT]
 -   **Aspect Ratio:** [ASPECT_RATIO]

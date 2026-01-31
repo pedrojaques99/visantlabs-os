@@ -96,6 +96,7 @@ const MockupMachinePageContent: React.FC = () => {
     generateText, setGenerateText,
     withHuman, setWithHuman,
     enhanceTexture, setEnhanceTexture,
+    removeText, setRemoveText,
     aspectRatio, setAspectRatio,
     promptPreview, setPromptPreview,
     negativePrompt, setNegativePrompt,
@@ -257,6 +258,7 @@ const MockupMachinePageContent: React.FC = () => {
         setGenerateText(persistedState.generateText);
         setWithHuman(persistedState.withHuman);
         setEnhanceTexture(persistedState.enhanceTexture ?? false);
+        setRemoveText(persistedState.removeText ?? true);
         setNegativePrompt(persistedState.negativePrompt);
         setAdditionalPrompt(persistedState.additionalPrompt);
         setSuggestedTags(persistedState.suggestedTags || []);
@@ -382,6 +384,7 @@ const MockupMachinePageContent: React.FC = () => {
           generateText,
           withHuman,
           enhanceTexture,
+          removeText,
           negativePrompt,
           additionalPrompt,
           suggestedTags,
@@ -425,6 +428,7 @@ const MockupMachinePageContent: React.FC = () => {
     generateText,
     withHuman,
     enhanceTexture,
+    removeText,
     negativePrompt,
     additionalPrompt,
     // Note: isPromptReady is intentionally excluded - it's not persisted and causes extra saves
@@ -551,6 +555,7 @@ const MockupMachinePageContent: React.FC = () => {
         generateText: generateText,
         withHuman: withHuman,
         enhanceTexture: enhanceTexture,
+        removeText: removeText,
         negativePrompt: negativePrompt,
         additionalPrompt: additionalPrompt,
         instructions: instructions,
@@ -707,6 +712,7 @@ const MockupMachinePageContent: React.FC = () => {
     setAdditionalPrompt('');
     setGenerateText(false);
     setWithHuman(false);
+    setRemoveText(true);
     setIsSmartPromptActive(true);
     setPromptSuggestions([]);
     setPromptPreview('');

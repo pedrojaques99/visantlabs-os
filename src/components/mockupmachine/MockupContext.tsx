@@ -44,6 +44,7 @@ interface MockupContextState {
     generateText: boolean;
     withHuman: boolean;
     enhanceTexture: boolean;
+    removeText: boolean;
 
     // Prompt States
     promptPreview: string;
@@ -114,6 +115,7 @@ interface MockupContextActions {
     setGenerateText: Dispatch<SetStateAction<boolean>>;
     setWithHuman: Dispatch<SetStateAction<boolean>>;
     setEnhanceTexture: Dispatch<SetStateAction<boolean>>;
+    setRemoveText: Dispatch<SetStateAction<boolean>>;
     setPromptPreview: Dispatch<SetStateAction<string>>;
     setNegativePrompt: Dispatch<SetStateAction<string>>;
     setAdditionalPrompt: Dispatch<SetStateAction<string>>;
@@ -206,6 +208,7 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const [generateText, setGenerateText] = useState(false);
     const [withHuman, setWithHuman] = useState(false);
     const [enhanceTexture, setEnhanceTexture] = useState(false);
+    const [removeText, setRemoveText] = useState(true);
     const [promptPreview, setPromptPreview] = useState('');
     const [negativePrompt, setNegativePrompt] = useState('');
     const [additionalPrompt, setAdditionalPrompt] = useState('');
@@ -335,6 +338,7 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         generateText, setGenerateText,
         withHuman, setWithHuman,
         enhanceTexture, setEnhanceTexture,
+        removeText, setRemoveText,
         promptPreview, setPromptPreview,
         negativePrompt, setNegativePrompt,
         additionalPrompt, setAdditionalPrompt,
@@ -369,7 +373,7 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         suggestedBrandingTags, suggestedLocationTags, suggestedAngleTags,
         suggestedLightingTags, suggestedEffectTags, suggestedMaterialTags,
         suggestedColors, isAdvancedOpen,
-        isAllCategoriesOpen, generateText, withHuman, enhanceTexture, promptPreview,
+        isAllCategoriesOpen, generateText, withHuman, enhanceTexture, removeText, promptPreview,
         negativePrompt, additionalPrompt, isSmartPromptActive, isPromptManuallyEdited,
         isPromptReady, promptSuggestions, isSuggestingPrompts, customBrandingInput,
         customCategoryInput, customLocationInput, customAngleInput, customLightingInput,

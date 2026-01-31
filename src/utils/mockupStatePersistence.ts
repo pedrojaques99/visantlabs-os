@@ -47,6 +47,7 @@ export interface PersistedMockupState {
   generateText: boolean;
   withHuman: boolean;
   enhanceTexture: boolean;
+  removeText: boolean;
   negativePrompt: string;
   additionalPrompt: string;
   instructions: string;
@@ -127,6 +128,7 @@ export const saveMockupState = (state: PersistedMockupState): void => {
       generateText: state.generateText,
       withHuman: state.withHuman,
       enhanceTexture: state.enhanceTexture,
+      removeText: state.removeText,
       negativePrompt: state.negativePrompt,
       additionalPrompt: state.additionalPrompt,
       instructions: state.instructions,

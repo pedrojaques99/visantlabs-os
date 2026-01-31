@@ -124,6 +124,7 @@ export const aiApi = {
     generateText: boolean;
     withHuman: boolean;
     enhanceTexture: boolean;
+    removeText: boolean;
     negativePrompt: string;
     additionalPrompt: string;
     instructions: string;

@@ -1,15 +1,6 @@
 import { GoogleGenAI, Modality, Type } from "@google/genai";
 import type { UploadedImage, AspectRatio, DesignType, GeminiModel, Resolution } from '../types/types.js';
 import { buildGeminiPromptInstructionsTemplate } from '../utils/mockupPromptFormat.js';
-import {
-  AVAILABLE_TAGS,
-  AVAILABLE_BRANDING_TAGS,
-  AVAILABLE_LOCATION_TAGS,
-  AVAILABLE_ANGLE_TAGS,
-  AVAILABLE_LIGHTING_TAGS,
-  AVAILABLE_EFFECT_TAGS,
-  AVAILABLE_MATERIAL_TAGS
-} from '../utils/mockupConstants.js';
 
 // Lazy initialization to avoid breaking app startup if API key is not configured
 let ai: GoogleGenAI | null = null;
@@ -564,6 +555,7 @@ interface SmartPromptParams {
   generateText: boolean;
   withHuman: boolean;
   enhanceTexture: boolean;
+  removeText: boolean;
   negativePrompt: string;
   additionalPrompt: string;
 }
@@ -576,7 +568,7 @@ interface SmartPromptResult {
 
 export const generateSmartPrompt = async (params: SmartPromptParams, apiKey?: string): Promise<SmartPromptResult> => {
   return withRetry(async () => {
-    const isBlankMockup = params.designType === 'blank';
+    const isBlankMockup = (params.designType as string) === 'blank';
 
     // Use shared function to build instructions template
     const instructionsTemplate = buildGeminiPromptInstructionsTemplate({
@@ -584,6 +576,7 @@ export const generateSmartPrompt = async (params: SmartPromptParams, apiKey?: st
       isBlankMockup,
       withHuman: params.withHuman,
       enhanceTexture: params.enhanceTexture,
+      removeText: params.removeText,
       locationTags: params.locationTags,
     });
 
@@ -597,6 +590,7 @@ export const generateSmartPrompt = async (params: SmartPromptParams, apiKey?: st
       .replace('[LIGHTING_TAGS]', params.lightingTags.join(', ') || 'Not specified')
       .replace('[EFFECT_TAGS]', params.effectTags.join(', ') || 'Not specified')
       .replace('[GENERATE_TEXT]', isBlankMockup ? 'No (Blank Mockup)' : (params.generateText ? 'Yes' : 'No'))
+      .replace('[REMOVE_TEXT]', isBlankMockup ? 'No' : (params.removeText ? 'Yes' : 'No'))
       .replace('[WITH_HUMAN]', params.withHuman ? 'Yes' : 'No')
       .replace('[ADDITIONAL_PROMPT]', params.additionalPrompt || 'Not specified')
       .replace('[ASPECT_RATIO]', params.aspectRatio)
