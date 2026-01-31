@@ -44,9 +44,12 @@ model User {
   isAdmin              Boolean   @default(false)
   userCategory         String?   // Category for special access (e.g., 'tester')
   encryptedGeminiApiKey String?  // Encrypted Gemini API key for user's own quota
+  encryptedSeedreamApiKey String? // Encrypted Seedream API key (APIFree.ai)
   storageLimitBytes    Int?      // Custom storage limit in bytes (optional, overrides tier-based limit)
   storageUsedBytes     Int       @default(0) // Current storage used in bytes (calculated from uploads/deletes)
   canvasSettings       Json?     // User settings for the canvas (colors, grid, etc.)
+  totalGenerations     Int       @default(0) // Track total images generated across all apps
+  totalTokensUsed      Int       @default(0) // Track total tokens used across all apps
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 
@@ -362,4 +365,27 @@ model SurpriseMePreset {
 
   @@index([userId])
   @@map("surprise_me_presets")
+}
+
+model MockupTagCategory {
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  name         String      @unique
+  displayOrder Int         @default(0)
+  tags         MockupTag[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@map("mockup_tag_categories")
+}
+
+model MockupTag {
+  id         String            @id @default(auto()) @map("_id") @db.ObjectId
+  name       String            @unique
+  categoryId String            @db.ObjectId
+  category   MockupTagCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  @@index([categoryId])
+  @@map("mockup_tags")
 }

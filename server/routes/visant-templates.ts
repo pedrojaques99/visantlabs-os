@@ -1,14 +1,35 @@
 import express from 'express';
 import { prisma } from '../db/prisma.js';
+import { rateLimit } from 'express-rate-limit';
+
+// API rate limiter - general authenticated endpoints
+// Using express-rate-limit for CodeQL recognition
+const apiRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS || '60000', 10),
+  max: parseInt(process.env.RATE_LIMIT_MAX_API || '60', 10),
+  message: { error: 'Too many requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+import { ensureOptionalBoolean, ensureString, isValidObjectId } from '../utils/validation.js';
 
 const router = express.Router();
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Vsn567349';
 
 const validateAdminPassword = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  // Security: Prefer header-based authentication over query params
+  // Query params are logged in server logs, browser history, and referrer headers
   const headerPassword = req.header('x-admin-password');
   const queryPassword = typeof req.query.password === 'string' ? req.query.password : undefined;
+  
+  // Use header password first (preferred), then fall back to query (deprecated)
   const providedPassword = headerPassword || queryPassword;
+  
+  // Log deprecation warning if query param is used
+  if (!headerPassword && queryPassword) {
+    console.warn('[SECURITY] Password provided via query param is deprecated. Use x-admin-password header instead.');
+  }
 
   if (!providedPassword || providedPassword !== ADMIN_PASSWORD) {
     return res.status(401).json({ error: 'Unauthorized' });
@@ -18,7 +39,7 @@ const validateAdminPassword = (req: express.Request, res: express.Response, next
 };
 
 // GET /api/admin/visant-templates - Listar todos os templates
-router.get('/', validateAdminPassword, async (_req, res) => {
+router.get('/', apiRateLimiter, validateAdminPassword, async (_req, res) => {
   try {
     const templates = await prisma.visantTemplate.findMany({
       orderBy: [
@@ -44,7 +65,7 @@ router.get('/', validateAdminPassword, async (_req, res) => {
 });
 
 // GET /api/visant-templates/active - Obter template ativo (público)
-router.get('/active', async (_req, res) => {
+router.get('/active', apiRateLimiter, async (_req, res) => {
   try {
     const activeTemplate = await prisma.visantTemplate.findFirst({
       where: { isActive: true },
@@ -70,16 +91,15 @@ router.get('/active', async (_req, res) => {
 });
 
 // POST /api/admin/visant-templates - Criar novo template
-router.post('/', validateAdminPassword, async (req, res) => {
+router.post('/', apiRateLimiter, validateAdminPassword, async (req, res) => {
   try {
     const { name, layout, isDefault = false } = req.body;
 
-    if (!name || !layout) {
+    const nameVal = ensureString(name, 200);
+    if (!nameVal || !layout) {
       return res.status(400).json({ error: 'Name and layout are required' });
     }
-
-    // Validate layout structure
-    if (!layout.pages || typeof layout.pages !== 'object') {
+    if (!layout || typeof layout !== 'object' || !layout.pages || typeof layout.pages !== 'object') {
       return res.status(400).json({ error: 'Invalid layout structure' });
     }
 
@@ -93,9 +113,9 @@ router.post('/', validateAdminPassword, async (req, res) => {
 
     const template = await prisma.visantTemplate.create({
       data: {
-        name,
+        name: nameVal,
         layout: layout as any,
-        isDefault,
+        isDefault: ensureOptionalBoolean(isDefault) ?? false,
         isActive: false,
       },
     });
@@ -116,9 +136,12 @@ router.post('/', validateAdminPassword, async (req, res) => {
 });
 
 // PUT /api/admin/visant-templates/:id - Atualizar template
-router.put('/:id', validateAdminPassword, async (req, res) => {
+router.put('/:id', apiRateLimiter, validateAdminPassword, async (req, res) => {
   try {
     const { id } = req.params;
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ error: 'Invalid template ID format' });
+    }
     const { name, layout, isDefault } = req.body;
 
     const existingTemplate = await prisma.visantTemplate.findUnique({
@@ -146,15 +169,16 @@ router.put('/:id', validateAdminPassword, async (req, res) => {
       updatedAt: new Date(),
     };
 
-    if (name !== undefined) updateData.name = name;
+    const n = name !== undefined ? ensureString(name, 200) : null;
+    if (n != null) updateData.name = n;
     if (layout !== undefined) {
-      // Validate layout structure
-      if (!layout.pages || typeof layout.pages !== 'object') {
+      if (!layout || typeof layout !== 'object' || !layout.pages || typeof layout.pages !== 'object') {
         return res.status(400).json({ error: 'Invalid layout structure' });
       }
       updateData.layout = layout;
     }
-    if (isDefault !== undefined) updateData.isDefault = isDefault;
+    const idDefault = ensureOptionalBoolean(isDefault);
+    if (idDefault !== undefined) updateData.isDefault = idDefault;
 
     const template = await prisma.visantTemplate.update({
       where: { id },
@@ -217,9 +241,12 @@ router.delete('/:id', validateAdminPassword, async (req, res) => {
 });
 
 // POST /api/admin/visant-templates/:id/activate - Ativar template
-router.post('/:id/activate', validateAdminPassword, async (req, res) => {
+router.post('/:id/activate', apiRateLimiter, validateAdminPassword, async (req, res) => {
   try {
     const { id } = req.params;
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ error: 'Invalid template ID format' });
+    }
 
     const template = await prisma.visantTemplate.findUnique({
       where: { id },

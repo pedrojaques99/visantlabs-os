@@ -1,4 +1,16 @@
 import express from 'express';
+import { validateExternalUrl, getErrorMessage, safeFetch, SSRFValidationError } from '../utils/securityValidation.js';
+import { rateLimit } from 'express-rate-limit';
+
+// API rate limiter - general authenticated endpoints
+// Using express-rate-limit for CodeQL recognition
+const apiRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS || '60000', 10),
+  max: parseInt(process.env.RATE_LIMIT_MAX_API || '60', 10),
+  message: { error: 'Too many requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const router = express.Router();
 
@@ -12,7 +24,7 @@ const getGoogleApiKey = (): string | null => {
  * This bypasses CORS restrictions by fetching server-side
  * GET /api/images/proxy?url=<encoded-r2-url>
  */
-router.get('/proxy', async (req, res) => {
+router.get('/proxy', apiRateLimiter, async (req, res) => {
   try {
     const { url } = req.query;
 
@@ -22,37 +34,22 @@ router.get('/proxy', async (req, res) => {
       });
     }
 
-    // Validate URL format
-    let imageUrl: URL;
-    try {
-      imageUrl = new URL(url);
-    } catch (error) {
-      return res.status(400).json({
-        error: 'Invalid URL format',
-      });
-    }
-
-    // Only allow http/https protocols
-    if (imageUrl.protocol !== 'http:' && imageUrl.protocol !== 'https:') {
-      return res.status(400).json({
-        error: 'Invalid URL protocol. Only http and https are allowed',
-      });
-    }
-
-    // Fetch the image from the URL
     let response: Response;
     try {
-      response = await fetch(url, {
+      response = await safeFetch(url, {
         method: 'GET',
         headers: {
           'User-Agent': 'VSN-Mockup-Machine/1.0',
         },
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      if (error instanceof SSRFValidationError) {
+        return res.status(400).json({ error: error.message });
+      }
       console.error('Error fetching image from URL:', error);
       return res.status(500).json({
         error: 'Failed to fetch image from URL',
-        message: error.message || 'Network error',
+        message: getErrorMessage(error),
       });
     }
 
@@ -91,11 +88,11 @@ router.get('/proxy', async (req, res) => {
       base64,
       mimeType: contentType,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in image proxy:', error);
     res.status(500).json({
       error: 'Internal server error',
-      message: error.message || 'Unknown error',
+      message: getErrorMessage(error),
     });
   }
 });
@@ -104,7 +101,7 @@ router.get('/proxy', async (req, res) => {
  * Proxy endpoint to fetch videos from Google Cloud Storage with authentication
  * GET /api/images/video-proxy?url=<encoded-video-url>
  */
-router.get('/video-proxy', async (req, res) => {
+router.get('/video-proxy', apiRateLimiter, async (req, res) => {
   try {
     const { url } = req.query;
 
@@ -114,47 +111,43 @@ router.get('/video-proxy', async (req, res) => {
       });
     }
 
-    // Validate URL format
-    let videoUrl: URL;
-    try {
-      videoUrl = new URL(url);
-    } catch (error) {
+    const urlValidation = validateExternalUrl(url);
+    if (!urlValidation.valid) {
       return res.status(400).json({
-        error: 'Invalid URL format',
+        error: urlValidation.error || 'Invalid URL',
       });
     }
 
-    // Only allow http/https protocols
-    if (videoUrl.protocol !== 'http:' && videoUrl.protocol !== 'https:') {
-      return res.status(400).json({
-        error: 'Invalid URL protocol. Only http and https are allowed',
-      });
-    }
-
-    // Get Google API key for authentication
+    const videoUrl = new URL(urlValidation.url!);
     const apiKey = getGoogleApiKey();
 
-    // Fetch the video from the URL with authentication if it's a Google Cloud Storage URL
+    // Whitelist of allowed Google Cloud Storage hostnames
+    const allowedGoogleHosts = [
+      'storage.googleapis.com',
+      'googleapis.com',
+    ];
+
+    const headers: Record<string, string> = {
+      'User-Agent': 'VSN-Mockup-Machine/1.0',
+    };
+    if (apiKey && allowedGoogleHosts.includes(videoUrl.hostname)) {
+      headers['x-goog-api-key'] = apiKey;
+    }
+
     let response: Response;
     try {
-      const headers: Record<string, string> = {
-        'User-Agent': 'VSN-Mockup-Machine/1.0',
-      };
-
-      // Add API key if available (for Google Cloud Storage)
-      if (apiKey && (videoUrl.hostname.includes('googleapis.com') || videoUrl.hostname.includes('storage.googleapis.com'))) {
-        headers['x-goog-api-key'] = apiKey;
-      }
-
-      response = await fetch(url, {
+      response = await safeFetch(url, {
         method: 'GET',
         headers,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      if (error instanceof SSRFValidationError) {
+        return res.status(400).json({ error: error.message });
+      }
       console.error('Error fetching video from URL:', error);
       return res.status(500).json({
         error: 'Failed to fetch video from URL',
-        message: error.message || 'Network error',
+        message: getErrorMessage(error),
       });
     }
 
@@ -197,11 +190,11 @@ router.get('/video-proxy', async (req, res) => {
       base64,
       mimeType: contentType,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in video proxy:', error);
     res.status(500).json({
       error: 'Internal server error',
-      message: error.message || 'Unknown error',
+      message: getErrorMessage(error),
     });
   }
 });
@@ -213,7 +206,7 @@ export default router;
  * This is used for <img src="..." /> tags where we need CORS headers
  * GET /api/images/stream?url=<encoded-r2-url>
  */
-router.get('/stream', async (req, res) => {
+router.get('/stream', apiRateLimiter, async (req, res) => {
   try {
     const { url } = req.query;
 
@@ -221,26 +214,20 @@ router.get('/stream', async (req, res) => {
       return res.status(400).send('Missing using url parameter');
     }
 
-    // Validate URL format
-    let imageUrl: URL;
+    let response: Response;
     try {
-      imageUrl = new URL(url);
-    } catch (error) {
-      return res.status(400).send('Invalid URL format');
+      response = await safeFetch(url, {
+        method: 'GET',
+        headers: {
+          'User-Agent': 'VSN-Mockup-Machine/1.0',
+        },
+      });
+    } catch (error: unknown) {
+      if (error instanceof SSRFValidationError) {
+        return res.status(400).send(error.message);
+      }
+      throw error;
     }
-
-    // Only allow http/https protocols
-    if (imageUrl.protocol !== 'http:' && imageUrl.protocol !== 'https:') {
-      return res.status(400).send('Invalid URL protocol');
-    }
-
-    // Fetch the image from the URL
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'User-Agent': 'VSN-Mockup-Machine/1.0',
-      },
-    });
 
     if (!response.ok) {
       return res.status(response.status).send(`Failed to fetch image: ${response.statusText}`);
@@ -272,7 +259,7 @@ router.get('/stream', async (req, res) => {
       res.end();
     }
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in image stream proxy:', error);
     if (!res.headersSent) {
       res.status(500).send('Internal server error');
