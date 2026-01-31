@@ -817,6 +817,7 @@
     "generateContextualText": "Gerar texto placeholder",
     "includeHumanInteraction": "Incluir interação humana",
     "enhanceTexture": "Realçar textura",
+    "removeText": "Remover texto",
     "aspectRatio": "PROPORÇÃO_",
     "aspectRatioTitle": "PROPORÇÃO_",
     "autoAspectRatioTitle": "PROPORÇÃO_AUTOMÁTICA_",

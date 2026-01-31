@@ -53,10 +53,12 @@ interface RefineSectionProps {
     onGenerateTextChange: (value: boolean) => void;
     onWithHumanChange: (value: boolean) => void;
     onEnhanceTextureChange: (value: boolean) => void;
+    onRemoveTextChange: (value: boolean) => void;
     designType: DesignType | null;
     generateText: boolean;
     withHuman: boolean;
     enhanceTexture: boolean;
+    removeText: boolean;
     suggestedLocationTags: string[];
     suggestedAngleTags: string[];
     suggestedLightingTags: string[];
@@ -91,9 +93,11 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
     generateText,
     withHuman,
     enhanceTexture,
+    removeText,
     onGenerateTextChange,
     onWithHumanChange,
     onEnhanceTextureChange,
+    onRemoveTextChange,
     selectedColors,
     suggestedColors,
     colorInput,
@@ -249,8 +253,8 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
                     key={color}
                     onClick={() => onRemoveColor(color)}
                     className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md border cursor-pointer transition-all duration-200 text-[9px] font-mono group ${theme === 'dark'
-                        ? 'border-neutral-700/40 bg-neutral-900/60 text-neutral-300 hover:bg-neutral-800 hover:border-neutral-600'
-                        : 'border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-100 hover:border-neutral-400'
+                      ? 'border-neutral-700/40 bg-neutral-900/60 text-neutral-300 hover:bg-neutral-800 hover:border-neutral-600'
+                      : 'border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-100 hover:border-neutral-400'
                       }`}
                     title={`Click to remove: ${color}`}
                   >
@@ -277,10 +281,10 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
                         }
                       }}
                       className={`w-4 h-4 rounded-full border cursor-pointer transition-all duration-200 ${selectedColors.length >= 5
-                          ? 'opacity-50 cursor-not-allowed'
-                          : theme === 'dark'
-                            ? 'border-neutral-700/40 hover:border-neutral-500 hover:scale-110'
-                            : 'border-neutral-300 hover:border-neutral-400 hover:scale-110'
+                        ? 'opacity-50 cursor-not-allowed'
+                        : theme === 'dark'
+                          ? 'border-neutral-700/40 hover:border-neutral-500 hover:scale-110'
+                          : 'border-neutral-300 hover:border-neutral-400 hover:scale-110'
                         }`}
                       style={{ backgroundColor: color }}
                       title={selectedColors.length >= 5 ? 'Maximum 5 colors reached' : `Click to add: ${color}`}
@@ -306,8 +310,8 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
                     <button
                       onClick={() => colorPickerRef.current?.click()}
                       className={`flex items-center justify-center w-8 h-8 rounded-md border-2 border-dashed transition-all duration-200 ${theme === 'dark'
-                          ? 'border-neutral-700/40 text-neutral-400 hover:border-brand-cyan/50 hover:text-brand-cyan hover:bg-neutral-800/50'
-                          : 'border-neutral-300 text-neutral-500 hover:border-brand-cyan/50 hover:text-brand-cyan hover:bg-neutral-100'
+                        ? 'border-neutral-700/40 text-neutral-400 hover:border-brand-cyan/50 hover:text-brand-cyan hover:bg-neutral-800/50'
+                        : 'border-neutral-300 text-neutral-500 hover:border-brand-cyan/50 hover:text-brand-cyan hover:bg-neutral-100'
                         }`}
                       title="Add new color"
                     >
@@ -333,6 +337,12 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
             value={withHuman}
             onChange={onWithHumanChange}
             label={t('mockup.includeHumanInteraction')}
+            className={'flex-1'}
+          />
+          <ToggleItem
+            value={removeText}
+            onChange={onRemoveTextChange}
+            label={t('mockup.removeText') || 'Remover texto'}
             className={'flex-1'}
           />
           <ToggleItem

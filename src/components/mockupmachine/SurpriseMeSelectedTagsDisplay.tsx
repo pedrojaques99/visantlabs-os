@@ -285,6 +285,7 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void 
     generateText,
     withHuman,
     enhanceTexture,
+    removeText,
     // Setters
     setSelectedTags,
     setSelectedLocationTags,
@@ -295,6 +296,7 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void 
     setGenerateText,
     setWithHuman,
     setEnhanceTexture,
+    setRemoveText,
   } = useMockup();
 
   const {
@@ -456,6 +458,12 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void 
           value={withHuman}
           onChange={setWithHuman}
           label={t('mockup.includeHumanInteraction')}
+          theme={theme}
+        />
+        <ToggleCheckbox
+          value={removeText}
+          onChange={setRemoveText}
+          label={t('mockup.removeText') || 'Remover texto'}
           theme={theme}
         />
         <ToggleCheckbox
