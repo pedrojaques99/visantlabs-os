@@ -57,6 +57,22 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
 
   const isOtherSelected = OTHER_ASPECT_RATIOS.includes(aspectRatio);
 
+  const aspectRatioLabel = (ratio: AspectRatio): string => {
+    const labels: Record<string, string> = {
+      '1:1': t('mockup.aspectRatioSquare') || 'Square',
+      '9:16': t('mockup.aspectRatioPortrait') || 'Portrait',
+      '16:9': t('mockup.aspectRatioWidescreen') || 'Widescreen',
+      '4:3': t('mockup.aspectRatioStandard') || 'Standard',
+      '3:4': t('mockup.aspectRatioPortrait43') || 'Portrait',
+      '2:3': t('mockup.aspectRatioPortrait23') || 'Portrait',
+      '3:2': t('mockup.aspectRatioLandscape') || 'Landscape',
+      '4:5': t('mockup.aspectRatioPortrait45') || 'Portrait',
+      '5:4': t('mockup.aspectRatioLandscape54') || 'Landscape',
+      '21:9': t('mockup.aspectRatioUltrawide') || 'Ultrawide',
+    };
+    return labels[ratio] || ratio;
+  };
+
   return (
     <section className="space-y-6 pt-4 border-t border-neutral-800/20 pb-6">
       <h2 className={sectionTitleClass(theme === 'dark')}>{t('mockup.outputConfig') || 'PRODUÇÃO'}</h2>
@@ -157,6 +173,9 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
         {/* Aspect Ratio Section */}
         <div className="space-y-2 pt-2">
           <h4 className={sectionTitleClass(theme === 'dark')}>{t('mockup.aspectRatioTitle') || 'PROPORÇÃO'}</h4>
+          <p className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider" role="status" aria-live="polite">
+            {aspectRatio} — {aspectRatioLabel(aspectRatio)}
+          </p>
           <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
             {MAIN_ASPECT_RATIOS.map((ratio) => {
               const [w, h] = ratio.split(':').map(Number);

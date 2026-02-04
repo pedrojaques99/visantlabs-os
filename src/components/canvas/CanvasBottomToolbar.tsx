@@ -257,7 +257,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
 
   return (
     <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50" ref={toolbarRef}>
-      <div 
+      <div
         className={cn(
           "flex items-center gap-1 backdrop-blur-xl border rounded-xl px-2 py-1.5 shadow-lg",
           isLight ? "border-neutral-300/50" : "border-neutral-800/50"
@@ -322,7 +322,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
               </Tooltip>
 
               {tool.id === 'type' && activeTool === 'type' && showFontPicker && (
-                <div 
+                <div
                   className={cn(
                     "absolute bottom-full left-0 mb-2 backdrop-blur-xl border rounded-xl shadow-xl p-3 min-w-[180px]",
                     isLight ? "border-neutral-300/50" : "border-neutral-800/50"
@@ -354,8 +354,8 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                         )}
                         style={{
                           color: fontFamily === font.value ? 'var(--brand-cyan)' : textColors.primary,
+                          ...getFontPreviewStyle(font.value),
                         }}
-                        style={getFontPreviewStyle(font.value)}
                       >
                         {font.preview}
                       </button>
@@ -365,7 +365,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
               )}
 
               {tool.id === 'color' && showColorPicker && (
-                <div 
+                <div
                   className={cn(
                     "absolute bottom-full left-0 mb-2 backdrop-blur-xl border rounded-xl shadow-xl p-3 min-w-[200px]",
                     isLight ? "border-neutral-300/50" : "border-neutral-800/50"
@@ -488,7 +488,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
 
                   {/* Cor atual selecionada (se não estiver nas predefinidas) */}
                   {!allColors.includes(strokeColor) && (
-                    <div 
+                    <div
                       className={cn(
                         "mb-3 pb-3 border-b",
                         isLight ? "border-neutral-300/50" : "border-neutral-800/50"
