@@ -594,6 +594,7 @@ interface SmartPromptParams {
   generateText: boolean;
   withHuman: boolean;
   enhanceTexture: boolean;
+  removeText: boolean;
   negativePrompt: string;
   additionalPrompt: string;
   instructions: string;
@@ -615,6 +616,7 @@ export const generateSmartPrompt = async (params: SmartPromptParams, apiKey?: st
       isBlankMockup,
       withHuman: params.withHuman,
       enhanceTexture: params.enhanceTexture,
+      removeText: params.removeText,
       locationTags: params.locationTags,
     });
 
@@ -628,6 +630,7 @@ export const generateSmartPrompt = async (params: SmartPromptParams, apiKey?: st
       .replace('[LIGHTING_TAGS]', params.lightingTags.join(', ') || 'Not specified')
       .replace('[EFFECT_TAGS]', params.effectTags.join(', ') || 'Not specified')
       .replace('[GENERATE_TEXT]', isBlankMockup ? 'No (Blank Mockup)' : (params.generateText ? 'Yes' : 'No'))
+      .replace('[REMOVE_TEXT]', isBlankMockup ? 'No' : (params.removeText ? 'Yes' : 'No'))
       .replace('[WITH_HUMAN]', params.withHuman ? 'Yes' : 'No')
       .replace('[ADDITIONAL_PROMPT]', params.additionalPrompt || 'Not specified')
       .replace('[INSTRUCTIONS]', params.instructions || 'Not specified')

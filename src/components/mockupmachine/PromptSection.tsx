@@ -268,7 +268,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
             </>
           ) : (
             isGeneratingPrompt && (
-              <div className="text-[11px] leading-relaxed space-y-1">
+              <div className="text-[11px] leading-relaxed space-y-1" role="status" aria-live="polite" aria-label={statusMessages[messageIndex]}>
                 <div className="flex items-center gap-1">
                   <GlitchLoader size={10} className="text-brand-cyan" />
                 </div>
@@ -313,37 +313,24 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
                 {onGenerateSuggestion && (
                   <div className={`flex items-center justify-between gap-2 pt-2 border-t ${theme === 'dark' ? 'border-neutral-700/50' : 'border-neutral-300'
                     }`}>
-                    {isGenerateDisabled ? (
-                      <Tooltip content={t('mockup.insufficientCredits') || "Insufficient credits to generate"} position="top">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onGenerateSuggestion(suggestion);
-                          }}
-                          disabled={isGenerating || !suggestion.trim() || isGenerateDisabled}
-                          className="flex-1 flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold py-2 px-3 rounded-md transition-all duration-300 text-xs transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50"
-                        >
-                          {isGenerating ? (
-                            <>
-                              <GlitchLoader size={12} />
-                              <span>{t('mockup.generatingOutputs')}</span>
-                            </>
-                          ) : (
-                            <>
-                              <Pickaxe size={12} />
-                              <span>{t('mockup.generateOutputs')}</span>
-                            </>
-                          )}
-                        </button>
-                      </Tooltip>
-                    ) : (
+                    <Tooltip
+                      content={
+                        isGenerateDisabled
+                          ? (t('mockup.insufficientCredits') || "Insufficient credits to generate")
+                          : (creditsPerGeneration && creditsPerGeneration > 0
+                            ? `${t('mockup.generateOutputs')} — ${creditsPerGeneration} ${creditsPerGeneration === 1 ? t('mockup.creditUnitSingular') : t('mockup.creditUnitPlural')}`
+                            : t('mockup.generateOutputs'))
+                      }
+                      position="top"
+                    >
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           onGenerateSuggestion(suggestion);
                         }}
                         disabled={isGenerating || !suggestion.trim() || isGenerateDisabled}
-                        className="flex-1 flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold py-2 px-3 rounded-md transition-all duration-300 text-xs transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50"
+                        className="flex-1 flex items-center justify-center gap-2 bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold py-2 px-3 rounded-md transition-all duration-300 text-xs transform active:scale-95 focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 min-h-[44px]"
+                        aria-label={isGenerating ? t('mockup.generatingOutputs') : t('mockup.generateOutputs')}
                       >
                         {isGenerating ? (
                           <>
@@ -357,7 +344,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
                           </>
                         )}
                       </button>
-                    )}
+                    </Tooltip>
                     {creditsPerGeneration !== undefined && creditsPerGeneration > 0 && (
                       <span className={`text-xs font-mono whitespace-nowrap ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
                         }`}>

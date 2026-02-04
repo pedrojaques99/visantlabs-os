@@ -45,11 +45,37 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
 
     const canAnalyze = uploadedImage && designType && !hasAnalyzed;
 
+    const currentStep = !uploadedImage ? 1 : !designType ? 2 : 3;
+
     return (
         <div
             id="section-setup"
             className="transition-all duration-300 w-full flex flex-col min-h-full relative pb-24"
         >
+            {/* Step indicator */}
+            <nav className="flex items-center gap-2 mb-6" aria-label={t('mockup.setupSteps') || 'Setup steps'}>
+                {[1, 2, 3].map((step) => (
+                    <React.Fragment key={step}>
+                        <span
+                            className={cn(
+                                "flex items-center justify-center w-7 h-7 rounded-full text-[10px] font-mono font-bold transition-colors",
+                                step < currentStep && "bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/40",
+                                step === currentStep && "bg-brand-cyan text-black border border-brand-cyan",
+                                step > currentStep && "bg-neutral-800/50 text-neutral-500 border border-neutral-700"
+                            )}
+                            aria-current={step === currentStep ? 'step' : undefined}
+                        >
+                            {step < currentStep ? '✓' : step}
+                        </span>
+                        {step < 3 && (
+                            <span className={cn(
+                                "w-4 h-px",
+                                step < currentStep ? "bg-brand-cyan/40" : "bg-neutral-700"
+                            )} aria-hidden="true" />
+                        )}
+                    </React.Fragment>
+                ))}
+            </nav>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start w-full">
                 {/* Left Column - Files/Uploads */}
                 <div className="flex flex-col gap-4">
@@ -86,6 +112,8 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
                             <div className="flex flex-col w-full gap-3">
                                 <button
                                     onClick={() => onDesignTypeChange('logo')}
+                                    aria-pressed={designType === 'logo'}
+                                    aria-label={t('mockup.typeLogo') || 'Logo'}
                                     className={cn(
                                         "w-full flex items-center justify-between px-6 py-5 text-sm font-mono rounded-md transition-all duration-300 border",
                                         designType === 'logo'
@@ -98,6 +126,8 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
                                 </button>
                                 <button
                                     onClick={() => onDesignTypeChange('layout')}
+                                    aria-pressed={designType === 'layout'}
+                                    aria-label={t('mockup.typeLayout') || 'Layout'}
                                     className={cn(
                                         "w-full flex items-center justify-between px-6 py-5 text-sm font-mono rounded-md transition-all duration-300 border",
                                         designType === 'layout'
@@ -119,6 +149,8 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
                 <button
                     onClick={onAnalyze}
                     disabled={!canAnalyze || isAnalyzing}
+                    aria-label={isAnalyzing ? t('mockup.analyzing') : t('mockup.continue')}
+                    aria-busy={isAnalyzing}
                     className={cn(
                         "w-full flex items-center justify-center gap-3 py-4 px-6 rounded-md font-mono text-base font-bold transition-all duration-500 group overflow-hidden relative border",
                         canAnalyze && !isAnalyzing

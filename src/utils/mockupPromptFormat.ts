@@ -12,9 +12,7 @@ When creating **[ACTION:prompt]** suggestions, you MUST follow this EXACT format
 
 STRUCTURE (MANDATORY ORDER):
 1. Aspect Ratio Prefix (CRITICAL - MUST BE FIRST):
-   - '16:9': "A photorealistic, super-detailed widescreen cinematic shot of..."
-   - '4:3': "A photorealistic, super-detailed standard photo of..."
-   - '1:1': "A photorealistic, super-detailed square composition of..."
+   - Use the aspect ratio from the user's selection. Start with a photorealistic, super-detailed shot description that matches the selected aspect ratio (e.g. widescreen for 16:9, portrait for 9:16, square for 1:1).
 
 2. Mockup Subject & Design Type:
    - Blank: "a blank white [category] mockup. The scene should be clean, minimalist, and ready for a design to be placed on it."
@@ -139,10 +137,7 @@ export function buildGeminiPromptInstructionsTemplate(params: {
 **INSTRUCTIONS:**
 Based ${isBlankMockup ? '' : 'on the user\'s input and the provided design image, '}write an improved prompt.
 1.  **Be Concise & Objective:** Combine the user's selections into a clear, direct, and effective prompt. Prioritize clarity and efficiency over descriptive prose.
-2.  **Aspect Ratio is Paramount (CRITICAL):** Start the entire prompt with the aspect ratio description. This is the most important rule.
-    - For '16:9', start with: "A photorealistic, super-detailed widescreen cinematic shot of..."
-    - For '4:3', start with: "A photorealistic, super-detailed standard photo of..."
-    - For '1:1', start with: "A photorealistic, super-detailed square composition of..."
+2.  **Aspect Ratio is Paramount (CRITICAL):** Use the **Aspect Ratio** from the user's input above. Start the entire prompt with a photorealistic, super-detailed shot description that matches the selected aspect ratio (e.g. widescreen cinematic for 16:9/21:9, portrait for 9:16/2:3/3:4, square for 1:1).
 ${designTypeHandlingInstruction}
 4.  **Focus on Realism:** After the aspect ratio prefix, describe the scene. Emphasize photorealistic details: ${enhanceTexture ? '"authentic materials", "subtle surface details", ' : ''}"natural reflections", "professional product photography", "sharp focus".
 ${locationInstruction}

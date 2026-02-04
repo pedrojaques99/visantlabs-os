@@ -624,14 +624,13 @@ const MockupMachinePageContent: React.FC = () => {
       }, 800);
     } catch (err) {
       const errorInfo = formatMockupError(err, t);
-      if (errorInfo.message === t('messages.rateLimit')) {
-        toast.error(errorInfo.message, { duration: 5000 });
-      } else {
-        if (isLocalDevelopment()) {
-          console.error("Error generating smart prompt:", err);
-        }
-        toast.error(t('messages.aiBusy'), { duration: 5000 });
+      if (isLocalDevelopment()) {
+        console.error("Error generating smart prompt:", err);
       }
+      toast.error(errorInfo.message, {
+        ...(errorInfo.suggestion && { description: errorInfo.suggestion }),
+        duration: 5000,
+      });
       setPromptPreview(buildPrompt());
     } finally {
       setIsGeneratingPrompt(false);
@@ -820,12 +819,11 @@ const MockupMachinePageContent: React.FC = () => {
       if (import.meta.env.DEV) console.log('[dev] analyze: handleAnalyze success', ((Date.now() - t0) / 1000).toFixed(2) + 's');
     } catch (err) {
       const errorInfo = formatMockupError(err, t);
-      if (errorInfo.message === t('messages.rateLimit')) {
-        toast.error(errorInfo.message, { duration: 5000 });
-      } else {
-        if (isLocalDevelopment()) console.error("Error getting full analysis:", err);
-        toast.error(errorInfo.message, { description: errorInfo.suggestion, duration: 5000 });
-      }
+      if (isLocalDevelopment()) console.error("Error getting full analysis:", err);
+      toast.error(errorInfo.message, {
+        ...(errorInfo.suggestion && { description: errorInfo.suggestion }),
+        duration: 5000,
+      });
     } finally {
       if (import.meta.env.DEV) console.log('[dev] analyze: handleAnalyze finally', ((Date.now() - t0) / 1000).toFixed(2) + 's');
       if (!silent) {
@@ -1107,14 +1105,13 @@ const MockupMachinePageContent: React.FC = () => {
       setPromptSuggestions(suggestions);
     } catch (err) {
       const errorInfo = formatMockupError(err, t);
-      if (errorInfo.message === t('messages.rateLimit')) {
-        toast.error(errorInfo.message, { duration: 5000 });
-      } else {
-        if (isLocalDevelopment()) {
-          console.error("Error suggesting prompts:", err);
-        }
-        toast.error(t('messages.aiCouldntBrainstorm'), { duration: 5000 });
+      if (isLocalDevelopment()) {
+        console.error("Error suggesting prompts:", err);
       }
+      toast.error(errorInfo.message, {
+        ...(errorInfo.suggestion && { description: errorInfo.suggestion }),
+        duration: 5000,
+      });
     } finally {
       setIsSuggestingPrompts(false);
     }
@@ -2702,6 +2699,12 @@ Generate the new mockup image with the requested changes applied.`;
         />
       ) : (
         <div className="h-full w-full pt-12 md:pt-14 overflow-hidden bg-background">
+          <a
+            href="#mockup-main-content"
+            className="absolute -top-12 left-4 z-[100] px-4 py-2 bg-brand-cyan text-black font-mono text-sm rounded-md transition-top duration-200 focus:top-4 focus:outline-none focus:ring-2 focus:ring-brand-cyan/50"
+          >
+            {t('mockup.skipToContent') || 'Skip to main content'}
+          </a>
           <div className={cn(
             "flex h-full transition-all duration-500",
             isSetupMode ? "flex-col items-center justify-center p-4 md:p-8" : "flex-row"
@@ -2740,8 +2743,8 @@ Generate the new mockup image with the requested changes applied.`;
 
             {/* Dashboard Main Area */}
             {isDashboardMode && (
-              <main className={cn(
-                "flex-1 min-w-0 h-full relative overflow-hidden transition-all duration-500",
+                <main id="mockup-main-content" className={cn(
+                  "flex-1 min-w-0 h-full relative overflow-hidden transition-all duration-500",
                 "p-2 md:p-6 lg:p-8 custom-scrollbar",
                 isSidebarCollapsed && "lg:pl-16 shadow-[inset_20px_0_30px_-20px_rgba(0,0,0,0.3)]"
               )}>
