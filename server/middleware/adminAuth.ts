@@ -23,13 +23,13 @@ export const validateAdmin = async (
   try {
     // First, verify authentication
     const token = req.headers.authorization?.replace('Bearer ', '');
-    
+
     if (!token) {
       return res.status(401).json({ error: 'Authentication required' });
     }
 
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; email: string };
-    
+
     // Get user from database using Prisma (for basic user info)
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
@@ -45,7 +45,7 @@ export const validateAdmin = async (
     try {
       await connectToMongoDB();
       const db = getDb();
-      
+
       // Convert user ID to ObjectId and query MongoDB directly
       const userIdObjectId = new ObjectId(user.id);
       const userDoc = await db.collection('users').findOne(

@@ -1,11 +1,22 @@
 import express from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../db/prisma.js';
+import { rateLimit } from 'express-rate-limit';
+
+// API rate limiter - general authenticated endpoints
+// Using express-rate-limit for CodeQL recognition
+const apiRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS || '60000', 10),
+  max: parseInt(process.env.RATE_LIMIT_MAX_API || '60', 10),
+  message: { error: 'Too many requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const router = express.Router();
 
 // Save branding example feedback (thumbs up)
-router.post('/branding', authenticate, async (req: AuthRequest, res) => {
+router.post('/branding', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const { prompt, step, output, rating } = req.body;
 
@@ -131,7 +142,7 @@ router.post('/mockup', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Get mockup examples (for RAG - no auth required for reading examples)
-router.get('/mockup-examples', async (req, res) => {
+router.get('/mockup-examples', apiRateLimiter, async (req, res) => {
   try {
     const { designType, limit = 10 } = req.query;
 

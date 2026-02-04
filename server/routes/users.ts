@@ -4,6 +4,17 @@ import { ObjectId } from 'mongodb';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { getUserIdFromToken } from '../utils/auth.js';
 import { prisma } from '../db/prisma.js';
+import { rateLimit } from 'express-rate-limit';
+
+// API rate limiter - general authenticated endpoints
+// Using express-rate-limit for CodeQL recognition
+const apiRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS || '60000', 10),
+  max: parseInt(process.env.RATE_LIMIT_MAX_API || '60', 10),
+  message: { error: 'Too many requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const router = express.Router();
 
@@ -50,7 +61,7 @@ function getUserObjectId(userId: string): ObjectId {
 }
 
 // Get user profile by username or ID
-router.get('/:identifier', async (req, res) => {
+router.get('/:identifier', apiRateLimiter, async (req, res) => {
   try {
     await connectToMongoDB();
     const { identifier } = req.params;
@@ -102,7 +113,7 @@ router.get('/:identifier', async (req, res) => {
 });
 
 // Get user's public mockups
-router.get('/:identifier/mockups', async (req, res) => {
+router.get('/:identifier/mockups', apiRateLimiter, async (req, res) => {
   try {
     await connectToMongoDB();
     const { identifier } = req.params;
@@ -135,7 +146,7 @@ router.get('/:identifier/mockups', async (req, res) => {
 });
 
 // Get user's public presets
-router.get('/:identifier/presets', async (req, res) => {
+router.get('/:identifier/presets', apiRateLimiter, async (req, res) => {
   try {
     await connectToMongoDB();
     const { identifier } = req.params;
@@ -217,7 +228,7 @@ router.get('/:identifier/presets', async (req, res) => {
 });
 
 // Get user's public workflows
-router.get('/:identifier/workflows', async (req, res) => {
+router.get('/:identifier/workflows', apiRateLimiter, async (req, res) => {
   try {
     await connectToMongoDB();
     const { identifier } = req.params;
@@ -368,7 +379,7 @@ router.put('/profile', authenticate, async (req: AuthRequest, res) => {
 
     // Handle cover image upload
     if (coverImageBase64) {
-      const r2Service = await import('../../services/r2Service.js');
+      const r2Service = await import('../../src/services/r2Service.js');
 
       if (!r2Service.isR2Configured()) {
         return res.status(500).json({
@@ -424,7 +435,7 @@ router.put('/profile', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Save/Update Gemini API Key
-router.put('/settings/gemini-api-key', authenticate, async (req: AuthRequest, res) => {
+router.put('/settings/gemini-api-key', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const userId = req.userId!;
 
@@ -518,7 +529,7 @@ router.delete('/settings/gemini-api-key', authenticate, async (req: AuthRequest,
 });
 
 // Check if user has API key (returns boolean only, not the key itself)
-router.get('/settings/gemini-api-key', authenticate, async (req: AuthRequest, res) => {
+router.get('/settings/gemini-api-key', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const userId = req.userId!;
 
@@ -580,7 +591,7 @@ router.get('/settings/canvas', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Update user canvas settings
-router.put('/settings/canvas', authenticate, async (req: AuthRequest, res) => {
+router.put('/settings/canvas', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const userId = req.userId!;
 
@@ -625,6 +636,131 @@ router.put('/settings/canvas', authenticate, async (req: AuthRequest, res) => {
     res.status(500).json({
       error: 'Failed to update canvas settings',
       message: error.message || 'An error occurred'
+    });
+  }
+});
+
+// Save/Update Seedream API Key
+router.put('/settings/seedream-api-key', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const { apiKey } = req.body;
+
+    if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length === 0) {
+      return res.status(400).json({ error: 'API key is required' });
+    }
+
+    // Basic validation
+    const trimmedKey = apiKey.trim();
+    if (trimmedKey.length < 10) { // Seedream/APIFree keys might be shorter or different format
+      return res.status(400).json({ error: 'Invalid API key format' });
+    }
+
+    // Check if encryption is configured
+    if (!process.env.API_KEY_ENCRYPTION_KEY) {
+      return res.status(500).json({
+        error: 'API key encryption is not configured',
+        details: 'Please contact support or configure API_KEY_ENCRYPTION_KEY environment variable.'
+      });
+    }
+
+    // Encrypt the API key
+    const { encryptApiKey } = await import('../utils/encryption.js');
+    const encryptedKey = encryptApiKey(trimmedKey);
+
+    // Update user with encrypted key
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        encryptedSeedreamApiKey: encryptedKey,
+      },
+    });
+
+    res.json({
+      success: true,
+      message: 'API key saved successfully'
+    });
+  } catch (error: any) {
+    console.error('Failed to save Seedream API key:', error);
+
+    // Don't leak encryption errors to client
+    if (error.message.includes('encrypt') || error.message.includes('decrypt')) {
+      return res.status(500).json({
+        error: 'Failed to save API key',
+        message: 'An encryption error occurred. Please try again.'
+      });
+    }
+
+    res.status(500).json({
+      error: 'Failed to save API key',
+      message: error.message
+    });
+  }
+});
+
+// Delete Seedream API Key
+router.delete('/settings/seedream-api-key', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    // Remove the encrypted key
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        encryptedSeedreamApiKey: null,
+      },
+    });
+
+    res.json({
+      success: true,
+      message: 'API key deleted successfully'
+    });
+  } catch (error: any) {
+    console.error('Failed to delete Seedream API key:', error);
+    res.status(500).json({
+      error: 'Failed to delete API key',
+      message: error.message
+    });
+  }
+});
+
+// Check if user has Seedream API key (returns boolean only)
+router.get('/settings/seedream-api-key', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        encryptedSeedreamApiKey: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({
+      hasApiKey: !!user.encryptedSeedreamApiKey
+    });
+  } catch (error: any) {
+    console.error('Failed to check Seedream API key:', error);
+    res.status(500).json({
+      error: 'Failed to check API key',
+      message: error.message
     });
   }
 });

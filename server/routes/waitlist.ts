@@ -1,10 +1,22 @@
 import express from 'express';
 import { prisma } from '../db/prisma.js';
+import { isValidEmail } from '../utils/validation.js';
+import { rateLimit } from 'express-rate-limit';
+
+// API rate limiter - general authenticated endpoints
+// Using express-rate-limit for CodeQL recognition
+const apiRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS || '60000', 10),
+  max: parseInt(process.env.RATE_LIMIT_MAX_API || '60', 10),
+  message: { error: 'Too many requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const router = express.Router();
 
 // Join waitlist
-router.post('/', async (req, res) => {
+router.post('/', apiRateLimiter, async (req, res) => {
   try {
     const { email } = req.body;
 
@@ -12,9 +24,8 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Email is required' });
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    // Validate email format (ReDoS-safe validation)
+    if (!isValidEmail(email)) {
       return res.status(400).json({ error: 'Invalid email format' });
     }
 
@@ -83,7 +94,7 @@ router.post('/', async (req, res) => {
 });
 
 // Get all waitlist entries (admin only - optional, for future use)
-router.get('/', async (req, res) => {
+router.get('/', apiRateLimiter, async (req, res) => {
   try {
     const waitlist = await prisma.waitlist.findMany({
       orderBy: { createdAt: 'desc' },

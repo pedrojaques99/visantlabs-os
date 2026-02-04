@@ -1,0 +1,366 @@
+import { useCallback, useEffect, useState } from 'react';
+import { MockupPreset } from '../types/mockupPresets.js';
+import { useMockup } from '../components/mockupmachine/MockupContext';
+import {
+    AVAILABLE_TAGS,
+    AVAILABLE_BRANDING_TAGS, // Fallback
+    AVAILABLE_LOCATION_TAGS,
+    AVAILABLE_ANGLE_TAGS,
+    AVAILABLE_LIGHTING_TAGS,
+    AVAILABLE_EFFECT_TAGS,
+    AVAILABLE_MATERIAL_TAGS
+} from '@/utils/mockupConstants';
+import { mockupPresetsService } from '@/services/mockupPresetsService';
+import { mockupTagService, MockupTagCategory } from '@/services/mockupTagService';
+import { saveSurpriseMeSelectedTags, type SurpriseMeSelectedTags } from '@/utils/surpriseMeSettings';
+
+export const useMockupTags = () => {
+    const {
+        selectedTags, setSelectedTags,
+        selectedBrandingTags, setSelectedBrandingTags,
+        selectedLocationTags, setSelectedLocationTags,
+        selectedAngleTags, setSelectedAngleTags,
+        selectedLightingTags, setSelectedLightingTags,
+        selectedEffectTags, setSelectedEffectTags,
+        selectedMaterialTags, setSelectedMaterialTags,
+        customBrandingInput, setCustomBrandingInput,
+        customCategoryInput, setCustomCategoryInput,
+        customLocationInput, setCustomLocationInput,
+        customAngleInput, setCustomAngleInput,
+        customLightingInput, setCustomLightingInput,
+        customEffectInput, setCustomEffectInput,
+        customMaterialInput, setCustomMaterialInput,
+        isSurpriseMeMode,
+    } = useMockup();
+
+    // Dynamic Tag State
+    const [availableBrandingTags, setAvailableBrandingTags] = useState<string[]>(AVAILABLE_BRANDING_TAGS);
+    const [availableMockupTags, setAvailableMockupTags] = useState<string[]>(AVAILABLE_TAGS);
+    const [availableLocationTags, setAvailableLocationTags] = useState<string[]>(AVAILABLE_LOCATION_TAGS);
+    const [availableAngleTags, setAvailableAngleTags] = useState<string[]>(AVAILABLE_ANGLE_TAGS);
+    const [availableLightingTags, setAvailableLightingTags] = useState<string[]>(AVAILABLE_LIGHTING_TAGS);
+    const [availableEffectTags, setAvailableEffectTags] = useState<string[]>(AVAILABLE_EFFECT_TAGS);
+    const [availableMaterialTags, setAvailableMaterialTags] = useState<string[]>(AVAILABLE_MATERIAL_TAGS);
+    const [mockupPresets, setMockupPresets] = useState<MockupPreset[]>([]);
+    const [tagCategories, setTagCategories] = useState<MockupTagCategory[]>([]);
+
+    // Fetch dynamic tags on mount (unified endpoint)
+    useEffect(() => {
+        const fetchTags = async () => {
+            try {
+                // Fetch all tags from unified endpoint + additional data needed
+                const [availableTags, dynamicMockupPresets, dynamicTagCategories] = await Promise.all([
+                    mockupTagService.getAvailableTagsAsync(),
+                    mockupPresetsService.getCategoriesAsync(), // For mockupPresets state
+                    mockupTagService.getCategoriesAsync() // For tagCategories state
+                ]);
+
+                // Map unified tags to state
+                if (availableTags.branding.length > 0) {
+                    setAvailableBrandingTags(availableTags.branding);
+                }
+                if (availableTags.categories.length > 0) {
+                    setAvailableMockupTags(availableTags.categories);
+                }
+                if (availableTags.locations.length > 0) {
+                    setAvailableLocationTags(availableTags.locations);
+                }
+                if (availableTags.angles.length > 0) {
+                    setAvailableAngleTags(availableTags.angles);
+                }
+                if (availableTags.lighting.length > 0) {
+                    setAvailableLightingTags(availableTags.lighting);
+                }
+                if (availableTags.effects.length > 0) {
+                    setAvailableEffectTags(availableTags.effects);
+                }
+                if (availableTags.materials.length > 0) {
+                    setAvailableMaterialTags(availableTags.materials);
+                }
+
+                // Set mockup presets and categories (still needed for UI)
+                if (dynamicMockupPresets.length > 0) {
+                    setMockupPresets(dynamicMockupPresets);
+                }
+                if (dynamicTagCategories && dynamicTagCategories.length > 0) {
+                    setTagCategories(dynamicTagCategories);
+                }
+
+            } catch (error) {
+                console.error("Failed to fetch dynamic tags:", error);
+                // Keep defaults on error
+            }
+        };
+
+        fetchTags();
+    }, []);
+
+    const scrollToSection = useCallback((sectionId: string) => {
+        setTimeout(() => {
+            const section = document.getElementById(sectionId);
+            const sidebar = document.getElementById('sidebar');
+            if (section && sidebar) {
+                const sidebarRect = sidebar.getBoundingClientRect();
+                const elementRect = section.getBoundingClientRect();
+                const relativeTop = elementRect.top - sidebarRect.top + sidebar.scrollTop;
+
+                sidebar.scrollTo({
+                    top: relativeTop - 20,
+                    behavior: 'smooth'
+                });
+            }
+        }, 150);
+    }, []);
+
+    const handleTagToggle = useCallback((tag: string) => {
+        const wasEmpty = selectedTags.length === 0;
+
+        if (isSurpriseMeMode) {
+            setSelectedTags(
+                selectedTags.includes(tag)
+                    ? selectedTags.filter(t => t !== tag)
+                    : [...selectedTags, tag]
+            );
+        } else {
+            setSelectedTags(selectedTags.includes(tag) ? [] : [tag]);
+        }
+
+        if (wasEmpty && !selectedTags.includes(tag)) {
+            scrollToSection('refine-section');
+        }
+    }, [selectedTags, setSelectedTags, scrollToSection, isSurpriseMeMode]);
+
+    const handleBrandingTagToggle = useCallback((tag: string) => {
+        const wasEmpty = selectedBrandingTags.length === 0;
+        const isAdding = !selectedBrandingTags.includes(tag);
+
+        setSelectedBrandingTags(
+            selectedBrandingTags.includes(tag)
+                ? selectedBrandingTags.filter(t => t !== tag)
+                : [...selectedBrandingTags, tag]
+        );
+
+        if (wasEmpty && isAdding) {
+            scrollToSection('categories-section');
+        }
+    }, [selectedBrandingTags, setSelectedBrandingTags, scrollToSection]);
+
+    const handleLocationTagToggle = useCallback((tag: string) =>
+        setSelectedLocationTags(selectedLocationTags.includes(tag) ? [] : [tag]),
+        [selectedLocationTags, setSelectedLocationTags]
+    );
+
+    const handleAngleTagToggle = useCallback((tag: string) =>
+        setSelectedAngleTags(selectedAngleTags.includes(tag) ? [] : [tag]),
+        [selectedAngleTags, setSelectedAngleTags]
+    );
+
+    const handleLightingTagToggle = useCallback((tag: string) =>
+        setSelectedLightingTags(selectedLightingTags.includes(tag) ? [] : [tag]),
+        [selectedLightingTags, setSelectedLightingTags]
+    );
+
+    const handleEffectTagToggle = useCallback((tag: string) =>
+        setSelectedEffectTags(selectedEffectTags.includes(tag) ? [] : [tag]),
+        [selectedEffectTags, setSelectedEffectTags]
+    );
+
+    const handleMaterialTagToggle = useCallback((tag: string) =>
+        setSelectedMaterialTags(selectedMaterialTags.includes(tag) ? [] : [tag]),
+        [selectedMaterialTags, setSelectedMaterialTags]
+    );
+
+    const handleAddCustomTag = useCallback((
+        inputValue: string,
+        selected: string[],
+        setter: (tags: string[]) => void,
+        inputSetter: (val: string) => void,
+        limit: number
+    ) => {
+        const newTag = inputValue.trim();
+        if (newTag && !selected.includes(newTag)) {
+            setter([...selected, newTag]);
+            inputSetter('');
+        }
+    }, []);
+
+    const handleAddCustomBrandingTag = useCallback(() => {
+        const wasEmpty = selectedBrandingTags.length === 0;
+        handleAddCustomTag(customBrandingInput, selectedBrandingTags, setSelectedBrandingTags, setCustomBrandingInput, 5);
+        if (wasEmpty && customBrandingInput.trim()) {
+            scrollToSection('categories-section');
+        }
+    }, [customBrandingInput, selectedBrandingTags, setSelectedBrandingTags, setCustomBrandingInput, handleAddCustomTag, scrollToSection]);
+
+    const handleAddCustomCategoryTag = useCallback(() => {
+        const newTag = customCategoryInput.trim();
+        if (newTag && !selectedTags.includes(newTag)) {
+            const wasEmpty = selectedTags.length === 0;
+            if (isSurpriseMeMode) {
+                setSelectedTags([...selectedTags, newTag]);
+            } else {
+                setSelectedTags([newTag]);
+            }
+            setCustomCategoryInput('');
+            if (wasEmpty) {
+                scrollToSection('refine-section');
+            }
+        }
+    }, [customCategoryInput, selectedTags, setSelectedTags, setCustomCategoryInput, scrollToSection, isSurpriseMeMode]);
+
+    const handleRandomizeCategories = useCallback(() => {
+        const shuffled = [...availableMockupTags].sort(() => 0.5 - Math.random());
+        const wasEmpty = selectedTags.length === 0;
+        setSelectedTags([shuffled[0]]);
+        if (wasEmpty) {
+            scrollToSection('refine-section');
+        }
+    }, [availableMockupTags, selectedTags.length, setSelectedTags, scrollToSection]);
+
+    const handleAddCustomLocationTag = useCallback(() => {
+        handleAddCustomTag(customLocationInput, selectedLocationTags, setSelectedLocationTags, setCustomLocationInput, 3);
+    }, [customLocationInput, selectedLocationTags, setSelectedLocationTags, setCustomLocationInput, handleAddCustomTag]);
+
+    const handleAddCustomAngleTag = useCallback(() => {
+        handleAddCustomTag(customAngleInput, selectedAngleTags, setSelectedAngleTags, setCustomAngleInput, 3);
+    }, [customAngleInput, selectedAngleTags, setSelectedAngleTags, setCustomAngleInput, handleAddCustomTag]);
+
+    const handleAddCustomLightingTag = useCallback(() => {
+        handleAddCustomTag(customLightingInput, selectedLightingTags, setSelectedLightingTags, setCustomLightingInput, 3);
+    }, [customLightingInput, selectedLightingTags, setSelectedLightingTags, setCustomLightingInput, handleAddCustomTag]);
+
+    const handleAddCustomEffectTag = useCallback(() => {
+        handleAddCustomTag(customEffectInput, selectedEffectTags, setSelectedEffectTags, setCustomEffectInput, 3);
+    }, [customEffectInput, selectedEffectTags, setSelectedEffectTags, setCustomEffectInput, handleAddCustomTag]);
+
+    const handleAddCustomMaterialTag = useCallback(() => {
+        handleAddCustomTag(customMaterialInput, selectedMaterialTags, setSelectedMaterialTags, setCustomMaterialInput, 3);
+    }, [customMaterialInput, selectedMaterialTags, setSelectedMaterialTags, setCustomMaterialInput, handleAddCustomTag]);
+
+    // Randomize functions
+    const randomizeSelection = useCallback((available: string[], setter: (tags: string[]) => void, count: number = 1) => {
+        if (available.length === 0) return;
+        const random = [];
+        const availableCopy = [...available];
+        for (let i = 0; i < count; i++) {
+            if (availableCopy.length === 0) break;
+            const randomIndex = Math.floor(Math.random() * availableCopy.length);
+            random.push(availableCopy[randomIndex]);
+            availableCopy.splice(randomIndex, 1);
+        }
+        setter(random);
+    }, []);
+
+    const randomizeBranding = useCallback(() => randomizeSelection(availableBrandingTags, setSelectedBrandingTags, 1), [availableBrandingTags, setSelectedBrandingTags, randomizeSelection]);
+    const randomizeCategory = useCallback(() => randomizeSelection(availableMockupTags, setSelectedTags, 1), [availableMockupTags, setSelectedTags, randomizeSelection]);
+    const randomizeLocation = useCallback(() => randomizeSelection(availableLocationTags, setSelectedLocationTags, 1), [availableLocationTags, setSelectedLocationTags, randomizeSelection]);
+    const randomizeAngle = useCallback(() => randomizeSelection(availableAngleTags, setSelectedAngleTags, 1), [availableAngleTags, setSelectedAngleTags, randomizeSelection]);
+    const randomizeLighting = useCallback(() => randomizeSelection(availableLightingTags, setSelectedLightingTags, 1), [availableLightingTags, setSelectedLightingTags, randomizeSelection]);
+    const randomizeEffect = useCallback(() => randomizeSelection(availableEffectTags, setSelectedEffectTags, 1), [availableEffectTags, setSelectedEffectTags, randomizeSelection]);
+    const randomizeMaterial = useCallback(() => randomizeSelection(availableMaterialTags, setSelectedMaterialTags, 1), [availableMaterialTags, setSelectedMaterialTags, randomizeSelection]);
+
+    // Surprise Me Pool handlers
+    const togglePoolTag = useCallback((
+        category: keyof SurpriseMeSelectedTags,
+        tag: string,
+        pool: SurpriseMeSelectedTags,
+        setPool: React.Dispatch<React.SetStateAction<SurpriseMeSelectedTags>>
+    ) => {
+        const currentTags = pool[category] || [];
+        const isInPool = currentTags.includes(tag);
+        const newPool = {
+            ...pool,
+            [category]: isInPool
+                ? currentTags.filter((t: string) => t !== tag)
+                : [...currentTags, tag]
+        };
+        setPool(newPool);
+        saveSurpriseMeSelectedTags(newPool);
+    }, []);
+
+    const randomizeFromPool = useCallback((
+        pool: SurpriseMeSelectedTags,
+        setters: {
+            setSelectedTags: (tags: string[]) => void;
+            setSelectedLocationTags: (tags: string[]) => void;
+            setSelectedAngleTags: (tags: string[]) => void;
+            setSelectedLightingTags: (tags: string[]) => void;
+            setSelectedEffectTags: (tags: string[]) => void;
+            setSelectedMaterialTags: (tags: string[]) => void;
+        }
+    ) => {
+        const pickRandom = (tags: string[]): string[] => {
+            if (tags.length === 0) return [];
+            const randomIndex = Math.floor(Math.random() * tags.length);
+            return [tags[randomIndex]];
+        };
+
+        if (pool.selectedCategoryTags?.length > 0) {
+            setters.setSelectedTags(pickRandom(pool.selectedCategoryTags));
+        }
+        if (pool.selectedLocationTags?.length > 0) {
+            setters.setSelectedLocationTags(pickRandom(pool.selectedLocationTags));
+        }
+        if (pool.selectedAngleTags?.length > 0) {
+            setters.setSelectedAngleTags(pickRandom(pool.selectedAngleTags));
+        }
+        if (pool.selectedLightingTags?.length > 0) {
+            setters.setSelectedLightingTags(pickRandom(pool.selectedLightingTags));
+        }
+        if (pool.selectedEffectTags?.length > 0) {
+            setters.setSelectedEffectTags(pickRandom(pool.selectedEffectTags));
+        }
+        if (pool.selectedMaterialTags?.length > 0) {
+            setters.setSelectedMaterialTags(pickRandom(pool.selectedMaterialTags));
+        }
+    }, []);
+
+
+    return {
+        // Tag Selection Handlers
+        handleTagToggle,
+        handleBrandingTagToggle,
+        handleLocationTagToggle,
+        handleAngleTagToggle,
+        handleLightingTagToggle,
+        handleEffectTagToggle,
+        handleMaterialTagToggle,
+
+        // Custom Tag Handlers
+        handleAddCustomBrandingTag,
+        handleAddCustomCategoryTag,
+        handleAddCustomLocationTag,
+        handleAddCustomAngleTag,
+        handleAddCustomLightingTag,
+        handleAddCustomEffectTag,
+        handleAddCustomMaterialTag,
+
+        // Randomize Handlers
+        handleRandomizeCategories,
+        randomizeBranding,
+        randomizeCategory,
+        randomizeLocation,
+        randomizeAngle,
+        randomizeLighting,
+        randomizeEffect,
+        randomizeMaterial,
+
+        // Scroll Utility
+        scrollToSection,
+
+        // Dynamic Available Tags
+        availableBrandingTags,
+        availableMockupTags,
+        availableLocationTags,
+        availableAngleTags,
+        availableLightingTags,
+        availableEffectTags,
+        availableMaterialTags,
+        mockupPresets,
+        tagCategories,
+
+        // Pool handlers for Surprise Me Mode
+        togglePoolTag,
+        randomizeFromPool
+    };
+};

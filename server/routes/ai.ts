@@ -1,16 +1,32 @@
 import express from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
+import { rateLimit } from 'express-rate-limit';
+
+// API rate limiter - general authenticated endpoints
+// Using express-rate-limit for CodeQL recognition
+const apiRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS || '60000', 10),
+  max: parseInt(process.env.RATE_LIMIT_MAX_API || '60', 10),
+  message: { error: 'Too many requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 import {
   improvePrompt,
   describeImage,
   suggestCategories,
   generateSmartPrompt,
   suggestPromptVariations,
+  analyzeMockupSetup,
   changeObjectInMockup,
   applyThemeToMockup,
-} from '../../services/geminiService.js';
+} from '../services/geminiService.js';
 import { getGeminiApiKey } from '../utils/geminiApiKey.js';
-import type { UploadedImage, GeminiModel, Resolution } from '../../types.js';
+import { getAllAvailableTags } from '../services/tagService.js';
+import type { UploadedImage, GeminiModel, Resolution } from '../../src/types/types.js';
+import { connectToMongoDB, getDb } from '../db/mongodb.js';
+import { createUsageRecord } from '../utils/usageTracking.js';
+import { incrementUserGenerations } from '../utils/usageTrackingUtils.js';
 
 const router = express.Router();
 
@@ -18,7 +34,7 @@ const router = express.Router();
  * POST /api/ai/improve-prompt
  * Improve a text prompt using AI
  */
-router.post('/improve-prompt', authenticate, async (req: AuthRequest, res, next) => {
+router.post('/improve-prompt', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     const { prompt } = req.body;
 
@@ -34,9 +50,40 @@ router.post('/improve-prompt', authenticate, async (req: AuthRequest, res, next)
       // User doesn't have API key, will use system key
     }
 
-    const improvedPrompt = await improvePrompt(prompt, userApiKey);
+    const result = await improvePrompt(prompt, userApiKey);
 
-    res.json({ improvedPrompt });
+    // Track usage asynchronously
+    (async () => {
+      try {
+        await connectToMongoDB();
+        const db = getDb();
+        const usageRecord = createUsageRecord(
+          req.userId!,
+          0, // images
+          'gemini-2.5-flash',
+          false, // hasInputImage
+          prompt.length,
+          undefined, // resolution
+          'branding', // feature
+          'system',
+          result.inputTokens,
+          result.outputTokens
+        );
+        (usageRecord as any).type = 'branding';
+
+        await db.collection('usage_records').insertOne(usageRecord);
+
+        // Track total tokens for user stats
+        const totalTokens = (result.inputTokens || 0) + (result.outputTokens || 0);
+        if (totalTokens > 0) {
+          await incrementUserGenerations(req.userId!, 0, totalTokens);
+        }
+      } catch (err) {
+        console.error('Error tracking usage for improve-prompt:', err);
+      }
+    })();
+
+    res.json({ improvedPrompt: result.improvedPrompt });
   } catch (error: any) {
     console.error('Error improving prompt:', error);
     next(error);
@@ -47,7 +94,7 @@ router.post('/improve-prompt', authenticate, async (req: AuthRequest, res, next)
  * POST /api/ai/describe-image
  * Generate a description of an image
  */
-router.post('/describe-image', authenticate, async (req: AuthRequest, res, next) => {
+router.post('/describe-image', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     const { image } = req.body;
 
@@ -67,15 +114,49 @@ router.post('/describe-image', authenticate, async (req: AuthRequest, res, next)
     let imageInput: UploadedImage | string;
     if (typeof image === 'string') {
       imageInput = image;
-    } else if (image.base64 && image.mimeType) {
+    } else if ((image.base64 || image.url) && image.mimeType) {
       imageInput = image as UploadedImage;
     } else {
       return res.status(400).json({ error: 'Invalid image format' });
     }
 
-    const description = await describeImage(imageInput, userApiKey);
+    const result = await describeImage(imageInput, userApiKey);
 
-    res.json({ description });
+    // Track usage asynchronously
+    (async () => {
+      try {
+        await connectToMongoDB();
+        const db = getDb();
+        const usageRecord = createUsageRecord(
+          req.userId!,
+          0, // images
+          'gemini-2.5-flash',
+          true, // hasInputImage
+          0, // promptLength
+          undefined, // resolution
+          'branding', // feature
+          'system',
+          result.inputTokens,
+          result.outputTokens
+        );
+        (usageRecord as any).type = 'branding';
+
+        await db.collection('usage_records').insertOne(usageRecord);
+
+        // Track total tokens for user stats
+        const totalTokens = (result.inputTokens || 0) + (result.outputTokens || 0);
+        if (totalTokens > 0) {
+          await incrementUserGenerations(req.userId!, 0, totalTokens);
+        }
+      } catch (err) {
+        console.error('Error tracking usage for describe-image:', err);
+      }
+    })();
+
+    res.json({
+      description: result.description,
+      title: result.title,
+    });
   } catch (error: any) {
     console.error('Error describing image:', error);
     next(error);
@@ -86,11 +167,11 @@ router.post('/describe-image', authenticate, async (req: AuthRequest, res, next)
  * POST /api/ai/suggest-categories
  * Suggest mockup categories based on an image and branding tags
  */
-router.post('/suggest-categories', authenticate, async (req: AuthRequest, res, next) => {
+router.post('/suggest-categories', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     const { baseImage, brandingTags } = req.body;
 
-    if (!baseImage || !baseImage.base64 || !baseImage.mimeType) {
+    if (!baseImage || (!baseImage.base64 && !baseImage.url) || !baseImage.mimeType) {
       return res.status(400).json({ error: 'Base image is required' });
     }
 
@@ -106,9 +187,41 @@ router.post('/suggest-categories', authenticate, async (req: AuthRequest, res, n
       // User doesn't have API key, will use system key
     }
 
-    const categories = await suggestCategories(baseImage as UploadedImage, brandingTags, userApiKey);
+    const result = await suggestCategories(baseImage as UploadedImage, brandingTags, userApiKey);
 
-    res.json({ categories });
+    // Track usage asynchronously
+    (async () => {
+      try {
+        await connectToMongoDB();
+        const db = getDb();
+        const usageRecord = createUsageRecord(
+          req.userId!,
+          0, // images
+          'gemini-2.5-flash',
+          true, // hasInputImage
+          0, // promptLength
+          undefined, // resolution
+          'branding', // feature
+          'system',
+          result.inputTokens,
+          result.outputTokens
+        );
+        // Add specific type for admin stats
+        (usageRecord as any).type = 'branding';
+
+        await db.collection('usage_records').insertOne(usageRecord);
+
+        // Track total tokens for user stats
+        const totalTokens = (result.inputTokens || 0) + (result.outputTokens || 0);
+        if (totalTokens > 0) {
+          await incrementUserGenerations(req.userId!, 0, totalTokens);
+        }
+      } catch (err) {
+        console.error('Error tracking usage for suggest-categories:', err);
+      }
+    })();
+
+    res.json({ categories: result.categories });
   } catch (error: any) {
     console.error('Error suggesting categories:', error);
     next(error);
@@ -120,28 +233,86 @@ router.post('/suggest-categories', authenticate, async (req: AuthRequest, res, n
  * Comprehensive analysis of an image to suggest tags for all mockup sections
  */
 router.post('/analyze-setup', authenticate, async (req: AuthRequest, res, next) => {
+  const t0 = Date.now();
+  if (process.env.NODE_ENV === 'development') console.log('[dev] analyze-setup: start');
   try {
-    const { baseImage } = req.body;
+    const { baseImage, instructions, userContext } = req.body;
 
-    if (!baseImage || !baseImage.base64 || !baseImage.mimeType) {
+    if (!baseImage || (!baseImage.base64 && !baseImage.url) || !baseImage.mimeType) {
       return res.status(400).json({ error: 'Base image is required' });
     }
 
-    // Try to use user's API key first, fallback to system key
+    // Run API key and tags fetch in parallel to reduce latency
     let userApiKey: string | undefined;
-    try {
-      userApiKey = await getGeminiApiKey(req.userId!);
-    } catch (error) {
-      // User doesn't have API key
-    }
+    const [apiKeyResult, availableTags] = await Promise.all([
+      (async () => {
+        try {
+          return await getGeminiApiKey(req.userId!);
+        } catch {
+          return undefined;
+        }
+      })(),
+      getAllAvailableTags(),
+    ]);
+    userApiKey = apiKeyResult;
+    if (process.env.NODE_ENV === 'development') console.log('[dev] analyze-setup: getGeminiApiKey + getAllAvailableTags done', ((Date.now() - t0) / 1000).toFixed(2) + 's');
 
-    const { analyzeMockupSetup } = await import('../../services/geminiService.js');
-    const analysis = await analyzeMockupSetup(baseImage as UploadedImage, userApiKey);
+    if (process.env.NODE_ENV === 'development') console.log('[dev] analyze-setup: calling analyzeMockupSetup');
+    const result = await analyzeMockupSetup(
+      baseImage as UploadedImage,
+      userApiKey,
+      availableTags,
+      instructions,
+      userContext
+    );
+    if (process.env.NODE_ENV === 'development') console.log('[dev] analyze-setup: analyzeMockupSetup done', ((Date.now() - t0) / 1000).toFixed(2) + 's');
 
-    res.json(analysis);
+    // Track usage asynchronously
+    (async () => {
+      try {
+        await connectToMongoDB();
+        const db = getDb();
+        const usageRecord = createUsageRecord(
+          req.userId!,
+          0, // images
+          'gemini-2.5-flash',
+          true, // hasInputImage
+          0, // promptLength
+          undefined, // resolution
+          'branding', // feature
+          'system',
+          result.inputTokens,
+          result.outputTokens
+        );
+        // Add specific type for admin stats
+        (usageRecord as any).type = 'branding';
+
+        await db.collection('usage_records').insertOne(usageRecord);
+
+        // Track total tokens for user stats
+        const totalTokens = (result.inputTokens || 0) + (result.outputTokens || 0);
+        if (totalTokens > 0) {
+          await incrementUserGenerations(req.userId!, 0, totalTokens);
+        }
+      } catch (err) {
+        console.error('Error tracking usage for analyze-setup:', err);
+      }
+    })();
+
+    if (process.env.NODE_ENV === 'development') console.log('[dev] analyze-setup: res.json', ((Date.now() - t0) / 1000).toFixed(2) + 's');
+    res.json(result);
   } catch (error: any) {
-    console.error('Error analyzing mockup setup:', error);
-    next(error);
+    const msg = (typeof error?.message === 'string' ? error.message : null) || 'Internal server error';
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[analyze-setup]', msg, error?.stack || '');
+    } else {
+      console.error('[analyze-setup]', msg);
+    }
+    if (!res.headersSent) {
+      res.status(500).json({ error: msg, code: 'ANALYZE_SETUP_FAILED' });
+    } else {
+      next(error);
+    }
   }
 });
 
@@ -149,7 +320,7 @@ router.post('/analyze-setup', authenticate, async (req: AuthRequest, res, next) 
  * POST /api/ai/generate-smart-prompt
  * Generate a smart prompt based on user selections
  */
-router.post('/generate-smart-prompt', authenticate, async (req: AuthRequest, res, next) => {
+router.post('/generate-smart-prompt', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     const {
       baseImage,
@@ -165,8 +336,10 @@ router.post('/generate-smart-prompt', authenticate, async (req: AuthRequest, res
       generateText,
       withHuman,
       enhanceTexture,
+      removeText,
       negativePrompt,
       additionalPrompt,
+      instructions,
     } = req.body;
 
     if (!designType) {
@@ -195,9 +368,23 @@ router.post('/generate-smart-prompt', authenticate, async (req: AuthRequest, res
       generateText: generateText || false,
       withHuman: withHuman || false,
       enhanceTexture: enhanceTexture || false,
+      removeText: removeText || false,
       negativePrompt: negativePrompt || '',
       additionalPrompt: additionalPrompt || '',
+      instructions: instructions || '',
     }, userApiKey);
+
+    // Track total tokens
+    (async () => {
+      try {
+        const totalTokens = (result.inputTokens || 0) + (result.outputTokens || 0);
+        if (totalTokens > 0) {
+          await incrementUserGenerations(req.userId!, 0, totalTokens);
+        }
+      } catch (err) {
+        console.error('Error tracking tokens for smart prompt:', err);
+      }
+    })();
 
     res.json(result);
   } catch (error: any) {
@@ -210,7 +397,7 @@ router.post('/generate-smart-prompt', authenticate, async (req: AuthRequest, res
  * POST /api/ai/suggest-prompt-variations
  * Generate variations of a prompt
  */
-router.post('/suggest-prompt-variations', authenticate, async (req: AuthRequest, res, next) => {
+router.post('/suggest-prompt-variations', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     const { prompt } = req.body;
 
@@ -226,9 +413,40 @@ router.post('/suggest-prompt-variations', authenticate, async (req: AuthRequest,
       // User doesn't have API key, will use system key
     }
 
-    const variations = await suggestPromptVariations(prompt, userApiKey);
+    const result = await suggestPromptVariations(prompt, userApiKey);
 
-    res.json({ variations });
+    // Track usage asynchronously
+    (async () => {
+      try {
+        await connectToMongoDB();
+        const db = getDb();
+        const usageRecord = createUsageRecord(
+          req.userId!,
+          0, // images
+          'gemini-2.5-flash',
+          false, // hasInputImage
+          prompt.length,
+          undefined, // resolution
+          'branding', // feature
+          'system',
+          result.inputTokens,
+          result.outputTokens
+        );
+        (usageRecord as any).type = 'branding';
+
+        await db.collection('usage_records').insertOne(usageRecord);
+
+        // Track total tokens for user stats
+        const totalTokens = (result.inputTokens || 0) + (result.outputTokens || 0);
+        if (totalTokens > 0) {
+          await incrementUserGenerations(req.userId!, 0, totalTokens);
+        }
+      } catch (err) {
+        console.error('Error tracking usage for suggest-prompt-variations:', err);
+      }
+    })();
+
+    res.json({ variations: result.variations });
   } catch (error: any) {
     console.error('Error suggesting prompt variations:', error);
     next(error);
@@ -239,11 +457,11 @@ router.post('/suggest-prompt-variations', authenticate, async (req: AuthRequest,
  * POST /api/ai/change-object
  * Change an object in a mockup image
  */
-router.post('/change-object', authenticate, async (req: AuthRequest, res, next) => {
+router.post('/change-object', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     const { baseImage, newObject, model, resolution } = req.body;
 
-    if (!baseImage || !baseImage.base64 || !baseImage.mimeType) {
+    if (!baseImage || (!baseImage.base64 && !baseImage.url) || !baseImage.mimeType) {
       return res.status(400).json({ error: 'Base image is required' });
     }
 
@@ -268,6 +486,15 @@ router.post('/change-object', authenticate, async (req: AuthRequest, res, next) 
       userApiKey
     );
 
+    // Track total generations
+    (async () => {
+      try {
+        await incrementUserGenerations(req.userId!, 1, 0);
+      } catch (err) {
+        console.error('Error tracking generation for change-object:', err);
+      }
+    })();
+
     res.json({ imageBase64 });
   } catch (error: any) {
     console.error('Error changing object:', error);
@@ -279,11 +506,11 @@ router.post('/change-object', authenticate, async (req: AuthRequest, res, next) 
  * POST /api/ai/apply-theme
  * Apply a theme to a mockup image
  */
-router.post('/apply-theme', authenticate, async (req: AuthRequest, res, next) => {
+router.post('/apply-theme', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     const { baseImage, themes, model, resolution } = req.body;
 
-    if (!baseImage || !baseImage.base64 || !baseImage.mimeType) {
+    if (!baseImage || (!baseImage.base64 && !baseImage.url) || !baseImage.mimeType) {
       return res.status(400).json({ error: 'Base image is required' });
     }
 
@@ -307,6 +534,15 @@ router.post('/apply-theme', authenticate, async (req: AuthRequest, res, next) =>
       undefined, // onRetry
       userApiKey
     );
+
+    // Track total generations
+    (async () => {
+      try {
+        await incrementUserGenerations(req.userId!, 1, 0);
+      } catch (err) {
+        console.error('Error tracking generation for apply-theme:', err);
+      }
+    })();
 
     res.json({ imageBase64 });
   } catch (error: any) {

@@ -4,9 +4,42 @@ import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { verifyBotId } from '../middleware/botid.js';
 import { getDb, connectToMongoDB } from '../db/mongodb.js';
 import { ObjectId } from 'mongodb';
-import { getCreditsByAmount, getCreditPackage, getCreditPackagePrice } from '../../utils/creditPackages.js';
+import { getCreditsByAmount, getCreditPackage, getCreditPackagePrice } from '../../src/utils/creditPackages.js';
 import { abacatepayService } from '../services/abacatepayService.js';
 import { prisma } from '../db/prisma.js';
+import { rateLimit } from 'express-rate-limit';
+import { validateSafeId } from '../utils/securityValidation.js';
+
+// API rate limiter - general authenticated endpoints
+// Using express-rate-limit for CodeQL recognition
+const apiRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS || '60000', 10),
+  max: parseInt(process.env.RATE_LIMIT_MAX_API || '60', 10),
+  message: { error: 'Too many requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Payment endpoints rate limiter - strict limits for financial operations
+// Using express-rate-limit for CodeQL recognition
+const paymentRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_PAYMENT_WINDOW_MS || '60000', 10),
+  max: parseInt(process.env.RATE_LIMIT_MAX_PAYMENT || '10', 10),
+  message: { error: 'Too many payment requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Webhook rate limiter - for incoming webhooks
+// Using express-rate-limit for CodeQL recognition
+const webhookRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_WEBHOOK_WINDOW_MS || '60000', 10),
+  max: parseInt(process.env.RATE_LIMIT_MAX_WEBHOOK || '100', 10),
+  message: { error: 'Too many webhook requests.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+import { isValidObjectId } from '../utils/validation.js';
 
 const router = express.Router();
 
@@ -287,7 +320,7 @@ const calculateCreditsResetDate = (subscription: Stripe.Subscription): Date => {
 };
 
 // Create checkout session for subscription
-router.post('/create-checkout-session', verifyBotId, authenticate, async (req: AuthRequest, res, next) => {
+router.post('/create-checkout-session', paymentRateLimiter, verifyBotId, authenticate, async (req: AuthRequest, res, next) => {
   try {
     if (!stripe) {
       console.error('❌ Stripe is not configured');
@@ -387,7 +420,7 @@ router.post('/create-checkout-session', verifyBotId, authenticate, async (req: A
 });
 
 // Create customer portal session
-router.post('/create-portal-session', verifyBotId, authenticate, async (req: AuthRequest, res, next) => {
+router.post('/create-portal-session', paymentRateLimiter, verifyBotId, authenticate, async (req: AuthRequest, res, next) => {
   try {
     if (!stripe) {
       return res.status(500).json({ error: 'Stripe is not configured. Please set STRIPE_SECRET_KEY in your environment variables.' });
@@ -414,7 +447,7 @@ router.post('/create-portal-session', verifyBotId, authenticate, async (req: Aut
 });
 
 // Get subscription status
-router.get('/subscription-status', authenticate, async (req: AuthRequest, res, next) => {
+router.get('/subscription-status', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     await connectToMongoDB();
     const db = getDb();
@@ -458,7 +491,7 @@ router.get('/subscription-status', authenticate, async (req: AuthRequest, res, n
 });
 
 // Get available plans from Stripe
-router.get('/plans', async (req, res, next) => {
+router.get('/plans', apiRateLimiter, async (req, res, next) => {
   try {
     if (!stripe) {
       console.error('❌ Stripe is not configured');
@@ -531,7 +564,7 @@ router.get('/plans', async (req, res, next) => {
 });
 
 // Get all active products (credit packages and subscription plans) from database
-router.get('/products', async (_req, res, next) => {
+router.get('/products', apiRateLimiter, async (_req, res, next) => {
   try {
     const products = await prisma.product.findMany({
       where: { isActive: true },
@@ -545,7 +578,7 @@ router.get('/products', async (_req, res, next) => {
 });
 
 // Get usage info
-router.get('/usage', authenticate, async (req: AuthRequest, res, next) => {
+router.get('/usage', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     await connectToMongoDB();
     const db = getDb();
@@ -585,7 +618,7 @@ router.get('/usage', authenticate, async (req: AuthRequest, res, next) => {
 });
 
 // Get transactions history
-router.get('/transactions', authenticate, async (req: AuthRequest, res, next) => {
+router.get('/transactions', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     const userId = req.userId;
     if (!userId) {
@@ -623,7 +656,7 @@ router.get('/transactions', authenticate, async (req: AuthRequest, res, next) =>
 });
 
 // Verify subscription manually (fallback when webhook fails)
-router.post('/verify-subscription', authenticate, async (req: AuthRequest, res, next) => {
+router.post('/verify-subscription', paymentRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     if (!stripe) {
       return res.status(500).json({ error: 'Stripe is not configured' });
@@ -748,7 +781,7 @@ router.post('/verify-subscription', authenticate, async (req: AuthRequest, res, 
 });
 
 // Create PIX checkout session for credit purchase
-router.post('/create-pix-checkout', verifyBotId, authenticate, async (req: AuthRequest, res, next) => {
+router.post('/create-pix-checkout', paymentRateLimiter, verifyBotId, authenticate, async (req: AuthRequest, res, next) => {
   try {
     if (!stripe) {
       console.error('❌ Stripe is not configured');
@@ -968,7 +1001,7 @@ router.post('/create-pix-checkout', verifyBotId, authenticate, async (req: AuthR
 });
 
 // Create credit checkout session for card payments (dynamic checkout for authenticated users)
-router.post('/create-credit-checkout', verifyBotId, authenticate, async (req: AuthRequest, res, next) => {
+router.post('/create-credit-checkout', paymentRateLimiter, verifyBotId, authenticate, async (req: AuthRequest, res, next) => {
   try {
     if (!stripe) {
       console.error('❌ Stripe is not configured');
@@ -1211,7 +1244,7 @@ router.post('/create-credit-checkout', verifyBotId, authenticate, async (req: Au
 });
 
 // Get PIX QR Code and payment details from session
-router.get('/pix-qrcode/:sessionId', authenticate, async (req: AuthRequest, res, next) => {
+router.get('/pix-qrcode/:sessionId', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     if (!stripe) {
       return res.status(500).json({ error: 'Stripe is not configured' });
@@ -1297,7 +1330,7 @@ router.get('/pix-qrcode/:sessionId', authenticate, async (req: AuthRequest, res,
 });
 
 // Stripe webhook handler
-router.post('/webhook', async (req, res) => {
+router.post('/webhook', webhookRateLimiter, async (req, res) => {
   // Check if this is an AbacatePay webhook (has webhookSecret query param or missing stripe-signature)
   const webhookSecretQuery = req.query.webhookSecret || req.query.secret;
   const sig = req.headers['stripe-signature'];
@@ -1351,10 +1384,16 @@ router.post('/webhook', async (req, res) => {
           return res.status(400).json({ error: 'Bill ID is missing' });
         }
 
+        // Validate billId format to prevent NoSQL injection
+        const billIdValidation = validateSafeId(billId);
+        if (!billIdValidation.valid) {
+          return res.status(400).json({ error: `Invalid bill ID format: ${billIdValidation.error}` });
+        }
+
         await connectToMongoDB();
         const db = getDb();
 
-        // Find payment in database
+        // Find payment in database (billId is now validated)
         let payment = await db.collection('payments').findOne({ billId });
 
         // Use webhook data directly - it already contains payment status
@@ -2263,7 +2302,7 @@ router.post('/webhook', async (req, res) => {
 // ========== ABACATEPAY ENDPOINTS ==========
 
 // Create PIX payment using AbacatePay (alternative to Stripe PIX)
-router.post('/create-abacate-pix', verifyBotId, authenticate, async (req: AuthRequest, res, next) => {
+router.post('/create-abacate-pix', paymentRateLimiter, verifyBotId, authenticate, async (req: AuthRequest, res, next) => {
   try {
     // Check if AbacatePay is configured
     if (!abacatepayService.isConfigured()) {
@@ -2418,13 +2457,19 @@ router.post('/create-abacate-pix', verifyBotId, authenticate, async (req: AuthRe
 });
 
 // Get AbacatePay payment status and PIX details
-router.get('/abacate-pix-status/:billId', authenticate, async (req: AuthRequest, res, next) => {
+router.get('/abacate-pix-status/:billId', apiRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     const { billId } = req.params;
     const userId = req.userId!;
 
     if (!billId) {
       return res.status(400).json({ error: 'Bill ID is required' });
+    }
+
+    // Validate billId format to prevent NoSQL injection
+    const billIdValidation = validateSafeId(billId);
+    if (!billIdValidation.valid) {
+      return res.status(400).json({ error: `Invalid bill ID format: ${billIdValidation.error}` });
     }
 
     // Verify user owns this payment
@@ -2457,7 +2502,10 @@ router.get('/abacate-pix-status/:billId', authenticate, async (req: AuthRequest,
     } catch (error: any) {
       // If billing not found, return expired status instead of error
       if (error.message && error.message.includes('not found')) {
-        console.warn(`⚠️ Billing ${billId} not found - returning expired status`);
+        // Use structured logging to avoid format string vulnerability
+        console.warn('⚠️ Billing not found - returning expired status:', {
+          billId: String(billId),
+        });
         return res.json({
           billId,
           sessionId: billId,
@@ -2481,7 +2529,7 @@ router.get('/abacate-pix-status/:billId', authenticate, async (req: AuthRequest,
 });
 
 // AbacatePay webhook handler
-router.post('/abacate-webhook', async (req, res) => {
+router.post('/abacate-webhook', webhookRateLimiter, async (req, res) => {
   try {
     // Validate webhook secret if configured
     // AbacatePay sends the secret as a query parameter in the URL
@@ -2504,150 +2552,20 @@ router.post('/abacate-webhook', async (req, res) => {
       console.warn('⚠️ ABACATE_WEBHOOK_SECRET not configured - webhook validation disabled');
     }
 
-    const { event, data } = req.body;
+    await connectToMongoDB();
+    const db = getDb();
 
-    console.log('📥 AbacatePay webhook received:', { event, billId: data?.id });
+    // Use abacatepay service to process webhook
+    const result = await abacatepayService.processWebhook(req.body, db);
 
-    if (event === 'billing.paid' || event === 'billing.payment_received') {
-      const billId = data?.id;
-      if (!billId) {
-        return res.status(400).json({ error: 'Bill ID is missing' });
-      }
-
-      await connectToMongoDB();
-      const db = getDb();
-
-      // Find payment in database
-      let payment = await db.collection('payments').findOne({ billId });
-
-      // Get billing details from AbacatePay to get actual amount paid (supports coupons)
-      const billingStatus = await abacatepayService.getPaymentStatus(billId);
-
-      if (billingStatus.status === 'PAID' || billingStatus.status === 'CONFIRMED') {
-        // Extract actual amount paid (in cents) - this handles coupons correctly
-        const amountPaidInCents = billingStatus.amount || 0;
-
-        // Use getCreditsByAmount to identify the correct package (supports coupons)
-        // This ensures we credit the right amount even if a coupon was applied
-        let credits = 0;
-
-        if (payment && payment.credits) {
-          // If payment record exists, use stored credits as primary source
-          credits = payment.credits;
-          console.log('📦 Using credits from payment record:', credits);
-        } else {
-          // Fallback: calculate credits from amount paid (handles coupons)
-          credits = getCreditsByAmount(amountPaidInCents, 'BRL');
-          console.log('📦 Calculated credits from amount paid:', { amountPaidInCents, credits });
-        }
-
-        if (credits <= 0) {
-          console.error('❌ Invalid credits amount:', { billId, amountPaidInCents, credits });
-          return res.status(400).json({ error: 'Invalid credits amount' });
-        }
-
-        // Find user - try by userId from payment, then by email from billing
-        let user = null;
-        let userId: ObjectId | null = null;
-
-        if (payment && payment.userId) {
-          userId = payment.userId instanceof ObjectId ? payment.userId : new ObjectId(payment.userId);
-          user = await db.collection('users').findOne({ _id: userId });
-        }
-
-        // If user not found, try to find by email from billing metadata
-        if (!user && data?.customer?.email) {
-          user = await db.collection('users').findOne({ email: data.customer.email });
-          if (user) {
-            userId = user._id;
-            console.log('👤 Found user by email:', data.customer.email);
-          }
-        }
-
-        if (!user || !userId) {
-          console.error('❌ User not found for AbacatePay payment:', { billId, userId, email: data?.customer?.email });
-          return res.status(404).json({ error: 'User not found' });
-        }
-
-        // Get or create abacateCustomerId
-        let abacateCustomerId = user.abacateCustomerId;
-
-        // If no abacateCustomerId, try to extract from billing or create one
-        // For now, we'll use the billId or customer email as identifier
-        // AbacatePay might not have a separate customer ID, so we'll use email as fallback
-        if (!abacateCustomerId && data?.customer?.email) {
-          // Store email as abacateCustomerId (or use a proper customer ID if AbacatePay provides it)
-          abacateCustomerId = data.customer.email;
-        }
-
-        // Add credits to user
-        const updateResult = await db.collection('users').updateOne(
-          { _id: userId },
-          {
-            $inc: { totalCreditsEarned: credits },
-            ...(abacateCustomerId && !user.abacateCustomerId ? { $set: { abacateCustomerId } } : {}),
-          }
-        );
-
-        if (updateResult.modifiedCount > 0) {
-          console.log('✅ Credits added via AbacatePay webhook:', {
-            userId: userId.toString(),
-            credits,
-            billId,
-            amountPaidInCents,
-            abacateCustomerId,
-          });
-
-          // Create or update payment record
-          if (!payment) {
-            await db.collection('payments').insertOne({
-              userId,
-              billId,
-              provider: 'abacatepay',
-              type: 'credit_purchase',
-              credits,
-              amount: amountPaidInCents,
-              currency: 'BRL',
-              status: 'paid',
-              createdAt: new Date(),
-              paidAt: new Date(),
-            });
-          } else {
-            // Update payment status
-            await db.collection('payments').updateOne(
-              { billId },
-              {
-                $set: {
-                  status: 'paid',
-                  paidAt: new Date(),
-                  updatedAt: new Date(),
-                  credits, // Update credits in case it was recalculated
-                  amount: amountPaidInCents, // Update amount to actual paid amount
-                },
-              }
-            );
-          }
-
-          // Record transaction
-          await recordTransaction(db, {
-            userId,
-            type: 'purchase',
-            status: 'paid',
-            credits,
-            amount: amountPaidInCents,
-            currency: 'BRL',
-            description: `Credit package - ${credits} credits (AbacatePay)`,
-            stripeSessionId: null,
-            stripePaymentIntentId: null,
-            stripeCustomerId: null,
-          });
-        } else {
-          console.warn('⚠️ Credit update returned 0 modified documents:', { userId: userId.toString() });
-        }
-      }
+    if (result.success) {
+      console.log('✅ AbacatePay webhook processed successfully:', result.message);
+      return res.status(200).json({ success: true, message: result.message });
+    } else {
+      console.error('❌ AbacatePay webhook processing failed:', result.message);
+      // AbacatePay documentation says to return 200 even on some failures to avoid retries
+      return res.status(200).json({ success: false, message: result.message });
     }
-
-    res.json({ received: true });
   } catch (error: any) {
     console.error('❌ AbacatePay webhook error:', error);
     res.status(500).json({ error: 'Webhook handler failed' });
@@ -2689,7 +2607,7 @@ router.get('/pending-payments', authenticate, async (req: AuthRequest, res, next
 });
 
 // Resolve pending payment (associate with user)
-router.post('/resolve-pending-payment', authenticate, async (req: AuthRequest, res, next) => {
+router.post('/resolve-pending-payment', paymentRateLimiter, authenticate, async (req: AuthRequest, res, next) => {
   try {
     await connectToMongoDB();
     const db = getDb();

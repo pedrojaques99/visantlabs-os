@@ -1,16 +1,5 @@
-/**
- * PDF compression utilities for backend
- * Compresses PDFs by reducing image resolution to reduce file size
- */
-
 import { PDFDocument, PDFImage, PDFPage } from 'pdf-lib';
 
-/**
- * Compress PDF by reducing image resolution
- * Reduces images to ~150-200 DPI while maintaining text and structure
- * @param pdfBase64 - Base64 encoded PDF string (with or without data URL prefix)
- * @returns Compressed PDF as base64 string
- */
 export async function compressPdf(pdfBase64: string): Promise<string> {
   try {
     // Remove data URL prefix if present

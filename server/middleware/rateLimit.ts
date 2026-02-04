@@ -125,3 +125,45 @@ export const uploadImageRateLimiter = createRateLimiter({
   message: 'Too many upload attempts. Please try again later.',
 });
 
+// Payment endpoints rate limiter - strict limits for financial operations
+export const paymentRateLimiter = createRateLimiter({
+  windowMs: parseInt(process.env.RATE_LIMIT_PAYMENT_WINDOW_MS || '60000', 10), // 1 minute default
+  max: parseInt(process.env.RATE_LIMIT_MAX_PAYMENT || '10', 10), // 10 payment requests per minute
+  message: 'Too many payment requests. Please try again later.',
+});
+
+// Mockup generation rate limiter - moderate limits
+export const mockupRateLimiter = createRateLimiter({
+  windowMs: parseInt(process.env.RATE_LIMIT_MOCKUP_WINDOW_MS || '60000', 10), // 1 minute default
+  max: parseInt(process.env.RATE_LIMIT_MAX_MOCKUP || '30', 10), // 30 mockup requests per minute
+  message: 'Too many mockup requests. Please try again later.',
+});
+
+// General API rate limiter - for general authenticated endpoints
+export const apiRateLimiter = createRateLimiter({
+  windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS || '60000', 10), // 1 minute default
+  max: parseInt(process.env.RATE_LIMIT_MAX_API || '60', 10), // 60 requests per minute
+  message: 'Too many requests. Please try again later.',
+});
+
+// OAuth rate limiter - prevent brute force on OAuth endpoints
+export const oauthRateLimiter = createRateLimiter({
+  windowMs: parseInt(process.env.RATE_LIMIT_OAUTH_WINDOW_MS || '300000', 10), // 5 minutes default
+  max: parseInt(process.env.RATE_LIMIT_MAX_OAUTH || '20', 10), // 20 OAuth requests per 5 minutes
+  message: 'Too many OAuth requests. Please try again later.',
+});
+
+// Webhook rate limiter - for incoming webhooks
+export const webhookRateLimiter = createRateLimiter({
+  windowMs: parseInt(process.env.RATE_LIMIT_WEBHOOK_WINDOW_MS || '60000', 10), // 1 minute default
+  max: parseInt(process.env.RATE_LIMIT_MAX_WEBHOOK || '100', 10), // 100 webhooks per minute
+  message: 'Too many webhook requests.',
+});
+
+// Password reset rate limiter - strict to prevent enumeration
+export const passwordResetRateLimiter = createRateLimiter({
+  windowMs: parseInt(process.env.RATE_LIMIT_PASSWORD_RESET_WINDOW_MS || '3600000', 10), // 1 hour default
+  max: parseInt(process.env.RATE_LIMIT_MAX_PASSWORD_RESET || '5', 10), // 5 password reset attempts per hour
+  message: 'Too many password reset attempts. Please try again later.',
+});
+
