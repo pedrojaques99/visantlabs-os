@@ -1170,6 +1170,23 @@
     "generatingCode": "Generating referral link..."
   },
   "auth": {
+    "signInWithGoogle": "Sign in with Google",
+    "signUpWithGoogle": "Sign up with Google",
+    "signingInWithGoogle": "Signing in with Google...",
+    "accountCreatedSuccess": "Account created successfully!",
+    "signedInSuccess": "Signed in successfully!",
+    "failedToConnectGoogle": "Failed to connect to Google.",
+    "tooManyAttempts": "Too many attempts. Please try again later.",
+    "oauthError": {
+      "failed": "OAuth authentication failed. Please try again.",
+      "invalidToken": "Invalid authentication token.",
+      "noCode": "Authorization code not received.",
+      "generic": "Authentication error occurred."
+    },
+    "tryAgain": "Try Again",
+    "authenticationError": "Authentication Error",
+    "backToHome": "Back to Home",
+    "processing": "Processing authentication...",
     "signIn": "SIGN IN",
     "signUp": "SIGN UP",
     "signInWithEmail": "Sign in with Email",

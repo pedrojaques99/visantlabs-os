@@ -8,6 +8,8 @@ import { toast } from 'sonner';
 import { ForgotPasswordModal } from './ForgotPasswordModal';
 import HCaptcha from '@hcaptcha/react-hcaptcha';
 import { Link } from 'react-router-dom';
+import { Button } from './ui/button';
+import { SiGoogle } from '@icons-pack/react-simple-icons';
 
 export interface AuthModalProps {
   isOpen: boolean;
@@ -178,31 +180,34 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         </div>
 
         {/* Google OAuth button - temporarily hidden during verification */}
-        {false && (
-          <>
-            <button
-              type="button"
-              onClick={handleGoogleAuth}
-              disabled={isGoogleLoading}
-              className="w-full flex items-center justify-center gap-2 bg-neutral-800/50 hover:bg-neutral-800/70 disabled:opacity-50 disabled:cursor-not-allowed text-neutral-300 font-semibold py-2.5 px-4 rounded-md border border-neutral-700/50 hover:border-neutral-600/50 transition-all duration-200 text-sm font-mono mb-4"
-            >
-              {isGoogleLoading ? (
-                <>
-                  <GlitchLoader size={16} />
-                  {t('auth.signingInWithGoogle')}
-                </>
-              ) : (
-                t('auth.signInWithGoogle')
-              )}
-            </button>
+        {/* Google OAuth button */}
+        <>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleGoogleAuth}
+            disabled={isGoogleLoading}
+            className="w-full flex items-center justify-center gap-2 mb-4 font-mono select-none border-neutral-700/50 hover:border-neutral-600/50 bg-neutral-800/50 hover:bg-neutral-800/70 text-neutral-300 hover:text-white"
+          >
+            {isGoogleLoading ? (
+              <>
+                <GlitchLoader size={16} />
+                {t('auth.signingInWithGoogle')}
+              </>
+            ) : (
+              <>
+                <SiGoogle className="w-4 h-4" />
+                {isSignUp ? t('auth.signUpWithGoogle') : t('auth.signInWithGoogle')}
+              </>
+            )}
+          </Button>
 
-            <div className="flex items-center gap-2 mb-4">
-              <div className="flex-1 h-px bg-neutral-800/50"></div>
-              <span className="text-xs text-neutral-500 font-mono">{t('auth.or')}</span>
-              <div className="flex-1 h-px bg-neutral-800/50"></div>
-            </div>
-          </>
-        )}
+          <div className="flex items-center gap-2 mb-4">
+            <div className="flex-1 h-px bg-neutral-800/50"></div>
+            <span className="text-xs text-neutral-500 font-mono">{t('auth.or')}</span>
+            <div className="flex-1 h-px bg-neutral-800/50"></div>
+          </div>
+        </>
 
         <form onSubmit={handleEmailAuth} className="space-y-4">
           {isSignUp && (
@@ -357,7 +362,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           setIsSignUp(false);
         }}
       />
-    </div>
+    </div >
   );
 };
 

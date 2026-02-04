@@ -1170,6 +1170,23 @@
     "generatingCode": "Gerando link de indicação..."
   },
   "auth": {
+    "signInWithGoogle": "Entrar com Google",
+    "signUpWithGoogle": "Cadastrar com Google",
+    "signingInWithGoogle": "Entrando com Google...",
+    "accountCreatedSuccess": "Conta criada com sucesso!",
+    "signedInSuccess": "Login realizado com sucesso!",
+    "failedToConnectGoogle": "Falha ao conectar com Google.",
+    "tooManyAttempts": "Muitas tentativas. Tente novamente mais tarde.",
+    "oauthError": {
+      "failed": "Falha na autenticação OAuth. Tente novamente.",
+      "invalidToken": "Token de autenticação inválido.",
+      "noCode": "Código de autorização não recebido.",
+      "generic": "Ocorreu um erro na autenticação."
+    },
+    "tryAgain": "Tentar Novamente",
+    "authenticationError": "Erro de Autenticação",
+    "backToHome": "Voltar para Início",
+    "processing": "Processando autenticação...",
     "signIn": "ENTRAR",
     "signUp": "CRIAR CONTA",
     "signInWithEmail": "Entrar com Email",
