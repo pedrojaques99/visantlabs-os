@@ -27,7 +27,7 @@ manifest.networkAccess.allowedDomains = [hostname, ...(manifest.networkAccess.al
 if (!manifest.networkAccess.devAllowedDomains) {
   manifest.networkAccess.devAllowedDomains = [];
 }
-manifest.networkAccess.devAllowedDomains.push(hostname);
+manifest.networkAccess.devAllowedDomains.push(url.replace(/\/$/, ''));
 fs.writeFileSync(outputPath, JSON.stringify(manifest, null, 2));
 
 console.log('manifest.dev.json and ui-dev.html generated — import manifest.dev.json in Figma Desktop (Plugins → Development → Import manifest)');

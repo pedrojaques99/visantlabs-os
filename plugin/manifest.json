@@ -5,9 +5,13 @@
   "main": "dist/code.js",
   "ui": "ui.html",
   "documentAccess": "dynamic-page",
-  "editorType": ["figma"],
+  "editorType": [
+    "figma"
+  ],
   "networkAccess": {
-    "allowedDomains": ["https://www.visantlabs.com"],
+    "allowedDomains": [
+      "www.visantlabs.com"
+    ],
     "reasoning": "Plugin communicates with Visant backend for AI-powered design generation"
   }
 }

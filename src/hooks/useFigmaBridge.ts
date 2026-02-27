@@ -4,7 +4,7 @@ import type { UIMessage, PluginMessage } from '@/lib/figma-types';
 export function useFigmaBridge(onMessage: (msg: PluginMessage) => void) {
   const send = useCallback((msg: UIMessage) => {
     if (typeof parent !== 'undefined') {
-      parent.postMessage({ pluginMessage: msg }, '*');
+      parent.postMessage({ pluginMessage: msg }, 'https://www.figma.com');
     }
   }, []);
 

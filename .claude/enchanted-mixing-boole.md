@@ -104,7 +104,7 @@ export type SerializedNode = {
 
 Typed postMessage bridge between iframe and Figma sandbox.
 
-- `send(msg: UIMessage)` → calls `parent.postMessage({ pluginMessage: msg }, '*')`
+- `send(msg: UIMessage)` → calls `parent.postMessage({ pluginMessage: msg }, 'https://www.figma.com')`
 - `onMessage` callback receives `PluginMessage` from `event.data.pluginMessage`
 - useEffect with addEventListener + cleanup
 - Reuse pattern from existing hooks (useCallback, useEffect)

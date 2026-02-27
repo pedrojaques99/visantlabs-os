@@ -1,31 +1,7 @@
 // Figma plugin sandbox — runs in QuickJS, no browser APIs
 
-type UIMessage =
-  | { type: 'GET_CONTEXT' }
-  | { type: 'USE_SELECTION_AS_LOGO' }
-  | { type: 'APPLY_OPERATIONS'; payload: FigmaOperation[] }
-  | { type: 'APPLY_OPERATIONS_FROM_API'; operations: FigmaOperation[] }
-  | { type: 'GENERATE_WITH_CONTEXT'; command: string; logoComponent?: { id: string; name: string }; brandFont?: { id: string; name: string }; brandColors?: Array<{ name: string; value: string }> }
-  | { type: 'DELETE_SELECTION' }
-  | { type: 'OPEN_EXTERNAL'; url: string }
-  | { type: 'SAVE_API_KEY'; key: string }
-  | { type: 'GET_API_KEY' };
+import type { UIMessage, FigmaOperation, SerializedContext, SerializedNode, ComponentInfo, ColorVariable, FontVariable } from '../../src/lib/figma-types';
 
-type FigmaOperation =
-  | { type: 'CREATE_FRAME'; props: { name: string; width: number; height: number; direction: 'HORIZONTAL' | 'VERTICAL'; gap: number; padding: number } }
-  | { type: 'CREATE_TEXT'; props: { content: string; styleId?: string; fontSize?: number; color?: { r: number; g: number; b: number; a: number } } }
-  | { type: 'CREATE_COMPONENT'; componentKey: string; x: number; y: number; name: string }
-  | { type: 'SET_FILL'; nodeId: string; color: { r: number; g: number; b: number; a: number } }
-  | { type: 'APPLY_STYLE'; nodeId: string; styleId: string; styleType: 'FILL' | 'TEXT' | 'EFFECT' | 'GRID' }
-  | { type: 'APPLY_VARIABLE'; nodeId: string; variableId: string; property: string }
-  | { type: 'GROUP_NODES'; nodeIds: string[]; name: string }
-  | { type: 'DELETE_NODE'; nodeId: string };
-
-type SerializedNode = { id: string; type: string; name: string; width: number; height: number };
-type SerializedContext = { nodes: SerializedNode[]; styles: Record<string, string> };
-type ComponentInfo = { id: string; name: string; key?: string; folderPath: string[]; thumbnail?: string };
-type ColorVariable = { id: string; name: string; value?: string };
-type FontVariable = { id: string; name: string };
 
 function postToUI(msg: { type: string } & Record<string, unknown>) {
   figma.ui.postMessage(msg);
@@ -91,7 +67,9 @@ async function applyOperations(ops: FigmaOperation[]) {
         if (op.props.styleId) {
           try {
             text.textStyleId = op.props.styleId;
-          } catch (_) { }
+          } catch (e) {
+            console.error(`Failed to apply text style ${op.props.styleId}:`, e);
+          }
         }
         text.x = figma.viewport.center.x - 50;
         text.y = figma.viewport.center.y - 10;
