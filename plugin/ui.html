@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" href="./ui.css">
+</head>
+
+<body>
+
+  <!-- ═══ MAIN VIEW ═══ -->
+  <div id="mainView" class="view">
+    <div class="app-header">
+      <h2>Visant Copilot</h2>
+      <button class="icon-btn" onclick="openSettings()" title="Configurações">⚙</button>
+    </div>
+
+    <div id="status"></div>
+
+    <div class="chat-messages-wrap">
+      <div class="chat-messages" id="chatMessages"></div>
+    </div>
+
+    <!-- Figma-style chat card -->
+    <div class="chat-card">
+      <div class="chat-card-toolbar">
+        <button class="tool-btn" title="Código"
+          style="font-family: monospace; font-size: 11px; font-weight: 700;">&lt;/&gt;</button>
+        <button class="tool-btn" title="Imagem">🖼</button>
+      </div>
+      <textarea id="chatInput" placeholder="Descreva o design que quer criar ou modificar..." rows="2"></textarea>
+      <div class="chat-card-footer">
+        <div class="chat-card-pills">
+          <button class="chat-pill" id="brandPill">🎨 Brand</button>
+        </div>
+        <button class="send-btn" id="sendBtn" onclick="sendChat()" title="Enviar (Enter)">↑</button>
+      </div>
+    </div>
+
+    <div class="context" id="contextInfo" style="margin-top: 8px;"></div>
+  </div>
+
+  <!-- ═══ SETTINGS VIEW ═══ -->
+  <div id="settingsView" class="view hidden">
+    <div class="settings-header">
+      <button class="back-btn" onclick="closeSettings()" title="Voltar">←</button>
+      <span>Configurações</span>
+    </div>
+
+    <!-- Brand Guidelines -->
+    <div class="brand-section">
+      <div class="brand-header" onclick="toggleBrandSection()">
+        <span class="brand-chevron" id="brandChevron">▾</span>
+        <span class="brand-title">Brand Guidelines</span>
+      </div>
+      <div class="brand-content" id="brandContent">
+        <div class="section">
+          <div class="section-title">Logotipo</div>
+          <button type="button" id="useSelectionBtn" class="secondary" onclick="useSelectionAsLogo()"
+            style="width: auto; padding: 0 10px; margin-bottom: 8px;">Usar seleção</button>
+          <input type="text" id="componentSearch" placeholder="Pesquisar componentes..."
+            oninput="renderComponentsLibrary()">
+          <div id="componentsLibrary" class="components-library"></div>
+          <div id="selectedLogo"></div>
+        </div>
+        <div class="section">
+          <div class="section-title">Fonte</div>
+          <select id="fontSelect" onchange="selectFont()">
+            <option value="">Carregando...</option>
+          </select>
+          <div id="selectedFont"></div>
+        </div>
+        <div class="section">
+          <div class="section-title">Cores</div>
+          <div id="colorsList"></div>
+          <div id="selectedColors"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- API Key (BYOK) -->
+    <div class="brand-section">
+      <div class="brand-header" onclick="toggleApiSection()">
+        <span class="brand-chevron collapsed" id="apiChevron">▾</span>
+        <span class="brand-title">Gemini API Key (BYOK)</span>
+      </div>
+      <div class="brand-content hidden" id="apiContent">
+        <p
+          style="font-size: 11px; color: var(--figma-color-text-secondary, #808080); margin-bottom: 10px; line-height: 1.5;">
+          Sua chave é salva localmente no Figma. Se vazio, usa a chave do servidor.
+        </p>
+        <div style="display: flex; gap: 6px; align-items: center;">
+          <input type="password" id="apiKeyInput" placeholder="AIza..." style="flex: 1; margin-bottom: 0;">
+          <button type="button" class="secondary" onclick="saveApiKey()"
+            style="width: auto; padding: 0 12px; flex-shrink: 0;">Salvar</button>
+        </div>
+        <div id="apiKeyStatus"
+          style="font-size: 10px; margin-top: 6px; color: var(--figma-color-text-secondary, #808080);"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./ui.js"></script>
+</body>
+
+</html>

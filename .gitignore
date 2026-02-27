@@ -37,3 +37,7 @@ GOOGLE_OAUTH_SETUP.md
 .agent
 /.agent
 
+# Figma plugin dev files (generated with ngrok URL)
+plugin/ui-dev.html
+plugin/manifest.dev.json
+

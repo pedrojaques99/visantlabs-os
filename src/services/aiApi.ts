@@ -1,5 +1,6 @@
 import { authService } from './authService';
 import type { UploadedImage } from '../types/types';
+import type { FigmaOperation, SerializedContext } from '@/lib/figma-types';
 
 const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || '/api';
 
@@ -208,6 +209,28 @@ export const aiApi = {
 
     const data = await response.json();
     return data.imageBase64;
+  },
+
+  /**
+   * Generate Figma operations from a prompt and canvas context (Figma plugin)
+   */
+  async generateFigmaOperations(
+    prompt: string,
+    context: SerializedContext
+  ): Promise<FigmaOperation[]> {
+    const response = await fetch(`${API_BASE_URL}/figma/generate`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ prompt, context }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Failed to generate Figma operations' }));
+      throw new Error(error.error || 'Failed to generate Figma operations');
+    }
+
+    const data = await response.json();
+    return data.operations;
   },
 };
 

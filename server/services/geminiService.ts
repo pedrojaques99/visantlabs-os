@@ -1,5 +1,6 @@
 import { GoogleGenAI, Modality, Type } from "@google/genai";
 import type { UploadedImage, AspectRatio, DesignType, GeminiModel, Resolution } from '../../src/types/types.js';
+import type { FigmaOperation, SerializedContext } from '../../src/lib/figma-types.js';
 import { safeFetch } from '../utils/securityValidation.js';
 import { buildGeminiPromptInstructionsTemplate } from '../../src/utils/mockupPromptFormat.js';
 import type { AvailableTags } from './tagService.js';
@@ -1066,4 +1067,80 @@ Retorne em formato JSON:
   }, {
     model: 'gemini-2.5-flash'
   });
+};
+
+export interface FigmaOperationsResult {
+  operations: FigmaOperation[];
+  inputTokens?: number;
+  outputTokens?: number;
+}
+
+export const generateFigmaOperations = async (
+  prompt: string,
+  context: SerializedContext,
+  userApiKey?: string
+): Promise<FigmaOperationsResult> => {
+  return withRetry(async () => {
+    const contextStr = JSON.stringify(context, null, 2);
+
+    const systemPrompt = `You are a Figma plugin assistant. Given a user prompt and the current canvas context (selected nodes, styles), generate a list of Figma operations to apply.
+
+Return ONLY valid JSON in this exact format:
+{ "operations": [ ... ] }
+
+Allowed operation types:
+- CREATE_FRAME: { type: "CREATE_FRAME", props: { name, width, height, direction: "HORIZONTAL"|"VERTICAL", gap, padding } }
+- CREATE_TEXT: { type: "CREATE_TEXT", props: { content, styleId?, fontSize?, color?: { r, g, b, a } } }
+- CREATE_COMPONENT: { type: "CREATE_COMPONENT", componentKey, x, y, name }
+- SET_FILL: { type: "SET_FILL", nodeId, color: { r, g, b, a } }
+- APPLY_STYLE: { type: "APPLY_STYLE", nodeId, styleId, styleType: "FILL"|"TEXT"|"EFFECT"|"GRID" }
+- APPLY_VARIABLE: { type: "APPLY_VARIABLE", nodeId, variableId, property }
+- GROUP_NODES: { type: "GROUP_NODES", nodeIds: string[], name }
+- DELETE_NODE: { type: "DELETE_NODE", nodeId }
+
+RGBA values: r, g, b, a are 0-1 floats.
+Use node IDs from the context when referencing existing nodes.`;
+
+    const userPrompt = `Canvas context:
+${contextStr}
+
+User prompt: ${prompt}
+
+Return JSON with "operations" array only.`;
+
+    const response = await getAI(userApiKey).models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: { parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] },
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            operations: {
+              type: Type.ARRAY,
+              items: { type: Type.OBJECT },
+            },
+          },
+        },
+      },
+    });
+
+    const usageMetadata = (response as any).usageMetadata;
+    const inputTokens = usageMetadata?.promptTokenCount;
+    const outputTokens = usageMetadata?.candidatesTokenCount;
+
+    const jsonString = (response.text || '').trim();
+    if (!jsonString) {
+      throw new Error('No operations were generated in the response.');
+    }
+
+    try {
+      const parsed = JSON.parse(jsonString);
+      const operations = Array.isArray(parsed?.operations) ? parsed.operations : [];
+      return { operations, inputTokens, outputTokens };
+    } catch (e) {
+      console.error('Failed to parse Figma operations JSON:', e);
+      throw new Error('Invalid JSON in AI response.');
+    }
+  }, { model: 'gemini-2.5-flash' });
 };

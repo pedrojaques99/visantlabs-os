@@ -190,6 +190,10 @@ console.log(`✅ Workflow routes registered at: ${routePrefix}/workflows`);
 import aiRoutes from './routes/ai.js';
 app.use(`${routePrefix}/ai`, aiRoutes);
 
+// Import Figma plugin routes
+import figmaRoutes from './routes/figma.js';
+app.use(`${routePrefix}/figma`, figmaRoutes);
+
 // Import surprise me routes
 import surpriseMeRoutes from './routes/surprise-me.js';
 app.use(`${routePrefix}/surprise-me`, surpriseMeRoutes);

@@ -1,0 +1,17 @@
+{
+  "name": "Visant Copilot",
+  "id": "",
+  "api": "1.0.0",
+  "main": "dist/code.js",
+  "ui": "ui.html",
+  "documentAccess": "dynamic-page",
+  "editorType": [
+    "figma"
+  ],
+  "networkAccess": {
+    "allowedDomains": [
+      "www.visantlabs.com"
+    ],
+    "reasoning": "Plugin communicates with Visant backend for AI-powered design generation"
+  }
+}
