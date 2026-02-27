@@ -67,7 +67,7 @@ const allAllowedOrigins = [...new Set([...allowedOrigins, ...devOrigins])];
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
+    // Allow requests with no origin (like mobile apps, curl, or Figma plugin iframes)
     if (!origin) return callback(null, true);
 
     // Check if origin is in allowed list
@@ -193,6 +193,10 @@ app.use(`${routePrefix}/ai`, aiRoutes);
 // Import Figma plugin routes
 import figmaRoutes from './routes/figma.js';
 app.use(`${routePrefix}/figma`, figmaRoutes);
+
+// Import plugin AI generation routes
+import pluginRoutes from './routes/plugin.js';
+app.use(`${routePrefix}/plugin`, pluginRoutes);
 
 // Import surprise me routes
 import surpriseMeRoutes from './routes/surprise-me.js';

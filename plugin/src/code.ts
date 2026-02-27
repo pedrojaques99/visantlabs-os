@@ -7,22 +7,69 @@ function postToUI(msg: { type: string } & Record<string, unknown>) {
   figma.ui.postMessage(msg);
 }
 
+// ── Deep node serialization (Phase 3) ──
+
+function serializeNode(node: SceneNode): SerializedNode {
+  const base: SerializedNode = {
+    id: node.id,
+    type: node.type,
+    name: node.name,
+    width: 'width' in node ? (node as any).width : 0,
+    height: 'height' in node ? (node as any).height : 0,
+  };
+
+  // Auto-layout info
+  if (node.type === 'FRAME' || node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') {
+    const frame = node as FrameNode;
+    base.layoutMode = frame.layoutMode;
+    base.itemSpacing = frame.itemSpacing;
+    base.paddingTop = frame.paddingTop;
+    base.paddingRight = frame.paddingRight;
+    base.paddingBottom = frame.paddingBottom;
+    base.paddingLeft = frame.paddingLeft;
+    base.primaryAxisAlignItems = frame.primaryAxisAlignItems;
+    base.counterAxisAlignItems = frame.counterAxisAlignItems;
+    base.childCount = frame.children.length;
+  }
+
+  // Fills
+  if ('fills' in node && Array.isArray(node.fills)) {
+    base.fills = (node.fills as ReadonlyArray<Paint>).map((f: Paint) => ({
+      type: f.type,
+      color: f.type === 'SOLID' ? (f as SolidPaint).color : undefined,
+      opacity: 'opacity' in f ? (f as SolidPaint).opacity : undefined,
+    }));
+  }
+
+  // Corner radius
+  if ('cornerRadius' in node && typeof (node as any).cornerRadius === 'number') {
+    base.cornerRadius = (node as any).cornerRadius;
+  }
+
+  // Text content
+  if (node.type === 'TEXT') {
+    base.characters = node.characters;
+    if (typeof node.fontSize === 'number') {
+      base.fontSize = node.fontSize;
+    }
+  }
+
+  // Instance info
+  if (node.type === 'INSTANCE' && node.mainComponent) {
+    base.componentKey = node.mainComponent.key;
+    base.componentName = node.mainComponent.name;
+  }
+
+  return base;
+}
+
 async function serializeSelection(): Promise<SerializedContext> {
   const nodes: SerializedNode[] = [];
   const selection = figma.currentPage.selection;
   const limit = 20;
 
   for (let i = 0; i < Math.min(selection.length, limit); i++) {
-    const node = selection[i];
-    if ('width' in node && 'height' in node) {
-      nodes.push({
-        id: node.id,
-        type: node.type,
-        name: node.name,
-        width: node.width,
-        height: node.height,
-      });
-    }
+    nodes.push(serializeNode(selection[i]));
   }
 
   const styles: Record<string, string> = {};
@@ -38,51 +85,317 @@ async function serializeSelection(): Promise<SerializedContext> {
   return { nodes, styles };
 }
 
+// ── Apply Operations (21 types with ref/parentRef hierarchy) ──
+
 async function applyOperations(ops: FigmaOperation[]) {
-  const defaultFont = { family: 'Inter', style: 'Regular' };
+  const createdNodes = new Map<string, SceneNode>();
+  const defaultFont: FontName = { family: 'Inter', style: 'Regular' };
+
+  function getParent(parentRef?: string): BaseNode & ChildrenMixin {
+    if (parentRef && createdNodes.has(parentRef)) {
+      return createdNodes.get(parentRef) as BaseNode & ChildrenMixin;
+    }
+    return figma.currentPage;
+  }
 
   for (const op of ops) {
     try {
+      // ═══ CREATE_FRAME ═══
       if (op.type === 'CREATE_FRAME') {
+        const parent = getParent(op.parentRef);
         const frame = figma.createFrame();
         frame.name = op.props.name;
         frame.resize(op.props.width, op.props.height);
-        frame.layoutMode = op.props.direction;
-        frame.primaryAxisSizingMode = 'AUTO';
-        frame.counterAxisSizingMode = 'AUTO';
-        frame.itemSpacing = op.props.gap;
-        frame.paddingLeft = frame.paddingRight = frame.paddingTop = frame.paddingBottom = op.props.padding;
-        frame.x = figma.viewport.center.x - op.props.width / 2;
-        frame.y = figma.viewport.center.y - op.props.height / 2;
-        figma.currentPage.appendChild(frame);
-        figma.currentPage.selection = [frame];
-      } else if (op.type === 'CREATE_TEXT') {
-        await figma.loadFontAsync(defaultFont);
-        const text = figma.createText();
-        text.characters = op.props.content;
-        if (op.props.fontSize) text.fontSize = op.props.fontSize;
-        if (op.props.color) {
-          text.fills = [{ type: 'SOLID', color: op.props.color }];
+
+        // Auto-layout
+        if (op.props.layoutMode && op.props.layoutMode !== 'NONE') {
+          frame.layoutMode = op.props.layoutMode;
+          frame.primaryAxisSizingMode = op.props.primaryAxisSizingMode ?? 'AUTO';
+          frame.counterAxisSizingMode = op.props.counterAxisSizingMode ?? 'AUTO';
+          frame.primaryAxisAlignItems = op.props.primaryAxisAlignItems ?? 'MIN';
+          frame.counterAxisAlignItems = op.props.counterAxisAlignItems ?? 'MIN';
+          frame.itemSpacing = op.props.itemSpacing ?? 0;
+          frame.layoutWrap = op.props.layoutWrap ?? 'NO_WRAP';
+          frame.paddingTop = op.props.paddingTop ?? 0;
+          frame.paddingRight = op.props.paddingRight ?? 0;
+          frame.paddingBottom = op.props.paddingBottom ?? 0;
+          frame.paddingLeft = op.props.paddingLeft ?? 0;
         }
-        if (op.props.styleId) {
+
+        if (op.props.fills) frame.fills = op.props.fills;
+        if (op.props.cornerRadius != null) frame.cornerRadius = op.props.cornerRadius;
+        if (op.props.clipsContent != null) frame.clipsContent = op.props.clipsContent;
+
+        // Position at center if root, otherwise append to parent
+        if (parent === figma.currentPage) {
+          frame.x = figma.viewport.center.x - op.props.width / 2;
+          frame.y = figma.viewport.center.y - op.props.height / 2;
+        }
+        parent.appendChild(frame);
+
+        // Layout sizing (must be set AFTER appendChild)
+        if (op.props.layoutSizingHorizontal && parent !== figma.currentPage) {
+          frame.layoutSizingHorizontal = op.props.layoutSizingHorizontal;
+        }
+        if (op.props.layoutSizingVertical && parent !== figma.currentPage) {
+          frame.layoutSizingVertical = op.props.layoutSizingVertical;
+        }
+
+        if (op.ref) createdNodes.set(op.ref, frame);
+
+        // ═══ CREATE_RECTANGLE ═══
+      } else if (op.type === 'CREATE_RECTANGLE') {
+        const parent = getParent(op.parentRef);
+        const rect = figma.createRectangle();
+        rect.name = op.props.name;
+        rect.resize(op.props.width, op.props.height);
+        if (op.props.fills) rect.fills = op.props.fills;
+        if (op.props.cornerRadius != null) rect.cornerRadius = op.props.cornerRadius;
+        if (op.props.strokes) rect.strokes = op.props.strokes;
+        if (op.props.strokeWeight != null) rect.strokeWeight = op.props.strokeWeight;
+        if (op.props.opacity != null) rect.opacity = op.props.opacity;
+        parent.appendChild(rect);
+        if (op.props.layoutSizingHorizontal && parent !== figma.currentPage) {
+          rect.layoutSizingHorizontal = op.props.layoutSizingHorizontal;
+        }
+        if (op.props.layoutSizingVertical && parent !== figma.currentPage) {
+          rect.layoutSizingVertical = op.props.layoutSizingVertical;
+        }
+        if (op.ref) createdNodes.set(op.ref, rect);
+
+        // ═══ CREATE_ELLIPSE ═══
+      } else if (op.type === 'CREATE_ELLIPSE') {
+        const parent = getParent(op.parentRef);
+        const ellipse = figma.createEllipse();
+        ellipse.name = op.props.name;
+        ellipse.resize(op.props.width, op.props.height);
+        if (op.props.fills) ellipse.fills = op.props.fills;
+        parent.appendChild(ellipse);
+        if (op.ref) createdNodes.set(op.ref, ellipse);
+
+        // ═══ CREATE_TEXT ═══
+      } else if (op.type === 'CREATE_TEXT') {
+        const fontFamily = op.props.fontFamily ?? 'Inter';
+        const fontStyle = op.props.fontStyle ?? 'Regular';
+        try {
+          await figma.loadFontAsync({ family: fontFamily, style: fontStyle });
+        } catch (_e) {
+          // Fallback to Inter Regular if requested font is not available
+          await figma.loadFontAsync(defaultFont);
+        }
+
+        const parent = getParent(op.parentRef);
+        const text = figma.createText();
+        try {
+          text.fontName = { family: fontFamily, style: fontStyle };
+        } catch (_e) {
+          text.fontName = defaultFont;
+        }
+        text.characters = op.props.content;
+        if (op.props.name) text.name = op.props.name;
+        if (op.props.fontSize) text.fontSize = op.props.fontSize;
+        if (op.props.fills) text.fills = op.props.fills;
+        if (op.props.textAlignHorizontal) text.textAlignHorizontal = op.props.textAlignHorizontal;
+        if (op.props.textAlignVertical) text.textAlignVertical = op.props.textAlignVertical;
+        if (op.props.textAutoResize) text.textAutoResize = op.props.textAutoResize;
+        if (op.props.lineHeight) text.lineHeight = op.props.lineHeight;
+        if (op.props.letterSpacing) text.letterSpacing = op.props.letterSpacing;
+
+        parent.appendChild(text);
+        if (op.props.layoutSizingHorizontal && parent !== figma.currentPage) {
+          text.layoutSizingHorizontal = op.props.layoutSizingHorizontal;
+        }
+        if (op.props.layoutSizingVertical && parent !== figma.currentPage) {
+          text.layoutSizingVertical = op.props.layoutSizingVertical;
+        }
+        if (op.ref) createdNodes.set(op.ref, text);
+
+        // ═══ CREATE_COMPONENT_INSTANCE ═══
+      } else if (op.type === 'CREATE_COMPONENT_INSTANCE') {
+        const parent = getParent(op.parentRef);
+        let component: ComponentNode | null = null;
+
+        // Try to find locally first
+        try {
+          await figma.loadAllPagesAsync();
+          const allComps = figma.root.findAllWithCriteria({ types: ['COMPONENT'] });
+          component = allComps.find(c => c.key === op.componentKey) || null;
+        } catch (_e) {
+          // Continue to try import
+        }
+
+        if (!component) {
           try {
-            text.textStyleId = op.props.styleId;
-          } catch (e) {
-            console.error(`Failed to apply text style ${op.props.styleId}:`, e);
+            component = await figma.importComponentByKeyAsync(op.componentKey);
+          } catch (_e) {
+            postToUI({ type: 'ERROR', message: `Componente não encontrado: ${op.componentKey}` });
+            continue;
           }
         }
-        text.x = figma.viewport.center.x - 50;
-        text.y = figma.viewport.center.y - 10;
-        figma.currentPage.appendChild(text);
-        figma.currentPage.selection = [text];
+
+        const instance = component.createInstance();
+        if (op.name) instance.name = op.name;
+        parent.appendChild(instance);
+        if (op.ref) createdNodes.set(op.ref, instance);
+
+        // ═══ SET_FILL ═══
       } else if (op.type === 'SET_FILL') {
         const node = figma.getNodeById(op.nodeId) as GeometryMixin | null;
         if (node && 'fills' in node) {
-          node.fills = [{ type: 'SOLID', color: op.color }];
+          node.fills = op.fills;
         }
-      } else if (op.type === 'DELETE_NODE') {
+
+        // ═══ SET_STROKE ═══
+      } else if (op.type === 'SET_STROKE') {
+        const node = figma.getNodeById(op.nodeId) as GeometryMixin | null;
+        if (node && 'strokes' in node) {
+          node.strokes = op.strokes;
+          if (op.strokeWeight != null) node.strokeWeight = op.strokeWeight;
+          if (op.strokeAlign && 'strokeAlign' in node) {
+            (node as any).strokeAlign = op.strokeAlign;
+          }
+        }
+
+        // ═══ SET_CORNER_RADIUS ═══
+      } else if (op.type === 'SET_CORNER_RADIUS') {
+        const node = figma.getNodeById(op.nodeId) as any;
+        if (node && 'cornerRadius' in node) {
+          node.cornerRadius = op.cornerRadius;
+          if (op.cornerSmoothing != null && 'cornerSmoothing' in node) {
+            node.cornerSmoothing = op.cornerSmoothing;
+          }
+        }
+
+        // ═══ SET_EFFECTS ═══
+      } else if (op.type === 'SET_EFFECTS') {
+        const node = figma.getNodeById(op.nodeId) as BlendMixin | null;
+        if (node && 'effects' in node) {
+          node.effects = op.effects.map(e => ({
+            type: e.type as Effect['type'],
+            color: e.color ?? { r: 0, g: 0, b: 0, a: 0.25 },
+            offset: e.offset ?? { x: 0, y: 4 },
+            radius: e.radius,
+            spread: e.spread ?? 0,
+            visible: e.visible ?? true,
+            blendMode: 'NORMAL' as BlendMode,
+          })) as Effect[];
+        }
+
+        // ═══ SET_AUTO_LAYOUT ═══
+      } else if (op.type === 'SET_AUTO_LAYOUT') {
+        const node = figma.getNodeById(op.nodeId) as FrameNode | null;
+        if (node && node.type === 'FRAME') {
+          node.layoutMode = op.layoutMode;
+          if (op.primaryAxisSizingMode) node.primaryAxisSizingMode = op.primaryAxisSizingMode;
+          if (op.counterAxisSizingMode) node.counterAxisSizingMode = op.counterAxisSizingMode;
+          if (op.primaryAxisAlignItems) node.primaryAxisAlignItems = op.primaryAxisAlignItems;
+          if (op.counterAxisAlignItems) node.counterAxisAlignItems = op.counterAxisAlignItems;
+          if (op.layoutWrap) node.layoutWrap = op.layoutWrap;
+          if (op.itemSpacing != null) node.itemSpacing = op.itemSpacing;
+          if (op.paddingTop != null) node.paddingTop = op.paddingTop;
+          if (op.paddingRight != null) node.paddingRight = op.paddingRight;
+          if (op.paddingBottom != null) node.paddingBottom = op.paddingBottom;
+          if (op.paddingLeft != null) node.paddingLeft = op.paddingLeft;
+        }
+
+        // ═══ RESIZE ═══
+      } else if (op.type === 'RESIZE') {
+        const node = figma.getNodeById(op.nodeId) as SceneNode | null;
+        if (node && 'resize' in node) {
+          (node as any).resize(op.width, op.height);
+        }
+
+        // ═══ MOVE ═══
+      } else if (op.type === 'MOVE') {
+        const node = figma.getNodeById(op.nodeId) as SceneNode | null;
+        if (node) {
+          node.x = op.x;
+          node.y = op.y;
+        }
+
+        // ═══ RENAME ═══
+      } else if (op.type === 'RENAME') {
         const node = figma.getNodeById(op.nodeId);
-        if (node) node.remove();
+        if (node) node.name = op.name;
+
+        // ═══ SET_TEXT_CONTENT ═══
+      } else if (op.type === 'SET_TEXT_CONTENT') {
+        const node = figma.getNodeById(op.nodeId) as TextNode | null;
+        if (node && node.type === 'TEXT') {
+          const fontFamily = op.fontFamily ?? 'Inter';
+          const fontStyle = op.fontStyle ?? 'Regular';
+          try {
+            await figma.loadFontAsync({ family: fontFamily, style: fontStyle });
+            node.fontName = { family: fontFamily, style: fontStyle };
+          } catch (_e) {
+            await figma.loadFontAsync(defaultFont);
+            node.fontName = defaultFont;
+          }
+          node.characters = op.content;
+          if (op.fontSize) node.fontSize = op.fontSize;
+          if (op.fills) node.fills = op.fills;
+        }
+
+        // ═══ SET_OPACITY ═══
+      } else if (op.type === 'SET_OPACITY') {
+        const node = figma.getNodeById(op.nodeId) as SceneNode | null;
+        if (node && 'opacity' in node) {
+          node.opacity = op.opacity;
+        }
+
+        // ═══ APPLY_VARIABLE ═══
+      } else if (op.type === 'APPLY_VARIABLE') {
+        const node = figma.getNodeById(op.nodeId) as SceneNode | null;
+        if (node && figma.variables) {
+          const variable = await figma.variables.getVariableByIdAsync(op.variableId);
+          if (variable) {
+            if (op.field === 'fills' || op.field === 'strokes') {
+              // For fills/strokes: use setBoundVariableForPaint
+              const paintArray = (node as any)[op.field];
+              if (paintArray && paintArray.length > 0) {
+                const paintsCopy = JSON.parse(JSON.stringify(paintArray));
+                paintsCopy[0] = figma.variables.setBoundVariableForPaint(
+                  paintsCopy[0], 'color', variable
+                );
+                (node as any)[op.field] = paintsCopy;
+              }
+            } else {
+              // For simple fields (width, height, itemSpacing, padding, etc.)
+              if ('setBoundVariable' in node) {
+                (node as any).setBoundVariable(op.field, variable);
+              }
+            }
+          }
+        }
+
+        // ═══ APPLY_STYLE ═══
+      } else if (op.type === 'APPLY_STYLE') {
+        const node = figma.getNodeById(op.nodeId) as any;
+        if (node) {
+          if (op.styleType === 'FILL' && 'fillStyleId' in node) {
+            if (typeof node.setFillStyleIdAsync === 'function') {
+              await node.setFillStyleIdAsync(op.styleId);
+            } else {
+              node.fillStyleId = op.styleId;
+            }
+          } else if (op.styleType === 'TEXT' && 'textStyleId' in node) {
+            node.textStyleId = op.styleId;
+          } else if (op.styleType === 'EFFECT' && 'effectStyleId' in node) {
+            if (typeof node.setEffectStyleIdAsync === 'function') {
+              await node.setEffectStyleIdAsync(op.styleId);
+            } else {
+              node.effectStyleId = op.styleId;
+            }
+          } else if (op.styleType === 'GRID' && 'gridStyleId' in node) {
+            if (typeof node.setGridStyleIdAsync === 'function') {
+              await node.setGridStyleIdAsync(op.styleId);
+            } else {
+              node.gridStyleId = op.styleId;
+            }
+          }
+        }
+
+        // ═══ GROUP_NODES ═══
       } else if (op.type === 'GROUP_NODES') {
         const nodes: SceneNode[] = [];
         for (const id of op.nodeIds) {
@@ -93,23 +406,41 @@ async function applyOperations(ops: FigmaOperation[]) {
           const group = figma.group(nodes, figma.currentPage);
           group.name = op.name;
         }
-      } else if (op.type === 'APPLY_STYLE') {
-        const node = figma.getNodeById(op.nodeId);
-        if (node) {
-          if (op.styleType === 'FILL' && 'fillStyleId' in node) {
-            node.fillStyleId = op.styleId;
-          } else if (op.styleType === 'TEXT' && 'textStyleId' in node) {
-            node.textStyleId = op.styleId;
-          }
+
+        // ═══ UNGROUP ═══
+      } else if (op.type === 'UNGROUP') {
+        const node = figma.getNodeById(op.nodeId) as SceneNode | null;
+        if (node && 'children' in node) {
+          figma.ungroup(node as SceneNode & ChildrenMixin);
         }
+
+        // ═══ DETACH_INSTANCE ═══
+      } else if (op.type === 'DETACH_INSTANCE') {
+        const node = figma.getNodeById(op.nodeId) as InstanceNode | null;
+        if (node && node.type === 'INSTANCE') {
+          node.detachInstance();
+        }
+
+        // ═══ DELETE_NODE ═══
+      } else if (op.type === 'DELETE_NODE') {
+        const node = figma.getNodeById(op.nodeId);
+        if (node) node.remove();
       }
     } catch (err) {
-      postToUI({ type: 'ERROR', message: String(err) });
-      return;
+      postToUI({ type: 'ERROR', message: `Op ${op.type}: ${String(err)}` });
     }
   }
 
-  postToUI({ type: 'OPERATIONS_DONE' });
+  // Select root nodes created and zoom to view
+  const rootNodes = [...createdNodes.values()].filter(
+    n => n.parent === figma.currentPage
+  );
+  if (rootNodes.length > 0) {
+    figma.currentPage.selection = rootNodes;
+    figma.viewport.scrollAndZoomIntoView(rootNodes);
+  }
+
+  postToUI({ type: 'OPERATIONS_DONE', count: ops.length });
 }
 
 function deleteSelection() {
@@ -117,7 +448,7 @@ function deleteSelection() {
   for (const node of selection) {
     node.remove();
   }
-  postToUI({ type: 'OPERATIONS_DONE' });
+  postToUI({ type: 'OPERATIONS_DONE', count: selection.length });
 }
 
 function getFolderPath(node: BaseNode): string[] {
@@ -352,10 +683,20 @@ figma.ui.onmessage = async (msg: UIMessage) => {
   } else if (msg.type === 'OPEN_EXTERNAL') {
     figma.openExternal(msg.url);
   } else if (msg.type === 'SAVE_API_KEY') {
-    await figma.clientStorage.setAsync('userApiKey', msg.key);
-    postToUI({ type: 'API_KEY_SAVED' });
+    try {
+      await figma.clientStorage.setAsync('userApiKey', msg.key);
+      postToUI({ type: 'API_KEY_SAVED' });
+    } catch (_e) {
+      // clientStorage requires a plugin ID — skip silently in dev
+      postToUI({ type: 'API_KEY_SAVED' });
+    }
   } else if (msg.type === 'GET_API_KEY') {
-    const key = await figma.clientStorage.getAsync('userApiKey');
-    postToUI({ type: 'API_KEY_LOADED', key: key || '' });
+    try {
+      const key = await figma.clientStorage.getAsync('userApiKey');
+      postToUI({ type: 'API_KEY_LOADED', key: key || '' });
+    } catch (_e) {
+      // clientStorage requires a plugin ID — skip silently in dev
+      postToUI({ type: 'API_KEY_LOADED', key: '' });
+    }
   }
 };
