@@ -7,6 +7,7 @@ import { lazyWithRetry } from './utils/lazyWithRetry';
 import { CanvasHeaderProvider } from './components/canvas/CanvasHeaderContext';
 
 // Lazy load all pages for code-splitting with automatic retry
+const HomePage = lazyWithRetry(() => import('./pages/HomePage').then(m => ({ default: m.HomePage })));
 const MockupMachinePage = lazyWithRetry(() => import('./pages/MockupMachinePage').then(m => ({ default: m.MockupMachinePage })));
 const PricingPage = lazyWithRetry(() => import('./pages/PricingPage').then(m => ({ default: m.PricingPage })));
 const ProfilePage = lazyWithRetry(() => import('./pages/ProfilePage').then(m => ({ default: m.ProfilePage })));
@@ -56,7 +57,7 @@ const App: React.FC = () => {
           <ErrorBoundaryWrapper>
             <Suspense fallback={<LoadingFallback />}>
               <Routes>
-                <Route path="/" element={<MockupMachinePage />} />
+                <Route path="/" element={<HomePage />} />
                 <Route path="/mockupmachine" element={<MockupMachinePage />} />
                 <Route path="/pricing" element={<PricingPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
