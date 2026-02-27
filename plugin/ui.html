@@ -1,737 +1,106 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="UTF-8" />
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #1a1a1a;
-      padding: 12px;
-      font-size: 12px;
-      color: #e0e0e0;
-    }
-    h2 {
-      font-size: 13px;
-      margin-bottom: 10px;
-      font-weight: 600;
-      color: #fff;
-    }
-    .section {
-      background: #242424;
-      border: 1px solid #333;
-      border-radius: 6px;
-      padding: 10px;
-      margin-bottom: 10px;
-    }
-    .section-title {
-      font-size: 10px;
-      font-weight: 600;
-      color: #888;
-      text-transform: uppercase;
-      margin-bottom: 6px;
-    }
-    select {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #333;
-      border-radius: 4px;
-      background: #2a2a2a;
-      color: #e0e0e0;
-      font-size: 11px;
-      margin-bottom: 8px;
-      cursor: pointer;
-    }
-    select:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    .selected-tag {
-      display: inline-block;
-      background: #0066cc;
-      color: white;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 10px;
-      margin-bottom: 8px;
-      margin-right: 6px;
-    }
-    button.secondary {
-      background: #333;
-    }
-    button.secondary:hover {
-      background: #444;
-    }
-    .selected-tag button {
-      background: none;
-      border: none;
-      color: white;
-      cursor: pointer;
-      margin-left: 4px;
-      padding: 0;
-      font-size: 10px;
-      width: auto;
-    }
-    textarea {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #333;
-      border-radius: 4px;
-      background: #2a2a2a;
-      color: #e0e0e0;
-      font-size: 11px;
-      margin-bottom: 8px;
-      resize: vertical;
-      min-height: 50px;
-    }
-    button {
-      width: 100%;
-      padding: 10px;
-      background: #0066cc;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-      font-size: 12px;
-    }
-    button:hover {
-      background: #0052a3;
-    }
-    button:disabled {
-      background: #555;
-      cursor: not-allowed;
-    }
-    .status {
-      padding: 8px;
-      border-radius: 4px;
-      font-size: 10px;
-      margin-bottom: 10px;
-      text-align: center;
-    }
-    .status.success {
-      background: #1b5e20;
-      color: #81c784;
-      border: 1px solid #2e7d32;
-    }
-    .status.error {
-      background: #b71c1c;
-      color: #ef9a9a;
-      border: 1px solid #c62828;
-    }
-    .status.loading {
-      background: #1e3a5f;
-      color: #64b5f6;
-      border: 1px solid #2d5a8c;
-    }
-    .info {
-      background: #1e3a5f;
-      border: 1px solid #2d5a8c;
-      border-radius: 4px;
-      padding: 8px;
-      margin-bottom: 10px;
-      font-size: 10px;
-      color: #64b5f6;
-      line-height: 1.3;
-    }
-    .context {
-      font-size: 10px;
-      color: #b0b0b0;
-      line-height: 1.3;
-    }
-    .components-library {
-      max-height: 180px;
-      overflow-y: auto;
-      background: #1a1a1a;
-      border: 1px solid #333;
-      border-radius: 4px;
-      padding: 4px;
-    }
-    .components-loading {
-      padding: 12px;
-      text-align: center;
-      color: #888;
-      font-size: 11px;
-    }
-    .folder-row {
-      display: flex;
-      align-items: center;
-      padding: 4px 6px;
-      cursor: pointer;
-      font-size: 11px;
-      border-radius: 4px;
-    }
-    .folder-row:hover {
-      background: #333;
-    }
-    .folder-chevron {
-      width: 16px;
-      font-size: 10px;
-      color: #888;
-      transition: transform 0.15s;
-    }
-    .folder-chevron.collapsed {
-      transform: rotate(-90deg);
-    }
-    .folder-name {
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .folder-children {
-      margin-left: 12px;
-    }
-    .component-tile {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 4px 6px;
-      cursor: pointer;
-      font-size: 11px;
-      border-radius: 4px;
-      border: 1px solid transparent;
-    }
-    .component-tile:hover {
-      background: #333;
-    }
-    .component-tile.selected {
-      background: #0066cc33;
-      border-color: #0066cc;
-    }
-    .component-thumb {
-      width: 40px;
-      height: 40px;
-      min-width: 40px;
-      background: #2a2a2a;
-      border-radius: 4px;
-      object-fit: contain;
-      border: 1px solid #333;
-    }
-    .component-thumb-placeholder {
-      width: 40px;
-      height: 40px;
-      min-width: 40px;
-      background: #2a2a2a;
-      border-radius: 4px;
-      border: 1px solid #333;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #555;
-      font-size: 10px;
-    }
-    .component-name {
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .brand-section {
-      background: #242424;
-      border: 1px solid #333;
-      border-radius: 6px;
-      margin-bottom: 8px;
-      overflow: hidden;
-    }
-    .brand-header {
-      display: flex;
-      align-items: center;
-      padding: 8px 10px;
-      cursor: pointer;
-      font-size: 11px;
-      font-weight: 600;
-      color: #e0e0e0;
-      background: #2a2a2a;
-    }
-    .brand-header:hover { background: #333; }
-    .brand-chevron {
-      width: 16px;
-      font-size: 10px;
-      color: #888;
-      transition: transform 0.2s;
-    }
-    .brand-chevron.collapsed { transform: rotate(-90deg); }
-    .brand-title { flex: 1; }
-    .brand-content {
-      padding: 8px 10px 10px;
-      max-height: 320px;
-      overflow-y: auto;
-    }
-    .brand-content.hidden { display: none; }
-    .chat-section {
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      min-height: 220px;
-    }
-    .chat-messages {
-      flex: 1;
-      min-height: 120px;
-      max-height: 240px;
-      overflow-y: auto;
-      background: #1a1a1a;
-      border: 1px solid #333;
-      border-radius: 6px;
-      padding: 8px;
-      margin-bottom: 8px;
-    }
-    .chat-msg {
-      padding: 6px 8px;
-      margin-bottom: 6px;
-      border-radius: 6px;
-      font-size: 11px;
-      line-height: 1.4;
-      max-width: 95%;
-    }
-    .chat-msg.user {
-      background: #0066cc33;
-      border: 1px solid #0066cc;
-      margin-left: auto;
-    }
-    .chat-msg.assistant {
-      background: #242424;
-      border: 1px solid #333;
-    }
-    .chat-msg.error {
-      background: #b71c1c22;
-      border-color: #c62828;
-    }
-    .chat-input-wrap {
-      display: flex;
-      gap: 6px;
-      align-items: flex-end;
-    }
-    .chat-input-wrap textarea {
-      flex: 1;
-      margin-bottom: 0;
-      min-height: 44px;
-      max-height: 80px;
-    }
-    .chat-send {
-      width: auto !important;
-      padding: 10px 14px !important;
-    }
-  </style>
+  <link rel="stylesheet" href="./ui.css">
 </head>
+
 <body>
-  <h2>Visant Copilot</h2>
 
-  <div id="status"></div>
-
-  <!-- Brand Guidelines (collapsible) -->
-  <div class="brand-section">
-    <div class="brand-header" onclick="toggleBrandSection()">
-      <span class="brand-chevron" id="brandChevron">▾</span>
-      <span class="brand-title">Brand Guidelines</span>
+  <!-- ═══ MAIN VIEW ═══ -->
+  <div id="mainView" class="view">
+    <div class="app-header">
+      <h2>Visant Copilot</h2>
+      <button class="icon-btn" onclick="openSettings()" title="Configurações">⚙</button>
     </div>
-    <div class="brand-content" id="brandContent">
-      <div class="info">Define logo, fonte e cores para a IA seguir</div>
-      <div class="section">
-        <div class="section-title">Logotipo</div>
-        <button type="button" id="useSelectionBtn" class="secondary" onclick="useSelectionAsLogo()" style="width: auto; padding: 6px 10px; margin-bottom: 6px;">Usar seleção</button>
-        <div id="componentsLibrary" class="components-library"></div>
-        <div id="selectedLogo"></div>
+
+    <div id="status"></div>
+
+    <div class="chat-messages-wrap">
+      <div class="chat-messages" id="chatMessages"></div>
+    </div>
+
+    <!-- Figma-style chat card -->
+    <div class="chat-card">
+      <div class="chat-card-toolbar">
+        <button class="tool-btn" title="Código"
+          style="font-family: monospace; font-size: 11px; font-weight: 700;">&lt;/&gt;</button>
+        <button class="tool-btn" title="Imagem">🖼</button>
       </div>
-      <div class="section">
-        <div class="section-title">Fonte</div>
-        <select id="fontSelect" onchange="selectFont()"><option value="">Carregando...</option></select>
-        <div id="selectedFont"></div>
+      <textarea id="chatInput" placeholder="Descreva o design que quer criar ou modificar..." rows="2"></textarea>
+      <div class="chat-card-footer">
+        <div class="chat-card-pills">
+          <button class="chat-pill" id="brandPill">🎨 Brand</button>
+        </div>
+        <button class="send-btn" id="sendBtn" onclick="sendChat()" title="Enviar (Enter)">↑</button>
       </div>
-      <div class="section">
-        <div class="section-title">Cores</div>
-        <div id="colorsList"></div>
-        <div id="selectedColors"></div>
+    </div>
+
+    <div class="context" id="contextInfo" style="margin-top: 8px;"></div>
+  </div>
+
+  <!-- ═══ SETTINGS VIEW ═══ -->
+  <div id="settingsView" class="view hidden">
+    <div class="settings-header">
+      <button class="back-btn" onclick="closeSettings()" title="Voltar">←</button>
+      <span>Configurações</span>
+    </div>
+
+    <!-- Brand Guidelines -->
+    <div class="brand-section">
+      <div class="brand-header" onclick="toggleBrandSection()">
+        <span class="brand-chevron" id="brandChevron">▾</span>
+        <span class="brand-title">Brand Guidelines</span>
+      </div>
+      <div class="brand-content" id="brandContent">
+        <div class="section">
+          <div class="section-title">Logotipo</div>
+          <button type="button" id="useSelectionBtn" class="secondary" onclick="useSelectionAsLogo()"
+            style="width: auto; padding: 0 10px; margin-bottom: 8px;">Usar seleção</button>
+          <input type="text" id="componentSearch" placeholder="Pesquisar componentes..."
+            oninput="renderComponentsLibrary()">
+          <div id="componentsLibrary" class="components-library"></div>
+          <div id="selectedLogo"></div>
+        </div>
+        <div class="section">
+          <div class="section-title">Fonte</div>
+          <select id="fontSelect" onchange="selectFont()">
+            <option value="">Carregando...</option>
+          </select>
+          <div id="selectedFont"></div>
+        </div>
+        <div class="section">
+          <div class="section-title">Cores</div>
+          <div id="colorsList"></div>
+          <div id="selectedColors"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- API Key (BYOK) -->
+    <div class="brand-section">
+      <div class="brand-header" onclick="toggleApiSection()">
+        <span class="brand-chevron collapsed" id="apiChevron">▾</span>
+        <span class="brand-title">Gemini API Key (BYOK)</span>
+      </div>
+      <div class="brand-content hidden" id="apiContent">
+        <p
+          style="font-size: 11px; color: var(--figma-color-text-secondary, #808080); margin-bottom: 10px; line-height: 1.5;">
+          Sua chave é salva localmente no Figma. Se vazio, usa a chave do servidor.
+        </p>
+        <div style="display: flex; gap: 6px; align-items: center;">
+          <input type="password" id="apiKeyInput" placeholder="AIza..." style="flex: 1; margin-bottom: 0;">
+          <button type="button" class="secondary" onclick="saveApiKey()"
+            style="width: auto; padding: 0 12px; flex-shrink: 0;">Salvar</button>
+        </div>
+        <div id="apiKeyStatus"
+          style="font-size: 10px; margin-top: 6px; color: var(--figma-color-text-secondary, #808080);"></div>
       </div>
     </div>
   </div>
 
-  <!-- Chat -->
-  <div class="chat-section">
-    <div class="chat-messages" id="chatMessages"></div>
-    <div class="chat-input-wrap">
-      <textarea id="chatInput" placeholder="Ex: Aplique cores do brand nos botões&#10;Ex: Crie um frame com 3 cards&#10;Ex: Mude a fonte do título para 24px" rows="2"></textarea>
-      <button type="button" id="sendBtn" onclick="sendChat()" class="chat-send">Enviar</button>
-    </div>
-  </div>
-
-  <div class="context" id="contextInfo"></div>
-
-  <script>
-    const statusEl = document.getElementById('status');
-    const chatInput = document.getElementById('chatInput');
-    const chatMessages = document.getElementById('chatMessages');
-    const sendBtn = document.getElementById('sendBtn');
-    const componentsLibraryEl = document.getElementById('componentsLibrary');
-    const fontSelectEl = document.getElementById('fontSelect');
-    const colorsList = document.getElementById('colorsList');
-    const selectedColorsEl = document.getElementById('selectedColors');
-    const contextInfoEl = document.getElementById('contextInfo');
-    const brandContent = document.getElementById('brandContent');
-    const brandChevron = document.getElementById('brandChevron');
-
-    let selectedLogo = null;
-    let selectedFont = null;
-    let selectedColors = new Map();
-    let allComponents = [];
-    let componentThumbs = {};
-    let expandedFolders = new Set();
-    let allFonts = [];
-    let allColors = [];
-    let chatHistory = [{ role: 'assistant', content: 'Olá! Configure as Brand Guidelines acima e descreva o que quer mudar. Posso criar frames, trocar cores, fontes, redimensionar e muito mais.', isError: false }];
-    let brandCollapsed = false;
-
-    function showStatus(message, type = 'loading') {
-      statusEl.textContent = message;
-      statusEl.className = `status ${type}`;
-    }
-
-    function hideStatus() {
-      statusEl.textContent = '';
-      statusEl.className = 'status';
-    }
-
-    function toggleBrandSection() {
-      brandCollapsed = !brandCollapsed;
-      brandContent.classList.toggle('hidden', brandCollapsed);
-      brandChevron.classList.toggle('collapsed', brandCollapsed);
-    }
-
-    function updateSendState() {
-      const hasMessage = chatInput.value.trim().length > 0;
-      const hasBrand = selectedLogo && selectedFont;
-      sendBtn.disabled = !hasMessage || !hasBrand;
-    }
-
-    function addChatMsg(role, content, isError = false) {
-      chatHistory.push({ role, content, isError });
-      renderChat();
-    }
-
-    function renderChat() {
-      chatMessages.innerHTML = chatHistory.map(m => {
-        const cls = `chat-msg ${m.role}${m.isError ? ' error' : ''}`;
-        const text = (m.content || '').replace(/</g, '&lt;').replace(/\n/g, '<br>');
-        return `<div class="${cls}">${text}</div>`;
-      }).join('');
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    function selectLogo(comp) {
-      selectedLogo = comp;
-      document.getElementById('selectedLogo').innerHTML =
-        `<div class="selected-tag">${comp.name} <button onclick="clearLogo()">×</button></div>`;
-      renderComponentsLibrary();
-      updateSendState();
-    }
-
-    function clearLogo() {
-      selectedLogo = null;
-      document.getElementById('selectedLogo').innerHTML = '';
-      renderComponentsLibrary();
-      updateSendState();
-    }
-
-    function toggleFolder(pathKey) {
-      if (expandedFolders.has(pathKey)) expandedFolders.delete(pathKey);
-      else expandedFolders.add(pathKey);
-      renderComponentsLibrary();
-    }
-
-    function buildTree(components) {
-      const root = { children: {}, comps: [] };
-      for (const comp of components) {
-        const path = comp.folderPath?.length ? comp.folderPath : ['Raiz'];
-        let node = root;
-        for (const part of path) {
-          if (!node.children[part]) node.children[part] = { children: {}, comps: [] };
-          node = node.children[part];
-        }
-        node.comps.push(comp);
-      }
-      return root;
-    }
-
-    function renderFolderNode(node, pathPrefix) {
-      let html = '';
-      const folders = Object.keys(node.children || {});
-      for (const name of folders) {
-        const pathKey = [...pathPrefix, name].join('/');
-        const isExpanded = expandedFolders.has(pathKey);
-        html += `<div class="folder-row" onclick="toggleFolder('${pathKey.replace(/'/g, "\\'")}')">
-          <span class="folder-chevron ${isExpanded ? '' : 'collapsed'}">▸</span>
-          <span class="folder-name">${name.replace(/</g, '&lt;')}</span>
-        </div>`;
-        if (isExpanded) {
-          const child = node.children[name];
-          html += `<div class="folder-children">${renderFolderNode(child, [...pathPrefix, name])}`;
-          for (const comp of child.comps || []) {
-            const thumb = componentThumbs[comp.id];
-            html += `<div class="component-tile ${selectedLogo?.id === comp.id ? 'selected' : ''}" onclick="selectLogo(allComponents.find(c=>c.id==='${comp.id}'))" data-id="${comp.id}">
-              ${thumb ? `<img class="component-thumb" src="${thumb}" alt="">` : '<div class="component-thumb-placeholder">…</div>'}
-              <span class="component-name" title="${(comp.name || '').replace(/"/g, '&quot;')}">${(comp.name || '').replace(/</g, '&lt;')}</span>
-            </div>`;
-          }
-          html += '</div>';
-        }
-      }
-      for (const comp of node.comps || []) {
-        const thumb = componentThumbs[comp.id];
-        html += `<div class="component-tile ${selectedLogo?.id === comp.id ? 'selected' : ''}" onclick="selectLogo(allComponents.find(c=>c.id==='${comp.id}'))" data-id="${comp.id}">
-          ${thumb ? `<img class="component-thumb" src="${thumb}" alt="">` : '<div class="component-thumb-placeholder">…</div>'}
-          <span class="component-name" title="${(comp.name || '').replace(/"/g, '&quot;')}">${(comp.name || '').replace(/</g, '&lt;')}</span>
-        </div>`;
-      }
-      return html;
-    }
-
-    function renderComponentsLibrary() {
-      if (!allComponents.length) {
-        componentsLibraryEl.innerHTML = '<div class="components-loading">Nenhum componente encontrado</div>';
-        return;
-      }
-      const tree = buildTree(allComponents);
-      const folders = Object.keys(tree.children || {});
-      const rootComps = tree.comps || [];
-      if (folders.length === 0 && rootComps.length === 0) {
-        componentsLibraryEl.innerHTML = '<div class="components-loading">Nenhum componente</div>';
-        return;
-      }
-      let html = '';
-      for (const name of folders) {
-        const pathKey = name;
-        const isExpanded = expandedFolders.has(pathKey) || expandedFolders.size === 0;
-        if (expandedFolders.size === 0) expandedFolders.add(pathKey);
-        html += `<div class="folder-row" onclick="toggleFolder('${pathKey.replace(/'/g, "\\'")}')">
-          <span class="folder-chevron ${isExpanded ? '' : 'collapsed'}">▸</span>
-          <span class="folder-name">${name.replace(/</g, '&lt;')}</span>
-        </div>`;
-        if (isExpanded) {
-          const child = tree.children[name];
-          html += `<div class="folder-children">${renderFolderNode(child, [name])}</div>`;
-        }
-      }
-      for (const comp of rootComps) {
-        const thumb = componentThumbs[comp.id];
-        html += `<div class="component-tile ${selectedLogo?.id === comp.id ? 'selected' : ''}" onclick="selectLogo(allComponents.find(c=>c.id==='${comp.id}'))" data-id="${comp.id}">
-          ${thumb ? `<img class="component-thumb" src="${thumb}" alt="">` : '<div class="component-thumb-placeholder">…</div>'}
-          <span class="component-name" title="${(comp.name || '').replace(/"/g, '&quot;')}">${(comp.name || '').replace(/</g, '&lt;')}</span>
-        </div>`;
-      }
-      componentsLibraryEl.innerHTML = html || '<div class="components-loading">Nenhum componente</div>';
-    }
-
-    function useSelectionAsLogo() {
-      parent.postMessage({ pluginMessage: { type: 'USE_SELECTION_AS_LOGO' } }, '*');
-    }
-
-    function selectFont() {
-      const value = fontSelectEl.value;
-      if (!value) {
-        selectedFont = null;
-        document.getElementById('selectedFont').innerHTML = '';
-      } else {
-        const font = allFonts.find(f => f.id === value);
-        selectedFont = font;
-        document.getElementById('selectedFont').innerHTML =
-          `<div class="selected-tag">${font.name} <button onclick="clearFont()">×</button></div>`;
-      }
-      updateSendState();
-    }
-
-    function clearFont() {
-      selectedFont = null;
-      fontSelectEl.value = '';
-      document.getElementById('selectedFont').innerHTML = '';
-      updateSendState();
-    }
-
-    function toggleColor(colorId, colorName, colorValue) {
-      if (selectedColors.has(colorId)) {
-        selectedColors.delete(colorId);
-      } else {
-        selectedColors.set(colorId, { name: colorName, value: colorValue });
-      }
-      updateColorDisplay();
-    }
-
-    function updateColorDisplay() {
-      const html = Array.from(selectedColors.values()).map(c =>
-        `<div class="selected-tag">
-          <span style="display: inline-block; width: 12px; height: 12px; background: ${c.value}; border-radius: 2px; margin-right: 4px; vertical-align: middle;"></span>
-          ${c.name} <button onclick="selectedColors.delete('${Array.from(selectedColors.keys()).find(k => selectedColors.get(k).name === c.name)}'); updateColorDisplay();">×</button>
-        </div>`
-      ).join('');
-      selectedColorsEl.innerHTML = html ? `<div>${html}</div>` : '';
-    }
-
-    function sendChat() {
-      const command = chatInput.value.trim();
-      if (!command || !selectedLogo || !selectedFont) {
-        showStatus('Defina logo e fonte em Brand Guidelines', 'error');
-        setTimeout(hideStatus, 3000);
-        return;
-      }
-
-      addChatMsg('user', command);
-      chatInput.value = '';
-      updateSendState();
-      showStatus('Processando...', 'loading');
-
-      parent.postMessage({
-        pluginMessage: {
-          type: 'GENERATE_WITH_CONTEXT',
-          command,
-          logoComponent: selectedLogo,
-          brandFont: selectedFont,
-          brandColors: Array.from(selectedColors.values())
-        }
-      }, '*');
-    }
-
-    async function callPluginAPI(context) {
-      try {
-        const apiUrl = 'https://visantlabs.com/api/plugin';
-        const response = await fetch(apiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(context)
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          parent.postMessage({
-            pluginMessage: {
-              type: 'ERROR',
-              message: error.error || 'Falha ao gerar operações'
-            }
-          }, '*');
-          return;
-        }
-
-        const data = await response.json();
-
-        if (!data.success || !Array.isArray(data.operations)) {
-          parent.postMessage({
-            pluginMessage: {
-              type: 'ERROR',
-              message: 'Resposta inválida da API'
-            }
-          }, '*');
-          return;
-        }
-
-        parent.postMessage({
-          pluginMessage: {
-            type: 'APPLY_OPERATIONS_FROM_API',
-            operations: data.operations
-          }
-        }, '*');
-      } catch (err) {
-        parent.postMessage({
-          pluginMessage: {
-            type: 'ERROR',
-            message: 'Falha ao chamar API: ' + String(err)
-          }
-        }, '*');
-      }
-    }
-
-    window.onmessage = (event) => {
-      const msg = event.data.pluginMessage;
-      console.log('UI received:', msg.type, msg);
-
-      if (msg.type === 'SELECTION_AS_LOGO') {
-        if (msg.component) {
-          selectedLogo = msg.component;
-          if (!allComponents.find(c => c.id === msg.component.id)) {
-            allComponents.push(msg.component);
-          }
-          document.getElementById('selectedLogo').innerHTML =
-            `<div class="selected-tag">${msg.component.name} <button onclick="clearLogo()">×</button></div>`;
-          renderComponentsLibrary();
-          updateSendState();
-        } else {
-          showStatus('Selecione um componente ou instância no painel de camadas', 'error');
-          setTimeout(hideStatus, 3000);
-        }
-      } else if (msg.type === 'COMPONENTS_LOADED') {
-        hideStatus();
-        allComponents = msg.components || [];
-        if (!allComponents.length) {
-          componentsLibraryEl.innerHTML = '<div class="components-loading">Nenhum componente encontrado</div>';
-        } else {
-          renderComponentsLibrary();
-        }
-      } else if (msg.type === 'FONT_VARIABLES_LOADED') {
-        hideStatus();
-        allFonts = msg.fonts || [];
-        fontSelectEl.innerHTML = '<option value="">Escolha uma fonte...</option>';
-        allFonts.forEach(font => {
-          const opt = document.createElement('option');
-          opt.value = font.id;
-          opt.textContent = font.name;
-          fontSelectEl.appendChild(opt);
-        });
-        fontSelectEl.disabled = false;
-        allFonts.forEach(font => {
-          const opt = document.createElement('option');
-          opt.value = font.id;
-          opt.textContent = font.name;
-          fontSelectEl.appendChild(opt);
-        });
-        fontSelectEl.disabled = false;
-      } else if (msg.type === 'COLOR_VARIABLES_LOADED') {
-        hideStatus();
-        allColors = msg.colors || [];
-        let html = '';
-        allColors.forEach(color => {
-          html += `
-            <label style="display: flex; align-items: center; margin-bottom: 6px; cursor: pointer;">
-              <input type="checkbox" onchange="toggleColor('${color.id}', '${color.name}', '${color.value}')" style="margin-right: 6px;">
-              <span style="display: inline-block; width: 12px; height: 12px; background: ${color.value}; border-radius: 2px; margin-right: 6px; border: 1px solid #555;"></span>
-              ${color.name}
-            </label>
-          `;
-        });
-        colorsList.innerHTML = html;
-      } else if (msg.type === 'COMPONENT_THUMBNAIL') {
-        if (msg.componentId && msg.thumbnail) {
-          componentThumbs[msg.componentId] = msg.thumbnail;
-          renderComponentsLibrary();
-        }
-      } else if (msg.type === 'CONTEXT_UPDATED') {
-        contextInfoEl.innerHTML = `📦 ${msg.selectedElements || 0} selecionado(s) • 🔧 ${msg.componentsCount || 0} componentes • 🎨 ${msg.colorVariables || 0} cores`;
-      } else if (msg.type === 'CALL_API') {
-        showStatus('Conectando à API...', 'loading');
-        callPluginAPI(msg.context);
-      } else if (msg.type === 'OPERATIONS_DONE') {
-        hideStatus();
-        addChatMsg('assistant', 'Design atualizado! ✨');
-      } else if (msg.type === 'ERROR') {
-        hideStatus();
-        addChatMsg('assistant', 'Erro: ' + msg.message, true);
-      }
-    };
-
-    chatInput.addEventListener('input', updateSendState);
-    chatInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendChat();
-      }
-    });
-
-    // Initial render
-    renderChat();
-    updateSendState();
-
-    // Load initial context
-    parent.postMessage({ pluginMessage: { type: 'GET_CONTEXT' } }, '*');
-  </script>
+  <script src="./ui.js"></script>
 </body>
+
 </html>
