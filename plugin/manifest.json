@@ -10,7 +10,8 @@
   ],
   "networkAccess": {
     "allowedDomains": [
-      "www.visantlabs.com"
+      "https://www.visantlabs.com",
+      "https://visantlabs.com"
     ],
     "reasoning": "Plugin communicates with Visant backend for AI-powered design generation"
   }
