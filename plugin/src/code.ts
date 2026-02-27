@@ -2,6 +2,7 @@
 
 type UIMessage =
   | { type: 'GET_CONTEXT' }
+  | { type: 'USE_SELECTION_AS_LOGO' }
   | { type: 'APPLY_OPERATIONS'; payload: FigmaOperation[] }
   | { type: 'APPLY_OPERATIONS_FROM_API'; operations: FigmaOperation[] }
   | { type: 'GENERATE_WITH_CONTEXT'; command: string; logoComponent?: { id: string; name: string }; brandFont?: { id: string; name: string }; brandColors?: Array<{ name: string; value: string }> }
@@ -20,11 +21,11 @@ type FigmaOperation =
 
 type SerializedNode = { id: string; type: string; name: string; width: number; height: number };
 type SerializedContext = { nodes: SerializedNode[]; styles: Record<string, string> };
-type ComponentInfo = { id: string; name: string; key?: string };
+type ComponentInfo = { id: string; name: string; key?: string; folderPath: string[]; thumbnail?: string };
 type ColorVariable = { id: string; name: string; value?: string };
 type FontVariable = { id: string; name: string };
 
-function postToUI(msg: { type: string; payload?: SerializedContext; message?: string }) {
+function postToUI(msg: { type: string } & Record<string, unknown>) {
   figma.ui.postMessage(msg);
 }
 
@@ -139,41 +140,71 @@ function deleteSelection() {
   postToUI({ type: 'OPERATIONS_DONE' });
 }
 
-function getComponentsInCurrentFile(): ComponentInfo[] {
+function getFolderPath(node: BaseNode): string[] {
+  const path: string[] = [];
+  let current: BaseNode | null = node.parent;
+  while (current && current.type !== 'PAGE') {
+    path.unshift(current.name);
+    current = current.parent;
+  }
+  if (current && current.type === 'PAGE') {
+    path.unshift(current.name);
+  }
+  return path;
+}
+
+async function exportThumbnail(node: ComponentNode | ComponentSetNode): Promise<string | undefined> {
+  try {
+    const bytes = await node.exportAsync({
+      format: 'PNG',
+      constraint: { type: 'HEIGHT', value: 64 }
+    });
+    const b64 = figma.base64Encode(bytes);
+    return `data:image/png;base64,${b64}`;
+  } catch {
+    return undefined;
+  }
+}
+
+async function getComponentsInCurrentFile(): Promise<ComponentInfo[]> {
   const components: ComponentInfo[] = [];
 
-  function traverse(node: BaseNode) {
-    try {
-      if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') {
+  try {
+    await figma.loadAllPagesAsync();
+    const nodes = figma.root.findAllWithCriteria({ types: ['COMPONENT', 'COMPONENT_SET'] });
+    const seen = new Set<string>();
+    for (const node of nodes) {
+      if (!seen.has(node.id)) {
+        seen.add(node.id);
         components.push({
           id: node.id,
           name: node.name,
-          key: 'key' in node ? node.key : undefined
+          key: node.key,
+          folderPath: getFolderPath(node)
         });
-        console.log('[Plugin] Found component:', node.name);
       }
-      if ('children' in node) {
-        const children = (node as any).children;
-        if (Array.isArray(children)) {
-          for (const child of children) {
-            traverse(child);
-          }
-        }
-      }
-    } catch (e) {
-      // Skip nodes that cause errors
     }
-  }
-
-  // Search entire document
-  try {
-    traverse(figma.root);
   } catch (e) {
-    console.log('[Plugin] Error traversing root:', e);
+    console.log('[Plugin] Error finding components:', e);
   }
 
-  console.log('[Plugin] Total components found:', components.length);
   return components;
+}
+
+async function exportComponentThumbnails(components: ComponentInfo[]): Promise<void> {
+  const BATCH = 5;
+  for (let i = 0; i < components.length; i += BATCH) {
+    const batch = components.slice(i, i + BATCH);
+    await Promise.all(
+      batch.map(async (comp) => {
+        const node = figma.getNodeById(comp.id) as ComponentNode | ComponentSetNode | null;
+        if (node) {
+          const thumb = await exportThumbnail(node);
+          if (thumb) postToUI({ type: 'COMPONENT_THUMBNAIL', componentId: comp.id, thumbnail: thumb });
+        }
+      })
+    );
+  }
 }
 
 async function getColorVariablesFromFile(): Promise<ColorVariable[]> {
@@ -239,8 +270,8 @@ async function getFontVariablesFromFile(): Promise<FontVariable[]> {
 }
 
 async function notifyContextChange() {
-  const components = getComponentsInCurrentFile();
-  const [colors, fonts] = await Promise.all([
+  const [components, colors, fonts] = await Promise.all([
+    getComponentsInCurrentFile(),
     getColorVariablesFromFile(),
     getFontVariablesFromFile()
   ]);
@@ -255,15 +286,34 @@ async function notifyContextChange() {
   });
 }
 
-figma.showUI(__html__, { width: 400, height: 640, themeColors: true, title: 'Visant Copilot' });
+figma.showUI(__html__, { width: 420, height: 680, themeColors: true, title: 'Visant Copilot' });
 
 // Notify when selection changes
 figma.on('selectionchange', notifyContextChange);
 
+function getComponentFromSelection(): ComponentInfo | null {
+  const sel = figma.currentPage.selection;
+  if (sel.length !== 1) return null;
+  const node = sel[0];
+  if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') {
+    return { id: node.id, name: node.name, key: node.key, folderPath: getFolderPath(node) };
+  }
+  if (node.type === 'INSTANCE' && node.mainComponent) {
+    const main = node.mainComponent;
+    return { id: main.id, name: main.name, key: main.key, folderPath: main.parent ? getFolderPath(main) : [] };
+  }
+  return null;
+}
+
 figma.ui.onmessage = async (msg: UIMessage) => {
+  if (msg.type === 'USE_SELECTION_AS_LOGO') {
+    const comp = getComponentFromSelection();
+    postToUI({ type: 'SELECTION_AS_LOGO', component: comp });
+    return;
+  }
   if (msg.type === 'GET_CONTEXT') {
-    const components = getComponentsInCurrentFile();
-    const [colors, fonts] = await Promise.all([
+    const [components, colors, fonts] = await Promise.all([
+      getComponentsInCurrentFile(),
       getColorVariablesFromFile(),
       getFontVariablesFromFile()
     ]);
@@ -278,9 +328,10 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       fontVariables: fonts.length
     });
 
-    // Send components, fonts, and colors for UI dropdowns with small delay to ensure delivery
+    // Send components first, then thumbnails in background
     setTimeout(() => {
       postToUI({ type: 'COMPONENTS_LOADED', components });
+      exportComponentThumbnails(components).catch(() => {});
     }, 100);
 
     setTimeout(() => {
@@ -295,8 +346,8 @@ figma.ui.onmessage = async (msg: UIMessage) => {
   } else if (msg.type === 'APPLY_OPERATIONS_FROM_API') {
     await applyOperations(msg.operations);
   } else if (msg.type === 'GENERATE_WITH_CONTEXT') {
-    const components = getComponentsInCurrentFile();
-    const [colors, fonts, selection] = await Promise.all([
+    const [components, colors, fonts, selection] = await Promise.all([
+      getComponentsInCurrentFile(),
       getColorVariablesFromFile(),
       getFontVariablesFromFile(),
       serializeSelection()
