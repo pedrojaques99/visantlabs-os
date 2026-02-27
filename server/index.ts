@@ -1,7 +1,25 @@
+// Register path aliases for tsx runtime
+import { register } from 'tsconfig-paths';
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Register path aliases from tsconfig
+register({
+  baseUrl: resolve(__dirname, '..'),
+  paths: {
+    '@/*': ['./src/*']
+  }
+});
+
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { rateLimit } from 'express-rate-limit';
 import mockupRoutes from './routes/mockups.js';
+import mockupTagRoutes from './routes/mockupTags.js';
 import authRoutes from './routes/auth.js';
 import healthRoutes from './routes/health.js';
 import paymentRoutes from './routes/payments.js';
@@ -87,7 +105,12 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 // Debug middleware to log all requests (only in development or when DEBUG is enabled)
 if (process.env.DEBUG || process.env.NODE_ENV !== 'production') {
   app.use((req, res, next) => {
-    console.log(`${req.method} ${req.url} - Original URL: ${req.originalUrl}`);
+    // Use structured logging to avoid format string vulnerability
+    console.log('Request:', {
+      method: String(req.method),
+      url: String(req.url),
+      originalUrl: String(req.originalUrl),
+    });
     next();
   });
 }
@@ -102,11 +125,21 @@ if (process.env.VERCEL) {
     // Only remove if it's at the start of the path
     if (req.url && req.url.startsWith('/api/')) {
       req.url = req.url.replace(/^\/api/, '');
-      console.log(`[Vercel Route Normalization] ${req.method} ${originalUrl} -> ${req.url}`);
+      // Use structured logging to avoid format string vulnerability
+      console.log('[Vercel Route Normalization]:', {
+        method: String(req.method),
+        originalUrl: String(originalUrl),
+        normalizedUrl: String(req.url),
+      });
     } else if (req.url && req.url.startsWith('/api')) {
       // Handle /api without trailing slash
       req.url = req.url.replace(/^\/api/, '') || '/';
-      console.log(`[Vercel Route Normalization] ${req.method} ${originalUrl} -> ${req.url}`);
+      // Use structured logging to avoid format string vulnerability
+      console.log('[Vercel Route Normalization]:', {
+        method: String(req.method),
+        originalUrl: String(originalUrl),
+        normalizedUrl: String(req.url),
+      });
     }
     next();
   });
@@ -118,6 +151,7 @@ if (process.env.VERCEL) {
 
 app.use(`${routePrefix}/auth`, authRoutes);
 app.use(`${routePrefix}/mockups`, mockupRoutes);
+app.use(`${routePrefix}/mockup-tags`, mockupTagRoutes);
 app.use(`${routePrefix}/payments`, paymentRoutes);
 app.use(`${routePrefix}/health`, healthRoutes);
 app.use(`${routePrefix}/admin`, adminRoutes);
@@ -160,8 +194,17 @@ app.use(`${routePrefix}/ai`, aiRoutes);
 import surpriseMeRoutes from './routes/surprise-me.js';
 app.use(`${routePrefix}/surprise-me`, surpriseMeRoutes);
 
+// Health check rate limiter
+const healthCheckLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 30, // 30 requests per minute
+  message: { error: 'Too many health check requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Basic health check
-app.get(`${routePrefix}/health`, (req, res) => {
+app.get(`${routePrefix}/health`, healthCheckLimiter, (req, res) => {
   res.json({ status: 'ok', message: 'Server is running' });
 });
 

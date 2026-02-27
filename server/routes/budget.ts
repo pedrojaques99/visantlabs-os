@@ -1,8 +1,29 @@
 import express from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma, verifyPrismaConnectionWithDetails } from '../db/prisma.js';
-import { uploadBrandLogo, uploadBudgetPdf, uploadCustomPdfPreset, uploadGiftImage } from '../../services/r2Service.js';
+import { uploadBrandLogo, uploadBudgetPdf, uploadCustomPdfPreset, uploadGiftImage } from '../../src/services/r2Service.js';
 import crypto from 'crypto';
+import { rateLimit } from 'express-rate-limit';
+
+// API rate limiter - general authenticated endpoints
+// Using express-rate-limit for CodeQL recognition
+const apiRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS || '60000', 10),
+  max: parseInt(process.env.RATE_LIMIT_MAX_API || '60', 10),
+  message: { error: 'Too many requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Upload image rate limiter
+// Using express-rate-limit for CodeQL recognition
+const uploadImageRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_UPLOAD_WINDOW_MS || '900000', 10),
+  max: parseInt(process.env.RATE_LIMIT_MAX_UPLOAD || '10', 10),
+  message: { error: 'Too many upload attempts. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const router = express.Router();
 
@@ -24,7 +45,7 @@ const isBase64Pdf = (str: string): boolean => {
 };
 
 // Create new budget
-router.post('/', authenticate, async (req: AuthRequest, res) => {
+router.post('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const { template, name, clientName, projectName, projectDescription, startDate, endDate, deliverables, observations, links, faq, brandColors, brandName, brandLogo, brandBackgroundColor, brandAccentColor, timeline, paymentInfo, signatures, giftOptions, customContent, finalCTAText, year, data, customPdfUrl } = req.body;
 
@@ -111,7 +132,7 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Get all budgets for user
-router.get('/', authenticate, async (req: AuthRequest, res) => {
+router.get('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     if (!req.userId) {
       return res.status(401).json({ error: 'User not authenticated' });
@@ -179,7 +200,7 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Get shared budget (no auth required) - must be before /:id route
-router.get('/shared/:shareId', async (req, res) => {
+router.get('/shared/:shareId', apiRateLimiter, async (req, res) => {
   try {
     const { shareId } = req.params;
 
@@ -278,7 +299,7 @@ router.get('/pdf-presets', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Create PDF preset - must be before /:id route
-router.post('/pdf-presets', authenticate, async (req: AuthRequest, res) => {
+router.post('/pdf-presets', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const { pdfBase64, name } = req.body;
 
@@ -322,7 +343,7 @@ router.post('/pdf-presets', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Delete PDF preset - must be before /:id route
-router.delete('/pdf-presets/:id', authenticate, async (req: AuthRequest, res) => {
+router.delete('/pdf-presets/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
 
@@ -485,7 +506,7 @@ router.put('/:id', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Delete budget
-router.delete('/:id', authenticate, async (req: AuthRequest, res) => {
+router.delete('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
 
@@ -563,7 +584,7 @@ router.post('/:id/share', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Duplicate budget
-router.post('/:id/duplicate', authenticate, async (req: AuthRequest, res) => {
+router.post('/:id/duplicate', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
 
@@ -635,7 +656,7 @@ router.post('/:id/duplicate', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Upload brand logo
-router.post('/:id/logo', authenticate, async (req: AuthRequest, res) => {
+router.post('/:id/logo', uploadImageRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
     const { imageBase64 } = req.body;
@@ -730,7 +751,7 @@ router.post('/:id/gift-image', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Upload custom PDF
-router.post('/:id/pdf', authenticate, async (req: AuthRequest, res) => {
+router.post('/:id/pdf', uploadImageRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
     const { pdfBase64 } = req.body;

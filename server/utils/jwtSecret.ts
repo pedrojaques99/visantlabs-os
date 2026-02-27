@@ -1,11 +1,3 @@
-/**
- * JWT Secret utility
- * 
- * SECURITY: This module ensures JWT_SECRET is properly configured.
- * In production, the server will fail to start if JWT_SECRET is not set.
- * In development, it will warn but allow startup with a default value.
- */
-
 const isProduction = process.env.NODE_ENV === 'production';
 const envSecret = process.env.JWT_SECRET;
 
