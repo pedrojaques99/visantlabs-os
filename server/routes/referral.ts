@@ -1,6 +1,17 @@
 import express from 'express';
 import { prisma } from '../db/prisma.js';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
+import { rateLimit } from 'express-rate-limit';
+
+// API rate limiter - general authenticated endpoints
+// Using express-rate-limit for CodeQL recognition
+const apiRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS || '60000', 10),
+  max: parseInt(process.env.RATE_LIMIT_MAX_API || '60', 10),
+  message: { error: 'Too many requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const router = express.Router();
 
@@ -15,7 +26,7 @@ const generateReferralCode = (): string => {
 };
 
 // Get referral code for authenticated user
-router.get('/code', authenticate, async (req: AuthRequest, res) => {
+router.get('/code', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const userId = req.userId!;
 
@@ -71,7 +82,7 @@ router.get('/code', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Get referral statistics
-router.get('/stats', authenticate, async (req: AuthRequest, res) => {
+router.get('/stats', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const userId = req.userId!;
 
@@ -141,7 +152,7 @@ router.get('/stats', authenticate, async (req: AuthRequest, res) => {
 });
 
 // Generate new referral code (regenerate)
-router.post('/generate', authenticate, async (req: AuthRequest, res) => {
+router.post('/generate', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
     const userId = req.userId!;
 

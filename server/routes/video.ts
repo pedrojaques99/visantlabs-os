@@ -4,10 +4,31 @@ import { getDb, connectToMongoDB } from '../db/mongodb.js';
 import { ObjectId } from 'mongodb';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { checkSubscription, SubscriptionRequest } from '../middleware/subscription.js';
-import { generateVideo } from '../../services/videoService.js';
+import { generateVideo } from '../services/videoService.js';
 import { getVideoCreditsRequired } from '../utils/usageTracking.js';
-import { uploadCanvasVideo, isR2Configured } from '../../services/r2Service.js';
-import { calculateVideoCost } from '../../utils/pricing.js';
+import { uploadCanvasVideo, isR2Configured } from '../services/r2Service.js';
+import { calculateVideoCost } from '../../src/utils/pricing.js';
+import { rateLimit } from 'express-rate-limit';
+
+// API rate limiter - general authenticated endpoints
+// Using express-rate-limit for CodeQL recognition
+const apiRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS || '60000', 10),
+  max: parseInt(process.env.RATE_LIMIT_MAX_API || '60', 10),
+  message: { error: 'Too many requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Mockup generation rate limiter (used for video generation)
+// Using express-rate-limit for CodeQL recognition
+const mockupRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_MOCKUP_WINDOW_MS || '60000', 10),
+  max: parseInt(process.env.RATE_LIMIT_MAX_MOCKUP || '30', 10),
+  message: { error: 'Too many generation requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // Helper function to refund credits if generation fails
 // Uses deduction source information to properly refund credits to their original source
@@ -101,7 +122,7 @@ async function refundCredits(
 const router = express.Router();
 
 // Test route to verify video routes are working
-router.get('/test', (req, res) => {
+router.get('/test', apiRateLimiter, (req, res) => {
   res.json({ message: 'Video routes are working', timestamp: new Date().toISOString() });
 });
 
@@ -231,9 +252,14 @@ async function deductCreditsAtomically(
 }
 
 // Generate video (validates and deducts credits BEFORE generation)
-router.post('/generate', authenticate, checkSubscription, async (req: SubscriptionRequest, res, next) => {
+router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, async (req: SubscriptionRequest, res, next) => {
   const logPrefix = '[VIDEO GENERATE]';
-  console.log(`${logPrefix} Route called - Method: ${req.method}, URL: ${req.url}, Path: ${req.path}`);
+  // Use structured logging to avoid format string vulnerability
+  console.log(`${logPrefix} Route called:`, {
+    method: String(req.method),
+    url: String(req.url),
+    path: String(req.path),
+  });
 
   let creditsDeducted = false;
   let creditsToDeduct = 0;
@@ -275,7 +301,7 @@ router.post('/generate', authenticate, checkSubscription, async (req: Subscripti
     const startFrame = normalizeMediaInput(startFrameRaw);
     const endFrame = normalizeMediaInput(endFrameRaw);
     const inputVideo = normalizeMediaInput(inputVideoRaw);
-    
+
     // Normalize referenceImages array
     let referenceImages: string[] | undefined = undefined;
     if (referenceImagesRaw && Array.isArray(referenceImagesRaw)) {

@@ -1,19 +1,30 @@
 import express from 'express';
 import { getDb } from '../db/mongodb.js';
+import { rateLimit } from 'express-rate-limit';
+
+// API rate limiter - general authenticated endpoints
+// Using express-rate-limit for CodeQL recognition
+const apiRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS || '60000', 10),
+  max: parseInt(process.env.RATE_LIMIT_MAX_API || '60', 10),
+  message: { error: 'Too many requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const router = express.Router();
 
 // Database health check
-router.get('/db', async (req, res) => {
+router.get('/db', apiRateLimiter, async (req, res) => {
   try {
     const db = getDb();
     // Test connection by running a simple command
     await db.admin().ping();
-    
+
     // Get database stats
     const stats = await db.stats();
     const collections = await db.listCollections().toArray();
-    
+
     res.json({
       status: 'connected',
       database: db.databaseName,
@@ -33,10 +44,10 @@ router.get('/db', async (req, res) => {
 });
 
 // R2 storage health check
-router.get('/r2', async (req, res) => {
+router.get('/r2', apiRateLimiter, async (req, res) => {
   try {
-    const r2Service = await import('../../services/r2Service.js');
-    
+    const r2Service = await import('../../src/services/r2Service.js');
+
     // Check if R2 is configured
     if (!r2Service.isR2Configured()) {
       return res.status(500).json({
@@ -59,7 +70,7 @@ router.get('/r2', async (req, res) => {
 
     // Test connection by trying to list bucket (minimal operation)
     const { S3Client, ListObjectsV2Command } = await import('@aws-sdk/client-s3');
-    
+
     const client = new S3Client({
       region: 'auto',
       endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
@@ -71,7 +82,7 @@ router.get('/r2', async (req, res) => {
     });
 
     try {
-      await client.send(new ListObjectsV2Command({ 
+      await client.send(new ListObjectsV2Command({
         Bucket: bucketName,
         MaxKeys: 1, // Just check if we can access the bucket
       }));

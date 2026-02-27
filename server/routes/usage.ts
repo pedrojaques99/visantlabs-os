@@ -28,7 +28,7 @@ router.get('/history', usageHistoryLimiter, authenticate, async (req: AuthReques
 
     // Build query filter explicitly to avoid user-controlled query injection alerts
     const filter: Record<string, any> = { userId: String(userId) };
-    
+
     // Only allow specific, validated features
     if (feature === 'brandingmachine') {
       filter.feature = 'brandingmachine';
@@ -163,6 +163,9 @@ router.get('/history', usageHistoryLimiter, authenticate, async (req: AuthReques
       stepNumber: record.stepNumber, // Only for branding
       imagesGenerated: record.imagesGenerated || 1,
       type: record.type, // 'branding' or undefined
+      inputTokens: record.inputTokens,
+      outputTokens: record.outputTokens,
+      cost: record.cost,
     }));
 
     res.json({

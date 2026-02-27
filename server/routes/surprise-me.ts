@@ -1,13 +1,23 @@
 import express from 'express';
 import { prisma } from '../db/prisma.js';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
+import { rateLimit } from 'express-rate-limit';
 
+// API rate limiter - general authenticated endpoints
+// Using express-rate-limit for CodeQL recognition
+const apiRateLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_API_WINDOW_MS || '60000', 10),
+  max: parseInt(process.env.RATE_LIMIT_MAX_API || '60', 10),
+  message: { error: 'Too many requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const SurpriseMePreset = prisma.surpriseMePreset;
 const router = express.Router();
 
 // GET /api/surprise-me - Get all presets for the current user
-router.get('/', authenticate, async (req: AuthRequest, res) => {
+router.get('/', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
     try {
         const presets = await prisma.surpriseMePreset.findMany({
             where: { userId: req.userId },
@@ -55,7 +65,7 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
 });
 
 // DELETE /api/surprise-me/:id - Delete a preset
-router.delete('/:id', authenticate, async (req: AuthRequest, res) => {
+router.delete('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
     try {
         const { id } = req.params;
 

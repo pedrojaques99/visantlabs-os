@@ -1,0 +1,5 @@
+{
+    "entry": ["src/index.tsx", "server/index.ts"],
+    "project": ["src/**/*.{ts,tsx}", "server/**/*.ts"],
+    "ignore": ["**/*.d.ts", "**/vite-env.d.ts", "**/*.config.{ts,js}", "api/**", "scripts/**", "prisma/**"]
+  }

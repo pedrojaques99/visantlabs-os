@@ -22,7 +22,10 @@
     "baseUrl": ".",
     "paths": {
       "@/*": [
-        "./*"
+        "./src/*"
+      ],
+      "@server/*": [
+        "./server/*"
       ]
     },
     "allowImportingTsExtensions": true,
