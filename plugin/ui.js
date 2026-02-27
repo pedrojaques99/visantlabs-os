@@ -243,7 +243,12 @@ function sendChat() {
     addChatMsg('user', command);
     chatInput.value = '';
     updateSendState();
-    showStatus('Processando...', 'loading');
+    showStatus('🤖 Gerando design...', 'loading');
+
+    // Disable input during processing
+    chatInput.disabled = true;
+    sendBtn.disabled = true;
+
     parent.postMessage({
         pluginMessage: {
             type: 'GENERATE_WITH_CONTEXT',
@@ -343,13 +348,18 @@ window.onmessage = (event) => {
         const colorVariablesCount = Number.isFinite(Number(msg.colorVariables)) ? Number(msg.colorVariables) : 0;
         contextInfoEl.textContent = `📦 ${selectedElementsCount} selecionado(s) • 🔧 ${componentsCount} componentes • 🎨 ${colorVariablesCount} cores`;
     } else if (msg.type === 'CALL_API') {
-        showStatus('Conectando à API...', 'loading');
+        showStatus('🔗 Conectando à IA...', 'loading');
         callPluginAPI(msg.context);
     } else if (msg.type === 'OPERATIONS_DONE') {
         hideStatus();
-        addChatMsg('assistant', 'Design atualizado! ✨');
+        chatInput.disabled = false;
+        updateSendState();
+        const countInfo = msg.count ? ` (${msg.count} operações)` : '';
+        addChatMsg('assistant', `Design atualizado! ✨${countInfo}`);
     } else if (msg.type === 'ERROR') {
         hideStatus();
+        chatInput.disabled = false;
+        updateSendState();
         addChatMsg('assistant', 'Erro: ' + msg.message, true);
     }
 };
