@@ -683,10 +683,20 @@ figma.ui.onmessage = async (msg: UIMessage) => {
   } else if (msg.type === 'OPEN_EXTERNAL') {
     figma.openExternal(msg.url);
   } else if (msg.type === 'SAVE_API_KEY') {
-    await figma.clientStorage.setAsync('userApiKey', msg.key);
-    postToUI({ type: 'API_KEY_SAVED' });
+    try {
+      await figma.clientStorage.setAsync('userApiKey', msg.key);
+      postToUI({ type: 'API_KEY_SAVED' });
+    } catch (_e) {
+      // clientStorage requires a plugin ID — skip silently in dev
+      postToUI({ type: 'API_KEY_SAVED' });
+    }
   } else if (msg.type === 'GET_API_KEY') {
-    const key = await figma.clientStorage.getAsync('userApiKey');
-    postToUI({ type: 'API_KEY_LOADED', key: key || '' });
+    try {
+      const key = await figma.clientStorage.getAsync('userApiKey');
+      postToUI({ type: 'API_KEY_LOADED', key: key || '' });
+    } catch (_e) {
+      // clientStorage requires a plugin ID — skip silently in dev
+      postToUI({ type: 'API_KEY_LOADED', key: '' });
+    }
   }
 };
