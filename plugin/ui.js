@@ -263,7 +263,7 @@ function sendChat() {
 // ── API call ──
 async function callPluginAPI(context) {
     try {
-        const response = await fetch('https://visantlabs.com/api/plugin', {
+        const response = await fetch('https://www.visantlabs.com/api/plugin', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ...context, apiKey: userApiKey || undefined })
