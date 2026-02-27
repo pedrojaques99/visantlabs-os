@@ -3,6 +3,9 @@
 type UIMessage =
   | { type: 'GET_CONTEXT' }
   | { type: 'APPLY_OPERATIONS'; payload: FigmaOperation[] }
+  | { type: 'APPLY_OPERATIONS_FROM_API'; operations: FigmaOperation[] }
+  | { type: 'GENERATE_WITH_CONTEXT'; command: string; logoComponent?: { id: string; name: string }; brandFont?: { id: string; name: string }; brandColors?: Array<{ name: string; value: string }> }
+  | { type: 'DELETE_SELECTION' }
   | { type: 'OPEN_EXTERNAL'; url: string };
 
 type FigmaOperation =
@@ -17,12 +20,15 @@ type FigmaOperation =
 
 type SerializedNode = { id: string; type: string; name: string; width: number; height: number };
 type SerializedContext = { nodes: SerializedNode[]; styles: Record<string, string> };
+type ComponentInfo = { id: string; name: string; key?: string };
+type ColorVariable = { id: string; name: string; value?: string };
+type FontVariable = { id: string; name: string };
 
 function postToUI(msg: { type: string; payload?: SerializedContext; message?: string }) {
   figma.ui.postMessage(msg);
 }
 
-function serializeSelection(): SerializedContext {
+async function serializeSelection(): Promise<SerializedContext> {
   const nodes: SerializedNode[] = [];
   const selection = figma.currentPage.selection;
   const limit = 20;
@@ -41,10 +47,14 @@ function serializeSelection(): SerializedContext {
   }
 
   const styles: Record<string, string> = {};
-  const paintStyles = figma.getLocalPaintStyles();
-  const textStyles = figma.getLocalTextStyles();
-  for (const s of paintStyles) styles[s.id] = `PAINT:${s.name}`;
-  for (const s of textStyles) styles[s.id] = `TEXT:${s.name}`;
+  try {
+    const paintStyles = await figma.getLocalPaintStylesAsync();
+    const textStyles = await figma.getLocalTextStylesAsync();
+    for (const s of paintStyles) styles[s.id] = `PAINT:${s.name}`;
+    for (const s of textStyles) styles[s.id] = `TEXT:${s.name}`;
+  } catch (e) {
+    // Styles might not be available, continue without them
+  }
 
   return { nodes, styles };
 }
@@ -121,13 +131,193 @@ async function applyOperations(ops: FigmaOperation[]) {
   postToUI({ type: 'OPERATIONS_DONE' });
 }
 
+function deleteSelection() {
+  const selection = figma.currentPage.selection;
+  for (const node of selection) {
+    node.remove();
+  }
+  postToUI({ type: 'OPERATIONS_DONE' });
+}
+
+function getComponentsInCurrentFile(): ComponentInfo[] {
+  const components: ComponentInfo[] = [];
+
+  function traverse(node: BaseNode) {
+    try {
+      if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') {
+        components.push({
+          id: node.id,
+          name: node.name,
+          key: 'key' in node ? node.key : undefined
+        });
+        console.log('[Plugin] Found component:', node.name);
+      }
+      if ('children' in node) {
+        const children = (node as any).children;
+        if (Array.isArray(children)) {
+          for (const child of children) {
+            traverse(child);
+          }
+        }
+      }
+    } catch (e) {
+      // Skip nodes that cause errors
+    }
+  }
+
+  // Search entire document
+  try {
+    traverse(figma.root);
+  } catch (e) {
+    console.log('[Plugin] Error traversing root:', e);
+  }
+
+  console.log('[Plugin] Total components found:', components.length);
+  return components;
+}
+
+async function getColorVariablesFromFile(): Promise<ColorVariable[]> {
+  const colors: ColorVariable[] = [];
+
+  try {
+    if (!figma.variables || typeof figma.variables.getLocalVariablesAsync !== 'function') {
+      console.log('[Plugin] Color variables API not available');
+      return colors;
+    }
+
+    const allVariables = await figma.variables.getLocalVariablesAsync('COLOR');
+    console.log('[Plugin] Total color variables:', allVariables.length);
+
+    for (const variable of allVariables) {
+      const value = variable.valuesByMode[Object.keys(variable.valuesByMode)[0]];
+      let colorHex = '#ccc';
+      if (typeof value === 'object' && 'r' in value) {
+        const r = Math.round((value as any).r * 255);
+        const g = Math.round((value as any).g * 255);
+        const b = Math.round((value as any).b * 255);
+        colorHex = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+      }
+      colors.push({
+        id: variable.id,
+        name: variable.name,
+        value: colorHex
+      });
+    }
+  } catch (e) {
+    console.log('[Plugin] Error getting color variables:', e);
+  }
+
+  console.log('[Plugin] Total color variables found:', colors.length);
+  return colors;
+}
+
+async function getFontVariablesFromFile(): Promise<FontVariable[]> {
+  const fonts: FontVariable[] = [];
+
+  try {
+    if (!figma.variables || typeof figma.variables.getLocalVariablesAsync !== 'function') {
+      console.log('[Plugin] Font variables API not available');
+      return fonts;
+    }
+
+    const allVariables = await figma.variables.getLocalVariablesAsync('STRING');
+    for (const variable of allVariables) {
+      const nameLower = variable.name.toLowerCase();
+      if (nameLower.includes('font') || nameLower.includes('typeface') || nameLower.includes('typography')) {
+        fonts.push({
+          id: variable.id,
+          name: variable.name
+        });
+      }
+    }
+  } catch (e) {
+    console.log('[Plugin] Error getting font variables:', e);
+  }
+
+  console.log('[Plugin] Total font variables found:', fonts.length);
+  return fonts;
+}
+
+async function notifyContextChange() {
+  const components = getComponentsInCurrentFile();
+  const [colors, fonts] = await Promise.all([
+    getColorVariablesFromFile(),
+    getFontVariablesFromFile()
+  ]);
+  const selection = figma.currentPage.selection;
+
+  figma.ui.postMessage({
+    type: 'CONTEXT_UPDATED',
+    selectedElements: selection.length,
+    componentsCount: components.length,
+    colorVariables: colors.length,
+    fontVariables: fonts.length
+  });
+}
+
 figma.showUI(__html__, { width: 400, height: 640, themeColors: true, title: 'Visant Copilot' });
+
+// Notify when selection changes
+figma.on('selectionchange', notifyContextChange);
 
 figma.ui.onmessage = async (msg: UIMessage) => {
   if (msg.type === 'GET_CONTEXT') {
-    postToUI({ type: 'CONTEXT', payload: serializeSelection() });
+    const components = getComponentsInCurrentFile();
+    const [colors, fonts] = await Promise.all([
+      getColorVariablesFromFile(),
+      getFontVariablesFromFile()
+    ]);
+    const selection = figma.currentPage.selection;
+
+    // Send context updated
+    postToUI({
+      type: 'CONTEXT_UPDATED',
+      selectedElements: selection.length,
+      componentsCount: components.length,
+      colorVariables: colors.length,
+      fontVariables: fonts.length
+    });
+
+    // Send components, fonts, and colors for UI dropdowns with small delay to ensure delivery
+    setTimeout(() => {
+      postToUI({ type: 'COMPONENTS_LOADED', components });
+    }, 100);
+
+    setTimeout(() => {
+      postToUI({ type: 'FONT_VARIABLES_LOADED', fonts });
+    }, 150);
+
+    setTimeout(() => {
+      postToUI({ type: 'COLOR_VARIABLES_LOADED', colors });
+    }, 200);
   } else if (msg.type === 'APPLY_OPERATIONS') {
     await applyOperations(msg.payload);
+  } else if (msg.type === 'APPLY_OPERATIONS_FROM_API') {
+    await applyOperations(msg.operations);
+  } else if (msg.type === 'GENERATE_WITH_CONTEXT') {
+    const components = getComponentsInCurrentFile();
+    const [colors, fonts, selection] = await Promise.all([
+      getColorVariablesFromFile(),
+      getFontVariablesFromFile(),
+      serializeSelection()
+    ]);
+
+    // Collect all context with user selections
+    const context = {
+      command: msg.command,
+      selectedElements: selection.nodes,
+      availableComponents: components,
+      availableColorVariables: colors,
+      availableFontVariables: fonts,
+      selectedLogo: msg.logoComponent,
+      selectedBrandFont: msg.brandFont,
+      selectedBrandColors: msg.brandColors
+    };
+
+    // Send context to UI to make the API call
+    postToUI({ type: 'CALL_API', context });
+  } else if (msg.type === 'DELETE_SELECTION') {
+    deleteSelection();
   } else if (msg.type === 'OPEN_EXTERNAL') {
     figma.openExternal(msg.url);
   }

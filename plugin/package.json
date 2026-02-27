@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "esbuild src/code.ts --bundle --outfile=dist/code.js --target=es2020",
-    "watch": "esbuild src/code.ts --bundle --outfile=dist/code.js --target=es2020 --watch",
+    "build": "node scripts/build.js",
+    "watch": "node scripts/watch.js",
     "dev": "node scripts/dev.js"
   },
   "devDependencies": {

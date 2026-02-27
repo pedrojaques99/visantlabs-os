@@ -26,6 +26,7 @@ import usersRoutes from '../server/routes/users.js';
 import storageRoutes from '../server/routes/storage.js';
 import aiRoutes from '../server/routes/ai.js';
 import workflowRoutes from '../server/routes/workflows.js';
+import pluginRoutes from '../server/routes/plugin.js';
 import { errorHandler } from '../server/middleware/errorHandler.js';
 
 // Load environment variables
@@ -186,6 +187,8 @@ app.use('/ai', aiRoutes);
 if (isDev) console.log('✅ AI routes registered at /ai');
 app.use('/workflows', workflowRoutes);
 if (isDev) console.log('✅ Workflow routes registered at /workflows');
+app.use('/plugin', pluginRoutes);
+if (isDev) console.log('✅ Plugin routes registered at /plugin');
 
 // Health check rate limiter
 const healthCheckLimiter = rateLimit({
