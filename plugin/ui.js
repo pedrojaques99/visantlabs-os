@@ -312,12 +312,39 @@ window.onmessage = (event) => {
     } else if (msg.type === 'COLOR_VARIABLES_LOADED') {
         hideStatus();
         allColors = msg.colors || [];
-        colorsList.innerHTML = allColors.map(color =>
-            `<label style="display:flex;align-items:center;margin-bottom:6px;cursor:pointer;">` +
-            `<input type="checkbox" onchange="toggleColor('${color.id}','${color.name}','${color.value}')" style="margin-right:8px;">` +
-            `<span style="display:inline-block;width:12px;height:12px;background:${color.value};border-radius:4px;margin-right:8px;border:1px solid var(--figma-color-border,#e5e5e5);"></span>` +
-            `${color.name}</label>`
-        ).join('');
+        // Safely populate the colors list without using innerHTML to avoid XSS
+        colorsList.innerHTML = '';
+        allColors.forEach(color => {
+            const label = document.createElement('label');
+            label.style.display = 'flex';
+            label.style.alignItems = 'center';
+            label.style.marginBottom = '6px';
+            label.style.cursor = 'pointer';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.style.marginRight = '8px';
+            checkbox.addEventListener('change', () => {
+                toggleColor(color.id, color.name, color.value);
+            });
+
+            const colorSwatch = document.createElement('span');
+            colorSwatch.style.display = 'inline-block';
+            colorSwatch.style.width = '12px';
+            colorSwatch.style.height = '12px';
+            colorSwatch.style.backgroundColor = color.value;
+            colorSwatch.style.borderRadius = '4px';
+            colorSwatch.style.marginRight = '8px';
+            colorSwatch.style.border = '1px solid var(--figma-color-border,#e5e5e5)';
+
+            const nameNode = document.createTextNode(color.name);
+
+            label.appendChild(checkbox);
+            label.appendChild(colorSwatch);
+            label.appendChild(nameNode);
+
+            colorsList.appendChild(label);
+        });
     } else if (msg.type === 'COMPONENT_THUMBNAIL') {
         if (msg.componentId && msg.thumbnail) {
             componentThumbs[msg.componentId] = msg.thumbnail;
