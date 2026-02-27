@@ -5,26 +5,29 @@ const esbuild = require('esbuild');
 const srcDir = path.join(__dirname, '..', 'src');
 const distDir = path.join(__dirname, '..', 'dist');
 const uiPath = path.join(__dirname, '..', 'ui.html');
+const cssPath = path.join(__dirname, '..', 'ui.css');
+const jsPath = path.join(__dirname, '..', 'ui.js');
 
 // Ensure dist directory exists
-if (!fs.existsSync(distDir)) {
-  fs.mkdirSync(distDir);
-}
+if (!fs.existsSync(distDir)) fs.mkdirSync(distDir);
 
-// Read UI HTML
-const htmlContent = fs.readFileSync(uiPath, 'utf-8');
+// Read source files
+const htmlTemplate = fs.readFileSync(uiPath, 'utf-8');
+const cssContent = fs.readFileSync(cssPath, 'utf-8');
+const jsContent = fs.readFileSync(jsPath, 'utf-8');
 
-// Create a plugin that injects HTML as __html__
+// Inline CSS and JS into the HTML template
+let htmlContent = htmlTemplate
+  .replace('<link rel="stylesheet" href="./ui.css">', `<style>\n${cssContent}\n</style>`)
+  .replace('<script src="./ui.js"></script>', `<script>\n${jsContent}\n</script>`);
+
+// Plugin that injects the assembled HTML as __html__
 const htmlPlugin = {
   name: 'html-inject',
   setup(build) {
     build.onLoad({ filter: /code\.ts$/ }, async (args) => {
       let code = await fs.promises.readFile(args.path, 'utf-8');
-
-      // Replace __html__ with the actual HTML content (escaped)
-      const htmlEscaped = JSON.stringify(htmlContent);
-      code = code.replace(/__html__/g, htmlEscaped);
-
+      code = code.replace(/__html__/g, JSON.stringify(htmlContent));
       return { contents: code, loader: 'ts' };
     });
   }
@@ -34,7 +37,8 @@ esbuild.build({
   entryPoints: [path.join(srcDir, 'code.ts')],
   bundle: true,
   outfile: path.join(distDir, 'code.js'),
-  target: 'es2020',
+  target: 'es2017',
   loader: { '.ts': 'ts' },
   plugins: [htmlPlugin],
 }).catch(() => process.exit(1));
+

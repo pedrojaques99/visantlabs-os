@@ -7,7 +7,9 @@ type UIMessage =
   | { type: 'APPLY_OPERATIONS_FROM_API'; operations: FigmaOperation[] }
   | { type: 'GENERATE_WITH_CONTEXT'; command: string; logoComponent?: { id: string; name: string }; brandFont?: { id: string; name: string }; brandColors?: Array<{ name: string; value: string }> }
   | { type: 'DELETE_SELECTION' }
-  | { type: 'OPEN_EXTERNAL'; url: string };
+  | { type: 'OPEN_EXTERNAL'; url: string }
+  | { type: 'SAVE_API_KEY'; key: string }
+  | { type: 'GET_API_KEY' };
 
 type FigmaOperation =
   | { type: 'CREATE_FRAME'; props: { name: string; width: number; height: number; direction: 'HORIZONTAL' | 'VERTICAL'; gap: number; padding: number } }
@@ -89,7 +91,7 @@ async function applyOperations(ops: FigmaOperation[]) {
         if (op.props.styleId) {
           try {
             text.textStyleId = op.props.styleId;
-          } catch (_) {}
+          } catch (_) { }
         }
         text.x = figma.viewport.center.x - 50;
         text.y = figma.viewport.center.y - 10;
@@ -161,7 +163,7 @@ async function exportThumbnail(node: ComponentNode | ComponentSetNode): Promise<
     });
     const b64 = figma.base64Encode(bytes);
     return `data:image/png;base64,${b64}`;
-  } catch {
+  } catch (_e) {
     return undefined;
   }
 }
@@ -331,7 +333,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     // Send components first, then thumbnails in background
     setTimeout(() => {
       postToUI({ type: 'COMPONENTS_LOADED', components });
-      exportComponentThumbnails(components).catch(() => {});
+      exportComponentThumbnails(components).catch(() => { });
     }, 100);
 
     setTimeout(() => {
@@ -371,5 +373,11 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     deleteSelection();
   } else if (msg.type === 'OPEN_EXTERNAL') {
     figma.openExternal(msg.url);
+  } else if (msg.type === 'SAVE_API_KEY') {
+    await figma.clientStorage.setAsync('userApiKey', msg.key);
+    postToUI({ type: 'API_KEY_SAVED' });
+  } else if (msg.type === 'GET_API_KEY') {
+    const key = await figma.clientStorage.getAsync('userApiKey');
+    postToUI({ type: 'API_KEY_LOADED', key: key || '' });
   }
 };

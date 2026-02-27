@@ -42,12 +42,21 @@ router.post('/', async (req: Request, res: Response) => {
       selectedBrandColors,
       availableComponents = [],
       availableColorVariables = [],
-      availableFontVariables = []
-    } = req.body as PluginRequest;
+      availableFontVariables = [],
+      apiKey: userApiKey
+    } = req.body as PluginRequest & { apiKey?: string };
 
-    if (!command || !selectedLogo || !selectedBrandFont) {
-      return res.status(400).json({ error: 'Command, logo, and font are required' });
+    if (!command) {
+      return res.status(400).json({ error: 'Command is required' });
     }
+
+    // BYOK: use user's key if provided, else fall back to server key
+    const effectiveKey = userApiKey || process.env.GEMINI_API_KEY || '';
+    if (!effectiveKey) {
+      return res.status(400).json({ error: 'No API key configured. Please add your Gemini API key in plugin settings.' });
+    }
+    const genAIInstance = new GoogleGenerativeAI(effectiveKey);
+
 
     // Build a very specific prompt to prevent hallucinations
     const brandColorsInfo = selectedBrandColors?.length
@@ -86,7 +95,7 @@ Generate operations in JSON format only:
 `;
 
     // Call Gemini API
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const model = genAIInstance.getGenerativeModel({ model: 'gemini-pro' });
     const result = await model.generateContent(prompt);
     const responseText = result.response.text();
 
