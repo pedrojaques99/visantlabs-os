@@ -1,1 +1,416 @@
-<script>window.location.href = "https://www.visantlabs.com/plugin";</script>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a1a;
+      padding: 12px;
+      font-size: 12px;
+      color: #e0e0e0;
+    }
+    h2 {
+      font-size: 13px;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: #fff;
+    }
+    .section {
+      background: #242424;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    .section-title {
+      font-size: 10px;
+      font-weight: 600;
+      color: #888;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #333;
+      border-radius: 4px;
+      background: #2a2a2a;
+      color: #e0e0e0;
+      font-size: 11px;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+    select:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .selected-tag {
+      display: inline-block;
+      background: #0066cc;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      margin-bottom: 8px;
+      margin-right: 6px;
+    }
+    .selected-tag button {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      margin-left: 4px;
+      padding: 0;
+      font-size: 10px;
+      width: auto;
+    }
+    textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #333;
+      border-radius: 4px;
+      background: #2a2a2a;
+      color: #e0e0e0;
+      font-size: 11px;
+      margin-bottom: 8px;
+      resize: vertical;
+      min-height: 50px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #0066cc;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-size: 12px;
+    }
+    button:hover {
+      background: #0052a3;
+    }
+    button:disabled {
+      background: #555;
+      cursor: not-allowed;
+    }
+    .status {
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    .status.success {
+      background: #1b5e20;
+      color: #81c784;
+      border: 1px solid #2e7d32;
+    }
+    .status.error {
+      background: #b71c1c;
+      color: #ef9a9a;
+      border: 1px solid #c62828;
+    }
+    .status.loading {
+      background: #1e3a5f;
+      color: #64b5f6;
+      border: 1px solid #2d5a8c;
+    }
+    .info {
+      background: #1e3a5f;
+      border: 1px solid #2d5a8c;
+      border-radius: 4px;
+      padding: 8px;
+      margin-bottom: 10px;
+      font-size: 10px;
+      color: #64b5f6;
+      line-height: 1.3;
+    }
+    .context {
+      font-size: 10px;
+      color: #b0b0b0;
+      line-height: 1.3;
+    }
+  </style>
+</head>
+<body>
+  <h2>Visant Copilot</h2>
+
+  <div id="status"></div>
+
+  <div class="info">
+    📌 Selecione logo, fonte e cores, depois descreva as mudanças
+  </div>
+
+  <!-- Logo Component Selection -->
+  <div class="section">
+    <div class="section-title">1️⃣ Componente Logotipo</div>
+    <select id="logoSelect" onchange="selectLogo()">
+      <option value="">Carregando componentes...</option>
+    </select>
+    <div id="selectedLogo"></div>
+  </div>
+
+  <!-- Font Selection -->
+  <div class="section">
+    <div class="section-title">2️⃣ Fonte do Branding</div>
+    <select id="fontSelect" onchange="selectFont()">
+      <option value="">Carregando fonts...</option>
+    </select>
+    <div id="selectedFont"></div>
+  </div>
+
+  <!-- Color Selection -->
+  <div class="section">
+    <div class="section-title">3️⃣ Cores Principais</div>
+    <div id="colorsList"></div>
+    <div id="selectedColors"></div>
+  </div>
+
+  <!-- Command -->
+  <div class="section">
+    <div class="section-title">4️⃣ O que mudar?</div>
+    <textarea id="command" placeholder="Ex: Aplique no fundo&#10;Ex: Mude os botões&#10;Ex: Atualize heading"></textarea>
+  </div>
+
+  <!-- Generate Button -->
+  <button id="generateBtn" onclick="generate()" disabled>
+    ✨ Gerar Design
+  </button>
+
+  <div class="context" style="margin-top: 10px;">
+    <div id="contextInfo"></div>
+  </div>
+
+  <script>
+    const statusEl = document.getElementById('status');
+    const commandEl = document.getElementById('command');
+    const generateBtn = document.getElementById('generateBtn');
+    const logoSelectEl = document.getElementById('logoSelect');
+    const fontSelectEl = document.getElementById('fontSelect');
+    const colorsList = document.getElementById('colorsList');
+    const selectedColorsEl = document.getElementById('selectedColors');
+    const contextInfoEl = document.getElementById('contextInfo');
+
+    let selectedLogo = null;
+    let selectedFont = null;
+    let selectedColors = new Map();
+    let allComponents = [];
+    let allFonts = [];
+    let allColors = [];
+
+    function showStatus(message, type = 'loading') {
+      statusEl.textContent = message;
+      statusEl.className = `status ${type}`;
+    }
+
+    function hideStatus() {
+      statusEl.textContent = '';
+      statusEl.className = 'status';
+    }
+
+    function updateButtonState() {
+      const hasCommand = commandEl.value.trim().length > 0;
+      const hasLogo = selectedLogo !== null;
+      const hasFont = selectedFont !== null;
+      generateBtn.disabled = !(hasCommand && hasLogo && hasFont);
+    }
+
+    function selectLogo() {
+      const value = logoSelectEl.value;
+      if (!value) {
+        selectedLogo = null;
+        document.getElementById('selectedLogo').innerHTML = '';
+      } else {
+        const comp = allComponents.find(c => c.id === value);
+        selectedLogo = comp;
+        document.getElementById('selectedLogo').innerHTML =
+          `<div class="selected-tag">${comp.name} <button onclick="clearLogo()">×</button></div>`;
+      }
+      updateButtonState();
+    }
+
+    function clearLogo() {
+      selectedLogo = null;
+      logoSelectEl.value = '';
+      document.getElementById('selectedLogo').innerHTML = '';
+      updateButtonState();
+    }
+
+    function selectFont() {
+      const value = fontSelectEl.value;
+      if (!value) {
+        selectedFont = null;
+        document.getElementById('selectedFont').innerHTML = '';
+      } else {
+        const font = allFonts.find(f => f.id === value);
+        selectedFont = font;
+        document.getElementById('selectedFont').innerHTML =
+          `<div class="selected-tag">${font.name} <button onclick="clearFont()">×</button></div>`;
+      }
+      updateButtonState();
+    }
+
+    function clearFont() {
+      selectedFont = null;
+      fontSelectEl.value = '';
+      document.getElementById('selectedFont').innerHTML = '';
+      updateButtonState();
+    }
+
+    function toggleColor(colorId, colorName, colorValue) {
+      if (selectedColors.has(colorId)) {
+        selectedColors.delete(colorId);
+      } else {
+        selectedColors.set(colorId, { name: colorName, value: colorValue });
+      }
+      updateColorDisplay();
+    }
+
+    function updateColorDisplay() {
+      const html = Array.from(selectedColors.values()).map(c =>
+        `<div class="selected-tag">
+          <span style="display: inline-block; width: 12px; height: 12px; background: ${c.value}; border-radius: 2px; margin-right: 4px; vertical-align: middle;"></span>
+          ${c.name} <button onclick="selectedColors.delete('${Array.from(selectedColors.keys()).find(k => selectedColors.get(k).name === c.name)}'); updateColorDisplay();">×</button>
+        </div>`
+      ).join('');
+      selectedColorsEl.innerHTML = html ? `<div>${html}</div>` : '';
+    }
+
+    function generate() {
+      const command = commandEl.value.trim();
+      if (!command || !selectedLogo || !selectedFont) {
+        showStatus('Preencha logo, fonte e comando', 'error');
+        return;
+      }
+
+      showStatus('Processando...', 'loading');
+      parent.postMessage({
+        pluginMessage: {
+          type: 'GENERATE_WITH_CONTEXT',
+          command,
+          logoComponent: selectedLogo,
+          brandFont: selectedFont,
+          brandColors: Array.from(selectedColors.values())
+        }
+      }, '*');
+    }
+
+    async function callPluginAPI(context) {
+      try {
+        const apiUrl = 'https://visantlabs.com/api/plugin';
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(context)
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          parent.postMessage({
+            pluginMessage: {
+              type: 'ERROR',
+              message: error.error || 'Falha ao gerar operações'
+            }
+          }, '*');
+          return;
+        }
+
+        const data = await response.json();
+
+        if (!data.success || !Array.isArray(data.operations)) {
+          parent.postMessage({
+            pluginMessage: {
+              type: 'ERROR',
+              message: 'Resposta inválida da API'
+            }
+          }, '*');
+          return;
+        }
+
+        parent.postMessage({
+          pluginMessage: {
+            type: 'APPLY_OPERATIONS_FROM_API',
+            operations: data.operations
+          }
+        }, '*');
+      } catch (err) {
+        parent.postMessage({
+          pluginMessage: {
+            type: 'ERROR',
+            message: 'Falha ao chamar API: ' + String(err)
+          }
+        }, '*');
+      }
+    }
+
+    window.onmessage = (event) => {
+      const msg = event.data.pluginMessage;
+      console.log('UI received:', msg.type, msg);
+
+      if (msg.type === 'COMPONENTS_LOADED') {
+        hideStatus();
+        allComponents = msg.components || [];
+        console.log('Loaded components:', allComponents.length);
+        logoSelectEl.innerHTML = '<option value="">Escolha um componente...</option>';
+        allComponents.forEach(comp => {
+          const opt = document.createElement('option');
+          opt.value = comp.id;
+          opt.textContent = comp.name;
+          logoSelectEl.appendChild(opt);
+        });
+        logoSelectEl.disabled = allComponents.length === 0;
+      } else if (msg.type === 'FONT_VARIABLES_LOADED') {
+        hideStatus();
+        allFonts = msg.fonts || [];
+        fontSelectEl.innerHTML = '<option value="">Escolha uma fonte...</option>';
+        allFonts.forEach(font => {
+          const opt = document.createElement('option');
+          opt.value = font.id;
+          opt.textContent = font.name;
+          fontSelectEl.appendChild(opt);
+        });
+        fontSelectEl.disabled = false;
+      } else if (msg.type === 'COLOR_VARIABLES_LOADED') {
+        hideStatus();
+        allColors = msg.colors || [];
+        let html = '';
+        allColors.forEach(color => {
+          html += `
+            <label style="display: flex; align-items: center; margin-bottom: 6px; cursor: pointer;">
+              <input type="checkbox" onchange="toggleColor('${color.id}', '${color.name}', '${color.value}')" style="margin-right: 6px;">
+              <span style="display: inline-block; width: 12px; height: 12px; background: ${color.value}; border-radius: 2px; margin-right: 6px; border: 1px solid #555;"></span>
+              ${color.name}
+            </label>
+          `;
+        });
+        colorsList.innerHTML = html;
+      } else if (msg.type === 'CONTEXT_UPDATED') {
+        contextInfoEl.innerHTML = `📦 ${msg.selectedElements || 0} selecionado(s) • 🔧 ${msg.componentsCount || 0} componentes • 🎨 ${msg.colorVariables || 0} cores`;
+      } else if (msg.type === 'CALL_API') {
+        showStatus('Conectando à API...', 'loading');
+        callPluginAPI(msg.context);
+      } else if (msg.type === 'OPERATIONS_DONE') {
+        showStatus('Design atualizado! ✨', 'success');
+        commandEl.value = '';
+        updateButtonState();
+        setTimeout(hideStatus, 2000);
+      } else if (msg.type === 'ERROR') {
+        showStatus('Erro: ' + msg.message, 'error');
+      }
+    };
+
+    commandEl.addEventListener('input', updateButtonState);
+
+    // Load initial context
+    parent.postMessage({ pluginMessage: { type: 'GET_CONTEXT' } }, '*');
+  </script>
+</body>
+</html>

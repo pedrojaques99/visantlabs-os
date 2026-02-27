@@ -4,7 +4,12 @@
       "Bash(npx skills find \"figma plugin\")",
       "Bash(cat /z/Cursor/visantlabs-os/src/config/*.ts)",
       "WebFetch(domain:developers.figma.com)",
-      "Bash(ls /z/Cursor/visantlabs-os/src/pages/*.tsx)"
+      "Bash(ls /z/Cursor/visantlabs-os/src/pages/*.tsx)",
+      "Bash(cd Z:\\\\Cursor\\\\visantlabs-os\\\\plugin:*)",
+      "Bash(cd \"Z:\\\\Cursor\\\\visantlabs-os\\\\plugin\" && npm run build 2>&1)",
+      "Bash(echo ✅ Build bem-sucedido!:*)",
+      "WebSearch",
+      "Bash(npm run:*)"
     ]
   }
 }
