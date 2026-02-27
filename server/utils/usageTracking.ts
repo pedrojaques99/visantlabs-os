@@ -3,7 +3,7 @@
 import { calculateImageCost } from '../../src/utils/pricing.js';
 import type { GeminiModel, Resolution } from '../../src/types/types.js';
 
-export type FeatureType = 'brandingmachine' | 'mockupmachine' | 'canvas' | 'branding';
+export type FeatureType = 'brandingmachine' | 'mockupmachine' | 'canvas' | 'branding' | 'figma';
 
 export interface UsageRecord {
   userId: string;
