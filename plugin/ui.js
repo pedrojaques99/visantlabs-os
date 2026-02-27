@@ -1,3 +1,5 @@
+const esc = (s) => (s || '').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+
 // ── DOM refs ──
 const statusEl = document.getElementById('status');
 const chatInput = document.getElementById('chatInput');
@@ -77,7 +79,7 @@ function toggleApiSection() {
 function saveApiKey() {
     const key = document.getElementById('apiKeyInput').value.trim();
     userApiKey = key;
-    parent.postMessage({ pluginMessage: { type: 'SAVE_API_KEY', key } }, '*');
+    parent.postMessage({ pluginMessage: { type: 'SAVE_API_KEY', key } }, 'https://www.figma.com');
 }
 
 // ── Send state ──
@@ -104,7 +106,7 @@ function renderChat() {
 function selectLogo(comp) {
     selectedLogo = comp;
     document.getElementById('selectedLogo').innerHTML =
-        `<div class="selected-tag">${comp.name} <button onclick="clearLogo()">×</button></div>`;
+        `<div class="selected-tag">${esc(comp.name)} <button onclick="clearLogo()">×</button></div>`;
     renderComponentsLibrary();
 }
 
@@ -115,7 +117,7 @@ function clearLogo() {
 }
 
 function useSelectionAsLogo() {
-    parent.postMessage({ pluginMessage: { type: 'USE_SELECTION_AS_LOGO' } }, '*');
+    parent.postMessage({ pluginMessage: { type: 'USE_SELECTION_AS_LOGO' } }, 'https://www.figma.com');
 }
 
 // ── Folder tree ──
@@ -143,7 +145,7 @@ function renderCompTile(comp) {
     const thumb = componentThumbs[comp.id];
     return `<div class="component-tile ${selectedLogo?.id === comp.id ? 'selected' : ''}" onclick="selectLogo(allComponents.find(c=>c.id==='${comp.id}'))" data-id="${comp.id}">` +
         (thumb ? `<img class="component-thumb" src="${thumb}" alt="">` : '<div class="component-thumb-placeholder">…</div>') +
-        `<span class="component-name" title="${(comp.name || '').replace(/"/g, '&quot;')}">${(comp.name || '').replace(/</g, '&lt;')}</span></div>`;
+        `<span class="component-name" title="${esc(comp.name)}">${esc(comp.name)}</span></div>`;
 }
 
 function renderFolderNode(node, pathPrefix) {
@@ -152,7 +154,8 @@ function renderFolderNode(node, pathPrefix) {
     for (const name of folders) {
         const pathKey = [...pathPrefix, name].join('/');
         const isExpanded = expandedFolders.has(pathKey);
-        html += `<div class="folder-row" onclick="toggleFolder('${pathKey.replace(/'/g, "\\'")}')">` +
+        const escapedPathKey = pathKey.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        html += `<div class="folder-row" onclick="toggleFolder('${escapedPathKey}')">` +
             `<span class="folder-chevron ${isExpanded ? '' : 'collapsed'}">▸</span>` +
             `<span class="folder-name">${name.replace(/</g, '&lt;')}</span></div>`;
         if (isExpanded) {
@@ -186,7 +189,8 @@ function renderComponentsLibrary() {
         const pathKey = name;
         const isExpanded = expandedFolders.has(pathKey) || expandedFolders.size === 0;
         if (expandedFolders.size === 0) expandedFolders.add(pathKey);
-        html += `<div class="folder-row" onclick="toggleFolder('${pathKey.replace(/'/g, "\\'")}')">` +
+        const escapedPathKey = pathKey.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        html += `<div class="folder-row" onclick="toggleFolder('${escapedPathKey}')">` +
             `<span class="folder-chevron ${isExpanded ? '' : 'collapsed'}">▸</span>` +
             `<span class="folder-name">${name.replace(/</g, '&lt;')}</span></div>`;
         if (isExpanded) html += `<div class="folder-children">${renderFolderNode(tree.children[name], [name])}</div>`;
@@ -206,7 +210,7 @@ function selectFont() {
         const font = allFonts.find(f => f.id === value);
         selectedFont = font;
         document.getElementById('selectedFont').innerHTML =
-            `<div class="selected-tag">${font.name} <button onclick="clearFont()">×</button></div>`;
+            `<div class="selected-tag">${esc(font.name)} <button onclick="clearFont()">×</button></div>`;
     }
 }
 
@@ -226,8 +230,8 @@ function toggleColor(colorId, colorName, colorValue) {
 function updateColorDisplay() {
     const html = Array.from(selectedColors.values()).map(c =>
         `<div class="selected-tag">` +
-        `<span style="display:inline-block;width:10px;height:10px;background:${c.value};border-radius:2px;margin-right:4px;"></span>` +
-        `${c.name} <button onclick="selectedColors.delete('${Array.from(selectedColors.keys()).find(k => selectedColors.get(k).name === c.name)}'); updateColorDisplay();">×</button></div>`
+        `<span style="display:inline-block;width:10px;height:10px;background:${esc(c.value)};border-radius:2px;margin-right:4px;"></span>` +
+        `${esc(c.name)} <button onclick="selectedColors.delete('${Array.from(selectedColors.keys()).find(k => selectedColors.get(k).name === c.name)}'); updateColorDisplay();">×</button></div>`
     ).join('');
     selectedColorsEl.innerHTML = html ? `<div>${html}</div>` : '';
 }
@@ -248,7 +252,7 @@ function sendChat() {
             brandFont: selectedFont,
             brandColors: Array.from(selectedColors.values())
         }
-    }, '*');
+    }, 'https://www.figma.com');
 }
 
 // ── API call ──
@@ -262,18 +266,18 @@ async function callPluginAPI(context) {
 
         if (!response.ok) {
             const error = await response.json();
-            parent.postMessage({ pluginMessage: { type: 'ERROR', message: error.error || 'Falha ao gerar operações' } }, '*');
+            parent.postMessage({ pluginMessage: { type: 'ERROR', message: error.error || 'Falha ao gerar operações' } }, 'https://www.figma.com');
             return;
         }
 
         const data = await response.json();
         if (!data.success || !Array.isArray(data.operations)) {
-            parent.postMessage({ pluginMessage: { type: 'ERROR', message: 'Resposta inválida da API' } }, '*');
+            parent.postMessage({ pluginMessage: { type: 'ERROR', message: 'Resposta inválida da API' } }, 'https://www.figma.com');
             return;
         }
-        parent.postMessage({ pluginMessage: { type: 'APPLY_OPERATIONS_FROM_API', operations: data.operations } }, '*');
+        parent.postMessage({ pluginMessage: { type: 'APPLY_OPERATIONS_FROM_API', operations: data.operations } }, 'https://www.figma.com');
     } catch (err) {
-        parent.postMessage({ pluginMessage: { type: 'ERROR', message: 'Falha ao chamar API: ' + String(err) } }, '*');
+        parent.postMessage({ pluginMessage: { type: 'ERROR', message: 'Falha ao chamar API: ' + String(err) } }, 'https://www.figma.com');
     }
 }
 
@@ -287,7 +291,7 @@ window.onmessage = (event) => {
             selectedLogo = msg.component;
             if (!allComponents.find(c => c.id === msg.component.id)) allComponents.push(msg.component);
             document.getElementById('selectedLogo').innerHTML =
-                `<div class="selected-tag">${msg.component.name} <button onclick="clearLogo()">×</button></div>`;
+                `<div class="selected-tag">${esc(msg.component.name)} <button onclick="clearLogo()">×</button></div>`;
             renderComponentsLibrary();
         } else {
             showStatus('Selecione um componente ou instância', 'error');
@@ -314,9 +318,9 @@ window.onmessage = (event) => {
         allColors = msg.colors || [];
         colorsList.innerHTML = allColors.map(color =>
             `<label style="display:flex;align-items:center;margin-bottom:6px;cursor:pointer;">` +
-            `<input type="checkbox" onchange="toggleColor('${color.id}','${color.name}','${color.value}')" style="margin-right:8px;">` +
-            `<span style="display:inline-block;width:12px;height:12px;background:${color.value};border-radius:4px;margin-right:8px;border:1px solid var(--figma-color-border,#e5e5e5);"></span>` +
-            `${color.name}</label>`
+            `<input type="checkbox" onchange="toggleColor('${color.id}','${esc(color.name)}','${esc(color.value)}')" style="margin-right:8px;">` +
+            `<span style="display:inline-block;width:12px;height:12px;background:${esc(color.value)};border-radius:4px;margin-right:8px;border:1px solid var(--figma-color-border,#e5e5e5);"></span>` +
+            `${esc(color.name)}</label>`
         ).join('');
     } else if (msg.type === 'COMPONENT_THUMBNAIL') {
         if (msg.componentId && msg.thumbnail) {
@@ -334,7 +338,10 @@ window.onmessage = (event) => {
         const el = document.getElementById('apiKeyStatus');
         if (el) el.textContent = userApiKey ? '🔑 Chave configurada' : 'Sem chave (usando servidor)';
     } else if (msg.type === 'CONTEXT_UPDATED') {
-        contextInfoEl.textContent = `${msg.selectedElements || 0} selecionado(s) · ${msg.componentsCount || 0} componentes · ${msg.colorVariables || 0} cores`;
+        const selectedElementsCount = Number.isFinite(Number(msg.selectedElements)) ? Number(msg.selectedElements) : 0;
+        const componentsCount = Number.isFinite(Number(msg.componentsCount)) ? Number(msg.componentsCount) : 0;
+        const colorVariablesCount = Number.isFinite(Number(msg.colorVariables)) ? Number(msg.colorVariables) : 0;
+        contextInfoEl.textContent = `📦 ${selectedElementsCount} selecionado(s) • 🔧 ${componentsCount} componentes • 🎨 ${colorVariablesCount} cores`;
     } else if (msg.type === 'CALL_API') {
         showStatus('Conectando à API...', 'loading');
         callPluginAPI(msg.context);
@@ -356,5 +363,5 @@ brandPill.addEventListener('click', openSettings);
 
 renderChat();
 updateSendState();
-parent.postMessage({ pluginMessage: { type: 'GET_CONTEXT' } }, '*');
-parent.postMessage({ pluginMessage: { type: 'GET_API_KEY' } }, '*');
+parent.postMessage({ pluginMessage: { type: 'GET_CONTEXT' } }, 'https://www.figma.com');
+parent.postMessage({ pluginMessage: { type: 'GET_API_KEY' } }, 'https://www.figma.com');
