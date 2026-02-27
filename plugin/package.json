@@ -1,0 +1,15 @@
+{
+  "name": "visant-copilot-figma-plugin",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "esbuild src/code.ts --bundle --outfile=dist/code.js --target=es2020",
+    "watch": "esbuild src/code.ts --bundle --outfile=dist/code.js --target=es2020 --watch",
+    "dev": "node scripts/dev.js"
+  },
+  "devDependencies": {
+    "@figma/plugin-typings": "^1.100.0",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.7.0"
+  }
+}

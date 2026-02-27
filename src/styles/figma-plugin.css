@@ -1,0 +1,121 @@
+/* Figma plugin native styles — uses Figma CSS variables (themeColors: true) */
+/* No Tailwind, no shadcn — 11px font, 4px/8px grid, 5px radius */
+
+:root {
+  --fp-bg: var(--figma-color-bg, #ffffff);
+  --fp-bg-secondary: var(--figma-color-bg-secondary, #f0f0f0);
+  --fp-text: var(--figma-color-text, #333333);
+  --fp-text-secondary: var(--figma-color-text-secondary, #666666);
+  --fp-border: var(--figma-color-border, #e5e5e5);
+  --fp-bg-brand: var(--figma-color-bg-brand, #0d99ff);
+  --fp-text-onbrand: var(--figma-color-text-onbrand, #ffffff);
+}
+
+.fp-container {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 11px;
+  color: var(--fp-text);
+  background: var(--fp-bg);
+  padding: 8px;
+  box-sizing: border-box;
+  min-height: 100%;
+}
+
+.fp-section {
+  margin-bottom: 8px;
+}
+
+.fp-label {
+  display: block;
+  color: var(--fp-text-secondary);
+  margin-bottom: 4px;
+  font-size: 11px;
+}
+
+.fp-input {
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 11px;
+  border: 1px solid var(--fp-border);
+  border-radius: 5px;
+  background: var(--fp-bg);
+  color: var(--fp-text);
+  box-sizing: border-box;
+}
+
+.fp-input:focus {
+  outline: none;
+  border-color: var(--fp-bg-brand);
+}
+
+.fp-textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 6px 8px;
+  font-size: 11px;
+  border: 1px solid var(--fp-border);
+  border-radius: 5px;
+  background: var(--fp-bg);
+  color: var(--fp-text);
+  box-sizing: border-box;
+  resize: vertical;
+}
+
+.fp-textarea:focus {
+  outline: none;
+  border-color: var(--fp-bg-brand);
+}
+
+.fp-button {
+  padding: 6px 12px;
+  font-size: 11px;
+  border: 1px solid var(--fp-border);
+  border-radius: 5px;
+  background: var(--fp-bg-secondary);
+  color: var(--fp-text);
+  cursor: pointer;
+}
+
+.fp-button:hover {
+  background: var(--fp-border);
+}
+
+.fp-button--primary {
+  background: var(--fp-bg-brand);
+  color: var(--fp-text-onbrand);
+  border-color: var(--fp-bg-brand);
+}
+
+.fp-button--primary:hover {
+  opacity: 0.9;
+}
+
+.fp-divider {
+  height: 1px;
+  background: var(--fp-border);
+  margin: 8px 0;
+}
+
+.fp-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--fp-border);
+  border-top-color: var(--fp-bg-brand);
+  border-radius: 50%;
+  animation: fp-spin 0.8s linear infinite;
+}
+
+@keyframes fp-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.fp-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  font-size: 10px;
+  border-radius: 4px;
+  background: var(--fp-bg-secondary);
+  color: var(--fp-text-secondary);
+}
