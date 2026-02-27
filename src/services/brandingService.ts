@@ -2,21 +2,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 import type { BrandingData } from '../types/types.js';
 import { cleanMarketResearchText } from '../utils/brandingHelpersServer.js';
 
-// Lazy import for MongoDB connection (only used server-side)
-let connectToMongoDB: any = null;
-let getDb: any = null;
-let ObjectId: any = null;
 
-const getMongoDB = async () => {
-  if (!connectToMongoDB || !getDb || !ObjectId) {
-    const mongoModule = await import('../../server/db/mongodb.js');
-    connectToMongoDB = mongoModule.connectToMongoDB;
-    getDb = mongoModule.getDb;
-    const mongodb = await import('mongodb');
-    ObjectId = mongodb.ObjectId;
-  }
-  return { connectToMongoDB, getDb, ObjectId };
-};
 
 // Lazy initialization to avoid executing server-side code in frontend bundle
 let ai: GoogleGenAI | null = null;
@@ -1154,94 +1140,3 @@ Example: {
     }
   });
 };
-
-/**
- * Create a usage record in the database for branding step generation
- * This function should be called after successful generation to track credit usage
- * 
- * @param userId - The user ID who generated the content
- * @param stepNumber - The branding step number (1-13)
- * @param promptLength - Length of the prompt used for generation
- * @param creditsDeducted - Number of credits deducted (usually 1 for branding steps)
- * @param subscriptionStatus - User's subscription status
- * @param hasActiveSubscription - Whether user has active subscription
- * @param isAdmin - Whether user is admin (admins don't have credits deducted)
- */
-export const createBrandingUsageRecord = async (
-  userId: string,
-  stepNumber: number,
-  promptLength: number,
-  creditsDeducted: number = 1,
-  subscriptionStatus: string = 'free',
-  hasActiveSubscription: boolean = false,
-  isAdmin: boolean = false,
-  inputTokens?: number,
-  outputTokens?: number
-): Promise<void> => {
-  try {
-    const { connectToMongoDB, getDb, ObjectId } = await getMongoDB();
-    await connectToMongoDB();
-    const db = getDb();
-
-    // Import usage tracking utilities
-    const { calculateTextGenerationCost } = await import('../../server/utils/usageTracking.js');
-
-    // Use real tokens if available, otherwise estimate
-    const actualInputTokens = inputTokens ?? (promptLength ? Math.ceil(promptLength / 4) : 500);
-    const actualOutputTokens = outputTokens ?? 1000; // Average response size if not provided
-    const cost = calculateTextGenerationCost(actualInputTokens, actualOutputTokens, 'gemini-2.5-flash');
-
-    // Create usage record for billing
-    const usageRecord: any = {
-      userId,
-      type: 'branding',
-      feature: 'brandingmachine' as const,
-      stepNumber,
-      timestamp: new Date(),
-      promptLength,
-      model: 'gemini-2.5-flash',
-      cost,
-      creditsDeducted: isAdmin ? 0 : creditsDeducted, // Admins don't have credits deducted
-      subscriptionStatus,
-      hasActiveSubscription,
-      isAdmin, // Track admin status in usage record
-      createdAt: new Date(),
-    };
-
-    // Add real tokens if available
-    if (inputTokens !== undefined) {
-      usageRecord.inputTokens = inputTokens;
-    }
-    if (outputTokens !== undefined) {
-      usageRecord.outputTokens = outputTokens;
-    }
-
-    await db.collection('usage_records').insertOne(usageRecord);
-
-    if (isAdmin) {
-      console.log(`[BrandingService] Recorded branding usage for admin user ${userId} (no credits deducted):`, {
-        stepNumber,
-        inputTokens: inputTokens ?? 'estimated',
-        outputTokens: outputTokens ?? 'estimated',
-        timestamp: usageRecord.timestamp,
-      });
-    } else {
-      console.log(`[BrandingService] Recorded branding usage for user ${userId}:`, {
-        stepNumber,
-        creditsDeducted: creditsDeducted,
-        inputTokens: inputTokens ?? 'estimated',
-        outputTokens: outputTokens ?? 'estimated',
-        timestamp: usageRecord.timestamp,
-      });
-    }
-  } catch (error: any) {
-    // Log error but don't throw - usage tracking failure shouldn't break generation
-    console.error('[BrandingService] Failed to create usage record:', {
-      error: error.message,
-      userId,
-      stepNumber,
-      timestamp: new Date().toISOString(),
-    });
-  }
-};
-
