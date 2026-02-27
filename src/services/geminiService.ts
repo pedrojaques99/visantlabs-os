@@ -568,7 +568,7 @@ interface SmartPromptResult {
 
 export const generateSmartPrompt = async (params: SmartPromptParams, apiKey?: string): Promise<SmartPromptResult> => {
   return withRetry(async () => {
-    const isBlankMockup = (params.designType as string) === 'blank';
+    const isBlankMockup = params.designType === 'blank';
 
     // Use shared function to build instructions template
     const instructionsTemplate = buildGeminiPromptInstructionsTemplate({
