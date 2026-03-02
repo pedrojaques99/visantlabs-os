@@ -28,16 +28,22 @@ function buildSystemPrompt(req: PluginRequest): string {
     ? req.selectedBrandColors.map(c => `${c.name}: ${c.value}`).join(', ')
     : 'Nenhuma selecionada';
 
-  const selectedElementsInfo = req.selectedElements?.length
-    ? req.selectedElements.map((el: any, i: number) => {
-      let desc = `${i + 1}. "${el.name}" (type: ${el.type}, id: "${el.id}", ${el.width}x${el.height}`;
-      if (el.layoutMode && el.layoutMode !== 'NONE') desc += `, layout: ${el.layoutMode}`;
-      if (el.childCount != null) desc += `, children: ${el.childCount}`;
-      if (el.cornerRadius != null) desc += `, radius: ${el.cornerRadius}`;
-      if (el.characters) desc += `, text: "${el.characters.substring(0, 50)}"`;
+  const flattenWithIds = (nodes: any[], depth = 0): string[] => {
+    const lines: string[] = [];
+    for (const n of nodes) {
+      let desc = `${' '.repeat(depth)}• "${n.name}" (type: ${n.type}, id: "${n.id}"`;
+      if (n.characters) desc += `, text: "${n.characters.substring(0, 60)}"`;
       desc += ')';
-      return desc;
-    }).join('\n')
+      lines.push(desc);
+      if (n.children?.length && depth < 4) {
+        lines.push(...flattenWithIds(n.children, depth + 1));
+      }
+    }
+    return lines;
+  };
+
+  const selectedElementsInfo = req.selectedElements?.length
+    ? flattenWithIds(req.selectedElements).join('\n')
     : 'Nenhum elemento selecionado';
 
   const componentsInfo = req.availableComponents?.length
@@ -62,7 +68,7 @@ BRAND GUIDELINES DO USUÁRIO:
 - Fonte de marca: ${fontInfo}
 - Cores de marca: ${brandColorsInfo}
 
-ELEMENTOS SELECIONADOS NO CANVAS:
+ELEMENTOS SELECIONADOS (inclui hierarquia — para editar texto use o id do nó TEXT, não do frame pai):
 ${selectedElementsInfo}
 
 COMPONENTES DISPONÍVEIS NO ARQUIVO (use o "key" para instanciar):
@@ -150,8 +156,9 @@ ESTRUTURA:
 10. Use cornerSmoothing: 0.6 para smooth corners estilo iOS.
 11. Para sombras sutis: DROP_SHADOW com alpha 0.08-0.15, offset y:2-8, radius 8-24.
 12. Para edição: use o nodeId dos ELEMENTOS SELECIONADOS. Nunca invente IDs.
-13. Para criação: sempre comece com o frame/container root e adicione filhos na ORDEM com parentRef.
-14. FontStyle válidos: "Regular", "Medium", "Semi Bold", "Bold", "Light", "Thin", "Extra Bold", "Black", "Italic".
+13. Para editar texto: use nodeId de um nó TEXT. Se a seleção for um FRAME ou GROUP com filhos TEXT, use o id do filho (ex: "T Message"), NUNCA do frame. SET_TEXT_CONTENT só funciona em TEXT.
+14. Para criação: sempre comece com o frame/container root e adicione filhos na ORDEM com parentRef.
+15. FontStyle válidos: "Regular", "Medium", "Semi Bold", "Bold", "Light", "Thin", "Extra Bold", "Black", "Italic".
 
 ═══ EXEMPLO COMPLETO ═══
 
