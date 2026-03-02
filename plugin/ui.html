@@ -66,8 +66,14 @@
           <button type="button" class="brand-panel-action" onclick="useSelectionAsLogo()">
             <span>◎</span> Usar seleção atual
           </button>
-          <input type="text" id="componentSearch" class="brand-panel-search" placeholder="Pesquisar componentes..."
-            oninput="renderComponentsLibrary()">
+          <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
+            <input type="text" id="componentSearch" class="brand-panel-search" placeholder="Pesquisar componentes..."
+              oninput="renderComponentsLibrary()" style="flex: 1;">
+            <label style="display: flex; align-items: center; gap: 4px; font-size: 11px; white-space: nowrap; cursor: pointer;">
+              <input type="checkbox" id="showFoldersCheckbox" onchange="toggleShowFolders()" style="cursor: pointer;">
+              <span>Pastas</span>
+            </label>
+          </div>
           <div id="componentsLibrary" class="components-library"></div>
         </div>
       </div>
