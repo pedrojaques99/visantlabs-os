@@ -6,7 +6,7 @@ import { SEO } from '../components/SEO';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { ArrowRight, Sparkles, Box, Palette, Calculator } from 'lucide-react';
-import { Navbar } from '../components/Navbar';
+
 
 export const HomePage: React.FC = () => {
     const { t } = useTranslation();
