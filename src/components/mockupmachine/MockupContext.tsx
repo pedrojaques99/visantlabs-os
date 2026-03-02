@@ -5,7 +5,7 @@ import { getSurpriseMeSelectedTags, saveSurpriseMeSelectedTags, type SurpriseMeS
 interface MockupContextState {
     uploadedImage: UploadedImage | null;
     referenceImages: UploadedImage[];
-    designType: DesignType | null;
+    designType: DesignType;
     selectedModel: GeminiModel | null;
     resolution: Resolution;
     aspectRatio: AspectRatio;
@@ -82,7 +82,7 @@ interface MockupContextState {
 interface MockupContextActions {
     setUploadedImage: Dispatch<SetStateAction<UploadedImage | null>>;
     setReferenceImages: Dispatch<SetStateAction<UploadedImage[]>>;
-    setDesignType: Dispatch<SetStateAction<DesignType | null>>;
+    setDesignType: Dispatch<SetStateAction<DesignType>>;
     setSelectedModel: Dispatch<SetStateAction<GeminiModel | null>>;
     setResolution: Dispatch<SetStateAction<Resolution>>;
     setAspectRatio: Dispatch<SetStateAction<AspectRatio>>;
@@ -151,7 +151,7 @@ const initialMockupCount = 2;
 export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(null);
     const [referenceImages, setReferenceImages] = useState<UploadedImage[]>([]);
-    const [designType, setDesignType] = useState<DesignType | null>(null);
+    const [designType, setDesignType] = useState<DesignType>('layout');
     const [selectedModel, setSelectedModel] = useState<GeminiModel | null>(null);
     const [resolution, setResolution] = useState<Resolution>('1K');
     const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
@@ -251,7 +251,7 @@ export const MockupProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const resetAll = () => {
         setUploadedImage(null);
         setReferenceImages([]);
-        setDesignType(null);
+        setDesignType('layout');
         setSelectedTags([]);
         setSelectedBrandingTags([]);
         setSelectedLocationTags([]);

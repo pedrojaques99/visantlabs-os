@@ -35,6 +35,19 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
   );
 };
 
+/** Renders skeleton when loading, otherwise children */
+export const SkeletonText: React.FC<{
+  loading: boolean;
+  className?: string;
+  width?: string;
+  children: React.ReactNode;
+}> = ({ loading, className = '', width = '100%', children }) => {
+  if (loading) {
+    return <SkeletonLoader variant="text" width={width} className={className} />;
+  }
+  return <>{children}</>;
+};
+
 export const SkeletonCard: React.FC<{ aspectRatio?: string }> = ({ aspectRatio = '16:9' }) => {
   const { locale } = useTranslation();
   const skeletonMessages = useMemo(() => {

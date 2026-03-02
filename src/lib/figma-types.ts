@@ -221,6 +221,8 @@ export type SerializedNode = {
   // Component
   componentKey?: string;
   componentName?: string;
+  // Children (recursive)
+  children?: SerializedNode[];
 };
 
 export type SerializedContext = {

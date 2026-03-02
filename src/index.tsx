@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import App from './App';
 import PluginPage from './pages/PluginPage';
@@ -85,40 +85,36 @@ if (!rootElement) {
   throw new Error("Could not find root element to mount to");
 }
 
+const routeErrorElement = (
+  <ErrorBoundaryWrapper>
+    <div className="min-h-screen bg-background text-neutral-300 flex items-center justify-center p-4">
+      <div className="max-w-2xl w-full bg-card border border-neutral-800 rounded-md p-6 md:p-8 space-y-6">
+        <h1 className="text-xl md:text-2xl font-semibold text-neutral-200 font-mono">
+          {translate('router.routeError', initialLocale)}
+        </h1>
+        <p className="text-sm text-neutral-400 font-mono">
+          {translate('router.routeErrorDescription', initialLocale)}
+        </p>
+        <button
+          onClick={() => (window.location.href = '/')}
+          className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-brand-cyan/30 hover:border-brand-cyan/50 text-brand-cyan rounded-md transition-colors font-mono text-sm"
+        >
+          {translate('router.goHome', initialLocale)}
+        </button>
+      </div>
+    </div>
+  </ErrorBoundaryWrapper>
+);
+
 const router = createBrowserRouter([
   {
-    path: '/',
-    element: <Outlet />,
-    children: [
-      {
-        path: 'plugin',
-        element: <PluginPage />,
-      },
-      {
-        path: '*',
-        element: <App />,
-        errorElement: (
-          <ErrorBoundaryWrapper>
-            <div className="min-h-screen bg-background text-neutral-300 flex items-center justify-center p-4">
-              <div className="max-w-2xl w-full bg-card border border-neutral-800 rounded-md p-6 md:p-8 space-y-6">
-                <h1 className="text-xl md:text-2xl font-semibold text-neutral-200 font-mono">
-                  {translate('router.routeError', initialLocale)}
-                </h1>
-                <p className="text-sm text-neutral-400 font-mono">
-                  {translate('router.routeErrorDescription', initialLocale)}
-                </p>
-                <button
-                  onClick={() => (window.location.href = '/')}
-                  className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-brand-cyan/30 hover:border-brand-cyan/50 text-brand-cyan rounded-md transition-colors font-mono text-sm"
-                >
-                  {translate('router.goHome', initialLocale)}
-                </button>
-              </div>
-            </div>
-          </ErrorBoundaryWrapper>
-        ),
-      },
-    ],
+    path: '/plugin',
+    element: <PluginPage />,
+  },
+  {
+    path: '/*',
+    element: <App />,
+    errorElement: routeErrorElement,
   },
 ]);
 

@@ -12,6 +12,8 @@ import { cn } from '@/lib/utils';
 import { MockupTagCategory } from '@/services/mockupTagService';
 import { MockupPreset } from '../../types/mockupPresets';
 import { useMockup } from './MockupContext';
+import { InstructionsIdentityPanel } from './InstructionsIdentityPanel';
+import { SkeletonText } from '@/components/ui/SkeletonLoader';
 
 interface CategoriesSectionProps {
   suggestedTags: string[];
@@ -33,6 +35,7 @@ interface CategoriesSectionProps {
   categoriesPool?: string[];
   onPoolToggle?: (tag: string) => void;
   hasAnalyzed?: boolean;
+  isGenerating?: boolean;
 }
 
 interface CollapsableCategoryGroupProps {
@@ -46,6 +49,7 @@ interface CollapsableCategoryGroupProps {
   isSurpriseMeMode?: boolean;
   categoriesPool?: string[];
   icon?: React.ReactNode;
+  isGenerating?: boolean;
 }
 
 const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
@@ -58,7 +62,8 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
   className,
   isSurpriseMeMode,
   categoriesPool = [],
-  icon
+  icon,
+  isGenerating = false,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const groupSelectedTags = tags.filter(tag => selectedTags.includes(tag));
@@ -83,9 +88,11 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {icon && <div className="flex-shrink-0">{icon}</div>}
           <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
-            <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>
-              {title}
-            </span>
+            <SkeletonText loading={isGenerating}>
+              <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>
+                {title}
+              </span>
+            </SkeletonText>
             {!isExpanded && (hasSelection || poolTags.length > 0) && (
               <span className="text-[10px] font-mono truncate max-w-[200px]">
                 {hasSelection && <span className="text-brand-cyan">{selectionSummary}</span>}
@@ -139,7 +146,8 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
   isSurpriseMeMode = false,
   categoriesPool = [],
   onPoolToggle,
-  hasAnalyzed = false
+  hasAnalyzed = false,
+  isGenerating = false,
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
@@ -421,6 +429,8 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
         </div>
       </div>
 
+      <InstructionsIdentityPanel />
+
       <div className="space-y-2">
         {/* Smart Suggestion Input */}
         <div className={cn(
@@ -506,6 +516,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
               isSurpriseMeMode={isSurpriseMeMode}
               categoriesPool={categoriesPool}
               icon={getCategoryIcon(group)}
+              isGenerating={isGenerating}
             />
           ))}
 

@@ -1,14 +1,19 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Select } from '@/components/ui/select';
-import { Dices, PenLine, Pickaxe, Check, Settings, Sparkles, Cpu, Zap, Film } from 'lucide-react';
+import { Dices, PenLine, Pickaxe, Check, Settings, Sparkles, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
-import { GeminiModel, Resolution, ImageProvider } from '@/types/types';
+import type { GeminiModel, Resolution, ImageProvider, UploadedImage } from '@/types/types';
+import { isSafeUrl } from '@/utils/imageUtils';
 import { getCreditsRequired } from '@/utils/creditCalculator';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { PromptSection } from './PromptSection';
+import type { ComponentProps } from 'react';
+
+type PromptSectionProps = ComponentProps<typeof PromptSection>;
 
 interface SurpriseMeControlProps {
     onSurpriseMe: (autoGenerate: boolean) => void;
@@ -32,6 +37,11 @@ interface SurpriseMeControlProps {
     isGeneratingOutputs?: boolean;
     isPromptReady?: boolean;
     showGenerateButtons?: boolean;
+    variant?: 'inline' | 'sticky';
+    /** Thumbnail of uploaded design - shown in collapsed (pool) mode */
+    uploadedImage?: UploadedImage | null;
+    /** When provided, renders collapsible PromptSection above the buttons */
+    promptSectionProps?: PromptSectionProps | null;
 }
 
 const buttonLabel = (dark: boolean, isActive?: boolean) =>
@@ -118,6 +128,9 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
     isGeneratingOutputs,
     isPromptReady,
     showGenerateButtons = true,
+    variant = 'sticky',
+    uploadedImage = null,
+    promptSectionProps = null,
 }) => {
     const { t } = useTranslation();
     const { theme } = useTheme();
@@ -153,8 +166,13 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
         return base;
     };
 
+    const isInline = variant === 'inline';
     const isFixedBottom = containerClassName?.includes('rounded-b-none');
     const isLight = !dark;
+
+    const thumbSrc = uploadedImage
+        ? (uploadedImage.url || (uploadedImage.base64 && isSafeUrl(`data:${uploadedImage.mimeType};base64,${uploadedImage.base64}`) ? `data:${uploadedImage.mimeType};base64,${uploadedImage.base64}` : ''))
+        : '';
 
     const renderButton = (
         onClick: () => void,
@@ -162,7 +180,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
         icon: React.ReactNode,
         isActive: boolean,
         tooltip: string,
-        badge?: React.ReactNode,
+        creditsCount?: number,
         label?: string,
         variant?: 'default' | 'generatePrompt' | 'surpriseMe'
     ) => {
@@ -195,7 +213,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                 isPrimarySurprise
                                     ? 'bg-gradient-to-br from-brand-cyan to-foreground border-brand-cyan/50 hover:opacity-90'
                                     : 'bg-brand-cyan border-brand-cyan/50 hover:bg-brand-cyan/90',
-                                isPrimarySurprise && isActive && 'ring-2 ring-brand-cyan ring-offset-2 ring-offset-black'
+                                isPrimarySurprise && isActive && 'ring-2 ring-brand-cyan ring-offset-2 ring-offset-black animate-pool-glow'
                             )
 
                             : // Active state (Non-primary)
@@ -218,13 +236,17 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                 </div>
                 {label && (
                     <span className={cn(
-                        'text-[11px] font-mono uppercase tracking-[0.12em] whitespace-nowrap text-center leading-tight transition-colors font-bold',
+                        'flex items-center gap-1.5 text-xs font-mono uppercase tracking-[0.12em] whitespace-nowrap text-center leading-tight transition-colors font-bold',
                         !disabled && (isPrimaryAction || isPrompt || isActive) ? 'text-black' : (dark ? 'text-neutral-400' : 'text-neutral-600')
                     )}>
                         {label}
+                        {creditsCount != null && creditsCount > 0 && (
+                            <span className="text-[11px] font-semibold opacity-90">
+                                {creditsCount} 💎
+                            </span>
+                        )}
                     </span>
                 )}
-                {badge}
             </button>
         );
 
@@ -240,25 +262,73 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
 
     // State for local settings menu
     const [showSettings, setShowSettings] = React.useState(false);
+    const [promptSectionExpanded, setPromptSectionExpanded] = React.useState(false);
+
+    const hasPromptSection = !!(promptSectionProps && showGenerateButtons);
 
     return (
         <div
             className={cn(
-                'w-fit bg-transparent transition-all duration-500',
-                showBackground && !isFixedBottom && `pt-4`,
-                showBackground && !isFixedBottom && 'px-5 md:px-6',
-                showBackground && isFixedBottom && 'pt-4 !pb-4 px-4 md:px-5 rounded-t-xl',
-                isSurpriseMeMode && 'drop-shadow-[0_0_15px_rgba(var(--brand-cyan-rgb),0.3)]',
+                'transition-all duration-500 origin-center flex flex-col',
+                'scale-80 md:scale-100',
+                isInline ? 'w-full bg-transparent' : 'w-fit bg-transparent',
+                !isInline && showBackground && !isFixedBottom && `pt-4`,
+                !isInline && showBackground && !isFixedBottom && 'px-5 md:px-6',
+                !isInline && showBackground && isFixedBottom && 'pt-4 !pb-4 px-4 md:px-5 rounded-t-xl',
+                isSurpriseMeMode && 'animate-pool-glow',
                 containerClassName
             )}
         >
+            {/* Collapsible PromptSection - above buttons when provided */}
+            {hasPromptSection && (
+                <div className="w-full min-w-0 mb-2">
+                    <button
+                        type="button"
+                        onClick={() => setPromptSectionExpanded((p) => !p)}
+                        className={cn(
+                            'w-full flex items-center justify-between gap-2 py-1.5 px-1 rounded-md',
+                            'text-[10px] font-mono uppercase tracking-widest transition-colors',
+                            dark ? 'text-neutral-400 hover:text-neutral-200' : 'text-neutral-600 hover:text-neutral-800'
+                        )}
+                        aria-expanded={promptSectionExpanded}
+                        aria-label={promptSectionExpanded ? (t('collapse') || 'Collapse') : (t('expand') || 'Expand')}
+                    >
+                        <span>{t('mockup.promptShort') || 'PROMPT'}</span>
+                        <span className="transition-transform duration-300" style={{ transform: promptSectionExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                            <ChevronDown size={14} strokeWidth={2.5} />
+                        </span>
+                    </button>
+                    <div
+                        className={cn(
+                            'grid transition-[grid-template-rows] duration-300 ease-out',
+                            promptSectionExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+                        )}
+                    >
+                        <div className="min-h-0 overflow-hidden">
+                            <PromptSection {...promptSectionProps!} />
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div
                 className={cn(
-                    "flex flex-nowrap items-center gap-2 justify-center select-none bg-transparent relative",
+                    "flex flex-nowrap items-center gap-2 select-none bg-transparent relative",
+                    isInline ? 'justify-center flex-nowrap gap-3 text-center' : 'justify-center',
                     isFixedBottom ? 'pt-2 pb-3' : 'pt-2 pb-3'
                 )}
             >
-                {/* 1. SURPRISE ME BUTTON - Now separated again */}
+                {/* Pool Director Mode Indicator */}
+                {isSurpriseMeMode && (
+                    <div className="absolute -top-5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 animate-fade-in">
+                        <span className="h-1.5 w-1.5 rounded-full bg-brand-cyan animate-pool-dot-breathe inline-block" />
+                        <span className="text-[9px] font-mono font-bold text-brand-cyan tracking-[0.15em] uppercase whitespace-nowrap">
+                            {t('mockup.surpriseMeModeActiveTooltip')}
+                        </span>
+                    </div>
+                )}
+
+                {/* 1. SURPRISE ME BUTTON */}
                 <div className="flex items-center gap-1.5">
                     {renderButton(
                         () => onSurpriseMe(autoGenerate),
@@ -266,17 +336,8 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                         <Dices size={20} className={cn("transition-transform duration-700", isDiceAnimating && "rotate-[360deg]")} />,
                         isSurpriseMeMode,
                         surpriseTooltip(),
-                        autoGenerate && creditsSurpriseMe > 0 && (
-                            <div className="absolute -top-1.5 -right-1.5 z-20 animate-in zoom-in duration-300">
-                                <Badge
-                                    variant="outline"
-                                    className="rounded-full px-1.5 py-0.5 text-[8px] font-mono leading-none border-white/10 bg-neutral-900 text-neutral-300 shadow-xl"
-                                >
-                                    {creditsSurpriseMe} 💎
-                                </Badge>
-                            </div>
-                        ),
-                        undefined,
+                        autoGenerate ? creditsSurpriseMe : 0,
+                        t('mockup.surpriseMe') || 'Surprise Me',
                         'surpriseMe'
                     )}
                 </div>
@@ -300,16 +361,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                     ),
                                     !!isPromptReady,
                                     isPromptReady ? outputsTooltip() : promptTooltip(),
-                                    isPromptReady && creditsOutputs > 0 && (
-                                        <div className="absolute -top-1.5 -right-1.5 z-20 animate-in zoom-in duration-300">
-                                            <Badge
-                                                variant="outline"
-                                                className="rounded-full px-1.5 py-0.5 text-[8px] font-mono leading-none border-white/10 bg-neutral-900 text-neutral-300 shadow-xl"
-                                            >
-                                                {creditsOutputs} 💎
-                                            </Badge>
-                                        </div>
-                                    ),
+                                    isPromptReady ? creditsOutputs : 0,
                                     t('mockup.outputsShort') || "Gerar"
                                 )
                             ) : (
@@ -326,7 +378,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                         ),
                                         !!isPromptReady,
                                         promptTooltip(),
-                                        null,
+                                        undefined,
                                         t('mockup.promptShort') || "Prompt"
                                     )}
 
@@ -341,16 +393,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                         ),
                                         false,
                                         outputsTooltip(),
-                                        creditsOutputs > 0 && (
-                                            <div className="absolute -top-1.5 -right-1.5 z-20 animate-in zoom-in duration-300">
-                                                <Badge
-                                                    variant="outline"
-                                                    className="rounded-full px-1.5 py-0.5 text-[8px] font-mono leading-none border-white/10 bg-neutral-900 text-neutral-300 shadow-xl"
-                                                >
-                                                    {creditsOutputs} 💎
-                                                </Badge>
-                                            </div>
-                                        ),
+                                        creditsOutputs,
                                         t('mockup.outputsShort') || "Gerar"
                                     )}
                                 </>
@@ -359,8 +402,19 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                     </>
                 )}
 
-                {/* Settings Toggle Button */}
-                <div className="relative ml-1">
+                {/* Uploaded image thumb - only in collapsed (pool) mode */}
+                {!isInline && isSurpriseMeMode && thumbSrc && (
+                    <div
+                        className="w-14 h-14 shrink-0 rounded-xl border border-white/10 overflow-hidden bg-neutral-900/50"
+                        role="img"
+                        aria-label={t('mockup.uploadedDesignAlt') || 'Design enviado'}
+                    >
+                        <img src={thumbSrc} alt="" className="w-full h-full object-cover" />
+                    </div>
+                )}
+
+                {/* Settings Toggle Button - hidden in inline mode */}
+                {!isInline && <div className="relative ml-1">
                     <Tooltip content={t('mockup.aiSettings') || "Configurações de geração"} position="top">
                         <button
                             onClick={() => setShowSettings(!showSettings)}
@@ -409,6 +463,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                         ]}
                                         className="w-full bg-black/40 border-white/10 text-[11px]"
                                         variant="default"
+                                        loading={isGeneratingPrompt || isGeneratingOutputs}
                                     />
                                 </div>
                             </div>
@@ -436,7 +491,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                             </div>
                         </div>
                     )}
-                </div>
+                </div>}
             </div>
         </div>
     );

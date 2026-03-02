@@ -571,6 +571,14 @@
     "createNewMockup": "Criar Mockup",
     "communityMockups": "Mockups da Comunidade"
   },
+  "homepage": {
+    "seoTitle": "Visant Labs® | Mockup Machine",
+    "seoDescription": "Envie seu logo ou layout e vá direto para o setup da Mockup Machine.",
+    "heroTitle": "Envie seu logo ou layout",
+    "heroSubtitle": "e vá direto para o setup da Mockup Machine",
+    "sendImage": "Enviar imagem",
+    "goToMockupMachine": "Você será redirecionado para o setup da Mockup Machine."
+  },
   "welcome": {
     "title": "MOCKUP MACHINE®",
     "version": "v1.0",
@@ -768,6 +776,8 @@
     "surpriseMeModeEnableTooltip": "Ativar Modo Diretor (mantém as tags ao clicar)",
     "surpriseMeModeDisableTooltip": "Desativar Modo Diretor",
     "surpriseMeModeActiveTooltip": "Modo Diretor Ativo",
+    "openSidebar": "Abrir barra lateral",
+    "closeSidebar": "Fechar barra lateral",
     "autoGenerate": "Auto Gerar",
     "autoGenerateTooltip": "Gera automaticamente os outputs após o prompt ser criado",
     "aiSettings": "Ajustes de IA",
@@ -804,7 +814,8 @@
       "other": "outros"
     },
     "refine": "REFINAR_",
-    "advancedOptions": "OPÇÕES_AVANÇADAS_",
+    "advancedOptions": "Opções avançadas",
+    "transparentBackground": "Fundo transparente",
     "colorPalette": "PALETA DE CORES_",
     "location": "LOCALIZAÇÃO_",
     "cameraAngle": "ÂNGULO_DA_CÂMERA_",
@@ -817,7 +828,7 @@
     "additionalPrompt": "PROMPT ADICIONAL (DEVE TER...)",
     "additionalPromptPlaceholder": "ex.: em uma mesa de madeira, sombras suaves",
     "outputConfig": "CONFIG_",
-    "numberOfImages": "NÚMERO DE IMAGENS_",
+    "numberOfImages": "NÚMERO DE IMAGENS",
     "resolution4kOnly": "RESOLUÇÃO_",
     "generateContextualText": "Gerar texto placeholder",
     "includeHumanInteraction": "Incluir interação humana",
@@ -911,7 +922,7 @@
     "selected": "SELECIONADO",
     "colorsSelected": "cores selecionadas",
     "setupAndAnalysis": "CONFIGURAÇÃO & ANÁLISE",
-    "generationConfig": "TAGS SELECIONADAS",
+    "generationConfig": "CUSTOMIZE SEU MOCKUP",
     "inPool": "no pool",
     "sectionLocked": "Seção bloqueada após análise",
     "addCustomTag": "Adicionar tag personalizada...",

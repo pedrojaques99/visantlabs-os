@@ -588,6 +588,14 @@
     "createNewMockup": "Create Mockup",
     "communityMockups": "Community Mockups"
   },
+  "homepage": {
+    "seoTitle": "Visant Labs® | Mockup Machine",
+    "seoDescription": "Upload your logo or layout and go straight to the Mockup Machine setup.",
+    "heroTitle": "Upload your logo or layout",
+    "heroSubtitle": "and go straight to the Mockup Machine setup",
+    "sendImage": "Upload image",
+    "goToMockupMachine": "You will be redirected to the Mockup Machine setup."
+  },
   "welcome": {
     "title": "MOCKUP MACHINE®",
     "version": "v1.0",
@@ -816,7 +824,8 @@
       "other": "other"
     },
     "refine": "REFINE_",
-    "advancedOptions": "ADVANCED_OPTIONS_",
+    "advancedOptions": "Advanced Options",
+    "transparentBackground": "Transparent background",
     "colorPalette": "COLOR PALETTE",
     "location": "LOCATION",
     "cameraAngle": "CAMERA_ANGLE",
@@ -911,6 +920,8 @@
     "surpriseMeAgain": "Click again for different tags",
     "surpriseMeMode": "Pool Mode",
     "surpriseMeModeActiveTooltip": "Pool mode active - selecting random tags from your configured pool",
+    "openSidebar": "Open sidebar",
+    "closeSidebar": "Close sidebar",
     "surpriseMeModeEnableTooltip": "Enable Pool Mode to configure which tags can be randomly selected",
     "surpriseMeModeDisableTooltip": "Disable Pool Mode and return to normal tag selection",
     "savePoolAsPreset": "Save Pool as Preset",
@@ -919,7 +930,7 @@
     "selected": "SELECTED",
     "colorsSelected": "colors selected",
     "setupAndAnalysis": "SETUP & ANALYSIS",
-    "generationConfig": "GENERATION CONFIG",
+    "generationConfig": "CUSTOMIZE YOUR MOCKUP",
     "inPool": "in pool",
     "sectionLocked": "Section locked after analysis",
     "selectOption": "Select..."

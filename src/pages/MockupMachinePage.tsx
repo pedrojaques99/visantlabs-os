@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useBlocker, useLocation } from 'react-router-dom';
-import { Menu, Pickaxe, X } from 'lucide-react';
+import { Menu, PanelLeftOpen, Pickaxe, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ImageUploader } from '../components/ui/ImageUploader';
 import { normalizeImageToBase64, detectMimeType } from '../services/reactFlowService';
@@ -2715,7 +2715,7 @@ Generate the new mockup image with the requested changes applied.`;
               "z-30 transition-all duration-500 ease-in-out",
               isSetupMode ? "w-full" : [
                 "fixed inset-0 lg:relative lg:inset-auto",
-                isSidebarVisibleMobile ? "flex bg-background/95 backdrop-blur-md" : "hidden lg:flex",
+                isSidebarVisibleMobile ? "flex items-center justify-center bg-background/95 backdrop-blur-md" : "hidden lg:flex lg:items-center lg:justify-center",
                 isSidebarCollapsed ? "lg:w-0 lg:opacity-0 lg:pointer-events-none" : "lg:w-auto lg:opacity-100"
               ]
             )}>
@@ -2749,31 +2749,34 @@ Generate the new mockup image with the requested changes applied.`;
                 isSidebarCollapsed && "lg:pl-16 shadow-[inset_20px_0_30px_-20px_rgba(0,0,0,0.3)]"
               )}>
 
-                {/* Desktop Sidebar Toggle */}
+                {/* Desktop Sidebar Toggle - PanelLeftOpen when collapsed (expand), X when expanded (close) */}
                 <div className="hidden lg:block absolute left-4 top-6 z-40">
                   <Button
                     onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
                     variant="ghost"
                     size="icon"
                     className="w-10 h-10 rounded-xl bg-neutral-900/50 backdrop-blur-md border border-white/5 hover:bg-neutral-800 hover:border-brand-cyan/30 text-neutral-400 hover:text-brand-cyan shadow-xl transition-all group"
+                    title={isSidebarCollapsed ? (t('mockup.openSidebar') || 'Abrir barra lateral') : (t('mockup.closeSidebar') || 'Fechar barra lateral')}
                   >
-                    <X className={cn(
-                      "h-5 w-5 transition-transform duration-500",
-                      !isSidebarCollapsed ? "rotate-180" : "group-hover:scale-110"
-                    )} />
+                    {isSidebarCollapsed ? (
+                      <PanelLeftOpen className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                    ) : (
+                      <X className="h-5 w-5 transition-transform duration-500" />
+                    )}
                   </Button>
                 </div>
 
-                {/* Mobile Sidebar Toggle (Visible only when sidebar is hidden) */}
-                {!isSidebarVisibleMobile && (
-                  <div className="lg:hidden fixed bottom-6 left-6 z-40">
+                {/* Mobile Sidebar Toggle - only when floating bar is hidden (bar has its own expand btn) */}
+                {!isSidebarVisibleMobile && !((isDashboardMode && shouldShowGenerateButton) || hasAnalyzed) && (
+                  <div className="lg:hidden fixed bottom-6 left-4 z-50">
                     <Button
                       onClick={() => setIsSidebarVisibleMobile(true)}
                       variant="default"
                       size="icon"
                       className="w-12 h-12 rounded-full bg-brand-cyan text-black shadow-2xl shadow-brand-cyan/20 hover:scale-110 active:scale-95 transition-all"
+                      title={t('mockup.openSidebar') || 'Abrir barra lateral'}
                     >
-                      <Menu className="h-6 w-6" />
+                      <PanelLeftOpen className="h-6 w-6" />
                     </Button>
                   </div>
                 )}
@@ -2858,6 +2861,17 @@ Generate the new mockup image with the requested changes applied.`;
       {/* Floating SurpriseMeControl (mobile only, when sidebar hidden) */}
       {!isSidebarVisibleMobile && ((isDashboardMode && shouldShowGenerateButton) || hasAnalyzed) && (
         <div className="fixed bottom-0 right-0 left-0 z-[60] lg:hidden animate-in fade-in slide-in-from-bottom-4 duration-300 bg-background px-4 md:px-6">
+          <div className="flex items-center gap-2 w-full">
+            <Button
+              onClick={() => setIsSidebarVisibleMobile(true)}
+              variant="outline"
+              size="icon"
+              className="shrink-0 w-10 h-10 rounded-xl border-white/10 bg-neutral-900/80 hover:bg-neutral-800 hover:border-brand-cyan/30 text-neutral-400 hover:text-brand-cyan"
+              title={t('mockup.openSidebar') || 'Abrir barra lateral'}
+            >
+              <PanelLeftOpen className="h-5 w-5" />
+            </Button>
+            <div className="flex-1 min-w-0">
           <SurpriseMeControl
             onSurpriseMe={handleSurpriseMeWithDice}
             isGeneratingPrompt={isGeneratingPrompt}
@@ -2880,7 +2894,10 @@ Generate the new mockup image with the requested changes applied.`;
             isGeneratingOutputs={isLoading.some(Boolean)}
             isPromptReady={isPromptReady}
             showGenerateButtons
+            uploadedImage={uploadedImage}
           />
+            </div>
+          </div>
         </div>
       )}
 

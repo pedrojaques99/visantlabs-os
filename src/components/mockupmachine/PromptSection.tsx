@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useTheme } from '@/hooks/useTheme';
 import { getTranslations } from '@/utils/localeUtils';
 import { useMockup } from './MockupContext';
+import { SkeletonText } from '@/components/ui/SkeletonLoader';
 
 interface PromptSectionProps {
   promptPreview: string;
@@ -30,6 +31,7 @@ interface PromptSectionProps {
   creditsPerGeneration?: number;
   onGenerateSuggestion?: (suggestion: string) => void;
   isGenerateDisabled?: boolean;
+  isSidebarGenerating?: boolean;
 }
 
 export const PromptSection: React.FC<PromptSectionProps> = ({
@@ -47,7 +49,8 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
   onSuggestionClick,
   creditsPerGeneration,
   onGenerateSuggestion,
-  isGenerateDisabled = false
+  isGenerateDisabled = false,
+  isSidebarGenerating = false,
 }) => {
   const { t, locale } = useTranslation();
   const { theme } = useTheme();
@@ -187,7 +190,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
       textarea.style.height = 'auto';
       // Set height to scrollHeight to fit all content, but respect max-height
       const scrollHeight = textarea.scrollHeight;
-      const maxHeight = 600; // max-h-[600px]
+      const maxHeight = 480;
       textarea.style.height = `${Math.min(scrollHeight, maxHeight)}px`;
       // Enable overflow-y-auto if content exceeds max height
       if (scrollHeight > maxHeight) {
@@ -204,7 +207,7 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
     textarea.style.height = 'auto';
     // Set height to scrollHeight to fit all content, but respect max-height
     const scrollHeight = textarea.scrollHeight;
-    const maxHeight = 600; // max-h-[600px]
+    const maxHeight = 480;
     textarea.style.height = `${Math.min(scrollHeight, maxHeight)}px`;
     // Enable overflow-y-auto if content exceeds max height
     if (scrollHeight > maxHeight) {
@@ -226,9 +229,11 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
       )}
     >
       <div className="flex items-center justify-between mb-2">
-        <h4 className={`flex items-center gap-2 text-xs font-mono ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>
-          <Info size={14} /> {t('mockup.prompt')}
-        </h4>
+        <SkeletonText loading={isSidebarGenerating}>
+          <h4 className={`flex items-center gap-2 text-xs font-mono ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>
+            <Info size={14} /> {t('mockup.prompt')}
+          </h4>
+        </SkeletonText>
         <div className="flex items-center gap-3">
           {/* Hide suggest button when prompt is empty */}
           {promptPreview.trim() && (
@@ -253,12 +258,9 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
         <div
           ref={backdropRef}
           aria-hidden="true"
-          className={`absolute inset-0 w-full h-full p-2 rounded-md border border-transparent whitespace-pre-wrap font-mono text-xs overflow-hidden pointer-events-none ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-700'
+          className={`absolute inset-0 w-full h-full p-3 rounded-md border border-transparent whitespace-pre-wrap font-mono text-sm overflow-hidden pointer-events-none ${theme === 'dark' ? 'text-neutral-300' : 'text-neutral-700'
             }`}
-          style={{
-            // Match textarea sizing styles exactly
-            lineHeight: '1.5', // Assuming default or verify
-          }}
+          style={{ lineHeight: '1.65' }}
         >
           {promptPreview ? (
             <>
@@ -281,22 +283,30 @@ export const PromptSection: React.FC<PromptSectionProps> = ({
           ref={textareaRef}
           value={promptPreview}
           onChange={handleChange}
-          onScroll={handleScroll} // Sync scroll
+          onScroll={handleScroll}
           rows={1}
-          className={`relative z-10 w-full p-2 rounded-md border focus:outline-none focus:border-brand-cyan/50 focus:ring-0 text-xs whitespace-pre-wrap font-mono transition-colors duration-200 bg-transparent ${theme === 'dark'
-            ? 'border-neutral-700/50 text-transparent caret-neutral-400'
-            : 'border-neutral-300 text-transparent caret-neutral-700'
-            } ${isGeneratingPrompt ? 'opacity-70' : ''} selection:bg-brand-cyan/20 selection:text-transparent`} // Text transparent to show backdrop
+          className={cn(
+            'relative z-10 w-full p-3 rounded-md border whitespace-pre-wrap font-mono text-sm resize-y',
+            'focus:outline-none focus:border-brand-cyan/50 focus:ring-2 focus:ring-brand-cyan/20 focus:ring-offset-0',
+            'transition-colors duration-200 bg-transparent',
+            theme === 'dark'
+              ? 'border-neutral-700/50 text-transparent caret-brand-cyan placeholder:text-neutral-500'
+              : 'border-neutral-300 text-transparent caret-brand-cyan placeholder:text-neutral-500',
+            isGeneratingPrompt && 'opacity-70',
+            'selection:bg-brand-cyan/25 selection:text-transparent'
+          )}
           placeholder={isGeneratingPrompt && !promptPreview ? '' : t('mockup.promptPlaceholder')}
-          style={{ minHeight: '100px', maxHeight: '600px', lineHeight: '1.5' }} // Explicit line-height
+          style={{ minHeight: '140px', maxHeight: '480px', lineHeight: '1.65' }}
           disabled={isGeneratingPrompt}
-          spellCheck={false} // Avoid red squiggles interfering
+          spellCheck={false}
         />
       </div>
       {
         promptSuggestions.length > 0 && (
           <div className="mt-3 space-y-2 animate-fade-in">
-            <p className={`text-xs font-mono ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.aiSuggestions')}</p>
+            <SkeletonText loading={isSidebarGenerating}>
+              <p className={`text-xs font-mono ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.aiSuggestions')}</p>
+            </SkeletonText>
             {promptSuggestions.map((suggestion, index) => (
               <div
                 key={index}

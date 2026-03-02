@@ -9,7 +9,7 @@ function postToUI(msg: { type: string } & Record<string, unknown>) {
 
 // ── Deep node serialization (Phase 3) ──
 
-function serializeNode(node: SceneNode): SerializedNode {
+async function serializeNode(node: SceneNode, depth = 0): Promise<SerializedNode> {
   const base: SerializedNode = {
     id: node.id,
     type: node.type,
@@ -54,10 +54,26 @@ function serializeNode(node: SceneNode): SerializedNode {
     }
   }
 
-  // Instance info
-  if (node.type === 'INSTANCE' && node.mainComponent) {
-    base.componentKey = node.mainComponent.key;
-    base.componentName = node.mainComponent.name;
+  // Instance info — must use async API with documentAccess: dynamic-page
+  if (node.type === 'INSTANCE') {
+    try {
+      const mainComp = await node.getMainComponentAsync();
+      if (mainComp) {
+        base.componentKey = mainComp.key;
+        base.componentName = mainComp.name;
+      }
+    } catch (_e) {
+      // Component may not be accessible
+    }
+  }
+
+  // Recursively serialize children (max 3 levels deep for performance)
+  if ('children' in node && (node as any).children && depth < 3) {
+    const children: SerializedNode[] = [];
+    for (const child of (node as any).children as SceneNode[]) {
+      children.push(await serializeNode(child, depth + 1));
+    }
+    base.children = children;
   }
 
   return base;
@@ -69,7 +85,7 @@ async function serializeSelection(): Promise<SerializedContext> {
   const limit = 20;
 
   for (let i = 0; i < Math.min(selection.length, limit); i++) {
-    nodes.push(serializeNode(selection[i]));
+    nodes.push(await serializeNode(selection[i]));
   }
 
   const styles: Record<string, string> = {};
@@ -240,14 +256,14 @@ async function applyOperations(ops: FigmaOperation[]) {
 
         // ═══ SET_FILL ═══
       } else if (op.type === 'SET_FILL') {
-        const node = figma.getNodeById(op.nodeId) as GeometryMixin | null;
+        const node = await figma.getNodeByIdAsync(op.nodeId) as GeometryMixin | null;
         if (node && 'fills' in node) {
           node.fills = op.fills;
         }
 
         // ═══ SET_STROKE ═══
       } else if (op.type === 'SET_STROKE') {
-        const node = figma.getNodeById(op.nodeId) as GeometryMixin | null;
+        const node = await figma.getNodeByIdAsync(op.nodeId) as GeometryMixin | null;
         if (node && 'strokes' in node) {
           node.strokes = op.strokes;
           if (op.strokeWeight != null) node.strokeWeight = op.strokeWeight;
@@ -258,7 +274,7 @@ async function applyOperations(ops: FigmaOperation[]) {
 
         // ═══ SET_CORNER_RADIUS ═══
       } else if (op.type === 'SET_CORNER_RADIUS') {
-        const node = figma.getNodeById(op.nodeId) as any;
+        const node = await figma.getNodeByIdAsync(op.nodeId) as any;
         if (node && 'cornerRadius' in node) {
           node.cornerRadius = op.cornerRadius;
           if (op.cornerSmoothing != null && 'cornerSmoothing' in node) {
@@ -268,22 +284,33 @@ async function applyOperations(ops: FigmaOperation[]) {
 
         // ═══ SET_EFFECTS ═══
       } else if (op.type === 'SET_EFFECTS') {
-        const node = figma.getNodeById(op.nodeId) as BlendMixin | null;
+        const node = await figma.getNodeByIdAsync(op.nodeId) as BlendMixin | null;
         if (node && 'effects' in node) {
-          node.effects = op.effects.map(e => ({
-            type: e.type as Effect['type'],
-            color: e.color ?? { r: 0, g: 0, b: 0, a: 0.25 },
-            offset: e.offset ?? { x: 0, y: 4 },
-            radius: e.radius,
-            spread: e.spread ?? 0,
-            visible: e.visible ?? true,
-            blendMode: 'NORMAL' as BlendMode,
-          })) as Effect[];
+          node.effects = op.effects.map(e => {
+            if (e.type === 'LAYER_BLUR' || e.type === 'BACKGROUND_BLUR') {
+              return {
+                type: e.type,
+                radius: e.radius,
+                visible: e.visible ?? true,
+                blurType: 'NORMAL',
+              } as Effect;
+            }
+            // DROP_SHADOW / INNER_SHADOW
+            return {
+              type: e.type as 'DROP_SHADOW' | 'INNER_SHADOW',
+              color: e.color ?? { r: 0, g: 0, b: 0, a: 0.25 },
+              offset: e.offset ?? { x: 0, y: 4 },
+              radius: e.radius,
+              spread: e.spread ?? 0,
+              visible: e.visible ?? true,
+              blendMode: 'NORMAL' as BlendMode,
+            } as Effect;
+          });
         }
 
         // ═══ SET_AUTO_LAYOUT ═══
       } else if (op.type === 'SET_AUTO_LAYOUT') {
-        const node = figma.getNodeById(op.nodeId) as FrameNode | null;
+        const node = await figma.getNodeByIdAsync(op.nodeId) as FrameNode | null;
         if (node && node.type === 'FRAME') {
           node.layoutMode = op.layoutMode;
           if (op.primaryAxisSizingMode) node.primaryAxisSizingMode = op.primaryAxisSizingMode;
@@ -300,14 +327,14 @@ async function applyOperations(ops: FigmaOperation[]) {
 
         // ═══ RESIZE ═══
       } else if (op.type === 'RESIZE') {
-        const node = figma.getNodeById(op.nodeId) as SceneNode | null;
+        const node = await figma.getNodeByIdAsync(op.nodeId) as SceneNode | null;
         if (node && 'resize' in node) {
           (node as any).resize(op.width, op.height);
         }
 
         // ═══ MOVE ═══
       } else if (op.type === 'MOVE') {
-        const node = figma.getNodeById(op.nodeId) as SceneNode | null;
+        const node = await figma.getNodeByIdAsync(op.nodeId) as SceneNode | null;
         if (node) {
           node.x = op.x;
           node.y = op.y;
@@ -315,37 +342,55 @@ async function applyOperations(ops: FigmaOperation[]) {
 
         // ═══ RENAME ═══
       } else if (op.type === 'RENAME') {
-        const node = figma.getNodeById(op.nodeId);
+        const node = await figma.getNodeByIdAsync(op.nodeId);
         if (node) node.name = op.name;
 
         // ═══ SET_TEXT_CONTENT ═══
       } else if (op.type === 'SET_TEXT_CONTENT') {
-        const node = figma.getNodeById(op.nodeId) as TextNode | null;
+        const node = await figma.getNodeByIdAsync(op.nodeId) as TextNode | null;
         if (node && node.type === 'TEXT') {
+          // Load ALL fonts currently used in the text node before modifying
+          const len = node.characters.length;
+          if (len > 0) {
+            const fontsUsed = new Set<string>();
+            for (let i = 0; i < len; i++) {
+              const fn = node.getRangeFontName(i, i + 1) as FontName;
+              const key = `${fn.family}::${fn.style}`;
+              if (!fontsUsed.has(key)) {
+                fontsUsed.add(key);
+                try { await figma.loadFontAsync(fn); } catch (_e) { /* skip */ }
+              }
+            }
+          }
+
           const fontFamily = op.fontFamily ?? 'Inter';
           const fontStyle = op.fontStyle ?? 'Regular';
           try {
             await figma.loadFontAsync({ family: fontFamily, style: fontStyle });
-            node.fontName = { family: fontFamily, style: fontStyle };
           } catch (_e) {
             await figma.loadFontAsync(defaultFont);
+          }
+
+          node.characters = op.content;
+          try {
+            node.fontName = { family: fontFamily, style: fontStyle };
+          } catch (_e) {
             node.fontName = defaultFont;
           }
-          node.characters = op.content;
           if (op.fontSize) node.fontSize = op.fontSize;
           if (op.fills) node.fills = op.fills;
         }
 
         // ═══ SET_OPACITY ═══
       } else if (op.type === 'SET_OPACITY') {
-        const node = figma.getNodeById(op.nodeId) as SceneNode | null;
+        const node = await figma.getNodeByIdAsync(op.nodeId) as SceneNode | null;
         if (node && 'opacity' in node) {
           node.opacity = op.opacity;
         }
 
         // ═══ APPLY_VARIABLE ═══
       } else if (op.type === 'APPLY_VARIABLE') {
-        const node = figma.getNodeById(op.nodeId) as SceneNode | null;
+        const node = await figma.getNodeByIdAsync(op.nodeId) as SceneNode | null;
         if (node && figma.variables) {
           const variable = await figma.variables.getVariableByIdAsync(op.variableId);
           if (variable) {
@@ -370,7 +415,7 @@ async function applyOperations(ops: FigmaOperation[]) {
 
         // ═══ APPLY_STYLE ═══
       } else if (op.type === 'APPLY_STYLE') {
-        const node = figma.getNodeById(op.nodeId) as any;
+        const node = await figma.getNodeByIdAsync(op.nodeId) as any;
         if (node) {
           if (op.styleType === 'FILL' && 'fillStyleId' in node) {
             if (typeof node.setFillStyleIdAsync === 'function') {
@@ -399,31 +444,33 @@ async function applyOperations(ops: FigmaOperation[]) {
       } else if (op.type === 'GROUP_NODES') {
         const nodes: SceneNode[] = [];
         for (const id of op.nodeIds) {
-          const n = figma.getNodeById(id);
+          const n = await figma.getNodeByIdAsync(id);
           if (n && 'parent' in n) nodes.push(n as SceneNode);
         }
         if (nodes.length > 0) {
-          const group = figma.group(nodes, figma.currentPage);
+          // figma.group requires all nodes share the same parent
+          const parent = nodes[0].parent as BaseNode & ChildrenMixin;
+          const group = figma.group(nodes, parent);
           group.name = op.name;
         }
 
         // ═══ UNGROUP ═══
       } else if (op.type === 'UNGROUP') {
-        const node = figma.getNodeById(op.nodeId) as SceneNode | null;
+        const node = await figma.getNodeByIdAsync(op.nodeId) as SceneNode | null;
         if (node && 'children' in node) {
           figma.ungroup(node as SceneNode & ChildrenMixin);
         }
 
         // ═══ DETACH_INSTANCE ═══
       } else if (op.type === 'DETACH_INSTANCE') {
-        const node = figma.getNodeById(op.nodeId) as InstanceNode | null;
+        const node = await figma.getNodeByIdAsync(op.nodeId) as InstanceNode | null;
         if (node && node.type === 'INSTANCE') {
           node.detachInstance();
         }
 
         // ═══ DELETE_NODE ═══
       } else if (op.type === 'DELETE_NODE') {
-        const node = figma.getNodeById(op.nodeId);
+        const node = await figma.getNodeByIdAsync(op.nodeId);
         if (node) node.remove();
       }
     } catch (err) {
@@ -508,7 +555,7 @@ async function exportComponentThumbnails(components: ComponentInfo[]): Promise<v
     const batch = components.slice(i, i + BATCH);
     await Promise.all(
       batch.map(async (comp) => {
-        const node = figma.getNodeById(comp.id) as ComponentNode | ComponentSetNode | null;
+        const node = await figma.getNodeByIdAsync(comp.id) as ComponentNode | ComponentSetNode | null;
         if (node) {
           const thumb = await exportThumbnail(node);
           if (thumb) postToUI({ type: 'COMPONENT_THUMBNAIL', componentId: comp.id, thumbnail: thumb });
@@ -602,23 +649,29 @@ figma.showUI(__html__, { width: 420, height: 680, themeColors: true, title: 'Vis
 // Notify when selection changes
 figma.on('selectionchange', notifyContextChange);
 
-function getComponentFromSelection(): ComponentInfo | null {
+async function getComponentFromSelection(): Promise<ComponentInfo | null> {
   const sel = figma.currentPage.selection;
   if (sel.length !== 1) return null;
   const node = sel[0];
   if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') {
     return { id: node.id, name: node.name, key: node.key, folderPath: getFolderPath(node) };
   }
-  if (node.type === 'INSTANCE' && node.mainComponent) {
-    const main = node.mainComponent;
-    return { id: main.id, name: main.name, key: main.key, folderPath: main.parent ? getFolderPath(main) : [] };
+  if (node.type === 'INSTANCE') {
+    try {
+      const main = await node.getMainComponentAsync();
+      if (main) {
+        return { id: main.id, name: main.name, key: main.key, folderPath: main.parent ? getFolderPath(main) : [] };
+      }
+    } catch (_e) {
+      // Component may not be accessible
+    }
   }
   return null;
 }
 
 figma.ui.onmessage = async (msg: UIMessage) => {
   if (msg.type === 'USE_SELECTION_AS_LOGO') {
-    const comp = getComponentFromSelection();
+    const comp = await getComponentFromSelection();
     postToUI({ type: 'SELECTION_AS_LOGO', component: comp });
     return;
   }
@@ -639,19 +692,11 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       fontVariables: fonts.length
     });
 
-    // Send components first, then thumbnails in background
-    setTimeout(() => {
-      postToUI({ type: 'COMPONENTS_LOADED', components });
-      exportComponentThumbnails(components).catch(() => { });
-    }, 100);
-
-    setTimeout(() => {
-      postToUI({ type: 'FONT_VARIABLES_LOADED', fonts });
-    }, 150);
-
-    setTimeout(() => {
-      postToUI({ type: 'COLOR_VARIABLES_LOADED', colors });
-    }, 200);
+    // Send data to UI immediately, then thumbnails in background
+    postToUI({ type: 'COMPONENTS_LOADED', components });
+    postToUI({ type: 'FONT_VARIABLES_LOADED', fonts });
+    postToUI({ type: 'COLOR_VARIABLES_LOADED', colors });
+    exportComponentThumbnails(components).catch(() => { });
   } else if (msg.type === 'APPLY_OPERATIONS') {
     await applyOperations(msg.payload);
   } else if (msg.type === 'APPLY_OPERATIONS_FROM_API') {

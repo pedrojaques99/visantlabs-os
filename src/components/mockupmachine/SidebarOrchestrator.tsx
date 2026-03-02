@@ -122,34 +122,29 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
         className={cn(
           "relative flex-shrink-0 bg-sidebar text-sidebar-foreground overflow-y-auto overflow-x-hidden overscroll-contain min-h-0 z-10 transition-all duration-500",
           "max-h-[calc(100dvh-6rem)] sm:max-h-[calc(100dvh-7rem)] lg:max-h-full",
-          "p-3 sm:p-4 md:p-6 lg:p-8 pb-24 sm:pb-28 md:pb-32 lg:pb-8",
+          "p-3 sm:p-4 md:p-6 lg:p-8",
           "w-full", // Base width
           !hasAnalyzed ? [
             "rounded-md border",
             isSurpriseMeMode
-              ? "border-brand-cyan/40 border-dashed shadow-[0_0_25px_rgba(0,210,255,0.08)] animate-pulse-subtle"
+              ? "border-brand-cyan/40 border-dashed shadow-[0_0_25px_rgba(0,210,255,0.08)] animate-pool-border-glow"
               : "border-sidebar-border/5",
             "max-w-screen-2xl mx-auto", // Full width for Step 1
             "min-w-0"
           ] : [
             "max-w-full sm:max-w-3xl md:max-w-4xl lg:max-w-5xl", // Sidebar panel state for Step 2
-            "h-full px-4 lg:px-6 py-10 lg:pb-0",
+            "h-full px-4 lg:px-6 py-10",
             isSurpriseMeMode
               ? "border-l border-brand-cyan/70 border-dashed shadow-[-10px_0_30px_rgba(0,210,255,0.05)]"
               : "border-r border-sidebar-border/10",
             "lg:w-auto"
           ]
         )}
-        style={hasAnalyzed && isLargeScreen ? { width: `${sidebarWidth}px` } : {}}
+        style={{
+          paddingBottom: '50px',
+          ...(hasAnalyzed && isLargeScreen ? { width: `${sidebarWidth}px` } : {})
+        }}
       >
-        {/* Pool Mode Status Badge */}
-        {isSurpriseMeMode && (
-          <div className="fixed top-6 right-8 flex items-center gap-2 px-2 py-1 rounded bg-brand-cyan/10 border border-brand-cyan/20 backdrop-blur animate-fade-in z-40">
-            <span className="text-[9px] font-mono font-bold text-brand-cyan tracking-[0.2em] uppercase">
-              {t('mockup.surpriseMeMode')}
-            </span>
-          </div>
-        )}
         <div className="space-y-3 sm:space-y-4 md:space-y-6 lg:space-y-8">
           {hasAnalyzed && (
             <SidebarGenerationConfig

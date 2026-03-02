@@ -4,11 +4,13 @@ import { AdvancedOptions } from './AdvancedOptions';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import type { DesignType } from '@/types/types';
+import { SkeletonText } from '@/components/ui/SkeletonLoader';
 
 
 interface RefineSectionProps {
   isAdvancedOpen: boolean;
   onToggleAdvanced: () => void;
+  isGenerating?: boolean;
   advancedOptionsProps: {
     selectedLocationTags: string[];
     selectedAngleTags: string[];
@@ -54,7 +56,7 @@ interface RefineSectionProps {
     onWithHumanChange: (value: boolean) => void;
     onEnhanceTextureChange: (value: boolean) => void;
     onRemoveTextChange: (value: boolean) => void;
-    designType: DesignType | null;
+    designType: DesignType;
     generateText: boolean;
     withHuman: boolean;
     enhanceTexture: boolean;
@@ -84,7 +86,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
   isAdvancedOpen,
   onToggleAdvanced,
   advancedOptionsProps,
-
+  isGenerating = false,
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
@@ -125,14 +127,16 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
       className={`flex items-center p-2.5 rounded-md cursor-pointer border transition-all duration-200 ${className} ${theme === 'dark' ? 'bg-neutral-800/50 border-neutral-700/50 hover:bg-neutral-800' : 'bg-neutral-100 border-neutral-300 hover:bg-neutral-200'}`}
       onClick={() => onChange(!value)}
     >
-      <div className={`w-4 h-4 rounded-md flex items-center justify-center border transition-all duration-200 ${value ? 'bg-brand-cyan/80 border-[brand-cyan]' : theme === 'dark' ? 'bg-neutral-700 border-neutral-600' : 'bg-white border-neutral-400'}`}>
+      <div className={`w-4 h-4 rounded-md flex items-center justify-center border transition-all duration-200 shrink-0 ${value ? 'bg-brand-cyan/80 border-[brand-cyan]' : theme === 'dark' ? 'bg-neutral-700 border-neutral-600' : 'bg-white border-neutral-400'}`}>
         {value && (
           <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
           </svg>
         )}
       </div>
-      <label className={`ml-3 text-xs select-none cursor-pointer ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-700'}`}>{label}</label>
+      <SkeletonText loading={isGenerating} className="ml-3 flex-1 min-w-0">
+        <label className={`text-xs select-none cursor-pointer ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-700'}`}>{label}</label>
+      </SkeletonText>
     </div>
   );
 
@@ -215,7 +219,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
   return (
     <section>
       <div id="advanced-options-content" className="space-y-4">
-        <AdvancedOptions {...advancedOptionsProps} />
+        <AdvancedOptions {...advancedOptionsProps} isGenerating={isGenerating} />
 
         {/* Color Palette Panel (collapsible) */}
         <div className={`mt-2 rounded-xl border transition-all duration-200 overflow-hidden ${theme === 'dark' ? 'bg-neutral-900/30 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
@@ -226,9 +230,11 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
             <div className="flex items-center gap-2 flex-1 min-w-0">
               <PaletteIcon size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
               <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
-                <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>
-                  {t('mockup.colorPalette')}
-                </span>
+                <SkeletonText loading={isGenerating}>
+                  <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>
+                    {t('mockup.colorPalette')}
+                  </span>
+                </SkeletonText>
                 {!isColorPaletteExpanded && selectedColors.length > 0 && (
                   <span className="text-[10px] font-mono truncate max-w-[200px] text-brand-cyan">
                     {selectedColors.map(color => color).join(', ')}
@@ -237,9 +243,11 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
-              <span className={`text-[10px] font-mono ${theme === 'dark' ? 'text-neutral-600' : 'text-neutral-500'}`}>
-                {selectedColors.length}/{5}
-              </span>
+              <SkeletonText loading={isGenerating}>
+                <span className={`text-[10px] font-mono ${theme === 'dark' ? 'text-neutral-600' : 'text-neutral-500'}`}>
+                  {selectedColors.length}/{5}
+                </span>
+              </SkeletonText>
               {isColorPaletteExpanded ? <ChevronUp size={16} className="text-neutral-500" /> : <ChevronDown size={16} className="text-neutral-500" />}
             </div>
           </button>
@@ -324,7 +332,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
           )}
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-2">
+        <div className="grid grid-cols-2 sm:flex sm:flex-row gap-2">
           {true && (
             <ToggleItem
               value={generateText}

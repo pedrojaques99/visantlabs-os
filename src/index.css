@@ -633,6 +633,48 @@
   animation: pulse-subtle 2s ease-in-out infinite;
 }
 
+/* Pool mode: glow pulse (no opacity change) */
+@keyframes pool-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px rgba(82, 221, 235, 0.25));
+  }
+  50% {
+    filter: drop-shadow(0 0 20px rgba(82, 221, 235, 0.45));
+  }
+}
+
+/* Pool mode: dot breathe (scale only) */
+@keyframes pool-dot-breathe {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.35);
+  }
+}
+
+/* Pool mode: sidebar border glow (no opacity) */
+@keyframes pool-border-glow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(82, 221, 235, 0.06);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(82, 221, 235, 0.15);
+  }
+}
+
+.animate-pool-glow {
+  animation: pool-glow 2s ease-in-out infinite;
+}
+
+.animate-pool-dot-breathe {
+  animation: pool-dot-breathe 1.5s ease-in-out infinite;
+}
+
+.animate-pool-border-glow {
+  animation: pool-border-glow 2.5s ease-in-out infinite;
+}
+
 .animate-fade-in-up {
   animation: fade-in-up 0.5s ease-out forwards;
 }
