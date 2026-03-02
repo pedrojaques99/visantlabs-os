@@ -637,7 +637,7 @@ async function getComponentsInCurrentFile(): Promise<ComponentInfo[]> {
 }
 
 async function exportComponentThumbnails(components: ComponentInfo[]): Promise<void> {
-  const BATCH = 5;
+  const BATCH = 12;
   for (let i = 0; i < components.length; i += BATCH) {
     const batch = components.slice(i, i + BATCH);
     await Promise.all(
@@ -652,38 +652,116 @@ async function exportComponentThumbnails(components: ComponentInfo[]): Promise<v
   }
 }
 
+function rgbToHex(r: number, g: number, b: number): string {
+  const ri = Math.round(r * 255);
+  const gi = Math.round(g * 255);
+  const bi = Math.round(b * 255);
+  return `#${ri.toString(16).padStart(2, '0')}${gi.toString(16).padStart(2, '0')}${bi.toString(16).padStart(2, '0')}`;
+}
+
 async function getColorVariablesFromFile(): Promise<ColorVariable[]> {
   const colors: ColorVariable[] = [];
+  const seen = new Set<string>();
 
+  // ── 1. Local color variables ──
   try {
-    if (!figma.variables || typeof figma.variables.getLocalVariablesAsync !== 'function') {
-      console.log('[Plugin] Color variables API not available');
-      return colors;
-    }
-
-    const allVariables = await figma.variables.getLocalVariablesAsync('COLOR');
-    console.log('[Plugin] Total color variables:', allVariables.length);
-
-    for (const variable of allVariables) {
-      const value = variable.valuesByMode[Object.keys(variable.valuesByMode)[0]];
-      let colorHex = '#ccc';
-      if (typeof value === 'object' && 'r' in value) {
-        const r = Math.round((value as any).r * 255);
-        const g = Math.round((value as any).g * 255);
-        const b = Math.round((value as any).b * 255);
-        colorHex = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+    if (figma.variables && typeof figma.variables.getLocalVariablesAsync === 'function') {
+      const allVariables = await figma.variables.getLocalVariablesAsync('COLOR');
+      for (const variable of allVariables) {
+        const value = variable.valuesByMode[Object.keys(variable.valuesByMode)[0]];
+        let colorHex = '#ccc';
+        if (typeof value === 'object' && 'r' in value) {
+          colorHex = rgbToHex((value as any).r, (value as any).g, (value as any).b);
+        }
+        colors.push({ id: variable.id, name: variable.name, value: colorHex });
+        seen.add(colorHex);
       }
-      colors.push({
-        id: variable.id,
-        name: variable.name,
-        value: colorHex
-      });
     }
   } catch (e) {
     console.log('[Plugin] Error getting color variables:', e);
   }
 
-  console.log('[Plugin] Total color variables found:', colors.length);
+  // ── 2. Local paint styles ──
+  try {
+    const paintStyles = await figma.getLocalPaintStylesAsync();
+    for (const style of paintStyles) {
+      const paint = style.paints[0];
+      if (paint?.type === 'SOLID' && paint.color) {
+        const hex = rgbToHex(paint.color.r, paint.color.g, paint.color.b);
+        if (!seen.has(hex)) {
+          colors.push({ id: style.id, name: style.name, value: hex });
+          seen.add(hex);
+        }
+      }
+    }
+  } catch (e) {
+    console.log('[Plugin] Error getting paint styles:', e);
+  }
+
+  // ── 3. Library color variables (requires teamlibrary permission) ──
+  try {
+    if (figma.teamLibrary && typeof figma.teamLibrary.getAvailableLibraryVariableCollectionsAsync === 'function') {
+      const collections = await figma.teamLibrary.getAvailableLibraryVariableCollectionsAsync();
+      for (const col of collections) {
+        const libVars = await figma.teamLibrary.getVariablesInLibraryCollectionAsync(col.key);
+        for (const libVar of libVars) {
+          if (libVar.resolvedType === 'COLOR') {
+            // Import to get actual value — Figma only exposes name/key on LibraryVariable
+            try {
+              const imported = await figma.variables.importVariableByKeyAsync(libVar.key);
+              const val = imported.valuesByMode[Object.keys(imported.valuesByMode)[0]];
+              if (typeof val === 'object' && 'r' in val) {
+                const hex = rgbToHex((val as any).r, (val as any).g, (val as any).b);
+                if (!seen.has(hex)) {
+                  colors.push({ id: imported.id, name: `${col.name}/${libVar.name}`, value: hex });
+                  seen.add(hex);
+                }
+              }
+            } catch (_e) {
+              // Import may fail for some variables — skip
+            }
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.log('[Plugin] Error getting library color variables:', e);
+  }
+
+  // ── 4. Colors from current selection ──
+  try {
+    const selection = figma.currentPage.selection;
+    for (const node of selection) {
+      if ('fills' in node && Array.isArray(node.fills)) {
+        for (const fill of node.fills as ReadonlyArray<Paint>) {
+          if (fill.type === 'SOLID' && (fill as SolidPaint).color) {
+            const c = (fill as SolidPaint).color;
+            const hex = rgbToHex(c.r, c.g, c.b);
+            if (!seen.has(hex)) {
+              colors.push({ id: `sel:${node.id}:fill`, name: `${node.name} (fill)`, value: hex });
+              seen.add(hex);
+            }
+          }
+        }
+      }
+      if ('strokes' in node && Array.isArray(node.strokes)) {
+        for (const stroke of node.strokes as ReadonlyArray<Paint>) {
+          if (stroke.type === 'SOLID' && (stroke as SolidPaint).color) {
+            const c = (stroke as SolidPaint).color;
+            const hex = rgbToHex(c.r, c.g, c.b);
+            if (!seen.has(hex)) {
+              colors.push({ id: `sel:${node.id}:stroke`, name: `${node.name} (stroke)`, value: hex });
+              seen.add(hex);
+            }
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.log('[Plugin] Error extracting selection colors:', e);
+  }
+
+  console.log('[Plugin] Total colors found:', colors.length);
   return colors;
 }
 

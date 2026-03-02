@@ -26,6 +26,7 @@ let selectedColors = new Map();
 let allComponents = [];
 let componentThumbs = {};
 let expandedFolders = new Set();
+let showFolders = false;
 let allFonts = []; // font variables from library
 let allAvailableFonts = []; // all font families from Figma
 let allColors = [];
@@ -256,6 +257,20 @@ function renderFolderNode(node, pathPrefix) {
     return html;
 }
 
+function flattenTree(node) {
+    const comps = [];
+    for (const comp of node.comps || []) comps.push(comp);
+    for (const child of Object.values(node.children || {})) {
+        comps.push(...flattenTree(child));
+    }
+    return comps;
+}
+
+function toggleShowFolders() {
+    showFolders = document.getElementById('showFoldersCheckbox').checked;
+    renderComponentsLibrary();
+}
+
 function renderComponentsLibrary() {
     const searchTerm = (componentSearchEl ? componentSearchEl.value : '').toLowerCase().trim();
     const filtered = searchTerm
@@ -267,24 +282,32 @@ function renderComponentsLibrary() {
         return;
     }
 
-    const tree = buildTree(filtered);
-    const folders = Object.keys(tree.children || {});
-    const rootComps = tree.comps || [];
-    let html = '';
+    // Render in flat mode (default) or folder tree mode
+    if (!showFolders) {
+        // Flat mode: just grid of components
+        const html = filtered.map(comp => renderCompTile(comp)).join('');
+        componentsLibraryEl.innerHTML = html || '<div class="components-loading">Nenhum componente</div>';
+    } else {
+        // Folder tree mode
+        const tree = buildTree(filtered);
+        const folders = Object.keys(tree.children || {});
+        const rootComps = tree.comps || [];
+        let html = '';
 
-    for (const name of folders) {
-        const pathKey = name;
-        const isExpanded = expandedFolders.has(pathKey) || expandedFolders.size === 0;
-        if (expandedFolders.size === 0) expandedFolders.add(pathKey);
-        const escapedPathKey = pathKey.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-        html += `<div class="folder-row" onclick="toggleFolder('${escapedPathKey}')">` +
-            `<span class="folder-chevron ${isExpanded ? '' : 'collapsed'}">▸</span>` +
-            `<span class="folder-name">${name.replace(/</g, '&lt;')}</span></div>`;
-        if (isExpanded) html += `<div class="folder-children">${renderFolderNode(tree.children[name], [name])}</div>`;
+        for (const name of folders) {
+            const pathKey = name;
+            const isExpanded = expandedFolders.has(pathKey) || expandedFolders.size === 0;
+            if (expandedFolders.size === 0) expandedFolders.add(pathKey);
+            const escapedPathKey = pathKey.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            html += `<div class="folder-row" onclick="toggleFolder('${escapedPathKey}')">` +
+                `<span class="folder-chevron ${isExpanded ? '' : 'collapsed'}">▸</span>` +
+                `<span class="folder-name">${name.replace(/</g, '&lt;')}</span></div>`;
+            if (isExpanded) html += `<div class="folder-children">${renderFolderNode(tree.children[name], [name])}</div>`;
+        }
+
+        for (const comp of rootComps) html += renderCompTile(comp);
+        componentsLibraryEl.innerHTML = html || '<div class="components-loading">Nenhum componente</div>';
     }
-
-    for (const comp of rootComps) html += renderCompTile(comp);
-    componentsLibraryEl.innerHTML = html || '<div class="components-loading">Nenhum componente</div>';
 }
 
 // ── Colors ──
