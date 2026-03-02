@@ -1,12 +1,11 @@
-import React, { useMemo, useState } from 'react';
-import { Lock, ChevronDown, ChevronUp, Sliders, Settings2 } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Lock, ChevronDown, ChevronUp, Settings2, Check } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { cn } from '@/lib/utils';
 import { CategoriesSection } from './CategoriesSection';
 import { RefineSection } from './RefineSection';
 import { OutputConfigSection } from './OutputConfigSection';
-import { PromptSection } from './PromptSection';
 import { getCreditsRequired } from '@/utils/creditCalculator';
 import { useMockup } from './MockupContext';
 import { useMockupTags } from '@/hooks/useMockupTags';
@@ -14,8 +13,7 @@ import { SurpriseMeSelectedTagsDisplay } from './SurpriseMeSelectedTagsDisplay';
 import { AnalyzedSummaryCard } from './AnalyzedSummaryCard';
 import type { UploadedImage } from '@/types/types';
 import { SurpriseMeControl } from './SurpriseMeControl';
-import { DesignTypeSection } from './DesignTypeSection';
-import { Separator } from '@radix-ui/react-separator';
+import { SkeletonText } from '@/components/ui/SkeletonLoader';
 
 interface SidebarGenerationConfigProps {
     onGenerateClick: () => void;
@@ -28,7 +26,7 @@ interface SidebarGenerationConfigProps {
     onGenerateSuggestion: (suggestion: string) => void;
     generateOutputsButtonRef: React.RefObject<HTMLButtonElement>;
     isDiceAnimating: boolean;
-    onStartOver: () => void; /* Used for reset all? No, resetAll comes from context */
+    onStartOver: () => void;
     onReplaceImage?: (image: UploadedImage) => void;
     onReferenceImagesChange: (images: UploadedImage[]) => void;
     authenticationRequiredMessage: string;
@@ -50,7 +48,6 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
 }) => {
     const { t } = useTranslation();
     const { theme } = useTheme();
-    const [isRefineSectionExpanded, setIsRefineSectionExpanded] = useState(false);
 
     const {
         selectedModel,
@@ -139,6 +136,15 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
         setImageProvider,
     } = useMockup();
 
+    const [isAdvancedOptionsOpen, setIsAdvancedOptionsOpen] = useState(isSurpriseMeMode);
+
+    // Open advanced options automatically when entering pool mode
+    useEffect(() => {
+        if (isSurpriseMeMode) {
+            setIsAdvancedOptionsOpen(true);
+        }
+    }, [isSurpriseMeMode]);
+
     const {
         handleBrandingTagToggle,
         handleAddCustomBrandingTag,
@@ -171,6 +177,7 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
     const designTypeSelected = !!designType;
     const categoriesComplete = selectedTags.length > 0;
     const isGenerating = isLoading.some(l => l);
+    const isSidebarGenerating = isGeneratingPrompt || isGenerating;
     const isGenerateDisabled = !selectedModel || isGenerating || isGeneratingPrompt || !designTypeSelected;
 
     const displayAvailableCategoryTags = useMemo(() => [...new Set([...availableMockupTags, ...selectedTags])], [availableMockupTags, selectedTags]);
@@ -227,52 +234,94 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
 
     return (
         <div className="animate-fade-in justify-center" >
+            {/* Color swatches + Transparent background toggle - moved above card */}
+            <div className="flex items-end justify-between mt-4 gap-3">
+                <div className="flex -space-x-1.5 transition-all duration-300">
+                    {selectedColors.map((color, i) => (
+                        <div
+                            key={i}
+                            className="w-3 h-3 rounded-full border border-white/10 ring-2 ring-neutral-900/50 relative"
+                            style={{ backgroundColor: color }}
+                            title={color}
+                        />
+                    ))}
+                </div>
+                {designType && (
+                    <div
+                        className="flex items-center gap-2 cursor-pointer group"
+                        onClick={() => setDesignType(designType === 'logo' ? 'layout' : 'logo')}
+                        role="checkbox"
+                        aria-checked={designType === 'logo'}
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                            if (e.key !== 'Enter' && e.key !== ' ') return;
+                            e.preventDefault();
+                            setDesignType(designType === 'logo' ? 'layout' : 'logo');
+                        }}
+                    >
+                        <div className={cn(
+                            "w-4 h-4 rounded flex items-center justify-center border-2 transition-all duration-200 flex-shrink-0",
+                            designType === 'logo'
+                                ? "bg-brand-cyan border-brand-cyan"
+                                : theme === 'dark'
+                                    ? "bg-neutral-800 border-neutral-600 group-hover:border-neutral-500"
+                                    : "bg-white border-neutral-300 group-hover:border-neutral-400"
+                        )}>
+                            {designType === 'logo' && <Check size={10} className="text-black" strokeWidth={3} />}
+                        </div>
+                        <SkeletonText loading={isSidebarGenerating} className="min-w-[120px]">
+                            <span className={cn(
+                                "text-[11px] font-mono transition-colors select-none",
+                                theme === 'dark' ? "text-neutral-400 group-hover:text-neutral-300" : "text-neutral-600 group-hover:text-neutral-800"
+                            )}>
+                                {t('mockup.transparentBackground') || 'Transparent background'}
+                            </span>
+                        </SkeletonText>
+                    </div>
+                )}
+            </div>
 
-            {/* Analysis Summary & Surprise Me Grid */}
             <div className="gap-2">
+
+                {/* 1. AnalyzedSummaryCard (compact) */}
                 <AnalyzedSummaryCard
                     uploadedImage={uploadedImage}
-                    referenceImages={referenceImages} /* Pass reference images */
+                    isGenerating={isSidebarGenerating}
+                    referenceImages={referenceImages}
                     selectedBrandingTags={selectedBrandingTags}
-                    selectedColors={selectedColors}
                     onStartOver={resetAll}
                     onReplaceImage={onReplaceImage}
                     onReferenceImagesChange={onReferenceImagesChange}
+                />
+
+                {/* 2. SurpriseMeSelectedTagsDisplay - ALWAYS visible */}
+                <SurpriseMeSelectedTagsDisplay onRerollAll={() => handleSurpriseMe(false)} isGenerating={isSidebarGenerating} />
+
+                {/* 3. (Action toolbar is fixed at bottom — see below) */}
+
+                {/* 4. OutputConfigSection - ALWAYS visible */}
+                <OutputConfigSection
+                    mockupCount={mockupCount}
+                    onMockupCountChange={setMockupCount}
                     designType={designType}
-                    onDesignTypeChange={setDesignType}
+                    selectedModel={selectedModel}
+                    isGenerating={isSidebarGenerating}
+                    resolution={resolution}
+                    onResolutionChange={setResolution}
+                    setSelectedModel={setSelectedModel}
+                    aspectRatio={aspectRatio}
+                    onAspectRatioChange={setAspectRatio}
+                    imageProvider={imageProvider}
+                    setImageProvider={setImageProvider}
                 />
 
-                {/* CategoriesSection - Mockup Types */}
-                <CategoriesSection
-                    suggestedTags={suggestedTags}
-                    availableTags={displayAvailableCategoryTags}
-                    selectedTags={selectedTags}
-                    onTagToggle={handleTagToggle}
-                    isAnalyzing={isAnalyzing}
-                    isAllCategoriesOpen={isAllCategoriesOpen}
-                    onToggleAllCategories={() => setIsAllCategoriesOpen(!isAllCategoriesOpen)}
-                    customInput={customCategoryInput}
-                    onCustomInputChange={setCustomCategoryInput}
-                    onAddCustomTag={handleAddCustomCategoryTag}
-                    onRandomize={handleRandomizeCategories}
-                    isComplete={categoriesComplete}
-                    displaySuggestedTags={displaySuggestedTags}
-                    tagCategories={tagCategories}
-                    mockupPresets={mockupPresets}
-                    isSurpriseMeMode={isSurpriseMeMode}
-                    categoriesPool={surpriseMePool.selectedCategoryTags || []}
-                    onPoolToggle={(tag) => togglePoolTag('selectedCategoryTags', tag, surpriseMePool, setSurpriseMePool)}
-                />
-
-                <Separator className="my-4 bg-neutral-800/30 border-1 border-neutral-800/50" />
-
-                {/* Show refine section and below immediately when design type is selected OR when reference images are present OR uploaded image */}
-                <div id="refine-section" className={cn(
-                    "rounded-md border-1 border-neutral-800/50 transition-all duration-200 overflow-hidden animate-fade-in",
-                    theme === 'dark' ? 'bg-neutral-900/30 border-1 border-neutral-800/50 shadow-md' : 'bg-white/50 border-1 border-neutral-200 shadow-md'
+                {/* 5. Advanced Options - Collapsible */}
+                <div className={cn(
+                    "rounded-md border transition-all duration-200 overflow-hidden mt-2",
+                    theme === 'dark' ? 'bg-neutral-900/30 border-neutral-800/50 shadow-md' : 'bg-white/50 border-neutral-200 shadow-md'
                 )}>
                     <button
-                        onClick={() => setIsRefineSectionExpanded(!isRefineSectionExpanded)}
+                        onClick={() => setIsAdvancedOptionsOpen(!isAdvancedOptionsOpen)}
                         className={cn(
                             "w-full flex justify-between items-center text-left p-3 transition-all duration-200",
                             theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'
@@ -280,45 +329,50 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
                     >
                         <div className="flex items-center gap-2 flex-1 min-w-0">
                             <Settings2 size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
-                            <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
+                            <SkeletonText loading={isSidebarGenerating} className="min-w-[100px]">
                                 <span className={cn(
                                     "text-[12px] font-mono uppercase tracking-widest",
                                     theme === 'dark' ? "text-neutral-300" : "text-neutral-700"
                                 )}>
-                                    {t('mockup.refine')}
+                                    {t('mockup.advancedOptions') || 'Advanced Options'}
                                 </span>
-                                {!isRefineSectionExpanded && (
-                                    (selectedLocationTags.length > 0 ||
-                                        selectedAngleTags.length > 0 ||
-                                        selectedLightingTags.length > 0 ||
-                                        selectedEffectTags.length > 0 ||
-                                        selectedMaterialTags.length > 0 ||
-                                        selectedColors.length > 0) && (
-                                        <span className="text-[12px] font-mono truncate max-w-[200px] text-brand-cyan">
-                                            {[
-                                                selectedLocationTags.length > 0 && `${selectedLocationTags.length} ${t('mockup.location')}`,
-                                                selectedAngleTags.length > 0 && `${selectedAngleTags.length} ${t('mockup.cameraAngle')}`,
-                                                selectedLightingTags.length > 0 && `${selectedLightingTags.length} ${t('mockup.lightingMood')}`,
-                                                selectedEffectTags.length > 0 && `${selectedEffectTags.length} ${t('mockup.visualEffects')}`,
-                                                selectedMaterialTags.length > 0 && `${selectedMaterialTags.length} ${t('mockup.material')}`,
-                                                selectedColors.length > 0 && `${selectedColors.length} ${t('mockup.colorPalette')}`
-                                            ].filter(Boolean).join(' · ')}
-                                        </span>
-                                    )
-                                )}
-                            </div>
+                            </SkeletonText>
                         </div>
                         <div className="flex items-center gap-2 flex-shrink-0">
-                            {isRefineSectionExpanded ? <ChevronUp size={16} className="text-neutral-500" /> : <ChevronDown size={16} className="text-neutral-500" />}
+                            {isAdvancedOptionsOpen ? <ChevronUp size={16} className="text-neutral-500" /> : <ChevronDown size={16} className="text-neutral-500" />}
                         </div>
                     </button>
 
-                    {isRefineSectionExpanded && (
-                        <div className="p-3 pt-0 animate-fade-in">
-                            {/* Show RefineSection always - including when reference images are present */}
+                    {isAdvancedOptionsOpen && (
+                        <div className="p-3 pt-0 animate-fade-in space-y-4">
+                            {/* CategoriesSection */}
+                            <CategoriesSection
+                                suggestedTags={suggestedTags}
+                                availableTags={displayAvailableCategoryTags}
+                                selectedTags={selectedTags}
+                                isGenerating={isSidebarGenerating}
+                                onTagToggle={handleTagToggle}
+                                isAnalyzing={isAnalyzing}
+                                isAllCategoriesOpen={isAllCategoriesOpen}
+                                onToggleAllCategories={() => setIsAllCategoriesOpen(!isAllCategoriesOpen)}
+                                customInput={customCategoryInput}
+                                onCustomInputChange={setCustomCategoryInput}
+                                onAddCustomTag={handleAddCustomCategoryTag}
+                                onRandomize={handleRandomizeCategories}
+                                isComplete={categoriesComplete}
+                                displaySuggestedTags={displaySuggestedTags}
+                                tagCategories={tagCategories}
+                                mockupPresets={mockupPresets}
+                                isSurpriseMeMode={isSurpriseMeMode}
+                                categoriesPool={surpriseMePool.selectedCategoryTags || []}
+                                onPoolToggle={(tag) => togglePoolTag('selectedCategoryTags', tag, surpriseMePool, setSurpriseMePool)}
+                            />
+
+                            {/* RefineSection */}
                             <RefineSection
                                 isAdvancedOpen={isAdvancedOpen}
                                 onToggleAdvanced={() => setIsAdvancedOpen(!isAdvancedOpen)}
+                                isGenerating={isSidebarGenerating}
                                 advancedOptionsProps={{
                                     selectedLocationTags,
                                     selectedAngleTags,
@@ -389,59 +443,12 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
                                     onMaterialPoolToggle: (tag) => togglePoolTag('selectedMaterialTags', tag, surpriseMePool, setSurpriseMePool)
                                 }}
                             />
+
                         </div>
                     )}
                 </div>
 
-                <OutputConfigSection
-                    mockupCount={mockupCount}
-                    onMockupCountChange={setMockupCount}
-                    designType={designType}
-                    selectedModel={selectedModel}
-                    resolution={resolution}
-                    onResolutionChange={setResolution}
-                    setSelectedModel={setSelectedModel}
-                    aspectRatio={aspectRatio}
-                    onAspectRatioChange={setAspectRatio}
-                    imageProvider={imageProvider}
-                    setImageProvider={setImageProvider}
-                />
-
-                {/* PromptSection sempre visível */}
-                <PromptSection
-                    promptPreview={promptPreview}
-                    onPromptChange={handlePromptChange}
-                    onPromptUpdate={(value) => {
-                        setPromptPreview(value);
-                        if (isSmartPromptActive) {
-                            setIsSmartPromptActive(false);
-                        }
-                        setIsPromptManuallyEdited(true);
-                    }}
-                    promptSuggestions={promptSuggestions}
-                    isGeneratingPrompt={isGeneratingPrompt}
-                    isSuggestingPrompts={isSuggestingPrompts}
-                    isGenerating={isGenerating}
-                    hasGenerated={hasGenerated}
-                    mockups={mockups}
-                    onSuggestPrompts={onSuggestPrompts}
-                    onGenerateSmartPrompt={onGenerateSmartPrompt}
-                    onSimplify={onSimplify}
-                    onRegenerate={onRegenerate}
-                    onSuggestionClick={handleSuggestionClick}
-                    isSmartPromptActive={isSmartPromptActive}
-                    setIsSmartPromptActive={setIsSmartPromptActive}
-                    setIsPromptManuallyEdited={setIsPromptManuallyEdited}
-                    creditsPerGeneration={creditsPerGeneration}
-                    onGenerateSuggestion={onGenerateSuggestion}
-                    isGenerateDisabled={isGenerateDisabled}
-                />
-
-                {/* Display Selected Tags (only when prompt has content) */}
-                {promptPreview.trim().length > 0 && (
-                    <SurpriseMeSelectedTagsDisplay onRerollAll={() => handleSurpriseMe(false)} />
-                )}
-
+                {/* 6. Auth alert (conditional) */}
                 {(() => {
                     const hasToken = typeof window !== 'undefined' && localStorage.getItem('auth_token');
                     const shouldShowAlert = !hasToken && authenticationRequiredMessage;
@@ -456,41 +463,72 @@ export const SidebarGenerationConfig: React.FC<SidebarGenerationConfigProps> = (
                     ) : null;
                 })()}
 
-                {/* Spacer on mobile so fixed bar doesn't cover last content */}
-                <div className="h-40 flex-shrink-0 lg:hidden" aria-hidden="true" />
+                {/* Spacer so fixed toolbar doesn't cover content */}
+                <div className="h-40 flex-shrink-0" aria-hidden="true" />
+            </div>
 
-                {/* SurpriseMeControl: floating on mobile, sticky on lg+ */}
-                <div
-                    className={cn(
-                        'z-30 pt-4 animate-fade-in',
-                        'fixed bottom-0 left-0 right-0 px-4 pb-[max(1rem,env(safe-area-inset-bottom))]',
-                        'lg:relative lg:left-auto lg:right-auto lg:px-0 lg:pb-0 lg:pt-0 lg:sticky lg:bottom-0',
-                        'lg:flex lg:justify-center'
-                    )}
-                >
-                    <SurpriseMeControl
-                        onSurpriseMe={handleSurpriseMe}
-                        isGeneratingPrompt={isGeneratingPrompt}
-                        isDiceAnimating={isDiceAnimating}
-                        isSurpriseMeMode={isSurpriseMeMode}
-                        setIsSurpriseMeMode={setIsSurpriseMeMode}
-                        autoGenerate={autoGenerate}
-                        setAutoGenerate={setAutoGenerate}
-                        selectedModel={selectedModel}
-                        mockupCount={mockupCount}
-                        resolution={resolution}
-                        showBackground={true}
-                        containerClassName="shadow-lg !pb-0 rounded-b-none"
-                        onGeneratePrompt={onGenerateSmartPrompt}
-                        onGenerateOutputs={onGenerateClick}
-                        isGenerateDisabled={isGenerateDisabled}
-                        isGeneratingOutputs={isGenerating}
-                        isPromptReady={isPromptReady}
-                        setSelectedModel={setSelectedModel}
-                        imageProvider={imageProvider}
-                        setImageProvider={setImageProvider}
-                    />
-                </div>
+            {/* Fixed Bottom Toolbar — Surprise Me + Generate */}
+            <div
+                className={cn(
+                    'z-30 animate-fade-in',
+                    'fixed bottom-0 left-0 right-0 px-4 pb-[50px]',
+                    'lg:sticky lg:bottom-0 lg:left-auto lg:right-auto lg:px-0',
+                    'flex items-center justify-center',
+                    theme === 'dark'
+                        ? 'bg-gradient-to-t from-neutral-950 via-neutral-950/95 to-transparent'
+                        : 'bg-gradient-to-t from-white via-white/95 to-transparent'
+                )}
+            >
+                <SurpriseMeControl
+                    onSurpriseMe={handleSurpriseMe}
+                    isGeneratingPrompt={isGeneratingPrompt}
+                    isDiceAnimating={isDiceAnimating}
+                    isSurpriseMeMode={isSurpriseMeMode}
+                    setIsSurpriseMeMode={setIsSurpriseMeMode}
+                    autoGenerate={autoGenerate}
+                    setAutoGenerate={setAutoGenerate}
+                    selectedModel={selectedModel}
+                    mockupCount={mockupCount}
+                    resolution={resolution}
+                    showBackground={true}
+                    containerClassName="shadow-lg !pb-0 rounded-b-none"
+                    onGeneratePrompt={onGenerateSmartPrompt}
+                    onGenerateOutputs={onGenerateClick}
+                    isGenerateDisabled={isGenerateDisabled}
+                    isGeneratingOutputs={isGenerating}
+                    isPromptReady={isPromptReady}
+                    setSelectedModel={setSelectedModel}
+                    imageProvider={imageProvider}
+                    setImageProvider={setImageProvider}
+                    uploadedImage={uploadedImage}
+                    promptSectionProps={{
+                        promptPreview,
+                        isSidebarGenerating,
+                        onPromptChange: handlePromptChange,
+                        onPromptUpdate: (value) => {
+                            setPromptPreview(value);
+                            if (isSmartPromptActive) setIsSmartPromptActive(false);
+                            setIsPromptManuallyEdited(true);
+                        },
+                        promptSuggestions,
+                        isGeneratingPrompt,
+                        isSuggestingPrompts: isSuggestingPrompts,
+                        isGenerating: isGenerating,
+                        hasGenerated,
+                        mockups,
+                        onSuggestPrompts,
+                        onGenerateSmartPrompt,
+                        onSimplify,
+                        onRegenerate,
+                        onSuggestionClick: handleSuggestionClick,
+                        isSmartPromptActive,
+                        setIsSmartPromptActive,
+                        setIsPromptManuallyEdited,
+                        creditsPerGeneration,
+                        onGenerateSuggestion,
+                        isGenerateDisabled,
+                    }}
+                />
             </div>
         </div>
     );

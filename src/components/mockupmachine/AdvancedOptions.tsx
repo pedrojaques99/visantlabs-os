@@ -5,6 +5,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { translateTag } from '@/utils/localeUtils';
 import { Tag } from '@/components/shared/Tag';
 import type { DesignType } from '@/types/types';
+import { SkeletonText } from '@/components/ui/SkeletonLoader';
 
 interface AdvancedOptionsProps {
   selectedLocationTags: string[];
@@ -47,7 +48,7 @@ interface AdvancedOptionsProps {
   onMaterialTagToggle: (tag: string) => void;
   onCustomMaterialInputChange: (value: string) => void;
   onAddCustomMaterialTag: () => void;
-  designType: DesignType | null;
+  designType: DesignType;
   suggestedLocationTags: string[];
   suggestedAngleTags: string[];
   suggestedLightingTags: string[];
@@ -66,6 +67,7 @@ interface AdvancedOptionsProps {
   onLightingPoolToggle?: (tag: string) => void;
   onEffectPoolToggle?: (tag: string) => void;
   onMaterialPoolToggle?: (tag: string) => void;
+  isGenerating?: boolean;
 }
 
 interface CollapsableTagSectionProps {
@@ -82,6 +84,7 @@ interface CollapsableTagSectionProps {
   poolTags?: string[];
   onPoolToggle?: (tag: string) => void;
   icon?: React.ReactNode;
+  isGenerating?: boolean;
 }
 
 const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
@@ -97,7 +100,8 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
   isSurpriseMeMode = false,
   poolTags = [],
   onPoolToggle,
-  icon
+  icon,
+  isGenerating = false,
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
@@ -177,7 +181,9 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {icon && <div className="flex-shrink-0">{icon}</div>}
           <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
-            <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{title}</span>
+            <SkeletonText loading={isGenerating}>
+              <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{title}</span>
+            </SkeletonText>
             {!isExpanded && (hasSelection || poolTagsList.length > 0) && (
               <span className="text-[10px] font-mono truncate max-w-[200px]">
                 {hasSelection && <span className="text-brand-cyan">{selectionSummary}</span>}
@@ -231,6 +237,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
                 label={t('mockup.customTagLabel')}
                 onToggle={handleCustomTagClick}
                 className="gap-1 scale-90 origin-left"
+                loading={isGenerating}
               >
                 <Plus size={12} />
               </Tag>
@@ -242,7 +249,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
                 onChange={(e) => onCustomInputChange(e.target.value)}
                 onKeyDown={handleKeyDown}
                 onBlur={handleBlur}
-                placeholder={t('mockup.customCategoryPlaceholder')}
+                placeholder={isGenerating ? '' : t('mockup.customCategoryPlaceholder')}
                 className={`px-3 py-1.5 text-[10px] font-medium rounded-md transition-all duration-200 border border-[brand-cyan]/30 focus:outline-none focus:ring-0 min-w-[120px] font-mono ${theme === 'dark'
                   ? 'bg-brand-cyan/10 text-brand-cyan'
                   : 'bg-brand-cyan/5 text-neutral-800'
@@ -367,7 +374,8 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
   onAnglePoolToggle,
   onLightingPoolToggle,
   onEffectPoolToggle,
-  onMaterialPoolToggle
+  onMaterialPoolToggle,
+  isGenerating = false,
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
@@ -380,6 +388,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
       <div id="location-section">
         <CollapsableTagSection
           title={t('mockup.location')}
+          isGenerating={isGenerating}
           tags={availableLocationTags}
           selectedTags={selectedLocationTags}
           onTagToggle={onLocationTagToggle}
@@ -395,6 +404,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
       </div>
       <CollapsableTagSection
         title={t('mockup.cameraAngle')}
+        isGenerating={isGenerating}
         tags={availableAngleTags}
         selectedTags={selectedAngleTags}
         onTagToggle={onAngleTagToggle}
@@ -409,6 +419,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
       />
       <CollapsableTagSection
         title={t('mockup.lightingMood')}
+        isGenerating={isGenerating}
         tags={availableLightingTags}
         selectedTags={selectedLightingTags}
         onTagToggle={onLightingTagToggle}
@@ -423,6 +434,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
       />
       <CollapsableTagSection
         title={t('mockup.visualEffects')}
+        isGenerating={isGenerating}
         tags={availableEffectTags}
         selectedTags={selectedEffectTags}
         onTagToggle={onEffectTagToggle}
@@ -438,6 +450,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
       {designType === 'logo' && (
         <CollapsableTagSection
           title={t('mockup.material')}
+          isGenerating={isGenerating}
           tags={availableMaterialTags}
           selectedTags={selectedMaterialTags}
           onTagToggle={onMaterialTagToggle}
@@ -462,7 +475,9 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
             <div className="flex items-center gap-2 flex-1 min-w-0">
               <XCircle size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
               <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
-                <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.negativePrompt')}</span>
+                <SkeletonText loading={isGenerating}>
+                  <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.negativePrompt')}</span>
+                </SkeletonText>
                 {!isNegativeExpanded && negativePrompt && (
                   <span className="text-[10px] text-neutral-500 font-mono truncate max-w-[200px]">{negativePrompt}</span>
                 )}
@@ -483,7 +498,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
                   ? 'bg-neutral-950/70 border-neutral-700/50 text-neutral-400'
                   : 'bg-neutral-50 border-neutral-300 text-neutral-700'
                   }`}
-                placeholder={t('mockup.negativePromptPlaceholder')}
+                placeholder={isGenerating ? '' : t('mockup.negativePromptPlaceholder')}
               />
             </div>
           )}
@@ -497,7 +512,9 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
             <div className="flex items-center gap-2 flex-1 min-w-0">
               <FilePlus size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
               <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
-                <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.additionalPrompt')}</span>
+                <SkeletonText loading={isGenerating}>
+                  <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.additionalPrompt')}</span>
+                </SkeletonText>
                 {!isAdditionalExpanded && additionalPrompt && (
                   <span className="text-[10px] text-neutral-500 font-mono truncate max-w-[200px]">{additionalPrompt}</span>
                 )}
@@ -518,7 +535,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
                   ? 'bg-neutral-950/70 border-neutral-700/50 text-neutral-400'
                   : 'bg-neutral-50 border-neutral-300 text-neutral-700'
                   }`}
-                placeholder={t('mockup.additionalPromptPlaceholder')}
+                placeholder={isGenerating ? '' : t('mockup.additionalPromptPlaceholder')}
               />
             </div>
           )}

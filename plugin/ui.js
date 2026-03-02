@@ -270,20 +270,28 @@ async function callPluginAPI(context) {
         });
 
         if (!response.ok) {
-            const error = await response.json();
-            parent.postMessage({ pluginMessage: { type: 'ERROR', message: error.error || 'Falha ao gerar operações' } }, 'https://www.figma.com');
+            let errorMsg = 'Falha ao gerar operações';
+            try { const error = await response.json(); errorMsg = error.error || errorMsg; } catch (_e) { /* non-JSON error */ }
+            handleApiError(errorMsg);
             return;
         }
 
         const data = await response.json();
         if (!data.success || !Array.isArray(data.operations)) {
-            parent.postMessage({ pluginMessage: { type: 'ERROR', message: 'Resposta inválida da API' } }, 'https://www.figma.com');
+            handleApiError('Resposta inválida da API');
             return;
         }
         parent.postMessage({ pluginMessage: { type: 'APPLY_OPERATIONS_FROM_API', operations: data.operations } }, 'https://www.figma.com');
     } catch (err) {
-        parent.postMessage({ pluginMessage: { type: 'ERROR', message: 'Falha ao chamar API: ' + String(err) } }, 'https://www.figma.com');
+        handleApiError('Falha ao chamar API: ' + String(err));
     }
+}
+
+function handleApiError(message) {
+    hideStatus();
+    chatInput.disabled = false;
+    updateSendState();
+    addChatMsg('assistant', 'Erro: ' + message, true);
 }
 
 // ── Message handler ──

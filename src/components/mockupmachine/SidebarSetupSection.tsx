@@ -1,13 +1,12 @@
 import React from 'react';
-import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useTheme } from '@/hooks/useTheme';
 import { InputSection } from './InputSection';
 import { useMockup } from './MockupContext';
 import type { UploadedImage, DesignType } from '../../types/types';
 import { GlitchLoader } from '../ui/GlitchLoader';
 import { cn } from '@/lib/utils';
-import { Plus, ArrowRight } from 'lucide-react';
-import { Tooltip } from '@/components/ui/Tooltip';
+import { ArrowRight, Check } from 'lucide-react';
 
 interface SidebarSetupSectionProps {
     onImageUpload: (image: UploadedImage) => void;
@@ -36,115 +35,67 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
         isAnalyzing,
     } = useMockup();
 
-    const handleScrollToSection = (sectionId: string) => {
-        const section = document.getElementById(sectionId);
-        if (section) {
-            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-    };
-
-    const canAnalyze = uploadedImage && designType && !hasAnalyzed;
-
-    const currentStep = !uploadedImage ? 1 : !designType ? 2 : 3;
+    const canAnalyze = uploadedImage && !hasAnalyzed;
+    const isTransparent = designType === 'logo';
 
     return (
         <div
             id="section-setup"
             className="transition-all duration-300 w-full flex flex-col min-h-full relative pb-24"
         >
-            {/* Step indicator */}
-            <nav className="flex items-center gap-2 mb-6" aria-label={t('mockup.setupSteps') || 'Setup steps'}>
-                {[1, 2, 3].map((step) => (
-                    <React.Fragment key={step}>
-                        <span
-                            className={cn(
-                                "flex items-center justify-center w-7 h-7 rounded-full text-[10px] font-mono font-bold transition-colors",
-                                step < currentStep && "bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/40",
-                                step === currentStep && "bg-brand-cyan text-black border border-brand-cyan",
-                                step > currentStep && "bg-neutral-800/50 text-neutral-500 border border-neutral-700"
-                            )}
-                            aria-current={step === currentStep ? 'step' : undefined}
-                        >
-                            {step < currentStep ? '✓' : step}
-                        </span>
-                        {step < 3 && (
-                            <span className={cn(
-                                "w-4 h-px",
-                                step < currentStep ? "bg-brand-cyan/40" : "bg-neutral-700"
-                            )} aria-hidden="true" />
+            <div className="flex flex-col gap-4 w-full">
+                {/* Upload Section */}
+                <InputSection
+                    uploadedImage={uploadedImage}
+                    referenceImages={referenceImages}
+                    designType={designType}
+                    selectedModel={selectedModel}
+                    onImageUpload={onImageUpload}
+                    onReferenceImagesChange={onReferenceImagesChange}
+                    onStartOver={onStartOver}
+                    hasAnalyzed={hasAnalyzed}
+                    onDesignTypeChange={onDesignTypeChange}
+                    onScrollToSection={() => {}}
+                />
+
+                {/* Transparent Background Checkbox */}
+                {uploadedImage && (
+                    <div
+                        className={cn(
+                            "flex items-center gap-3 cursor-pointer group px-2 py-3 rounded-lg transition-colors",
+                            theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'
                         )}
-                    </React.Fragment>
-                ))}
-            </nav>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start w-full">
-                {/* Left Column - Files/Uploads */}
-                <div className="flex flex-col gap-4">
-                    <InputSection
-                        uploadedImage={uploadedImage}
-                        referenceImages={referenceImages}
-                        designType={designType}
-                        selectedModel={selectedModel}
-                        onImageUpload={onImageUpload}
-                        onReferenceImagesChange={onReferenceImagesChange}
-                        onStartOver={onStartOver}
-                        hasAnalyzed={hasAnalyzed}
-                        onDesignTypeChange={onDesignTypeChange}
-                        onScrollToSection={handleScrollToSection}
-                    />
-                </div>
-
-                {/* Right Column - Configuration */}
-                <div className="flex flex-col gap-6">
-                    {uploadedImage && (
-                        <div className="flex flex-col gap-6 w-full items-start py-8 px-8 rounded-md border border-white/[0.05] backdrop-blur-xl animate-in fade-in slide-in-from-right-4 duration-500">
-                            <div className="space-y-1">
-                                <span className="text-[10px] font-mono uppercase tracking-[0.4em] text-brand-cyan font-bold block mb-2">
-                                    {t('mockup.setup') || 'Configuração'}
-                                </span>
-                                <h4 className="text-xl font-mono text-white font-medium">
-                                    {t('mockup.designTypeQuestion') || 'Isto é um logo ou layout?'}
-                                </h4>
-                                <p className="text-sm text-neutral-500 font-mono leading-relaxed">
-                                    {t('mockup.designTypeDescription') || 'Selecione o tipo de imagem principal para otimizar os resultados da IA.'}
-                                </p>
-                            </div>
-
-                            <div className="flex flex-col w-full gap-3">
-                                <button
-                                    onClick={() => onDesignTypeChange('logo')}
-                                    aria-pressed={designType === 'logo'}
-                                    aria-label={t('mockup.typeLogo') || 'Logo'}
-                                    className={cn(
-                                        "w-full flex items-center justify-between px-6 py-5 text-sm font-mono rounded-md transition-all duration-300 border",
-                                        designType === 'logo'
-                                            ? "bg-brand-cyan border-brand-cyan text-black font-bold shadow-xl shadow-brand-cyan/20 translate-y-[-2px]"
-                                            : "bg-neutral-900/50 border-white/5 text-neutral-400 hover:text-neutral-200 hover:border-white/10 hover:bg-white/5"
-                                    )}
-                                >
-                                    <span>{t('mockup.typeLogo') || 'LOGO'}</span>
-                                    {designType === 'logo' && <div className="w-2.5 h-2.5 rounded-full bg-black animate-pulse shadow-sm" />}
-                                </button>
-                                <button
-                                    onClick={() => onDesignTypeChange('layout')}
-                                    aria-pressed={designType === 'layout'}
-                                    aria-label={t('mockup.typeLayout') || 'Layout'}
-                                    className={cn(
-                                        "w-full flex items-center justify-between px-6 py-5 text-sm font-mono rounded-md transition-all duration-300 border",
-                                        designType === 'layout'
-                                            ? "bg-brand-cyan border-brand-cyan text-black font-bold shadow-xl shadow-brand-cyan/20 translate-y-[-2px]"
-                                            : "bg-neutral-900/50 border-white/5 text-neutral-400 hover:text-neutral-200 hover:border-white/10 hover:bg-white/5"
-                                    )}
-                                >
-                                    <span>{t('mockup.typeLayout') || 'LAYOUT / UI'}</span>
-                                    {designType === 'layout' && <div className="w-2.5 h-2.5 rounded-full bg-black animate-pulse shadow-sm" />}
-                                </button>
-                            </div>
+                        onClick={() => onDesignTypeChange(isTransparent ? 'layout' : 'logo')}
+                        role="checkbox"
+                        aria-checked={isTransparent}
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                            if (e.key !== 'Enter' && e.key !== ' ') return;
+                            e.preventDefault();
+                            onDesignTypeChange(isTransparent ? 'layout' : 'logo');
+                        }}
+                    >
+                        <div className={cn(
+                            "w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-200 flex-shrink-0",
+                            isTransparent
+                                ? "bg-brand-cyan border-brand-cyan"
+                                : theme === 'dark'
+                                    ? "bg-neutral-800 border-neutral-600 group-hover:border-neutral-500"
+                                    : "bg-white border-neutral-300 group-hover:border-neutral-400"
+                        )}>
+                            {isTransparent && <Check size={14} className="text-black" strokeWidth={3} />}
                         </div>
-                    )}
-                </div>
+                        <span className={cn(
+                            "text-sm font-mono transition-colors select-none",
+                            theme === 'dark' ? "text-neutral-300 group-hover:text-neutral-200" : "text-neutral-600 group-hover:text-neutral-800"
+                        )}>
+                            {t('mockup.transparentBackground') || 'Transparent background'}
+                        </span>
+                    </div>
+                )}
             </div>
 
-            {/* Sticky Bottom Footer - Full Width Action */}
+            {/* Bottom Action Button */}
             <div className="fixed bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-neutral-950 via-neutral-950/90 to-transparent z-40 lg:absolute lg:mt-8 lg:relative lg:bg-transparent lg:p-0">
                 <button
                     onClick={onAnalyze}
@@ -161,12 +112,12 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
                     {isAnalyzing ? (
                         <>
                             <GlitchLoader size={18} color="black" />
-                            <span className="animate-pulse tracking-widest text-sm">{t('mockup.analyzing') || 'ANALISANDO...'}</span>
+                            <span className="animate-pulse tracking-widest text-sm">{t('mockup.analyzing') || 'ANALYZING...'}</span>
                         </>
                     ) : (
                         <>
                             <span className="relative z-10 flex items-center gap-2 tracking-widest">
-                                {t('mockup.continue') || 'CONTINUAR'}
+                                {t('mockup.continue') || 'CONTINUE'}
                                 <ArrowRight size={18} className="transition-transform duration-300 group-hover:translate-x-1" />
                             </span>
                             {canAnalyze && (
@@ -179,10 +130,8 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
                 {!canAnalyze && !isAnalyzing && !hasAnalyzed && (
                     <p className="text-center mt-3 text-[10px] font-mono text-neutral-500 uppercase tracking-[0.2em]">
                         {!uploadedImage
-                            ? (t('mockup.uploadRequired') || 'Upload necessário')
-                            : !designType
-                                ? (t('mockup.selectDesignType') || 'Selecione o tipo de design')
-                                : null
+                            ? (t('mockup.uploadRequired') || 'Upload required')
+                            : null
                         }
                     </p>
                 )}

@@ -13,7 +13,7 @@ import { useMockup } from './MockupContext';
 interface InputSectionProps {
   uploadedImage: UploadedImage | null;
   referenceImages: UploadedImage[]; // Array de até 3 imagens para modelo Pro, até 1 para HD
-  designType: DesignType | null;
+  designType: DesignType;
   selectedModel: GeminiModel | null;
   onImageUpload: (image: UploadedImage) => void;
   onReferenceImagesChange: (images: UploadedImage[]) => void;
@@ -234,7 +234,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
         />
 
         {/* Hover Overlay with Replace Action */}
-        <div className="absolute inset-0 bg-black/70 flex items-center justify-center opacity-0 group-hover/img-container:opacity-100 transition-all duration-300 backdrop-blur-[2px]">
+        <div className="absolute inset-0 bg-black/70 flex items-center justify-center opacity-0 group-hover/img-container:opacity-100 transition-all duration-300 backdrop-blur-[2px] p-10">
           <button
             type="button"
             onClick={onReplace}
