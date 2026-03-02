@@ -5,31 +5,37 @@ const statusEl = document.getElementById('status');
 const chatInput = document.getElementById('chatInput');
 const chatMessages = document.getElementById('chatMessages');
 const sendBtn = document.getElementById('sendBtn');
-const componentsLibraryEl = document.getElementById('componentsLibrary');
-const fontSelectEl = document.getElementById('fontSelect');
-const colorsList = document.getElementById('colorsList');
-const selectedColorsEl = document.getElementById('selectedColors');
 const contextInfoEl = document.getElementById('contextInfo');
-const brandContent = document.getElementById('brandContent');
-const brandChevron = document.getElementById('brandChevron');
-const componentSearchEl = document.getElementById('componentSearch');
 const brandPill = document.getElementById('brandPill');
+const selectionIndicator = document.getElementById('selectionIndicator');
+
+// Brand panel refs
+const componentsLibraryEl = document.getElementById('componentsLibrary');
+const componentSearchEl = document.getElementById('componentSearch');
+const colorGridEl = document.getElementById('colorGrid');
+const colorGridEmptyEl = document.getElementById('colorGridEmpty');
+const fontListEl = document.getElementById('fontList');
+const fontSearchEl = document.getElementById('fontSearch');
 
 // ── State ──
+let currentSelectionDetails = [];
+let currentSelectionThumb = null;
 let selectedLogo = null;
 let selectedFont = null;
 let selectedColors = new Map();
 let allComponents = [];
 let componentThumbs = {};
 let expandedFolders = new Set();
-let allFonts = [];
+let allFonts = []; // font variables from library
+let allAvailableFonts = []; // all font families from Figma
 let allColors = [];
 let userApiKey = '';
-let brandCollapsed = false;
 let apiCollapsed = true;
+let activeFontTab = 'library';
+let openPanel = null; // 'logo' | 'colors' | 'fonts' | null
 let chatHistory = [{
     role: 'assistant',
-    content: 'Olá! Descreva o que quer criar ou modificar. Opcionalmente, configure as Brand Guidelines em ⚙ Configurações.',
+    content: 'Olá! Descreva o que quer criar ou modificar. Configure as Brand Guidelines em ⚙ Configurações.',
     isError: false
 }];
 
@@ -43,6 +49,51 @@ function closeSettings() {
     document.getElementById('settingsView').classList.add('hidden');
     document.getElementById('mainView').classList.remove('hidden');
     updateBrandPill();
+}
+
+// ── Selection indicator ──
+function getNodeTypeIcon(type) {
+    const icons = {
+        'FRAME': '▢', 'GROUP': '▧', 'COMPONENT': '◇', 'COMPONENT_SET': '◈',
+        'INSTANCE': '◆', 'TEXT': 'T', 'RECTANGLE': '■', 'ELLIPSE': '●',
+        'VECTOR': '✦', 'LINE': '─', 'BOOLEAN_OPERATION': '⊞', 'SECTION': '§',
+    };
+    return icons[type] || '□';
+}
+
+function getNodeTypeLabel(type) {
+    const labels = {
+        'FRAME': 'Frame', 'GROUP': 'Grupo', 'COMPONENT': 'Componente',
+        'COMPONENT_SET': 'Component Set', 'INSTANCE': 'Instância', 'TEXT': 'Texto',
+        'RECTANGLE': 'Retângulo', 'ELLIPSE': 'Elipse', 'VECTOR': 'Vetor',
+        'LINE': 'Linha', 'BOOLEAN_OPERATION': 'Boolean', 'SECTION': 'Seção',
+    };
+    return labels[type] || type;
+}
+
+function renderSelectionIndicator() {
+    if (!currentSelectionDetails || currentSelectionDetails.length === 0) {
+        selectionIndicator.classList.add('hidden');
+        return;
+    }
+    selectionIndicator.classList.remove('hidden');
+    if (currentSelectionDetails.length === 1) {
+        const sel = currentSelectionDetails[0];
+        const thumbHtml = currentSelectionThumb
+            ? `<img class="sel-thumb" src="${currentSelectionThumb}" alt="">`
+            : `<div class="sel-icon">${getNodeTypeIcon(sel.type)}</div>`;
+        selectionIndicator.innerHTML = thumbHtml +
+            `<div class="sel-info">` +
+            `<div class="sel-name" title="${esc(sel.name)}">${esc(sel.name)}</div>` +
+            `<div class="sel-type">${getNodeTypeLabel(sel.type)}</div></div>`;
+    } else {
+        const names = currentSelectionDetails.map(s => s.name).join(', ');
+        selectionIndicator.innerHTML =
+            `<div class="sel-icon">${currentSelectionDetails.length}</div>` +
+            `<div class="sel-info">` +
+            `<div class="sel-multi">${currentSelectionDetails.length} camadas selecionadas</div>` +
+            `<div class="sel-type sel-multi-list" title="${esc(names)}">${esc(names)}</div></div>`;
+    }
 }
 
 // ── Brand pill indicator ──
@@ -62,13 +113,7 @@ function hideStatus() {
     statusEl.className = 'status';
 }
 
-// ── Collapsible sections ──
-function toggleBrandSection() {
-    brandCollapsed = !brandCollapsed;
-    brandContent.classList.toggle('hidden', brandCollapsed);
-    brandChevron.classList.toggle('collapsed', brandCollapsed);
-}
-
+// ── API section toggle ──
 function toggleApiSection() {
     apiCollapsed = !apiCollapsed;
     document.getElementById('apiContent').classList.toggle('hidden', apiCollapsed);
@@ -102,25 +147,67 @@ function renderChat() {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-// ── Logo selection ──
+// ═══════════════════════════════════════════
+// ── Brand Panels ──
+// ═══════════════════════════════════════════
+
+function toggleBrandPanel(panel) {
+    if (openPanel === panel) {
+        // Close current panel
+        document.getElementById(panel + 'Panel').classList.add('hidden');
+        document.querySelector(`#${panel}Panel`).previousElementSibling.querySelector('.brand-add-btn').classList.remove('open');
+        openPanel = null;
+    } else {
+        // Close previous panel if open
+        if (openPanel) {
+            document.getElementById(openPanel + 'Panel').classList.add('hidden');
+            document.querySelector(`#${openPanel}Panel`).previousElementSibling.querySelector('.brand-add-btn').classList.remove('open');
+        }
+        // Open new panel
+        document.getElementById(panel + 'Panel').classList.remove('hidden');
+        document.querySelector(`#${panel}Panel`).previousElementSibling.querySelector('.brand-add-btn').classList.add('open');
+        openPanel = panel;
+
+        // Initialize panel content
+        if (panel === 'colors') renderColorGrid();
+        if (panel === 'fonts') renderFontList();
+    }
+}
+
+// ── Logo ──
 function selectLogo(comp) {
     selectedLogo = comp;
-    document.getElementById('selectedLogo').innerHTML =
-        `<div class="selected-tag">${esc(comp.name)} <button onclick="clearLogo()">×</button></div>`;
+    updateLogoPreview();
     renderComponentsLibrary();
+    updateBrandPill();
 }
 
 function clearLogo() {
     selectedLogo = null;
-    document.getElementById('selectedLogo').innerHTML = '';
+    updateLogoPreview();
     renderComponentsLibrary();
+    updateBrandPill();
+}
+
+function updateLogoPreview() {
+    const el = document.getElementById('logoPreview');
+    if (!selectedLogo) {
+        el.innerHTML = '';
+        return;
+    }
+    const thumb = componentThumbs[selectedLogo.id];
+    el.innerHTML = `<div class="preview-tag">` +
+        (thumb ? `<img src="${thumb}" alt="">` : '') +
+        `<span>${esc(selectedLogo.name)}</span>` +
+        `<button class="remove-btn" onclick="event.stopPropagation(); clearLogo()">×</button>` +
+        `</div>`;
 }
 
 function useSelectionAsLogo() {
     parent.postMessage({ pluginMessage: { type: 'USE_SELECTION_AS_LOGO' } }, 'https://www.figma.com');
 }
 
-// ── Folder tree ──
+// ── Folder tree (for logo component picker) ──
 function toggleFolder(pathKey) {
     if (expandedFolders.has(pathKey)) expandedFolders.delete(pathKey);
     else expandedFolders.add(pathKey);
@@ -200,40 +287,113 @@ function renderComponentsLibrary() {
     componentsLibraryEl.innerHTML = html || '<div class="components-loading">Nenhum componente</div>';
 }
 
-// ── Font selection ──
-function selectFont() {
-    const value = fontSelectEl.value;
-    if (!value) {
-        selectedFont = null;
-        document.getElementById('selectedFont').innerHTML = '';
-    } else {
-        const font = allFonts.find(f => f.id === value);
-        selectedFont = font;
-        document.getElementById('selectedFont').innerHTML =
-            `<div class="selected-tag">${esc(font.name)} <button onclick="clearFont()">×</button></div>`;
+// ── Colors ──
+function toggleColor(colorId, colorName, colorValue) {
+    if (selectedColors.has(colorId)) selectedColors.delete(colorId);
+    else selectedColors.set(colorId, { name: colorName, value: colorValue });
+    renderColorGrid();
+    updateColorsPreview();
+    updateBrandPill();
+}
+
+function renderColorGrid() {
+    if (!allColors.length) {
+        colorGridEl.innerHTML = '';
+        colorGridEmptyEl.classList.remove('hidden');
+        return;
     }
+    colorGridEmptyEl.classList.add('hidden');
+    colorGridEl.innerHTML = allColors.map(color => {
+        const isSelected = selectedColors.has(color.id);
+        return `<button class="color-swatch${isSelected ? ' selected' : ''}" ` +
+            `style="background: ${esc(color.value)} !important;" ` +
+            `title="${esc(color.name)}" ` +
+            `onclick="toggleColor('${color.id}','${esc(color.name)}','${esc(color.value)}')">` +
+            `</button>`;
+    }).join('');
+}
+
+function updateColorsPreview() {
+    const el = document.getElementById('colorsPreview');
+    if (selectedColors.size === 0) {
+        el.innerHTML = '';
+        return;
+    }
+    const dots = Array.from(selectedColors.values()).slice(0, 6).map(c =>
+        `<span class="color-preview-dot" style="background: ${esc(c.value)};" title="${esc(c.name)}"></span>`
+    ).join('');
+    const extra = selectedColors.size > 6 ? `<span style="font-size:10px;color:var(--figma-color-text-tertiary,#b3b3b3)">+${selectedColors.size - 6}</span>` : '';
+    el.innerHTML = dots + extra;
+}
+
+// ── Fonts ──
+function switchFontTab(tab) {
+    activeFontTab = tab;
+    document.getElementById('fontTabLibrary').classList.toggle('active', tab === 'library');
+    document.getElementById('fontTabAll').classList.toggle('active', tab === 'all');
+    if (fontSearchEl) fontSearchEl.value = '';
+    renderFontList();
+}
+
+function selectFontItem(id, name) {
+    if (selectedFont && selectedFont.id === id) {
+        selectedFont = null;
+    } else {
+        selectedFont = { id, name };
+    }
+    renderFontList();
+    updateFontsPreview();
+    updateBrandPill();
 }
 
 function clearFont() {
     selectedFont = null;
-    fontSelectEl.value = '';
-    document.getElementById('selectedFont').innerHTML = '';
+    renderFontList();
+    updateFontsPreview();
+    updateBrandPill();
 }
 
-// ── Color selection ──
-function toggleColor(colorId, colorName, colorValue) {
-    if (selectedColors.has(colorId)) selectedColors.delete(colorId);
-    else selectedColors.set(colorId, { name: colorName, value: colorValue });
-    updateColorDisplay();
+function renderFontList() {
+    const searchTerm = (fontSearchEl ? fontSearchEl.value : '').toLowerCase().trim();
+
+    let items = [];
+    if (activeFontTab === 'library') {
+        items = allFonts.map(f => ({ id: f.id, name: f.name }));
+    } else {
+        items = allAvailableFonts.map(family => ({ id: 'font:' + family, name: family }));
+    }
+
+    if (searchTerm) {
+        items = items.filter(f => f.name.toLowerCase().includes(searchTerm));
+    }
+
+    if (!items.length) {
+        const msg = activeFontTab === 'library'
+            ? (searchTerm ? 'Nenhum resultado' : 'Nenhuma variável de fonte na biblioteca')
+            : (searchTerm ? 'Nenhum resultado' : 'Carregando fontes...');
+        fontListEl.innerHTML = `<div class="font-list-empty">${msg}</div>`;
+        return;
+    }
+
+    fontListEl.innerHTML = items.map(f => {
+        const isSelected = selectedFont && selectedFont.id === f.id;
+        return `<div class="font-list-item${isSelected ? ' selected' : ''}" onclick="selectFontItem('${esc(f.id)}','${esc(f.name)}')">` +
+            `<span class="font-sample">${esc(f.name)}</span>` +
+            (isSelected ? `<span class="font-check">✓</span>` : '') +
+            `</div>`;
+    }).join('');
 }
 
-function updateColorDisplay() {
-    const html = Array.from(selectedColors.values()).map(c =>
-        `<div class="selected-tag">` +
-        `<span style="display:inline-block;width:10px;height:10px;background:${esc(c.value)};border-radius:2px;margin-right:4px;"></span>` +
-        `${esc(c.name)} <button onclick="selectedColors.delete('${Array.from(selectedColors.keys()).find(k => selectedColors.get(k).name === c.name)}'); updateColorDisplay();">×</button></div>`
-    ).join('');
-    selectedColorsEl.innerHTML = html ? `<div>${html}</div>` : '';
+function updateFontsPreview() {
+    const el = document.getElementById('fontsPreview');
+    if (!selectedFont) {
+        el.innerHTML = '';
+        return;
+    }
+    el.innerHTML = `<div class="preview-tag">` +
+        `<span>${esc(selectedFont.name)}</span>` +
+        `<button class="remove-btn" onclick="event.stopPropagation(); clearFont()">×</button>` +
+        `</div>`;
 }
 
 // ── Send chat ──
@@ -245,7 +405,6 @@ function sendChat() {
     updateSendState();
     showStatus('🤖 Gerando design...', 'loading');
 
-    // Disable input during processing
     chatInput.disabled = true;
     sendBtn.disabled = true;
 
@@ -303,9 +462,9 @@ window.onmessage = (event) => {
         if (msg.component) {
             selectedLogo = msg.component;
             if (!allComponents.find(c => c.id === msg.component.id)) allComponents.push(msg.component);
-            document.getElementById('selectedLogo').innerHTML =
-                `<div class="selected-tag">${esc(msg.component.name)} <button onclick="clearLogo()">×</button></div>`;
+            updateLogoPreview();
             renderComponentsLibrary();
+            updateBrandPill();
         } else {
             showStatus('Selecione um componente ou instância', 'error');
             setTimeout(hideStatus, 3000);
@@ -313,32 +472,24 @@ window.onmessage = (event) => {
     } else if (msg.type === 'COMPONENTS_LOADED') {
         hideStatus();
         allComponents = msg.components || [];
-        componentsLibraryEl.innerHTML = allComponents.length ? '' : '<div class="components-loading">Nenhum componente encontrado</div>';
         if (allComponents.length) renderComponentsLibrary();
+        else componentsLibraryEl.innerHTML = '<div class="components-loading">Nenhum componente encontrado</div>';
     } else if (msg.type === 'FONT_VARIABLES_LOADED') {
         hideStatus();
         allFonts = msg.fonts || [];
-        fontSelectEl.innerHTML = '<option value="">Escolha uma fonte...</option>';
-        allFonts.forEach(font => {
-            const opt = document.createElement('option');
-            opt.value = font.id;
-            opt.textContent = font.name;
-            fontSelectEl.appendChild(opt);
-        });
-        fontSelectEl.disabled = false;
+        if (openPanel === 'fonts' && activeFontTab === 'library') renderFontList();
+    } else if (msg.type === 'AVAILABLE_FONTS_LOADED') {
+        allAvailableFonts = msg.families || [];
+        if (openPanel === 'fonts' && activeFontTab === 'all') renderFontList();
     } else if (msg.type === 'COLOR_VARIABLES_LOADED') {
         hideStatus();
         allColors = msg.colors || [];
-        colorsList.innerHTML = allColors.map(color =>
-            `<label style="display:flex;align-items:center;margin-bottom:6px;cursor:pointer;">` +
-            `<input type="checkbox" onchange="toggleColor('${color.id}','${esc(color.name)}','${esc(color.value)}')" style="margin-right:8px;">` +
-            `<span style="display:inline-block;width:12px;height:12px;background:${esc(color.value)};border-radius:4px;margin-right:8px;border:1px solid var(--figma-color-border,#e5e5e5);"></span>` +
-            `${esc(color.name)}</label>`
-        ).join('');
+        if (openPanel === 'colors') renderColorGrid();
     } else if (msg.type === 'COMPONENT_THUMBNAIL') {
         if (msg.componentId && msg.thumbnail) {
             componentThumbs[msg.componentId] = msg.thumbnail;
             renderComponentsLibrary();
+            if (selectedLogo && selectedLogo.id === msg.componentId) updateLogoPreview();
         }
     } else if (msg.type === 'API_KEY_SAVED') {
         const el = document.getElementById('apiKeyStatus');
@@ -355,6 +506,15 @@ window.onmessage = (event) => {
         const componentsCount = Number.isFinite(Number(msg.componentsCount)) ? Number(msg.componentsCount) : 0;
         const colorVariablesCount = Number.isFinite(Number(msg.colorVariables)) ? Number(msg.colorVariables) : 0;
         contextInfoEl.textContent = `📦 ${selectedElementsCount} selecionado(s) • 🔧 ${componentsCount} componentes • 🎨 ${colorVariablesCount} cores`;
+
+        currentSelectionDetails = msg.selectionDetails || [];
+        currentSelectionThumb = null;
+        renderSelectionIndicator();
+    } else if (msg.type === 'SELECTION_THUMBNAIL') {
+        if (currentSelectionDetails.length === 1 && currentSelectionDetails[0].id === msg.nodeId) {
+            currentSelectionThumb = msg.thumbnail;
+            renderSelectionIndicator();
+        }
     } else if (msg.type === 'CALL_API') {
         showStatus('🔗 Conectando à IA...', 'loading');
         callPluginAPI(msg.context);
@@ -362,8 +522,12 @@ window.onmessage = (event) => {
         hideStatus();
         chatInput.disabled = false;
         updateSendState();
-        const countInfo = msg.count ? ` (${msg.count} operações)` : '';
-        addChatMsg('assistant', `Design atualizado! ✨${countInfo}`);
+        if (msg.summary) {
+            addChatMsg('assistant', `Design atualizado! ✨\n${msg.summary}`);
+        } else {
+            const countInfo = msg.count ? ` (${msg.count} operações)` : '';
+            addChatMsg('assistant', `Design atualizado! ✨${countInfo}`);
+        }
     } else if (msg.type === 'ERROR') {
         hideStatus();
         chatInput.disabled = false;

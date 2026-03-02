@@ -1,6 +1,6 @@
 // Figma plugin sandbox — runs in QuickJS, no browser APIs
 
-import type { UIMessage, FigmaOperation, SerializedContext, SerializedNode, ComponentInfo, ColorVariable, FontVariable } from '../../src/lib/figma-types';
+import type { UIMessage, FigmaOperation, SerializedContext, SerializedNode, ComponentInfo, ColorVariable, FontVariable, AvailableLayer } from '../../src/lib/figma-types';
 
 
 function postToUI(msg: { type: string } & Record<string, unknown>) {
@@ -101,15 +101,54 @@ async function serializeSelection(): Promise<SerializedContext> {
   return { nodes, styles };
 }
 
+// ── Collect referenceable layers for @"name" syntax ──
+
+function getAvailableLayers(): AvailableLayer[] {
+  const layers: AvailableLayer[] = [];
+  const seen = new Set<string>();
+  const MAX = 80;
+
+  function addLayer(node: SceneNode) {
+    if (seen.has(node.id) || layers.length >= MAX) return;
+    seen.add(node.id);
+    layers.push({ id: node.id, name: node.name, type: node.type });
+  }
+
+  // Selected nodes + their direct children
+  const selection = figma.currentPage.selection;
+  for (const node of selection) {
+    addLayer(node);
+    if ('children' in node) {
+      for (const child of (node as FrameNode).children) {
+        addLayer(child);
+      }
+    }
+  }
+
+  // Top-level nodes on current page
+  for (const node of figma.currentPage.children) {
+    addLayer(node);
+  }
+
+  return layers;
+}
+
 // ── Apply Operations (21 types with ref/parentRef hierarchy) ──
 
 async function applyOperations(ops: FigmaOperation[]) {
   const createdNodes = new Map<string, SceneNode>();
   const defaultFont: FontName = { family: 'Inter', style: 'Regular' };
+  const summaryLines: string[] = [];
 
-  function getParent(parentRef?: string): BaseNode & ChildrenMixin {
+  async function getParent(parentRef?: string, parentNodeId?: string): Promise<BaseNode & ChildrenMixin> {
     if (parentRef && createdNodes.has(parentRef)) {
       return createdNodes.get(parentRef) as BaseNode & ChildrenMixin;
+    }
+    if (parentNodeId) {
+      const node = await figma.getNodeByIdAsync(parentNodeId);
+      if (node && 'children' in node) {
+        return node as BaseNode & ChildrenMixin;
+      }
     }
     return figma.currentPage;
   }
@@ -118,10 +157,12 @@ async function applyOperations(ops: FigmaOperation[]) {
     try {
       // ═══ CREATE_FRAME ═══
       if (op.type === 'CREATE_FRAME') {
-        const parent = getParent(op.parentRef);
+        const parent = await getParent(op.parentRef, op.parentNodeId);
         const frame = figma.createFrame();
         frame.name = op.props.name;
-        frame.resize(op.props.width, op.props.height);
+        const fw = op.props.width > 0 ? op.props.width : 100;
+        const fh = op.props.height > 0 ? op.props.height : 100;
+        frame.resize(fw, fh);
 
         // Auto-layout
         if (op.props.layoutMode && op.props.layoutMode !== 'NONE') {
@@ -140,12 +181,13 @@ async function applyOperations(ops: FigmaOperation[]) {
 
         if (op.props.fills) frame.fills = op.props.fills;
         if (op.props.cornerRadius != null) frame.cornerRadius = op.props.cornerRadius;
+        if (op.props.cornerSmoothing != null) frame.cornerSmoothing = op.props.cornerSmoothing;
         if (op.props.clipsContent != null) frame.clipsContent = op.props.clipsContent;
 
         // Position at center if root, otherwise append to parent
         if (parent === figma.currentPage) {
-          frame.x = figma.viewport.center.x - op.props.width / 2;
-          frame.y = figma.viewport.center.y - op.props.height / 2;
+          frame.x = figma.viewport.center.x - fw / 2;
+          frame.y = figma.viewport.center.y - fh / 2;
         }
         parent.appendChild(frame);
 
@@ -158,13 +200,14 @@ async function applyOperations(ops: FigmaOperation[]) {
         }
 
         if (op.ref) createdNodes.set(op.ref, frame);
+        summaryLines.push(`Criado @"${frame.name}"`);
 
         // ═══ CREATE_RECTANGLE ═══
       } else if (op.type === 'CREATE_RECTANGLE') {
-        const parent = getParent(op.parentRef);
+        const parent = await getParent(op.parentRef, op.parentNodeId);
         const rect = figma.createRectangle();
         rect.name = op.props.name;
-        rect.resize(op.props.width, op.props.height);
+        rect.resize(op.props.width > 0 ? op.props.width : 100, op.props.height > 0 ? op.props.height : 100);
         if (op.props.fills) rect.fills = op.props.fills;
         if (op.props.cornerRadius != null) rect.cornerRadius = op.props.cornerRadius;
         if (op.props.strokes) rect.strokes = op.props.strokes;
@@ -178,16 +221,24 @@ async function applyOperations(ops: FigmaOperation[]) {
           rect.layoutSizingVertical = op.props.layoutSizingVertical;
         }
         if (op.ref) createdNodes.set(op.ref, rect);
+        summaryLines.push(`Criado @"${rect.name}"`);
 
         // ═══ CREATE_ELLIPSE ═══
       } else if (op.type === 'CREATE_ELLIPSE') {
-        const parent = getParent(op.parentRef);
+        const parent = await getParent(op.parentRef, op.parentNodeId);
         const ellipse = figma.createEllipse();
         ellipse.name = op.props.name;
-        ellipse.resize(op.props.width, op.props.height);
+        ellipse.resize(op.props.width > 0 ? op.props.width : 100, op.props.height > 0 ? op.props.height : 100);
         if (op.props.fills) ellipse.fills = op.props.fills;
         parent.appendChild(ellipse);
+        if (op.props.layoutSizingHorizontal && parent !== figma.currentPage) {
+          ellipse.layoutSizingHorizontal = op.props.layoutSizingHorizontal;
+        }
+        if (op.props.layoutSizingVertical && parent !== figma.currentPage) {
+          ellipse.layoutSizingVertical = op.props.layoutSizingVertical;
+        }
         if (op.ref) createdNodes.set(op.ref, ellipse);
+        summaryLines.push(`Criado @"${ellipse.name}"`);
 
         // ═══ CREATE_TEXT ═══
       } else if (op.type === 'CREATE_TEXT') {
@@ -200,7 +251,7 @@ async function applyOperations(ops: FigmaOperation[]) {
           await figma.loadFontAsync(defaultFont);
         }
 
-        const parent = getParent(op.parentRef);
+        const parent = await getParent(op.parentRef, op.parentNodeId);
         const text = figma.createText();
         try {
           text.fontName = { family: fontFamily, style: fontStyle };
@@ -225,10 +276,11 @@ async function applyOperations(ops: FigmaOperation[]) {
           text.layoutSizingVertical = op.props.layoutSizingVertical;
         }
         if (op.ref) createdNodes.set(op.ref, text);
+        summaryLines.push(`Criado @"${text.name}"`);
 
         // ═══ CREATE_COMPONENT_INSTANCE ═══
       } else if (op.type === 'CREATE_COMPONENT_INSTANCE') {
-        const parent = getParent(op.parentRef);
+        const parent = await getParent(op.parentRef, op.parentNodeId);
         let component: ComponentNode | null = null;
 
         // Try to find locally first
@@ -253,12 +305,14 @@ async function applyOperations(ops: FigmaOperation[]) {
         if (op.name) instance.name = op.name;
         parent.appendChild(instance);
         if (op.ref) createdNodes.set(op.ref, instance);
+        summaryLines.push(`Criado @"${instance.name}"`);
 
         // ═══ SET_FILL ═══
       } else if (op.type === 'SET_FILL') {
         const node = await figma.getNodeByIdAsync(op.nodeId) as GeometryMixin | null;
         if (node && 'fills' in node) {
           node.fills = op.fills;
+          summaryLines.push(`Editado fill @"${(node as any).name}"`);
         }
 
         // ═══ SET_STROKE ═══
@@ -270,6 +324,7 @@ async function applyOperations(ops: FigmaOperation[]) {
           if (op.strokeAlign && 'strokeAlign' in node) {
             (node as any).strokeAlign = op.strokeAlign;
           }
+          summaryLines.push(`Editado stroke @"${(node as any).name}"`);
         }
 
         // ═══ SET_CORNER_RADIUS ═══
@@ -280,6 +335,7 @@ async function applyOperations(ops: FigmaOperation[]) {
           if (op.cornerSmoothing != null && 'cornerSmoothing' in node) {
             node.cornerSmoothing = op.cornerSmoothing;
           }
+          summaryLines.push(`Editado radius @"${node.name}"`);
         }
 
         // ═══ SET_EFFECTS ═══
@@ -292,7 +348,6 @@ async function applyOperations(ops: FigmaOperation[]) {
                 type: e.type,
                 radius: e.radius,
                 visible: e.visible ?? true,
-                blurType: 'NORMAL',
               } as Effect;
             }
             // DROP_SHADOW / INNER_SHADOW
@@ -306,12 +361,13 @@ async function applyOperations(ops: FigmaOperation[]) {
               blendMode: 'NORMAL' as BlendMode,
             } as Effect;
           });
+          summaryLines.push(`Editado effects @"${(node as any).name}"`);
         }
 
         // ═══ SET_AUTO_LAYOUT ═══
       } else if (op.type === 'SET_AUTO_LAYOUT') {
         const node = await figma.getNodeByIdAsync(op.nodeId) as FrameNode | null;
-        if (node && node.type === 'FRAME') {
+        if (node && (node.type === 'FRAME' || node.type === 'COMPONENT' || node.type === 'COMPONENT_SET')) {
           node.layoutMode = op.layoutMode;
           if (op.primaryAxisSizingMode) node.primaryAxisSizingMode = op.primaryAxisSizingMode;
           if (op.counterAxisSizingMode) node.counterAxisSizingMode = op.counterAxisSizingMode;
@@ -323,6 +379,7 @@ async function applyOperations(ops: FigmaOperation[]) {
           if (op.paddingRight != null) node.paddingRight = op.paddingRight;
           if (op.paddingBottom != null) node.paddingBottom = op.paddingBottom;
           if (op.paddingLeft != null) node.paddingLeft = op.paddingLeft;
+          summaryLines.push(`Editado layout @"${node.name}"`);
         }
 
         // ═══ RESIZE ═══
@@ -330,6 +387,7 @@ async function applyOperations(ops: FigmaOperation[]) {
         const node = await figma.getNodeByIdAsync(op.nodeId) as SceneNode | null;
         if (node && 'resize' in node) {
           (node as any).resize(op.width, op.height);
+          summaryLines.push(`Redimensionado @"${node.name}"`);
         }
 
         // ═══ MOVE ═══
@@ -338,12 +396,17 @@ async function applyOperations(ops: FigmaOperation[]) {
         if (node) {
           node.x = op.x;
           node.y = op.y;
+          summaryLines.push(`Movido @"${node.name}"`);
         }
 
         // ═══ RENAME ═══
       } else if (op.type === 'RENAME') {
         const node = await figma.getNodeByIdAsync(op.nodeId);
-        if (node) node.name = op.name;
+        if (node) {
+          const oldName = node.name;
+          node.name = op.name;
+          summaryLines.push(`Renomeado @"${oldName}" → @"${op.name}"`);
+        }
 
         // ═══ SET_TEXT_CONTENT ═══
       } else if (op.type === 'SET_TEXT_CONTENT') {
@@ -351,34 +414,45 @@ async function applyOperations(ops: FigmaOperation[]) {
         if (node && node.type === 'TEXT') {
           // Load ALL fonts currently used in the text node before modifying
           const len = node.characters.length;
+          const fontsUsed: FontName[] = [];
           if (len > 0) {
-            const fontsUsed = new Set<string>();
+            const seen = new Set<string>();
             for (let i = 0; i < len; i++) {
               const fn = node.getRangeFontName(i, i + 1) as FontName;
               const key = `${fn.family}::${fn.style}`;
-              if (!fontsUsed.has(key)) {
-                fontsUsed.add(key);
+              if (!seen.has(key)) {
+                seen.add(key);
+                fontsUsed.push(fn);
                 try { await figma.loadFontAsync(fn); } catch (_e) { /* skip */ }
               }
             }
           }
 
-          const fontFamily = op.fontFamily ?? 'Inter';
-          const fontStyle = op.fontStyle ?? 'Regular';
-          try {
-            await figma.loadFontAsync({ family: fontFamily, style: fontStyle });
-          } catch (_e) {
-            await figma.loadFontAsync(defaultFont);
+          // Determine target font: use specified, or preserve existing, or fallback
+          const wantsNewFont = op.fontFamily || op.fontStyle;
+          let targetFont: FontName;
+          if (wantsNewFont) {
+            targetFont = { family: op.fontFamily ?? 'Inter', style: op.fontStyle ?? 'Regular' };
+          } else if (fontsUsed.length === 1) {
+            targetFont = fontsUsed[0];
+          } else {
+            // Mixed fonts or empty — keep first used or default
+            targetFont = fontsUsed[0] ?? defaultFont;
           }
 
-          node.characters = op.content;
           try {
-            node.fontName = { family: fontFamily, style: fontStyle };
+            await figma.loadFontAsync(targetFont);
           } catch (_e) {
-            node.fontName = defaultFont;
+            await figma.loadFontAsync(defaultFont);
+            targetFont = defaultFont;
           }
+
+          // Set font BEFORE characters (Figma best practice)
+          node.fontName = targetFont;
+          node.characters = op.content;
           if (op.fontSize) node.fontSize = op.fontSize;
           if (op.fills) node.fills = op.fills;
+          summaryLines.push(`Editado texto @"${node.name}"`);
         }
 
         // ═══ SET_OPACITY ═══
@@ -386,6 +460,7 @@ async function applyOperations(ops: FigmaOperation[]) {
         const node = await figma.getNodeByIdAsync(op.nodeId) as SceneNode | null;
         if (node && 'opacity' in node) {
           node.opacity = op.opacity;
+          summaryLines.push(`Editado opacidade @"${node.name}"`);
         }
 
         // ═══ APPLY_VARIABLE ═══
@@ -424,7 +499,11 @@ async function applyOperations(ops: FigmaOperation[]) {
               node.fillStyleId = op.styleId;
             }
           } else if (op.styleType === 'TEXT' && 'textStyleId' in node) {
-            node.textStyleId = op.styleId;
+            if (typeof node.setTextStyleIdAsync === 'function') {
+              await node.setTextStyleIdAsync(op.styleId);
+            } else {
+              node.textStyleId = op.styleId;
+            }
           } else if (op.styleType === 'EFFECT' && 'effectStyleId' in node) {
             if (typeof node.setEffectStyleIdAsync === 'function') {
               await node.setEffectStyleIdAsync(op.styleId);
@@ -452,13 +531,16 @@ async function applyOperations(ops: FigmaOperation[]) {
           const parent = nodes[0].parent as BaseNode & ChildrenMixin;
           const group = figma.group(nodes, parent);
           group.name = op.name;
+          summaryLines.push(`Agrupado @"${op.name}"`);
         }
 
         // ═══ UNGROUP ═══
       } else if (op.type === 'UNGROUP') {
         const node = await figma.getNodeByIdAsync(op.nodeId) as SceneNode | null;
         if (node && 'children' in node) {
+          const name = node.name;
           figma.ungroup(node as SceneNode & ChildrenMixin);
+          summaryLines.push(`Desagrupado @"${name}"`);
         }
 
         // ═══ DETACH_INSTANCE ═══
@@ -466,12 +548,16 @@ async function applyOperations(ops: FigmaOperation[]) {
         const node = await figma.getNodeByIdAsync(op.nodeId) as InstanceNode | null;
         if (node && node.type === 'INSTANCE') {
           node.detachInstance();
+          summaryLines.push(`Detached @"${node.name}"`);
         }
 
         // ═══ DELETE_NODE ═══
       } else if (op.type === 'DELETE_NODE') {
         const node = await figma.getNodeByIdAsync(op.nodeId);
-        if (node) node.remove();
+        if (node) {
+          summaryLines.push(`Removido @"${node.name}"`);
+          node.remove();
+        }
       }
     } catch (err) {
       postToUI({ type: 'ERROR', message: `Op ${op.type}: ${String(err)}` });
@@ -487,7 +573,8 @@ async function applyOperations(ops: FigmaOperation[]) {
     figma.viewport.scrollAndZoomIntoView(rootNodes);
   }
 
-  postToUI({ type: 'OPERATIONS_DONE', count: ops.length });
+  const summary = summaryLines.length > 0 ? summaryLines.join('\n') : undefined;
+  postToUI({ type: 'OPERATIONS_DONE', count: ops.length, summary });
 }
 
 function deleteSelection() {
@@ -627,6 +714,19 @@ async function getFontVariablesFromFile(): Promise<FontVariable[]> {
   return fonts;
 }
 
+async function getAvailableFontFamilies(): Promise<string[]> {
+  try {
+    const fonts = await figma.listAvailableFontsAsync();
+    const families = new Set<string>();
+    for (const f of fonts) {
+      families.add(f.fontName.family);
+    }
+    return [...families].sort();
+  } catch (_e) {
+    return [];
+  }
+}
+
 async function notifyContextChange() {
   const [components, colors, fonts] = await Promise.all([
     getComponentsInCurrentFile(),
@@ -635,13 +735,39 @@ async function notifyContextChange() {
   ]);
   const selection = figma.currentPage.selection;
 
+  // Build detailed selection info for UI
+  const selectionDetails: Array<{ id: string; name: string; type: string }> = [];
+  for (const node of selection) {
+    selectionDetails.push({ id: node.id, name: node.name, type: node.type });
+  }
+
   figma.ui.postMessage({
     type: 'CONTEXT_UPDATED',
     selectedElements: selection.length,
     componentsCount: components.length,
     colorVariables: colors.length,
-    fontVariables: fonts.length
+    fontVariables: fonts.length,
+    selectionDetails
   });
+
+  // Export thumbnail for single selection
+  if (selection.length === 1) {
+    const node = selection[0];
+    try {
+      const bytes = await node.exportAsync({
+        format: 'PNG',
+        constraint: { type: 'HEIGHT', value: 48 }
+      });
+      const b64 = figma.base64Encode(bytes);
+      figma.ui.postMessage({
+        type: 'SELECTION_THUMBNAIL',
+        nodeId: node.id,
+        thumbnail: `data:image/png;base64,${b64}`
+      });
+    } catch (_e) {
+      // Some nodes can't be exported, that's fine
+    }
+  }
 }
 
 figma.showUI(__html__, { width: 420, height: 680, themeColors: true, title: 'Visant Copilot' });
@@ -692,11 +818,14 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       fontVariables: fonts.length
     });
 
-    // Send data to UI immediately, then thumbnails in background
+    // Send data to UI immediately, then thumbnails and fonts in background
     postToUI({ type: 'COMPONENTS_LOADED', components });
     postToUI({ type: 'FONT_VARIABLES_LOADED', fonts });
     postToUI({ type: 'COLOR_VARIABLES_LOADED', colors });
     exportComponentThumbnails(components).catch(() => { });
+    getAvailableFontFamilies().then(families => {
+      postToUI({ type: 'AVAILABLE_FONTS_LOADED', families });
+    }).catch(() => { });
   } else if (msg.type === 'APPLY_OPERATIONS') {
     await applyOperations(msg.payload);
   } else if (msg.type === 'APPLY_OPERATIONS_FROM_API') {
@@ -710,12 +839,14 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     ]);
 
     // Collect all context with user selections
+    const availableLayers = getAvailableLayers();
     const context = {
       command: msg.command,
       selectedElements: selection.nodes,
       availableComponents: components,
       availableColorVariables: colors,
       availableFontVariables: fonts,
+      availableLayers,
       selectedLogo: msg.logoComponent,
       selectedBrandFont: msg.brandFont,
       selectedBrandColors: msg.brandColors

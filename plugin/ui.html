@@ -29,6 +29,7 @@
         <button class="tool-btn" title="Imagem">🖼</button>
       </div>
       <textarea id="chatInput" placeholder="Descreva o design que quer criar ou modificar..." rows="2"></textarea>
+      <div id="selectionIndicator" class="selection-indicator hidden"></div>
       <div class="chat-card-footer">
         <div class="chat-card-pills">
           <button class="chat-pill" id="brandPill">🎨 Brand</button>
@@ -48,43 +49,74 @@
     </div>
 
     <!-- Brand Guidelines -->
-    <div class="brand-section">
-      <div class="brand-header" onclick="toggleBrandSection()">
-        <span class="brand-chevron" id="brandChevron">▾</span>
-        <span class="brand-title">Brand Guidelines</span>
-      </div>
-      <div class="brand-content" id="brandContent">
-        <div class="section">
-          <div class="section-title">Logotipo</div>
-          <button type="button" id="useSelectionBtn" class="secondary" onclick="useSelectionAsLogo()"
-            style="width: auto; padding: 0 10px; margin-bottom: 8px;">Usar seleção</button>
-          <input type="text" id="componentSearch" placeholder="Pesquisar componentes..."
+    <div class="brand-guidelines">
+      <div class="brand-guidelines-title">Brand Guidelines</div>
+
+      <!-- Logo -->
+      <div class="brand-row">
+        <div class="brand-row-header">
+          <div class="brand-row-left">
+            <span class="brand-row-icon">◇</span>
+            <span class="brand-row-label">Logo</span>
+          </div>
+          <div class="brand-row-preview" id="logoPreview"></div>
+          <button class="brand-add-btn" onclick="toggleBrandPanel('logo')" title="Adicionar logo">+</button>
+        </div>
+        <div class="brand-panel hidden" id="logoPanel">
+          <button type="button" class="brand-panel-action" onclick="useSelectionAsLogo()">
+            <span>◎</span> Usar seleção atual
+          </button>
+          <input type="text" id="componentSearch" class="brand-panel-search" placeholder="Pesquisar componentes..."
             oninput="renderComponentsLibrary()">
           <div id="componentsLibrary" class="components-library"></div>
-          <div id="selectedLogo"></div>
         </div>
-        <div class="section">
-          <div class="section-title">Fonte</div>
-          <select id="fontSelect" onchange="selectFont()">
-            <option value="">Carregando...</option>
-          </select>
-          <div id="selectedFont"></div>
+      </div>
+
+      <!-- Cores -->
+      <div class="brand-row">
+        <div class="brand-row-header">
+          <div class="brand-row-left">
+            <span class="brand-row-icon brand-row-icon-dot">●</span>
+            <span class="brand-row-label">Cores</span>
+          </div>
+          <div class="brand-row-preview" id="colorsPreview"></div>
+          <button class="brand-add-btn" onclick="toggleBrandPanel('colors')" title="Adicionar cores">+</button>
         </div>
-        <div class="section">
-          <div class="section-title">Cores</div>
-          <div id="colorsList"></div>
-          <div id="selectedColors"></div>
+        <div class="brand-panel hidden" id="colorsPanel">
+          <div class="color-grid" id="colorGrid"></div>
+          <div class="brand-panel-empty hidden" id="colorGridEmpty">Nenhuma variável de cor no arquivo</div>
+        </div>
+      </div>
+
+      <!-- Fontes -->
+      <div class="brand-row">
+        <div class="brand-row-header">
+          <div class="brand-row-left">
+            <span class="brand-row-icon brand-row-icon-font">A</span>
+            <span class="brand-row-label">Fontes</span>
+          </div>
+          <div class="brand-row-preview" id="fontsPreview"></div>
+          <button class="brand-add-btn" onclick="toggleBrandPanel('fonts')" title="Adicionar fonte">+</button>
+        </div>
+        <div class="brand-panel hidden" id="fontsPanel">
+          <div class="font-tabs">
+            <button class="font-tab active" id="fontTabLibrary" onclick="switchFontTab('library')">Biblioteca</button>
+            <button class="font-tab" id="fontTabAll" onclick="switchFontTab('all')">Todas</button>
+          </div>
+          <input type="text" id="fontSearch" class="brand-panel-search" placeholder="Pesquisar fontes..."
+            oninput="renderFontList()">
+          <div class="font-list" id="fontList"></div>
         </div>
       </div>
     </div>
 
     <!-- API Key (BYOK) -->
-    <div class="brand-section">
-      <div class="brand-header" onclick="toggleApiSection()">
-        <span class="brand-chevron collapsed" id="apiChevron">▾</span>
-        <span class="brand-title">Gemini API Key (BYOK)</span>
+    <div class="settings-section">
+      <div class="settings-section-header" onclick="toggleApiSection()">
+        <span class="settings-section-chevron collapsed" id="apiChevron">▾</span>
+        <span class="settings-section-title">Gemini API Key (BYOK)</span>
       </div>
-      <div class="brand-content hidden" id="apiContent">
+      <div class="settings-section-content hidden" id="apiContent">
         <p
           style="font-size: 11px; color: var(--figma-color-text-secondary, #808080); margin-bottom: 10px; line-height: 1.5;">
           Sua chave é salva localmente no Figma. Se vazio, usa a chave do servidor.

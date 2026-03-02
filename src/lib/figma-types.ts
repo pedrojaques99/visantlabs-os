@@ -27,12 +27,14 @@ export type FigmaOperation =
     type: 'CREATE_FRAME';
     ref?: string;
     parentRef?: string;
+    parentNodeId?: string;
     props: {
       name: string;
       width: number;
       height: number;
       fills?: SolidPaint[];
       cornerRadius?: number;
+      cornerSmoothing?: number;
       clipsContent?: boolean;
       layoutMode?: 'NONE' | 'HORIZONTAL' | 'VERTICAL';
       primaryAxisSizingMode?: 'FIXED' | 'AUTO';
@@ -53,6 +55,7 @@ export type FigmaOperation =
     type: 'CREATE_RECTANGLE';
     ref?: string;
     parentRef?: string;
+    parentNodeId?: string;
     props: {
       name: string;
       width: number;
@@ -70,17 +73,21 @@ export type FigmaOperation =
     type: 'CREATE_ELLIPSE';
     ref?: string;
     parentRef?: string;
+    parentNodeId?: string;
     props: {
       name: string;
       width: number;
       height: number;
       fills?: SolidPaint[];
+      layoutSizingHorizontal?: 'FIXED' | 'FILL';
+      layoutSizingVertical?: 'FIXED' | 'FILL';
     };
   }
   | {
     type: 'CREATE_TEXT';
     ref?: string;
     parentRef?: string;
+    parentNodeId?: string;
     props: {
       name?: string;
       content: string;
@@ -102,6 +109,7 @@ export type FigmaOperation =
     type: 'CREATE_COMPONENT_INSTANCE';
     ref?: string;
     parentRef?: string;
+    parentNodeId?: string;
     componentKey: string;
     name?: string;
   }
@@ -249,6 +257,12 @@ export type FontVariable = {
   name: string;
 };
 
+export type AvailableLayer = {
+  id: string;
+  name: string;
+  type: string;
+};
+
 // ── UI → Sandbox messages ──
 
 export type UIMessage =
@@ -272,7 +286,7 @@ export type UIMessage =
 
 export type PluginMessage =
   | { type: 'CONTEXT'; payload: SerializedContext }
-  | { type: 'OPERATIONS_DONE'; count?: number }
+  | { type: 'OPERATIONS_DONE'; count?: number; summary?: string }
   | { type: 'ERROR'; message: string }
   | {
     type: 'CONTEXT_UPDATED';
