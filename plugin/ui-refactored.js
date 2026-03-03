@@ -30,18 +30,8 @@
 // - API functions from api.js module
 
 // ══════════════════════════════════════════════════════════════════════════════
-// SESSION ID & MODE INITIALIZATION (Async via Sandbox)
+// SESSION ID INITIALIZATION (Async via Sandbox)
 // ══════════════════════════════════════════════════════════════════════════════
-
-// Listen for mode loaded from clientStorage
-eventBus.on('state:mode-loaded', (mode) => {
-  if (mode === 'advanced' || mode === 'simple') {
-    setState('mode', mode);
-    if (window.uiManager) {
-      window.uiManager.updateUIForMode(mode);
-    }
-  }
-});
 
 // Listen for session ID loaded from clientStorage
 eventBus.on('state:session-loaded', (sessionId) => {
@@ -63,16 +53,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Request initial context and persisted state from sandbox
   getContext();
+  loadApiKey();
+  loadAnthropicKey();
   parent.postMessage({ pluginMessage: { type: 'LOAD_PERSISTED_STATE' } }, '*');
 
   // Render initial state
   chatModule.renderMessages();
   brandModule.updateBrandPill();
   libraryModule.render();
-  uiManager.updateUIForMode(state.mode);
 
   console.log('[Plugin] Initialization complete');
-  console.log('[Plugin] Mode: ' + state.mode);
   console.log('[Plugin] Session: ' + state.sessionId);
 });
 

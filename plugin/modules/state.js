@@ -27,6 +27,7 @@ const state = {
 
   // Settings & API
   userApiKey: '',
+  anthropicApiKey: '',
   apiCollapsed: true,
 
   // Tabs & UI
@@ -48,6 +49,9 @@ const state = {
 
   // UI Mode (Progressive Disclosure)
   mode: 'simple', // 'simple' | 'advanced'
+
+  // Page scan toggle
+  scanPage: false,
 };
 
 /**

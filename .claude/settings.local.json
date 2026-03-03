@@ -20,7 +20,8 @@
       "Skill(firecrawl)",
       "Bash(.firecrawl/PLUGIN_API_AUDIT.md:*)",
       "Bash(firecrawl scrape:*)",
-      "Bash(firecrawl search:*)"
+      "Bash(firecrawl search:*)",
+      "Bash(rm:*)"
     ]
   }
 }

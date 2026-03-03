@@ -1,6 +1,6 @@
 /**
  * Chat module - Handle chat UI and messaging
- * Best practice: Encapsulated chat logic, event-driven updates
+ * Uses native Figma plugin CSS variables and chat-msg classes from ui.css
  */
 
 class ChatModule {
@@ -10,16 +10,34 @@ class ChatModule {
     this.sendBtn = document.getElementById('sendBtn');
     this.statusEl = document.getElementById('status');
     this.isLoading = false;
+    this._typingBubble = null;
+    this.operationsMap = {}; // Map message index to operations data
 
     this.setupEventListeners();
     this.setupStateListeners();
+
+    // Delegated click handler for node chips in chat messages
+    this.chatMessages.addEventListener('click', (e) => {
+      const chip = e.target.closest('.node-chip');
+      if (chip && chip.dataset.nodeId) {
+        parent.postMessage(
+          { pluginMessage: { type: 'SELECT_AND_ZOOM', nodeId: chip.dataset.nodeId } },
+          '*'
+        );
+      }
+
+      // Handler for view operations data button
+      const viewDataBtn = e.target.closest('.msg-view-data-btn');
+      if (viewDataBtn) {
+        const msgIndex = viewDataBtn.dataset.msgIndex;
+        this.showOperationsModal(msgIndex);
+      }
+    });
   }
 
   setupEventListeners() {
-    // Send message on button click
     this.sendBtn.addEventListener('click', () => this.sendMessage());
 
-    // Send on Enter key
     this.chatInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -27,36 +45,67 @@ class ChatModule {
       }
     });
 
-    // Auto-resize textarea
     this.chatInput.addEventListener('input', () => {
       this.chatInput.style.height = 'auto';
       this.chatInput.style.height = Math.min(this.chatInput.scrollHeight, 120) + 'px';
     });
+
+    // Scan Page toggle pill
+    const scanPill = document.getElementById('scanPagePill');
+    if (scanPill) {
+      scanPill.addEventListener('click', () => {
+        const next = !state.scanPage;
+        setState('scanPage', next);
+        scanPill.classList.toggle('active', next);
+      });
+    }
   }
 
   setupStateListeners() {
-    // Listen for chat history updates
     watchState('chatHistory', () => {
       this.renderMessages();
     });
 
-    // Listen for loading state
     eventBus.on('chat:loading', (isLoading) => {
       this.setLoading(isLoading);
     });
 
-    // Listen for API errors
     eventBus.on('api:error', (error) => {
-      this.addErrorMessage(`Erro na API: ${error.error}`);
+      this.removeTypingBubble();
+      this.addErrorMessage(`Erro: ${error.error}`);
+      this.setLoading(false);
     });
 
-    // Listen for design generated
+    // Main response handler — reads MESSAGE ops as text, rest as design ops
     eventBus.on('api:design-generated', (result) => {
-      this.addAssistantMessage(
-        `Geradas ${result.operations.length} operações (usando ${result.provider || 'AI'})`
-      );
-      eventBus.emit('chat:operations-ready', result.operations);
+      this.removeTypingBubble();
+
+      const ops = result.operations || [];
+      const messageOps = ops.filter(op => op.type === 'MESSAGE');
+      const designOps = ops.filter(op => op.type !== 'MESSAGE');
+
+      if (messageOps.length > 0) {
+        // Show each MESSAGE op content as a chat bubble
+        messageOps.forEach(op => {
+          if (op.content) this.addAssistantMessage(op.content, null, designOps);
+        });
+      }
+
+      if (designOps.length > 0) {
+        // Subtle status line for design operations
+        const n = designOps.length;
+        this.addStatusMessage(`✦ ${n} operação${n > 1 ? 'ões' : ''} · ${result.provider || 'AI'}`);
+        eventBus.emit('chat:operations-ready', designOps);
+      }
+
+      // If nothing useful came back at all
+      if (ops.length === 0) {
+        this.addErrorMessage('❌ Nenhuma resposta gerada. Tente ser mais específico.');
+      }
+
+      this.setLoading(false);
     });
+
   }
 
   /**
@@ -64,130 +113,230 @@ class ChatModule {
    */
   async sendMessage() {
     const message = this.chatInput.value.trim();
-    if (!message) return;
+    if (!message || this.isLoading) return;
 
-    // Clear input
     this.chatInput.value = '';
     this.chatInput.style.height = 'auto';
 
-    // Add user message
     this.addUserMessage(message);
-
-    // Request context and generate
     this.setLoading(true);
+    this.showTypingBubble();
+
     try {
       generateWithContext(message, { fileId: state.sessionId });
     } catch (error) {
-      this.addErrorMessage(`Falha ao enviar mensagem: ${error.message}`);
+      this.removeTypingBubble();
+      this.addErrorMessage(`Falha ao enviar: ${error.message}`);
       this.setLoading(false);
     }
   }
 
-  /**
-   * Add user message to chat
-   * @param {string} content - Message content
-   */
   addUserMessage(content) {
-    state.chatHistory.push({
-      role: 'user',
-      content,
-      isError: false,
-    });
-    setState('chatHistory', state.chatHistory);
+    // New array reference so setState's reference-equality check fires
+    setState('chatHistory', [...state.chatHistory, { role: 'user', content, isError: false }]);
   }
 
-  /**
-   * Add assistant message
-   * @param {string} content - Message content
-   */
-  addAssistantMessage(content) {
-    state.chatHistory.push({
+  addAssistantMessage(content, summaryItems, operations) {
+    const newHistory = [...state.chatHistory, {
       role: 'assistant',
       content,
       isError: false,
-    });
-    setState('chatHistory', state.chatHistory);
+      summaryItems: summaryItems || null,
+      operations: operations || null
+    }];
+    setState('chatHistory', newHistory);
   }
 
-  /**
-   * Add error message
-   * @param {string} content - Error message
-   */
   addErrorMessage(content) {
-    state.chatHistory.push({
-      role: 'assistant',
-      content,
-      isError: true,
-    });
-    setState('chatHistory', state.chatHistory);
+    setState('chatHistory', [...state.chatHistory, { role: 'assistant', content, isError: true }]);
+  }
+
+  addStatusMessage(content) {
+    setState('chatHistory', [...state.chatHistory, { role: 'status', content, isError: false }]);
   }
 
   /**
-   * Render all messages
+   * Show animated typing indicator while AI is processing
+   */
+  showTypingBubble() {
+    this.removeTypingBubble();
+    const el = document.createElement('div');
+    el.className = 'chat-msg assistant chat-typing';
+    el.id = 'typingBubble';
+    el.innerHTML = `<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>`;
+    this.chatMessages.appendChild(el);
+    this._typingBubble = el;
+    this._scrollToBottom();
+  }
+
+  removeTypingBubble() {
+    if (this._typingBubble) {
+      this._typingBubble.remove();
+      this._typingBubble = null;
+    }
+    const existing = document.getElementById('typingBubble');
+    if (existing) existing.remove();
+  }
+
+  /**
+   * Render full message history
    */
   renderMessages() {
     this.chatMessages.innerHTML = '';
+    this.operationsMap = {};
 
-    for (const msg of state.chatHistory) {
+    state.chatHistory.forEach((msg, idx) => {
       const el = document.createElement('div');
-      el.className = `chat-message ${msg.role}${msg.isError ? ' error' : ''}`;
 
-      if (msg.role === 'assistant') {
-        el.innerHTML = `
-          <div class="message-avatar">AI</div>
-          <div class="message-body">${this.escapeHtml(msg.content)}</div>
-        `;
+      if (msg.role === 'status') {
+        el.className = 'chat-status-line';
+        el.textContent = msg.content;
+      } else if (msg.role === 'user') {
+        el.className = 'chat-msg user';
+        el.textContent = msg.content;
       } else {
-        el.innerHTML = `
-          <div class="message-body">${this.escapeHtml(msg.content)}</div>
-          <div class="message-avatar">👤</div>
-        `;
+        // assistant
+        el.className = `chat-msg assistant${msg.isError ? ' error' : ''}`;
+        el.innerHTML = this.renderMarkdown(msg.content, msg.summaryItems);
+
+        // Store operations data if present
+        if (msg.operations && msg.operations.length > 0) {
+          this.operationsMap[idx] = msg.operations;
+
+          // Add view data button
+          const footer = document.createElement('div');
+          footer.className = 'msg-footer';
+          footer.innerHTML = `
+            <button class="msg-view-data-btn" data-msg-index="${idx}" title="Ver dados das operações">
+              📋 Ver dados
+            </button>
+          `;
+          el.appendChild(footer);
+        }
       }
 
       this.chatMessages.appendChild(el);
-    }
+    });
 
-    // Auto-scroll to bottom
-    this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+    this._scrollToBottom();
   }
 
   /**
-   * Set loading state
-   * @param {boolean} isLoading - Loading state
+   * Very light markdown renderer (bold, newline, code) + clickable node chips
    */
+  renderMarkdown(text, summaryItems) {
+    if (!text) return '';
+    const nodeMap = this._buildNodeMap(summaryItems);
+    let html = this.escapeHtml(text)
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>')
+      .replace(/\n/g, '<br>');
+
+    // Replace @&quot;name&quot; patterns with clickable node chips
+    // After escapeHtml, quotes become &quot;
+    html = html.replace(/@&quot;([^&]+?)&quot;/g, (match, name) => {
+      const nodeId = nodeMap[name];
+      if (nodeId) {
+        return `<span class="node-chip" data-node-id="${this.escapeHtml(nodeId)}" title="Clique para selecionar e ver no canvas">@${name}</span>`;
+      }
+      return `<span class="node-chip-static">@"${name}"</span>`;
+    });
+
+    return html;
+  }
+
+  /**
+   * Build name→nodeId map from summaryItems
+   */
+  _buildNodeMap(summaryItems) {
+    const map = {};
+    if (!summaryItems || !Array.isArray(summaryItems)) return map;
+    for (const item of summaryItems) {
+      if (item.nodeName && item.nodeId) {
+        map[item.nodeName] = item.nodeId;
+      }
+    }
+    return map;
+  }
+
   setLoading(isLoading) {
     this.isLoading = isLoading;
     this.sendBtn.disabled = isLoading;
     this.chatInput.disabled = isLoading;
 
     if (isLoading) {
-      this.statusEl.textContent = '⏳ Gerando operações...';
+      this.statusEl.textContent = '⏳ Gerando...';
       this.statusEl.classList.remove('hidden');
     } else {
       this.statusEl.classList.add('hidden');
+      this.statusEl.textContent = '';
     }
   }
 
-  /**
-   * Clear chat history
-   */
   clearHistory() {
     if (confirm('Limpar histórico de chat?')) {
+      // Reset to a brand-new array reference
       setState('chatHistory', [
-        {
-          role: 'assistant',
-          content:
-            'Olá! Descreva o que quer criar ou modificar. Configure as Brand Guidelines em ⚙ Configurações.',
-          isError: false,
-        },
+        { role: 'assistant', content: 'Olá! Descreva o que quer criar ou modificar. Configure as Brand Guidelines em ⚙ Configurações.', isError: false },
       ]);
-      setState('sessionId', (window.crypto && typeof window.crypto.randomUUID === 'function') ? window.crypto.randomUUID() : 'sess_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36));
+      setState('sessionId',
+        window.crypto && typeof window.crypto.randomUUID === 'function'
+          ? window.crypto.randomUUID()
+          : 'sess_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36)
+      );
     }
   }
 
+  _scrollToBottom() {
+    requestAnimationFrame(() => {
+      const wrap = this.chatMessages.closest('.chat-messages-wrap') || this.chatMessages;
+      wrap.scrollTop = wrap.scrollHeight;
+    });
+  }
+
   /**
-   * Escape HTML
+   * Show operations modal with data
    */
+  showOperationsModal(msgIndex) {
+    const operations = this.operationsMap[msgIndex];
+    if (!operations || operations.length === 0) return;
+
+    const modal = document.getElementById('operationsModal');
+    const content = document.getElementById('operationsModalContent');
+
+    if (!modal || !content) return;
+
+    // Render operations list + JSON
+    let html = `
+      <div class="operations-container">
+        <div class="ops-section">
+          <div class="ops-title">Operações (${operations.length})</div>
+          <div class="ops-list">
+    `;
+
+    operations.forEach((op, i) => {
+      const opName = op.props?.name ? ` — ${this.escapeHtml(op.props.name)}` : '';
+      html += `<div class="op-item">
+                <span class="op-num">${i + 1}.</span>
+                <span class="op-type">${this.escapeHtml(op.type)}</span>
+                <span class="op-name">${opName}</span>
+              </div>`;
+    });
+
+    html += `
+          </div>
+        </div>
+        <div class="ops-section">
+          <div class="ops-title">JSON</div>
+          <pre class="ops-json"><code>${this.escapeHtml(JSON.stringify(operations, null, 2))}</code></pre>
+        </div>
+      </div>
+    `;
+
+    content.innerHTML = html;
+    modal.classList.remove('hidden');
+  }
+
   escapeHtml(text) {
     return (text || '')
       .replace(/&/g, '&amp;')

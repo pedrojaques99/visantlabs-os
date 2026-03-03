@@ -7,26 +7,21 @@ class UIManager {
   constructor() {
     this.mainView = document.getElementById('mainView');
     this.settingsView = document.getElementById('settingsView');
-    this.modeToggle = document.getElementById('modeToggle');
-    this.advancedPanel = document.getElementById('advancedPanel');
-    this.operationsLog = document.getElementById('operationsLog');
-    this.jsonPreview = document.getElementById('jsonPreview');
     this.selectionIndicator = document.getElementById('selectionIndicator');
+
+    // WebSocket management
+    this.ws = null;
+    this.wsReconnectAttempts = 0;
+    this.wsMaxReconnectAttempts = 5;
+    this.wsReconnectDelay = 5000; // 5 seconds
 
     this.setupEventListeners();
     this.setupStateListeners();
     this.setupSandboxListeners();
+    this.initWebSocket();
   }
 
   setupEventListeners() {
-    // Mode toggle (Simple vs Advanced)
-    this.modeToggle?.addEventListener('change', (e) => {
-      const newMode = e.target.checked ? 'advanced' : 'simple';
-      setState('mode', newMode);
-      // Persist mode preference
-      eventBus.emit('api:save-mode', newMode);
-    });
-
     // Tabs Navigation
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
@@ -46,10 +41,23 @@ class UIManager {
     // Modals generic close
     document.querySelectorAll('.modal-close').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        e.target.closest('.modal').classList.add('hidden');
-        setState('activeModalTarget', null);
+        const modal = e.target.closest('.modal');
+        if (modal) {
+          modal.classList.add('hidden');
+          setState('activeModalTarget', null);
+        }
       });
     });
+
+    // Close operations modal on outside click
+    const operationsModal = document.getElementById('operationsModal');
+    if (operationsModal) {
+      operationsModal.addEventListener('click', (e) => {
+        if (e.target === operationsModal) {
+          operationsModal.classList.add('hidden');
+        }
+      });
+    }
 
     // Clicking outside modal content to close
     document.querySelectorAll('.modal').forEach(modal => {
@@ -75,20 +83,42 @@ class UIManager {
       chatModule.clearHistory();
     });
 
-    // Save API key
+    // Save Gemini API key
     document.getElementById('apiKeySaveBtn')?.addEventListener('click', () => {
       const key = document.getElementById('apiKeyInput')?.value || '';
       saveApiKey(key);
       setState('userApiKey', key);
     });
 
-    // API Section toggle
+    // API Section toggle (Gemini)
     document.getElementById('apiSectionToggle')?.addEventListener('click', () => {
       const chevron = document.getElementById('apiChevron');
       const content = document.getElementById('apiContent');
       if (chevron && content) {
         chevron.classList.toggle('collapsed');
         content.classList.toggle('hidden');
+      }
+    });
+
+    // API Section toggle (Anthropic)
+    document.getElementById('anthropicSectionToggle')?.addEventListener('click', () => {
+      const chevron = document.getElementById('anthropicChevron');
+      const content = document.getElementById('anthropicContent');
+      if (chevron && content) {
+        chevron.classList.toggle('collapsed');
+        content.classList.toggle('hidden');
+      }
+    });
+
+    // Save Anthropic key
+    document.getElementById('anthropicKeySaveBtn')?.addEventListener('click', () => {
+      const key = document.getElementById('anthropicKeyInput')?.value || '';
+      saveAnthropicKey(key);
+      setState('anthropicApiKey', key);
+      const status = document.getElementById('anthropicKeyStatus');
+      if (status) {
+        status.textContent = key ? '✅ Chave salva' : '🗑 Chave removida';
+        setTimeout(() => { status.textContent = ''; }, 2000);
       }
     });
 
@@ -99,22 +129,20 @@ class UIManager {
         this.focusChatInput();
       }
     });
+
+    // Undo button
+    document.getElementById('undoBtn')?.addEventListener('click', () => {
+      parent.postMessage(
+        { pluginMessage: { type: 'UNDO_LAST_BATCH' } },
+        'https://www.figma.com'
+      );
+    });
   }
 
   setupStateListeners() {
-    // Mode change
-    watchState('mode', (newMode) => {
-      this.updateUIForMode(newMode);
-    });
-
     // Selection changes
     watchState('selectionDetails', () => {
       this.updateSelectionIndicator();
-    });
-
-    // Operations ready
-    eventBus.on('chat:operations-ready', (operations) => {
-      this.showOperationsInAdvancedMode(operations);
     });
 
     // Context updates
@@ -182,18 +210,78 @@ class UIManager {
             document.getElementById('apiKeyInput').value = msg.key || '';
           }
           break;
+        case 'ANTHROPIC_KEY_LOADED':
+          setState('anthropicApiKey', msg.key || '');
+          if (document.getElementById('anthropicKeyInput')) {
+            document.getElementById('anthropicKeyInput').value = msg.key || '';
+          }
+          break;
         case 'CALL_API':
           this.callAPI(msg.context);
           break;
         case 'OPERATIONS_DONE':
           eventBus.emit('chat:loading', false);
           if (msg.summary) {
-            chatModule.addAssistantMessage(`✅ ${msg.summary}`);
+            chatModule.addAssistantMessage(`✅ ${msg.summary}`, msg.summaryItems);
           }
+          this.toggleUndoBtn(!!msg.canUndo);
           break;
         case 'ERROR':
           eventBus.emit('chat:loading', false);
           chatModule.addErrorMessage(`⚠️ ${msg.message}`);
+          break;
+
+        // ── Undo Result ──
+        case 'UNDO_RESULT':
+          if (msg.success) {
+            chatModule.addAssistantMessage(msg.message);
+          } else {
+            chatModule.addErrorMessage(msg.message);
+          }
+          this.toggleUndoBtn(!!msg.canUndo);
+          break;
+
+        // ── Agent Operation Responses ──
+        case 'OPERATION_ACK':
+          // Operation applied successfully from agent
+          console.log('[Plugin UI] Operation ACK:', msg.opId, 'applied', msg.appliedCount, 'ops');
+          this.sendToServer({
+            type: 'OPERATION_ACK',
+            opId: msg.opId,
+            success: true,
+            appliedCount: msg.appliedCount,
+          });
+          break;
+
+        case 'OPERATION_ERROR':
+          // Operation failed in plugin
+          console.error('[Plugin UI] Operation ERROR:', msg.opId, msg.error);
+          this.sendToServer({
+            type: 'OPERATION_ERROR',
+            opId: msg.opId,
+            error: msg.error,
+          });
+          break;
+
+        case 'SELECTION_CHANGED':
+          // User selection changed, forward to server
+          this.sendToServer({
+            type: 'SELECTION_CHANGED',
+            nodes: msg.nodes || [],
+          });
+          break;
+
+        // ── WebSocket Status ──
+        case 'WS_OPEN':
+          console.log('[Plugin UI] WebSocket opened');
+          break;
+
+        case 'WS_CLOSED':
+          console.log('[Plugin UI] WebSocket closed');
+          break;
+
+        case 'WS_ERROR':
+          console.error('[Plugin UI] WebSocket error:', msg.error);
           break;
       }
     };
@@ -217,79 +305,18 @@ class UIManager {
    * Call API to generate operations
    */
   async callAPI(context) {
+    // Note: chat.js's api:design-generated handler owns all chat rendering (MESSAGE ops, status, loading).
+    // Here we only need to call generateDesign (which emits the event) and apply design ops.
     try {
-      eventBus.emit('chat:loading', true);
-      const operations = await generateDesign(
-        context.command,
-        context
-      );
-
-      if (operations && operations.length > 0) {
-        // Extract text messages from conversational operations
-        const messages = operations.filter(op => op.type === 'MESSAGE');
-        const designOps = operations.filter(op => op.type !== 'MESSAGE');
-
-        // Display textual responses
-        if (messages.length > 0) {
-          messages.forEach(msg => {
-            chatModule.addAssistantMessage(msg.content);
-          });
-        }
-
-        if (designOps.length > 0) {
-          applyOperations(designOps);
-        } else {
-          // If there were only conversational messages and no design operations
-          eventBus.emit('chat:loading', false);
-        }
-      } else {
-        chatModule.addErrorMessage('❌ Nenhuma operação gerada. Tente ser mais específico.');
-        eventBus.emit('chat:loading', false);
+      const operations = await generateDesign(context.command, context);
+      // generateDesign already emitted api:design-generated → chat.js handles display.
+      // Now apply only the non-MESSAGE design operations to Figma:
+      const designOps = (operations || []).filter(op => op.type !== 'MESSAGE');
+      if (designOps.length > 0) {
+        applyOperations(designOps);
       }
     } catch (error) {
-      chatModule.addErrorMessage(`❌ Erro ao gerar design: ${error.message}`);
-      eventBus.emit('chat:loading', false);
-    }
-  }
-
-  /**
-   * Update UI based on mode
-   */
-  updateUIForMode(mode) {
-    if (this.advancedPanel) {
-      this.advancedPanel.classList.toggle('hidden', mode === 'simple');
-    }
-
-    if (this.modeToggle) {
-      this.modeToggle.checked = mode === 'advanced';
-    }
-  }
-
-  /**
-   * Show operations in advanced mode
-   */
-  showOperationsInAdvancedMode(operations) {
-    if (this.operationsLog) {
-      this.operationsLog.innerHTML = `
-        <div class="operations-header">Operações Geradas (${operations.length})</div>
-        <div class="operations-list">
-          ${operations
-          .map(
-            (op, i) => `
-            <div class="operation-item">
-              <span class="op-number">${i + 1}</span>
-              <span class="op-type">${this.escapeHtml(op.type)}</span>
-              ${op.props?.name ? `<span class="op-name">${this.escapeHtml(op.props.name)}</span>` : ''}
-            </div>
-          `
-          )
-          .join('')}
-        </div>
-      `;
-    }
-
-    if (this.jsonPreview) {
-      this.jsonPreview.innerHTML = `<pre>${this.escapeHtml(JSON.stringify(operations, null, 2))}</pre>`;
+      // api:error event is emitted by apiCall() → chat.js handles the error bubble
     }
   }
 
@@ -352,6 +379,152 @@ class UIManager {
   }
 
   /**
+   * Initialize WebSocket connection to server
+   */
+  initWebSocket() {
+    // Get auth token (implement based on your auth strategy)
+    const token = this.getPluginToken();
+    const fileId = this.getFileId();
+
+    if (!token || !fileId) {
+      console.warn('[UIManager] Cannot initialize WebSocket: missing token or fileId');
+      return;
+    }
+
+    const wsUrl = this.buildWebSocketUrl(token, fileId);
+    console.log('[UIManager] Initializing WebSocket:', wsUrl.split('?')[0] + '?***');
+
+    try {
+      this.ws = new WebSocket(wsUrl);
+
+      this.ws.onopen = () => {
+        console.log('[UIManager] WebSocket connected');
+        this.wsReconnectAttempts = 0;
+        parent.postMessage(
+          { pluginMessage: { type: 'WS_OPEN' } },
+          '*'
+        );
+      };
+
+      this.ws.onmessage = (event) => {
+        try {
+          const message = JSON.parse(event.data);
+          this.handleWebSocketMessage(message);
+        } catch (err) {
+          console.error('[UIManager] Invalid JSON from server:', err);
+        }
+      };
+
+      this.ws.onerror = (err) => {
+        console.error('[UIManager] WebSocket error:', err);
+        parent.postMessage(
+          { pluginMessage: { type: 'WS_ERROR', error: err.message } },
+          '*'
+        );
+      };
+
+      this.ws.onclose = () => {
+        console.log('[UIManager] WebSocket closed');
+        parent.postMessage(
+          { pluginMessage: { type: 'WS_CLOSED' } },
+          '*'
+        );
+
+        // Attempt reconnect with exponential backoff
+        if (this.wsReconnectAttempts < this.wsMaxReconnectAttempts) {
+          this.wsReconnectAttempts++;
+          const delay = this.wsReconnectDelay * this.wsReconnectAttempts;
+          console.log(`[UIManager] Reconnecting in ${delay}ms (attempt ${this.wsReconnectAttempts})`);
+          setTimeout(() => this.initWebSocket(), delay);
+        } else {
+          console.error('[UIManager] Max reconnect attempts reached');
+        }
+      };
+    } catch (err) {
+      console.error('[UIManager] Failed to create WebSocket:', err);
+    }
+  }
+
+  /**
+   * Get plugin authentication token
+   */
+  getPluginToken() {
+    // TODO: Implement based on your auth strategy
+    // For now, return a simple user ID
+    const userId = localStorage.getItem('figmaPluginUserId') || 'plugin-user-' + Date.now();
+    localStorage.setItem('figmaPluginUserId', userId);
+    return userId + ':' + Date.now();
+  }
+
+  /**
+   * Get current file ID
+   */
+  getFileId() {
+    // This will be set by the plugin code
+    return window.figmaFileId || 'unknown';
+  }
+
+  /**
+   * Build WebSocket URL
+   */
+  buildWebSocketUrl(token, fileId) {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const host = window.location.host || 'localhost:3001';
+    const params = new URLSearchParams({
+      token,
+      fileId,
+    });
+    return `${protocol}//${host}/api/plugin/ws?${params.toString()}`;
+  }
+
+  /**
+   * Handle messages from server via WebSocket
+   */
+  handleWebSocketMessage(message) {
+    const { type } = message;
+    console.log('[UIManager] WebSocket message:', type);
+
+    switch (type) {
+      case 'PLUGIN_READY':
+        console.log('[UIManager] Plugin ready for operations');
+        break;
+
+      case 'AGENT_OPS':
+        // Forward agent operations to plugin sandbox
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: 'AGENT_OPS',
+              operations: message.operations,
+              opId: message.opId,
+            },
+          },
+          '*'
+        );
+        break;
+
+      default:
+        console.warn('[UIManager] Unknown WebSocket message type:', type);
+    }
+  }
+
+  /**
+   * Send message to server via WebSocket
+   */
+  sendToServer(message) {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      console.warn('[UIManager] WebSocket not connected, cannot send message:', message.type);
+      return;
+    }
+
+    try {
+      this.ws.send(JSON.stringify(message));
+    } catch (err) {
+      console.error('[UIManager] Failed to send WebSocket message:', err);
+    }
+  }
+
+  /**
    * Open settings view
    */
   openSettings() {
@@ -374,6 +547,16 @@ class UIManager {
    */
   focusChatInput() {
     document.getElementById('chatInput')?.focus();
+  }
+
+  /**
+   * Show/hide undo button based on whether there are undo entries
+   */
+  toggleUndoBtn(canUndo) {
+    const btn = document.getElementById('undoBtn');
+    if (btn) {
+      btn.classList.toggle('hidden', !canUndo);
+    }
   }
 
   /**

@@ -13,10 +13,6 @@
     <div class="app-header">
       <h2>Visant Copilot</h2>
       <div class="header-controls">
-        <label class="mode-toggle" title="Alternar entre modo simples e avançado">
-          <input type="checkbox" id="modeToggle">
-          <span>Avançado</span>
-        </label>
         <button class="icon-btn" id="settingsBtn" title="Configurações">⚙</button>
       </div>
     </div>
@@ -38,26 +34,16 @@
       <div id="selectionIndicator" class="selection-indicator hidden"></div>
       <div class="chat-card-footer">
         <div class="chat-card-pills">
+          <button class="chat-pill" id="scanPagePill"
+            title="Pesquisar toda a página (inclui todos os nós no contexto)">🔍 Página</button>
           <button class="chat-pill" id="brandPill">🎨 Brand</button>
         </div>
+        <button class="undo-btn hidden" id="undoBtn" title="Desfazer última operação (↩)">↩</button>
         <button class="send-btn" id="sendBtn" title="Enviar (Enter)">↑</button>
       </div>
     </div>
 
     <div class="context" id="contextInfo" style="margin-top: 8px;"></div>
-
-    <!-- ═══ ADVANCED PANEL ═══ -->
-    <div id="advancedPanel" class="advanced-panel hidden">
-      <div class="advanced-section">
-        <div class="advanced-header">Operações</div>
-        <div id="operationsLog" class="operations-log"></div>
-      </div>
-      <div class="advanced-divider"></div>
-      <div class="advanced-section">
-        <div class="advanced-header">JSON</div>
-        <div id="jsonPreview" class="json-preview"></div>
-      </div>
-    </div>
   </div>
 
   <!-- ═══ SETTINGS VIEW ═══ -->
@@ -173,7 +159,7 @@
       <div id="tab-config" class="tab-content hidden">
         <div class="figma-prop-panel">
 
-          <!-- API Key (BYOK) -->
+          <!-- API Key (BYOK) - Gemini -->
           <div class="figma-prop-section">
             <div class="figma-prop-header" id="apiSectionToggle" style="cursor: pointer; padding-right: 12px;">
               <span class="figma-prop-title">Gemini API Key (BYOK)</span>
@@ -183,7 +169,7 @@
               style="padding: 0 12px 12px; border-top: none;">
               <p
                 style="font-size: 11px; color: var(--figma-color-text-secondary, #808080); margin-bottom: 10px; line-height: 1.5;">
-                Sua chave é salva localmente no Figma. Se vazio, usa a chave do servidor.
+                Salva localmente no Figma. Se vazio, usa a chave do servidor.
               </p>
               <div style="display: flex; gap: 6px; align-items: center;">
                 <input type="password" id="apiKeyInput" placeholder="AIza..." style="flex: 1; margin-bottom: 0;">
@@ -191,6 +177,29 @@
                   style="width: auto; padding: 0 12px; flex-shrink: 0;">Salvar</button>
               </div>
               <div id="apiKeyStatus"
+                style="font-size: 10px; margin-top: 6px; color: var(--figma-color-text-secondary, #808080);"></div>
+            </div>
+          </div>
+
+          <!-- API Key (BYOK) - Anthropic/Claude -->
+          <div class="figma-prop-section">
+            <div class="figma-prop-header" id="anthropicSectionToggle" style="cursor: pointer; padding-right: 12px;">
+              <span class="figma-prop-title">Anthropic API Key (BYOK)</span>
+              <span class="settings-section-chevron collapsed" id="anthropicChevron" style="width: auto;">▾</span>
+            </div>
+            <div class="settings-section-content hidden" id="anthropicContent"
+              style="padding: 0 12px 12px; border-top: none;">
+              <p
+                style="font-size: 11px; color: var(--figma-color-text-secondary, #808080); margin-bottom: 10px; line-height: 1.5;">
+                Usada para pedidos complexos (Claude). Salva localmente no Figma.
+              </p>
+              <div style="display: flex; gap: 6px; align-items: center;">
+                <input type="password" id="anthropicKeyInput" placeholder="sk-ant-..."
+                  style="flex: 1; margin-bottom: 0;">
+                <button type="button" class="secondary" id="anthropicKeySaveBtn"
+                  style="width: auto; padding: 0 12px; flex-shrink: 0;">Salvar</button>
+              </div>
+              <div id="anthropicKeyStatus"
                 style="font-size: 10px; margin-top: 6px; color: var(--figma-color-text-secondary, #808080);"></div>
             </div>
           </div>
@@ -234,6 +243,18 @@
       </div>
       <div class="modal-body">
         <div class="font-list" id="fontList"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="operationsModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title">Dados das Operações</span>
+        <button class="figma-icon-btn modal-close" id="closeOperationsModal" style="font-size: 16px;">×</button>
+      </div>
+      <div class="modal-body">
+        <div id="operationsModalContent" class="operations-modal-content"></div>
       </div>
     </div>
   </div>
