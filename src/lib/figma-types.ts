@@ -263,6 +263,16 @@ export type AvailableLayer = {
   type: string;
 };
 
+// ── Brand Guideline preset ──
+
+export type BrandGuideline = {
+  id: string;         // uuid / timestamp string
+  name: string;       // e.g. "Creatina Power"
+  logo?: { id: string; name: string; key?: string };
+  font?: { id: string; name: string };
+  colors: Array<{ id: string; name: string; value: string }>;
+};
+
 // ── UI → Sandbox messages ──
 
 export type UIMessage =
@@ -280,7 +290,11 @@ export type UIMessage =
   | { type: 'DELETE_SELECTION' }
   | { type: 'OPEN_EXTERNAL'; url: string }
   | { type: 'SAVE_API_KEY'; key: string }
-  | { type: 'GET_API_KEY' };
+  | { type: 'GET_API_KEY' }
+  // Guideline presets
+  | { type: 'GET_GUIDELINES' }
+  | { type: 'SAVE_GUIDELINE'; guideline: BrandGuideline }
+  | { type: 'DELETE_GUIDELINE'; id: string };
 
 // ── Sandbox → UI messages ──
 
@@ -302,4 +316,7 @@ export type PluginMessage =
   | { type: 'SELECTION_AS_LOGO'; component: ComponentInfo | null }
   | { type: 'CALL_API'; context: Record<string, unknown> }
   | { type: 'API_KEY_SAVED' }
-  | { type: 'API_KEY_LOADED'; key: string };
+  | { type: 'API_KEY_LOADED'; key: string }
+  // Guideline presets
+  | { type: 'GUIDELINES_LOADED'; guidelines: BrandGuideline[] }
+  | { type: 'GUIDELINE_SAVED'; guidelines: BrandGuideline[]; savedId: string };

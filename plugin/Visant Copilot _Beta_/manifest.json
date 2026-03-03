@@ -2,17 +2,20 @@
   "name": "Visant Copilot (Beta)",
   "id": "1609259957876331442",
   "api": "1.0.0",
-  "main": "code.js",
-  "capabilities": [],
-  "enableProposedApi": false,
+  "main": "../dist/code.js",
+  "ui": "../ui.html",
   "documentAccess": "dynamic-page",
   "editorType": [
     "figma"
   ],
-  "permissions": ["teamlibrary"],
+  "permissions": [
+    "teamlibrary"
+  ],
   "networkAccess": {
     "allowedDomains": [
-      "none"
-    ]
+      "https://www.visantlabs.com",
+      "https://visantlabs.com"
+    ],
+    "reasoning": "Plugin communicates with Visant backend for AI-powered design generation"
   }
 }

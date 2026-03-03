@@ -58,6 +58,16 @@ function buildSystemPrompt(req: PluginRequest): string {
     ? req.availableFontVariables.slice(0, 10).map((f: any) => `- "${f.name}" (id: "${f.id}")`).join('\n')
     : 'Nenhuma variável de fonte';
 
+  // Build a dedicated "selected containers" hint for placing new nodes inside existing frames
+  const selectedNodes = req.selectedElements || [];
+  const containerTypes = new Set(['FRAME', 'COMPONENT', 'COMPONENT_SET', 'GROUP', 'SECTION']);
+  const selectedContainers = selectedNodes
+    .filter((n: any) => containerTypes.has(n.type))
+    .map((n: any) => `- "${n.name}" (id: "${n.id}", type: ${n.type})`);
+  const containersHint = selectedContainers.length > 0
+    ? selectedContainers.join('\n')
+    : 'Nenhum (criação vai para a página raiz)';
+
   return `Você é um assistente expert de design Figma. Gera operações JSON para criar e editar designs no Figma.
 Responda SOMENTE com um JSON array de operações. SEM texto, SEM markdown, SEM explicações.
 
@@ -68,7 +78,10 @@ BRAND GUIDELINES DO USUÁRIO:
 - Fonte de marca: ${fontInfo}
 - Cores de marca: ${brandColorsInfo}
 
-ELEMENTOS SELECIONADOS (inclui hierarquia — para editar texto use o id do nó TEXT, não do frame pai):
+FRAMES/CONTAINERS SELECIONADOS (use o "id" como "parentNodeId" para criar DENTRO deles):
+${containersHint}
+
+ELEMENTOS SELECIONADOS — hierarquia completa (use os ids para edição; para texto use o id do nó TEXT):
 ${selectedElementsInfo}
 
 COMPONENTES DISPONÍVEIS NO ARQUIVO (use o "key" para instanciar):
@@ -82,7 +95,11 @@ ${fontVarsInfo}
 
 ═══ OPERAÇÕES DISPONÍVEIS ═══
 
-CRIAÇÃO (todos suportam "ref" e "parentRef" para hierarquia pai-filho):
+CRIAÇÃO — dois modos de especificar o pai:
+  • "parentRef": "refName"  → pai é outro nó criado NESTA MESMA resposta (via "ref")
+  • "parentNodeId": "<id>"  → pai é um nó JÁ EXISTENTE no Figma (ex: frame selecionado)
+  ⚠️  REGRA CRÍTICA: se o usuário quer adicionar algo DENTRO de um elemento selecionado,
+      use "parentNodeId" com o id desse elemento. SEM parentNodeId → o nó vai para a página.
 
 1. CREATE_FRAME — Frame container com auto-layout
    { "type": "CREATE_FRAME", "ref": "card", "props": {
@@ -118,7 +135,14 @@ CRIAÇÃO (todos suportam "ref" e "parentRef" para hierarquia pai-filho):
    }}
 
 5. CREATE_COMPONENT_INSTANCE — Instanciar componente existente
-   { "type": "CREATE_COMPONENT_INSTANCE", "parentRef": "card", "componentKey": "abc123", "name": "Button" }
+   { "type": "CREATE_COMPONENT_INSTANCE", "parentNodeId": "<existingFrameId>", "componentKey": "abc123", "name": "Button" }
+
+   ── Exemplo: adicionar dentro de frame SELECIONADO (id "123:4") ──
+   { "type": "CREATE_TEXT", "parentNodeId": "123:4", "props": {
+     "name": "Label", "content": "Olá", "fontFamily": "Inter", "fontStyle": "Regular", "fontSize": 16,
+     "fills": [{"type": "SOLID", "color": {"r": 0.07, "g": 0.07, "b": 0.07}}],
+     "textAutoResize": "WIDTH_AND_HEIGHT"
+   }}
 
 EDIÇÃO DE NÓS EXISTENTES (usar nodeId de elemento selecionado):
 6.  SET_FILL — { "type": "SET_FILL", "nodeId": "...", "fills": [{"type": "SOLID", "color": {"r": 0, "g": 0.5, "b": 1}}] }
@@ -155,10 +179,14 @@ ESTRUTURA:
 9. Se não puder executar o pedido, retorne [].
 10. Use cornerSmoothing: 0.6 para smooth corners estilo iOS.
 11. Para sombras sutis: DROP_SHADOW com alpha 0.08-0.15, offset y:2-8, radius 8-24.
-12. Para edição: use o nodeId dos ELEMENTOS SELECIONADOS. Nunca invente IDs.
-13. Para editar texto: use nodeId de um nó TEXT. Se a seleção for um FRAME ou GROUP com filhos TEXT, use o id do filho (ex: "T Message"), NUNCA do frame. SET_TEXT_CONTENT só funciona em TEXT.
-14. Para criação: sempre comece com o frame/container root e adicione filhos na ORDEM com parentRef.
-15. FontStyle válidos: "Regular", "Medium", "Semi Bold", "Bold", "Light", "Thin", "Extra Bold", "Black", "Italic".
+16. ⭐ REGRA SOBRE CONTEXTO DE SELEÇÃO:
+    - O usuário tem UM frame selecionado e pede para adicionar algo → use "parentNodeId": "<id do frame selecionado>"
+    - O usuário pede um design novo do zero → crie o frame root sem parentNodeId (vai para a página)
+    - "parentRef" é SOMENTE para apontar para um nó criado NESTA resposta (via "ref")
+    - Misturar parentRef e parentNodeId no mesmo nó é erro: use UM dos dois.
+17. Para editar texto: use nodeId de um nó TEXT. Se a seleção for um FRAME ou GROUP com filhos TEXT, use o id do filho (ex: "T Message"), NUNCA do frame. SET_TEXT_CONTENT só funciona em TEXT.
+18. Para criação: sempre comece com o frame/container root e adicione filhos na ORDEM com parentRef.
+19. FontStyle válidos: "Regular", "Medium", "Semi Bold", "Bold", "Light", "Thin", "Extra Bold", "Black", "Italic".
 
 ═══ EXEMPLO COMPLETO ═══
 
