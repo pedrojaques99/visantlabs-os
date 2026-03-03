@@ -41,6 +41,42 @@ async function serializeNode(node: SceneNode, depth = 0): Promise<SerializedNode
     }));
   }
 
+  // Fix 1.5: Strokes
+  if ('strokes' in node && Array.isArray(node.strokes) && (node.strokes as any).length > 0) {
+    base.strokes = (node.strokes as ReadonlyArray<Paint>).map((s: Paint) => ({
+      type: s.type,
+      color: s.type === 'SOLID' ? (s as SolidPaint).color : undefined,
+      opacity: 'opacity' in s ? (s as SolidPaint).opacity : undefined,
+    }));
+    if ('strokeWeight' in node) base.strokeWeight = (node as any).strokeWeight;
+  }
+
+  // Fix 1.5: Effects
+  if ('effects' in node && Array.isArray((node as any).effects) && (node as any).effects.length > 0) {
+    base.effects = (node as any).effects.map((e: Effect) => ({
+      type: e.type,
+      radius: 'radius' in e ? e.radius : undefined,
+      color: 'color' in e ? e.color : undefined,
+      offset: 'offset' in e ? e.offset : undefined,
+    }));
+  }
+
+  // Fix 1.5: Opacity
+  if ('opacity' in node && (node as any).opacity !== 1) {
+    base.opacity = (node as any).opacity;
+  }
+
+  // Fix 1.5: Constraints (non-auto-layout)
+  if ('constraints' in node) {
+    base.constraints = (node as any).constraints;
+  }
+
+  // Fix 1.5: layoutSizing (for children of auto-layout)
+  if ('layoutSizingHorizontal' in node) {
+    base.layoutSizingHorizontal = (node as any).layoutSizingHorizontal;
+    base.layoutSizingVertical = (node as any).layoutSizingVertical;
+  }
+
   // Corner radius
   if ('cornerRadius' in node && typeof (node as any).cornerRadius === 'number') {
     base.cornerRadius = (node as any).cornerRadius;
@@ -67,8 +103,8 @@ async function serializeNode(node: SceneNode, depth = 0): Promise<SerializedNode
     }
   }
 
-  // Recursively serialize children (max 3 levels deep for performance)
-  if ('children' in node && (node as any).children && depth < 3) {
+  // Fix 1.5: Recursively serialize children (max 5 levels deep for complex designs)
+  if ('children' in node && (node as any).children && depth < 5) {
     const children: SerializedNode[] = [];
     for (const child of (node as any).children as SceneNode[]) {
       children.push(await serializeNode(child, depth + 1));
@@ -133,7 +169,17 @@ function getAvailableLayers(): AvailableLayer[] {
   return layers;
 }
 
-// ── Apply Operations (21 types with ref/parentRef hierarchy) ──
+// ── Apply Operations (21+ types with ref/parentRef hierarchy) ──
+
+// Fix 1.2: Session-level cache for loadAllPagesAsync (performance)
+let pagesLoaded = false;
+
+async function ensurePagesLoaded() {
+  if (!pagesLoaded) {
+    await figma.loadAllPagesAsync();
+    pagesLoaded = true;
+  }
+}
 
 async function applyOperations(ops: FigmaOperation[]) {
   const createdNodes = new Map<string, SceneNode>();
@@ -172,11 +218,21 @@ async function applyOperations(ops: FigmaOperation[]) {
           frame.primaryAxisAlignItems = op.props.primaryAxisAlignItems ?? 'MIN';
           frame.counterAxisAlignItems = op.props.counterAxisAlignItems ?? 'MIN';
           frame.itemSpacing = op.props.itemSpacing ?? 0;
+          if (op.props.counterAxisSpacing != null && 'counterAxisSpacing' in frame) {
+            (frame as any).counterAxisSpacing = op.props.counterAxisSpacing;
+          }
           frame.layoutWrap = op.props.layoutWrap ?? 'NO_WRAP';
           frame.paddingTop = op.props.paddingTop ?? 0;
           frame.paddingRight = op.props.paddingRight ?? 0;
           frame.paddingBottom = op.props.paddingBottom ?? 0;
           frame.paddingLeft = op.props.paddingLeft ?? 0;
+          if (op.props.strokesIncludedInLayout != null && 'strokesIncludedInLayout' in frame) {
+            (frame as any).strokesIncludedInLayout = op.props.strokesIncludedInLayout;
+          }
+          if (op.props.minWidth != null && 'minWidth' in frame) (frame as any).minWidth = op.props.minWidth;
+          if (op.props.maxWidth != null && 'maxWidth' in frame) (frame as any).maxWidth = op.props.maxWidth;
+          if (op.props.minHeight != null && 'minHeight' in frame) (frame as any).minHeight = op.props.minHeight;
+          if (op.props.maxHeight != null && 'maxHeight' in frame) (frame as any).maxHeight = op.props.maxHeight;
         }
 
         if (op.props.fills) frame.fills = op.props.fills;
@@ -213,6 +269,13 @@ async function applyOperations(ops: FigmaOperation[]) {
         if (op.props.strokes) rect.strokes = op.props.strokes;
         if (op.props.strokeWeight != null) rect.strokeWeight = op.props.strokeWeight;
         if (op.props.opacity != null) rect.opacity = op.props.opacity;
+        if (op.props.effects) rect.effects = op.props.effects.map(e => {
+          if (e.type === 'LAYER_BLUR' || e.type === 'BACKGROUND_BLUR') {
+            return { type: e.type, radius: e.radius, visible: e.visible ?? true } as Effect;
+          }
+          return { type: e.type as 'DROP_SHADOW' | 'INNER_SHADOW', color: e.color ?? { r: 0, g: 0, b: 0, a: 0.25 }, offset: e.offset ?? { x: 0, y: 4 }, radius: e.radius, spread: e.spread ?? 0, visible: e.visible ?? true, blendMode: 'NORMAL' as BlendMode } as Effect;
+        });
+        if (op.props.constraints && 'constraints' in rect) (rect as any).constraints = op.props.constraints;
         parent.appendChild(rect);
         if (op.props.layoutSizingHorizontal && parent !== figma.currentPage) {
           rect.layoutSizingHorizontal = op.props.layoutSizingHorizontal;
@@ -230,6 +293,13 @@ async function applyOperations(ops: FigmaOperation[]) {
         ellipse.name = op.props.name;
         ellipse.resize(op.props.width > 0 ? op.props.width : 100, op.props.height > 0 ? op.props.height : 100);
         if (op.props.fills) ellipse.fills = op.props.fills;
+        if (op.props.effects) ellipse.effects = op.props.effects.map(e => {
+          if (e.type === 'LAYER_BLUR' || e.type === 'BACKGROUND_BLUR') {
+            return { type: e.type, radius: e.radius, visible: e.visible ?? true } as Effect;
+          }
+          return { type: e.type as 'DROP_SHADOW' | 'INNER_SHADOW', color: e.color ?? { r: 0, g: 0, b: 0, a: 0.25 }, offset: e.offset ?? { x: 0, y: 4 }, radius: e.radius, spread: e.spread ?? 0, visible: e.visible ?? true, blendMode: 'NORMAL' as BlendMode } as Effect;
+        });
+        if (op.props.constraints && 'constraints' in ellipse) (ellipse as any).constraints = op.props.constraints;
         parent.appendChild(ellipse);
         if (op.props.layoutSizingHorizontal && parent !== figma.currentPage) {
           ellipse.layoutSizingHorizontal = op.props.layoutSizingHorizontal;
@@ -265,8 +335,15 @@ async function applyOperations(ops: FigmaOperation[]) {
         if (op.props.textAlignHorizontal) text.textAlignHorizontal = op.props.textAlignHorizontal;
         if (op.props.textAlignVertical) text.textAlignVertical = op.props.textAlignVertical;
         if (op.props.textAutoResize) text.textAutoResize = op.props.textAutoResize;
+        if (op.props.textDecoration && op.props.textDecoration !== 'NONE') {
+          text.textDecoration = op.props.textDecoration;
+        }
+        if (op.props.textCase && op.props.textCase !== 'ORIGINAL') {
+          text.textCase = op.props.textCase;
+        }
         if (op.props.lineHeight) text.lineHeight = op.props.lineHeight;
         if (op.props.letterSpacing) text.letterSpacing = op.props.letterSpacing;
+        if (op.props.paragraphSpacing != null) text.paragraphSpacing = op.props.paragraphSpacing;
 
         parent.appendChild(text);
         if (op.props.layoutSizingHorizontal && parent !== figma.currentPage) {
@@ -283,9 +360,9 @@ async function applyOperations(ops: FigmaOperation[]) {
         const parent = await getParent(op.parentRef, op.parentNodeId);
         let component: ComponentNode | null = null;
 
-        // Try to find locally first
+        // Try to find locally first (Fix 1.2: use cached ensurePagesLoaded)
         try {
-          await figma.loadAllPagesAsync();
+          await ensurePagesLoaded();
           const allComps = figma.root.findAllWithCriteria({ types: ['COMPONENT'] });
           component = allComps.find(c => c.key === op.componentKey) || null;
         } catch (_e) {
@@ -325,6 +402,25 @@ async function applyOperations(ops: FigmaOperation[]) {
             (node as any).strokeAlign = op.strokeAlign;
           }
           summaryLines.push(`Editado stroke @"${(node as any).name}"`);
+        }
+
+        // ═══ SET_IMAGE_FILL (Fix 1.4) ═══
+      } else if (op.type === 'SET_IMAGE_FILL') {
+        const node = op.nodeId
+          ? await figma.getNodeByIdAsync(op.nodeId)
+          : (op.ref ? createdNodes.get(op.ref) : null);
+        if (node && 'fills' in node) {
+          try {
+            const image = await figma.createImageAsync(op.imageUrl);
+            (node as GeometryMixin).fills = [{
+              type: 'IMAGE',
+              imageHash: image.hash,
+              scaleMode: op.scaleMode || 'FILL',
+            } as Paint];
+            summaryLines.push(`Imagem aplicada @"${(node as any).name}"`);
+          } catch (e) {
+            postToUI({ type: 'ERROR', message: `Falha ao carregar imagem: ${String(e)}` });
+          }
         }
 
         // ═══ SET_CORNER_RADIUS ═══
@@ -375,10 +471,22 @@ async function applyOperations(ops: FigmaOperation[]) {
           if (op.counterAxisAlignItems) node.counterAxisAlignItems = op.counterAxisAlignItems;
           if (op.layoutWrap) node.layoutWrap = op.layoutWrap;
           if (op.itemSpacing != null) node.itemSpacing = op.itemSpacing;
+          if (op.counterAxisSpacing != null && 'counterAxisSpacing' in node) {
+            (node as any).counterAxisSpacing = op.counterAxisSpacing;
+          }
           if (op.paddingTop != null) node.paddingTop = op.paddingTop;
           if (op.paddingRight != null) node.paddingRight = op.paddingRight;
           if (op.paddingBottom != null) node.paddingBottom = op.paddingBottom;
           if (op.paddingLeft != null) node.paddingLeft = op.paddingLeft;
+          if (op.strokesIncludedInLayout != null && 'strokesIncludedInLayout' in node) {
+            (node as any).strokesIncludedInLayout = op.strokesIncludedInLayout;
+          }
+          if (op.layoutSizingHorizontal && 'layoutSizingHorizontal' in node) {
+            (node as any).layoutSizingHorizontal = op.layoutSizingHorizontal;
+          }
+          if (op.layoutSizingVertical && 'layoutSizingVertical' in node) {
+            (node as any).layoutSizingVertical = op.layoutSizingVertical;
+          }
           summaryLines.push(`Editado layout @"${node.name}"`);
         }
 
@@ -412,13 +520,13 @@ async function applyOperations(ops: FigmaOperation[]) {
       } else if (op.type === 'SET_TEXT_CONTENT') {
         const node = await figma.getNodeByIdAsync(op.nodeId) as TextNode | null;
         if (node && node.type === 'TEXT') {
-          // Load ALL fonts currently used in the text node before modifying
-          const len = node.characters.length;
+          // Fix 1.1: Load fonts using getStyledTextSegments (O(segments) instead of O(n))
           const fontsUsed: FontName[] = [];
-          if (len > 0) {
-            const seen = new Set<string>();
-            for (let i = 0; i < len; i++) {
-              const fn = node.getRangeFontName(i, i + 1) as FontName;
+          const seen = new Set<string>();
+          try {
+            const segments = node.getStyledTextSegments(['fontName']);
+            for (const seg of segments) {
+              const fn = seg.fontName as FontName;
               const key = `${fn.family}::${fn.style}`;
               if (!seen.has(key)) {
                 seen.add(key);
@@ -426,6 +534,8 @@ async function applyOperations(ops: FigmaOperation[]) {
                 try { await figma.loadFontAsync(fn); } catch (_e) { /* skip */ }
               }
             }
+          } catch (_e) {
+            // Fallback: if getStyledTextSegments not available, just load default
           }
 
           // Determine target font: use specified, or preserve existing, or fallback
@@ -549,6 +659,274 @@ async function applyOperations(ops: FigmaOperation[]) {
         if (node && node.type === 'INSTANCE') {
           node.detachInstance();
           summaryLines.push(`Detached @"${node.name}"`);
+        }
+
+        // ═══ FASE 2: CREATE_COMPONENT ═══
+      } else if (op.type === 'CREATE_COMPONENT') {
+        const parent = await getParent(op.parentRef, op.parentNodeId);
+        const comp = figma.createComponent();
+        comp.name = op.props.name;
+        const cw = op.props.width > 0 ? op.props.width : 100;
+        const ch = op.props.height > 0 ? op.props.height : 100;
+        comp.resize(cw, ch);
+
+        if (op.props.description) comp.description = op.props.description;
+        if (op.props.layoutMode && op.props.layoutMode !== 'NONE') {
+          comp.layoutMode = op.props.layoutMode;
+          comp.primaryAxisSizingMode = op.props.primaryAxisSizingMode ?? 'AUTO';
+          comp.counterAxisSizingMode = op.props.counterAxisSizingMode ?? 'AUTO';
+          comp.primaryAxisAlignItems = op.props.primaryAxisAlignItems ?? 'MIN';
+          comp.counterAxisAlignItems = op.props.counterAxisAlignItems ?? 'MIN';
+          comp.itemSpacing = op.props.itemSpacing ?? 0;
+          comp.paddingTop = op.props.paddingTop ?? 0;
+          comp.paddingRight = op.props.paddingRight ?? 0;
+          comp.paddingBottom = op.props.paddingBottom ?? 0;
+          comp.paddingLeft = op.props.paddingLeft ?? 0;
+        }
+        if (op.props.fills) comp.fills = op.props.fills;
+        if (op.props.cornerRadius != null) comp.cornerRadius = op.props.cornerRadius;
+
+        parent.appendChild(comp);
+        if (op.props.layoutSizingHorizontal && parent !== figma.currentPage) {
+          comp.layoutSizingHorizontal = op.props.layoutSizingHorizontal;
+        }
+        if (op.props.layoutSizingVertical && parent !== figma.currentPage) {
+          comp.layoutSizingVertical = op.props.layoutSizingVertical;
+        }
+        if (op.ref) createdNodes.set(op.ref, comp);
+        summaryLines.push(`Componente criado @"${comp.name}"`);
+
+        // ═══ FASE 2: COMBINE_AS_VARIANTS ═══
+      } else if (op.type === 'COMBINE_AS_VARIANTS') {
+        const components: ComponentNode[] = [];
+        for (const ref of op.componentRefs) {
+          const node = createdNodes.get(ref);
+          if (node && node.type === 'COMPONENT') components.push(node as ComponentNode);
+        }
+        if (components.length >= 1) {
+          const parent = components[0].parent as BaseNode & ChildrenMixin;
+          const set = figma.combineAsVariants(components, parent);
+          set.name = op.name;
+          if (op.ref) createdNodes.set(op.ref, set);
+          summaryLines.push(`Variantes combinadas @"${op.name}"`);
+        }
+
+        // ═══ FASE 2: CREATE_SVG ═══
+      } else if (op.type === 'CREATE_SVG') {
+        const parent = await getParent(op.parentRef, op.parentNodeId);
+        try {
+          const svgFrame = figma.createNodeFromSvg(op.svgString);
+          if (op.name) svgFrame.name = op.name;
+          if (op.width && op.height) svgFrame.resize(op.width, op.height);
+          parent.appendChild(svgFrame);
+          if (op.ref) createdNodes.set(op.ref, svgFrame);
+          summaryLines.push(`SVG criado @"${op.name || 'svg'}"`);
+        } catch (e) {
+          postToUI({ type: 'ERROR', message: `Erro ao criar SVG: ${String(e)}` });
+        }
+
+        // ═══ FASE 2: CREATE_LINE ═══
+      } else if (op.type === 'CREATE_LINE') {
+        const parent = await getParent(op.parentRef, op.parentNodeId);
+        const line = figma.createLine();
+        line.name = op.props.name;
+        line.resize(op.props.width > 0 ? op.props.width : 100, 1);
+        if (op.props.strokes) line.strokes = op.props.strokes;
+        if (op.props.strokeWeight != null) line.strokeWeight = op.props.strokeWeight;
+        parent.appendChild(line);
+        if (op.ref) createdNodes.set(op.ref, line);
+        summaryLines.push(`Linha criada @"${line.name}"`);
+
+        // ═══ FASE 2: CREATE_POLYGON ═══
+      } else if (op.type === 'CREATE_POLYGON') {
+        const parent = await getParent(op.parentRef, op.parentNodeId);
+        const polygon = figma.createPolygon();
+        polygon.name = op.props.name;
+        polygon.pointCount = op.props.pointCount;
+        polygon.resize(op.props.width > 0 ? op.props.width : 100, op.props.height > 0 ? op.props.height : 100);
+        if (op.props.fills) polygon.fills = op.props.fills;
+        parent.appendChild(polygon);
+        if (op.ref) createdNodes.set(op.ref, polygon);
+        summaryLines.push(`Polígono criado @"${polygon.name}"`);
+
+        // ═══ FASE 2: CREATE_STAR ═══
+      } else if (op.type === 'CREATE_STAR') {
+        const parent = await getParent(op.parentRef, op.parentNodeId);
+        const star = figma.createStar();
+        star.name = op.props.name;
+        star.pointCount = op.props.pointCount;
+        star.innerRadius = op.props.innerRadius ?? 0.4;
+        star.resize(op.props.width > 0 ? op.props.width : 100, op.props.height > 0 ? op.props.height : 100);
+        if (op.props.fills) star.fills = op.props.fills;
+        parent.appendChild(star);
+        if (op.ref) createdNodes.set(op.ref, star);
+        summaryLines.push(`Estrela criada @"${star.name}"`);
+
+        // ═══ FASE 2: SET_TEXT_RANGES ═══
+      } else if (op.type === 'SET_TEXT_RANGES') {
+        const node = await figma.getNodeByIdAsync(op.nodeId) as TextNode | null;
+        if (node && node.type === 'TEXT') {
+          for (const range of op.ranges) {
+            if (range.fontFamily || range.fontStyle) {
+              const targetFont: FontName = {
+                family: range.fontFamily ?? 'Inter',
+                style: range.fontStyle ?? 'Regular'
+              };
+              try {
+                await figma.loadFontAsync(targetFont);
+                node.setRangeFontName(range.start, range.end, targetFont);
+              } catch (_e) {
+                // Skip font load errors
+              }
+            }
+            if (range.fontSize != null) {
+              node.setRangeFontSize(range.start, range.end, range.fontSize);
+            }
+            if (range.fills) {
+              node.setRangeFills(range.start, range.end, range.fills);
+            }
+            if (range.textDecoration) {
+              node.setRangeTextDecoration(range.start, range.end,
+                range.textDecoration === 'NONE' ? 'NONE' :
+                  range.textDecoration === 'UNDERLINE' ? 'UNDERLINE' :
+                    'STRIKETHROUGH'
+              );
+            }
+            if (range.textCase && range.textCase !== 'ORIGINAL') {
+              node.setRangeTextCase(range.start, range.end, range.textCase);
+            }
+            if (range.letterSpacing) {
+              node.setRangeLetterSpacing(range.start, range.end, range.letterSpacing);
+            }
+            if (range.lineHeight) {
+              node.setRangeLineHeight(range.start, range.end, range.lineHeight);
+            }
+          }
+          summaryLines.push(`Formatação de texto aplicada @"${node.name}"`);
+        }
+
+        // ═══ FASE 4: CLONE_NODE ═══
+      } else if (op.type === 'CLONE_NODE') {
+        const sourceNode = await figma.getNodeByIdAsync(op.sourceNodeId);
+        const parent = await getParent(op.parentRef, op.parentNodeId);
+        if (sourceNode) {
+          const cloned = sourceNode.clone();
+          if (op.overrides?.name) cloned.name = op.overrides.name;
+          if (op.overrides?.width && 'resize' in cloned) {
+            (cloned as any).resize(op.overrides.width, op.overrides.height || (cloned as any).height);
+          }
+          if (op.overrides?.fills && 'fills' in cloned) {
+            (cloned as any).fills = op.overrides.fills;
+          }
+          parent.appendChild(cloned);
+          if (op.ref) createdNodes.set(op.ref, cloned);
+          summaryLines.push(`Clonado @"${cloned.name}"`);
+        }
+
+        // ═══ FASE 4: REORDER_CHILD ═══
+      } else if (op.type === 'REORDER_CHILD') {
+        const node = await figma.getNodeByIdAsync(op.nodeId);
+        const parent = await figma.getNodeByIdAsync(op.parentNodeId);
+        if (node && parent && 'children' in parent) {
+          const parentFrame = parent as BaseNode & ChildrenMixin;
+          if (op.index >= 0 && op.index <= parentFrame.children.length) {
+            parentFrame.insertChild(op.index, node);
+            summaryLines.push(`Reordenado @"${node.name}"`);
+          }
+        }
+
+        // ═══ FASE 4: SET_CONSTRAINTS ═══
+      } else if (op.type === 'SET_CONSTRAINTS') {
+        const node = await figma.getNodeByIdAsync(op.nodeId);
+        if (node && 'constraints' in node) {
+          (node as any).constraints = {
+            horizontal: op.horizontal,
+            vertical: op.vertical,
+          };
+          summaryLines.push(`Constraints definidas @"${(node as any).name}"`);
+        }
+
+        // ═══ FASE 4: SET_LAYOUT_GRID ═══
+      } else if (op.type === 'SET_LAYOUT_GRID') {
+        const node = await figma.getNodeByIdAsync(op.nodeId);
+        if (node && 'layoutGrids' in node) {
+          (node as any).layoutGrids = op.grids.map((g: any) => ({
+            pattern: g.pattern,
+            alignment: g.alignment ?? 'MIN',
+            count: g.count,
+            gutterSize: g.gutterSize ?? 0,
+            offset: g.offset ?? 0,
+            sectionSize: g.sectionSize,
+            visible: g.visible ?? true,
+            color: g.color ?? { r: 0, g: 0, b: 0, a: 0.1 },
+          }));
+          summaryLines.push(`Grid definido @"${(node as any).name}"`);
+        }
+
+        // ═══ FASE 4: CREATE_VARIABLE ═══
+      } else if (op.type === 'CREATE_VARIABLE') {
+        if (figma.variables) {
+          try {
+            // Find or create collection
+            let collection = figma.variables.getLocalVariableCollections?.().find(
+              (c) => c.name === op.collectionName
+            );
+            if (!collection) {
+              collection = await figma.variables.createVariableCollectionAsync(op.collectionName);
+            }
+
+            if (collection) {
+              const variable = await figma.variables.createVariableAsync(
+                `${collection.id}/${op.name}`,
+                collection.defaultModeId,
+                op.resolvedType,
+                op.value
+              );
+              if (op.ref) createdNodes.set(op.ref, variable as any);
+              summaryLines.push(`Variável criada: ${op.name}`);
+            }
+          } catch (e) {
+            postToUI({ type: 'ERROR', message: `Erro ao criar variável: ${String(e)}` });
+          }
+        }
+
+        // ═══ FASE 4: SET_BLEND_MODE ═══
+      } else if (op.type === 'SET_BLEND_MODE') {
+        const node = await figma.getNodeByIdAsync(op.nodeId);
+        if (node && 'blendMode' in node) {
+          (node as any).blendMode = op.blendMode;
+          summaryLines.push(`Blend mode definido @"${(node as any).name}"`);
+        }
+
+        // ═══ FASE 4: SET_INDIVIDUAL_CORNERS ═══
+      } else if (op.type === 'SET_INDIVIDUAL_CORNERS') {
+        const node = await figma.getNodeByIdAsync(op.nodeId);
+        if (node && 'topLeftRadius' in node) {
+          if (op.topLeftRadius != null) (node as any).topLeftRadius = op.topLeftRadius;
+          if (op.topRightRadius != null) (node as any).topRightRadius = op.topRightRadius;
+          if (op.bottomLeftRadius != null) (node as any).bottomLeftRadius = op.bottomLeftRadius;
+          if (op.bottomRightRadius != null) (node as any).bottomRightRadius = op.bottomRightRadius;
+          if (op.cornerSmoothing != null) (node as any).cornerSmoothing = op.cornerSmoothing;
+          summaryLines.push(`Corners individuais definidos @"${(node as any).name}"`);
+        }
+
+        // ═══ FASE 4: BOOLEAN_OPERATION ═══
+      } else if (op.type === 'BOOLEAN_OPERATION') {
+        const nodes: SceneNode[] = [];
+        for (const id of op.nodeIds || []) {
+          const n = await figma.getNodeByIdAsync(id);
+          if (n) nodes.push(n as SceneNode);
+        }
+        for (const ref of op.nodeRefs || []) {
+          const n = createdNodes.get(ref);
+          if (n) nodes.push(n as SceneNode);
+        }
+
+        if (nodes.length >= 2) {
+          const result = figma.booleanOperation(nodes, op.operation as BooleanOperationOp, 0);
+          if (op.name) result.name = op.name;
+          if (op.ref) createdNodes.set(op.ref, result);
+          summaryLines.push(`Operação booleana @"${op.name || 'result'}"`);
         }
 
         // ═══ DELETE_NODE ═══
@@ -920,6 +1298,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     const availableLayers = getAvailableLayers();
     const context = {
       command: msg.command,
+      fileId: figma.fileKey || 'local_file',
       selectedElements: selection.nodes,
       availableComponents: components,
       availableColorVariables: colors,
@@ -951,41 +1330,38 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       postToUI({ type: 'API_KEY_LOADED', key: '' });
     }
 
-    // ── Brand Guideline Presets ──────────────────────────────────────────────
+    // ── Brand Guideline Presets (stored in document via setPluginData — syncs with Figma Cloud) ──
   } else if (msg.type === 'GET_GUIDELINES') {
     try {
-      const raw = await figma.clientStorage.getAsync('brandGuidelines');
-      const guidelines = Array.isArray(raw) ? raw : [];
+      const raw = figma.root.getPluginData('brandGuidelines');
+      const guidelines = raw ? JSON.parse(raw) : [];
       postToUI({ type: 'GUIDELINES_LOADED', guidelines });
     } catch (_e) {
-      // clientStorage may fail in dev (no plugin id) — reply with empty list
       postToUI({ type: 'GUIDELINES_LOADED', guidelines: [] });
     }
 
   } else if (msg.type === 'SAVE_GUIDELINE') {
     try {
-      const raw = await figma.clientStorage.getAsync('brandGuidelines');
-      const guidelines: unknown[] = Array.isArray(raw) ? raw : [];
+      const raw = figma.root.getPluginData('brandGuidelines');
+      const guidelines: unknown[] = raw ? JSON.parse(raw) : [];
       const incoming = msg.guideline;
       const idx = guidelines.findIndex((g: any) => g.id === incoming.id);
       if (idx >= 0) guidelines[idx] = incoming;
       else guidelines.push(incoming);
-      await figma.clientStorage.setAsync('brandGuidelines', guidelines);
+      figma.root.setPluginData('brandGuidelines', JSON.stringify(guidelines));
       postToUI({ type: 'GUIDELINE_SAVED', guidelines, savedId: incoming.id });
     } catch (_e) {
-      // clientStorage unavailable — acknowledge save so the UI stays consistent
       postToUI({ type: 'GUIDELINE_SAVED', guidelines: [msg.guideline], savedId: msg.guideline.id });
     }
 
   } else if (msg.type === 'DELETE_GUIDELINE') {
     try {
-      const raw = await figma.clientStorage.getAsync('brandGuidelines');
-      const guidelines: unknown[] = Array.isArray(raw) ? raw : [];
+      const raw = figma.root.getPluginData('brandGuidelines');
+      const guidelines: unknown[] = raw ? JSON.parse(raw) : [];
       const updated = guidelines.filter((g: any) => g.id !== msg.id);
-      await figma.clientStorage.setAsync('brandGuidelines', updated);
+      figma.root.setPluginData('brandGuidelines', JSON.stringify(updated));
       postToUI({ type: 'GUIDELINES_LOADED', guidelines: updated });
     } catch (_e) {
-      // clientStorage unavailable — acknowledge deletion with empty list fallback
       postToUI({ type: 'GUIDELINES_LOADED', guidelines: [] });
     }
   }

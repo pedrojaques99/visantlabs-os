@@ -14,7 +14,9 @@
       "Bash(npx vite build)",
       "Bash(npx tsc:*)",
       "Bash(node:*)",
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "WebFetch(domain:www.figma.com)",
+      "Bash(grep:*)"
     ]
   }
 }
