@@ -8,6 +8,28 @@ export type SolidPaint = {
   opacity?: number;
 };
 
+export type GradientStop = {
+  position: number; // 0-1
+  color: { r: number; g: number; b: number };
+};
+
+export type GradientPaint = {
+  type: 'GRADIENT_LINEAR' | 'GRADIENT_RADIAL' | 'GRADIENT_ANGULAR' | 'GRADIENT_DIAMOND';
+  gradientStops: GradientStop[];
+  gradientTransform?: [[number, number, number], [number, number, number]];
+  opacity?: number;
+};
+
+export type ImagePaint = {
+  type: 'IMAGE';
+  imageUrl?: string; // URL for createImageAsync
+  imageHash?: string; // hash directly if already exists
+  scaleMode?: 'FILL' | 'FIT' | 'CROP' | 'TILE';
+  opacity?: number;
+};
+
+export type FigmaPaint = SolidPaint | GradientPaint | ImagePaint;
+
 export type FigmaEffect = {
   type: 'DROP_SHADOW' | 'INNER_SHADOW' | 'LAYER_BLUR' | 'BACKGROUND_BLUR';
   color?: { r: number; g: number; b: number; a: number };
@@ -32,7 +54,7 @@ export type FigmaOperation =
       name: string;
       width: number;
       height: number;
-      fills?: SolidPaint[];
+      fills?: FigmaPaint[];
       cornerRadius?: number;
       cornerSmoothing?: number;
       clipsContent?: boolean;
@@ -45,10 +67,16 @@ export type FigmaOperation =
       counterAxisAlignItems?: 'MIN' | 'MAX' | 'CENTER' | 'BASELINE';
       layoutWrap?: 'NO_WRAP' | 'WRAP';
       itemSpacing?: number;
+      counterAxisSpacing?: number;
       paddingTop?: number;
       paddingRight?: number;
       paddingBottom?: number;
       paddingLeft?: number;
+      strokesIncludedInLayout?: boolean;
+      minWidth?: number;
+      maxWidth?: number;
+      minHeight?: number;
+      maxHeight?: number;
     };
   }
   | {
@@ -60,11 +88,13 @@ export type FigmaOperation =
       name: string;
       width: number;
       height: number;
-      fills?: SolidPaint[];
+      fills?: FigmaPaint[];
       cornerRadius?: number;
-      strokes?: SolidPaint[];
+      strokes?: FigmaPaint[];
       strokeWeight?: number;
       opacity?: number;
+      effects?: FigmaEffect[];
+      constraints?: { horizontal: string; vertical: string };
       layoutSizingHorizontal?: 'FIXED' | 'FILL';
       layoutSizingVertical?: 'FIXED' | 'FILL';
     };
@@ -78,7 +108,9 @@ export type FigmaOperation =
       name: string;
       width: number;
       height: number;
-      fills?: SolidPaint[];
+      fills?: FigmaPaint[];
+      effects?: FigmaEffect[];
+      constraints?: { horizontal: string; vertical: string };
       layoutSizingHorizontal?: 'FIXED' | 'FILL';
       layoutSizingVertical?: 'FIXED' | 'FILL';
     };
@@ -99,7 +131,10 @@ export type FigmaOperation =
       textAlignHorizontal?: 'LEFT' | 'CENTER' | 'RIGHT' | 'JUSTIFIED';
       textAlignVertical?: 'TOP' | 'CENTER' | 'BOTTOM';
       textAutoResize?: 'NONE' | 'WIDTH_AND_HEIGHT' | 'HEIGHT' | 'TRUNCATE';
-      fills?: SolidPaint[];
+      textDecoration?: 'NONE' | 'UNDERLINE' | 'STRIKETHROUGH';
+      textCase?: 'ORIGINAL' | 'UPPER' | 'LOWER' | 'TITLE';
+      paragraphSpacing?: number;
+      fills?: FigmaPaint[];
       textStyleId?: string;
       layoutSizingHorizontal?: 'FIXED' | 'HUG' | 'FILL';
       layoutSizingVertical?: 'FIXED' | 'HUG' | 'FILL';
@@ -113,18 +148,105 @@ export type FigmaOperation =
     componentKey: string;
     name?: string;
   }
+  // ═══ FASE 2: Advanced Creation ═══
+  | {
+    type: 'CREATE_COMPONENT';
+    ref?: string;
+    parentRef?: string;
+    parentNodeId?: string;
+    props: {
+      name: string;
+      width: number;
+      height: number;
+      description?: string;
+      fills?: FigmaPaint[];
+      cornerRadius?: number;
+      layoutMode?: 'NONE' | 'HORIZONTAL' | 'VERTICAL';
+      primaryAxisSizingMode?: 'FIXED' | 'AUTO';
+      counterAxisSizingMode?: 'FIXED' | 'AUTO';
+      primaryAxisAlignItems?: 'MIN' | 'MAX' | 'CENTER' | 'SPACE_BETWEEN';
+      counterAxisAlignItems?: 'MIN' | 'MAX' | 'CENTER' | 'BASELINE';
+      itemSpacing?: number;
+      paddingTop?: number;
+      paddingRight?: number;
+      paddingBottom?: number;
+      paddingLeft?: number;
+      layoutSizingHorizontal?: 'FIXED' | 'HUG' | 'FILL';
+      layoutSizingVertical?: 'FIXED' | 'HUG' | 'FILL';
+    };
+  }
+  | {
+    type: 'COMBINE_AS_VARIANTS';
+    ref?: string;
+    componentRefs: string[];
+    name: string;
+  }
+  | {
+    type: 'CREATE_SVG';
+    ref?: string;
+    parentRef?: string;
+    parentNodeId?: string;
+    svgString: string;
+    name?: string;
+    width?: number;
+    height?: number;
+  }
+  | {
+    type: 'CREATE_LINE';
+    ref?: string;
+    parentRef?: string;
+    parentNodeId?: string;
+    props: { name: string; width: number; strokes?: FigmaPaint[]; strokeWeight?: number };
+  }
+  | {
+    type: 'CREATE_POLYGON';
+    ref?: string;
+    parentRef?: string;
+    parentNodeId?: string;
+    props: { name: string; width: number; height: number; pointCount: number; fills?: FigmaPaint[] };
+  }
+  | {
+    type: 'CREATE_STAR';
+    ref?: string;
+    parentRef?: string;
+    parentNodeId?: string;
+    props: { name: string; width: number; height: number; pointCount: number; fills?: FigmaPaint[]; innerRadius?: number };
+  }
+  | {
+    type: 'SET_TEXT_RANGES';
+    nodeId: string;
+    ranges: Array<{
+      start: number;
+      end: number;
+      fontFamily?: string;
+      fontStyle?: string;
+      fontSize?: number;
+      fills?: FigmaPaint[];
+      textDecoration?: 'NONE' | 'UNDERLINE' | 'STRIKETHROUGH';
+      textCase?: 'ORIGINAL' | 'UPPER' | 'LOWER' | 'TITLE';
+      letterSpacing?: { value: number; unit: 'PIXELS' | 'PERCENT' };
+      lineHeight?: { value: number; unit: 'PIXELS' | 'PERCENT' | 'AUTO' };
+    }>;
+  }
   // ═══ EDIT EXISTING NODES ═══
   | {
     type: 'SET_FILL';
     nodeId: string;
-    fills: SolidPaint[];
+    fills: FigmaPaint[];
   }
   | {
     type: 'SET_STROKE';
     nodeId: string;
-    strokes: SolidPaint[];
+    strokes: FigmaPaint[];
     strokeWeight?: number;
     strokeAlign?: 'CENTER' | 'INSIDE' | 'OUTSIDE';
+  }
+  | {
+    type: 'SET_IMAGE_FILL';
+    nodeId?: string;
+    ref?: string;
+    imageUrl: string;
+    scaleMode?: 'FILL' | 'FIT' | 'CROP' | 'TILE';
   }
   | {
     type: 'SET_CORNER_RADIUS';
@@ -147,10 +269,14 @@ export type FigmaOperation =
     counterAxisAlignItems?: 'MIN' | 'MAX' | 'CENTER' | 'BASELINE';
     layoutWrap?: 'NO_WRAP' | 'WRAP';
     itemSpacing?: number;
+    counterAxisSpacing?: number;
     paddingTop?: number;
     paddingRight?: number;
     paddingBottom?: number;
     paddingLeft?: number;
+    strokesIncludedInLayout?: boolean;
+    layoutSizingHorizontal?: 'FIXED' | 'HUG' | 'FILL';
+    layoutSizingVertical?: 'FIXED' | 'HUG' | 'FILL';
   }
   | {
     type: 'RESIZE';
@@ -176,7 +302,7 @@ export type FigmaOperation =
     fontFamily?: string;
     fontStyle?: string;
     fontSize?: number;
-    fills?: SolidPaint[];
+    fills?: FigmaPaint[];
   }
   | {
     type: 'SET_OPACITY';
@@ -200,7 +326,93 @@ export type FigmaOperation =
   | { type: 'GROUP_NODES'; nodeIds: string[]; name: string }
   | { type: 'UNGROUP'; nodeId: string }
   | { type: 'DETACH_INSTANCE'; nodeId: string }
-  | { type: 'DELETE_NODE'; nodeId: string };
+  | { type: 'DELETE_NODE'; nodeId: string }
+  // ═══ FASE 4: Polish & Advanced Features ═══
+  | {
+    type: 'CLONE_NODE';
+    ref?: string;
+    sourceNodeId: string;
+    parentRef?: string;
+    parentNodeId?: string;
+    overrides?: {
+      name?: string;
+      fills?: FigmaPaint[];
+      width?: number;
+      height?: number;
+    };
+  }
+  | {
+    type: 'REORDER_CHILD';
+    nodeId: string;
+    parentNodeId: string;
+    index: number;
+  }
+  | {
+    type: 'SET_CONSTRAINTS';
+    nodeId: string;
+    horizontal: 'MIN' | 'CENTER' | 'MAX' | 'STRETCH' | 'SCALE';
+    vertical: 'MIN' | 'CENTER' | 'MAX' | 'STRETCH' | 'SCALE';
+  }
+  | {
+    type: 'SET_LAYOUT_GRID';
+    nodeId: string;
+    grids: Array<{
+      pattern: 'COLUMNS' | 'ROWS' | 'GRID';
+      alignment?: 'MIN' | 'MAX' | 'STRETCH' | 'CENTER';
+      count?: number;
+      gutterSize?: number;
+      sectionSize?: number;
+      offset?: number;
+      color?: { r: number; g: number; b: number; a: number };
+      visible?: boolean;
+    }>;
+  }
+  | {
+    type: 'CREATE_VARIABLE';
+    ref?: string;
+    collectionName: string;
+    name: string;
+    resolvedType: 'COLOR' | 'FLOAT' | 'STRING' | 'BOOLEAN';
+    value: any;
+  }
+  | {
+    type: 'SET_BLEND_MODE';
+    nodeId: string;
+    blendMode:
+      | 'NORMAL'
+      | 'MULTIPLY'
+      | 'SCREEN'
+      | 'OVERLAY'
+      | 'DARKEN'
+      | 'LIGHTEN'
+      | 'COLOR_DODGE'
+      | 'COLOR_BURN'
+      | 'HARD_LIGHT'
+      | 'SOFT_LIGHT'
+      | 'DIFFERENCE'
+      | 'EXCLUSION'
+      | 'HUE'
+      | 'SATURATION'
+      | 'COLOR'
+      | 'LUMINOSITY';
+  }
+  | {
+    type: 'SET_INDIVIDUAL_CORNERS';
+    nodeId: string;
+    topLeftRadius?: number;
+    topRightRadius?: number;
+    bottomLeftRadius?: number;
+    bottomRightRadius?: number;
+    cornerSmoothing?: number;
+  }
+  | {
+    type: 'BOOLEAN_OPERATION';
+    ref?: string;
+    operation: 'UNION' | 'SUBTRACT' | 'INTERSECT' | 'EXCLUDE';
+    nodeIds?: string[];
+    nodeRefs?: string[];
+    name?: string;
+  };
 
 // ── Serialized context ──
 
@@ -222,14 +434,22 @@ export type SerializedNode = {
   childCount?: number;
   // Appearance
   fills?: Array<{ type: string; color?: { r: number; g: number; b: number }; opacity?: number }>;
+  strokes?: Array<{ type: string; color?: { r: number; g: number; b: number }; opacity?: number }>;
+  strokeWeight?: number;
   cornerRadius?: number;
+  effects?: Array<{ type: string; radius?: number; color?: { r: number; g: number; b: number; a: number }; offset?: { x: number; y: number } }>;
+  opacity?: number;
+  constraints?: { horizontal: string; vertical: string };
+  // Layout sizing (for children of auto-layout)
+  layoutSizingHorizontal?: string;
+  layoutSizingVertical?: string;
   // Text
   characters?: string;
   fontSize?: number;
   // Component
   componentKey?: string;
   componentName?: string;
-  // Children (recursive)
+  // Children (recursive, up to depth 5)
   children?: SerializedNode[];
 };
 

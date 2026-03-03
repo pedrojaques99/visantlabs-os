@@ -1,10 +1,12 @@
 import express, { Request, Response } from 'express';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { chooseProvider } from '../lib/ai-providers/index.js';
+import { getDb } from '../db/mongodb.js';
 
 const router = express.Router();
 
 interface PluginRequest {
   command: string;
+  sessionId?: string; // For chat memory
   selectedElements: any[];
   selectedLogo?: { id: string; name: string; key?: string };
   selectedBrandFont?: { id: string; name: string };
@@ -12,10 +14,12 @@ interface PluginRequest {
   availableComponents?: any[];
   availableColorVariables?: Array<{ id: string; name: string; value?: string }>;
   availableFontVariables?: any[];
+  availableLayers?: Array<{ id: string; name: string; type: string }>;
+  fileId?: string; // Figma file key
   apiKey?: string;
 }
 
-function buildSystemPrompt(req: PluginRequest): string {
+function buildSystemPrompt(req: PluginRequest, chatHistory?: string): string {
   const logoInfo = req.selectedLogo
     ? `${req.selectedLogo.name} (key: "${req.selectedLogo.key || req.selectedLogo.id}")`
     : 'Nenhum selecionado';
@@ -68,9 +72,16 @@ function buildSystemPrompt(req: PluginRequest): string {
     ? selectedContainers.join('\n')
     : 'Nenhum (criação vai para a página raiz)';
 
-  return `Você é um assistente expert de design Figma. Gera operações JSON para criar e editar designs no Figma.
-Responda SOMENTE com um JSON array de operações. SEM texto, SEM markdown, SEM explicações.
+  return `Você é um assistente expert de design Figma. Você ajuda o usuário responder a perguntas, criar novos designs e editar designs existentes.
+Se o usuário fizer apenas uma pergunta ou bater papo (ex: "Oi tudo bem?", "Como faço X?"), você DEVE usar a operação especial \`MESSAGE\` para responder de modo texto.
+Para responder com texto e operações contextuais, combine operações de design com uma operação \`MESSAGE\`.
+SEM texto solto fora do array. Responda SOMENTE e APENAS com um arquivo JSON puro, contendo um array de operações.
+Exemplo de bate-papo:
+[
+  { "type": "MESSAGE", "content": "Olá! Tudo bem? Estou pronto para ajudar você a desenhar no Figma." }
+]
 
+${chatHistory ? `═══ HISTÓRICO DE CONVERSA ═══\n${chatHistory}\n` : ''}
 ═══ CONTEXTO DO ARQUIVO ═══
 
 BRAND GUIDELINES DO USUÁRIO:
@@ -100,6 +111,9 @@ CRIAÇÃO — dois modos de especificar o pai:
   • "parentNodeId": "<id>"  → pai é um nó JÁ EXISTENTE no Figma (ex: frame selecionado)
   ⚠️  REGRA CRÍTICA: se o usuário quer adicionar algo DENTRO de um elemento selecionado,
       use "parentNodeId" com o id desse elemento. SEM parentNodeId → o nó vai para a página.
+
+0. MESSAGE — Resposta em texto para bate-papo, explicação ou dúvidas
+   { "type": "MESSAGE", "content": "Texto da resposta" }
 
 1. CREATE_FRAME — Frame container com auto-layout
    { "type": "CREATE_FRAME", "ref": "card", "props": {
@@ -187,6 +201,13 @@ ESTRUTURA:
 17. Para editar texto: use nodeId de um nó TEXT. Se a seleção for um FRAME ou GROUP com filhos TEXT, use o id do filho (ex: "T Message"), NUNCA do frame. SET_TEXT_CONTENT só funciona em TEXT.
 18. Para criação: sempre comece com o frame/container root e adicione filhos na ORDEM com parentRef.
 19. FontStyle válidos: "Regular", "Medium", "Semi Bold", "Bold", "Light", "Thin", "Extra Bold", "Black", "Italic".
+20. GRADIENTES (FASE 2): Use gradientStops com positions 0-1. Transform padrão linear: [[1,0,0],[0,1,0]]. Diagonal: [[0.7,0.7,-0.1],[-0.7,0.7,0.5]].
+21. IMAGENS (FASE 2): Use SET_IMAGE_FILL com URLs (unsplash.com, picsum.photos). Para cards com foto: crie RECTANGLE, aplique SET_IMAGE_FILL.
+22. COMPONENTES (FASE 2): Use CREATE_COMPONENT para reutilizáveis. Variants via COMBINE_AS_VARIANTS com naming "Property=Value".
+23. SVG (FASE 2): Use CREATE_SVG para ícones simples. Gere SVG inline com viewBox correto. Preferir componentes da library quando disponíveis.
+24. RICH TEXT (FASE 2): Para formatação mista, use CREATE_TEXT seguido de SET_TEXT_RANGES com ranges de caracteres.
+25. CONSTRAINTS (FASE 2): Em frames sem auto-layout, sempre setar constraints. Buttons: horizontal STRETCH, vertical MIN.
+26. MEMÓRIA (FASE 3): Consulte o histórico de conversa. Se o user referencia algo que criamos antes, use os nodeIds do histórico.
 
 ═══ EXEMPLO COMPLETO ═══
 
@@ -203,11 +224,13 @@ Prompt: "Cria um card de perfil com avatar, nome e descrição"
 ]`;
 }
 
-// POST /plugin - Generate design operations from natural language
+// POST /plugin - Generate design operations from natural language (FASE 3: Multi-model + Chat Memory)
 router.post('/', async (req: Request, res: Response) => {
   try {
     const {
       command,
+      sessionId,
+      fileId,
       selectedElements = [],
       selectedLogo,
       selectedBrandFont,
@@ -215,6 +238,7 @@ router.post('/', async (req: Request, res: Response) => {
       availableComponents = [],
       availableColorVariables = [],
       availableFontVariables = [],
+      availableLayers = [],
       apiKey: userApiKey
     } = req.body as PluginRequest;
 
@@ -222,102 +246,137 @@ router.post('/', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Command is required' });
     }
 
-    // BYOK: use user's key if provided, else fall back to server key
-    const effectiveKey = userApiKey || process.env.GEMINI_API_KEY || '';
-    if (!effectiveKey) {
-      return res.status(400).json({ error: 'No API key configured. Please add your Gemini API key in plugin settings.' });
+    // FASE 3: Load or create session for chat memory
+    let chatHistory = '';
+    if (sessionId && fileId) {
+      try {
+        const db = getDb();
+        const collection = db.collection<any>('plugin_sessions');
+
+        const session = await collection.findOneAndUpdate(
+          { _id: sessionId },
+          {
+            $set: { updatedAt: new Date(), fileId },
+            $setOnInsert: { createdAt: new Date(), messages: [], context: {} }
+          },
+          { upsert: true, returnDocument: 'after' }
+        );
+
+        // Build chat history from last 10 messages (FASE 3)
+        if (session && session.messages && session.messages.length > 0) {
+          chatHistory = session.messages
+            .slice(-10)
+            .map((m: any) => `[${m.role.toUpperCase()}]: ${m.content}`)
+            .join('\n');
+        }
+      } catch (sessionError) {
+        console.error('[Plugin] Session error:', sessionError);
+        // Continue without session
+      }
     }
 
-    const genAIInstance = new GoogleGenerativeAI(effectiveKey);
+    // Calculate context size for provider selection
+    const contextSize =
+      (selectedElements?.length || 0) +
+      (availableComponents?.length || 0) +
+      (availableLayers?.length || 0);
+
+    // FASE 3: Intelligently choose provider based on complexity
+    const provider = chooseProvider(command, contextSize);
 
     // Build context-aware prompt
-    const systemPrompt = buildSystemPrompt({
-      command,
-      selectedElements,
-      selectedLogo,
-      selectedBrandFont,
-      selectedBrandColors,
-      availableComponents,
-      availableColorVariables,
-      availableFontVariables,
-    });
+    const systemPrompt = buildSystemPrompt(
+      {
+        command,
+        selectedElements,
+        selectedLogo,
+        selectedBrandFont,
+        selectedBrandColors,
+        availableComponents,
+        availableColorVariables,
+        availableFontVariables,
+        availableLayers,
+      },
+      chatHistory
+    );
 
     const userPrompt = `═══ PEDIDO DO USUÁRIO ═══\n\n"${command}"`;
 
-    // Call Gemini API with JSON output mode
-    const model = genAIInstance.getGenerativeModel({
-      model: 'gemini-2.5-flash',
-      generationConfig: {
-        responseMimeType: 'application/json',
-        temperature: 0.2,
-      },
-      systemInstruction: systemPrompt,
-    });
-
-    const result = await model.generateContent(userPrompt);
-    const responseText = result.response.text();
-
-    console.log('[Plugin API] AI Response:', responseText.substring(0, 500));
-
-    // Parse the response - extract JSON array
+    // Generate operations using selected provider
     let operations: any[] = [];
     try {
-      const parsed = JSON.parse(responseText);
-      // Handle both direct array and wrapped object
-      if (Array.isArray(parsed)) {
-        operations = parsed;
-      } else if (parsed.operations && Array.isArray(parsed.operations)) {
-        operations = parsed.operations;
-      } else {
-        // Try to extract JSON array from the response
-        const jsonMatch = responseText.match(/\[[\s\S]*\]/);
-        if (jsonMatch) {
-          operations = JSON.parse(jsonMatch[0]);
-        }
-      }
-    } catch (parseError) {
-      console.error('[Plugin API] Failed to parse AI response:', responseText.substring(0, 200));
-      // Try regex fallback
-      try {
-        const jsonMatch = responseText.match(/\[[\s\S]*\]/);
-        if (jsonMatch) {
-          operations = JSON.parse(jsonMatch[0]);
-        }
-      } catch (_e) {
-        operations = [];
-      }
-    }
-
-    // Validate it's an array
-    if (!Array.isArray(operations)) {
+      operations = await provider.generateOperations(systemPrompt, userPrompt, {
+        temperature: 0.2,
+        maxTokens: 8192,
+      });
+    } catch (aiError) {
+      console.error(`[Plugin] ${provider.name} error:`, aiError);
+      // Fallback gracefully
       operations = [];
     }
 
     // Validate operations have required fields
-    operations = operations.filter(op =>
-      op && op.type && (
-        op.nodeId || op.props || op.componentKey ||
-        op.nodeIds || op.fills || op.strokes ||
-        op.effects || op.layoutMode || op.variableId ||
-        op.styleId || op.content || op.name ||
-        op.width != null || op.opacity != null ||
-        op.cornerRadius != null || op.x != null
-      )
+    operations = operations.filter(
+      (op) =>
+        op &&
+        op.type &&
+        (op.nodeId ||
+          op.props ||
+          op.componentKey ||
+          op.nodeIds ||
+          op.fills ||
+          op.strokes ||
+          op.effects ||
+          op.layoutMode ||
+          op.variableId ||
+          op.styleId ||
+          op.content ||
+          op.name ||
+          op.width != null ||
+          op.opacity != null ||
+          op.cornerRadius != null ||
+          op.x != null)
     );
 
-    console.log(`[Plugin API] Generated ${operations.length} operation(s) for: "${command.substring(0, 60)}"`);
+    console.log(
+      `[Plugin API] [${provider.name}] Generated ${operations.length} operation(s) for: "${command.substring(0, 60)}"`
+    );
+
+    // Save to session if available (FASE 3)
+    if (sessionId && fileId) {
+      try {
+        const db = getDb();
+        const collection = db.collection<any>('plugin_sessions');
+        await collection.updateOne(
+          { _id: sessionId },
+          {
+            $push: {
+              messages: {
+                $each: [
+                  { role: 'user', content: command, timestamp: new Date() },
+                  { role: 'assistant', content: `Generated ${operations.length} operations`, operations, timestamp: new Date() }
+                ]
+              }
+            } as any
+          }
+        );
+      } catch (sessionError) {
+        console.error('[Plugin] Failed to save to session:', sessionError);
+      }
+    }
 
     // Return operations to apply
     res.json({
       success: true,
       operations,
-      message: `Generated ${operations.length} operation(s)`
+      message: `Generated ${operations.length} operation(s)`,
+      provider: provider.name,
     });
   } catch (error: any) {
     console.error('[Plugin API] Route error:', error);
     res.status(500).json({
       error: 'Failed to process command',
-      message: error.message
+      message: error.message,
     });
   }
 });

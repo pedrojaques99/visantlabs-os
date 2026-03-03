@@ -12,7 +12,13 @@
   <div id="mainView" class="view">
     <div class="app-header">
       <h2>Visant Copilot</h2>
-      <button class="icon-btn" onclick="openSettings()" title="Configurações">⚙</button>
+      <div class="header-controls">
+        <label class="mode-toggle" title="Alternar entre modo simples e avançado">
+          <input type="checkbox" id="modeToggle">
+          <span>Avançado</span>
+        </label>
+        <button class="icon-btn" id="settingsBtn" title="Configurações">⚙</button>
+      </div>
     </div>
 
     <div id="status"></div>
@@ -34,122 +40,213 @@
         <div class="chat-card-pills">
           <button class="chat-pill" id="brandPill">🎨 Brand</button>
         </div>
-        <button class="send-btn" id="sendBtn" onclick="sendChat()" title="Enviar (Enter)">↑</button>
+        <button class="send-btn" id="sendBtn" title="Enviar (Enter)">↑</button>
       </div>
     </div>
 
     <div class="context" id="contextInfo" style="margin-top: 8px;"></div>
+
+    <!-- ═══ ADVANCED PANEL ═══ -->
+    <div id="advancedPanel" class="advanced-panel hidden">
+      <div class="advanced-section">
+        <div class="advanced-header">Operações</div>
+        <div id="operationsLog" class="operations-log"></div>
+      </div>
+      <div class="advanced-divider"></div>
+      <div class="advanced-section">
+        <div class="advanced-header">JSON</div>
+        <div id="jsonPreview" class="json-preview"></div>
+      </div>
+    </div>
   </div>
 
   <!-- ═══ SETTINGS VIEW ═══ -->
   <div id="settingsView" class="view hidden">
     <div class="settings-header">
-      <button class="back-btn" onclick="closeSettings()" title="Voltar">←</button>
+      <button class="back-btn" id="settingsCloseBtn" title="Voltar">←</button>
       <span>Configurações</span>
     </div>
 
-    <!-- Brand Guidelines -->
-    <div class="brand-guidelines">
-      <div class="brand-guidelines-title">Brand Guidelines</div>
-
-      <!-- Guideline Selector -->
-      <div class="guideline-selector-row">
-        <select id="guidelineSelect" class="guideline-select" onchange="onGuidelineSelectChange()">
-          <option value="">— Nenhum —</option>
-        </select>
-        <button class="guideline-save-btn" onclick="saveCurrentGuideline()" title="Salvar guideline atual">💾</button>
-        <button class="guideline-delete-btn hidden" id="guidelineDeleteBtn" onclick="deleteActiveGuideline()"
-          title="Excluir guideline">🗑</button>
-      </div>
-
-      <!-- Logo -->
-      <div class="brand-row">
-        <div class="brand-row-header">
-          <div class="brand-row-left">
-            <span class="brand-row-icon">◇</span>
-            <span class="brand-row-label">Logo</span>
-          </div>
-          <div class="brand-row-preview" id="logoPreview"></div>
-          <button class="brand-add-btn" onclick="toggleBrandPanel('logo')" title="Adicionar logo">+</button>
-        </div>
-        <div class="brand-panel hidden" id="logoPanel">
-          <button type="button" class="brand-panel-action" onclick="useSelectionAsLogo()">
-            <span>◎</span> Usar seleção atual
-          </button>
-          <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
-            <input type="text" id="componentSearch" class="brand-panel-search" placeholder="Pesquisar componentes..."
-              oninput="renderComponentsLibrary()" style="flex: 1;">
-            <label
-              style="display: flex; align-items: center; gap: 4px; font-size: 11px; white-space: nowrap; cursor: pointer;">
-              <input type="checkbox" id="showFoldersCheckbox" onchange="toggleShowFolders()" style="cursor: pointer;">
-              <span>Pastas</span>
-            </label>
-          </div>
-          <div id="componentsLibrary" class="components-library"></div>
-        </div>
-      </div>
-
-      <!-- Cores -->
-      <div class="brand-row">
-        <div class="brand-row-header">
-          <div class="brand-row-left">
-            <span class="brand-row-icon brand-row-icon-dot">●</span>
-            <span class="brand-row-label">Cores</span>
-          </div>
-          <div class="brand-row-preview" id="colorsPreview"></div>
-          <button class="brand-add-btn" onclick="toggleBrandPanel('colors')" title="Adicionar cores">+</button>
-        </div>
-        <div class="brand-panel hidden" id="colorsPanel">
-          <div class="color-grid" id="colorGrid"></div>
-          <div class="brand-panel-empty hidden" id="colorGridEmpty">Nenhuma variável de cor no arquivo</div>
-        </div>
-      </div>
-
-      <!-- Fontes -->
-      <div class="brand-row">
-        <div class="brand-row-header">
-          <div class="brand-row-left">
-            <span class="brand-row-icon brand-row-icon-font">A</span>
-            <span class="brand-row-label">Fontes</span>
-          </div>
-          <div class="brand-row-preview" id="fontsPreview"></div>
-          <button class="brand-add-btn" onclick="toggleBrandPanel('fonts')" title="Adicionar fonte">+</button>
-        </div>
-        <div class="brand-panel hidden" id="fontsPanel">
-          <div class="font-tabs">
-            <button class="font-tab active" id="fontTabLibrary" onclick="switchFontTab('library')">Biblioteca</button>
-            <button class="font-tab" id="fontTabAll" onclick="switchFontTab('all')">Todas</button>
-          </div>
-          <input type="text" id="fontSearch" class="brand-panel-search" placeholder="Pesquisar fontes..."
-            oninput="renderFontList()">
-          <div class="font-list" id="fontList"></div>
-        </div>
-      </div>
+    <!-- TABS NAVIGATION -->
+    <div class="settings-tabs">
+      <button class="tab-btn active" data-tab="tab-brand">Brand</button>
+      <button class="tab-btn" data-tab="tab-config">Opções</button>
     </div>
 
-    <!-- API Key (BYOK) -->
-    <div class="settings-section">
-      <div class="settings-section-header" onclick="toggleApiSection()">
-        <span class="settings-section-chevron collapsed" id="apiChevron">▾</span>
-        <span class="settings-section-title">Gemini API Key (BYOK)</span>
-      </div>
-      <div class="settings-section-content hidden" id="apiContent">
-        <p
-          style="font-size: 11px; color: var(--figma-color-text-secondary, #808080); margin-bottom: 10px; line-height: 1.5;">
-          Sua chave é salva localmente no Figma. Se vazio, usa a chave do servidor.
-        </p>
-        <div style="display: flex; gap: 6px; align-items: center;">
-          <input type="password" id="apiKeyInput" placeholder="AIza..." style="flex: 1; margin-bottom: 0;">
-          <button type="button" class="secondary" onclick="saveApiKey()"
-            style="width: auto; padding: 0 12px; flex-shrink: 0;">Salvar</button>
+    <div class="settings-scroll">
+
+      <!-- ================= TAB: BRAND ================= -->
+      <div id="tab-brand" class="tab-content">
+        <div class="brand-guidelines">
+
+          <div class="figma-prop-panel">
+
+            <!-- Logo Section -->
+            <div class="figma-prop-section">
+              <div class="figma-prop-header">
+                <span class="figma-prop-title">Logo</span>
+              </div>
+
+              <div class="figma-prop-row">
+                <span class="figma-prop-label">Light Mode</span>
+                <div id="logoLightInfo" class="figma-prop-value text-muted">Não selecionado</div>
+                <button class="figma-icon-btn brand-select-btn" data-target="logoLight" title="Escolher Logo Light">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M6.5 5.5V1h-1v4.5H1v1h4.5V11h1V6.5H11v-1H6.5z"
+                      fill="currentColor" />
+                  </svg>
+                </button>
+              </div>
+
+              <div class="figma-prop-row">
+                <span class="figma-prop-label">Dark Mode</span>
+                <div id="logoDarkInfo" class="figma-prop-value text-muted">Não selecionado</div>
+                <button class="figma-icon-btn brand-select-btn" data-target="logoDark" title="Escolher Logo Dark">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M6.5 5.5V1h-1v4.5H1v1h4.5V11h1V6.5H11v-1H6.5z"
+                      fill="currentColor" />
+                  </svg>
+                </button>
+              </div>
+
+              <div class="figma-prop-row">
+                <span class="figma-prop-label">Accent</span>
+                <div id="logoAccentInfo" class="figma-prop-value text-muted">Não selecionado</div>
+                <button class="figma-icon-btn brand-select-btn" data-target="logoAccent" title="Escolher Logo Accent">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M6.5 5.5V1h-1v4.5H1v1h4.5V11h1V6.5H11v-1H6.5z"
+                      fill="currentColor" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Colors Section -->
+            <div class="figma-prop-section">
+              <div class="figma-prop-header">
+                <span class="figma-prop-title">Colors</span>
+                <button class="figma-icon-btn" id="colorAddBtn" title="Adicionar cores">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M6.5 5.5V1h-1v4.5H1v1h4.5V11h1V6.5H11v-1H6.5z"
+                      fill="currentColor" />
+                  </svg>
+                </button>
+              </div>
+              <div class="color-grid" id="colorGrid"></div>
+              <div id="availableColorsList" class="available-colors-list hidden"></div>
+            </div>
+
+            <!-- Typography Section -->
+            <div class="figma-prop-section">
+              <div class="figma-prop-header">
+                <span class="figma-prop-title">Typography</span>
+              </div>
+
+              <div class="figma-prop-row">
+                <span class="figma-prop-label" title="Chamadas e Títulos">Primary</span>
+                <div id="fontPrimaryInfo" class="figma-prop-value text-muted">Não selecionado</div>
+                <button class="figma-icon-btn font-select-btn" data-target="fontPrimary" title="Escolher fonte">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M6.5 5.5V1h-1v4.5H1v1h4.5V11h1V6.5H11v-1H6.5z"
+                      fill="currentColor" />
+                  </svg>
+                </button>
+              </div>
+
+              <div class="figma-prop-row">
+                <span class="figma-prop-label" title="Textos e Parágrafos">Secondary</span>
+                <div id="fontSecondaryInfo" class="figma-prop-value text-muted">Não selecionado</div>
+                <button class="figma-icon-btn font-select-btn" data-target="fontSecondary" title="Escolher fonte">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M6.5 5.5V1h-1v4.5H1v1h4.5V11h1V6.5H11v-1H6.5z"
+                      fill="currentColor" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+          </div>
         </div>
-        <div id="apiKeyStatus"
-          style="font-size: 10px; margin-top: 6px; color: var(--figma-color-text-secondary, #808080);"></div>
+      </div>
+
+      <!-- ================= TAB: CONFIG ================= -->
+      <div id="tab-config" class="tab-content hidden">
+        <div class="figma-prop-panel">
+
+          <!-- API Key (BYOK) -->
+          <div class="figma-prop-section">
+            <div class="figma-prop-header" id="apiSectionToggle" style="cursor: pointer; padding-right: 12px;">
+              <span class="figma-prop-title">Gemini API Key (BYOK)</span>
+              <span class="settings-section-chevron collapsed" id="apiChevron" style="width: auto;">▾</span>
+            </div>
+            <div class="settings-section-content hidden" id="apiContent"
+              style="padding: 0 12px 12px; border-top: none;">
+              <p
+                style="font-size: 11px; color: var(--figma-color-text-secondary, #808080); margin-bottom: 10px; line-height: 1.5;">
+                Sua chave é salva localmente no Figma. Se vazio, usa a chave do servidor.
+              </p>
+              <div style="display: flex; gap: 6px; align-items: center;">
+                <input type="password" id="apiKeyInput" placeholder="AIza..." style="flex: 1; margin-bottom: 0;">
+                <button type="button" class="secondary" id="apiKeySaveBtn"
+                  style="width: auto; padding: 0 12px; flex-shrink: 0;">Salvar</button>
+              </div>
+              <div id="apiKeyStatus"
+                style="font-size: 10px; margin-top: 6px; color: var(--figma-color-text-secondary, #808080);"></div>
+            </div>
+          </div>
+
+          <!-- Clear Chat -->
+          <div class="figma-prop-section" style="padding: 12px;">
+            <button class="secondary" id="clearChatBtn" style="width: 100%;">Limpar Histórico do Chat</button>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- /.settings-scroll -->
+  </div>
+
+  <!-- MODALS -->
+  <div id="componentModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title">Selecionar Componente</span>
+        <button class="figma-icon-btn modal-close" id="closeComponentModal" style="font-size: 16px;">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="figma-prop-header" style="padding: 0 0 8px 0; height: auto;">
+          <button class="secondary" id="showFoldersBtn" style="width: auto;" title="Alternar visualização de pastas">📁
+            Pastas / Lista</button>
+        </div>
+        <div id="libraryContent">
+          <input type="text" id="componentSearch" placeholder="Buscar componentes..." style="margin-bottom: 6px;" />
+          <div id="componentsLibrary" class="components-library modal-library-list"></div>
+        </div>
       </div>
     </div>
   </div>
 
-  <script src="./ui.js"></script>
+  <div id="fontModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title">Escolher Fonte</span>
+        <button class="figma-icon-btn modal-close" id="closeFontModal" style="font-size: 16px;">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="font-list" id="fontList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modular UI System (Load Order is Critical) -->
+  <script src="./modules/EventEmitter.js"></script>
+  <script src="./modules/state.js"></script>
+  <script src="./modules/api.js"></script>
+  <script src="./modules/chat.js"></script>
+  <script src="./modules/brand.js"></script>
+  <script src="./modules/library.js"></script>
+  <script src="./modules/uiManager.js"></script>
+  <script src="./ui-refactored.js"></script>
 </body>
 
 </html>
