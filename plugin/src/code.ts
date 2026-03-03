@@ -1,3 +1,4 @@
+/// <reference types="@figma/plugin-typings" />
 // Figma plugin sandbox — runs in QuickJS, no browser APIs
 
 import type { UIMessage, FigmaOperation, SerializedContext, SerializedNode, ComponentInfo, ColorVariable, FontVariable, AvailableLayer } from '../../src/lib/figma-types';
@@ -182,6 +183,9 @@ async function ensurePagesLoaded() {
 }
 
 async function applyOperations(ops: FigmaOperation[]) {
+  // Reset page cache per batch to ensure fresh state if called multiple times
+  pagesLoaded = false;
+
   const createdNodes = new Map<string, SceneNode>();
   const defaultFont: FontName = { family: 'Inter', style: 'Regular' };
   const summaryLines: string[] = [];
@@ -235,7 +239,7 @@ async function applyOperations(ops: FigmaOperation[]) {
           if (op.props.maxHeight != null && 'maxHeight' in frame) (frame as any).maxHeight = op.props.maxHeight;
         }
 
-        if (op.props.fills) frame.fills = op.props.fills;
+        if (op.props.fills) frame.fills = op.props.fills as any;
         if (op.props.cornerRadius != null) frame.cornerRadius = op.props.cornerRadius;
         if (op.props.cornerSmoothing != null) frame.cornerSmoothing = op.props.cornerSmoothing;
         if (op.props.clipsContent != null) frame.clipsContent = op.props.clipsContent;
@@ -264,9 +268,9 @@ async function applyOperations(ops: FigmaOperation[]) {
         const rect = figma.createRectangle();
         rect.name = op.props.name;
         rect.resize(op.props.width > 0 ? op.props.width : 100, op.props.height > 0 ? op.props.height : 100);
-        if (op.props.fills) rect.fills = op.props.fills;
+        if (op.props.fills) rect.fills = op.props.fills as any;
         if (op.props.cornerRadius != null) rect.cornerRadius = op.props.cornerRadius;
-        if (op.props.strokes) rect.strokes = op.props.strokes;
+        if (op.props.strokes) rect.strokes = op.props.strokes as any;
         if (op.props.strokeWeight != null) rect.strokeWeight = op.props.strokeWeight;
         if (op.props.opacity != null) rect.opacity = op.props.opacity;
         if (op.props.effects) rect.effects = op.props.effects.map(e => {
@@ -292,7 +296,7 @@ async function applyOperations(ops: FigmaOperation[]) {
         const ellipse = figma.createEllipse();
         ellipse.name = op.props.name;
         ellipse.resize(op.props.width > 0 ? op.props.width : 100, op.props.height > 0 ? op.props.height : 100);
-        if (op.props.fills) ellipse.fills = op.props.fills;
+        if (op.props.fills) ellipse.fills = op.props.fills as any;
         if (op.props.effects) ellipse.effects = op.props.effects.map(e => {
           if (e.type === 'LAYER_BLUR' || e.type === 'BACKGROUND_BLUR') {
             return { type: e.type, radius: e.radius, visible: e.visible ?? true } as Effect;
@@ -331,7 +335,7 @@ async function applyOperations(ops: FigmaOperation[]) {
         text.characters = op.props.content;
         if (op.props.name) text.name = op.props.name;
         if (op.props.fontSize) text.fontSize = op.props.fontSize;
-        if (op.props.fills) text.fills = op.props.fills;
+        if (op.props.fills) text.fills = op.props.fills as any;
         if (op.props.textAlignHorizontal) text.textAlignHorizontal = op.props.textAlignHorizontal;
         if (op.props.textAlignVertical) text.textAlignVertical = op.props.textAlignVertical;
         if (op.props.textAutoResize) text.textAutoResize = op.props.textAutoResize;
@@ -388,7 +392,7 @@ async function applyOperations(ops: FigmaOperation[]) {
       } else if (op.type === 'SET_FILL') {
         const node = await figma.getNodeByIdAsync(op.nodeId) as GeometryMixin | null;
         if (node && 'fills' in node) {
-          node.fills = op.fills;
+          node.fills = op.fills as any;
           summaryLines.push(`Editado fill @"${(node as any).name}"`);
         }
 
@@ -396,7 +400,7 @@ async function applyOperations(ops: FigmaOperation[]) {
       } else if (op.type === 'SET_STROKE') {
         const node = await figma.getNodeByIdAsync(op.nodeId) as GeometryMixin | null;
         if (node && 'strokes' in node) {
-          node.strokes = op.strokes;
+          node.strokes = op.strokes as any;
           if (op.strokeWeight != null) node.strokeWeight = op.strokeWeight;
           if (op.strokeAlign && 'strokeAlign' in node) {
             (node as any).strokeAlign = op.strokeAlign;
@@ -561,7 +565,7 @@ async function applyOperations(ops: FigmaOperation[]) {
           node.fontName = targetFont;
           node.characters = op.content;
           if (op.fontSize) node.fontSize = op.fontSize;
-          if (op.fills) node.fills = op.fills;
+          if (op.fills) node.fills = op.fills as any;
           summaryLines.push(`Editado texto @"${node.name}"`);
         }
 
@@ -683,7 +687,7 @@ async function applyOperations(ops: FigmaOperation[]) {
           comp.paddingBottom = op.props.paddingBottom ?? 0;
           comp.paddingLeft = op.props.paddingLeft ?? 0;
         }
-        if (op.props.fills) comp.fills = op.props.fills;
+        if (op.props.fills) comp.fills = op.props.fills as any;
         if (op.props.cornerRadius != null) comp.cornerRadius = op.props.cornerRadius;
 
         parent.appendChild(comp);
@@ -731,7 +735,7 @@ async function applyOperations(ops: FigmaOperation[]) {
         const line = figma.createLine();
         line.name = op.props.name;
         line.resize(op.props.width > 0 ? op.props.width : 100, 1);
-        if (op.props.strokes) line.strokes = op.props.strokes;
+        if (op.props.strokes) line.strokes = op.props.strokes as any;
         if (op.props.strokeWeight != null) line.strokeWeight = op.props.strokeWeight;
         parent.appendChild(line);
         if (op.ref) createdNodes.set(op.ref, line);
@@ -744,7 +748,7 @@ async function applyOperations(ops: FigmaOperation[]) {
         polygon.name = op.props.name;
         polygon.pointCount = op.props.pointCount;
         polygon.resize(op.props.width > 0 ? op.props.width : 100, op.props.height > 0 ? op.props.height : 100);
-        if (op.props.fills) polygon.fills = op.props.fills;
+        if (op.props.fills) polygon.fills = op.props.fills as any;
         parent.appendChild(polygon);
         if (op.ref) createdNodes.set(op.ref, polygon);
         summaryLines.push(`Polígono criado @"${polygon.name}"`);
@@ -757,7 +761,7 @@ async function applyOperations(ops: FigmaOperation[]) {
         star.pointCount = op.props.pointCount;
         star.innerRadius = op.props.innerRadius ?? 0.4;
         star.resize(op.props.width > 0 ? op.props.width : 100, op.props.height > 0 ? op.props.height : 100);
-        if (op.props.fills) star.fills = op.props.fills;
+        if (op.props.fills) star.fills = op.props.fills as any;
         parent.appendChild(star);
         if (op.ref) createdNodes.set(op.ref, star);
         summaryLines.push(`Estrela criada @"${star.name}"`);
@@ -783,7 +787,7 @@ async function applyOperations(ops: FigmaOperation[]) {
               node.setRangeFontSize(range.start, range.end, range.fontSize);
             }
             if (range.fills) {
-              node.setRangeFills(range.start, range.end, range.fills);
+              node.setRangeFills(range.start, range.end, range.fills as any);
             }
             if (range.textDecoration) {
               node.setRangeTextDecoration(range.start, range.end,
@@ -807,31 +811,43 @@ async function applyOperations(ops: FigmaOperation[]) {
 
         // ═══ FASE 4: CLONE_NODE ═══
       } else if (op.type === 'CLONE_NODE') {
-        const sourceNode = await figma.getNodeByIdAsync(op.sourceNodeId);
+        const sourceNode = await figma.getNodeByIdAsync(op.sourceNodeId) as any;
         const parent = await getParent(op.parentRef, op.parentNodeId);
-        if (sourceNode) {
-          const cloned = sourceNode.clone();
-          if (op.overrides?.name) cloned.name = op.overrides.name;
-          if (op.overrides?.width && 'resize' in cloned) {
-            (cloned as any).resize(op.overrides.width, op.overrides.height || (cloned as any).height);
+        if (sourceNode && typeof sourceNode.clone === 'function') {
+          try {
+            const cloned = sourceNode.clone();
+            if (op.overrides?.name) cloned.name = op.overrides.name;
+            if (op.overrides?.width && 'resize' in cloned) {
+              (cloned as any).resize(op.overrides.width, op.overrides.height || (cloned as any).height);
+            }
+            if (op.overrides?.fills && 'fills' in cloned) {
+              (cloned as any).fills = op.overrides.fills as any;
+            }
+            parent.appendChild(cloned);
+            if (op.ref) createdNodes.set(op.ref, cloned);
+            summaryLines.push(`Clonado @"${cloned.name}"`);
+          } catch (e) {
+            postToUI({ type: 'ERROR', message: `Clone falhou: ${String(e)}` });
           }
-          if (op.overrides?.fills && 'fills' in cloned) {
-            (cloned as any).fills = op.overrides.fills;
-          }
-          parent.appendChild(cloned);
-          if (op.ref) createdNodes.set(op.ref, cloned);
-          summaryLines.push(`Clonado @"${cloned.name}"`);
         }
 
         // ═══ FASE 4: REORDER_CHILD ═══
       } else if (op.type === 'REORDER_CHILD') {
-        const node = await figma.getNodeByIdAsync(op.nodeId);
+        const node = await figma.getNodeByIdAsync(op.nodeId) as any;
         const parent = await figma.getNodeByIdAsync(op.parentNodeId);
         if (node && parent && 'children' in parent) {
           const parentFrame = parent as BaseNode & ChildrenMixin;
           if (op.index >= 0 && op.index <= parentFrame.children.length) {
-            parentFrame.insertChild(op.index, node);
-            summaryLines.push(`Reordenado @"${node.name}"`);
+            // insertChild requires node to already be a child; remove first if needed
+            try {
+              if (node.parent !== parent) {
+                node.remove();
+              }
+              parentFrame.insertChild(op.index, node as SceneNode);
+              summaryLines.push(`Reordenado @"${node.name}"`);
+            } catch (e) {
+              postToUI({ type: 'ERROR', message: `Reordenamento falhou: ${String(e)}` });
+            }
           }
         }
 
@@ -867,23 +883,25 @@ async function applyOperations(ops: FigmaOperation[]) {
       } else if (op.type === 'CREATE_VARIABLE') {
         if (figma.variables) {
           try {
-            // Find or create collection
-            let collection = figma.variables.getLocalVariableCollections?.().find(
-              (c) => c.name === op.collectionName
+            // getLocalVariableCollections is synchronous; no await needed
+            const collections = (figma.variables as any).getLocalVariableCollections?.() || [];
+            let collection = collections.find(
+              (c: any) => c.name === op.collectionName
             );
+
             if (!collection) {
-              collection = await figma.variables.createVariableCollectionAsync(op.collectionName);
+              collection = (figma.variables as any).createVariableCollection?.(op.collectionName);
             }
 
             if (collection) {
-              const variable = await figma.variables.createVariableAsync(
+              const variable = (figma.variables as any).createVariable?.(
                 `${collection.id}/${op.name}`,
                 collection.defaultModeId,
                 op.resolvedType,
                 op.value
               );
-              if (op.ref) createdNodes.set(op.ref, variable as any);
-              summaryLines.push(`Variável criada: ${op.name}`);
+              if (variable && op.ref) createdNodes.set(op.ref, variable as any);
+              if (variable) summaryLines.push(`Variável criada: ${op.name}`);
             }
           } catch (e) {
             postToUI({ type: 'ERROR', message: `Erro ao criar variável: ${String(e)}` });
@@ -923,10 +941,34 @@ async function applyOperations(ops: FigmaOperation[]) {
         }
 
         if (nodes.length >= 2) {
-          const result = figma.booleanOperation(nodes, op.operation as BooleanOperationOp, 0);
-          if (op.name) result.name = op.name;
-          if (op.ref) createdNodes.set(op.ref, result);
-          summaryLines.push(`Operação booleana @"${op.name || 'result'}"`);
+          try {
+            const parent = nodes[0].parent as BaseNode & ChildrenMixin;
+            let result: BooleanOperationNode | undefined;
+
+            // Use correct Figma API methods: union, subtract, intersect, exclude
+            switch (op.operation) {
+              case 'UNION':
+                result = figma.union(nodes, parent);
+                break;
+              case 'SUBTRACT':
+                result = figma.subtract(nodes, parent);
+                break;
+              case 'INTERSECT':
+                result = figma.intersect(nodes, parent);
+                break;
+              case 'EXCLUDE':
+                result = figma.exclude(nodes, parent);
+                break;
+            }
+
+            if (result) {
+              if (op.name) result.name = op.name;
+              if (op.ref) createdNodes.set(op.ref, result);
+              summaryLines.push(`Operação booleana (${op.operation}) @"${op.name || 'result'}"`);
+            }
+          } catch (e) {
+            postToUI({ type: 'ERROR', message: `Operação booleana falhou: ${String(e)}` });
+          }
         }
 
         // ═══ DELETE_NODE ═══
@@ -993,7 +1035,8 @@ async function getComponentsInCurrentFile(): Promise<ComponentInfo[]> {
   const components: ComponentInfo[] = [];
 
   try {
-    await figma.loadAllPagesAsync();
+    // Use cached pages loading to avoid redundant async calls
+    await ensurePagesLoaded();
     const nodes = figma.root.findAllWithCriteria({ types: ['COMPONENT', 'COMPONENT_SET'] });
     const seen = new Set<string>();
     for (const node of nodes) {
@@ -1087,12 +1130,16 @@ async function getColorVariablesFromFile(): Promise<ColorVariable[]> {
             // Import to get actual value — Figma only exposes name/key on LibraryVariable
             try {
               const imported = await figma.variables.importVariableByKeyAsync(libVar.key);
-              const val = imported.valuesByMode[Object.keys(imported.valuesByMode)[0]];
-              if (typeof val === 'object' && 'r' in val) {
-                const hex = rgbToHex((val as any).r, (val as any).g, (val as any).b);
-                if (!seen.has(hex)) {
-                  colors.push({ id: imported.id, name: `${col.name}/${libVar.name}`, value: hex });
-                  seen.add(hex);
+              // Validate imported variable structure
+              if (imported && imported.valuesByMode && typeof imported.valuesByMode === 'object') {
+                const modeId = Object.keys(imported.valuesByMode)[0];
+                const val = imported.valuesByMode[modeId];
+                if (typeof val === 'object' && val !== null && 'r' in val && 'g' in val && 'b' in val) {
+                  const hex = rgbToHex((val as any).r, (val as any).g, (val as any).b);
+                  if (!seen.has(hex)) {
+                    colors.push({ id: imported.id, name: `${col.name}/${libVar.name}`, value: hex });
+                    seen.add(hex);
+                  }
                 }
               }
             } catch (_e) {

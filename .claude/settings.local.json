@@ -16,7 +16,11 @@
       "Bash(node:*)",
       "Bash(xargs grep:*)",
       "WebFetch(domain:www.figma.com)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Skill(firecrawl)",
+      "Bash(.firecrawl/PLUGIN_API_AUDIT.md:*)",
+      "Bash(firecrawl scrape:*)",
+      "Bash(firecrawl search:*)"
     ]
   }
 }
