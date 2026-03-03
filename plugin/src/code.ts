@@ -941,7 +941,6 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       await figma.clientStorage.setAsync('userApiKey', msg.key);
       postToUI({ type: 'API_KEY_SAVED' });
     } catch (_e) {
-      // clientStorage requires a plugin ID — skip silently in dev
       postToUI({ type: 'API_KEY_SAVED' });
     }
   } else if (msg.type === 'GET_API_KEY') {
@@ -949,8 +948,45 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       const key = await figma.clientStorage.getAsync('userApiKey');
       postToUI({ type: 'API_KEY_LOADED', key: key || '' });
     } catch (_e) {
-      // clientStorage requires a plugin ID — skip silently in dev
       postToUI({ type: 'API_KEY_LOADED', key: '' });
+    }
+
+    // ── Brand Guideline Presets ──────────────────────────────────────────────
+  } else if (msg.type === 'GET_GUIDELINES') {
+    try {
+      const raw = await figma.clientStorage.getAsync('brandGuidelines');
+      const guidelines = Array.isArray(raw) ? raw : [];
+      postToUI({ type: 'GUIDELINES_LOADED', guidelines });
+    } catch (_e) {
+      // clientStorage may fail in dev (no plugin id) — reply with empty list
+      postToUI({ type: 'GUIDELINES_LOADED', guidelines: [] });
+    }
+
+  } else if (msg.type === 'SAVE_GUIDELINE') {
+    try {
+      const raw = await figma.clientStorage.getAsync('brandGuidelines');
+      const guidelines: unknown[] = Array.isArray(raw) ? raw : [];
+      const incoming = msg.guideline;
+      const idx = guidelines.findIndex((g: any) => g.id === incoming.id);
+      if (idx >= 0) guidelines[idx] = incoming;
+      else guidelines.push(incoming);
+      await figma.clientStorage.setAsync('brandGuidelines', guidelines);
+      postToUI({ type: 'GUIDELINE_SAVED', guidelines, savedId: incoming.id });
+    } catch (_e) {
+      // clientStorage unavailable — acknowledge save so the UI stays consistent
+      postToUI({ type: 'GUIDELINE_SAVED', guidelines: [msg.guideline], savedId: msg.guideline.id });
+    }
+
+  } else if (msg.type === 'DELETE_GUIDELINE') {
+    try {
+      const raw = await figma.clientStorage.getAsync('brandGuidelines');
+      const guidelines: unknown[] = Array.isArray(raw) ? raw : [];
+      const updated = guidelines.filter((g: any) => g.id !== msg.id);
+      await figma.clientStorage.setAsync('brandGuidelines', updated);
+      postToUI({ type: 'GUIDELINES_LOADED', guidelines: updated });
+    } catch (_e) {
+      // clientStorage unavailable — acknowledge deletion with empty list fallback
+      postToUI({ type: 'GUIDELINES_LOADED', guidelines: [] });
     }
   }
 };

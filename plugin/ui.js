@@ -34,6 +34,8 @@ let userApiKey = '';
 let apiCollapsed = true;
 let activeFontTab = 'library';
 let openPanel = null; // 'logo' | 'colors' | 'fonts' | null
+let savedGuidelines = []; // BrandGuideline[]
+let activeGuidelineId = null; // string | null
 let chatHistory = [{
     role: 'assistant',
     content: 'Olá! Descreva o que quer criar ou modificar. Configure as Brand Guidelines em ⚙ Configurações.',
@@ -101,6 +103,102 @@ function renderSelectionIndicator() {
 function updateBrandPill() {
     const active = selectedLogo || selectedFont || selectedColors.size > 0;
     brandPill.classList.toggle('active', !!active);
+}
+
+// ──────────────────────────────────────────────────
+// ── Brand Guideline Presets ──
+// ──────────────────────────────────────────────────
+
+function renderGuidelinesSelector() {
+    const sel = document.getElementById('guidelineSelect');
+    const delBtn = document.getElementById('guidelineDeleteBtn');
+    if (!sel) return;
+
+    // Rebuild options
+    const prev = sel.value;
+    sel.innerHTML = '<option value="">— Nenhum —</option>';
+    for (const g of savedGuidelines) {
+        const opt = document.createElement('option');
+        opt.value = g.id;
+        opt.textContent = esc(g.name);
+        sel.appendChild(opt);
+    }
+
+    // Restore selection
+    sel.value = activeGuidelineId || '';
+
+    if (delBtn) {
+        delBtn.classList.toggle('hidden', !activeGuidelineId);
+    }
+}
+
+function saveCurrentGuideline() {
+    const name = prompt('Nome do guideline:', '');
+    if (!name || !name.trim()) return;
+
+    const id = activeGuidelineId || String(Date.now());
+    const guideline = {
+        id,
+        name: name.trim(),
+        logo: selectedLogo ? { id: selectedLogo.id, name: selectedLogo.name, key: selectedLogo.key } : undefined,
+        font: selectedFont ? { id: selectedFont.id, name: selectedFont.name } : undefined,
+        colors: Array.from(selectedColors.entries()).map(([cid, c]) => ({ id: cid, name: c.name, value: c.value }))
+    };
+
+    parent.postMessage({ pluginMessage: { type: 'SAVE_GUIDELINE', guideline } }, 'https://www.figma.com');
+}
+
+function onGuidelineSelectChange() {
+    const sel = document.getElementById('guidelineSelect');
+    const id = sel ? sel.value : '';
+    if (!id) {
+        activeGuidelineId = null;
+        const delBtn = document.getElementById('guidelineDeleteBtn');
+        if (delBtn) delBtn.classList.add('hidden');
+        return;
+    }
+    activeGuidelineId = id;
+    const guideline = savedGuidelines.find(g => g.id === id);
+    if (guideline) applyGuideline(guideline);
+    const delBtn = document.getElementById('guidelineDeleteBtn');
+    if (delBtn) delBtn.classList.remove('hidden');
+}
+
+function applyGuideline(guideline) {
+    // Apply logo
+    if (guideline.logo) {
+        selectedLogo = guideline.logo;
+        // Make sure it's in allComponents so the library can render it selected
+        if (!allComponents.find(c => c.id === guideline.logo.id)) {
+            allComponents.push(guideline.logo);
+        }
+    } else {
+        selectedLogo = null;
+    }
+    updateLogoPreview();
+
+    // Apply colors
+    selectedColors = new Map();
+    if (Array.isArray(guideline.colors)) {
+        for (const c of guideline.colors) {
+            selectedColors.set(c.id, { name: c.name, value: c.value });
+        }
+    }
+    updateColorsPreview();
+
+    // Apply font
+    selectedFont = guideline.font || null;
+    updateFontsPreview();
+
+    updateBrandPill();
+    renderGuidelinesSelector();
+}
+
+function deleteActiveGuideline() {
+    if (!activeGuidelineId) return;
+    if (!confirm('Excluir este guideline?')) return;
+    parent.postMessage({ pluginMessage: { type: 'DELETE_GUIDELINE', id: activeGuidelineId } }, 'https://www.figma.com');
+    activeGuidelineId = null;
 }
 
 // ── Status ──
@@ -538,6 +636,17 @@ window.onmessage = (event) => {
             currentSelectionThumb = msg.thumbnail;
             renderSelectionIndicator();
         }
+    } else if (msg.type === 'GUIDELINES_LOADED') {
+        savedGuidelines = msg.guidelines || [];
+        // If the active guideline was deleted, reset
+        if (activeGuidelineId && !savedGuidelines.find(g => g.id === activeGuidelineId)) {
+            activeGuidelineId = null;
+        }
+        renderGuidelinesSelector();
+    } else if (msg.type === 'GUIDELINE_SAVED') {
+        savedGuidelines = msg.guidelines || [];
+        activeGuidelineId = msg.savedId;
+        renderGuidelinesSelector();
     } else if (msg.type === 'CALL_API') {
         showStatus('🔗 Conectando à IA...', 'loading');
         callPluginAPI(msg.context);
@@ -570,3 +679,5 @@ renderChat();
 updateSendState();
 parent.postMessage({ pluginMessage: { type: 'GET_CONTEXT' } }, 'https://www.figma.com');
 parent.postMessage({ pluginMessage: { type: 'GET_API_KEY' } }, 'https://www.figma.com');
+parent.postMessage({ pluginMessage: { type: 'GET_GUIDELINES' } }, 'https://www.figma.com');
+
