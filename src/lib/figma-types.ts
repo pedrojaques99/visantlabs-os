@@ -16,7 +16,7 @@ export type GradientStop = {
 export type GradientPaint = {
   type: 'GRADIENT_LINEAR' | 'GRADIENT_RADIAL' | 'GRADIENT_ANGULAR' | 'GRADIENT_DIAMOND';
   gradientStops: GradientStop[];
-  gradientTransform?: [[number, number, number], [number, number, number]];
+  gradientTransform: [[number, number, number], [number, number, number]];
   opacity?: number;
 };
 
