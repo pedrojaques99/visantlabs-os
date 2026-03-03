@@ -195,7 +195,7 @@ import figmaRoutes from './routes/figma.js';
 app.use(`${routePrefix}/figma`, figmaRoutes);
 
 // Import plugin AI generation routes
-import pluginRoutes from './routes/plugin.js';
+import pluginRoutes, { initPluginWebSocket } from './routes/plugin.js';
 app.use(`${routePrefix}/plugin`, pluginRoutes);
 
 // Import surprise me routes
@@ -304,10 +304,13 @@ if (!process.env.VERCEL) {
       console.warn('⚠️  Prisma connection test failed, but server will start anyway');
     });
 
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
       console.log(`📝 Make sure MONGODB_URI is configured in your .env file`);
     });
+
+    // Initialize WebSocket server for Figma plugin
+    initPluginWebSocket(server);
   };
 
   startServer();

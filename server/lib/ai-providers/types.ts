@@ -2,16 +2,18 @@
 
 import type { FigmaOperation } from '../../../src/lib/figma-types';
 
+export interface AIGenerationOptions {
+  temperature?: number;
+  maxTokens?: number;
+  apiKey?: string; // Per-request BYOK key override
+}
+
 export interface AIProvider {
   name: 'claude' | 'gemini';
   generateOperations(
     systemPrompt: string,
     userPrompt: string,
-    options?: { temperature?: number; maxTokens?: number }
+    options?: AIGenerationOptions
   ): Promise<FigmaOperation[]>;
 }
 
-export interface AIGenerationOptions {
-  temperature?: number;
-  maxTokens?: number;
-}

@@ -10,7 +10,7 @@ function postToUI(msg: { type: string } & Record<string, unknown>) {
 
 // ── Deep node serialization (Phase 3) ──
 
-async function serializeNode(node: SceneNode, depth = 0): Promise<SerializedNode> {
+async function serializeNode(node: SceneNode, depth = 0, maxDepth = 5): Promise<SerializedNode> {
   const base: SerializedNode = {
     id: node.id,
     type: node.type,
@@ -104,11 +104,11 @@ async function serializeNode(node: SceneNode, depth = 0): Promise<SerializedNode
     }
   }
 
-  // Fix 1.5: Recursively serialize children (max 5 levels deep for complex designs)
-  if ('children' in node && (node as any).children && depth < 5) {
+  // Fix 1.5: Recursively serialize children (respects maxDepth for page vs selection)
+  if ('children' in node && (node as any).children && depth < maxDepth) {
     const children: SerializedNode[] = [];
     for (const child of (node as any).children as SceneNode[]) {
-      children.push(await serializeNode(child, depth + 1));
+      children.push(await serializeNode(child, depth + 1, maxDepth));
     }
     base.children = children;
   }
@@ -133,6 +133,29 @@ async function serializeSelection(): Promise<SerializedContext> {
     for (const s of textStyles) styles[s.id] = `TEXT:${s.name}`;
   } catch (e) {
     // Styles might not be available, continue without them
+  }
+
+  return { nodes, styles };
+}
+
+async function serializePage(): Promise<SerializedContext> {
+  const nodes: SerializedNode[] = [];
+  const pageChildren = figma.currentPage.children;
+  const limit = 50;
+  const maxDepth = 2; // shallower than selection to keep payload manageable
+
+  for (let i = 0; i < Math.min(pageChildren.length, limit); i++) {
+    nodes.push(await serializeNode(pageChildren[i], 0, maxDepth));
+  }
+
+  const styles: Record<string, string> = {};
+  try {
+    const paintStyles = await figma.getLocalPaintStylesAsync();
+    const textStyles = await figma.getLocalTextStylesAsync();
+    for (const s of paintStyles) styles[s.id] = `PAINT:${s.name}`;
+    for (const s of textStyles) styles[s.id] = `TEXT:${s.name}`;
+  } catch (e) {
+    // Styles might not be available
   }
 
   return { nodes, styles };
@@ -182,13 +205,35 @@ async function ensurePagesLoaded() {
   }
 }
 
+// ── Undo (Official Figma API: commitUndo + triggerUndo) ──
+// figma.commitUndo() saves a checkpoint before each operation batch.
+// figma.triggerUndo() reverts to the last checkpoint.
+// This handles ALL properties natively — no manual snapshot needed.
+
+let canUndo = false;
+
 async function applyOperations(ops: FigmaOperation[]) {
+  // Create a native Figma undo checkpoint before applying operations
+  figma.commitUndo();
+  canUndo = true;
+
   // Reset page cache per batch to ensure fresh state if called multiple times
   pagesLoaded = false;
 
   const createdNodes = new Map<string, SceneNode>();
   const defaultFont: FontName = { family: 'Inter', style: 'Regular' };
   const summaryLines: string[] = [];
+  const summaryItems: Array<{ text: string; nodeId?: string; nodeName?: string }> = [];
+
+  // Helper: push to both summaryLines and summaryItems with optional node reference
+  function pushSummary(text: string, node?: SceneNode | BaseNode | null) {
+    summaryLines.push(text);
+    summaryItems.push({
+      text,
+      nodeId: node && 'id' in node ? node.id : undefined,
+      nodeName: node && 'name' in node ? (node as any).name : undefined,
+    });
+  }
 
   async function getParent(parentRef?: string, parentNodeId?: string): Promise<BaseNode & ChildrenMixin> {
     if (parentRef && createdNodes.has(parentRef)) {
@@ -203,8 +248,10 @@ async function applyOperations(ops: FigmaOperation[]) {
     return figma.currentPage;
   }
 
+
   for (const op of ops) {
     try {
+
       // ═══ CREATE_FRAME ═══
       if (op.type === 'CREATE_FRAME') {
         const parent = await getParent(op.parentRef, op.parentNodeId);
@@ -260,7 +307,7 @@ async function applyOperations(ops: FigmaOperation[]) {
         }
 
         if (op.ref) createdNodes.set(op.ref, frame);
-        summaryLines.push(`Criado @"${frame.name}"`);
+        pushSummary(`Criado @"${frame.name}"`, frame);
 
         // ═══ CREATE_RECTANGLE ═══
       } else if (op.type === 'CREATE_RECTANGLE') {
@@ -288,7 +335,7 @@ async function applyOperations(ops: FigmaOperation[]) {
           rect.layoutSizingVertical = op.props.layoutSizingVertical;
         }
         if (op.ref) createdNodes.set(op.ref, rect);
-        summaryLines.push(`Criado @"${rect.name}"`);
+        pushSummary(`Criado @"${rect.name}"`, rect);
 
         // ═══ CREATE_ELLIPSE ═══
       } else if (op.type === 'CREATE_ELLIPSE') {
@@ -312,7 +359,7 @@ async function applyOperations(ops: FigmaOperation[]) {
           ellipse.layoutSizingVertical = op.props.layoutSizingVertical;
         }
         if (op.ref) createdNodes.set(op.ref, ellipse);
-        summaryLines.push(`Criado @"${ellipse.name}"`);
+        pushSummary(`Criado @"${ellipse.name}"`, ellipse);
 
         // ═══ CREATE_TEXT ═══
       } else if (op.type === 'CREATE_TEXT') {
@@ -357,7 +404,7 @@ async function applyOperations(ops: FigmaOperation[]) {
           text.layoutSizingVertical = op.props.layoutSizingVertical;
         }
         if (op.ref) createdNodes.set(op.ref, text);
-        summaryLines.push(`Criado @"${text.name}"`);
+        pushSummary(`Criado @"${text.name}"`, text);
 
         // ═══ CREATE_COMPONENT_INSTANCE ═══
       } else if (op.type === 'CREATE_COMPONENT_INSTANCE') {
@@ -386,14 +433,14 @@ async function applyOperations(ops: FigmaOperation[]) {
         if (op.name) instance.name = op.name;
         parent.appendChild(instance);
         if (op.ref) createdNodes.set(op.ref, instance);
-        summaryLines.push(`Criado @"${instance.name}"`);
+        pushSummary(`Criado @"${instance.name}"`, instance);
 
         // ═══ SET_FILL ═══
       } else if (op.type === 'SET_FILL') {
         const node = await figma.getNodeByIdAsync(op.nodeId) as GeometryMixin | null;
         if (node && 'fills' in node) {
           node.fills = op.fills as any;
-          summaryLines.push(`Editado fill @"${(node as any).name}"`);
+          pushSummary(`Editado fill @"${(node as any).name}"`, node as SceneNode);
         }
 
         // ═══ SET_STROKE ═══
@@ -405,7 +452,7 @@ async function applyOperations(ops: FigmaOperation[]) {
           if (op.strokeAlign && 'strokeAlign' in node) {
             (node as any).strokeAlign = op.strokeAlign;
           }
-          summaryLines.push(`Editado stroke @"${(node as any).name}"`);
+          pushSummary(`Editado stroke @"${(node as any).name}"`, node as SceneNode);
         }
 
         // ═══ SET_IMAGE_FILL (Fix 1.4) ═══
@@ -421,7 +468,7 @@ async function applyOperations(ops: FigmaOperation[]) {
               imageHash: image.hash,
               scaleMode: op.scaleMode || 'FILL',
             } as Paint];
-            summaryLines.push(`Imagem aplicada @"${(node as any).name}"`);
+            pushSummary(`Imagem aplicada @"${(node as any).name}"`, node as SceneNode);
           } catch (e) {
             postToUI({ type: 'ERROR', message: `Falha ao carregar imagem: ${String(e)}` });
           }
@@ -435,7 +482,7 @@ async function applyOperations(ops: FigmaOperation[]) {
           if (op.cornerSmoothing != null && 'cornerSmoothing' in node) {
             node.cornerSmoothing = op.cornerSmoothing;
           }
-          summaryLines.push(`Editado radius @"${node.name}"`);
+          pushSummary(`Editado radius @"${node.name}"`, node as SceneNode);
         }
 
         // ═══ SET_EFFECTS ═══
@@ -461,7 +508,7 @@ async function applyOperations(ops: FigmaOperation[]) {
               blendMode: 'NORMAL' as BlendMode,
             } as Effect;
           });
-          summaryLines.push(`Editado effects @"${(node as any).name}"`);
+          pushSummary(`Editado effects @"${(node as any).name}"`, node as SceneNode);
         }
 
         // ═══ SET_AUTO_LAYOUT ═══
@@ -491,7 +538,7 @@ async function applyOperations(ops: FigmaOperation[]) {
           if (op.layoutSizingVertical && 'layoutSizingVertical' in node) {
             (node as any).layoutSizingVertical = op.layoutSizingVertical;
           }
-          summaryLines.push(`Editado layout @"${node.name}"`);
+          pushSummary(`Editado layout @"${node.name}"`, node);
         }
 
         // ═══ RESIZE ═══
@@ -499,7 +546,7 @@ async function applyOperations(ops: FigmaOperation[]) {
         const node = await figma.getNodeByIdAsync(op.nodeId) as SceneNode | null;
         if (node && 'resize' in node) {
           (node as any).resize(op.width, op.height);
-          summaryLines.push(`Redimensionado @"${node.name}"`);
+          pushSummary(`Redimensionado @"${node.name}"`, node);
         }
 
         // ═══ MOVE ═══
@@ -508,7 +555,7 @@ async function applyOperations(ops: FigmaOperation[]) {
         if (node) {
           node.x = op.x;
           node.y = op.y;
-          summaryLines.push(`Movido @"${node.name}"`);
+          pushSummary(`Movido @"${node.name}"`, node);
         }
 
         // ═══ RENAME ═══
@@ -517,7 +564,7 @@ async function applyOperations(ops: FigmaOperation[]) {
         if (node) {
           const oldName = node.name;
           node.name = op.name;
-          summaryLines.push(`Renomeado @"${oldName}" → @"${op.name}"`);
+          pushSummary(`Renomeado @"${oldName}" → @"${op.name}"`, node);
         }
 
         // ═══ SET_TEXT_CONTENT ═══
@@ -563,10 +610,12 @@ async function applyOperations(ops: FigmaOperation[]) {
 
           // Set font BEFORE characters (Figma best practice)
           node.fontName = targetFont;
-          node.characters = op.content;
+          if (op.content != null && op.content !== '') {
+            node.characters = op.content;
+          }
           if (op.fontSize) node.fontSize = op.fontSize;
           if (op.fills) node.fills = op.fills as any;
-          summaryLines.push(`Editado texto @"${node.name}"`);
+          pushSummary(`Editado texto @"${node.name}"`, node);
         }
 
         // ═══ SET_OPACITY ═══
@@ -574,7 +623,7 @@ async function applyOperations(ops: FigmaOperation[]) {
         const node = await figma.getNodeByIdAsync(op.nodeId) as SceneNode | null;
         if (node && 'opacity' in node) {
           node.opacity = op.opacity;
-          summaryLines.push(`Editado opacidade @"${node.name}"`);
+          pushSummary(`Editado opacidade @"${node.name}"`, node);
         }
 
         // ═══ APPLY_VARIABLE ═══
@@ -645,7 +694,7 @@ async function applyOperations(ops: FigmaOperation[]) {
           const parent = nodes[0].parent as BaseNode & ChildrenMixin;
           const group = figma.group(nodes, parent);
           group.name = op.name;
-          summaryLines.push(`Agrupado @"${op.name}"`);
+          pushSummary(`Agrupado @"${op.name}"`, group);
         }
 
         // ═══ UNGROUP ═══
@@ -654,7 +703,7 @@ async function applyOperations(ops: FigmaOperation[]) {
         if (node && 'children' in node) {
           const name = node.name;
           figma.ungroup(node as SceneNode & ChildrenMixin);
-          summaryLines.push(`Desagrupado @"${name}"`);
+          pushSummary(`Desagrupado @"${name}"`);
         }
 
         // ═══ DETACH_INSTANCE ═══
@@ -662,7 +711,7 @@ async function applyOperations(ops: FigmaOperation[]) {
         const node = await figma.getNodeByIdAsync(op.nodeId) as InstanceNode | null;
         if (node && node.type === 'INSTANCE') {
           node.detachInstance();
-          summaryLines.push(`Detached @"${node.name}"`);
+          pushSummary(`Detached @"${node.name}"`, node);
         }
 
         // ═══ FASE 2: CREATE_COMPONENT ═══
@@ -698,7 +747,7 @@ async function applyOperations(ops: FigmaOperation[]) {
           comp.layoutSizingVertical = op.props.layoutSizingVertical;
         }
         if (op.ref) createdNodes.set(op.ref, comp);
-        summaryLines.push(`Componente criado @"${comp.name}"`);
+        pushSummary(`Componente criado @"${comp.name}"`, comp);
 
         // ═══ FASE 2: COMBINE_AS_VARIANTS ═══
       } else if (op.type === 'COMBINE_AS_VARIANTS') {
@@ -712,7 +761,7 @@ async function applyOperations(ops: FigmaOperation[]) {
           const set = figma.combineAsVariants(components, parent);
           set.name = op.name;
           if (op.ref) createdNodes.set(op.ref, set);
-          summaryLines.push(`Variantes combinadas @"${op.name}"`);
+          pushSummary(`Variantes combinadas @"${op.name}"`, set);
         }
 
         // ═══ FASE 2: CREATE_SVG ═══
@@ -724,7 +773,7 @@ async function applyOperations(ops: FigmaOperation[]) {
           if (op.width && op.height) svgFrame.resize(op.width, op.height);
           parent.appendChild(svgFrame);
           if (op.ref) createdNodes.set(op.ref, svgFrame);
-          summaryLines.push(`SVG criado @"${op.name || 'svg'}"`);
+          pushSummary(`SVG criado @"${op.name || 'svg'}"`, svgFrame);
         } catch (e) {
           postToUI({ type: 'ERROR', message: `Erro ao criar SVG: ${String(e)}` });
         }
@@ -739,7 +788,7 @@ async function applyOperations(ops: FigmaOperation[]) {
         if (op.props.strokeWeight != null) line.strokeWeight = op.props.strokeWeight;
         parent.appendChild(line);
         if (op.ref) createdNodes.set(op.ref, line);
-        summaryLines.push(`Linha criada @"${line.name}"`);
+        pushSummary(`Linha criada @"${line.name}"`, line);
 
         // ═══ FASE 2: CREATE_POLYGON ═══
       } else if (op.type === 'CREATE_POLYGON') {
@@ -751,7 +800,7 @@ async function applyOperations(ops: FigmaOperation[]) {
         if (op.props.fills) polygon.fills = op.props.fills as any;
         parent.appendChild(polygon);
         if (op.ref) createdNodes.set(op.ref, polygon);
-        summaryLines.push(`Polígono criado @"${polygon.name}"`);
+        pushSummary(`Polígono criado @"${polygon.name}"`, polygon);
 
         // ═══ FASE 2: CREATE_STAR ═══
       } else if (op.type === 'CREATE_STAR') {
@@ -764,7 +813,7 @@ async function applyOperations(ops: FigmaOperation[]) {
         if (op.props.fills) star.fills = op.props.fills as any;
         parent.appendChild(star);
         if (op.ref) createdNodes.set(op.ref, star);
-        summaryLines.push(`Estrela criada @"${star.name}"`);
+        pushSummary(`Estrela criada @"${star.name}"`, star);
 
         // ═══ FASE 2: SET_TEXT_RANGES ═══
       } else if (op.type === 'SET_TEXT_RANGES') {
@@ -806,7 +855,7 @@ async function applyOperations(ops: FigmaOperation[]) {
               node.setRangeLineHeight(range.start, range.end, range.lineHeight);
             }
           }
-          summaryLines.push(`Formatação de texto aplicada @"${node.name}"`);
+          pushSummary(`Formatação de texto aplicada @"${node.name}"`, node);
         }
 
         // ═══ FASE 4: CLONE_NODE ═══
@@ -825,7 +874,7 @@ async function applyOperations(ops: FigmaOperation[]) {
             }
             parent.appendChild(cloned);
             if (op.ref) createdNodes.set(op.ref, cloned);
-            summaryLines.push(`Clonado @"${cloned.name}"`);
+            pushSummary(`Clonado @"${cloned.name}"`, cloned);
           } catch (e) {
             postToUI({ type: 'ERROR', message: `Clone falhou: ${String(e)}` });
           }
@@ -844,7 +893,7 @@ async function applyOperations(ops: FigmaOperation[]) {
                 node.remove();
               }
               parentFrame.insertChild(op.index, node as SceneNode);
-              summaryLines.push(`Reordenado @"${node.name}"`);
+              pushSummary(`Reordenado @"${node.name}"`, node);
             } catch (e) {
               postToUI({ type: 'ERROR', message: `Reordenamento falhou: ${String(e)}` });
             }
@@ -859,7 +908,7 @@ async function applyOperations(ops: FigmaOperation[]) {
             horizontal: op.horizontal,
             vertical: op.vertical,
           };
-          summaryLines.push(`Constraints definidas @"${(node as any).name}"`);
+          pushSummary(`Constraints definidas @"${(node as any).name}"`, node as SceneNode);
         }
 
         // ═══ FASE 4: SET_LAYOUT_GRID ═══
@@ -876,7 +925,7 @@ async function applyOperations(ops: FigmaOperation[]) {
             visible: g.visible ?? true,
             color: g.color ?? { r: 0, g: 0, b: 0, a: 0.1 },
           }));
-          summaryLines.push(`Grid definido @"${(node as any).name}"`);
+          pushSummary(`Grid definido @"${(node as any).name}"`, node as SceneNode);
         }
 
         // ═══ FASE 4: CREATE_VARIABLE ═══
@@ -913,7 +962,7 @@ async function applyOperations(ops: FigmaOperation[]) {
         const node = await figma.getNodeByIdAsync(op.nodeId);
         if (node && 'blendMode' in node) {
           (node as any).blendMode = op.blendMode;
-          summaryLines.push(`Blend mode definido @"${(node as any).name}"`);
+          pushSummary(`Blend mode definido @"${(node as any).name}"`, node as SceneNode);
         }
 
         // ═══ FASE 4: SET_INDIVIDUAL_CORNERS ═══
@@ -925,7 +974,7 @@ async function applyOperations(ops: FigmaOperation[]) {
           if (op.bottomLeftRadius != null) (node as any).bottomLeftRadius = op.bottomLeftRadius;
           if (op.bottomRightRadius != null) (node as any).bottomRightRadius = op.bottomRightRadius;
           if (op.cornerSmoothing != null) (node as any).cornerSmoothing = op.cornerSmoothing;
-          summaryLines.push(`Corners individuais definidos @"${(node as any).name}"`);
+          pushSummary(`Corners individuais definidos @"${(node as any).name}"`, node as SceneNode);
         }
 
         // ═══ FASE 4: BOOLEAN_OPERATION ═══
@@ -964,7 +1013,7 @@ async function applyOperations(ops: FigmaOperation[]) {
             if (result) {
               if (op.name) result.name = op.name;
               if (op.ref) createdNodes.set(op.ref, result);
-              summaryLines.push(`Operação booleana (${op.operation}) @"${op.name || 'result'}"`);
+              pushSummary(`Operação booleana (${op.operation}) @"${op.name || 'result'}"`, result);
             }
           } catch (e) {
             postToUI({ type: 'ERROR', message: `Operação booleana falhou: ${String(e)}` });
@@ -975,7 +1024,7 @@ async function applyOperations(ops: FigmaOperation[]) {
       } else if (op.type === 'DELETE_NODE') {
         const node = await figma.getNodeByIdAsync(op.nodeId);
         if (node) {
-          summaryLines.push(`Removido @"${node.name}"`);
+          pushSummary(`Removido @"${node.name}"`);
           node.remove();
         }
       }
@@ -993,8 +1042,14 @@ async function applyOperations(ops: FigmaOperation[]) {
     figma.viewport.scrollAndZoomIntoView(rootNodes);
   }
 
+  // Build ref → nodeId mapping for chat memory
+  const nodeIdMap: Record<string, { nodeId: string; name: string }> = {};
+  for (const [ref, node] of createdNodes) {
+    nodeIdMap[ref] = { nodeId: node.id, name: node.name };
+  }
+
   const summary = summaryLines.length > 0 ? summaryLines.join('\n') : undefined;
-  postToUI({ type: 'OPERATIONS_DONE', count: ops.length, summary });
+  postToUI({ type: 'OPERATIONS_DONE', count: ops.length, summary, summaryItems, canUndo, nodeIdMap });
 }
 
 function deleteSelection() {
@@ -1299,9 +1354,99 @@ async function getComponentFromSelection(): Promise<ComponentInfo | null> {
 }
 
 figma.ui.onmessage = async (msg: UIMessage) => {
+  // ── Agent Operations (WebSocket from server) ──
+  if (msg.type === 'AGENT_OPS') {
+    try {
+      const { operations, opId } = msg as any;
+      const createdNodes = await applyOperations(operations);
+      const appliedCount = operations.length;
+
+      // Send ACK back to UI (which forwards to server via WebSocket)
+      postToUI({
+        type: 'OPERATION_ACK',
+        opId,
+        success: true,
+        appliedCount,
+      });
+
+      console.log(`[Agent] Applied ${appliedCount} operations (opId=${opId})`);
+    } catch (err) {
+      const { opId } = msg as any;
+      const errorMsg = err instanceof Error ? err.message : String(err);
+
+      // Send error back to UI
+      postToUI({
+        type: 'OPERATION_ERROR',
+        opId,
+        error: errorMsg,
+      });
+
+      console.error(`[Agent] Operation failed (opId=${opId}):`, err);
+    }
+    return;
+  }
+
+  // ── WebSocket initialization (from UI) ──
+  if (msg.type === 'INIT_WS') {
+    // UI will handle WebSocket connection, just log for now
+    console.log('[Plugin] WebSocket initialization message received');
+    return;
+  }
+
+  // ── Undo last batch of operations (official Figma API) ──
+  if (msg.type === 'UNDO_LAST_BATCH') {
+    if (canUndo) {
+      figma.triggerUndo();
+      canUndo = false;
+      postToUI({
+        type: 'UNDO_RESULT',
+        success: true,
+        message: '↩️ Última operação desfeita com sucesso.',
+        canUndo: false
+      });
+    } else {
+      postToUI({
+        type: 'UNDO_RESULT',
+        success: false,
+        message: 'Nenhuma operação para desfazer.',
+        canUndo: false
+      });
+    }
+    return;
+  }
+
+  // ── Selection change notification (to server) ──
+  if (msg.type === 'REPORT_SELECTION') {
+    const selection = figma.currentPage.selection;
+    const nodes = selection.map((n) => ({
+      name: n.name,
+      id: n.id,
+      type: n.type,
+    }));
+
+    postToUI({
+      type: 'SELECTION_CHANGED',
+      nodes,
+    });
+    return;
+  }
+
   if (msg.type === 'USE_SELECTION_AS_LOGO') {
     const comp = await getComponentFromSelection();
     postToUI({ type: 'SELECTION_AS_LOGO', component: comp });
+    return;
+  }
+  // ── Select and zoom to a node by ID (clickable node chips in chat) ──
+  if (msg.type === 'SELECT_AND_ZOOM') {
+    try {
+      const node = await figma.getNodeByIdAsync((msg as any).nodeId);
+      if (node && 'parent' in node) {
+        figma.currentPage.selection = [node as SceneNode];
+        figma.viewport.scrollAndZoomIntoView([node as SceneNode]);
+      }
+    } catch (_e) {
+      // Node may have been deleted
+    }
     return;
   }
   if (msg.type === 'GET_CONTEXT') {
@@ -1334,11 +1479,12 @@ figma.ui.onmessage = async (msg: UIMessage) => {
   } else if (msg.type === 'APPLY_OPERATIONS_FROM_API') {
     await applyOperations(msg.operations);
   } else if (msg.type === 'GENERATE_WITH_CONTEXT') {
-    const [components, colors, fonts, selection] = await Promise.all([
+    const useScanPage = !!(msg as any).scanPage;
+    const [components, colors, fonts, contextData] = await Promise.all([
       getComponentsInCurrentFile(),
       getColorVariablesFromFile(),
       getFontVariablesFromFile(),
-      serializeSelection()
+      useScanPage ? serializePage() : serializeSelection()
     ]);
 
     // Collect all context with user selections
@@ -1346,7 +1492,8 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     const context = {
       command: msg.command,
       fileId: figma.fileKey || 'local_file',
-      selectedElements: selection.nodes,
+      selectedElements: contextData.nodes,
+      scanPage: useScanPage,
       availableComponents: components,
       availableColorVariables: colors,
       availableFontVariables: fonts,
@@ -1375,6 +1522,20 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       postToUI({ type: 'API_KEY_LOADED', key: key || '' });
     } catch (_e) {
       postToUI({ type: 'API_KEY_LOADED', key: '' });
+    }
+  } else if (msg.type === 'SAVE_ANTHROPIC_KEY') {
+    try {
+      await figma.clientStorage.setAsync('anthropicApiKey', msg.key);
+      postToUI({ type: 'ANTHROPIC_KEY_SAVED' });
+    } catch (_e) {
+      postToUI({ type: 'ANTHROPIC_KEY_SAVED' });
+    }
+  } else if (msg.type === 'GET_ANTHROPIC_KEY') {
+    try {
+      const key = await figma.clientStorage.getAsync('anthropicApiKey');
+      postToUI({ type: 'ANTHROPIC_KEY_LOADED', key: key || '' });
+    } catch (_e) {
+      postToUI({ type: 'ANTHROPIC_KEY_LOADED', key: '' });
     }
 
     // ── Brand Guideline Presets (stored in document via setPluginData — syncs with Figma Cloud) ──

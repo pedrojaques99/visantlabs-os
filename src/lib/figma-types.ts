@@ -379,22 +379,22 @@ export type FigmaOperation =
     type: 'SET_BLEND_MODE';
     nodeId: string;
     blendMode:
-      | 'NORMAL'
-      | 'MULTIPLY'
-      | 'SCREEN'
-      | 'OVERLAY'
-      | 'DARKEN'
-      | 'LIGHTEN'
-      | 'COLOR_DODGE'
-      | 'COLOR_BURN'
-      | 'HARD_LIGHT'
-      | 'SOFT_LIGHT'
-      | 'DIFFERENCE'
-      | 'EXCLUSION'
-      | 'HUE'
-      | 'SATURATION'
-      | 'COLOR'
-      | 'LUMINOSITY';
+    | 'NORMAL'
+    | 'MULTIPLY'
+    | 'SCREEN'
+    | 'OVERLAY'
+    | 'DARKEN'
+    | 'LIGHTEN'
+    | 'COLOR_DODGE'
+    | 'COLOR_BURN'
+    | 'HARD_LIGHT'
+    | 'SOFT_LIGHT'
+    | 'DIFFERENCE'
+    | 'EXCLUSION'
+    | 'HUE'
+    | 'SATURATION'
+    | 'COLOR'
+    | 'LUMINOSITY';
   }
   | {
     type: 'SET_INDIVIDUAL_CORNERS';
@@ -503,6 +503,7 @@ export type UIMessage =
   | {
     type: 'GENERATE_WITH_CONTEXT';
     command: string;
+    scanPage?: boolean;
     logoComponent?: { id: string; name: string; key?: string };
     brandFont?: { id: string; name: string };
     brandColors?: Array<{ name: string; value: string }>;
@@ -511,10 +512,19 @@ export type UIMessage =
   | { type: 'OPEN_EXTERNAL'; url: string }
   | { type: 'SAVE_API_KEY'; key: string }
   | { type: 'GET_API_KEY' }
+  | { type: 'SAVE_ANTHROPIC_KEY'; key: string }
+  | { type: 'GET_ANTHROPIC_KEY' }
   // Guideline presets
   | { type: 'GET_GUIDELINES' }
   | { type: 'SAVE_GUIDELINE'; guideline: BrandGuideline }
-  | { type: 'DELETE_GUIDELINE'; id: string };
+  | { type: 'DELETE_GUIDELINE'; id: string }
+  | { type: 'SELECT_AND_ZOOM'; nodeId: string }
+  // Agent / WebSocket messages
+  | { type: 'AGENT_OPS'; operations: FigmaOperation[]; opId: string }
+  | { type: 'INIT_WS' }
+  | { type: 'REPORT_SELECTION' }
+  // Undo
+  | { type: 'UNDO_LAST_BATCH' };
 
 // ── Sandbox → UI messages ──
 
@@ -537,6 +547,8 @@ export type PluginMessage =
   | { type: 'CALL_API'; context: Record<string, unknown> }
   | { type: 'API_KEY_SAVED' }
   | { type: 'API_KEY_LOADED'; key: string }
+  | { type: 'ANTHROPIC_KEY_SAVED' }
+  | { type: 'ANTHROPIC_KEY_LOADED'; key: string }
   // Guideline presets
   | { type: 'GUIDELINES_LOADED'; guidelines: BrandGuideline[] }
   | { type: 'GUIDELINE_SAVED'; guidelines: BrandGuideline[]; savedId: string };

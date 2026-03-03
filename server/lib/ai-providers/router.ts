@@ -15,7 +15,12 @@ export function chooseProvider(
   command: string,
   contextSize: number
 ): AIProvider {
-  // Heuristic: command is complex if it contains certain keywords or is very long
+  // If Claude API key is not configured, always use Gemini
+  if (!process.env.ANTHROPIC_API_KEY) {
+    console.log('[Router] ANTHROPIC_API_KEY not set — using Gemini');
+    return geminiProvider;
+  }
+
   const complexKeywords = [
     'página',
     'section',
@@ -42,13 +47,11 @@ export function chooseProvider(
   const isLongCommand = command.length > 100;
   const isLargeContext = contextSize > 30;
 
-  // If it's a complex command, large context, or contains multiple operations, use Claude
   if (hasComplexKeywords || isLongCommand || isLargeContext) {
     console.log('[Router] Using Claude for complex request');
     return claudeProvider;
   }
 
-  // Default to Gemini for speed
   console.log('[Router] Using Gemini for simple request');
   return geminiProvider;
 }

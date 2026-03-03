@@ -54,6 +54,7 @@ async function generateDesign(command, context) {
     availableFontVariables: state.allFonts,
     availableLayers: context.availableLayers || [],
     apiKey: state.userApiKey || undefined,
+    anthropicApiKey: state.anthropicApiKey || undefined,
   };
 
   try {
@@ -88,6 +89,27 @@ function saveApiKey(key) {
 function loadApiKey() {
   parent.postMessage(
     { pluginMessage: { type: 'GET_API_KEY' } },
+    'https://www.figma.com'
+  );
+}
+
+/**
+ * Save Anthropic API key to plugin storage
+ * @param {string} key - API key
+ */
+function saveAnthropicKey(key) {
+  parent.postMessage(
+    { pluginMessage: { type: 'SAVE_ANTHROPIC_KEY', key } },
+    'https://www.figma.com'
+  );
+}
+
+/**
+ * Load saved Anthropic API key
+ */
+function loadAnthropicKey() {
+  parent.postMessage(
+    { pluginMessage: { type: 'GET_ANTHROPIC_KEY' } },
     'https://www.figma.com'
   );
 }
@@ -149,6 +171,7 @@ function generateWithContext(command, context) {
       pluginMessage: {
         type: 'GENERATE_WITH_CONTEXT',
         command,
+        scanPage: state.scanPage || false,
         logoComponent: state.selectedLogo,
         brandFont: state.selectedFont,
         brandColors: Array.from(state.selectedColors.values()),
