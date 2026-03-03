@@ -15,13 +15,30 @@ const API_BASE = 'http://localhost:3001/api'; // Change to https://www.visantlab
  */
 async function apiCall(endpoint, method = 'GET', body = null) {
   try {
-    const options = { method };
+    const headers = { 'Content-Type': 'application/json' };
+
+    // Include auth token if available
+    if (state.authToken) {
+      headers['Authorization'] = `Bearer ${state.authToken}`;
+    }
+
+    const options = { method, headers };
     if (body) {
-      options.headers = { 'Content-Type': 'application/json' };
       options.body = JSON.stringify(body);
     }
 
     const response = await fetch(`${API_BASE}${endpoint}`, options);
+
+    // Handle credit exhaustion gracefully
+    if (response.status === 403) {
+      const data = await response.json();
+      if (data.code === 'NO_CREDITS') {
+        setState('canGenerate', false);
+        eventBus.emit('auth:no-credits', data.error);
+        throw new Error(data.error);
+      }
+    }
+
     if (!response.ok) {
       throw new Error(`API Error: ${response.status} ${response.statusText}`);
     }
@@ -226,4 +243,92 @@ function useSelectionAsLogo() {
     { pluginMessage: { type: 'USE_SELECTION_AS_LOGO' } },
     'https://www.figma.com'
   );
+}
+
+// ── Auth & Credits ──
+
+/**
+ * Login with email/password → gets JWT token
+ * Reuses existing /api/auth/login endpoint
+ */
+async function authLogin(email, password) {
+  try {
+    const result = await apiCall('/auth/login', 'POST', { email, password });
+    if (result.token) {
+      setState('authToken', result.token);
+      setState('authEmail', email);
+      saveAuthToken(result.token);
+      await fetchAuthStatus();
+      eventBus.emit('auth:login-success', { email });
+      return { success: true };
+    }
+    return { success: false, error: 'Token não recebido' };
+  } catch (error) {
+    eventBus.emit('auth:login-error', error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Fetch auth status and credits from server
+ * Calls GET /api/plugin/auth/status
+ */
+async function fetchAuthStatus() {
+  try {
+    const data = await apiCall('/plugin/auth/status');
+    if (data.authenticated) {
+      setState('authEmail', data.email);
+      setState('credits', {
+        total: data.totalCredits,
+        remaining: data.creditsRemaining,
+        freeRemaining: data.freeGenerationsRemaining,
+        tier: data.subscriptionTier,
+        hasSubscription: data.hasActiveSubscription,
+      });
+      setState('canGenerate', data.canGenerate);
+    }
+    return data;
+  } catch (_e) {
+    // Fail silently — BYOK users may not have accounts
+    return { authenticated: false, canGenerate: true };
+  }
+}
+
+/**
+ * Save auth token to sandbox (figma.clientStorage)
+ */
+function saveAuthToken(token) {
+  parent.postMessage(
+    { pluginMessage: { type: 'SAVE_AUTH_TOKEN', token } },
+    'https://www.figma.com'
+  );
+}
+
+/**
+ * Load auth token from sandbox
+ */
+function loadAuthToken() {
+  parent.postMessage(
+    { pluginMessage: { type: 'GET_AUTH_TOKEN' } },
+    'https://www.figma.com'
+  );
+}
+
+/**
+ * Logout — clear token and reset credit state
+ */
+function logout() {
+  setState('authToken', null);
+  setState('authEmail', null);
+  setState('canGenerate', true);
+  setState('credits', {
+    total: 0, remaining: 0, freeRemaining: 4,
+    tier: 'free', hasSubscription: false,
+  });
+  // Clear from sandbox storage
+  parent.postMessage(
+    { pluginMessage: { type: 'SAVE_AUTH_TOKEN', token: '' } },
+    'https://www.figma.com'
+  );
+  eventBus.emit('auth:logout');
 }

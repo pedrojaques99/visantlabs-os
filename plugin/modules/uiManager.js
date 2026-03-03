@@ -137,6 +137,44 @@ class UIManager {
         'https://www.figma.com'
       );
     });
+
+    // Auth: Login button
+    document.getElementById('authLoginBtn')?.addEventListener('click', async () => {
+      const email = document.getElementById('authEmailInput')?.value || '';
+      const password = document.getElementById('authPasswordInput')?.value || '';
+      if (!email || !password) {
+        const status = document.getElementById('authLoginStatus');
+        if (status) status.textContent = '⚠ Preencha email e senha';
+        return;
+      }
+      const btn = document.getElementById('authLoginBtn');
+      if (btn) btn.textContent = 'Entrando...';
+      const result = await authLogin(email, password);
+      if (btn) btn.textContent = 'Entrar';
+      if (!result.success) {
+        const status = document.getElementById('authLoginStatus');
+        if (status) status.textContent = `❌ ${result.error}`;
+      }
+    });
+
+    // Auth: Logout button
+    document.getElementById('authLogoutBtn')?.addEventListener('click', () => {
+      logout();
+    });
+
+    // Auth: On token loaded from storage (on plugin init)
+    eventBus.on('auth:login-success', () => {
+      this.updateAuthUI(true);
+    });
+    eventBus.on('auth:logout', () => {
+      this.updateAuthUI(false);
+    });
+    eventBus.on('auth:no-credits', (message) => {
+      this.addSystemMessage(`⚠️ ${message}`);
+    });
+
+    // Load saved auth token on initialization
+    loadAuthToken();
   }
 
   setupStateListeners() {
@@ -215,6 +253,19 @@ class UIManager {
           if (document.getElementById('anthropicKeyInput')) {
             document.getElementById('anthropicKeyInput').value = msg.key || '';
           }
+          break;
+        case 'AUTH_TOKEN_LOADED':
+          if (msg.token) {
+            setState('authToken', msg.token);
+            // Fetch auth status from server to restore session
+            fetchAuthStatus().then(data => {
+              if (data.authenticated) {
+                this.updateAuthUI(true);
+              }
+            });
+          }
+          break;
+        case 'AUTH_TOKEN_SAVED':
           break;
         case 'CALL_API':
           this.callAPI(msg.context);
@@ -599,6 +650,68 @@ class UIManager {
       SECTION: 'Seção',
     };
     return labels[type] || type;
+  }
+
+  /**
+   * Update auth UI (login form / logged-in state)
+   */
+  updateAuthUI(authenticated) {
+    const loggedOut = document.getElementById('authLoggedOut');
+    const loggedIn = document.getElementById('authLoggedIn');
+    const emailEl = document.getElementById('authUserEmail');
+    const tierEl = document.getElementById('authUserTier');
+    const creditsEl = document.getElementById('authCreditsInfo');
+    const statusEl = document.getElementById('authLoginStatus');
+
+    if (authenticated && state.authEmail) {
+      if (loggedOut) loggedOut.classList.add('hidden');
+      if (loggedIn) loggedIn.classList.remove('hidden');
+      if (emailEl) emailEl.textContent = state.authEmail;
+      if (tierEl) {
+        const tierLabels = { free: 'Free', premium: 'Premium', pro: 'Pro' };
+        tierEl.textContent = tierLabels[state.credits.tier] || state.credits.tier;
+      }
+      if (creditsEl) {
+        const c = state.credits;
+        if (c.hasSubscription) {
+          creditsEl.textContent = `${c.remaining} créditos restantes de ${c.total}`;
+        } else {
+          creditsEl.textContent = `${c.freeRemaining} gerações grátis restantes`;
+        }
+      }
+      if (statusEl) statusEl.textContent = '';
+    } else {
+      if (loggedOut) loggedOut.classList.remove('hidden');
+      if (loggedIn) loggedIn.classList.add('hidden');
+    }
+    this.updateCreditPill();
+  }
+
+  /**
+   * Update credit pill in chat footer
+   */
+  updateCreditPill() {
+    const pill = document.getElementById('creditPill');
+    if (!pill) return;
+
+    if (!state.authToken) {
+      pill.classList.remove('visible', 'low', 'empty');
+      return;
+    }
+
+    const c = state.credits;
+    const display = c.hasSubscription ? c.remaining : c.freeRemaining;
+    const label = c.hasSubscription ? `${display} créd.` : `${display} free`;
+
+    pill.textContent = label;
+    pill.classList.add('visible');
+    pill.classList.remove('low', 'empty');
+
+    if (display <= 0) {
+      pill.classList.add('empty');
+    } else if (display <= 3) {
+      pill.classList.add('low');
+    }
   }
 
   /**

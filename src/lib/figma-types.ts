@@ -523,6 +523,9 @@ export type UIMessage =
   | { type: 'AGENT_OPS'; operations: FigmaOperation[]; opId: string }
   | { type: 'INIT_WS' }
   | { type: 'REPORT_SELECTION' }
+  // Auth
+  | { type: 'SAVE_AUTH_TOKEN'; token: string }
+  | { type: 'GET_AUTH_TOKEN' }
   // Undo
   | { type: 'UNDO_LAST_BATCH' };
 

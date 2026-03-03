@@ -1538,6 +1538,22 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       postToUI({ type: 'ANTHROPIC_KEY_LOADED', key: '' });
     }
 
+    // ── Auth Token (persisted in clientStorage — per machine) ──
+  } else if (msg.type === 'SAVE_AUTH_TOKEN') {
+    try {
+      await figma.clientStorage.setAsync('authToken', (msg as any).token || '');
+      postToUI({ type: 'AUTH_TOKEN_SAVED' });
+    } catch (_e) {
+      postToUI({ type: 'AUTH_TOKEN_SAVED' });
+    }
+  } else if (msg.type === 'GET_AUTH_TOKEN') {
+    try {
+      const token = await figma.clientStorage.getAsync('authToken');
+      postToUI({ type: 'AUTH_TOKEN_LOADED', token: token || '' });
+    } catch (_e) {
+      postToUI({ type: 'AUTH_TOKEN_LOADED', token: '' });
+    }
+
     // ── Brand Guideline Presets (stored in document via setPluginData — syncs with Figma Cloud) ──
   } else if (msg.type === 'GET_GUIDELINES') {
     try {

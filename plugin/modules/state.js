@@ -52,6 +52,18 @@ const state = {
 
   // Page scan toggle
   scanPage: false,
+
+  // Auth & Credits
+  authToken: null,       // JWT token from Visant login
+  authEmail: null,       // Authenticated user email
+  credits: {
+    total: 0,
+    remaining: 0,
+    freeRemaining: 4,
+    tier: 'free',        // 'free' | 'premium' | 'pro'
+    hasSubscription: false,
+  },
+  canGenerate: true,     // Whether user can generate (credits available)
 };
 
 /**

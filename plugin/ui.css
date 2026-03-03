@@ -1241,6 +1241,33 @@ label {
     color: var(--figma-color-text-brand, #0d99ff) !important;
 }
 
+.credit-pill {
+    display: none;
+    align-items: center;
+    height: 20px;
+    padding: 0 7px;
+    border-radius: 10px;
+    background: var(--figma-color-bg-secondary, #f0f0f0);
+    color: var(--figma-color-text-secondary, #808080);
+    font-size: 9px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.credit-pill.visible {
+    display: inline-flex;
+}
+
+.credit-pill.low {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.credit-pill.empty {
+    background: #f8d7da;
+    color: #721c24;
+}
+
 .undo-btn {
     width: 28px !important;
     height: 28px !important;

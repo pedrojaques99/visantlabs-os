@@ -37,6 +37,19 @@ GOOGLE_OAUTH_SETUP.md
 .agent
 /.agent
 
+# Extensões e IDEs
+.cursor/
+.claude/
+.gemini/
+.qwen/
+.adal/
+.agents/
+.augment/
+.github/skills/ (a menos que sejam GitHub Actions específicas)
+
+# Node
+node_modules/
+
 # Figma plugin dev files (generated with ngrok URL)
 plugin/ui-dev.html
 plugin/manifest.dev.json

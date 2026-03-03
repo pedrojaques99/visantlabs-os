@@ -37,6 +37,7 @@
           <button class="chat-pill" id="scanPagePill"
             title="Pesquisar toda a página (inclui todos os nós no contexto)">🔍 Página</button>
           <button class="chat-pill" id="brandPill">🎨 Brand</button>
+          <span class="credit-pill" id="creditPill" title="Créditos restantes"></span>
         </div>
         <button class="undo-btn hidden" id="undoBtn" title="Desfazer última operação (↩)">↩</button>
         <button class="send-btn" id="sendBtn" title="Enviar (Enter)">↑</button>
@@ -158,6 +159,37 @@
       <!-- ================= TAB: CONFIG ================= -->
       <div id="tab-config" class="tab-content hidden">
         <div class="figma-prop-panel">
+
+          <!-- Visant Account -->
+          <div class="figma-prop-section">
+            <div class="figma-prop-header">
+              <span class="figma-prop-title">Conta Visant</span>
+            </div>
+            <div id="authLoggedOut" style="padding: 8px 12px;">
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <input type="email" id="authEmailInput" placeholder="seu@email.com" style="margin-bottom: 0;">
+                <input type="password" id="authPasswordInput" placeholder="Senha" style="margin-bottom: 0;">
+                <button type="button" class="primary" id="authLoginBtn" style="width: 100%;">Entrar</button>
+              </div>
+              <div id="authLoginStatus"
+                style="font-size: 10px; margin-top: 6px; color: var(--figma-color-text-secondary, #808080);"></div>
+            </div>
+            <div id="authLoggedIn" class="hidden" style="padding: 8px 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div id="authUserEmail" style="font-size: 12px; font-weight: 500;"></div>
+                  <div id="authUserTier" style="font-size: 10px; color: var(--figma-color-text-secondary, #808080);">
+                  </div>
+                </div>
+                <button type="button" class="secondary" id="authLogoutBtn"
+                  style="width: auto; padding: 0 12px;">Sair</button>
+              </div>
+              <div id="authCreditsInfo"
+                style="font-size: 11px; margin-top: 8px; color: var(--figma-color-text-secondary, #808080);"></div>
+            </div>
+          </div>
+
+          <div class="figma-prop-divider"></div>
 
           <!-- API Key (BYOK) - Gemini -->
           <div class="figma-prop-section">
