@@ -1512,7 +1512,7 @@ Result: Entire card design created in Figma instantly</code>
 // ============ Existing HTTP Polling Endpoint ============
 
 // POST /plugin - Generate design operations from natural language (FASE 3: Multi-model + Chat Memory)
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
   try {
     const {
       command,
@@ -1532,6 +1532,15 @@ router.post('/', async (req: Request, res: Response) => {
 
     if (!command) {
       return res.status(400).json({ error: 'Command is required' });
+    }
+
+    // Credit check — skip for BYOK users (they use their own keys)
+    const isByok = !!(userApiKey || userAnthropicKey);
+    if (req.userId && !isByok) {
+      const credits = await checkCredits(req.userId);
+      if (!credits.canGenerate) {
+        return res.status(403).json({ error: credits.reason, code: 'NO_CREDITS' });
+      }
     }
 
     // FASE 3: Load or create session for chat memory
@@ -1686,12 +1695,65 @@ router.post('/', async (req: Request, res: Response) => {
       provider: provider.name,
       warnings: warnings.length > 0 ? warnings : undefined,
     });
+
+    // Deduct credit after successful response (non-blocking, only for authenticated non-BYOK users)
+    const isByokUser = !!(userApiKey || userAnthropicKey);
+    if (req.userId && !isByokUser && validOps.length > 0) {
+      deductCredit(req.userId).catch(e => console.error('[Plugin] Credit deduction error:', e));
+    }
   } catch (error: any) {
     console.error('[Plugin API] Route error:', error);
     res.status(500).json({
       error: 'Failed to process command',
       message: error.message,
     });
+  }
+});
+
+// ============ Plugin Auth Status (same credit fields as /payments/usage) ============
+
+router.get('/auth/status', optionalAuth, async (req: AuthRequest, res: Response) => {
+  if (!req.userId) {
+    return res.json({
+      authenticated: false,
+      canGenerate: true, // Allow unauthenticated BYOK users
+    });
+  }
+
+  try {
+    await connectToMongoDB();
+    const db = getDb();
+    const user = await db.collection('users').findOne({ _id: new ObjectId(req.userId) });
+    if (!user) {
+      return res.json({ authenticated: false, canGenerate: true });
+    }
+
+    const hasActiveSubscription = user.subscriptionStatus === 'active';
+    const freeGenerationsUsed = user.freeGenerationsUsed || 0;
+    const monthlyCredits = user.monthlyCredits || 20;
+    const creditsUsed = user.creditsUsed || 0;
+    const creditsRemaining = Math.max(0, monthlyCredits - creditsUsed);
+    const totalCreditsEarned = user.totalCreditsEarned ?? 0;
+    const totalCredits = totalCreditsEarned + creditsRemaining;
+
+    res.json({
+      authenticated: true,
+      email: req.userEmail,
+      subscriptionTier: user.subscriptionTier || 'free',
+      hasActiveSubscription,
+      freeGenerationsUsed,
+      freeGenerationsRemaining: Math.max(0, FREE_GENERATIONS_LIMIT - freeGenerationsUsed),
+      monthlyCredits,
+      creditsUsed,
+      creditsRemaining,
+      totalCredits,
+      canGenerate: hasActiveSubscription
+        ? totalCredits > 0
+        : (freeGenerationsUsed < FREE_GENERATIONS_LIMIT && totalCredits > 0),
+    });
+  } catch (error: any) {
+    console.error('[Plugin] Auth status error:', error.message);
+    res.json({ authenticated: false, canGenerate: true });
   }
 });
 
