@@ -224,6 +224,8 @@ interface PluginRequest {
   fileId?: string;
   apiKey?: string;         // Gemini BYOK
   anthropicApiKey?: string; // Anthropic/Claude BYOK
+  attachments?: Array<{ name: string; mimeType: string; data: string }>; // Base64 data
+  mentions?: Array<{ name: string; type: string; id: string }>; // @mentions
 }
 
 function buildSystemPrompt(req: PluginRequest, chatHistory?: string): string {
@@ -427,6 +429,9 @@ CRIAÇÃO — dois modos de especificar o pai:
    }}
 
 EDIÇÃO DE NÓS EXISTENTES (usar nodeId de elemento selecionado):
+⚠️ IMPORTANTE: O contexto contém a propriedade "characters" dos nós TEXT selecionados. USE SEMPRE o conteúdo atual se estiver editando formatação.
+Exemplo do contexto: {"name":"Title","type":"TEXT","id":"11:12","characters":"Olá Mundo","fontSize":24}
+Se vai mudar apenas a fonte: SET_TEXT_CONTENT com content="Olá Mundo" (mantém conteúdo) + nova fontFamily/fontStyle
 6.  SET_FILL — { "type": "SET_FILL", "nodeId": "...", "fills": [{"type": "SOLID", "color": {"r": 0, "g": 0.5, "b": 1}}] }
 7.  SET_STROKE — { "type": "SET_STROKE", "nodeId": "...", "strokes": [{"type": "SOLID", "color": {"r": 0, "g": 0, "b": 0}}], "strokeWeight": 1, "strokeAlign": "INSIDE" }
 8.  SET_CORNER_RADIUS — { "type": "SET_CORNER_RADIUS", "nodeId": "...", "cornerRadius": 8, "cornerSmoothing": 0.6 }
@@ -435,7 +440,9 @@ EDIÇÃO DE NÓS EXISTENTES (usar nodeId de elemento selecionado):
 11. RESIZE — { "type": "RESIZE", "nodeId": "...", "width": 400, "height": 300 }
 12. MOVE — { "type": "MOVE", "nodeId": "...", "x": 100, "y": 200 }
 13. RENAME — { "type": "RENAME", "nodeId": "...", "name": "Novo Nome" }
-14. SET_TEXT_CONTENT — { "type": "SET_TEXT_CONTENT", "nodeId": "...", "content": "Novo texto", "fontSize": 14, "fontFamily": "Inter", "fontStyle": "Regular" }
+14. SET_TEXT_CONTENT — ⚠️ OBRIGATÓRIO: sempre inclua "content" (novo texto) + opcionais fontSize/fontFamily/fontStyle
+    { "type": "SET_TEXT_CONTENT", "nodeId": "...", "content": "Novo texto", "fontSize": 14, "fontFamily": "Barlow", "fontStyle": "Medium" }
+    ⚠️ NÃO deixe "content" em branco ou ausente. Se o usuário quer apenas mudar a FONTE existente, precisa reescrever o conteúdo com a nova fonte.
 15. SET_OPACITY — { "type": "SET_OPACITY", "nodeId": "...", "opacity": 0.5 }
 
 TOKENS / VARIABLES:
@@ -466,7 +473,9 @@ ESTRUTURA:
     - O usuário pede um design novo do zero → crie o frame root sem parentNodeId (vai para a página)
     - "parentRef" é SOMENTE para apontar para um nó criado NESTA resposta (via "ref")
     - Misturar parentRef e parentNodeId no mesmo nó é erro: use UM dos dois.
-17. Para editar texto: use nodeId de um nó TEXT. Se a seleção for um FRAME ou GROUP com filhos TEXT, use o id do filho (ex: "T Message"), NUNCA do frame. SET_TEXT_CONTENT só funciona em TEXT.
+17. Para editar texto: use nodeId de um nó TEXT. Se a seleção for um FRAME ou GROUP com filhos TEXT, use o id do filho (ex: "T Message"), NUNCA do frame.
+    ⚠️ SET_TEXT_CONTENT SEMPRE PRECISA de "content". Para mudar apenas a FONTE de um texto existente, precisa reescrever o conteúdo com a nova fonte.
+    Exemplo: Se o texto era "Olá" em Inter Regular, para mudar para Barlow Medium use SET_TEXT_CONTENT com content="Olá" fontFamily="Barlow" fontStyle="Medium".
 18. Para criação: sempre comece com o frame/container root e adicione filhos na ORDEM com parentRef.
 19. FontStyle válidos: "Regular", "Medium", "Semi Bold", "Bold", "Light", "Thin", "Extra Bold", "Black", "Italic".
 20. GRADIENTES (FASE 2): Use gradientStops com positions 0-1. Transform padrão linear: [[1,0,0],[0,1,0]]. Diagonal: [[0.7,0.7,-0.1],[-0.7,0.7,0.5]].
@@ -476,7 +485,15 @@ ESTRUTURA:
 24. RICH TEXT (FASE 2): Para formatação mista, use CREATE_TEXT seguido de SET_TEXT_RANGES com ranges de caracteres.
 25. CONSTRAINTS (FASE 2): Em frames sem auto-layout, sempre setar constraints. Buttons: horizontal STRETCH, vertical MIN.
 26. MEMÓRIA (FASE 3): Consulte o histórico de conversa. Se o user referencia algo que criamos antes, use os nodeIds do histórico.
+27. ⚠️ SET_TEXT_CONTENT REQUER "content" OBRIGATORIAMENTE. Nunca gere SET_TEXT_CONTENT sem o campo "content" preenchido com uma string válida.
+    - Se o user quer mudar APENAS a fonte de um texto existente, você PRECISA saber ou INFERIR qual é o conteúdo atual (ex: "Título", "Descrição")
+    - Reescreva com a nova formatação: {"type":"SET_TEXT_CONTENT","nodeId":"...","content":"[conteúdo original ou inferido]","fontFamily":"Nova Fonte","fontStyle":"Novo estilo"}
 
+${req.attachments?.length ? `═══ ANEXOS DO USUÁRIO ═══
+O usuário anexou os seguintes arquivos:
+${req.attachments.map((a, i) => `${i + 1}. "${a.name}" (${a.mimeType})`).join('\n')}
+Você pode usar esses dados como referência para criar designs, por exemplo: imagens para extrair cores/estilos, CSVs para dados de tabelas, PDFs para conteúdo.
+` : ''}
 ═══ EXEMPLO COMPLETO ═══
 
 Prompt: "Cria um card de perfil com avatar, nome e descrição"
@@ -1528,6 +1545,8 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       availableLayers = [],
       apiKey: userApiKey,
       anthropicApiKey: userAnthropicKey,
+      attachments = [],
+      mentions = [],
     } = req.body as PluginRequest;
 
     if (!command) {
@@ -1593,6 +1612,8 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
         availableColorVariables,
         availableFontVariables,
         availableLayers,
+        attachments,
+        mentions,
       },
       chatHistory
     );
@@ -1607,6 +1628,8 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
         maxTokens: 8192,
         // Pass BYOK Anthropic key if the user provided one
         apiKey: userAnthropicKey || undefined,
+        // Pass attachments (images, PDFs, CSVs) for multimodal processing
+        attachments: attachments || [],
       });
     } catch (aiError) {
       console.error(`[Plugin] ${provider.name} error:`, aiError);

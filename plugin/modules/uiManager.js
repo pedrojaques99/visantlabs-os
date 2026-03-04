@@ -236,6 +236,15 @@ class UIManager {
             chatModule.addErrorMessage('⚠️ Selecione um componente ou instância para usar como logo.');
           }
           break;
+        case 'ELEMENTS_FOR_MENTIONS':
+          // Pass Figma elements to mentions module for autocomplete
+          mentionsModule.handleFigmaElements({
+            layers: msg.layers || [],
+            frames: msg.frames || [],
+            components: msg.components || [],
+            variables: msg.variables || []
+          });
+          break;
         case 'GUIDELINES_LOADED':
           eventBus.emit('guidelines:loaded', msg.guidelines);
           break;

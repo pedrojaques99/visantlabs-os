@@ -2198,3 +2198,218 @@ label {
     font-size: 10px !important;
     width: auto !important;
 }
+
+/* ── Mentions Autocomplete ── */
+.mentions-menu {
+    background: var(--figma-color-bg, #ffffff);
+    border: 1px solid var(--figma-color-border, #e5e5e5);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 10000;
+    max-height: 250px;
+    display: flex;
+    flex-direction: column;
+}
+
+.mentions-menu.hidden {
+    display: none;
+}
+
+.mention-search {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--figma-color-border, #e5e5e5);
+    font-size: 10px;
+    color: var(--figma-color-text-secondary, #808080);
+    background: var(--figma-color-bg-secondary, #f5f5f5);
+    font-weight: 500;
+}
+
+.mention-list {
+    overflow-y: auto;
+    flex: 1;
+}
+
+.mention-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    height: 32px;
+    border-bottom: 1px solid var(--figma-color-border, #f0f0f0);
+    transition: background-color 0.15s;
+}
+
+.mention-item:last-child {
+    border-bottom: none;
+}
+
+.mention-item:hover,
+.mention-item.selected {
+    background: var(--figma-color-bg-brand, #0d99ff);
+    color: white;
+}
+
+.mention-item.selected {
+    background: var(--figma-color-bg-brand, #0d99ff);
+}
+
+.mention-icon {
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.mention-name {
+    flex: 1;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mention-type {
+    font-size: 9px;
+    opacity: 0.7;
+    flex-shrink: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.mention-item:hover .mention-type,
+.mention-item.selected .mention-type {
+    opacity: 1;
+}
+
+.mention-empty {
+    padding: 12px;
+    text-align: center;
+    color: var(--figma-color-text-tertiary, #b3b3b3);
+    font-size: 11px;
+}
+
+/* ══════════════════════════════════════ */
+/* ──── ATTACHMENT SUPPORT STYLES ─── */
+/* ══════════════════════════════════════ */
+
+.attachment-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: var(--figma-color-bg-brand, #0d99ff);
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.attachment-badge.hidden {
+    display: none;
+}
+
+.attachment-preview {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 8px 0;
+    margin: 8px 0 0 0;
+    border-top: 1px solid var(--figma-color-border, #e5e5e5);
+    max-height: 100px;
+}
+
+.attachment-preview.hidden {
+    display: none;
+}
+
+.attachment-chip {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    background: var(--figma-color-bg-secondary, #f5f5f5);
+    border: 1px solid var(--figma-color-border, #e5e5e5);
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--figma-color-text, #333333);
+    white-space: nowrap;
+    max-width: 120px;
+}
+
+.attachment-chip-thumbnail {
+    width: 24px;
+    height: 24px;
+    border-radius: 3px;
+    background: var(--figma-color-bg, #ffffff);
+    border: 1px solid var(--figma-color-border, #e5e5e5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.attachment-chip-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 2px;
+}
+
+.attachment-chip-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 10px;
+}
+
+.attachment-chip-remove {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--figma-color-text-secondary, #808080);
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+    transition: background-color 0.15s;
+}
+
+.attachment-chip-remove:hover {
+    background: var(--figma-color-bg-hover, #f0f0f0);
+    color: var(--figma-color-text, #333333);
+}
+
+/* Chat message attachments (rendered in user messages) */
+.chat-msg .attachment-img {
+    max-width: 120px;
+    max-height: 100px;
+    border-radius: 4px;
+    margin-top: 6px;
+    display: block;
+    border: 1px solid var(--figma-color-border, #e5e5e5);
+}
+
+.chat-msg .attachment-file-chip {
+    display: inline-block;
+    padding: 4px 8px;
+    background: var(--figma-color-bg-secondary, #f5f5f5);
+    border: 1px solid var(--figma-color-border, #e5e5e5);
+    border-radius: 4px;
+    font-size: 10px;
+    margin-top: 4px;
+    margin-right: 4px;
+}

@@ -6,6 +6,7 @@ export interface AIGenerationOptions {
   temperature?: number;
   maxTokens?: number;
   apiKey?: string; // Per-request BYOK key override
+  attachments?: Array<{ name: string; mimeType: string; data: string }>; // Base64 data
 }
 
 export interface AIProvider {

@@ -193,6 +193,78 @@ function getAvailableLayers(): AvailableLayer[] {
   return layers;
 }
 
+/**
+ * Collect all elements for mentions autocomplete
+ * Gathers layers, frames, components, and variables
+ */
+function getElementsForMentions() {
+  const elements = {
+    layers: [] as any[],
+    frames: [] as any[],
+    components: [] as any[],
+    variables: [] as any[]
+  };
+
+  const seenIds = new Set<string>();
+
+  function addElement(node: SceneNode, category: 'layers' | 'frames' | 'components') {
+    if (seenIds.has(node.id) || elements[category].length >= 50) return;
+    seenIds.add(node.id);
+    elements[category].push({ id: node.id, name: node.name });
+  }
+
+  // Traverse current page: selected + top-level + their children
+  const selection = figma.currentPage.selection;
+
+  // Add selected nodes
+  for (const node of selection) {
+    if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') {
+      addElement(node, 'components');
+    } else if (node.type === 'FRAME' || node.type === 'SECTION') {
+      addElement(node, 'frames');
+    } else {
+      addElement(node, 'layers');
+    }
+
+    // Add direct children
+    if ('children' in node) {
+      for (const child of (node as FrameNode).children) {
+        if (child.type === 'COMPONENT' || child.type === 'COMPONENT_SET') {
+          addElement(child, 'components');
+        } else if (child.type === 'FRAME' || child.type === 'SECTION') {
+          addElement(child, 'frames');
+        } else {
+          addElement(child, 'layers');
+        }
+      }
+    }
+  }
+
+  // Add top-level nodes
+  for (const node of figma.currentPage.children) {
+    if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') {
+      addElement(node, 'components');
+    } else if (node.type === 'FRAME' || node.type === 'SECTION') {
+      addElement(node, 'frames');
+    } else {
+      addElement(node, 'layers');
+    }
+  }
+
+  // Variables (color + font)
+  try {
+    const allVariables = (figma.variables as any)?.getAll?.() || [];
+    for (const v of allVariables) {
+      if (elements.variables.length >= 30) break;
+      elements.variables.push({ id: v.id, name: v.name });
+    }
+  } catch (_e) {
+    // Variables API may not be available
+  }
+
+  return elements;
+}
+
 // ── Apply Operations (21+ types with ref/parentRef hierarchy) ──
 
 // Fix 1.2: Session-level cache for loadAllPagesAsync (performance)
@@ -858,8 +930,8 @@ async function applyOperations(ops: FigmaOperation[]) {
           pushSummary(`Formatação de texto aplicada @"${node.name}"`, node);
         }
 
-        // ═══ FASE 4: CLONE_NODE ═══
-      } else if (op.type === 'CLONE_NODE') {
+        // ═══ FASE 4: CLONE_NODE / DUPLICATE_NODE ═══
+      } else if (op.type === 'CLONE_NODE' || op.type === 'DUPLICATE_NODE') {
         const sourceNode = await figma.getNodeByIdAsync(op.sourceNodeId) as any;
         const parent = await getParent(op.parentRef, op.parentNodeId);
         if (sourceNode && typeof sourceNode.clone === 'function') {
@@ -1436,6 +1508,14 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     postToUI({ type: 'SELECTION_AS_LOGO', component: comp });
     return;
   }
+
+  // ── Get elements for mentions autocomplete in chat ──
+  if (msg.type === 'GET_ELEMENTS_FOR_MENTIONS') {
+    const elements = getElementsForMentions();
+    postToUI({ type: 'ELEMENTS_FOR_MENTIONS', ...elements });
+    return;
+  }
+
   // ── Select and zoom to a node by ID (clickable node chips in chat) ──
   if (msg.type === 'SELECT_AND_ZOOM') {
     try {
@@ -1500,7 +1580,9 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       availableLayers,
       selectedLogo: msg.logoComponent,
       selectedBrandFont: msg.brandFont,
-      selectedBrandColors: msg.brandColors
+      selectedBrandColors: msg.brandColors,
+      mentions: (msg as any).mentions || [],
+      attachments: (msg as any).attachments || []
     };
 
     // Send context to UI to make the API call

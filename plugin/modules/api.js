@@ -70,6 +70,12 @@ async function generateDesign(command, context) {
     availableColorVariables: state.allColors,
     availableFontVariables: state.allFonts,
     availableLayers: context.availableLayers || [],
+    mentions: context.mentions || [],
+    attachments: (context.attachments || []).map(att => ({
+      name: att.name,
+      mimeType: att.mimeType,
+      data: att.dataUrl.split(',')[1], // Remove data: prefix
+    })),
     apiKey: state.userApiKey || undefined,
     anthropicApiKey: state.anthropicApiKey || undefined,
   };
@@ -192,6 +198,12 @@ function generateWithContext(command, context) {
         logoComponent: state.selectedLogo,
         brandFont: state.selectedFont,
         brandColors: Array.from(state.selectedColors.values()),
+        mentions: context.mentions || [],
+        attachments: (context.attachments || []).map(att => ({
+          name: att.name,
+          mimeType: att.mimeType,
+          data: att.dataUrl.split(',')[1], // Remove data:image/png;base64, prefix
+        })),
       },
     },
     'https://www.figma.com'

@@ -41,7 +41,7 @@ export type FigmaEffect = {
 
 export type RGBA = { r: number; g: number; b: number; a: number };
 
-// ── Figma Operations (21 types) ──
+// ── Figma Operations (38 types) ──
 
 export type FigmaOperation =
   // ═══ CREATION ═══
@@ -330,6 +330,19 @@ export type FigmaOperation =
   // ═══ FASE 4: Polish & Advanced Features ═══
   | {
     type: 'CLONE_NODE';
+    ref?: string;
+    sourceNodeId: string;
+    parentRef?: string;
+    parentNodeId?: string;
+    overrides?: {
+      name?: string;
+      fills?: FigmaPaint[];
+      width?: number;
+      height?: number;
+    };
+  }
+  | {
+    type: 'DUPLICATE_NODE';
     ref?: string;
     sourceNodeId: string;
     parentRef?: string;
