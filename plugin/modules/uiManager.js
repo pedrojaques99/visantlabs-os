@@ -301,6 +301,15 @@ class UIManager {
           this.toggleUndoBtn(!!msg.canUndo);
           break;
 
+        // ── Image Generation Feedback ──
+        case 'IMAGE_PASTED':
+          chatModule.addAssistantMessage(msg.message || '✨ Imagem colada no canvas!');
+          break;
+
+        case 'IMAGE_PASTE_ERROR':
+          chatModule.addErrorMessage(`❌ Erro ao colar imagem: ${msg.error}`);
+          break;
+
         // ── Agent Operation Responses ──
         case 'OPERATION_ACK':
           // Operation applied successfully from agent

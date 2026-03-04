@@ -1124,6 +1124,86 @@ async function applyOperations(ops: FigmaOperation[]) {
   postToUI({ type: 'OPERATIONS_DONE', count: ops.length, summary, summaryItems, canUndo, nodeIdMap });
 }
 
+/**
+ * Paste generated image to canvas as a frame with image fill
+ */
+async function pasteGeneratedImage(imageData: string, prompt: string, width: number = 800, height: number = 450, isUrl: boolean = false) {
+  try {
+    // Get or create a frame to hold the image
+    const page = figma.currentPage;
+
+    // Create a frame for the image with dynamic dimensions
+    const frame = figma.createFrame();
+    frame.name = `Generated: ${prompt.substring(0, 30)}...`;
+    frame.resize(width, height);
+
+    // Position it near the center of the current viewport
+    frame.x = page.selection.length > 0
+      ? (page.selection[0] as any).x + 50
+      : 0;
+    frame.y = page.selection.length > 0
+      ? (page.selection[0] as any).y + 50
+      : 0;
+
+    // Create a rectangle to hold the image
+    const rectangle = figma.createRectangle();
+    rectangle.resize(width, height);
+    rectangle.fills = [];
+    frame.appendChild(rectangle);
+
+    // Apply image fill using SET_IMAGE_FILL operation logic
+    let bytes: Uint8Array;
+
+    if (isUrl) {
+      // Fetch image from URL (e.g., from R2)
+      try {
+        const response = await fetch(imageData);
+        if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
+        const arrayBuffer = await response.arrayBuffer();
+        bytes = new Uint8Array(arrayBuffer);
+      } catch (fetchError) {
+        console.error('Failed to fetch image URL, falling back to base64:', fetchError);
+        // Fallback: treat as base64
+        const imageBase64 = imageData.includes(',')
+          ? imageData.split(',')[1]
+          : imageData;
+        bytes = new Uint8Array(atob(imageBase64).split('').map(c => c.charCodeAt(0)));
+      }
+    } else {
+      // Handle base64 data
+      const imageBase64 = imageData.includes(',')
+        ? imageData.split(',')[1]
+        : imageData;
+      bytes = new Uint8Array(atob(imageBase64).split('').map(c => c.charCodeAt(0)));
+    }
+
+    const imageHash = figma.createImage(bytes).hash;
+
+    // Set the fill
+    rectangle.fills = [{
+      type: 'IMAGE',
+      scaleMode: 'FILL',
+      imageHash: imageHash as string,
+    } as any];
+
+    // Select the frame and notify
+    page.selection = [frame];
+    figma.viewport.scrollAndZoomIntoView([frame]);
+
+    postToUI({
+      type: 'IMAGE_PASTED',
+      message: '✨ Imagem colada no canvas!',
+      nodeId: frame.id
+    });
+  } catch (error) {
+    console.error('[PasteImage] Error:', error);
+    postToUI({
+      type: 'IMAGE_PASTE_ERROR',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+}
+
 function deleteSelection() {
   const selection = figma.currentPage.selection;
   for (const node of selection) {
@@ -1587,6 +1667,8 @@ figma.ui.onmessage = async (msg: UIMessage) => {
 
     // Send context to UI to make the API call
     postToUI({ type: 'CALL_API', context });
+  } else if (msg.type === 'PASTE_GENERATED_IMAGE') {
+    await pasteGeneratedImage(msg.imageData, msg.prompt, msg.width || 800, msg.height || 450, msg.isUrl || false);
   } else if (msg.type === 'DELETE_SELECTION') {
     deleteSelection();
   } else if (msg.type === 'OPEN_EXTERNAL') {
