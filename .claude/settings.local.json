@@ -22,7 +22,8 @@
       "Bash(firecrawl scrape:*)",
       "Bash(firecrawl search:*)",
       "Bash(rm:*)",
-      "Bash(npx skills:*)"
+      "Bash(npx skills:*)",
+      "Bash(npx tsx:*)"
     ]
   }
 }

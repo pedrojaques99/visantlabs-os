@@ -164,8 +164,7 @@ class ChatModule {
     });
 
     // Custom size input handlers for aspect ratio display
-    const customWidth = document.getElementById('customWidth');
-    const customHeight = document.getElementById('customHeight');
+
     const updateAspectRatio = () => {
       const width = parseInt(customWidth?.value || 800);
       const height = parseInt(customHeight?.value || 450);

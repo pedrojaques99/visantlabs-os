@@ -198,6 +198,11 @@ app.use(`${routePrefix}/figma`, figmaRoutes);
 import pluginRoutes, { initPluginWebSocket } from './routes/plugin.js';
 app.use(`${routePrefix}/plugin`, pluginRoutes);
 
+// Import documentation routes
+import docsRoutes from './routes/docs.js';
+app.use(`${routePrefix}/docs`, docsRoutes);
+console.log(`✅ Documentation routes registered at: ${routePrefix}/docs`);
+
 // Import surprise me routes
 import surpriseMeRoutes from './routes/surprise-me.js';
 app.use(`${routePrefix}/surprise-me`, surpriseMeRoutes);
