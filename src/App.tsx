@@ -42,6 +42,7 @@ const NotFoundPage = lazyWithRetry(() => import('./pages/NotFoundPage').then(m =
 const WaitlistPage = lazyWithRetry(() => import('./pages/WaitlistPage').then(m => ({ default: m.WaitlistPage })));
 const ForgotPasswordPage = lazyWithRetry(() => import('./pages/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })));
 const DesignSystemPage = lazyWithRetry(() => import('./pages/DesignSystemPage').then(m => ({ default: m.DesignSystemPage })));
+const DocsPage = lazyWithRetry(() => import('./pages/DocsPage').then(m => ({ default: m.DocsPage })));
 
 const LoadingFallback = () => (
   <div className="min-h-screen bg-background flex items-center justify-center">
@@ -82,6 +83,7 @@ const App: React.FC = () => {
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/privacy" element={<PrivacyPolicyPage />} />
                 <Route path="/design-system" element={<DesignSystemPage />} />
+                <Route path="/docs" element={<DocsPage />} />
                 <Route path="/auth" element={<AuthCallbackPage />} />
                 <Route path="/waitlist" element={<WaitlistPage />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
