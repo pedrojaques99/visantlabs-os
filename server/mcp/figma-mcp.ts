@@ -370,6 +370,105 @@ server.setRequestHandler(
         }
       }
 
+      case 'generate_mockup': {
+        const {
+          fileId,
+          promptText,
+          baseImage,
+          width,
+          height,
+          resolution,
+          model = 'gemini-2.5-flash-image',
+          targetNodeId,
+        } = args;
+
+        try {
+          // Validate required fields
+          if (!promptText) {
+            throw new Error('promptText is required');
+          }
+
+          if (!baseImage) {
+            throw new Error('baseImage is required');
+          }
+
+          // Generate mockup via existing API
+          const generateResponse = await fetch('http://localhost:3001/api/mockups/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              promptText,
+              baseImage,
+              width,
+              height,
+              resolution,
+              model,
+              feature: 'agent', // Identify as agent-generated
+            }),
+          });
+
+          if (!generateResponse.ok) {
+            const errorText = await generateResponse.text();
+            throw new Error(`Mockup generation failed: ${errorText}`);
+          }
+
+          const mockupResult = await generateResponse.json();
+
+          if (!mockupResult.imageUrl) {
+            throw new Error('No image URL in response');
+          }
+
+          // ✨ OPTIONAL: If fileId and targetNodeId provided, paste into Figma automatically
+          let pasteResult: any = null;
+          if (fileId && targetNodeId) {
+            const operations = [
+              {
+                type: 'SET_IMAGE_FILL',
+                nodeId: targetNodeId,
+                imageUrl: mockupResult.imageUrl,
+              },
+            ];
+
+            const validation = operationValidator.validateBatch(operations);
+            if (validation.invalid.length === 0) {
+              pasteResult = await pluginBridge.push(fileId, validation.valid);
+            } else {
+              console.warn('[Figma MCP] SET_IMAGE_FILL validation failed:', validation.invalid);
+            }
+          }
+
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(
+                  {
+                    success: true,
+                    imageUrl: mockupResult.imageUrl,
+                    pasted: pasteResult?.success || false,
+                    message: pasteResult?.success
+                      ? '✓ Mockup generated and pasted into Figma'
+                      : '✓ Mockup generated (not pasted)',
+                  },
+                  null,
+                  2
+                ),
+              },
+            ],
+          };
+        } catch (err) {
+          console.error('[Figma MCP] Mockup generation error:', err);
+          return {
+            content: [
+              {
+                type: 'text',
+                text: `Error generating mockup: ${err instanceof Error ? err.message : String(err)}`,
+              },
+            ],
+          };
+        }
+      }
+
       default:
         return {
           content: [
@@ -583,6 +682,53 @@ const tools: Tool[] = [
         },
       },
       required: ['fileId', 'message'],
+    },
+  },
+  {
+    name: 'generate_mockup',
+    description:
+      'Generate a mockup image using AI. Can optionally paste the result directly into a Figma node.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        fileId: {
+          type: 'string',
+          description: 'Figma file ID (optional, required if you want to auto-paste into a node)',
+        },
+        promptText: {
+          type: 'string',
+          description: 'Text description of the mockup to generate (e.g., "iPhone 15 mockup showing login screen")',
+        },
+        baseImage: {
+          type: 'object',
+          description: 'Base image as {base64: string, mimeType: string}',
+          properties: {
+            base64: { type: 'string', description: 'Base64-encoded image data' },
+            mimeType: { type: 'string', description: 'Image MIME type (e.g., image/png)' },
+          },
+        },
+        width: {
+          type: 'number',
+          description: 'Optional: Output width in pixels (default: 800)',
+        },
+        height: {
+          type: 'number',
+          description: 'Optional: Output height in pixels (default: 450)',
+        },
+        resolution: {
+          type: 'string',
+          description: 'Optional: Resolution level (hd, 1k, 2k, 4k)',
+        },
+        model: {
+          type: 'string',
+          description: 'Optional: AI model to use (default: gemini-2.5-flash-image)',
+        },
+        targetNodeId: {
+          type: 'string',
+          description: 'Optional: Figma node ID to paste the image into. Required with fileId for auto-paste.',
+        },
+      },
+      required: ['promptText', 'baseImage'],
     },
   },
 ];

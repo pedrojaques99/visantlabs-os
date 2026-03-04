@@ -48,6 +48,7 @@ class ChatModule {
     this.chatInput.addEventListener('input', () => {
       this.chatInput.style.height = 'auto';
       this.chatInput.style.height = Math.min(this.chatInput.scrollHeight, 120) + 'px';
+      this.updateImageGenerationButton();
     });
 
     // Scan Page toggle pill
@@ -67,6 +68,176 @@ class ChatModule {
       attachBtn.addEventListener('click', () => attachInput.click());
       attachInput.addEventListener('change', (e) => this.handleFileSelect(e));
     }
+
+    // Generate Image button
+    const genImageBtn = document.getElementById('genImageBtn');
+    if (genImageBtn) {
+      genImageBtn.addEventListener('click', () => this.handleGenerateImageClick());
+    }
+
+    // Image Generation Settings Panel
+    const genImageSettingsBtn = document.getElementById('genImageSettingsBtn');
+    const genImageSettingsPanel = document.getElementById('genImageSettingsPanel');
+    const genImageSettingsClose = document.getElementById('genImageSettingsClose');
+
+    if (genImageSettingsBtn && genImageSettingsPanel) {
+      genImageSettingsBtn.addEventListener('click', () => {
+        genImageSettingsPanel.classList.toggle('hidden');
+      });
+    }
+
+    if (genImageSettingsClose && genImageSettingsPanel) {
+      genImageSettingsClose.addEventListener('click', () => {
+        genImageSettingsPanel.classList.add('hidden');
+      });
+    }
+
+    // Frame size selection
+    const frameSizeButtons = document.querySelectorAll('.settings-option[data-size]');
+    frameSizeButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const size = btn.dataset.size;
+        setState('selectedFrameSize', size);
+
+        // Show/hide custom size input
+        const customSizeGroup = document.getElementById('customSizeGroup');
+        if (size === 'custom') {
+          customSizeGroup?.classList.remove('hidden');
+        } else {
+          customSizeGroup?.classList.add('hidden');
+        }
+
+        // Update active button state
+        frameSizeButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    // Set initial active button
+    const initialSize = state.selectedFrameSize;
+    frameSizeButtons.forEach(btn => {
+      if (btn.dataset.size === initialSize) {
+        btn.classList.add('active');
+      }
+    });
+
+    // Custom size inputs
+    const customWidth = document.getElementById('customWidth');
+    const customHeight = document.getElementById('customHeight');
+    if (customWidth) {
+      customWidth.addEventListener('change', (e) => {
+        const val = Math.max(100, Math.min(4000, parseInt(e.target.value) || 800));
+        setState('customWidth', val);
+        e.target.value = val;
+      });
+    }
+    if (customHeight) {
+      customHeight.addEventListener('change', (e) => {
+        const val = Math.max(100, Math.min(4000, parseInt(e.target.value) || 450));
+        setState('customHeight', val);
+        e.target.value = val;
+      });
+    }
+
+    // Model selector buttons
+    const modelBtns = document.querySelectorAll('.model-btn');
+    modelBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const model = btn.dataset.model;
+        setState('selectedModel', model);
+
+        // Update active button
+        modelBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Update resolution options (they change based on model)
+        this.updateResolutionOptions();
+      });
+    });
+
+    // Populate resolution options based on model
+    this.updateResolutionOptions();
+
+    // Watch for model changes to update resolution options
+    watchState('selectedModel', () => {
+      this.updateResolutionOptions();
+    });
+
+    // Custom size input handlers for aspect ratio display
+    const customWidth = document.getElementById('customWidth');
+    const customHeight = document.getElementById('customHeight');
+    const updateAspectRatio = () => {
+      const width = parseInt(customWidth?.value || 800);
+      const height = parseInt(customHeight?.value || 450);
+      if (width > 0 && height > 0) {
+        const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+        const divisor = gcd(width, height);
+        const ratioW = width / divisor;
+        const ratioH = height / divisor;
+        const aspectDisplay = document.getElementById('aspectRatioDisplay');
+        if (aspectDisplay) {
+          aspectDisplay.textContent = `${Math.round(ratioW)}:${Math.round(ratioH)}`;
+        }
+      }
+    };
+
+    if (customWidth) customWidth.addEventListener('input', updateAspectRatio);
+    if (customHeight) customHeight.addEventListener('input', updateAspectRatio);
+
+    // Resolution selection
+    this.setupResolutionHandlers();
+  }
+
+  /**
+   * Update resolution options based on selected model
+   */
+  updateResolutionOptions() {
+    const resolutionDiv = document.getElementById('resolutionOptions');
+    if (!resolutionDiv) return;
+
+    const isProModel = state.selectedModel === 'gemini-3-pro-image-preview';
+    const options = isProModel
+      ? ['1K', '2K', '4K']
+      : ['HD'];
+
+    resolutionDiv.innerHTML = options.map(opt => `
+      <button class="settings-option" data-resolution="${opt}" data-selected="no">
+        <span class="option-label">${opt}</span>
+        <span class="option-desc">${opt === 'HD' ? '1280×720' : opt === '1K' ? '1024×1024' : opt === '2K' ? '2048×2048' : '4096×4096'}</span>
+      </button>
+    `).join('');
+
+    // Set initial selection
+    const currentResolution = state.selectedResolution;
+    const buttons = resolutionDiv.querySelectorAll('.settings-option[data-resolution]');
+    buttons.forEach(btn => {
+      if (btn.dataset.resolution === currentResolution) {
+        btn.classList.add('active');
+      }
+    });
+
+    // Re-attach handlers
+    this.setupResolutionHandlers();
+  }
+
+  /**
+   * Setup resolution selection handlers
+   */
+  setupResolutionHandlers() {
+    const resolutionDiv = document.getElementById('resolutionOptions');
+    if (!resolutionDiv) return;
+
+    const buttons = resolutionDiv.querySelectorAll('.settings-option[data-resolution]');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const resolution = btn.dataset.resolution;
+        setState('selectedResolution', resolution);
+
+        // Update active button
+        buttons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
   }
 
   setupStateListeners() {
@@ -519,6 +690,146 @@ class ChatModule {
         setState('pendingAttachments', updated);
       });
     });
+  }
+
+  /**
+   * Detect if message contains image generation keywords
+   */
+  _detectImageGenerationKeywords(text) {
+    const keywords = [
+      'gera imagem', 'cria imagem', 'generate image', 'create image',
+      'desenha', 'draw', 'faça uma imagem', 'make an image',
+      'imagem de', 'image of', 'crie uma', 'create a',
+      'preciso de uma imagem', 'i need an image'
+    ];
+    const lowerText = text.toLowerCase();
+    return keywords.some(kw => lowerText.includes(kw));
+  }
+
+  /**
+   * Update image generation button visibility
+   */
+  updateImageGenerationButton() {
+    const genImageBtn = document.getElementById('genImageBtn');
+    const genImageSettingsBtn = document.getElementById('genImageSettingsBtn');
+    const modelSelector = document.getElementById('modelSelector');
+    if (!genImageBtn) return;
+
+    const text = this.chatInput.value.trim();
+    const shouldShow = text.length > 0 && this._detectImageGenerationKeywords(text);
+
+    if (shouldShow) {
+      genImageBtn.classList.remove('hidden');
+      if (genImageSettingsBtn) genImageSettingsBtn.classList.remove('hidden');
+      if (modelSelector) modelSelector.classList.remove('hidden');
+    } else {
+      genImageBtn.classList.add('hidden');
+      if (genImageSettingsBtn) genImageSettingsBtn.classList.add('hidden');
+      if (modelSelector) modelSelector.classList.add('hidden');
+    }
+  }
+
+  /**
+   * Handle explicit generate image button click
+   */
+  handleGenerateImageClick() {
+    const prompt = this.chatInput.value.trim();
+    if (!prompt) return;
+
+    this.generateImage(prompt);
+  }
+
+  /**
+   * Generate image using mockupApi and paste to canvas.
+   * Reuses apiCall() from api.js (handles API_BASE, auth headers, credit errors).
+   */
+  async generateImage(prompt) {
+    // Select model - default to 2.5 Flash
+    const selectedModel = state.selectedModel || 'gemini-2.5-flash-image';
+
+    // Parse frame size
+    let width = 800, height = 450, aspectRatio = '16:9';
+    const frameSize = state.selectedFrameSize;
+
+    if (frameSize === 'custom') {
+      width = state.customWidth || 800;
+      height = state.customHeight || 450;
+    } else {
+      // Parse format: "16:9-800x450"
+      const parts = frameSize.split('-');
+      if (parts.length === 2) {
+        aspectRatio = parts[0];
+        const dims = parts[1].split('x');
+        width = parseInt(dims[0]) || 800;
+        height = parseInt(dims[1]) || 450;
+      }
+    }
+
+    // Get resolution (for display)
+    const resolution = state.selectedResolution || 'HD';
+
+    this.setLoading(true);
+    this.showTypingBubble();
+
+    try {
+      // Reuse apiCall() — centralised fetch with API_BASE, auth headers & credit handling
+      const result = await apiCall('/mockups/generate', 'POST', {
+        promptText: prompt,
+        model: selectedModel,
+        imagesCount: 1,
+        aspectRatio,
+        resolution,
+        width,
+        height
+      });
+
+      if (!result.imageBase64 && !result.imageUrl) {
+        throw new Error('No image returned from generation');
+      }
+
+      // Get the image data — base64 is sent directly; URLs need fetching in sandbox
+      const imageData = result.imageBase64 || result.imageUrl;
+      const isUrl = !result.imageBase64 && !!result.imageUrl;
+
+      // Add message to chat
+      const modelLabel = selectedModel === 'gemini-3-pro-image-preview' ? '3 Pro' : '2.5 Flash';
+      this.addAssistantMessage(`✨ Imagem ${width}×${height} gerada com ${modelLabel} (${resolution})`);
+
+      // Auto-close settings panel and model selector
+      const genImageSettingsPanel = document.getElementById('genImageSettingsPanel');
+      const modelSelector = document.getElementById('modelSelector');
+      if (genImageSettingsPanel) genImageSettingsPanel.classList.add('hidden');
+      if (modelSelector) modelSelector.classList.add('hidden');
+
+      // Send to plugin sandbox to paste on canvas
+      parent.postMessage(
+        {
+          pluginMessage: {
+            type: 'PASTE_GENERATED_IMAGE',
+            imageData,
+            isUrl,
+            prompt,
+            width,
+            height
+          }
+        },
+        'https://www.figma.com'
+      );
+
+      // Show credit notification
+      if (result.creditsDeducted > 0) {
+        const plural = result.creditsDeducted > 1 ? 's' : '';
+        this.addAssistantMessage(`💳 ${result.creditsDeducted} crédito${plural} debitado`);
+      }
+
+    } catch (error) {
+      this.removeTypingBubble();
+      this.addErrorMessage(`❌ Erro ao gerar imagem: ${error.message}`);
+      console.error('[ImageGeneration] Error:', error);
+    } finally {
+      this.setLoading(false);
+      this.removeTypingBubble();
+    }
   }
 }
 

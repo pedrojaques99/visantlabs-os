@@ -532,6 +532,10 @@ export type UIMessage =
   | { type: 'SAVE_GUIDELINE'; guideline: BrandGuideline }
   | { type: 'DELETE_GUIDELINE'; id: string }
   | { type: 'SELECT_AND_ZOOM'; nodeId: string }
+  // Image generation
+  | { type: 'PASTE_GENERATED_IMAGE'; imageData: string; prompt: string; width?: number; height?: number; isUrl?: boolean }
+  // Mentions
+  | { type: 'GET_ELEMENTS_FOR_MENTIONS' }
   // Agent / WebSocket messages
   | { type: 'AGENT_OPS'; operations: FigmaOperation[]; opId: string }
   | { type: 'INIT_WS' }

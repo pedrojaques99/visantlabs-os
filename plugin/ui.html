@@ -31,8 +31,69 @@
         <button class="tool-btn" id="attachBtn" title="Anexar arquivo (Imagem, CSV, PDF)">📎
           <span id="attachBadge" class="attachment-badge hidden">0</span>
         </button>
+        <!-- Model selector for image generation -->
+        <div id="modelSelector" class="model-selector hidden">
+          <button class="model-btn active" data-model="gemini-2.5-flash-image" title="Flash - Rápido (HD)">⚡ Flash</button>
+          <button class="model-btn" data-model="gemini-3-pro-image-preview" title="Pro - Melhor qualidade (4K)">✨ Pro</button>
+        </div>
+        <button class="tool-btn" id="genImageBtn" title="Gerar imagem com IA (auto-detectable)" style="display: none;">🎨</button>
+        <button class="tool-btn" id="genImageSettingsBtn" title="Configurar geração de imagem" style="display: none;">⚙</button>
         <input type="file" id="attachInput" accept="image/*,.csv,.pdf" multiple style="display: none;">
       </div>
+
+      <!-- Image Generation Settings Panel -->
+      <div id="genImageSettingsPanel" class="gen-image-settings-panel hidden">
+        <div class="settings-header">
+          <span class="settings-title">⚙ Configurações de Imagem</span>
+          <button class="settings-close" id="genImageSettingsClose">×</button>
+        </div>
+        <div class="settings-content">
+          <!-- Frame Size Selector -->
+          <div class="settings-group">
+            <label class="settings-label">📐 Tamanho do Frame</label>
+            <div class="settings-options">
+              <button class="settings-option active" data-size="16:9-800x450" title="Widescreen 800×450">
+                <span class="option-label">16:9</span>
+                <span class="option-desc">800×450</span>
+              </button>
+              <button class="settings-option" data-size="4:3-1024x768" title="Standard 1024×768">
+                <span class="option-label">4:3</span>
+                <span class="option-desc">1024×768</span>
+              </button>
+              <button class="settings-option" data-size="1:1-800x800" title="Square 800×800">
+                <span class="option-label">1:1</span>
+                <span class="option-desc">800×800</span>
+              </button>
+              <button class="settings-option" data-size="custom" title="Custom size">
+                <span class="option-label">Custom</span>
+                <span class="option-desc">⚙ Config</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Resolution Selector -->
+          <div class="settings-group">
+            <label class="settings-label">🎬 Resolução</label>
+            <div id="resolutionOptions" class="settings-options">
+              <!-- Populated dynamically based on selected model -->
+            </div>
+          </div>
+
+          <!-- Custom Size Input (Hidden by default) -->
+          <div id="customSizeGroup" class="settings-group hidden">
+            <label class="settings-label">Tamanho Customizado</label>
+            <div style="display: flex; gap: 8px; margin-bottom: 6px;">
+              <input type="number" id="customWidth" placeholder="Largura" min="100" max="4000" value="800" style="flex: 1;">
+              <span style="padding: 6px 0; color: var(--figma-color-text-secondary); font-size: 11px; font-weight: 600;">×</span>
+              <input type="number" id="customHeight" placeholder="Altura" min="100" max="4000" value="450" style="flex: 1;">
+            </div>
+            <div style="text-align: center; font-size: 10px; color: var(--figma-color-text-tertiary); padding: 4px; background: var(--figma-color-bg, white); border-radius: 3px;">
+              <span id="aspectRatioDisplay">16:9</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <textarea id="chatInput" placeholder="Descreva o design que quer criar ou modificar..." rows="2"></textarea>
       <div id="attachmentPreview" class="attachment-preview hidden"></div>
       <div id="selectionIndicator" class="selection-indicator hidden"></div>

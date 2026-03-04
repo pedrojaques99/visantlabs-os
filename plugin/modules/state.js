@@ -67,6 +67,13 @@ const state = {
 
   // Media attachments
   pendingAttachments: [], // Array of { name, type, mimeType, size, dataUrl }
+
+  // Image generation settings
+  selectedFrameSize: '16:9-800x450', // Format: "aspectRatio-widthxheight" or "custom"
+  selectedResolution: 'HD', // 'HD', '1K', '2K', '4K'
+  customWidth: 800,
+  customHeight: 450,
+  selectedModel: 'gemini-2.5-flash-image', // 'gemini-2.5-flash-image' or 'gemini-3-pro-image-preview'
 };
 
 /**
