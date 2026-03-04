@@ -251,8 +251,9 @@ class OperationValidator {
         break;
       }
 
-      case 'CLONE_NODE': {
-        if (!op.nodeId) errors.push('CLONE_NODE requires nodeId');
+      case 'CLONE_NODE':
+      case 'DUPLICATE_NODE': {
+        if (!op.nodeId) errors.push(`${op.type} requires nodeId`);
         // parentRef or parentNodeId is optional (defaults to same parent)
         break;
       }

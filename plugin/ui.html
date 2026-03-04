@@ -28,9 +28,13 @@
       <div class="chat-card-toolbar">
         <button class="tool-btn" title="Código"
           style="font-family: monospace; font-size: 11px; font-weight: 700;">&lt;/&gt;</button>
-        <button class="tool-btn" title="Imagem">🖼</button>
+        <button class="tool-btn" id="attachBtn" title="Anexar arquivo (Imagem, CSV, PDF)">📎
+          <span id="attachBadge" class="attachment-badge hidden">0</span>
+        </button>
+        <input type="file" id="attachInput" accept="image/*,.csv,.pdf" multiple style="display: none;">
       </div>
       <textarea id="chatInput" placeholder="Descreva o design que quer criar ou modificar..." rows="2"></textarea>
+      <div id="attachmentPreview" class="attachment-preview hidden"></div>
       <div id="selectionIndicator" class="selection-indicator hidden"></div>
       <div class="chat-card-footer">
         <div class="chat-card-pills">
@@ -294,6 +298,7 @@
   <!-- Modular UI System (Load Order is Critical) -->
   <script src="./modules/EventEmitter.js"></script>
   <script src="./modules/state.js"></script>
+  <script src="./modules/mentions.js"></script>
   <script src="./modules/api.js"></script>
   <script src="./modules/chat.js"></script>
   <script src="./modules/brand.js"></script>

@@ -64,6 +64,9 @@ const state = {
     hasSubscription: false,
   },
   canGenerate: true,     // Whether user can generate (credits available)
+
+  // Media attachments
+  pendingAttachments: [], // Array of { name, type, mimeType, size, dataUrl }
 };
 
 /**

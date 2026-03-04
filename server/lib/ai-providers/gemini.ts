@@ -23,7 +23,40 @@ const geminiProvider: AIProvider = {
         systemInstruction: systemPrompt,
       });
 
-      const result = await model.generateContent(userPrompt);
+      // Build multimodal content
+      const parts: any[] = [{ text: userPrompt }];
+
+      if (options?.attachments && options.attachments.length > 0) {
+        for (const att of options.attachments) {
+          if (att.mimeType.startsWith('image/')) {
+            parts.push({
+              inlineData: {
+                mimeType: att.mimeType,
+                data: att.data,
+              },
+            });
+          } else if (att.mimeType === 'application/pdf') {
+            parts.push({
+              inlineData: {
+                mimeType: 'application/pdf',
+                data: att.data,
+              },
+            });
+          } else if (att.mimeType === 'text/csv') {
+            // For CSV, include as text
+            try {
+              const csvContent = Buffer.from(att.data, 'base64').toString('utf-8');
+              parts.push({
+                text: `\n\n📊 Arquivo CSV: ${att.name}\n\`\`\`csv\n${csvContent}\n\`\`\``,
+              });
+            } catch (_e) {
+              console.warn(`[Gemini] Failed to decode CSV ${att.name}`);
+            }
+          }
+        }
+      }
+
+      const result = await model.generateContent(parts as any);
       const responseText = result.response.text();
 
       // Parse JSON response
