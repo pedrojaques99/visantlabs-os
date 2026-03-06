@@ -8,7 +8,7 @@ interface ModelSelectionSectionProps {
   designType?: DesignType;
 }
 
-const DEFAULT_MODEL_INFO: Record<GeminiModel, {
+const DEFAULT_MODEL_INFO: Record<string, {
   emoji: string;
   name: string;
   version: string;
@@ -23,9 +23,14 @@ const DEFAULT_MODEL_INFO: Record<GeminiModel, {
     name: 'Flash',
     version: 'Text only'
   },
+  'gemini-3.1-flash-image-preview': {
+    emoji: '🍌',
+    name: 'NB2',
+    version: '1-5 credits'
+  },
   'gemini-3-pro-image-preview': {
     emoji: '⛏️💎',
-    name: '4K',
+    name: '4K Pro',
     version: '3-7 credits'
   },
   'veo-3.1-generate-preview': {
@@ -66,7 +71,7 @@ export const ModelSelectionSection: React.FC<ModelSelectionSectionProps> = ({
     );
   };
 
-  const models: GeminiModel[] = ['gemini-2.5-flash-image', 'gemini-3-pro-image-preview'];
+  const models: GeminiModel[] = ['gemini-2.5-flash-image', 'gemini-3.1-flash-image-preview', 'gemini-3-pro-image-preview'];
   const selectedInfo = selectedModel ? DEFAULT_MODEL_INFO[selectedModel] : null;
 
   return (
@@ -87,8 +92,9 @@ export const ModelSelectionSection: React.FC<ModelSelectionSectionProps> = ({
       </div>
 
       {/* Cards for desktop */}
-      <div className="hidden md:grid grid-cols-2 gap-2 cursor-pointer">
+      <div className="hidden md:grid grid-cols-3 gap-2 cursor-pointer">
         {renderModelCard('gemini-2.5-flash-image')}
+        {renderModelCard('gemini-3.1-flash-image-preview')}
         {!isBlankMockup && renderModelCard('gemini-3-pro-image-preview')}
       </div>
     </>

@@ -5,7 +5,7 @@ import { getCreditsRequired } from '@/utils/creditCalculator';
 import type { GeminiModel } from '@/types/types';
 import { Select } from '@/components/ui/select';
 
-const ALL_RESOLUTIONS: Resolution[] = ['1K', '2K', '4K', '720p', '1080p'];
+const ALL_RESOLUTIONS: Resolution[] = ['512px', '1K', '2K', '4K', '720p', '1080p'];
 
 interface ResolutionSelectorProps {
   value: Resolution;

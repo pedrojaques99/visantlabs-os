@@ -54,11 +54,6 @@
     "prisma:push": "prisma db push",
     "test:validation": "tsx server/utils/validation.test.ts"
   },
-  "overrides": {
-    "@google/genai": {
-      "@modelcontextprotocol/sdk": "$@modelcontextprotocol/sdk"
-    }
-  },
   "dependencies": {
     "@ai-sdk/gateway": "^2.0.13",
     "@anthropic-ai/sdk": "^0.78.0",
@@ -75,7 +70,7 @@
     "@liveblocks/node": "^3.11.0",
     "@liveblocks/react": "^3.11.0",
     "@mendable/firecrawl-js": "^4.15.1",
-    "@modelcontextprotocol/sdk": "^0.6.0",
+    "@modelcontextprotocol/sdk": "^1.20.1",
     "@prisma/client": "^6.19.0",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
