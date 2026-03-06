@@ -6,6 +6,7 @@ import { useMockupTags } from '@/hooks/useMockupTags';
 import { translateTag } from '@/utils/localeUtils';
 import { Dices, Shuffle, ChevronDown, Check, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SkeletonText } from '@/components/ui/SkeletonLoader';
 
 type SectionKey = 'categories' | 'location' | 'angle' | 'lighting' | 'effects' | 'material';
 
@@ -58,6 +59,7 @@ interface TagDropdownProps {
   onSelect: (tag: string) => void;
   placeholder: string;
   theme: string;
+  isGenerating?: boolean;
 }
 
 const TagDropdown: React.FC<TagDropdownProps> = ({
@@ -66,6 +68,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
   onSelect,
   placeholder,
   theme,
+  isGenerating = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -133,7 +136,11 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
         )}
       >
         <span className="truncate">
-          {selectedTag ? translateTag(selectedTag) : placeholder}
+          {isGenerating ? (
+            <span className="inline-block w-16 h-3 rounded animate-pulse bg-neutral-700/50" />
+          ) : (
+            selectedTag ? translateTag(selectedTag) : placeholder
+          )}
         </span>
         <ChevronDown
           size={12}
@@ -164,7 +171,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Pesquisar ou digitar..."
+              placeholder={isGenerating ? '' : 'Pesquisar ou digitar...'}
               className={cn(
                 "w-full px-2 py-1 text-[10px] font-mono rounded border-none outline-none",
                 theme === 'dark'
@@ -271,7 +278,7 @@ const ToggleCheckbox: React.FC<ToggleCheckboxProps> = ({ value, onChange, label,
   </div>
 );
 
-export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void }> = ({ onRerollAll }) => {
+export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void; isGenerating?: boolean }> = ({ onRerollAll, isGenerating = false }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
   const {
@@ -385,26 +392,29 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void 
   return (
     <div
       className={cn(
-        "rounded-xl p-3 animate-fade-in transition-all duration-300",
-        theme === 'dark' ? 'bg-neutral-900/20' : 'bg-neutral-50/40',
-        "border",
-        theme === 'dark' ? 'border-neutral-800/40' : 'border-neutral-200/60'
+        "animate-fade-in transition-all duration-300",
+        isSurpriseMeMode
+          ? "py-2"
+          : cn(
+              "rounded-xl p-3",
+              theme === 'dark' ? 'bg-neutral-900/20' : 'bg-neutral-50/40',
+              "border",
+              theme === 'dark' ? 'border-neutral-800/40' : 'border-neutral-200/60'
+            )
       )}
     >
       <div className="flex items-center gap-2 mb-3">
-        <h3
-          className={cn(
-            "text-[10px] font-mono uppercase tracking-widest font-medium",
-            theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'
-          )}
-        >
-          {t('mockup.generationConfig')}
-        </h3>
-        {isSurpriseMeMode && (
-          <span className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-brand-cyan/10 border border-brand-cyan/20">
-            <Dices size={10} className="text-brand-cyan/80" />
-            <span className="text-[9px] font-mono text-brand-cyan/90 uppercase">Director</span>
-          </span>
+        {!isSurpriseMeMode && (
+          <SkeletonText loading={isGenerating}>
+            <h3
+              className={cn(
+                "text-[10px] font-mono uppercase tracking-widest font-medium",
+                theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'
+              )}
+            >
+              {t('mockup.generationConfig')}
+            </h3>
+          </SkeletonText>
         )}
         {isSurpriseMeMode && onRerollAll && (
           <button
@@ -426,28 +436,31 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void 
 
           return (
             <div key={key} className="flex flex-col gap-1">
-              <span
-                className={cn(
-                  "text-[9px] font-mono uppercase tracking-wider",
-                  theme === 'dark' ? 'text-neutral-600' : 'text-neutral-400'
-                )}
-              >
-                {t(labelKey)}:
-              </span>
+              <SkeletonText loading={isGenerating}>
+                <span
+                  className={cn(
+                    "text-[9px] font-mono uppercase tracking-wider",
+                    theme === 'dark' ? 'text-neutral-600' : 'text-neutral-400'
+                  )}
+                >
+                  {t(labelKey)}:
+                </span>
+              </SkeletonText>
               <TagDropdown
                 selectedTag={selectedTag}
                 availableTags={availableTags}
                 onSelect={(tag) => handleTagSelect(key, tag)}
                 placeholder={t('mockup.selectOption') || 'Select...'}
                 theme={theme}
+                isGenerating={isGenerating}
               />
             </div>
           );
         })}
       </div>
 
-      {/* Checkboxes */}
-      <div className="flex flex-wrap gap-2">
+      {/* Checkboxes - 2x2 grid on mobile */}
+      <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
         <ToggleCheckbox
           value={generateText}
           onChange={setGenerateText}

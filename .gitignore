@@ -14,6 +14,7 @@ dist-ssr
 .env
 .env.local
 .env.*.local
+.md
 MONGODB_AUTH_TROUBLESHOOTING.md
 MONGODB_SETUP.md
 VERCEL_MONGODB_SETUP.md
@@ -37,7 +38,27 @@ GOOGLE_OAUTH_SETUP.md
 .agent
 /.agent
 
+# Extensões e IDEs
+.cursor/
+.claude/
+.gemini/
+.qwen/
+.adal/
+.agents/
+.augment/
+.firecrawl/
+.github/skills/ (a menos que sejam GitHub Actions específicas)
+docs/
+plugin/docs/
+plugin/Visant Copilot _Beta_/
+plugin/.agent/
+plugin/.firecrawl/
+
+# Node
+node_modules/
+
 # Figma plugin dev files (generated with ngrok URL)
 plugin/ui-dev.html
 plugin/manifest.dev.json
 
+*.md

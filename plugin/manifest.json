@@ -8,11 +8,22 @@
   "editorType": [
     "figma"
   ],
+  "permissions": [
+    "currentuser",
+    "teamlibrary"
+  ],
   "networkAccess": {
     "allowedDomains": [
       "https://www.visantlabs.com",
-      "https://visantlabs.com"
+      "https://visantlabs.com",
+      "https://images.unsplash.com",
+      "https://picsum.photos",
+      "https://fastly.picsum.photos",
+      "https://res.cloudinary.com",
+      "http://localhost:3000",
+      "ws://localhost:3000",
+      "http://localhost:3001"
     ],
-    "reasoning": "Plugin communicates with Visant backend for AI-powered design generation"
+    "reasoning": "Plugin communicates with Visant backend for AI-powered design generation and loads placeholder images from CDNs."
   }
 }

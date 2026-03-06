@@ -2,26 +2,52 @@ const fs = require('fs');
 const path = require('path');
 const esbuild = require('esbuild');
 
-const srcDir = path.join(__dirname, '..', 'src');
-const distDir = path.join(__dirname, '..', 'dist');
-const uiPath = path.join(__dirname, '..', 'ui.html');
-const cssPath = path.join(__dirname, '..', 'ui.css');
-const jsPath = path.join(__dirname, '..', 'ui.js');
+const pluginDir = path.join(__dirname, '..');
+const srcDir = path.join(pluginDir, 'src');
+const distDir = path.join(pluginDir, 'dist');
+const modulesDir = path.join(pluginDir, 'modules');
 
 // Ensure dist directory exists
-if (!fs.existsSync(distDir)) fs.mkdirSync(distDir);
+if (!fs.existsSync(distDir)) fs.mkdirSync(distDir, { recursive: true });
 
-// Read source files
-const htmlTemplate = fs.readFileSync(uiPath, 'utf-8');
-const cssContent = fs.readFileSync(cssPath, 'utf-8');
-const jsContent = fs.readFileSync(jsPath, 'utf-8');
+// ── Read source files ──────────────────────────────────────────────────────────
+const htmlTemplate = fs.readFileSync(path.join(pluginDir, 'ui.html'), 'utf-8');
+const cssContent = fs.readFileSync(path.join(pluginDir, 'ui.css'), 'utf-8');
 
-// Inline CSS and JS into the HTML template
+// Concatenate JS modules in the required load order (must match ui.html)
+const moduleFiles = [
+  'EventEmitter.js',
+  'state.js',
+  'api.js',
+  'chat.js',
+  'brand.js',
+  'library.js',
+  'uiManager.js',
+];
+const jsParts = moduleFiles.map(f =>
+  `// ── ${f} ──\n` + fs.readFileSync(path.join(modulesDir, f), 'utf-8')
+);
+// Entry-point (ui-refactored.js lives at the plugin root)
+jsParts.push(
+  `// ── ui-refactored.js ──\n` +
+  fs.readFileSync(path.join(pluginDir, 'ui-refactored.js'), 'utf-8')
+);
+const jsContent = jsParts.join('\n\n');
+
+// ── Assemble self-contained HTML ───────────────────────────────────────────────
+// 1. Replace <link rel="stylesheet" ...> with inlined <style>
+// 2. Remove all individual <script src="..."> tags
+// 3. Append a single bundled <script> before </body>
 let htmlContent = htmlTemplate
-  .replace('<link rel="stylesheet" href="./ui.css">', `<style>\n${cssContent}\n</style>`)
-  .replace('<script src="./ui.js"></script>', `<script>\n${jsContent}\n</script>`);
+  // Inline CSS
+  .replace(/<link\s+rel="stylesheet"\s+href="[^"]*"\s*\/?>/gi,
+    `<style>\n${cssContent}\n</style>`)
+  // Remove all external script tags (modules + entry point)
+  .replace(/<script\s+src="[^"]*"><\/script>\s*/gi, '')
+  // Inject bundled JS just before </body>
+  .replace('</body>', `  <script>\n${jsContent}\n  </script>\n</body>`);
 
-// Plugin that injects the assembled HTML as __html__
+// ── esbuild plugin: inject assembled HTML into code.ts ────────────────────────
 const htmlPlugin = {
   name: 'html-inject',
   setup(build) {
@@ -33,6 +59,7 @@ const htmlPlugin = {
   }
 };
 
+// ── Build code.ts → dist/code.js ─────────────────────────────────────────────
 esbuild.build({
   entryPoints: [path.join(srcDir, 'code.ts')],
   bundle: true,
@@ -40,5 +67,9 @@ esbuild.build({
   target: 'es2017',
   loader: { '.ts': 'ts' },
   plugins: [htmlPlugin],
-}).catch(() => process.exit(1));
-
+}).then(() => {
+  console.log('✅  Build complete → dist/code.js');
+}).catch((err) => {
+  console.error('❌  Build failed:', err);
+  process.exit(1);
+});

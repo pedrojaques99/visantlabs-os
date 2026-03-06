@@ -2,6 +2,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import { X, Shuffle } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
+import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 
 export interface TagProps extends React.PropsWithChildren {
     label?: string;
@@ -14,6 +15,7 @@ export interface TagProps extends React.PropsWithChildren {
     className?: string;
     disabled?: boolean;
     size?: 'sm' | 'md';
+    loading?: boolean;
 }
 
 export const Tag: React.FC<TagProps> = ({
@@ -28,6 +30,7 @@ export const Tag: React.FC<TagProps> = ({
     className,
     disabled = false,
     size = 'md',
+    loading = false,
 }) => {
     const { theme } = useTheme();
 
@@ -71,7 +74,11 @@ export const Tag: React.FC<TagProps> = ({
         >
             {inPool && <Shuffle size={10} className="mr-0.5 opacity-70" />}
             {children}
-            {label && <span>{label}</span>}
+            {loading ? (
+                <SkeletonLoader variant="text" width="60px" height="0.75rem" className="rounded" />
+            ) : label ? (
+                <span>{label}</span>
+            ) : null}
             {removable && onRemove && (
                 <button
                     onClick={(e) => {

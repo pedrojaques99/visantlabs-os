@@ -17,10 +17,11 @@ export interface SelectProps {
   className?: string;
   onMouseDown?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  loading?: boolean;
 }
 
 const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
-  ({ className, options, value, onChange, placeholder, variant = 'default', disabled = false, ...props }, ref) => {
+  ({ className, options, value, onChange, placeholder, variant = 'default', disabled = false, loading = false, ...props }, ref) => {
     const [isOpen, setIsOpen] = React.useState(false);
     const [focusedIndex, setFocusedIndex] = React.useState(-1);
     const containerRef = React.useRef<HTMLDivElement>(null);
@@ -148,7 +149,11 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
             "truncate",
             !selectedOption && "text-neutral-500"
           )}>
-            {displayValue}
+            {loading ? (
+              <span className="inline-block w-20 h-4 rounded animate-pulse bg-neutral-700/50" />
+            ) : (
+              displayValue
+            )}
           </span>
           <ChevronDown
             size={16}

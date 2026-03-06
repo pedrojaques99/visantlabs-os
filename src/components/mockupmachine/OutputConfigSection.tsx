@@ -3,13 +3,14 @@ import { Cpu, Sparkles } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { authService } from '@/services/authService';
-
+import { Select } from '@/components/ui/select';
+import { SkeletonText } from '@/components/ui/SkeletonLoader';
 import { ImageProvider, DesignType, GeminiModel, Resolution, AspectRatio } from '@/types/types';
 
 interface OutputConfigSectionProps {
   mockupCount: number;
   onMockupCountChange: (count: number) => void;
-  designType: DesignType | null;
+  designType: DesignType;
   selectedModel: GeminiModel | null;
   resolution: Resolution;
   onResolutionChange: (resolution: Resolution) => void;
@@ -18,6 +19,7 @@ interface OutputConfigSectionProps {
   onAspectRatioChange: (ratio: AspectRatio) => void;
   imageProvider: ImageProvider;
   setImageProvider: (provider: ImageProvider) => void;
+  isGenerating?: boolean;
 }
 
 const MAIN_ASPECT_RATIOS: AspectRatio[] = ['1:1', '9:16', '16:9', '4:3', '3:4'];
@@ -37,6 +39,7 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
   onAspectRatioChange,
   imageProvider,
   setImageProvider,
+  isGenerating = false,
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
@@ -75,47 +78,40 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
 
   return (
     <section className="space-y-6 pt-4 border-t border-neutral-800/20 pb-6">
-      <h2 className={sectionTitleClass(theme === 'dark')}>{t('mockup.outputConfig') || 'PRODUÇÃO'}</h2>
+      <SkeletonText loading={isGenerating}>
+        <h2 className={sectionTitleClass(theme === 'dark')}>{t('mockup.outputConfig') || 'PRODUÇÃO'}</h2>
+      </SkeletonText>
 
       <div className="space-y-5">
 
-        {/* AI Provider Toggle - Only visible for Admins */}
+        {/* AI Provider Select - Only visible for Admins */}
         {isAdmin && (
           <div className="space-y-2">
-            <h4 className={sectionTitleClass(theme === 'dark')}>MODELO DE IA</h4>
-            <div className="flex gap-1.5">
-              <button
-                onClick={() => setImageProvider('gemini')}
-                className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 text-[11px] font-mono rounded-md transition-all duration-200 border cursor-pointer ${imageProvider === 'gemini'
-                  ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/40 shadow-[0_0_10px_-5px_#22d3ee]'
-                  : theme === 'dark'
-                    ? 'bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
-                    : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:border-neutral-300 hover:text-neutral-700'
-                  }`}
-              >
-                <Cpu className="w-3.5 h-3.5" />
-                <span>Gemini</span>
-              </button>
-              <button
-                onClick={() => {
-                  setImageProvider('seedream');
-                  // Switch to 2K minimum for Seedream if needed, though API supports others
-                  // forcing 2K/4K for better quality usually
-                  if (resolution !== '2K' && resolution !== '4K') {
-                    onResolutionChange('2K');
-                    // Seedream doesn't use gemini models, but we might keep state consistent
+            <SkeletonText loading={isGenerating}>
+              <h4 className={sectionTitleClass(theme === 'dark')}>MODELO DE IA</h4>
+            </SkeletonText>
+            <div className="flex flex-nowrap items-center justify-center gap-1.5 text-center">
+              <Select
+                value={imageProvider}
+                onChange={(value) => {
+                  if (value === 'gemini') {
+                    setImageProvider('gemini');
+                  } else if (value === 'seedream') {
+                    setImageProvider('seedream');
+                    // Switch to 2K minimum for Seedream if needed, though API supports others
+                    // forcing 2K/4K for better quality usually
+                    if (resolution !== '2K' && resolution !== '4K') {
+                      onResolutionChange('2K');
+                    }
                   }
                 }}
-                className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 text-[11px] font-mono rounded-md transition-all duration-200 border cursor-pointer ${imageProvider === 'seedream'
-                  ? 'bg-violet-500/20 text-violet-400 border-violet-500/40 shadow-[0_0_10px_-5px_#8b5cf6]'
-                  : theme === 'dark'
-                    ? 'bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
-                    : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:border-neutral-300 hover:text-neutral-700'
-                  }`}
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Seedream</span>
-              </button>
+                options={[
+                  { value: 'gemini', label: 'Gemini' },
+                  { value: 'seedream', label: 'Seedream' },
+                ]}
+                className="max-w-xs"
+                loading={isGenerating}
+              />
             </div>
           </div>
         )}
@@ -125,7 +121,9 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
 
           {/* Number of Images */}
           <div className="space-y-2">
-            <h4 className={sectionTitleClass(theme === 'dark')}>{t('mockup.numberOfImages') || 'IMAGENS'}</h4>
+            <SkeletonText loading={isGenerating}>
+              <h4 className={sectionTitleClass(theme === 'dark')}>{t('mockup.numberOfImages') || 'IMAGENS'}</h4>
+            </SkeletonText>
             <div className={`relative flex items-center rounded-md border transition-all duration-200 overflow-hidden ${theme === 'dark' ? 'bg-neutral-800/50 border-neutral-700/50 hover:border-neutral-600' : 'bg-neutral-100 border-neutral-300 hover:border-neutral-400'}`}>
               <input
                 type="number"
@@ -136,14 +134,18 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
                 className={`w-full p-2.5 bg-transparent border-none focus:outline-none focus:ring-0 text-xs font-monoSync ${theme === 'dark' ? 'text-neutral-100' : 'text-neutral-900'}`}
               />
               <div className="absolute right-8 pointer-events-none">
-                <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-tighter">outputs</span>
+                <SkeletonText loading={isGenerating}>
+                  <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-tighter">outputs</span>
+                </SkeletonText>
               </div>
             </div>
           </div>
 
           {/* Unified Resolution Selection */}
           <div className="space-y-2">
-            <h4 className={sectionTitleClass(theme === 'dark')}>RESOLUÇÃO / QUALIDADE</h4>
+            <SkeletonText loading={isGenerating}>
+              <h4 className={sectionTitleClass(theme === 'dark')}>RESOLUÇÃO / QUALIDADE</h4>
+            </SkeletonText>
             <div className="flex gap-1.5 h-[38px]"> {/* Fixed height to match input */}
               {(imageProvider === 'gemini' ? ['HD', '1K', '2K', '4K'] : ['2K', '4K']).map((res) => {
                 const isActive = resolution === res;
@@ -160,7 +162,9 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
                         : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:border-neutral-300 hover:text-neutral-700'
                       }`}
                   >
-                    <span className={isActive ? 'font-bold' : ''}>{res}</span>
+                    <SkeletonText loading={isGenerating}>
+                      <span className={isActive ? 'font-bold' : ''}>{res}</span>
+                    </SkeletonText>
                     {/* Optional credit cost hint on hover or active */}
                     {/* <span className="text-[8px] opacity-60 scale-75">{isHd ? '1c' : '3-7c'}</span> */}
                   </button>
@@ -172,10 +176,14 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
 
         {/* Aspect Ratio Section */}
         <div className="space-y-2 pt-2">
-          <h4 className={sectionTitleClass(theme === 'dark')}>{t('mockup.aspectRatioTitle') || 'PROPORÇÃO'}</h4>
-          <p className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider" role="status" aria-live="polite">
-            {aspectRatio} — {aspectRatioLabel(aspectRatio)}
-          </p>
+          <SkeletonText loading={isGenerating}>
+            <h4 className={sectionTitleClass(theme === 'dark')}>{t('mockup.aspectRatioTitle') || 'PROPORÇÃO'}</h4>
+          </SkeletonText>
+          <SkeletonText loading={isGenerating}>
+            <p className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider" role="status" aria-live="polite">
+              {aspectRatio} — {aspectRatioLabel(aspectRatio)}
+            </p>
+          </SkeletonText>
           <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
             {MAIN_ASPECT_RATIOS.map((ratio) => {
               const [w, h] = ratio.split(':').map(Number);
@@ -196,7 +204,9 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
                 >
                   <div className={`${isSquare ? 'w-5 h-5' : isLandscape ? 'w-7 h-4' : 'w-4 h-7'} border ${isSelected ? 'border-brand-cyan/60' : 'border-neutral-600/50'
                     } rounded-[4px]`} />
-                  <span className="text-[10px] font-mono mt-1">{ratio}</span>
+                  <SkeletonText loading={isGenerating}>
+                    <span className="text-[10px] font-mono mt-1">{ratio}</span>
+                  </SkeletonText>
                 </button>
               );
             })}
@@ -210,7 +220,9 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
                   : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:border-neutral-300 hover:text-neutral-700'
                 }`}
             >
-              <span className="text-[10px] font-mono uppercase tracking-widest">{t('mockup.otherAspectRatio') || 'OUTROS'}</span>
+              <SkeletonText loading={isGenerating}>
+                <span className="text-[10px] font-mono uppercase tracking-widest">{t('mockup.otherAspectRatio') || 'OUTROS'}</span>
+              </SkeletonText>
             </button>
           </div>
 
@@ -238,7 +250,9 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
                   >
                     <div className={`${isSquare ? 'w-5 h-5' : isLandscape ? 'w-7 h-4' : 'w-4 h-7'} border ${isSelected ? 'border-brand-cyan/60' : 'border-neutral-600/50'
                       } rounded-[4px]`} />
-                    <span className="text-[10px] font-mono mt-1">{ratio}</span>
+                    <SkeletonText loading={isGenerating}>
+                      <span className="text-[10px] font-mono mt-1">{ratio}</span>
+                    </SkeletonText>
                   </button>
                 );
               })}

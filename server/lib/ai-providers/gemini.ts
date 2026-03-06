@@ -1,0 +1,92 @@
+// Gemini provider for fast execution and simple tasks
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import type { FigmaOperation } from '../../../src/lib/figma-types';
+import type { AIProvider, AIGenerationOptions } from './types';
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+
+const geminiProvider: AIProvider = {
+  name: 'gemini',
+
+  async generateOperations(
+    systemPrompt: string,
+    userPrompt: string,
+    options?: AIGenerationOptions
+  ): Promise<FigmaOperation[]> {
+    try {
+      const model = genAI.getGenerativeModel({
+        model: 'gemini-2.5-flash',
+        generationConfig: {
+          responseMimeType: 'application/json',
+          temperature: options?.temperature ?? 0.2,
+        },
+        systemInstruction: systemPrompt,
+      });
+
+      // Build multimodal content
+      const parts: any[] = [{ text: userPrompt }];
+
+      if (options?.attachments && options.attachments.length > 0) {
+        for (const att of options.attachments) {
+          if (att.mimeType.startsWith('image/')) {
+            parts.push({
+              inlineData: {
+                mimeType: att.mimeType,
+                data: att.data,
+              },
+            });
+          } else if (att.mimeType === 'application/pdf') {
+            parts.push({
+              inlineData: {
+                mimeType: 'application/pdf',
+                data: att.data,
+              },
+            });
+          } else if (att.mimeType === 'text/csv') {
+            // For CSV, include as text
+            try {
+              const csvContent = Buffer.from(att.data, 'base64').toString('utf-8');
+              parts.push({
+                text: `\n\n📊 Arquivo CSV: ${att.name}\n\`\`\`csv\n${csvContent}\n\`\`\``,
+              });
+            } catch (_e) {
+              console.warn(`[Gemini] Failed to decode CSV ${att.name}`);
+            }
+          }
+        }
+      }
+
+      const result = await model.generateContent(parts as any);
+      const responseText = result.response.text();
+
+      // Parse JSON response
+      let operations: any[] = [];
+      try {
+        const parsed = JSON.parse(responseText);
+        if (Array.isArray(parsed)) {
+          operations = parsed;
+        } else if (parsed.operations && Array.isArray(parsed.operations)) {
+          operations = parsed.operations;
+        }
+      } catch (parseError) {
+        console.error('[Gemini] Parse error:', parseError);
+        // Try regex fallback
+        const jsonMatch = responseText.match(/\[[\s\S]*\]/);
+        if (jsonMatch) {
+          try {
+            operations = JSON.parse(jsonMatch[0]);
+          } catch (_e) {
+            operations = [];
+          }
+        }
+      }
+
+      return Array.isArray(operations) ? operations : [];
+    } catch (error) {
+      console.error('[Gemini Provider] Error:', error);
+      throw error;
+    }
+  },
+};
+
+export default geminiProvider;
