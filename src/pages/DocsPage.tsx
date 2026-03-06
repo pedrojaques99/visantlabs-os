@@ -260,24 +260,30 @@ export const DocsPage: React.FC = () => {
     return `# Visant Copilot Documentation\n\n## Sections\n- **REST API** — HTTP endpoints for auth, mockups, and canvas manipulation.\n- **Canvas API** — Create and manipulate canvas projects and nodes programmatically.\n- **MCP Tools** — Model Context Protocol tools for Claude and AI agent integration.\n- **Figma Plugin** — Design automation inside Figma.\n- **Figma Node JSON** — Data-driven node creation spec for the plugin renderer.\n\n## Authentication\nAll endpoints: \`Authorization: Bearer <jwt_token>\`\nObtain token: \`POST /api/auth/login\` → \`{ "email": "...", "password": "..." }\`\n\n## Base URL\n\`https://your-domain.com/api\``;
   }, [mcpSpec, openApiSpec]);
 
-  const handleCopyMarkdown = useCallback(async () => {
-    const md = generateTabMarkdown(activeTab);
+  const markCopied = useCallback(() => {
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }, []);
+
+  const copyToClipboard = useCallback(async (text: string) => {
     try {
-      await navigator.clipboard.writeText(md);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      await navigator.clipboard.writeText(text);
     } catch {
       // fallback for non-https contexts
       const el = document.createElement('textarea');
-      el.value = md;
+      el.value = text;
       document.body.appendChild(el);
       el.select();
       document.execCommand('copy');
       document.body.removeChild(el);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
     }
-  }, [activeTab, generateTabMarkdown]);
+    markCopied();
+  }, [markCopied]);
+
+  const handleCopyMarkdown = useCallback(async () => {
+    const md = generateTabMarkdown(activeTab);
+    await copyToClipboard(md);
+  }, [activeTab, generateTabMarkdown, copyToClipboard]);
 
   const handleNavigationClick = (itemId: string, sectionId?: string) => {
     setActiveTab(itemId);
