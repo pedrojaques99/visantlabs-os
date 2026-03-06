@@ -339,8 +339,8 @@ export default function ClubLogo3D({
         }}
       >
         <Suspense fallback={null}>
-          <Environment preset="city" />
-          <ambientLight intensity={isSmallScreen ? 0.8 : 0.6} />
+          {/* <Environment preset="city" /> Removed to fix potsdamer_platz_1k.hdr fetch error */}
+          <ambientLight intensity={isSmallScreen ? 1.0 : 0.8} />
           <pointLight position={[10, 10, 10]} intensity={1.2} />
           <pointLight position={[-10, 10, -10]} intensity={1} />
           <pointLight position={[0, 15, 0]} intensity={0.8} />

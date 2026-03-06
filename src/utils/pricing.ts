@@ -2,7 +2,7 @@
 // Single source of truth for all pricing calculations
 
 import type { GeminiModel, Resolution } from '../types/types';
-import { GEMINI_MODELS } from '@/constants/geminiModels';
+import { GEMINI_MODELS } from '../constants/geminiModels.js';
 
 
 /**
