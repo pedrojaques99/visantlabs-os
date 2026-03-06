@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import type { BrandingData } from '../../src/types/branding';
+import type { BrandingData } from '../../src/types/branding.js';
 import { cleanMarketResearchText } from '../utils/brandingHelpersServer.js';
 import { connectToMongoDB, getDb } from '../db/mongodb.js';
 import { ObjectId } from 'mongodb';
