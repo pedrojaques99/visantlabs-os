@@ -51,6 +51,7 @@ interface ChatInputProps {
 const MODEL_NAMES: Record<GeminiModel, string> = {
   'gemini-2.5-flash-image': 'Mockup Machine® HD',
   'gemini-2.5-flash': 'Gemini Flash',
+  'gemini-3.1-flash-image-preview': 'Mockup Machine® NB2',
   'gemini-3-pro-image-preview': 'Mockup Machine® 4K',
   'veo-3.1-generate-preview': 'Mockup Machine® 4K',
   'veo-3.1-fast-generate-preview': 'Mockup Machine® 4K'

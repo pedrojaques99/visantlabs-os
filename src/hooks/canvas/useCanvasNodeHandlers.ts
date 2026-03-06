@@ -33,6 +33,7 @@ import { getImageUrl } from '@/utils/imageUtils';
 import { toast } from 'sonner';
 
 // ========== IMPORTS - Hooks ==========
+import { GEMINI_MODELS, DEFAULT_MODEL, DEFAULT_ASPECT_RATIO, isAdvancedModel, getMaxHandles, getMaxRefImages, getDefaultResolution, getModelConfig } from '@/constants/geminiModels';
 import { useShaderNodeHandlers } from './handlers/useShaderNodeHandlers';
 import { useUpscaleBicubicNodeHandlers } from './handlers/useUpscaleBicubicNodeHandlers';
 import { useLogoNodeHandlers } from './handlers/useLogoNodeHandlers';
@@ -237,7 +238,7 @@ export const useCanvasNodeHandlers = (
 
     console.log('handleEditApply: Proceeding with edit', { nodeId, inputImageSize: inputImage.length });
 
-    const model = config.model || 'gemini-2.5-flash-image';
+    const model = config.model || DEFAULT_MODEL;
     const resolution = config.resolution;
     const hasCredits = await validateCredits(model, resolution);
     if (!hasCredits) return;
@@ -326,7 +327,7 @@ export const useCanvasNodeHandlers = (
       return;
     }
 
-    const model: GeminiModel = resolution === '4K' ? 'gemini-3-pro-image-preview' : 'gemini-3.1-flash-image-preview';
+    const model: GeminiModel = resolution === '4K' ? GEMINI_MODELS.PRO : GEMINI_MODELS.NB2;
     const hasCredits = await validateCredits(model, resolution);
     if (!hasCredits) return;
 
@@ -496,7 +497,7 @@ export const useCanvasNodeHandlers = (
         lightingTags: editData.lightingTags || [],
         effectTags: editData.effectTags || [],
         selectedColors: editData.selectedColors || [],
-        aspectRatio: editData.aspectRatio || '16:9',
+        aspectRatio: editData.aspectRatio || DEFAULT_ASPECT_RATIO,
         generateText: editData.generateText || false,
         withHuman: editData.withHuman || false,
         enhanceTexture: (editData as any).enhanceTexture === true,
@@ -627,8 +628,8 @@ export const useCanvasNodeHandlers = (
         name: customMockup.prompt?.substring(0, 30) || 'Custom Mockup',
         prompt: customMockup.prompt || '',
         referenceImageUrl: getImageUrl(customMockup) || undefined,
-        aspectRatio: customMockup.aspectRatio || '16:9',
-        model: 'gemini-2.5-flash-image', // Default model for custom mockups
+        aspectRatio: customMockup.aspectRatio || DEFAULT_ASPECT_RATIO,
+        model: DEFAULT_MODEL, // Default model for custom mockups
       };
       console.log('[handleMockupGenerate] Using custom mockup:', {
         mockupId: customMockup._id,
@@ -651,8 +652,8 @@ export const useCanvasNodeHandlers = (
       });
     }
 
-    const model = modelOverride || preset.model || 'gemini-2.5-flash-image';
-    const resolution: Resolution = resolutionOverride || (model === 'gemini-3-pro-image-preview' ? '4K' : model === 'gemini-3.1-flash-image-preview' ? '1K' : '1K');
+    const model = modelOverride || preset.model || DEFAULT_MODEL;
+    const resolution: Resolution = resolutionOverride || (getDefaultResolution(model) || '1K');
     const aspectRatio = aspectRatioOverride || preset.aspectRatio;
 
     const hasCredits = await validateCredits(model, resolution);
@@ -1416,11 +1417,11 @@ export const useCanvasNodeHandlers = (
     }
 
     const promptData = node.data as PromptNodeData;
-    const selectedModel: GeminiModel = model || promptData.model || 'gemini-2.5-flash-image';
-    const isAdvancedModel = selectedModel === 'gemini-3-pro-image-preview' || selectedModel === 'gemini-3.1-flash-image-preview';
+    const selectedModel: GeminiModel = model || promptData.model || DEFAULT_MODEL;
+    const isAdvanced = isAdvancedModel(selectedModel);
     // Use resolution and aspectRatio from nodeData if available, otherwise use defaults
-    const resolution: Resolution | undefined = isAdvancedModel ? (promptData.resolution || (selectedModel === 'gemini-3-pro-image-preview' ? '4K' : '1K')) : undefined;
-    const aspectRatio = isAdvancedModel ? (promptData.aspectRatio || '16:9') : undefined;
+    const resolution: Resolution | undefined = isAdvanced ? (promptData.resolution || (getDefaultResolution(selectedModel) || '1K')) : undefined;
+    const aspectRatio = isAdvanced ? (promptData.aspectRatio || DEFAULT_ASPECT_RATIO) : undefined;
 
     const hasCredits = await validateCredits(selectedModel, resolution);
     if (!hasCredits) return;
@@ -1467,13 +1468,13 @@ export const useCanvasNodeHandlers = (
         const uploadedImages = await normalizeImagesToUploadedImages(connectedImages);
 
         // Define limits based on model
-        const maxImages = (selectedModel === 'gemini-3-pro-image-preview' || selectedModel === 'gemini-3.1-flash-image-preview') ? 4 : 2;
+        const maxImages = getMaxHandles(selectedModel);
 
         // Validate image count
         if (uploadedImages.length > maxImages) {
           updateNodeLoadingState<PromptNodeData>(nodeId, false, 'prompt');
           toast.error(
-            `Maximum ${maxImages} images allowed for ${isAdvancedModel ? selectedModel.includes('3.1') ? 'NB2' : '4K Pro' : 'HD'} model. You have ${uploadedImages.length} images connected.`,
+            `Maximum ${maxImages} images allowed for ${isAdvanced ? getModelConfig(selectedModel).label : 'HD'} model. You have ${uploadedImages.length} images connected.`,
             { duration: 5000 }
           );
           return;
@@ -1496,8 +1497,7 @@ export const useCanvasNodeHandlers = (
 
           // Process reference images based on model
           if (uploadedImages.length > 1) {
-            const maxReferenceImages = selectedModel === 'gemini-3.1-flash-image-preview' ? 13
-              : selectedModel === 'gemini-3-pro-image-preview' ? 3 : 1;
+            const maxReferenceImages = getMaxRefImages(selectedModel);
             referenceImages = uploadedImages.slice(1, 1 + maxReferenceImages);
           }
 

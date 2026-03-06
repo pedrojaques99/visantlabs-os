@@ -1,5 +1,6 @@
 import { GoogleGenAI, Modality, Type } from "@google/genai";
 import type { UploadedImage, AspectRatio, DesignType, GeminiModel, Resolution } from '../../src/types/types.js';
+import { GEMINI_MODELS, isAdvancedModel, getMaxRefImages } from '../../src/constants/geminiModels.js';
 import type { FigmaOperation, SerializedContext } from '../../src/lib/figma-types.js';
 import { safeFetch } from '../utils/securityValidation.js';
 import { buildGeminiPromptInstructionsTemplate } from '../../src/utils/mockupPromptFormat.js';
@@ -62,17 +63,17 @@ interface RetryOptions {
 }
 
 const DEFAULT_TIMEOUTS: Record<string, number> = {
-  'gemini-3.1-flash-image-preview': 180000, // 3 minutes for Nano Banana 2
-  'gemini-3-pro-image-preview': 300000, // 5 minutes for Gemini 3 Pro
-  'gemini-2.5-flash-image': 120000, // 2 minutes for other models
-  'gemini-2.5-flash': 120000, // 2 minutes for text models
+  [GEMINI_MODELS.NB2]: 180000, // 3 minutes for Nano Banana 2
+  [GEMINI_MODELS.PRO]: 300000, // 5 minutes for Gemini 3 Pro
+  [GEMINI_MODELS.FLASH]: 120000, // 2 minutes for other models
+  [GEMINI_MODELS.TEXT]: 120000, // 2 minutes for text models
 };
 
 const DEFAULT_RETRIES: Record<string, number> = {
-  'gemini-3.1-flash-image-preview': 7, // Nano Banana 2
-  'gemini-3-pro-image-preview': 10, // More retries for Gemini 3 Pro
-  'gemini-2.5-flash-image': 5, // Fewer retries for other models
-  'gemini-2.5-flash': 5, // Fewer retries for text models
+  [GEMINI_MODELS.NB2]: 7, // Nano Banana 2
+  [GEMINI_MODELS.PRO]: 10, // More retries for Gemini 3 Pro
+  [GEMINI_MODELS.FLASH]: 5, // Fewer retries for other models
+  [GEMINI_MODELS.TEXT]: 5, // Fewer retries for text models
 };
 
 // Resolves to base64 only for this request (URL→base64 when needed); no persistent cache.
@@ -254,8 +255,7 @@ export const generateMockup = async (
     // Nano Banana 2 (3.1 Flash): up to 10 object images + 4 character images (total 14)
     // Nano Banana Pro (3 Pro): up to 6 object images + 5 character images (total 11)
     if (referenceImages && referenceImages.length > 0) {
-      const maxReferenceImages = model === 'gemini-3.1-flash-image-preview' ? 13
-        : model === 'gemini-3-pro-image-preview' ? 3 : 1;
+      const maxReferenceImages = getMaxRefImages(model);
       const imagesToAdd = referenceImages.slice(0, maxReferenceImages);
 
       for (const img of imagesToAdd) {
@@ -284,8 +284,8 @@ export const generateMockup = async (
     // - Nano Banana 2 (3.1 Flash): uses imageConfig with aspectRatio + imageSize
     // - Nano Banana Pro (3 Pro): uses imageConfig with aspectRatio + imageSize
     // - Nano Banana (2.5 Flash): uses outputImageDimensions (legacy)
-    if (model === 'gemini-3.1-flash-image-preview') {
-      // Nano Banana 2: use imageConfig API
+    if (isAdvancedModel(model)) {
+      // Nano Banana 2 / Pro: use imageConfig API
       config.imageConfig = {} as any;
       if (aspectRatio) {
         config.imageConfig.aspectRatio = aspectRatio;
@@ -293,16 +293,7 @@ export const generateMockup = async (
       if (resolution) {
         config.imageConfig.imageSize = resolution;
       }
-    } else if (model === 'gemini-3-pro-image-preview') {
-      // Nano Banana Pro: use imageConfig API
-      config.imageConfig = {} as any;
-      if (aspectRatio) {
-        config.imageConfig.aspectRatio = aspectRatio;
-      }
-      if (resolution) {
-        config.imageConfig.imageSize = resolution;
-      }
-    } else if (model === 'gemini-2.5-flash-image' && aspectRatio) {
+    } else if (model === GEMINI_MODELS.FLASH && aspectRatio) {
       // Nano Banana (legacy): uses outputImageDimensions
       const maxDimension = 1210;
       const [widthRatio, heightRatio] = aspectRatio.split(':').map(Number);
@@ -863,8 +854,8 @@ export const changeObjectInMockup = async (
       responseModalities: [Modality.TEXT, Modality.IMAGE],
     };
 
-    // Configure resolution for Gemini 3.x models
-    if ((model === 'gemini-3.1-flash-image-preview' || model === 'gemini-3-pro-image-preview') && resolution) {
+    // Configure resolution for advanced models
+    if (isAdvancedModel(model) && resolution) {
       config.imageConfig = { imageSize: resolution };
     }
 
@@ -917,8 +908,8 @@ export const applyThemeToMockup = async (
       responseModalities: [Modality.TEXT, Modality.IMAGE],
     };
 
-    // Configure resolution for Gemini 3.x models
-    if ((model === 'gemini-3.1-flash-image-preview' || model === 'gemini-3-pro-image-preview') && resolution) {
+    // Configure resolution for advanced models
+    if (isAdvancedModel(model) && resolution) {
       config.imageConfig = { imageSize: resolution };
     }
 

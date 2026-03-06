@@ -48,7 +48,7 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
   // Check if user is admin to show Seedream
   const isAdmin = authService.isAdmin();
 
-  // Also check if user has a specific Seedream key (pending implementation in userSettingsService, 
+  // Also check if user has a specific Seedream key (pending implementation in userSettingsService,
   // but for now we rely on admin check as primary gate or if we want to allow users with keys later)
   // For now, per requirement: "visible to admins"
 
@@ -79,74 +79,56 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
   return (
     <section className="space-y-6 pt-4 border-t border-neutral-800/20 pb-6">
       <SkeletonText loading={isGenerating}>
-        <h2 className={sectionTitleClass(theme === 'dark')}>{t('mockup.outputConfig') || 'PRODUÇÃO'}</h2>
+        <h2 className={sectionTitleClass(theme === 'dark')}>
+          {t('mockup.outputConfig') || 'PRODUÇÃO'}
+        </h2>
       </SkeletonText>
 
       <div className="space-y-5">
-
-        {/* AI Provider Select - Only visible for Admins */}
-        {isAdmin && (
-          <div className="space-y-2">
-            <SkeletonText loading={isGenerating}>
-              <h4 className={sectionTitleClass(theme === 'dark')}>MODELO DE IA</h4>
-            </SkeletonText>
-            <div className="flex flex-nowrap items-center justify-center gap-1.5 text-center">
-              <Select
-                value={imageProvider}
-                onChange={(value) => {
-                  if (value === 'gemini') {
-                    setImageProvider('gemini');
-                  } else if (value === 'seedream') {
-                    setImageProvider('seedream');
-                    // Switch to 2K minimum for Seedream if needed, though API supports others
-                    // forcing 2K/4K for better quality usually
-                    if (resolution !== '2K' && resolution !== '4K') {
-                      onResolutionChange('2K');
-                    }
-                  }
-                }}
-                options={[
-                  { value: 'gemini', label: 'Gemini' },
-                  { value: 'seedream', label: 'Seedream' },
-                ]}
-                className="max-w-xs"
-                loading={isGenerating}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Unified Config Row: Number of Images + Resolution */}
+        {/* 2x2 Grid Layout */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-          {/* Number of Images */}
+          {/* Row 1, Col 1: Model (Only visible for Admins) */}
           <div className="space-y-2">
-            <SkeletonText loading={isGenerating}>
-              <h4 className={sectionTitleClass(theme === 'dark')}>{t('mockup.numberOfImages') || 'IMAGENS'}</h4>
-            </SkeletonText>
-            <div className={`relative flex items-center rounded-md border transition-all duration-200 overflow-hidden ${theme === 'dark' ? 'bg-neutral-800/50 border-neutral-700/50 hover:border-neutral-600' : 'bg-neutral-100 border-neutral-300 hover:border-neutral-400'}`}>
-              <input
-                type="number"
-                min={1}
-                max={4}
-                value={mockupCount}
-                onChange={(e) => onMockupCountChange(Math.min(Math.max(parseInt(e.target.value) || 1, 1), 4))}
-                className={`w-full p-2.5 bg-transparent border-none focus:outline-none focus:ring-0 text-xs font-monoSync ${theme === 'dark' ? 'text-neutral-100' : 'text-neutral-900'}`}
-              />
-              <div className="absolute right-8 pointer-events-none">
+            {isAdmin && (
+              <>
                 <SkeletonText loading={isGenerating}>
-                  <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-tighter">outputs</span>
+                  <h4 className={sectionTitleClass(theme === 'dark')}>MODELO DE IA</h4>
                 </SkeletonText>
-              </div>
-            </div>
+                <div className="flex flex-nowrap items-center justify-start gap-1.5 text-center">
+                  <Select
+                    value={imageProvider}
+                    onChange={(value) => {
+                      if (value === 'gemini') {
+                        setImageProvider('gemini');
+                      } else if (value === 'seedream') {
+                        setImageProvider('seedream');
+                        // Switch to 2K minimum for Seedream if needed, though API supports others
+                        // forcing 2K/4K for better quality usually
+                        if (resolution !== '2K' && resolution !== '4K') {
+                          onResolutionChange('2K');
+                        }
+                      }
+                    }}
+                    options={[
+                      { value: 'gemini', label: 'Gemini' },
+                      { value: 'seedream', label: 'Seedream' },
+                    ]}
+                    className="w-full"
+                    loading={isGenerating}
+                  />
+                </div>
+              </>
+            )}
           </div>
 
-          {/* Unified Resolution Selection */}
+          {/* Row 1, Col 2: Resolution */}
           <div className="space-y-2">
             <SkeletonText loading={isGenerating}>
               <h4 className={sectionTitleClass(theme === 'dark')}>RESOLUÇÃO / QUALIDADE</h4>
             </SkeletonText>
-            <div className="flex gap-1.5 h-[38px]"> {/* Fixed height to match input */}
+            <div className="flex gap-1.5 h-[38px]">
+              {' '}
+              {/* Fixed height to match input */}
               {(imageProvider === 'gemini' ? ['HD', '1K', '2K', '4K'] : ['2K', '4K']).map((res) => {
                 const isActive = resolution === res;
                 // const isHd = res === 'HD';
@@ -155,80 +137,71 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
                   <button
                     key={res}
                     onClick={() => onResolutionChange(res as Resolution)}
-                    className={`flex-1 flex flex-col items-center justify-center text-[10px] font-mono rounded transition-all duration-200 border cursor-pointer relative group ${isActive
-                      ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/40 shadow-[0_0_10px_-5px_#22d3ee]'
-                      : theme === 'dark'
-                        ? 'bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
-                        : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:border-neutral-300 hover:text-neutral-700'
-                      }`}
+                    className={`flex-1 flex flex-col items-center justify-center text-[10px] font-mono rounded transition-all duration-200 border cursor-pointer relative group ${
+                      isActive
+                        ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/40 shadow-[0_0_10px_-5px_#22d3ee]'
+                        : theme === 'dark'
+                          ? 'bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
+                          : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:border-neutral-300 hover:text-neutral-700'
+                    }`}
                   >
                     <SkeletonText loading={isGenerating}>
                       <span className={isActive ? 'font-bold' : ''}>{res}</span>
                     </SkeletonText>
-                    {/* Optional credit cost hint on hover or active */}
-                    {/* <span className="text-[8px] opacity-60 scale-75">{isHd ? '1c' : '3-7c'}</span> */}
                   </button>
-                )
+                );
               })}
             </div>
           </div>
-        </div>
 
-        {/* Aspect Ratio Section */}
-        <div className="space-y-2 pt-2">
-          <SkeletonText loading={isGenerating}>
-            <h4 className={sectionTitleClass(theme === 'dark')}>{t('mockup.aspectRatioTitle') || 'PROPORÇÃO'}</h4>
-          </SkeletonText>
-          <SkeletonText loading={isGenerating}>
-            <p className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider" role="status" aria-live="polite">
-              {aspectRatio} — {aspectRatioLabel(aspectRatio)}
-            </p>
-          </SkeletonText>
-          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-            {MAIN_ASPECT_RATIOS.map((ratio) => {
-              const [w, h] = ratio.split(':').map(Number);
-              const isLandscape = w > h;
-              const isSquare = w === h;
-              const isSelected = aspectRatio === ratio;
-
-              return (
-                <button
-                  key={ratio}
-                  onClick={() => onAspectRatioChange(ratio)}
-                  className={`flex flex-col items-center justify-center gap-1 py-3 px-1 w-full rounded-sm transition-all duration-200 border cursor-pointer ${isSelected
-                    ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40 shadow-[0_0_10px_-5px_#22d3ee]'
-                    : theme === 'dark'
-                      ? 'bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
-                      : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:border-neutral-300 hover:text-neutral-700'
-                    }`}
-                >
-                  <div className={`${isSquare ? 'w-5 h-5' : isLandscape ? 'w-7 h-4' : 'w-4 h-7'} border ${isSelected ? 'border-brand-cyan/60' : 'border-neutral-600/50'
-                    } rounded-[4px]`} />
-                  <SkeletonText loading={isGenerating}>
-                    <span className="text-[10px] font-mono mt-1">{ratio}</span>
-                  </SkeletonText>
-                </button>
-              );
-            })}
-
-            <button
-              onClick={() => setShowOther(!showOther)}
-              className={`flex flex-col items-center justify-center gap-1 py-3 px-1 w-full rounded-sm transition-all duration-200 border cursor-pointer ${isOtherSelected
-                ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40 shadow-[0_0_10px_-5px_#22d3ee]'
-                : theme === 'dark'
-                  ? 'bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
-                  : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:border-neutral-300 hover:text-neutral-700'
-                }`}
+          {/* Row 2, Col 1: Number of Images */}
+          <div className="space-y-2">
+            <SkeletonText loading={isGenerating}>
+              <h4 className={sectionTitleClass(theme === 'dark')}>
+                {t('mockup.numberOfImages') || 'NÚMERO DE IMAGENS'}
+              </h4>
+            </SkeletonText>
+            <div
+              className={`relative flex items-center rounded-md border transition-all duration-200 overflow-hidden ${theme === 'dark' ? 'bg-neutral-800/50 border-neutral-700/50 hover:border-neutral-600' : 'bg-neutral-100 border-neutral-300 hover:border-neutral-400'}`}
             >
-              <SkeletonText loading={isGenerating}>
-                <span className="text-[10px] font-mono uppercase tracking-widest">{t('mockup.otherAspectRatio') || 'OUTROS'}</span>
-              </SkeletonText>
-            </button>
+              <input
+                type="number"
+                min={1}
+                max={4}
+                value={mockupCount}
+                onChange={(e) =>
+                  onMockupCountChange(Math.min(Math.max(parseInt(e.target.value) || 1, 1), 4))
+                }
+                className={`w-full p-2.5 bg-transparent border-none focus:outline-none focus:ring-0 text-xs font-monoSync ${theme === 'dark' ? 'text-neutral-100' : 'text-neutral-900'}`}
+              />
+              <div className="absolute right-8 pointer-events-none">
+                <SkeletonText loading={isGenerating}>
+                  <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-tighter">
+                    outputs
+                  </span>
+                </SkeletonText>
+              </div>
+            </div>
           </div>
 
-          {showOther && (
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mt-2 pt-2 border-t border-neutral-800/50 animate-fade-in">
-              {OTHER_ASPECT_RATIOS.map((ratio) => {
+          {/* Row 2, Col 2: Aspect Ratio */}
+          <div className="space-y-2">
+            <SkeletonText loading={isGenerating}>
+              <div className="flex justify-between items-center mb-1">
+                <h4 className={sectionTitleClass(theme === 'dark')}>
+                  {t('mockup.aspectRatioTitle') || 'PROPORÇÃO'}
+                </h4>
+                <p
+                  className="text-[9px] font-mono text-neutral-500 uppercase tracking-wider"
+                  role="status"
+                  aria-live="polite"
+                >
+                  {aspectRatio} — {aspectRatioLabel(aspectRatio)}
+                </p>
+              </div>
+            </SkeletonText>
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+              {MAIN_ASPECT_RATIOS.map((ratio) => {
                 const [w, h] = ratio.split(':').map(Number);
                 const isLandscape = w > h;
                 const isSquare = w === h;
@@ -237,27 +210,82 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
                 return (
                   <button
                     key={ratio}
-                    onClick={() => {
-                      onAspectRatioChange(ratio);
-                      setShowOther(false);
-                    }}
-                    className={`flex flex-col items-center justify-center gap-1 py-2 px-1 w-full rounded-sm transition-all duration-200 border cursor-pointer ${isSelected
-                      ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40 shadow-[0_0_10px_-5px_#22d3ee]'
-                      : theme === 'dark'
-                        ? 'bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
-                        : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:border-neutral-300 hover:text-neutral-700'
-                      }`}
+                    onClick={() => onAspectRatioChange(ratio)}
+                    className={`flex flex-col items-center justify-center gap-1 py-2 px-1 w-full rounded-sm transition-all duration-200 border cursor-pointer ${
+                      isSelected
+                        ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40 shadow-[0_0_10px_-5px_#22d3ee]'
+                        : theme === 'dark'
+                          ? 'bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
+                          : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:border-neutral-300 hover:text-neutral-700'
+                    }`}
                   >
-                    <div className={`${isSquare ? 'w-5 h-5' : isLandscape ? 'w-7 h-4' : 'w-4 h-7'} border ${isSelected ? 'border-brand-cyan/60' : 'border-neutral-600/50'
-                      } rounded-[4px]`} />
+                    <div
+                      className={`${isSquare ? 'w-4 h-4' : isLandscape ? 'w-5 h-3' : 'w-3 h-5'} border ${
+                        isSelected ? 'border-brand-cyan/60' : 'border-neutral-600/50'
+                      } rounded-[3px]`}
+                    />
                     <SkeletonText loading={isGenerating}>
-                      <span className="text-[10px] font-mono mt-1">{ratio}</span>
+                      <span className="text-[9px] font-mono mt-0.5">{ratio}</span>
                     </SkeletonText>
                   </button>
                 );
               })}
+
+              <button
+                onClick={() => setShowOther(!showOther)}
+                className={`flex flex-col items-center justify-center gap-1 py-2 px-1 w-full rounded-sm transition-all duration-200 border cursor-pointer ${
+                  isOtherSelected
+                    ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40 shadow-[0_0_10px_-5px_#22d3ee]'
+                    : theme === 'dark'
+                      ? 'bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
+                      : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:border-neutral-300 hover:text-neutral-700'
+                }`}
+              >
+                <SkeletonText loading={isGenerating}>
+                  <span className="text-[9px] font-mono uppercase tracking-widest">
+                    {t('mockup.otherAspectRatio') || 'OUTROS'}
+                  </span>
+                </SkeletonText>
+              </button>
             </div>
-          )}
+
+            {showOther && (
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 mt-2 pt-2 border-t border-neutral-800/50 animate-fade-in">
+                {OTHER_ASPECT_RATIOS.map((ratio) => {
+                  const [w, h] = ratio.split(':').map(Number);
+                  const isLandscape = w > h;
+                  const isSquare = w === h;
+                  const isSelected = aspectRatio === ratio;
+
+                  return (
+                    <button
+                      key={ratio}
+                      onClick={() => {
+                        onAspectRatioChange(ratio);
+                        setShowOther(false);
+                      }}
+                      className={`flex flex-col items-center justify-center gap-1 py-2 px-1 w-full rounded-sm transition-all duration-200 border cursor-pointer ${
+                        isSelected
+                          ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40 shadow-[0_0_10px_-5px_#22d3ee]'
+                          : theme === 'dark'
+                            ? 'bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
+                            : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:border-neutral-300 hover:text-neutral-700'
+                      }`}
+                    >
+                      <div
+                        className={`${isSquare ? 'w-4 h-4' : isLandscape ? 'w-5 h-3' : 'w-3 h-5'} border ${
+                          isSelected ? 'border-brand-cyan/60' : 'border-neutral-600/50'
+                        } rounded-[3px]`}
+                      />
+                      <SkeletonText loading={isGenerating}>
+                        <span className="text-[9px] font-mono mt-0.5">{ratio}</span>
+                      </SkeletonText>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </section>

@@ -13,6 +13,7 @@ import { NodeHeader } from './shared/node-header';
 import { NodeButton } from './shared/node-button';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getCreditsRequired } from '@/utils/creditCalculator';
+import { GEMINI_MODELS, DEFAULT_MODEL, DEFAULT_ASPECT_RATIO, isAdvancedModel } from '@/constants/geminiModels';
 import { isSafeUrl } from '@/utils/imageUtils';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
@@ -22,7 +23,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
   const { setNodes } = useReactFlow();
   const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
   const [prompt, setPrompt] = useState(data.prompt || '');
-  const [model, setModel] = useState<GeminiModel>(data.model || 'gemini-2.5-flash-image');
+  const [model, setModel] = useState<GeminiModel>(data.model || DEFAULT_MODEL);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const isLoading = data.isLoading || false;
@@ -30,7 +31,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
   const hasResult = !!(data.resultImageUrl || data.resultImageBase64);
   const connectedImages = data.connectedImages || [];
   const hasEnoughImages = connectedImages.length >= 2;
-  const creditsRequired = getCreditsRequired(model);
+  const creditsRequired = getCreditsRequired(model, isAdvancedModel(model) ? '1K' : undefined);
 
   // Auto-resize textarea to fit content
   const adjustTextareaHeight = () => {
@@ -257,9 +258,9 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
         }}
         className="mb-4"
         options={[
-          { value: 'gemini-2.5-flash-image', label: 'HD' },
-          { value: 'gemini-3.1-flash-image-preview', label: 'NB2' },
-          { value: 'gemini-3-pro-image-preview', label: '4K Pro' }
+          { value: GEMINI_MODELS.FLASH, label: 'HD' },
+          { value: GEMINI_MODELS.NB2, label: 'NB2' },
+          { value: GEMINI_MODELS.PRO, label: '4K Pro' }
         ]}
       />
 

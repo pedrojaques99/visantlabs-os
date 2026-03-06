@@ -11,6 +11,7 @@ import { useCanvasStrategyHandler } from './useCanvasStrategyHandler';
 import { useCanvasChatHandler } from './useCanvasChatHandler';
 import { canvasApi } from '@/services/canvasApi';
 import { isLocalDevelopment } from '@/utils/env';
+import { DEFAULT_MODEL, DEFAULT_ASPECT_RATIO } from '@/constants/geminiModels';
 
 export const useCanvasNodeCreation = (
   reactFlowInstance: ReactFlowInstance | null,
@@ -172,7 +173,7 @@ export const useCanvasNodeCreation = (
       data: {
         type: 'merge',
         prompt: '',
-        model: 'gemini-2.5-flash-image',
+        model: DEFAULT_MODEL,
         connectedImages: [],
         onGenerate: handlersRef.current?.handleMergeGenerate || (() => Promise.resolve()),
         onGeneratePrompt: handlersRef.current?.handleMergeGeneratePrompt || (() => Promise.resolve()),
@@ -227,7 +228,7 @@ export const useCanvasNodeCreation = (
       data: {
         type: 'prompt',
         prompt: initialData?.prompt || '',
-        model: initialData?.model || 'gemini-2.5-flash-image',
+        model: initialData?.model || DEFAULT_MODEL,
         onGenerate: handlersRef.current?.handlePromptGenerate || (() => Promise.resolve()),
         onSuggestPrompts: handlersRef.current?.handlePromptSuggestPrompts || (() => Promise.resolve()),
         onSavePrompt: handlersRef.current?.handleSavePrompt || (() => { }),
@@ -386,9 +387,9 @@ export const useCanvasNodeCreation = (
       selectable: true,
       data: {
         type: 'edit',
-        model: 'gemini-2.5-flash-image',
+        model: DEFAULT_MODEL,
         resolution: '1K',
-        aspectRatio: '16:9',
+        aspectRatio: DEFAULT_ASPECT_RATIO,
         onApply: handlersRef.current?.handleEditApply || (() => Promise.resolve()),
         onUpdateData: handlersRef.current?.handleEditNodeDataUpdate || (() => { }),
         onGenerateSmartPrompt: handlersRef.current?.handleEditNodeGenerateSmartPrompt || (() => Promise.resolve()),
@@ -846,7 +847,7 @@ export const useCanvasNodeCreation = (
       designType: 'blank',
       tags: [],
       brandingTags: [],
-      aspectRatio: '16:9',
+      aspectRatio: DEFAULT_ASPECT_RATIO,
     };
 
     const newNode: Node<FlowNodeData> = {
@@ -1034,7 +1035,7 @@ export const useCanvasNodeCreation = (
           designType: 'blank',
           tags: [],
           brandingTags: [],
-          aspectRatio: '16:9',
+          aspectRatio: DEFAULT_ASPECT_RATIO,
         };
 
         const newNode: Node<FlowNodeData> = {
@@ -1201,7 +1202,7 @@ export const useCanvasNodeCreation = (
       designType: 'blank',
       tags: [],
       brandingTags: [],
-      aspectRatio: '16:9',
+      aspectRatio: DEFAULT_ASPECT_RATIO,
     };
 
     const newNode: Node<FlowNodeData> = {

@@ -19,6 +19,7 @@ import { NodeLabel } from './shared/node-label';
 import { AspectRatioSelector } from './shared/AspectRatioSelector';
 import { ResolutionSelector } from './shared/ResolutionSelector';
 import { getCreditsRequired } from '@/utils/creditCalculator';
+import { GEMINI_MODELS, DEFAULT_MODEL, DEFAULT_ASPECT_RATIO, isAdvancedModel } from '@/constants/geminiModels';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -39,8 +40,8 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
   const [isValidColor, setIsValidColor] = useState(data.isValidColor || false);
   const [withHuman, setWithHuman] = useState(data.withHuman || false);
   const [customPrompt, setCustomPrompt] = useState(data.customPrompt || '');
-  const [model, setModel] = useState<GeminiModel>(data.model || 'gemini-2.5-flash-image');
-  const [aspectRatio, setAspectRatio] = useState<AspectRatio>(data.aspectRatio || '16:9');
+  const [model, setModel] = useState<GeminiModel>(data.model || DEFAULT_MODEL);
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>(data.aspectRatio || DEFAULT_ASPECT_RATIO);
   const [resolution, setResolution] = useState<Resolution>(data.resolution || '1K');
   const [isPromptOpen, setIsPromptOpen] = useState(false);
   const [isColorSectionOpen, setIsColorSectionOpen] = useState(false);
@@ -294,9 +295,9 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
       hasFinalPrompt: !!finalPrompt,
     });
 
-    const isAdvancedModel = model === 'gemini-3-pro-image-preview' || model === 'gemini-3.1-flash-image-preview';
-    const finalResolution = isAdvancedModel ? resolution : undefined;
-    const finalAspectRatio = isAdvancedModel ? aspectRatio : undefined;
+    const isAdvanced = isAdvancedModel(model);
+    const finalResolution = isAdvanced ? resolution : undefined;
+    const finalAspectRatio = isAdvanced ? aspectRatio : undefined;
 
     await data.onGenerate(id, imageToUse, selectedPresetId, selectedColors, withHuman, finalPrompt || undefined, model, finalResolution, finalAspectRatio);
   };
@@ -585,7 +586,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    const newModel: GeminiModel = 'gemini-2.5-flash-image';
+                    const newModel: GeminiModel = GEMINI_MODELS.FLASH;
                     setModel(newModel);
 
                     if (data.onUpdateData) {
@@ -600,7 +601,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                   disabled={isLoading}
                   className={cn(
                     'p-2 rounded border transition-all text-left node-interactive',
-                    model === 'gemini-2.5-flash-image'
+                    model === GEMINI_MODELS.FLASH
                       ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
                       : 'bg-neutral-900/50 border-neutral-700/50 text-neutral-400 hover:bg-neutral-800/50 hover:border-neutral-600/50',
                     isLoading && 'opacity-50 cursor-not-allowed'
@@ -610,14 +611,14 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                     {t('canvasNodes.promptNode.modelHD')}
                   </div>
                   <div className="text-[9px] font-mono opacity-70 mt-0.5">
-                    {getCreditsRequired('gemini-2.5-flash-image')} {t('canvasNodes.promptNode.credits')}
+                    {getCreditsRequired(GEMINI_MODELS.FLASH)} {t('canvasNodes.promptNode.credits')}
                   </div>
                 </button>
 
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    const newModel: GeminiModel = 'gemini-3.1-flash-image-preview';
+                    const newModel: GeminiModel = GEMINI_MODELS.NB2;
                     setModel(newModel);
 
                     if (data.onUpdateData) {
@@ -627,8 +628,8 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                         setResolution('1K');
                       }
                       if (!data.aspectRatio) {
-                        updates.aspectRatio = '16:9';
-                        setAspectRatio('16:9');
+                        updates.aspectRatio = DEFAULT_ASPECT_RATIO;
+                        setAspectRatio(DEFAULT_ASPECT_RATIO);
                       }
                       data.onUpdateData(id, updates);
                     }
@@ -637,7 +638,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                   disabled={isLoading}
                   className={cn(
                     'p-2 rounded border transition-all text-left node-interactive',
-                    model === 'gemini-3.1-flash-image-preview'
+                    model === GEMINI_MODELS.NB2
                       ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
                       : 'bg-neutral-900/50 border-neutral-700/50 text-neutral-400 hover:bg-neutral-800/50 hover:border-neutral-600/50',
                     isLoading && 'opacity-50 cursor-not-allowed'
@@ -647,14 +648,14 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                     NB2
                   </div>
                   <div className="text-[9px] font-mono opacity-70 mt-0.5">
-                    {getCreditsRequired('gemini-3.1-flash-image-preview', resolution)} {t('canvasNodes.promptNode.credits')}
+                    {getCreditsRequired(GEMINI_MODELS.NB2, resolution)} {t('canvasNodes.promptNode.credits')}
                   </div>
                 </button>
 
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    const newModel: GeminiModel = 'gemini-3-pro-image-preview';
+                    const newModel: GeminiModel = GEMINI_MODELS.PRO;
                     setModel(newModel);
 
                     if (data.onUpdateData) {
@@ -664,8 +665,8 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                         setResolution('4K');
                       }
                       if (!data.aspectRatio) {
-                        updates.aspectRatio = '16:9';
-                        setAspectRatio('16:9');
+                        updates.aspectRatio = DEFAULT_ASPECT_RATIO;
+                        setAspectRatio(DEFAULT_ASPECT_RATIO);
                       }
                       data.onUpdateData(id, updates);
                     }
@@ -674,7 +675,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                   disabled={isLoading}
                   className={cn(
                     'p-2 rounded border transition-all text-left node-interactive',
-                    model === 'gemini-3-pro-image-preview'
+                    model === GEMINI_MODELS.PRO
                       ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
                       : 'bg-neutral-900/50 border-neutral-700/50 text-neutral-400 hover:bg-neutral-800/50 hover:border-neutral-600/50',
                     isLoading && 'opacity-50 cursor-not-allowed'
@@ -684,14 +685,14 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                     {t('canvasNodes.promptNode.model4K')}
                   </div>
                   <div className="text-[9px] font-mono opacity-70 mt-0.5">
-                    {getCreditsRequired('gemini-3-pro-image-preview', resolution)} {t('canvasNodes.promptNode.credits')}
+                    {getCreditsRequired(GEMINI_MODELS.PRO, resolution)} {t('canvasNodes.promptNode.credits')}
                   </div>
                 </button>
               </div>
             </div>
 
             {/* Advanced Model Settings (NB2 + Pro) */}
-            {(model === 'gemini-3-pro-image-preview' || model === 'gemini-3.1-flash-image-preview') && (
+            {isAdvancedModel(model) && (
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
                   <NodeLabel className="mb-1.5 text-[10px]">
