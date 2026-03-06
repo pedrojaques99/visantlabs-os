@@ -61,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
   chatModule.renderMessages();
   brandModule.updateBrandPill();
   libraryModule.render();
+  designSystemModule.init();
 
   console.log('[Plugin] Initialization complete');
   console.log('[Plugin] Session: ' + state.sessionId);

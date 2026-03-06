@@ -65,6 +65,9 @@ const state = {
   },
   canGenerate: true,     // Whether user can generate (credits available)
 
+  // Design System (imported from JSON, stored in Figma file)
+  designSystem: null, // Parsed design system object or null
+
   // Media attachments
   pendingAttachments: [], // Array of { name, type, mimeType, size, dataUrl }
 

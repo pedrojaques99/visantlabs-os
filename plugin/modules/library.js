@@ -205,11 +205,7 @@ class LibraryModule {
    * Escape HTML
    */
   escapeHtml(text) {
-    return (text || '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+    return escapeHtml(text);
   }
 }
 

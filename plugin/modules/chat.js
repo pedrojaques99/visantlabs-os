@@ -258,6 +258,15 @@ class ChatModule {
       this.setLoading(false);
     });
 
+    // Design system module events → chat bubbles
+    eventBus.on('chat:error-message', (msg) => {
+      this.addErrorMessage(msg);
+    });
+
+    eventBus.on('chat:assistant-message', (msg) => {
+      this.addAssistantMessage(msg);
+    });
+
     // Main response handler — reads MESSAGE ops as text, rest as design ops
     eventBus.on('api:design-generated', (result) => {
       this.removeTypingBubble();
@@ -560,11 +569,7 @@ class ChatModule {
   }
 
   escapeHtml(text) {
-    return (text || '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+    return escapeHtml(text);
   }
 
   /**
@@ -582,6 +587,22 @@ class ChatModule {
       if (file.size > MAX_FILE_SIZE) {
         this.addErrorMessage(`❌ Arquivo "${file.name}" é muito grande (>5 MB).`);
         continue;
+      }
+
+      // JSON files: try to import as Design System before adding as attachment
+      if (file.name.endsWith('.json')) {
+        try {
+          const text = await file.text();
+          const imported = designSystemModule.importFromJSONString(text, file.name);
+          if (imported) {
+            // Successfully imported as design system — do not add to attachments
+            continue;
+          }
+          // Not a design system JSON — fall through and attach normally as text
+        } catch (_) {
+          this.addErrorMessage(`❌ Erro ao ler "${file.name}".`);
+          continue;
+        }
       }
 
       // Validate total count

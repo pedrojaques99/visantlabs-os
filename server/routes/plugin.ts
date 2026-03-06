@@ -215,7 +215,16 @@ interface PluginRequest {
   sessionId?: string;
   selectedElements: any[];
   selectedLogo?: { id: string; name: string; key?: string };
+  brandLogos?: {
+    light?: { id: string; name: string; key?: string } | null;
+    dark?: { id: string; name: string; key?: string } | null;
+    accent?: { id: string; name: string; key?: string } | null;
+  };
   selectedBrandFont?: { id: string; name: string };
+  brandFonts?: {
+    primary?: { id: string; name: string } | null;
+    secondary?: { id: string; name: string } | null;
+  };
   selectedBrandColors?: Array<{ name: string; value: string }>;
   availableComponents?: any[];
   availableColorVariables?: Array<{ id: string; name: string; value?: string }>;
@@ -226,16 +235,128 @@ interface PluginRequest {
   anthropicApiKey?: string; // Anthropic/Claude BYOK
   attachments?: Array<{ name: string; mimeType: string; data: string }>; // Base64 data
   mentions?: Array<{ name: string; type: string; id: string }>; // @mentions
+  designSystem?: DesignSystemJSON | null; // Imported design system tokens
+}
+
+interface DesignSystemJSON {
+  name?: string;
+  version?: string;
+  colors?: Record<string, string | { hex?: string; value?: string; usage?: string }>;
+  typography?: Record<string, { family: string; style?: string; size?: number; lineHeight?: number }>;
+  spacing?: Record<string, number>;
+  radius?: Record<string, number>;
+  shadows?: Record<string, { x?: number; y?: number; blur?: number; spread?: number; color?: string; opacity?: number }>;
+  components?: Record<string, any>;
+  guidelines?: { voice?: string; dos?: string[]; donts?: string[]; imagery?: string };
+}
+
+/**
+ * Format a DesignSystemJSON into a human-readable string block for LLM context.
+ * Maps tokens directly to the operations the LLM can use (fills, radius, etc.)
+ */
+function buildDesignSystemContext(ds: DesignSystemJSON): string {
+  const lines: string[] = [];
+  lines.push(`═══ DESIGN SYSTEM: ${ds.name || 'Importado'} (v${ds.version || '1.0'}) ═══`);
+  lines.push('Use SEMPRE esses tokens ao criar ou editar designs neste arquivo.\n');
+
+  // Colors → fills RGB
+  if (ds.colors && Object.keys(ds.colors).length > 0) {
+    lines.push('CORES (use em "fills", "strokes" — converta hex → RGB 0-1):');
+    for (const [key, val] of Object.entries(ds.colors)) {
+      const hex = typeof val === 'string' ? val : (val.hex || val.value || '');
+      const usage = typeof val === 'object' ? val.usage : '';
+      lines.push(`  ${key}: ${hex}${usage ? ` — ${usage}` : ''}`);
+    }
+    lines.push('');
+  }
+
+  // Typography → fontFamily, fontStyle, fontSize
+  if (ds.typography && Object.keys(ds.typography).length > 0) {
+    lines.push('TIPOGRAFIA (use em fontFamily, fontStyle, fontSize):');
+    for (const [key, t] of Object.entries(ds.typography)) {
+      const parts = [`family: "${t.family}"`];
+      if (t.style) parts.push(`style: "${t.style}"`);
+      if (t.size) parts.push(`size: ${t.size}`);
+      if (t.lineHeight) parts.push(`lineHeight: ${t.lineHeight}`);
+      lines.push(`  ${key}: { ${parts.join(', ')} }`);
+    }
+    lines.push('');
+  }
+
+  // Spacing → itemSpacing, padding
+  if (ds.spacing && Object.keys(ds.spacing).length > 0) {
+    lines.push('ESPAÇAMENTOS (use em itemSpacing, padding, width/height):');
+    const entries = Object.entries(ds.spacing).map(([k, v]) => `${k}=${v}px`).join(', ');
+    lines.push(`  ${entries}`);
+    lines.push('');
+  }
+
+  // Border radius → cornerRadius
+  if (ds.radius && Object.keys(ds.radius).length > 0) {
+    lines.push('RAIOS (use em cornerRadius):');
+    const entries = Object.entries(ds.radius).map(([k, v]) => `${k}=${v}`).join(', ');
+    lines.push(`  ${entries}`);
+    lines.push('');
+  }
+
+  // Shadows → effects DROP_SHADOW
+  if (ds.shadows && Object.keys(ds.shadows).length > 0) {
+    lines.push('SOMBRAS (use em effects DROP_SHADOW):');
+    for (const [key, s] of Object.entries(ds.shadows)) {
+      lines.push(`  ${key}: offset(${s.x || 0},${s.y || 0}) blur=${s.blur || 0} spread=${s.spread || 0} color=${s.color || '#000'} opacity=${s.opacity ?? 0.1}`);
+    }
+    lines.push('');
+  }
+
+  // Components → structure hints
+  if (ds.components && Object.keys(ds.components).length > 0) {
+    lines.push('COMPONENTES (estrutura e estilos padrão):');
+    for (const [key, comp] of Object.entries(ds.components)) {
+      const compLines: string[] = [];
+      if (comp.height) compLines.push(`height: ${comp.height}`);
+      if (comp.padding || comp.paddingH) compLines.push(`paddingH: ${comp.paddingH || comp.padding}`);
+      if (comp.radius) compLines.push(`radius: "${comp.radius}"`);
+      if (comp.font) compLines.push(`font: "${comp.font}"`);
+      if (comp.bg) compLines.push(`bg: "${comp.bg}"`);
+      if (comp.shadow) compLines.push(`shadow: "${comp.shadow}"`);
+      lines.push(`  ${key}: { ${compLines.join(', ')} }`);
+    }
+    lines.push('');
+  }
+
+  // Guidelines → behavioral rules
+  if (ds.guidelines) {
+    const g = ds.guidelines;
+    if (g.voice) lines.push(`VOZ/TOM: ${g.voice}`);
+    if (g.dos?.length) lines.push(`FAZER: ${g.dos.join(' | ')}`);
+    if (g.donts?.length) lines.push(`EVITAR: ${g.donts.join(' | ')}`);
+    if (g.imagery) lines.push(`IMAGENS: ${g.imagery}`);
+  }
+
+  return lines.join('\n');
 }
 
 function buildSystemPrompt(req: PluginRequest, chatHistory?: string): string {
-  const logoInfo = req.selectedLogo
-    ? `${req.selectedLogo.name} (key: "${req.selectedLogo.key || req.selectedLogo.id}")`
-    : 'Nenhum selecionado';
+  // Build logo info — support multi-variant logos
+  const logos = req.brandLogos || {};
+  const logoLines: string[] = [];
+  const fmtLogo = (label: string, logo: any) => {
+    if (logo) logoLines.push(`  ${label}: ${logo.name} (key: "${logo.key || logo.id}")`);
+  };
+  fmtLogo('Light', logos.light || req.selectedLogo);
+  fmtLogo('Dark', logos.dark);
+  fmtLogo('Accent', logos.accent);
+  const logoInfo = logoLines.length > 0 ? '\n' + logoLines.join('\n') : 'Nenhum selecionado';
 
-  const fontInfo = req.selectedBrandFont
-    ? `${req.selectedBrandFont.name} (ID: "${req.selectedBrandFont.id}")`
-    : 'Nenhuma selecionada';
+  // Build font info — support primary + secondary
+  const fonts = req.brandFonts || {};
+  const fontLines: string[] = [];
+  const fmtFont = (label: string, font: any) => {
+    if (font) fontLines.push(`  ${label}: ${font.name} (ID: "${font.id}")`);
+  };
+  fmtFont('Primary (títulos)', fonts.primary || req.selectedBrandFont);
+  fmtFont('Secondary (textos)', fonts.secondary);
+  const fontInfo = fontLines.length > 0 ? '\n' + fontLines.join('\n') : 'Nenhuma selecionada';
 
   const brandColorsInfo = req.selectedBrandColors?.length
     ? req.selectedBrandColors.map(c => `${c.name}: ${c.value}`).join(', ')
@@ -352,11 +473,12 @@ Exemplo de bate-papo:
 ]
 
 ${chatHistory ? `═══ HISTÓRICO DE CONVERSA ═══\n${chatHistory}\n` : ''}
+${req.designSystem ? buildDesignSystemContext(req.designSystem) + '\n' : ''}
 ═══ CONTEXTO DO ARQUIVO ═══
 
 BRAND GUIDELINES DO USUÁRIO:
-- Logo: ${logoInfo}
-- Fonte de marca: ${fontInfo}
+- Logo(s): ${logoInfo}
+- Fonte(s) de marca: ${fontInfo}
 - Cores de marca: ${brandColorsInfo}
 
 FRAMES/CONTAINERS SELECIONADOS (use o "id" como "parentNodeId" para criar DENTRO deles):
@@ -432,7 +554,10 @@ EDIÇÃO DE NÓS EXISTENTES (usar nodeId de elemento selecionado):
 ⚠️ IMPORTANTE: O contexto contém a propriedade "characters" dos nós TEXT selecionados. USE SEMPRE o conteúdo atual se estiver editando formatação.
 Exemplo do contexto: {"name":"Title","type":"TEXT","id":"11:12","characters":"Olá Mundo","fontSize":24}
 Se vai mudar apenas a fonte: SET_TEXT_CONTENT com content="Olá Mundo" (mantém conteúdo) + nova fontFamily/fontStyle
-6.  SET_FILL — { "type": "SET_FILL", "nodeId": "...", "fills": [{"type": "SOLID", "color": {"r": 0, "g": 0.5, "b": 1}}] }
+6.  SET_FILL — Cor sólida:
+    { "type": "SET_FILL", "nodeId": "...", "fills": [{"type": "SOLID", "color": {"r": 0, "g": 0.5, "b": 1}}] }
+    Gradiente linear (FASE 2):
+    { "type": "SET_FILL", "nodeId": "...", "fills": [{"type": "GRADIENT_LINEAR", "gradientTransform": [[1,0,0],[0,1,0]], "gradientStops": [{"position": 0, "color": {"r": 0.1, "g": 0.1, "b": 0.3, "a": 1}}, {"position": 1, "color": {"r": 0.3, "g": 0.1, "b": 0.5, "a": 1}}]}] }
 7.  SET_STROKE — { "type": "SET_STROKE", "nodeId": "...", "strokes": [{"type": "SOLID", "color": {"r": 0, "g": 0, "b": 0}}], "strokeWeight": 1, "strokeAlign": "INSIDE" }
 8.  SET_CORNER_RADIUS — { "type": "SET_CORNER_RADIUS", "nodeId": "...", "cornerRadius": 8, "cornerSmoothing": 0.6 }
 9.  SET_EFFECTS — { "type": "SET_EFFECTS", "nodeId": "...", "effects": [{"type": "DROP_SHADOW", "color": {"r":0,"g":0,"b":0,"a":0.12}, "offset": {"x":0,"y":4}, "radius": 16, "spread": 0}] }
@@ -447,6 +572,7 @@ Se vai mudar apenas a fonte: SET_TEXT_CONTENT com content="Olá Mundo" (mantém 
 
 TOKENS / VARIABLES:
 16. APPLY_VARIABLE — { "type": "APPLY_VARIABLE", "nodeId": "...", "variableId": "...", "field": "fills" }
+    ⚠️ APPLY_VARIABLE só funciona com fills/strokes que são SOLID. Para nós com gradiente ou imagem, use SET_FILL primeiro para converter para SOLID, ou use SET_FILL diretamente com a cor desejada.
 17. APPLY_STYLE — { "type": "APPLY_STYLE", "nodeId": "...", "styleId": "...", "styleType": "FILL" }
 
 ESTRUTURA:
@@ -461,7 +587,7 @@ ESTRUTURA:
 2. Use "ref"/"parentRef" para hierarquia. O frame root tem "ref", filhos referenciam com "parentRef".
 3. Cores são RGB normalizado 0-1. Vermelho = {"r":1,"g":0,"b":0}. Branco = {"r":1,"g":1,"b":1}. Preto = {"r":0,"g":0,"b":0}.
 4. Se o usuário tiver cores de marca, USE-AS com prioridade.
-5. Se existirem variáveis de cor no arquivo, prefira APPLY_VARIABLE ao invés de cores hardcoded.
+5. Se existirem variáveis de cor no arquivo, prefira APPLY_VARIABLE ao invés de cores hardcoded. Mas ATENÇÃO: APPLY_VARIABLE só vincula variáveis a paints SÓLIDOS. Se o nó tiver gradiente/imagem, use SET_FILL com cor sólida ao invés de APPLY_VARIABLE.
 6. Para textos dentro de auto-layout: layoutSizingHorizontal "FILL" para expandir, textAutoResize "WIDTH_AND_HEIGHT" ou "HEIGHT" para ajustar.
 7. Nomeie layers semanticamente: "Card/Header", "Button/Primary", "Icon/Close".
 8. Retorne SOMENTE o JSON array. SEM texto, SEM markdown, SEM explicações.
@@ -478,7 +604,9 @@ ESTRUTURA:
     Exemplo: Se o texto era "Olá" em Inter Regular, para mudar para Barlow Medium use SET_TEXT_CONTENT com content="Olá" fontFamily="Barlow" fontStyle="Medium".
 18. Para criação: sempre comece com o frame/container root e adicione filhos na ORDEM com parentRef.
 19. FontStyle válidos: "Regular", "Medium", "Semi Bold", "Bold", "Light", "Thin", "Extra Bold", "Black", "Italic".
-20. GRADIENTES (FASE 2): Use gradientStops com positions 0-1. Transform padrão linear: [[1,0,0],[0,1,0]]. Diagonal: [[0.7,0.7,-0.1],[-0.7,0.7,0.5]].
+20. GRADIENTES (FASE 2): Tipos suportados: GRADIENT_LINEAR, GRADIENT_RADIAL, GRADIENT_ANGULAR, GRADIENT_DIAMOND. Cada gradiente PRECISA de "gradientTransform" e "gradientStops". Cores nos stops usam RGBA (0-1).
+    Transform padrão horizontal: [[1,0,0],[0,1,0]]. Diagonal 45°: [[0.7,0.7,-0.1],[-0.7,0.7,0.5]]. Vertical: [[0,1,0],[-1,0,1]].
+    Exemplo completo: { "type": "SET_FILL", "nodeId": "...", "fills": [{"type": "GRADIENT_LINEAR", "gradientTransform": [[1,0,0],[0,1,0]], "gradientStops": [{"position": 0, "color": {"r": 0.05, "g": 0.05, "b": 0.15, "a": 1}}, {"position": 1, "color": {"r": 0.2, "g": 0.1, "b": 0.4, "a": 1}}]}] }
 21. IMAGENS (FASE 2): Use SET_IMAGE_FILL com URLs (unsplash.com, picsum.photos). Para cards com foto: crie RECTANGLE, aplique SET_IMAGE_FILL.
 22. COMPONENTES (FASE 2): Use CREATE_COMPONENT para reutilizáveis. Variants via COMBINE_AS_VARIANTS com naming "Property=Value".
 23. SVG (FASE 2): Use CREATE_SVG para ícones simples. Gere SVG inline com viewBox correto. Preferir componentes da library quando disponíveis.
@@ -603,7 +731,9 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       fileId,
       selectedElements = [],
       selectedLogo,
+      brandLogos,
       selectedBrandFont,
+      brandFonts,
       selectedBrandColors,
       availableComponents = [],
       availableColorVariables = [],
@@ -613,6 +743,7 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       anthropicApiKey: userAnthropicKey,
       attachments = [],
       mentions = [],
+      designSystem,
     } = req.body as PluginRequest;
 
     if (!command) {
@@ -672,7 +803,9 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
         command,
         selectedElements,
         selectedLogo,
+        brandLogos,
         selectedBrandFont,
+        brandFonts,
         selectedBrandColors,
         availableComponents,
         availableColorVariables,
@@ -680,6 +813,7 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
         availableLayers,
         attachments,
         mentions,
+        designSystem: designSystem || null,
       },
       chatHistory
     );

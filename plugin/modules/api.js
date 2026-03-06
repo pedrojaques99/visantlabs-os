@@ -63,14 +63,26 @@ async function generateDesign(command, context) {
     sessionId: state.sessionId, // For chat memory
     fileId: context.fileId,
     selectedElements: context.selectedElements || [],
-    selectedLogo: state.selectedLogo,
-    selectedBrandFont: state.selectedFont,
+    // Brand: send the primary logo (logoLight) as selectedLogo for backward compat,
+    // plus all 3 variants in brandLogos for richer context
+    selectedLogo: state.logoLight || state.logoDark || state.logoAccent || null,
+    brandLogos: {
+      light: state.logoLight || null,
+      dark: state.logoDark || null,
+      accent: state.logoAccent || null,
+    },
+    selectedBrandFont: state.fontPrimary || null,
+    brandFonts: {
+      primary: state.fontPrimary || null,
+      secondary: state.fontSecondary || null,
+    },
     selectedBrandColors: Array.from(state.selectedColors.values()),
     availableComponents: state.allComponents,
     availableColorVariables: state.allColors,
     availableFontVariables: state.allFonts,
     availableLayers: context.availableLayers || [],
     mentions: context.mentions || [],
+    designSystem: state.designSystem || undefined,
     attachments: (context.attachments || []).map(att => ({
       name: att.name,
       mimeType: att.mimeType,
@@ -174,6 +186,28 @@ function loadGuidelines() {
 }
 
 /**
+ * Save design system JSON to Figma file (figma.root.setPluginData)
+ * Pass null to clear the stored design system.
+ * @param {any|null} designSystem - Normalized design system object or null
+ */
+function saveDesignSystem(designSystem) {
+  parent.postMessage(
+    { pluginMessage: { type: 'SAVE_DESIGN_SYSTEM', designSystem } },
+    'https://www.figma.com'
+  );
+}
+
+/**
+ * Load the design system stored in this Figma file
+ */
+function loadDesignSystem() {
+  parent.postMessage(
+    { pluginMessage: { type: 'GET_DESIGN_SYSTEM' } },
+    'https://www.figma.com'
+  );
+}
+
+/**
  * Request design context from sandbox
  */
 function getContext() {
@@ -195,9 +229,20 @@ function generateWithContext(command, context) {
         type: 'GENERATE_WITH_CONTEXT',
         command,
         scanPage: state.scanPage || false,
-        logoComponent: state.selectedLogo,
-        brandFont: state.selectedFont,
+        // Send primary logo for backward compat + all variants
+        logoComponent: state.logoLight || state.logoDark || state.logoAccent || null,
+        brandLogos: {
+          light: state.logoLight || null,
+          dark: state.logoDark || null,
+          accent: state.logoAccent || null,
+        },
+        brandFont: state.fontPrimary || null,
+        brandFonts: {
+          primary: state.fontPrimary || null,
+          secondary: state.fontSecondary || null,
+        },
         brandColors: Array.from(state.selectedColors.values()),
+        designSystem: state.designSystem || undefined,
         mentions: context.mentions || [],
         attachments: (context.attachments || []).map(att => ({
           name: att.name,
@@ -247,15 +292,7 @@ function openExternal(url) {
   );
 }
 
-/**
- * Use selection as logo
- */
-function useSelectionAsLogo() {
-  parent.postMessage(
-    { pluginMessage: { type: 'USE_SELECTION_AS_LOGO' } },
-    'https://www.figma.com'
-  );
-}
+
 
 // ── Auth & Credits ──
 

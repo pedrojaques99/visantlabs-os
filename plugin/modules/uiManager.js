@@ -49,17 +49,7 @@ class UIManager {
       });
     });
 
-    // Close operations modal on outside click
-    const operationsModal = document.getElementById('operationsModal');
-    if (operationsModal) {
-      operationsModal.addEventListener('click', (e) => {
-        if (e.target === operationsModal) {
-          operationsModal.classList.add('hidden');
-        }
-      });
-    }
-
-    // Clicking outside modal content to close
+    // Close modals on outside click (covers component, font, operations modals)
     document.querySelectorAll('.modal').forEach(modal => {
       modal.addEventListener('click', (e) => {
         if (e.target === modal) {
@@ -68,6 +58,8 @@ class UIManager {
         }
       });
     });
+
+
 
     // Settings navigation
     document.getElementById('settingsBtn')?.addEventListener('click', () => {
@@ -231,7 +223,8 @@ class UIManager {
           break;
         case 'SELECTION_AS_LOGO':
           if (msg.component) {
-            setState('selectedLogo', msg.component);
+            // Default to logoLight when using selection-as-logo
+            setState('logoLight', msg.component);
           } else {
             chatModule.addErrorMessage('⚠️ Selecione um componente ou instância para usar como logo.');
           }
@@ -250,6 +243,12 @@ class UIManager {
           break;
         case 'GUIDELINE_SAVED':
           eventBus.emit('guideline:saved', msg);
+          break;
+        case 'DESIGN_SYSTEM_LOADED':
+          eventBus.emit('designSystem:loaded', msg.designSystem || null);
+          break;
+        case 'DESIGN_SYSTEM_SAVED':
+          eventBus.emit('designSystem:loaded', msg.designSystem || null);
           break;
         case 'API_KEY_LOADED':
           setState('userApiKey', msg.key || '');
@@ -736,11 +735,7 @@ class UIManager {
    * Escape HTML
    */
   escapeHtml(text) {
-    return (text || '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+    return escapeHtml(text);
   }
 }
 
