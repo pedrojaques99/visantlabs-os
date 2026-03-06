@@ -13,7 +13,7 @@ export interface Operation {
 export interface PendingAck {
   resolve: (result: any) => void;
   reject: (error: Error) => void;
-  timeout: NodeJS.Timer;
+  timeout: ReturnType<typeof setTimeout>;
 }
 
 export interface PluginSession {
@@ -24,7 +24,7 @@ export interface PluginSession {
   lastHeartbeat: Date;
   operationQueue: Array<{ operations: Operation[]; opId: string }>;
   pendingAcks: Map<string, PendingAck>;
-  heartbeatInterval?: NodeJS.Timer;
+  heartbeatInterval?: ReturnType<typeof setInterval>;
 }
 
 /**
