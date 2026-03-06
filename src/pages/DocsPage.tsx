@@ -172,6 +172,111 @@ export const DocsPage: React.FC = () => {
     },
   ];
 
+  const generateTabMarkdown = useCallback((tab: string): string => {
+    const lines: string[] = [];
+
+    if (tab === 'canvas-api') {
+      lines.push(`# Canvas API Reference`);
+      lines.push(`\nBase URL: \`/api/canvas\`\nAuth: \`Authorization: Bearer <jwt_token>\`\nContent-Type: \`application/json\``);
+      lines.push(`\n## Overview\nThe canvas is a React Flow graph stored as a project with \`nodes[]\` and \`edges[]\` arrays.\nThere is no individual node CRUD — to add/update/remove a node: GET the project, mutate the array, PUT the full array back.\n\n**Workflow:**\n1. \`POST /api/canvas\` — create project\n2. \`GET /api/canvas/:id\` — fetch current nodes\n3. Mutate locally\n4. \`PUT /api/canvas/:id\` — persist the full nodes array`);
+      lines.push(`\n## Projects CRUD\n\n### GET /api/canvas\nList all projects for the authenticated user.\n\`\`\`json\n{ "projects": [{ "_id": "...", "name": "...", "nodes": [...], "edges": [...], "createdAt": "...", "updatedAt": "..." }] }\n\`\`\``);
+      lines.push(`\n### GET /api/canvas/:id\nGet a single project by ID.\n\`\`\`json\n{ "project": { "_id": "...", "name": "...", "nodes": [...], "edges": [...] } }\n\`\`\``);
+      lines.push(`\n### POST /api/canvas\nCreate a new canvas project.\n**Body:**\n\`\`\`json\n{\n  "name": "My Canvas",\n  "nodes": [\n    {\n      "id": "prompt-1",\n      "type": "prompt",\n      "position": { "x": 100, "y": 100 },\n      "data": { "type": "prompt", "prompt": "A product photo on white background", "model": "gemini-2.0-flash-exp" }\n    }\n  ],\n  "edges": []\n}\n\`\`\`\n**Response:** \`{ "project": { "_id": "abc123", ... } }\``);
+      lines.push(`\n### PUT /api/canvas/:id\nUpdate a project. Send only fields to change; nodes/edges require the full array.\n**Body:** \`{ "name"?: string, "nodes"?: Node[], "edges"?: Edge[], "drawings"?: any[] }\`\n**Limits:** max 10 000 nodes, 15 MB payload after R2 offload.`);
+      lines.push(`\n### DELETE /api/canvas/:id\nDelete a project permanently.\n**Response:** \`{ "success": true }\``);
+      lines.push(`\n## Node Structure\nEvery node follows the React Flow node schema:\n\`\`\`json\n{\n  "id": "unique-id",\n  "type": "prompt",\n  "position": { "x": 0, "y": 0 },\n  "width": 320,\n  "height": 240,\n  "data": {\n    "type": "prompt",\n    "prompt": "...",\n    ...typeSpecificFields\n  }\n}\n\`\`\``);
+      lines.push(`\n## Node Types\n| type | description | key data fields |\n|------|-------------|----------------|\n| \`prompt\` | Text-to-image generation | prompt, model, aspectRatio, resolution, resultImageUrl |\n| \`image\` | Display a mockup/image | mockup: { imageUrl, ... } |\n| \`output\` | Result viewer (receives from flow nodes) | resultImageUrl, resultVideoUrl, sourceNodeId |\n| \`merge\` | Combine 2+ connected images with AI | prompt, model, resultImageUrl |\n| \`edit\` | Edit image with Mockup Machine | uploadedImage, referenceImage, tags[], model, designType |\n| \`upscale\` | AI upscaling (Gemini) | targetResolution, resultImageUrl, connectedImage |\n| \`upscaleBicubic\` | Bicubic shader upscaling | scaleFactor, sharpening, resultImageUrl, resultVideoUrl |\n| \`mockup\` | AI mockup from preset templates | selectedPreset, selectedColors[], withHuman, customPrompt |\n| \`angle\` | Re-render with camera angle preset | selectedAngle, resultImageUrl, connectedImage |\n| \`texture\` | Apply 3D texture/style preset | selectedPreset, resultImageUrl, connectedImage |\n| \`ambience\` | Apply background/environment preset | selectedPreset, resultImageUrl, connectedImage |\n| \`luminance\` | Apply light setup preset | selectedPreset, resultImageUrl, connectedImage |\n| \`shader\` | GLSL shader effects (halftone, VHS, ASCII…) | shaderType, dotSize, contrast, resultVideoUrl |\n| \`colorExtractor\` | Extract color palette from image | connectedImage, extractedColors: string[] |\n| \`text\` | Editable text block (connects to prompt/chat) | text: string |\n| \`logo\` | Logo upload node | logoImageUrl, logoBase64 |\n| \`pdf\` | Identity guide PDF upload | pdfUrl, fileName |\n| \`videoInput\` | Video upload for shader/processing | uploadedVideoUrl |\n| \`video\` | Video generation via Veo | prompt, model, aspectRatio, duration, resultVideoUrl |\n| \`brand\` | Brand identity extractor (legacy) | logoImage, identityPdfUrl, brandIdentity |\n| \`brandCore\` | Brand catalyst — generates visual prompts | connectedLogo, connectedPdf, visualPrompts, brandIdentity |\n| \`strategy\` | Brand strategy generation | strategyType, prompt, strategyData |\n| \`director\` | AI-assisted prompt builder with tag selection | connectedImage, suggestedTags, generatedPrompt |\n| \`chat\` | Conversational AI with multimodal context | messages[], model, systemPrompt, connectedImage1..4 |`);
+      lines.push(`\n## Edges\n\`\`\`json\n{ "id": "e1", "source": "prompt-1", "target": "output-1", "sourceHandle": "output", "targetHandle": "input" }\n\`\`\`\n\n| Connection | sourceHandle | targetHandle | Effect |\n|------------|-------------|--------------|--------|\n| image → merge | output | input-1 / input-2 | Feeds source image into merge |\n| prompt → output | output | input | Generated image to output display |\n| text → prompt | output | text-input | Text syncs to prompt node |\n| logo → brandCore | output | logo-input | Logo fed to brand core |\n| pdf → brandCore | output | identity-input | PDF identity guide to brand core |\n| brandCore → mockup | output | brand-input | Brand prompts/colors to mockup |\n| strategy → brandCore | output | strategy-input | Strategy data consolidated |\n| image → chat | output | input-1..input-4 | Visual context to chat node |`);
+      lines.push(`\n## Media Upload\n\n### POST /api/canvas/image/upload\nUpload image (base64) to R2. Returns persistent URL.\n**Body:** \`{ "base64Image": "data:image/png;base64,...", "canvasId": "...", "nodeId": "..." }\`\n**Response:** \`{ "imageUrl": "https://r2.example.com/..." }\`\n\n### GET /api/canvas/image/upload-url\nPresigned URL for direct large-image upload (bypasses Vercel limit).\n**Query:** \`canvasId, nodeId, contentType\`\n**Response:** \`{ "presignedUrl": "...", "finalUrl": "..." }\`\n\n### POST /api/canvas/video/upload\n**Body:** \`{ "videoBase64": "data:video/mp4;base64,...", "canvasId": "...", "nodeId": "..." }\`\n**Response:** \`{ "videoUrl": "..." }\`\n\n### GET /api/canvas/video/upload-url\nPresigned URL for direct large-video upload.\n**Query:** \`canvasId, nodeId, contentType\`\n\n### POST /api/canvas/pdf/upload\n**Body:** \`{ "pdfBase64": "data:application/pdf;base64,...", "canvasId": "...", "nodeId": "..." }\`\n**Response:** \`{ "pdfUrl": "..." }\`\n\n### DELETE /api/canvas/image?url=<encoded>\nDelete image from R2 by URL.`);
+      lines.push(`\n## Sharing & Collaboration\nRequires Admin or Premium plan.\n\n### POST /api/canvas/:id/share\n**Body:** \`{ "canEdit": ["user@example.com"], "canView": ["viewer@example.com"] }\`\n**Response:** \`{ "shareId": "abc123", "shareUrl": "/canvas/shared/abc123" }\`\n\n### GET /api/canvas/shared/:shareId\nFetch shared project — no authentication required.\n\n### PUT /api/canvas/:id/share-settings\n**Body:** \`{ "canEdit": [...], "canView": [...] }\`\n\n### DELETE /api/canvas/:id/share\nDisable sharing and revoke all access.`);
+      lines.push(`\n## Agent Integration Patterns\n\n### Create and read a project\n\`\`\`js\nconst headers = { "Authorization": "Bearer TOKEN", "Content-Type": "application/json" };\n\nconst { project } = await fetch("/api/canvas", {\n  method: "POST", headers,\n  body: JSON.stringify({\n    name: "Agent Canvas",\n    nodes: [{ id: "p1", type: "prompt", position: { x: 0, y: 0 }, data: { type: "prompt", prompt: "Product photo" } }],\n    edges: []\n  })\n}).then(r => r.json());\n\n// Read after generation\nconst { project: updated } = await fetch(\`/api/canvas/\${project._id}\`, { headers }).then(r => r.json());\nconst resultUrl = updated.nodes.find(n => n.type === "output")?.data?.resultImageUrl;\n\`\`\`\n\n### Add a node to existing project\n\`\`\`js\nconst { project } = await fetch(\`/api/canvas/\${id}\`, { headers }).then(r => r.json());\nawait fetch(\`/api/canvas/\${id}\`, {\n  method: "PUT", headers,\n  body: JSON.stringify({\n    nodes: [...project.nodes, { id: "text-1", type: "text", position: { x: 0, y: 0 }, data: { type: "text", text: "neon lighting" } }],\n    edges: project.edges\n  })\n});\n\`\`\`\n\n**Key rules:**\n- Node IDs must be unique within the project (use UUID or timestamp suffix)\n- Always PUT the full nodes array (no individual node PATCH)\n- Prefer R2 URLs over base64 — base64 expires in 7 days\n- Generation is async (happens in browser) — poll GET to read updated results`);
+      return lines.join('\n');
+    }
+
+    if (tab === 'mcp') {
+      if (!mcpSpec) return '# MCP Tools\n\nSpec not loaded yet.';
+      lines.push('# MCP Tools Reference');
+      lines.push(`\nIntegrate Visant Copilot into your AI agents via Model Context Protocol.\n`);
+      mcpSpec.tools.forEach(tool => {
+        lines.push(`\n## ${tool.name}\n\n${tool.description}\n`);
+        const props = Object.entries(tool.inputSchema?.properties || {});
+        if (props.length > 0) {
+          lines.push('**Parameters:**\n');
+          lines.push('| name | type | required | description |');
+          lines.push('|------|------|----------|-------------|');
+          props.forEach(([name, prop]: [string, any]) => {
+            const req = tool.inputSchema.required?.includes(name) ? 'yes' : 'no';
+            lines.push(`| \`${name}\` | ${prop.type || 'string'} | ${req} | ${prop.description || '-'} |`);
+          });
+        }
+        if (tool.examples?.[0]) {
+          lines.push(`\n**Example input:**\n\`\`\`json\n${JSON.stringify(tool.examples[0].input, null, 2)}\n\`\`\``);
+        }
+      });
+      return lines.join('\n');
+    }
+
+    if (tab === 'api') {
+      if (!openApiSpec) return '# REST API\n\nSpec not loaded yet.';
+      lines.push(`# ${openApiSpec.info.title} — REST API Reference`);
+      lines.push(`\nVersion: ${openApiSpec.info.version}\nAuth: \`Authorization: Bearer <jwt_token>\``);
+      const paths = openApiSpec.paths || {};
+      Object.entries(paths).forEach(([path, methods]) => {
+        Object.entries(methods as Record<string, any>).forEach(([method, details]) => {
+          if (!['get', 'post', 'put', 'delete', 'patch'].includes(method)) return;
+          lines.push(`\n## ${method.toUpperCase()} ${path}`);
+          if (details.summary) lines.push(`\n${details.summary}`);
+          if (details.description) lines.push(`\n${details.description}`);
+          if (details.parameters?.length > 0) {
+            lines.push('\n**Parameters:**\n');
+            lines.push('| name | in | type | description |');
+            lines.push('|------|----|------|-------------|');
+            details.parameters.forEach((p: any) => {
+              lines.push(`| \`${p.name}\` | ${p.in} | ${p.schema?.type || 'string'} | ${p.schema?.description || '-'} |`);
+            });
+          }
+        });
+      });
+      return lines.join('\n');
+    }
+
+    if (tab === 'figma-nodes') {
+      lines.push('# Figma Node JSON Spec');
+      lines.push(`\nData-driven pattern for creating Figma nodes via Plugin API. Define JSON → execute with render.ts.\n\n**Flow:** JSON spec → collectFonts() → figma.loadFontAsync() → buildNode() recursively`);
+      lines.push(`\n## Supported Node Types\n- FRAME — container with auto-layout, padding, fills, children\n- RECTANGLE — solid or gradient-filled box\n- ELLIPSE — circle or oval shape\n- TEXT — text with full typography control`);
+      lines.push(`\n## NodeSpec Properties\n| property | type | notes |\n|----------|------|-------|\n| type | string | 'FRAME' \\| 'RECTANGLE' \\| 'ELLIPSE' \\| 'TEXT' — required |\n| name | string | Layer name — required |\n| width / height | number | Applied via resize() internally |\n| fills | FillSpec[] | Array of solid or gradient fills. Empty array = transparent |\n| strokes | FillSpec[] | Stroke paints (same format as fills) |\n| strokeWeight | number | Stroke width in pixels |\n| cornerRadius | number | Rounded corners in pixels |\n| opacity | number | 0–1 |\n| effects | EffectSpec[] | DROP_SHADOW, INNER_SHADOW, LAYER_BLUR, BACKGROUND_BLUR |\n| layoutMode | string | 'NONE' \\| 'HORIZONTAL' \\| 'VERTICAL' — FRAME only |\n| primaryAxisAlignItems | string | 'MIN' \\| 'MAX' \\| 'CENTER' \\| 'SPACE_BETWEEN' |\n| counterAxisAlignItems | string | 'MIN' \\| 'MAX' \\| 'CENTER' \\| 'BASELINE' |\n| paddingTop/Bottom/Left/Right | number | Inner spacing — auto-layout frames only |\n| itemSpacing | number | Gap between children |\n| layoutSizingHorizontal | string | 'FIXED' \\| 'FILL' \\| 'HUG' — set AFTER appendChild |\n| layoutSizingVertical | string | 'FIXED' \\| 'FILL' \\| 'HUG' — set AFTER appendChild |\n| characters | string | Text content — TEXT only |\n| fontSize | number | Font size in px — TEXT only |\n| fontName | object | { family: string, style: string } — must be loaded first |\n| textAlignHorizontal | string | 'LEFT' \\| 'CENTER' \\| 'RIGHT' \\| 'JUSTIFIED' |\n| children | NodeSpec[] | Nested nodes — FRAME only |`);
+      lines.push(`\n## Critical Rules\n- **Colors are 0–1 floats** — { r: 1, g: 0, b: 0 } = red. Never 0–255.\n- **Use resize(), not width=** — width/height are read-only.\n- **Load fonts before text** — figma.loadFontAsync() must complete first.\n- **appendChild before layoutSizing** — FILL/HUG only works after node is in auto-layout parent.\n- **fontName.style must be exact** — 'SemiBold' not 'Semi Bold'.\n- **lineHeight AUTO has no value** — { unit: 'AUTO' } — omit value field.\n- **Empty fills = transparent** — fills: [] removes all background.`);
+      lines.push(`\n## Fill Examples\n\`\`\`json\n// Solid fill\n{ "type": "SOLID", "color": { "r": 0.98, "g": 0.35, "b": 0.35 }, "opacity": 1 }\n\n// Linear gradient\n{\n  "type": "GRADIENT_LINEAR",\n  "gradientTransform": [[0.7, 0.7, -0.1], [-0.7, 0.7, 0.7]],\n  "gradientStops": [\n    { "color": { "r": 0.06, "g": 0.09, "b": 0.22, "a": 1 }, "position": 0 },\n    { "color": { "r": 0.40, "g": 0.06, "b": 0.20, "a": 1 }, "position": 1 }\n  ]\n}\n\`\`\``);
+      return lines.join('\n');
+    }
+
+    if (tab === 'plugin') {
+      return `# Figma Plugin Guide\n\n## Installation\n1. Open any file in Figma.\n2. Go to Resources > Plugins.\n3. Search for "Visant Copilot" and click Run.\n4. Follow the on-screen prompts to connect your account.\n\n## Capabilities\n- **Mockups** — select frames and convert them to 3D device mockups instantly.\n- **Chat with AI** — describe what to build; nodes are created automatically.\n- **Brand identity extraction** — upload logo + identity PDF to generate brand-aware prompts.\n- **Image generation** — text-to-image, edit, merge, upscale inside Figma.\n\n## Plugin API (for developers)\nThe plugin communicates with the server via WebSocket (pluginBridge). Agents can send commands via the \`/api/plugin/agent-command\` endpoint which validates and queues operations for execution inside Figma.`;
+    }
+
+    // overview
+    return `# Visant Copilot Documentation\n\n## Sections\n- **REST API** — HTTP endpoints for auth, mockups, and canvas manipulation.\n- **Canvas API** — Create and manipulate canvas projects and nodes programmatically.\n- **MCP Tools** — Model Context Protocol tools for Claude and AI agent integration.\n- **Figma Plugin** — Design automation inside Figma.\n- **Figma Node JSON** — Data-driven node creation spec for the plugin renderer.\n\n## Authentication\nAll endpoints: \`Authorization: Bearer <jwt_token>\`\nObtain token: \`POST /api/auth/login\` → \`{ "email": "...", "password": "..." }\`\n\n## Base URL\n\`https://your-domain.com/api\``;
+  }, [mcpSpec, openApiSpec]);
+
+  const handleCopyMarkdown = useCallback(async () => {
+    const md = generateTabMarkdown(activeTab);
+    try {
+      await navigator.clipboard.writeText(md);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // fallback for non-https contexts
+      const el = document.createElement('textarea');
+      el.value = md;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }, [activeTab, generateTabMarkdown]);
+
   const handleNavigationClick = (itemId: string, sectionId?: string) => {
     setActiveTab(itemId);
     setTimeout(() => {
@@ -371,7 +476,7 @@ export const DocsPage: React.FC = () => {
           >
             <div className="h-screen overflow-y-auto">
               <div className="max-w-5xl mx-auto px-4 pt-[30px] pb-16 md:pb-24">
-                <div className="mb-4">
+                <div className="mb-4 flex items-center justify-between gap-3">
                   <BreadcrumbWithBack to="/">
                     <BreadcrumbList>
                       <BreadcrumbItem>
@@ -385,6 +490,20 @@ export const DocsPage: React.FC = () => {
                       </BreadcrumbItem>
                     </BreadcrumbList>
                   </BreadcrumbWithBack>
+
+                  <button
+                    onClick={handleCopyMarkdown}
+                    title="Copy this section as clean Markdown — ideal for pasting into LLM contexts"
+                    className={cn(
+                      "flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-redhatmono transition-all duration-200 shrink-0",
+                      copied
+                        ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-500"
+                        : "bg-secondary/60 border-border text-muted-foreground hover:border-brand-cyan/50 hover:text-brand-cyan hover:bg-brand-cyan/5"
+                    )}
+                  >
+                    {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copied ? 'Copied!' : 'Copy as Markdown'}
+                  </button>
                 </div>
 
                 {activeTab === 'overview' && (
@@ -402,6 +521,16 @@ export const DocsPage: React.FC = () => {
                     </div>
                   </div>
                 )}
+
+                {/* Agent-first hint bar */}
+                <div className="mb-6 flex items-start gap-3 bg-brand-cyan/5 border border-brand-cyan/20 rounded-lg px-4 py-3">
+                  <FileText className="w-4 h-4 text-brand-cyan mt-0.5 shrink-0" />
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    <span className="text-brand-cyan font-medium">LLM / Agent tip —</span>{' '}
+                    use the <span className="font-medium text-foreground">Copy as Markdown</span> button above to get the current section as clean, structured markdown.
+                    Paste it directly into your agent's context window or system prompt for accurate API usage.
+                  </p>
+                </div>
 
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                   <TabsContent value="overview" className="space-y-6 bg-transparent mt-0">
