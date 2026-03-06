@@ -51,6 +51,10 @@ interface CanvasHeaderContextValue {
   setOnExportImagesRequest: (handler: (() => void) | undefined) => void;
   onExportAllImagesRequest?: () => void;
   setOnExportAllImagesRequest: (handler: (() => void) | undefined) => void;
+  onExportJson?: () => void;
+  setOnExportJson: (handler: (() => void) | undefined) => void;
+  onImportJson?: () => void;
+  setOnImportJson: (handler: (() => void) | undefined) => void;
   activeSidePanel: string | null;
   setActiveSidePanel: (panel: string | null) => void;
 }
@@ -106,6 +110,8 @@ export const CanvasHeaderProvider: React.FC<CanvasHeaderProviderProps> = ({ chil
   const [onLoadWorkflow, setOnLoadWorkflow] = useState<(() => void) | undefined>(undefined);
   const [onExportImagesRequest, setOnExportImagesRequest] = useState<(() => void) | undefined>(undefined);
   const [onExportAllImagesRequest, setOnExportAllImagesRequest] = useState<(() => void) | undefined>(undefined);
+  const [onExportJson, setOnExportJson] = useState<(() => void) | undefined>(undefined);
+  const [onImportJson, setOnImportJson] = useState<(() => void) | undefined>(undefined);
   const [activeSidePanel, setActiveSidePanel] = useState<string | null>(null);
 
   const [backgroundColor, setBackgroundColor] = useLocalStorage('canvasBackgroundColor', '#0C0C0C');
@@ -172,6 +178,10 @@ export const CanvasHeaderProvider: React.FC<CanvasHeaderProviderProps> = ({ chil
     setOnExportImagesRequest,
     onExportAllImagesRequest,
     setOnExportAllImagesRequest,
+    onExportJson,
+    setOnExportJson,
+    onImportJson,
+    setOnImportJson,
     activeSidePanel,
     setActiveSidePanel,
   }), [
@@ -199,6 +209,8 @@ export const CanvasHeaderProvider: React.FC<CanvasHeaderProviderProps> = ({ chil
     onLoadWorkflow,
     onExportImagesRequest,
     onExportAllImagesRequest,
+    onExportJson,
+    onImportJson,
     activeSidePanel,
     setActiveSidePanel,
   ]);

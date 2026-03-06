@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BackButton } from '@/components/ui/BackButton';
-import { Share2, ChevronRight, Settings, Users, Save, FolderOpen, Download, Check } from 'lucide-react';
+import { Share2, ChevronRight, Settings, Users, Save, FolderOpen, Download, Check, FileJson, Upload } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
 import { AuthButton } from '../AuthButton';
@@ -58,6 +58,8 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
     onLoadWorkflow,
     onExportImagesRequest,
     onExportAllImagesRequest,
+    onExportJson,
+    onImportJson,
     activeSidePanel,
     setActiveSidePanel,
   } = useCanvasHeader();
@@ -244,20 +246,35 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
             >
               <Download size={14} />
             </button>
-            <div className="absolute right-0 top-full mt-1 w-48 bg-[#1a1a1a] border border-neutral-800/50 rounded-lg shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60] py-1 backdrop-blur-md">
+            <div className="absolute right-0 top-full mt-1 w-52 bg-[#1a1a1a] border border-neutral-800/50 rounded-lg shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60] py-1 backdrop-blur-md">
               <button
                 onClick={() => onExportImagesRequest?.()}
                 className="w-full text-left px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-800/80 transition-colors flex items-center gap-2 font-mono"
               >
-                <Download size={12} className="text-[brand-cyan]" />
+                <Download size={12} className="text-brand-cyan" />
                 Exportar imagens...
               </button>
               <button
                 onClick={() => onExportAllImagesRequest?.()}
                 className="w-full text-left px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-800/80 transition-colors flex items-center gap-2 font-mono"
               >
-                <Check size={12} className="text-[brand-cyan]" />
+                <Check size={12} className="text-brand-cyan" />
                 Exportar todas (PNG)
+              </button>
+              <div className="border-t border-neutral-800/60 my-1" />
+              <button
+                onClick={() => onExportJson?.()}
+                className="w-full text-left px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-800/80 transition-colors flex items-center gap-2 font-mono"
+              >
+                <FileJson size={12} className="text-brand-cyan" />
+                Exportar como JSON
+              </button>
+              <button
+                onClick={() => onImportJson?.()}
+                className="w-full text-left px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-800/80 transition-colors flex items-center gap-2 font-mono"
+              >
+                <Upload size={12} className="text-brand-cyan" />
+                Importar de JSON
               </button>
             </div>
           </div>
