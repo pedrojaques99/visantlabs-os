@@ -168,6 +168,7 @@ export const DocsPage: React.FC = () => {
         { id: 'ca-media', label: 'Media Upload' },
         { id: 'ca-share', label: 'Sharing & Collab' },
         { id: 'ca-agents', label: 'Agent Integration' },
+        { id: 'ca-json', label: 'JSON Export Format' },
       ],
     },
   ];
@@ -190,6 +191,7 @@ export const DocsPage: React.FC = () => {
       lines.push(`\n## Media Upload\n\n### POST /api/canvas/image/upload\nUpload image (base64) to R2. Returns persistent URL.\n**Body:** \`{ "base64Image": "data:image/png;base64,...", "canvasId": "...", "nodeId": "..." }\`\n**Response:** \`{ "imageUrl": "https://r2.example.com/..." }\`\n\n### GET /api/canvas/image/upload-url\nPresigned URL for direct large-image upload (bypasses Vercel limit).\n**Query:** \`canvasId, nodeId, contentType\`\n**Response:** \`{ "presignedUrl": "...", "finalUrl": "..." }\`\n\n### POST /api/canvas/video/upload\n**Body:** \`{ "videoBase64": "data:video/mp4;base64,...", "canvasId": "...", "nodeId": "..." }\`\n**Response:** \`{ "videoUrl": "..." }\`\n\n### GET /api/canvas/video/upload-url\nPresigned URL for direct large-video upload.\n**Query:** \`canvasId, nodeId, contentType\`\n\n### POST /api/canvas/pdf/upload\n**Body:** \`{ "pdfBase64": "data:application/pdf;base64,...", "canvasId": "...", "nodeId": "..." }\`\n**Response:** \`{ "pdfUrl": "..." }\`\n\n### DELETE /api/canvas/image?url=<encoded>\nDelete image from R2 by URL.`);
       lines.push(`\n## Sharing & Collaboration\nRequires Admin or Premium plan.\n\n### POST /api/canvas/:id/share\n**Body:** \`{ "canEdit": ["user@example.com"], "canView": ["viewer@example.com"] }\`\n**Response:** \`{ "shareId": "abc123", "shareUrl": "/canvas/shared/abc123" }\`\n\n### GET /api/canvas/shared/:shareId\nFetch shared project — no authentication required.\n\n### PUT /api/canvas/:id/share-settings\n**Body:** \`{ "canEdit": [...], "canView": [...] }\`\n\n### DELETE /api/canvas/:id/share\nDisable sharing and revoke all access.`);
       lines.push(`\n## Agent Integration Patterns\n\n### Create and read a project\n\`\`\`js\nconst headers = { "Authorization": "Bearer TOKEN", "Content-Type": "application/json" };\n\nconst { project } = await fetch("/api/canvas", {\n  method: "POST", headers,\n  body: JSON.stringify({\n    name: "Agent Canvas",\n    nodes: [{ id: "p1", type: "prompt", position: { x: 0, y: 0 }, data: { type: "prompt", prompt: "Product photo" } }],\n    edges: []\n  })\n}).then(r => r.json());\n\n// Read after generation\nconst { project: updated } = await fetch(\`/api/canvas/\${project._id}\`, { headers }).then(r => r.json());\nconst resultUrl = updated.nodes.find(n => n.type === "output")?.data?.resultImageUrl;\n\`\`\`\n\n### Add a node to existing project\n\`\`\`js\nconst { project } = await fetch(\`/api/canvas/\${id}\`, { headers }).then(r => r.json());\nawait fetch(\`/api/canvas/\${id}\`, {\n  method: "PUT", headers,\n  body: JSON.stringify({\n    nodes: [...project.nodes, { id: "text-1", type: "text", position: { x: 0, y: 0 }, data: { type: "text", text: "neon lighting" } }],\n    edges: project.edges\n  })\n});\n\`\`\`\n\n**Key rules:**\n- Node IDs must be unique within the project (use UUID or timestamp suffix)\n- Always PUT the full nodes array (no individual node PATCH)\n- Prefer R2 URLs over base64 — base64 expires in 7 days\n- Generation is async (happens in browser) — poll GET to read updated results`);
+      lines.push(`\n## JSON Export / Import Format (visant-canvas/v1)\n\nCanvas projects can be exported and imported as portable JSON files using the schema \`visant-canvas/v1\`.\n\n### Schema\n\`\`\`json\n{\n  "meta": {\n    "schema": "visant-canvas/v1",\n    "exportedAt": "2026-01-01T00:00:00.000Z",\n    "nodeCount": 5,\n    "edgeCount": 4,\n    "drawingCount": 0\n  },\n  "name": "My Workflow",\n  "nodes": [...],\n  "edges": [...],\n  "drawings": []\n}\n\`\`\`\n\n### Stripped fields (on export)\n**Binary data (only R2 URLs are kept):** resultImageBase64, resultVideoBase64, imageBase64, base64, pdfBase64, identityPdfBase64, identityImageBase64, logoBase64, uploadedVideo, startFrame, endFrame\n\n**Transient / recomputed from edges:** connectedImages, connectedImage, connectedLogo, connectedPdf, connectedText, connectedVideo, oversizedWarning, isGenerating, isLoading, promptSuggestions, suggestedTags, userMockups\n\n### Import (programmatic)\n\`\`\`js\nimport { readJsonFile, validateVisantJson } from '@/utils/canvas/canvasJsonExport';\nimport { canvasApi } from '@/services/canvasApi';\n\nconst raw = await readJsonFile(file); // file: File from input[type=file]\nif (!validateVisantJson(raw)) throw new Error('Not a valid visant-canvas/v1 file');\n\nconst newProject = await canvasApi.save(raw.name, raw.nodes, raw.edges, undefined, raw.drawings ?? []);\nnavigate(\`/canvas/\${newProject._id}\`);\n\`\`\`\n\n### UI Entry Points\n- Canvas header → Download dropdown → "Exportar como JSON" / "Importar de JSON"\n- Projects listing page → "Import from JSON" button\n- On import a **new project is always created** — existing projects are never overwritten`);
       return lines.join('\n');
     }
 
@@ -1633,6 +1635,110 @@ await fetch(\`\${BASE}/canvas/\${projectId}\`, {
                             <li>• <strong className="text-foreground">Prefer R2 URLs over base64</strong> — base64 in nodes expires after 7 days and increases payload size.</li>
                             <li>• <strong className="text-foreground">Result images are async</strong> — generation happens in the browser. The API stores whatever state the frontend last saved. Poll or listen to get updated results after generation.</li>
                             <li>• <strong className="text-foreground">Max 10,000 nodes</strong> per project. Max 15 MB payload after R2 offload.</li>
+                          </ul>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* JSON Export / Import Format */}
+                    <Card id="ca-json">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">JSON Export / Import Format</CardTitle>
+                        <CardDescription>The <code className="font-redhatmono text-xs bg-secondary px-1 rounded">visant-canvas/v1</code> schema used to save and restore complete canvas workflows as portable JSON files.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        <div>
+                          <h4 className="font-redhatmono text-xs uppercase tracking-wider text-muted-foreground mb-3">Top-level structure</h4>
+                          <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                            <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">TypeScript</div>
+                            <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto leading-relaxed">{`interface VisantCanvasExport {
+  meta: {
+    schema: "visant-canvas/v1"; // always this string — used for validation
+    exportedAt: string;          // ISO-8601 timestamp
+    nodeCount: number;
+    edgeCount: number;
+    drawingCount: number;
+  };
+  name: string;       // human-readable project name
+  nodes: Node[];      // React Flow nodes (cleaned — no base64, no transient state)
+  edges: Edge[];      // React Flow edges (id, source, target, handles, type)
+  drawings: any[];    // free-draw strokes (may be empty array)
+}`}</pre>
+                          </div>
+                        </div>
+
+                        <div>
+                          <h4 className="font-redhatmono text-xs uppercase tracking-wider text-muted-foreground mb-3">Fields stripped on export</h4>
+                          <p className="text-sm text-muted-foreground mb-3">The following fields are removed from node data before export to keep files portable and compact:</p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="bg-secondary/20 rounded-lg border border-border p-3">
+                              <p className="font-redhatmono text-xs text-muted-foreground uppercase tracking-wider mb-2">Large binary data (kept as R2 URLs)</p>
+                              <ul className="space-y-0.5 text-xs font-redhatmono text-foreground">
+                                {['resultImageBase64', 'resultVideoBase64', 'imageBase64', 'base64', 'pdfBase64', 'identityPdfBase64', 'identityImageBase64', 'logoBase64', 'uploadedVideo', 'startFrame', 'endFrame'].map(f => (
+                                  <li key={f} className="text-muted-foreground"><span className="text-brand-cyan">−</span> {f}</li>
+                                ))}
+                              </ul>
+                            </div>
+                            <div className="bg-secondary/20 rounded-lg border border-border p-3">
+                              <p className="font-redhatmono text-xs text-muted-foreground uppercase tracking-wider mb-2">Transient / recomputed from edges</p>
+                              <ul className="space-y-0.5 text-xs font-redhatmono text-foreground">
+                                {['connectedImages', 'connectedImage', 'connectedLogo', 'connectedPdf', 'connectedText', 'connectedVideo', 'oversizedWarning', 'isGenerating', 'isLoading', 'promptSuggestions', 'suggestedTags', 'userMockups'].map(f => (
+                                  <li key={f} className="text-muted-foreground"><span className="text-brand-cyan">−</span> {f}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <h4 className="font-redhatmono text-xs uppercase tracking-wider text-muted-foreground mb-3">Exporting programmatically</h4>
+                          <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                            <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">TypeScript</div>
+                            <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto leading-relaxed">{`import { exportCanvasToJson, downloadJsonFile } from '@/utils/canvas/canvasJsonExport';
+
+// Serialize current canvas state (nodes / edges / drawings from React Flow)
+const exported = exportCanvasToJson(projectName, nodes, edges, drawings);
+
+// Trigger browser download → "my_canvas.json"
+downloadJsonFile(exported, projectName);`}</pre>
+                          </div>
+                        </div>
+
+                        <div>
+                          <h4 className="font-redhatmono text-xs uppercase tracking-wider text-muted-foreground mb-3">Importing programmatically</h4>
+                          <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                            <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">TypeScript</div>
+                            <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto leading-relaxed">{`import { readJsonFile, validateVisantJson } from '@/utils/canvas/canvasJsonExport';
+import { canvasApi } from '@/services/canvasApi';
+
+// file: File from <input type="file" accept=".json">
+const raw = await readJsonFile(file);
+
+if (!validateVisantJson(raw)) {
+  throw new Error('Not a valid visant-canvas/v1 file');
+}
+
+// Create a new project from the imported data
+const newProject = await canvasApi.save(
+  raw.name,
+  raw.nodes,
+  raw.edges,
+  undefined,
+  raw.drawings ?? []
+);
+
+// Navigate to the newly created project
+navigate(\`/canvas/\${newProject._id}\`);`}</pre>
+                          </div>
+                        </div>
+
+                        <div className="bg-card border border-brand-cyan/20 rounded-lg p-4">
+                          <p className="text-brand-cyan text-sm font-medium mb-2">UI Entry Points</p>
+                          <ul className="space-y-1.5 text-sm text-muted-foreground">
+                            <li>• <strong className="text-foreground">Canvas header → Download dropdown</strong> — "Exportar como JSON" / "Importar de JSON" buttons.</li>
+                            <li>• <strong className="text-foreground">Projects listing page</strong> — "Import from JSON" button next to "New Project".</li>
+                            <li>• On export, base64 blobs are stripped; only R2 <code className="font-redhatmono text-xs bg-secondary px-1 rounded">*Url</code> fields are kept, so files are human-readable and reproducible.</li>
+                            <li>• On import, a <strong className="text-foreground">new project is always created</strong> — it never overwrites an existing one.</li>
                           </ul>
                         </div>
                       </CardContent>
