@@ -6,6 +6,7 @@ import { aiApi } from '@/services/aiApi';
 import { generateNodeId } from '@/utils/canvas/canvasNodeUtils';
 import { isLocalDevelopment } from '@/utils/env';
 import { normalizeImageToBase64, detectMimeType } from '@/services/reactFlowService';
+import { DEFAULT_MODEL, DEFAULT_ASPECT_RATIO } from '@/constants/geminiModels';
 
 interface UseDirectorNodeHandlerParams {
   nodesRef: React.MutableRefObject<Node<FlowNodeData>[]>;
@@ -260,7 +261,7 @@ export const useDirectorNodeHandler = ({
         effectTags,
         materialTags,
         selectedColors: directorData.selectedColors || [],
-        aspectRatio: '16:9',
+        aspectRatio: DEFAULT_ASPECT_RATIO,
         generateText: false,
         withHuman: false,
         enhanceTexture: false,
@@ -306,7 +307,7 @@ export const useDirectorNodeHandler = ({
         data: {
           type: 'prompt',
           prompt: generatedPrompt,
-          model: 'gemini-2.5-flash-image',
+          model: DEFAULT_MODEL,
           onGenerate: handlersRef.current?.handlePromptGenerate || (() => Promise.resolve()),
           onSuggestPrompts: handlersRef.current?.handlePromptSuggestPrompts || (() => Promise.resolve()),
           onSavePrompt: handlersRef.current?.handleSavePrompt || (() => {}),

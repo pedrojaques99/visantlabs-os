@@ -2,6 +2,7 @@
 
 import { calculateImageCost } from '../../src/utils/pricing.js';
 import type { GeminiModel, Resolution } from '../../src/types/types.js';
+import { GEMINI_MODELS } from '../../src/constants/geminiModels.js';
 
 export type FeatureType = 'brandingmachine' | 'mockupmachine' | 'canvas' | 'branding' | 'figma';
 
@@ -40,11 +41,11 @@ export function getCreditsRequired(
   model: GeminiModel,
   resolution?: Resolution
 ): number {
-  if (model === 'gemini-2.5-flash-image') {
+  if (model === GEMINI_MODELS.FLASH) {
     return 1;
   }
 
-  if (model === 'gemini-3.1-flash-image-preview') {
+  if (model === GEMINI_MODELS.NB2) {
     switch (resolution) {
       case '512px':
         return 1;
@@ -59,7 +60,7 @@ export function getCreditsRequired(
     }
   }
 
-  if (model === 'gemini-3-pro-image-preview') {
+  if (model === GEMINI_MODELS.PRO) {
     switch (resolution) {
       case '1K':
         return 3;

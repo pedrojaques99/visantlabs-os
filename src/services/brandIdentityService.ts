@@ -1,6 +1,8 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import type { BrandIdentity } from '../types/reactFlow';
 import type { UploadedImage } from '../types/types';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
+
 
 // Lazy initialization to avoid breaking app startup if API key is not configured
 let ai: GoogleGenAI | null = null;
@@ -135,7 +137,7 @@ You must return a JSON object matching this exact structure:
   parts.push({ text: prompt });
 
   const response = await getAI().models.generateContent({
-    model: 'gemini-2.5-flash',
+    model: GEMINI_MODELS.TEXT,
     contents: { parts },
     config: {
       responseMimeType: 'application/json',

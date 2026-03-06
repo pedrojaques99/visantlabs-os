@@ -24,7 +24,9 @@
       "Bash(rm:*)",
       "Bash(npx skills:*)",
       "Bash(npx tsx:*)",
-      "WebFetch(domain:ai.google.dev)"
+      "WebFetch(domain:ai.google.dev)",
+      "Bash(python:*)",
+      "Bash(PYTHONIOENCODING=utf-8 python:*)"
     ]
   }
 }

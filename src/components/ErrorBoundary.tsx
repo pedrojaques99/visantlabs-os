@@ -31,7 +31,7 @@ interface State {
 }
 
 export class ErrorBoundary extends Component<Props, State> {
-  private retryTimeout: NodeJS.Timeout | null = null;
+  private retryTimeout: any = null;
 
   constructor(props: Props) {
     super(props);
@@ -231,7 +231,7 @@ export class ErrorBoundary extends Component<Props, State> {
                   </p>
                 </div>
               )}
-              {this.state.errorInfo && !isChunkError && (
+              {this.state.errorInfo && !isChunkError && import.meta.env.DEV && (
                 <details className="mt-4">
                   <summary className="text-xs text-neutral-500 cursor-pointer hover:text-neutral-400 font-mono mb-2">
                     {translations.stackTrace || 'Stack Trace'}

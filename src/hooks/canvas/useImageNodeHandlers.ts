@@ -11,6 +11,7 @@ import { aiApi } from '@/services/aiApi';
 import { normalizeImageToBase64 } from '@/services/reactFlowService';
 import type { ReactFlowInstance } from '@/types/reactflow-instance';
 import { collectR2UrlsForDeletion } from './utils/r2UploadHelpers';
+import { DEFAULT_ASPECT_RATIO } from '@/constants/geminiModels';
 
 interface UseImageNodeHandlersParams {
   imageContextMenu: { x: number; y: number; nodeId: string } | null;
@@ -637,7 +638,7 @@ export const useImageNodeHandlers = ({
         designType: 'other',
         tags: [],
         brandingTags: [],
-        aspectRatio: '16:9',
+        aspectRatio: DEFAULT_ASPECT_RATIO,
         isLiked: true,
       });
 

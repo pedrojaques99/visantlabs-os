@@ -5,6 +5,8 @@ import { toast } from 'sonner';
 import { useTranslation } from './useTranslation';
 import { isLocalDevelopment } from '@/utils/env';
 import type { GeminiModel, Resolution } from '@/types/types';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
+
 
 /**
  * Hook that provides credit validation functions
@@ -24,7 +26,7 @@ import type { GeminiModel, Resolution } from '@/types/types';
  * if (!hasEnoughCredits(5)) return;
  * 
  * // Async validation
- * if (!(await validateCredits({ model: 'gemini-3-pro-image-preview', resolution: '4K' }))) return;
+ * if (!(await validateCredits({ model: GEMINI_MODELS.PRO, resolution: '4K' }))) return;
  */
 export const useCreditValidation = (
   mockupCount: number = 1,

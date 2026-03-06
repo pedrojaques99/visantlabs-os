@@ -13,6 +13,8 @@ import { parseActionsFromResponse, type DetectedAction } from '@/services/chatSe
 import { toast } from 'sonner';
 import { fileToBase64 } from '@/utils/fileUtils';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
+
 
 interface ChatSidebarProps {
   nodeData: ChatNodeData;
@@ -217,7 +219,7 @@ export const ChatSidebar = ({
   const actualSidebarRef = sidebarRef || internalSidebarRef;
 
   const isLoading = nodeData.isLoading || false;
-  const model = nodeData.model || 'gemini-2.5-flash';
+  const model = nodeData.model || GEMINI_MODELS.TEXT;
   const userMessageCount = nodeData.userMessageCount || 0;
   const messages = nodeData.messages || [];
 

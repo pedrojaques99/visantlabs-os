@@ -1,4 +1,6 @@
 import { authService } from './authService';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
+
 
 // Get API URL from environment or use current origin for production
 const getApiBaseUrl = () => {
@@ -234,7 +236,7 @@ export const subscriptionService = {
   async trackUsage(
     success: boolean,
     imagesCount: number = 1,
-    model: string = 'gemini-2.5-flash-image',
+    model: string = GEMINI_MODELS.FLASH,
     hasInputImage: boolean = false,
     promptLength?: number,
     resolution?: '1K' | '2K' | '4K',

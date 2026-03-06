@@ -1,4 +1,5 @@
 import type { GeminiModel, Resolution, SeedreamModel, ImageProvider } from '../types/types';
+import { GEMINI_MODELS } from '../constants/geminiModels';
 
 /**
  * Get credits required for image generation based on model, resolution, and provider
@@ -22,11 +23,11 @@ export function getCreditsRequired(
   }
 
   // Gemini models
-  if (model === 'gemini-2.5-flash-image') {
+  if (model === GEMINI_MODELS.FLASH) {
     return 1;
   }
 
-  if (model === 'gemini-3.1-flash-image-preview') {
+  if (model === GEMINI_MODELS.NB2) {
     switch (resolution) {
       case '512px':
         return 1;
@@ -42,7 +43,7 @@ export function getCreditsRequired(
     }
   }
 
-  if (model === 'gemini-3-pro-image-preview') {
+  if (model === GEMINI_MODELS.PRO) {
     switch (resolution) {
       case '1K':
       case 'HD':

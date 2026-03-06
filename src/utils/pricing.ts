@@ -2,6 +2,8 @@
 // Single source of truth for all pricing calculations
 
 import type { GeminiModel, Resolution } from '../types/types';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
+
 
 /**
  * Pricing constants (in USD)
@@ -29,12 +31,12 @@ export function getImagePricing(
   resolution?: Resolution | string | null
 ): number {
   // Gemini 2.5 Flash
-  if (model === 'gemini-2.5-flash-image') {
+  if (model === GEMINI_MODELS.FLASH) {
     return PRICING.IMAGE.GEMINI_2_5;
   }
 
   // Gemini 3 Pro - pricing varies by resolution
-  if (model === 'gemini-3-pro-image-preview') {
+  if (model === GEMINI_MODELS.PRO) {
     if (resolution === '1K') {
       return PRICING.IMAGE.GEMINI_1K;
     }
@@ -61,7 +63,7 @@ export function getImagePricing(
  */
 export function calculateImageCost(
   imagesCount: number,
-  model: GeminiModel | string = 'gemini-2.5-flash-image',
+  model: GeminiModel | string = GEMINI_MODELS.FLASH,
   resolution?: Resolution | string | null
 ): number {
   const pricePerImage = getImagePricing(model, resolution);
