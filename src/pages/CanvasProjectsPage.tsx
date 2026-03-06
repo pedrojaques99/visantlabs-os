@@ -9,7 +9,7 @@ import { AuthModal } from '../components/AuthModal';
 import { ConfirmationModal } from '../components/ConfirmationModal';
 import { BreadcrumbWithBack, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '../components/ui/BreadcrumbWithBack';
 import { toast } from 'sonner';
-import { FolderKanban, Calendar, Eye, Trash2, Plus, Pickaxe, FolderOpen } from 'lucide-react';
+import { FolderKanban, Calendar, Eye, Trash2, Plus, Pickaxe, FolderOpen, FileJson } from 'lucide-react';
 import { SEO } from '../components/SEO';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
@@ -20,6 +20,7 @@ import { getImageUrl } from '@/utils/imageUtils';
 import { isLocalDevelopment } from '@/utils/env';
 import { WorkflowLibraryModal } from '../components/WorkflowLibraryModal';
 import { workflowApi, type CanvasWorkflow } from '../services/workflowApi';
+import { validateVisantJson, readJsonFile } from '@/utils/canvas/canvasJsonExport';
 
 // Helper function to get project thumbnail
 const getProjectThumbnail = (project: CanvasProject): string | null => {
@@ -218,6 +219,31 @@ export const CanvasProjectsPage: React.FC = () => {
       toast.error(t('canvas.invalidProjectId') || 'Invalid project ID');
     }
   };
+
+  const importJsonInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImportJsonClick = useCallback(() => {
+    importJsonInputRef.current?.click();
+  }, []);
+
+  const handleImportJsonFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+    try {
+      const raw = await readJsonFile(file);
+      if (!validateVisantJson(raw)) {
+        toast.error('Invalid file — not a Visant canvas JSON.');
+        return;
+      }
+      const newProject = await canvasApi.save(raw.name, raw.nodes, raw.edges, undefined, raw.drawings ?? []);
+      toast.success(`Imported "${raw.name}" — opening canvas...`);
+      navigate(`/canvas/${newProject._id}`);
+    } catch (err: any) {
+      console.error('JSON import failed:', err);
+      toast.error(err?.message || 'Failed to import JSON file.');
+    }
+  }, [navigate]);
 
   const handleCreateNew = async () => {
     console.log('[CanvasProjects] ➕ Creating new project...');
@@ -494,6 +520,20 @@ export const CanvasProjectsPage: React.FC = () => {
                 <FolderOpen className="h-4 w-4" />
                 {t('workflows.importWorkflow') || 'Import workflow'}
               </button>
+              <button
+                onClick={handleImportJsonClick}
+                className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-700 hover:border-neutral-600 font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2"
+              >
+                <FileJson className="h-4 w-4" />
+                Import from JSON
+              </button>
+              <input
+                ref={importJsonInputRef}
+                type="file"
+                accept=".json"
+                style={{ display: 'none' }}
+                onChange={handleImportJsonFileChange}
+              />
             </div>
           </div>
 

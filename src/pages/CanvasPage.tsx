@@ -85,6 +85,7 @@ import type { UploadedImage } from '../types/types';
 import { SaveWorkflowDialog } from '../components/SaveWorkflowDialog';
 import { workflowApi } from '../services/workflowApi';
 import type { CanvasWorkflow } from '../services/workflowApi';
+import { exportCanvasToJson, downloadJsonFile, validateVisantJson, readJsonFile } from '@/utils/canvas/canvasJsonExport';
 
 import { isLocalDevelopment } from '@/utils/env';
 import { ExportPanel } from '../components/ui/ExportPanel';
@@ -1428,6 +1429,77 @@ export const CanvasPage: React.FC = () => {
   useEffect(() => {
     setOnImportCommunityPreset(() => handleImportCommunityPreset);
   }, [handleImportCommunityPreset, setOnImportCommunityPreset]);
+
+  // ── JSON Export ────────────────────────────────────────────────────────────
+  const importJsonInputRef = useRef<HTMLInputElement>(null);
+
+  const handleExportJson = useCallback(() => {
+    const data = exportCanvasToJson(
+      projectName || 'canvas',
+      nodes,
+      edges,
+      drawing.drawings ?? []
+    );
+    downloadJsonFile(data, projectName || 'canvas');
+    toast.success(
+      `Exportado: ${data.meta.nodeCount} nodes, ${data.meta.edgeCount} edges`,
+      { duration: 3000 }
+    );
+  }, [projectName, nodes, edges, drawing.drawings]);
+
+  const handleImportJson = useCallback(() => {
+    importJsonInputRef.current?.click();
+  }, []);
+
+  const handleImportFileChange = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      e.target.value = ''; // allow reimporting same file
+
+      try {
+        const raw = await readJsonFile(file);
+        if (!validateVisantJson(raw)) {
+          toast.error(
+            'Arquivo inválido. Use um export .json gerado pelo Visant Canvas.',
+            { duration: 5000 }
+          );
+          return;
+        }
+
+        const newProject = await canvasApi.save(
+          raw.name || file.name.replace(/\.json$/i, ''),
+          raw.nodes as any,
+          raw.edges as any,
+          undefined,
+          raw.drawings ?? []
+        );
+
+        toast.success(
+          `Importado "${raw.name}" — ${raw.meta.nodeCount} nodes, ${raw.meta.edgeCount} edges`,
+          { duration: 4000 }
+        );
+        navigate(`/canvas/${newProject._id}`);
+      } catch (err: any) {
+        console.error('[CanvasPage] JSON import failed:', err);
+        toast.error(`Falha ao importar: ${err?.message ?? 'erro desconhecido'}`, {
+          duration: 5000,
+        });
+      }
+    },
+    [navigate]
+  );
+
+  // Wire JSON export/import into header context
+  useEffect(() => {
+    canvasHeader.setOnExportJson(() => handleExportJson);
+    canvasHeader.setOnImportJson(() => handleImportJson);
+    return () => {
+      canvasHeader.setOnExportJson(undefined);
+      canvasHeader.setOnImportJson(undefined);
+    };
+  }, [handleExportJson, handleImportJson, canvasHeader.setOnExportJson, canvasHeader.setOnImportJson]);
+  // ── end JSON Export ────────────────────────────────────────────────────────
 
   // Handle drop of images onto canvas
   const handleDropImage = useCallback((image: UploadedImage, position: { x: number; y: number }) => {
@@ -3937,6 +4009,15 @@ export const CanvasPage: React.FC = () => {
             nodeType={exportPanel.nodeType}
           />
         )}
+
+        {/* JSON Import — hidden file input */}
+        <input
+          ref={importJsonInputRef}
+          type="file"
+          accept=".json"
+          style={{ display: 'none' }}
+          onChange={handleImportFileChange}
+        />
 
         {/* Workflow Modals */}
         <SaveWorkflowDialog
