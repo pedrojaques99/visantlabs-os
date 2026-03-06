@@ -1,5 +1,5 @@
 import express, { Request, Response, NextFunction } from 'express';
-import { chooseProvider } from '../lib/ai-providers/index.js';
+import { chooseProvider } from '../lib/ai-providers/router.js';
 import { getDb, connectToMongoDB } from '../db/mongodb.js';
 import { pluginBridge } from '../lib/pluginBridge.js';
 import { operationValidator } from '../lib/operationValidator.js';
