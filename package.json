@@ -54,6 +54,11 @@
     "prisma:push": "prisma db push",
     "test:validation": "tsx server/utils/validation.test.ts"
   },
+  "overrides": {
+    "@google/genai": {
+      "@modelcontextprotocol/sdk": "$@modelcontextprotocol/sdk"
+    }
+  },
   "dependencies": {
     "@ai-sdk/gateway": "^2.0.13",
     "@anthropic-ai/sdk": "^0.78.0",
