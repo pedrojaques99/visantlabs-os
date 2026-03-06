@@ -36,6 +36,7 @@ import { AMBIENCE_PRESETS } from '../types/ambiencePresets';
 import type { LuminancePreset } from '../types/luminancePresets';
 import { LUMINANCE_PRESETS } from '../types/luminancePresets';
 import type { AspectRatio, GeminiModel, UploadedImage } from '../types/types';
+import { GEMINI_MODELS } from '../constants/geminiModels';
 import { cn } from '../lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
 import type { BrandingPreset } from '../types/brandingPresets';
@@ -57,7 +58,7 @@ import type { CommunityPrompt } from '@/types/communityPrompts';
 const ADMIN_API = '/api/admin/presets';
 
 const ASPECT_RATIOS: AspectRatio[] = ['9:16', '21:9', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '16:9', '1:1'];
-const GEMINI_MODELS: GeminiModel[] = ['gemini-2.5-flash-image', 'gemini-3-pro-image-preview'];
+const AVAILABLE_MODELS: GeminiModel[] = [GEMINI_MODELS.FLASH, GEMINI_MODELS.PRO];
 
 interface PresetsData {
   mockupPresets: MockupPreset[];
@@ -100,7 +101,7 @@ export const AdminPresetsPage: React.FC = () => {
     prompt: '',
     referenceImageUrl: '',
     aspectRatio: '16:9',
-    model: 'gemini-2.5-flash-image',
+    model: GEMINI_MODELS.FLASH,
     tags: [],
     mockupCategoryId: '',
   });
@@ -163,7 +164,7 @@ export const AdminPresetsPage: React.FC = () => {
           prompt: '',
           referenceImageUrl: '',
           aspectRatio: '16:9',
-          model: 'gemini-2.5-flash-image',
+          model: GEMINI_MODELS.FLASH,
           mockupCategoryId: '',
         });
         setImageUploadError(null);
@@ -495,7 +496,7 @@ export const AdminPresetsPage: React.FC = () => {
       prompt: '',
       referenceImageUrl: '',
       aspectRatio: '16:9',
-      model: 'gemini-2.5-flash-image',
+      model: GEMINI_MODELS.FLASH,
       tags: [],
     });
     setTagInput('');
@@ -512,7 +513,7 @@ export const AdminPresetsPage: React.FC = () => {
       prompt: '',
       referenceImageUrl: '',
       aspectRatio: '16:9',
-      model: 'gemini-2.5-flash-image',
+      model: GEMINI_MODELS.FLASH,
       tags: [],
     });
     setTagInput('');
@@ -701,7 +702,7 @@ export const AdminPresetsPage: React.FC = () => {
       }
 
       const validAspectRatios = ['9:16', '21:9', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '16:9', '1:1'];
-      const validModels = ['gemini-2.5-flash-image', 'gemini-3-pro-image-preview'];
+      const validModels = [GEMINI_MODELS.FLASH, GEMINI_MODELS.PRO];
 
       for (let i = 0; i < parsed.length; i++) {
         const preset = parsed[i];
@@ -1562,7 +1563,7 @@ export const AdminPresetsPage: React.FC = () => {
                           }}
                           rows={12}
                           className="w-full px-4 py-2 bg-neutral-950/70 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50 resize-none"
-                          placeholder={`[\n  {\n    "id": "preset-id-1",\n    "name": "Nome do Preset 1",\n    "description": "Descrição do preset 1",\n    "prompt": "Prompt completo...",\n    "referenceImageUrl": "",\n    "aspectRatio": "16:9",\n    "model": "gemini-2.5-flash-image"\n  }\n]`}
+                          placeholder={`[\n  {\n    "id": "preset-id-1",\n    "name": "Nome do Preset 1",\n    "description": "Descrição do preset 1",\n    "prompt": "Prompt completo...",\n    "referenceImageUrl": "",\n    "aspectRatio": "16:9",\n    "model": GEMINI_MODELS.FLASH\n  }\n]`}
                         />
                       </div>
 
@@ -1803,7 +1804,7 @@ export const AdminPresetsPage: React.FC = () => {
                           className="w-full px-4 py-2 bg-neutral-950/70 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
                         >
                           <option value="">Nenhum</option>
-                          {GEMINI_MODELS.map((model) => (
+                          {AVAILABLE_MODELS.map((model) => (
                             <option key={model} value={model}>
                               {model}
                             </option>

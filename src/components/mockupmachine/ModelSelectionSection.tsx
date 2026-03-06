@@ -1,6 +1,7 @@
 import React from 'react';
 import { Select } from '@/components/ui/select';
 import type { GeminiModel, DesignType } from '@/types/types';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
 
 interface ModelSelectionSectionProps {
   selectedModel: GeminiModel | null;
@@ -13,22 +14,22 @@ const DEFAULT_MODEL_INFO: Record<string, {
   name: string;
   version: string;
 }> = {
-  'gemini-2.5-flash-image': {
+  [GEMINI_MODELS.FLASH]: {
     emoji: '⛏️',
     name: 'HD',
     version: '1 credit'
   },
-  'gemini-2.5-flash': {
+  [GEMINI_MODELS.TEXT]: {
     emoji: '💬',
     name: 'Flash',
     version: 'Text only'
   },
-  'gemini-3.1-flash-image-preview': {
+  [GEMINI_MODELS.NB2]: {
     emoji: '🍌',
     name: 'NB2',
     version: '1-5 credits'
   },
-  'gemini-3-pro-image-preview': {
+  [GEMINI_MODELS.PRO]: {
     emoji: '⛏️💎',
     name: '4K Pro',
     version: '3-7 credits'
@@ -71,7 +72,7 @@ export const ModelSelectionSection: React.FC<ModelSelectionSectionProps> = ({
     );
   };
 
-  const models: GeminiModel[] = ['gemini-2.5-flash-image', 'gemini-3.1-flash-image-preview', 'gemini-3-pro-image-preview'];
+  const models: GeminiModel[] = [GEMINI_MODELS.FLASH, GEMINI_MODELS.NB2, GEMINI_MODELS.PRO];
   const selectedInfo = selectedModel ? DEFAULT_MODEL_INFO[selectedModel] : null;
 
   return (
@@ -82,7 +83,7 @@ export const ModelSelectionSection: React.FC<ModelSelectionSectionProps> = ({
           value={selectedModel || ''}
           onChange={(value) => onModelChange(value as GeminiModel)}
           options={models
-            .filter(model => !isBlankMockup || model === 'gemini-2.5-flash-image')
+            .filter(model => !isBlankMockup || model === GEMINI_MODELS.FLASH)
             .map(model => ({
               value: model,
               label: `${DEFAULT_MODEL_INFO[model].emoji} ${DEFAULT_MODEL_INFO[model].name} - ${DEFAULT_MODEL_INFO[model].version}`
@@ -93,9 +94,9 @@ export const ModelSelectionSection: React.FC<ModelSelectionSectionProps> = ({
 
       {/* Cards for desktop */}
       <div className="hidden md:grid grid-cols-3 gap-2 cursor-pointer">
-        {renderModelCard('gemini-2.5-flash-image')}
-        {renderModelCard('gemini-3.1-flash-image-preview')}
-        {!isBlankMockup && renderModelCard('gemini-3-pro-image-preview')}
+        {renderModelCard(GEMINI_MODELS.FLASH)}
+        {renderModelCard(GEMINI_MODELS.NB2)}
+        {!isBlankMockup && renderModelCard(GEMINI_MODELS.PRO)}
       </div>
     </>
   );

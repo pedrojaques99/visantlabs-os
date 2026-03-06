@@ -21,6 +21,7 @@ import {
   cleanupFailedNode
 } from './nodeGenerationUtils';
 import { uploadImageToR2Auto } from './r2UploadUtils';
+import { DEFAULT_MODEL, getDefaultResolution } from '@/constants/geminiModels';
 
 interface Preset {
   id: string;
@@ -85,8 +86,8 @@ export const generateImageWithPreset = async ({
     return;
   }
 
-  const model: GeminiModel = (preset.model as GeminiModel) || 'gemini-2.5-flash-image';
-  const resolution: Resolution = model === 'gemini-3-pro-image-preview' ? '4K' : model === 'gemini-3.1-flash-image-preview' ? '1K' : '1K';
+  const model: GeminiModel = (preset.model as GeminiModel) || DEFAULT_MODEL;
+  const resolution: Resolution = getDefaultResolution(model) || '1K';
 
   const hasCredits = await validateCredits(model, resolution);
   if (!hasCredits) return;

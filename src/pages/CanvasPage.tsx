@@ -89,6 +89,8 @@ import type { CanvasWorkflow } from '../services/workflowApi';
 import { isLocalDevelopment } from '@/utils/env';
 import { ExportPanel } from '../components/ui/ExportPanel';
 import type { CommunityPrompt } from '../types/communityPrompts';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
+
 
 // Node types
 const nodeTypes = {
@@ -1216,7 +1218,7 @@ export const CanvasPage: React.FC = () => {
       // Default to PromptNode for other categories (3d, aesthetics, themes, prompts, etc.)
       nodeId = addPromptNode(center, {
         prompt: preset.prompt,
-        model: preset.model || 'gemini-2.5-flash-image'
+        model: preset.model || GEMINI_MODELS.FLASH
       });
     }
 
@@ -2257,7 +2259,7 @@ export const CanvasPage: React.FC = () => {
                 onUpdateData: handleMergeNodeDataUpdate,
                 onDeleteNode: handleDeleteNodeById,
                 connectedImages,
-                model: mergeData.model || 'gemini-2.5-flash-image',
+                model: mergeData.model || GEMINI_MODELS.FLASH,
               } as MergeNodeData,
             } as Node<FlowNodeData>;
           }
@@ -2272,8 +2274,8 @@ export const CanvasPage: React.FC = () => {
           const image4Edge = edges.find(e => e.target === n.id && e.targetHandle === 'input-4');
 
           // Determine max handles based on model
-          const model = promptData.model || 'gemini-2.5-flash-image';
-          const maxHandles = model === 'gemini-3-pro-image-preview' ? 4 : 2;
+          const model = promptData.model || GEMINI_MODELS.FLASH;
+          const maxHandles = model === GEMINI_MODELS.PRO ? 4 : 2;
 
           // Helper function to get image from edge
           const getImageFromEdge = (edge: Edge | undefined) => {
@@ -2419,7 +2421,7 @@ export const CanvasPage: React.FC = () => {
                 onUpdateData: handlePromptNodeDataUpdate,
                 onRemoveEdge: handlePromptRemoveEdge,
                 onDeleteNode: handleDeleteNodeById,
-                model: promptData.model || 'gemini-2.5-flash-image',
+                model: promptData.model || GEMINI_MODELS.FLASH,
                 prompt: promptData.prompt || '',
               } as PromptNodeData,
             } as Node<FlowNodeData>;
@@ -2759,7 +2761,7 @@ export const CanvasPage: React.FC = () => {
                 // Preserve existing messages and other data
                 messages: chatData.messages || [],
                 userMessageCount: chatData.userMessageCount || 0,
-                model: chatData.model || 'gemini-2.5-flash',
+                model: chatData.model || GEMINI_MODELS.TEXT,
                 isLoading: chatData.isLoading || false,
                 // Inject callbacks
                 onSendMessage: handlersRef.current?.handleChatSendMessage || (() => Promise.resolve()),

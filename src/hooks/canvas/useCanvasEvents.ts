@@ -4,6 +4,7 @@ import { addEdge } from '@xyflow/react';
 import type { FlowNodeData, ImageNodeData, EditNodeData, OutputNodeData, LogoNodeData, TextNodeData, PromptNodeData } from '@/types/reactFlow';
 import type { UploadedImage } from '@/types/types';
 import { cleanEdges, getMediaFromNodeForCopy } from '@/utils/canvas/canvasNodeUtils';
+import { DEFAULT_MODEL, getMaxHandles } from '@/constants/geminiModels';
 import { toast } from 'sonner';
 import type { ReactFlowInstance } from '@/types/reactflow-instance';
 
@@ -185,8 +186,8 @@ export const useCanvasEvents = (
       } else {
         // For image nodes, determine max handles based on model
         const promptData = targetNode.data as any;
-        const model = promptData?.model || 'gemini-2.5-flash-image';
-        const maxHandles = (model === 'gemini-3-pro-image-preview' || model === 'gemini-3.1-flash-image-preview') ? 4 : 2;
+        const model = promptData?.model || DEFAULT_MODEL;
+        const maxHandles = getMaxHandles(model);
 
         // If targetHandle is not explicitly set, assign based on existing connections
         if (!targetHandle) {

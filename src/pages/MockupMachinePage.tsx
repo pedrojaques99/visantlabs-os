@@ -53,6 +53,7 @@ import {
   AVAILABLE_EFFECT_TAGS,
   AVAILABLE_MATERIAL_TAGS
 } from '@/utils/mockupConstants';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
 import {
   getBackgroundsForBranding,
   filterPresetsByBranding,
@@ -289,10 +290,10 @@ const MockupMachinePageContent: React.FC = () => {
     const previousModel = selectedModel;
 
     // If switching to 2.5 Flash, reset resolution (not applicable)
-    if (model === 'gemini-2.5-flash-image' && previousModel === 'gemini-3-pro-image-preview') {
+    if (model === GEMINI_MODELS.FLASH && previousModel === GEMINI_MODELS.PRO) {
       setResolution('1K');
       toast.info(t('messages.switchedToHD'), { duration: 3000 });
-    } else if (model === 'gemini-3-pro-image-preview' && previousModel === 'gemini-2.5-flash-image') {
+    } else if (model === GEMINI_MODELS.PRO && previousModel === GEMINI_MODELS.FLASH) {
       // Switching to 3 Pro - validate credits if needed
       if (subscriptionStatus) {
         const minCredits = 3; // Minimum credits for 3 Pro
@@ -752,7 +753,7 @@ const MockupMachinePageContent: React.FC = () => {
         setIsAllCategoriesOpen(true);
         setIsAdvancedOpen(true);
         setHasAnalyzed(true);
-        if (!selectedModel) setSelectedModel('gemini-2.5-flash-image');
+        if (!selectedModel) setSelectedModel(GEMINI_MODELS.FLASH);
       }, 5000);
     }
 
@@ -811,7 +812,7 @@ const MockupMachinePageContent: React.FC = () => {
           setIsAllCategoriesOpen(true);
           setIsAdvancedOpen(true);
           setHasAnalyzed(true);
-          if (!selectedModel) setSelectedModel('gemini-2.5-flash-image');
+          if (!selectedModel) setSelectedModel(GEMINI_MODELS.FLASH);
         }
         // Se o timeout já executou (passou de 5s), apenas atualizar os dados
         // (hasAnalyzed já está true, então o conteúdo já está visível)
@@ -1127,8 +1128,8 @@ const MockupMachinePageContent: React.FC = () => {
   }): Promise<void> => {
     const { base64Image, prompt, onSuccess, setIsLoading, promptLength = 0 } = params;
 
-    const modelToUse = selectedModel || 'gemini-2.5-flash-image';
-    const resolutionToUse = modelToUse === 'gemini-3-pro-image-preview' ? resolution : undefined;
+    const modelToUse = selectedModel || GEMINI_MODELS.FLASH;
+    const resolutionToUse = modelToUse === GEMINI_MODELS.PRO ? resolution : undefined;
 
     const canProceed = await validateCredits({ model: modelToUse, resolution: resolutionToUse });
     if (!canProceed) return;
@@ -1234,8 +1235,8 @@ const MockupMachinePageContent: React.FC = () => {
       return;
     }
 
-    const modelToUse = selectedModel || 'gemini-2.5-flash-image';
-    const resolutionToUse = modelToUse === 'gemini-3-pro-image-preview' ? resolution : undefined;
+    const modelToUse = selectedModel || GEMINI_MODELS.FLASH;
+    const resolutionToUse = modelToUse === GEMINI_MODELS.PRO ? resolution : undefined;
 
     const canProceed = await validateCredits({ model: modelToUse, resolution: resolutionToUse });
     if (!canProceed) return;
@@ -1497,9 +1498,9 @@ const MockupMachinePageContent: React.FC = () => {
 
   const handleSurpriseMe = useCallback(async (autoGenerate: boolean = false) => {
     // Ensure model is selected (default to gemini-2.5-flash-image if not set)
-    const modelToUse = selectedModel || 'gemini-2.5-flash-image';
+    const modelToUse = selectedModel || GEMINI_MODELS.FLASH;
     if (!selectedModel) {
-      setSelectedModel('gemini-2.5-flash-image');
+      setSelectedModel(GEMINI_MODELS.FLASH);
     }
 
     // Ensure designType is set (default to 'logo' if not set, since Surprise Me works best with a type)
@@ -2606,8 +2607,8 @@ Generate the new mockup image with the requested changes applied.`;
   // Calculate credits needed for main generation
   const creditsNeededForGeneration = useMemo(() => {
     if (!selectedModel) return 0;
-    const modelToUse = selectedModel || 'gemini-2.5-flash-image';
-    const resolutionToUse = modelToUse === 'gemini-3-pro-image-preview' ? resolution : undefined;
+    const modelToUse = selectedModel || GEMINI_MODELS.FLASH;
+    const resolutionToUse = modelToUse === GEMINI_MODELS.PRO ? resolution : undefined;
     const creditsPerImage = getCreditsRequired(modelToUse, resolutionToUse);
     return mockupCount * creditsPerImage;
   }, [selectedModel, resolution, mockupCount]);
@@ -2615,8 +2616,8 @@ Generate the new mockup image with the requested changes applied.`;
   // Calculate credits needed for edit operations (single image)
   const creditsNeededForEdit = useMemo(() => {
     if (!selectedModel) return 1; // Default to 1 credit if no model selected
-    const modelToUse = selectedModel || 'gemini-2.5-flash-image';
-    const resolutionToUse = modelToUse === 'gemini-3-pro-image-preview' ? resolution : undefined;
+    const modelToUse = selectedModel || GEMINI_MODELS.FLASH;
+    const resolutionToUse = modelToUse === GEMINI_MODELS.PRO ? resolution : undefined;
     return getCreditsRequired(modelToUse, resolutionToUse);
   }, [selectedModel, resolution]);
 
@@ -2743,8 +2744,8 @@ Generate the new mockup image with the requested changes applied.`;
 
             {/* Dashboard Main Area */}
             {isDashboardMode && (
-                <main id="mockup-main-content" className={cn(
-                  "flex-1 min-w-0 h-full relative overflow-hidden transition-all duration-500",
+              <main id="mockup-main-content" className={cn(
+                "flex-1 min-w-0 h-full relative overflow-hidden transition-all duration-500",
                 "p-2 md:p-6 lg:p-8 custom-scrollbar",
                 isSidebarCollapsed && "lg:pl-16 shadow-[inset_20px_0_30px_-20px_rgba(0,0,0,0.3)]"
               )}>
@@ -2872,30 +2873,30 @@ Generate the new mockup image with the requested changes applied.`;
               <PanelLeftOpen className="h-5 w-5" />
             </Button>
             <div className="flex-1 min-w-0">
-          <SurpriseMeControl
-            onSurpriseMe={handleSurpriseMeWithDice}
-            isGeneratingPrompt={isGeneratingPrompt}
-            isDiceAnimating={isDiceAnimatingFloating}
-            isSurpriseMeMode={isSurpriseMeMode}
-            setIsSurpriseMeMode={setIsSurpriseMeMode}
-            autoGenerate={autoGenerateFloating}
-            setAutoGenerate={setAutoGenerateFloating}
-            selectedModel={selectedModel}
-            setSelectedModel={setSelectedModel}
-            imageProvider={imageProvider}
-            setImageProvider={setImageProvider}
-            mockupCount={mockupCount}
-            resolution={resolution}
-            showBackground
-            containerClassName="shadow-lg !pb-0 rounded-b-none"
-            onGeneratePrompt={handleGenerateSmartPrompt}
-            onGenerateOutputs={handleGenerateClick}
-            isGenerateDisabled={isGenerateDisabled}
-            isGeneratingOutputs={isLoading.some(Boolean)}
-            isPromptReady={isPromptReady}
-            showGenerateButtons
-            uploadedImage={uploadedImage}
-          />
+              <SurpriseMeControl
+                onSurpriseMe={handleSurpriseMeWithDice}
+                isGeneratingPrompt={isGeneratingPrompt}
+                isDiceAnimating={isDiceAnimatingFloating}
+                isSurpriseMeMode={isSurpriseMeMode}
+                setIsSurpriseMeMode={setIsSurpriseMeMode}
+                autoGenerate={autoGenerateFloating}
+                setAutoGenerate={setAutoGenerateFloating}
+                selectedModel={selectedModel}
+                setSelectedModel={setSelectedModel}
+                imageProvider={imageProvider}
+                setImageProvider={setImageProvider}
+                mockupCount={mockupCount}
+                resolution={resolution}
+                showBackground
+                containerClassName="shadow-lg !pb-0 rounded-b-none"
+                onGeneratePrompt={handleGenerateSmartPrompt}
+                onGenerateOutputs={handleGenerateClick}
+                isGenerateDisabled={isGenerateDisabled}
+                isGeneratingOutputs={isLoading.some(Boolean)}
+                isPromptReady={isPromptReady}
+                showGenerateButtons
+                uploadedImage={uploadedImage}
+              />
             </div>
           </div>
         </div>

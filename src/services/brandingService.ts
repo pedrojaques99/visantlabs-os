@@ -1,6 +1,8 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import type { BrandingData } from '../types/types.js';
 import { cleanMarketResearchText } from '../utils/brandingHelpersServer.js';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
+
 
 
 
@@ -219,7 +221,7 @@ IMPORTANT:
     const systemPrompt = addLanguageInstruction(strategicPrompt, prompt);
 
     const response = await getAI().models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: GEMINI_MODELS.TEXT,
       contents: { parts: [{ text: systemPrompt }] },
     });
 
@@ -301,7 +303,7 @@ Example: {"competitors": [{"name": "Competitor 1", "url": "https://competitor1.c
     const systemPrompt = addLanguageInstruction(strategicPrompt, prompt);
 
     const response = await getAI().models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: GEMINI_MODELS.TEXT,
       contents: { parts: [{ text: systemPrompt }] },
       config: {
         responseMimeType: 'application/json',
@@ -373,7 +375,7 @@ Example: {"references": ["Reference 1", "Reference 2", "Reference 3"]}`;
     const systemPrompt = addLanguageInstruction(strategicPrompt, prompt);
 
     const response = await getAI().models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: GEMINI_MODELS.TEXT,
       contents: { parts: [{ text: systemPrompt }] },
       config: {
         responseMimeType: 'application/json',
@@ -445,7 +447,7 @@ Example: {
     const systemPrompt = addLanguageInstruction(strategicPrompt, prompt);
 
     const response = await getAI().models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: GEMINI_MODELS.TEXT,
       contents: { parts: [{ text: systemPrompt }] },
       config: {
         responseMimeType: 'application/json',
@@ -582,7 +584,7 @@ Example: {
     const systemPrompt = addLanguageInstruction(strategicPrompt, prompt);
 
     const response = await getAI().models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: GEMINI_MODELS.TEXT,
       contents: { parts: [{ text: systemPrompt }] },
       config: {
         responseMimeType: 'application/json',
@@ -677,7 +679,7 @@ Example: {"elements": ["Element 1", "Element 2", "Element 3"]}`;
     const systemPrompt = addLanguageInstruction(strategicPrompt, prompt);
 
     const response = await getAI().models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: GEMINI_MODELS.TEXT,
       contents: { parts: [{ text: systemPrompt }] },
       config: {
         responseMimeType: 'application/json',
@@ -795,7 +797,7 @@ IMPORTANT:
     const systemPrompt = addLanguageInstruction(strategicPrompt, prompt);
 
     const response = await getAI().models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: GEMINI_MODELS.TEXT,
       contents: { parts: [{ text: systemPrompt }] },
       config: {
         responseMimeType: 'application/json',
@@ -970,7 +972,7 @@ Example: {
     const systemPrompt = addLanguageInstruction(strategicPrompt, prompt);
 
     const response = await getAI().models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: GEMINI_MODELS.TEXT,
       contents: { parts: [{ text: systemPrompt }] },
       config: {
         responseMimeType: 'application/json',
@@ -1028,7 +1030,7 @@ Example: {"mockups": ["Mockup idea 1", "Mockup idea 2", "Mockup idea 3"]}`;
     const systemPrompt = addLanguageInstruction(strategicPrompt, prompt);
 
     const response = await getAI().models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: GEMINI_MODELS.TEXT,
       contents: { parts: [{ text: systemPrompt }] },
       config: {
         responseMimeType: 'application/json',
@@ -1101,7 +1103,7 @@ Example: {
     const systemPrompt = addLanguageInstruction(strategicPrompt, prompt);
 
     const response = await getAI().models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: GEMINI_MODELS.TEXT,
       contents: { parts: [{ text: systemPrompt }] },
       config: {
         responseMimeType: 'application/json',

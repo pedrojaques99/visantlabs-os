@@ -3,6 +3,8 @@ import type { GeminiModel, Resolution, UploadedImage } from '../types/types.js';
 import { toast } from 'sonner';
 import { mockupApi } from './mockupApi';
 import { subscriptionService } from './subscriptionService';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
+
 
 // Get API URL from environment or use current origin for production
 const getApiBaseUrl = () => {
@@ -216,7 +218,7 @@ const isLocalDevelopment = () => {
 export const combineImages = async (
   images: string[], // Array of base64 image strings or URLs
   prompt: string,
-  model: GeminiModel = 'gemini-2.5-flash-image',
+  model: GeminiModel = GEMINI_MODELS.FLASH,
   resolution?: Resolution
 ): Promise<string> => {
   if (images.length === 0) {
@@ -296,7 +298,7 @@ export const combineImages = async (
 export const editImage = async (
   imageBase64: string, // Can be base64 or URL
   prompt: string,
-  model: GeminiModel = 'gemini-2.5-flash-image',
+  model: GeminiModel = GEMINI_MODELS.FLASH,
   resolution?: Resolution
 ): Promise<string> => {
   if (!imageBase64 || imageBase64.trim() === '') {
@@ -344,7 +346,7 @@ export const editImage = async (
 export const upscaleImage = async (
   imageBase64: string, // Can be base64 or URL
   targetResolution: Resolution,
-  model: GeminiModel = 'gemini-3-pro-image-preview'
+  model: GeminiModel = GEMINI_MODELS.PRO
 ): Promise<string> => {
   if (!imageBase64 || imageBase64.trim() === '') {
     throw new Error('Invalid image: empty or null');

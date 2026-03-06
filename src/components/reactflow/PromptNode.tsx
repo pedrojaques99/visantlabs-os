@@ -5,6 +5,7 @@ import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { PromptNodeData } from '@/types/reactFlow';
 import type { GeminiModel, AspectRatio, Resolution } from '@/types/types';
 import { cn } from '@/lib/utils';
+import { GEMINI_MODELS, DEFAULT_MODEL, DEFAULT_ASPECT_RATIO, isAdvancedModel as isAdvancedModelFn, getMaxHandles } from '@/constants/geminiModels';
 import { PromptInput } from '@/components/PromptInput';
 import { ConnectedImagesDisplay } from './ConnectedImagesDisplay';
 import { BrandIdentityPanel } from '@/components/ui/BrandIdentityPanel';
@@ -30,8 +31,8 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   const nodeData = data as PromptNodeData;
   const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
   const [prompt, setPrompt] = useState(nodeData.prompt || '');
-  const [model, setModel] = useState<GeminiModel>(nodeData.model || 'gemini-2.5-flash-image');
-  const [aspectRatio, setAspectRatio] = useState<AspectRatio>(nodeData.aspectRatio || '16:9');
+  const [model, setModel] = useState<GeminiModel>(nodeData.model || DEFAULT_MODEL);
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>(nodeData.aspectRatio || DEFAULT_ASPECT_RATIO);
   const [resolution, setResolution] = useState<Resolution>(nodeData.resolution || '1K');
   const [connectedImage1, setConnectedImage1] = useState<string | undefined>(nodeData.connectedImage1);
   const [connectedImage2, setConnectedImage2] = useState<string | undefined>(nodeData.connectedImage2);
@@ -69,14 +70,12 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   const isLoading = nodeData.isLoading || false;
   const isSuggestingPrompts = nodeData.isSuggestingPrompts || false;
   const promptSuggestions = nodeData.promptSuggestions || [];
-  const isAdvancedModel = model === 'gemini-3-pro-image-preview' || model === 'gemini-3.1-flash-image-preview';
-  const finalResolution = isAdvancedModel ? resolution : undefined;
+  const isAdvanced = isAdvancedModelFn(model);
+  const finalResolution = isAdvanced ? resolution : undefined;
   const creditsRequired = getCreditsRequired(model, finalResolution);
 
   // Determine number of handles based on model
-  // Nano Banana 2 supports up to 14 ref images, Pro up to 11, Flash up to 2
-  const maxHandles = model === 'gemini-3.1-flash-image-preview' ? 4
-    : model === 'gemini-3-pro-image-preview' ? 4 : 2;
+  const maxHandles = getMaxHandles(model);
 
   // Get all connected images up to max handles
   // BrandCore images are displayed separately, so only include legacy connected images here
@@ -170,8 +169,8 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     if (nodeData.onUpdateData) {
       const updates: Partial<PromptNodeData> = {};
       if (model !== nodeData.model) updates.model = model;
-      if (isAdvancedModel && aspectRatio !== nodeData.aspectRatio) updates.aspectRatio = aspectRatio;
-      if (isAdvancedModel && resolution !== nodeData.resolution) updates.resolution = resolution;
+      if (isAdvanced && aspectRatio !== nodeData.aspectRatio) updates.aspectRatio = aspectRatio;
+      if (isAdvanced && resolution !== nodeData.resolution) updates.resolution = resolution;
 
       if (Object.keys(updates).length > 0) {
         nodeData.onUpdateData(id, updates);
@@ -181,7 +180,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     // HIERARCHY: Logo (priority 1) as first image, Identity (priority 2) as second image for context
     // Then legacy connected images
     const connectedImages: string[] = [];
-    const maxImages = (model === 'gemini-3-pro-image-preview' || model === 'gemini-3.1-flash-image-preview') ? 4 : 2;
+    const maxImages = getMaxHandles(model);
 
     // Add Logo first (primary focus)
     if (nodeData.connectedLogo) {
@@ -201,7 +200,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     if (nodeData.connectedImage2 && !brandCoreImages.includes(nodeData.connectedImage2)) {
       connectedImages.push(nodeData.connectedImage2);
     }
-    if (model === 'gemini-3-pro-image-preview' || model === 'gemini-3.1-flash-image-preview') {
+    if (isAdvancedModelFn(model)) {
       if (nodeData.connectedImage3 && !brandCoreImages.includes(nodeData.connectedImage3)) {
         connectedImages.push(nodeData.connectedImage3);
       }
@@ -322,15 +321,15 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   // Unified HD/NB2/1K/2K/4K resolution handler
   const handleResolutionClick = (res: 'HD' | 'NB2' | Resolution) => {
     const previousModel = model;
-    const wasAdvancedModel = previousModel === 'gemini-3-pro-image-preview' || previousModel === 'gemini-3.1-flash-image-preview';
+    const wasAdvancedModel = isAdvancedModelFn(previousModel);
 
     if (res === 'HD') {
-      setModel('gemini-2.5-flash-image');
+      setModel(GEMINI_MODELS.FLASH);
 
       if (!nodeData.onUpdateData) return;
 
       const updates: Partial<PromptNodeData> = {
-        model: 'gemini-2.5-flash-image',
+        model: GEMINI_MODELS.FLASH,
         resolution: undefined,
         aspectRatio: undefined
       };
@@ -351,43 +350,43 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
 
       nodeData.onUpdateData(id, updates);
     } else if (res === 'NB2') {
-      setModel('gemini-3.1-flash-image-preview');
+      setModel(GEMINI_MODELS.NB2);
       setResolution('1K');
 
       if (!nodeData.onUpdateData) return;
 
       const updates: Partial<PromptNodeData> = {
-        model: 'gemini-3.1-flash-image-preview',
+        model: GEMINI_MODELS.NB2,
         resolution: '1K'
       };
 
       if (!nodeData.aspectRatio) {
-        updates.aspectRatio = '16:9';
-        setAspectRatio('16:9');
+        updates.aspectRatio = DEFAULT_ASPECT_RATIO;
+        setAspectRatio(DEFAULT_ASPECT_RATIO);
       }
 
       nodeData.onUpdateData(id, updates);
     } else {
-      setModel('gemini-3-pro-image-preview');
+      setModel(GEMINI_MODELS.PRO);
       setResolution(res);
 
       if (!nodeData.onUpdateData) return;
 
       const updates: Partial<PromptNodeData> = {
-        model: 'gemini-3-pro-image-preview',
+        model: GEMINI_MODELS.PRO,
         resolution: res
       };
 
       if (!nodeData.aspectRatio) {
-        updates.aspectRatio = '16:9';
-        setAspectRatio('16:9');
+        updates.aspectRatio = DEFAULT_ASPECT_RATIO;
+        setAspectRatio(DEFAULT_ASPECT_RATIO);
       }
 
       nodeData.onUpdateData(id, updates);
     }
   };
 
-  const currentActiveResolution = isAdvancedModel ? resolution : 'HD';
+  const currentActiveResolution = isAdvanced ? resolution : 'HD';
 
   // Debounced fit-to-content: update node size when container content changes
   const debouncedFitToContent = useDebouncedCallback(() => {
@@ -729,10 +728,10 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           >
             {(['HD', 'NB2', '1K', '2K', '4K'] as const).map(res => {
               const isActive = res === 'NB2'
-                ? model === 'gemini-3.1-flash-image-preview'
+                ? model === GEMINI_MODELS.NB2
                 : res === 'HD'
-                  ? model === 'gemini-2.5-flash-image'
-                  : model === 'gemini-3-pro-image-preview' && currentActiveResolution === res;
+                  ? model === GEMINI_MODELS.FLASH
+                  : model === GEMINI_MODELS.PRO && currentActiveResolution === res;
               return (
                 <button
                   key={res}
@@ -757,7 +756,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         </div>
 
         {/* Aspect Ratio - For advanced models (NB2 + Pro) */}
-        {isAdvancedModel && (
+        {isAdvanced && (
           <div>
             <NodeLabel className="mb-1.5 text-[10px]">
               {t('canvasNodes.promptNode.aspectRatio')}

@@ -12,6 +12,8 @@ import { Tooltip } from '@/components/ui/Tooltip';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { PromptSection } from './PromptSection';
 import type { ComponentProps } from 'react';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
+
 
 type PromptSectionProps = ComponentProps<typeof PromptSection>;
 
@@ -211,7 +213,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                 'text-black',
                                 'shadow-[0_8px_30px_rgba(var(--brand-cyan-rgb),0.25)] hover:scale-[1.02] active:scale-[0.98] font-black',
                                 isPrimarySurprise
-                                    ? 'bg-gradient-to-br from-brand-cyan to-foreground border-brand-cyan/50 hover:opacity-90'
+                                    ? 'bg-brand-cyan border-brand-cyan/50 hover:bg-brand-cyan/90'
                                     : 'bg-brand-cyan border-brand-cyan/50 hover:bg-brand-cyan/90',
                                 isPrimarySurprise && isActive && 'ring-2 ring-brand-cyan ring-offset-2 ring-offset-black animate-pool-glow'
                             )
@@ -454,7 +456,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                                 if (setImageProvider) setImageProvider('seedream');
                                             } else {
                                                 if (setImageProvider) setImageProvider('gemini');
-                                                if (setSelectedModel) setSelectedModel('gemini-3-pro-image-preview');
+                                                if (setSelectedModel) setSelectedModel(GEMINI_MODELS.PRO);
                                             }
                                         }}
                                         options={[

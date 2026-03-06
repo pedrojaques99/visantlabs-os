@@ -9,6 +9,8 @@ import { formatImageTo16_9 } from '@/utils/fileUtils';
 import { isSafeUrl } from '@/utils/imageUtils';
 import { cn, sectionTitleClass } from '@/lib/utils';
 import { useMockup } from './MockupContext';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
+
 
 interface InputSectionProps {
   uploadedImage: UploadedImage | null;
@@ -43,8 +45,8 @@ export const InputSection: React.FC<InputSectionProps> = ({
 
   const displayImage = uploadedImage;
   const hasImage = !!displayImage;
-  const isProModel = selectedModel === 'gemini-3-pro-image-preview';
-  const isHDModel = selectedModel === 'gemini-2.5-flash-image';
+  const isProModel = selectedModel === GEMINI_MODELS.PRO;
+  const isHDModel = selectedModel === GEMINI_MODELS.FLASH;
   // Allow 3 references before model selection (Pro max), limit to 1 for HD after selection
   const maxReferences = !selectedModel ? 3 : (isProModel ? 3 : (isHDModel ? 1 : 0));
   // Allow reference upload when there's a main image, even without model selected

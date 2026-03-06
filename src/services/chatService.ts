@@ -2,6 +2,8 @@ import { GoogleGenAI } from "@google/genai";
 import type { StrategyNodeData } from '../types/reactFlow';
 import { validateMessage, validateContext } from './chatValidators';
 import { buildSystemPrompt } from './promptTemplates';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
+
 
 // ============================================================================
 // Types & Interfaces
@@ -318,7 +320,7 @@ export async function sendChatMessage(
 
     // CRITICAL: Do NOT include responseModalities - we only want text
     const response = await aiInstance.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: GEMINI_MODELS.TEXT,
       contents: contents,
       // No responseModalities = text only
     });
