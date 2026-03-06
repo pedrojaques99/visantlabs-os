@@ -9,7 +9,21 @@
       "Bash(cd \"Z:\\\\Cursor\\\\visantlabs-os\\\\plugin\" && npm run build 2>&1)",
       "Bash(echo ✅ Build bem-sucedido!:*)",
       "WebSearch",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(npx tsc --noEmit --pretty)",
+      "Bash(npx vite build)",
+      "Bash(npx tsc:*)",
+      "Bash(node:*)",
+      "Bash(xargs grep:*)",
+      "WebFetch(domain:www.figma.com)",
+      "Bash(grep:*)",
+      "Skill(firecrawl)",
+      "Bash(.firecrawl/PLUGIN_API_AUDIT.md:*)",
+      "Bash(firecrawl scrape:*)",
+      "Bash(firecrawl search:*)",
+      "Bash(rm:*)",
+      "Bash(npx skills:*)",
+      "Bash(npx tsx:*)"
     ]
   }
 }

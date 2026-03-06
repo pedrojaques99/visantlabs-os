@@ -5,7 +5,7 @@ import type { GeminiModel, DesignType } from '@/types/types';
 interface ModelSelectionSectionProps {
   selectedModel: GeminiModel | null;
   onModelChange: (model: GeminiModel) => void;
-  designType?: DesignType | null;
+  designType?: DesignType;
 }
 
 const DEFAULT_MODEL_INFO: Record<GeminiModel, {

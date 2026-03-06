@@ -709,6 +709,8 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       referenceImages,
       feature, // Optional: 'mockupmachine' | 'canvas'
       provider = 'gemini', // 'gemini' | 'seedream'
+      width, // Optional: custom width in pixels (for Figma plugin)
+      height, // Optional: custom height in pixels (for Figma plugin)
     } = req.body;
 
     // Helper to download image from URL if base64 is not provided
@@ -1206,6 +1208,8 @@ router.post('/generate', mockupRateLimiter, authenticate, checkSubscription, asy
       creditsDeducted: actualCreditsDeducted,
       creditsRemaining: totalCreditsRemaining,
       isAdmin,
+      width: width || undefined, // Echo back custom dimensions for Figma plugin
+      height: height || undefined,
     });
   } catch (error: any) {
     // Always release lock on error if it was acquired
