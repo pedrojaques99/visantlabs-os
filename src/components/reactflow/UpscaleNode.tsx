@@ -25,8 +25,8 @@ export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(({ d
   const resultImageUrl = data.resultImageUrl;
   const connectedImage = (data as any).connectedImage as string | undefined;
   const hasConnectedImage = !!connectedImage;
-  // Upscale uses gemini-3-pro-image-preview for 4K, gemini-2.5-flash-image for 2K
-  const upscaleModel: GeminiModel = targetResolution === '4K' ? 'gemini-3-pro-image-preview' : 'gemini-2.5-flash-image';
+  // Upscale uses gemini-3-pro-image-preview for 4K, gemini-3.1-flash-image-preview for 2K
+  const upscaleModel: GeminiModel = targetResolution === '4K' ? 'gemini-3-pro-image-preview' : 'gemini-3.1-flash-image-preview';
   const creditsRequired = getCreditsRequired(upscaleModel, targetResolution);
 
   const handleUpscale = async () => {

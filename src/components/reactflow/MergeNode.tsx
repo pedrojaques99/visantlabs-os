@@ -258,7 +258,8 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
         className="mb-4"
         options={[
           { value: 'gemini-2.5-flash-image', label: 'HD' },
-          { value: 'gemini-3-pro-image-preview', label: '4K' }
+          { value: 'gemini-3.1-flash-image-preview', label: 'NB2' },
+          { value: 'gemini-3-pro-image-preview', label: '4K Pro' }
         ]}
       />
 

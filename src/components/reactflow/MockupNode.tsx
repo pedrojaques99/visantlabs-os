@@ -294,9 +294,9 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
       hasFinalPrompt: !!finalPrompt,
     });
 
-    const isProModel = model === 'gemini-3-pro-image-preview';
-    const finalResolution = isProModel ? resolution : undefined;
-    const finalAspectRatio = isProModel ? aspectRatio : undefined;
+    const isAdvancedModel = model === 'gemini-3-pro-image-preview' || model === 'gemini-3.1-flash-image-preview';
+    const finalResolution = isAdvancedModel ? resolution : undefined;
+    const finalAspectRatio = isAdvancedModel ? aspectRatio : undefined;
 
     await data.onGenerate(id, imageToUse, selectedPresetId, selectedColors, withHuman, finalPrompt || undefined, model, finalResolution, finalAspectRatio);
   };
@@ -581,7 +581,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
               <NodeLabel className="mb-1.5 text-[10px]">
                 {t('canvasNodes.promptNode.model')}
               </NodeLabel>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -611,6 +611,43 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                   </div>
                   <div className="text-[9px] font-mono opacity-70 mt-0.5">
                     {getCreditsRequired('gemini-2.5-flash-image')} {t('canvasNodes.promptNode.credits')}
+                  </div>
+                </button>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newModel: GeminiModel = 'gemini-3.1-flash-image-preview';
+                    setModel(newModel);
+
+                    if (data.onUpdateData) {
+                      const updates: Partial<MockupNodeData> = { model: newModel };
+                      if (!data.resolution) {
+                        updates.resolution = '1K';
+                        setResolution('1K');
+                      }
+                      if (!data.aspectRatio) {
+                        updates.aspectRatio = '16:9';
+                        setAspectRatio('16:9');
+                      }
+                      data.onUpdateData(id, updates);
+                    }
+                  }}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  disabled={isLoading}
+                  className={cn(
+                    'p-2 rounded border transition-all text-left node-interactive',
+                    model === 'gemini-3.1-flash-image-preview'
+                      ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
+                      : 'bg-neutral-900/50 border-neutral-700/50 text-neutral-400 hover:bg-neutral-800/50 hover:border-neutral-600/50',
+                    isLoading && 'opacity-50 cursor-not-allowed'
+                  )}
+                >
+                  <div className="text-[11px] font-mono font-semibold">
+                    NB2
+                  </div>
+                  <div className="text-[9px] font-mono opacity-70 mt-0.5">
+                    {getCreditsRequired('gemini-3.1-flash-image-preview', resolution)} {t('canvasNodes.promptNode.credits')}
                   </div>
                 </button>
 
@@ -653,8 +690,8 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
               </div>
             </div>
 
-            {/* Pro Model Settings */}
-            {model === 'gemini-3-pro-image-preview' && (
+            {/* Advanced Model Settings (NB2 + Pro) */}
+            {(model === 'gemini-3-pro-image-preview' || model === 'gemini-3.1-flash-image-preview') && (
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
                   <NodeLabel className="mb-1.5 text-[10px]">

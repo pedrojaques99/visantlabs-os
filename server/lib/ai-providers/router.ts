@@ -1,7 +1,7 @@
 // Intelligent router to choose between Claude (complex) and Gemini (fast)
-import type { AIProvider } from './types';
-import claudeProvider from './claude';
-import geminiProvider from './gemini';
+import type { AIProvider } from './types.js';
+import claudeProvider from './claude.js';
+import geminiProvider from './gemini.js';
 
 /**
  * Chooses an AI provider based on command complexity and context size

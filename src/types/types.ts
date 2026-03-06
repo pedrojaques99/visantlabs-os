@@ -11,6 +11,7 @@ export interface UploadedImage {
 export type GeminiModel =
   | 'gemini-2.5-flash-image'
   | 'gemini-2.5-flash'
+  | 'gemini-3.1-flash-image-preview'
   | 'gemini-3-pro-image-preview'
   | 'veo-3.1-generate-preview'
   | 'veo-3.1-fast-generate-preview';
@@ -35,9 +36,9 @@ export enum GenerationMode {
   REFERENCES = 'references',
 }
 
-export type Resolution = '1K' | '2K' | '4K' | 'HD' | '720p' | '1080p';
+export type Resolution = '512px' | '1K' | '2K' | '4K' | 'HD' | '720p' | '1080p';
 
-export type AspectRatio = '9:16' | '21:9' | '2:3' | '3:2' | '3:4' | '4:3' | '4:5' | '5:4' | '16:9' | '1:1';
+export type AspectRatio = '9:16' | '21:9' | '1:4' | '4:1' | '1:8' | '8:1' | '2:3' | '3:2' | '3:4' | '4:3' | '4:5' | '5:4' | '16:9' | '1:1';
 
 export type DesignType = 'logo' | 'layout' | 'blank';
 
