@@ -2,6 +2,8 @@ import type { Node, Edge } from '@xyflow/react';
 import type { Mockup } from '../services/mockupApi';
 import type { GeminiModel, Resolution, AspectRatio, DesignType, UploadedImage, GenerationMode } from './types';
 import type { SubscriptionStatus } from '../services/subscriptionService';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
+
 
 // Base node data interface
 export interface BaseNodeData {
@@ -705,7 +707,7 @@ export interface ChatNodeData extends BaseNodeData {
 
   // State
   isLoading?: boolean;
-  model?: GeminiModel; // 'gemini-2.5-flash' (text only)
+  model?: GeminiModel; // GEMINI_MODELS.TEXT (text only)
   systemPrompt?: string; // Custom system prompt for personalizing agent personality
 
   // Context inputs (via edges)

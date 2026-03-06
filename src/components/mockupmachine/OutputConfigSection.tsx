@@ -88,38 +88,36 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
         {/* 2x2 Grid Layout */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Row 1, Col 1: Model (Only visible for Admins) */}
-          <div className="space-y-2">
-            {isAdmin && (
-              <>
-                <SkeletonText loading={isGenerating}>
-                  <h4 className={sectionTitleClass(theme === 'dark')}>MODELO DE IA</h4>
-                </SkeletonText>
-                <div className="flex flex-nowrap items-center justify-start gap-1.5 text-center">
-                  <Select
-                    value={imageProvider}
-                    onChange={(value) => {
-                      if (value === 'gemini') {
-                        setImageProvider('gemini');
-                      } else if (value === 'seedream') {
-                        setImageProvider('seedream');
-                        // Switch to 2K minimum for Seedream if needed, though API supports others
-                        // forcing 2K/4K for better quality usually
-                        if (resolution !== '2K' && resolution !== '4K') {
-                          onResolutionChange('2K');
-                        }
+          {isAdmin && (
+            <div className="space-y-2">
+              <SkeletonText loading={isGenerating}>
+                <h4 className={sectionTitleClass(theme === 'dark')}>MODELO DE IA</h4>
+              </SkeletonText>
+              <div className="flex flex-nowrap items-center justify-start gap-1.5 text-center">
+                <Select
+                  value={imageProvider}
+                  onChange={(value) => {
+                    if (value === 'gemini') {
+                      setImageProvider('gemini');
+                    } else if (value === 'seedream') {
+                      setImageProvider('seedream');
+                      // Switch to 2K minimum for Seedream if needed, though API supports others
+                      // forcing 2K/4K for better quality usually
+                      if (resolution !== '2K' && resolution !== '4K') {
+                        onResolutionChange('2K');
                       }
-                    }}
-                    options={[
-                      { value: 'gemini', label: 'Gemini' },
-                      { value: 'seedream', label: 'Seedream' },
-                    ]}
-                    className="w-full"
-                    loading={isGenerating}
-                  />
-                </div>
-              </>
-            )}
-          </div>
+                    }
+                  }}
+                  options={[
+                    { value: 'gemini', label: 'Gemini' },
+                    { value: 'seedream', label: 'Seedream' },
+                  ]}
+                  className="w-full"
+                  loading={isGenerating}
+                />
+              </div>
+            </div>
+          )}
 
           {/* Row 1, Col 2: Resolution */}
           <div className="space-y-2">
@@ -137,13 +135,12 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
                   <button
                     key={res}
                     onClick={() => onResolutionChange(res as Resolution)}
-                    className={`flex-1 flex flex-col items-center justify-center text-[10px] font-mono rounded transition-all duration-200 border cursor-pointer relative group ${
-                      isActive
+                    className={`flex-1 flex flex-col items-center justify-center text-[10px] font-mono rounded transition-all duration-200 border cursor-pointer relative group ${isActive
                         ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/40 shadow-[0_0_10px_-5px_#22d3ee]'
                         : theme === 'dark'
                           ? 'bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
                           : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:border-neutral-300 hover:text-neutral-700'
-                    }`}
+                      }`}
                   >
                     <SkeletonText loading={isGenerating}>
                       <span className={isActive ? 'font-bold' : ''}>{res}</span>
@@ -185,7 +182,7 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
           </div>
 
           {/* Row 2, Col 2: Aspect Ratio */}
-          <div className="space-y-2">
+          <div className={`space-y-2 ${!isAdmin ? 'sm:col-span-2' : ''}`}>
             <SkeletonText loading={isGenerating}>
               <div className="flex justify-between items-center mb-1">
                 <h4 className={sectionTitleClass(theme === 'dark')}>
@@ -211,18 +208,16 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
                   <button
                     key={ratio}
                     onClick={() => onAspectRatioChange(ratio)}
-                    className={`flex flex-col items-center justify-center gap-1 py-2 px-1 w-full rounded-sm transition-all duration-200 border cursor-pointer ${
-                      isSelected
+                    className={`flex flex-col items-center justify-center gap-1 py-2 px-1 w-full rounded-sm transition-all duration-200 border cursor-pointer ${isSelected
                         ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40 shadow-[0_0_10px_-5px_#22d3ee]'
                         : theme === 'dark'
                           ? 'bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
                           : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:border-neutral-300 hover:text-neutral-700'
-                    }`}
+                      }`}
                   >
                     <div
-                      className={`${isSquare ? 'w-4 h-4' : isLandscape ? 'w-5 h-3' : 'w-3 h-5'} border ${
-                        isSelected ? 'border-brand-cyan/60' : 'border-neutral-600/50'
-                      } rounded-[3px]`}
+                      className={`${isSquare ? 'w-4 h-4' : isLandscape ? 'w-5 h-3' : 'w-3 h-5'} border ${isSelected ? 'border-brand-cyan/60' : 'border-neutral-600/50'
+                        } rounded-[3px]`}
                     />
                     <SkeletonText loading={isGenerating}>
                       <span className="text-[9px] font-mono mt-0.5">{ratio}</span>
@@ -233,13 +228,12 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
 
               <button
                 onClick={() => setShowOther(!showOther)}
-                className={`flex flex-col items-center justify-center gap-1 py-2 px-1 w-full rounded-sm transition-all duration-200 border cursor-pointer ${
-                  isOtherSelected
+                className={`flex flex-col items-center justify-center gap-1 py-2 px-1 w-full rounded-sm transition-all duration-200 border cursor-pointer ${isOtherSelected
                     ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40 shadow-[0_0_10px_-5px_#22d3ee]'
                     : theme === 'dark'
                       ? 'bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
                       : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:border-neutral-300 hover:text-neutral-700'
-                }`}
+                  }`}
               >
                 <SkeletonText loading={isGenerating}>
                   <span className="text-[9px] font-mono uppercase tracking-widest">
@@ -264,18 +258,16 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
                         onAspectRatioChange(ratio);
                         setShowOther(false);
                       }}
-                      className={`flex flex-col items-center justify-center gap-1 py-2 px-1 w-full rounded-sm transition-all duration-200 border cursor-pointer ${
-                        isSelected
+                      className={`flex flex-col items-center justify-center gap-1 py-2 px-1 w-full rounded-sm transition-all duration-200 border cursor-pointer ${isSelected
                           ? 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40 shadow-[0_0_10px_-5px_#22d3ee]'
                           : theme === 'dark'
                             ? 'bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300'
                             : 'bg-neutral-50 text-neutral-500 border-neutral-200 hover:border-neutral-300 hover:text-neutral-700'
-                      }`}
+                        }`}
                     >
                       <div
-                        className={`${isSquare ? 'w-4 h-4' : isLandscape ? 'w-5 h-3' : 'w-3 h-5'} border ${
-                          isSelected ? 'border-brand-cyan/60' : 'border-neutral-600/50'
-                        } rounded-[3px]`}
+                        className={`${isSquare ? 'w-4 h-4' : isLandscape ? 'w-5 h-3' : 'w-3 h-5'} border ${isSelected ? 'border-brand-cyan/60' : 'border-neutral-600/50'
+                          } rounded-[3px]`}
                       />
                       <SkeletonText loading={isGenerating}>
                         <span className="text-[9px] font-mono mt-0.5">{ratio}</span>

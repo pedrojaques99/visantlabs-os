@@ -1,5 +1,7 @@
 import type { BrandIdentity, StrategyNodeData } from '../types/reactFlow';
 import { GoogleGenAI } from '@google/genai';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
+
 
 // Lazy initialization to avoid breaking app startup if API key is not configured
 let ai: GoogleGenAI | null = null;
@@ -391,7 +393,7 @@ ${JSON.stringify(consolidatedStrategies, null, 2)}
 Generate a concise, actionable strategic prompt that synthesizes this information.`;
 
   const response = await getAI().models.generateContent({
-    model: 'gemini-2.5-flash',
+    model: GEMINI_MODELS.TEXT,
     contents: { parts: [{ text: prompt }] },
   });
 

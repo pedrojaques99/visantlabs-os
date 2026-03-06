@@ -12,6 +12,8 @@ import { Tooltip } from '@/components/ui/Tooltip';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { PromptSection } from './PromptSection';
 import type { ComponentProps } from 'react';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
+
 
 type PromptSectionProps = ComponentProps<typeof PromptSection>;
 
@@ -454,7 +456,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                                 if (setImageProvider) setImageProvider('seedream');
                                             } else {
                                                 if (setImageProvider) setImageProvider('gemini');
-                                                if (setSelectedModel) setSelectedModel('gemini-3-pro-image-preview');
+                                                if (setSelectedModel) setSelectedModel(GEMINI_MODELS.PRO);
                                             }
                                         }}
                                         options={[

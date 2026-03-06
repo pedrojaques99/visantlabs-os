@@ -17,6 +17,8 @@ import { parseActionsFromResponse, type DetectedAction } from '@/services/chatSe
 import { toast } from 'sonner';
 import { fileToBase64 } from '@/utils/fileUtils';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
+
 
 // Auto-resize textarea component (reused from StrategyNode)
 const AutoResizeTextarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
@@ -213,7 +215,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
   const [showSystemPromptEditor, setShowSystemPromptEditor] = useState(false);
   const [systemPrompt, setSystemPrompt] = useState(nodeData.systemPrompt || '');
   const isLoading = nodeData.isLoading || false;
-  const model = nodeData.model || 'gemini-2.5-flash';
+  const model = nodeData.model || GEMINI_MODELS.TEXT;
   const userMessageCount = nodeData.userMessageCount || 0;
   const messages = nodeData.messages || [];
 

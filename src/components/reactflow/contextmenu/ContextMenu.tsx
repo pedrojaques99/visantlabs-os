@@ -336,22 +336,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       section: 'processing' as const,
       category: 'Effects',
     }] : []),
-    ...(experimentalMode && onAddShader ? [{
-      id: 'shader',
-      label: 'Shader Node',
-      icon: <Sparkles size={16} />,
-      onClick: () => { onAddShader!(); onClose(); },
-      section: 'processing' as const,
-      category: 'Effects',
-    }] : []),
-    ...(experimentalMode && onAddColorExtractor ? [{
-      id: 'colorExtractor',
-      label: 'Color Extractor',
-      icon: <Palette size={16} />,
-      onClick: () => { onAddColorExtractor!(); onClose(); },
-      section: 'processing' as const,
-      category: 'Effects',
-    }] : []),
+
     // Branding
     {
       id: 'brand',
@@ -361,30 +346,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       section: 'processing',
       category: 'Branding',
     },
-    ...(experimentalMode && onAddBrandCore ? [{
-      id: 'brandcore',
-      label: 'Brand Core',
-      icon: <Dna size={16} />,
-      onClick: () => { onAddBrandCore!(); onClose(); },
-      section: 'processing' as const,
-      category: 'Branding',
-    }] : []),
-    ...(experimentalMode && onAddStrategy ? [{
-      id: 'strategy',
-      label: 'Strategy Node',
-      icon: <Target size={16} />,
-      onClick: () => { onAddStrategy!(); onClose(); },
-      section: 'processing' as const,
-      category: 'Branding',
-    }] : []),
-    ...(experimentalMode && onAddChat ? [{
-      id: 'chat',
-      label: 'Chat Node',
-      icon: <MessageSquare size={16} />,
-      onClick: () => { onAddChat!(); onClose(); },
-      section: 'processing' as const,
-      category: 'Generate',
-    }] : []),
+
     // Export
     ...(onExport && sourceNodeId ? [{
       id: 'export',

@@ -12,6 +12,8 @@ import { useCanvasChatHandler } from './useCanvasChatHandler';
 import { canvasApi } from '@/services/canvasApi';
 import { isLocalDevelopment } from '@/utils/env';
 import { DEFAULT_MODEL, DEFAULT_ASPECT_RATIO } from '@/constants/geminiModels';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
+
 
 export const useCanvasNodeCreation = (
   reactFlowInstance: ReactFlowInstance | null,
@@ -1775,7 +1777,7 @@ export const useCanvasNodeCreation = (
         type: 'chat',
         messages: [],
         userMessageCount: 0,
-        model: 'gemini-2.5-flash',
+        model: GEMINI_MODELS.TEXT,
         isLoading: false,
         onSendMessage: handlersRef.current?.handleChatSendMessage || (() => Promise.resolve()),
         onUpdateData: handlersRef.current?.handleChatUpdateData || (() => { }),

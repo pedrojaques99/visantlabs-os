@@ -7,12 +7,14 @@ export interface UploadedImage {
   size?: number; // Size in bytes
 }
 
+import { GEMINI_MODELS } from '../constants/geminiModels';
+
 // Duplicate removed
 export type GeminiModel =
-  | 'gemini-2.5-flash-image'
-  | 'gemini-2.5-flash'
-  | 'gemini-3.1-flash-image-preview'
-  | 'gemini-3-pro-image-preview'
+  | typeof GEMINI_MODELS.FLASH
+  | typeof GEMINI_MODELS.TEXT
+  | typeof GEMINI_MODELS.NB2
+  | typeof GEMINI_MODELS.PRO
   | 'veo-3.1-generate-preview'
   | 'veo-3.1-fast-generate-preview';
 

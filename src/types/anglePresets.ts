@@ -1,4 +1,6 @@
 import type { GeminiModel, AspectRatio } from './types';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
+
 
 export type AnglePresetType =
   | 'eye-level'
@@ -31,7 +33,7 @@ export const ANGLE_PRESETS: AnglePreset[] = [
     description: 'Câmera no nível dos olhos, perspectiva natural',
     prompt: 'Recriar esta mesma imagem exatamente como está, mantendo todos os elementos, mas fotografada com ângulo eye-level. Apenas a perspectiva da câmera deve mudar.',
     aspectRatio: '16:9',
-    model: 'gemini-2.5-flash-image',
+    model: GEMINI_MODELS.FLASH,
   },
 
   {
@@ -40,7 +42,7 @@ export const ANGLE_PRESETS: AnglePreset[] = [
     description: 'Câmera olhando para cima, perspectiva heroica',
     prompt: 'Recriar esta mesma imagem exatamente como está, mantendo todos os elementos, mas fotografada com ângulo low angle. Apenas a perspectiva da câmera deve mudar.',
     aspectRatio: '16:9',
-    model: 'gemini-2.5-flash-image',
+    model: GEMINI_MODELS.FLASH,
   },
   {
     id: 'top-down',
@@ -48,7 +50,7 @@ export const ANGLE_PRESETS: AnglePreset[] = [
     description: 'Vista de cima, flat lay',
     prompt: 'Recriar esta mesma imagem, mantendo todos os elementos, mas fotografada com ângulo top-down flat lay. Apenas a perspectiva da câmera deve mudar.',
     aspectRatio: '16:9',
-    model: 'gemini-2.5-flash-image',
+    model: GEMINI_MODELS.FLASH,
   },
   {
     id: 'dutch-angle',
@@ -56,7 +58,7 @@ export const ANGLE_PRESETS: AnglePreset[] = [
     description: 'Câmera inclinada, perspectiva dinâmica',
     prompt: 'Recriar esta mesma imagem, mantendo todos os elementos, mas fotografada com ângulo dutch angle. Apenas a perspectiva da câmera deve mudar.',
     aspectRatio: '16:9',
-    model: 'gemini-2.5-flash-image',
+    model: GEMINI_MODELS.FLASH,
   },
   {
     id: 'worms-eye-view',
@@ -64,7 +66,7 @@ export const ANGLE_PRESETS: AnglePreset[] = [
     description: 'Vista de baixo, perspectiva extrema',
     prompt: 'Recriar esta mesma imagem, mantendo todos os elementos, mas fotografada com ângulo worms-eye view. Apenas a perspectiva da câmera deve mudar.',
     aspectRatio: '16:9',
-    model: 'gemini-2.5-flash-image',
+    model: GEMINI_MODELS.FLASH,
   },
   {
     id: '45-degree',
@@ -72,7 +74,7 @@ export const ANGLE_PRESETS: AnglePreset[] = [
     description: 'Ângulo de 45 graus, vista dinâmica',
     prompt: 'Recriar esta mesma imagem, mantendo todos os elementos, mas fotografada com ângulo 45-degree three-quarter view. Apenas a perspectiva da câmera deve mudar.',
     aspectRatio: '16:9',
-    model: 'gemini-2.5-flash-image',
+    model: GEMINI_MODELS.FLASH,
   },
   {
     id: 'straight-on',
@@ -80,7 +82,7 @@ export const ANGLE_PRESETS: AnglePreset[] = [
     description: 'Vista frontal direta, perspectiva clara',
     prompt: 'Recriar esta mesma imagem, mantendo todos os elementos, mas fotografada com ângulo straight-on front view. Apenas a perspectiva da câmera deve mudar. Tudo mais permanece igual - mesma composição, cores, iluminação e elementos visuais.',
     aspectRatio: '16:9',
-    model: 'gemini-2.5-flash-image',
+    model: GEMINI_MODELS.FLASH,
   },
   {
     id: 'profile',
@@ -88,7 +90,7 @@ export const ANGLE_PRESETS: AnglePreset[] = [
     description: 'Vista lateral, enfatiza profundidade',
     prompt: 'Recriar esta mesma imagem, mantendo todos os elementos, mas fotografada com ângulo profile side view. Apenas a perspectiva da câmera deve mudar. Tudo mais permanece igual - mesma composição, cores, iluminação e elementos visuais.',
     aspectRatio: '16:9',
-    model: 'gemini-2.5-flash-image',
+    model: GEMINI_MODELS.FLASH,
   },
   {
     id: 'back-angle',
@@ -96,7 +98,7 @@ export const ANGLE_PRESETS: AnglePreset[] = [
     description: 'Vista de trás, perspectiva alternativa',
     prompt: 'Recriar esta mesma imagem, mantendo todos os elementos, mas fotografada com ângulo back angle. Apenas a perspectiva da câmera deve mudar. Tudo mais permanece igual - mesma composição, cores, iluminação e elementos visuais.',
     aspectRatio: '16:9',
-    model: 'gemini-2.5-flash-image',
+    model: GEMINI_MODELS.FLASH,
   },
   {
     id: 'macro',
@@ -104,7 +106,7 @@ export const ANGLE_PRESETS: AnglePreset[] = [
     description: 'Close-up detalhado, foco em texturas',
     prompt: 'Recriar esta mesma imagem, mantendo todos os elementos, mas fotografada com ângulo macro close-up. Apenas a perspectiva da câmera deve mudar. Tudo mais permanece igual - mesma composição, cores, iluminação e elementos visuais.',
     aspectRatio: '16:9',
-    model: 'gemini-2.5-flash-image',
+    model: GEMINI_MODELS.FLASH,
   },
   {
     id: 'over-the-shoulder',
@@ -112,6 +114,6 @@ export const ANGLE_PRESETS: AnglePreset[] = [
     description: 'Sobre o ombro, perspectiva íntima',
     prompt: 'Recriar esta mesma imagem, mantendo todos os elementos, mas fotografada com ângulo over-the-shoulder. Apenas a perspectiva da câmera deve mudar. Tudo mais permanece igual - mesma composição, cores, iluminação e elementos visuais.',
     aspectRatio: '16:9',
-    model: 'gemini-2.5-flash-image',
+    model: GEMINI_MODELS.FLASH,
   },
 ];
