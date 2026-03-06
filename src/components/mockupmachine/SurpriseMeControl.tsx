@@ -211,7 +211,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                 'text-black',
                                 'shadow-[0_8px_30px_rgba(var(--brand-cyan-rgb),0.25)] hover:scale-[1.02] active:scale-[0.98] font-black',
                                 isPrimarySurprise
-                                    ? 'bg-gradient-to-br from-brand-cyan to-foreground border-brand-cyan/50 hover:opacity-90'
+                                    ? 'bg-brand-cyan border-brand-cyan/50 hover:bg-brand-cyan/90'
                                     : 'bg-brand-cyan border-brand-cyan/50 hover:bg-brand-cyan/90',
                                 isPrimarySurprise && isActive && 'ring-2 ring-brand-cyan ring-offset-2 ring-offset-black animate-pool-glow'
                             )

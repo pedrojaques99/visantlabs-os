@@ -1,6 +1,7 @@
 import { GoogleGenAI, Modality, Type } from "@google/genai";
 import type { UploadedImage, AspectRatio, DesignType, GeminiModel, Resolution } from '../types/types.js';
 import { buildGeminiPromptInstructionsTemplate } from '../utils/mockupPromptFormat.js';
+import { GEMINI_MODELS, isAdvancedModel, getMaxRefImages } from '../constants/geminiModels.js';
 
 // Lazy initialization to avoid breaking app startup if API key is not configured
 let ai: GoogleGenAI | null = null;
@@ -96,17 +97,17 @@ interface RetryOptions {
 }
 
 const DEFAULT_TIMEOUTS = {
-  'gemini-3.1-flash-image-preview': 180000, // 3 minutes for Nano Banana 2
-  'gemini-3-pro-image-preview': 300000, // 5 minutes for Gemini 3 Pro
-  'gemini-2.5-flash-image': 120000, // 2 minutes for other models
-  'gemini-2.5-flash': 120000, // 2 minutes for text models
+  [GEMINI_MODELS.NB2]: 180000, // 3 minutes for Nano Banana 2
+  [GEMINI_MODELS.PRO]: 300000, // 5 minutes for Gemini 3 Pro
+  [GEMINI_MODELS.FLASH]: 120000, // 2 minutes for other models
+  [GEMINI_MODELS.TEXT]: 120000, // 2 minutes for text models
 };
 
 const DEFAULT_RETRIES = {
-  'gemini-3.1-flash-image-preview': 7, // Nano Banana 2
-  'gemini-3-pro-image-preview': 10, // More retries for Gemini 3 Pro
-  'gemini-2.5-flash-image': 5, // Fewer retries for other models
-  'gemini-2.5-flash': 5, // Fewer retries for text models
+  [GEMINI_MODELS.NB2]: 7, // Nano Banana 2
+  [GEMINI_MODELS.PRO]: 10, // More retries for Gemini 3 Pro
+  [GEMINI_MODELS.FLASH]: 5, // Fewer retries for other models
+  [GEMINI_MODELS.TEXT]: 5, // Fewer retries for text models
 };
 
 const withRetry = async <T>(
@@ -262,8 +263,7 @@ export const generateMockup = async (
     // Nano Banana 2 (3.1 Flash): up to 14 reference images
     // Nano Banana Pro (3 Pro): up to 3 reference images (total 4 images)
     if (referenceImages && referenceImages.length > 0) {
-      const maxReferenceImages = model === 'gemini-3.1-flash-image-preview' ? 13
-        : model === 'gemini-3-pro-image-preview' ? 3 : 1;
+      const maxReferenceImages = getMaxRefImages(model);
       const imagesToAdd = referenceImages.slice(0, maxReferenceImages);
 
       imagesToAdd.forEach((img) => {
@@ -288,17 +288,8 @@ export const generateMockup = async (
     };
 
     // Configure resolution / aspect ratio for image models
-    if (model === 'gemini-3.1-flash-image-preview') {
-      // Nano Banana 2: use imageConfig API
-      config.imageConfig = {} as any;
-      if (aspectRatio) {
-        config.imageConfig.aspectRatio = aspectRatio;
-      }
-      if (resolution) {
-        config.imageConfig.imageSize = resolution;
-      }
-    } else if (model === 'gemini-3-pro-image-preview') {
-      // Nano Banana Pro: use imageConfig API
+    if (isAdvancedModel(model)) {
+      // Nano Banana 2 / Pro: use imageConfig API
       config.imageConfig = {} as any;
       if (aspectRatio) {
         config.imageConfig.aspectRatio = aspectRatio;
@@ -706,7 +697,7 @@ Retorne APENAS o texto melhorado, sem explicações.`;
 
     const response = await getAI(apiKey).models.generateContent({
       model: 'gemini-2.5-flash',
-      contents: promptToGemini,
+      contents: { parts: [{ text: promptToGemini }] },
     });
 
     // Extract usage metadata
@@ -753,7 +744,7 @@ export const suggestPromptVariations = async (basePrompt: string, apiKey?: strin
 
     const response = await getAI(apiKey).models.generateContent({
       model: 'gemini-2.5-flash',
-      contents: promptToGemini,
+      contents: { parts: [{ text: promptToGemini }] },
       config: {
         responseMimeType: 'application/json',
         responseSchema: {
@@ -819,8 +810,8 @@ export const changeObjectInMockup = async (
       responseModalities: [Modality.TEXT, Modality.IMAGE],
     };
 
-    // Configure resolution for Gemini 3.x models
-    if ((model === 'gemini-3.1-flash-image-preview' || model === 'gemini-3-pro-image-preview') && resolution) {
+    // Configure resolution for advanced models
+    if (isAdvancedModel(model) && resolution) {
       config.imageConfig = { imageSize: resolution };
     }
 
@@ -871,8 +862,8 @@ export const applyThemeToMockup = async (
       responseModalities: [Modality.TEXT, Modality.IMAGE],
     };
 
-    // Configure resolution for Gemini 3.x models
-    if ((model === 'gemini-3.1-flash-image-preview' || model === 'gemini-3-pro-image-preview') && resolution) {
+    // Configure resolution for advanced models
+    if (isAdvancedModel(model) && resolution) {
       config.imageConfig = { imageSize: resolution };
     }
 

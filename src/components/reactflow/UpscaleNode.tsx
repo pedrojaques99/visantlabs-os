@@ -15,6 +15,7 @@ import { NodeHeader } from './shared/node-header';
 import { NodeLabel } from './shared/node-label';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getCreditsRequired } from '@/utils/creditCalculator';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
 
 export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
@@ -26,7 +27,7 @@ export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(({ d
   const connectedImage = (data as any).connectedImage as string | undefined;
   const hasConnectedImage = !!connectedImage;
   // Upscale uses gemini-3-pro-image-preview for 4K, gemini-3.1-flash-image-preview for 2K
-  const upscaleModel: GeminiModel = targetResolution === '4K' ? 'gemini-3-pro-image-preview' : 'gemini-3.1-flash-image-preview';
+  const upscaleModel: GeminiModel = targetResolution === '4K' ? GEMINI_MODELS.PRO : GEMINI_MODELS.NB2;
   const creditsRequired = getCreditsRequired(upscaleModel, targetResolution);
 
   const handleUpscale = async () => {
