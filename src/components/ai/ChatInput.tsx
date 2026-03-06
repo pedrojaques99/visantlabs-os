@@ -10,6 +10,7 @@ import { Button } from '../ui/button';
 import { Select } from '../ui/select';
 import { Badge } from '../ui/badge';
 import { cn } from '../../lib/utils';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
 
 interface ChatInputProps {
   // Prompt
@@ -48,11 +49,11 @@ interface ChatInputProps {
   creditsPerGeneration?: number;
 }
 
-const MODEL_NAMES: Record<GeminiModel, string> = {
-  'gemini-2.5-flash-image': 'Mockup Machine® HD',
-  'gemini-2.5-flash': 'Gemini Flash',
-  'gemini-3.1-flash-image-preview': 'Mockup Machine® NB2',
-  'gemini-3-pro-image-preview': 'Mockup Machine® 4K',
+const MODEL_NAMES: Record<string, string> = {
+  [GEMINI_MODELS.FLASH]: 'Mockup Machine® HD',
+  [GEMINI_MODELS.TEXT]: 'Gemini Flash',
+  [GEMINI_MODELS.NB2]: 'Mockup Machine® NB2',
+  [GEMINI_MODELS.PRO]: 'Mockup Machine® 4K',
   'veo-3.1-generate-preview': 'Mockup Machine® 4K',
   'veo-3.1-fast-generate-preview': 'Mockup Machine® 4K'
 };
@@ -158,8 +159,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 className="text-sm"
                 options={[
                   { value: '', label: t('mockup.selectModel') },
-                  { value: 'gemini-2.5-flash-image', label: MODEL_NAMES['gemini-2.5-flash-image'] },
-                  { value: 'gemini-3-pro-image-preview', label: MODEL_NAMES['gemini-3-pro-image-preview'] },
+                  { value: GEMINI_MODELS.FLASH, label: MODEL_NAMES[GEMINI_MODELS.FLASH] },
+                  { value: GEMINI_MODELS.PRO, label: MODEL_NAMES[GEMINI_MODELS.PRO] },
                 ]}
               />
             </div>

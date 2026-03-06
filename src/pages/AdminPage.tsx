@@ -24,6 +24,8 @@ import { DataTableEditableCell } from '../components/ui/data-table-editable-cell
 import { ColumnDef } from '@tanstack/react-table';
 import { getImagePricing } from '@/utils/pricing';
 import { cn } from '@/lib/utils';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
+
 
 interface AdminUser {
   id: string;
@@ -438,14 +440,14 @@ export const AdminPage: React.FC = () => {
     const stats = data.generationStats.imagesByModel;
 
     // Calculate Gemini 2.5 Flash cost
-    if (stats['gemini-2.5-flash-image']) {
-      const price = getImagePricing('gemini-2.5-flash-image');
-      cost += stats['gemini-2.5-flash-image'].total * price;
+    if (stats[GEMINI_MODELS.FLASH]) {
+      const price = getImagePricing(GEMINI_MODELS.FLASH);
+      cost += stats[GEMINI_MODELS.FLASH].total * price;
     }
 
     // Calculate Gemini 3 Pro cost
-    if (stats['gemini-3-pro-image-preview']) {
-      const resolutions = stats['gemini-3-pro-image-preview'].byResolution;
+    if (stats[GEMINI_MODELS.PRO]) {
+      const resolutions = stats[GEMINI_MODELS.PRO].byResolution;
 
       Object.entries(resolutions).forEach(([res, count]) => {
         // Normalize resolution string to 1K, 2K, or 4K
@@ -459,7 +461,7 @@ export const AdminPage: React.FC = () => {
           normalizedRes = '4K';
         }
 
-        const price = getImagePricing('gemini-3-pro-image-preview', normalizedRes);
+        const price = getImagePricing(GEMINI_MODELS.PRO, normalizedRes);
         cost += count * price;
       });
     }

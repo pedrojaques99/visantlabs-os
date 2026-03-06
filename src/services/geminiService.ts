@@ -118,7 +118,7 @@ const withRetry = async <T>(
     maxRetries,
     timeout,
     onRetry,
-    model = 'gemini-2.5-flash-image'
+    model = GEMINI_MODELS.FLASH
   } = options;
 
   const effectiveMaxRetries = maxRetries ?? DEFAULT_RETRIES[model] ?? 5;
@@ -230,7 +230,7 @@ const withRetry = async <T>(
 export const generateMockup = async (
   promptText: string,
   baseImage?: UploadedImage,
-  model: GeminiModel = 'gemini-2.5-flash-image',
+  model: GeminiModel = GEMINI_MODELS.FLASH,
   resolution?: Resolution,
   aspectRatio?: AspectRatio,
   referenceImages?: UploadedImage[],
@@ -338,7 +338,7 @@ export const suggestCategories = async (
     Return ONLY a comma-separated list of suggested categories (e.g., T-Shirt, Mug, Poster, Business Card). Do not include any other text or explanation.`;
 
     const response = await getAI(apiKey).models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: GEMINI_MODELS.TEXT,
       contents: {
         parts: [
           {
@@ -374,7 +374,7 @@ export const suggestCategories = async (
 
     return { categories, inputTokens, outputTokens };
   }, {
-    model: 'gemini-2.5-flash'
+    model: GEMINI_MODELS.TEXT
   });
 };
 
@@ -438,7 +438,7 @@ Retorne em formato JSON JSON:
 }`;
 
     const response = await getAI(userApiKey).models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: GEMINI_MODELS.TEXT,
       contents: {
         parts: [
           {
@@ -515,7 +515,7 @@ Retorne em formato JSON JSON:
       };
     }
   }, {
-    model: 'gemini-2.5-flash'
+    model: GEMINI_MODELS.TEXT
   });
 };
 
@@ -586,7 +586,7 @@ export const generateSmartPrompt = async (params: SmartPromptParams, apiKey?: st
     parts.push({ text: promptToGemini });
 
     const response = await getAI(apiKey).models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: GEMINI_MODELS.TEXT,
       contents: { parts },
     });
 
@@ -604,7 +604,7 @@ export const generateSmartPrompt = async (params: SmartPromptParams, apiKey?: st
       outputTokens,
     };
   }, {
-    model: 'gemini-2.5-flash'
+    model: GEMINI_MODELS.TEXT
   });
 };
 
@@ -651,7 +651,7 @@ export const generateMergePrompt = async (images: UploadedImage[]): Promise<Gene
     parts.push({ text: promptToGemini });
 
     const response = await getAI().models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: GEMINI_MODELS.TEXT,
       contents: { parts },
     });
 
@@ -666,7 +666,7 @@ export const generateMergePrompt = async (images: UploadedImage[]): Promise<Gene
       outputTokens,
     };
   }, {
-    model: 'gemini-2.5-flash'
+    model: GEMINI_MODELS.TEXT
   });
 };
 
@@ -696,7 +696,7 @@ Regras:
 Retorne APENAS o texto melhorado, sem explicações.`;
 
     const response = await getAI(apiKey).models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: GEMINI_MODELS.TEXT,
       contents: { parts: [{ text: promptToGemini }] },
     });
 
@@ -716,7 +716,7 @@ Retorne APENAS o texto melhorado, sem explicações.`;
       outputTokens,
     };
   }, {
-    model: 'gemini-2.5-flash'
+    model: GEMINI_MODELS.TEXT
   });
 };
 
@@ -743,7 +743,7 @@ export const suggestPromptVariations = async (basePrompt: string, apiKey?: strin
     Sua saída deve ser APENAS o objeto JSON.`;
 
     const response = await getAI(apiKey).models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: GEMINI_MODELS.TEXT,
       contents: { parts: [{ text: promptToGemini }] },
       config: {
         responseMimeType: 'application/json',
@@ -781,14 +781,14 @@ export const suggestPromptVariations = async (basePrompt: string, apiKey?: strin
       return { variations: [], inputTokens, outputTokens };
     }
   }, {
-    model: 'gemini-2.5-flash'
+    model: GEMINI_MODELS.TEXT
   });
 };
 
 export const changeObjectInMockup = async (
   baseImage: UploadedImage,
   newObject: string,
-  model: GeminiModel = 'gemini-2.5-flash-image',
+  model: GeminiModel = GEMINI_MODELS.FLASH,
   resolution?: Resolution,
   onRetry?: (attempt: number, maxRetries: number, delay: number) => void,
   apiKey?: string
@@ -839,7 +839,7 @@ export const changeObjectInMockup = async (
 export const applyThemeToMockup = async (
   baseImage: UploadedImage,
   themes: string[],
-  model: GeminiModel = 'gemini-2.5-flash-image',
+  model: GeminiModel = GEMINI_MODELS.FLASH,
   resolution?: Resolution,
   onRetry?: (attempt: number, maxRetries: number, delay: number) => void,
   apiKey?: string
@@ -946,7 +946,7 @@ Retorne em formato JSON:
     ];
 
     const response = await getAI(apiKey).models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: GEMINI_MODELS.TEXT,
       contents: { parts },
       config: {
         responseMimeType: 'application/json',
@@ -987,6 +987,6 @@ Retorne em formato JSON:
       };
     }
   }, {
-    model: 'gemini-2.5-flash'
+    model: GEMINI_MODELS.TEXT
   });
 };

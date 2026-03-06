@@ -13,6 +13,8 @@ import type { PromptCategory, LegacyPresetType } from '../types/communityPrompts
 import { authService } from '../services/authService';
 import { cn } from '../lib/utils';
 import { CATEGORY_CONFIG } from './PresetCard';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
+
 
 interface PresetFormData {
     category: PromptCategory;
@@ -58,7 +60,7 @@ const getInitialFormData = (category: PromptCategory = 'presets', presetType?: L
     prompt: '',
     referenceImageUrl: '',
     aspectRatio: '16:9',
-    model: 'gemini-2.5-flash-image',
+    model: GEMINI_MODELS.FLASH,
     tags: [],
     useCase: '',
 });

@@ -28,6 +28,8 @@ import { CommunityPresetsSidebar } from '../components/CommunityPresetsSidebar';
 import { PresetCard, CATEGORY_CONFIG } from '../components/PresetCard';
 import type { PromptCategory, LegacyPresetType, CommunityPrompt } from '../types/communityPrompts';
 import { migrateLegacyPreset } from '../types/communityPrompts';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
+
 
 // Constants
 const COMMUNITY_API = '/api/community/presets';
@@ -75,7 +77,7 @@ const getInitialFormData = (category: PromptCategory = 'presets', presetType?: L
   prompt: '',
   referenceImageUrl: '',
   aspectRatio: '16:9',
-  model: 'gemini-2.5-flash-image',
+  model: GEMINI_MODELS.FLASH,
   tags: [],
   difficulty: 'intermediate',
   context: 'general',
@@ -118,7 +120,7 @@ export const CommunityPresetsPage: React.FC = () => {
     prompt: '',
     referenceImageUrl: '',
     aspectRatio: '16:9',
-    model: 'gemini-2.5-flash-image',
+    model: GEMINI_MODELS.FLASH,
     tags: [],
     difficulty: 'intermediate',
     context: 'general',

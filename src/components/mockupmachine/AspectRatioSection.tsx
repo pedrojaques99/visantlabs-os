@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import type { AspectRatio, GeminiModel } from '@/types/types';
 import { useTranslation } from '@/hooks/useTranslation';
+import { GEMINI_MODELS } from '@/constants/geminiModels';
+
 
 interface AspectRatioSectionProps {
   aspectRatio: AspectRatio;
@@ -21,7 +23,7 @@ export const AspectRatioSection: React.FC<AspectRatioSectionProps> = ({
   selectedModel
 }) => {
   const [showOther, setShowOther] = useState(false);
-  const isProModel = selectedModel === 'gemini-3-pro-image-preview';
+  const isProModel = selectedModel === GEMINI_MODELS.PRO;
   const isOtherSelected = !MAIN_ASPECT_RATIOS.includes(aspectRatio) && aspectRatio !== undefined;
   const { t } = useTranslation();
 
