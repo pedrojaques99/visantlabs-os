@@ -69,12 +69,14 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
   const isLoading = nodeData.isLoading || false;
   const isSuggestingPrompts = nodeData.isSuggestingPrompts || false;
   const promptSuggestions = nodeData.promptSuggestions || [];
-  const isProModel = model === 'gemini-3-pro-image-preview';
-  const finalResolution = isProModel ? resolution : undefined;
+  const isAdvancedModel = model === 'gemini-3-pro-image-preview' || model === 'gemini-3.1-flash-image-preview';
+  const finalResolution = isAdvancedModel ? resolution : undefined;
   const creditsRequired = getCreditsRequired(model, finalResolution);
 
   // Determine number of handles based on model
-  const maxHandles = model === 'gemini-3-pro-image-preview' ? 4 : 2;
+  // Nano Banana 2 supports up to 14 ref images, Pro up to 11, Flash up to 2
+  const maxHandles = model === 'gemini-3.1-flash-image-preview' ? 4
+    : model === 'gemini-3-pro-image-preview' ? 4 : 2;
 
   // Get all connected images up to max handles
   // BrandCore images are displayed separately, so only include legacy connected images here
@@ -168,8 +170,8 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     if (nodeData.onUpdateData) {
       const updates: Partial<PromptNodeData> = {};
       if (model !== nodeData.model) updates.model = model;
-      if (isProModel && aspectRatio !== nodeData.aspectRatio) updates.aspectRatio = aspectRatio;
-      if (isProModel && resolution !== nodeData.resolution) updates.resolution = resolution;
+      if (isAdvancedModel && aspectRatio !== nodeData.aspectRatio) updates.aspectRatio = aspectRatio;
+      if (isAdvancedModel && resolution !== nodeData.resolution) updates.resolution = resolution;
 
       if (Object.keys(updates).length > 0) {
         nodeData.onUpdateData(id, updates);
@@ -179,7 +181,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     // HIERARCHY: Logo (priority 1) as first image, Identity (priority 2) as second image for context
     // Then legacy connected images
     const connectedImages: string[] = [];
-    const maxImages = model === 'gemini-3-pro-image-preview' ? 4 : 2;
+    const maxImages = (model === 'gemini-3-pro-image-preview' || model === 'gemini-3.1-flash-image-preview') ? 4 : 2;
 
     // Add Logo first (primary focus)
     if (nodeData.connectedLogo) {
@@ -199,7 +201,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     if (nodeData.connectedImage2 && !brandCoreImages.includes(nodeData.connectedImage2)) {
       connectedImages.push(nodeData.connectedImage2);
     }
-    if (model === 'gemini-3-pro-image-preview') {
+    if (model === 'gemini-3-pro-image-preview' || model === 'gemini-3.1-flash-image-preview') {
       if (nodeData.connectedImage3 && !brandCoreImages.includes(nodeData.connectedImage3)) {
         connectedImages.push(nodeData.connectedImage3);
       }
@@ -317,23 +319,24 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     debouncedUpdateData({ pdfPageReference: value || undefined });
   };
 
-  // Unified HD/1K/2K/4K resolution handler
-  const handleResolutionClick = (res: 'HD' | Resolution) => {
+  // Unified HD/NB2/1K/2K/4K resolution handler
+  const handleResolutionClick = (res: 'HD' | 'NB2' | Resolution) => {
     const previousModel = model;
-    
+    const wasAdvancedModel = previousModel === 'gemini-3-pro-image-preview' || previousModel === 'gemini-3.1-flash-image-preview';
+
     if (res === 'HD') {
       setModel('gemini-2.5-flash-image');
-      
+
       if (!nodeData.onUpdateData) return;
-      
-      const updates: Partial<PromptNodeData> = { 
+
+      const updates: Partial<PromptNodeData> = {
         model: 'gemini-2.5-flash-image',
         resolution: undefined,
         aspectRatio: undefined
       };
 
-      // If switching from Pro to Flash, clear images 3 and 4
-      if (previousModel === 'gemini-3-pro-image-preview') {
+      // If switching from advanced model to Flash, clear images 3 and 4
+      if (wasAdvancedModel) {
         updates.connectedImage3 = undefined;
         updates.connectedImage4 = undefined;
 
@@ -347,17 +350,34 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       }
 
       nodeData.onUpdateData(id, updates);
+    } else if (res === 'NB2') {
+      setModel('gemini-3.1-flash-image-preview');
+      setResolution('1K');
+
+      if (!nodeData.onUpdateData) return;
+
+      const updates: Partial<PromptNodeData> = {
+        model: 'gemini-3.1-flash-image-preview',
+        resolution: '1K'
+      };
+
+      if (!nodeData.aspectRatio) {
+        updates.aspectRatio = '16:9';
+        setAspectRatio('16:9');
+      }
+
+      nodeData.onUpdateData(id, updates);
     } else {
       setModel('gemini-3-pro-image-preview');
       setResolution(res);
-      
+
       if (!nodeData.onUpdateData) return;
-      
-      const updates: Partial<PromptNodeData> = { 
+
+      const updates: Partial<PromptNodeData> = {
         model: 'gemini-3-pro-image-preview',
         resolution: res
       };
-      
+
       if (!nodeData.aspectRatio) {
         updates.aspectRatio = '16:9';
         setAspectRatio('16:9');
@@ -367,7 +387,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     }
   };
 
-  const currentActiveResolution = isProModel ? resolution : 'HD';
+  const currentActiveResolution = isAdvancedModel ? resolution : 'HD';
 
   // Debounced fit-to-content: update node size when container content changes
   const debouncedFitToContent = useDebouncedCallback(() => {
@@ -707,8 +727,12 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
             className="flex gap-1" 
             onMouseDown={(e) => e.stopPropagation()}
           >
-            {(['HD', '1K', '2K', '4K'] as const).map(res => {
-              const isActive = currentActiveResolution === res;
+            {(['HD', 'NB2', '1K', '2K', '4K'] as const).map(res => {
+              const isActive = res === 'NB2'
+                ? model === 'gemini-3.1-flash-image-preview'
+                : res === 'HD'
+                  ? model === 'gemini-2.5-flash-image'
+                  : model === 'gemini-3-pro-image-preview' && currentActiveResolution === res;
               return (
                 <button
                   key={res}
@@ -732,8 +756,8 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           </div>
         </div>
 
-        {/* Aspect Ratio - Only for Pro model */}
-        {isProModel && (
+        {/* Aspect Ratio - For advanced models (NB2 + Pro) */}
+        {isAdvancedModel && (
           <div>
             <NodeLabel className="mb-1.5 text-[10px]">
               {t('canvasNodes.promptNode.aspectRatio')}

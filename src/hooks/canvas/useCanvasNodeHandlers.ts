@@ -326,7 +326,7 @@ export const useCanvasNodeHandlers = (
       return;
     }
 
-    const model: GeminiModel = resolution === '4K' ? 'gemini-3-pro-image-preview' : 'gemini-2.5-flash-image';
+    const model: GeminiModel = resolution === '4K' ? 'gemini-3-pro-image-preview' : 'gemini-3.1-flash-image-preview';
     const hasCredits = await validateCredits(model, resolution);
     if (!hasCredits) return;
 
@@ -652,7 +652,7 @@ export const useCanvasNodeHandlers = (
     }
 
     const model = modelOverride || preset.model || 'gemini-2.5-flash-image';
-    const resolution: Resolution = resolutionOverride || (model === 'gemini-3-pro-image-preview' ? '4K' : '1K');
+    const resolution: Resolution = resolutionOverride || (model === 'gemini-3-pro-image-preview' ? '4K' : model === 'gemini-3.1-flash-image-preview' ? '1K' : '1K');
     const aspectRatio = aspectRatioOverride || preset.aspectRatio;
 
     const hasCredits = await validateCredits(model, resolution);
@@ -1417,10 +1417,10 @@ export const useCanvasNodeHandlers = (
 
     const promptData = node.data as PromptNodeData;
     const selectedModel: GeminiModel = model || promptData.model || 'gemini-2.5-flash-image';
-    const isProModel = selectedModel === 'gemini-3-pro-image-preview';
+    const isAdvancedModel = selectedModel === 'gemini-3-pro-image-preview' || selectedModel === 'gemini-3.1-flash-image-preview';
     // Use resolution and aspectRatio from nodeData if available, otherwise use defaults
-    const resolution: Resolution | undefined = isProModel ? (promptData.resolution || '4K') : undefined;
-    const aspectRatio = isProModel ? (promptData.aspectRatio || '16:9') : undefined;
+    const resolution: Resolution | undefined = isAdvancedModel ? (promptData.resolution || (selectedModel === 'gemini-3-pro-image-preview' ? '4K' : '1K')) : undefined;
+    const aspectRatio = isAdvancedModel ? (promptData.aspectRatio || '16:9') : undefined;
 
     const hasCredits = await validateCredits(selectedModel, resolution);
     if (!hasCredits) return;
@@ -1467,13 +1467,13 @@ export const useCanvasNodeHandlers = (
         const uploadedImages = await normalizeImagesToUploadedImages(connectedImages);
 
         // Define limits based on model
-        const maxImages = selectedModel === 'gemini-3-pro-image-preview' ? 4 : 2;
+        const maxImages = (selectedModel === 'gemini-3-pro-image-preview' || selectedModel === 'gemini-3.1-flash-image-preview') ? 4 : 2;
 
         // Validate image count
         if (uploadedImages.length > maxImages) {
           updateNodeLoadingState<PromptNodeData>(nodeId, false, 'prompt');
           toast.error(
-            `Maximum ${maxImages} images allowed for ${selectedModel === 'gemini-3-pro-image-preview' ? '4K' : 'HD'} model. You have ${uploadedImages.length} images connected.`,
+            `Maximum ${maxImages} images allowed for ${isAdvancedModel ? selectedModel.includes('3.1') ? 'NB2' : '4K Pro' : 'HD'} model. You have ${uploadedImages.length} images connected.`,
             { duration: 5000 }
           );
           return;
@@ -1496,7 +1496,8 @@ export const useCanvasNodeHandlers = (
 
           // Process reference images based on model
           if (uploadedImages.length > 1) {
-            const maxReferenceImages = selectedModel === 'gemini-3-pro-image-preview' ? 3 : 1;
+            const maxReferenceImages = selectedModel === 'gemini-3.1-flash-image-preview' ? 13
+              : selectedModel === 'gemini-3-pro-image-preview' ? 3 : 1;
             referenceImages = uploadedImages.slice(1, 1 + maxReferenceImages);
           }
 

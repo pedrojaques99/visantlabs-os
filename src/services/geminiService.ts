@@ -96,12 +96,14 @@ interface RetryOptions {
 }
 
 const DEFAULT_TIMEOUTS = {
+  'gemini-3.1-flash-image-preview': 180000, // 3 minutes for Nano Banana 2
   'gemini-3-pro-image-preview': 300000, // 5 minutes for Gemini 3 Pro
   'gemini-2.5-flash-image': 120000, // 2 minutes for other models
   'gemini-2.5-flash': 120000, // 2 minutes for text models
 };
 
 const DEFAULT_RETRIES = {
+  'gemini-3.1-flash-image-preview': 7, // Nano Banana 2
   'gemini-3-pro-image-preview': 10, // More retries for Gemini 3 Pro
   'gemini-2.5-flash-image': 5, // Fewer retries for other models
   'gemini-2.5-flash': 5, // Fewer retries for text models
@@ -256,10 +258,12 @@ export const generateMockup = async (
     }
 
     // Add reference images
-    // Flash model: up to 1 reference image (total 2 images)
-    // Pro model: up to 3 reference images (total 4 images)
+    // Nano Banana (Flash): up to 1 reference image (total 2 images)
+    // Nano Banana 2 (3.1 Flash): up to 14 reference images
+    // Nano Banana Pro (3 Pro): up to 3 reference images (total 4 images)
     if (referenceImages && referenceImages.length > 0) {
-      const maxReferenceImages = model === 'gemini-3-pro-image-preview' ? 3 : 1;
+      const maxReferenceImages = model === 'gemini-3.1-flash-image-preview' ? 13
+        : model === 'gemini-3-pro-image-preview' ? 3 : 1;
       const imagesToAdd = referenceImages.slice(0, maxReferenceImages);
 
       imagesToAdd.forEach((img) => {
@@ -280,44 +284,27 @@ export const generateMockup = async (
     parts.push({ text: promptText });
 
     const config: any = {
-      responseModalities: [Modality.IMAGE],
+      responseModalities: [Modality.TEXT, Modality.IMAGE],
     };
 
-    // Configure resolution for Gemini 3 Pro
-    if (model === 'gemini-3-pro-image-preview' && resolution) {
-      // Map resolution to output dimensions
-      // According to docs: 1K=1210px, 2K=1210px, 4K=2000px max dimension
-      let maxDimension = 1210; // 1K and 2K default
-      if (resolution === '4K') {
-        maxDimension = 2000;
-      }
-
-      // If aspectRatio is provided, calculate dimensions
+    // Configure resolution / aspect ratio for image models
+    if (model === 'gemini-3.1-flash-image-preview') {
+      // Nano Banana 2: use imageConfig API
+      config.imageConfig = {} as any;
       if (aspectRatio) {
-        const [widthRatio, heightRatio] = aspectRatio.split(':').map(Number);
-        const ratio = widthRatio / heightRatio;
-
-        let width: number, height: number;
-        if (ratio >= 1) {
-          // Landscape or square
-          width = maxDimension;
-          height = Math.round(maxDimension / ratio);
-        } else {
-          // Portrait
-          height = maxDimension;
-          width = Math.round(maxDimension * ratio);
-        }
-
-        config.outputImageDimensions = {
-          width,
-          height,
-        };
-      } else {
-        // Default to square if no aspect ratio
-        config.outputImageDimensions = {
-          width: maxDimension,
-          height: maxDimension,
-        };
+        config.imageConfig.aspectRatio = aspectRatio;
+      }
+      if (resolution) {
+        config.imageConfig.imageSize = resolution;
+      }
+    } else if (model === 'gemini-3-pro-image-preview') {
+      // Nano Banana Pro: use imageConfig API
+      config.imageConfig = {} as any;
+      if (aspectRatio) {
+        config.imageConfig.aspectRatio = aspectRatio;
+      }
+      if (resolution) {
+        config.imageConfig.imageSize = resolution;
       }
     }
 
@@ -829,16 +816,12 @@ export const changeObjectInMockup = async (
     ];
 
     const config: any = {
-      responseModalities: [Modality.IMAGE],
+      responseModalities: [Modality.TEXT, Modality.IMAGE],
     };
 
-    // Configure resolution for Gemini 3 Pro
-    if (model === 'gemini-3-pro-image-preview' && resolution) {
-      const maxDimension = resolution === '4K' ? 2000 : 1210;
-      config.outputImageDimensions = {
-        width: maxDimension,
-        height: maxDimension,
-      };
+    // Configure resolution for Gemini 3.x models
+    if ((model === 'gemini-3.1-flash-image-preview' || model === 'gemini-3-pro-image-preview') && resolution) {
+      config.imageConfig = { imageSize: resolution };
     }
 
     const response = await getAI().models.generateContent({
@@ -885,16 +868,12 @@ export const applyThemeToMockup = async (
     ];
 
     const config: any = {
-      responseModalities: [Modality.IMAGE],
+      responseModalities: [Modality.TEXT, Modality.IMAGE],
     };
 
-    // Configure resolution for Gemini 3 Pro
-    if (model === 'gemini-3-pro-image-preview' && resolution) {
-      const maxDimension = resolution === '4K' ? 2000 : 1210;
-      config.outputImageDimensions = {
-        width: maxDimension,
-        height: maxDimension,
-      };
+    // Configure resolution for Gemini 3.x models
+    if ((model === 'gemini-3.1-flash-image-preview' || model === 'gemini-3-pro-image-preview') && resolution) {
+      config.imageConfig = { imageSize: resolution };
     }
 
     const response = await getAI().models.generateContent({

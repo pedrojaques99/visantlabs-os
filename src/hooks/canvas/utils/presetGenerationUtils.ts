@@ -86,7 +86,7 @@ export const generateImageWithPreset = async ({
   }
 
   const model: GeminiModel = (preset.model as GeminiModel) || 'gemini-2.5-flash-image';
-  const resolution: Resolution = model === 'gemini-3-pro-image-preview' ? '4K' : '1K';
+  const resolution: Resolution = model === 'gemini-3-pro-image-preview' ? '4K' : model === 'gemini-3.1-flash-image-preview' ? '1K' : '1K';
 
   const hasCredits = await validateCredits(model, resolution);
   if (!hasCredits) return;

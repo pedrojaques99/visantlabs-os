@@ -23,7 +23,8 @@
       "Bash(firecrawl search:*)",
       "Bash(rm:*)",
       "Bash(npx skills:*)",
-      "Bash(npx tsx:*)"
+      "Bash(npx tsx:*)",
+      "WebFetch(domain:ai.google.dev)"
     ]
   }
 }
