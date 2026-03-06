@@ -44,6 +44,21 @@ export function getCreditsRequired(
     return 1;
   }
 
+  if (model === 'gemini-3.1-flash-image-preview') {
+    switch (resolution) {
+      case '512px':
+        return 1;
+      case '1K':
+        return 2;
+      case '2K':
+        return 3;
+      case '4K':
+        return 5;
+      default:
+        return 2;
+    }
+  }
+
   if (model === 'gemini-3-pro-image-preview') {
     switch (resolution) {
       case '1K':

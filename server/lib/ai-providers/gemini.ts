@@ -1,7 +1,7 @@
 // Gemini provider for fast execution and simple tasks
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import type { FigmaOperation } from '../../../src/lib/figma-types';
-import type { AIProvider, AIGenerationOptions } from './types';
+import type { FigmaOperation } from '../../../src/lib/figma-types.js';
+import type { AIProvider, AIGenerationOptions } from './types.js';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
