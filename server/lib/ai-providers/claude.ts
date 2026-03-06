@@ -1,7 +1,7 @@
 // Claude provider for complex reasoning and advanced generation tasks
 import Anthropic from '@anthropic-ai/sdk';
-import type { FigmaOperation } from '../../../src/lib/figma-types';
-import type { AIProvider, AIGenerationOptions } from './types';
+import type { FigmaOperation } from '../../../src/lib/figma-types.js';
+import type { AIProvider, AIGenerationOptions } from './types.js';
 
 function getClient(apiKey?: string) {
   return new Anthropic({ apiKey: apiKey || process.env.ANTHROPIC_API_KEY });
