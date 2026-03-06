@@ -18,6 +18,10 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         }}
         ref={ref}
         {...props}
+        onPointerDownCapture={(e) => {
+          e.stopPropagation()
+          props.onPointerDownCapture?.(e)
+        }}
       />
     )
   }

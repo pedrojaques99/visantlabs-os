@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Book, Server, Puzzle, Home, ChevronLeft, ChevronRight, Terminal, Code, Sparkles, Layers } from 'lucide-react';
+import { Book, Server, Puzzle, Home, ChevronLeft, ChevronRight, Terminal, Code, Sparkles, Layers, Workflow, Copy, Check, FileText } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { SEO } from '../components/SEO';
@@ -64,6 +64,7 @@ export const DocsPage: React.FC = () => {
   const [openApiSpec, setOpenApiSpec] = useState<OpenAPISpec | null>(null);
   const [mcpSpec, setMcpSpec] = useState<MCPSpec | null>(null);
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const fetchDocs = async () => {
@@ -152,6 +153,21 @@ export const DocsPage: React.FC = () => {
         { id: 'fn-renderer', label: 'Renderer (render.ts)' },
         { id: 'fn-social', label: 'Social Media Example' },
         { id: 'fn-patterns', label: 'Common Patterns' },
+      ],
+    },
+    {
+      id: 'canvas-api',
+      label: 'Canvas API',
+      icon: Workflow,
+      sections: [
+        { id: 'ca-overview', label: 'Overview' },
+        { id: 'ca-auth', label: 'Authentication' },
+        { id: 'ca-projects', label: 'Projects CRUD' },
+        { id: 'ca-nodes', label: 'Node Types' },
+        { id: 'ca-edges', label: 'Edges & Connections' },
+        { id: 'ca-media', label: 'Media Upload' },
+        { id: 'ca-share', label: 'Sharing & Collab' },
+        { id: 'ca-agents', label: 'Agent Integration' },
       ],
     },
   ];
@@ -417,6 +433,16 @@ export const DocsPage: React.FC = () => {
                         </CardHeader>
                         <CardContent>
                           <p className="text-muted-foreground text-sm">Design automation and mockup generation inside Figma.</p>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="cursor-pointer hover:border-brand-cyan/50 transition-all hover:-translate-y-1" onClick={() => setActiveTab('canvas-api')}>
+                        <CardHeader>
+                          <Workflow className="w-8 h-8 text-brand-cyan mb-2" />
+                          <CardTitle>Canvas API</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-muted-foreground text-sm">Programmatically create, edit, and manipulate canvas nodes and projects — for LLM agents and external tools.</p>
                         </CardContent>
                       </Card>
                     </div>
@@ -911,6 +937,578 @@ figma.ui.onmessage = async (msg) => {
                         </div>
                       </CardContent>
                     </Card>
+                  </TabsContent>
+
+                  <TabsContent value="canvas-api" className="space-y-8 mt-0">
+                    <div>
+                      <h2 className="text-3xl font-semibold tracking-tight mb-2">Canvas API</h2>
+                      <p className="text-muted-foreground">REST API for programmatic creation, editing, and manipulation of canvas projects and their nodes. Designed for LLM agents and external integrations.</p>
+                    </div>
+
+                    {/* Overview */}
+                    <Card id="ca-overview">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Workflow className="w-5 h-5 text-brand-cyan" /> How It Works</CardTitle>
+                        <CardDescription>The canvas is a React Flow graph — a list of nodes and edges stored in a project. All mutations go through the project-level PUT endpoint.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          {[
+                            { step: '1', title: 'Create a Project', desc: 'POST /api/canvas with an initial nodes[] and edges[] array.' },
+                            { step: '2', title: 'Read & Modify Nodes', desc: 'GET /api/canvas/:id to fetch current state. Modify the nodes array locally.' },
+                            { step: '3', title: 'Persist Changes', desc: 'PUT /api/canvas/:id with the full updated nodes[] and edges[] to save.' },
+                          ].map(({ step, title, desc }) => (
+                            <div key={step} className="bg-card border border-border rounded-lg p-4">
+                              <div className="text-brand-cyan font-redhatmono text-xs uppercase tracking-wider mb-1">Step {step}</div>
+                              <div className="font-medium text-foreground mb-1">{title}</div>
+                              <div className="text-muted-foreground text-xs">{desc}</div>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="bg-secondary/30 rounded-lg border border-border p-4">
+                          <div className="text-xs font-redhatmono text-muted-foreground mb-2 uppercase tracking-wide">Base URL</div>
+                          <code className="text-brand-cyan font-redhatmono text-sm">https://your-domain.com/api/canvas</code>
+                        </div>
+                        <div className="bg-secondary/30 rounded-lg border border-border p-4">
+                          <div className="text-xs font-redhatmono text-muted-foreground mb-2 uppercase tracking-wide">Key Design Note</div>
+                          <p className="text-sm text-muted-foreground">There is no individual node endpoint. Nodes are stored as a JSON array inside the project document. To add, update, or remove a node, fetch the project, mutate the nodes array, and PUT the full array back.</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Authentication */}
+                    <Card id="ca-auth">
+                      <CardHeader>
+                        <CardTitle>Authentication</CardTitle>
+                        <CardDescription>All endpoints require a JWT Bearer token except the public shared-project endpoint.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                          <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">HTTP Header (all requests)</div>
+                          <pre className="p-4 text-sm font-redhatmono text-foreground m-0">{`Authorization: Bearer <your_jwt_token>
+Content-Type: application/json`}</pre>
+                        </div>
+                        <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                          <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">Obtain Token — POST /api/auth/login</div>
+                          <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`// Request
+{ "email": "user@example.com", "password": "..." }
+
+// Response
+{ "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }`}</pre>
+                        </div>
+                        <p className="text-muted-foreground text-sm">Rate limits: 60 requests/min for general endpoints, 10 uploads/15 min for media uploads.</p>
+                      </CardContent>
+                    </Card>
+
+                    {/* Projects CRUD */}
+                    <Card id="ca-projects">
+                      <CardHeader>
+                        <CardTitle>Projects CRUD</CardTitle>
+                        <CardDescription>Create, read, update, and delete canvas projects. Each project stores a name, a nodes array, and an edges array.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        {[
+                          {
+                            method: 'GET', path: '/api/canvas',
+                            summary: 'List all projects for the authenticated user.',
+                            response: `{ "projects": [{ "_id": "...", "name": "My Project", "nodes": [...], "edges": [...], "createdAt": "...", "updatedAt": "..." }] }`,
+                          },
+                          {
+                            method: 'GET', path: '/api/canvas/:id',
+                            summary: 'Get a single project by ID. Returns nodes with expired base64 data cleaned.',
+                            response: `{ "project": { "_id": "...", "name": "...", "nodes": [...], "edges": [...] } }`,
+                          },
+                          {
+                            method: 'POST', path: '/api/canvas',
+                            summary: 'Create a new canvas project.',
+                            request: `{
+  "name": "My Agent Canvas",
+  "nodes": [
+    {
+      "id": "node-1",
+      "type": "prompt",
+      "position": { "x": 100, "y": 100 },
+      "data": { "type": "prompt", "prompt": "A product photo of running shoes on a white background" }
+    }
+  ],
+  "edges": []
+}`,
+                            response: `{ "project": { "_id": "abc123", "name": "My Agent Canvas", "nodes": [...], "edges": [...] } }`,
+                          },
+                          {
+                            method: 'PUT', path: '/api/canvas/:id',
+                            summary: 'Update a project. Send only the fields you want to change. To update nodes, send the full updated nodes array.',
+                            request: `{
+  "name": "Updated Name",         // optional
+  "nodes": [...],                  // optional — full array
+  "edges": [...],                  // optional — full array
+  "drawings": [...]                // optional — freehand drawing data
+}`,
+                            response: `{ "project": { "_id": "...", "name": "...", "nodes": [...], "edges": [...] } }`,
+                          },
+                          {
+                            method: 'DELETE', path: '/api/canvas/:id',
+                            summary: 'Delete a canvas project permanently.',
+                            response: `{ "success": true }`,
+                          },
+                        ].map(({ method, path, summary, request, response }) => (
+                          <div key={path + method} className="bg-card border border-border rounded-xl p-5 space-y-3">
+                            <div className="flex items-center gap-3">
+                              <Badge variant="outline" className={cn("font-redhatmono uppercase", {
+                                'bg-emerald-500/10 text-emerald-500 border-emerald-500/20': method === 'GET',
+                                'bg-amber-500/10 text-amber-500 border-amber-500/20': method === 'POST',
+                                'bg-blue-500/10 text-blue-500 border-blue-500/20': method === 'PUT',
+                                'bg-red-500/10 text-red-500 border-red-500/20': method === 'DELETE',
+                              })}>{method}</Badge>
+                              <span className="font-redhatmono text-foreground font-medium">{path}</span>
+                            </div>
+                            <p className="text-muted-foreground text-sm">{summary}</p>
+                            {request && (
+                              <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                                <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">Request Body</div>
+                                <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto">{request}</pre>
+                              </div>
+                            )}
+                            <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                              <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">Response</div>
+                              <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto">{response}</pre>
+                            </div>
+                          </div>
+                        ))}
+                      </CardContent>
+                    </Card>
+
+                    {/* Node Types */}
+                    <Card id="ca-nodes">
+                      <CardHeader>
+                        <CardTitle>Node Types Reference</CardTitle>
+                        <CardDescription>All 23 node types available in the canvas. Each node must have an <code className="bg-secondary px-1 py-0.5 rounded text-xs">id</code>, <code className="bg-secondary px-1 py-0.5 rounded text-xs">type</code>, <code className="bg-secondary px-1 py-0.5 rounded text-xs">position</code>, and a <code className="bg-secondary px-1 py-0.5 rounded text-xs">data</code> object with <code className="bg-secondary px-1 py-0.5 rounded text-xs">type</code> matching the node type.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                          <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">Base Node Structure</div>
+                          <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`{
+  "id": "unique-node-id",          // string — must be unique within the project
+  "type": "prompt",                // FlowNodeType — see table below
+  "position": { "x": 100, "y": 200 },
+  "width": 320,                    // optional — display size
+  "height": 240,
+  "data": {
+    "type": "prompt",              // must match the outer "type" field
+    // ...type-specific fields
+  }
+}`}</pre>
+                        </div>
+
+                        <div className="border border-border rounded-lg overflow-hidden">
+                          <table className="w-full text-sm text-left">
+                            <thead className="bg-secondary/50">
+                              <tr>
+                                <th className="px-4 py-3 font-medium text-foreground w-36">type</th>
+                                <th className="px-4 py-3 font-medium text-foreground">Description</th>
+                                <th className="px-4 py-3 font-medium text-foreground">Key data fields</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border">
+                              {[
+                                ['prompt', 'Text-to-image generation', 'prompt (string), model, aspectRatio, resolution, resultImageUrl'],
+                                ['image', 'Display an existing mockup or image', 'mockup: { imageUrl, imageBase64, ... }'],
+                                ['output', 'Result viewer — receives from flow nodes', 'resultImageUrl, resultVideoUrl, sourceNodeId'],
+                                ['merge', 'Combine 2+ connected images with AI', 'prompt (string), model, resultImageUrl'],
+                                ['edit', 'Edit image with Mockup Machine settings', 'uploadedImage, referenceImage, tags[], model, resolution, designType'],
+                                ['upscale', 'AI upscaling (Gemini)', 'targetResolution, resultImageUrl, connectedImage'],
+                                ['upscaleBicubic', 'Bicubic shader upscaling', 'scaleFactor, sharpening, resultImageUrl, resultVideoUrl'],
+                                ['mockup', 'AI mockup from preset templates', 'selectedPreset, selectedColors[], withHuman, customPrompt, model'],
+                                ['angle', 'Re-render with camera angle preset', 'selectedAngle, resultImageUrl, connectedImage'],
+                                ['texture', 'Apply 3D texture/style preset', 'selectedPreset, resultImageUrl, connectedImage'],
+                                ['ambience', 'Apply background/environment preset', 'selectedPreset, resultImageUrl, connectedImage'],
+                                ['luminance', 'Apply light setup preset', 'selectedPreset, resultImageUrl, connectedImage'],
+                                ['shader', 'GLSL shader effects (halftone, VHS, ASCII…)', 'shaderType, dotSize, angle, contrast, resultVideoUrl'],
+                                ['colorExtractor', 'Extract color palette from image', 'connectedImage, extractedColors: string[]'],
+                                ['text', 'Editable text block (connects to prompt/chat)', 'text (string)'],
+                                ['logo', 'Logo upload node', 'logoImageUrl, logoBase64'],
+                                ['pdf', 'Identity guide PDF upload', 'pdfUrl, fileName'],
+                                ['videoInput', 'Video upload for shader/processing nodes', 'uploadedVideoUrl'],
+                                ['video', 'Video generation via Veo', 'prompt, model, aspectRatio, duration, mode, resultVideoUrl'],
+                                ['brand', 'Brand identity extractor (legacy)', 'logoImage, identityPdfUrl, brandIdentity'],
+                                ['brandCore', 'Brand catalyst — generates visual prompts', 'connectedLogo, connectedPdf, visualPrompts, brandIdentity'],
+                                ['strategy', 'Brand strategy generation (persona, archetypes…)', 'strategyType, prompt, strategyData'],
+                                ['director', 'AI-assisted prompt builder with tag selection', 'connectedImage, suggestedTags, generatedPrompt'],
+                                ['chat', 'Conversational AI with multimodal context', 'messages[], model, systemPrompt, connectedImage1..4'],
+                              ].map(([type, desc, fields]) => (
+                                <tr key={type} className="bg-card">
+                                  <td className="px-4 py-2.5 font-redhatmono text-brand-cyan text-xs">{type}</td>
+                                  <td className="px-4 py-2.5 text-muted-foreground text-xs">{desc}</td>
+                                  <td className="px-4 py-2.5 text-muted-foreground text-xs font-redhatmono">{fields}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                          <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">Example — Creating a Prompt Node</div>
+                          <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`{
+  "id": "prompt-1",
+  "type": "prompt",
+  "position": { "x": 100, "y": 100 },
+  "data": {
+    "type": "prompt",
+    "prompt": "A minimalist product photo of running shoes on white background, studio lighting",
+    "model": "gemini-2.0-flash-exp",
+    "aspectRatio": "1:1",
+    "resolution": "1024x1024"
+  }
+}`}</pre>
+                        </div>
+
+                        <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                          <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">Example — Text Node connected to Prompt Node</div>
+                          <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`// Text Node
+{
+  "id": "text-1",
+  "type": "text",
+  "position": { "x": 100, "y": 50 },
+  "data": { "type": "text", "text": "A futuristic sneaker floating in space" }
+}
+
+// Prompt Node — will receive text via edge connection
+{
+  "id": "prompt-1",
+  "type": "prompt",
+  "position": { "x": 100, "y": 200 },
+  "data": { "type": "prompt", "prompt": "" }
+}`}</pre>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Edges */}
+                    <Card id="ca-edges">
+                      <CardHeader>
+                        <CardTitle>Edges & Connections</CardTitle>
+                        <CardDescription>Edges are React Flow edges connecting node outputs to node inputs. They drive data flow between nodes (e.g. an image node feeding into a merge node).</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                          <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">Edge Structure</div>
+                          <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`{
+  "id": "edge-1",               // string — must be unique
+  "source": "prompt-1",         // source node ID
+  "target": "output-1",         // target node ID
+  "sourceHandle": "output",     // optional — handle id on source node
+  "targetHandle": "input",      // optional — handle id on target node
+  "type": "default"             // optional — edge rendering type
+}`}</pre>
+                        </div>
+
+                        <div className="border border-border rounded-lg overflow-hidden">
+                          <table className="w-full text-sm text-left">
+                            <thead className="bg-secondary/50">
+                              <tr>
+                                <th className="px-4 py-3 font-medium text-foreground">Connection</th>
+                                <th className="px-4 py-3 font-medium text-foreground">sourceHandle</th>
+                                <th className="px-4 py-3 font-medium text-foreground">targetHandle</th>
+                                <th className="px-4 py-3 font-medium text-foreground">Effect</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border">
+                              {[
+                                ['image → merge', 'output', 'input-1 / input-2', 'Feeds source image into merge generation'],
+                                ['prompt → output', 'output', 'input', 'Generated image flows to output display'],
+                                ['text → prompt', 'output', 'text-input', 'Text node content syncs to prompt'],
+                                ['logo → brandCore', 'output', 'logo-input', 'Logo base64 fed to brand core'],
+                                ['pdf → brandCore', 'output', 'identity-input', 'PDF identity guide fed to brand core'],
+                                ['brandCore → mockup', 'output', 'brand-input', 'Brand prompts and colors fed to mockup'],
+                                ['image → colorExtractor', 'output', 'input', 'Image fed to color extraction'],
+                                ['strategy → brandCore', 'output', 'strategy-input', 'Strategy data consolidated in brand core'],
+                                ['image/prompt → chat', 'output', 'input-1..input-4', 'Visual context provided to chat node'],
+                              ].map(([conn, src, tgt, effect]) => (
+                                <tr key={conn} className="bg-card">
+                                  <td className="px-4 py-2.5 font-redhatmono text-brand-cyan text-xs">{conn}</td>
+                                  <td className="px-4 py-2.5 text-muted-foreground text-xs font-redhatmono">{src}</td>
+                                  <td className="px-4 py-2.5 text-muted-foreground text-xs font-redhatmono">{tgt}</td>
+                                  <td className="px-4 py-2.5 text-muted-foreground text-xs">{effect}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                          <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">Example — Prompt → Output flow</div>
+                          <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`"edges": [
+  {
+    "id": "e1",
+    "source": "prompt-1",
+    "target": "output-1",
+    "sourceHandle": "output",
+    "targetHandle": "input"
+  }
+]`}</pre>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Media Upload */}
+                    <Card id="ca-media">
+                      <CardHeader>
+                        <CardTitle>Media Upload</CardTitle>
+                        <CardDescription>Upload images, PDFs, and videos to R2 storage and get back a persistent URL to embed in node data.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-5">
+                        {[
+                          {
+                            method: 'POST', path: '/api/canvas/image/upload',
+                            summary: 'Upload an image (base64) to R2. Returns a URL to store in node data fields like resultImageUrl or imageUrl.',
+                            request: `{ "base64Image": "data:image/png;base64,...", "canvasId": "abc123", "nodeId": "node-1" }`,
+                            response: `{ "imageUrl": "https://r2.example.com/canvas/abc123/node-1-xxx.png" }`,
+                          },
+                          {
+                            method: 'GET', path: '/api/canvas/image/upload-url',
+                            summary: 'Get a presigned URL for direct R2 upload (bypasses server size limits). Use for large images (>10 MB).',
+                            request: `Query params: canvasId, nodeId, contentType (e.g. image/png)`,
+                            response: `{ "presignedUrl": "https://r2.../...", "finalUrl": "https://r2-public.example.com/..." }`,
+                          },
+                          {
+                            method: 'POST', path: '/api/canvas/video/upload',
+                            summary: 'Upload a video (base64) to R2. No compression applied — original quality preserved.',
+                            request: `{ "videoBase64": "data:video/mp4;base64,...", "canvasId": "abc123", "nodeId": "node-1" }`,
+                            response: `{ "videoUrl": "https://r2.example.com/canvas/abc123/node-1-xxx.mp4" }`,
+                          },
+                          {
+                            method: 'GET', path: '/api/canvas/video/upload-url',
+                            summary: 'Get a presigned URL for direct large video upload to R2.',
+                            request: `Query params: canvasId, nodeId, contentType (e.g. video/mp4)`,
+                            response: `{ "presignedUrl": "https://r2.../...", "finalUrl": "https://r2-public.example.com/..." }`,
+                          },
+                          {
+                            method: 'POST', path: '/api/canvas/pdf/upload',
+                            summary: 'Upload a PDF (base64) to R2. PDF is compressed before upload.',
+                            request: `{ "pdfBase64": "data:application/pdf;base64,...", "canvasId": "abc123", "nodeId": "node-1" }`,
+                            response: `{ "pdfUrl": "https://r2.example.com/canvas/abc123/node-1-xxx.pdf" }`,
+                          },
+                          {
+                            method: 'DELETE', path: '/api/canvas/image?url=<encoded>',
+                            summary: 'Delete an image from R2 by URL.',
+                            request: `URL query param: url (URL-encoded R2 image URL)`,
+                            response: `{ "success": true }`,
+                          },
+                        ].map(({ method, path, summary, request, response }) => (
+                          <div key={path} className="bg-card border border-border rounded-xl p-5 space-y-3">
+                            <div className="flex items-center gap-3">
+                              <Badge variant="outline" className={cn("font-redhatmono uppercase", {
+                                'bg-emerald-500/10 text-emerald-500 border-emerald-500/20': method === 'GET',
+                                'bg-amber-500/10 text-amber-500 border-amber-500/20': method === 'POST',
+                                'bg-red-500/10 text-red-500 border-red-500/20': method === 'DELETE',
+                              })}>{method}</Badge>
+                              <span className="font-redhatmono text-foreground font-medium text-sm">{path}</span>
+                            </div>
+                            <p className="text-muted-foreground text-sm">{summary}</p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                                <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">Request</div>
+                                <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto">{request}</pre>
+                              </div>
+                              <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                                <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">Response</div>
+                                <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto">{response}</pre>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </CardContent>
+                    </Card>
+
+                    {/* Sharing & Collaboration */}
+                    <Card id="ca-share">
+                      <CardHeader>
+                        <CardTitle>Sharing & Collaboration</CardTitle>
+                        <CardDescription>Share projects publicly or with specific users by email or user ID. Requires Admin or Premium subscription.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-5">
+                        {[
+                          {
+                            method: 'POST', path: '/api/canvas/:id/share',
+                            summary: 'Enable sharing on a project. Generates a shareId and sets collaboration permissions.',
+                            request: `{ "canEdit": ["user@example.com"], "canView": ["viewer@example.com"] }`,
+                            response: `{ "shareId": "abc123xyz", "shareUrl": "/canvas/shared/abc123xyz", "canEdit": [...], "canView": [...] }`,
+                          },
+                          {
+                            method: 'GET', path: '/api/canvas/shared/:shareId',
+                            summary: 'Fetch a publicly shared project. No authentication required.',
+                            request: `No body — shareId in path`,
+                            response: `{ "project": { "_id": "...", "name": "...", "nodes": [...], "edges": [...] } }`,
+                          },
+                          {
+                            method: 'PUT', path: '/api/canvas/:id/share-settings',
+                            summary: 'Update collaboration permissions for an existing shared project.',
+                            request: `{ "canEdit": ["new-editor@example.com"], "canView": [] }`,
+                            response: `{ "canEdit": [...], "canView": [...] }`,
+                          },
+                          {
+                            method: 'DELETE', path: '/api/canvas/:id/share',
+                            summary: 'Disable sharing — removes shareId and revokes all collaboration access.',
+                            request: `No body`,
+                            response: `{ "success": true }`,
+                          },
+                        ].map(({ method, path, summary, request, response }) => (
+                          <div key={path} className="bg-card border border-border rounded-xl p-5 space-y-3">
+                            <div className="flex items-center gap-3">
+                              <Badge variant="outline" className={cn("font-redhatmono uppercase", {
+                                'bg-emerald-500/10 text-emerald-500 border-emerald-500/20': method === 'GET',
+                                'bg-amber-500/10 text-amber-500 border-amber-500/20': method === 'POST',
+                                'bg-blue-500/10 text-blue-500 border-blue-500/20': method === 'PUT',
+                                'bg-red-500/10 text-red-500 border-red-500/20': method === 'DELETE',
+                              })}>{method}</Badge>
+                              <span className="font-redhatmono text-foreground font-medium text-sm">{path}</span>
+                            </div>
+                            <p className="text-muted-foreground text-sm">{summary}</p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                                <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">Request</div>
+                                <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto">{request}</pre>
+                              </div>
+                              <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                                <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">Response</div>
+                                <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto">{response}</pre>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </CardContent>
+                    </Card>
+
+                    {/* Agent Integration */}
+                    <Card id="ca-agents">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-brand-cyan" /> Agent Integration</CardTitle>
+                        <CardDescription>Complete workflow examples for LLM agents and external tools interacting with the Canvas API.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        <div>
+                          <h4 className="font-redhatmono text-xs uppercase tracking-wider text-muted-foreground mb-3">Workflow A — Create a canvas with a prompt node and read the result</h4>
+                          <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                            <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">JavaScript / TypeScript</div>
+                            <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto leading-relaxed">{`const BASE = "https://your-domain.com/api";
+const TOKEN = "your_jwt_token";
+const headers = { "Authorization": \`Bearer \${TOKEN}\`, "Content-Type": "application/json" };
+
+// Step 1 — Create a canvas project with a prompt + output node
+const { project } = await fetch(\`\${BASE}/canvas\`, {
+  method: "POST",
+  headers,
+  body: JSON.stringify({
+    name: "Agent Canvas",
+    nodes: [
+      {
+        id: "prompt-1",
+        type: "prompt",
+        position: { x: 100, y: 100 },
+        data: {
+          type: "prompt",
+          prompt: "A luxury perfume bottle on a dark marble surface, dramatic lighting",
+          model: "gemini-2.0-flash-exp",
+          aspectRatio: "1:1"
+        }
+      },
+      {
+        id: "output-1",
+        type: "output",
+        position: { x: 500, y: 100 },
+        data: { type: "output" }
+      }
+    ],
+    edges: [{ id: "e1", source: "prompt-1", target: "output-1", sourceHandle: "output", targetHandle: "input" }]
+  })
+}).then(r => r.json());
+
+const projectId = project._id;
+
+// Step 2 — Later, fetch the project to read generated image URLs
+const { project: updated } = await fetch(\`\${BASE}/canvas/\${projectId}\`, { headers }).then(r => r.json());
+const outputNode = updated.nodes.find(n => n.id === "output-1");
+const imageUrl = outputNode?.data?.resultImageUrl;
+console.log("Generated image:", imageUrl);`}</pre>
+                          </div>
+                        </div>
+
+                        <div>
+                          <h4 className="font-redhatmono text-xs uppercase tracking-wider text-muted-foreground mb-3">Workflow B — Add a node to an existing project</h4>
+                          <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                            <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">JavaScript / TypeScript</div>
+                            <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto leading-relaxed">{`// Fetch current state
+const { project } = await fetch(\`\${BASE}/canvas/\${projectId}\`, { headers }).then(r => r.json());
+
+// Add a new text node
+const newNode = {
+  id: \`text-\${Date.now()}\`,
+  type: "text",
+  position: { x: 300, y: 50 },
+  data: { type: "text", text: "Add dramatic red neon lighting effects" }
+};
+
+// Persist the updated nodes array
+await fetch(\`\${BASE}/canvas/\${projectId}\`, {
+  method: "PUT",
+  headers,
+  body: JSON.stringify({
+    nodes: [...project.nodes, newNode],
+    edges: project.edges
+  })
+});`}</pre>
+                          </div>
+                        </div>
+
+                        <div>
+                          <h4 className="font-redhatmono text-xs uppercase tracking-wider text-muted-foreground mb-3">Workflow C — Upload an image and set it in an image node</h4>
+                          <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                            <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">JavaScript / TypeScript</div>
+                            <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto leading-relaxed">{`// Step 1 — Upload image to R2
+const { imageUrl } = await fetch(\`\${BASE}/canvas/image/upload\`, {
+  method: "POST",
+  headers,
+  body: JSON.stringify({
+    base64Image: "data:image/png;base64,iVBORw0KGgo...",
+    canvasId: projectId,
+    nodeId: "image-1"
+  })
+}).then(r => r.json());
+
+// Step 2 — Create an image node referencing the uploaded URL
+const imageNode = {
+  id: "image-1",
+  type: "image",
+  position: { x: 100, y: 100 },
+  data: {
+    type: "image",
+    mockup: { imageUrl, id: "image-1", name: "Product Shot" }
+  }
+};
+
+// Step 3 — Patch the project
+const { project } = await fetch(\`\${BASE}/canvas/\${projectId}\`, { headers }).then(r => r.json());
+await fetch(\`\${BASE}/canvas/\${projectId}\`, {
+  method: "PUT",
+  headers,
+  body: JSON.stringify({ nodes: [...project.nodes, imageNode], edges: project.edges })
+});`}</pre>
+                          </div>
+                        </div>
+
+                        <div className="bg-card border border-amber-500/20 rounded-lg p-4">
+                          <p className="text-amber-500 text-sm font-medium mb-2">Key Patterns for Agents</p>
+                          <ul className="space-y-1.5 text-sm text-muted-foreground">
+                            <li>• <strong className="text-foreground">Node IDs must be unique</strong> within a project. Use a UUID or timestamp-based suffix.</li>
+                            <li>• <strong className="text-foreground">Always PUT the full nodes array</strong> — there is no PATCH for individual nodes.</li>
+                            <li>• <strong className="text-foreground">Prefer R2 URLs over base64</strong> — base64 in nodes expires after 7 days and increases payload size.</li>
+                            <li>• <strong className="text-foreground">Result images are async</strong> — generation happens in the browser. The API stores whatever state the frontend last saved. Poll or listen to get updated results after generation.</li>
+                            <li>• <strong className="text-foreground">Max 10,000 nodes</strong> per project. Max 15 MB payload after R2 offload.</li>
+                          </ul>
+                        </div>
+                      </CardContent>
+                    </Card>
+
                   </TabsContent>
 
                 </Tabs>
