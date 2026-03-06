@@ -18,7 +18,10 @@ const cssContent = fs.readFileSync(path.join(pluginDir, 'ui.css'), 'utf-8');
 const moduleFiles = [
   'EventEmitter.js',
   'state.js',
+  'utils.js',
+  'mentions.js',
   'api.js',
+  'designSystem.js',
   'chat.js',
   'brand.js',
   'library.js',
