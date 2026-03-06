@@ -15,6 +15,7 @@ import { NodeLabel } from './shared/node-label';
 import { NodeHeader } from './shared/node-header';
 import { LabeledHandle } from './shared/LabeledHandle';
 import { AspectRatioSelector } from './shared/AspectRatioSelector';
+import { ResolutionSelector } from './shared/ResolutionSelector';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getCreditsRequired } from '@/utils/creditCalculator';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
@@ -317,6 +318,31 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
     setPdfPageReference(value);
     debouncedUpdateData({ pdfPageReference: value || undefined });
   };
+
+  // Centralized model selection handler — avoids duplicating conditional logic across buttons
+  const handleModelChange = useCallback((newModel: GeminiModel) => {
+    setModel(newModel);
+    if (!nodeData.onUpdateData) return;
+
+    const updates: Partial<PromptNodeData> = { model: newModel };
+
+    if (newModel === GEMINI_MODELS.FLASH) {
+      updates.resolution = undefined;
+      updates.aspectRatio = undefined;
+    } else {
+      if (!nodeData.aspectRatio) {
+        updates.aspectRatio = DEFAULT_ASPECT_RATIO;
+        setAspectRatio(DEFAULT_ASPECT_RATIO);
+      }
+      if (!nodeData.resolution) {
+        const defaultRes = newModel === GEMINI_MODELS.NB2 ? '1K' : '4K';
+        updates.resolution = defaultRes as Resolution;
+        setResolution(defaultRes as Resolution);
+      }
+    }
+
+    nodeData.onUpdateData(id, updates);
+  }, [id, nodeData, setModel, setAspectRatio, setResolution]);
 
   // Unified HD/NB2/1K/2K/4K resolution handler
   const handleResolutionClick = (res: 'HD' | 'NB2' | Resolution) => {
@@ -717,65 +743,84 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
 
       {/* Settings Section - Compact */}
       <div className="mb-3 space-y-2.5">
-        {/* Unified Resolution/Model Selection: HD | 1K | 2K | 4K */}
+        {/* Model Selector */}
         <div>
           <NodeLabel className="mb-1.5 text-[10px]">
             {t('canvasNodes.promptNode.model')}
           </NodeLabel>
-          <div 
-            className="flex gap-1" 
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            {(['HD', 'NB2', '1K', '2K', '4K'] as const).map(res => {
-              const isActive = res === 'NB2'
-                ? model === GEMINI_MODELS.NB2
-                : res === 'HD'
-                  ? model === GEMINI_MODELS.FLASH
-                  : model === GEMINI_MODELS.PRO && currentActiveResolution === res;
-              return (
-                <button
-                  key={res}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleResolutionClick(res);
-                  }}
-                  disabled={isLoading}
-                  className={cn(
-                    'flex-1 py-2 text-[10px] font-mono rounded border transition-all node-interactive',
-                    isActive
-                      ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/40 font-bold'
-                      : 'bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300',
-                    isLoading && 'opacity-50 cursor-not-allowed'
-                  )}
-                >
-                  {res}
-                </button>
-              );
-            })}
+          <div className="grid grid-cols-3 gap-2">
+            {([
+              { geminiModel: GEMINI_MODELS.FLASH, label: 'HD', emoji: '⛏️', credits: getCreditsRequired(GEMINI_MODELS.FLASH) },
+              { geminiModel: GEMINI_MODELS.NB2, label: 'NB2', emoji: '🍌', credits: getCreditsRequired(GEMINI_MODELS.NB2, resolution) },
+              { geminiModel: GEMINI_MODELS.PRO, label: '4K Pro', emoji: '⛏️💎', credits: getCreditsRequired(GEMINI_MODELS.PRO, resolution) },
+            ] as const).map(({ geminiModel, label, emoji, credits }) => (
+              <button
+                key={geminiModel}
+                onClick={(e) => { e.stopPropagation(); handleModelChange(geminiModel); }}
+                onMouseDown={(e) => e.stopPropagation()}
+                disabled={isLoading}
+                className={cn(
+                  'w-full aspect-square max-h-32 flex flex-col items-center justify-center gap-1 p-2 text-xs font-mono rounded border transition-colors cursor-pointer node-interactive',
+                  model === geminiModel
+                    ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
+                    : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50',
+                  isLoading && 'opacity-50 cursor-not-allowed'
+                )}
+              >
+                <span className="text-2xl">{emoji}</span>
+                <span className="font-semibold text-sm">{label}</span>
+                <span className="text-[10px] text-neutral-500 mt-0.5">
+                  {credits} {t('canvasNodes.promptNode.credits')}
+                </span>
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Aspect Ratio - For advanced models (NB2 + Pro) */}
+        {/* Advanced Settings (Aspect Ratio & Resolution) - For advanced models (NB2 + Pro) */}
         {isAdvanced && (
-          <div>
-            <NodeLabel className="mb-1.5 text-[10px]">
-              {t('canvasNodes.promptNode.aspectRatio')}
-            </NodeLabel>
-            <div onMouseDown={(e) => e.stopPropagation()}>
-              <AspectRatioSelector
-                value={aspectRatio}
-                onChange={(ratio) => {
-                  setAspectRatio(ratio);
-                  if (nodeData.onUpdateData) {
-                    nodeData.onUpdateData(id, { aspectRatio: ratio });
-                  }
-                }}
-                disabled={isLoading}
-                compact
-              />
+          <div className="grid grid-cols-2 gap-2.5">
+            <div>
+              <NodeLabel className="mb-1.5 text-[10px]">
+                {t('canvasNodes.promptNode.aspectRatio')}
+              </NodeLabel>
+              <div onMouseDown={(e) => e.stopPropagation()}>
+                <AspectRatioSelector
+                  value={aspectRatio}
+                  onChange={(ratio) => {
+                    setAspectRatio(ratio);
+                    if (nodeData.onUpdateData) {
+                      nodeData.onUpdateData(id, { aspectRatio: ratio });
+                    }
+                  }}
+                  disabled={isLoading}
+                  compact
+                />
+              </div>
+            </div>
+
+            <div>
+              <NodeLabel className="mb-1.5 text-[10px]">
+                {t('canvasNodes.promptNode.resolution')}
+              </NodeLabel>
+              <div onMouseDown={(e) => e.stopPropagation()}>
+                <ResolutionSelector
+                  value={resolution}
+                  onChange={(res) => {
+                    setResolution(res);
+                    if (nodeData.onUpdateData) {
+                      nodeData.onUpdateData(id, { resolution: res });
+                    }
+                  }}
+                  model={model}
+                  disabled={isLoading}
+                  compact
+                />
+              </div>
             </div>
           </div>
         )}
+
       </div>
 
       {/* Generate Image Button */}
@@ -820,20 +865,22 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       />
 
       {/* Context Menu */}
-      {contextMenu && (
-        <PromptContextMenu
-          x={contextMenu.x}
-          y={contextMenu.y}
-          onClose={() => setContextMenu(null)}
-          onDuplicate={handleDuplicate}
-          onDelete={handleDelete}
-          onSavePrompt={() => {
-            if (nodeData.onSavePrompt) {
-              nodeData.onSavePrompt(prompt);
-            }
-          }}
-        />
-      )}
+      {
+        contextMenu && (
+          <PromptContextMenu
+            x={contextMenu.x}
+            y={contextMenu.y}
+            onClose={() => setContextMenu(null)}
+            onDuplicate={handleDuplicate}
+            onDelete={handleDelete}
+            onSavePrompt={() => {
+              if (nodeData.onSavePrompt) {
+                nodeData.onSavePrompt(prompt);
+              }
+            }}
+          />
+        )
+      }
 
       <MockupPresetModal
         isOpen={isPresetModalOpen}
@@ -841,7 +888,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         onClose={() => setIsPresetModalOpen(false)}
         onSelectPreset={handlePresetSelect}
       />
-    </NodeContainer>
+    </NodeContainer >
   );
 }, (prevProps, nextProps) => {
   // Custom comparison - re-render if connected images change

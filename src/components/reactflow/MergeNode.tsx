@@ -114,6 +114,13 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
     handleResizeWithDebounce(id, width, height, data.onResize);
   }, [id, data.onResize, handleResizeWithDebounce]);
 
+  const handleModelChange = useCallback((newModel: GeminiModel) => {
+    setModel(newModel);
+    if (data.onUpdateData) {
+      data.onUpdateData(id, { model: newModel });
+    }
+  }, [id, data]);
+
   const handleFitToContent = useCallback(() => {
     const width = data.imageWidth;
     const height = data.imageHeight;
@@ -242,27 +249,35 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
       />
 
       {/* Model Selector */}
-      <Select
-        value={model}
-        onChange={(value) => {
-          const newModel = value as GeminiModel;
-          setModel(newModel);
-          if (data.onUpdateData) {
-            data.onUpdateData(id, { model: newModel });
-          }
-        }}
-        variant="node"
-        disabled={isLoading || isGeneratingPrompt}
-        onMouseDown={(e) => {
-          e.stopPropagation();
-        }}
-        className="mb-4"
-        options={[
-          { value: GEMINI_MODELS.FLASH, label: 'HD' },
-          { value: GEMINI_MODELS.NB2, label: 'NB2' },
-          { value: GEMINI_MODELS.PRO, label: '4K Pro' }
-        ]}
-      />
+      <div className="mb-4">
+        <div className="grid grid-cols-3 gap-2">
+          {([
+            { geminiModel: GEMINI_MODELS.FLASH, label: 'HD', emoji: '⛏️', credits: getCreditsRequired(GEMINI_MODELS.FLASH) },
+            { geminiModel: GEMINI_MODELS.NB2, label: 'NB2', emoji: '🍌', credits: getCreditsRequired(GEMINI_MODELS.NB2, isAdvancedModel(model) ? '1K' : undefined) },
+            { geminiModel: GEMINI_MODELS.PRO, label: '4K Pro', emoji: '⛏️💎', credits: getCreditsRequired(GEMINI_MODELS.PRO, isAdvancedModel(model) ? '1K' : undefined) },
+          ] as const).map(({ geminiModel, label, emoji, credits }) => (
+            <button
+              key={geminiModel}
+              onClick={(e) => { e.stopPropagation(); handleModelChange(geminiModel); }}
+              onMouseDown={(e) => e.stopPropagation()}
+              disabled={isLoading || isGeneratingPrompt}
+              className={cn(
+                'w-full aspect-square max-h-32 flex flex-col items-center justify-center gap-1 p-2 text-xs font-mono rounded border transition-colors cursor-pointer node-interactive',
+                model === geminiModel
+                  ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
+                  : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50',
+                (isLoading || isGeneratingPrompt) && 'opacity-50 cursor-not-allowed'
+              )}
+            >
+              <span className="text-2xl">{emoji}</span>
+              <span className="font-semibold text-sm">{label}</span>
+              <span className="text-[10px] text-neutral-500 mt-0.5">
+                {credits} {t('canvasNodes.promptNode.credits')}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Generate Image Button */}
       <NodeButton

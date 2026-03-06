@@ -600,19 +600,18 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                   onMouseDown={(e) => e.stopPropagation()}
                   disabled={isLoading}
                   className={cn(
-                    'p-2 rounded border transition-all text-left node-interactive',
+                    'w-full aspect-square max-h-32 flex flex-col items-center justify-center gap-1 p-2 text-xs font-mono rounded border transition-colors cursor-pointer node-interactive',
                     model === GEMINI_MODELS.FLASH
-                      ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
-                      : 'bg-neutral-900/50 border-neutral-700/50 text-neutral-400 hover:bg-neutral-800/50 hover:border-neutral-600/50',
+                      ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
+                      : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50',
                     isLoading && 'opacity-50 cursor-not-allowed'
                   )}
                 >
-                  <div className="text-[11px] font-mono font-semibold">
-                    {t('canvasNodes.promptNode.modelHD')}
-                  </div>
-                  <div className="text-[9px] font-mono opacity-70 mt-0.5">
+                  <span className="text-2xl">⛏️</span>
+                  <span className="font-semibold text-sm">HD</span>
+                  <span className="text-[10px] text-neutral-500 mt-0.5">
                     {getCreditsRequired(GEMINI_MODELS.FLASH)} {t('canvasNodes.promptNode.credits')}
-                  </div>
+                  </span>
                 </button>
 
                 <button
@@ -637,19 +636,18 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                   onMouseDown={(e) => e.stopPropagation()}
                   disabled={isLoading}
                   className={cn(
-                    'p-2 rounded border transition-all text-left node-interactive',
+                    'w-full aspect-square max-h-32 flex flex-col items-center justify-center gap-1 p-2 text-xs font-mono rounded border transition-colors cursor-pointer node-interactive',
                     model === GEMINI_MODELS.NB2
-                      ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
-                      : 'bg-neutral-900/50 border-neutral-700/50 text-neutral-400 hover:bg-neutral-800/50 hover:border-neutral-600/50',
+                      ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
+                      : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50',
                     isLoading && 'opacity-50 cursor-not-allowed'
                   )}
                 >
-                  <div className="text-[11px] font-mono font-semibold">
-                    NB2
-                  </div>
-                  <div className="text-[9px] font-mono opacity-70 mt-0.5">
+                  <span className="text-2xl">🍌</span>
+                  <span className="font-semibold text-sm">NB2</span>
+                  <span className="text-[10px] text-neutral-500 mt-0.5">
                     {getCreditsRequired(GEMINI_MODELS.NB2, resolution)} {t('canvasNodes.promptNode.credits')}
-                  </div>
+                  </span>
                 </button>
 
                 <button
@@ -674,19 +672,18 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                   onMouseDown={(e) => e.stopPropagation()}
                   disabled={isLoading}
                   className={cn(
-                    'p-2 rounded border transition-all text-left node-interactive',
+                    'w-full aspect-square max-h-32 flex flex-col items-center justify-center gap-1 p-2 text-xs font-mono rounded border transition-colors cursor-pointer node-interactive',
                     model === GEMINI_MODELS.PRO
-                      ? 'bg-brand-cyan/20 border-[brand-cyan]/50 text-brand-cyan'
-                      : 'bg-neutral-900/50 border-neutral-700/50 text-neutral-400 hover:bg-neutral-800/50 hover:border-neutral-600/50',
+                      ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
+                      : 'bg-neutral-800/30 text-neutral-400 border-neutral-700/30 hover:border-neutral-600/50',
                     isLoading && 'opacity-50 cursor-not-allowed'
                   )}
                 >
-                  <div className="text-[11px] font-mono font-semibold">
-                    {t('canvasNodes.promptNode.model4K')}
-                  </div>
-                  <div className="text-[9px] font-mono opacity-70 mt-0.5">
+                  <span className="text-2xl">⛏️💎</span>
+                  <span className="font-semibold text-sm">4K Pro</span>
+                  <span className="text-[10px] text-neutral-500 mt-0.5">
                     {getCreditsRequired(GEMINI_MODELS.PRO, resolution)} {t('canvasNodes.promptNode.credits')}
-                  </div>
+                  </span>
                 </button>
               </div>
             </div>
