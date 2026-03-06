@@ -33,11 +33,15 @@
         </button>
         <!-- Model selector for image generation -->
         <div id="modelSelector" class="model-selector hidden">
-          <button class="model-btn active" data-model="gemini-2.5-flash-image" title="Flash - Rápido (HD)">⚡ Flash</button>
-          <button class="model-btn" data-model="gemini-3-pro-image-preview" title="Pro - Melhor qualidade (4K)">✨ Pro</button>
+          <button class="model-btn active" data-model="gemini-2.5-flash-image" title="Flash - Rápido (HD)">⚡
+            Flash</button>
+          <button class="model-btn" data-model="gemini-3-pro-image-preview" title="Pro - Melhor qualidade (4K)">✨
+            Pro</button>
         </div>
-        <button class="tool-btn" id="genImageBtn" title="Gerar imagem com IA (auto-detectable)" style="display: none;">🎨</button>
-        <button class="tool-btn" id="genImageSettingsBtn" title="Configurar geração de imagem" style="display: none;">⚙</button>
+        <button class="tool-btn" id="genImageBtn" title="Gerar imagem com IA (auto-detectable)"
+          style="display: none;">🎨</button>
+        <button class="tool-btn" id="genImageSettingsBtn" title="Configurar geração de imagem"
+          style="display: none;">⚙</button>
         <input type="file" id="attachInput" accept="image/*,.csv,.pdf" multiple style="display: none;">
       </div>
 
@@ -83,11 +87,15 @@
           <div id="customSizeGroup" class="settings-group hidden">
             <label class="settings-label">Tamanho Customizado</label>
             <div style="display: flex; gap: 8px; margin-bottom: 6px;">
-              <input type="number" id="customWidth" placeholder="Largura" min="100" max="4000" value="800" style="flex: 1;">
-              <span style="padding: 6px 0; color: var(--figma-color-text-secondary); font-size: 11px; font-weight: 600;">×</span>
-              <input type="number" id="customHeight" placeholder="Altura" min="100" max="4000" value="450" style="flex: 1;">
+              <input type="number" id="customWidth" placeholder="Largura" min="100" max="4000" value="800"
+                style="flex: 1;">
+              <span
+                style="padding: 6px 0; color: var(--figma-color-text-secondary); font-size: 11px; font-weight: 600;">×</span>
+              <input type="number" id="customHeight" placeholder="Altura" min="100" max="4000" value="450"
+                style="flex: 1;">
             </div>
-            <div style="text-align: center; font-size: 10px; color: var(--figma-color-text-tertiary); padding: 4px; background: var(--figma-color-bg, white); border-radius: 3px;">
+            <div
+              style="text-align: center; font-size: 10px; color: var(--figma-color-text-tertiary); padding: 4px; background: var(--figma-color-bg, white); border-radius: 3px;">
               <span id="aspectRatioDisplay">16:9</span>
             </div>
           </div>
@@ -217,8 +225,59 @@
               </div>
             </div>
 
+            <!-- Guideline Presets Section -->
+            <div class="figma-prop-section">
+              <div class="figma-prop-header">
+                <span class="figma-prop-title">Presets</span>
+              </div>
+              <div class="figma-prop-row" style="flex-wrap: wrap; gap: 6px;">
+                <select id="guidelineSelect" class="figma-select" style="flex: 1; min-width: 0;">
+                  <option value="">— Nenhum —</option>
+                </select>
+                <button class="figma-icon-btn" id="guidelineSaveBtn" title="Salvar configuração atual como preset">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M10 1H3.5L1 3.5V10C1 10.5523 1.44772 11 2 11H10C10.5523 11 11 10.5523 11 10V2C11 1.44772 10.5523 1 10 1Z"
+                      stroke="currentColor" stroke-width="1.2" />
+                    <rect x="4" y="7" width="4" height="3" rx="0.5" stroke="currentColor" stroke-width="1" />
+                  </svg>
+                </button>
+                <button class="figma-icon-btn" id="guidelineDeleteBtn" title="Remover preset selecionado">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2 3h8M4 3V2a1 1 0 011-1h2a1 1 0 011 1v1m1.5 0l-.5 7a1 1 0 01-1 1h-4a1 1 0 01-1-1l-.5-7"
+                      stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
           </div>
         </div>
+
+          <!-- ─── Design System ─── -->
+          <div class="figma-prop-section">
+            <div class="figma-prop-header">
+              <span class="figma-prop-title">Design System</span>
+              <span id="dsBadge" class="ds-badge hidden"></span>
+            </div>
+            <div id="dsInfoPanel" class="ds-empty">Nenhum Design System importado.</div>
+            <div class="figma-prop-row" style="gap: 6px; margin-top: 8px;">
+              <input type="file" id="dsImportInput" accept=".json" style="display:none">
+              <button class="figma-btn-secondary" id="dsImportBtn" style="flex:1">
+                Importar JSON
+              </button>
+              <button class="figma-icon-btn" id="dsRemoveBtn" title="Remover Design System" style="flex-shrink:0">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M2 3h8M4 3V2a1 1 0 011-1h2a1 1 0 011 1v1m1.5 0l-.5 7a1 1 0 01-1 1h-4a1 1 0 01-1-1l-.5-7"
+                    stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
+                </svg>
+              </button>
+            </div>
+            <div class="ds-hint">
+              Importe um <code>.json</code> com tokens de cor, tipografia e espaçamento. O arquivo fica salvo neste arquivo Figma e é compartilhado com o time. <a href="https://www.visantlabs.com/docs#design-system" target="_blank" style="color: var(--figma-color-text-brand);">Ver especificação</a>
+            </div>
+          </div>
+
       </div>
 
       <!-- ================= TAB: CONFIG ================= -->
@@ -359,8 +418,10 @@
   <!-- Modular UI System (Load Order is Critical) -->
   <script src="./modules/EventEmitter.js"></script>
   <script src="./modules/state.js"></script>
+  <script src="./modules/utils.js"></script>
   <script src="./modules/mentions.js"></script>
   <script src="./modules/api.js"></script>
+  <script src="./modules/designSystem.js"></script>
   <script src="./modules/chat.js"></script>
   <script src="./modules/brand.js"></script>
   <script src="./modules/library.js"></script>

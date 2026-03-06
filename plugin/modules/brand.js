@@ -40,7 +40,7 @@ class BrandModule {
     // Logo Buttons (open modal)
     document.querySelectorAll('.brand-select-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        const target = e.target.getAttribute('data-target');
+        const target = e.currentTarget.getAttribute('data-target');
         setState('activeModalTarget', target);
         document.getElementById('componentModal')?.classList.remove('hidden');
       });
@@ -60,7 +60,7 @@ class BrandModule {
     // Font Buttons (open modal)
     document.querySelectorAll('.font-select-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
-        const target = e.target.getAttribute('data-target');
+        const target = e.currentTarget.getAttribute('data-target');
         setState('activeModalTarget', target);
         document.getElementById('fontModal')?.classList.remove('hidden');
       });
@@ -382,11 +382,7 @@ class BrandModule {
    * Escape HTML
    */
   escapeHtml(text) {
-    return (text || '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+    return escapeHtml(text);
   }
 }
 

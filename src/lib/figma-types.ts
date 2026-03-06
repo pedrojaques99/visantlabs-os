@@ -543,6 +543,9 @@ export type UIMessage =
   // Auth
   | { type: 'SAVE_AUTH_TOKEN'; token: string }
   | { type: 'GET_AUTH_TOKEN' }
+  // Design System
+  | { type: 'GET_DESIGN_SYSTEM' }
+  | { type: 'SAVE_DESIGN_SYSTEM'; designSystem: any }
   // Undo
   | { type: 'UNDO_LAST_BATCH' };
 

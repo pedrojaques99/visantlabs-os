@@ -705,12 +705,17 @@ async function applyOperations(ops: FigmaOperation[]) {
           const variable = await figma.variables.getVariableByIdAsync(op.variableId);
           if (variable) {
             if (op.field === 'fills' || op.field === 'strokes') {
-              // For fills/strokes: use setBoundVariableForPaint
+              // For fills/strokes: use setBoundVariableForPaint (only works with SolidPaint per Figma API)
               const paintArray = (node as any)[op.field];
               if (paintArray && paintArray.length > 0) {
-                const paintsCopy = JSON.parse(JSON.stringify(paintArray));
+                const paintsCopy = [...paintArray];
+                let targetPaint = paintsCopy[0];
+                // setBoundVariableForPaint only accepts SolidPaint — convert if needed
+                if (targetPaint.type !== 'SOLID') {
+                  targetPaint = { type: 'SOLID', color: { r: 0, g: 0, b: 0 }, opacity: 1 } as SolidPaint;
+                }
                 paintsCopy[0] = figma.variables.setBoundVariableForPaint(
-                  paintsCopy[0], 'color', variable
+                  targetPaint, 'color', variable
                 );
                 (node as any)[op.field] = paintsCopy;
               }
@@ -1167,14 +1172,14 @@ async function pasteGeneratedImage(imageData: string, prompt: string, width: num
         const imageBase64 = imageData.includes(',')
           ? imageData.split(',')[1]
           : imageData;
-        bytes = new Uint8Array(atob(imageBase64).split('').map(c => c.charCodeAt(0)));
+        bytes = figma.base64Decode(imageBase64);
       }
     } else {
       // Handle base64 data
       const imageBase64 = imageData.includes(',')
         ? imageData.split(',')[1]
         : imageData;
-      bytes = new Uint8Array(atob(imageBase64).split('').map(c => c.charCodeAt(0)));
+      bytes = figma.base64Decode(imageBase64);
     }
 
     const imageHash = figma.createImage(bytes).hash;
@@ -1659,8 +1664,11 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       availableFontVariables: fonts,
       availableLayers,
       selectedLogo: msg.logoComponent,
+      brandLogos: (msg as any).brandLogos || null,
       selectedBrandFont: msg.brandFont,
+      brandFonts: (msg as any).brandFonts || null,
       selectedBrandColors: msg.brandColors,
+      designSystem: (msg as any).designSystem || null,
       mentions: (msg as any).mentions || [],
       attachments: (msg as any).attachments || []
     };
@@ -1751,6 +1759,29 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       postToUI({ type: 'GUIDELINES_LOADED', guidelines: updated });
     } catch (_e) {
       postToUI({ type: 'GUIDELINES_LOADED', guidelines: [] });
+    }
+
+    // ── Design System (stored in document via setPluginData — syncs with Figma Cloud) ──
+  } else if (msg.type === 'GET_DESIGN_SYSTEM') {
+    try {
+      const raw = figma.root.getPluginData('visantDesignSystem');
+      const designSystem = raw ? JSON.parse(raw) : null;
+      postToUI({ type: 'DESIGN_SYSTEM_LOADED', designSystem });
+    } catch (_e) {
+      postToUI({ type: 'DESIGN_SYSTEM_LOADED', designSystem: null });
+    }
+
+  } else if (msg.type === 'SAVE_DESIGN_SYSTEM') {
+    try {
+      const designSystem = msg.designSystem || null;
+      if (designSystem) {
+        figma.root.setPluginData('visantDesignSystem', JSON.stringify(designSystem));
+      } else {
+        figma.root.setPluginData('visantDesignSystem', '');
+      }
+      postToUI({ type: 'DESIGN_SYSTEM_SAVED', designSystem });
+    } catch (_e) {
+      postToUI({ type: 'DESIGN_SYSTEM_SAVED', designSystem: null });
     }
   }
 };
