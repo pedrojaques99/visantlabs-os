@@ -12,6 +12,8 @@ class ChatModule {
     this.isLoading = false;
     this._typingBubble = null;
     this._typingTimer = null;
+    this._glitchTimer = null;
+    this._dotsTimer = null;
     this._requestStartTime = null;
     this.operationsMap = {};
 
@@ -403,31 +405,103 @@ class ChatModule {
   }
 
   /**
-   * Show animated typing indicator while AI is processing
+   * Show animated typing indicator while AI is processing.
+   * GlitchLoader-style: random chars + glitch-reveal word transitions + animated dots + timer.
    */
   showTypingBubble() {
     this.removeTypingBubble();
+
+    const words = [
+      'Criando', 'Desenhando', 'Esculpindo', 'Burilando',
+      'Arquitetando', 'Rabiscando', 'Refinando', 'Compondo',
+      'Moldando', 'Traçando', 'Prototipando', 'Lapidando',
+    ];
+    const glitchChars = '*•□/-®▸◆○~#%&';
+    const revealChars = 'abcdefghijklmnopqrstuvwxyz*•-□';
+    let wordIdx = Math.floor(Math.random() * words.length);
+
+    const randChar = (pool) => pool[Math.floor(Math.random() * pool.length)];
+    const randomGlitch = () =>
+      Array.from({ length: 4 }, () => randChar(glitchChars)).join('');
+
     const el = document.createElement('div');
     el.className = 'chat-msg assistant chat-typing';
     el.id = 'typingBubble';
-    el.innerHTML = `<span class="typing-dots"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></span><span class="typing-timer">0:00</span>`;
+    el.innerHTML = [
+      `<span class="typing-glitch">${randomGlitch()}</span>`,
+      `<span class="typing-word">${words[wordIdx]}</span>`,
+      `<span class="typing-dots-anim">.</span>`,
+      `<span class="typing-timer">0:00</span>`,
+    ].join('');
     this.chatMessages.appendChild(el);
     this._typingBubble = el;
 
-    // Live elapsed timer
-    const timerEl = el.querySelector('.typing-timer');
+    const glitchEl  = el.querySelector('.typing-glitch');
+    const wordEl    = el.querySelector('.typing-word');
+    const dotsEl    = el.querySelector('.typing-dots-anim');
+    const timerEl   = el.querySelector('.typing-timer');
     const start = Date.now();
+
+    /**
+     * Glitch-reveal a new word over ~350ms:
+     * starts fully scrambled, progressively uncovers chars left-to-right.
+     */
+    const glitchReveal = (target) => {
+      const len = target.length;
+      const totalSteps = 7;
+      let step = 0;
+      const iv = setInterval(() => {
+        step++;
+        if (step >= totalSteps) {
+          clearInterval(iv);
+          if (wordEl) wordEl.textContent = target;
+          return;
+        }
+        const revealed = Math.floor((step / totalSteps) * len);
+        const result = Array.from({ length: len }, (_, i) =>
+          i < revealed ? target[i] : randChar(revealChars)
+        ).join('');
+        if (wordEl) wordEl.textContent = result;
+      }, 50); // 7 steps × 50ms = ~350ms
+    };
+
+    // Glitch chars — 150ms matches GlitchLoader
+    this._glitchTimer = setInterval(() => {
+      if (glitchEl) glitchEl.textContent = randomGlitch();
+    }, 150);
+
+    // Dots micro-animation: . → .. → ... → .
+    let dotCount = 1;
+    this._dotsTimer = setInterval(() => {
+      dotCount = dotCount >= 3 ? 1 : dotCount + 1;
+      if (dotsEl) dotsEl.textContent = '.'.repeat(dotCount);
+    }, 380);
+
+    // Timer + word rotation every 1s
     this._typingTimer = setInterval(() => {
       const sec = Math.floor((Date.now() - start) / 1000);
       const min = Math.floor(sec / 60);
       const s = sec % 60;
       if (timerEl) timerEl.textContent = `${min}:${String(s).padStart(2, '0')}`;
+      // Glitch-reveal new word every 3s
+      if (sec > 0 && sec % 3 === 0) {
+        wordIdx = (wordIdx + 1) % words.length;
+        glitchReveal(words[wordIdx]);
+      }
     }, 1000);
 
     this._scrollToBottom();
   }
 
   removeTypingBubble() {
+    if (this._dotsTimer) {
+      clearInterval(this._dotsTimer);
+      this._dotsTimer = null;
+    }
+    if (this._glitchTimer) {
+      clearInterval(this._glitchTimer);
+      this._glitchTimer = null;
+    }
     if (this._typingTimer) {
       clearInterval(this._typingTimer);
       this._typingTimer = null;
@@ -480,7 +554,20 @@ class ChatModule {
       } else {
         // assistant
         el.className = `chat-msg assistant${msg.isError ? ' error' : ''}`;
-        el.innerHTML = this.renderMarkdown(msg.content, msg.summaryItems);
+        let renderedHtml = this.renderMarkdown(msg.content, msg.summaryItems);
+
+        // Collapse long summary lists (>5 lines) with "Mostrar mais" toggle
+        if (msg.summaryItems && msg.summaryItems.length > 5) {
+          const lines = renderedHtml.split('<br>');
+          if (lines.length > 5) {
+            const visible = lines.slice(0, 5).join('<br>');
+            const hidden = lines.slice(5).join('<br>');
+            const toggleId = `summary-toggle-${idx}`;
+            renderedHtml = `${visible}<div id="${toggleId}-hidden" class="summary-collapsed" style="display:none">${hidden.startsWith('<br>') ? hidden : '<br>' + hidden}</div><button class="summary-toggle-btn" data-toggle-id="${toggleId}" onclick="(function(btn){var el=document.getElementById(btn.dataset.toggleId+'-hidden');if(el.style.display==='none'){el.style.display='block';btn.textContent='▲ Mostrar menos';}else{el.style.display='none';btn.textContent='▼ Mostrar mais ('+el.querySelectorAll('.node-chip,.node-chip-static').length+')';};})(this)">▼ Mostrar mais (${msg.summaryItems.length - 5})</button>`;
+          }
+        }
+
+        el.innerHTML = renderedHtml;
 
         // Store operations data if present
         if (msg.operations && msg.operations.length > 0) {
@@ -616,12 +703,71 @@ class ChatModule {
         </div>
         <div class="ops-section">
           <div class="ops-title">JSON</div>
-          <pre class="ops-json"><code>${this.escapeHtml(JSON.stringify(operations, null, 2))}</code></pre>
+          <div class="ops-json-wrapper">
+            <div class="ops-json-toolbar">
+              <button class="ops-json-action-btn" id="opsJsonCopyBtn" title="Copiar JSON">📋 Copiar</button>
+              <button class="ops-json-action-btn" id="opsJsonSaveBtn" title="Salvar JSON como arquivo">💾 Salvar</button>
+            </div>
+            <pre class="ops-json"><code>${this.escapeHtml(JSON.stringify(operations, null, 2))}</code></pre>
+          </div>
         </div>
       </div>
     `;
 
     content.innerHTML = html;
+
+    // Wire up copy button
+    const copyBtn = content.querySelector('#opsJsonCopyBtn');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', () => {
+        const json = JSON.stringify(operations, null, 2);
+        navigator.clipboard.writeText(json).then(() => {
+          copyBtn.classList.add('copied');
+          copyBtn.textContent = '✅ Copiado!';
+          setTimeout(() => {
+            copyBtn.classList.remove('copied');
+            copyBtn.textContent = '📋 Copiar';
+          }, 1500);
+        }).catch(() => {
+          // Fallback for environments without clipboard API
+          const ta = document.createElement('textarea');
+          ta.value = json;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          copyBtn.classList.add('copied');
+          copyBtn.textContent = '✅ Copiado!';
+          setTimeout(() => {
+            copyBtn.classList.remove('copied');
+            copyBtn.textContent = '📋 Copiar';
+          }, 1500);
+        });
+      });
+    }
+
+    // Wire up save button
+    const saveBtn = content.querySelector('#opsJsonSaveBtn');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', () => {
+        const json = JSON.stringify(operations, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        a.download = `operations-${timestamp}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        saveBtn.textContent = '✅ Salvo!';
+        setTimeout(() => { saveBtn.textContent = '💾 Salvar'; }, 1500);
+      });
+    }
+
     modal.classList.remove('hidden');
   }
 

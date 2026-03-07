@@ -435,6 +435,8 @@ export type SerializedNode = {
   name: string;
   width: number;
   height: number;
+  x?: number;
+  y?: number;
   // Auto-layout
   layoutMode?: string;
   itemSpacing?: number;
