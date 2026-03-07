@@ -61,6 +61,26 @@ class ChatModule {
       });
     }
 
+    // Think mode toggle pill
+    const thinkPill = document.getElementById('thinkPill');
+    if (thinkPill) {
+      thinkPill.addEventListener('click', () => {
+        const next = !state.thinkMode;
+        setState('thinkMode', next);
+        thinkPill.classList.toggle('active', next);
+      });
+    }
+
+    // Stop generation button
+    const stopBtn = document.getElementById('stopBtn');
+    if (stopBtn) {
+      stopBtn.addEventListener('click', () => {
+        cancelCurrentRequest();
+        this.removeTypingBubble();
+        this.setLoading(false);
+      });
+    }
+
     // Attach button → open file picker
     const attachBtn = document.getElementById('attachBtn');
     const attachInput = document.getElementById('attachInput');
@@ -495,10 +515,15 @@ class ChatModule {
     this.sendBtn.disabled = isLoading;
     this.chatInput.disabled = isLoading;
 
+    const stopBtn = document.getElementById('stopBtn');
     if (isLoading) {
-      this.statusEl.textContent = '⏳ Gerando...';
+      this.sendBtn.classList.add('hidden');
+      if (stopBtn) stopBtn.classList.remove('hidden');
+      this.statusEl.textContent = state.thinkMode ? '🧠 Analisando...' : '⏳ Gerando...';
       this.statusEl.classList.remove('hidden');
     } else {
+      this.sendBtn.classList.remove('hidden');
+      if (stopBtn) stopBtn.classList.add('hidden');
       this.statusEl.classList.add('hidden');
       this.statusEl.textContent = '';
     }

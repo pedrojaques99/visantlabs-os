@@ -1,7 +1,7 @@
 // Claude provider for complex reasoning and advanced generation tasks
 import Anthropic from '@anthropic-ai/sdk';
 import type { FigmaOperation } from '../../../src/lib/figma-types.js';
-import type { AIProvider, AIGenerationOptions } from './types.js';
+import type { AIProvider, AIGenerationOptions, AIGenerationResult } from './types.js';
 
 function getClient(apiKey?: string) {
   return new Anthropic({ apiKey: apiKey || process.env.ANTHROPIC_API_KEY });
@@ -14,7 +14,7 @@ const claudeProvider: AIProvider = {
     systemPrompt: string,
     userPrompt: string,
     options?: AIGenerationOptions
-  ): Promise<FigmaOperation[]> {
+  ): Promise<AIGenerationResult> {
     try {
       const client = getClient(options?.apiKey);
 
@@ -94,11 +94,20 @@ const claudeProvider: AIProvider = {
 
       if (!toolUseBlock || !toolUseBlock.input) {
         console.log('[Claude] No tool use found in response');
-        return [];
+        return { operations: [] };
       }
 
       const input = toolUseBlock.input as any;
-      return Array.isArray(input.operations) ? input.operations : [];
+      const operations = Array.isArray(input.operations) ? input.operations : [];
+
+      // Extract token usage from Claude response
+      const usage = response.usage ? {
+        inputTokens: response.usage.input_tokens ?? 0,
+        outputTokens: response.usage.output_tokens ?? 0,
+        totalTokens: (response.usage.input_tokens ?? 0) + (response.usage.output_tokens ?? 0),
+      } : undefined;
+
+      return { operations, usage };
     } catch (error) {
       console.error('[Claude Provider] Error:', error);
       throw error;
