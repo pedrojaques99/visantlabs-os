@@ -1,7 +1,7 @@
 // Gemini provider for fast execution and simple tasks
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { FigmaOperation } from '../../../src/lib/figma-types.js';
-import type { AIProvider, AIGenerationOptions } from './types.js';
+import type { AIProvider, AIGenerationOptions, AIGenerationResult } from './types.js';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
@@ -12,7 +12,7 @@ const geminiProvider: AIProvider = {
     systemPrompt: string,
     userPrompt: string,
     options?: AIGenerationOptions
-  ): Promise<FigmaOperation[]> {
+  ): Promise<AIGenerationResult> {
     try {
       const model = genAI.getGenerativeModel({
         model: 'gemini-2.5-flash',
@@ -59,6 +59,14 @@ const geminiProvider: AIProvider = {
       const result = await model.generateContent(parts as any);
       const responseText = result.response.text();
 
+      // Extract token usage from Gemini response
+      const meta = result.response.usageMetadata;
+      const usage = meta ? {
+        inputTokens: meta.promptTokenCount ?? 0,
+        outputTokens: meta.candidatesTokenCount ?? 0,
+        totalTokens: meta.totalTokenCount ?? 0,
+      } : undefined;
+
       // Parse JSON response
       let operations: any[] = [];
       try {
@@ -81,7 +89,7 @@ const geminiProvider: AIProvider = {
         }
       }
 
-      return Array.isArray(operations) ? operations : [];
+      return { operations: Array.isArray(operations) ? operations : [], usage };
     } catch (error) {
       console.error('[Gemini Provider] Error:', error);
       throw error;

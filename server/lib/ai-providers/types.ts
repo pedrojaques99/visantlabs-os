@@ -9,12 +9,23 @@ export interface AIGenerationOptions {
   attachments?: Array<{ name: string; mimeType: string; data: string }>; // Base64 data
 }
 
+export interface TokenUsage {
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+}
+
+export interface AIGenerationResult {
+  operations: FigmaOperation[];
+  usage?: TokenUsage;
+}
+
 export interface AIProvider {
   name: 'claude' | 'gemini';
   generateOperations(
     systemPrompt: string,
     userPrompt: string,
     options?: AIGenerationOptions
-  ): Promise<FigmaOperation[]>;
+  ): Promise<AIGenerationResult>;
 }
 
