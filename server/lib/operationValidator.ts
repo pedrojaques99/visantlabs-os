@@ -150,7 +150,7 @@ class OperationValidator {
       }
 
       case 'MOVE': {
-        if (!op.nodeId) errors.push('MOVE requires nodeId');
+        if (!op.nodeId && !op.ref) errors.push('MOVE requires nodeId or ref');
         if (typeof op.x !== 'number') errors.push('MOVE requires x (number)');
         if (typeof op.y !== 'number') errors.push('MOVE requires y (number)');
         break;
