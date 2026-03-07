@@ -11,7 +11,9 @@ class ChatModule {
     this.statusEl = document.getElementById('status');
     this.isLoading = false;
     this._typingBubble = null;
-    this.operationsMap = {}; // Map message index to operations data
+    this._typingTimer = null;
+    this._requestStartTime = null;
+    this.operationsMap = {};
 
     this.setupEventListeners();
     this.setupStateListeners();
@@ -303,9 +305,23 @@ class ChatModule {
       }
 
       if (designOps.length > 0) {
-        // Subtle status line for design operations
+        // Build rich status line with time + tokens
         const n = designOps.length;
-        this.addStatusMessage(`✦ ${n} operação${n > 1 ? 'ões' : ''} · ${result.provider || 'AI'}`);
+        const parts = [`✦ ${n} operação${n > 1 ? 'ões' : ''}`];
+        if (result.provider) parts.push(result.provider);
+
+        // Elapsed time
+        const elapsed = this._requestStartTime ? ((Date.now() - this._requestStartTime) / 1000) : null;
+        if (elapsed) parts.push(`${elapsed.toFixed(1)}s`);
+
+        // Token usage from server
+        if (result.usage && result.usage.totalTokens) {
+          const t = result.usage.totalTokens;
+          const label = t >= 1000 ? `${(t / 1000).toFixed(1)}k` : `${t}`;
+          parts.push(`${label} tokens`);
+        }
+
+        this.addStatusMessage(parts.join(' · '));
         eventBus.emit('chat:operations-ready', designOps);
       }
 
@@ -344,6 +360,7 @@ class ChatModule {
 
     this.addUserMessage(displayMessage, mentions, attachments);
     this.setLoading(true);
+    this._requestStartTime = Date.now();
     this.showTypingBubble();
 
     try {
@@ -393,13 +410,28 @@ class ChatModule {
     const el = document.createElement('div');
     el.className = 'chat-msg assistant chat-typing';
     el.id = 'typingBubble';
-    el.innerHTML = `<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>`;
+    el.innerHTML = `<span class="typing-dots"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></span><span class="typing-timer">0:00</span>`;
     this.chatMessages.appendChild(el);
     this._typingBubble = el;
+
+    // Live elapsed timer
+    const timerEl = el.querySelector('.typing-timer');
+    const start = Date.now();
+    this._typingTimer = setInterval(() => {
+      const sec = Math.floor((Date.now() - start) / 1000);
+      const min = Math.floor(sec / 60);
+      const s = sec % 60;
+      if (timerEl) timerEl.textContent = `${min}:${String(s).padStart(2, '0')}`;
+    }, 1000);
+
     this._scrollToBottom();
   }
 
   removeTypingBubble() {
+    if (this._typingTimer) {
+      clearInterval(this._typingTimer);
+      this._typingTimer = null;
+    }
     if (this._typingBubble) {
       this._typingBubble.remove();
       this._typingBubble = null;
