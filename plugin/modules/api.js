@@ -128,8 +128,7 @@ async function generateDesign(command, context) {
     }
     return [];
   } catch (error) {
-    eventBus.emit('api:design-error', error);
-    throw error;
+    throw error; // api:error (from apiCall) already handles user-visible display
   }
 }
 

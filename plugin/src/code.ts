@@ -17,6 +17,8 @@ async function serializeNode(node: SceneNode, depth = 0, maxDepth = 5): Promise<
     name: node.name,
     width: 'width' in node ? (node as any).width : 0,
     height: 'height' in node ? (node as any).height : 0,
+    x: 'x' in node ? (node as any).x : undefined,
+    y: 'y' in node ? (node as any).y : undefined,
   };
 
   // Auto-layout info
@@ -623,7 +625,9 @@ async function applyOperations(ops: FigmaOperation[]) {
 
         // ═══ MOVE ═══
       } else if (op.type === 'MOVE') {
-        const node = await figma.getNodeByIdAsync(op.nodeId) as SceneNode | null;
+        // Support both nodeId (existing node) and ref (node created in this response)
+        const node = (op.ref ? createdNodes.get(op.ref) : null) as SceneNode | null
+          ?? await figma.getNodeByIdAsync(op.nodeId) as SceneNode | null;
         if (node) {
           node.x = op.x;
           node.y = op.y;
