@@ -960,10 +960,24 @@ label {
 .chat-typing {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 8px;
     padding: 10px 14px;
-    max-width: 60px;
+    max-width: 120px;
     min-width: 48px;
+}
+
+.typing-dots {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.typing-timer {
+    font-family: 'SF Mono', 'Fira Mono', 'Consolas', monospace;
+    font-size: 9px;
+    color: var(--figma-color-text-tertiary, #b3b3b3);
+    white-space: nowrap;
+    min-width: 24px;
 }
 
 .typing-dot {
@@ -2497,33 +2511,42 @@ label {
     white-space: nowrap;
     vertical-align: middle;
 }
-.ds-badge.hidden { display: none; }
+
+.ds-badge.hidden {
+    display: none;
+}
+
 .ds-empty {
     font-size: 11px;
     color: var(--figma-color-text-tertiary, #999);
     padding: 6px 0;
 }
+
 .ds-header {
     display: flex;
     align-items: center;
     gap: 6px;
     margin-bottom: 4px;
 }
+
 .ds-name {
     font-size: 11px;
     font-weight: 600;
     color: var(--figma-color-text, #1e1e1e);
 }
+
 .ds-version {
     font-size: 10px;
     color: var(--figma-color-text-tertiary, #999);
 }
+
 .ds-stats {
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
     margin-bottom: 6px;
 }
+
 .ds-stat {
     font-size: 10px;
     background: var(--figma-color-bg-secondary, #f5f5f5);
@@ -2532,26 +2555,30 @@ label {
     padding: 1px 6px;
     color: var(--figma-color-text-secondary, #555);
 }
+
 .ds-swatches {
     display: flex;
     gap: 3px;
     flex-wrap: wrap;
     margin-bottom: 4px;
 }
+
 .ds-swatch {
     width: 16px;
     height: 16px;
     border-radius: 3px;
-    border: 1px solid rgba(0,0,0,0.08);
+    border: 1px solid rgba(0, 0, 0, 0.08);
     cursor: default;
     flex-shrink: 0;
 }
+
 .ds-hint {
     font-size: 10px;
     color: var(--figma-color-text-tertiary, #999);
     line-height: 1.5;
     margin-top: 6px;
 }
+
 .ds-hint code {
     background: var(--figma-color-bg-secondary, #f0f0f0);
     padding: 1px 4px;
@@ -2559,6 +2586,7 @@ label {
     font-family: monospace;
     font-size: 10px;
 }
+
 .figma-btn-secondary {
     background: var(--figma-color-bg-secondary, #f5f5f5);
     border: 1px solid var(--figma-color-border, #e5e5e5);
@@ -2569,6 +2597,7 @@ label {
     cursor: pointer;
     text-align: center;
 }
+
 .figma-btn-secondary:hover {
     background: var(--figma-color-bg-hover, #ebebeb);
 }
