@@ -77,6 +77,9 @@ const state = {
   customWidth: 800,
   customHeight: 450,
   selectedModel: 'gemini-2.5-flash-image', // 'gemini-2.5-flash-image' or 'gemini-3-pro-image-preview'
+
+  // Think mode: LLM analyzes context + asks questions before generating any nodes
+  thinkMode: false,
 };
 
 /**
