@@ -6,14 +6,30 @@
 // Use an absolute URL because Figma plugins run in a data: origin where relative fetch() fails
 const API_BASE = 'http://localhost:3001/api'; // Change to https://www.visantlabs.com/api for production
 
+// Active request abort controller (one at a time)
+let _abortController = null;
+
+/**
+ * Cancel the currently in-flight API request (stop button)
+ */
+function cancelCurrentRequest() {
+  if (_abortController) {
+    _abortController.abort();
+    _abortController = null;
+  }
+}
+
 /**
  * Generic fetch wrapper with error handling
  * @param {string} endpoint - API endpoint
  * @param {string} method - HTTP method
  * @param {any} body - Request body
- * @returns {Promise<any>}
+ * @returns {Promise<any>} null if request was cancelled
  */
 async function apiCall(endpoint, method = 'GET', body = null) {
+  _abortController = new AbortController();
+  const signal = _abortController.signal;
+
   try {
     const headers = { 'Content-Type': 'application/json' };
 
@@ -22,7 +38,7 @@ async function apiCall(endpoint, method = 'GET', body = null) {
       headers['Authorization'] = `Bearer ${state.authToken}`;
     }
 
-    const options = { method, headers };
+    const options = { method, headers, signal };
     if (body) {
       options.body = JSON.stringify(body);
     }
@@ -45,9 +61,15 @@ async function apiCall(endpoint, method = 'GET', body = null) {
 
     return await response.json();
   } catch (error) {
+    if (error.name === 'AbortError') {
+      console.log(`[API] Request cancelled: ${endpoint}`);
+      return null; // Cancelled — not an error
+    }
     console.error(`[API] ${method} ${endpoint}:`, error);
     eventBus.emit('api:error', { endpoint, method, error: error.message });
     throw error;
+  } finally {
+    _abortController = null;
   }
 }
 
@@ -86,14 +108,20 @@ async function generateDesign(command, context) {
     attachments: (context.attachments || []).map(att => ({
       name: att.name,
       mimeType: att.mimeType,
-      data: att.dataUrl.split(',')[1], // Remove data: prefix
+      // Use pre-stripped data from sandbox, or strip dataUrl prefix as fallback
+      data: att.data || (att.dataUrl ? att.dataUrl.split(',')[1] : ''),
     })),
     apiKey: state.userApiKey || undefined,
     anthropicApiKey: state.anthropicApiKey || undefined,
+    thinkMode: context.thinkMode || false,
   };
 
   try {
     const result = await apiCall('/plugin', 'POST', payload);
+    if (result === null) {
+      // Request was cancelled by user (stop button)
+      return [];
+    }
     if (result.operations) {
       eventBus.emit('api:design-generated', result);
       return result.operations;
@@ -243,6 +271,7 @@ function generateWithContext(command, context) {
         },
         brandColors: Array.from(state.selectedColors.values()),
         designSystem: state.designSystem || undefined,
+        thinkMode: state.thinkMode || false,
         mentions: context.mentions || [],
         attachments: (context.attachments || []).map(att => ({
           name: att.name,

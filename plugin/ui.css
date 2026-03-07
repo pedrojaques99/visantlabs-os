@@ -1323,6 +1323,36 @@ label {
     opacity: 0.8;
 }
 
+.send-btn.hidden {
+    display: none !important;
+}
+
+/* ── Stop generation button ── */
+.stop-btn {
+    width: 28px !important;
+    height: 28px !important;
+    padding: 0 !important;
+    border-radius: 8px !important;
+    border: 1.5px solid var(--figma-color-border-danger, #f04438) !important;
+    background: var(--figma-color-bg-danger-tertiary, #fef3f2) !important;
+    color: var(--figma-color-text-danger, #d92d20) !important;
+    font-size: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s, opacity 0.15s;
+}
+
+.stop-btn:hover {
+    background: var(--figma-color-bg-danger-secondary, #fee4e2) !important;
+}
+
+.stop-btn.hidden {
+    display: none !important;
+}
+
 /* ── Selection indicator ── */
 .selection-indicator {
     display: flex;

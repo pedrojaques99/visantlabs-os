@@ -378,13 +378,18 @@ class UIManager {
     try {
       const operations = await generateDesign(context.command, context);
       // generateDesign already emitted api:design-generated → chat.js handles display.
+      // operations is [] if cancelled — no-op is correct here.
       // Now apply only the non-MESSAGE design operations to Figma:
       const designOps = (operations || []).filter(op => op.type !== 'MESSAGE');
       if (designOps.length > 0) {
         applyOperations(designOps);
       }
     } catch (error) {
-      // api:error event is emitted by apiCall() → chat.js handles the error bubble
+      // If error happened before apiCall() (e.g. during payload construction),
+      // api:error won't have been emitted, so we handle it here as fallback.
+      eventBus.emit('chat:loading', false);
+      chatModule.removeTypingBubble();
+      chatModule.addErrorMessage(`⚠️ Erro ao processar: ${error.message || error}`);
     }
   }
 

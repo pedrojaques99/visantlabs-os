@@ -236,6 +236,7 @@ interface PluginRequest {
   attachments?: Array<{ name: string; mimeType: string; data: string }>; // Base64 data
   mentions?: Array<{ name: string; type: string; id: string }>; // @mentions
   designSystem?: DesignSystemJSON | null; // Imported design system tokens
+  thinkMode?: boolean; // Think mode: analyze + ask questions before generating
 }
 
 interface DesignSystemJSON {
@@ -336,7 +337,7 @@ function buildDesignSystemContext(ds: DesignSystemJSON): string {
   return lines.join('\n');
 }
 
-function buildSystemPrompt(req: PluginRequest, chatHistory?: string): string {
+function buildSystemPrompt(req: PluginRequest, chatHistory?: string, thinkMode?: boolean): string {
   // Build logo info — support multi-variant logos
   const logos = req.brandLogos || {};
   const logoLines: string[] = [];
@@ -463,6 +464,29 @@ function buildSystemPrompt(req: PluginRequest, chatHistory?: string): string {
     ? selectedContainers.join('\n')
     : 'Nenhum (criação vai para a página raiz)';
 
+  const thinkModeBlock = thinkMode ? `
+═══ MODO THINK ATIVADO ═══
+
+Você está no MODO THINK. Seu comportamento muda da seguinte forma:
+
+**SE esta é uma nova solicitação de design** (sem suas perguntas respondidas pelo usuário no histórico de conversa):
+1. Faça uma análise COMPLETA do contexto atual: frame selecionado, board, design guide, brand, design system importado.
+2. Identifique TODAS as dúvidas, ambiguidades ou decisões de design que precisam de confirmação.
+3. Responda SOMENTE com operações MESSAGE contendo:
+   - Sua análise do contexto (o que você entendeu, quais elementos existem, o que o brand guide define).
+   - Uma lista numerada de TODAS as perguntas que precisa que o usuário responda antes de criar qualquer elemento.
+4. NÃO gere NENHUMA operação de criação ou edição (CREATE_*, SET_*, RESIZE, MOVE, etc.) até ter as respostas.
+
+**SE o usuário já respondeu suas perguntas** (as respostas estão visíveis no histórico de conversa):
+- Prossiga normalmente com a geração do design, aplicando as respostas do usuário.
+
+Exemplo de resposta no modo THINK (nova solicitação):
+[
+  { "type": "MESSAGE", "content": "**Análise do contexto:**\\nFrame selecionado: 'Dashboard' (1440×900), auto-layout vertical.\\nBrand: cor primária #0D99FF, fonte Inter.\\n\\n**Preciso de mais informações antes de criar:**\\n1. Quais seções o dashboard deve ter? (ex: métricas, gráficos, tabela de dados)\\n2. Qual o número de cards de métricas na linha superior?\\n3. O gráfico principal deve ser de linha, barras ou área?\\n4. Qual período de tempo mostrar por padrão? (7 dias, 30 dias, 1 ano)" }
+]
+
+` : '';
+
   return `Você é um assistente expert de design Figma. Você ajuda o usuário responder a perguntas, criar novos designs e editar designs existentes.
 Se o usuário fizer apenas uma pergunta ou bater papo (ex: "Oi tudo bem?", "Como faço X?"), você DEVE usar a operação especial \`MESSAGE\` para responder de modo texto.
 Para responder com texto e operações contextuais, combine operações de design com uma operação \`MESSAGE\`.
@@ -472,7 +496,7 @@ Exemplo de bate-papo:
   { "type": "MESSAGE", "content": "Olá! Tudo bem? Estou pronto para ajudar você a desenhar no Figma." }
 ]
 
-${chatHistory ? `═══ HISTÓRICO DE CONVERSA ═══\n${chatHistory}\n` : ''}
+${thinkModeBlock}${chatHistory ? `═══ HISTÓRICO DE CONVERSA ═══\n${chatHistory}\n` : ''}
 ${req.designSystem ? buildDesignSystemContext(req.designSystem) + '\n' : ''}
 ═══ CONTEXTO DO ARQUIVO ═══
 
@@ -744,6 +768,7 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       attachments = [],
       mentions = [],
       designSystem,
+      thinkMode = false,
     } = req.body as PluginRequest;
 
     if (!command) {
@@ -815,15 +840,18 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
         mentions,
         designSystem: designSystem || null,
       },
-      chatHistory
+      chatHistory,
+      thinkMode
     );
 
     const userPrompt = `═══ PEDIDO DO USUÁRIO ═══\n\n"${command}"`;
 
     // Generate operations using selected provider
     let operations: any[] = [];
+    let usage: { inputTokens: number; outputTokens: number; totalTokens: number } | undefined;
+    const generationStart = Date.now();
     try {
-      operations = await provider.generateOperations(systemPrompt, userPrompt, {
+      const result = await provider.generateOperations(systemPrompt, userPrompt, {
         temperature: 0.2,
         maxTokens: 8192,
         // Pass BYOK Anthropic key if the user provided one
@@ -831,11 +859,14 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
         // Pass attachments (images, PDFs, CSVs) for multimodal processing
         attachments: attachments || [],
       });
+      operations = result.operations;
+      usage = result.usage;
     } catch (aiError) {
       console.error(`[Plugin] ${provider.name} error:`, aiError);
       // Fallback gracefully
       operations = [];
     }
+    const durationMs = Date.now() - generationStart;
 
     // Validate operations have required fields
     operations = operations.filter(
@@ -917,6 +948,8 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
       message: `Generated ${validOps.length} operation(s)${warnings.length > 0 ? ` (${warnings.length} filtered)` : ''}`,
       provider: provider.name,
       warnings: warnings.length > 0 ? warnings : undefined,
+      usage: usage || undefined,
+      durationMs,
     });
 
     // Deduct credit after successful response (non-blocking, only for authenticated non-BYOK users)
