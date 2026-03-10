@@ -2791,3 +2791,17 @@ label {
     border-radius: 4px;
     font-size: 10px;
 }
+/* Brand Guidelines V2 */
+.bg-list-item { display: flex; align-items: center; justify-content: space-between; padding: 8px; border-radius: 4px; cursor: pointer; }
+.bg-list-item:hover { background: var(--figma-color-bg-hover); }
+.bg-list-name { font-weight: 500; }
+.bg-list-completeness { font-size: 11px; color: var(--figma-color-text-secondary); }
+.bg-color-grid { display: flex; flex-wrap: wrap; gap: 4px; }
+.bg-color-swatch { width: 32px; height: 32px; border-radius: 4px; position: relative; border: 1px solid var(--figma-color-border); }
+.bg-color-swatch .bg-remove-btn { position: absolute; top: -4px; right: -4px; width: 14px; height: 14px; border-radius: 50%; background: var(--figma-color-bg-danger); color: white; border: none; font-size: 10px; cursor: pointer; display: none; line-height: 14px; padding: 0; }
+.bg-color-swatch:hover .bg-remove-btn { display: block; }
+.bg-typo-item { display: flex; align-items: center; justify-content: space-between; padding: 4px 0; }
+.bg-typo-item .bg-remove-btn { background: none; border: none; color: var(--figma-color-text-secondary); cursor: pointer; font-size: 14px; }
+.bg-typo-item .bg-remove-btn:hover { color: var(--figma-color-text-danger); }
+.bg-ingest-banner { background: var(--figma-color-bg-secondary); border-radius: 6px; padding: 8px; }
+.bg-tag-pill { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; background: var(--figma-color-bg-brand-tertiary); color: var(--figma-color-text-brand); margin: 2px; }

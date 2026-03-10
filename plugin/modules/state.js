@@ -67,6 +67,7 @@ const state = {
 
   // Design System (imported from JSON, stored in Figma file)
   designSystem: null, // Parsed design system object or null
+  brandGuideline: null, // BrandGuideline v2 (unified, server-synced)
 
   // Media attachments
   pendingAttachments: [], // Array of { name, type, mimeType, size, dataUrl }

@@ -62,6 +62,8 @@ document.addEventListener('DOMContentLoaded', () => {
   brandModule.updateBrandPill();
   libraryModule.render();
   designSystemModule.init();
+  if (window.brandSyncModule) window.brandSyncModule.init()
+  if (window.brandUIModule) window.brandUIModule.init()
 
   console.log('[Plugin] Initialization complete');
   console.log('[Plugin] Session: ' + state.sessionId);
