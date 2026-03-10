@@ -8,6 +8,7 @@ import { JWT_SECRET } from '../utils/jwtSecret.js';
 import jwt from 'jsonwebtoken';
 import { ObjectId } from 'mongodb';
 import WebSocket, { WebSocketServer } from 'ws';
+import type { BrandGuideline } from '../types/brandGuideline.js';
 
 const router = express.Router();
 
@@ -236,6 +237,7 @@ interface PluginRequest {
   attachments?: Array<{ name: string; mimeType: string; data: string }>; // Base64 data
   mentions?: Array<{ name: string; type: string; id: string }>; // @mentions
   designSystem?: DesignSystemJSON | null; // Imported design system tokens
+  brandGuideline?: any  // BrandGuideline from plugin
   thinkMode?: boolean; // Think mode: analyze + ask questions before generating
 }
 
@@ -335,6 +337,48 @@ function buildDesignSystemContext(ds: DesignSystemJSON): string {
   }
 
   return lines.join('\n');
+}
+
+function buildBrandContext(bg: BrandGuideline): string {
+  const lines: string[] = []
+  const name = bg.identity?.name || 'Marca'
+  lines.push(`═══ BRAND: ${name} ═══`)
+  if (bg.identity?.tagline) lines.push(`"${bg.identity.tagline}"`)
+  if (bg.identity?.website) lines.push(`Site: ${bg.identity.website}`)
+  lines.push('')
+
+  if (bg.colors?.length) {
+    lines.push('CORES (hex → RGB 0-1 no Figma):')
+    for (const c of bg.colors) lines.push(`  ${c.name}: ${c.hex}${c.role ? ` (${c.role})` : ''}`)
+    lines.push('')
+  }
+
+  if (bg.typography?.length) {
+    lines.push('FONTES (fontFamily + fontStyle exatos):')
+    for (const t of bg.typography) {
+      const parts = [t.family, t.style].filter(Boolean).join(' ')
+      const size = t.size ? ` ${t.size}` : ''
+      const lh = t.lineHeight ? `/${t.lineHeight}` : ''
+      lines.push(`  ${t.role}: ${parts}${size}${lh}`)
+    }
+    lines.push('')
+  }
+
+  if (bg.guidelines) {
+    if (bg.guidelines.voice) lines.push(`TOM: ${bg.guidelines.voice}`)
+    if (bg.guidelines.dos?.length) lines.push(`FAZER: ${bg.guidelines.dos.join(' | ')}`)
+    if (bg.guidelines.donts?.length) lines.push(`EVITAR: ${bg.guidelines.donts.join(' | ')}`)
+    lines.push('')
+  }
+
+  if (bg.tokens?.spacing) {
+    lines.push(`SPACING: ${Object.entries(bg.tokens.spacing).map(([k, v]) => `${k}=${v}`).join(' ')}`)
+  }
+  if (bg.tokens?.radius) {
+    lines.push(`RADIUS: ${Object.entries(bg.tokens.radius).map(([k, v]) => `${k}=${v}`).join(' ')}`)
+  }
+
+  return lines.join('\n')
 }
 
 function buildSystemPrompt(req: PluginRequest, chatHistory?: string, thinkMode?: boolean): string {
@@ -500,13 +544,13 @@ Exemplo de bate-papo:
 ]
 
 ${thinkModeBlock}${chatHistory ? `═══ HISTÓRICO DE CONVERSA ═══\n${chatHistory}\n` : ''}
-${req.designSystem ? buildDesignSystemContext(req.designSystem) + '\n' : ''}
+${req.brandGuideline ? buildBrandContext(req.brandGuideline) + '\n' : (req.designSystem ? buildDesignSystemContext(req.designSystem) + '\n' : '')}
 ═══ CONTEXTO DO ARQUIVO ═══
 
-BRAND GUIDELINES DO USUÁRIO:
+${!req.brandGuideline ? `BRAND GUIDELINES DO USUÁRIO:
 - Logo(s): ${logoInfo}
 - Fonte(s) de marca: ${fontInfo}
-- Cores de marca: ${brandColorsInfo}
+- Cores de marca: ${brandColorsInfo}` : ''}
 
 FRAMES/CONTAINERS SELECIONADOS (use o "id" como "parentNodeId" para criar DENTRO deles):
 ${containersHint}
