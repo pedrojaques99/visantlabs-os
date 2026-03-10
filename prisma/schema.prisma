@@ -389,3 +389,19 @@ model MockupTag {
   @@index([categoryId])
   @@map("mockup_tags")
 }
+
+model ApiKey {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String    @db.ObjectId
+  keyHash   String    @unique  // SHA-256 hash of the key
+  keyPrefix String             // First 18 chars for display: "visant_sk_xxxxxxxx..."
+  name      String             // User-given name: "My Agent", "Claude Desktop"
+  lastUsed  DateTime?
+  createdAt DateTime  @default(now())
+  expiresAt DateTime?
+  scopes    String[]           // ["read", "write", "generate"]
+  active    Boolean   @default(true)
+
+  @@index([userId])
+  @@map("api_keys")
+}
