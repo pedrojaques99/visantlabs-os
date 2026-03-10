@@ -19,8 +19,8 @@ export async function parseUrl(url: string): Promise<ParsedChunk[]> {
 }
 
 export async function parsePdf(buffer: Buffer, filename?: string): Promise<ParsedChunk[]> {
-  const pdf = await import('pdf-parse')
-  const data = await pdf.default(buffer)
+  const pdf = (await import('pdf-parse')) as any
+  const data = await (pdf.default || pdf)(buffer)
   return chunkText(data.text || '', 2000).map(chunk => ({
     text: chunk,
     source: filename || 'uploaded.pdf',

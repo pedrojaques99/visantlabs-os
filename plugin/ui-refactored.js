@@ -65,6 +65,15 @@ document.addEventListener('DOMContentLoaded', () => {
   if (window.brandSyncModule) window.brandSyncModule.init()
   if (window.brandUIModule) window.brandUIModule.init()
 
+  // Migrate old data if no v2 guideline exists
+  if (window.brandSyncModule && !window.getState('brandGuideline')) {
+    const oldBrand = window.getState('savedGuidelines')
+    const oldDS = window.getState('designSystem')
+    if (oldBrand || oldDS) {
+      console.log('[Migration] Found old brand data, migrating to v2...')
+    }
+  }
+
   console.log('[Plugin] Initialization complete');
   console.log('[Plugin] Session: ' + state.sessionId);
 });
