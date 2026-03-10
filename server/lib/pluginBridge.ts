@@ -266,6 +266,19 @@ class PluginBridge {
   }
 
   /**
+   * Send a fire-and-forget notification to the plugin (no ACK expected)
+   */
+  notify(fileId: string, payload: Record<string, unknown>): void {
+    const session = this.sessions.get(fileId);
+    if (!session || session.ws.readyState !== WebSocket.OPEN) return;
+    try {
+      session.ws.send(JSON.stringify(payload));
+    } catch (err) {
+      console.warn(`[PluginBridge] notify failed for ${fileId}:`, err);
+    }
+  }
+
+  /**
    * Start heartbeat to detect stale connections
    */
   private startHeartbeat(session: PluginSession): void {
