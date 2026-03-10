@@ -36,6 +36,7 @@ import storageRoutes from './routes/storage.js';
 import usersRoutes from './routes/users.js';
 import llmsRoutes from './routes/llms.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { detectAgent } from './middleware/agentContent.js';
 import { connectToMongoDB } from './db/mongodb.js';
 
 // Load environment variables from .env or .env.local
@@ -102,6 +103,9 @@ app.use(`${routePrefix}/liveblocks/webhook`, express.raw({ type: 'application/js
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// AI agent detection — sets res.locals.isAgent and adds Link header
+app.use(detectAgent);
 
 // Debug middleware to log all requests (only in development or when DEBUG is enabled)
 if (process.env.DEBUG || process.env.NODE_ENV !== 'production') {
