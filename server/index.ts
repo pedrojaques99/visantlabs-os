@@ -215,6 +215,29 @@ app.use(`${routePrefix}/surprise-me`, surpriseMeRoutes);
 import apiKeyRoutes from './routes/apiKeys.js';
 app.use(`${routePrefix}/api-keys`, apiKeyRoutes);
 
+// ═══ Platform MCP Server (HTTP/SSE transport) ═══
+import { createPlatformMcpServer } from './mcp/platform-mcp.js';
+import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
+
+const mcpServer = createPlatformMcpServer();
+const mcpTransports = new Map<string, SSEServerTransport>();
+
+app.get(`${routePrefix}/mcp`, async (req, res) => {
+  const transport = new SSEServerTransport(`${routePrefix}/mcp/message`, res);
+  mcpTransports.set(transport.sessionId, transport);
+  res.on('close', () => { mcpTransports.delete(transport.sessionId); });
+  await mcpServer.connect(transport);
+});
+
+app.post(`${routePrefix}/mcp/message`, async (req, res) => {
+  const sessionId = req.query.sessionId as string;
+  const transport = mcpTransports.get(sessionId);
+  if (!transport) return res.status(404).json({ error: 'Session not found' });
+  await transport.handlePostMessage(req, res);
+});
+
+console.log(`✅ Platform MCP server registered at: ${routePrefix}/mcp`);
+
 // Health check rate limiter
 const healthCheckLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
