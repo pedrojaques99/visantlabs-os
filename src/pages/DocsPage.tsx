@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Book, Server, Puzzle, Home, ChevronLeft, ChevronRight, Terminal, Code, Sparkles, Layers, Workflow, Copy, Check, FileText } from 'lucide-react';
+import { Book, Server, Puzzle, Home, ChevronLeft, ChevronRight, Terminal, Code, Sparkles, Layers, Workflow, Copy, Check, FileText, Bot } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { SEO } from '../components/SEO';
@@ -153,6 +153,19 @@ export const DocsPage: React.FC = () => {
         { id: 'fn-renderer', label: 'Renderer (render.ts)' },
         { id: 'fn-social', label: 'Social Media Example' },
         { id: 'fn-patterns', label: 'Common Patterns' },
+      ],
+    },
+    {
+      id: 'agents',
+      label: 'For Agents',
+      icon: Bot,
+      sections: [
+        { id: 'ag-overview', label: 'Overview' },
+        { id: 'ag-auth', label: 'Authentication' },
+        { id: 'ag-mcp', label: 'MCP Connection' },
+        { id: 'ag-tools', label: 'Available Tools' },
+        { id: 'ag-credits', label: 'Credits & Limits' },
+        { id: 'ag-example', label: 'Example Flow' },
       ],
     },
     {
@@ -1747,6 +1760,192 @@ navigate(\`/canvas/\${newProject._id}\`);`}</pre>
                             <li>• On import, a <strong className="text-foreground">new project is always created</strong> — it never overwrites an existing one.</li>
                           </ul>
                         </div>
+                      </CardContent>
+                    </Card>
+
+                  </TabsContent>
+
+                  {/* For Agents Tab */}
+                  <TabsContent value="agents" className="space-y-8 mt-0">
+
+                    <Card className="bg-card border border-border">
+                      <CardHeader>
+                        <div className="flex items-center gap-3">
+                          <Bot className="h-8 w-8 text-brand-cyan" />
+                          <div>
+                            <CardTitle className="text-2xl">For AI Agents</CardTitle>
+                            <CardDescription>Connect AI agents and LLMs to the Visant Labs platform</CardDescription>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        <div id="ag-overview" className="scroll-mt-20">
+                          <h3 className="text-lg font-semibold text-foreground mb-3">Overview</h3>
+                          <p className="text-muted-foreground text-sm leading-relaxed mb-4">
+                            Visant Labs provides three ways for AI agents to interact with the platform:
+                          </p>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="bg-secondary/40 border border-border rounded-lg p-4">
+                              <p className="text-brand-cyan font-semibold text-sm mb-1">Discovery</p>
+                              <p className="text-muted-foreground text-xs">Read <code className="font-redhatmono bg-secondary px-1 rounded">/llms.txt</code> to understand what the platform offers</p>
+                            </div>
+                            <div className="bg-secondary/40 border border-border rounded-lg p-4">
+                              <p className="text-brand-cyan font-semibold text-sm mb-1">MCP Tools</p>
+                              <p className="text-muted-foreground text-xs">Connect via SSE to <code className="font-redhatmono bg-secondary px-1 rounded">/api/mcp</code> and invoke tools directly</p>
+                            </div>
+                            <div className="bg-secondary/40 border border-border rounded-lg p-4">
+                              <p className="text-brand-cyan font-semibold text-sm mb-1">REST API</p>
+                              <p className="text-muted-foreground text-xs">Full HTTP API with JSON responses for all platform features</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <Separator />
+
+                        <div id="ag-auth" className="scroll-mt-20">
+                          <h3 className="text-lg font-semibold text-foreground mb-3">Authentication</h3>
+                          <p className="text-muted-foreground text-sm mb-3">
+                            Agents authenticate using API keys. Create one from <a href="/settings/api-keys" className="text-brand-cyan hover:underline">Settings → API Keys</a>.
+                          </p>
+                          <div className="bg-secondary/60 border border-border rounded-lg p-4 font-redhatmono text-sm">
+                            <p className="text-muted-foreground mb-1"># Pass your API key in the Authorization header</p>
+                            <p className="text-foreground">Authorization: Bearer visant_sk_xxxxxxxxxxxx</p>
+                          </div>
+                          <div className="mt-3 space-y-2 text-sm text-muted-foreground">
+                            <p>• Key format: <code className="font-redhatmono bg-secondary px-1 rounded">visant_sk_</code> + 64 hex characters</p>
+                            <p>• Keys are shown only once on creation — store securely</p>
+                            <p>• Scopes: <Badge className="bg-blue-500/20 text-blue-400 border border-blue-500/30 text-xs mx-1">read</Badge> <Badge className="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs mx-1">write</Badge> <Badge className="bg-purple-500/20 text-purple-400 border border-purple-500/30 text-xs mx-1">generate</Badge></p>
+                          </div>
+                        </div>
+
+                        <Separator />
+
+                        <div id="ag-mcp" className="scroll-mt-20">
+                          <h3 className="text-lg font-semibold text-foreground mb-3">MCP Connection</h3>
+                          <p className="text-muted-foreground text-sm mb-3">
+                            Connect to the Platform MCP server via HTTP/SSE transport:
+                          </p>
+                          <div className="bg-secondary/60 border border-border rounded-lg p-4 font-redhatmono text-sm space-y-2">
+                            <p className="text-muted-foreground"># SSE endpoint (GET to connect, POST to send messages)</p>
+                            <p className="text-foreground">GET /api/mcp</p>
+                            <p className="text-foreground">POST /api/mcp/message?sessionId=...</p>
+                          </div>
+                          <p className="text-muted-foreground text-xs mt-3">
+                            For Claude Desktop, add to your MCP config. For custom agents, use the <code className="font-redhatmono bg-secondary px-1 rounded">@modelcontextprotocol/sdk</code> client.
+                          </p>
+                        </div>
+
+                        <Separator />
+
+                        <div id="ag-tools" className="scroll-mt-20">
+                          <h3 className="text-lg font-semibold text-foreground mb-3">Available MCP Tools</h3>
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr className="border-b border-border">
+                                  <th className="text-left p-3 text-muted-foreground font-medium text-xs uppercase">Tool</th>
+                                  <th className="text-left p-3 text-muted-foreground font-medium text-xs uppercase">Description</th>
+                                  <th className="text-left p-3 text-muted-foreground font-medium text-xs uppercase">Cost</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-border/50">
+                                {[
+                                  { name: 'account-usage', desc: 'Get credit usage, limits, and plan info', cost: 'Free' },
+                                  { name: 'account-profile', desc: 'Get your profile information', cost: 'Free' },
+                                  { name: 'mockup-list', desc: 'List your generated mockups', cost: 'Free' },
+                                  { name: 'mockup-get', desc: 'Get a specific mockup by ID', cost: 'Free' },
+                                  { name: 'mockup-presets', desc: 'Browse preset categories', cost: 'Free' },
+                                  { name: 'mockup-generate', desc: 'Generate a mockup from prompt', cost: '1 credit' },
+                                  { name: 'branding-list', desc: 'List branding projects', cost: 'Free' },
+                                  { name: 'branding-get', desc: 'Get branding project details', cost: 'Free' },
+                                  { name: 'branding-generate', desc: 'Generate brand identity', cost: 'Credits' },
+                                  { name: 'canvas-list', desc: 'List canvas projects', cost: 'Free' },
+                                  { name: 'canvas-get', desc: 'Get canvas with nodes/edges', cost: 'Free' },
+                                  { name: 'canvas-create', desc: 'Create new canvas project', cost: 'Free' },
+                                  { name: 'budget-list', desc: 'List budget proposals', cost: 'Free' },
+                                  { name: 'budget-get', desc: 'Get budget details', cost: 'Free' },
+                                  { name: 'budget-create', desc: 'Create budget proposal', cost: 'Free' },
+                                  { name: 'ai-improve-prompt', desc: 'Enhance a text prompt', cost: '1 credit' },
+                                  { name: 'ai-describe-image', desc: 'Analyze an image', cost: '1 credit' },
+                                  { name: 'community-presets', desc: 'Browse shared presets', cost: 'Free' },
+                                  { name: 'community-profiles', desc: 'Browse community profiles', cost: 'Free' },
+                                ].map(tool => (
+                                  <tr key={tool.name} className="hover:bg-secondary/30">
+                                    <td className="p-3 font-redhatmono text-foreground text-xs">{tool.name}</td>
+                                    <td className="p-3 text-muted-foreground">{tool.desc}</td>
+                                    <td className="p-3">
+                                      <Badge className={tool.cost === 'Free' ? 'bg-green-500/20 text-green-400 border border-green-500/30 text-xs' : 'bg-purple-500/20 text-purple-400 border border-purple-500/30 text-xs'}>
+                                        {tool.cost}
+                                      </Badge>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+
+                        <Separator />
+
+                        <div id="ag-credits" className="scroll-mt-20">
+                          <h3 className="text-lg font-semibold text-foreground mb-3">Credits & Limits</h3>
+                          <p className="text-muted-foreground text-sm mb-3">
+                            Every MCP tool response includes quota information in the <code className="font-redhatmono bg-secondary px-1 rounded">_meta</code> field:
+                          </p>
+                          <div className="bg-secondary/60 border border-border rounded-lg p-4 font-redhatmono text-sm">
+                            <pre className="text-foreground whitespace-pre-wrap">{`{
+  "results": [...],
+  "_meta": {
+    "credits_remaining": 42,
+    "credits_used": 8,
+    "plan": "pro"
+  }
+}`}</pre>
+                          </div>
+                          <div className="mt-3 space-y-2 text-sm text-muted-foreground">
+                            <p>• Free tier: 4 generations total</p>
+                            <p>• Paid tiers: monthly credit allowance (resets automatically)</p>
+                            <p>• Read operations (list, get) are always free</p>
+                            <p>• Generation operations cost 1+ credits</p>
+                          </div>
+                        </div>
+
+                        <Separator />
+
+                        <div id="ag-example" className="scroll-mt-20">
+                          <h3 className="text-lg font-semibold text-foreground mb-3">Example Flow</h3>
+                          <div className="space-y-3 text-sm">
+                            <div className="flex items-start gap-3 bg-secondary/40 border border-border rounded-lg p-4">
+                              <span className="bg-brand-cyan/20 text-brand-cyan text-xs font-bold px-2 py-1 rounded shrink-0">1</span>
+                              <div>
+                                <p className="text-foreground font-medium">Get an API key</p>
+                                <p className="text-muted-foreground text-xs">Go to Settings → API Keys → Create New Key with "read" + "generate" scopes</p>
+                              </div>
+                            </div>
+                            <div className="flex items-start gap-3 bg-secondary/40 border border-border rounded-lg p-4">
+                              <span className="bg-brand-cyan/20 text-brand-cyan text-xs font-bold px-2 py-1 rounded shrink-0">2</span>
+                              <div>
+                                <p className="text-foreground font-medium">Connect to MCP</p>
+                                <p className="text-muted-foreground text-xs">SSE connect to /api/mcp with your API key in the Authorization header</p>
+                              </div>
+                            </div>
+                            <div className="flex items-start gap-3 bg-secondary/40 border border-border rounded-lg p-4">
+                              <span className="bg-brand-cyan/20 text-brand-cyan text-xs font-bold px-2 py-1 rounded shrink-0">3</span>
+                              <div>
+                                <p className="text-foreground font-medium">Check your balance</p>
+                                <p className="text-muted-foreground text-xs">Call <code className="font-redhatmono bg-secondary px-1 rounded">account-usage</code> to see available credits</p>
+                              </div>
+                            </div>
+                            <div className="flex items-start gap-3 bg-secondary/40 border border-border rounded-lg p-4">
+                              <span className="bg-brand-cyan/20 text-brand-cyan text-xs font-bold px-2 py-1 rounded shrink-0">4</span>
+                              <div>
+                                <p className="text-foreground font-medium">Generate content</p>
+                                <p className="text-muted-foreground text-xs">Call <code className="font-redhatmono bg-secondary px-1 rounded">mockup-generate</code> with your prompt. Check _meta.credits_remaining in the response.</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
                       </CardContent>
                     </Card>
 
