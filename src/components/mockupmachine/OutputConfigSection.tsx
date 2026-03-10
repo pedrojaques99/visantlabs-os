@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Cpu, Sparkles } from 'lucide-react';
+import { Cpu, Sparkles, ChevronUp, ChevronDown } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { authService } from '@/services/authService';
@@ -169,14 +169,30 @@ export const OutputConfigSection: React.FC<OutputConfigSectionProps> = ({
                 onChange={(e) =>
                   onMockupCountChange(Math.min(Math.max(parseInt(e.target.value) || 1, 1), 4))
                 }
-                className={`w-full p-2.5 bg-transparent border-none focus:outline-none focus:ring-0 text-xs font-monoSync ${theme === 'dark' ? 'text-neutral-100' : 'text-neutral-900'}`}
+                className={`w-full py-2.5 pl-3 pr-14 bg-transparent border-none focus:outline-none focus:ring-0 text-xs font-monoSync [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${theme === 'dark' ? 'text-neutral-100' : 'text-neutral-900'}`}
               />
-              <div className="absolute right-8 pointer-events-none">
+              <div className="absolute right-7 pointer-events-none">
                 <SkeletonText loading={isGenerating}>
                   <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-tighter">
                     outputs
                   </span>
                 </SkeletonText>
+              </div>
+              <div className={`absolute right-1 flex flex-col h-[80%] my-auto justify-center space-y-[1px] ${theme === 'dark' ? 'border-neutral-700/50' : 'border-neutral-300'} border-l pl-1`}>
+                <button
+                  type="button"
+                  onClick={() => onMockupCountChange(Math.min(mockupCount + 1, 4))}
+                  className={`flex items-center justify-center p-0.5 rounded-sm transition-colors ${theme === 'dark' ? 'text-neutral-500 hover:text-neutral-200 hover:bg-neutral-700/50' : 'text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200'}`}
+                >
+                  <ChevronUp size={12} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onMockupCountChange(Math.max(mockupCount - 1, 1))}
+                  className={`flex items-center justify-center p-0.5 rounded-sm transition-colors ${theme === 'dark' ? 'text-neutral-500 hover:text-neutral-200 hover:bg-neutral-700/50' : 'text-neutral-400 hover:text-neutral-700 hover:bg-neutral-200'}`}
+                >
+                  <ChevronDown size={12} />
+                </button>
               </div>
             </div>
           </div>

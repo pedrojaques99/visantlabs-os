@@ -41,7 +41,7 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
     return (
         <div
             id="section-setup"
-            className="transition-all duration-300 w-full flex flex-col min-h-full relative pb-24"
+            className="transition-all duration-300 w-full flex flex-col min-h-full relative"
         >
             <div className="flex flex-col gap-4 w-full">
                 {/* Upload Section */}
@@ -96,7 +96,7 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
             </div>
 
             {/* Bottom Action Button */}
-            <div className="fixed bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-neutral-950 via-neutral-950/90 to-transparent z-40 lg:absolute lg:mt-8 lg:relative lg:bg-transparent lg:p-0">
+            <div className="sticky bottom-0 left-0 right-0 mt-auto pt-6 pb-6 z-50 w-full">
                 <button
                     onClick={onAnalyze}
                     disabled={!canAnalyze || isAnalyzing}

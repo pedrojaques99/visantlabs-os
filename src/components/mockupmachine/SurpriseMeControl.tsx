@@ -1,21 +1,18 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Select } from '@/components/ui/select';
-import { Dices, PenLine, Pickaxe, Check, Settings, Sparkles, ChevronDown } from 'lucide-react';
+import { Dices, PenLine, Pickaxe, Check, Settings, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
-import type { GeminiModel, Resolution, ImageProvider, UploadedImage } from '@/types/types';
+import type { GeminiModel, Resolution, ImageProvider, UploadedImage, AspectRatio } from '@/types/types';
 import { isSafeUrl } from '@/utils/imageUtils';
 import { getCreditsRequired } from '@/utils/creditCalculator';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import { PromptSection } from './PromptSection';
 import type { ComponentProps } from 'react';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 
-
-type PromptSectionProps = ComponentProps<typeof PromptSection>;
 
 interface SurpriseMeControlProps {
     onSurpriseMe: (autoGenerate: boolean) => void;
@@ -42,8 +39,10 @@ interface SurpriseMeControlProps {
     variant?: 'inline' | 'sticky';
     /** Thumbnail of uploaded design - shown in collapsed (pool) mode */
     uploadedImage?: UploadedImage | null;
-    /** When provided, renders collapsible PromptSection above the buttons */
-    promptSectionProps?: PromptSectionProps | null;
+    setMockupCount?: (count: number) => void;
+    setResolution?: (resolution: Resolution) => void;
+    aspectRatio?: AspectRatio;
+    setAspectRatio?: (ratio: AspectRatio) => void;
 }
 
 const buttonLabel = (dark: boolean, isActive?: boolean) =>
@@ -132,7 +131,10 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
     showGenerateButtons = true,
     variant = 'sticky',
     uploadedImage = null,
-    promptSectionProps = null,
+    setMockupCount,
+    setResolution,
+    aspectRatio,
+    setAspectRatio,
 }) => {
     const { t } = useTranslation();
     const { theme } = useTheme();
@@ -215,7 +217,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                 isPrimarySurprise
                                     ? 'bg-brand-cyan border-brand-cyan/50 hover:bg-brand-cyan/90'
                                     : 'bg-brand-cyan border-brand-cyan/50 hover:bg-brand-cyan/90',
-                                isPrimarySurprise && isActive && 'ring-2 ring-brand-cyan ring-offset-2 ring-offset-black animate-pool-glow'
+                                isPrimarySurprise && isActive && 'ring-2 ring-brand-cyan ring-offset-2 ring-offset-black'
                             )
 
                             : // Active state (Non-primary)
@@ -264,60 +266,20 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
 
     // State for local settings menu
     const [showSettings, setShowSettings] = React.useState(false);
-    const [promptSectionExpanded, setPromptSectionExpanded] = React.useState(false);
-
-    const hasPromptSection = !!(promptSectionProps && showGenerateButtons);
-
     return (
         <div
             className={cn(
-                'transition-all duration-500 origin-center flex flex-col',
-                'scale-80 md:scale-100',
-                isInline ? 'w-full bg-transparent' : 'w-fit bg-transparent',
-                !isInline && showBackground && !isFixedBottom && `pt-4`,
-                !isInline && showBackground && !isFixedBottom && 'px-5 md:px-6',
-                !isInline && showBackground && isFixedBottom && 'pt-4 !pb-4 px-4 md:px-5 rounded-t-xl',
-                isSurpriseMeMode && 'animate-pool-glow',
+                'transition-all duration-500 origin-center flex flex-col items-center mx-auto',
+                'scale-80 md:scale-100 pointer-events-auto',
+                isInline ? 'w-full bg-transparent' : 'w-fit max-w-full',
+                !isInline && 'bg-neutral-900/60 backdrop-blur-2xl border border-white/10 rounded-2xl p-2.5 shadow-2xl',
                 containerClassName
             )}
         >
-            {/* Collapsible PromptSection - above buttons when provided */}
-            {hasPromptSection && (
-                <div className="w-full min-w-0 mb-2">
-                    <button
-                        type="button"
-                        onClick={() => setPromptSectionExpanded((p) => !p)}
-                        className={cn(
-                            'w-full flex items-center justify-between gap-2 py-1.5 px-1 rounded-md',
-                            'text-[10px] font-mono uppercase tracking-widest transition-colors',
-                            dark ? 'text-neutral-400 hover:text-neutral-200' : 'text-neutral-600 hover:text-neutral-800'
-                        )}
-                        aria-expanded={promptSectionExpanded}
-                        aria-label={promptSectionExpanded ? (t('collapse') || 'Collapse') : (t('expand') || 'Expand')}
-                    >
-                        <span>{t('mockup.promptShort') || 'PROMPT'}</span>
-                        <span className="transition-transform duration-300" style={{ transform: promptSectionExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                            <ChevronDown size={14} strokeWidth={2.5} />
-                        </span>
-                    </button>
-                    <div
-                        className={cn(
-                            'grid transition-[grid-template-rows] duration-300 ease-out',
-                            promptSectionExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
-                        )}
-                    >
-                        <div className="min-h-0 overflow-hidden">
-                            <PromptSection {...promptSectionProps!} />
-                        </div>
-                    </div>
-                </div>
-            )}
-
             <div
                 className={cn(
-                    "flex flex-nowrap items-center gap-2 select-none bg-transparent relative",
-                    isInline ? 'justify-center flex-nowrap gap-3 text-center' : 'justify-center',
-                    isFixedBottom ? 'pt-2 pb-3' : 'pt-2 pb-3'
+                    "flex items-center gap-2 select-none relative w-full",
+                    isInline ? 'justify-center text-center' : 'justify-between'
                 )}
             >
                 {/* Pool Director Mode Indicator */}
@@ -448,25 +410,102 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                         )}
                                     </div>
 
-                                    <label className="text-[9px] font-mono uppercase text-neutral-500 ml-1">Modelo de IA</label>
-                                    <Select
-                                        value={imageProvider === 'seedream' ? 'seedream-4.5' : 'gemini-pro'}
-                                        onChange={(val) => {
-                                            if (val === 'seedream-4.5') {
-                                                if (setImageProvider) setImageProvider('seedream');
-                                            } else {
-                                                if (setImageProvider) setImageProvider('gemini');
-                                                if (setSelectedModel) setSelectedModel(GEMINI_MODELS.PRO);
-                                            }
-                                        }}
-                                        options={[
-                                            { value: 'gemini-pro', label: 'Gemini Pro' },
-                                            { value: 'seedream-4.5', label: 'Seedream 4.5' }
-                                        ]}
-                                        className="w-full bg-black/40 border-white/10 text-[11px]"
-                                        variant="default"
-                                        loading={isGeneratingPrompt || isGeneratingOutputs}
-                                    />
+                                    <div className="space-y-1">
+                                        <label className="text-[9px] font-mono uppercase text-neutral-500 ml-1">Modelo de IA</label>
+                                        <Select
+                                            value={imageProvider === 'seedream' ? 'seedream-4.5' : 'gemini-pro'}
+                                            onChange={(val) => {
+                                                if (val === 'seedream-4.5') {
+                                                    if (setImageProvider) setImageProvider('seedream');
+                                                } else {
+                                                    if (setImageProvider) setImageProvider('gemini');
+                                                    if (setSelectedModel) setSelectedModel(GEMINI_MODELS.PRO);
+                                                }
+                                            }}
+                                            options={[
+                                                { value: 'gemini-pro', label: 'Gemini Pro' },
+                                                { value: 'seedream-4.5', label: 'Seedream 4.5' }
+                                            ]}
+                                            className="w-full bg-black/40 border-white/10 text-[11px]"
+                                            variant="default"
+                                            loading={isGeneratingPrompt || isGeneratingOutputs}
+                                        />
+                                    </div>
+
+                                    {setResolution && (
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-mono uppercase text-neutral-500 ml-1">Resolução / Qualidade</label>
+                                            <div className="flex gap-1.5 h-[32px]">
+                                                {(imageProvider === 'gemini' ? ['HD', '1K', '2K', '4K'] : ['2K', '4K']).map((res) => (
+                                                    <button
+                                                        key={res}
+                                                        onClick={() => setResolution(res as Resolution)}
+                                                        className={cn(
+                                                            "flex-1 text-[10px] font-mono rounded border transition-all",
+                                                            resolution === res ? "bg-brand-cyan/20 text-brand-cyan border-brand-cyan/40" : "bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300"
+                                                        )}
+                                                    >
+                                                        {res}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {setMockupCount && (
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-mono uppercase text-neutral-500 ml-1">Nº Imagens (Outputs)</label>
+                                            <div className="relative flex items-center">
+                                                <input
+                                                    type="number"
+                                                    min={1}
+                                                    max={4}
+                                                    value={mockupCount}
+                                                    onChange={(e) => setMockupCount(Math.min(Math.max(parseInt(e.target.value) || 1, 1), 4))}
+                                                    className="w-full h-[32px] pl-2 pr-6 bg-neutral-800/50 border border-neutral-700/50 rounded text-xs font-mono text-neutral-200 focus:outline-none focus:border-brand-cyan/50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                                />
+                                                <div className="absolute right-1 flex flex-col h-[80%] my-auto justify-center space-y-[1px] border-neutral-700/50 border-l pl-0.5">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setMockupCount(Math.min(mockupCount + 1, 4))}
+                                                        className="flex items-center justify-center p-0.5 rounded-sm hover:bg-neutral-700/50 text-neutral-500 hover:text-neutral-200 transition-colors"
+                                                    >
+                                                        <ChevronUp size={10} />
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setMockupCount(Math.max(mockupCount - 1, 1))}
+                                                        className="flex items-center justify-center p-0.5 rounded-sm hover:bg-neutral-700/50 text-neutral-500 hover:text-neutral-200 transition-colors"
+                                                    >
+                                                        <ChevronDown size={10} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {aspectRatio && setAspectRatio && (
+                                        <div className="space-y-1">
+                                            <div className="flex justify-between items-center ml-1">
+                                                <label className="text-[9px] font-mono uppercase text-neutral-500">Proporção</label>
+                                                <span className="text-[8px] font-mono text-neutral-500">{aspectRatio}</span>
+                                            </div>
+                                            <div className="grid grid-cols-5 gap-1.5">
+                                                {['1:1', '9:16', '16:9', '4:3', '3:4'].map(ratio => (
+                                                    <button
+                                                        key={ratio}
+                                                        onClick={() => setAspectRatio(ratio as AspectRatio)}
+                                                        className={cn(
+                                                            "flex flex-col items-center justify-center py-1 rounded-sm border transition-all",
+                                                            aspectRatio === ratio ? "bg-brand-cyan/10 text-brand-cyan border-brand-cyan/40" : "bg-neutral-800/30 text-neutral-500 border-neutral-700/50 hover:border-neutral-600 hover:text-neutral-300"
+                                                        )}
+                                                    >
+                                                        <span className="text-[9px] font-mono">{ratio}</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
