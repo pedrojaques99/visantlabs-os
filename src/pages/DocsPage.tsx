@@ -586,6 +586,16 @@ export const DocsPage: React.FC = () => {
                         </CardContent>
                       </Card>
 
+                      <Card className="cursor-pointer hover:border-brand-cyan/50 transition-all hover:-translate-y-1" onClick={() => setActiveTab('agents')}>
+                        <CardHeader>
+                          <Bot className="w-8 h-8 text-brand-cyan mb-2" />
+                          <CardTitle>For Agents</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-muted-foreground text-sm">Connect AI agents via MCP, API keys, llms.txt discovery, and clean HTML.</p>
+                        </CardContent>
+                      </Card>
+
                       <Card className="cursor-pointer hover:border-brand-cyan/50 transition-all hover:-translate-y-1" onClick={() => setActiveTab('canvas-api')}>
                         <CardHeader>
                           <Workflow className="w-8 h-8 text-brand-cyan mb-2" />
@@ -605,11 +615,13 @@ export const DocsPage: React.FC = () => {
                       <CardContent className="space-y-6">
                         <div>
                           <h3 className="text-lg font-medium mb-2">1. Authentication</h3>
-                          <p className="text-muted-foreground mb-3 font-sm">All API requests require a JWT token in the Authorization header. First, sign up or log in.</p>
-                          <div className="bg-secondary/50 rounded-lg p-4 border border-border">
+                          <p className="text-muted-foreground mb-3 font-sm">All API requests require authentication via JWT token or API key in the Authorization header.</p>
+                          <div className="bg-secondary/50 rounded-lg p-4 border border-border space-y-2">
                             <div className="text-xs font-redhatmono text-muted-foreground mb-2 uppercase tracking-wide">HTTP Header</div>
-                            <code className="text-brand-cyan font-redhatmono text-sm">Authorization: Bearer YOUR_TOKEN_HERE</code>
+                            <code className="text-brand-cyan font-redhatmono text-sm block">Authorization: Bearer YOUR_JWT_TOKEN</code>
+                            <code className="text-brand-cyan font-redhatmono text-sm block">Authorization: Bearer visant_sk_xxxxxxxxxxxx</code>
                           </div>
+                          <p className="text-muted-foreground text-xs mt-2">For agents, create an API key from <a href="/settings/api-keys" className="text-brand-cyan hover:underline">Settings → API Keys</a>. See the <button onClick={() => setActiveTab('agents')} className="text-brand-cyan hover:underline">For Agents</button> tab for details.</p>
                         </div>
 
                         <div>
