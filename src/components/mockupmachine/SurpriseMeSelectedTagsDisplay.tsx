@@ -54,7 +54,8 @@ const filterValidTags = (tags: string[]): string[] => {
 };
 
 interface TagDropdownProps {
-  selectedTag: string | null;
+  selectedTags: string[];
+  isMulti: boolean;
   availableTags: string[];
   onSelect: (tag: string) => void;
   placeholder: string;
@@ -63,7 +64,8 @@ interface TagDropdownProps {
 }
 
 const TagDropdown: React.FC<TagDropdownProps> = ({
-  selectedTag,
+  selectedTags,
+  isMulti,
   availableTags,
   onSelect,
   placeholder,
@@ -94,8 +96,10 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
 
   const handleSelect = (tag: string) => {
     onSelect(tag);
-    setIsOpen(false);
-    setSearchQuery('');
+    if (!isMulti) {
+      setIsOpen(false);
+      setSearchQuery('');
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -126,7 +130,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           "w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg text-[10px] font-mono transition-all duration-200 border",
-          selectedTag
+          selectedTags.length > 0
             ? theme === 'dark'
               ? 'bg-neutral-800/60 text-neutral-400 border-neutral-700/50 hover:border-neutral-600'
               : 'bg-white text-brand-cyan border-brand-cyan/40 hover:border-brand-cyan/60'
@@ -139,7 +143,9 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
           {isGenerating ? (
             <span className="inline-block w-16 h-3 rounded animate-pulse bg-neutral-700/50" />
           ) : (
-            selectedTag ? translateTag(selectedTag) : placeholder
+            selectedTags.length > 0 
+              ? (selectedTags.length === 1 ? translateTag(selectedTags[0]) : `${translateTag(selectedTags[0])} +${selectedTags.length - 1}`) 
+              : placeholder
           )}
         </span>
         <ChevronDown
@@ -208,7 +214,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
                 onClick={() => handleSelect(tag)}
                 className={cn(
                   "w-full flex items-center justify-between gap-2 px-2.5 py-1.5 text-[10px] font-mono text-left transition-colors",
-                  tag === selectedTag
+                  selectedTags.includes(tag)
                     ? theme === 'dark'
                       ? 'bg-brand-cyan/10 text-brand-cyan'
                       : 'bg-brand-cyan/10 text-brand-cyan'
@@ -218,7 +224,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
                 )}
               >
                 <span className="truncate">{translateTag(tag)}</span>
-                {tag === selectedTag && <Check size={10} className="shrink-0 text-brand-cyan" />}
+                {selectedTags.includes(tag) && <Check size={10} className="shrink-0 text-brand-cyan" />}
               </button>
             ))}
 
@@ -293,6 +299,8 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void;
     withHuman,
     enhanceTexture,
     removeText,
+    surpriseMePool,
+    setSurpriseMePool,
     // Setters
     setSelectedTags,
     setSelectedLocationTags,
@@ -313,16 +321,17 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void;
     availableLightingTags,
     availableEffectTags,
     availableMaterialTags,
+    togglePoolTag
   } = useMockupTags();
 
   // Filter tags
   const sectionData: Record<SectionKey, string[]> = {
-    categories: filterValidTags(selectedTags),
-    location: filterValidTags(selectedLocationTags),
-    angle: filterValidTags(selectedAngleTags),
-    lighting: filterValidTags(selectedLightingTags),
-    effects: filterValidTags(selectedEffectTags),
-    material: filterValidTags(selectedMaterialTags),
+    categories: filterValidTags(isSurpriseMeMode ? (surpriseMePool.selectedCategoryTags || []) : selectedTags),
+    location: filterValidTags(isSurpriseMeMode ? (surpriseMePool.selectedLocationTags || []) : selectedLocationTags),
+    angle: filterValidTags(isSurpriseMeMode ? (surpriseMePool.selectedAngleTags || []) : selectedAngleTags),
+    lighting: filterValidTags(isSurpriseMeMode ? (surpriseMePool.selectedLightingTags || []) : selectedLightingTags),
+    effects: filterValidTags(isSurpriseMeMode ? (surpriseMePool.selectedEffectTags || []) : selectedEffectTags),
+    material: filterValidTags(isSurpriseMeMode ? (surpriseMePool.selectedMaterialTags || []) : selectedMaterialTags),
   };
 
   const availableTagsMap: Record<SectionKey, string[]> = {
@@ -383,9 +392,21 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void;
   ]);
 
   const handleTagSelect = (sectionKey: SectionKey, tag: string) => {
-    const setter = settersMap[sectionKey];
-    if (setter) {
-      setter([tag]);
+    if (isSurpriseMeMode) {
+      const poolKeyMap: Record<SectionKey, keyof typeof surpriseMePool> = {
+        categories: 'selectedCategoryTags',
+        location: 'selectedLocationTags',
+        angle: 'selectedAngleTags',
+        lighting: 'selectedLightingTags',
+        effects: 'selectedEffectTags',
+        material: 'selectedMaterialTags'
+      };
+      togglePoolTag(poolKeyMap[sectionKey], tag, surpriseMePool, setSurpriseMePool);
+    } else {
+      const setter = settersMap[sectionKey];
+      if (setter) {
+        setter([tag]);
+      }
     }
   };
 
@@ -432,7 +453,6 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void;
         {SECTIONS.map(({ key, labelKey }) => {
           const tags = sectionData[key];
           const availableTags = availableTagsMap[key];
-          const selectedTag = tags.length > 0 ? tags[0] : null;
 
           return (
             <div key={key} className="flex flex-col gap-1">
@@ -447,7 +467,8 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void;
                 </span>
               </SkeletonText>
               <TagDropdown
-                selectedTag={selectedTag}
+                selectedTags={tags}
+                isMulti={isSurpriseMeMode}
                 availableTags={availableTags}
                 onSelect={(tag) => handleTagSelect(key, tag)}
                 placeholder={t('mockup.selectOption') || 'Select...'}

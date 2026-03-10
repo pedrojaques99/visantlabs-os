@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ChevronDown, ChevronUp, Sliders, Palette as PaletteIcon, X, Plus } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { AdvancedOptions } from './AdvancedOptions';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
@@ -124,18 +125,37 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
     className?: string
   }) => (
     <div
-      className={`flex items-center p-2.5 rounded-md cursor-pointer border transition-all duration-200 ${className} ${theme === 'dark' ? 'bg-neutral-800/50 border-neutral-700/50 hover:bg-neutral-800' : 'bg-neutral-100 border-neutral-300 hover:bg-neutral-200'}`}
+      className={cn(
+        `flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer border transition-all duration-200 ${className}`,
+        theme === 'dark'
+          ? 'bg-neutral-800/40 border-neutral-700/40 hover:bg-neutral-800/60'
+          : 'bg-neutral-100 border-neutral-200 hover:bg-neutral-200'
+      )}
       onClick={() => onChange(!value)}
     >
-      <div className={`w-4 h-4 rounded-md flex items-center justify-center border transition-all duration-200 shrink-0 ${value ? 'bg-brand-cyan/80 border-[brand-cyan]' : theme === 'dark' ? 'bg-neutral-700 border-neutral-600' : 'bg-white border-neutral-400'}`}>
+      <div
+        className={cn(
+          "w-3.5 h-3.5 rounded flex items-center justify-center border transition-all duration-200 shrink-0",
+          value
+            ? 'bg-brand-cyan/80 border-brand-cyan'
+            : theme === 'dark'
+              ? 'bg-neutral-700 border-neutral-600'
+              : 'bg-white border-neutral-400'
+        )}
+      >
         {value && (
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-black">
+            <polyline points="20 6 9 17 4 12" />
           </svg>
         )}
       </div>
-      <SkeletonText loading={isGenerating} className="ml-3 flex-1 min-w-0">
-        <label className={`text-xs select-none cursor-pointer ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-700'}`}>{label}</label>
+      <SkeletonText loading={isGenerating} className="min-w-0">
+        <label className={cn(
+          "text-[10px] font-mono select-none cursor-pointer",
+          theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
+        )}>
+          {label}
+        </label>
       </SkeletonText>
     </div>
   );

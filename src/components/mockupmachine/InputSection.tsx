@@ -205,12 +205,12 @@ export const InputSection: React.FC<InputSectionProps> = ({
 
   const capacityUsage = Math.round(Math.min(((displayImage ? 1 : 0) + referenceImages.length) / 4 * 100, 100));
 
-  // Reusable Image Card component for consistency
   const ImageCard = ({
     img,
     label,
     onReplace,
     onRemove,
+    onAddRef,
     isAnalyzed = false,
     highlight = false
   }: {
@@ -218,6 +218,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
     label: string,
     onReplace: () => void,
     onRemove?: () => void,
+    onAddRef?: () => void,
     isAnalyzed?: boolean,
     highlight?: boolean
   }) => (
@@ -236,17 +237,36 @@ export const InputSection: React.FC<InputSectionProps> = ({
         />
 
         {/* Hover Overlay with Replace Action */}
-        <div className="absolute inset-0 bg-black/70 flex items-center justify-center opacity-0 group-hover/img-container:opacity-100 transition-all duration-300 backdrop-blur-[2px] p-10">
+        <div className="absolute inset-0 bg-black/70 flex items-center justify-center gap-4 opacity-0 group-hover/img-container:opacity-100 transition-all duration-300 backdrop-blur-[2px] p-4">
           <button
             type="button"
-            onClick={onReplace}
-            className="flex flex-col items-center gap-2 cursor-pointer p-4 rounded-md hover:bg-white/10 transition-all transform translate-y-2 group-hover/img-container:translate-y-0 text-white"
+            onClick={(e) => {
+               e.stopPropagation();
+               onReplace();
+            }}
+            className="flex flex-col items-center gap-2 cursor-pointer p-2 rounded-md hover:bg-white/10 transition-all transform translate-y-2 group-hover/img-container:translate-y-0 text-white"
           >
             <div className="p-3 rounded-full bg-white/10 border border-white/20 group-hover:bg-brand-cyan group-hover:text-black transition-all shadow-xl">
               <ArrowLeftRight size={20} />
             </div>
             <span className="text-[10px] font-mono uppercase tracking-[0.2em] font-bold">{t('mockup.replace') || 'Substituir'}</span>
           </button>
+          
+          {onAddRef && (
+            <button
+              type="button"
+              onClick={(e) => {
+                 e.stopPropagation();
+                 onAddRef();
+              }}
+              className="flex flex-col items-center gap-2 cursor-pointer p-2 rounded-md hover:bg-white/10 transition-all transform translate-y-2 group-hover/img-container:translate-y-0 text-white delay-75"
+            >
+              <div className="p-3 rounded-full bg-white/10 border border-white/20 group-hover:bg-brand-cyan group-hover:text-black transition-all shadow-xl">
+                <Plus size={20} />
+              </div>
+              <span className="text-[10px] font-mono uppercase tracking-[0.2em] font-bold">+ REF</span>
+            </button>
+          )}
         </div>
 
         {/* Status Badge (Top Right) */}
@@ -337,6 +357,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
             img={displayImage}
             label={t('mockup.mainFile')}
             onReplace={() => document.getElementById('image-upload-blank')?.click()}
+            onAddRef={canAddMoreReferences ? () => document.getElementById('multiple-image-upload')?.click() : undefined}
             isAnalyzed={hasAnalyzed}
             highlight={hasAnalyzed}
           />

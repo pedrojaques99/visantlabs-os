@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { MockupCard } from './MockupCard';
 import type { AspectRatio } from '@/types/types';
+import { InteractiveASCIICopy } from '@/components/ui/InteractiveASCIICopy';
 
 interface MockupDisplayProps {
   mockups: (string | null)[];
@@ -68,19 +69,27 @@ export const MockupDisplay: React.FC<MockupDisplayProps> = React.memo(({
 
   if (!hasContent) {
     return (
-      <div className="relative flex flex-col items-center justify-center h-full w-full min-w-0 text-center p-6 sm:p-8 md:p-12 animate-fade-in">
+      <div className="relative flex flex-col items-center justify-center h-full w-full min-w-0 text-center p-6 sm:p-8 md:p-12 animate-fade-in overflow-hidden">
+        {/* Interactive ASCII Background */}
+        <div className="absolute inset-0 z-0 opacity-40">
+          <InteractiveASCIICopy 
+            isDarkMode={true} 
+            fullHeight={true} 
+          />
+        </div>
+
         {/* Decorative background - absolute so it doesn't affect flex; parent has relative */}
-        <div className="absolute inset-0 rounded-full blur-[100px] pointer-events-none -z-10" aria-hidden />
+        <div className="absolute inset-0 rounded-full blur-[100px] pointer-events-none z-0" aria-hidden />
 
+        <div className="relative z-10 flex flex-col items-center bg-black/60 p-8 rounded-2xl border border-neutral-800/50 backdrop-blur-md shadow-2xl">
+          <h2 className="text-xl md:text-2xl font-bold font-mono uppercase tracking-[0.2em] text-neutral-300 mb-4 drop-shadow-md">
+            {t('mockup.awaitingGeneration')}
+          </h2>
 
-
-        <h2 className="text-xl md:text-2xl font-bold font-mono uppercase tracking-[0.2em] text-neutral-300 mb-4 z-10">
-          {t('mockup.awaitingGeneration')}
-        </h2>
-
-        <p className="max-w-md text-neutral-500 text-sm md:text-base font-medium leading-relaxed z-10">
-          {t('mockup.awaitingGenerationDescription')}
-        </p>
+          <p className="max-w-md text-neutral-400 text-sm md:text-base font-medium leading-relaxed drop-shadow-md">
+            {t('mockup.awaitingGenerationDescription')}
+          </p>
+        </div>
       </div>
     );
   }
