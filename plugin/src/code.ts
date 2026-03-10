@@ -1788,5 +1788,20 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     } catch (_e) {
       postToUI({ type: 'DESIGN_SYSTEM_SAVED', designSystem: null });
     }
+
+  } else if (msg.type === 'GET_BRAND_GUIDELINE') {
+    const selectedId = figma.root.getPluginData('brandGuidelineSelectedId')
+    const cached = figma.root.getPluginData('brandGuidelineCache')
+    postToUI({
+      type: 'BRAND_GUIDELINE_LOADED',
+      selectedId: selectedId || null,
+      guideline: cached || null,
+    })
+
+  } else if (msg.type === 'SAVE_BRAND_GUIDELINE') {
+    const { selectedId, guideline } = msg
+    figma.root.setPluginData('brandGuidelineSelectedId', selectedId || '')
+    figma.root.setPluginData('brandGuidelineCache', guideline || '')
+    postToUI({ type: 'BRAND_GUIDELINE_SAVED' })
   }
 };
