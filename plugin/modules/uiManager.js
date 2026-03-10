@@ -185,6 +185,11 @@ class UIManager {
       console.log('[Plugin UI] Component selected:', component.name);
       // Could be used for previewing, adding to canvas, etc.
     });
+
+    // Brand Guideline V2 sync
+    window.watchState('brandGuideline', () => {
+      if (window.brandSyncModule) window.brandSyncModule.scheduleSave()
+    })
   }
 
   setupSandboxListeners() {
@@ -249,6 +254,10 @@ class UIManager {
           break;
         case 'DESIGN_SYSTEM_SAVED':
           eventBus.emit('designSystem:loaded', msg.designSystem || null);
+          break;
+        case 'BRAND_GUIDELINE_LOADED':
+        case 'BRAND_GUIDELINE_SAVED':
+          if (window.brandSyncModule) window.brandSyncModule.handleMessage(msg)
           break;
         case 'API_KEY_LOADED':
           setState('userApiKey', msg.key || '');

@@ -105,6 +105,7 @@ async function generateDesign(command, context) {
     availableLayers: context.availableLayers || [],
     mentions: context.mentions || [],
     designSystem: state.designSystem || undefined,
+    brandGuideline: state.brandGuideline || undefined,
     attachments: (context.attachments || []).map(att => ({
       name: att.name,
       mimeType: att.mimeType,
