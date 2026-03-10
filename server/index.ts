@@ -220,13 +220,21 @@ import apiKeyRoutes from './routes/apiKeys.js';
 app.use(`${routePrefix}/api-keys`, apiKeyRoutes);
 
 // ═══ Platform MCP Server (HTTP/SSE transport) ═══
-import { createPlatformMcpServer } from './mcp/platform-mcp.js';
+import { createPlatformMcpServer, setMcpUserId } from './mcp/platform-mcp.js';
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
+import { authenticateApiKey } from './middleware/apiKeyAuth.js';
 
 const mcpServer = createPlatformMcpServer();
 const mcpTransports = new Map<string, SSEServerTransport>();
 
-app.get(`${routePrefix}/mcp`, async (req, res) => {
+app.get(`${routePrefix}/mcp`, async (req: any, res) => {
+  // Try to authenticate via API key before connecting
+  const authReq = req as any;
+  authReq.userId = undefined;
+  authReq.userEmail = undefined;
+  const isAuth = await authenticateApiKey(authReq);
+  setMcpUserId(isAuth ? authReq.userId : null);
+
   const transport = new SSEServerTransport(`${routePrefix}/mcp/message`, res);
   mcpTransports.set(transport.sessionId, transport);
   res.on('close', () => { mcpTransports.delete(transport.sessionId); });
