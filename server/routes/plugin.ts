@@ -883,6 +883,12 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
         apiKey: userAnthropicKey || undefined,
         // Pass attachments (images, PDFs, CSVs) for multimodal processing
         attachments: attachments || [],
+        // Agent status callback — broadcasts search progress to plugin UI via WebSocket
+        onStatus: fileId
+          ? (message: string) => {
+              pluginBridge.notify(fileId, { type: 'AGENT_STATUS', message });
+            }
+          : undefined,
       });
       operations = result.operations;
       usage = result.usage;

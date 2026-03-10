@@ -38,6 +38,28 @@ export function chooseProvider(
     ' e ',
     ' and ',
     ',',
+    // Search/research keywords → Claude agent with web_search
+    'pesquis',
+    'busca',
+    'busque',
+    'search',
+    'referência',
+    'referencia',
+    'reference',
+    'inspiração',
+    'inspiracao',
+    'inspiration',
+    'tendência',
+    'tendencia',
+    'trend',
+    'exemplo',
+    'example',
+    'similar',
+    'como',
+    'estilo de',
+    'style of',
+    'parecido com',
+    'like',
   ];
 
   const hasComplexKeywords = complexKeywords.some((kw) =>
