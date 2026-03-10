@@ -4,6 +4,9 @@ import { authenticate, AuthRequest } from '../middleware/auth.js'
 import { prisma } from '../db/prisma.js'
 import { rateLimit } from 'express-rate-limit'
 import { BrandGuideline, calculateCompleteness } from '../types/brandGuideline.js'
+import { parseUrl, parsePdf, parseImage, parseJson } from '../lib/brand-parse.js'
+import { extractBrandData } from '../lib/brand-extract.js'
+import { mergeBrandGuidelines } from '../lib/brand-merge.js'
 
 const router = express.Router()
 
@@ -139,6 +142,79 @@ router.delete('/:id', apiRateLimiter, authenticate, async (req: AuthRequest, res
   } catch (error: any) {
     console.error('Error deleting brand guideline:', error)
     res.status(500).json({ error: 'Failed to delete brand guideline' })
+  }
+})
+
+// POST /api/brand-guidelines/:id/ingest — extract from source and merge
+router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const existing = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    })
+    if (!existing) return res.status(404).json({ error: 'Brand guideline not found' })
+
+    const { source, url, data, filename } = req.body
+    let chunks: any[] = []
+    let imageBase64: string | undefined
+
+    switch (source) {
+      case 'url':
+        if (!url) return res.status(400).json({ error: 'URL required' })
+        chunks = await parseUrl(url)
+        break
+      case 'pdf':
+        if (!data) return res.status(400).json({ error: 'PDF data required' })
+        chunks = await parsePdf(Buffer.from(data.replace(/^data:application\/pdf;base64,/, ''), 'base64'), filename)
+        break
+      case 'image':
+        if (!data) return res.status(400).json({ error: 'Image data required' })
+        chunks = parseImage(filename || 'image.png')
+        imageBase64 = data.replace(/^data:image\/\w+;base64,/, '')
+        break
+      case 'json': {
+        if (!data) return res.status(400).json({ error: 'JSON data required' })
+        const jsonStr = typeof data === 'string'
+          ? (data.startsWith('data:') ? Buffer.from(data.replace(/^data:[^;]+;base64,/, ''), 'base64').toString('utf-8') : data)
+          : JSON.stringify(data)
+        chunks = parseJson(jsonStr, filename)
+        break
+      }
+      default:
+        return res.status(400).json({ error: `Invalid source: ${source}` })
+    }
+
+    const extracted = await extractBrandData(chunks, imageBase64)
+    const merged = mergeBrandGuidelines(existing as any, extracted)
+
+    // Track source
+    merged.extraction = merged.extraction || { sources: [], completeness: 0 }
+    merged.extraction.sources.push({ type: source, ref: url || filename, date: new Date().toISOString() })
+    merged.extraction.completeness = calculateCompleteness(merged)
+
+    const guideline = await prisma.brandGuideline.update({
+      where: { id: existing.id },
+      data: {
+        identity: merged.identity as any,
+        logos: merged.logos as any,
+        colors: merged.colors as any,
+        typography: merged.typography as any,
+        tags: merged.tags as any,
+        media: merged.media as any,
+        tokens: merged.tokens as any,
+        guidelines: merged.guidelines as any,
+        extraction: merged.extraction as any,
+      },
+    })
+
+    res.json({
+      guideline: { ...guideline, _id: guideline.id },
+      extracted, // what AI found — user can review
+    })
+  } catch (error: any) {
+    console.error('[Brand Ingest] Error:', error)
+    res.status(500).json({ error: 'Ingestion failed', message: error.message })
   }
 })
 
