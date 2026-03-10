@@ -548,6 +548,9 @@ export type UIMessage =
   // Design System
   | { type: 'GET_DESIGN_SYSTEM' }
   | { type: 'SAVE_DESIGN_SYSTEM'; designSystem: any }
+  // Brand Guidelines V2
+  | { type: 'GET_BRAND_GUIDELINE' }
+  | { type: 'SAVE_BRAND_GUIDELINE'; selectedId: string | null; guideline: string | null }
   // Undo
   | { type: 'UNDO_LAST_BATCH' };
 
@@ -576,4 +579,7 @@ export type PluginMessage =
   | { type: 'ANTHROPIC_KEY_LOADED'; key: string }
   // Guideline presets
   | { type: 'GUIDELINES_LOADED'; guidelines: BrandGuideline[] }
-  | { type: 'GUIDELINE_SAVED'; guidelines: BrandGuideline[]; savedId: string };
+  | { type: 'GUIDELINE_SAVED'; guidelines: BrandGuideline[]; savedId: string }
+  // Brand Guidelines V2
+  | { type: 'BRAND_GUIDELINE_LOADED'; selectedId: string | null; guideline: string | null }
+  | { type: 'BRAND_GUIDELINE_SAVED' };
