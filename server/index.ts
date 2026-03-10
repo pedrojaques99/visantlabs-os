@@ -34,6 +34,7 @@ import videoRoutes from './routes/video.js';
 import communityRoutes from './routes/community.js';
 import storageRoutes from './routes/storage.js';
 import usersRoutes from './routes/users.js';
+import llmsRoutes from './routes/llms.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { connectToMongoDB } from './db/mongodb.js';
 
@@ -144,6 +145,9 @@ if (process.env.VERCEL) {
     next();
   });
 }
+
+// LLM discovery routes — served at root level (no /api prefix)
+app.use('/', llmsRoutes);
 
 // Routes
 // In Vercel, the /api prefix is already handled by routing, so we use paths without /api
