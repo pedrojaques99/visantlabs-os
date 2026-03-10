@@ -1,7 +1,5 @@
 # robots.txt
 # https://www.robotstxt.org/robotstxt.html
-#
-# IMPORTANT: Update YOUR_DOMAIN.COM below before deploying to production!
 
 User-agent: *
 Allow: /
@@ -12,6 +10,8 @@ Allow: /mockups
 Allow: /branding-machine
 Allow: /budget-machine
 Allow: /waitlist
+Allow: /llms.txt
+Allow: /llms-full.txt
 
 # Disallow private/user pages
 Disallow: /profile
@@ -29,6 +29,26 @@ Disallow: /thank-you
 Disallow: /recharge-success
 Disallow: /forgot-password
 
+# AI Crawlers — explicitly allowed
+User-agent: GPTBot
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+
+User-agent: ClaudeBot
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+
+User-agent: PerplexityBot
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+
+User-agent: Anthropic
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+
 # Allow sitemap
-# Replace YOUR_DOMAIN.COM with your actual domain
-Sitemap: https://YOUR_DOMAIN.COM/sitemap.xml
+Sitemap: https://visantlabs.com/sitemap.xml

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../db/prisma.js';
 import { JWT_SECRET } from '../utils/jwtSecret.js';
+import { authenticateApiKey } from './apiKeyAuth.js';
 
 const isDev = process.env.NODE_ENV !== 'production';
 
@@ -16,6 +17,10 @@ export const authenticate = async (
   next: NextFunction
 ) => {
   try {
+    // Try API key auth first
+    const isApiKey = await authenticateApiKey(req);
+    if (isApiKey) return next();
+
     const token = req.headers.authorization?.replace('Bearer ', '');
 
     if (!token) {
