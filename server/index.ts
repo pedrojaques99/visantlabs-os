@@ -211,6 +211,10 @@ console.log(`✅ Documentation routes registered at: ${routePrefix}/docs`);
 import surpriseMeRoutes from './routes/surprise-me.js';
 app.use(`${routePrefix}/surprise-me`, surpriseMeRoutes);
 
+// Import API key routes
+import apiKeyRoutes from './routes/apiKeys.js';
+app.use(`${routePrefix}/api-keys`, apiKeyRoutes);
+
 // Health check rate limiter
 const healthCheckLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
