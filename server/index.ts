@@ -34,7 +34,9 @@ import videoRoutes from './routes/video.js';
 import communityRoutes from './routes/community.js';
 import storageRoutes from './routes/storage.js';
 import usersRoutes from './routes/users.js';
+import llmsRoutes from './routes/llms.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { detectAgent } from './middleware/agentContent.js';
 import { connectToMongoDB } from './db/mongodb.js';
 
 // Load environment variables from .env or .env.local
@@ -102,6 +104,9 @@ app.use(`${routePrefix}/liveblocks/webhook`, express.raw({ type: 'application/js
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+// AI agent detection — sets res.locals.isAgent and adds Link header
+app.use(detectAgent);
+
 // Debug middleware to log all requests (only in development or when DEBUG is enabled)
 if (process.env.DEBUG || process.env.NODE_ENV !== 'production') {
   app.use((req, res, next) => {
@@ -144,6 +149,9 @@ if (process.env.VERCEL) {
     next();
   });
 }
+
+// LLM discovery routes — served at root level (no /api prefix)
+app.use('/', llmsRoutes);
 
 // Routes
 // In Vercel, the /api prefix is already handled by routing, so we use paths without /api
@@ -206,6 +214,41 @@ console.log(`✅ Documentation routes registered at: ${routePrefix}/docs`);
 // Import surprise me routes
 import surpriseMeRoutes from './routes/surprise-me.js';
 app.use(`${routePrefix}/surprise-me`, surpriseMeRoutes);
+
+// Import API key routes
+import apiKeyRoutes from './routes/apiKeys.js';
+app.use(`${routePrefix}/api-keys`, apiKeyRoutes);
+
+// ═══ Platform MCP Server (HTTP/SSE transport) ═══
+import { createPlatformMcpServer, setMcpUserId } from './mcp/platform-mcp.js';
+import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
+import { authenticateApiKey } from './middleware/apiKeyAuth.js';
+
+const mcpServer = createPlatformMcpServer();
+const mcpTransports = new Map<string, SSEServerTransport>();
+
+app.get(`${routePrefix}/mcp`, async (req: any, res) => {
+  // Try to authenticate via API key before connecting
+  const authReq = req as any;
+  authReq.userId = undefined;
+  authReq.userEmail = undefined;
+  const isAuth = await authenticateApiKey(authReq);
+  setMcpUserId(isAuth ? authReq.userId : null);
+
+  const transport = new SSEServerTransport(`${routePrefix}/mcp/message`, res);
+  mcpTransports.set(transport.sessionId, transport);
+  res.on('close', () => { mcpTransports.delete(transport.sessionId); });
+  await mcpServer.connect(transport);
+});
+
+app.post(`${routePrefix}/mcp/message`, async (req, res) => {
+  const sessionId = req.query.sessionId as string;
+  const transport = mcpTransports.get(sessionId);
+  if (!transport) return res.status(404).json({ error: 'Session not found' });
+  await transport.handlePostMessage(req, res);
+});
+
+console.log(`✅ Platform MCP server registered at: ${routePrefix}/mcp`);
 
 // Health check rate limiter
 const healthCheckLimiter = rateLimit({

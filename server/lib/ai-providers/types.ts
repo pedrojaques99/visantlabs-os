@@ -7,6 +7,7 @@ export interface AIGenerationOptions {
   maxTokens?: number;
   apiKey?: string; // Per-request BYOK key override
   attachments?: Array<{ name: string; mimeType: string; data: string }>; // Base64 data
+  onStatus?: (message: string) => void; // Agent status callback (e.g. "Pesquisando...")
 }
 
 export interface TokenUsage {

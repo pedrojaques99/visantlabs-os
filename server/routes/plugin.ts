@@ -375,6 +375,9 @@ function buildSystemPrompt(req: PluginRequest, chatHistory?: string, thinkMode?:
       const indent = '  '.repeat(depth);
       const parts: string[] = [`${indent}• "${n.name}" (type: ${n.type}, id: "${n.id}"`];
 
+      // Position (useful for multi-frame layout calculations)
+      if (n.x != null && n.y != null) parts.push(`pos: ${Math.round(n.x)},${Math.round(n.y)}`);
+
       // Dimensions
       if (n.width || n.height) parts.push(`${n.width}×${n.height}`);
 
@@ -641,6 +644,28 @@ ESTRUTURA:
     - Se o user quer mudar APENAS a fonte de um texto existente, você PRECISA saber ou INFERIR qual é o conteúdo atual (ex: "Título", "Descrição")
     - Reescreva com a nova formatação: {"type":"SET_TEXT_CONTENT","nodeId":"...","content":"[conteúdo original ou inferido]","fontFamily":"Nova Fonte","fontStyle":"Novo estilo"}
 
+28. ⭐ DUPLICAÇÃO / CÓPIA — PRESERVAÇÃO TOTAL:
+    Se o usuário pedir para duplicar, copiar, replicar ou clonar um frame/elemento:
+    - Preserve EXATAMENTE todas as propriedades do original: fonte, tamanho de fonte, cor do texto, fills, strokes, opacidade, sombras, cornerRadius, espaçamentos, tamanho, conteúdo de texto.
+    - Altere SOMENTE o que foi explicitamente pedido (ex: "duplica e muda o título para X" → só muda o título).
+    - NÃO mude cor, fonte, texto, tamanho ou qualquer outra propriedade por iniciativa própria, mesmo que julgue ser uma "melhoria".
+    - Em caso de dúvida: não mude nada que não foi pedido.
+
+29. ⭐ MÚLTIPLOS FRAMES ROOT — POSICIONAMENTO LADO A LADO:
+    ⚠️ ESTA REGRA SÓ SE APLICA a frames que vão diretamente para a PÁGINA (sem "parentRef" nem "parentNodeId").
+    Frames filhos de outros frames (auto-layout children) JAMAIS recebem MOVE — o auto-layout posiciona eles automaticamente.
+
+    Quando criar 2 ou mais frames que vão para a PÁGINA na mesma resposta:
+    - NUNCA crie frames sobrepostos. Sempre use MOVE para posicioná-los lado a lado com gap de 40px.
+    - Use as coordenadas dos elementos no contexto (campo "pos: x,y") para saber onde existem elementos.
+    - Lógica de posicionamento:
+        a) Se há elementos no contexto: posicione o primeiro novo frame à direita do elemento mais à direita (max(x + width) + 40). Os frames subsequentes seguem à direita com gap de 40px.
+        b) Sem elementos no contexto: primeiro frame em x=0, y=0; seguintes em x=width_anterior+40, y=0.
+    - Após criar cada frame root, adicione um MOVE com as coordenadas calculadas.
+    - Exemplo (2 frames de 360px indo para a página, sem contexto): CREATE_FRAME(ref="f1", width=360), CREATE_FRAME(ref="f2", width=360), MOVE(ref="f1", x=0, y=0), MOVE(ref="f2", x=400, y=0).
+    - ⚠️ MOVE de frames criados nesta resposta usa "ref": {"type":"MOVE","ref":"f2","x":400,"y":0}
+    - ✅ Frame filho de outro frame (parentRef/parentNodeId): NUNCA adicione MOVE. O auto-layout cuida do posicionamento.
+
 ${req.attachments?.length ? `═══ ANEXOS DO USUÁRIO ═══
 O usuário anexou os seguintes arquivos:
 ${req.attachments.map((a, i) => `${i + 1}. "${a.name}" (${a.mimeType})`).join('\n')}
@@ -858,6 +883,12 @@ router.post('/', optionalAuth, async (req: AuthRequest, res: Response) => {
         apiKey: userAnthropicKey || undefined,
         // Pass attachments (images, PDFs, CSVs) for multimodal processing
         attachments: attachments || [],
+        // Agent status callback — broadcasts search progress to plugin UI via WebSocket
+        onStatus: fileId
+          ? (message: string) => {
+              pluginBridge.notify(fileId, { type: 'AGENT_STATUS', message });
+            }
+          : undefined,
       });
       operations = result.operations;
       usage = result.usage;

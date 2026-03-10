@@ -384,12 +384,11 @@ class UIManager {
       if (designOps.length > 0) {
         applyOperations(designOps);
       }
-    } catch (error) {
-      // If error happened before apiCall() (e.g. during payload construction),
-      // api:error won't have been emitted, so we handle it here as fallback.
+    } catch (_error) {
+      // api:error event (emitted by apiCall) already handles the user-visible error message.
+      // This catch only resets loading state as a safety net (e.g. for errors before apiCall).
       eventBus.emit('chat:loading', false);
       chatModule.removeTypingBubble();
-      chatModule.addErrorMessage(`⚠️ Erro ao processar: ${error.message || error}`);
     }
   }
 

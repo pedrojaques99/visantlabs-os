@@ -548,7 +548,7 @@ export function generateOpenAPISpec(
     openapi: '3.0.0',
     info: {
       title: 'Visant Copilot API',
-      description: 'REST API for Visant design copilot platform',
+      description: 'REST API for Visant design copilot platform. Supports JWT and API key authentication. AI agents can also connect via MCP (Model Context Protocol) at /api/mcp for direct tool invocation. See /llms.txt for agent discovery.',
       version,
     },
     servers: [
@@ -566,6 +566,11 @@ export function generateOpenAPISpec(
           bearerFormat: 'JWT',
           description: 'JWT token for authentication',
         },
+        apiKeyAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          description: 'API key authentication for agents. Format: visant_sk_xxxxxxxxxxxx. Get your key from Settings → API Keys.',
+        },
       },
     },
     tags: [
@@ -573,6 +578,8 @@ export function generateOpenAPISpec(
       { name: 'mockups', description: 'Mockup generation' },
       { name: 'plugin', description: 'Figma plugin integration' },
       { name: 'canvas', description: 'Canvas management' },
+      { name: 'api-keys', description: 'API key management for agent access' },
+      { name: 'mcp', description: 'MCP (Model Context Protocol) server — connect at /api/mcp via SSE' },
     ],
   };
 
