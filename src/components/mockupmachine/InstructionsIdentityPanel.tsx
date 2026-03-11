@@ -6,6 +6,8 @@ import { cn } from '@/lib/utils';
 import { useMockup } from './MockupContext';
 import { useMockupTags } from '@/hooks/useMockupTags';
 import { BrandingSection } from '../branding/BrandingSection';
+import { MicroTitle } from '../ui/MicroTitle';
+import { GlassPanel } from '../ui/GlassPanel';
 
 export const InstructionsIdentityPanel: React.FC = () => {
   const { t } = useTranslation();
@@ -43,13 +45,8 @@ export const InstructionsIdentityPanel: React.FC = () => {
   }, []);
 
   return (
-    <div
-      className={cn(
-        'w-full rounded-xl border transition-all duration-200 overflow-hidden',
-        theme === 'dark'
-          ? 'bg-neutral-900/30 border-white/5'
-          : 'bg-white/50 border-neutral-200'
-      )}
+    <GlassPanel
+        className="group overflow-hidden"
     >
       <button
         onClick={() => setIsInstructionsExpanded(!isInstructionsExpanded)}
@@ -64,14 +61,9 @@ export const InstructionsIdentityPanel: React.FC = () => {
             className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
           />
           <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
-            <span
-              className={cn(
-                'text-[10px] font-mono uppercase tracking-widest',
-                theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
-              )}
-            >
+            <MicroTitle as="span">
               {t('mockup.instructions')} / {t('mockup.identity')}
-            </span>
+            </MicroTitle>
             {!isInstructionsExpanded &&
               (instructions || ctxSelectedBrandingTags.length > 0) && (
                 <span className="text-[10px] font-mono truncate max-w-[200px]">
@@ -106,14 +98,9 @@ export const InstructionsIdentityPanel: React.FC = () => {
         <div className="p-3 pt-2 animate-fade-in space-y-3">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span
-                className={cn(
-                  'text-[10px] uppercase font-mono tracking-widest',
-                  theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                )}
-              >
+              <MicroTitle as="span">
                 {t('mockup.instructions')}
-              </span>
+              </MicroTitle>
               <button
                 type="button"
                 onClick={() =>
@@ -167,14 +154,9 @@ export const InstructionsIdentityPanel: React.FC = () => {
                   size={12}
                   className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}
                 />
-                <span
-                  className={cn(
-                    'text-[10px] uppercase font-mono tracking-widest',
-                    theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
-                  )}
-                >
+                <MicroTitle as="span">
                   {t('mockup.identity')}
-                </span>
+                </MicroTitle>
               </div>
               <button
                 type="button"
@@ -212,7 +194,7 @@ export const InstructionsIdentityPanel: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+    </GlassPanel>
   );
 };
 

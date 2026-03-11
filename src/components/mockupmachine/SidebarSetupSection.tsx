@@ -2,11 +2,14 @@ import React from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { InputSection } from './InputSection';
+import { BrandGuidelineSelector } from './BrandGuidelineSelector';
 import { useMockup } from './MockupContext';
 import type { UploadedImage, DesignType } from '../../types/types';
-import { GlitchLoader } from '../ui/GlitchLoader';
+import { PremiumButton } from '../ui/PremiumButton';
+import { GlassPanel } from '../ui/GlassPanel';
+import { MicroTitle } from '../ui/MicroTitle';
 import { cn } from '@/lib/utils';
-import { ArrowRight, Check } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 interface SidebarSetupSectionProps {
     onImageUpload: (image: UploadedImage) => void;
@@ -41,99 +44,54 @@ export const SidebarSetupSection: React.FC<SidebarSetupSectionProps> = ({
     return (
         <div
             id="section-setup"
-            className="transition-all duration-300 w-full flex flex-col min-h-full relative"
+            className="flex flex-col h-full w-full gap-8"
         >
-            <div className="flex flex-col gap-4 w-full">
-                {/* Upload Section */}
-                <InputSection
-                    uploadedImage={uploadedImage}
-                    referenceImages={referenceImages}
-                    designType={designType}
-                    selectedModel={selectedModel}
-                    onImageUpload={onImageUpload}
-                    onReferenceImagesChange={onReferenceImagesChange}
-                    onStartOver={onStartOver}
-                    hasAnalyzed={hasAnalyzed}
-                    onDesignTypeChange={onDesignTypeChange}
-                    onScrollToSection={() => {}}
-                />
+            <div className="flex-1 min-h-0 flex flex-col gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 auto-rows-min">
+                    {/* Upload Section */}
+                    <InputSection
+                        uploadedImage={uploadedImage}
+                        referenceImages={referenceImages}
+                        designType={designType}
+                        selectedModel={selectedModel}
+                        onImageUpload={onImageUpload}
+                        onReferenceImagesChange={onReferenceImagesChange}
+                        onStartOver={onStartOver}
+                        hasAnalyzed={hasAnalyzed}
+                        onDesignTypeChange={onDesignTypeChange}
+                        onScrollToSection={() => { }}
+                    />
 
-                {/* Transparent Background Checkbox */}
-                {uploadedImage && (
-                    <div
-                        className={cn(
-                            "flex items-center gap-3 cursor-pointer group px-2 py-3 rounded-lg transition-colors",
-                            theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'
-                        )}
-                        onClick={() => onDesignTypeChange(isTransparent ? 'layout' : 'logo')}
-                        role="checkbox"
-                        aria-checked={isTransparent}
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                            if (e.key !== 'Enter' && e.key !== ' ') return;
-                            e.preventDefault();
-                            onDesignTypeChange(isTransparent ? 'layout' : 'logo');
-                        }}
-                    >
-                        <div className={cn(
-                            "w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-200 flex-shrink-0",
-                            isTransparent
-                                ? "bg-brand-cyan border-brand-cyan"
-                                : theme === 'dark'
-                                    ? "bg-neutral-800 border-neutral-600 group-hover:border-neutral-500"
-                                    : "bg-white border-neutral-300 group-hover:border-neutral-400"
-                        )}>
-                            {isTransparent && <Check size={14} className="text-black" strokeWidth={3} />}
-                        </div>
-                        <span className={cn(
-                            "text-sm font-mono transition-colors select-none",
-                            theme === 'dark' ? "text-neutral-300 group-hover:text-neutral-200" : "text-neutral-600 group-hover:text-neutral-800"
-                        )}>
-                            {t('mockup.transparentBackground') || 'Transparent background'}
-                        </span>
+                    <div className="flex flex-col gap-4">
+                        <MicroTitle className="px-1">
+                            {t('mockup.setup') || 'CONFIGURAÇÕES'}
+                        </MicroTitle>
+
+                        <GlassPanel className="flex-1 p-4 md:p-6 overflow-y-auto max-h-[400px] lg:max-h-none">
+                            {/* Brand Guideline Selection */}
+                            <BrandGuidelineSelector />
+                        </GlassPanel>
                     </div>
-                )}
+                </div>
             </div>
 
-            {/* Bottom Action Button */}
-            <div className="sticky bottom-0 left-0 right-0 mt-auto pt-6 pb-6 z-50 w-full">
-                <button
+            {/* Bottom Action Button - Now at the end of the flex column but inside the container */}
+            <div className="w-full pt-4 border-t border-white/5 bg-neutral-900/50 backdrop-blur-sm -mx-4 px-4 -mb-4 pb-4 md:-mx-8 md:px-8 md:-mb-8 md:pb-8 sticky bottom-0 z-[60]">
+                <PremiumButton
                     onClick={onAnalyze}
-                    disabled={!canAnalyze || isAnalyzing}
-                    aria-label={isAnalyzing ? t('mockup.analyzing') : t('mockup.continue')}
-                    aria-busy={isAnalyzing}
-                    className={cn(
-                        "w-full flex items-center justify-center gap-3 py-4 px-6 rounded-md font-mono text-base font-bold transition-all duration-500 group overflow-hidden relative border",
-                        canAnalyze && !isAnalyzing
-                            ? "bg-brand-cyan border-brand-cyan/50 text-black shadow-[0_10px_40px_rgba(var(--brand-cyan-rgb),0.2)] hover:scale-[1.01] active:scale-[0.99] hover:bg-brand-cyan/90"
-                            : "bg-neutral-800/60 border-neutral-600/40 text-neutral-500 cursor-not-allowed shadow-none"
-                    )}
+                    disabled={!canAnalyze}
+                    isLoading={isAnalyzing}
+                    loadingText={t('mockup.analyzing') || 'ANALYZING...'}
+                    icon={ArrowRight}
+                    className="w-full h-14 text-base"
                 >
-                    {isAnalyzing ? (
-                        <>
-                            <GlitchLoader size={18} color="black" />
-                            <span className="animate-pulse tracking-widest text-sm">{t('mockup.analyzing') || 'ANALYZING...'}</span>
-                        </>
-                    ) : (
-                        <>
-                            <span className="relative z-10 flex items-center gap-2 tracking-widest">
-                                {t('mockup.continue') || 'CONTINUE'}
-                                <ArrowRight size={18} className="transition-transform duration-300 group-hover:translate-x-1" />
-                            </span>
-                            {canAnalyze && (
-                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer" />
-                            )}
-                        </>
-                    )}
-                </button>
+                    {t('mockup.continue') || 'CONTINUE'}
+                </PremiumButton>
 
-                {!canAnalyze && !isAnalyzing && !hasAnalyzed && (
-                    <p className="text-center mt-3 text-[10px] font-mono text-neutral-500 uppercase tracking-[0.2em]">
-                        {!uploadedImage
-                            ? (t('mockup.uploadRequired') || 'Upload required')
-                            : null
-                        }
-                    </p>
+                {!canAnalyze && !isAnalyzing && !hasAnalyzed && !uploadedImage && (
+                    <MicroTitle as="p" className="text-center mt-3 block text-neutral-500 text-[10px]">
+                        {t('mockup.uploadRequired') || 'Aproxime-se e envie uma imagem para continuar'}
+                    </MicroTitle>
                 )}
             </div>
         </div>

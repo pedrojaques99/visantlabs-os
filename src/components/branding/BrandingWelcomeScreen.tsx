@@ -8,6 +8,8 @@ import { getTotalBrandingCredits } from '@/utils/creditCalculator';
 import { InteractiveASCIICopy } from '@/components/ui/InteractiveASCIICopy';
 import { toast } from 'sonner';
 import { AuthModal } from '../AuthModal';
+import { GlassPanel } from '@/components/ui/GlassPanel';
+import { MicroTitle } from '@/components/ui/MicroTitle';
 
 interface BrandingWelcomeScreenProps {
   prompt: string;
@@ -65,17 +67,14 @@ export const BrandingWelcomeScreen: React.FC<BrandingWelcomeScreenProps> = ({
         </div>
         <div className="relative z-10 max-w-2xl w-full text-center space-y-8 animate-fade-in">
           <div className="space-y-4">
-            <h1 className={`text-2xl md:text-3xl font-regular font-mono tracking-wider flex items-center justify-center gap-2 ${theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
+            <h1 className={`text-2xl md:text-3xl font-regular font-manrope tracking-wider flex items-center justify-center gap-2 ${theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
               }`}>
-              BRANDING MACHINE® <span className="text-brand-cyan text-sm">v1.0</span>
+              BRANDING MACHINE® <MicroTitle as="span" className="text-brand-cyan">v1.0</MicroTitle>
             </h1>
           </div>
 
           <div className="w-full animate-fade-in-down">
-            <div className={`rounded-xl p-6 md:p-8 space-y-6 transition-all duration-300 ${theme === 'dark'
-              ? 'bg-card/30 backdrop-blur-sm'
-              : 'bg-card/50 backdrop-blur-sm'
-              }`}>
+            <GlassPanel className="p-6 md:p-8 space-y-6 transition-all duration-300">
               <div className="text-center">
                 <h2 className={`text-xl md:text-2xl font-semibold mb-2 normal-case ${theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'
                   }`}>
@@ -97,7 +96,7 @@ export const BrandingWelcomeScreen: React.FC<BrandingWelcomeScreenProps> = ({
                 isGenerateDisabled={!prompt.trim() || isGenerating || isCheckingAuth}
                 isPromptReady={!!prompt.trim()}
               />
-            </div>
+            </GlassPanel>
           </div>
         </div>
       </div>

@@ -131,10 +131,16 @@ export const DocsPage: React.FC = () => {
       id: 'mcp',
       label: 'MCP Tools',
       icon: Terminal,
-      sections: mcpSpec?.tools.map(tool => ({
-        id: `tool-${tool.name}`,
-        label: tool.name
-      })) || [],
+      sections: [
+        { id: 'mcp-overview', label: 'Overview' },
+        { id: 'mcp-setup', label: 'Setup & Connection' },
+        { id: 'mcp-auth', label: 'Authentication' },
+        { id: 'mcp-figma-tools', label: 'Figma MCP Tools' },
+        ...(mcpSpec?.tools.map(tool => ({
+          id: `tool-${tool.name}`,
+          label: tool.name
+        })) || []),
+      ],
     },
     {
       id: 'plugin',
@@ -211,9 +217,17 @@ export const DocsPage: React.FC = () => {
     if (tab === 'mcp') {
       if (!mcpSpec) return '# MCP Tools\n\nSpec not loaded yet.';
       lines.push('# MCP Tools Reference');
-      lines.push(`\nIntegrate Visant Copilot into your AI agents via Model Context Protocol.\n`);
+      lines.push(`\nIntegrate Visant Labs directly into AI agents via the Model Context Protocol.\n`);
+      lines.push(`## Two MCP Servers\n`);
+      lines.push(`| Server | Transport | Endpoint | Tools |`);
+      lines.push(`|--------|-----------|----------|-------|`);
+      lines.push(`| Platform MCP | HTTP/SSE | \`/api/mcp\` | 19 (mockups, canvas, branding, AI) |`);
+      lines.push(`| Figma MCP | stdio | \`npm run mcp:figma\` | 9 (Figma node manipulation) |`);
+      lines.push(`\n## Setup — Claude Desktop\n\n\`\`\`json\n{\n  "mcpServers": {\n    "visant-platform": {\n      "url": "https://your-domain.com/api/mcp",\n      "transport": "sse",\n      "headers": { "Authorization": "Bearer visant_sk_xxx" }\n    }\n  }\n}\n\`\`\``);
+      lines.push(`\n## Authentication\n\nPass your API key in every request:\n\`Authorization: Bearer visant_sk_xxxxxxxxxxxx\`\n\nCreate keys at Settings → API Keys. Scopes: read, write, generate.\n`);
+      lines.push(`\n## Figma MCP — Tool Reference\n`);
       mcpSpec.tools.forEach(tool => {
-        lines.push(`\n## ${tool.name}\n\n${tool.description}\n`);
+        lines.push(`\n### ${tool.name}\n\n${tool.description}\n`);
         const props = Object.entries(tool.inputSchema?.properties || {});
         if (props.length > 0) {
           lines.push('**Parameters:**\n');
@@ -655,7 +669,175 @@ export const DocsPage: React.FC = () => {
                   <TabsContent value="mcp" className="space-y-8 mt-0">
                     <div>
                       <h2 className="text-3xl font-semibold tracking-tight mb-2">MCP Tools</h2>
-                      <p className="text-muted-foreground">Integrate Visant Copilot functionality directly into your AI agents via the Model Context Protocol.</p>
+                      <p className="text-muted-foreground">Integrate Visant Labs directly into AI agents via the Model Context Protocol. Two servers available: <strong>Platform MCP</strong> (HTTP/SSE) for mockups, canvas, branding, and <strong>Figma MCP</strong> (stdio) for direct Figma manipulation.</p>
+                    </div>
+
+                    {/* Overview */}
+                    <Card id="mcp-overview" className="border border-border bg-card">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Server className="w-5 h-5 text-brand-cyan" /> Two MCP Servers</CardTitle>
+                        <CardDescription>Choose the server that fits your use case. You can use both simultaneously.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="bg-secondary/40 border border-border rounded-lg p-5">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge className="bg-blue-500/20 text-blue-400 border border-blue-500/30 text-xs">HTTP/SSE</Badge>
+                              <span className="font-semibold text-foreground text-sm">Platform MCP</span>
+                            </div>
+                            <p className="text-muted-foreground text-xs mb-3">Generate mockups, manage canvas projects, branding, budgets, and AI tools — all via your API key over SSE.</p>
+                            <div className="space-y-1 text-xs text-muted-foreground">
+                              <p>Endpoint: <code className="font-redhatmono bg-secondary px-1 rounded">/api/mcp</code></p>
+                              <p>Auth: <code className="font-redhatmono bg-secondary px-1 rounded">Bearer visant_sk_xxx</code></p>
+                              <p>19 tools available</p>
+                            </div>
+                          </div>
+                          <div className="bg-secondary/40 border border-border rounded-lg p-5">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge className="bg-purple-500/20 text-purple-400 border border-purple-500/30 text-xs">stdio</Badge>
+                              <span className="font-semibold text-foreground text-sm">Figma MCP</span>
+                            </div>
+                            <p className="text-muted-foreground text-xs mb-3">Create frames, rectangles, text, and send AI commands directly to the Figma plugin sandbox via WebSocket bridge.</p>
+                            <div className="space-y-1 text-xs text-muted-foreground">
+                              <p>Command: <code className="font-redhatmono bg-secondary px-1 rounded">npm run mcp:figma</code></p>
+                              <p>Requires: Figma plugin connected</p>
+                              <p>9 tools available</p>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Setup & Connection */}
+                    <Card id="mcp-setup" className="border border-border bg-card">
+                      <CardHeader>
+                        <CardTitle>Setup & Connection</CardTitle>
+                        <CardDescription>Configuration examples for popular AI clients.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        <div>
+                          <h4 className="font-redhatmono text-xs uppercase tracking-wider text-muted-foreground mb-3">Claude Desktop</h4>
+                          <p className="text-muted-foreground text-sm mb-2">Add to your <code className="font-redhatmono bg-secondary px-1 rounded">claude_desktop_config.json</code>:</p>
+                          <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                            <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">Platform MCP (SSE)</div>
+                            <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`{
+  "mcpServers": {
+    "visant-platform": {
+      "url": "https://your-domain.com/api/mcp",
+      "transport": "sse",
+      "headers": {
+        "Authorization": "Bearer visant_sk_xxxxxxxxxxxx"
+      }
+    }
+  }
+}`}</pre>
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                            <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">Figma MCP (stdio)</div>
+                            <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`{
+  "mcpServers": {
+    "visant-figma": {
+      "command": "npx",
+      "args": ["-y", "visant-figma-mcp"],
+      "env": {
+        "VISANT_API_URL": "https://your-domain.com"
+      }
+    }
+  }
+}`}</pre>
+                          </div>
+                        </div>
+
+                        <Separator />
+
+                        <div>
+                          <h4 className="font-redhatmono text-xs uppercase tracking-wider text-muted-foreground mb-3">Cursor / VS Code</h4>
+                          <p className="text-muted-foreground text-sm mb-2">Add to your <code className="font-redhatmono bg-secondary px-1 rounded">.cursor/mcp.json</code> or workspace settings:</p>
+                          <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                            <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">mcp.json</div>
+                            <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`{
+  "mcpServers": {
+    "visant-platform": {
+      "url": "https://your-domain.com/api/mcp",
+      "transport": "sse",
+      "headers": {
+        "Authorization": "Bearer visant_sk_xxxxxxxxxxxx"
+      }
+    }
+  }
+}`}</pre>
+                          </div>
+                        </div>
+
+                        <Separator />
+
+                        <div>
+                          <h4 className="font-redhatmono text-xs uppercase tracking-wider text-muted-foreground mb-3">Custom Agent (TypeScript)</h4>
+                          <div className="bg-secondary/30 rounded-lg border border-border overflow-hidden">
+                            <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">@modelcontextprotocol/sdk</div>
+                            <pre className="p-4 text-sm font-redhatmono text-foreground m-0 overflow-x-auto">{`import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
+
+const transport = new SSEClientTransport(
+  new URL("https://your-domain.com/api/mcp"),
+  {
+    requestInit: {
+      headers: {
+        Authorization: "Bearer visant_sk_xxxxxxxxxxxx"
+      }
+    }
+  }
+);
+
+const client = new Client({ name: "my-agent", version: "1.0.0" });
+await client.connect(transport);
+
+// List available tools
+const { tools } = await client.listTools();
+
+// Call a tool
+const result = await client.callTool({
+  name: "mockup-generate",
+  arguments: {
+    prompt: "A smartphone mockup on a marble desk",
+    model: "gemini-2.0-flash-exp"
+  }
+});`}</pre>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Authentication */}
+                    <Card id="mcp-auth" className="border border-border bg-card">
+                      <CardHeader>
+                        <CardTitle>Authentication</CardTitle>
+                        <CardDescription>API keys are required for the Platform MCP server. The Figma MCP server authenticates through the plugin connection.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="bg-secondary/60 border border-border rounded-lg p-4 font-redhatmono text-sm space-y-2">
+                          <p className="text-muted-foreground"># Pass your API key in every request</p>
+                          <p className="text-foreground">Authorization: Bearer visant_sk_xxxxxxxxxxxx</p>
+                        </div>
+                        <div className="space-y-2 text-sm text-muted-foreground">
+                          <p>1. Go to <a href="/settings/api-keys" className="text-brand-cyan hover:underline">Settings &rarr; API Keys</a> and create a new key</p>
+                          <p>2. Select scopes: <Badge className="bg-blue-500/20 text-blue-400 border border-blue-500/30 text-xs mx-1">read</Badge> <Badge className="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs mx-1">write</Badge> <Badge className="bg-purple-500/20 text-purple-400 border border-purple-500/30 text-xs mx-1">generate</Badge></p>
+                          <p>3. Copy the key immediately &mdash; it is shown only once</p>
+                          <p>4. Store it securely (environment variable or secrets manager)</p>
+                        </div>
+                        <div className="bg-secondary/30 rounded-lg border border-border p-4">
+                          <p className="text-xs text-muted-foreground">Every tool response includes a <code className="font-redhatmono bg-secondary px-1 rounded">_meta</code> field with your remaining credits, so your agent can track usage automatically.</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Figma MCP Tools */}
+                    <div id="mcp-figma-tools">
+                      <h3 className="text-2xl font-semibold tracking-tight mb-2">Figma MCP &mdash; Tool Reference</h3>
+                      <p className="text-muted-foreground mb-6 text-sm">9 tools for direct Figma manipulation via the plugin bridge. Requires the Visant Copilot Figma plugin to be running and connected.</p>
                     </div>
 
                     {loading ? (
@@ -663,7 +845,7 @@ export const DocsPage: React.FC = () => {
                     ) : (
                       <div className="space-y-8">
                         {mcpSpec?.tools.map((tool, idx) => (
-                          <Card key={idx} id={`tool-${tool.name}`} className="border border-border bg-card overfow-hidden">
+                          <Card key={idx} id={`tool-${tool.name}`} className="border border-border bg-card overflow-hidden">
                             <CardHeader className="border-b border-border/50 bg-secondary/20 pb-4">
                               <div className="flex items-center gap-3">
                                 <Code className="w-5 h-5 text-brand-cyan" />

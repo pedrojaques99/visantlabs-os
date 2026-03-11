@@ -48,6 +48,16 @@ export const AppsPage: React.FC = () => {
       free: false
     },
     {
+      id: 'brand-guidelines',
+      name: t('apps.brandGuidelines.name'),
+      desc: t('apps.brandGuidelines.description'),
+      link: '/brand-guidelines',
+      badge: t('apps.badge.premium'),
+      badgeVariant: 'premium',
+      category: 'branding',
+      free: false
+    },
+    {
       id: 'budget-machine',
       name: t('apps.budgetMachine.name'),
       desc: t('apps.budgetMachine.description'),

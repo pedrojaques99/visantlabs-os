@@ -28,7 +28,9 @@
       "Bash(python:*)",
       "Bash(PYTHONIOENCODING=utf-8 python:*)",
       "Bash(ls:*)",
-      "Bash(npx prisma:*)"
+      "Bash(npx prisma:*)",
+      "Bash(find /z/Cursor/visantlabs-os/docs -type f -name \"*MCP*\" -o -name \"*mcp*\" 2>/dev/null | head -20)",
+      "Bash(find /z/Cursor/visantlabs-os -type f \\\\\\( -name \"*mcp*\" -o -name \"*agent*\" \\\\\\) -not -path \"*/node_modules/*\" 2>/dev/null | grep -E \"\\\\.\\(ts|js\\)$\" | head -20)"
     ]
   }
 }

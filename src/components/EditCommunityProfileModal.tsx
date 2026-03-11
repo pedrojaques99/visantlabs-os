@@ -8,6 +8,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Badge } from './ui/badge';
+import { MicroTitle } from './ui/MicroTitle';
 
 export interface EditCommunityProfileModalProps {
   isOpen: boolean;
@@ -210,9 +211,9 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
 
           {/* Cover Image */}
           <div className="space-y-2">
-            <label className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest ml-1">
+            <MicroTitle as="label" className="ml-1 uppercase">
               Cover Image
-            </label>
+            </MicroTitle>
             <div className="relative w-full h-40 rounded-xl overflow-hidden bg-neutral-900/50 border border-neutral-800/60 group">
               {coverImageUrl ? (
                 <img
@@ -257,9 +258,9 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
 
           {/* Username */}
           <div className="space-y-2">
-            <label className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest ml-1">
+            <MicroTitle as="label" className="ml-1 uppercase">
               Username
-            </label>
+            </MicroTitle>
             <Input
               type="text"
               value={username}
@@ -274,9 +275,9 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
 
           {/* Bio */}
           <div className="space-y-2">
-            <label className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest ml-1">
+            <MicroTitle as="label" className="ml-1 uppercase">
               Bio
-            </label>
+            </MicroTitle>
             <Textarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}
@@ -287,16 +288,16 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
 
           {/* Social Links */}
           <div className="space-y-6">
-            <label className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest ml-1">
+            <MicroTitle as="label" className="ml-1 uppercase">
               Social Media Links
-            </label>
+            </MicroTitle>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-[10px] text-neutral-500 font-mono uppercase tracking-tight ml-1 flex items-center gap-2">
-                  <Instagram size={14} className="text-pink-500" />
+                <MicroTitle as="label" className="ml-1 flex items-center gap-2 lowercase">
+                  <Instagram size={14} className="text-pink-500 uppercase" />
                   Instagram
-                </label>
+                </MicroTitle>
                 <Input
                   type="url"
                   value={instagram}
@@ -307,10 +308,10 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] text-neutral-500 font-mono uppercase tracking-tight ml-1 flex items-center gap-2">
-                  <Youtube size={14} className="text-red-500" />
+                <MicroTitle as="label" className="ml-1 flex items-center gap-2 lowercase">
+                  <Youtube size={14} className="text-red-500 uppercase" />
                   YouTube
-                </label>
+                </MicroTitle>
                 <Input
                   type="url"
                   value={youtube}
@@ -321,10 +322,10 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] text-neutral-500 font-mono uppercase tracking-tight ml-1 flex items-center gap-2">
-                  <Twitter size={14} className="text-blue-400" />
+                <MicroTitle as="label" className="ml-1 flex items-center gap-2 lowercase">
+                  <Twitter size={14} className="text-blue-400 uppercase" />
                   X (Twitter)
-                </label>
+                </MicroTitle>
                 <Input
                   type="url"
                   value={x}
@@ -335,10 +336,10 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] text-neutral-500 font-mono uppercase tracking-tight ml-1 flex items-center gap-2">
-                  <Globe size={14} className="text-brand-cyan" />
+                <MicroTitle as="label" className="ml-1 flex items-center gap-2 lowercase">
+                  <Globe size={14} className="text-brand-cyan uppercase" />
                   Website
-                </label>
+                </MicroTitle>
                 <Input
                   type="url"
                   value={website}

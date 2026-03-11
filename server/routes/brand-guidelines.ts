@@ -1,12 +1,14 @@
 // server/routes/brand-guidelines.ts
 import express from 'express'
+import crypto from 'crypto'
 import { authenticate, AuthRequest } from '../middleware/auth.js'
 import { prisma } from '../db/prisma.js'
 import { rateLimit } from 'express-rate-limit'
-import { BrandGuideline, calculateCompleteness } from '../types/brandGuideline.js'
+import { BrandGuideline, BrandGuidelineMedia, BrandGuidelineLogo, calculateCompleteness } from '../types/brandGuideline.js'
 import { parseUrl, parsePdf, parseImage, parseJson } from '../lib/brand-parse.js'
 import { extractBrandData } from '../lib/brand-extract.js'
 import { mergeBrandGuidelines } from '../lib/brand-merge.js'
+import { uploadBrandMedia, deleteImage } from '../services/r2Service.js'
 
 const router = express.Router()
 
@@ -260,6 +262,268 @@ router.get('/:id/export', apiRateLimiter, authenticate, async (req: AuthRequest,
   } catch (error: any) {
     console.error('Error exporting brand guideline:', error)
     res.status(500).json({ error: 'Failed to export' })
+  }
+})
+
+// ═══════════════════════════════════════════════════
+// MEDIA KIT ENDPOINTS
+// ═══════════════════════════════════════════════════
+
+// POST /api/brand-guidelines/:id/media — upload media to guideline's kit
+router.post('/:id/media', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    })
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' })
+
+    const { data, url, label, type: mediaType, contentType: ct } = req.body
+    const mediaId = crypto.randomUUID()
+    let mediaUrl: string
+    let resolvedType: 'image' | 'pdf' = 'image'
+
+    if (data) {
+      // Base64 upload
+      const contentType = ct || (data.startsWith('data:application/pdf') ? 'application/pdf' : 'image/png')
+      resolvedType = contentType.includes('pdf') ? 'pdf' : 'image'
+
+      const user = await prisma.user.findUnique({
+        where: { id: req.userId },
+        select: { subscriptionTier: true, isAdmin: true },
+      })
+
+      mediaUrl = await uploadBrandMedia(
+        data, req.userId, guideline.id, mediaId, contentType,
+        user?.subscriptionTier || undefined, user?.isAdmin || undefined,
+      )
+    } else if (url) {
+      // URL reference (no upload, just store the URL)
+      mediaUrl = url
+      resolvedType = mediaType === 'pdf' ? 'pdf' : 'image'
+    } else {
+      return res.status(400).json({ error: 'Either data (base64) or url is required' })
+    }
+
+    const newMedia: BrandGuidelineMedia = { id: mediaId, url: mediaUrl, type: resolvedType, label }
+    const existingMedia = (guideline.media as unknown as BrandGuidelineMedia[] | null) || []
+    const updatedMedia = [...existingMedia, newMedia]
+
+    const updated = await prisma.brandGuideline.update({
+      where: { id: guideline.id },
+      data: { media: updatedMedia as any },
+    })
+
+    res.status(201).json({ media: newMedia, allMedia: updatedMedia, guideline: { ...updated, _id: updated.id } })
+  } catch (error: any) {
+    console.error('[Brand Media Upload] Error:', error)
+    res.status(500).json({ error: 'Failed to upload media', message: error.message })
+  }
+})
+
+// DELETE /api/brand-guidelines/:id/media/:mediaId — remove media from kit
+router.delete('/:id/media/:mediaId', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    })
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' })
+
+    const existingMedia = (guideline.media as unknown as BrandGuidelineMedia[] | null) || []
+    const mediaToDelete = existingMedia.find(m => m.id === req.params.mediaId)
+    if (!mediaToDelete) return res.status(404).json({ error: 'Media not found' })
+
+    // Try to delete from R2 if it's an R2 URL
+    const publicUrl = process.env.R2_PUBLIC_URL
+    if (publicUrl && mediaToDelete.url.startsWith(publicUrl)) {
+      try { await deleteImage(mediaToDelete.url) } catch (e) { /* ignore R2 delete errors */ }
+    }
+
+    const updatedMedia = existingMedia.filter(m => m.id !== req.params.mediaId)
+    await prisma.brandGuideline.update({
+      where: { id: guideline.id },
+      data: { media: updatedMedia as any },
+    })
+
+    res.json({ success: true, allMedia: updatedMedia })
+  } catch (error: any) {
+    console.error('[Brand Media Delete] Error:', error)
+    res.status(500).json({ error: 'Failed to delete media', message: error.message })
+  }
+})
+
+// POST /api/brand-guidelines/:id/logos — upload logo variant
+router.post('/:id/logos', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    })
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' })
+
+    const { data, url, variant = 'primary', label } = req.body
+    const logoId = crypto.randomUUID()
+    let logoUrl: string
+
+    if (data) {
+      const contentType = 'image/png'
+      const user = await prisma.user.findUnique({
+        where: { id: req.userId },
+        select: { subscriptionTier: true, isAdmin: true },
+      })
+
+      logoUrl = await uploadBrandMedia(
+        data, req.userId, guideline.id, `logo-${logoId}`, contentType,
+        user?.subscriptionTier || undefined, user?.isAdmin || undefined,
+      )
+    } else if (url) {
+      logoUrl = url
+    } else {
+      return res.status(400).json({ error: 'Either data (base64) or url is required' })
+    }
+
+    const validVariants = ['primary', 'dark', 'light', 'icon', 'custom'] as const
+    const safeVariant = validVariants.includes(variant) ? variant : 'custom'
+
+    const newLogo: BrandGuidelineLogo = { id: logoId, url: logoUrl, variant: safeVariant, label }
+    const existingLogos = (guideline.logos as unknown as BrandGuidelineLogo[] | null) || []
+    const updatedLogos = [...existingLogos, newLogo]
+
+    const updated = await prisma.brandGuideline.update({
+      where: { id: guideline.id },
+      data: { logos: updatedLogos as any },
+    })
+
+    res.status(201).json({ logo: newLogo, allLogos: updatedLogos, guideline: { ...updated, _id: updated.id } })
+  } catch (error: any) {
+    console.error('[Brand Logo Upload] Error:', error)
+    res.status(500).json({ error: 'Failed to upload logo', message: error.message })
+  }
+})
+
+// DELETE /api/brand-guidelines/:id/logos/:logoId — remove logo
+router.delete('/:id/logos/:logoId', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    })
+    if (!guideline) return res.status(404).json({ error: 'Brand guideline not found' })
+
+    const existingLogos = (guideline.logos as unknown as BrandGuidelineLogo[] | null) || []
+    const logoToDelete = existingLogos.find(l => l.id === req.params.logoId)
+    if (!logoToDelete) return res.status(404).json({ error: 'Logo not found' })
+
+    const publicUrl = process.env.R2_PUBLIC_URL
+    if (publicUrl && logoToDelete.url.startsWith(publicUrl)) {
+      try { await deleteImage(logoToDelete.url) } catch (e) { /* ignore */ }
+    }
+
+    const updatedLogos = existingLogos.filter(l => l.id !== req.params.logoId)
+    await prisma.brandGuideline.update({
+      where: { id: guideline.id },
+      data: { logos: updatedLogos as any },
+    })
+
+    res.json({ success: true, allLogos: updatedLogos })
+  } catch (error: any) {
+    console.error('[Brand Logo Delete] Error:', error)
+    res.status(500).json({ error: 'Failed to delete logo', message: error.message })
+  }
+})
+
+// ═══════════════════════════════════════════════════
+// AGENT-FIRST / MCP-READY CONTEXT ENDPOINT
+// ═══════════════════════════════════════════════════
+
+// GET /api/brand-guidelines/:id/context — structured context for LLMs/agents/MCP
+// Returns a machine-readable summary optimized for prompt injection
+router.get('/:id/context', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const guideline = await prisma.brandGuideline.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    })
+    if (!guideline) return res.status(404).json({ error: 'Not found' })
+
+    const bg = guideline as any as BrandGuideline
+    const format = (req.query.format as string) || 'structured'
+
+    if (format === 'prompt') {
+      // Flat text optimized for LLM system prompt injection
+      const lines: string[] = []
+      const name = bg.identity?.name || 'Brand'
+      lines.push(`═══ BRAND: ${name} ═══`)
+      if (bg.identity?.tagline) lines.push(`Tagline: "${bg.identity.tagline}"`)
+      if (bg.identity?.website) lines.push(`Website: ${bg.identity.website}`)
+      if (bg.identity?.description) lines.push(`Description: ${bg.identity.description}`)
+      lines.push('')
+
+      if (bg.colors?.length) {
+        lines.push('COLORS:')
+        for (const c of bg.colors) lines.push(`  ${c.name}: ${c.hex}${c.role ? ` (${c.role})` : ''}`)
+        lines.push('')
+      }
+
+      if (bg.typography?.length) {
+        lines.push('TYPOGRAPHY:')
+        for (const t of bg.typography) {
+          const parts = [t.family, t.style].filter(Boolean).join(' ')
+          lines.push(`  ${t.role}: ${parts}${t.size ? ` ${t.size}px` : ''}`)
+        }
+        lines.push('')
+      }
+
+      if (bg.guidelines?.voice) lines.push(`VOICE: ${bg.guidelines.voice}`)
+      if (bg.guidelines?.dos?.length) lines.push(`DO: ${bg.guidelines.dos.join(' | ')}`)
+      if (bg.guidelines?.donts?.length) lines.push(`DON'T: ${bg.guidelines.donts.join(' | ')}`)
+      if (bg.guidelines?.imagery) lines.push(`IMAGERY: ${bg.guidelines.imagery}`)
+
+      if (bg.logos?.length) {
+        lines.push('')
+        lines.push('LOGOS:')
+        for (const l of bg.logos) lines.push(`  ${l.variant}: ${l.url}${l.label ? ` (${l.label})` : ''}`)
+      }
+
+      if (bg.media?.length) {
+        lines.push('')
+        lines.push('MEDIA KIT (reference assets for generation):')
+        for (const m of bg.media) lines.push(`  [${m.type}] ${m.url}${m.label ? ` — ${m.label}` : ''}`)
+      }
+
+      if (bg.tokens?.spacing) {
+        lines.push('')
+        lines.push(`SPACING: ${Object.entries(bg.tokens.spacing).map(([k, v]) => `${k}=${v}`).join(' ')}`)
+      }
+      if (bg.tokens?.radius) {
+        lines.push(`RADIUS: ${Object.entries(bg.tokens.radius).map(([k, v]) => `${k}=${v}`).join(' ')}`)
+      }
+
+      res.type('text/plain').send(lines.join('\n'))
+    } else {
+      // Structured JSON — ideal for MCP tools and programmatic access
+      res.json({
+        id: guideline.id,
+        identity: bg.identity,
+        colors: bg.colors || [],
+        typography: bg.typography || [],
+        logos: bg.logos || [],
+        media: bg.media || [],
+        guidelines: bg.guidelines || {},
+        tokens: bg.tokens || {},
+        tags: bg.tags || {},
+        extraction: bg.extraction,
+      })
+    }
+  } catch (error: any) {
+    console.error('Error fetching brand context:', error)
+    res.status(500).json({ error: 'Failed to fetch brand context' })
   }
 })
 

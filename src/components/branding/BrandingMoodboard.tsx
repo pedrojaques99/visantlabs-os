@@ -12,6 +12,7 @@ import { BrandingSectionCard } from './BrandingSectionCard';
 import { BrandingCompactCard } from './BrandingCompactCard';
 import { EmptySectionCard } from './EmptySectionCard';
 import { NotionColumnLayout } from './NotionColumnLayout';
+import { GlassPanel } from '@/components/ui/GlassPanel';
 import type { BrandingData } from '@/types/types';
 
 interface BrandingMoodboardProps {
@@ -239,10 +240,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
       <div className="relative z-10 pt-10 md:pt-14">
         <div className="max-w-[1800px] mx-auto px-4 md:px-6 py-4 md:py-6 space-y-3">
           {/* Header Section */}
-          <section className={`border rounded-xl p-4 md:p-5 flex-shrink-0 ${theme === 'dark'
-            ? 'bg-[#141414] border-neutral-800/60'
-            : 'bg-white border-neutral-300'
-            }`}>
+          <GlassPanel className="p-4 md:p-5 flex-shrink-0">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
               <div className="flex-1 min-w-0">
                 {isEditingName ? (
@@ -350,7 +348,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                 </button>
               </div>
             </div>
-          </section>
+          </GlassPanel>
 
           {/* Notion-style Column Layout */}
           <div className="space-y-3">

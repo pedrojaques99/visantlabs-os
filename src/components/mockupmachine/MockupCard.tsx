@@ -9,6 +9,8 @@ import { ReImaginePanel } from '../ReImaginePanel';
 import { useMockupLike } from '@/hooks/useMockupLike';
 import { isSafeUrl } from '@/utils/imageUtils';
 import type { AspectRatio } from '@/types/types';
+import { GlassPanel } from '../ui/GlassPanel';
+import { cn } from '@/lib/utils';
 
 export interface MockupCardProps {
     base64Image: string | null;
@@ -110,8 +112,12 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
     const aspectRatioClass = aspectRatio === '16:9' ? 'aspect-[16/9]' : aspectRatio === '4:3' ? 'aspect-[4/3]' : 'aspect-square';
 
     return (
-        <div
-            className={`relative ${aspectRatioClass} bg-neutral-900/40 rounded-md overflow-hidden group border border-neutral-800/50 transition-all duration-500 hover:border-brand-cyan/30 hover:shadow-[0_0_40px_-10px_rgba(0,210,255,0.2)] hover:scale-[1.01] animate-fade-in ${className || 'w-full'}`}
+        <GlassPanel
+            className={cn(
+                "relative group transition-all duration-500 hover:border-brand-cyan/30 hover:shadow-[0_0_40px_-10px_rgba(0,210,255,0.2)] hover:scale-[1.01] animate-fade-in",
+                aspectRatioClass,
+                className
+            )}
             style={style}
         >
             {showSkeleton && (
@@ -187,9 +193,8 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
                         )}
                     </div>
 
-                    {/* Bottom Toolbar - only the pill blocks clicks, not the full bottom band */}
                     <div className="absolute bottom-3 left-0 right-0 flex justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
-                        <div className="flex items-center gap-1 p-1 bg-neutral-900/90 backdrop-blur-xl border border-white/10 rounded-md shadow-2xl pointer-events-auto">
+                        <GlassPanel padding="none" className="flex items-center gap-1 p-1 bg-neutral-900/90 backdrop-blur-xl border-white/10 rounded-md shadow-2xl pointer-events-auto">
                             <Tooltip content={t('mockup.download') || "Download"} position="top">
                                 <a
                                     href={imageUrl}
@@ -261,7 +266,7 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
                                     </button>
                                 </Tooltip>
                             )}
-                        </div>
+                        </GlassPanel>
                     </div>
                 </div>
             )}
@@ -276,6 +281,6 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
                     isLoading={isRedrawing || isLoading}
                 />
             )}
-        </div>
+        </GlassPanel>
     );
 });

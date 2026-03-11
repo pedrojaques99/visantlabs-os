@@ -10,6 +10,7 @@ import type { Node, Edge } from '@xyflow/react';
 import type { WorkflowCategory } from '../types/workflow';
 import { WORKFLOW_CATEGORY_CONFIG } from '../types/workflow';
 import { cn } from '../lib/utils';
+import { MicroTitle } from './ui/MicroTitle';
 
 interface SaveWorkflowDialogProps {
     isOpen: boolean;
@@ -148,9 +149,9 @@ export const SaveWorkflowDialog: React.FC<SaveWorkflowDialogProps> = ({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Name */}
                         <div className="space-y-2 md:col-span-2">
-                            <label className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest ml-1">
+                            <MicroTitle as="label" className="ml-1">
                                 {t('workflows.saveDialog.name') || 'Workflow Name'} <span className="text-red-400">*</span>
-                            </label>
+                            </MicroTitle>
                             <Input
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
@@ -161,10 +162,10 @@ export const SaveWorkflowDialog: React.FC<SaveWorkflowDialogProps> = ({
 
                         {/* Category */}
                         <div className="space-y-2">
-                            <label className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest ml-1 flex items-center gap-1.5">
-                                <Folder size={12} />
+                            <MicroTitle as="label" className="ml-1 flex items-center gap-1.5 lowercase">
+                                <Folder size={12} className="uppercase" />
                                 {t('workflows.saveDialog.category') || 'Category'}
-                            </label>
+                            </MicroTitle>
                             <Select
                                 value={category}
                                 onChange={(value) => setCategory(value as WorkflowCategory)}
@@ -180,10 +181,10 @@ export const SaveWorkflowDialog: React.FC<SaveWorkflowDialogProps> = ({
 
                         {/* Tags */}
                         <div className="space-y-2">
-                            <label className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest ml-1 flex items-center gap-1.5">
-                                <Tags size={12} />
+                            <MicroTitle as="label" className="ml-1 flex items-center gap-1.5 lowercase">
+                                <Tags size={12} className="uppercase" />
                                 {t('workflows.saveDialog.tags') || 'Tags'}
-                            </label>
+                            </MicroTitle>
                             <Input
                                 value={tagsInput}
                                 onChange={(e) => setTagsInput(e.target.value)}
@@ -194,10 +195,10 @@ export const SaveWorkflowDialog: React.FC<SaveWorkflowDialogProps> = ({
 
                         {/* Description */}
                         <div className="space-y-2 md:col-span-2">
-                            <label className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest ml-1 flex items-center gap-1.5">
-                                <Info size={12} />
+                            <MicroTitle as="label" className="ml-1 flex items-center gap-1.5 lowercase">
+                                <Info size={12} className="uppercase" />
                                 {t('workflows.saveDialog.description') || 'Description'} <span className="text-red-400">*</span>
-                            </label>
+                            </MicroTitle>
                             <Textarea
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}

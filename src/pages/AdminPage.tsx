@@ -25,6 +25,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { getImagePricing } from '@/utils/pricing';
 import { cn } from '@/lib/utils';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
+import { MicroTitle } from '../components/ui/MicroTitle';
 
 
 interface AdminUser {
@@ -2033,12 +2034,12 @@ export const AdminPage: React.FC = () => {
                   <Table>
                     <TableHeader>
                       <TableRow className="border-neutral-800 hover:bg-transparent">
-                        <TableHead className="text-[10px] uppercase font-mono text-neutral-500">Data</TableHead>
-                        <TableHead className="text-[10px] uppercase font-mono text-neutral-500">Feature</TableHead>
-                        <TableHead className="text-[10px] uppercase font-mono text-neutral-500">Modelo</TableHead>
-                        <TableHead className="text-[10px] uppercase font-mono text-neutral-500">Tipo</TableHead>
-                        <TableHead className="text-[10px] uppercase font-mono text-neutral-500">Stats</TableHead>
-                        <TableHead className="text-[10px] uppercase font-mono text-neutral-500 text-right">Créditos</TableHead>
+                        <TableHead><MicroTitle as="span" className="uppercase">Data</MicroTitle></TableHead>
+                        <TableHead><MicroTitle as="span" className="uppercase">Feature</MicroTitle></TableHead>
+                        <TableHead><MicroTitle as="span" className="uppercase">Modelo</MicroTitle></TableHead>
+                        <TableHead><MicroTitle as="span" className="uppercase">Tipo</MicroTitle></TableHead>
+                        <TableHead><MicroTitle as="span" className="uppercase">Stats</MicroTitle></TableHead>
+                        <TableHead className="text-right"><MicroTitle as="span" className="uppercase">Créditos</MicroTitle></TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
