@@ -601,26 +601,45 @@ CRIAÇÃO — dois modos de especificar o pai:
      "cornerRadius": 12, "clipsContent": true
    }}
 
-2. CREATE_RECTANGLE — Retângulo, divider, background
+2. CREATE_RECTANGLE — Retângulo, divider, background, linha
    { "type": "CREATE_RECTANGLE", "ref": "divider", "parentRef": "card", "props": {
      "name": "Divider", "width": 360, "height": 1,
      "fills": [{"type": "SOLID", "color": {"r": 0.9, "g": 0.9, "b": 0.9}}],
      "layoutSizingHorizontal": "FILL"
    }}
+   ── Em frames com layoutMode "NONE", posicione com x/y e opcionalmente rotation:
+   { "type": "CREATE_RECTANGLE", "parentRef": "canvas", "props": {
+     "name": "Line", "width": 150, "height": 2,
+     "fills": [{"type": "SOLID", "color": {"r": 0, "g": 0, "b": 0}}],
+     "x": 100, "y": 200, "rotation": -30
+   }}
 
-3. CREATE_ELLIPSE — Círculo, avatar, dot
+3. CREATE_ELLIPSE — Círculo, avatar, dot (suporta strokes, strokeWeight, opacity, x, y, rotation)
    { "type": "CREATE_ELLIPSE", "ref": "avatar", "parentRef": "header", "props": {
      "name": "Avatar", "width": 40, "height": 40,
      "fills": [{"type": "SOLID", "color": {"r": 0.85, "g": 0.85, "b": 0.9}}]
    }}
+   ── Ellipse com stroke (sem fill):
+   { "type": "CREATE_ELLIPSE", "ref": "circle", "parentRef": "canvas", "props": {
+     "name": "Circle Outline", "width": 100, "height": 100,
+     "fills": [], "strokes": [{"type": "SOLID", "color": {"r": 0, "g": 0, "b": 0}}],
+     "strokeWeight": 2, "x": 50, "y": 50
+   }}
 
-4. CREATE_TEXT — Texto com tipografia completa
+4. CREATE_TEXT — Texto com tipografia completa (suporta x, y, rotation para frames NONE)
    { "type": "CREATE_TEXT", "parentRef": "card", "props": {
      "name": "Title", "content": "Hello World",
      "fontFamily": "Inter", "fontStyle": "Semi Bold", "fontSize": 18,
      "fills": [{"type": "SOLID", "color": {"r": 0.07, "g": 0.07, "b": 0.07}}],
      "textAutoResize": "WIDTH_AND_HEIGHT",
      "layoutSizingHorizontal": "FILL"
+   }}
+   ── Texto posicionado em frame NONE:
+   { "type": "CREATE_TEXT", "parentRef": "canvas", "props": {
+     "name": "Label", "content": "Performance",
+     "fontFamily": "Inter", "fontStyle": "Regular", "fontSize": 14,
+     "fills": [{"type": "SOLID", "color": {"r": 0.3, "g": 0.3, "b": 0.3}}],
+     "textAutoResize": "WIDTH_AND_HEIGHT", "x": 20, "y": 100, "rotation": -90
    }}
 
 5. CREATE_COMPONENT_INSTANCE — Instanciar componente existente
@@ -666,7 +685,7 @@ ESTRUTURA:
 
 ═══ REGRAS DE OURO ═══
 
-1. SEMPRE use auto-layout (layoutMode: "VERTICAL" ou "HORIZONTAL") nos frames container. NUNCA posicione filhos com x/y dentro de auto-layout.
+1. SEMPRE use auto-layout (layoutMode: "VERTICAL" ou "HORIZONTAL") nos frames container. NUNCA posicione filhos com x/y dentro de auto-layout. Para posicionamento absoluto (canvas livre, gráficos, ilustrações), use frames com layoutMode: "NONE" e posicione filhos com "x", "y" e opcionalmente "rotation" no props.
 2. Use "ref"/"parentRef" para hierarquia. O frame root tem "ref", filhos referenciam com "parentRef".
 3. Cores são RGB normalizado 0-1. Vermelho = {"r":1,"g":0,"b":0}. Branco = {"r":1,"g":1,"b":1}. Preto = {"r":0,"g":0,"b":0}.
 4. Se o usuário tiver cores de marca, USE-AS com prioridade.

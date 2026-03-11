@@ -77,6 +77,9 @@ export type FigmaOperation =
       maxWidth?: number;
       minHeight?: number;
       maxHeight?: number;
+      x?: number;
+      y?: number;
+      rotation?: number;
     };
   }
   | {
@@ -97,6 +100,9 @@ export type FigmaOperation =
       constraints?: { horizontal: string; vertical: string };
       layoutSizingHorizontal?: 'FIXED' | 'FILL';
       layoutSizingVertical?: 'FIXED' | 'FILL';
+      x?: number;
+      y?: number;
+      rotation?: number;
     };
   }
   | {
@@ -109,10 +115,16 @@ export type FigmaOperation =
       width: number;
       height: number;
       fills?: FigmaPaint[];
+      strokes?: FigmaPaint[];
+      strokeWeight?: number;
+      opacity?: number;
       effects?: FigmaEffect[];
       constraints?: { horizontal: string; vertical: string };
       layoutSizingHorizontal?: 'FIXED' | 'FILL';
       layoutSizingVertical?: 'FIXED' | 'FILL';
+      x?: number;
+      y?: number;
+      rotation?: number;
     };
   }
   | {
@@ -138,6 +150,9 @@ export type FigmaOperation =
       textStyleId?: string;
       layoutSizingHorizontal?: 'FIXED' | 'HUG' | 'FILL';
       layoutSizingVertical?: 'FIXED' | 'HUG' | 'FILL';
+      x?: number;
+      y?: number;
+      rotation?: number;
     };
   }
   | {
