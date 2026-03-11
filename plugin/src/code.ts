@@ -380,6 +380,11 @@ async function applyOperations(ops: FigmaOperation[]) {
           frame.layoutSizingVertical = op.props.layoutSizingVertical;
         }
 
+        // Absolute position & rotation (for children inside layoutMode: NONE parents)
+        if (op.props.x != null) frame.x = op.props.x;
+        if (op.props.y != null) frame.y = op.props.y;
+        if (op.props.rotation != null) frame.rotation = op.props.rotation;
+
         if (op.ref) createdNodes.set(op.ref, frame);
         pushSummary(`Criado @"${frame.name}"`, frame);
 
@@ -408,6 +413,10 @@ async function applyOperations(ops: FigmaOperation[]) {
         if (op.props.layoutSizingVertical && parent !== figma.currentPage) {
           rect.layoutSizingVertical = op.props.layoutSizingVertical;
         }
+        // Absolute position & rotation (for children inside layoutMode: NONE parents)
+        if (op.props.x != null) rect.x = op.props.x;
+        if (op.props.y != null) rect.y = op.props.y;
+        if (op.props.rotation != null) rect.rotation = op.props.rotation;
         if (op.ref) createdNodes.set(op.ref, rect);
         pushSummary(`Criado @"${rect.name}"`, rect);
 
@@ -418,6 +427,9 @@ async function applyOperations(ops: FigmaOperation[]) {
         ellipse.name = op.props.name;
         ellipse.resize(op.props.width > 0 ? op.props.width : 100, op.props.height > 0 ? op.props.height : 100);
         if (op.props.fills) ellipse.fills = op.props.fills as any;
+        if (op.props.strokes) ellipse.strokes = op.props.strokes as any;
+        if (op.props.strokeWeight != null) ellipse.strokeWeight = op.props.strokeWeight;
+        if (op.props.opacity != null) ellipse.opacity = op.props.opacity;
         if (op.props.effects) ellipse.effects = op.props.effects.map(e => {
           if (e.type === 'LAYER_BLUR' || e.type === 'BACKGROUND_BLUR') {
             return { type: e.type, radius: e.radius, visible: e.visible ?? true } as Effect;
@@ -432,6 +444,10 @@ async function applyOperations(ops: FigmaOperation[]) {
         if (op.props.layoutSizingVertical && parent !== figma.currentPage) {
           ellipse.layoutSizingVertical = op.props.layoutSizingVertical;
         }
+        // Absolute position & rotation (for children inside layoutMode: NONE parents)
+        if (op.props.x != null) ellipse.x = op.props.x;
+        if (op.props.y != null) ellipse.y = op.props.y;
+        if (op.props.rotation != null) ellipse.rotation = op.props.rotation;
         if (op.ref) createdNodes.set(op.ref, ellipse);
         pushSummary(`Criado @"${ellipse.name}"`, ellipse);
 
@@ -477,6 +493,10 @@ async function applyOperations(ops: FigmaOperation[]) {
         if (op.props.layoutSizingVertical && parent !== figma.currentPage) {
           text.layoutSizingVertical = op.props.layoutSizingVertical;
         }
+        // Absolute position & rotation (for children inside layoutMode: NONE parents)
+        if (op.props.x != null) text.x = op.props.x;
+        if (op.props.y != null) text.y = op.props.y;
+        if (op.props.rotation != null) text.rotation = op.props.rotation;
         if (op.ref) createdNodes.set(op.ref, text);
         pushSummary(`Criado @"${text.name}"`, text);
 
