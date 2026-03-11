@@ -17,6 +17,9 @@ import { Badge } from '../components/ui/badge';
 import { cn } from '../lib/utils';
 import { authService, type User } from '../services/authService';
 import { SubscriptionPlansGrid } from '../components/SubscriptionPlansGrid';
+import { MicroTitle } from '../components/ui/MicroTitle';
+import { GlassPanel } from '../components/ui/GlassPanel';
+import { PremiumButton } from '../components/ui/PremiumButton';
 
 // Hook para animação de contador
 const useAnimatedCounter = (targetValue: number, duration: number = 500) => {
@@ -266,14 +269,14 @@ export const PricingPage: React.FC = () => {
             </p>
           </div>
 
-          {/* Tabs Navigation */}
           <div className="flex justify-center mb-12 animate-fade-in-fast">
             <Tabs
               value={activeTab}
               onValueChange={(v: any) => setActiveTab(v)}
               className="w-full max-w-[400px]"
             >
-              <TabsList className="grid w-full grid-cols-2 bg-neutral-900/50 border border-neutral-800 p-1 rounded-xl">
+              <TabsList asChild>
+                <GlassPanel padding="none" className="grid w-full grid-cols-2 p-1 rounded-xl">
                 <TabsTrigger
                   value="subscriptions"
                   className="rounded-lg data-[state=active]:bg-neutral-800 data-[state=active]:text-brand-cyan"
@@ -286,6 +289,7 @@ export const PricingPage: React.FC = () => {
                 >
                   {t('pricing.tabs.credits') || 'Créditos'}
                 </TabsTrigger>
+                </GlassPanel>
               </TabsList>
             </Tabs>
           </div>
@@ -302,10 +306,10 @@ export const PricingPage: React.FC = () => {
               <TabsContent value="credits" className="mt-0 outline-none">
                 <div className="animate-fade-in-fast">
                   <div className="flex flex-col items-center justify-center py-4">
-                    <Card className="bg-neutral-900/40 border-neutral-800/50 w-full max-w-[500px] shadow-2xl overflow-hidden group relative">
+                    <GlassPanel className="w-full max-w-[500px] shadow-2xl overflow-hidden group relative">
                       <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-                      <CardContent className="p-8 md:p-12">
+                      <CardContent className="p-4 md:p-8">
                         <div className="space-y-8 relative z-10">
                           <div className="text-center">
                             <div className="flex items-center justify-center gap-6 mb-4">
@@ -340,30 +344,29 @@ export const PricingPage: React.FC = () => {
                               </button>
                             </div>
 
-                            <div className="flex items-center justify-center gap-2 text-xs text-neutral-500 font-mono uppercase tracking-[0.2em]">
+                            <MicroTitle as="span" className="flex items-center justify-center gap-2 opacity-60">
                               <Pickaxe size={14} className="text-brand-cyan/50" />
                               {t('pricing.creditsLabel')}
-                            </div>
+                            </MicroTitle>
                           </div>
 
                           <div className="pt-8 border-t border-neutral-800/50 text-center">
                             <div className="text-4xl font-bold text-neutral-100 font-mono mb-1">
                               {formatPrice(animatedPrice, currencyInfo?.currency || 'BRL', currencyInfo?.locale || 'pt-BR')}
                             </div>
-                            <div className="text-[10px] text-neutral-500 font-mono uppercase tracking-widest opacity-60">
+                            <MicroTitle as="span" className="opacity-40">
                               {currencyInfo?.currency === 'BRL' ? 'Pagamento Único' : 'One-time payment'}
-                            </div>
+                            </MicroTitle>
                           </div>
 
                           <div className="flex flex-col gap-3 pt-6">
-                            <Button
+                            <PremiumButton
                               onClick={handleBuyCredits}
-                              className="w-full bg-brand-cyan hover:bg-brand-cyan/90 text-black font-bold h-12 text-sm uppercase tracking-wider shadow-[0_5px_15px_rgba(82,221,235,0.15)]"
-                              size="lg"
+                              className="w-full h-12 uppercase tracking-wider"
                             >
                               <CreditCard className="mr-2 h-4 w-4" />
                               {t('pricing.buyCredits')}
-                            </Button>
+                            </PremiumButton>
 
                             {currencyInfo?.currency === 'BRL' && (
                               <Button
@@ -383,10 +386,10 @@ export const PricingPage: React.FC = () => {
                           </p>
                         </div>
                       </CardContent>
-                    </Card>
+                    </GlassPanel>
 
                     {/* Indicators */}
-                    <div className="flex gap-1.5 mt-8 items-center bg-neutral-900/40 p-1.5 rounded-full border border-neutral-800/30">
+                    <GlassPanel padding="sm" className="flex gap-1.5 mt-8 items-center rounded-full">
                       {creditPackages.map((_, index) => (
                         <button
                           key={index}
@@ -399,7 +402,7 @@ export const PricingPage: React.FC = () => {
                           )}
                         />
                       ))}
-                    </div>
+                    </GlassPanel>
                   </div>
                 </div>
               </TabsContent>

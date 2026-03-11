@@ -10,6 +10,8 @@ import { isSafeUrl } from '@/utils/imageUtils';
 import { cn, sectionTitleClass } from '@/lib/utils';
 import { useMockup } from './MockupContext';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
+import { MicroTitle } from '../ui/MicroTitle';
+import { GlassPanel } from '../ui/GlassPanel';
 
 
 interface InputSectionProps {
@@ -214,26 +216,26 @@ export const InputSection: React.FC<InputSectionProps> = ({
     isAnalyzed = false,
     highlight = false
   }: {
-    img: UploadedImage,
-    label: string,
-    onReplace: () => void,
-    onRemove?: () => void,
-    onAddRef?: () => void,
-    isAnalyzed?: boolean,
-    highlight?: boolean
+    img: UploadedImage;
+    label: string;
+    onReplace: () => void;
+    onRemove?: () => void;
+    onAddRef?: () => void;
+    isAnalyzed?: boolean;
+    highlight?: boolean;
   }) => (
     <div className={cn(
       "relative flex flex-col p-2.5 rounded-xl border transition-all group w-full animate-in fade-in zoom-in-95 duration-300",
       highlight ? "bg-brand-cyan/[0.03] border-brand-cyan/20 shadow-lg shadow-brand-cyan/5" : "bg-neutral-900/40 border-white/[0.05] hover:border-white/10"
     )}>
       {/* Image Container */}
-      <div className="relative aspect-video w-full rounded-lg overflow-hidden bg-black/40 flex items-center justify-center group/img-container">
+      <div className="relative h-auto max-h-[400px] w-full rounded-lg overflow-hidden bg-black/40 flex items-center justify-center group/img-container">
         <img
           src={getImageSrc(img)}
           alt={label}
           loading="lazy"
           decoding="async"
-          className="max-h-full max-w-full h-auto w-auto object-contain transition-transform duration-500 group-hover/img-container:scale-[1.05]"
+          className="max-h-[400px] w-full h-auto object-contain transition-transform duration-500 group-hover/img-container:scale-[1.02]"
         />
 
         {/* Hover Overlay with Replace Action */}
@@ -249,7 +251,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
             <div className="p-3 rounded-full bg-white/10 border border-white/20 group-hover:bg-brand-cyan group-hover:text-black transition-all shadow-xl">
               <ArrowLeftRight size={20} />
             </div>
-            <span className="text-[10px] font-mono uppercase tracking-[0.2em] font-bold">{t('mockup.replace') || 'Substituir'}</span>
+            <MicroTitle as="span" className="font-bold text-white">{t('mockup.replace') || 'Substituir'}</MicroTitle>
           </button>
           
           {onAddRef && (
@@ -264,7 +266,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
               <div className="p-3 rounded-full bg-white/10 border border-white/20 group-hover:bg-brand-cyan group-hover:text-black transition-all shadow-xl">
                 <Plus size={20} />
               </div>
-              <span className="text-[10px] font-mono uppercase tracking-[0.2em] font-bold">+ REF</span>
+              <MicroTitle as="span" className="font-bold text-white">+ REF</MicroTitle>
             </button>
           )}
         </div>
@@ -294,7 +296,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
         {onRemove && (
           <button
             onClick={onRemove}
-            className="p-2 hover:bg-red-500/10 rounded-lg transition-colors text-neutral-600 hover:text-red-400 group/remove"
+            className="p-1.5 hover:bg-white/5 rounded transition-colors text-neutral-600 hover:text-red-400 group/remove"
             title={t('mockup.removeFileTitle') || "Remover arquivo"}
           >
             <X size={14} className="group-hover/remove:scale-110 transition-transform" />
@@ -307,37 +309,59 @@ export const InputSection: React.FC<InputSectionProps> = ({
   return (
     <section className={cn("flex flex-col gap-5 w-full", className)}>
       {/* Files Header */}
-      <div className="flex items-center justify-between flex-shrink-0">
+      <div className="flex items-center justify-between">
         <div className="flex flex-col gap-1">
-          <h2 className={sectionTitleClass(theme === 'dark')}>
-            {t('mockup.files')}
-          </h2>
+          <MicroTitle className="text-brand-cyan uppercase tracking-[0.2em]">
+            {t('mockup.files') || 'ARQUIVOS'}
+          </MicroTitle>
           {hasImage && (
-            <span className="text-[9px] font-mono text-neutral-600 uppercase tracking-widest">
+            <p className="text-[10px] font-manrope text-neutral-500 uppercase">
               {t('mockup.filesLoaded', { count: referenceImages.length + 1 }) || `${referenceImages.length + 1} Arquivo(s) carregados`}
-            </span>
+            </p>
           )}
         </div>
 
         {!isLoadingImage && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            {uploadedImage && (
+              <button
+                type="button"
+                onClick={() => onDesignTypeChange(designType === 'logo' ? 'layout' : 'logo')}
+                className={cn(
+                  "px-3 py-1.5 rounded-md transition-all flex items-center gap-2 border",
+                  designType === 'logo'
+                    ? "bg-brand-cyan/10 border-brand-cyan/30 text-brand-cyan shadow-[0_0_15px_rgba(0,210,255,0.1)]"
+                    : "bg-white/5 border-white/10 text-neutral-400 hover:text-white hover:bg-white/10"
+                )}
+                title={t('mockup.transparentBackground') || 'Isolar Logotipo'}
+              >
+                <div className={cn(
+                  "w-2.5 h-2.5 rounded-full transition-all duration-300",
+                  designType === 'logo' ? "bg-brand-cyan shadow-[0_0_10px_rgba(0,210,255,1)]" : "bg-neutral-600"
+                )} />
+                <MicroTitle as="span" className="font-bold text-inherit !text-[9px]">
+                  {t('mockup.transparentBackground') || 'ISOLAR'}
+                </MicroTitle>
+              </button>
+            )}
+            
             {canAddMoreReferences && (
               <label
                 htmlFor="multiple-image-upload"
-                className="cursor-pointer px-3 py-1.5 bg-neutral-900 border border-white/5 hover:border-brand-cyan/30 hover:bg-brand-cyan/5 rounded-lg transition-all text-neutral-400 hover:text-brand-cyan flex items-center gap-2 group"
+                className="cursor-pointer px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-md transition-all text-neutral-400 hover:text-white flex items-center gap-2"
                 title={t('mockup.addReferenceImage', { count: referenceImages.length })}
               >
-                <Plus size={14} className="group-hover:rotate-90 transition-transform" />
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider">Ref</span>
+                <Plus size={12} />
+                <MicroTitle as="span" className="font-bold text-inherit !text-[9px]">REF</MicroTitle>
               </label>
             )}
             {!displayImage && (
               <label
                 htmlFor="image-upload-blank"
-                className="cursor-pointer px-3 py-1.5 bg-brand-cyan/10 border border-brand-cyan/20 rounded-lg transition-all text-brand-cyan hover:bg-brand-cyan hover:text-black flex items-center gap-2 animate-pulse"
+                className="cursor-pointer px-3 py-1.5 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/30 rounded-md transition-all text-brand-cyan flex items-center gap-2 animate-pulse"
               >
-                <Plus size={14} />
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider">Upload</span>
+                <Plus size={12} />
+                <MicroTitle as="span" className="font-bold text-inherit !text-[9px]">UPLOAD</MicroTitle>
               </label>
             )}
           </div>

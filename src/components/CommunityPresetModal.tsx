@@ -14,6 +14,7 @@ import { authService } from '../services/authService';
 import { cn } from '../lib/utils';
 import { CATEGORY_CONFIG } from './PresetCard';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
+import { MicroTitle } from './ui/MicroTitle';
 
 
 interface PresetFormData {
@@ -317,8 +318,8 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                                     </div>
                                 )}
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium text-neutral-200 mb-1">{t('communityPresets.referenceImage')}</p>
-                                    <p className="text-xs text-neutral-500 mb-2">Image should be below 4 mb</p>
+                                    <MicroTitle as="p" className="text-neutral-200 mb-1">{t('communityPresets.referenceImage')}</MicroTitle>
+                                    <MicroTitle as="p" className="text-neutral-500 mb-2 lowercase">Image should be below 4 mb</MicroTitle>
                                     <div className="flex items-center gap-2">
                                         <AdminImageUploader
                                             onImageUpload={handleImageUpload}
@@ -355,7 +356,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
 
                         {/* Name Field */}
                         <div>
-                            <label className="block text-xs text-neutral-400 mb-1.5">{t('communityPresets.nameRequired')} *</label>
+                            <MicroTitle as="label" className="mb-1.5">{t('communityPresets.nameRequired')} *</MicroTitle>
                             <input
                                 type="text"
                                 value={formData.name}
@@ -373,7 +374,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                         {/* Category & Preset Type Row */}
                         <div className="grid grid-cols-2 gap-4">
                             <div className="relative z-[60]">
-                                <label className="block text-xs text-neutral-400 mb-1.5">{t('communityPresets.category')} *</label>
+                                <MicroTitle as="label" className="mb-1.5">{t('communityPresets.category')} *</MicroTitle>
                                 <Select
                                     options={categoryOptions.map(opt => ({ value: opt.value, label: opt.label }))}
                                     value={formData.category}
@@ -391,7 +392,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                             </div>
                             {formData.category === 'presets' && (
                                 <div className="relative z-[60]">
-                                    <label className="block text-xs text-neutral-400 mb-1.5">{t('communityPresets.presetType')} *</label>
+                                    <MicroTitle as="label" className="mb-1.5">{t('communityPresets.presetType')} *</MicroTitle>
                                     <Select
                                         options={presetTypeOptions}
                                         value={formData.presetType || 'mockup'}
@@ -406,7 +407,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                         {/* Description & Aspect Ratio Row */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs text-neutral-400 mb-1.5">{t('communityPresets.descriptionOptional')}</label>
+                                <MicroTitle as="label" className="mb-1.5">{t('communityPresets.descriptionOptional')}</MicroTitle>
                                 <input
                                     type="text"
                                     value={formData.description}
@@ -416,7 +417,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                                 />
                             </div>
                             <div className="relative z-[50]">
-                                <label className="block text-xs text-neutral-400 mb-1.5">{t('communityPresets.aspectRatioOptional')}</label>
+                                <MicroTitle as="label" className="mb-1.5">{t('communityPresets.aspectRatioOptional')}</MicroTitle>
                                 <Select
                                     options={aspectRatioOptions}
                                     value={formData.aspectRatio}
@@ -429,7 +430,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                         {/* Reference Image URL (manual) */}
                         {needsReferenceImage && (
                             <div>
-                                <label className="block text-xs text-neutral-400 mb-1.5">{t('communityPresets.referenceImageManual')}</label>
+                                <MicroTitle as="label" className="mb-1.5">{t('communityPresets.referenceImageManual')}</MicroTitle>
                                 <input
                                     type="text"
                                     value={formData.referenceImageUrl || ''}
@@ -446,8 +447,8 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                         {/* Prompt */}
                         <div>
                             <div className="flex items-center justify-between mb-1.5">
-                                <label className="text-xs text-neutral-400">{t('communityPresets.promptRequired')} *</label>
-                                <span className="text-xs text-neutral-500">{formData.prompt.length} chars</span>
+                                <MicroTitle as="label">{t('communityPresets.promptRequired')} *</MicroTitle>
+                                <MicroTitle as="span" className="text-neutral-500 lowercase">{formData.prompt.length} chars</MicroTitle>
                             </div>
                             <textarea
                                 value={formData.prompt}
@@ -460,7 +461,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
 
                         {/* Tags */}
                         <div>
-                            <label className="block text-xs text-neutral-400 mb-1.5">{t('communityPresets.tags.label')}</label>
+                            <MicroTitle as="label" className="mb-1.5">{t('communityPresets.tags.label')}</MicroTitle>
                             <div className="flex gap-2">
                                 <input
                                     type="text"

@@ -3,6 +3,8 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { MockupCard } from './MockupCard';
 import type { AspectRatio } from '@/types/types';
 import { InteractiveASCIICopy } from '@/components/ui/InteractiveASCIICopy';
+import { MicroTitle } from '../ui/MicroTitle';
+import { GlassPanel } from '../ui/GlassPanel';
 
 interface MockupDisplayProps {
   mockups: (string | null)[];
@@ -81,15 +83,15 @@ export const MockupDisplay: React.FC<MockupDisplayProps> = React.memo(({
         {/* Decorative background - absolute so it doesn't affect flex; parent has relative */}
         <div className="absolute inset-0 rounded-full blur-[100px] pointer-events-none z-0" aria-hidden />
 
-        <div className="relative z-10 flex flex-col items-center bg-black/60 p-8 rounded-2xl border border-neutral-800/50 backdrop-blur-md shadow-2xl">
-          <h2 className="text-xl md:text-2xl font-bold font-mono uppercase tracking-[0.2em] text-neutral-300 mb-4 drop-shadow-md">
+        <GlassPanel padding="lg" className="relative z-10 flex flex-col items-center bg-black/60 backdrop-blur-md shadow-2xl">
+          <MicroTitle as="h2" className="text-xl md:text-2xl font-bold text-neutral-300 mb-4 drop-shadow-md">
             {t('mockup.awaitingGeneration')}
-          </h2>
+          </MicroTitle>
 
           <p className="max-w-md text-neutral-400 text-sm md:text-base font-medium leading-relaxed drop-shadow-md">
             {t('mockup.awaitingGenerationDescription')}
           </p>
-        </div>
+        </GlassPanel>
       </div>
     );
   }

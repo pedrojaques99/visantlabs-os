@@ -1,0 +1,35 @@
+plugin/src/code.ts(629,26): error TS2339: Property 'ref' does not exist on type '{ type: "MOVE"; nodeId: string; x: number; y: number; }'.
+plugin/src/code.ts(629,52): error TS2339: Property 'ref' does not exist on type '{ type: "MOVE"; nodeId: string; x: number; y: number; }'.
+server/lib/__tests__/mcp-gen.test.ts(5,38): error TS2307: Cannot find module 'vitest' or its corresponding type declarations.
+server/lib/__tests__/openapi-gen.test.ts(5,50): error TS2307: Cannot find module 'vitest' or its corresponding type declarations.
+server/lib/docs-cache.ts(57,28): error TS2345: Argument of type 'number' is not assignable to parameter of type 'Timeout'.
+server/lib/operationValidator.test.ts(6,38): error TS2307: Cannot find module 'vitest' or its corresponding type declarations.
+server/lib/pluginBridge.test.ts(6,61): error TS2307: Cannot find module 'vitest' or its corresponding type declarations.
+server/mcp/figma-mcp.ts(11,3): error TS2305: Module '"@modelcontextprotocol/sdk/server/index.js"' has no exported member 'Tool'.
+server/mcp/figma-mcp.ts(21,5): error TS2353: Object literal may only specify known properties, and 'capabilities' does not exist in type '{ version: string; name: string; websiteUrl?: string; description?: string; icons?: { src: string; mimeType?: string; sizes?: string[]; theme?: "dark" | "light"; }[]; title?: string; }'.
+server/mcp/figma-mcp.ts(32,5): error TS2353: Object literal may only specify known properties, and 'method' does not exist in type 'AnyObjectSchema'.
+server/mcp/figma-mcp.ts(737,28): error TS2353: Object literal may only specify known properties, and 'method' does not exist in type 'AnyObjectSchema'.
+src/components/canvas/ShaderControlsSidebar.tsx(179,5): error TS2322: Type 'number' is not assignable to type 'Timeout'.
+src/components/canvas/ShaderControlsSidebar.tsx(759,27): error TS2322: Type 'number' is not assignable to type 'Timeout'.
+src/components/canvas/ShaderControlsSidebar.tsx(819,27): error TS2322: Type 'number' is not assignable to type 'Timeout'.
+src/components/CreditRechargeSuccessPage.tsx(105,13): error TS2322: Type 'number' is not assignable to type 'Timeout'.
+src/components/Layout.tsx(293,15): error TS2322: Type 'number' is not assignable to type 'Timeout'.
+src/components/PixPaymentModal.tsx(227,5): error TS2322: Type 'number' is not assignable to type 'Timeout'.
+src/components/reactflow/StrategyNode.tsx(110,5): error TS2322: Type 'number' is not assignable to type 'Timeout'.
+src/components/reactflow/StrategyNode.tsx(457,5): error TS2322: Type 'number' is not assignable to type 'Timeout'.
+src/components/reactflow/StrategyNode.tsx(639,5): error TS2322: Type 'number' is not assignable to type 'Timeout'.
+src/components/reactflow/StrategyNode.tsx(657,5): error TS2322: Type 'number' is not assignable to type 'Timeout'.
+src/hooks/canvas/useCanvasCollaboration.ts(25,5): error TS2322: Type 'number' is not assignable to type 'Timeout'.
+src/hooks/canvas/useCanvasEditingState.ts(38,5): error TS2322: Type 'number' is not assignable to type 'Timeout'.
+src/hooks/canvas/useCanvasKeyboard.ts(42,5): error TS2322: Type 'number' is not assignable to type 'Timeout'.
+src/hooks/canvas/useCanvasKeyboard.ts(61,9): error TS2322: Type 'number' is not assignable to type 'Timeout'.
+src/hooks/canvas/useCanvasNodeHandlers.ts(490,65): error TS2345: Argument of type '{ baseImage: UploadedImage; designType: DesignType; brandingTags: string[]; categoryTags: string[]; locationTags: string[]; angleTags: string[]; lightingTags: string[]; ... 7 more ...; additionalPrompt: string; }' is not assignable to parameter of type '{ baseImage: UploadedImage; designType: string; brandingTags: string[]; categoryTags: string[]; locationTags: string[]; angleTags: string[]; lightingTags: string[]; effectTags: string[]; ... 8 more ...; instructions: string; }'.
+  Type '{ baseImage: UploadedImage; designType: DesignType; brandingTags: string[]; categoryTags: string[]; locationTags: string[]; angleTags: string[]; lightingTags: string[]; ... 7 more ...; additionalPrompt: string; }' is missing the following properties from type '{ baseImage: UploadedImage; designType: string; brandingTags: string[]; categoryTags: string[]; locationTags: string[]; angleTags: string[]; lightingTags: string[]; effectTags: string[]; ... 8 more ...; instructions: string; }': removeText, instructions
+src/hooks/canvas/useDirectorNodeHandler.ts(262,9): error TS2353: Object literal may only specify known properties, and 'materialTags' does not exist in type '{ baseImage: UploadedImage; designType: string; brandingTags: string[]; categoryTags: string[]; locationTags: string[]; angleTags: string[]; lightingTags: string[]; effectTags: string[]; ... 8 more ...; instructions: string; }'.
+src/hooks/canvas/utils/r2UploadUtils.ts(156,33): error TS2345: Argument of type 'number' is not assignable to parameter of type 'Timeout'.
+src/hooks/useAutoSave.ts(86,5): error TS2322: Type 'number' is not assignable to type 'Timeout'.
+src/hooks/useBudgetAutoSave.ts(74,7): error TS2322: Type 'number' is not assignable to type 'Timeout'.
+src/hooks/useBudgetAutoSave.ts(89,7): error TS2322: Type 'number' is not assignable to type 'Timeout'.
+src/hooks/useBudgetAutoSave.ts(131,5): error TS2322: Type 'number' is not assignable to type 'Timeout'.
+src/hooks/useDebouncedCallback.ts(22,13): error TS2322: Type 'number' is not assignable to type 'Timeout'.
+src/pages/CanvasPage.tsx(3485,25): error TS2345: Argument of type 'number' is not assignable to parameter of type 'Timeout'.

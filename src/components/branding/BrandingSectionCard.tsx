@@ -1,5 +1,7 @@
 import React, { useRef, useState, useCallback } from 'react';
 import { X, GripVertical, Minus } from 'lucide-react';
+import { GlassPanel } from '@/components/ui/GlassPanel';
+import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { SectionHeader } from './SectionHeader';
@@ -142,15 +144,17 @@ export const BrandingSectionCard: React.FC<BrandingSectionCardProps> = ({
   );
 
   return (
-    <div
+    <GlassPanel
       ref={cardRef}
-      className={`${colSpan} border rounded-md p-6 md:p-8 transition-all duration-200 group relative animate-fade-in-down ${theme === 'dark' ? 'bg-[#141414]' : 'bg-white'
-        } ${isEditing
-          ? 'border-[brand-cyan]/50 shadow-[0_0_0_1px_rgba(82,221,235,0.1)]'
-          : theme === 'dark'
-            ? 'border-neutral-800/60 hover:border-neutral-700/60'
-            : 'border-neutral-300 hover:border-neutral-400'
-        } ${isDragging ? 'opacity-50' : ''} ${isResizing ? 'cursor-ns-resize' : ''}`}
+      className={cn(
+        colSpan,
+        "p-6 md:p-8 transition-all duration-200 group relative animate-fade-in-down",
+        isEditing
+          ? 'border-brand-cyan/50 shadow-[0_0_0_1px_rgba(82,221,235,0.1)]'
+          : 'border-white/5',
+        isDragging ? 'opacity-50' : '',
+        isResizing ? 'cursor-ns-resize' : ''
+      )}
       style={{
         animation: 'expandSection 0.25s ease-out',
         height: customHeight ? `${customHeight}px` : undefined,
@@ -257,7 +261,7 @@ export const BrandingSectionCard: React.FC<BrandingSectionCardProps> = ({
             }`} />
         </div>
       )}
-    </div>
+    </GlassPanel>
   );
 };
 

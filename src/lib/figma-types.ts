@@ -498,15 +498,67 @@ export type AvailableLayer = {
   type: string;
 };
 
-// ── Brand Guideline preset ──
+// ── Brand Guideline preset (V2) ──
+export interface BrandGuidelineColor {
+  hex: string
+  name: string
+  role?: string
+}
 
-export type BrandGuideline = {
-  id: string;         // uuid / timestamp string
-  name: string;       // e.g. "Creatina Power"
-  logo?: { id: string; name: string; key?: string };
-  font?: { id: string; name: string };
-  colors: Array<{ id: string; name: string; value: string }>;
-};
+export interface BrandGuidelineTypography {
+  family: string
+  style?: string
+  role: string
+  size?: number
+  lineHeight?: number
+}
+export interface BrandGuideline {
+  id?: string
+  userId?: string
+  identity?: {
+    name?: string
+    website?: string
+    tagline?: string
+    description?: string
+  }
+  logos?: Array<{
+    id: string
+    url: string
+    variant: 'primary' | 'dark' | 'light' | 'icon' | 'custom'
+    label?: string
+  }>
+  colors?: BrandGuidelineColor[]
+  typography?: BrandGuidelineTypography[]
+  tags?: Record<string, string[]>
+  media?: Array<{
+    id: string
+    url: string
+    type: 'image' | 'pdf'
+    label?: string
+  }>
+  tokens?: {
+    spacing?: Record<string, number>
+    radius?: Record<string, number>
+    shadows?: Record<string, { x: number; y: number; blur: number; spread: number; color: string; opacity: number }>
+    components?: Record<string, any>
+  }
+  guidelines?: {
+    voice?: string
+    dos?: string[]
+    donts?: string[]
+    imagery?: string
+    accessibility?: string
+  }
+  _extraction?: {
+    sources: Array<{ type: 'url' | 'pdf' | 'image' | 'json' | 'manual'; ref?: string; date: string }>
+    completeness: number
+  }
+  extraction?: { // Keep this for backend compatibility if it uses "extraction"
+    sources: Array<{ type: 'url' | 'pdf' | 'image' | 'json' | 'manual'; ref?: string; date: string }>
+    completeness: number
+  }
+  updatedAt?: string
+}
 
 // ── UI → Sandbox messages ──
 

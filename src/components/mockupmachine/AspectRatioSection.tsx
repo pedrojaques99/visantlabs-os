@@ -3,6 +3,7 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import type { AspectRatio, GeminiModel } from '@/types/types';
 import { useTranslation } from '@/hooks/useTranslation';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
+import { MicroTitle } from '../ui/MicroTitle';
 
 
 interface AspectRatioSectionProps {
@@ -31,9 +32,9 @@ export const AspectRatioSection: React.FC<AspectRatioSectionProps> = ({
 
   return (
     <section>
-      <h2 className={`text-xs md:text-sm font-semibold font-mono uppercase tracking-widest mb-1.5 md:mb-2 transition-all duration-300 ${aspectRatio ? 'text-neutral-600' : 'text-neutral-400'}`}>
+      <MicroTitle as="h2" className={`mb-1.5 md:mb-2 transition-all duration-300 ${aspectRatio ? 'text-neutral-600' : 'text-neutral-400'}`}>
         {isProModel ? t('mockup.aspectRatioTitle') : t('mockup.autoAspectRatioTitle')}
-      </h2>
+      </MicroTitle>
       {!isProModel && (
         <p className="text-[10px] md:text-xs text-neutral-500 mb-2 md:mb-3 font-mono">{t('mockup.autoAspectRatioDescription')}</p>
       )}
@@ -115,4 +116,3 @@ export const AspectRatioSection: React.FC<AspectRatioSectionProps> = ({
     </section>
   );
 };
-

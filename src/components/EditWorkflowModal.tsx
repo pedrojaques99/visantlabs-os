@@ -10,6 +10,7 @@ import type { WorkflowCategory } from '../types/workflow';
 import { WORKFLOW_CATEGORY_CONFIG } from '../types/workflow';
 import { cn } from '../lib/utils';
 import { Input } from './ui/input';
+import { MicroTitle } from './ui/MicroTitle';
 
 interface EditWorkflowModalProps {
     isOpen: boolean;
@@ -76,11 +77,11 @@ export const EditWorkflowModal: React.FC<EditWorkflowModalProps> = ({
 
                 <div className="p-6 space-y-5">
                     <div className="space-y-2">
-                        <label className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest ml-1">{t('workflows.edit.name') || 'Name'}</label>
+                        <MicroTitle as="label" className="ml-1">{t('workflows.edit.name') || 'Name'}</MicroTitle>
                         <Input value={name} onChange={e => setName(e.target.value)} className="bg-neutral-900/50 border-neutral-800 focus:border-brand-cyan/30" />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest ml-1">{t('workflows.edit.description') || 'Description'}</label>
+                        <MicroTitle as="label" className="ml-1">{t('workflows.edit.description') || 'Description'}</MicroTitle>
                         <Textarea
                             value={description}
                             onChange={e => setDescription(e.target.value)}
@@ -89,7 +90,7 @@ export const EditWorkflowModal: React.FC<EditWorkflowModalProps> = ({
                     </div>
                     <div className="flex gap-4">
                         <div className="flex-1 space-y-2">
-                            <label className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest ml-1">{t('workflows.edit.category') || 'Category'}</label>
+                            <MicroTitle as="label" className="ml-1">{t('workflows.edit.category') || 'Category'}</MicroTitle>
                             <Select
                                 value={category}
                                 onChange={(val) => setCategory(val as WorkflowCategory)}
@@ -101,7 +102,7 @@ export const EditWorkflowModal: React.FC<EditWorkflowModalProps> = ({
                             />
                         </div>
                         <div className="w-32 space-y-2">
-                            <label className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest ml-1">{t('workflows.edit.visibility') || 'Visibility'}</label>
+                            <MicroTitle as="label" className="ml-1">{t('workflows.edit.visibility') || 'Visibility'}</MicroTitle>
                             <button
                                 onClick={() => setIsPublic(!isPublic)}
                                 className={cn(
@@ -117,7 +118,7 @@ export const EditWorkflowModal: React.FC<EditWorkflowModalProps> = ({
                         </div>
                     </div>
                     <div className="space-y-2">
-                        <label className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest ml-1">{t('workflows.edit.tags') || 'Tags (comma separated)'}</label>
+                        <MicroTitle as="label" className="ml-1">{t('workflows.edit.tags') || 'Tags (comma separated)'}</MicroTitle>
                         <Input value={tags} onChange={e => setTags(e.target.value)} className="bg-neutral-900/50 border-neutral-800 focus:border-brand-cyan/30" />
                     </div>
                 </div>

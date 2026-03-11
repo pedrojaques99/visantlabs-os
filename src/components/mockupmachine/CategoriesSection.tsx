@@ -28,6 +28,8 @@ import { MockupPreset } from '../../types/mockupPresets';
 import { useMockup } from './MockupContext';
 import { InstructionsIdentityPanel } from './InstructionsIdentityPanel';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
+import { MicroTitle } from '../ui/MicroTitle';
+import { GlassPanel } from '../ui/GlassPanel';
 
 interface CategoriesSectionProps {
   suggestedTags: string[];
@@ -90,9 +92,9 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
     poolTags.length > 0 ? poolTags.map((tag) => translateTag(tag)).join(', ') : '';
 
   return (
-    <div
+    <GlassPanel
       className={cn(
-        `rounded-xl border-1 border-neutral-800/50 transition-all duration-200 overflow-hidden ${theme === 'dark' ? 'bg-neutral-900/30 border-1 border-neutral-800/50' : 'bg-white/50 border-1 border-neutral-200'}`,
+        "group overflow-hidden",
         className
       )}
     >
@@ -104,11 +106,9 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
           {icon && <div className="flex-shrink-0">{icon}</div>}
           <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
             <SkeletonText loading={isGenerating}>
-              <span
-                className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}
-              >
+              <MicroTitle as="span">
                 {title}
-              </span>
+              </MicroTitle>
             </SkeletonText>
             {!isExpanded && (hasSelection || poolTags.length > 0) && (
               <span className="text-[10px] font-mono truncate max-w-[200px]">
@@ -144,7 +144,7 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
           </div>
         </div>
       )}
-    </div>
+    </GlassPanel>
   );
 };
 
@@ -424,14 +424,9 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
     return (
       <section id="categories-section" className="animate-fade-in pb-0">
         <Tooltip content={t('mockup.categoriesComment')} position="top">
-          <h3
-            className={cn(
-              'text-[10px] font-mono uppercase tracking-wider mb-3 cursor-help',
-              theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'
-            )}
-          >
+          <MicroTitle as="h3" className="mb-3 cursor-help text-neutral-500">
             {t('mockup.categories')}
-          </h3>
+          </MicroTitle>
         </Tooltip>
 
         <div className="flex flex-wrap gap-2">
@@ -449,23 +444,17 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
 
   return (
     <section id="categories-section" className={cn('animate-fade-in', isComplete && 'pb-0')}>
-      <div
-        className={cn(
-          `rounded-xl border-1 border-neutral-800/50 transition-all duration-200 overflow-hidden ${theme === 'dark' ? 'bg-neutral-900/30 border-1 border-neutral-800/50' : 'bg-white/50 border-1 border-neutral-200'}`
-        )}
-      >
+      <GlassPanel className="overflow-hidden">
         <button
           onClick={() => setIsSectionExpanded(!isSectionExpanded)}
           className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'}`}
         >
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
-              <span
-                className={`text-[10px] font-mono uppercase tracking-widest flex items-center gap-2 ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}
-              >
+              <MicroTitle as="span" className="flex items-center gap-2">
                 {t('mockup.categories') || 'TIPOS DE MOCKUP'}
                 {isAnalyzing && <GlitchLoader size={16} color="#71717a" />}
-              </span>
+              </MicroTitle>
               {!isSectionExpanded && hasSectionSelection && (
                 <span className="text-[10px] font-mono truncate max-w-[200px]">
                   <span className="text-brand-cyan">{sectionSelectionSummary}</span>
@@ -542,11 +531,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                 ))}
 
                 {/* Final Section (Drinkware + Other) - Always visible; contains custom tags */}
-                <div
-                  className={cn(
-                    `rounded-xl border transition-all duration-200 overflow-hidden ${theme === 'dark' ? 'bg-neutral-900/30 border-white/5' : 'bg-white/50 border-neutral-200'}`
-                  )}
-                >
+                <GlassPanel className="overflow-hidden">
                   <button
                     onClick={() => setIsFinalExpanded(!isFinalExpanded)}
                     className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'}`}
@@ -564,14 +549,12 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                         />
                       )}
                       <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
-                        <span
-                          className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}
-                        >
+                        <MicroTitle as="span">
                           {drinkwareTags.length > 0
                             ? t(`mockup.categoryGroups.drinkware`) +
                               (otherTags.length > 0 ? ` / ${t(`mockup.categoryGroups.other`)}` : '')
                             : t(`mockup.categoryGroups.other`)}
-                        </span>
+                        </MicroTitle>
                         {!isFinalExpanded &&
                           (hasFinalSelection ||
                             finalPoolTags.length > 0 ||
@@ -632,14 +615,9 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                         )}
                       >
                         <div className="flex items-center gap-1.5 mb-2">
-                          <span
-                            className={cn(
-                              'text-[9px] font-mono uppercase tracking-widest',
-                              theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
-                            )}
-                          >
+                          <MicroTitle as="span" className="text-[9px]">
                             {t('mockup.customCategories') || 'CUSTOM'}
-                          </span>
+                          </MicroTitle>
                           {customSelectedTags.length > 0 && (
                             <span
                               className={cn(
@@ -706,11 +684,11 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                       </div>
                     </div>
                   )}
-                </div>
+                </GlassPanel>
               </div>
             </div>
           )}
-        </div>
+        </GlassPanel>
       </section>
     );
   };

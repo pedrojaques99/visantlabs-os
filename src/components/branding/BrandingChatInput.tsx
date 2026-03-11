@@ -1,9 +1,10 @@
 import React, { useMemo } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getTotalBrandingCredits } from '@/utils/creditCalculator';
-import { Card, CardContent } from '@/components/ui/card';
+import { GlassPanel } from '@/components/ui/GlassPanel';
 import { Textarea } from '@/components/ui/textarea';
-import { FormButton } from '@/components/ui/form-button';
+import { PremiumButton } from '@/components/ui/PremiumButton';
+import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 
 interface BrandingChatInputProps {
@@ -49,8 +50,8 @@ export const BrandingChatInput: React.FC<BrandingChatInputProps> = ({
   }, [creditsRequired]);
 
   return (
-    <Card className="w-full bg-card/30 backdrop-blur-sm shadow-lg border-0">
-      <CardContent className="p-4 space-y-4">
+    <GlassPanel className="w-full shadow-lg border-white/5" padding="md">
+      <div className="space-y-4">
         {/* Prompt Textarea */}
         <div className="space-y-2">
           <Textarea
@@ -75,11 +76,9 @@ export const BrandingChatInput: React.FC<BrandingChatInputProps> = ({
           )}
 
           {/* Botão Generate */}
-          <FormButton
+          <PremiumButton
             onClick={onGenerateClick}
             disabled={isGenerateDisabled || (isPromptReady && isGenerating)}
-            variant="primary"
-            size="lg"
             isLoading={isGenerating || isGeneratingPrompt}
             className="w-full"
           >
@@ -92,7 +91,7 @@ export const BrandingChatInput: React.FC<BrandingChatInputProps> = ({
             ) : (
               <span>{t('branding.startAnalysis')}</span>
             )}
-          </FormButton>
+          </PremiumButton>
         </div>
 
         {/* Sugestões de Prompt (se houver) */}
@@ -100,34 +99,31 @@ export const BrandingChatInput: React.FC<BrandingChatInputProps> = ({
           <div className="pt-2 border-t border-border/5 space-y-2 animate-fade-in">
             <p className="text-xs font-medium text-muted-foreground">{t('branding.aiSuggestions')}</p>
             {promptSuggestions.map((suggestion, index) => (
-              <Card key={index} className="border-border/5 bg-muted/30">
-                <CardContent className="p-3 space-y-2">
-                  <FormButton
-                    variant="ghost"
+              <GlassPanel key={index} className="border-white/5 bg-white/5" padding="sm">
+                <div className="space-y-2">
+                  <button
                     onClick={() => onSuggestionClick?.(suggestion)}
-                    className="w-full text-left text-xs h-auto py-2 font-normal justify-start"
+                    className="w-full text-left text-xs h-auto py-2 font-normal justify-start hover:text-brand-cyan transition-colors"
                   >
                     {suggestion}
-                  </FormButton>
+                  </button>
                   {onGenerateSuggestion && (
                     <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/5">
-                      <FormButton
+                      <PremiumButton
                         onClick={(e) => {
                           e.stopPropagation();
                           onGenerateSuggestion(suggestion);
                         }}
                         disabled={isGenerating || !suggestion.trim()}
-                        variant="primary"
-                        size="sm"
                         isLoading={isGenerating}
-                        className="flex-1"
+                        className="flex-1 h-9 py-0 text-xs"
                       >
                         {isGenerating ? (
                           <span>{t('branding.generating')}</span>
                         ) : (
                           <span>{t('branding.startAnalysis')}</span>
                         )}
-                      </FormButton>
+                      </PremiumButton>
                       {creditsPerGeneration !== undefined && creditsPerGeneration > 0 && (
                         <Badge variant="outline" className="text-xs whitespace-nowrap">
                           {creditsPerGeneration} {creditsPerGeneration === 1 ? t('mockup.creditUnitSingular') : t('mockup.creditUnitPlural')}
@@ -135,13 +131,13 @@ export const BrandingChatInput: React.FC<BrandingChatInputProps> = ({
                       )}
                     </div>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </GlassPanel>
             ))}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </GlassPanel>
   );
 };
 

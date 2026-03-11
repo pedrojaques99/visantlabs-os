@@ -34,6 +34,7 @@ import { Badge } from '../components/ui/badge';
 import { Card, CardContent } from '../components/ui/card';
 import { cn } from '../lib/utils';
 import { workflowApi } from '../services/workflowApi';
+import { MicroTitle } from '../components/ui/MicroTitle';
 
 export const CommunityProfilePage: React.FC = () => {
   const { t } = useTranslation();
@@ -471,21 +472,21 @@ export const CommunityProfilePage: React.FC = () => {
                       <div className="text-xl md:text-2xl font-bold font-manrope text-white">
                         {profile.stats.mockups}
                       </div>
-                      <div className="text-xs font-mono text-neutral-500 uppercase tracking-wider">Mockups</div>
+                      <MicroTitle>Mockups</MicroTitle>
                     </div>
                     <div className="w-px bg-neutral-800/50" />
                     <div className="text-center">
                       <div className="text-xl md:text-2xl font-bold font-manrope text-white">
                         {workflows.length}
                       </div>
-                      <div className="text-xs font-mono text-neutral-500 uppercase tracking-wider">Workflows</div>
+                      <MicroTitle>Workflows</MicroTitle>
                     </div>
                     <div className="w-px bg-neutral-800/50" />
                     <div className="text-center">
                       <div className="text-xl md:text-2xl font-bold font-manrope text-white">
                         {profile.stats.presets}
                       </div>
-                      <div className="text-xs font-mono text-neutral-500 uppercase tracking-wider">Presets</div>
+                      <MicroTitle>Presets</MicroTitle>
                     </div>
                   </div>
 

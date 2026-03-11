@@ -6,6 +6,8 @@ import { translateTag } from '@/utils/localeUtils';
 import { Tag } from '@/components/shared/Tag';
 import type { DesignType } from '@/types/types';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
+import { MicroTitle } from '../ui/MicroTitle';
+import { GlassPanel } from '../ui/GlassPanel';
 
 interface AdvancedOptionsProps {
   selectedLocationTags: string[];
@@ -173,7 +175,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
     : '';
 
   return (
-    <div className={`rounded-xl border transition-all duration-200 overflow-hidden group ${theme === 'dark' ? 'bg-neutral-900/30 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
+    <GlassPanel className="group overflow-hidden">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'}`}
@@ -182,7 +184,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
           {icon && <div className="flex-shrink-0">{icon}</div>}
           <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
             <SkeletonText loading={isGenerating}>
-              <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{title}</span>
+              <MicroTitle as="span">{title}</MicroTitle>
             </SkeletonText>
             {!isExpanded && (hasSelection || poolTagsList.length > 0) && (
               <span className="text-[10px] font-mono truncate max-w-[200px]">
@@ -311,7 +313,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
           </div>
         </div>
       )}
-    </div>
+    </GlassPanel>
   );
 };
 
@@ -467,7 +469,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
 
       {/* Prompts Section */}
       <div className="space-y-2">
-        <div className={`rounded-xl border transition-all duration-200 overflow-hidden ${theme === 'dark' ? 'bg-neutral-900/30 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
+        <GlassPanel className="overflow-hidden">
           <button
             onClick={() => setIsNegativeExpanded(!isNegativeExpanded)}
             className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'}`}
@@ -476,7 +478,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
               <XCircle size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
               <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
                 <SkeletonText loading={isGenerating}>
-                  <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.negativePrompt')}</span>
+                  <MicroTitle as="span">{t('mockup.negativePrompt')}</MicroTitle>
                 </SkeletonText>
                 {!isNegativeExpanded && negativePrompt && (
                   <span className="text-[10px] text-neutral-500 font-mono truncate max-w-[200px]">{negativePrompt}</span>
@@ -502,9 +504,9 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
               />
             </div>
           )}
-        </div>
+        </GlassPanel>
 
-        <div className={`rounded-xl border transition-all duration-200 overflow-hidden ${theme === 'dark' ? 'bg-neutral-900/30 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
+        <GlassPanel className="overflow-hidden">
           <button
             onClick={() => setIsAdditionalExpanded(!isAdditionalExpanded)}
             className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'}`}
@@ -513,7 +515,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
               <FilePlus size={14} className={theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'} />
               <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
                 <SkeletonText loading={isGenerating}>
-                  <span className={`text-[10px] font-mono uppercase tracking-widest ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'}`}>{t('mockup.additionalPrompt')}</span>
+                  <MicroTitle as="span">{t('mockup.additionalPrompt')}</MicroTitle>
                 </SkeletonText>
                 {!isAdditionalExpanded && additionalPrompt && (
                   <span className="text-[10px] text-neutral-500 font-mono truncate max-w-[200px]">{additionalPrompt}</span>
@@ -539,7 +541,7 @@ export const AdvancedOptions: React.FC<AdvancedOptionsProps> = ({
               />
             </div>
           )}
-        </div>
+        </GlassPanel>
       </div>
     </div>
   );

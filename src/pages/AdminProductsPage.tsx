@@ -29,6 +29,7 @@ import { toast } from 'sonner';
 import { cn } from '../lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
 import { SEO } from '../components/SEO';
+import { MicroTitle } from '../components/ui/MicroTitle';
 
 const ADMIN_API = '/api/admin/products';
 
@@ -411,14 +412,14 @@ export const AdminProductsPage: React.FC = () => {
 
                                         <div className="grid grid-cols-2 gap-2 pt-2">
                                             <div className="flex flex-col gap-1">
-                                                <span className="text-[10px] text-neutral-500 uppercase font-bold tracking-wider">Stripe</span>
+                                                <MicroTitle className="font-bold">Stripe</MicroTitle>
                                                 <div className="flex items-center gap-1.5 overflow-hidden">
                                                     <CheckCircle2 className={cn("h-3 w-3", product.stripeProductId ? "text-green-500" : "text-neutral-700")} />
                                                     <span className="text-[10px] truncate max-w-full font-mono">{product.stripeProductId || 'N/A'}</span>
                                                 </div>
                                             </div>
                                             <div className="flex flex-col gap-1">
-                                                <span className="text-[10px] text-neutral-500 uppercase font-bold tracking-wider">Payments</span>
+                                                <MicroTitle className="font-bold">Payments</MicroTitle>
                                                 <div className="flex items-center gap-1.5">
                                                     <Link2 className={cn("h-3 w-3", product.paymentLinkBRL ? "text-brand-cyan" : "text-neutral-700")} />
                                                     <span className="text-[10px]">{product.paymentLinkBRL ? 'Configurado' : 'Aguardando'}</span>
@@ -589,7 +590,7 @@ export const AdminProductsPage: React.FC = () => {
                                     </h3>
                                     <div className="space-y-3">
                                         <div className="space-y-1">
-                                            <label className="text-[10px] text-neutral-500 uppercase font-bold tracking-widest pl-1">Stripe Product ID</label>
+                                            <MicroTitle as="label" className="pl-1 font-bold">Stripe Product ID</MicroTitle>
                                             <Input
                                                 placeholder="prod_..."
                                                 value={formData.stripeProductId}
@@ -598,7 +599,7 @@ export const AdminProductsPage: React.FC = () => {
                                             />
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-[10px] text-neutral-500 uppercase font-bold tracking-widest pl-1">Abacate Product ID</label>
+                                            <MicroTitle as="label" className="pl-1 font-bold">Abacate Product ID</MicroTitle>
                                             <Input
                                                 placeholder="prod_..."
                                                 value={formData.abacateProductId}
@@ -607,7 +608,7 @@ export const AdminProductsPage: React.FC = () => {
                                             />
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-[10px] text-neutral-500 uppercase font-bold tracking-widest pl-1">Abacate Bill ID (PIX)</label>
+                                            <MicroTitle as="label" className="pl-1 font-bold">Abacate Bill ID (PIX)</MicroTitle>
                                             <Input
                                                 placeholder="bill_..."
                                                 value={formData.abacateBillId}
@@ -625,7 +626,7 @@ export const AdminProductsPage: React.FC = () => {
                                     </h3>
                                     <div className="space-y-3">
                                         <div className="space-y-1">
-                                            <label className="text-[10px] text-neutral-500 uppercase font-bold tracking-widest pl-1">Link de Pagamento BRL (Stripe)</label>
+                                            <MicroTitle as="label" className="pl-1 font-bold">Link de Pagamento BRL (Stripe)</MicroTitle>
                                             <Input
                                                 placeholder="https://buy.stripe.com/..."
                                                 value={formData.paymentLinkBRL}
@@ -634,7 +635,7 @@ export const AdminProductsPage: React.FC = () => {
                                             />
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-[10px] text-neutral-500 uppercase font-bold tracking-widest pl-1">Link de Pagamento USD (Stripe)</label>
+                                            <MicroTitle as="label" className="pl-1 font-bold">Link de Pagamento USD (Stripe)</MicroTitle>
                                             <Input
                                                 placeholder="https://buy.stripe.com/..."
                                                 value={formData.paymentLinkUSD}

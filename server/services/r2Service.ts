@@ -325,6 +325,53 @@ export async function uploadCustomPdfPreset(
 }
 
 /**
+ * Upload brand guideline media to R2 storage
+ */
+export async function uploadBrandMedia(
+    base64Data: string,
+    userId: string,
+    guidelineId: string,
+    mediaId: string,
+    contentType: string = 'image/png',
+    subscriptionTier?: string,
+    isAdmin?: boolean
+): Promise<string> {
+    const bucketName = process.env.R2_BUCKET_NAME;
+    const publicUrl = process.env.R2_PUBLIC_URL;
+    if (!bucketName || !publicUrl) throw new Error('R2 configuration missing.');
+
+    const cleanBase64 = base64Data.replace(/^data:[^;]+;base64,/, '');
+    const buffer = Buffer.from(cleanBase64, 'base64');
+
+    await checkStorageLimitIfNeeded(userId, buffer.length, subscriptionTier, isAdmin);
+
+    let extension = 'png';
+    if (contentType.includes('jpeg') || contentType.includes('jpg')) extension = 'jpg';
+    else if (contentType.includes('webp')) extension = 'webp';
+    else if (contentType.includes('gif')) extension = 'gif';
+    else if (contentType.includes('pdf')) extension = 'pdf';
+    else if (contentType.includes('svg')) extension = 'svg';
+
+    const key = `brands/${userId}/${guidelineId}/${mediaId}.${extension}`;
+
+    const client = getR2Client();
+
+    try {
+        await client.send(new PutObjectCommand({
+            Bucket: bucketName,
+            Key: key,
+            Body: buffer,
+            ContentType: contentType,
+        }));
+
+        await incrementUserStorage(userId, buffer.length);
+        return `${publicUrl}/${key}`;
+    } catch (error: unknown) {
+        throw new Error(`Failed to upload brand media to R2: ${getErrorMessage(error)}`);
+    }
+}
+
+/**
  * Upload canvas image to R2 storage
  */
 export async function uploadCanvasImage(

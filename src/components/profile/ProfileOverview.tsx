@@ -7,6 +7,7 @@ import { type SubscriptionStatus } from '@/services/subscriptionService';
 import { referralService, type ReferralStats } from '@/services/referralService';
 import { toast } from 'sonner';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { MicroTitle } from '@/components/ui/MicroTitle';
 
 interface ProfileOverviewProps {
     user: UserType;
@@ -216,9 +217,9 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                         <CreditCard size={20} className="text-brand-cyan" />
                     </div>
                     <div>
-                        <h3 className="text-base font-semibold text-neutral-100 font-redhatmono">
+                        <MicroTitle as="h3" className="text-base font-semibold text-neutral-100 font-redhatmono">
                             {t('credits.title') || 'CRÉDITOS'}
-                        </h3>
+                        </MicroTitle>
                     </div>
                 </div>
 
@@ -236,9 +237,9 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                                         <Plus size={16} />
                                     </button>
                                 </div>
-                                <p className="text-xs text-neutral-500 font-mono mb-1 uppercase tracking-wider">
+                                <MicroTitle as="p" className="mb-1">
                                     {t('credits.available') || 'DISPONÍVEIS'}
-                                </p>
+                                </MicroTitle>
                                 <div className="flex items-baseline gap-2">
                                     <p className="text-4xl font-bold text-white font-mono tracking-tight">
                                         {totalCreditsAvailable}
@@ -249,7 +250,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
 
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="bg-neutral-900/30 border border-neutral-800 rounded-xl p-3">
-                                    <p className="text-[10px] text-neutral-500 font-mono uppercase mb-1">{t('profile.totalCreditsUsed') || 'USADOS'}</p>
+                                    <MicroTitle as="p" className="mb-1">{t('profile.totalCreditsUsed') || 'USADOS'}</MicroTitle>
                                     <p className="text-lg font-bold text-neutral-300 font-mono">{subscriptionStatus.creditsUsed ?? 0}</p>
                                 </div>
                                 {/* Storage Usage - Compact */}
@@ -262,7 +263,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                                         <div className="flex items-center justify-between gap-1 mb-1">
                                             <div className="flex items-center gap-1.5">
                                                 <HardDrive size={10} className="text-neutral-500" />
-                                                <p className="text-[10px] text-neutral-500 font-mono uppercase">{t('credits.storage') || 'STORAGE'}</p>
+                                                <MicroTitle as="p">{t('credits.storage') || 'STORAGE'}</MicroTitle>
                                             </div>
                                             <p className="text-[10px] text-brand-cyan font-mono">{storageUsage.percentage.toFixed(0)}%</p>
                                         </div>
@@ -276,7 +277,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
 
                             {subscriptionStatus.creditsResetDate && (
                                 <div className="text-center pt-2">
-                                    <p className="text-[10px] text-neutral-600 font-mono uppercase tracking-widest">
+                                    <MicroTitle as="p" className="text-neutral-600 tracking-widest text-center">
                                         {subscriptionStatus.hasActiveSubscription
                                             ? t('credits.renews', {
                                                 date: formatFriendlyDate(subscriptionStatus.creditsResetDate),
@@ -284,7 +285,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                                             : t('credits.resets', {
                                                 date: formatFriendlyDate(subscriptionStatus.creditsResetDate),
                                             })}
-                                    </p>
+                                    </MicroTitle>
                                 </div>
                             )}
                         </div>
@@ -324,9 +325,9 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                         <Share2 size={20} className="text-brand-cyan" />
                     </div>
                     <div>
-                        <h3 className="text-base font-semibold text-neutral-100 font-redhatmono">
+                        <MicroTitle as="h3" className="text-base font-semibold text-neutral-100 font-redhatmono">
                             {t('referral.title') || 'INDICAÇÃO'}
-                        </h3>
+                        </MicroTitle>
                     </div>
                 </div>
 
@@ -339,9 +340,9 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                                 </p>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] text-neutral-600 font-mono uppercase block tracking-widest">
+                                    <MicroTitle as="label" className="block text-neutral-600">
                                         {t('referral.yourLink') || 'SEU LINK DE INDICAÇÃO'}
-                                    </label>
+                                    </MicroTitle>
                                     <div className="flex gap-2">
                                         <div className="relative flex-1 group">
                                             <input
@@ -368,18 +369,18 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                                     <p className="text-xl font-bold text-neutral-300 font-mono mb-1">
                                         {referralStats.referredUsersCount || 0}
                                     </p>
-                                    <p className="text-[10px] text-neutral-600 font-mono uppercase tracking-wide">
+                                    <MicroTitle as="p" className="text-neutral-600 tracking-wide">
                                         {t('referral.friendsReferred') || 'AMIGOS INDICADOS'}
-                                    </p>
+                                    </MicroTitle>
                                 </div>
                                 <div className="bg-neutral-900/20 border border-neutral-800/50 rounded-xl p-4 flex flex-col items-center justify-center text-center">
                                     <CreditCard className="text-brand-cyan/50 mb-2" size={20} />
                                     <p className="text-xl font-bold text-brand-cyan font-mono mb-1">
                                         {referralStats.totalCreditsEarned || 0}
                                     </p>
-                                    <p className="text-[10px] text-neutral-600 font-mono uppercase tracking-wide">
+                                    <MicroTitle as="p" className="text-neutral-600 tracking-wide">
                                         {t('referral.totalEarned') || 'TOTAL DE CRÉDITOS GANHOS'}
-                                    </p>
+                                    </MicroTitle>
                                 </div>
                             </div>
                         </div>

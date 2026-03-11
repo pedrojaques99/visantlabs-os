@@ -371,6 +371,18 @@ function buildBrandContext(bg: BrandGuideline): string {
     lines.push('')
   }
 
+  if (bg.logos?.length) {
+    lines.push('LOGOS:')
+    for (const l of bg.logos) lines.push(`  ${l.variant}: ${l.url}${l.label ? ` (${l.label})` : ''}`)
+    lines.push('')
+  }
+
+  if (bg.media?.length) {
+    lines.push('MEDIA KIT (reference assets — use as templates/inspiration):')
+    for (const m of bg.media) lines.push(`  [${m.type}] ${m.url}${m.label ? ` — ${m.label}` : ''}`)
+    lines.push('')
+  }
+
   if (bg.tokens?.spacing) {
     lines.push(`SPACING: ${Object.entries(bg.tokens.spacing).map(([k, v]) => `${k}=${v}`).join(' ')}`)
   }

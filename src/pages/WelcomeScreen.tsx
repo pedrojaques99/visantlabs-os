@@ -16,6 +16,8 @@ import type { UploadedImage } from '../types/types';
 import { toast } from 'sonner';
 import { branding, getYoutubeThumbnail } from '../config/branding';
 import AnimatedTitle from '../components/shared/AnimatedTitle';
+import { PremiumButton } from '../components/ui/PremiumButton';
+import { MicroTitle } from '../components/ui/MicroTitle';
 
 const SUPPORTED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const MAX_IMAGE_SIZE_MB = 10;
@@ -385,14 +387,14 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
       </div>
       <div className="relative z-10 max-w-2xl w-full text-center space-y-8 animate-fade-in">
         <div className="space-y-4">
-          <h1 className={`text-2xl md:text-3xl font-bold font-mono tracking-wide ${theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'}`}>
-            Envie seu logo ou layout
+          <h1 className={`text-2xl md:text-3xl font-regular font-manrope tracking-wider ${theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800'}`}>
+            {t('welcome.uploadLogo') || 'Envie seu logo ou layout'}
           </h1>
-          <h3 className={`text-lg md:text-xl font-mono ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'}`}>
-            e veja a mágica acontecer
-          </h3>
+          <MicroTitle className="text-brand-cyan uppercase tracking-[0.2em]">
+            {t('welcome.magicHappens') || 'e veja a mágica acontecer'}
+          </MicroTitle>
         </div>
-        <div className="flex flex-col gap-4 justify-center items-center">
+        <div className="flex flex-col gap-6 justify-center items-center">
           <input
             ref={fileInputRef}
             type="file"
@@ -407,26 +409,30 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
             delay={showPasteTip ? 0 : 300}
             dismissible={showPasteTip}
           >
-            <button
-              onClick={handleUploadClick}
-              disabled={isProcessing || isCheckingAuth || isVerifyingAuth}
-              data-tutorial-target="upload-image"
-              className="inline-flex flex-col items-center gap-1 bg-brand-cyan/80 hover:bg-brand-cyan disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed cursor-pointer text-black font-bold py-5 px-12 rounded-md transition-all duration-300 font-mono shadow-lg shadow-brand-cyan/20"
-            >
-              <div className="flex items-center gap-3">
-                <UploadCloud size={22} className="md:w-8 md:h-8" />
-                <span className="text-sm md:text-base">Enviar imagem</span>
-              </div>
-            </button>
+            <div className="w-full max-w-sm">
+              <PremiumButton
+                onClick={handleUploadClick}
+                disabled={isProcessing || isCheckingAuth || isVerifyingAuth}
+                isLoading={isProcessing}
+                loadingText="UPLOADING..."
+                icon={UploadCloud}
+                className="w-full h-16 text-lg"
+              >
+                {t('welcome.sendImage') || 'Enviar imagem'}
+              </PremiumButton>
+            </div>
           </Tooltip>
-          <span className="text-[10px] md:text-xs font-normal opacity-70 hover:opacity-100">ou ctrl + v para colar</span>
+          
+          <MicroTitle as="span" className="text-[10px] md:text-xs opacity-60 hover:opacity-100 transition-opacity">
+            {t('welcome.pasteTipSmall') || 'ou ctrl + v para colar'}
+          </MicroTitle>
 
           {isProcessing && (
-            <div className={`flex items-center gap-2 font-mono text-sm ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
+            <div className={`flex items-center gap-2 font-manrope text-sm ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
               }`}>
               <GlitchLoader size={16} color="var(--brand-cyan)" />
               <span>
-                Loading image...
+                {t('welcome.loadingImage') || 'Loading image...'}
               </span>
             </div>
           )}

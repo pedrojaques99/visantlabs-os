@@ -44,6 +44,7 @@ const ForgotPasswordPage = lazyWithRetry(() => import('./pages/ForgotPasswordPag
 const DesignSystemPage = lazyWithRetry(() => import('./pages/DesignSystemPage').then(m => ({ default: m.DesignSystemPage })));
 const DocsPage = lazyWithRetry(() => import('./pages/DocsPage').then(m => ({ default: m.DocsPage })));
 const ApiKeysPage = lazyWithRetry(() => import('./pages/ApiKeysPage').then(m => ({ default: m.ApiKeysPage })));
+const BrandGuidelinesPage = lazyWithRetry(() => import('./pages/BrandGuidelinesPage').then(m => ({ default: m.BrandGuidelinesPage })));
 
 const LoadingFallback = () => (
   <div className="min-h-screen bg-background flex items-center justify-center">
@@ -83,6 +84,7 @@ const App: React.FC = () => {
                 <Route path="/qrcode" element={<QRCodePage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/privacy" element={<PrivacyPolicyPage />} />
+                <Route path="/brand-guidelines" element={<BrandGuidelinesPage />} />
                 <Route path="/design-system" element={<DesignSystemPage />} />
                 <Route path="/docs" element={<DocsPage />} />
                 <Route path="/settings/api-keys" element={<ApiKeysPage />} />

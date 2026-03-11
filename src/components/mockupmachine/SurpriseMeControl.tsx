@@ -12,6 +12,8 @@ import { Tooltip } from '@/components/ui/Tooltip';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { ComponentProps } from 'react';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
+import { MicroTitle } from '../ui/MicroTitle';
+import { GlassPanel } from '../ui/GlassPanel';
 
 
 interface SurpriseMeControlProps {
@@ -267,13 +269,11 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
     // State for local settings menu
     const [showSettings, setShowSettings] = React.useState(false);
     return (
-        <div
+        <GlassPanel
             className={cn(
                 'transition-all duration-500 origin-center flex flex-col items-center mx-auto',
                 'scale-80 md:scale-100 pointer-events-auto',
-                isInline ? 'w-full bg-transparent' : 'w-fit max-w-full',
-                !isInline && 'bg-neutral-900/60 backdrop-blur-2xl border border-white/10 rounded-2xl p-2.5 shadow-2xl',
-                containerClassName
+                isInline ? 'w-full bg-transparent border-0 shadow-none backdrop-blur-0' : 'w-fit max-w-full'
             )}
         >
             <div
@@ -399,10 +399,10 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                             <div className="space-y-5">
                                 <div className="space-y-3 pb-4 border-b border-white/5">
                                     <div className="flex items-center justify-between">
-                                        <h5 className="text-[10px] font-mono uppercase tracking-widest text-neutral-400 font-bold flex items-center gap-2">
+                                        <MicroTitle as="h5" className="font-bold flex items-center gap-2">
                                             <Sparkles size={12} className="text-brand-cyan" />
                                             {t('mockup.aiSettings') || 'MODELO & AJUSTES'}
-                                        </h5>
+                                        </MicroTitle>
                                         {selectedModel && (
                                             <Badge variant="outline" className="text-[9px] h-5 px-1.5 border-white/10 text-neutral-400 font-mono">
                                                 {getCreditsRequired(selectedModel, resolution)} 💎 / img
@@ -411,7 +411,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                     </div>
 
                                     <div className="space-y-1">
-                                        <label className="text-[9px] font-mono uppercase text-neutral-500 ml-1">Modelo de IA</label>
+                                        <MicroTitle as="span" className="text-[9px] ml-1">Modelo de IA</MicroTitle>
                                         <Select
                                             value={imageProvider === 'seedream' ? 'seedream-4.5' : 'gemini-pro'}
                                             onChange={(val) => {
@@ -434,7 +434,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
 
                                     {setResolution && (
                                         <div className="space-y-1">
-                                            <label className="text-[9px] font-mono uppercase text-neutral-500 ml-1">Resolução / Qualidade</label>
+                                            <MicroTitle as="span" className="text-[9px] ml-1">Resolução / Qualidade</MicroTitle>
                                             <div className="flex gap-1.5 h-[32px]">
                                                 {(imageProvider === 'gemini' ? ['HD', '1K', '2K', '4K'] : ['2K', '4K']).map((res) => (
                                                     <button
@@ -454,7 +454,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
 
                                     {setMockupCount && (
                                         <div className="space-y-1">
-                                            <label className="text-[9px] font-mono uppercase text-neutral-500 ml-1">Nº Imagens (Outputs)</label>
+                                            <MicroTitle as="span" className="text-[9px] ml-1">Nº Imagens (Outputs)</MicroTitle>
                                             <div className="relative flex items-center">
                                                 <input
                                                     type="number"
@@ -487,7 +487,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                     {aspectRatio && setAspectRatio && (
                                         <div className="space-y-1">
                                             <div className="flex justify-between items-center ml-1">
-                                                <label className="text-[9px] font-mono uppercase text-neutral-500">Proporção</label>
+                                                <MicroTitle as="span" className="text-[9px]">Proporção</MicroTitle>
                                                 <span className="text-[8px] font-mono text-neutral-500">{aspectRatio}</span>
                                             </div>
                                             <div className="grid grid-cols-5 gap-1.5">
@@ -534,6 +534,6 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                     )}
                 </div>}
             </div>
-        </div>
+        </GlassPanel>
     );
 };

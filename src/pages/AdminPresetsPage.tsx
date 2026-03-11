@@ -54,6 +54,7 @@ import {
 import { PresetCard } from '@/components/PresetCard';
 import { migrateLegacyPreset } from '@/types/communityPrompts';
 import type { CommunityPrompt } from '@/types/communityPrompts';
+import { MicroTitle } from '../components/ui/MicroTitle';
 
 const ADMIN_API = '/api/admin/presets';
 
@@ -1656,9 +1657,9 @@ export const AdminPresetsPage: React.FC = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm text-neutral-400 font-mono mb-2">
+                        <MicroTitle as="label" className="mb-2 uppercase">
                           {t('adminPresets.idRequired')}
-                        </label>
+                        </MicroTitle>
                         <Input
                           type="text"
                           value={formData.id}
@@ -1670,9 +1671,9 @@ export const AdminPresetsPage: React.FC = () => {
                       </div>
 
                       <div>
-                        <label className="block text-sm text-neutral-400 font-mono mb-2">
+                        <MicroTitle as="label" className="mb-2 uppercase">
                           {t('adminPresets.nameRequired')}
-                        </label>
+                        </MicroTitle>
                         <Input
                           type="text"
                           value={formData.name}
@@ -1682,9 +1683,9 @@ export const AdminPresetsPage: React.FC = () => {
                       </div>
 
                       <div className="md:col-span-2">
-                        <label className="block text-sm text-neutral-400 font-mono mb-2">
+                        <MicroTitle as="label" className="mb-2 uppercase">
                           {t('adminPresets.descriptionRequired')}
-                        </label>
+                        </MicroTitle>
                         <Input
                           type="text"
                           value={formData.description}
@@ -1694,9 +1695,9 @@ export const AdminPresetsPage: React.FC = () => {
                       </div>
 
                       <div className="md:col-span-2">
-                        <label className="block text-sm text-neutral-400 font-mono mb-2">
+                        <MicroTitle as="label" className="mb-2 uppercase">
                           {t('adminPresets.promptRequired')}
-                        </label>
+                        </MicroTitle>
                         <Textarea
                           value={formData.prompt}
                           onChange={(e) => setFormData({ ...formData, prompt: e.target.value })}
@@ -1708,9 +1709,9 @@ export const AdminPresetsPage: React.FC = () => {
                       {effectiveEditType === 'mockup' && (
                         <div className="md:col-span-2 space-y-4">
                           <div>
-                            <label className="block text-sm text-neutral-400 font-mono mb-2">
+                            <MicroTitle as="label" className="mb-2 uppercase">
                               Imagem de Referência
-                            </label>
+                            </MicroTitle>
                             {!formData.referenceImageUrl ? (
                               <div className="space-y-3">
                                 <AdminImageUploader
@@ -1751,7 +1752,7 @@ export const AdminPresetsPage: React.FC = () => {
                                   </button>
                                 </div>
                                 <div>
-                                  <p className="text-xs text-neutral-500 font-mono mb-2">Ou faça upload de uma nova imagem:</p>
+                                  <MicroTitle as="p" className="mb-2 lowercase">Ou faça upload de uma nova imagem:</MicroTitle>
                                   <AdminImageUploader
                                     onImageUpload={handleImageUpload}
                                     disabled={isUploadingImage || !formData.id || formData.id.trim() === ''}
@@ -1761,9 +1762,9 @@ export const AdminPresetsPage: React.FC = () => {
                             )}
                           </div>
                           <div>
-                            <label className="block text-sm text-neutral-400 font-mono mb-2">
+                            <MicroTitle as="label" className="mb-2 lowercase">
                               Ou insira a URL manualmente
-                            </label>
+                            </MicroTitle>
                             <input
                               type="text"
                               value={formData.referenceImageUrl || ''}
@@ -1779,9 +1780,9 @@ export const AdminPresetsPage: React.FC = () => {
                       )}
 
                       <div>
-                        <label className="block text-sm text-neutral-400 font-mono mb-2">
+                        <MicroTitle as="label" className="mb-2 lowercase">
                           Aspect Ratio (obrigatório)
-                        </label>
+                        </MicroTitle>
                         <select
                           value={formData.aspectRatio}
                           onChange={(e) => setFormData({ ...formData, aspectRatio: e.target.value as AspectRatio })}
@@ -1795,9 +1796,9 @@ export const AdminPresetsPage: React.FC = () => {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm text-neutral-400 font-mono mb-2">
+                        <MicroTitle as="label" className="mb-2 lowercase">
                           Model (opcional)
-                        </label>
+                        </MicroTitle>
                         <select
                           value={formData.model || ''}
                           onChange={(e) => setFormData({ ...formData, model: e.target.value as GeminiModel || undefined })}
@@ -1814,9 +1815,9 @@ export const AdminPresetsPage: React.FC = () => {
 
                       {effectiveEditType === 'mockup' && (
                         <div>
-                          <label className="block text-sm text-neutral-400 font-mono mb-2">
+                          <MicroTitle as="label" className="mb-2 lowercase">
                             Categoria Mockup (opcional)
-                          </label>
+                          </MicroTitle>
                           <select
                             value={formData.mockupCategoryId || ''}
                             onChange={(e) => setFormData({ ...formData, mockupCategoryId: e.target.value })}
@@ -1833,9 +1834,9 @@ export const AdminPresetsPage: React.FC = () => {
                       )}
 
                       <div className="md:col-span-2">
-                        <label className="block text-sm text-neutral-400 font-mono mb-2">
+                        <MicroTitle as="label" className="mb-2 lowercase">
                           Tags (opcional)
-                        </label>
+                        </MicroTitle>
                         <div className="space-y-2">
                           <div className="flex gap-2">
                             <input

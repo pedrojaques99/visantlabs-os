@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Analytics } from '@vercel/analytics/react';
 import { Header } from './Header';
@@ -49,7 +49,27 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isTermsOpen, setIsTermsOpen] = useState(false);
   const [isRefundOpen, setIsRefundOpen] = useState(false);
   const [isUsagePolicyOpen, setIsUsagePolicyOpen] = useState(false);
-  const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
+  const [subscriptionStatus, _setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
+  const subscriptionStatusRef = useRef(subscriptionStatus);
+
+  // Stable setter that only triggers re-render when status actually changes
+  const setSubscriptionStatus = useCallback((status: SubscriptionStatus | null) => {
+    const prev = subscriptionStatusRef.current;
+    if (prev && status &&
+      prev.hasActiveSubscription === status.hasActiveSubscription &&
+      prev.subscriptionStatus === status.subscriptionStatus &&
+      prev.subscriptionTier === status.subscriptionTier &&
+      prev.totalCreditsEarned === status.totalCreditsEarned &&
+      prev.creditsUsed === status.creditsUsed &&
+      prev.creditsRemaining === status.creditsRemaining &&
+      prev.canGenerate === status.canGenerate &&
+      prev.freeGenerationsRemaining === status.freeGenerationsRemaining) {
+      return; // No meaningful change, skip re-render
+    }
+    subscriptionStatusRef.current = status;
+    _setSubscriptionStatus(status);
+  }, []);
+
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
   const [isCreditPackagesModalOpen, setIsCreditPackagesModalOpen] = useState(false);
   const [creditPackagesModalTab, setCreditPackagesModalTab] = useState<'buy' | 'credits'>('buy');
@@ -378,8 +398,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         if (!isMounted) return;
 
         if (user) {
-          setIsAuthenticated(true);
-          setCurrentUser(user);
+          setIsAuthenticated(prev => prev === true ? prev : true);
+          setCurrentUser(prev => {
+            // Only update if user actually changed (avoid re-render on same user)
+            if (prev && prev.id === user.id && prev.email === user.email) return prev;
+            return user;
+          });
         } else {
           // No user returned - check if token still exists
           const token = authService.getToken();
@@ -408,7 +432,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         }
       } finally {
         if (!isMounted) return;
-        setIsCheckingAuth(false);
+        setIsCheckingAuth(prev => prev === false ? prev : false);
       }
     };
 
@@ -467,19 +491,22 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     };
   }, []);
 
-  const contextValue: LayoutContextValue = {
+  const onSubscriptionModalOpen = useCallback(() => setIsSubscriptionModalOpen(true), []);
+  const onCreditPackagesModalOpen = useCallback(() => {
+    setCreditPackagesModalTab('buy');
+    setIsCreditPackagesModalOpen(true);
+  }, []);
+
+  const contextValue = useMemo<LayoutContextValue>(() => ({
     subscriptionStatus,
     isAuthenticated,
     isCheckingAuth,
-    onSubscriptionModalOpen: () => setIsSubscriptionModalOpen(true),
-    onCreditPackagesModalOpen: () => {
-      setCreditPackagesModalTab('buy');
-      setIsCreditPackagesModalOpen(true);
-    },
+    onSubscriptionModalOpen,
+    onCreditPackagesModalOpen,
     setSubscriptionStatus,
     registerUnsavedOutputsHandler,
     registerResetHandler,
-  };
+  }), [subscriptionStatus, isAuthenticated, isCheckingAuth, onSubscriptionModalOpen, onCreditPackagesModalOpen, setSubscriptionStatus, registerUnsavedOutputsHandler, registerResetHandler]);
 
   return (
     <LayoutContext.Provider value={contextValue}>
