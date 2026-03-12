@@ -526,7 +526,7 @@ export const DocsPage: React.FC = () => {
                     </BreadcrumbList>
                   </BreadcrumbWithBack>
 
-                  <button
+                  <Button variant="brand" 
                     onClick={handleCopyMarkdown}
                     title="Copy this section as clean Markdown — ideal for pasting into LLM contexts"
                     className={cn(
@@ -538,7 +538,7 @@ export const DocsPage: React.FC = () => {
                   >
                     {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                     {copied ? 'Copied!' : 'Copy as Markdown'}
-                  </button>
+                  </Button>
                 </div>
 
                 {activeTab === 'overview' && (
@@ -635,7 +635,7 @@ export const DocsPage: React.FC = () => {
                             <code className="text-brand-cyan font-redhatmono text-sm block">Authorization: Bearer YOUR_JWT_TOKEN</code>
                             <code className="text-brand-cyan font-redhatmono text-sm block">Authorization: Bearer visant_sk_xxxxxxxxxxxx</code>
                           </div>
-                          <p className="text-muted-foreground text-xs mt-2">For agents, create an API key from <a href="/settings/api-keys" className="text-brand-cyan hover:underline">Settings → API Keys</a>. See the <button onClick={() => setActiveTab('agents')} className="text-brand-cyan hover:underline">For Agents</button> tab for details.</p>
+                          <p className="text-muted-foreground text-xs mt-2">For agents, create an API key from <a href="/settings/api-keys" className="text-brand-cyan hover:underline">Settings → API Keys</a>. See the <Button variant="ghost" onClick={() => setActiveTab('agents')} className="text-brand-cyan hover:underline">For Agents</Button> tab for details.</p>
                         </div>
 
                         <div>
@@ -1923,8 +1923,10 @@ downloadJsonFile(exported, projectName);`}</pre>
                             <div className="bg-secondary/50 px-4 py-2 border-b border-border font-redhatmono text-xs text-muted-foreground uppercase tracking-wider">TypeScript</div>
                             <pre className="p-4 text-xs font-redhatmono text-foreground m-0 overflow-x-auto leading-relaxed">{`import { readJsonFile, validateVisantJson } from '@/utils/canvas/canvasJsonExport';
 import { canvasApi } from '@/services/canvasApi';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
-// file: File from <input type="file" accept=".json">
+// file: File from <Input type="file" accept=".json">
 const raw = await readJsonFile(file);
 
 if (!validateVisantJson(raw)) {

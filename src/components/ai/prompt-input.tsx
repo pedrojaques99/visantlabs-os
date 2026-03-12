@@ -8,6 +8,8 @@ import type {
   HTMLAttributes,
   KeyboardEventHandler,
 } from 'react';
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
 
 export type PromptInputProps = HTMLAttributes<HTMLFormElement>;
 
@@ -50,7 +52,7 @@ export const PromptInputTextarea = ({
   };
 
   return (
-    <textarea
+    <Textarea
       className={cn(
         'w-full resize-y rounded-none border-none p-3 shadow-none outline-none ring-0',
         'min-h-[48px] max-h-[164px] bg-transparent text-neutral-200 placeholder-neutral-500',
@@ -106,8 +108,7 @@ export const PromptInputSubmit = ({
   }
 
   return (
-    <button
-      className={cn(
+    <Button variant="brand"       className={cn(
         'flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5',
         'bg-brand-cyan text-black font-medium text-sm',
         'hover:bg-brand-cyan/90 transition-colors',
@@ -119,7 +120,7 @@ export const PromptInputSubmit = ({
       {...props}
     >
       {children ?? Icon}
-    </button>
+    </Button>
   );
 };
 

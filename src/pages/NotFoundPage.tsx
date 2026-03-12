@@ -13,6 +13,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '../components/ui/BreadcrumbWithBack';
+import { Button } from '@/components/ui/button'
 
 export const NotFoundPage: React.FC = () => {
   const { t } = useTranslation();
@@ -74,8 +75,7 @@ export const NotFoundPage: React.FC = () => {
 
             {/* Actions */}
             <div className="flex flex-col sm:flex-row gap-3 justify-center items-center pt-6">
-              <button
-                onClick={() => navigate('/')}
+              <Button variant="ghost"                 onClick={() => navigate('/')}
                 className={`px-8 py-3.5 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 shadow-lg cursor-pointer ${theme === 'dark'
                   ? 'shadow-[brand-cyan]/20'
                   : 'shadow-[brand-cyan]/30'
@@ -83,7 +83,7 @@ export const NotFoundPage: React.FC = () => {
               >
                 <Home className="h-4 w-4" />
                 {t('notFound.goHome') || 'Ir para a página inicial'}
-              </button>
+              </Button>
             </div>
 
             {/* Helpful Links */}
@@ -94,20 +94,18 @@ export const NotFoundPage: React.FC = () => {
                 {t('notFound.helpfulLinks') || 'Links úteis:'}
               </p>
               <div className="flex flex-wrap justify-center gap-6">
-                <button
-                  onClick={() => navigate('/')}
+                <Button variant="ghost"                   onClick={() => navigate('/')}
                   className={`text-sm hover:text-brand-cyan transition-colors cursor-pointer ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                     }`}
                 >
                   {t('notFound.mockupMachine') || 'Mockup Machine'}
-                </button>
-                <button
-                  onClick={() => navigate('/pricing')}
+                </Button>
+                <Button variant="ghost"                   onClick={() => navigate('/pricing')}
                   className={`text-sm hover:text-brand-cyan transition-colors cursor-pointer ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                     }`}
                 >
                   {t('notFound.pricing') || 'Preços'}
-                </button>
+                </Button>
               </div>
             </div>
           </div>

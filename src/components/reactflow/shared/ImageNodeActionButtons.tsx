@@ -2,6 +2,7 @@ import React from 'react';
 import { Maximize2, Heart, Download, FileText, Trash2, Palette, X } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button'
 
 interface ImageNodeActionButtonsProps {
   // View button
@@ -81,18 +82,18 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
   return (
     <>
       {showView && onView && (
-        <button
+        <Button variant="ghost" 
           onClick={(e) => handleClick(e, onView)}
           className="p-1 bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 rounded transition-colors backdrop-blur-sm border border-neutral-700/30 hover:border-neutral-600/50"
           title={t(`${translationKeyPrefix}.viewFullScreen`) || 'View full screen'}
           onMouseDown={handleMouseDown}
         >
           <Maximize2 size={12} strokeWidth={2} />
-        </button>
+        </Button>
       )}
 
       {showDownload && onDownload && (
-        <button
+        <Button variant="ghost" 
           onClick={(e) => {
             e.stopPropagation();
             // Handle both function types: with or without event parameter
@@ -117,22 +118,22 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
           ) : (
             <Download size={12} strokeWidth={2} />
           )}
-        </button>
+        </Button>
       )}
 
       {showDelete && onDelete && (
-        <button
+        <Button variant="ghost" 
           onClick={(e) => handleClick(e, onDelete)}
           className="p-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded transition-colors backdrop-blur-sm border border-red-500/20 hover:border-red-500/30"
           title={t(`${translationKeyPrefix}.delete`) || 'Delete'}
           onMouseDown={handleMouseDown}
         >
           <Trash2 size={12} strokeWidth={2} />
-        </button>
+        </Button>
       )}
 
       {showBrandKit && onBrandKit && (
-        <button
+        <Button variant="ghost" 
           onClick={(e) => handleClick(e, onBrandKit)}
           disabled={brandKitDisabled}
           className={cn(
@@ -145,11 +146,11 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
           onMouseDown={handleMouseDown}
         >
           <Palette size={12} strokeWidth={2} />
-        </button>
+        </Button>
       )}
 
       {showLike && (onLike || onSave) && (
-        <button
+        <Button variant="ghost" 
           onClick={(e) => {
             e.stopPropagation();
             const handler = onLike || onSave;
@@ -185,11 +186,11 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
           ) : (
             <Heart size={12} className={isLiked ? "fill-current" : ""} strokeWidth={2} />
           )}
-        </button>
+        </Button>
       )}
 
       {showDescribe && onDescribe && (
-        <button
+        <Button variant="ghost" 
           onClick={(e) => handleClick(e, onDescribe)}
           disabled={describeDisabled || isDescribing}
           className={cn(
@@ -206,18 +207,18 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
           ) : (
             <FileText size={12} strokeWidth={2} />
           )}
-        </button>
+        </Button>
       )}
 
       {showRemove && onRemove && (
-        <button
+        <Button variant="ghost" 
           onClick={(e) => handleClick(e, onRemove)}
           className="p-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded transition-colors backdrop-blur-sm border border-red-500/20 hover:border-red-500/30"
           title={t(`${translationKeyPrefix}.removeLogo`) || t(`${translationKeyPrefix}.remove`) || 'Remove'}
           onMouseDown={handleMouseDown}
         >
           <X size={12} strokeWidth={2} />
-        </button>
+        </Button>
       )}
     </>
   );

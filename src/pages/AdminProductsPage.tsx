@@ -354,8 +354,7 @@ export const AdminProductsPage: React.FC = () => {
                                 <RefreshCw className={cn("h-4 w-4 mr-2", isLoading && "animate-spin")} />
                                 Sincronizar
                             </Button>
-                            <Button
-                                onClick={handleCreate}
+                            <Button variant="brand"                                 onClick={handleCreate}
                                 className="bg-brand-cyan hover:bg-brand-cyan/90 text-neutral-950 font-bold"
                             >
                                 <Plus className="h-4 w-4 mr-2" />
@@ -672,8 +671,7 @@ export const AdminProductsPage: React.FC = () => {
 
                                 <div className="flex items-center gap-3">
                                     <Button variant="ghost" onClick={() => setIsEditModalOpen(false)}>Cancelar</Button>
-                                    <Button
-                                        className="bg-brand-cyan hover:bg-brand-cyan/90 text-neutral-950 font-bold px-8"
+                                    <Button variant="brand"                                         className="bg-brand-cyan hover:bg-brand-cyan/90 text-neutral-950 font-bold px-8"
                                         onClick={handleSave}
                                         disabled={isLoading}
                                     >

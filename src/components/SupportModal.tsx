@@ -151,7 +151,7 @@ ${message}
           <h2 className="text-lg font-semibold font-mono text-neutral-200 uppercase">
             {t('support.title') || 'Support / Report Bug'}
           </h2>
-          <Button
+          <Button variant="ghost" 
             onClick={handleClose}
             className="text-neutral-500 hover:text-neutral-300 transition-colors"
             aria-label="Close"
@@ -167,7 +167,7 @@ ${message}
               {t('support.contactType') || 'Contact Type'}
             </label>
             <div className="flex gap-2">
-              <Button
+              <Button variant="ghost" 
                 type="button"
                 onClick={() => setContactType('customerService')}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md border transition-all text-sm font-mono ${contactType === 'customerService'
@@ -178,7 +178,7 @@ ${message}
                 <MessageCircle size={16} />
                 {t('support.customerService') || 'Customer Service'}
               </Button>
-              <Button
+              <Button variant="ghost" 
                 type="button"
                 onClick={() => setContactType('reportBug')}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md border transition-all text-sm font-mono ${contactType === 'reportBug'
@@ -252,14 +252,14 @@ ${message}
 
           {/* Action Buttons */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-800/50">
-            <Button
+            <Button variant="ghost" 
               type="button"
               onClick={handleClose}
               className="px-4 py-2 text-xs font-mono text-neutral-400 hover:text-neutral-200 transition-colors border border-neutral-700/50 hover:border-neutral-600 rounded-md"
             >
               {t('common.cancel') || 'Cancel'}
             </Button>
-            <Button
+            <Button variant="brand" 
               type="submit"
               disabled={isSubmitting || !subject.trim() || !message.trim()}
               className="flex items-center justify-center gap-2 px-4 py-2 text-xs font-mono bg-brand-cyan/80 hover:bg-brand-cyan/90 disabled:bg-neutral-700 disabled:text-neutral-500 disabled:cursor-not-allowed text-black font-semibold rounded-md transition-all duration-200"

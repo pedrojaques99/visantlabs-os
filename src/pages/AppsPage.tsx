@@ -19,6 +19,7 @@ import { ImageOff, ExternalLink } from 'lucide-react';
 import { usePremiumAccess } from '@/hooks/usePremiumAccess';
 import { useLayout } from '@/hooks/useLayout';
 import { RenderAppGrid } from '../components/RenderAppGrid';
+import { MicroTitle } from '@/components/ui/MicroTitle'
 
 export const AppsPage: React.FC = () => {
   const { t } = useTranslation();

@@ -13,6 +13,7 @@ import { ImageNodeActionButtons } from './shared/ImageNodeActionButtons';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { ConfirmationModal } from '../ConfirmationModal';
+import { Input } from '@/components/ui/input'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const LogoNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -159,7 +160,7 @@ export const LogoNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         </div>
       ) : (
         <>
-          <input
+          <Input
             ref={logoInputRef}
             type="file"
             accept="image/*"

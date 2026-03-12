@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { SearchBar } from '@/components/ui/SearchBar';
 import type { Node } from '@xyflow/react';
 import type { FlowNodeData } from '@/types/reactFlow';
+import { Button } from '@/components/ui/button'
 
 interface ContextMenuProps {
   x: number;
@@ -395,8 +396,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   };
 
   const MenuItemButton: React.FC<{ item: MenuItem; index: number }> = ({ item, index }) => (
-    <button
-      onClick={item.onClick}
+    <Button variant="brand"       onClick={item.onClick}
       className={cn(
         "w-full px-3 py-2.5 text-left text-sm cursor-pointer",
         "rounded-md transition-colors duration-150",
@@ -413,7 +413,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
         {item.icon}
       </span>
       <span className="flex-1 font-medium text-[11px] tracking-wide">{highlightText(item.label, searchQuery)}</span>
-    </button>
+    </Button>
   );
 
   const categoryOrder = ['Generate', 'Composition', 'Effects', 'Branding'];
@@ -446,14 +446,13 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           <span className="text-xs font-semibold text-neutral-300 uppercase tracking-wider">
             Add Node
           </span>
-          <button
-            onClick={onClose}
+          <Button variant="ghost"             onClick={onClose}
             className="p-1 text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800/50 rounded transition-colors duration-150 cursor-pointer"
             aria-label="Close menu"
             onMouseDown={(e) => e.stopPropagation()}
           >
             <X size={16} />
-          </button>
+          </Button>
         </div>
 
         {/* Search Input */}

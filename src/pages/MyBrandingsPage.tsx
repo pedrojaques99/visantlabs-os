@@ -20,6 +20,7 @@ import { PremiumButton } from '../components/ui/PremiumButton';
 import { toast } from 'sonner';
 import { FileText, Calendar, Eye, Trash2, FilePenLine } from 'lucide-react';
 import { SEO } from '../components/SEO';
+import { Button } from '@/components/ui/button'
 
 export const MyBrandingsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -169,13 +170,12 @@ export const MyBrandingsPage: React.FC = () => {
                   : `${projects.length} ${projects.length === 1 ? 'project' : 'projects'}`}
               </p>
             </div>
-            <button
-              onClick={() => navigate('/branding-machine')}
+            <Button variant="ghost"               onClick={() => navigate('/branding-machine')}
               className="px-4 py-2 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 cursor-pointer flex-shrink-0"
             >
               <FilePenLine className="h-4 w-4" />
               {t('branding.myBrandings.createNew') || 'Create New'}
-            </button>
+            </Button>
           </div>
 
           {/* Projects Grid */}
@@ -225,8 +225,7 @@ export const MyBrandingsPage: React.FC = () => {
                   </p>
 
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={(e) => {
+                    <Button variant="ghost"                       onClick={(e) => {
                         e.stopPropagation();
                         handleView(project);
                       }}
@@ -234,14 +233,13 @@ export const MyBrandingsPage: React.FC = () => {
                     >
                       <Eye className="h-4 w-4" />
                       {t('branding.myBrandings.view') || 'View'}
-                    </button>
-                    <button
-                      onClick={(e) => handleDeleteClick(project._id, e)}
+                    </Button>
+                    <Button variant="ghost"                       onClick={(e) => handleDeleteClick(project._id, e)}
                       disabled={deletingId === project._id}
                       className="px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-red-500/50 hover:text-red-400 rounded-md text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Trash2 className="h-4 w-4" />
-                    </button>
+                    </Button>
                   </div>
                 </GlassPanel>
               ))}

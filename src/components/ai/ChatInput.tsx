@@ -11,6 +11,7 @@ import { Select } from '../ui/select';
 import { Badge } from '../ui/badge';
 import { cn } from '../../lib/utils';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
+import { Input } from '@/components/ui/input'
 
 interface ChatInputProps {
   // Prompt
@@ -231,7 +232,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                     <Image size={14} className="mr-1.5" />
                     {allReferenceImages.length > 0 ? t('mockup.addMore') : t('mockup.addImage')}
                   </Button>
-                  <input
+                  <Input
                     type="file"
                     accept="image/jpeg,image/png,image/webp,image/gif"
                     onChange={handleAddReferenceImage}
@@ -253,7 +254,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           )}
 
           {/* Botão Generate Output */}
-          <Button
+          <Button variant="brand" 
             onClick={onGenerateClick}
             disabled={isGenerateDisabled || (isPromptReady && isGenerating)}
             className="w-full bg-brand-cyan hover:bg-brand-cyan/90 text-black font-semibold shadow-lg shadow-[brand-cyan]/20"
@@ -299,7 +300,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                   </Button>
                   {onGenerateSuggestion && (
                     <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/50">
-                      <Button
+                      <Button variant="ghost" 
                         onClick={(e) => {
                           e.stopPropagation();
                           onGenerateSuggestion(suggestion);

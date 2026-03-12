@@ -8,6 +8,9 @@ import { Dices, Shuffle, ChevronDown, Check, Plus, Grid3x3 } from 'lucide-react'
 import { cn } from '@/lib/utils';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
 import { MockupTagCategory } from '@/services/mockupTagService';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { MicroTitle } from '@/components/ui/MicroTitle'
 
 type SectionKey = 'categories' | 'location' | 'angle' | 'lighting' | 'effects' | 'material';
 
@@ -161,7 +164,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
   }, [filteredTags, tagCategories, availableTags, searchQuery]);
 
   const renderTagButton = (tag: string) => (
-    <button
+    <Button variant="ghost" 
       key={tag}
       type="button"
       onClick={() => handleSelect(tag)}
@@ -178,12 +181,12 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
     >
       <span className="truncate">{translateTag(tag)}</span>
       {selectedTags.includes(tag) && <Check size={10} className="shrink-0 text-brand-cyan" />}
-    </button>
+    </Button>
   );
 
   return (
     <div ref={dropdownRef} className="relative flex-1 min-w-0">
-      <button
+      <Button variant="ghost" 
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
@@ -213,7 +216,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
             isOpen && "rotate-180"
           )}
         />
-      </button>
+      </Button>
 
       {isOpen && (
         <div
@@ -229,7 +232,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
             "p-1.5 border-b",
             theme === 'dark' ? 'border-neutral-700/50' : 'border-neutral-200'
           )}>
-            <input
+            <Input
               ref={inputRef}
               type="text"
               value={searchQuery}
@@ -249,7 +252,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
           <div className="max-h-40 overflow-y-auto">
             {/* Custom tag option */}
             {showCustomOption && (
-              <button
+              <Button variant="ghost" 
                 type="button"
                 onClick={() => handleSelect(searchQuery.trim())}
                 className={cn(
@@ -261,7 +264,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
               >
                 <Plus size={10} className="shrink-0" />
                 <span className="truncate">Adicionar "{searchQuery.trim()}"</span>
-              </button>
+              </Button>
             )}
 
             {/* Tags List */}
@@ -492,13 +495,13 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void;
           </SkeletonText>
         )}
         {isSurpriseMeMode && onRerollAll && (
-          <button
+          <Button variant="ghost" 
             onClick={handleRerollAll}
             className="ml-auto p-1.5 rounded-full hover:bg-neutral-800 transition-all duration-200 group/reroll"
             title="Sortear tudo novamente (Shuffle All)"
           >
             <Shuffle size={14} className="text-neutral-500 group-hover/reroll:text-brand-cyan group-hover/reroll:rotate-180 transition-all duration-500" />
-          </button>
+          </Button>
         )}
       </div>
 

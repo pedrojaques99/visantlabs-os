@@ -2752,8 +2752,7 @@ Generate the new mockup image with the requested changes applied.`;
 
                 {/* Desktop Sidebar Toggle - PanelLeftOpen when collapsed (expand), X when expanded (close) */}
                 <div className="hidden lg:block absolute left-4 top-6 z-40">
-                  <Button
-                    onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                  <Button variant="ghost"                     onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
                     variant="ghost"
                     size="icon"
                     className="w-10 h-10 rounded-xl bg-neutral-900/50 backdrop-blur-md border border-white/5 hover:bg-neutral-800 hover:border-brand-cyan/30 text-neutral-400 hover:text-brand-cyan shadow-xl transition-all group"
@@ -2770,8 +2769,7 @@ Generate the new mockup image with the requested changes applied.`;
                 {/* Mobile Sidebar Toggle - only when floating bar is hidden (bar has its own expand btn) */}
                 {!isSidebarVisibleMobile && !((isDashboardMode && shouldShowGenerateButton) || hasAnalyzed) && (
                   <div className="lg:hidden fixed bottom-6 left-4 z-50">
-                    <Button
-                      onClick={() => setIsSidebarVisibleMobile(true)}
+                    <Button variant="ghost"                       onClick={() => setIsSidebarVisibleMobile(true)}
                       variant="default"
                       size="icon"
                       className="w-12 h-12 rounded-full bg-brand-cyan text-black shadow-2xl shadow-brand-cyan/20 hover:scale-110 active:scale-95 transition-all"
@@ -2785,8 +2783,7 @@ Generate the new mockup image with the requested changes applied.`;
                 {/* Top Action Bar (Mobile Only - Closes Sidebar) */}
                 {isSidebarVisibleMobile && (
                   <div className="lg:hidden fixed top-6 right-6 z-50 mt-[30px]">
-                    <Button
-                      onClick={() => setIsSidebarVisibleMobile(false)}
+                    <Button variant="ghost"                       onClick={() => setIsSidebarVisibleMobile(false)}
                       variant="outline"
                       size="icon"
                       className="w-10 h-10 rounded-full bg-neutral-900 shadow-xl border-white/10"
@@ -2863,8 +2860,7 @@ Generate the new mockup image with the requested changes applied.`;
       {!isSidebarVisibleMobile && ((isDashboardMode && shouldShowGenerateButton) || hasAnalyzed) && (
         <div className="fixed bottom-0 right-0 left-0 z-[60] lg:hidden animate-in fade-in slide-in-from-bottom-4 duration-300 bg-background px-4 md:px-6">
           <div className="flex items-center gap-2 w-full">
-            <Button
-              onClick={() => setIsSidebarVisibleMobile(true)}
+            <Button variant="ghost"               onClick={() => setIsSidebarVisibleMobile(true)}
               variant="outline"
               size="icon"
               className="shrink-0 w-10 h-10 rounded-xl border-white/10 bg-neutral-900/80 hover:bg-neutral-800 hover:border-brand-cyan/30 text-neutral-400 hover:text-brand-cyan"

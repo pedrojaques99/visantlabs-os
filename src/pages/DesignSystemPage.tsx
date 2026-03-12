@@ -65,8 +65,7 @@ const ColorSwatch: React.FC<{
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <h4 className="font-mono font-semibold text-neutral-200">{name}</h4>
-            <button
-              onClick={copyToClipboard}
+            <Button variant="ghost"               onClick={copyToClipboard}
               className="p-1 hover:bg-neutral-800/50 rounded transition-colors"
               title="Copy CSS variable"
             >
@@ -75,7 +74,7 @@ const ColorSwatch: React.FC<{
               ) : (
                 <Copy className="w-3 h-3 text-neutral-400" />
               )}
-            </button>
+            </Button>
           </div>
           <p className="font-mono text-xs text-neutral-500 mb-2 break-all">
             {variable}
@@ -444,28 +443,26 @@ export const DesignSystemPage: React.FC = () => {
       <div className="mt-8 pt-8 border-t border-neutral-800/50">
         <div className="flex items-center justify-between gap-4">
           {previousTab ? (
-            <button
-              onClick={() => handleNavigationClick(previousTab)}
+            <Button variant="ghost"               onClick={() => handleNavigationClick(previousTab)}
               className="flex items-center gap-2 px-4 py-2 text-sm font-mono text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50 rounded-md transition-colors border border-neutral-800/50 hover:border-brand-cyan/30"
             >
               <ChevronLeft className="w-4 h-4" />
               <span>{t('designSystem.navigation.previous') || 'Previous'}</span>
               <span className="text-neutral-500">•</span>
               <span className="text-neutral-500">{getTabLabel(previousTab)}</span>
-            </button>
+            </Button>
           ) : (
             <div />
           )}
           {nextTab && (
-            <button
-              onClick={() => handleNavigationClick(nextTab)}
+            <Button variant="ghost"               onClick={() => handleNavigationClick(nextTab)}
               className="flex items-center gap-2 px-4 py-2 text-sm font-mono text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50 rounded-md transition-colors border border-neutral-800/50 hover:border-brand-cyan/30 ml-auto"
             >
               <span className="text-neutral-500">{getTabLabel(nextTab)}</span>
               <span className="text-neutral-500">•</span>
               <span>{t('designSystem.navigation.next') || 'Next'}</span>
               <ChevronRight className="w-4 h-4" />
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -544,8 +541,7 @@ export const DesignSystemPage: React.FC = () => {
                         </p>
                       </div>
                     </div>
-                    <button
-                      onClick={() => {
+                    <Button variant="ghost"                       onClick={() => {
                         const event = new KeyboardEvent('keydown', {
                           key: 'k',
                           ctrlKey: true,
@@ -562,7 +558,7 @@ export const DesignSystemPage: React.FC = () => {
                         <Command className="w-3 h-3" />
                         <kbd className="text-xs">K</kbd>
                       </div>
-                    </button>
+                    </Button>
                   </div>
                 )}
 
@@ -797,13 +793,13 @@ export const DesignSystemPage: React.FC = () => {
                         </div>
                         <Separator />
                         <div className="flex flex-wrap gap-4">
-                          <Button size="sm">Small</Button>
-                          <Button size="default">Default</Button>
-                          <Button size="lg">Large</Button>
-                          <Button size="icon">
+                          <Button variant="ghost" size="sm">Small</Button>
+                          <Button variant="ghost" size="default">Default</Button>
+                          <Button variant="ghost" size="lg">Large</Button>
+                          <Button variant="ghost" size="icon">
                             <Palette className="w-4 h-4" />
                           </Button>
-                          <Button size="sidebar">Sidebar</Button>
+                          <Button variant="ghost" size="sidebar">Sidebar</Button>
                         </div>
                         <Separator />
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-4">
@@ -817,13 +813,13 @@ export const DesignSystemPage: React.FC = () => {
                           </div>
                           <div className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
                             <div className="text-xs font-mono text-neutral-500 mb-1">Icon</div>
-                            <Button size="icon" className="w-full">
+                            <Button variant="ghost" size="icon" className="w-full">
                               <Palette className="w-4 h-4" />
                             </Button>
                           </div>
                           <div className="p-3 bg-neutral-900/30 border border-neutral-800/50 rounded-md">
                             <div className="text-xs font-mono text-neutral-500 mb-1">Large</div>
-                            <Button size="lg" className="w-full">Large</Button>
+                            <Button variant="ghost" size="lg" className="w-full">Large</Button>
                           </div>
                         </div>
                       </CardContent>
@@ -1210,7 +1206,7 @@ export const DesignSystemPage: React.FC = () => {
                                 <Badge variant="outline">Sizes</Badge>
                                 <Badge variant="outline">Footer</Badge>
                               </div>
-                              <Button onClick={() => setShowSharedModal(true)} variant="outline" size="sm">
+                              <Button variant="ghost" onClick={() => setShowSharedModal(true)} variant="outline" size="sm">
                                 Open Shared Modal
                               </Button>
                             </div>
@@ -1227,7 +1223,7 @@ export const DesignSystemPage: React.FC = () => {
                                 <Badge variant="outline">Danger</Badge>
                                 <Badge variant="outline">Info</Badge>
                               </div>
-                              <Button onClick={() => setShowModal(true)} variant="outline" size="sm">
+                              <Button variant="ghost" onClick={() => setShowModal(true)} variant="outline" size="sm">
                                 {t('designSystem.modal.exampleTitle') || 'Open Confirmation Modal'}
                               </Button>
                             </div>

@@ -84,14 +84,9 @@ function walkDir(dir, callback) {
 }
 
 function hasImport(content, importName, importPath) {
-  // Check various import patterns
-  const patterns = [
-    // import { Button } from '@/components/ui/button'
-    new RegExp(`import\\s*\\{[^}]*\\b${importName}\\b[^}]*\\}\\s*from\\s*['"]${importPath.replace('/', '\\/')}['"]`),
-    // import { Button } from "@/components/ui/button"
-    new RegExp(`import\\s*\\{[^}]*\\b${importName}\\b[^}]*\\}\\s*from\\s*["']${importPath.replace('/', '\\/')}["']`),
-  ];
-  return patterns.some(p => p.test(content));
+  // Check if this name is already imported from ANY path (catches ./ui/button vs @/components/ui/button)
+  const anyPathPattern = new RegExp(`import\\s*\\{[^}]*\\b${importName}\\b[^}]*\\}\\s*from\\s*['"][^'"]*['"]`, 'm');
+  return anyPathPattern.test(content);
 }
 
 function addImport(content, importName, importPath) {
@@ -111,12 +106,32 @@ function addImport(content, importName, importPath) {
     return content.replace(existingImportRegex, `$1 ${newNames} $3`);
   }
 
-  // Find the last import line and add after it
+  // Find the last complete import statement and add after it
+  // Must handle multi-line imports like: import {\n  Foo,\n  Bar\n} from '...'
   const lines = content.split('\n');
   let lastImportIndex = -1;
+  let inMultiLineImport = false;
   for (let i = 0; i < lines.length; i++) {
-    if (lines[i].match(/^import\s/)) {
+    const trimmed = lines[i].trim();
+    if (trimmed.match(/^import\s/)) {
+      if (trimmed.includes('{') && !trimmed.includes('}')) {
+        // Start of multi-line import
+        inMultiLineImport = true;
+      } else if (!inMultiLineImport) {
+        // Single-line import
+        lastImportIndex = i;
+      }
+    }
+    if (inMultiLineImport && trimmed.includes('}')) {
+      // Find the line with 'from' (could be same line or next)
+      if (trimmed.includes('from')) {
+        lastImportIndex = i;
+        inMultiLineImport = false;
+      }
+    }
+    if (inMultiLineImport && trimmed.match(/from\s*['"]/)) {
       lastImportIndex = i;
+      inMultiLineImport = false;
     }
   }
 

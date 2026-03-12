@@ -6,6 +6,8 @@ import { formatPixCode, copyPixToClipboard, formatExpirationTime } from '@/utils
 import { QRCodeSVG } from 'qrcode.react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { LinearGradientBackground } from './ui/LinearGradientBackground';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 interface PixPaymentModalProps {
   isOpen: boolean;
@@ -293,13 +295,12 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/80 backdrop-blur-sm p-4">
       <div className="bg-neutral-900 border border-neutral-800/50 rounded-xl p-6 md:p-8 max-w-md w-full mx-4 relative max-h-[90vh] overflow-y-auto">
-        <button
-          onClick={onClose}
+        <Button variant="ghost"           onClick={onClose}
           className="absolute top-4 right-4 text-neutral-500 hover:text-neutral-300 transition-colors z-10"
           aria-label={t('common.close') || 'Fechar'}
         >
           <X size={20} />
-        </button>
+        </Button>
 
         <div className="space-y-6">
           <div className="text-center">
@@ -337,7 +338,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                   <label className="text-sm text-neutral-300 font-mono block">
                     {t('pix.taxId') || 'CPF ou CNPJ *'}
                   </label>
-                  <input
+                  <Input
                     type="text"
                     value={taxId}
                     onChange={(e) => {
@@ -354,12 +355,11 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                     {t('pix.taxIdRequired') || 'Necessário para processar o pagamento PIX'}
                   </p>
                 </div>
-                <button
-                  type="submit"
+                <Button variant="brand"                   type="submit"
                   className="w-full px-4 py-3 bg-brand-cyan hover:bg-brand-cyan/90 text-neutral-900 font-mono font-semibold rounded-md transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[brand-cyan]/20"
                 >
                   {t('pix.continue') || 'Continuar'}
-                </button>
+                </Button>
               </form>
             </div>
           )}
@@ -395,27 +395,25 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
 
                       {/* QR Code Icon Button */}
                       {(qrCode || pixCode) && (
-                        <button
-                          onClick={() => setShowQrCodeModal(true)}
+                        <Button variant="ghost"                           onClick={() => setShowQrCodeModal(true)}
                           className="p-3 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 rounded-md transition-all hover:scale-105 active:scale-95 flex-shrink-0"
                           title={t('pix.showQrCode') || 'Mostrar QR Code'}
                           aria-label={t('pix.showQrCode') || 'Mostrar QR Code'}
                         >
                           <QrCode size={20} className="text-brand-cyan" />
-                        </button>
+                        </Button>
                       )}
                     </>
                   ) : (
                     /* If no payment URL but we have QR code, show QR code button directly */
                     (qrCode || pixCode) && (
-                      <button
-                        onClick={() => setShowQrCodeModal(true)}
+                      <Button variant="ghost"                         onClick={() => setShowQrCodeModal(true)}
                         className="w-full px-6 py-3 bg-brand-cyan hover:bg-brand-cyan/90 text-neutral-900 font-mono font-semibold rounded-md transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[brand-cyan]/20 flex items-center justify-center gap-2"
                         title={t('pix.showQrCode') || 'Mostrar QR Code'}
                       >
                         <QrCode size={20} />
                         {t('pix.showQrCode') || 'Mostrar QR Code'}
-                      </button>
+                      </Button>
                     )
                   )}
                 </div>
@@ -434,13 +432,12 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
               }}
             >
               <div className="bg-neutral-900 border border-neutral-800/50 rounded-xl p-6 md:p-8 max-w-md w-full mx-4 relative">
-                <button
-                  onClick={() => setShowQrCodeModal(false)}
+                <Button variant="ghost"                   onClick={() => setShowQrCodeModal(false)}
                   className="absolute top-4 right-4 text-neutral-500 hover:text-neutral-300 transition-colors z-10"
                   aria-label={t('common.close') || 'Fechar'}
                 >
                   <X size={20} />
-                </button>
+                </Button>
 
                 <div className="flex flex-col items-center space-y-4">
                   <h3 className="text-lg md:text-xl font-semibold font-mono text-neutral-200 mb-2">
@@ -467,8 +464,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                   {/* PIX Code - Copy Button */}
                   {pixCode && (
                     <div className="w-full flex justify-center">
-                      <button
-                        onClick={handleCopyCode}
+                      <Button variant="brand"                         onClick={handleCopyCode}
                         className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 rounded-md transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
                         title={t('pix.copy') || 'Copiar código PIX'}
                         aria-label={t('pix.copy') || 'Copiar código PIX'}
@@ -488,7 +484,7 @@ export const PixPaymentModal: React.FC<PixPaymentModalProps> = ({
                             </span>
                           </>
                         )}
-                      </button>
+                      </Button>
                     </div>
                   )}
 

@@ -521,18 +521,17 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
               />
             </div>
             {!connectedLogo && (
-              <button
-                onClick={handleRemoveLogo}
+              <Button variant="destructive"                 onClick={handleRemoveLogo}
                 className="absolute top-1 right-1 p-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded opacity-0 group-hover/logo:opacity-100 transition-opacity"
                 title={t('canvasNodes.brandNode.removeLogo')}
               >
                 <X size={12} />
-              </button>
+              </Button>
             )}
           </div>
         ) : (
           <>
-            <input
+            <Input
               ref={logoInputRef}
               type="file"
               accept="image/*"
@@ -560,13 +559,12 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                   className="w-full h-full object-contain p-2"
                 />
                 {!connectedIdentity && (
-                  <button
-                    onClick={handleRemoveIdentity}
+                  <Button variant="destructive"                     onClick={handleRemoveIdentity}
                     className="absolute top-1 right-1 p-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded opacity-0 group-hover/identity:opacity-100 transition-opacity"
                     title={t('canvasNodes.brandNode.removeIdentityGuide')}
                   >
                     <X size={12} />
-                  </button>
+                  </Button>
                 )}
               </div>
             ) : (
@@ -574,20 +572,19 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 <FileText size={16} className="text-brand-cyan" />
                 <span className="text-xs font-mono text-neutral-400 flex-1">{identityFileType?.toUpperCase()} {connectedIdentity ? 'connected' : 'uploaded'}</span>
                 {!connectedIdentity && (
-                  <button
-                    onClick={handleRemoveIdentity}
+                  <Button variant="destructive"                     onClick={handleRemoveIdentity}
                     className="p-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded opacity-0 group-hover/identity:opacity-100 transition-opacity"
                     title={t('canvasNodes.brandNode.removeIdentityGuide')}
                   >
                     <X size={12} />
-                  </button>
+                  </Button>
                 )}
               </div>
             )}
           </div>
         ) : (
           <>
-            <input
+            <Input
               ref={pdfInputRef}
               type="file"
               accept="application/pdf,image/png,image/jpeg,image/jpg"
@@ -625,13 +622,12 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       {/* Brand Identity Display */}
       {brandIdentity && (
         <div className="border-t border-neutral-700/30 pt-3">
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
+          <Button variant="ghost"             onClick={() => setIsExpanded(!isExpanded)}
             className="w-full flex items-center justify-between text-xs font-mono text-neutral-400 hover:text-neutral-300 mb-2"
           >
             <span>Brand Identity</span>
             {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-          </button>
+          </Button>
 
           {isExpanded && (
             <div className="space-y-3 text-xs">

@@ -6,6 +6,7 @@ import { getBrandingStepCredits } from '@/utils/creditCalculator';
 import { getSectionEmoji } from '@/utils/brandingHelpers';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button'
 
 interface EmptySectionCardProps {
   stepNumber: number;
@@ -51,7 +52,7 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
       )}
       padding="none"
     >
-      <button
+      <Button variant="ghost" 
         onClick={(e) => {
           e.stopPropagation();
           if (!isBlocked) {
@@ -122,7 +123,7 @@ export const EmptySectionCard: React.FC<EmptySectionCardProps> = ({
             }`} />
         </div>
       )}
-      </button>
+      </Button>
     </GlassPanel>
   );
 };

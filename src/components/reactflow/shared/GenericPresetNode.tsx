@@ -8,6 +8,7 @@ import { NodeContainer } from './NodeContainer';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { ComponentType, memo, useCallback, useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button'
 
 interface PresetItem {
     id: string;
@@ -176,7 +177,7 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
 
                 {/* Preset Selector - Button to open modal */}
                 <div className="mb-2">
-                    <button
+                    <Button variant="ghost" 
                         onClick={(e) => {
                             e.stopPropagation();
                             setIsPresetModalOpen(true);
@@ -205,7 +206,7 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                             )}
                         </div>
                         <ChevronDown size={14} className="text-neutral-400 flex-shrink-0" />
-                    </button>
+                    </Button>
                 </div>
 
                 {/* Connected Image Thumbnail */}
@@ -224,7 +225,7 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                 )}
 
                 {/* Generate Button */}
-                <button
+                <Button variant="ghost" 
                     onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
@@ -250,7 +251,7 @@ export function createGenericPresetNode<TPresetType extends string, TNodeData ex
                             {t(config.translationKeys.generateButton) || `Generate ${config.title}`}
                         </>
                     )}
-                </button>
+                </Button>
 
                 {/* Result Preview */}
                 {hasResult && (resultImageUrl || resultImageBase64) && (

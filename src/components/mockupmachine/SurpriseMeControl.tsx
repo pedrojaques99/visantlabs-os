@@ -14,6 +14,8 @@ import type { ComponentProps } from 'react';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 import { MicroTitle } from '../ui/MicroTitle';
 import { GlassPanel } from '../ui/GlassPanel';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 
 interface SurpriseMeControlProps {
@@ -196,7 +198,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
         const isPrimaryAction = isPrimarySurprise || isGenerate;
 
         const buttonContent = (
-            <button
+            <Button
                 type="button"
                 onClick={onClick}
                 disabled={disabled}
@@ -253,7 +255,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                         )}
                     </span>
                 )}
-            </button>
+            </Button>
         );
 
         return (
@@ -380,8 +382,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                 {/* Settings Toggle Button - hidden in inline mode */}
                 {!isInline && <div className="relative ml-1">
                     <Tooltip content={t('mockup.aiSettings') || "Configurações de geração"} position="top">
-                        <button
-                            onClick={() => setShowSettings(!showSettings)}
+                        <Button variant="ghost"                             onClick={() => setShowSettings(!showSettings)}
                             className={cn(
                                 "flex items-center justify-center w-14 h-14 rounded-xl border transition-all duration-200",
                                 showSettings
@@ -390,7 +391,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                             )}
                         >
                             <Settings size={20} className={cn("transition-transform duration-500", showSettings && "rotate-90")} />
-                        </button>
+                        </Button>
                     </Tooltip>
 
                     {/* Settings Feedback/Menu Overlay */}
@@ -437,8 +438,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                             <MicroTitle as="span" className="text-[9px] ml-1">Resolução / Qualidade</MicroTitle>
                                             <div className="flex gap-1.5 h-[32px]">
                                                 {(imageProvider === 'gemini' ? ['HD', '1K', '2K', '4K'] : ['2K', '4K']).map((res) => (
-                                                    <button
-                                                        key={res}
+                                                    <Button variant="ghost"                                                         key={res}
                                                         onClick={() => setResolution(res as Resolution)}
                                                         className={cn(
                                                             "flex-1 text-[10px] font-mono rounded border transition-all",
@@ -446,7 +446,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                                         )}
                                                     >
                                                         {res}
-                                                    </button>
+                                                    </Button>
                                                 ))}
                                             </div>
                                         </div>
@@ -456,7 +456,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                         <div className="space-y-1">
                                             <MicroTitle as="span" className="text-[9px] ml-1">Nº Imagens (Outputs)</MicroTitle>
                                             <div className="relative flex items-center">
-                                                <input
+                                                <Input
                                                     type="number"
                                                     min={1}
                                                     max={4}
@@ -465,20 +465,18 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                                     className="w-full h-[32px] pl-2 pr-6 bg-neutral-800/50 border border-neutral-700/50 rounded text-xs font-mono text-neutral-200 focus:outline-none focus:border-brand-cyan/50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                                 />
                                                 <div className="absolute right-1 flex flex-col h-[80%] my-auto justify-center space-y-[1px] border-neutral-700/50 border-l pl-0.5">
-                                                    <button
-                                                        type="button"
+                                                    <Button variant="ghost"                                                         type="button"
                                                         onClick={() => setMockupCount(Math.min(mockupCount + 1, 4))}
                                                         className="flex items-center justify-center p-0.5 rounded-sm hover:bg-neutral-700/50 text-neutral-500 hover:text-neutral-200 transition-colors"
                                                     >
                                                         <ChevronUp size={10} />
-                                                    </button>
-                                                    <button
-                                                        type="button"
+                                                    </Button>
+                                                    <Button variant="ghost"                                                         type="button"
                                                         onClick={() => setMockupCount(Math.max(mockupCount - 1, 1))}
                                                         className="flex items-center justify-center p-0.5 rounded-sm hover:bg-neutral-700/50 text-neutral-500 hover:text-neutral-200 transition-colors"
                                                     >
                                                         <ChevronDown size={10} />
-                                                    </button>
+                                                    </Button>
                                                 </div>
                                             </div>
                                         </div>
@@ -492,8 +490,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                             </div>
                                             <div className="grid grid-cols-5 gap-1.5">
                                                 {['1:1', '9:16', '16:9', '4:3', '3:4'].map(ratio => (
-                                                    <button
-                                                        key={ratio}
+                                                    <Button variant="ghost"                                                         key={ratio}
                                                         onClick={() => setAspectRatio(ratio as AspectRatio)}
                                                         className={cn(
                                                             "flex flex-col items-center justify-center py-1 rounded-sm border transition-all",
@@ -501,7 +498,7 @@ export const SurpriseMeControl: React.FC<SurpriseMeControlProps> = ({
                                                         )}
                                                     >
                                                         <span className="text-[9px] font-mono">{ratio}</span>
-                                                    </button>
+                                                    </Button>
                                                 ))}
                                             </div>
                                         </div>

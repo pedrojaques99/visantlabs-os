@@ -5,6 +5,7 @@ import { cn } from '../lib/utils';
 import { authService } from '../services/authService';
 import { migrateLegacyPreset } from '../types/communityPrompts';
 import type { CommunityPrompt, PromptCategory } from '../types/communityPrompts';
+import { Button } from '@/components/ui/button'
 
 export const CATEGORY_CONFIG: Record<PromptCategory, { icon: any; color: string; label: string }> = {
   'all': { icon: LayoutGrid, color: 'text-neutral-300', label: 'All Prompts' },
@@ -163,15 +164,14 @@ export const PresetCard: React.FC<PresetCardProps> = ({
                 {migrated.description || migrated.prompt}
               </p>
               {!isPromptExpanded && (migrated.description?.length > 60 || migrated.prompt?.length > 60) && (
-                <button
-                  onClick={(e) => {
+                <Button variant="ghost"                   onClick={(e) => {
                     e.stopPropagation();
                     setIsPromptExpanded(true);
                   }}
                   className="text-[10px] text-neutral-600 hover:text-brand-cyan mt-1 font-mono uppercase"
                 >
                   {t('canvasNodes.promptNode.presetCard.viewMore')}
-                </button>
+                </Button>
               )}
               {isPromptExpanded && (
                 <div className="mt-2 text-[10px] font-mono text-neutral-400 bg-neutral-900/50 p-2 rounded border border-neutral-800/50">
@@ -184,8 +184,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
           <div className="flex gap-1 flex-shrink-0 flex-col items-end">
             {/* Actions */}
             <div className="flex gap-1">
-              <button
-                onClick={async (e) => {
+              <Button variant="ghost"                 onClick={async (e) => {
                   e.stopPropagation();
                   setIsCopyingPrompt(true);
                   try {
@@ -203,10 +202,9 @@ export const PresetCard: React.FC<PresetCardProps> = ({
                 ) : (
                   <Clipboard className="h-4 w-4" />
                 )}
-              </button>
+              </Button>
               {isAuthenticated && onDuplicate && (
-                <button
-                  onClick={(e) => {
+                <Button variant="ghost"                   onClick={(e) => {
                     e.stopPropagation();
                     onDuplicate();
                   }}
@@ -214,11 +212,10 @@ export const PresetCard: React.FC<PresetCardProps> = ({
                   title={t('communityPresets.actions.duplicate') || 'Duplicate'}
                 >
                   {canEdit ? <Download className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                </button>
+                </Button>
               )}
               {isOwner && onEdit && (
-                <button
-                  onClick={(e) => {
+                <Button variant="ghost"                   onClick={(e) => {
                     e.stopPropagation();
                     onEdit?.();
                   }}
@@ -226,13 +223,12 @@ export const PresetCard: React.FC<PresetCardProps> = ({
                   title={t('communityPresets.actions.edit')}
                 >
                   <Edit2 className="h-4 w-4" />
-                </button>
+                </Button>
               )}
             </div>
             <div>
               {canEdit && onEdit && onDelete && !isOwner && (
-                <button
-                  onClick={(e) => {
+                <Button variant="ghost"                   onClick={(e) => {
                     e.stopPropagation();
                     onEdit?.();
                   }}
@@ -240,11 +236,10 @@ export const PresetCard: React.FC<PresetCardProps> = ({
                   title={t('communityPresets.actions.edit')}
                 >
                   <Edit2 className="h-4 w-4" />
-                </button>
+                </Button>
               )}
               {canEdit && onDelete && (
-                <button
-                  onClick={(e) => {
+                <Button variant="ghost"                   onClick={(e) => {
                     e.stopPropagation();
                     onDelete?.();
                   }}
@@ -252,7 +247,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
                   title={t('communityPresets.actions.delete')}
                 >
                   <Trash2 className="h-4 w-4" />
-                </button>
+                </Button>
               )}
             </div>
           </div>
@@ -333,8 +328,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
             {migrated.aspectRatio}
           </span>
           {isAuthenticated && onToggleLike && (
-            <button
-              onClick={(e) => {
+            <Button variant="ghost"               onClick={(e) => {
                 e.stopPropagation();
                 onToggleLike();
               }}
@@ -346,7 +340,7 @@ export const PresetCard: React.FC<PresetCardProps> = ({
             >
               <Heart size={12} className={isLiked ? 'fill-current' : ''} />
               <span>{likesCount}</span>
-            </button>
+            </Button>
           )}
         </div>
 

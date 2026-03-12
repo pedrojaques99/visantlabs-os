@@ -19,6 +19,9 @@ import {
   AVAILABLE_EFFECT_TAGS,
   AVAILABLE_MATERIAL_TAGS
 } from '@/utils/mockupConstants';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { MicroTitle } from '@/components/ui/MicroTitle'
 
 interface DirectorSidePanelProps {
   isOpen: boolean;
@@ -62,8 +65,7 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
       'rounded-lg border transition-all duration-200',
       theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200'
     )}>
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
+      <Button variant="ghost"         onClick={() => setIsExpanded(!isExpanded)}
         className={cn(
           'w-full flex justify-between items-center text-left p-3 transition-all duration-200',
           'hover:bg-neutral-800/10',
@@ -80,338 +82,13 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
               {title}
             </span>
             {!isExpanded && hasSelection && (
-              <span className="text-[10px] font-mono truncate max-w-[200px] text-brand-cyan">
-                {selectionSummary}
-              </span>
-            )}
-          </div>
-        </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {hasSelection && (
-            <span className="text-[10px] font-mono text-brand-cyan bg-brand-cyan/10 px-1.5 py-0.5 rounded">
-              {groupSelectedTags.length}
-            </span>
-          )}
-          {isExpanded ? (
-            <ChevronUp size={16} className="text-neutral-500" />
-          ) : (
-            <ChevronDown size={16} className="text-neutral-500" />
-          )}
-        </div>
-      </button>
-
-      {isExpanded && (
-        <div className="p-3 pt-0 animate-fade-in">
-          <div className="flex flex-wrap gap-1.5 mt-2">
-            {tags.map(tag => (
-              <React.Fragment key={tag}>
-                {renderTagButton(tag)}
-              </React.Fragment>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-// Collapsable tag section with custom tag input support
-interface CollapsableTagSectionProps {
-  title: string;
-  tags: string[];
-  selectedTags: string[];
-  suggestedTags: string[];
-  onTagToggle: (tag: string) => void;
-  customInput: string;
-  onCustomInputChange: (value: string) => void;
-  onAddCustomTag: () => void;
-  theme: string;
-  t: (key: string) => string;
-  icon?: React.ReactNode;
-  isSurpriseMeMode?: boolean;
-  poolTags?: string[];
-  onPoolToggle?: (tag: string) => void;
-  isSingleSelection?: boolean;
-}
-
-const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
-  title,
-  tags,
-  selectedTags,
-  suggestedTags,
-  onTagToggle,
-  customInput,
-  onCustomInputChange,
-  onAddCustomTag,
-  theme,
-  t,
-  icon,
-  isSurpriseMeMode = false,
-  poolTags = [],
-  onPoolToggle,
-  isSingleSelection = false
-}) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isEditingCustom, setIsEditingCustom] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const blurTimeoutRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    if (isEditingCustom && inputRef.current) {
-      inputRef.current.focus();
-    }
-
-    return () => {
-      if (blurTimeoutRef.current) {
-        clearTimeout(blurTimeoutRef.current);
-      }
-    };
-  }, [isEditingCustom]);
-
-  const handleCustomTagClick = () => {
-    setIsEditingCustom(true);
-    if (!isExpanded) setIsExpanded(true);
-  };
-
-  const handleCustomTagSubmit = () => {
-    if (customInput.trim()) {
-      onAddCustomTag();
-      setIsEditingCustom(false);
-    } else {
-      handleCustomTagCancel();
-    }
-  };
-
-  const handleCustomTagCancel = () => {
-    onCustomInputChange('');
-    setIsEditingCustom(false);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      if (blurTimeoutRef.current) {
-        clearTimeout(blurTimeoutRef.current);
-      }
-      handleCustomTagSubmit();
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      if (blurTimeoutRef.current) {
-        clearTimeout(blurTimeoutRef.current);
-      }
-      handleCustomTagCancel();
-    }
-  };
-
-  const handleBlur = () => {
-    blurTimeoutRef.current = window.setTimeout(() => {
-      handleCustomTagSubmit();
-    }, 150);
-  };
-
-  const hasSelection = selectedTags.length > 0;
-  const selectionSummary = hasSelection
-    ? selectedTags.map(tag => translateTag(tag)).join(', ')
-    : '';
-  const poolCount = isSurpriseMeMode ? tags.filter(t => poolTags?.includes(t)).length : 0;
-
-  // Get all display tags (available + selected + suggested)
-  const allDisplayTags = [...new Set([...tags, ...selectedTags, ...suggestedTags])];
-
-  // Sort tags: suggested first, then selected, then others
-  const sortedTags = [...allDisplayTags].sort((a, b) => {
-    const aIsSuggested = suggestedTags.includes(a);
-    const bIsSuggested = suggestedTags.includes(b);
-    const aIsSelected = selectedTags.includes(a);
-    const bIsSelected = selectedTags.includes(b);
-
-    if (aIsSuggested && !bIsSuggested) return -1;
-    if (!aIsSuggested && bIsSuggested) return 1;
-    if (aIsSelected && !bIsSelected) return -1;
-    if (!aIsSelected && bIsSelected) return 1;
-
-    return 0;
-  });
-
-  return (
-    <div className={cn(
-      'rounded-lg border transition-all duration-200',
-      theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200'
-    )}>
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className={cn(
-          'w-full flex justify-between items-center text-left p-3 transition-all duration-200',
-          'hover:bg-neutral-800/10',
-          isExpanded && (theme === 'dark' ? 'bg-neutral-800/20' : 'bg-neutral-100/50')
-        )}
-      >
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          {icon && <div className="flex-shrink-0">{icon}</div>}
-          <div className="flex flex-col gap-0.5 overflow-hidden min-w-0">
-            <span className={cn(
-              'text-[10px] font-mono uppercase tracking-widest',
+              <MicroTitle className="text-[10px] truncate max-w-[200px] text-brand-cyan"> {selectionSummary} </MicroTitle> )} </div> </div> <div className="flex items-center gap-2 flex-shrink-0"> {hasSelection && ( <span className="text-[10px] text-brand-cyan bg-brand-cyan/10 px-1.5 py-0.5 rounded"> {groupSelectedTags.length} </span> )} {isExpanded ? ( <ChevronUp size={16} className="" /> ) : ( <ChevronDown size={16} className="" /> )} </div> </Button> {isExpanded && ( <div className="p-3 pt-0 animate-fade-in"> <div className="flex flex-wrap gap-1.5 mt-2"> {tags.map(tag => ( <React.Fragment key={tag}> {renderTagButton(tag)} </React.Fragment> ))} </div> </div> )} </div> ); }; // Collapsable tag section with custom tag input support interface CollapsableTagSectionProps { title: string; tags: string[]; selectedTags: string[]; suggestedTags: string[]; onTagToggle: (tag: string) => void; customInput: string; onCustomInputChange: (value: string) => void; onAddCustomTag: () => void; theme: string; t: (key: string) => string; icon?: React.ReactNode; isSurpriseMeMode?: boolean; poolTags?: string[]; onPoolToggle?: (tag: string) => void; isSingleSelection?: boolean; } const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({ title, tags, selectedTags, suggestedTags, onTagToggle, customInput, onCustomInputChange, onAddCustomTag, theme, t, icon, isSurpriseMeMode = false, poolTags = [], onPoolToggle, isSingleSelection = false }) => { const [isExpanded, setIsExpanded] = useState(false); const [isEditingCustom, setIsEditingCustom] = useState(false); const inputRef = useRef<HTMLInputElement>(null); const blurTimeoutRef = useRef<number | null>(null); useEffect(() => { if (isEditingCustom && inputRef.current) { inputRef.current.focus(); } return () => { if (blurTimeoutRef.current) { clearTimeout(blurTimeoutRef.current); } }; }, [isEditingCustom]); const handleCustomTagClick = () => { setIsEditingCustom(true); if (!isExpanded) setIsExpanded(true); }; const handleCustomTagSubmit = () => { if (customInput.trim()) { onAddCustomTag(); setIsEditingCustom(false); } else { handleCustomTagCancel(); } }; const handleCustomTagCancel = () => { onCustomInputChange(''); setIsEditingCustom(false); }; const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => { if (e.key === 'Enter') { e.preventDefault(); if (blurTimeoutRef.current) { clearTimeout(blurTimeoutRef.current); } handleCustomTagSubmit(); } else if (e.key === 'Escape') { e.preventDefault(); if (blurTimeoutRef.current) { clearTimeout(blurTimeoutRef.current); } handleCustomTagCancel(); } }; const handleBlur = () => { blurTimeoutRef.current = window.setTimeout(() => { handleCustomTagSubmit(); }, 150); }; const hasSelection = selectedTags.length > 0; const selectionSummary = hasSelection ? selectedTags.map(tag => translateTag(tag)).join(', ') : ''; const poolCount = isSurpriseMeMode ? tags.filter(t => poolTags?.includes(t)).length : 0; // Get all display tags (available + selected + suggested) const allDisplayTags = [...new Set([...tags, ...selectedTags, ...suggestedTags])]; // Sort tags: suggested first, then selected, then others const sortedTags = [...allDisplayTags].sort((a, b) => { const aIsSuggested = suggestedTags.includes(a); const bIsSuggested = suggestedTags.includes(b); const aIsSelected = selectedTags.includes(a); const bIsSelected = selectedTags.includes(b); if (aIsSuggested && !bIsSuggested) return -1; if (!aIsSuggested && bIsSuggested) return 1; if (aIsSelected && !bIsSelected) return -1; if (!aIsSelected && bIsSelected) return 1; return 0; }); return ( <div className={cn( 'rounded-lg border transition-all duration-200', theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200' )}> <Button variant="ghost" onClick={() => setIsExpanded(!isExpanded)} className={cn( 'w-full flex justify-between items-center text-left p-3 transition-all duration-200', 'hover:bg-neutral-800/10', isExpanded && (theme === 'dark' ? 'bg-neutral-800/20' : 'bg-neutral-100/50') )} > <div className="flex items-center gap-2 flex-1 min-w-0"> {icon && <div className="flex-shrink-0">{icon}</div>} <div className="flex flex-col gap-0.5 overflow-hidden min-w-0"> <span className={cn( 'text-[10px]',
               theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
             )}>
               {title}
             </span>
             {!isExpanded && (hasSelection || poolCount > 0) && (
-              <span className="text-[10px] font-mono truncate max-w-[200px] text-brand-cyan">
-                {selectionSummary}
-              </span>
-            )}
-          </div>
-        </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {isSurpriseMeMode && <Dices size={12} className="text-brand-cyan/60" />}
-          {hasSelection && (
-            <span className="text-[10px] font-mono text-brand-cyan bg-brand-cyan/10 px-1.5 py-0.5 rounded">
-              {selectedTags.length}
-            </span>
-          )}
-          {isExpanded ? (
-            <ChevronUp size={16} className="text-neutral-500" />
-          ) : (
-            <ChevronDown size={16} className="text-neutral-500" />
-          )}
-        </div>
-      </button>
-
-      {isExpanded && (
-        <div className="p-3 pt-0 animate-fade-in">
-          {/* Suggested tags section */}
-          {suggestedTags.length > 0 && (
-            <div className="mb-2">
-              <span className="text-[9px] font-mono uppercase text-brand-cyan/70 mb-1 block">
-                {t('mockup.suggested') || 'Suggested'}
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {suggestedTags.map(tag => {
-                  const isSelected = selectedTags.includes(tag);
-                  const isInPool = isSurpriseMeMode && poolTags?.includes(tag);
-                  const hasSelection = selectedTags.length > 0;
-                  return (
-                    <Tag
-                      key={tag}
-                      label={translateTag(tag)}
-                      selected={isSelected}
-                      suggested={!isSurpriseMeMode && !isSelected}
-                      inPool={isInPool}
-                      onToggle={() => {
-                        if (isSurpriseMeMode && onPoolToggle) {
-                          onPoolToggle(tag);
-                        } else {
-                          onTagToggle(tag);
-                        }
-                      }}
-                      disabled={!isSurpriseMeMode && hasSelection && !isSelected && isSingleSelection}
-                      size="sm"
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          <div className="flex flex-wrap gap-1.5 mt-2">
-            {/* Custom tag input/button - always first */}
-            {!isEditingCustom ? (
-              <Tag
-                label={t('mockup.customTagLabel')}
-                onToggle={handleCustomTagClick}
-                className="gap-1 scale-90 origin-left"
-              >
-                <Plus size={12} />
-              </Tag>
-            ) : (
-              <input
-                ref={inputRef}
-                type="text"
-                value={customInput}
-                onChange={(e) => onCustomInputChange(e.target.value)}
-                onKeyDown={handleKeyDown}
-                onBlur={handleBlur}
-                placeholder={t('mockup.customCategoryPlaceholder')}
-                className={cn(
-                  'px-3 py-1.5 text-[10px] font-medium rounded-md transition-all duration-200 border border-[brand-cyan]/30 focus:outline-none focus:ring-0 min-w-[120px] font-mono',
-                  theme === 'dark'
-                    ? 'bg-brand-cyan/10 text-brand-cyan'
-                    : 'bg-brand-cyan/5 text-neutral-800'
-                )}
-                autoFocus
-              />
-            )}
-
-            {/* Regular tags */}
-            {sortedTags
-              .filter(tag => !suggestedTags.includes(tag))
-              .map(tag => {
-                const isSelected = selectedTags.includes(tag);
-                const isInPool = isSurpriseMeMode && poolTags?.includes(tag);
-                const hasSelection = selectedTags.length > 0;
-
-                return (
-                  <Tag
-                    key={tag}
-                    label={translateTag(tag)}
-                    selected={isSelected}
-                    inPool={isInPool}
-                    onToggle={() => {
-                      if (isSurpriseMeMode && onPoolToggle) {
-                        onPoolToggle(tag);
-                      } else {
-                        onTagToggle(tag);
-                      }
-                    }}
-                    disabled={!isSurpriseMeMode && hasSelection && !isSelected && isSingleSelection}
-                    size="sm"
-                  />
-                );
-              })}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-// Color palette section
-interface ColorSectionProps {
-  suggestedColors: string[];
-  selectedColors: string[];
-  onColorToggle: (color: string) => void;
-  theme: string;
-  t: (key: string) => string;
-}
-
-const ColorSection: React.FC<ColorSectionProps> = ({
-  suggestedColors,
-  selectedColors,
-  onColorToggle,
-  theme,
-  t
-}) => {
-  const [isExpanded, setIsExpanded] = useState(suggestedColors.length > 0);
-
-  if (suggestedColors.length === 0) return null;
-
-  return (
-    <div className={cn(
-      'rounded-lg border transition-all duration-200',
-      theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200'
-    )}>
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className={cn(
-          'w-full flex justify-between items-center text-left p-3 transition-all duration-200',
-          'hover:bg-neutral-800/10',
-          isExpanded && (theme === 'dark' ? 'bg-neutral-800/20' : 'bg-neutral-100/50')
-        )}
-      >
-        <div className="flex items-center gap-2">
-          <Palette size={14} className="text-neutral-500" />
-          <span className={cn(
-            'text-[10px] font-mono uppercase tracking-widest',
+              <MicroTitle className="text-[10px] truncate max-w-[200px] text-brand-cyan"> {selectionSummary} </MicroTitle> )} </div> </div> <div className="flex items-center gap-2 flex-shrink-0"> {isSurpriseMeMode && <Dices size={12} className="text-brand-cyan/60" />} {hasSelection && ( <span className="text-[10px] text-brand-cyan bg-brand-cyan/10 px-1.5 py-0.5 rounded"> {selectedTags.length} </span> )} {isExpanded ? ( <ChevronUp size={16} className="" /> ) : ( <ChevronDown size={16} className="" /> )} </div> </Button> {isExpanded && ( <div className="p-3 pt-0 animate-fade-in"> {/* Suggested tags section */} {suggestedTags.length > 0 && ( <div className="mb-2"> <span className="text-[9px] text-brand-cyan/70 mb-1 block"> {t('mockup.suggested') || 'Suggested'} </span> <div className="flex flex-wrap gap-1.5"> {suggestedTags.map(tag => { const isSelected = selectedTags.includes(tag); const isInPool = isSurpriseMeMode && poolTags?.includes(tag); const hasSelection = selectedTags.length > 0; return ( <Tag key={tag} label={translateTag(tag)} selected={isSelected} suggested={!isSurpriseMeMode && !isSelected} inPool={isInPool} onToggle={() => { if (isSurpriseMeMode && onPoolToggle) { onPoolToggle(tag); } else { onTagToggle(tag); } }} disabled={!isSurpriseMeMode && hasSelection && !isSelected && isSingleSelection} size="sm" /> ); })} </div> </div> )} <div className="flex flex-wrap gap-1.5 mt-2"> {/* Custom tag input/button - always first */} {!isEditingCustom ? ( <Tag label={t('mockup.customTagLabel')} onToggle={handleCustomTagClick} className="gap-1 scale-90 origin-left" > <Plus size={12} /> </Tag> ) : ( <Input ref={inputRef} type="text" value={customInput} onChange={(e) => onCustomInputChange(e.target.value)} onKeyDown={handleKeyDown} onBlur={handleBlur} placeholder={t('mockup.customCategoryPlaceholder')} className={cn( 'px-3 py-1.5 text-[10px] font-medium rounded-md transition-all duration-200 border border-[brand-cyan]/30 focus:outline-none focus:ring-0 min-w-[120px] ', theme === 'dark' ? 'bg-brand-cyan/10 text-brand-cyan' : 'bg-brand-cyan/5 text-neutral-800' )} autoFocus /> )} {/* Regular tags */} {sortedTags .filter(tag => !suggestedTags.includes(tag)) .map(tag => { const isSelected = selectedTags.includes(tag); const isInPool = isSurpriseMeMode && poolTags?.includes(tag); const hasSelection = selectedTags.length > 0; return ( <Tag key={tag} label={translateTag(tag)} selected={isSelected} inPool={isInPool} onToggle={() => { if (isSurpriseMeMode && onPoolToggle) { onPoolToggle(tag); } else { onTagToggle(tag); } }} disabled={!isSurpriseMeMode && hasSelection && !isSelected && isSingleSelection} size="sm" /> ); })} </div> </div> )} </div> ); }; // Color palette section interface ColorSectionProps { suggestedColors: string[]; selectedColors: string[]; onColorToggle: (color: string) => void; theme: string; t: (key: string) => string; } const ColorSection: React.FC<ColorSectionProps> = ({ suggestedColors, selectedColors, onColorToggle, theme, t }) => { const [isExpanded, setIsExpanded] = useState(suggestedColors.length > 0); if (suggestedColors.length === 0) return null; return ( <div className={cn( 'rounded-lg border transition-all duration-200', theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200' )}> <Button variant="ghost" onClick={() => setIsExpanded(!isExpanded)} className={cn( 'w-full flex justify-between items-center text-left p-3 transition-all duration-200', 'hover:bg-neutral-800/10', isExpanded && (theme === 'dark' ? 'bg-neutral-800/20' : 'bg-neutral-100/50') )} > <div className="flex items-center gap-2"> <Palette size={14} className="" /> <span className={cn( 'text-[10px]',
             theme === 'dark' ? 'text-neutral-500' : 'text-neutral-600'
           )}>
             {t('mockup.colorPalette') || 'Color Palette'}
@@ -435,14 +112,13 @@ const ColorSection: React.FC<ColorSectionProps> = ({
             <ChevronDown size={16} className="text-neutral-500" />
           )}
         </div>
-      </button>
+      </Button>
 
       {isExpanded && (
         <div className="p-3 pt-0 animate-fade-in">
           <div className="flex flex-wrap gap-2 mt-2">
             {suggestedColors.map(color => (
-              <button
-                key={color}
+              <Button variant="ghost"                 key={color}
                 onClick={() => onColorToggle(color)}
                 className={cn(
                   'w-8 h-8 rounded-lg border-2 transition-all duration-200',
@@ -744,12 +420,11 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
             {t('canvasNodes.directorNode.title') || 'Director'}
           </h2>
         </div>
-        <button
-          onClick={onClose}
+        <Button variant="ghost"           onClick={onClose}
           className="p-2 text-neutral-500 hover:text-white transition-colors rounded-lg hover:bg-neutral-800/50"
         >
           <X size={18} />
-        </button>
+        </Button>
       </div>
 
       {/* Content */}
@@ -783,8 +458,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
 
         {/* Analyze Button */}
         {connectedImage && !hasAnalyzed && (
-          <button
-            onClick={onAnalyze}
+          <Button variant="brand"             onClick={onAnalyze}
             disabled={isAnalyzing}
             className={cn(
               'w-full px-4 py-3 rounded-lg border transition-all duration-200',
@@ -806,7 +480,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                 <span>{t('canvasNodes.directorNode.analyzeImage') || 'Analyze Image'}</span>
               </>
             )}
-          </button>
+          </Button>
         )}
 
         {/* Tag Selection Sections (after analysis) */}
@@ -889,8 +563,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
 
             {/* Categories Section - Organized by Groups */}
             <div className="rounded-lg border border-neutral-800/50">
-              <button
-                onClick={() => setIsAllCategoriesOpen(!isAllCategoriesOpen)}
+              <Button variant="ghost"                 onClick={() => setIsAllCategoriesOpen(!isAllCategoriesOpen)}
                 className={cn(
                   'w-full flex justify-between items-center text-left p-3 transition-all duration-200',
                   'hover:bg-neutral-800/10',
@@ -899,16 +572,16 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Layers size={14} className="text-neutral-500" />
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">
+                  <MicroTitle className="text-[10px]">
                     {t('mockup.categories') || 'Categories'}
-                  </span>
+                  </MicroTitle>
                 </div>
                 {isAllCategoriesOpen ? (
                   <ChevronUp size={16} className="text-neutral-500" />
                 ) : (
                   <ChevronDown size={16} className="text-neutral-500" />
                 )}
-              </button>
+              </Button>
 
               {isAllCategoriesOpen && (
                 <div className="p-3 pt-0 space-y-2">
@@ -1169,8 +842,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
       {/* Footer with Generate Button */}
       {hasAnalyzed && (
         <div className="p-4 border-t border-neutral-800/50">
-          <button
-            onClick={onGeneratePrompt}
+          <Button variant="brand"             onClick={onGeneratePrompt}
             disabled={!hasSelections || isGeneratingPrompt}
             className={cn(
               'w-full px-4 py-3 rounded-lg border transition-all duration-200',
@@ -1192,7 +864,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                 <span>{t('canvasNodes.directorNode.generateAndCreate') || 'Generate Prompt & Create Node'}</span>
               </>
             )}
-          </button>
+          </Button>
           {!hasSelections && (
             <p className="text-[10px] text-neutral-500 text-center mt-2 font-mono">
               {!selectedDesignType

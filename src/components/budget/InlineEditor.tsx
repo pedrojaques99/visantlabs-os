@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Edit2, Check, AlertCircle } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
+import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
 
 interface InlineEditorProps {
   value: string | number;
@@ -115,7 +117,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
       const rows = Math.max(3, Math.min(lineCount + 1, 10));
 
       return (
-        <textarea
+        <Textarea
           ref={inputRef as React.RefObject<HTMLTextAreaElement>}
           value={editValue}
           onChange={(e) => setEditValue(e.target.value)}
@@ -134,7 +136,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
     }
 
     return (
-      <input
+      <Input
         ref={inputRef as React.RefObject<HTMLInputElement>}
         type={type}
         value={editValue}

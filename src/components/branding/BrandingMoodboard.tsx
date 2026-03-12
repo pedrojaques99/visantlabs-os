@@ -14,6 +14,8 @@ import { EmptySectionCard } from './EmptySectionCard';
 import { NotionColumnLayout } from './NotionColumnLayout';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import type { BrandingData } from '@/types/types';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 interface BrandingMoodboardProps {
   data: BrandingData;
@@ -245,7 +247,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
               <div className="flex-1 min-w-0">
                 {isEditingName ? (
                   <div className="flex items-center gap-2">
-                    <input
+                    <Input
                       type="text"
                       value={localProjectName}
                       onChange={(e) => handleNameChange(e.target.value)}
@@ -256,7 +258,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                         }`}
                       autoFocus
                     />
-                    <button
+                    <Button variant="brand" 
                       onClick={handleNameAccept}
                       className={`p-1.5 rounded-md transition-colors ${theme === 'dark'
                         ? 'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan'
@@ -265,8 +267,8 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                       title="Salvar (Enter)"
                     >
                       <Check className="h-4 w-4" />
-                    </button>
-                    <button
+                    </Button>
+                    <Button variant="ghost" 
                       onClick={handleNameCancel}
                       className={`p-1.5 rounded-md transition-colors ${theme === 'dark'
                         ? 'bg-neutral-800/60 hover:bg-neutral-800/80 text-neutral-400 hover:text-neutral-300'
@@ -275,7 +277,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                       title="Cancelar (ESC)"
                     >
                       <X className="h-4 w-4" />
-                    </button>
+                    </Button>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2 group">
@@ -289,7 +291,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                         >
                           {localProjectName}
                         </h2>
-                        <button
+                        <Button variant="ghost" 
                           onClick={() => setIsEditingName(true)}
                           className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded ${theme === 'dark' ? 'hover:bg-neutral-950/70' : 'hover:bg-neutral-200'
                             }`}
@@ -297,23 +299,23 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                         >
                           <Edit2 className={`h-4 w-4 hover:text-brand-cyan ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                             }`} />
-                        </button>
+                        </Button>
                       </>
                     ) : (
-                      <button
+                      <Button variant="ghost" 
                         onClick={() => setIsEditingName(true)}
                         className={`text-xl md:text-2xl font-semibold font-manrope hover:text-brand-cyan transition-colors ${theme === 'dark' ? 'text-neutral-500' : 'text-neutral-400'
                           }`}
                       >
                         {t('branding.projectNamePlaceholder') || 'Clique para adicionar nome do projeto'}
-                      </button>
+                      </Button>
                     )}
                   </div>
                 )}
               </div>
               <div className="flex flex-wrap gap-2">
                 {onGenerateAll && (
-                  <button
+                  <Button variant="ghost" 
                     onClick={onGenerateAll}
                     disabled={generatingSteps.size > 0}
                     className={`px-4 py-2 border rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 hover:border-[brand-cyan]/50 hover:text-brand-cyan ${theme === 'dark'
@@ -323,9 +325,9 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                   >
                     <Zap className="h-4 w-4" />
                     {t('branding.generateAll')}
-                  </button>
+                  </Button>
                 )}
-                <button
+                <Button variant="ghost" 
                   onClick={handleGeneratePDF}
                   className={`px-4 py-2 border rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 hover:border-[brand-cyan]/50 hover:text-brand-cyan ${theme === 'dark'
                     ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300'
@@ -334,8 +336,8 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                 >
                   <FileDown className="h-4 w-4" />
                   {t('branding.generatePDF')}
-                </button>
-                <button
+                </Button>
+                <Button variant="brand" 
                   onClick={handleSave}
                   disabled={isSaving || !hasContent(1)}
                   className={`px-4 py-2 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-xl text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${theme === 'dark'
@@ -345,7 +347,7 @@ export const BrandingMoodboard: React.FC<BrandingMoodboardProps> = ({
                 >
                   <Save className="h-4 w-4" />
                   {isSaving ? t('branding.saving') : t('branding.saveProject')}
-                </button>
+                </Button>
               </div>
             </div>
           </GlassPanel>

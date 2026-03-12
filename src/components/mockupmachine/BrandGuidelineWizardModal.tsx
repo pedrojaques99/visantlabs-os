@@ -9,6 +9,8 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { MicroTitle } from '../ui/MicroTitle';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 interface BrandGuidelineWizardModalProps {
     isOpen: boolean;
@@ -146,15 +148,15 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
             closeOnEscape={!isSubmitting && !isIngesting}
             footer={
                 <div className="flex items-center gap-3 w-full">
-                    <button
+                    <Button variant="ghost" 
                         type="button"
                         onClick={handleClose}
                         disabled={isSubmitting || isIngesting}
                         className="px-4 py-2 text-sm font-mono text-neutral-400 hover:text-white transition-colors disabled:opacity-50"
                     >
                         {t('mockup.brandWizardCancel')}
-                    </button>
-                    <button
+                    </Button>
+                    <Button variant="brand" 
                         type="submit"
                         form="brand-wizard-form"
                         disabled={!canSubmit}
@@ -168,7 +170,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                         {isSubmitting && <Loader2 size={14} className="animate-spin" />}
                         {isIngesting && <GlitchLoader size={14} color="black" />}
                         {submitLabel && <span>{submitLabel}</span>}
-                    </button>
+                    </Button>
                 </div>
             }
         >
@@ -177,7 +179,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                     <MicroTitle as="label" htmlFor="brand-wizard-name">
                         {t('mockup.brandWizardNameLabel')}
                     </MicroTitle>
-                    <input
+                    <Input
                         id="brand-wizard-name"
                         type="text"
                         autoFocus
@@ -193,7 +195,7 @@ export const BrandGuidelineWizardModal: React.FC<BrandGuidelineWizardModalProps>
                     <MicroTitle as="label" htmlFor="brand-wizard-url">
                         {t('mockup.brandWizardUrlLabel')}
                     </MicroTitle>
-                    <input
+                    <Input
                         id="brand-wizard-url"
                         type="url"
                         value={url}

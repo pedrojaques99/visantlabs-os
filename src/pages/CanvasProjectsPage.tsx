@@ -21,6 +21,8 @@ import { isLocalDevelopment } from '@/utils/env';
 import { WorkflowLibraryModal } from '../components/WorkflowLibraryModal';
 import { workflowApi, type CanvasWorkflow } from '../services/workflowApi';
 import { validateVisantJson, readJsonFile } from '@/utils/canvas/canvasJsonExport';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 // Helper function to get project thumbnail
 const getProjectThumbnail = (project: CanvasProject): string | null => {
@@ -506,28 +508,25 @@ export const CanvasProjectsPage: React.FC = () => {
               )}
             </div>
             <div className="flex flex-col gap-2 flex-shrink-0">
-              <button
-                onClick={handleCreateNew}
+              <Button variant="brand"                 onClick={handleCreateNew}
                 className="px-4 py-2 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2"
               >
                 <Plus className="h-4 w-4" />
                 {t('canvas.newProject') || 'New Project'}
-              </button>
-              <button
-                onClick={() => setShowWorkflowLibrary(true)}
+              </Button>
+              <Button variant="ghost"                 onClick={() => setShowWorkflowLibrary(true)}
                 className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-700 hover:border-neutral-600 font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2"
               >
                 <FolderOpen className="h-4 w-4" />
                 {t('workflows.importWorkflow') || 'Import workflow'}
-              </button>
-              <button
-                onClick={handleImportJsonClick}
+              </Button>
+              <Button variant="outline"                 onClick={handleImportJsonClick}
                 className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-700 hover:border-neutral-600 font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2"
               >
                 <FileJson className="h-4 w-4" />
                 Import from JSON
-              </button>
-              <input
+              </Button>
+              <Input
                 ref={importJsonInputRef}
                 type="file"
                 accept=".json"
@@ -547,12 +546,11 @@ export const CanvasProjectsPage: React.FC = () => {
               <p className="text-sm text-neutral-600 font-mono mb-6">
                 {t('canvas.noProjectsMatchSearch') || 'No projects match your search query.'}
               </p>
-              <button
-                onClick={() => setSearchQuery('')}
+              <Button variant="ghost"                 onClick={() => setSearchQuery('')}
                 className="px-6 py-3 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border border-neutral-700 hover:border-neutral-600 font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95"
               >
                 {t('canvas.clearSearch') || 'Clear Search'}
-              </button>
+              </Button>
             </div>
           ) : projects.length === 0 ? (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
@@ -563,13 +561,12 @@ export const CanvasProjectsPage: React.FC = () => {
               <p className="text-sm text-neutral-600 font-mono mb-6">
                 {t('canvas.createFirstProject') || 'Create your first canvas project to start working with nodes.'}
               </p>
-              <button
-                onClick={handleCreateNew}
+              <Button variant="brand"                 onClick={handleCreateNew}
                 className="px-6 py-3 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2"
               >
                 <Pickaxe className="h-4 w-4" />
                 {t('canvas.createFirstProjectButton') || 'Create Your First Project'}
-              </button>
+              </Button>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
@@ -614,7 +611,7 @@ export const CanvasProjectsPage: React.FC = () => {
                         <div className="flex items-center gap-2 mb-2">
                           <FolderKanban className="h-5 w-5 text-brand-cyan flex-shrink-0" />
                           {editingProjectId === project._id ? (
-                            <input
+                            <Input
                               ref={editingInputRef}
                               type="text"
                               value={editingName}
@@ -648,8 +645,7 @@ export const CanvasProjectsPage: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <button
-                        onClick={(e) => {
+                      <Button variant="ghost"                         onClick={(e) => {
                           e.stopPropagation();
                           handleView(project);
                         }}
@@ -657,14 +653,13 @@ export const CanvasProjectsPage: React.FC = () => {
                       >
                         <Eye className="h-4 w-4" />
                         {t('canvas.open') || 'Open'}
-                      </button>
-                      <button
-                        onClick={(e) => handleDeleteClick(project._id, e)}
+                      </Button>
+                      <Button variant="ghost"                         onClick={(e) => handleDeleteClick(project._id, e)}
                         disabled={deletingId === project._id}
                         className="px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-red-500/50 hover:text-red-400 rounded-xl text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                       >
                         <Trash2 className="h-4 w-4" />
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 );

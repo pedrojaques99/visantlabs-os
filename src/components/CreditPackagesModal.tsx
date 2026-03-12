@@ -10,6 +10,7 @@ import type { SubscriptionStatus } from '../services/subscriptionService';
 import { productService, type Product } from '../services/productService';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
+import { MicroTitle } from '@/components/ui/MicroTitle'
 
 // Função para tocar som de clique
 const playClickSound = () => {
@@ -252,12 +253,12 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
         <div className="relative flex-1 h-full w-full">
           <LinearGradientBackground className="rounded-md" fullHeight />
           <div className="relative p-4 sm:p-6 md:p-8 z-10 w-full min-h-full">
-          <button
+          <Button variant="ghost" 
             onClick={onClose}
             className="absolute top-4 right-2 sm:top-4 sm:right-4 md:top-4 md:right-4 text-neutral-500 hover:text-neutral-300 transition-colors z-20 p-1"
           >
             <X size={16} className="sm:w-4 sm:h-4" />
-          </button>
+          </Button>
 
           <div className="space-y-4 sm:space-y-5 md:space-y-6">
             <div className="flex items-center justify-between">
@@ -273,7 +274,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
               
               {/* Subtle navigation button */}
               {activeTab === 'buy' && subscriptionStatus && (
-                <button
+                <Button variant="ghost" 
                   onClick={() => {
                     playClickSound();
                     setActiveTab('credits');
@@ -282,10 +283,10 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                 >
                   <span>←</span>
                   {t('credits.title') || 'Créditos'}
-                </button>
+                </Button>
               )}
               {activeTab === 'credits' && (
-                <button
+                <Button variant="ghost" 
                   onClick={() => {
                     playClickSound();
                     setActiveTab('buy');
@@ -294,7 +295,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                 >
                   {t('creditsPackages.buy') || 'Comprar'}
                   <span>→</span>
-                </button>
+                </Button>
               )}
             </div>
 
@@ -305,7 +306,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                   {/* Unified Tabs: Créditos/Assinaturas */}
                   <div className="flex justify-center">
                     <div className="grid grid-cols-2 bg-neutral-900/50 p-1 rounded-lg border border-neutral-800/50 w-full sm:w-auto sm:min-w-[200px]">
-                      <button
+                      <Button variant="ghost" 
                         onClick={() => {
                           playClickSound();
                           setBuySection('credits');
@@ -316,8 +317,8 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                           }`}
                       >
                         {t('creditsPackages.credits') || 'Créditos'}
-                      </button>
-                      <button
+                      </Button>
+                      <Button variant="ghost" 
                         onClick={() => {
                           playClickSound();
                           setBuySection('subscriptions');
@@ -328,7 +329,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                           }`}
                       >
                         {t('pricing.tabs.subscriptions') || 'Assinaturas'}
-                      </button>
+                      </Button>
                     </div>
                   </div>
 
@@ -346,7 +347,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                           {/* Credits Display with Pickaxe and +/- buttons */}
                           <div className="flex items-center justify-center gap-3 mb-3">
                             {/* Previous button */}
-                            <button
+                            <Button variant="ghost" 
                               onClick={() => {
                                 playClickSound();
                                 handlePrevious();
@@ -359,7 +360,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                               aria-label="Previous package"
                             >
                               <Minus size={18} className="sm:w-5 sm:h-5 md:w-5 md:h-5" />
-                            </button>
+                            </Button>
 
                             {/* Credits number */}
                             <div className="text-4xl sm:text-5xl md:text-6xl font-bold text-brand-cyan/80 font-mono">
@@ -367,7 +368,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                             </div>
 
                             {/* Next button */}
-                            <button
+                            <Button variant="ghost" 
                               onClick={() => {
                                 playClickSound();
                                 handleNext();
@@ -380,7 +381,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                               aria-label="Next package"
                             >
                               <Plus size={18} className="sm:w-5 sm:h-5 md:w-5 md:h-5" />
-                            </button>
+                            </Button>
                           </div>
 
                           <div className="flex items-center justify-center gap-2 text-sm text-neutral-400 font-mono uppercase tracking-wider">
@@ -417,7 +418,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                         )}
 
                         <div className="flex flex-col gap-2 mt-4 sm:mt-6">
-                          <button
+                          <Button variant="ghost" 
                             onClick={() => {
                               playClickSound();
                               handleBuyCredits();
@@ -426,9 +427,9 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                           >
                             <CreditCard size={14} className="sm:w-4 sm:h-4" />
                             {t('creditsPackages.buy') || 'Comprar'}
-                          </button>
+                          </Button>
                           {currencyInfo?.currency === 'BRL' && ABACATEPAY_LINKS[currentPackage.credits] && (
-                            <button
+                            <Button variant="ghost" 
                               onClick={() => {
                                 playClickSound();
                                 handleBuyWithPix();
@@ -437,10 +438,10 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                             >
                               <QrCode size={14} className="sm:w-4 sm:h-4" />
                               {t('pix.payWithPix') || 'Pagar com PIX'}
-                            </button>
+                            </Button>
                           )}
 
-                          <button
+                          <Button variant="ghost" 
                             onClick={() => {
                               playClickSound();
                               setBuySection('subscriptions');
@@ -448,7 +449,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                             className="w-full mt-2 px-4 sm:px-6 py-2 text-neutral-500 hover:text-brand-cyan text-xs font-mono transition-colors flex items-center justify-center gap-2 hover:bg-neutral-800/30 rounded-md"
                           >
                             {t('pricing.tabs.subscriptions') || 'Ver Assinaturas'}
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     </div>
@@ -457,7 +458,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                       {/* Package Indicator */}
                       <div className="flex gap-2 mb-4 sm:mb-5 md:mb-6 justify-center">
                         {CREDIT_PACKAGES.map((_, index) => (
-                          <button
+                          <Button variant="ghost" 
                             key={index}
                             onClick={() => {
                               playClickSound();
@@ -486,7 +487,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                           {/* Plan Display with Arrows */}
                           <div className="flex items-center justify-center gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 w-full">
                             {/* Left Arrow */}
-                            <button
+                            <Button variant="ghost" 
                               onClick={handlePreviousPlan}
                               disabled={selectedPlanIndex === 0}
                               className={`p-2 sm:p-2.5 md:p-3 transition-all duration-200 rounded-md active:scale-[0.95] flex-shrink-0 ${
@@ -497,7 +498,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                               aria-label="Previous plan"
                             >
                               <ChevronLeft size={20} className="sm:w-6 sm:h-6 md:w-7 md:h-7" />
-                            </button>
+                            </Button>
 
                             {/* Plan Card */}
                             <div className="bg-neutral-900/40 border border-neutral-800/50 rounded-xl p-4 sm:p-6 md:p-8 w-full max-w-[320px] sm:max-w-[380px] md:max-w-[420px] text-center shadow-sm relative overflow-hidden group">
@@ -528,7 +529,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                         billingCycle === 'monthly' ? "left-1 w-[calc(50%-3px)]" : "left-[50%] w-[calc(50%-3px)]"
                                       }`}
                                     />
-                                    <button
+                                    <Button variant="ghost" 
                                       onClick={() => {
                                         playClickSound();
                                         setBillingCycle('monthly');
@@ -538,8 +539,8 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                       }`}
                                     >
                                       {t('pricing.monthly') || 'Mensal'}
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button variant="ghost" 
                                       onClick={() => {
                                         playClickSound();
                                         setBillingCycle('yearly');
@@ -554,7 +555,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                       }`}>
                                         {t('pricing.yearlyDiscount') || '-16%'}
                                       </span>
-                                    </button>
+                                    </Button>
                                   </div>
                                 </div>
 
@@ -572,9 +573,9 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                       {billingCycle === 'yearly' ? (t('pricing.perYear') || '/ano') : t('pricing.perMonth') || '/mês'}
                                     </span>
                                   </div>
-                                  <div className="flex items-center justify-center gap-1.5 text-[10px] sm:text-[11px] text-neutral-400 font-mono mt-2 uppercase tracking-wider">
+                                  <MicroTitle className="flex items-center justify-center gap-1.5 text-[10px] sm:text-[11px] text-neutral-400 mt-2 tracking-wider">
                                     <Pickaxe size={10} className="sm:w-3 sm:h-3 text-brand-cyan/60" />
-                                    <span>{currentPlan.credits} {t('pricing.creditsLabel') || 'créditos'}</span>
+                                    <span>{currentPlan.credits} {t('pricing.creditsLabel') || 'créditos'}</MicroTitle>
                                   </div>
                                 </div>
 
@@ -599,7 +600,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
 
                                 {/* Subscribe Button */}
                                 <div className="pt-2 sm:pt-4">
-                                  <Button
+                                  <Button variant="ghost" 
                                     onClick={() => {
                                       playClickSound();
                                       const link = currencyInfo?.currency === 'USD' ? currentPlan.paymentLinkUSD : currentPlan.paymentLinkBRL;
@@ -616,7 +617,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                             </div>
 
                             {/* Right Arrow */}
-                            <button
+                            <Button variant="ghost" 
                               onClick={handleNextPlan}
                               disabled={selectedPlanIndex === filteredPlans.length - 1}
                               className={`p-2 sm:p-2.5 md:p-3 transition-all duration-200 rounded-md active:scale-[0.95] flex-shrink-0 ${
@@ -627,13 +628,13 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                               aria-label="Next plan"
                             >
                               <ChevronRight size={20} className="sm:w-6 sm:h-6 md:w-7 md:h-7" />
-                            </button>
+                            </Button>
                           </div>
 
                           {/* Plan Indicator */}
                           <div className="flex gap-1.5 sm:gap-2 mb-2 sm:mb-3 md:mb-4">
                             {filteredPlans.map((_, index) => (
-                              <button
+                              <Button variant="ghost" 
                                 key={index}
                                 onClick={() => {
                                   playClickSound();
@@ -720,7 +721,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
 
                         {/* Action Buttons */}
                         <div className="flex flex-col gap-2 mt-4 sm:mt-6">
-                          <button
+                          <Button variant="ghost" 
                             onClick={() => {
                               playClickSound();
                               setActiveTab('buy');
@@ -729,8 +730,8 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                           >
                             <CreditCard size={14} className="sm:w-4 sm:h-4" />
                             {t('credits.buyCredits') || 'Comprar Créditos'}
-                          </button>
-                          <button
+                          </Button>
+                          <Button variant="ghost" 
                             onClick={() => {
                               playClickSound();
                               onClose();
@@ -747,7 +748,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                           >
                             <FileText size={14} className="sm:w-4 sm:h-4" />
                             {t('usageHistory.title') || 'Histórico de Uso'}
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     </div>
@@ -761,7 +762,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                   <div className="text-neutral-400 font-mono text-sm mb-4">
                     {t('credits.noSubscription') || 'Faça login para ver seus créditos disponíveis'}
                   </div>
-                  <button
+                  <Button variant="ghost" 
                     onClick={() => {
                       playClickSound();
                       setActiveTab('buy');
@@ -769,7 +770,7 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                     className="text-xs text-brand-cyan hover:text-brand-cyan/80 font-mono uppercase tracking-wider transition-colors px-3 py-2 hover:bg-neutral-800/30 rounded"
                   >
                     {t('creditsPackages.buy') || 'Comprar'} →
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>

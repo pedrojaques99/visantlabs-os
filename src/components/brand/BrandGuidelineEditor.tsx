@@ -22,6 +22,9 @@ import {
     Image as ImageIcon
 } from 'lucide-react';
 import { MicroTitle } from '@/components/ui/MicroTitle';
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
 
 interface EditorProps {
     guideline: BrandGuideline;
@@ -115,7 +118,7 @@ export const BrandGuidelineEditor: React.FC<EditorProps> = ({ guideline, onUpdat
     };
 
     const SectionHeader: React.FC<{ id: string; title: string; icon: React.ReactNode }> = ({ id, title, icon }) => (
-        <button 
+        <Button variant="ghost" 
             onClick={() => setExpandedSection(expandedSection === id ? null : id)}
             className={cn(
                 "w-full flex items-center justify-between p-4 rounded-xl border transition-all duration-300",
@@ -133,7 +136,7 @@ export const BrandGuidelineEditor: React.FC<EditorProps> = ({ guideline, onUpdat
                 </MicroTitle>
             </div>
             {expandedSection === id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-        </button>
+        </Button>
     );
 
     return (
@@ -145,7 +148,7 @@ export const BrandGuidelineEditor: React.FC<EditorProps> = ({ guideline, onUpdat
                     <div className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
                         <div className="space-y-2">
                             <MicroTitle className="text-neutral-600">{t('brandGuidelines.tagline')}</MicroTitle>
-                            <input
+                            <Input
                                 type="text"
                                 value={edited.identity?.tagline || ''}
                                 placeholder={t('brandGuidelines.taglinePlaceholder')}
@@ -155,7 +158,7 @@ export const BrandGuidelineEditor: React.FC<EditorProps> = ({ guideline, onUpdat
                         </div>
                         <div className="space-y-2">
                             <MicroTitle className="text-neutral-600">{t('brandGuidelines.description')}</MicroTitle>
-                            <textarea
+                            <Textarea
                                 value={edited.identity?.description || ''}
                                 placeholder={t('brandGuidelines.descriptionPlaceholder')}
                                 onChange={(e) => updateIdentityField('description', e.target.value)}
@@ -185,14 +188,14 @@ export const BrandGuidelineEditor: React.FC<EditorProps> = ({ guideline, onUpdat
                                         <div className="absolute inset-0 rounded-lg pointer-events-none ring-1 ring-inset ring-white/10" />
                                     </div>
                                     <div className="flex-1 grid grid-cols-2 gap-2">
-                                        <input
+                                        <Input
                                             type="text"
                                             value={c.name}
                                             placeholder={t('brandGuidelines.colorName')}
                                             onChange={(e) => updateColor(i, { name: e.target.value })}
                                             className="bg-transparent text-xs font-mono text-white border-none focus:ring-0 p-0 placeholder:text-neutral-700"
                                         />
-                                        <input
+                                        <Input
                                             type="text"
                                             value={c.role || ''}
                                             placeholder={t('brandGuidelines.colorRole')}
@@ -200,22 +203,22 @@ export const BrandGuidelineEditor: React.FC<EditorProps> = ({ guideline, onUpdat
                                             className="bg-transparent text-[10px] font-mono text-neutral-500 border-none focus:ring-0 p-0 placeholder:text-neutral-700"
                                         />
                                     </div>
-                                    <button
+                                    <Button variant="ghost" 
                                         onClick={() => removeColor(i)}
                                         className="p-1.5 text-neutral-700 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
                                     >
                                         <X size={12} />
-                                    </button>
+                                    </Button>
                                 </div>
                             ))}
                         </div>
-                        <button
+                        <Button variant="ghost" 
                             onClick={addColor}
                             className="w-full py-3 rounded-xl border border-dashed border-white/5 text-neutral-600 hover:text-neutral-400 hover:border-white/10 flex items-center justify-center gap-2 text-[10px] font-mono uppercase tracking-widest transition-all"
                         >
                             <Plus size={12} />
                             {t('common.add')}
-                        </button>
+                        </Button>
                     </div>
                 )}
             </div>
@@ -231,7 +234,7 @@ export const BrandGuidelineEditor: React.FC<EditorProps> = ({ guideline, onUpdat
                                     <div className="flex-1 grid grid-cols-3 gap-4">
                                         <div className="space-y-1">
                                             <span className="text-[9px] font-mono text-neutral-700 uppercase tracking-tighter">Family</span>
-                                            <input
+                                            <Input
                                                 type="text"
                                                 value={f.family}
                                                 placeholder={t('brandGuidelines.fontFamily')}
@@ -241,7 +244,7 @@ export const BrandGuidelineEditor: React.FC<EditorProps> = ({ guideline, onUpdat
                                         </div>
                                         <div className="space-y-1">
                                             <span className="text-[9px] font-mono text-neutral-700 uppercase tracking-tighter">Role</span>
-                                            <input
+                                            <Input
                                                 type="text"
                                                 value={f.role}
                                                 placeholder={t('brandGuidelines.fontRole')}
@@ -251,7 +254,7 @@ export const BrandGuidelineEditor: React.FC<EditorProps> = ({ guideline, onUpdat
                                         </div>
                                         <div className="space-y-1">
                                             <span className="text-[9px] font-mono text-neutral-700 uppercase tracking-tighter">Style</span>
-                                            <input
+                                            <Input
                                                 type="text"
                                                 value={f.style || ''}
                                                 placeholder={t('brandGuidelines.fontStyle')}
@@ -260,22 +263,22 @@ export const BrandGuidelineEditor: React.FC<EditorProps> = ({ guideline, onUpdat
                                             />
                                         </div>
                                     </div>
-                                    <button
+                                    <Button variant="ghost" 
                                         onClick={() => removeFont(i)}
                                         className="p-1.5 text-neutral-700 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
                                     >
                                         <X size={12} />
-                                    </button>
+                                    </Button>
                                 </div>
                             ))}
                         </div>
-                        <button
+                        <Button variant="ghost" 
                             onClick={addFont}
                             className="w-full py-3 rounded-xl border border-dashed border-white/5 text-neutral-600 hover:text-neutral-400 hover:border-white/10 flex items-center justify-center gap-2 text-[10px] font-mono uppercase tracking-widest transition-all"
                         >
                             <Plus size={12} />
                             {t('common.add')}
-                        </button>
+                        </Button>
                     </div>
                 )}
             </div>
@@ -287,7 +290,7 @@ export const BrandGuidelineEditor: React.FC<EditorProps> = ({ guideline, onUpdat
                     <div className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
                         <div className="space-y-2">
                             <MicroTitle className="text-neutral-600">{t('brandGuidelines.voiceTone')}</MicroTitle>
-                            <input
+                            <Input
                                 type="text"
                                 value={edited.guidelines?.voice || ''}
                                 placeholder={t('brandGuidelines.voicePlaceholder')}
@@ -297,7 +300,7 @@ export const BrandGuidelineEditor: React.FC<EditorProps> = ({ guideline, onUpdat
                         </div>
                         <div className="space-y-2">
                             <MicroTitle className="text-neutral-600">{t('brandGuidelines.imagery')}</MicroTitle>
-                            <input
+                            <Input
                                 type="text"
                                 value={edited.guidelines?.imagery || ''}
                                 placeholder={t('brandGuidelines.imageryPlaceholder')}
@@ -311,7 +314,7 @@ export const BrandGuidelineEditor: React.FC<EditorProps> = ({ guideline, onUpdat
                                     <CheckCircle2 size={12} />
                                     <MicroTitle>{t('brandGuidelines.dos').toUpperCase()}</MicroTitle>
                                 </div>
-                                <textarea
+                                <Textarea
                                     value={(edited.guidelines?.dos || []).join('\n')}
                                     placeholder={t('brandGuidelines.doPlaceholder')}
                                     onChange={(e) => updateGuidelineField('dos', e.target.value.split('\n'))}
@@ -324,7 +327,7 @@ export const BrandGuidelineEditor: React.FC<EditorProps> = ({ guideline, onUpdat
                                     <AlertCircle size={12} />
                                     <MicroTitle>{t('brandGuidelines.donts').toUpperCase()}</MicroTitle>
                                 </div>
-                                <textarea
+                                <Textarea
                                     value={(edited.guidelines?.donts || []).join('\n')}
                                     placeholder={t('brandGuidelines.dontPlaceholder')}
                                     onChange={(e) => updateGuidelineField('donts', e.target.value.split('\n'))}
@@ -349,7 +352,7 @@ export const BrandGuidelineEditor: React.FC<EditorProps> = ({ guideline, onUpdat
                                     {['xs', 'sm', 'md', 'lg', 'xl'].map(size => (
                                         <div key={size} className="flex items-center gap-2 bg-neutral-900/50 rounded-lg p-2 border border-white/5">
                                             <span className="text-[9px] font-mono text-neutral-700 w-4">{size.toUpperCase()}</span>
-                                            <input 
+                                            <Input 
                                                 type="number"
                                                 value={edited.tokens?.spacing?.[size as keyof typeof edited.tokens.spacing] || ''}
                                                 onChange={(e) => updateTokenField('spacing', size, parseInt(e.target.value))}
@@ -366,7 +369,7 @@ export const BrandGuidelineEditor: React.FC<EditorProps> = ({ guideline, onUpdat
                                     {['sm', 'md', 'lg', 'xl', 'full'].map(size => (
                                         <div key={size} className="flex items-center gap-2 bg-neutral-900/50 rounded-lg p-2 border border-white/5">
                                             <span className="text-[9px] font-mono text-neutral-700 w-6">{size.toUpperCase()}</span>
-                                            <input 
+                                            <Input 
                                                 type="number"
                                                 value={edited.tokens?.radius?.[size as keyof typeof edited.tokens.radius] || ''}
                                                 onChange={(e) => updateTokenField('radius', size, parseInt(e.target.value))}
@@ -389,7 +392,7 @@ export const BrandGuidelineEditor: React.FC<EditorProps> = ({ guideline, onUpdat
                     <div className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl animate-in fade-in slide-in-from-top-2 duration-300">
                         <div className="space-y-3">
                             <MicroTitle className="text-neutral-600">{t('brandGuidelines.accessibility.title')}</MicroTitle>
-                            <textarea
+                            <Textarea
                                 value={edited.guidelines?.accessibility || ''}
                                 placeholder={t('brandGuidelines.accessibility.placeholder')}
                                 onChange={(e) => updateGuidelineField('accessibility', e.target.value)}
@@ -403,7 +406,7 @@ export const BrandGuidelineEditor: React.FC<EditorProps> = ({ guideline, onUpdat
 
             {/* Actions */}
             <div className="pt-6 flex justify-end">
-                <button
+                <Button variant="brand" 
                     disabled={isSaving}
                     onClick={handleSave}
                     className="relative flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-brand-cyan text-black font-mono text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-brand-cyan/80 transition-all shadow-[0_0_30px_rgba(var(--brand-cyan-rgb),0.2)] disabled:opacity-50 group overflow-hidden"
@@ -411,7 +414,7 @@ export const BrandGuidelineEditor: React.FC<EditorProps> = ({ guideline, onUpdat
                     {isSaving ? <Layers size={14} className="animate-spin" /> : <Save size={14} className="group-hover:scale-125 transition-transform" />}
                     {isSaving ? t('common.processing') : t('common.save')}
                     <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-brand-cyan/50 pointer-events-none" />
-                </button>
+                </Button>
             </div>
         </div>
     );

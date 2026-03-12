@@ -16,6 +16,7 @@ import { NodeLabel } from './shared/node-label';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getCreditsRequired } from '@/utils/creditCalculator';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
+import { Button } from '@/components/ui/button'
 
 export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
@@ -156,7 +157,7 @@ export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(({ d
       </div>
 
       {/* Upscale Button */}
-      <button
+      <Button variant="ghost" 
         onClick={async (e) => {
           e.stopPropagation();
           e.preventDefault();
@@ -186,7 +187,7 @@ export const UpscaleNode: React.FC<NodeProps<Node<UpscaleNodeData>>> = memo(({ d
             <span className="text-brand-cyan/70">({creditsRequired} credits)</span>
           </>
         )}
-      </button>
+      </Button>
 
     </NodeContainer>
   );

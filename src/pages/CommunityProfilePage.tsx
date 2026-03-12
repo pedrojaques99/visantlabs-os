@@ -604,8 +604,7 @@ export const CommunityProfilePage: React.FC = () => {
 
                           {/* Overlay Actions */}
                           <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
-                            <Button
-                              size="sm"
+                            <Button variant="brand"                               size="sm"
                               className="gap-2 bg-brand-cyan text-black hover:bg-brand-cyan/90 border-none"
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -652,8 +651,7 @@ export const CommunityProfilePage: React.FC = () => {
                             </div>
 
                             <div className="flex items-center gap-3">
-                              <button
-                                onClick={(e) => handleToggleWorkflowLike(e, workflow)}
+                              <Button variant="ghost"                                 onClick={(e) => handleToggleWorkflowLike(e, workflow)}
                                 className={cn(
                                   "flex items-center gap-1.5 text-xs font-mono transition-colors",
                                   workflow.isLikedByUser
@@ -666,7 +664,7 @@ export const CommunityProfilePage: React.FC = () => {
                                   className={cn(workflow.isLikedByUser && "fill-current")}
                                 />
                                 {workflow.likesCount || 0}
-                              </button>
+                              </Button>
                             </div>
                           </div>
                         </CardContent>
@@ -696,7 +694,7 @@ export const CommunityProfilePage: React.FC = () => {
                         key={preset._id || preset.id}
                         className="group flex flex-col text-left h-full bg-neutral-900/40 hover:border-brand-cyan/50 hover:bg-neutral-800/60 transition-all duration-300 cursor-pointer"
                       >
-                        <button onClick={() => handlePresetClick(preset)}>
+                        <Button variant="ghost" onClick={() => handlePresetClick(preset)}>
                         <div className="aspect-[3/2] w-full bg-neutral-950 relative overflow-hidden">
                           {preset.referenceImageUrl ? (
                             <img
@@ -726,7 +724,7 @@ export const CommunityProfilePage: React.FC = () => {
                             </p>
                           )}
                         </div>
-                        </button>
+                        </Button>
                       </GlassPanel>
                     ))}
                   </div>

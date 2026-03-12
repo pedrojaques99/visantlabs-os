@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import { X, Shuffle } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
+import { Button } from '@/components/ui/button'
 
 export interface TagProps extends React.PropsWithChildren {
     label?: string;
@@ -80,7 +81,7 @@ export const Tag: React.FC<TagProps> = ({
                 <span>{label}</span>
             ) : null}
             {removable && onRemove && (
-                <button
+                <Button variant="ghost" 
                     onClick={(e) => {
                         e.stopPropagation();
                         onRemove();
@@ -91,7 +92,7 @@ export const Tag: React.FC<TagProps> = ({
                     )}
                 >
                     <X size={12} />
-                </button>
+                </Button>
             )}
         </div>
     );

@@ -5,6 +5,7 @@ import { NodeSlider } from '../reactflow/shared/node-slider';
 import { Select } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
+import { Button } from '@/components/ui/button'
 
 interface ShaderControlsSidebarProps {
   isCollapsed?: boolean;
@@ -219,8 +220,7 @@ export const ShaderControlsSidebar = ({
     >
       {/* Toggle Button - Only visible when expanded */}
       {!isCollapsed && (
-        <button
-          onClick={onToggleCollapse}
+        <Button variant="ghost"           onClick={onToggleCollapse}
           className={cn(
             "absolute -left-3 z-50",
             "w-5 h-5 rounded-md",
@@ -237,18 +237,17 @@ export const ShaderControlsSidebar = ({
           title={t('shaderControls.collapse')}
         >
           <ChevronRight size={12} />
-        </button>
+        </Button>
       )}
 
       {isCollapsed ? (
         /* Collapsed State - Icon Only - Entire button is clickable */
-        <button
-          onClick={onToggleCollapse}
+        <Button variant="ghost"           onClick={onToggleCollapse}
           className="w-full h-full flex items-center justify-center hover:bg-neutral-800/30 transition-colors duration-200 cursor-pointer"
           title={t('shaderControls.expand')}
         >
           <Brush size={20} className="text-neutral-500 hover:text-neutral-400 transition-colors duration-200" />
-        </button>
+        </Button>
       ) : (
         /* Expanded State - Full Content */
         <div className="w-full h-full flex flex-col overflow-hidden">
@@ -368,8 +367,7 @@ export const ShaderControlsSidebar = ({
                   />
 
                   {/* Invert Checkbox - Subtle Icon Only */}
-                  <button
-                    onClick={() => {
+                  <Button variant="ghost"                     onClick={() => {
                       if (onUpdateData) {
                         onUpdateData(nodeId, { halftoneInvert: halftoneInvert > 0.5 ? 0.0 : 1.0 });
                       }
@@ -388,7 +386,7 @@ export const ShaderControlsSidebar = ({
                       "transition-transform duration-200",
                       halftoneInvert > 0.5 && "scale-x-[-1]"
                     )} />
-                  </button>
+                  </Button>
                 </>
               )}
 
@@ -400,8 +398,7 @@ export const ShaderControlsSidebar = ({
                     <label className="text-[9px] font-semibold text-neutral-500 uppercase tracking-wider">
                       {t('shaderControls.labels.animation')}
                     </label>
-                    <button
-                      onClick={toggleAnimation}
+                    <Button variant="brand"                       onClick={toggleAnimation}
                       className={cn(
                         "flex items-center gap-2 px-3 py-1.5 rounded",
                         "border transition-all",
@@ -423,7 +420,7 @@ export const ShaderControlsSidebar = ({
                           <span>{t('shaderControls.buttons.play')}</span>
                         </>
                       )}
-                    </button>
+                    </Button>
                   </div>
 
                   <NodeSlider
@@ -570,8 +567,7 @@ export const ShaderControlsSidebar = ({
                     <label className="text-[9px] font-semibold text-neutral-500 uppercase tracking-wider">
                       {t('shaderControls.labels.colored')}
                     </label>
-                    <button
-                      onClick={() => {
+                    <Button variant="ghost"                       onClick={() => {
                         if (onUpdateData) {
                           onUpdateData(nodeId, { asciiColored: asciiColored > 0.5 ? 0.0 : 1.0 });
                         }
@@ -584,15 +580,14 @@ export const ShaderControlsSidebar = ({
                       )}
                     >
                       {asciiColored > 0.5 ? t('shaderControls.buttons.on') : t('shaderControls.buttons.off')}
-                    </button>
+                    </Button>
                   </div>
 
                   <div className="flex items-center justify-between py-1">
                     <label className="text-[9px] font-semibold text-neutral-500 uppercase tracking-wider">
                       {t('shaderControls.labels.invert')}
                     </label>
-                    <button
-                      onClick={() => {
+                    <Button variant="ghost"                       onClick={() => {
                         if (onUpdateData) {
                           onUpdateData(nodeId, { asciiInvert: asciiInvert > 0.5 ? 0.0 : 1.0 });
                         }
@@ -605,7 +600,7 @@ export const ShaderControlsSidebar = ({
                       )}
                     >
                       {asciiInvert > 0.5 ? t('shaderControls.buttons.on') : t('shaderControls.buttons.off')}
-                    </button>
+                    </Button>
                   </div>
                 </>
               )}

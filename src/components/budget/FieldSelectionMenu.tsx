@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { X, Search } from 'lucide-react';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 interface Field {
   id: string;
@@ -107,20 +109,20 @@ export const FieldSelectionMenu: React.FC<FieldSelectionMenuProps> = ({
     >
       <div className="flex items-center justify-between px-3 py-2 border-b border-neutral-800">
         <span className="text-xs font-mono text-neutral-400">Adicionar campo</span>
-        <button
+        <Button variant="ghost" 
           onClick={onClose}
           className="p-1 text-neutral-500 hover:text-neutral-300 rounded transition-colors"
           aria-label="Fechar menu"
         >
           <X size={14} />
-        </button>
+        </Button>
       </div>
 
       {/* Search input */}
       <div className="px-3 py-2 border-b border-neutral-800">
         <div className="relative">
           <Search size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-neutral-500" />
-          <input
+          <Input
             ref={searchInputRef}
             type="text"
             value={searchQuery}
@@ -139,7 +141,7 @@ export const FieldSelectionMenu: React.FC<FieldSelectionMenuProps> = ({
           </div>
         ) : (
           filteredFields.map((field, index) => (
-            <button
+            <Button variant="ghost" 
               key={field.id}
               onClick={() => {
                 onSelect(field.id);
@@ -154,7 +156,7 @@ export const FieldSelectionMenu: React.FC<FieldSelectionMenuProps> = ({
               aria-label={`Adicionar campo ${field.label}`}
             >
               {field.label}
-            </button>
+            </Button>
           ))
         )}
       </div>

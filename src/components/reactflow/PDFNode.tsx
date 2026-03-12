@@ -8,6 +8,7 @@ import { NodeContainer } from './shared/NodeContainer';
 import { NodeHeader } from './shared/node-header';
 import { NodeButton } from './shared/node-button';
 import { useTranslation } from '@/hooks/useTranslation';
+import { Input } from '@/components/ui/input'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const PDFNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -133,7 +134,7 @@ export const PDFNode = memo(({ data, selected, id, dragging }: NodeProps<any>) =
         </div>
       ) : (
         <>
-          <input
+          <Input
             ref={pdfInputRef}
             type="file"
             accept="application/pdf"

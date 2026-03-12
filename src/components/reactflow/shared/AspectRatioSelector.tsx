@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { AspectRatio } from '@/types/types';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button'
 
 interface AspectRatioSelectorProps {
   value: AspectRatio;
@@ -34,7 +35,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
             const isSelected = value === ratio;
 
             return (
-              <button
+              <Button variant="ghost" 
                 key={ratio}
                 onClick={() => !disabled && onChange(ratio)}
                 disabled={disabled}
@@ -53,11 +54,11 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                   isSelected ? 'border-[brand-cyan]/60' : 'border-neutral-600/50'
                 )} />
                 <span className="text-[9px] leading-none">{ratio}</span>
-              </button>
+              </Button>
             );
           })}
 
-          <button
+          <Button variant="ghost" 
             onClick={() => !disabled && setShowOther(!showOther)}
             disabled={disabled}
             className={cn(
@@ -70,7 +71,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
             onMouseDown={(e) => e.stopPropagation()}
           >
             <span className="text-[9px] leading-none">...</span>
-          </button>
+          </Button>
         </div>
 
         {showOther && (
@@ -84,7 +85,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                 const isSelected = value === ratio;
 
                 return (
-                  <button
+                  <Button variant="ghost" 
                     key={ratio}
                     onClick={() => {
                       if (!disabled) {
@@ -108,7 +109,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                       isSelected ? 'border-[brand-cyan]/60' : 'border-neutral-600/50'
                     )} />
                     <span className="text-[9px] leading-none">{ratio}</span>
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -129,7 +130,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
         const isSelected = value === ratio;
 
         return (
-          <button
+          <Button variant="ghost" 
             key={ratio}
             onClick={() => !disabled && onChange(ratio)}
             disabled={disabled}
@@ -147,11 +148,11 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
               isSelected ? 'border-[brand-cyan]/60' : 'border-neutral-600/50'
             )} />
             <span className="text-[10px] mt-0.5">{ratio}</span>
-          </button>
+          </Button>
         );
       })}
 
-      <button
+      <Button variant="ghost" 
         onClick={() => !disabled && setShowOther(!showOther)}
         disabled={disabled}
         className={cn(
@@ -163,7 +164,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
         )}
       >
         <span className="text-[10px]">More</span>
-      </button>
+      </Button>
 
       {showOther && (
         <div className="mt-3 pt-3 border-t border-neutral-700/30 animate-fade-in w-full">
@@ -176,7 +177,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
               const isSelected = value === ratio;
 
               return (
-                <button
+                <Button variant="ghost" 
                   key={ratio}
                   onClick={() => {
                     if (!disabled) {
@@ -199,7 +200,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                     isSelected ? 'border-[brand-cyan]/60' : 'border-neutral-600/50'
                   )} />
                   <span className="text-[10px] mt-0.5">{ratio}</span>
-                </button>
+                </Button>
               );
             })}
           </div>

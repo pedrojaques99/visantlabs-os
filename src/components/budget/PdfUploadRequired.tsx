@@ -5,6 +5,7 @@ import { Upload, FileText, ArrowRight, Save } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { budgetApi } from '@/services/budgetApi';
 import { toast } from 'sonner';
+import { Input } from '@/components/ui/input'
 
 interface PdfUploadRequiredProps {
   budgetId?: string;
@@ -158,7 +159,7 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
                 <h4 className="text-lg font-semibold font-mono text-neutral-200 mb-4">
                   Salvar como Preset
                 </h4>
-                <input
+                <Input
                   type="text"
                   value={presetName}
                   onChange={(e) => setPresetName(e.target.value)}
@@ -176,8 +177,7 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
                   autoFocus
                 />
                 <div className="flex gap-2">
-                  <Button
-                    onClick={handleSavePreset}
+                  <Button variant="brand"                     onClick={handleSavePreset}
                     disabled={isSavingPreset || !presetName.trim()}
                     className="flex-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 text-brand-cyan"
                   >
@@ -216,7 +216,7 @@ export const PdfUploadRequired: React.FC<PdfUploadRequiredProps> = ({
                 <p className="text-sm text-neutral-400 font-mono mb-4 text-center">
                   Arraste e solte seu PDF aqui ou clique para selecionar
                 </p>
-                <input
+                <Input
                   ref={fileInputRef}
                   type="file"
                   accept="application/pdf"

@@ -1,0 +1,281 @@
+{
+  "confident": {
+    "components/ai/ChatInput.tsx": {
+      "exists": true,
+      "size": 13132,
+      "reasons": [
+        "❌ No external references found"
+      ]
+    },
+    "components/branding/PosicionamentoSection.tsx": {
+      "exists": true,
+      "size": 3841,
+      "reasons": [
+        "❌ No external references found"
+      ]
+    },
+    "components/branding/PublicoAlvoSection.tsx": {
+      "exists": true,
+      "size": 3831,
+      "reasons": [
+        "❌ No external references found"
+      ]
+    },
+    "components/mockupmachine/AnimatedDiceIcon.tsx": {
+      "exists": true,
+      "size": 1260,
+      "reasons": [
+        "❌ No external references found"
+      ]
+    },
+    "components/mockupmachine/AspectRatioSection.tsx": {
+      "exists": true,
+      "size": 5812,
+      "reasons": [
+        "❌ No external references found"
+      ]
+    },
+    "components/mockupmachine/ColorPalettePreview.tsx": {
+      "exists": true,
+      "size": 7559,
+      "reasons": [
+        "❌ No external references found"
+      ]
+    },
+    "components/mockupmachine/ModelSelectionSection.tsx": {
+      "exists": true,
+      "size": 3163,
+      "reasons": [
+        "❌ No external references found"
+      ]
+    },
+    "components/mockupmachine/OutputConfigSection.tsx": {
+      "exists": true,
+      "size": 14856,
+      "reasons": [
+        "❌ No external references found"
+      ]
+    },
+    "components/ui/icons.tsx": {
+      "exists": true,
+      "size": 1222,
+      "reasons": [
+        "❌ No external references found"
+      ]
+    },
+    "components/ui/MockupCard.tsx": {
+      "exists": true,
+      "size": 4098,
+      "reasons": [
+        "❌ No external references found"
+      ]
+    },
+    "components/ui/QuickActionsBar.tsx": {
+      "exists": true,
+      "size": 2999,
+      "reasons": [
+        "❌ No external references found"
+      ]
+    },
+    "components/ui/TagSelector.tsx": {
+      "exists": true,
+      "size": 1979,
+      "reasons": [
+        "❌ No external references found"
+      ]
+    },
+    "components/ui/ValidationMessage.tsx": {
+      "exists": true,
+      "size": 2010,
+      "reasons": [
+        "❌ No external references found"
+      ]
+    },
+    "components/ui/ZoomControls.tsx": {
+      "exists": true,
+      "size": 1666,
+      "reasons": [
+        "❌ No external references found"
+      ]
+    },
+    "components/YouTubeVideoModal.tsx": {
+      "exists": true,
+      "size": 2489,
+      "reasons": [
+        "❌ No external references found"
+      ]
+    },
+    "services/brandingPresetsService.ts": {
+      "exists": true,
+      "size": 808,
+      "reasons": [
+        "❌ No external references found"
+      ]
+    },
+    "services/effectPresetsService.ts": {
+      "exists": true,
+      "size": 1109,
+      "reasons": [
+        "❌ No external references found"
+      ]
+    },
+    "services/pixService.ts": {
+      "exists": true,
+      "size": 3057,
+      "reasons": [
+        "❌ No external references found"
+      ]
+    },
+    "services/r2Service.ts": {
+      "exists": true,
+      "size": 51105,
+      "reasons": [
+        "❌ No external references found"
+      ]
+    },
+    "services/stripeService.ts": {
+      "exists": true,
+      "size": 1022,
+      "reasons": [
+        "❌ No external references found"
+      ]
+    },
+    "services/userPresetsService.ts": {
+      "exists": true,
+      "size": 2444,
+      "reasons": [
+        "❌ No external references found"
+      ]
+    },
+    "services/videoService.ts": {
+      "exists": true,
+      "size": 18671,
+      "reasons": [
+        "❌ No external references found"
+      ]
+    },
+    "utils/imageAnalysis.ts": {
+      "exists": true,
+      "size": 8628,
+      "reasons": [
+        "❌ No external references found"
+      ]
+    },
+    "utils/mockupPromptFormat.ts": {
+      "exists": true,
+      "size": 10702,
+      "reasons": [
+        "❌ No external references found"
+      ]
+    },
+    "utils/shaders/shaders/ascii.ts": {
+      "exists": true,
+      "size": 9094,
+      "reasons": [
+        "❌ No external references found"
+      ]
+    },
+    "utils/shaders/shaders/dither.ts": {
+      "exists": true,
+      "size": 7202,
+      "reasons": [
+        "❌ No external references found"
+      ]
+    },
+    "utils/shaders/shaders/duotone.ts": {
+      "exists": true,
+      "size": 2916,
+      "reasons": [
+        "❌ No external references found"
+      ]
+    },
+    "utils/shaders/shaders/matrixDither.ts": {
+      "exists": true,
+      "size": 5995,
+      "reasons": [
+        "❌ No external references found"
+      ]
+    },
+    "utils/shaders/shaders/upscale.ts": {
+      "exists": true,
+      "size": 5043,
+      "reasons": [
+        "❌ No external references found"
+      ]
+    },
+    "utils/shaders/shaders/vhs.ts": {
+      "exists": true,
+      "size": 3797,
+      "reasons": [
+        "❌ No external references found"
+      ]
+    }
+  },
+  "uncertain": {
+    "components/3d/club-hero3d.tsx": {
+      "exists": true,
+      "size": 1777,
+      "reasons": [
+        "⚠ Similar file exists: club-logo3d.tsx"
+      ]
+    },
+    "components/branding/BrandingStep.tsx": {
+      "exists": true,
+      "size": 14130,
+      "reasons": [
+        "⚠ Similar file exists: BrandingChatInput.tsx, BrandingCompactCard.tsx, BrandingMoodboard.tsx, BrandingSection.tsx, BrandingSectionCard.tsx, BrandingWelcomeScreen.tsx"
+      ]
+    },
+    "components/budget/visant/MobilePageFrame.tsx": {
+      "exists": true,
+      "size": 166,
+      "reasons": [
+        "ℹ Very small file (<300 bytes) - might be placeholder"
+      ]
+    },
+    "components/reactflow/shared/DrawingShapeRenderer.tsx": {
+      "exists": true,
+      "size": 3339,
+      "reasons": [
+        "⚠ Similar file exists: DrawingTextRenderer.tsx"
+      ]
+    },
+    "components/SubscriptionBanner.tsx": {
+      "exists": true,
+      "size": 3156,
+      "reasons": [
+        "⚠ Similar file exists: SubscriptionModal.tsx, SubscriptionPlansGrid.tsx, SubscriptionStatus.tsx"
+      ]
+    },
+    "components/SubscriptionStatus.tsx": {
+      "exists": true,
+      "size": 3325,
+      "reasons": [
+        "⚠ Similar file exists: SubscriptionBanner.tsx, SubscriptionModal.tsx, SubscriptionPlansGrid.tsx"
+      ]
+    },
+    "components/ui/GenerateButton.tsx": {
+      "exists": true,
+      "size": 6834,
+      "reasons": [
+        "⚠ Similar file exists: GeneratingPromptOverlay.tsx"
+      ]
+    },
+    "components/ui/GeneratingPromptOverlay.tsx": {
+      "exists": true,
+      "size": 195,
+      "reasons": [
+        "ℹ Very small file (<300 bytes) - might be placeholder",
+        "⚠ Similar file exists: GenerateButton.tsx"
+      ]
+    },
+    "utils/brandingHelpersServer.ts": {
+      "exists": true,
+      "size": 848,
+      "reasons": [
+        "⚠ Similar file exists: brandingParsers.tsx",
+        "ℹ Server-related file (may only be used server-side)"
+      ]
+    }
+  }
+}

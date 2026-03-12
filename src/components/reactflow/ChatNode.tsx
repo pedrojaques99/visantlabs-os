@@ -18,6 +18,8 @@ import { toast } from 'sonner';
 import { fileToBase64 } from '@/utils/fileUtils';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
+import { Input } from '@/components/ui/input'
+import { MicroTitle } from '@/components/ui/MicroTitle'
 
 
 // Auto-resize textarea component (reused from StrategyNode)
@@ -166,14 +168,11 @@ const ActionDetector = ({
 
   return (
     <div className="mt-4 pt-3 border-t border-neutral-700/20 space-y-2.5 min-w-0">
-      <div className="text-[10px] font-mono text-brand-cyan/80 flex items-center gap-1.5 mb-2 min-w-0">
-        <Sparkles size={11} className="animate-pulse text-brand-cyan shrink-0" />
-        <span className="uppercase tracking-wider truncate">{t('canvasNodes.chatNode.detectedActions') || 'Detected Actions'}</span>
+      <MicroTitle className="text-[10px] text-brand-cyan/80 flex items-center gap-1.5 mb-2 min-w-0"> <Sparkles size={11} className="animate-pulse text-brand-cyan shrink-0" /> <span className=" tracking-wider truncate">{t('canvasNodes.chatNode.detectedActions') || 'Detected Actions'}</MicroTitle>
       </div>
       <div className="flex flex-wrap gap-2 min-w-0">
         {actions.map((action, i) => (
-          <button
-            key={i}
+          <Button variant="ghost"             key={i}
             onClick={(e) => {
               e.stopPropagation();
               handleActionClick(action);
@@ -189,7 +188,7 @@ const ActionDetector = ({
             {getActionIcon(action.type)}
             <span className="max-w-[180px] truncate font-medium">{action.title}</span>
             <Plus size={8} className="opacity-50 group-hover:opacity-100 group-hover:scale-125 transition-all" />
-          </button>
+          </Button>
         ))}
       </div>
     </div>
@@ -521,17 +520,15 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
 
             {/* Open as Panel Button */}
             {nodeData.onOpenSidebar && (
-              <button
-                onClick={() => nodeData.onOpenSidebar!(nodeId)}
+              <Button variant="ghost"                 onClick={() => nodeData.onOpenSidebar!(nodeId)}
                 className="p-2 rounded-md border transition-all bg-neutral-900/60 border-neutral-700/40 text-neutral-400 hover:border-neutral-600/60 hover:text-neutral-200 hover:bg-neutral-800/70 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95 nodrag"
                 title={t('canvasNodes.chatNode.openAsPanel') || 'Abrir como painel'}
               >
                 <PanelRight size={14} />
-              </button>
+              </Button>
             )}
             {/* System Prompt Settings Button */}
-            <button
-              onClick={() => setShowSystemPromptEditor(!showSystemPromptEditor)}
+            <Button variant="ghost"               onClick={() => setShowSystemPromptEditor(!showSystemPromptEditor)}
               className={cn(
                 "p-2 rounded-md border transition-all bg-neutral-900/60 border-neutral-700/40 text-neutral-400 hover:border-neutral-600/60 hover:text-neutral-200 hover:bg-neutral-800/70 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95 nodrag",
                 showSystemPromptEditor && "border-brand-cyan/50 text-brand-cyan bg-brand-cyan/10"
@@ -539,7 +536,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
               title={t('canvasNodes.chatNode.systemPromptSettings') || 'System Prompt Settings'}
             >
               <Settings2 size={14} />
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -552,19 +549,17 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
               </label>
               <div className="flex items-center gap-2">
                 {systemPrompt && (
-                  <button
-                    onClick={handleResetSystemPrompt}
+                  <Button variant="ghost"                     onClick={handleResetSystemPrompt}
                     className="text-[10px] px-2 py-1 rounded border border-neutral-600/40 text-neutral-400 hover:text-neutral-200 hover:border-neutral-500/60 transition-all nodrag"
                   >
                     {t('canvasNodes.chatNode.resetToDefault') || 'Reset to Default'}
-                  </button>
+                  </Button>
                 )}
-                <button
-                  onClick={handleSaveSystemPrompt}
+                <Button variant="brand"                   onClick={handleSaveSystemPrompt}
                   className="text-[10px] px-2 py-1 rounded bg-brand-cyan/20 border border-brand-cyan/40 text-brand-cyan hover:bg-brand-cyan/30 transition-all nodrag"
                 >
                   {t('canvasNodes.chatNode.save') || 'Save'}
-                </button>
+                </Button>
               </div>
             </div>
             <AutoResizeTextarea
@@ -576,134 +571,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
               maxHeight={300}
               disabled={isLoading}
             />
-            <p className="text-[10px] text-neutral-500 mt-2 font-mono">
-              {t('canvasNodes.chatNode.systemPromptHint') || 'This prompt defines how the AI assistant behaves. Use it to customize tone, style, and expertise.'}
-            </p>
-          </div>
-        )}
-
-        {/* Credit Indicator */}
-        <div className="px-4 py-2.5 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/50 to-neutral-900/30 backdrop-blur-sm">
-          <div className="flex items-center justify-between text-xs mb-2">
-            <span className="text-neutral-300 font-mono font-medium">
-              {t('canvasNodes.chatNode.messages')}: <span className="text-brand-cyan">{userMessageCount}</span>
-            </span>
-            <span className="text-neutral-400 font-mono text-[10px]">
-              {t('canvasNodes.chatNode.nextCreditIn')} {messagesUntilNextCredit} {messagesUntilNextCredit > 1 ? t('canvasNodes.chatNode.messagesPlural') : t('canvasNodes.chatNode.message')}
-            </span>
-          </div>
-          <div className="h-1.5 bg-neutral-800/40 rounded-full overflow-hidden shadow-inner">
-            <div
-              className="h-full bg-gradient-to-r from-brand-cyan to-brand-cyan/80 transition-all duration-500 ease-out shadow-sm"
-              style={{ width: `${((userMessageCount % 4) / 4) * 100}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Messages Area */}
-        <div
-          ref={messagesAreaRef}
-          className="flex-1 p-4 overflow-y-auto overflow-x-hidden space-y-4 min-h-0 min-w-0 scroll-smooth bg-gradient-to-b from-transparent via-neutral-900/10 to-transparent"
-          onWheel={(e) => e.stopPropagation()}
-        >
-          {messages.length === 0 ? (
-            <div className="text-center text-sm text-muted-foreground py-12">
-              {hasContext ? (
-                <div className="space-y-3">
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-brand-cyan/10 border border-brand-cyan/20 mb-2">
-                    <MessageSquare size={20} className="text-brand-cyan/70" />
-                  </div>
-                  <p className="text-neutral-300 font-medium">{t('canvasNodes.chatNode.startConversationWithContext')}</p>
-                  <p className="text-xs text-neutral-500">{t('canvasNodes.chatNode.chatWillUseImagesAndTexts')}</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-neutral-800/50 border border-neutral-700/30 mb-2">
-                    <MessageSquare size={20} className="text-neutral-500" />
-                  </div>
-                  <p className="text-neutral-300 font-medium">{t('canvasNodes.chatNode.startConversationWithAI')}</p>
-                  <p className="text-xs text-neutral-500">{t('canvasNodes.chatNode.connectImagesOrTexts')}</p>
-                </div>
-              )}
-            </div>
-          ) : (
-            messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={cn(
-                  "flex",
-                  msg.role === 'user' ? 'justify-end' : 'justify-start'
-                )}
-              >
-                <Card
-                  className={cn(
-                    "max-w-[85%] min-w-0 p-3.5 rounded-lg shadow-sm relative group nodrag",
-                    msg.role === 'user'
-                      ? 'bg-primary text-primary-foreground border-primary/20'
-                      : 'bg-muted/80 border-neutral-700/40 backdrop-blur-sm'
-                  )}
-                >
-                  {/* Copy button - appears on hover */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCopyMessage(msg.id, msg.content);
-                    }}
-                    className={cn(
-                      "absolute top-2 right-2 p-1.5 rounded-md transition-all opacity-0 group-hover:opacity-100",
-                      "backdrop-blur-sm shadow-sm hover:shadow-md nodrag",
-                      msg.role === 'user'
-                        ? 'bg-primary/20 hover:bg-primary/30 text-primary-foreground/80 hover:text-primary-foreground'
-                        : 'bg-neutral-800/60 hover:bg-neutral-700/80 text-neutral-300 hover:text-neutral-100'
-                    )}
-                    title={t('canvasNodes.chatNode.copyMessage') || 'Copy message'}
-                  >
-                    {copiedMessageId === msg.id ? (
-                      <Check size={14} className="text-green-400" />
-                    ) : (
-                      <Copy size={14} />
-                    )}
-                  </button>
-                  <CardContent className="p-0 min-w-0 select-text">
-                    <div className="text-sm break-words leading-relaxed min-w-0 select-text">
-                      {msg.role === 'assistant' ? (
-                        <MarkdownRenderer content={msg.content} preserveLines className="font-sans select-text" />
-                      ) : (
-                        <p className="whitespace-pre-wrap select-text">{msg.content}</p>
-                      )}
-                    </div>
-                    {msg.role === 'assistant' && (nodeData.onAddPromptNode || nodeData.onCreateNode) && (
-                      <ActionDetector
-                        content={msg.content}
-                        nodeId={nodeId}
-                        onAddPrompt={nodeData.onAddPromptNode}
-                        onCreateNode={nodeData.onCreateNode}
-                        t={t}
-                      />
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-            ))
-          )}
-          {isLoading && (
-            <div className="flex justify-start">
-              <Card className="bg-muted/80 border-neutral-700/40 max-w-[85%] min-w-0 p-3.5 rounded-lg backdrop-blur-sm shadow-sm nodrag">
-                <CardContent className="p-0 flex items-center gap-2.5 min-w-0">
-                  <GlitchLoader size={16} color="currentColor" />
-                  <span className="text-sm text-muted-foreground">{t('canvasNodes.chatNode.thinking')}</span>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-        </div>
-
-        {/* Compact Context Preview at the bottom */}
-        {hasContext && (
-          <div className="px-4 py-3 border-t border-neutral-700/30 bg-gradient-to-r from-neutral-900/40 to-neutral-900/20 backdrop-blur-sm min-w-0">
-            <div className="flex items-center justify-between gap-4 min-w-0">
-              <div className="flex items-center gap-3 overflow-x-auto py-0.5 min-w-0 flex-1">
-                <div className="flex items-center gap-1.5 text-[10px] text-neutral-400 font-mono shrink-0 uppercase tracking-wider border-r border-neutral-700/40 pr-3 mr-1">
+            <MicroTitle className="text-[10px] mt-2 "> {t('canvasNodes.chatNode.systemPromptHint') || 'This prompt defines how the AI assistant behaves. Use it to customize tone, style, and expertise.'} </MicroTitle> </div> )} {/* Credit Indicator */} <div className="px-4 py-2.5 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/50 to-neutral-900/30 backdrop-blur-sm"> <div className="flex items-center justify-between text-xs mb-2"> <span className="text-neutral-300 font-medium"> {t('canvasNodes.chatNode.messages')}: <span className="text-brand-cyan">{userMessageCount}</span> </span> <span className="text-neutral-400 text-[10px]"> {t('canvasNodes.chatNode.nextCreditIn')} {messagesUntilNextCredit} {messagesUntilNextCredit > 1 ? t('canvasNodes.chatNode.messagesPlural') : t('canvasNodes.chatNode.message')} </span> </div> <div className="h-1.5 bg-neutral-800/40 rounded-full overflow-hidden shadow-inner"> <div className="h-full bg-gradient-to-r from-brand-cyan to-brand-cyan/80 transition-all duration-500 ease-out shadow-sm" style={{ width: `${((userMessageCount % 4) / 4) * 100}%` }} /> </div> </div> {/* Messages Area */} <div ref={messagesAreaRef} className="flex-1 p-4 overflow-y-auto overflow-x-hidden space-y-4 min-h-0 min-w-0 scroll-smooth bg-gradient-to-b from-transparent via-neutral-900/10 to-transparent" onWheel={(e) => e.stopPropagation()} > {messages.length === 0 ? ( <div className="text-center text-sm text-muted-foreground py-12"> {hasContext ? ( <div className="space-y-3"> <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-brand-cyan/10 border border-brand-cyan/20 mb-2"> <MessageSquare size={20} className="text-brand-cyan/70" /> </div> <p className="text-neutral-300 font-medium">{t('canvasNodes.chatNode.startConversationWithContext')}</p> <p className="text-xs ">{t('canvasNodes.chatNode.chatWillUseImagesAndTexts')}</p> </div> ) : ( <div className="space-y-3"> <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-neutral-800/50 border border-neutral-700/30 mb-2"> <MessageSquare size={20} className="" /> </div> <p className="text-neutral-300 font-medium">{t('canvasNodes.chatNode.startConversationWithAI')}</p> <p className="text-xs ">{t('canvasNodes.chatNode.connectImagesOrTexts')}</p> </div> )} </div> ) : ( messages.map((msg) => ( <div key={msg.id} className={cn( "flex", msg.role === 'user' ? 'justify-end' : 'justify-start' )} > <Card className={cn( "max-w-[85%] min-w-0 p-3.5 rounded-lg shadow-sm relative group nodrag", msg.role === 'user' ? 'bg-primary text-primary-foreground border-primary/20' : 'bg-muted/80 border-neutral-700/40 backdrop-blur-sm' )} > {/* Copy button - appears on hover */} <Button variant="ghost" onClick={(e) => { e.stopPropagation(); handleCopyMessage(msg.id, msg.content); }} className={cn( "absolute top-2 right-2 p-1.5 rounded-md transition-all opacity-0 group-hover:opacity-100", "backdrop-blur-sm shadow-sm hover:shadow-md nodrag", msg.role === 'user' ? 'bg-primary/20 hover:bg-primary/30 text-primary-foreground/80 hover:text-primary-foreground' : 'bg-neutral-800/60 hover:bg-neutral-700/80 text-neutral-300 hover:text-neutral-100' )} title={t('canvasNodes.chatNode.copyMessage') || 'Copy message'} > {copiedMessageId === msg.id ? ( <Check size={14} className="text-green-400" /> ) : ( <Copy size={14} /> )} </Button> <CardContent className="p-0 min-w-0 select-text"> <div className="text-sm break-words leading-relaxed min-w-0 select-text"> {msg.role === 'assistant' ? ( <MarkdownRenderer content={msg.content} preserveLines className="font-sans select-text" /> ) : ( <p className="whitespace-pre-wrap select-text">{msg.content}</p> )} </div> {msg.role === 'assistant' && (nodeData.onAddPromptNode || nodeData.onCreateNode) && ( <ActionDetector content={msg.content} nodeId={nodeId} onAddPrompt={nodeData.onAddPromptNode} onCreateNode={nodeData.onCreateNode} t={t} /> )} </CardContent> </Card> </div> )) )} {isLoading && ( <div className="flex justify-start"> <Card className="bg-muted/80 border-neutral-700/40 max-w-[85%] min-w-0 p-3.5 rounded-lg backdrop-blur-sm shadow-sm nodrag"> <CardContent className="p-0 flex items-center gap-2.5 min-w-0"> <GlitchLoader size={16} color="currentColor" /> <span className="text-sm text-muted-foreground">{t('canvasNodes.chatNode.thinking')}</span> </CardContent> </Card> </div> )} </div> {/* Compact Context Preview at the bottom */} {hasContext && ( <div className="px-4 py-3 border-t border-neutral-700/30 bg-gradient-to-r from-neutral-900/40 to-neutral-900/20 backdrop-blur-sm min-w-0"> <div className="flex items-center justify-between gap-4 min-w-0"> <div className="flex items-center gap-3 overflow-x-auto py-0.5 min-w-0 flex-1"> <div className="flex items-center gap-1.5 text-[10px] text-neutral-400 shrink-0 tracking-wider border-r border-neutral-700/40 pr-3 mr-1">
                   <CheckCircle2 size={11} className="text-brand-cyan" />
                   <span className="font-medium">{t('canvasNodes.chatNode.context')}</span>
                 </div>
@@ -711,42 +579,18 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                 {connectedImages.length > 0 && (
                   <div className="flex items-center gap-1.5 px-2.5 py-1 bg-brand-cyan/10 border border-brand-cyan/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm">
                     <ImageIcon size={11} className="text-brand-cyan" />
-                    <span className="text-[10px] text-brand-cyan font-mono font-bold">{connectedImages.length}</span>
-                  </div>
-                )}
-
-                {connectedText && (
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-purple-500/10 border border-purple-500/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm">
-                    <FileText size={11} className="text-purple-400" />
-                    <span className="text-[10px] text-purple-400 font-mono font-bold">{connectedText.length}</span>
-                  </div>
-                )}
-
-                {connectedStrategyData && (
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm">
-                    <Target size={11} className="text-amber-400" />
-                    <span className="text-[10px] text-amber-400 font-mono font-bold">{strategySections.length}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  onClick={handleSuggestMockups}
-                  disabled={isLoading}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/40 rounded-md text-[10px] text-brand-cyan transition-all disabled:opacity-50 font-mono uppercase tracking-tighter nodrag backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
+                    <MicroTitle className="text-[10px] text-brand-cyan font-bold">{connectedImages.length}</MicroTitle> </div> )} {connectedText && ( <div className="flex items-center gap-1.5 px-2.5 py-1 bg-purple-500/10 border border-purple-500/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm"> <FileText size={11} className="text-purple-400" /> <span className="text-[10px] text-purple-400 font-bold">{connectedText.length}</span> </div> )} {connectedStrategyData && ( <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 rounded-full shrink-0 backdrop-blur-sm shadow-sm"> <Target size={11} className="text-amber-400" /> <span className="text-[10px] text-amber-400 font-bold">{strategySections.length}</span> </div> )} </div> <div className="flex items-center gap-2 shrink-0"> <Button variant="brand" onClick={handleSuggestMockups} disabled={isLoading} className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/40 rounded-md text-[10px] text-brand-cyan transition-all disabled:opacity-50 tracking-tighter nodrag backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
                 >
                   <Sparkles size={11} />
                   <span>{t('canvasNodes.chatNode.suggestMockups')}</span>
-                </button>
+                </Button>
 
-                <button
-                  onClick={() => setExpandedStrategy(!expandedStrategy)}
+                <Button variant="ghost"                   onClick={() => setExpandedStrategy(!expandedStrategy)}
                   className="p-1.5 text-neutral-500 hover:text-neutral-300 transition-all rounded-md hover:bg-neutral-800/50 nodrag"
                   title="Toggle details"
                 >
                   {expandedStrategy ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -792,7 +636,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         {/* Input Area */}
         <div className="p-4 border-t border-neutral-700/30 bg-gradient-to-r from-neutral-900/60 to-neutral-900/40 backdrop-blur-sm relative z-10">
           {/* Hidden file input for media attachment */}
-          <input
+          <Input
             ref={mediaInputRef}
             type="file"
             accept="image/*"
@@ -823,8 +667,7 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
               maxHeight={200}
               disabled={isLoading}
             />
-            <Button
-              onClick={handleSend}
+            <Button variant="brand"               onClick={handleSend}
               disabled={!inputMessage.trim() || isLoading}
               size="icon"
               className="self-end shrink-0 nodrag bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-brand-cyan/40 text-brand-cyan hover:text-brand-cyan shadow-sm hover:shadow-md hover:scale-105 active:scale-95 transition-all backdrop-blur-sm"

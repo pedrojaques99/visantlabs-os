@@ -6,6 +6,7 @@ import { parseDemographics, parsePersonaInfo } from '@/utils/brandingParsers';
 import { RichTextEditor } from './RichTextEditor';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button'
 
 interface PersonaSectionProps {
   persona: {
@@ -193,18 +194,16 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
                       : 'bg-neutral-100 border-neutral-300 text-neutral-800'
                       }`}
                   />
-                  <button
-                    onClick={() => handleRemoveDesire(index)}
+                  <Button variant="ghost"                     onClick={() => handleRemoveDesire(index)}
                     className={`p-2 hover:bg-red-500/20 rounded transition-colors hover:text-red-400 self-start ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                       }`}
                     title="Remover desejo"
                   >
                     <X className="h-4 w-4" />
-                  </button>
+                  </Button>
                 </div>
               ))}
-              <button
-                onClick={handleAddDesire}
+              <Button variant="ghost"                 onClick={handleAddDesire}
                 className={`flex items-center gap-2 px-4 py-2 border hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-all duration-300 ${theme === 'dark'
                   ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300'
                   : 'bg-neutral-100 border-neutral-300 text-neutral-800'
@@ -212,7 +211,7 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
               >
                 <Plus className="h-4 w-4" />
                 Adicionar desejo
-              </button>
+              </Button>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -253,18 +252,16 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
                       : 'bg-neutral-100 border-neutral-300 text-neutral-800'
                       }`}
                   />
-                  <button
-                    onClick={() => handleRemovePain(index)}
+                  <Button variant="ghost"                     onClick={() => handleRemovePain(index)}
                     className={`p-2 hover:bg-red-500/20 rounded transition-colors hover:text-red-400 self-start ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                       }`}
                     title="Remover dor"
                   >
                     <X className="h-4 w-4" />
-                  </button>
+                  </Button>
                 </div>
               ))}
-              <button
-                onClick={handleAddPain}
+              <Button variant="ghost"                 onClick={handleAddPain}
                 className={`flex items-center gap-2 px-4 py-2 border hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-xl text-sm font-mono transition-all duration-300 ${theme === 'dark'
                   ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-300'
                   : 'bg-neutral-100 border-neutral-300 text-neutral-800'
@@ -272,7 +269,7 @@ export const PersonaSection: React.FC<PersonaSectionProps> = ({
               >
                 <Plus className="h-4 w-4" />
                 Adicionar dor
-              </button>
+              </Button>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

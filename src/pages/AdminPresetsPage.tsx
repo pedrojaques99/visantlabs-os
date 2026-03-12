@@ -1363,8 +1363,7 @@ export const AdminPresetsPage: React.FC = () => {
 
             {/* Row 2: Action Buttons */}
             <div className="flex flex-wrap items-center gap-2 mb-6">
-              <Button
-                onClick={handleRefresh}
+              <Button variant="brand"                 onClick={handleRefresh}
                 disabled={isLoading}
                 className="font-mono bg-brand-cyan/80 hover:bg-brand-cyan text-black disabled:bg-neutral-700 disabled:text-neutral-500 h-9"
               >
@@ -1373,8 +1372,7 @@ export const AdminPresetsPage: React.FC = () => {
               </Button>
 
               {!isEditing && (
-                <Button
-                  onClick={handleCreate}
+                <Button variant="brand"                   onClick={handleCreate}
                   className="font-mono bg-brand-cyan/80 hover:bg-brand-cyan text-black h-9"
                 >
                   <Plus className="h-4 w-4 mr-2" />
@@ -1384,16 +1382,14 @@ export const AdminPresetsPage: React.FC = () => {
 
               {!isEditing && activeTab === 'mockup' && (
                 <>
-                  <Button
-                    onClick={handlePopulateFromDefaults}
+                  <Button variant="brand"                     onClick={handlePopulateFromDefaults}
                     disabled={isLoading}
                     className="font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-brand-cyan/30 h-9"
                   >
                     <Layers className="h-4 w-4 mr-2" />
                     Popular Mockups Padrão
                   </Button>
-                  <Button
-                    onClick={handleOpenBatchModal}
+                  <Button variant="brand"                     onClick={handleOpenBatchModal}
                     disabled={isLoading}
                     className="font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-brand-cyan/30 h-9"
                   >
@@ -1404,8 +1400,7 @@ export const AdminPresetsPage: React.FC = () => {
               )}
 
               {!isEditing && activeTab !== 'mockup' && activeTab !== 'all' && (
-                <Button
-                  onClick={handlePopulateFromTags}
+                <Button variant="brand"                   onClick={handlePopulateFromTags}
                   disabled={isLoading}
                   className="font-mono bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border border-brand-cyan/30 h-9"
                 >
@@ -1416,8 +1411,7 @@ export const AdminPresetsPage: React.FC = () => {
 
               {/* View Toggle */}
               <div className="bg-neutral-900 border border-neutral-800 p-1 rounded-lg h-9 flex items-center ml-auto">
-                <button
-                  onClick={() => setViewMode('grid')}
+                <Button variant="ghost"                   onClick={() => setViewMode('grid')}
                   className={cn(
                     "p-1.5 rounded-md transition-all duration-200",
                     viewMode === 'grid'
@@ -1427,9 +1421,8 @@ export const AdminPresetsPage: React.FC = () => {
                   title={t('adminPresets.viewGrid')}
                 >
                   <LayoutGrid className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setViewMode('table')}
+                </Button>
+                <Button variant="ghost"                   onClick={() => setViewMode('table')}
                   className={cn(
                     "p-1.5 rounded-md transition-all duration-200",
                     viewMode === 'table'
@@ -1439,7 +1432,7 @@ export const AdminPresetsPage: React.FC = () => {
                   title={t('adminPresets.viewTable')}
                 >
                   <TableIcon className="w-4 h-4" />
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -1455,8 +1448,7 @@ export const AdminPresetsPage: React.FC = () => {
                 { id: 'branding', label: 'Branding' },
                 { id: 'effect', label: 'Effects' }
               ].map((tab) => (
-                <Button
-                  key={tab.id}
+                <Button variant="ghost"                   key={tab.id}
                   onClick={() => {
                     setActiveTab(tab.id as PresetType);
                     if (isEditModalOpen) handleCancel();
@@ -1542,12 +1534,11 @@ export const AdminPresetsPage: React.FC = () => {
                       <h3 className="text-xl font-semibold text-neutral-200 font-mono">
                         Importar Batch de Mockup Presets
                       </h3>
-                      <button
-                        onClick={handleCloseBatchModal}
+                      <Button variant="ghost"                         onClick={handleCloseBatchModal}
                         className="text-neutral-400 hover:text-neutral-200 transition-colors"
                       >
                         <X className="h-5 w-5" />
-                      </button>
+                      </Button>
                     </div>
 
                     <div className="space-y-4 mb-6">
@@ -1555,7 +1546,7 @@ export const AdminPresetsPage: React.FC = () => {
                         <label className="block text-sm text-neutral-400 font-mono mb-2">
                           Cole o JSON com os presets (array de objetos)
                         </label>
-                        <textarea
+                        <Textarea
                           value={batchJson}
                           onChange={(e) => {
                             setBatchJson(e.target.value);
@@ -1605,8 +1596,7 @@ export const AdminPresetsPage: React.FC = () => {
                       >
                         {t('adminPresets.validateJson')}
                       </Button>
-                      <Button
-                        onClick={handleBatchUpload}
+                      <Button variant="brand"                         onClick={handleBatchUpload}
                         disabled={isLoading || !batchJson.trim()}
                         className="font-mono bg-brand-cyan/80 hover:bg-brand-cyan text-black disabled:bg-neutral-700 disabled:text-neutral-500"
                       >
@@ -1641,12 +1631,11 @@ export const AdminPresetsPage: React.FC = () => {
                       <h3 className="text-xl font-semibold text-neutral-200 font-mono">
                         {isCreating ? t('adminPresets.createTitle') : t('adminPresets.editTitle')}
                       </h3>
-                      <button
-                        onClick={handleCancel}
+                      <Button variant="ghost"                         onClick={handleCancel}
                         className="text-neutral-400 hover:text-neutral-200 transition-colors"
                       >
                         <X className="h-5 w-5" />
-                      </button>
+                      </Button>
                     </div>
 
                     {error && (
@@ -1739,8 +1728,7 @@ export const AdminPresetsPage: React.FC = () => {
                                     className="w-full max-h-64 object-contain rounded-md border border-neutral-700/50 bg-neutral-950/70"
                                     onError={() => setImageUploadError('Erro ao carregar imagem. Verifique a URL.')}
                                   />
-                                  <button
-                                    type="button"
+                                  <Button variant="ghost"                                     type="button"
                                     onClick={() => {
                                       setFormData({ ...formData, referenceImageUrl: '' });
                                       setImageUploadError(null);
@@ -1749,7 +1737,7 @@ export const AdminPresetsPage: React.FC = () => {
                                     title={t('adminPresets.removeImage')}
                                   >
                                     <X className="h-4 w-4" />
-                                  </button>
+                                  </Button>
                                 </div>
                                 <div>
                                   <MicroTitle as="p" className="mb-2 lowercase">Ou faça upload de uma nova imagem:</MicroTitle>
@@ -1765,7 +1753,7 @@ export const AdminPresetsPage: React.FC = () => {
                             <MicroTitle as="label" className="mb-2 lowercase">
                               Ou insira a URL manualmente
                             </MicroTitle>
-                            <input
+                            <Input
                               type="text"
                               value={formData.referenceImageUrl || ''}
                               onChange={(e) => {
@@ -1839,7 +1827,7 @@ export const AdminPresetsPage: React.FC = () => {
                         </MicroTitle>
                         <div className="space-y-2">
                           <div className="flex gap-2">
-                            <input
+                            <Input
                               type="text"
                               value={tagInput}
                               onChange={(e) => setTagInput(e.target.value)}
@@ -1859,8 +1847,7 @@ export const AdminPresetsPage: React.FC = () => {
                               placeholder="Digite uma tag e pressione Enter"
                               className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-700/50 rounded-md text-neutral-300 font-mono text-sm focus:outline-none focus:border-[brand-cyan]/50"
                             />
-                            <button
-                              type="button"
+                            <Button variant="ghost"                               type="button"
                               onClick={() => {
                                 if (tagInput.trim() && !formData.tags?.includes(tagInput.trim())) {
                                   setFormData({
@@ -1873,7 +1860,7 @@ export const AdminPresetsPage: React.FC = () => {
                               className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 rounded-md text-brand-cyan font-mono text-sm transition-colors"
                             >
                               Adicionar
-                            </button>
+                            </Button>
                           </div>
                           {formData.tags && formData.tags.length > 0 && (
                             <div className="flex flex-wrap gap-2">
@@ -1883,8 +1870,7 @@ export const AdminPresetsPage: React.FC = () => {
                                   className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-neutral-900/50 border border-neutral-700/30 rounded text-xs text-neutral-300 font-mono"
                                 >
                                   {tag}
-                                  <button
-                                    type="button"
+                                  <Button variant="ghost"                                     type="button"
                                     onClick={() => {
                                       setFormData({
                                         ...formData,
@@ -1894,7 +1880,7 @@ export const AdminPresetsPage: React.FC = () => {
                                     className="text-neutral-500 hover:text-neutral-300 transition-colors"
                                   >
                                     <X size={12} />
-                                  </button>
+                                  </Button>
                                 </span>
                               ))}
                             </div>
@@ -1904,8 +1890,7 @@ export const AdminPresetsPage: React.FC = () => {
                     </div>
 
                     <div className="flex gap-3 pt-4">
-                      <Button
-                        onClick={handleSave}
+                      <Button variant="brand"                         onClick={handleSave}
                         disabled={isLoading}
                         className="font-mono bg-brand-cyan/80 hover:bg-brand-cyan text-black disabled:bg-neutral-700 disabled:text-neutral-500"
                       >

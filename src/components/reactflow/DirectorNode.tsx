@@ -8,6 +8,7 @@ import { NodeContainer } from './shared/NodeContainer';
 import { NodeHeader } from './shared/node-header';
 import { LabeledHandle } from './shared/LabeledHandle';
 import { useTranslation } from '@/hooks/useTranslation';
+import { Button } from '@/components/ui/button'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const DirectorNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -138,8 +139,7 @@ export const DirectorNode = memo(({ data, selected, id, dragging }: NodeProps<an
       {/* Action Buttons */}
       <div className="space-y-2">
         {/* Open Side Panel Button */}
-        <button
-          onClick={handleOpenSidePanel}
+        <Button variant="brand"           onClick={handleOpenSidePanel}
           disabled={!connectedImage}
           className={cn(
             'w-full px-3 py-2.5 rounded-lg border transition-all duration-200',
@@ -154,12 +154,11 @@ export const DirectorNode = memo(({ data, selected, id, dragging }: NodeProps<an
         >
           <PanelRight size={14} />
           <span>{t('canvasNodes.directorNode.openDirector') || 'Open Director'}</span>
-        </button>
+        </Button>
 
         {/* Generate Prompt Button (only shown when analyzed and has selections) */}
         {hasAnalyzed && (
-          <button
-            onClick={handleGeneratePrompt}
+          <Button variant="brand"             onClick={handleGeneratePrompt}
             disabled={!hasSelections || isGeneratingPrompt}
             className={cn(
               'w-full px-3 py-2.5 rounded-lg border transition-all duration-200',
@@ -183,7 +182,7 @@ export const DirectorNode = memo(({ data, selected, id, dragging }: NodeProps<an
                 <span>{t('canvasNodes.directorNode.generatePrompt') || 'Generate Prompt'}</span>
               </>
             )}
-          </button>
+          </Button>
         )}
       </div>
 

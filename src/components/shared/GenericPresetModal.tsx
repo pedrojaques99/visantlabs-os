@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { X, ChevronDown, ChevronUp, Users, LucideIcon } from 'lucide-react';
 import { getCommunityPresetsByType } from '@/services/communityPresetsService';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button'
 
 interface PresetItem {
     id: string;
@@ -121,7 +122,7 @@ export function GenericPresetModal<T extends string>({
                 )}
             >
                 {/* Thumbnail */}
-                <button
+                <Button variant="ghost" 
                     onClick={(e) => {
                         e.stopPropagation();
                         if (!isLoading) {
@@ -148,7 +149,7 @@ export function GenericPresetModal<T extends string>({
                             Community
                         </div>
                     )}
-                </button>
+                </Button>
 
                 {/* Name and Prompt Section */}
                 <div className="flex flex-col p-3 min-h-[80px]">
@@ -170,7 +171,7 @@ export function GenericPresetModal<T extends string>({
                     {/* Collapsible Prompt */}
                     {preset.prompt && (
                         <div className="flex-1 flex flex-col min-h-0">
-                            <button
+                            <Button variant="ghost" 
                                 onClick={(e) => togglePrompt(preset.id, e)}
                                 className="flex items-center gap-1 text-xs text-neutral-400 hover:text-neutral-300 transition-colors mb-1"
                                 aria-expanded={isPromptExpanded}
@@ -181,7 +182,7 @@ export function GenericPresetModal<T extends string>({
                                 ) : (
                                     <ChevronDown size={12} className="flex-shrink-0" />
                                 )}
-                            </button>
+                            </Button>
                             {isPromptExpanded && (
                                 <div className="text-[10px] text-neutral-500 font-mono leading-relaxed overflow-y-auto max-h-24">
                                     {preset.prompt}
@@ -215,18 +216,18 @@ export function GenericPresetModal<T extends string>({
                         <Icon size={20} className="text-brand-cyan" />
                         <h2 id="preset-modal-title" className="text-sm font-mono text-neutral-300 uppercase">{title}</h2>
                     </div>
-                    <button
+                    <Button variant="ghost" 
                         onClick={onClose}
                         className="p-2 text-neutral-500 hover:text-white transition-colors"
                         title="Close (Esc)"
                     >
                         <X size={20} />
-                    </button>
+                    </Button>
                 </div>
 
                 {/* Tabs */}
                 <div className="flex gap-2 px-4 pt-4 border-b border-neutral-800/50">
-                    <button
+                    <Button variant="ghost" 
                         onClick={() => setActiveTab('official')}
                         className={cn(
                             'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 relative',
@@ -236,8 +237,8 @@ export function GenericPresetModal<T extends string>({
                         )}
                     >
                         Official ({officialPresets.length})
-                    </button>
-                    <button
+                    </Button>
+                    <Button variant="ghost" 
                         onClick={() => setActiveTab('community')}
                         className={cn(
                             'px-4 py-2 text-xs font-mono uppercase transition-all duration-200 border-b-2 flex items-center gap-1.5 relative',
@@ -248,7 +249,7 @@ export function GenericPresetModal<T extends string>({
                     >
                         <Users size={12} />
                         Community ({communityPresets.length})
-                    </button>
+                    </Button>
                 </div>
 
                 {/* Content */}

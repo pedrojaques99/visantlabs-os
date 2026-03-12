@@ -34,8 +34,7 @@ export const DesignTypeSection: React.FC<DesignTypeSectionProps> = ({
       )}
       <div className="space-y-2">
         <div className="grid grid-cols-2 gap-2">
-          <Button
-            onClick={() => {
+          <Button variant="ghost"             onClick={() => {
               onDesignTypeChange('logo');
               onScrollToSection('branding-section');
             }}
@@ -50,8 +49,7 @@ export const DesignTypeSection: React.FC<DesignTypeSectionProps> = ({
             <span className="text-sm">🖼️</span>
             <span className="font-semibold text-sm">{t('mockup.itsALogo')}</span>
           </Button>
-          <Button
-            onClick={() => {
+          <Button variant="ghost"             onClick={() => {
               onDesignTypeChange('layout');
               onScrollToSection('branding-section');
             }}

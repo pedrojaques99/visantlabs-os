@@ -3,6 +3,7 @@ import { Plus, X } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button'
 
 interface SWOTSectionProps {
   swot: {
@@ -100,14 +101,14 @@ export const SWOTSection: React.FC<SWOTSectionProps> = ({
                       : 'border-neutral-400/50 text-neutral-800'
                       }`}
                   />
-                  <button
+                  <Button variant="ghost" 
                     onClick={() => handleRemoveItem(category, index)}
                     className={`p-1 hover:bg-red-500/20 rounded transition-colors hover:text-red-400 self-start mt-2 ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                       }`}
                     title="Remover item"
                   >
                     <X className="h-4 w-4" />
-                  </button>
+                  </Button>
                 </div>
               ) : (
                 <div className={`text-sm font-manrope leading-relaxed ${theme === 'dark' ? 'text-neutral-300' : 'text-neutral-800'
@@ -116,7 +117,7 @@ export const SWOTSection: React.FC<SWOTSectionProps> = ({
             </div>
           ))}
           {isEditing && onContentChange && (
-            <button
+            <Button variant="ghost" 
               onClick={() => handleAddItem(category)}
               className={`flex items-center gap-2 px-3 py-2 border hover:border-[brand-cyan]/50 hover:text-brand-cyan rounded-md text-xs font-mono transition-all duration-300 mt-2 ${theme === 'dark'
                 ? 'bg-neutral-950/70 border-neutral-800/60 text-neutral-400'
@@ -125,7 +126,7 @@ export const SWOTSection: React.FC<SWOTSectionProps> = ({
             >
               <Plus className="h-3 w-3" />
               Adicionar
-            </button>
+            </Button>
           )}
         </div>
       </div>

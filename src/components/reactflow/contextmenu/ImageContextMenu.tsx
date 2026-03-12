@@ -3,6 +3,7 @@ import { Heart, Download, Maximize2, Copy, Wand2, X, Trash2, Copy as CopyIcon, F
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { cn } from '@/lib/utils';
 import { downloadImage } from '@/utils/imageUtils';
+import { Button } from '@/components/ui/button'
 
 interface ImageContextMenuProps {
   x: number;
@@ -93,18 +94,16 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
     >
       <div className="px-3 py-2.5 border-b border-neutral-800/30 flex items-center justify-between sticky top-0 bg-neutral-950/70 backdrop-blur-xl z-10 rounded-t-2xl">
         <span className="text-xs font-semibold text-neutral-300 uppercase tracking-wider">Image Actions</span>
-        <button
-          onClick={onClose}
+        <Button variant="ghost"           onClick={onClose}
           className="p-1 text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800/50 rounded transition-colors duration-150 cursor-pointer"
         >
           <X size={16} />
-        </button>
+        </Button>
       </div>
 
       <div className="p-2">
 
-        <button
-          onClick={() => {
+        <Button variant="ghost"           onClick={() => {
             onLike();
             onClose();
           }}
@@ -112,10 +111,9 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
         >
           <Heart size={16} className={cn("text-neutral-400", isLiked && "fill-current text-brand-cyan")} />
           <span className="font-medium text-[11px] tracking-wide">{isLiked ? 'Unlike' : 'Like'}</span>
-        </button>
+        </Button>
 
-        <button
-          onClick={handleDownload}
+        <Button variant="ghost"           onClick={handleDownload}
           disabled={isDownloading}
           className={cn(
             "w-full px-3 py-2.5 text-left text-sm text-neutral-400 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md",
@@ -124,11 +122,10 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
         >
           {isDownloading ? <GlitchLoader size={16} /> : <Download size={16} className="text-neutral-400" />}
           <span className="font-medium text-[11px] tracking-wide">{isDownloading ? 'Downloading...' : 'Download'}</span>
-        </button>
+        </Button>
 
         {onExport && (
-          <button
-            onClick={() => {
+          <Button variant="ghost"             onClick={() => {
               onExport();
               onClose();
             }}
@@ -136,20 +133,18 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
           >
             <Upload size={16} className="text-neutral-400" />
             <span className="font-medium text-[11px] tracking-wide">Export</span>
-          </button>
+          </Button>
         )}
 
-        <button
-          onClick={handleFullscreen}
+        <Button variant="ghost"           onClick={handleFullscreen}
           className="w-full px-3 py-2.5 text-left text-sm text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200 transition-colors duration-150 flex items-center gap-3 cursor-pointer rounded-md"
         >
           <Maximize2 size={16} className="text-neutral-400" />
           <span className="font-medium text-[11px] tracking-wide">Fullscreen</span>
-        </button>
+        </Button>
 
         {imageUrl && (
-          <button
-            onClick={() => {
+          <Button variant="ghost"             onClick={() => {
               window.open(imageUrl, '_blank', 'noopener,noreferrer');
               onClose();
             }}
@@ -157,11 +152,10 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
           >
             <ExternalLink size={16} className="text-neutral-400" />
             <span className="font-medium text-[11px] tracking-wide">Open in New Tab</span>
-          </button>
+          </Button>
         )}
 
-        <button
-          onClick={() => {
+        <Button variant="ghost"           onClick={() => {
             onCopy();
             onClose();
           }}
@@ -172,11 +166,10 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
             <span className="font-medium text-[11px] tracking-wide">Copy</span>
             <span className="text-[10px] text-neutral-500 bg-neutral-800/50 px-1.5 py-0.5 rounded">Ctrl+C</span>
           </div>
-        </button>
+        </Button>
 
         {onCopyPNG && (
-          <button
-            onClick={() => {
+          <Button variant="ghost"             onClick={() => {
               onCopyPNG();
               onClose();
             }}
@@ -187,12 +180,11 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
               <span className="font-medium text-[11px] tracking-wide">Copy as PNG</span>
               <span className="text-[10px] text-neutral-500 bg-neutral-800/50 px-1.5 py-0.5 rounded">Ctrl+Shift+C</span>
             </div>
-          </button>
+          </Button>
         )}
 
         {onDescribe && (
-          <button
-            onClick={() => {
+          <Button variant="ghost"             onClick={() => {
               onDescribe();
               onClose();
             }}
@@ -200,13 +192,12 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
           >
             <FileText size={16} className="text-neutral-400" />
             <span className="font-medium text-[11px] tracking-wide">Describe Image</span>
-          </button>
+          </Button>
         )}
 
         <div className="h-px bg-neutral-800/30 my-1.5" />
 
-        <button
-          onClick={() => {
+        <Button variant="ghost"           onClick={() => {
             onEditWithPrompt();
             onClose();
           }}
@@ -214,12 +205,11 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
         >
           <Wand2 size={16} className="text-brand-cyan" />
           <span className="text-[11px] tracking-wide">Edit with Prompt</span>
-        </button>
+        </Button>
 
         <div className="h-px bg-neutral-800/30 my-1.5" />
 
-        <button
-          onClick={() => {
+        <Button variant="ghost"           onClick={() => {
             onDuplicate();
             onClose();
           }}
@@ -227,9 +217,8 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
         >
           <CopyIcon size={16} className="text-neutral-400" />
           <span className="font-medium text-[11px] tracking-wide">Duplicate</span>
-        </button>
-        <button
-          onClick={() => {
+        </Button>
+        <Button variant="ghost"           onClick={() => {
             onDelete();
             onClose();
           }}
@@ -237,7 +226,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
         >
           <Trash2 size={16} className="text-red-400" />
           <span className="font-medium text-[11px] tracking-wide">Delete</span>
-        </button>
+        </Button>
       </div>
     </div>
   );

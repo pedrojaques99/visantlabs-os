@@ -25,6 +25,8 @@ import { toast } from 'sonner';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { applyPresetDataToNodes } from '@/lib/presetImportUtils';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
@@ -359,8 +361,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
 
       {/* Preset Selector - Button to open modal */}
       <div className="mb-2">
-        <button
-          onClick={(e) => {
+        <Button variant="ghost"           onClick={(e) => {
             e.stopPropagation();
             setIsPresetModalOpen(true);
           }}
@@ -416,7 +417,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
           </div>
           {/* Click indicator */}
           <ChevronDown size={14} className="text-neutral-400 flex-shrink-0" />
-        </button>
+        </Button>
       </div>
 
 
@@ -477,8 +478,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
 
       {/* Prompt Editor Toggle */}
       <div className="mb-2">
-        <button
-          onClick={(e) => {
+        <Button variant="ghost"           onClick={(e) => {
             e.stopPropagation();
             const newIsOpen = !isPromptOpen;
             setIsPromptOpen(newIsOpen);
@@ -516,7 +516,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
               isPromptOpen && 'rotate-90'
             )}
           />
-        </button>
+        </Button>
       </div>
 
       {/* Prompt Editor Textarea */}
@@ -543,8 +543,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
 
       {/* Color & Human Section - Collapsable */}
       <div className="mb-2">
-        <button
-          onClick={(e) => {
+        <Button variant="ghost"           onClick={(e) => {
             e.stopPropagation();
             setIsColorSectionOpen(!isColorSectionOpen);
           }}
@@ -573,7 +572,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
               isColorSectionOpen && 'rotate-90'
             )}
           />
-        </button>
+        </Button>
 
         {isColorSectionOpen && (
           <div className="mt-3 space-y-3">
@@ -583,8 +582,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                 {t('canvasNodes.promptNode.model')}
               </NodeLabel>
               <div className="grid grid-cols-3 gap-2">
-                <button
-                  onClick={(e) => {
+                <Button variant="ghost"                   onClick={(e) => {
                     e.stopPropagation();
                     const newModel: GeminiModel = GEMINI_MODELS.FLASH;
                     setModel(newModel);
@@ -612,10 +610,9 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                   <span className="text-[10px] text-neutral-500 mt-0.5">
                     {getCreditsRequired(GEMINI_MODELS.FLASH)} {t('canvasNodes.promptNode.credits')}
                   </span>
-                </button>
+                </Button>
 
-                <button
-                  onClick={(e) => {
+                <Button variant="ghost"                   onClick={(e) => {
                     e.stopPropagation();
                     const newModel: GeminiModel = GEMINI_MODELS.NB2;
                     setModel(newModel);
@@ -648,10 +645,9 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                   <span className="text-[10px] text-neutral-500 mt-0.5">
                     {getCreditsRequired(GEMINI_MODELS.NB2, resolution)} {t('canvasNodes.promptNode.credits')}
                   </span>
-                </button>
+                </Button>
 
-                <button
-                  onClick={(e) => {
+                <Button variant="ghost"                   onClick={(e) => {
                     e.stopPropagation();
                     const newModel: GeminiModel = GEMINI_MODELS.PRO;
                     setModel(newModel);
@@ -684,7 +680,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                   <span className="text-[10px] text-neutral-500 mt-0.5">
                     {getCreditsRequired(GEMINI_MODELS.PRO, resolution)} {t('canvasNodes.promptNode.credits')}
                   </span>
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -737,7 +733,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
               <h4 className="text-xs font-mono mb-1.5 text-neutral-500">{t('canvasNodes.mockupNode.colorPalette')}</h4>
               <div className="flex gap-3">
                 <div className="flex-grow relative flex items-center">
-                  <input
+                  <Input
                     type="text"
                     value={colorInput}
                     onChange={handleColorInputChange}
@@ -761,8 +757,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                     ></span>
                   )}
                 </div>
-                <button
-                  onClick={(e) => {
+                <Button variant="ghost"                   onClick={(e) => {
                     e.stopPropagation();
                     handleAddColor();
                   }}
@@ -775,7 +770,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                   )}
                 >
                   {t('canvasNodes.mockupNode.add')}
-                </button>
+                </Button>
               </div>
               {selectedColors.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mt-1.5 min-h-[24px]">
@@ -786,8 +781,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                         style={{ backgroundColor: color }}
                       ></span>
                       <span className="font-mono text-[10px]">{color}</span>
-                      <button
-                        onClick={(e) => {
+                      <Button variant="ghost"                         onClick={(e) => {
                           e.stopPropagation();
                           handleRemoveColor(color);
                         }}
@@ -795,7 +789,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
                         className="rounded-md text-neutral-500 hover:text-white transition-colors node-interactive"
                       >
                         <X size={10} />
-                      </button>
+                      </Button>
                     </div>
                   ))}
                 </div>
@@ -833,8 +827,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
       </div>
 
       {/* Generate Button */}
-      <button
-        onClick={(e) => {
+      <Button variant="ghost"         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();
           handleGenerate();
@@ -860,14 +853,13 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
             {t('canvasNodes.mockupNode.generateMockup')}
           </>
         )}
-      </button>
+      </Button>
 
 
 
       {/* Add Mockup Button */}
       <div className="mt-2 pt-2 border-t border-neutral-700/30 flex justify-center">
-        <button
-          onClick={(e) => {
+        <Button variant="ghost"           onClick={(e) => {
             e.stopPropagation();
             if (data.onAddMockupNode) {
               data.onAddMockupNode();
@@ -886,7 +878,7 @@ const MockupNodeComponent: React.FC<NodeProps<Node<MockupNodeData>>> = ({ data, 
           title={t('canvasNodes.mockupNode.addAnotherMockupNode')}
         >
           <Plus size={12} />
-        </button>
+        </Button>
       </div>
 
       {/* Preset Selection Modal */}

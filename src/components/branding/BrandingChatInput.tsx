@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { PremiumButton } from '@/components/ui/PremiumButton';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button'
 
 interface BrandingChatInputProps {
   // Prompt
@@ -101,12 +102,11 @@ export const BrandingChatInput: React.FC<BrandingChatInputProps> = ({
             {promptSuggestions.map((suggestion, index) => (
               <GlassPanel key={index} className="border-white/5 bg-white/5" padding="sm">
                 <div className="space-y-2">
-                  <button
-                    onClick={() => onSuggestionClick?.(suggestion)}
+                  <Button variant="ghost"                     onClick={() => onSuggestionClick?.(suggestion)}
                     className="w-full text-left text-xs h-auto py-2 font-normal justify-start hover:text-brand-cyan transition-colors"
                   >
                     {suggestion}
-                  </button>
+                  </Button>
                   {onGenerateSuggestion && (
                     <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/5">
                       <PremiumButton

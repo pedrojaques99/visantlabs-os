@@ -8,6 +8,8 @@ import { useMockupTags } from '@/hooks/useMockupTags';
 import { BrandingSection } from '../branding/BrandingSection';
 import { MicroTitle } from '../ui/MicroTitle';
 import { GlassPanel } from '../ui/GlassPanel';
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
 
 export const InstructionsIdentityPanel: React.FC = () => {
   const { t } = useTranslation();
@@ -48,7 +50,7 @@ export const InstructionsIdentityPanel: React.FC = () => {
     <GlassPanel
         className="group overflow-hidden"
     >
-      <button
+      <Button variant="ghost" 
         onClick={() => setIsInstructionsExpanded(!isInstructionsExpanded)}
         className={cn(
           'w-full flex justify-between items-center text-left p-3 transition-all duration-200',
@@ -92,7 +94,7 @@ export const InstructionsIdentityPanel: React.FC = () => {
             <ChevronDown size={16} className="text-neutral-500" />
           )}
         </div>
-      </button>
+      </Button>
 
       {isInstructionsExpanded && (
         <div className="p-3 pt-2 animate-fade-in space-y-3">
@@ -101,7 +103,7 @@ export const InstructionsIdentityPanel: React.FC = () => {
               <MicroTitle as="span">
                 {t('mockup.instructions')}
               </MicroTitle>
-              <button
+              <Button variant="ghost" 
                 type="button"
                 onClick={() =>
                   setIsInstructionsTextareaVisible(!isInstructionsTextareaVisible)
@@ -124,10 +126,10 @@ export const InstructionsIdentityPanel: React.FC = () => {
                 }
               >
                 {isInstructionsTextareaVisible ? <X size={12} /> : <Plus size={12} />}
-              </button>
+              </Button>
             </div>
             {isInstructionsTextareaVisible && (
-              <textarea
+              <Textarea
                 value={instructions}
                 onChange={(e) => setInstructions(e.target.value)}
                 placeholder={t('mockup.instructionsPlaceholder')}
@@ -158,7 +160,7 @@ export const InstructionsIdentityPanel: React.FC = () => {
                   {t('mockup.identity')}
                 </MicroTitle>
               </div>
-              <button
+              <Button variant="ghost" 
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -174,7 +176,7 @@ export const InstructionsIdentityPanel: React.FC = () => {
                 aria-label={t('mockup.customTagLabel')}
               >
                 <Plus size={12} />
-              </button>
+              </Button>
             </div>
             <div onClick={(e) => e.stopPropagation()}>
               <BrandingSection
