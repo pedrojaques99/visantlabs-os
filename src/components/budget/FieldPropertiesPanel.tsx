@@ -3,7 +3,7 @@ import { X, Bold, AlignLeft, AlignCenter, AlignRight, Trash2, Type, Check } from
 import { FormInput } from '@/components/ui/form-input';
 import { Select } from '@/components/ui/select';
 import type { PdfFieldMapping } from '@/types/types';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 
 interface FieldPropertiesPanelProps {
   mapping: PdfFieldMapping;

@@ -8,7 +8,7 @@ import { SectionHeader } from './SectionHeader';
 import { SectionActions } from './SectionActions';
 import { SectionContentRenderer } from './SectionContentRenderer';
 import { getSectionColSpan } from '@/utils/brandingHelpers';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 
 interface BrandingSectionCardProps {
   stepNumber: number;

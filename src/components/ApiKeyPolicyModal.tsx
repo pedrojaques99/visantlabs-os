@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { X, Lock, Shield, Key, AlertCircle, ExternalLink } from 'lucide-react';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 
 interface ApiKeyPolicyModalProps {
   isOpen: boolean;

@@ -1926,12 +1926,12 @@
     "aiSuggested": "AI Suggested:",
     "aiSuggestions": "AI Suggestions:",
     "allCategories": "ALL_CATEGORIES",
-    "analysisStatusMessages": {
-      "0": "scanning colors and contrast",
-      "1": "identifying visual style",
-      "2": "detecting categories",
-      "3": "optimizing suggestions"
-    },
+    "analysisStatusMessages": [
+      "scanning colors and contrast",
+      "identifying visual style",
+      "detecting categories",
+      "optimizing suggestions"
+    ],
     "analyzeImage": "ANALYZE IMAGE",
     "analyzing": "ANALYZING...",
     "analyzingImage": "ANALYZING IMAGE...",
@@ -2085,22 +2085,22 @@
     "models": {
       "gemini-2.5-flash-image": {
         "emoji": "⛏️",
-        "features": {
-          "0": "Fast generation",
-          "1": "1 credit per image",
-          "2": "Auto aspect ratio"
-        },
+        "features": [
+          "Fast generation",
+          "1 credit per image",
+          "Auto aspect ratio"
+        ],
         "name": "Mockup Machine® HD",
         "version": "HD"
       },
       "gemini-3-pro-image-preview": {
         "credits": "3-7 credits",
         "emoji": "⛏️",
-        "features": {
-          "0": "4K resolution",
-          "1": "Advanced tools",
-          "2": "Higher quality"
-        },
+        "features": [
+          "4K resolution",
+          "Advanced tools",
+          "Higher quality"
+        ],
         "name": "Mockup Machine® 4K",
         "version": "4K"
       }
@@ -2128,11 +2128,11 @@
     "prompt": "PROMPT_",
     "promptPlaceholder": "Describe the mockup you want to create...",
     "promptShort": "PROMPT",
-    "promptStatusMessages": {
-      "0": "understanding your design",
-      "1": "searching for the best visual solutions",
-      "2": "thinking as a senior graphic designer"
-    },
+    "promptStatusMessages": [
+      "understanding your design",
+      "searching for the best visual solutions",
+      "thinking as a senior graphic designer"
+    ],
     "redrawTooltip": "Re-draw (Generate a new variation)",
     "referenceImageAlt": "Reference image",
     "referenceImages": "Reference Images",
@@ -2171,13 +2171,13 @@
     "showSidebar": "Show sidebar",
     "simplify": "SIMPLIFY",
     "simplifyTooltip": "Simplify to a basic prompt",
-    "skeletonStatusMessages": {
-      "0": "rendering concepts...",
-      "1": "designing compositions...",
-      "2": "searching visual balance...",
-      "3": "polishing details...",
-      "4": "almost there..."
-    },
+    "skeletonStatusMessages": [
+      "rendering concepts...",
+      "designing compositions...",
+      "searching visual balance...",
+      "polishing details...",
+      "almost there..."
+    ],
     "skipToContent": "Skip to main content",
     "startOver": "Start Over",
     "successBrandGuidelineCreated": "Brand Guideline created successfully",
@@ -2306,69 +2306,69 @@
       },
       "cookiesAndTracking": {
         "googleAnalytics": {
-          "collected": {
-            "0": "Page views and navigation patterns",
-            "1": "Scroll depth and user interactions",
-            "2": "Outbound clicks",
-            "3": "Device and browser information",
-            "4": "General geographic location (country/city level)"
-          },
+          "collected": [
+            "Page views and navigation patterns",
+            "Scroll depth and user interactions",
+            "Outbound clicks",
+            "Device and browser information",
+            "General geographic location (country/city level)"
+          ],
           "howItWorks": "Google Analytics uses cookies and similar technologies. The data collected is processed by Google according to their Privacy Policy. You can:",
           "intro": "We use Google Analytics to understand how visitors interact with our website. Google Analytics collects:",
           "note": "We do not send personally identifiable information (PII) to Google Analytics. We have configured Google Analytics to respect user privacy and comply with data protection regulations.",
-          "options": {
-            "0": "Opt out of Google Analytics by installing the Google Analytics Opt-out Browser Add-on",
-            "1": "Manage cookie preferences through your browser settings",
-            "2": "Use browser extensions that block tracking"
-          },
+          "options": [
+            "Opt out of Google Analytics by installing the Google Analytics Opt-out Browser Add-on",
+            "Manage cookie preferences through your browser settings",
+            "Use browser extensions that block tracking"
+          ],
           "title": "6.1 Google Analytics"
         },
         "intro": "We use cookies for:",
-        "items": {
-          "0": "Authentication",
-          "1": "Interface preferences",
-          "2": "Internal metrics"
-        },
+        "items": [
+          "Authentication",
+          "Interface preferences",
+          "Internal metrics"
+        ],
         "noAdvertising": "We do not use advertising cookies or tracking pixels for marketing purposes.",
         "title": "6. COOKIES AND TRACKING TECHNOLOGIES"
       },
       "dataRetention": {
         "apiKeys": {
           "intro": "Your encrypted API keys are retained:",
-          "items": {
-            "0": "While your Mockup Machine account is active and you choose to use your own API key",
-            "1": "Until you explicitly delete your API key from our system",
-            "2": "Permanently removed immediately upon deletion — no retention period"
-          },
+          "items": [
+            "While your Mockup Machine account is active and you choose to use your own API key",
+            "Until you explicitly delete your API key from our system",
+            "Permanently removed immediately upon deletion — no retention period"
+          ],
           "title": "7.3 API Key Data Retention"
         },
         "general": {
-          "items": {
-            "0": "Account data is retained while your subscription is active.",
-            "1": "Logs and metrics may be retained for up to 12 months.",
-            "2": "Data may be anonymized for internal analysis."
-          },
+          "items": [
+            "Account data is retained while your subscription is active.",
+            "Logs and metrics may be retained for up to 12 months.",
+            "Data may be anonymized for internal analysis."
+          ],
           "title": "7.1 General Data Retention"
         },
         "googleAuth": {
           "intro": "Google authentication data (email, name, profile picture, Google User ID) is retained:",
-          "items": {
-            "0": "While your Mockup Machine account is active",
-            "1": "For up to 90 days after account deletion (for security and fraud prevention purposes)",
-            "2": "As required by law or legal obligations"
-          },
+          "items": [
+            "While your Mockup Machine account is active",
+            "For up to 90 days after account deletion (for security and fraud prevention purposes)",
+            "As required by law or legal obligations"
+          ],
           "title": "7.2 Google Authentication Data Retention"
         },
         "requestingDeletion": {
           "intro": "You have the right to request deletion of your data, including Google authentication data and API keys:",
-          "items": {
-            "0": "You can delete your API key directly through the Mockup Machine settings at any time",
-            "1": "You can delete your account directly through the Mockup Machine settings",
-            "2": "Contact us at contato@visant.co to request immediate deletion",
-            "3": "Upon API key deletion, your encrypted key is permanently removed from our systems immediately",
-            "4": "Upon account deletion, your Google User ID and associated profile data will be permanently removed from our systems",
-            "5": "To revoke Google OAuth access, visit your Google Account settings at myaccount.google.com/permissions"
-          },
+          "items": [
+            "You can delete your API key directly through the Mockup Machine settings at any time",
+            "You can delete your account directly through the Mockup Machine settings",
+            "Contact us at contato@visant.co to request immediate deletion",
+            "Upon API key deletion, your encrypted key is permanently removed from our systems immediately",
+            "Upon account deletion, your Google User ID and associated profile data will be permanently removed from our systems",
+            "To revoke Google OAuth access, visit your Google Account settings at myaccount.google.com/permissions"
+          ],
           "note": "Note: Some data may be retained for up to 90 days after deletion for security, fraud prevention, or legal compliance purposes, but will not be used for any other purpose during this period. API keys are an exception and are deleted immediately with no retention period.",
           "title": "7.4 Requesting Data Deletion"
         },
@@ -2378,24 +2378,24 @@
         "apiKeySharing": {
           "exception": "The only exception is when required by law enforcement or court order (see section 3.3).",
           "intro": "We do not share your API keys with any third parties. Your API keys are:",
-          "items": {
-            "0": "Stored securely in our encrypted database",
-            "1": "Used exclusively for processing your requests",
-            "2": "Never sold, rented, or shared with advertisers, marketing partners, or service providers",
-            "3": "Never exposed in API responses, logs, or any other output",
-            "4": "Only decrypted in memory when needed for API calls, then immediately discarded"
-          },
+          "items": [
+            "Stored securely in our encrypted database",
+            "Used exclusively for processing your requests",
+            "Never sold, rented, or shared with advertisers, marketing partners, or service providers",
+            "Never exposed in API responses, logs, or any other output",
+            "Only decrypted in memory when needed for API calls, then immediately discarded"
+          ],
           "title": "3.4 API Key Sharing"
         },
         "googleData": {
           "exception": "The only exception is when required by law enforcement or court order (see section 3.3).",
           "intro": "We do not share your Google account data with any third parties. The data we collect from Google (email, name, profile picture, and Google User ID) is:",
-          "items": {
-            "0": "Stored securely in our own database",
-            "1": "Used exclusively for authentication and account management",
-            "2": "Not sold, rented, or shared with advertisers or marketing partners",
-            "3": "Not used for any purpose beyond what is necessary to operate the Mockup Machine service"
-          },
+          "items": [
+            "Stored securely in our own database",
+            "Used exclusively for authentication and account management",
+            "Not sold, rented, or shared with advertisers or marketing partners",
+            "Not used for any purpose beyond what is necessary to operate the Mockup Machine service"
+          ],
           "title": "3.2 Google Data Sharing"
         },
         "intro": "We may share information with:",
@@ -2404,13 +2404,13 @@
           "title": "3.3 Legal Obligations"
         },
         "serviceProviders": {
-          "items": {
-            "0": "Third-party AI image generation APIs",
-            "1": "Payment providers",
-            "2": "Hosting and storage services",
-            "3": "Authentication services (MongoDBAuth)",
-            "4": "Analytics services (Google Analytics) — for website usage statistics only"
-          },
+          "items": [
+            "Third-party AI image generation APIs",
+            "Payment providers",
+            "Hosting and storage services",
+            "Authentication services (MongoDBAuth)",
+            "Analytics services (Google Analytics) — for website usage statistics only"
+          ],
           "note": "We share only the minimum necessary for service operation. Analytics data shared with Google Analytics is anonymized and does not include personally identifiable information.",
           "title": "3.1 Service Providers"
         },
@@ -2424,146 +2424,146 @@
         "apiKeys": {
           "important": "Important: We never use your API key for any purpose other than processing your requests. All API calls made with your key are billed to your Google Cloud account, not ours. We never share your API keys with third parties or use them for any other purpose.",
           "intro": "If you provide your own Gemini API key, we use it exclusively for:",
-          "items": {
-            "0": "Processing your AI image generation requests",
-            "1": "Using your Google Cloud quota and credits instead of our system's default key",
-            "2": "Prioritizing your key over the default key for your account's requests"
-          },
+          "items": [
+            "Processing your AI image generation requests",
+            "Using your Google Cloud quota and credits instead of our system's default key",
+            "Prioritizing your key over the default key for your account's requests"
+          ],
           "title": "2.3 Use of API Keys"
         },
         "googleAuth": {
           "intro": "We use the data collected from your Google account exclusively for:",
-          "items": {
-            "0": "Creating and managing your Mockup Machine account",
-            "1": "Authenticating your identity when you sign in",
-            "2": "Linking your Google account to your existing account (if applicable)",
-            "3": "Pre-filling your profile information (name and profile picture)",
-            "4": "Preventing duplicate accounts and fraudulent activity"
-          },
+          "items": [
+            "Creating and managing your Mockup Machine account",
+            "Authenticating your identity when you sign in",
+            "Linking your Google account to your existing account (if applicable)",
+            "Pre-filling your profile information (name and profile picture)",
+            "Preventing duplicate accounts and fraudulent activity"
+          ],
           "note": "We do not use your Google data for advertising, marketing, or any purpose other than account management and authentication. Your Google credentials are never stored by us; we only store the profile information provided by Google's OAuth service.",
           "title": "2.1 Use of Google Authentication Data"
         },
         "intro": "We use your data to:",
-        "items": {
-          "0": "Operate and improve the Mockup Machine",
-          "1": "Process subscriptions and payments",
-          "2": "Monitor plan usage limits",
-          "3": "Personalize your experience",
-          "4": "Prevent abusive or fraudulent use",
-          "5": "Comply with legal obligations"
-        },
+        "items": [
+          "Operate and improve the Mockup Machine",
+          "Process subscriptions and payments",
+          "Monitor plan usage limits",
+          "Personalize your experience",
+          "Prevent abusive or fraudulent use",
+          "Comply with legal obligations"
+        ],
         "title": "2. HOW WE USE YOUR DATA"
       },
       "informationWeCollect": {
         "accountInfo": {
-          "items": {
-            "0": "Name",
-            "1": "Email address",
-            "2": "User ID",
-            "3": "Profile picture (when provided)",
-            "4": "Authentication data via providers (Google/Apple/Email)"
-          },
+          "items": [
+            "Name",
+            "Email address",
+            "User ID",
+            "Profile picture (when provided)",
+            "Authentication data via providers (Google/Apple/Email)"
+          ],
           "title": "1.1 Account Information"
         },
         "apiKeys": {
           "important": "Important: Providing your own API key is completely optional. If you choose to provide one, it will be encrypted immediately upon saving and never stored in plaintext.",
           "intro": "If you choose to use your own Gemini API key with our service, we collect and store:",
-          "items": {
-            "0": "Your encrypted Gemini API key — Stored securely using AES-256-GCM encryption",
-            "1": "API key metadata — Associated with your account for usage tracking"
-          },
+          "items": [
+            "Your encrypted Gemini API key — Stored securely using AES-256-GCM encryption",
+            "API key metadata — Associated with your account for usage tracking"
+          ],
           "title": "1.6 API Keys"
         },
         "googleAuth": {
           "dataIntro": "The specific data we collect from your Google account includes:",
-          "dataItems": {
-            "0": "Email address — Used as your primary account identifier",
-            "1": "Full name — Used to personalize your profile",
-            "2": "Profile picture — Used as your account avatar (optional)",
-            "3": "Google User ID (sub) — Used for authentication and account linking"
-          },
+          "dataItems": [
+            "Email address — Used as your primary account identifier",
+            "Full name — Used to personalize your profile",
+            "Profile picture — Used as your account avatar (optional)",
+            "Google User ID (sub) — Used for authentication and account linking"
+          ],
           "important": "Important: We do not access your Google contacts, calendar, drive files, or any other Google services beyond the basic profile information listed above.",
-          "permissions": {
-            "0": "email — Access to your Google account email address",
-            "1": "profile — Access to your basic profile information"
-          },
+          "permissions": [
+            "email — Access to your Google account email address",
+            "profile — Access to your basic profile information"
+          ],
           "permissionsIntro": "When you choose to sign in with Google, we request the following permissions (OAuth 2.0 scopes):",
           "title": "1.5 Google Authentication Data"
         },
         "paymentInfo": {
-          "items": {
-            "0": "Subscription data (active plan, renewals, history)",
-            "1": "Billing identifiers via third-party providers (Pagar.me, PagSeguro, Stripe, or others)",
-            "2": "We never store complete card data."
-          },
+          "items": [
+            "Subscription data (active plan, renewals, history)",
+            "Billing identifiers via third-party providers (Pagar.me, PagSeguro, Stripe, or others)",
+            "We never store complete card data."
+          ],
           "title": "1.2 Payment Information"
         },
         "technicalData": {
-          "items": {
-            "0": "IP address",
-            "1": "Device type",
-            "2": "Browser",
-            "3": "Language preferences"
-          },
+          "items": [
+            "IP address",
+            "Device type",
+            "Browser",
+            "Language preferences"
+          ],
           "title": "1.4 Technical Data"
         },
         "title": "1. INFORMATION WE COLLECT",
         "usageData": {
-          "items": {
-            "0": "Number of images generated",
-            "1": "Prompts submitted by users",
-            "2": "Platform usage time",
-            "3": "Error logs for maintenance"
-          },
+          "items": [
+            "Number of images generated",
+            "Prompts submitted by users",
+            "Platform usage time",
+            "Error logs for maintenance"
+          ],
           "title": "1.3 Usage Data"
         }
       },
       "storageAndSecurity": {
         "apiKeySecurity": {
           "intro": "We implement military-grade security measures to protect your API keys:",
-          "items": {
-            "0": "Encryption: We use AES-256-GCM encryption, a military-grade encryption standard, to encrypt your API keys before storage",
-            "1": "Master Key: Encryption keys are stored securely in environment variables, never in code or version control",
-            "2": "No Plaintext Storage: Your API key is never stored in plaintext in our database, logs, or anywhere else",
-            "3": "In-Memory Decryption: API keys are only decrypted in memory when needed for API calls, then immediately discarded",
-            "4": "User Isolation: Each user can only access their own encrypted API key",
-            "5": "Authentication Required: Only authenticated users can save or access their own API keys",
-            "6": "No Exposure: We never return decrypted API keys in API responses — we only confirm successful operations",
-            "7": "Audit Trail: API key operations (save/delete) are logged for security auditing"
-          },
+          "items": [
+            "Encryption: We use AES-256-GCM encryption, a military-grade encryption standard, to encrypt your API keys before storage",
+            "Master Key: Encryption keys are stored securely in environment variables, never in code or version control",
+            "No Plaintext Storage: Your API key is never stored in plaintext in our database, logs, or anywhere else",
+            "In-Memory Decryption: API keys are only decrypted in memory when needed for API calls, then immediately discarded",
+            "User Isolation: Each user can only access their own encrypted API key",
+            "Authentication Required: Only authenticated users can save or access their own API keys",
+            "No Exposure: We never return decrypted API keys in API responses — we only confirm successful operations",
+            "Audit Trail: API key operations (save/delete) are logged for security auditing"
+          ],
           "responsibilities": "Your Responsibilities: Keep your API key secure, never share it with others, and consider rotating it periodically. Monitor your Google Cloud Console for unexpected usage or charges. Configure API key restrictions in Google AI Studio to limit where it can be used.",
           "title": "4.2 API Key Security"
         },
         "googleAuth": {
-          "items": {
-            "0": "We use OAuth 2.0, the industry-standard authentication protocol.",
-            "1": "Google access tokens are never stored in our database.",
-            "2": "We only store the Google User ID (sub) and profile information provided by Google after successful authentication.",
-            "3": "Your Google password is never accessible to us and remains secure with Google.",
-            "4": "You can revoke our access to your Google account at any time through your Google account settings."
-          },
+          "items": [
+            "We use OAuth 2.0, the industry-standard authentication protocol.",
+            "Google access tokens are never stored in our database.",
+            "We only store the Google User ID (sub) and profile information provided by Google after successful authentication.",
+            "Your Google password is never accessible to us and remains secure with Google.",
+            "You can revoke our access to your Google account at any time through your Google account settings."
+          ],
           "title": "4.1 Google Authentication Security"
         },
         "intro": "All data, including Google authentication data, is protected using industry-standard security measures:",
-        "items": {
-          "0": "Your data is stored on secure servers with encryption at rest and in transit.",
-          "1": "We use MongoDB, DigitalOcean, and Vercel as our primary infrastructure.",
-          "2": "We apply reinforced authentication, RLS, and security best practices.",
-          "3": "OAuth tokens are handled securely and never stored in plain text.",
-          "4": "All database connections use encrypted channels (TLS/SSL)."
-        },
+        "items": [
+          "Your data is stored on secure servers with encryption at rest and in transit.",
+          "We use MongoDB, DigitalOcean, and Vercel as our primary infrastructure.",
+          "We apply reinforced authentication, RLS, and security best practices.",
+          "OAuth tokens are handled securely and never stored in plain text.",
+          "All database connections use encrypted channels (TLS/SSL)."
+        ],
         "title": "4. STORAGE AND SECURITY"
       },
       "yourRights": {
         "contact": "To exercise your rights, contact Visant Labs support.",
         "intro": "You can:",
-        "items": {
-          "0": "Access your data",
-          "1": "Correct information",
-          "2": "Request account deletion",
-          "3": "Export your data",
-          "4": "Revoke consents"
-        },
+        "items": [
+          "Access your data",
+          "Correct information",
+          "Request account deletion",
+          "Export your data",
+          "Revoke consents"
+        ],
         "title": "5. YOUR RIGHTS"
       }
     },
@@ -2674,23 +2674,23 @@
       },
       "exceptions": {
         "intro": "The right of withdrawal <strong>does not apply</strong> in the following cases:",
-        "items": {
-          "0": "Credits or subscriptions purchased as gifts/promotions",
-          "1": "Products or services personalized or customized specifically for you",
-          "2": "When the service was fully provided and consumed by the customer"
-        },
+        "items": [
+          "Credits or subscriptions purchased as gifts/promotions",
+          "Products or services personalized or customized specifically for you",
+          "When the service was fully provided and consumed by the customer"
+        ],
         "title": "7. Exceptions"
       },
       "legalNote": "Legal Note: This policy is in compliance with the Brazilian Consumer Defense Code (Law No. 8.078/1990) and does not limit the rights guaranteed by law. If you have questions about your rights as a consumer, we recommend consulting the PROCON in your region or a lawyer specialized in Consumer Law.",
       "procedure": {
         "howToRequest": {
           "intro": "To exercise your right of withdrawal and request a refund, you must:",
-          "items": {
-            "0": "Send an email to contato@visant.co within the 7 calendar day period",
-            "1": "Inform the transaction number or purchase identification",
-            "2": "Indicate the reason for the request (not mandatory, but helps us improve our services)",
-            "3": "Provide bank account or payment account details for refund, when applicable"
-          },
+          "items": [
+            "Send an email to contato@visant.co within the 7 calendar day period",
+            "Inform the transaction number or purchase identification",
+            "Indicate the reason for the request (not mandatory, but helps us improve our services)",
+            "Provide bank account or payment account details for refund, when applicable"
+          ],
           "title": "2.1 How to Request"
         },
         "processing": {
@@ -2701,12 +2701,12 @@
       },
       "processingTimes": {
         "intro": "After approval of the request, processing times vary according to the payment method:",
-        "items": {
-          "0": "Credit Card: The chargeback will appear on the next or subsequent invoice, depending on the card issuer (average time: 5 to 15 business days)",
-          "1": "PIX: Refund processed within 1 (one) business day",
-          "2": "Bank Slip: Refund processed via bank transfer within 5 (five) business days after confirmation",
-          "3": "Debit Card: Refund processed within 3 (three) business days"
-        },
+        "items": [
+          "Credit Card: The chargeback will appear on the next or subsequent invoice, depending on the card issuer (average time: 5 to 15 business days)",
+          "PIX: Refund processed within 1 (one) business day",
+          "Bank Slip: Refund processed via bank transfer within 5 (five) business days after confirmation",
+          "Debit Card: Refund processed within 3 (three) business days"
+        ],
         "title": "5. Processing Times for Refund"
       },
       "rightOfWithdrawal": {
@@ -2732,11 +2732,11 @@
         },
         "partial": {
           "intro": "For monthly or annual subscriptions canceled within the 7-day period:",
-          "items": {
-            "0": "The refund will be calculated proportionally to the unused period",
-            "1": "Credits used during the period will not be refunded",
-            "2": "The refund will be credited according to the original payment method"
-          },
+          "items": [
+            "The refund will be calculated proportionally to the unused period",
+            "Credits used during the period will not be refunded",
+            "The refund will be credited according to the original payment method"
+          ],
           "title": "3.1 Partial Refund"
         },
         "title": "3. Subscription Refund"
@@ -3085,16 +3085,16 @@
     "sections": {
       "acceptableUse": {
         "intro": "You agree not to:",
-        "items": {
-          "0": "Use the service for any illegal purpose or in violation of any laws",
-          "1": "Generate content that is defamatory, harmful, abusive, or violates others' rights",
-          "2": "Upload content that infringes on intellectual property rights",
-          "3": "Attempt to reverse engineer, decompile, or extract the source code",
-          "4": "Use automated systems (bots, scrapers) to access the service",
-          "5": "Share your account credentials with others",
-          "6": "Interfere with or disrupt the service or servers",
-          "7": "Generate content that promotes hate speech, violence, or illegal activities"
-        },
+        "items": [
+          "Use the service for any illegal purpose or in violation of any laws",
+          "Generate content that is defamatory, harmful, abusive, or violates others' rights",
+          "Upload content that infringes on intellectual property rights",
+          "Attempt to reverse engineer, decompile, or extract the source code",
+          "Use automated systems (bots, scrapers) to access the service",
+          "Share your account credentials with others",
+          "Interfere with or disrupt the service or servers",
+          "Generate content that promotes hate speech, violence, or illegal activities"
+        ],
         "title": "5. Acceptable Use"
       },
       "acceptance": {
@@ -3109,12 +3109,12 @@
       },
       "description": {
         "intro": "Mockup Machine is a platform that allows users to:",
-        "items": {
-          "0": "Generate photorealistic mockups using AI technology",
-          "1": "Upload and apply designs to various mockup templates",
-          "2": "Customize mockups with branding, location, lighting, and other parameters",
-          "3": "Export generated images for personal or commercial use"
-        },
+        "items": [
+          "Generate photorealistic mockups using AI technology",
+          "Upload and apply designs to various mockup templates",
+          "Customize mockups with branding, location, lighting, and other parameters",
+          "Export generated images for personal or commercial use"
+        ],
         "title": "2. Description of Service"
       },
       "disclaimers": {
@@ -3143,12 +3143,12 @@
       "intellectualProperty": {
         "generatedImages": {
           "intro": "You own the mockup images generated through the service. You may use them for:",
-          "items": {
-            "0": "Personal projects",
-            "1": "Commercial projects",
-            "2": "Client work",
-            "3": "Marketing and promotional materials"
-          },
+          "items": [
+            "Personal projects",
+            "Commercial projects",
+            "Client work",
+            "Marketing and promotional materials"
+          ],
           "restriction": "However, you may not resell the mockup images as standalone products or use them to train competing AI models.",
           "title": "6.2 Generated Images"
         },
@@ -3159,11 +3159,11 @@
         "title": "6. Intellectual Property",
         "yourContent": {
           "intro": "You retain ownership of designs and content you upload. By using the service, you grant us a license to:",
-          "items": {
-            "0": "Process and store your content to provide the service",
-            "1": "Generate mockups based on your content",
-            "2": "Use your content for service improvement (with your explicit consent)"
-          },
+          "items": [
+            "Process and store your content to provide the service",
+            "Generate mockups based on your content",
+            "Use your content for service improvement (with your explicit consent)"
+          ],
           "title": "6.1 Your Content"
         }
       },
@@ -3173,21 +3173,21 @@
       },
       "rateLimits": {
         "intro": "To ensure fair access and service quality:",
-        "items": {
-          "0": "We implement rate limits based on your subscription tier",
-          "1": "Free tier users have limited generations per period",
-          "2": "Excessive usage may result in temporary restrictions",
-          "3": "We reserve the right to modify limits with notice"
-        },
+        "items": [
+          "We implement rate limits based on your subscription tier",
+          "Free tier users have limited generations per period",
+          "Excessive usage may result in temporary restrictions",
+          "We reserve the right to modify limits with notice"
+        ],
         "title": "8. Rate Limits and Usage"
       },
       "serviceAvailability": {
         "intro": "We strive to maintain high availability but do not guarantee:",
-        "items": {
-          "0": "Uninterrupted or error-free service",
-          "1": "Specific response times or generation speeds",
-          "2": "Availability of all features at all times"
-        },
+        "items": [
+          "Uninterrupted or error-free service",
+          "Specific response times or generation speeds",
+          "Availability of all features at all times"
+        ],
         "maintenance": "We may perform maintenance, updates, or modifications that temporarily affect service availability. We will provide reasonable notice when possible.",
         "title": "7. Service Availability"
       },
@@ -3197,13 +3197,13 @@
           "title": "4.1 Free Tier"
         },
         "paidSubscriptions": {
-          "items": {
-            "0": "Subscriptions are billed on a recurring basis (monthly or annually)",
-            "1": "All fees are non-refundable except as required by law",
-            "2": "Prices may change with 30 days' notice to existing subscribers",
-            "3": "You may cancel your subscription at any time",
-            "4": "Cancellation takes effect at the end of the current billing period"
-          },
+          "items": [
+            "Subscriptions are billed on a recurring basis (monthly or annually)",
+            "All fees are non-refundable except as required by law",
+            "Prices may change with 30 days' notice to existing subscribers",
+            "You may cancel your subscription at any time",
+            "Cancellation takes effect at the end of the current billing period"
+          ],
           "title": "4.2 Paid Subscriptions"
         },
         "paymentProcessing": {
@@ -3214,23 +3214,23 @@
       },
       "termination": {
         "intro": "Either party may terminate this agreement:",
-        "items": {
-          "0": "You may cancel your account at any time",
-          "1": "We may suspend or terminate accounts that violate these terms",
-          "2": "Upon termination, your right to use the service immediately ceases",
-          "3": "We may delete your account data in accordance with our Privacy Policy"
-        },
+        "items": [
+          "You may cancel your account at any time",
+          "We may suspend or terminate accounts that violate these terms",
+          "Upon termination, your right to use the service immediately ceases",
+          "We may delete your account data in accordance with our Privacy Policy"
+        ],
         "title": "12. Termination"
       },
       "userAccounts": {
         "accountCreation": {
           "intro": "To use certain features of the service, you must create an account. You agree to:",
-          "items": {
-            "0": "Provide accurate, current, and complete information",
-            "1": "Maintain and update your account information",
-            "2": "Maintain the security of your account credentials",
-            "3": "Accept responsibility for all activities under your account"
-          },
+          "items": [
+            "Provide accurate, current, and complete information",
+            "Maintain and update your account information",
+            "Maintain the security of your account credentials",
+            "Accept responsibility for all activities under your account"
+          ],
           "title": "3.1 Account Creation"
         },
         "accountTermination": {
@@ -3366,23 +3366,23 @@
       "agreement": "By using Mockup Machine, you acknowledge that you have read and understand this Usage Policy, including the disclosure that the service uses Google Gemini AI models for image generation.",
       "aiTechnology": {
         "4k": {
-          "features": {
-            "0": "High-resolution output up to 4K",
-            "1": "3-7 credits per image (varies by resolution)",
-            "2": "Manual aspect ratio control",
-            "3": "Advanced image quality and detail",
-            "4": "Support for multiple reference images"
-          },
+          "features": [
+            "High-resolution output up to 4K",
+            "3-7 credits per image (varies by resolution)",
+            "Manual aspect ratio control",
+            "Advanced image quality and detail",
+            "Support for multiple reference images"
+          ],
           "model": "Powered by Google Gemini 3 Pro Preview",
           "name": "Mockup Machine® 4K"
         },
         "hd": {
-          "features": {
-            "0": "Optimized for fast generation",
-            "1": "1 credit per image",
-            "2": "Automatic aspect ratio detection",
-            "3": "Lower resolution output suitable for most use cases"
-          },
+          "features": [
+            "Optimized for fast generation",
+            "1 credit per image",
+            "Automatic aspect ratio detection",
+            "Lower resolution output suitable for most use cases"
+          ],
           "model": "Powered by Google Gemini 2.5 Flash",
           "name": "Mockup Machine® HD"
         },
@@ -3391,30 +3391,30 @@
       },
       "capabilities": {
         "features": {
-          "items": {
-            "0": "HD model supports automatic aspect ratio based on input image",
-            "1": "4K model supports manual aspect ratio selection and multiple reference images",
-            "2": "Both models support the same prompt customization options",
-            "3": "Advanced features may only be available on the 4K model"
-          },
+          "items": [
+            "HD model supports automatic aspect ratio based on input image",
+            "4K model supports manual aspect ratio selection and multiple reference images",
+            "Both models support the same prompt customization options",
+            "Advanced features may only be available on the 4K model"
+          ],
           "title": "3.3 Feature Differences"
         },
         "processingTimes": {
-          "items": {
-            "0": "HD generation typically completes in seconds",
-            "1": "4K generation may take significantly longer, especially at higher resolutions",
-            "2": "Processing times are dependent on Google's API availability and load",
-            "3": "No guaranteed response times — service availability is subject to third-party API status"
-          },
+          "items": [
+            "HD generation typically completes in seconds",
+            "4K generation may take significantly longer, especially at higher resolutions",
+            "Processing times are dependent on Google's API availability and load",
+            "No guaranteed response times — service availability is subject to third-party API status"
+          ],
           "title": "3.2 Processing Times"
         },
         "resolution": {
-          "items": {
-            "0": "Mockup Machine® HD: Fixed resolution optimized for speed and efficiency",
-            "1": "Mockup Machine® 4K: Configurable resolution options (1K, 2K, 4K)",
-            "2": "Higher resolutions consume more credits and may take longer to generate",
-            "3": "Actual output quality depends on input parameters and model capabilities"
-          },
+          "items": [
+            "Mockup Machine® HD: Fixed resolution optimized for speed and efficiency",
+            "Mockup Machine® 4K: Configurable resolution options (1K, 2K, 4K)",
+            "Higher resolutions consume more credits and may take longer to generate",
+            "Actual output quality depends on input parameters and model capabilities"
+          ],
           "title": "3.1 Resolution and Quality"
         },
         "title": "3. Model Capabilities and Limitations"
@@ -3426,121 +3426,121 @@
       },
       "contentPolicies": {
         "intro": "Both Mockup Machine and Google have content policies that restrict:",
-        "items": {
-          "0": "Generation of illegal content",
-          "1": "Generation of harmful or abusive content",
-          "2": "Generation of content that violates intellectual property rights",
-          "3": "Attempts to circumvent safety filters or content policies"
-        },
+        "items": [
+          "Generation of illegal content",
+          "Generation of harmful or abusive content",
+          "Generation of content that violates intellectual property rights",
+          "Attempts to circumvent safety filters or content policies"
+        ],
         "note": "Requests that violate these policies will be rejected. Repeated violations may result in account suspension or termination.",
         "title": "10. Content Policies"
       },
       "dataUsage": {
         "intro": "When you generate images using Mockup Machine:",
-        "items": {
-          "0": "Your uploaded images and prompts are sent to Google's Gemini API for processing",
-          "1": "Image data is transmitted securely to Google Cloud infrastructure",
-          "2": "Google may use this data in accordance with their Privacy Policy and Terms of Service",
-          "3": "Generated images are returned to Mockup Machine and stored according to our Privacy Policy",
-          "4": "We do not control how Google uses or stores data sent through their API"
-        },
+        "items": [
+          "Your uploaded images and prompts are sent to Google's Gemini API for processing",
+          "Image data is transmitted securely to Google Cloud infrastructure",
+          "Google may use this data in accordance with their Privacy Policy and Terms of Service",
+          "Generated images are returned to Mockup Machine and stored according to our Privacy Policy",
+          "We do not control how Google uses or stores data sent through their API"
+        ],
         "note": "For details on data handling, please review both our Privacy Policy and Google's AI Services Privacy Policy.",
         "title": "4. Data Usage and Privacy"
       },
       "disclaimers": {
         "intro": "Please understand that:",
-        "items": {
-          "0": "AI-generated content may contain errors, inaccuracies, or unexpected results",
-          "1": "We do not guarantee that generated images will meet your specific requirements",
-          "2": "Model capabilities and limitations are determined by Google, not Mockup Machine",
-          "3": "Service quality and availability depend on third-party infrastructure",
-          "4": "Google may modify, deprecate, or change their models without notice"
-        },
+        "items": [
+          "AI-generated content may contain errors, inaccuracies, or unexpected results",
+          "We do not guarantee that generated images will meet your specific requirements",
+          "Model capabilities and limitations are determined by Google, not Mockup Machine",
+          "Service quality and availability depend on third-party infrastructure",
+          "Google may modify, deprecate, or change their models without notice"
+        ],
         "title": "11. Disclaimers"
       },
       "modelChanges": {
         "intro": "Google may update, modify, or deprecate their Gemini models at any time. Mockup Machine reserves the right to:",
-        "items": {
-          "0": "Update which Google models are used for each tier",
-          "1": "Migrate to newer model versions as they become available",
-          "2": "Adjust pricing and credit costs if Google's pricing changes",
-          "3": "Modify features or capabilities based on model updates",
-          "4": "Provide reasonable notice of significant changes when possible"
-        },
+        "items": [
+          "Update which Google models are used for each tier",
+          "Migrate to newer model versions as they become available",
+          "Adjust pricing and credit costs if Google's pricing changes",
+          "Modify features or capabilities based on model updates",
+          "Provide reasonable notice of significant changes when possible"
+        ],
         "title": "9. Model Changes and Updates"
       },
       "rateLimits": {
         "intro": "Image generation is subject to rate limits imposed by:",
-        "items": {
-          "0": "Mockup Machine rate limits: Based on your subscription tier and credit balance",
-          "1": "Google API rate limits: Imposed by Google Cloud on API usage",
-          "2": "Exceeding rate limits may result in temporary service unavailability",
-          "3": "Rate limits may vary based on current API load and Google's policies",
-          "4": "We reserve the right to implement additional rate limiting to ensure fair access"
-        },
+        "items": [
+          "Mockup Machine rate limits: Based on your subscription tier and credit balance",
+          "Google API rate limits: Imposed by Google Cloud on API usage",
+          "Exceeding rate limits may result in temporary service unavailability",
+          "Rate limits may vary based on current API load and Google's policies",
+          "We reserve the right to implement additional rate limiting to ensure fair access"
+        ],
         "title": "5. Rate Limits and Quotas"
       },
       "serviceAvailability": {
         "intro": "Mockup Machine's availability depends on:",
-        "items": {
-          "0": "Google Cloud API availability and operational status",
-          "1": "Network connectivity between our servers and Google's infrastructure",
-          "2": "Google's API rate limits and quotas",
-          "3": "Our own infrastructure status"
-        },
+        "items": [
+          "Google Cloud API availability and operational status",
+          "Network connectivity between our servers and Google's infrastructure",
+          "Google's API rate limits and quotas",
+          "Our own infrastructure status"
+        ],
         "note": "We cannot guarantee uninterrupted service, as it is partially dependent on third-party infrastructure. Service outages, maintenance, or API changes by Google may temporarily affect availability. We will make reasonable efforts to communicate any known issues.",
         "title": "8. Service Availability"
       },
       "serviceProvider": {
         "intro": "The AI image generation capabilities are provided through:",
-        "items": {
-          "0": "Google Cloud AI / Google AI — Provider of Gemini AI models",
-          "1": "API access to Google Gemini 2.5 Flash for HD generation",
-          "2": "API access to Google Gemini 3 Pro Preview for 4K generation",
-          "3": "All image generation requests are processed by Google's servers"
-        },
+        "items": [
+          "Google Cloud AI / Google AI — Provider of Gemini AI models",
+          "API access to Google Gemini 2.5 Flash for HD generation",
+          "API access to Google Gemini 3 Pro Preview for 4K generation",
+          "All image generation requests are processed by Google's servers"
+        ],
         "note": "Mockup Machine acts as an intermediary service that interfaces with Google's AI models to provide you with image generation capabilities. Your use of Mockup Machine is also subject to Google's Terms of Service and Privacy Policy for their AI services.",
         "title": "2. Service Provider"
       },
       "technicalSpecs": {
         "creditCosts": {
-          "items": {
-            "0": "Mockup Machine® HD: 1 credit per image",
-            "1": "Mockup Machine® 4K: 3-7 credits per image (varies by selected resolution)",
-            "2": "Credit costs are set by Mockup Machine and may change with notice",
-            "3": "Credits are consumed upon successful generation, not upon request"
-          },
+          "items": [
+            "Mockup Machine® HD: 1 credit per image",
+            "Mockup Machine® 4K: 3-7 credits per image (varies by selected resolution)",
+            "Credit costs are set by Mockup Machine and may change with notice",
+            "Credits are consumed upon successful generation, not upon request"
+          ],
           "title": "6.1 Credit Costs"
         },
         "inputRequirements": {
-          "items": {
-            "0": "Supported image formats: PNG, JPG, WEBP",
-            "1": "Maximum file size: 10MB per image",
-            "2": "Prompt length limitations may apply",
-            "3": "4K model supports up to 3 reference images simultaneously"
-          },
+          "items": [
+            "Supported image formats: PNG, JPG, WEBP",
+            "Maximum file size: 10MB per image",
+            "Prompt length limitations may apply",
+            "4K model supports up to 3 reference images simultaneously"
+          ],
           "title": "6.2 Input Requirements"
         },
         "outputFormats": {
-          "items": {
-            "0": "Generated images are provided in PNG format",
-            "1": "Output resolution varies by selected model and settings",
-            "2": "Actual dimensions may vary slightly from requested aspect ratios"
-          },
+          "items": [
+            "Generated images are provided in PNG format",
+            "Output resolution varies by selected model and settings",
+            "Actual dimensions may vary slightly from requested aspect ratios"
+          ],
           "title": "6.3 Output Formats"
         },
         "title": "6. Technical Specifications"
       },
       "userResponsibilities": {
         "intro": "When using Mockup Machine's AI-powered features, you agree to:",
-        "items": {
-          "0": "Use generated content in compliance with applicable laws and regulations",
-          "1": "Respect intellectual property rights of others",
-          "2": "Not use the service to generate harmful, illegal, or inappropriate content",
-          "3": "Understand that AI-generated content may contain errors or unexpected results",
-          "4": "Review generated images before using them in commercial projects",
-          "5": "Comply with Google's Acceptable Use Policy for their AI services"
-        },
+        "items": [
+          "Use generated content in compliance with applicable laws and regulations",
+          "Respect intellectual property rights of others",
+          "Not use the service to generate harmful, illegal, or inappropriate content",
+          "Understand that AI-generated content may contain errors or unexpected results",
+          "Review generated images before using them in commercial projects",
+          "Comply with Google's Acceptable Use Policy for their AI services"
+        ],
         "title": "7. User Responsibilities"
       }
     },

@@ -1206,7 +1206,7 @@ export const DesignSystemPage: React.FC = () => {
                                 <Badge variant="outline">Sizes</Badge>
                                 <Badge variant="outline">Footer</Badge>
                               </div>
-                              <Button variant="ghost" onClick={() => setShowSharedModal(true)} variant="outline" size="sm">
+                              <Button variant="ghost" onClick={() => setShowSharedModal(true)} size="sm">
                                 Open Shared Modal
                               </Button>
                             </div>
@@ -1223,7 +1223,7 @@ export const DesignSystemPage: React.FC = () => {
                                 <Badge variant="outline">Danger</Badge>
                                 <Badge variant="outline">Info</Badge>
                               </div>
-                              <Button variant="ghost" onClick={() => setShowModal(true)} variant="outline" size="sm">
+                              <Button variant="ghost" onClick={() => setShowModal(true)} size="sm">
                                 {t('designSystem.modal.exampleTitle') || 'Open Confirmation Modal'}
                               </Button>
                             </div>

@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Plus, X } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface ColorPalette {
   name: string;

@@ -10,7 +10,7 @@ import {
 } from '@/utils/markdownFormatter';
 import { Textarea } from '@/components/ui/textarea';
 import { renderMarkdownWithLines } from '@/utils/markdownRenderer';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 
 interface RichTextEditorProps {
   value: string;

@@ -662,7 +662,7 @@ async function applyOperations(ops: FigmaOperation[]) {
       } else if (op.type === 'MOVE') {
         // Support both nodeId (existing node) and ref (node created in this response)
         const node = (op.ref ? createdNodes.get(op.ref) : null) as SceneNode | null
-          ?? await figma.getNodeByIdAsync(op.nodeId) as SceneNode | null;
+          ?? (op.nodeId ? await figma.getNodeByIdAsync(op.nodeId) as SceneNode | null : null);
         if (node) {
           node.x = op.x;
           node.y = op.y;

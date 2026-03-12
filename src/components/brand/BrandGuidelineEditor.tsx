@@ -22,9 +22,9 @@ import {
     Image as ImageIcon
 } from 'lucide-react';
 import { MicroTitle } from '@/components/ui/MicroTitle';
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
-import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 
 interface EditorProps {
     guideline: BrandGuideline;

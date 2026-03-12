@@ -575,8 +575,8 @@ export const CreditPackagesModal: React.FC<CreditPackagesModalProps> = ({
                                   </div>
                                   <MicroTitle className="flex items-center justify-center gap-1.5 text-[10px] sm:text-[11px] text-neutral-400 mt-2 tracking-wider">
                                     <Pickaxe size={10} className="sm:w-3 sm:h-3 text-brand-cyan/60" />
-                                    <span>{currentPlan.credits} {t('pricing.creditsLabel') || 'créditos'}</MicroTitle>
-                                  </div>
+                                    <span>{currentPlan.credits} {t('pricing.creditsLabel') || 'créditos'}</span>
+                                  </MicroTitle>
                                 </div>
 
                                 {/* Plan Benefits */}

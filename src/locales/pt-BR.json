@@ -2006,14 +2006,14 @@
     "aiSuggested": "SUGERIDAS PELA IA:",
     "aiSuggestions": "SUGESTÕES DA IA:",
     "allCategories": "TODAS_CATEGORIAS",
-    "analysisStatusMessages": {
-      "0": "escaneando cores e contrastes",
-      "1": "identificando estilo visual",
-      "2": "detectando categorias",
-      "3": "otimizando sugestões",
-      "4": "analisando projeto",
-      "5": "burilando prompt"
-    },
+    "analysisStatusMessages": [
+      "escaneando cores e contrastes",
+      "identificando estilo visual",
+      "detectando categorias",
+      "otimizando sugestões",
+      "analisando projeto",
+      "burilando prompt"
+    ],
     "analyzeImage": "ANALISAR PROJETO",
     "analyzeProject": "Analisar Projeto",
     "analyzing": "ANALISANDO...",
@@ -2171,22 +2171,22 @@
     "models": {
       "gemini-2.5-flash-image": {
         "emoji": "⛏️",
-        "features": {
-          "0": "Geração rápida",
-          "1": "1 crédito por imagem",
-          "2": "Proporção automática"
-        },
+        "features": [
+          "Geração rápida",
+          "1 crédito por imagem",
+          "Proporção automática"
+        ],
         "name": "Mockup Machine® HD",
         "version": "HD"
       },
       "gemini-3-pro-image-preview": {
         "credits": "3-10 créditos",
         "emoji": "⛏️",
-        "features": {
-          "0": "Resolução 4K",
-          "1": "Ferramentas avançadas",
-          "2": "Qualidade superior"
-        },
+        "features": [
+          "Resolução 4K",
+          "Ferramentas avançadas",
+          "Qualidade superior"
+        ],
         "name": "Mockup Machine® 4K",
         "version": "4K"
       }
@@ -2214,12 +2214,12 @@
     "prompt": "PROMPT_",
     "promptPlaceholder": "Descreva o mockup que você quer criar...",
     "promptShort": "PROMPT",
-    "promptStatusMessages": {
-      "0": "entendendo seu design",
-      "1": "buscando as melhores soluções visuais",
-      "2": "pensando como um designer gráfico sênior",
-      "3": "refinando prompt"
-    },
+    "promptStatusMessages": [
+      "entendendo seu design",
+      "buscando as melhores soluções visuais",
+      "pensando como um designer gráfico sênior",
+      "refinando prompt"
+    ],
     "redrawTooltip": "Re-desenhar (Gerar uma nova variação)",
     "referenceAreaLabel": "REFERÊNCIA",
     "referenceImageAlt": "Imagem de referência",
@@ -2259,14 +2259,14 @@
     "showSidebar": "Mostrar barra lateral",
     "simplify": "SIMPLIFICAR",
     "simplifyTooltip": "Simplificar para um prompt básico",
-    "skeletonStatusMessages": {
-      "0": "renderizando conceitos...",
-      "1": "desenhando composições...",
-      "2": "buscando equilíbrio visual...",
-      "3": "polindo detalhes...",
-      "4": "quase lá...",
-      "5": "burilando prompt..."
-    },
+    "skeletonStatusMessages": [
+      "renderizando conceitos...",
+      "desenhando composições...",
+      "buscando equilíbrio visual...",
+      "polindo detalhes...",
+      "quase lá...",
+      "burilando prompt..."
+    ],
     "skipToContent": "Pular para o conteúdo principal",
     "startOver": "Começar de Novo",
     "successBrandGuidelineCreated": "Brand Guideline criado com sucesso",
@@ -2402,69 +2402,69 @@
       },
       "cookiesAndTracking": {
         "googleAnalytics": {
-          "collected": {
-            "0": "Visualizações de página e padrões de navegação",
-            "1": "Profundidade de rolagem e interações do usuário",
-            "2": "Cliques externos",
-            "3": "Informações de dispositivo e navegador",
-            "4": "Localização geográfica geral (nível de país/cidade)"
-          },
+          "collected": [
+            "Visualizações de página e padrões de navegação",
+            "Profundidade de rolagem e interações do usuário",
+            "Cliques externos",
+            "Informações de dispositivo e navegador",
+            "Localização geográfica geral (nível de país/cidade)"
+          ],
           "howItWorks": "O Google Analytics usa cookies e tecnologias similares. Os dados coletados são processados pelo Google de acordo com sua Política de Privacidade. Você pode:",
           "intro": "Usamos o Google Analytics para entender como os visitantes interagem com nosso site. O Google Analytics coleta:",
           "note": "Não enviamos informações pessoalmente identificáveis (PII) para o Google Analytics. Configuramos o Google Analytics para respeitar a privacidade do usuário e cumprir os regulamentos de proteção de dados.",
-          "options": {
-            "0": "Desativar o Google Analytics instalando o Complemento do Navegador de Desativação do Google Analytics",
-            "1": "Gerenciar preferências de cookies através das configurações do seu navegador",
-            "2": "Usar extensões do navegador que bloqueiam rastreamento"
-          },
+          "options": [
+            "Desativar o Google Analytics instalando o Complemento do Navegador de Desativação do Google Analytics",
+            "Gerenciar preferências de cookies através das configurações do seu navegador",
+            "Usar extensões do navegador que bloqueiam rastreamento"
+          ],
           "title": "6.1 Google Analytics"
         },
         "intro": "Usamos cookies para:",
-        "items": {
-          "0": "Autenticação",
-          "1": "Preferências de interface",
-          "2": "Métricas internas"
-        },
+        "items": [
+          "Autenticação",
+          "Preferências de interface",
+          "Métricas internas"
+        ],
         "noAdvertising": "Não usamos cookies de publicidade ou pixels de rastreamento para fins de marketing.",
         "title": "6. COOKIES E TECNOLOGIAS DE RASTREAMENTO"
       },
       "dataRetention": {
         "apiKeys": {
           "intro": "Suas chaves de API criptografadas são retidas:",
-          "items": {
-            "0": "Enquanto sua conta no Mockup Machine estiver ativa e você optar por usar sua própria chave de API",
-            "1": "Até que você exclua explicitamente sua chave de API do nosso sistema",
-            "2": "Removidas permanentemente imediatamente após a exclusão — sem período de retenção"
-          },
+          "items": [
+            "Enquanto sua conta no Mockup Machine estiver ativa e você optar por usar sua própria chave de API",
+            "Até que você exclua explicitamente sua chave de API do nosso sistema",
+            "Removidas permanentemente imediatamente após a exclusão — sem período de retenção"
+          ],
           "title": "7.3 Retenção de Dados de Chaves de API"
         },
         "general": {
-          "items": {
-            "0": "Os dados da conta são retidos enquanto sua assinatura estiver ativa.",
-            "1": "Logs e métricas podem ser retidos por até 12 meses.",
-            "2": "Os dados podem ser anonimizados para análise interna."
-          },
+          "items": [
+            "Os dados da conta são retidos enquanto sua assinatura estiver ativa.",
+            "Logs e métricas podem ser retidos por até 12 meses.",
+            "Os dados podem ser anonimizados para análise interna."
+          ],
           "title": "7.1 Retenção Geral de Dados"
         },
         "googleAuth": {
           "intro": "Os dados de autenticação do Google (e-mail, nome, foto de perfil, ID do Usuário do Google) são retidos:",
-          "items": {
-            "0": "Enquanto sua conta no Mockup Machine estiver ativa",
-            "1": "Por até 90 dias após a exclusão da conta (para fins de segurança e prevenção de fraudes)",
-            "2": "Conforme exigido por lei ou obrigações legais"
-          },
+          "items": [
+            "Enquanto sua conta no Mockup Machine estiver ativa",
+            "Por até 90 dias após a exclusão da conta (para fins de segurança e prevenção de fraudes)",
+            "Conforme exigido por lei ou obrigações legais"
+          ],
           "title": "7.2 Retenção de Dados de Autenticação do Google"
         },
         "requestingDeletion": {
           "intro": "Você tem o direito de solicitar a exclusão de seus dados, incluindo dados de autenticação do Google e chaves de API:",
-          "items": {
-            "0": "Você pode excluir sua chave de API diretamente através das configurações do Mockup Machine a qualquer momento",
-            "1": "Você pode excluir sua conta diretamente através das configurações do Mockup Machine",
-            "2": "Entre em contato conosco em contato@visant.co para solicitar exclusão imediata",
-            "3": "Após a exclusão da chave de API, sua chave criptografada é permanentemente removida de nossos sistemas imediatamente",
-            "4": "Após a exclusão da conta, seu ID do Usuário do Google e dados de perfil associados serão permanentemente removidos de nossos sistemas",
-            "5": "Para revogar o acesso OAuth do Google, visite as configurações da sua Conta do Google em myaccount.google.com/permissions"
-          },
+          "items": [
+            "Você pode excluir sua chave de API diretamente através das configurações do Mockup Machine a qualquer momento",
+            "Você pode excluir sua conta diretamente através das configurações do Mockup Machine",
+            "Entre em contato conosco em contato@visant.co para solicitar exclusão imediata",
+            "Após a exclusão da chave de API, sua chave criptografada é permanentemente removida de nossos sistemas imediatamente",
+            "Após a exclusão da conta, seu ID do Usuário do Google e dados de perfil associados serão permanentemente removidos de nossos sistemas",
+            "Para revogar o acesso OAuth do Google, visite as configurações da sua Conta do Google em myaccount.google.com/permissions"
+          ],
           "note": "Nota: Alguns dados podem ser retidos por até 90 dias após a exclusão para fins de segurança, prevenção de fraudes ou conformidade legal, mas não serão usados para qualquer outro propósito durante este período. As chaves de API são uma exceção e são excluídas imediatamente sem período de retenção.",
           "title": "7.4 Solicitação de Exclusão de Dados"
         },
@@ -2474,24 +2474,24 @@
         "apiKeySharing": {
           "exception": "A única exceção é quando exigido por autoridades policiais ou ordem judicial (consulte a seção 3.3).",
           "intro": "Não compartilhamos suas chaves de API com terceiros. Suas chaves de API são:",
-          "items": {
-            "0": "Armazenadas com segurança em nosso banco de dados criptografado",
-            "1": "Usadas exclusivamente para processar suas solicitações",
-            "2": "Nunca vendidas, alugadas ou compartilhadas com anunciantes, parceiros de marketing ou provedores de serviços",
-            "3": "Nunca expostas em respostas de API, logs ou qualquer outra saída",
-            "4": "Descriptografadas apenas na memória quando necessárias para chamadas de API, depois imediatamente descartadas"
-          },
+          "items": [
+            "Armazenadas com segurança em nosso banco de dados criptografado",
+            "Usadas exclusivamente para processar suas solicitações",
+            "Nunca vendidas, alugadas ou compartilhadas com anunciantes, parceiros de marketing ou provedores de serviços",
+            "Nunca expostas em respostas de API, logs ou qualquer outra saída",
+            "Descriptografadas apenas na memória quando necessárias para chamadas de API, depois imediatamente descartadas"
+          ],
           "title": "3.4 Compartilhamento de Chaves de API"
         },
         "googleData": {
           "exception": "A única exceção é quando exigido por autoridades policiais ou ordem judicial (consulte a seção 3.3).",
           "intro": "Não compartilhamos os dados da sua conta do Google com terceiros. Os dados que coletamos do Google (e-mail, nome, foto de perfil e ID do Usuário do Google) são:",
-          "items": {
-            "0": "Armazenados com segurança em nosso próprio banco de dados",
-            "1": "Usados exclusivamente para autenticação e gerenciamento de conta",
-            "2": "Não vendidos, alugados ou compartilhados com anunciantes ou parceiros de marketing",
-            "3": "Não usados para qualquer propósito além do necessário para operar o serviço Mockup Machine"
-          },
+          "items": [
+            "Armazenados com segurança em nosso próprio banco de dados",
+            "Usados exclusivamente para autenticação e gerenciamento de conta",
+            "Não vendidos, alugados ou compartilhados com anunciantes ou parceiros de marketing",
+            "Não usados para qualquer propósito além do necessário para operar o serviço Mockup Machine"
+          ],
           "title": "3.2 Compartilhamento de Dados do Google"
         },
         "intro": "Podemos compartilhar informações com:",
@@ -2500,13 +2500,13 @@
           "title": "3.3 Obrigações Legais"
         },
         "serviceProviders": {
-          "items": {
-            "0": "APIs de geração de imagens com IA de terceiros",
-            "1": "Provedores de pagamento",
-            "2": "Serviços de hospedagem e armazenamento",
-            "3": "Serviços de autenticação (MongoDBAuth)",
-            "4": "Serviços de análise (Google Analytics) — apenas para estatísticas de uso do site"
-          },
+          "items": [
+            "APIs de geração de imagens com IA de terceiros",
+            "Provedores de pagamento",
+            "Serviços de hospedagem e armazenamento",
+            "Serviços de autenticação (MongoDBAuth)",
+            "Serviços de análise (Google Analytics) — apenas para estatísticas de uso do site"
+          ],
           "note": "Compartilhamos apenas o mínimo necessário para a operação do serviço. Os dados de análise compartilhados com o Google Analytics são anonimizados e não incluem informações pessoalmente identificáveis.",
           "title": "3.1 Provedores de Serviços"
         },
@@ -2520,146 +2520,146 @@
         "apiKeys": {
           "important": "Importante: Nunca usamos sua chave de API para qualquer outro propósito além de processar suas solicitações. Todas as chamadas de API feitas com sua chave são cobradas na sua conta do Google Cloud, não na nossa. Nunca compartilhamos suas chaves de API com terceiros ou as usamos para qualquer outro propósito.",
           "intro": "Se você fornecer sua própria chave de API do Gemini, usamos exclusivamente para:",
-          "items": {
-            "0": "Processar suas solicitações de geração de imagens com IA",
-            "1": "Usar sua cota e créditos do Google Cloud em vez da chave padrão do nosso sistema",
-            "2": "Priorizar sua chave sobre a chave padrão para as solicitações da sua conta"
-          },
+          "items": [
+            "Processar suas solicitações de geração de imagens com IA",
+            "Usar sua cota e créditos do Google Cloud em vez da chave padrão do nosso sistema",
+            "Priorizar sua chave sobre a chave padrão para as solicitações da sua conta"
+          ],
           "title": "2.3 Uso de Chaves de API"
         },
         "googleAuth": {
           "intro": "Usamos os dados coletados da sua conta do Google exclusivamente para:",
-          "items": {
-            "0": "Criar e gerenciar sua conta no Mockup Machine",
-            "1": "Autenticar sua identidade quando você faz login",
-            "2": "Vincular sua conta do Google à sua conta existente (se aplicável)",
-            "3": "Pré-preencher suas informações de perfil (nome e foto de perfil)",
-            "4": "Prevenir contas duplicadas e atividades fraudulentas"
-          },
+          "items": [
+            "Criar e gerenciar sua conta no Mockup Machine",
+            "Autenticar sua identidade quando você faz login",
+            "Vincular sua conta do Google à sua conta existente (se aplicável)",
+            "Pré-preencher suas informações de perfil (nome e foto de perfil)",
+            "Prevenir contas duplicadas e atividades fraudulentas"
+          ],
           "note": "Não usamos seus dados do Google para publicidade, marketing ou qualquer outro propósito além do gerenciamento de conta e autenticação. Suas credenciais do Google nunca são armazenadas por nós; apenas armazenamos as informações de perfil fornecidas pelo serviço OAuth do Google.",
           "title": "2.1 Uso dos Dados de Autenticação do Google"
         },
         "intro": "Usamos seus dados para:",
-        "items": {
-          "0": "Operar e melhorar o Mockup Machine",
-          "1": "Processar assinaturas e pagamentos",
-          "2": "Monitorar limites de uso do plano",
-          "3": "Personalizar sua experiência",
-          "4": "Prevenir uso abusivo ou fraudulento",
-          "5": "Cumprir obrigações legais"
-        },
+        "items": [
+          "Operar e melhorar o Mockup Machine",
+          "Processar assinaturas e pagamentos",
+          "Monitorar limites de uso do plano",
+          "Personalizar sua experiência",
+          "Prevenir uso abusivo ou fraudulento",
+          "Cumprir obrigações legais"
+        ],
         "title": "2. COMO USAMOS SEUS DADOS"
       },
       "informationWeCollect": {
         "accountInfo": {
-          "items": {
-            "0": "Nome",
-            "1": "Endereço de e-mail",
-            "2": "ID do usuário",
-            "3": "Foto de perfil (quando fornecida)",
-            "4": "Dados de autenticação via provedores (Google/Apple/E-mail)"
-          },
+          "items": [
+            "Nome",
+            "Endereço de e-mail",
+            "ID do usuário",
+            "Foto de perfil (quando fornecida)",
+            "Dados de autenticação via provedores (Google/Apple/E-mail)"
+          ],
           "title": "1.1 Informações da Conta"
         },
         "apiKeys": {
           "important": "Importante: Fornecer sua própria chave de API é completamente opcional. Se você optar por fornecer uma, ela será criptografada imediatamente ao salvar e nunca será armazenada em texto simples.",
           "intro": "Se você optar por usar sua própria chave de API do Gemini com nosso serviço, coletamos e armazenamos:",
-          "items": {
-            "0": "Sua chave de API do Gemini criptografada — Armazenada com segurança usando criptografia AES-256-GCM",
-            "1": "Metadados da chave de API — Associados à sua conta para rastreamento de uso"
-          },
+          "items": [
+            "Sua chave de API do Gemini criptografada — Armazenada com segurança usando criptografia AES-256-GCM",
+            "Metadados da chave de API — Associados à sua conta para rastreamento de uso"
+          ],
           "title": "1.6 Chaves de API"
         },
         "googleAuth": {
           "dataIntro": "Os dados específicos que coletamos da sua conta do Google incluem:",
-          "dataItems": {
-            "0": "Endereço de e-mail — Usado como identificador principal da sua conta",
-            "1": "Nome completo — Usado para personalizar seu perfil",
-            "2": "Foto de perfil — Usada como avatar da sua conta (opcional)",
-            "3": "ID do Usuário do Google (sub) — Usado para autenticação e vinculação de conta"
-          },
+          "dataItems": [
+            "Endereço de e-mail — Usado como identificador principal da sua conta",
+            "Nome completo — Usado para personalizar seu perfil",
+            "Foto de perfil — Usada como avatar da sua conta (opcional)",
+            "ID do Usuário do Google (sub) — Usado para autenticação e vinculação de conta"
+          ],
           "important": "Importante: Não acessamos seus contatos do Google, calendário, arquivos do Drive ou qualquer outro serviço do Google além das informações básicas de perfil listadas acima.",
-          "permissions": {
-            "0": "email — Acesso ao endereço de e-mail da sua conta do Google",
-            "1": "profile — Acesso às suas informações básicas de perfil"
-          },
+          "permissions": [
+            "email — Acesso ao endereço de e-mail da sua conta do Google",
+            "profile — Acesso às suas informações básicas de perfil"
+          ],
           "permissionsIntro": "Quando você escolhe fazer login com o Google, solicitamos as seguintes permissões (escopos OAuth 2.0):",
           "title": "1.5 Dados de Autenticação do Google"
         },
         "paymentInfo": {
-          "items": {
-            "0": "Dados de assinatura (plano ativo, renovações, histórico)",
-            "1": "Identificadores de cobrança via provedores terceirizados (Pagar.me, PagSeguro, Stripe ou outros)",
-            "2": "Nunca armazenamos dados completos do cartão."
-          },
+          "items": [
+            "Dados de assinatura (plano ativo, renovações, histórico)",
+            "Identificadores de cobrança via provedores terceirizados (Pagar.me, PagSeguro, Stripe ou outros)",
+            "Nunca armazenamos dados completos do cartão."
+          ],
           "title": "1.2 Informações de Pagamento"
         },
         "technicalData": {
-          "items": {
-            "0": "Endereço IP",
-            "1": "Tipo de dispositivo",
-            "2": "Navegador",
-            "3": "Preferências de idioma"
-          },
+          "items": [
+            "Endereço IP",
+            "Tipo de dispositivo",
+            "Navegador",
+            "Preferências de idioma"
+          ],
           "title": "1.4 Dados Técnicos"
         },
         "title": "1. INFORMAÇÕES QUE COLETAMOS",
         "usageData": {
-          "items": {
-            "0": "Número de imagens geradas",
-            "1": "Prompts enviados pelos usuários",
-            "2": "Tempo de uso da plataforma",
-            "3": "Logs de erro para manutenção"
-          },
+          "items": [
+            "Número de imagens geradas",
+            "Prompts enviados pelos usuários",
+            "Tempo de uso da plataforma",
+            "Logs de erro para manutenção"
+          ],
           "title": "1.3 Dados de Uso"
         }
       },
       "storageAndSecurity": {
         "apiKeySecurity": {
           "intro": "Implementamos medidas de segurança de nível militar para proteger suas chaves de API:",
-          "items": {
-            "0": "Criptografia: Usamos criptografia AES-256-GCM, um padrão de criptografia de nível militar, para criptografar suas chaves de API antes do armazenamento",
-            "1": "Chave Mestra: As chaves de criptografia são armazenadas com segurança em variáveis de ambiente, nunca em código ou controle de versão",
-            "2": "Sem Armazenamento em Texto Simples: Sua chave de API nunca é armazenada em texto simples em nosso banco de dados, logs ou em qualquer outro lugar",
-            "3": "Descriptografia na Memória: As chaves de API são descriptografadas apenas na memória quando necessárias para chamadas de API, depois imediatamente descartadas",
-            "4": "Isolamento de Usuário: Cada usuário pode acessar apenas sua própria chave de API criptografada",
-            "5": "Autenticação Necessária: Apenas usuários autenticados podem salvar ou acessar suas próprias chaves de API",
-            "6": "Sem Exposição: Nunca retornamos chaves de API descriptografadas em respostas de API — apenas confirmamos operações bem-sucedidas",
-            "7": "Rastreamento de Auditoria: Operações de chave de API (salvar/excluir) são registradas para auditoria de segurança"
-          },
+          "items": [
+            "Criptografia: Usamos criptografia AES-256-GCM, um padrão de criptografia de nível militar, para criptografar suas chaves de API antes do armazenamento",
+            "Chave Mestra: As chaves de criptografia são armazenadas com segurança em variáveis de ambiente, nunca em código ou controle de versão",
+            "Sem Armazenamento em Texto Simples: Sua chave de API nunca é armazenada em texto simples em nosso banco de dados, logs ou em qualquer outro lugar",
+            "Descriptografia na Memória: As chaves de API são descriptografadas apenas na memória quando necessárias para chamadas de API, depois imediatamente descartadas",
+            "Isolamento de Usuário: Cada usuário pode acessar apenas sua própria chave de API criptografada",
+            "Autenticação Necessária: Apenas usuários autenticados podem salvar ou acessar suas próprias chaves de API",
+            "Sem Exposição: Nunca retornamos chaves de API descriptografadas em respostas de API — apenas confirmamos operações bem-sucedidas",
+            "Rastreamento de Auditoria: Operações de chave de API (salvar/excluir) são registradas para auditoria de segurança"
+          ],
           "responsibilities": "Suas Responsabilidades: Mantenha sua chave de API segura, nunca a compartilhe com outros e considere rotacioná-la periodicamente. Monitore seu Console do Google Cloud para uso ou cobranças inesperadas. Configure restrições de chave de API no Google AI Studio para limitar onde ela pode ser usada.",
           "title": "4.2 Segurança de Chaves de API"
         },
         "googleAuth": {
-          "items": {
-            "0": "Usamos OAuth 2.0, o protocolo de autenticação padrão da indústria.",
-            "1": "Tokens de acesso do Google nunca são armazenados em nosso banco de dados.",
-            "2": "Armazenamos apenas o ID do Usuário do Google (sub) e as informações de perfil fornecidas pelo Google após autenticação bem-sucedida.",
-            "3": "Sua senha do Google nunca é acessível por nós e permanece segura com o Google.",
-            "4": "Você pode revogar nosso acesso à sua conta do Google a qualquer momento através das configurações da sua conta do Google."
-          },
+          "items": [
+            "Usamos OAuth 2.0, o protocolo de autenticação padrão da indústria.",
+            "Tokens de acesso do Google nunca são armazenados em nosso banco de dados.",
+            "Armazenamos apenas o ID do Usuário do Google (sub) e as informações de perfil fornecidas pelo Google após autenticação bem-sucedida.",
+            "Sua senha do Google nunca é acessível por nós e permanece segura com o Google.",
+            "Você pode revogar nosso acesso à sua conta do Google a qualquer momento através das configurações da sua conta do Google."
+          ],
           "title": "4.1 Segurança de Autenticação do Google"
         },
         "intro": "Todos os dados, incluindo dados de autenticação do Google, são protegidos usando medidas de segurança padrão da indústria:",
-        "items": {
-          "0": "Seus dados são armazenados em servidores seguros com criptografia em repouso e em trânsito.",
-          "1": "Usamos MongoDB, DigitalOcean e Vercel como nossa infraestrutura principal.",
-          "2": "Aplicamos autenticação reforçada, RLS e melhores práticas de segurança.",
-          "3": "Tokens OAuth são tratados com segurança e nunca armazenados em texto simples.",
-          "4": "Todas as conexões de banco de dados usam canais criptografados (TLS/SSL)."
-        },
+        "items": [
+          "Seus dados são armazenados em servidores seguros com criptografia em repouso e em trânsito.",
+          "Usamos MongoDB, DigitalOcean e Vercel como nossa infraestrutura principal.",
+          "Aplicamos autenticação reforçada, RLS e melhores práticas de segurança.",
+          "Tokens OAuth são tratados com segurança e nunca armazenados em texto simples.",
+          "Todas as conexões de banco de dados usam canais criptografados (TLS/SSL)."
+        ],
         "title": "4. ARMAZENAMENTO E SEGURANÇA"
       },
       "yourRights": {
         "contact": "Para exercer seus direitos, entre em contato com o suporte da Visant Labs.",
         "intro": "Você pode:",
-        "items": {
-          "0": "Acessar seus dados",
-          "1": "Corrigir informações",
-          "2": "Solicitar exclusão de conta",
-          "3": "Exportar seus dados",
-          "4": "Revogar consentimentos"
-        },
+        "items": [
+          "Acessar seus dados",
+          "Corrigir informações",
+          "Solicitar exclusão de conta",
+          "Exportar seus dados",
+          "Revogar consentimentos"
+        ],
         "title": "5. SEUS DIREITOS"
       }
     },
@@ -2770,23 +2770,23 @@
       },
       "exceptions": {
         "intro": "O direito de arrependimento <strong>não se aplica</strong> nos seguintes casos:",
-        "items": {
-          "0": "Créditos ou assinaturas adquiridos como presente/brinde",
-          "1": "Produtos ou serviços personalizados ou customizados especificamente para você",
-          "2": "Quando o serviço foi totalmente prestado e consumido pelo cliente"
-        },
+        "items": [
+          "Créditos ou assinaturas adquiridos como presente/brinde",
+          "Produtos ou serviços personalizados ou customizados especificamente para você",
+          "Quando o serviço foi totalmente prestado e consumido pelo cliente"
+        ],
         "title": "7. Exceções"
       },
       "legalNote": "Nota Legal: Esta política está em conformidade com o Código de Defesa do Consumidor brasileiro (Lei nº 8.078/1990) e não limita os direitos garantidos por lei. Em caso de dúvidas sobre seus direitos como consumidor, recomendamos consultar o PROCON de sua região ou um advogado especializado em Direito do Consumidor.",
       "procedure": {
         "howToRequest": {
           "intro": "Para exercer seu direito de arrependimento e solicitar reembolso, você deve:",
-          "items": {
-            "0": "Enviar e-mail para contato@visant.co dentro do prazo de 7 dias corridos",
-            "1": "Informar o número da transação ou identificação da compra",
-            "2": "Indicar o motivo da solicitação (não é obrigatório, mas ajuda a melhorarmos nossos serviços)",
-            "3": "Fornecer os dados bancários ou da conta para reembolso, quando aplicável"
-          },
+          "items": [
+            "Enviar e-mail para contato@visant.co dentro do prazo de 7 dias corridos",
+            "Informar o número da transação ou identificação da compra",
+            "Indicar o motivo da solicitação (não é obrigatório, mas ajuda a melhorarmos nossos serviços)",
+            "Fornecer os dados bancários ou da conta para reembolso, quando aplicável"
+          ],
           "title": "2.1 Como Solicitar"
         },
         "processing": {
@@ -2797,12 +2797,12 @@
       },
       "processingTimes": {
         "intro": "Após a aprovação da solicitação, os prazos para processamento variam conforme o método de pagamento:",
-        "items": {
-          "0": "Cartão de Crédito: O estorno aparecerá na fatura seguinte ou subsequente, dependendo da administradora (prazo médio: 5 a 15 dias úteis)",
-          "1": "PIX: Reembolso processado em até 1 (um) dia útil",
-          "2": "Boleto Bancário: Reembolso processado via transferência bancária em até 5 (cinco) dias úteis após confirmação",
-          "3": "Cartão de Débito: Reembolso processado em até 3 (três) dias úteis"
-        },
+        "items": [
+          "Cartão de Crédito: O estorno aparecerá na fatura seguinte ou subsequente, dependendo da administradora (prazo médio: 5 a 15 dias úteis)",
+          "PIX: Reembolso processado em até 1 (um) dia útil",
+          "Boleto Bancário: Reembolso processado via transferência bancária em até 5 (cinco) dias úteis após confirmação",
+          "Cartão de Débito: Reembolso processado em até 3 (três) dias úteis"
+        ],
         "title": "5. Prazos para Processamento do Reembolso"
       },
       "rightOfWithdrawal": {
@@ -2828,11 +2828,11 @@
         },
         "partial": {
           "intro": "Para assinaturas mensais ou anuais canceladas dentro do prazo de 7 dias:",
-          "items": {
-            "0": "O reembolso será calculado proporcionalmente ao período não utilizado",
-            "1": "Créditos utilizados durante o período não serão reembolsados",
-            "2": "O reembolso será creditado conforme o método de pagamento original"
-          },
+          "items": [
+            "O reembolso será calculado proporcionalmente ao período não utilizado",
+            "Créditos utilizados durante o período não serão reembolsados",
+            "O reembolso será creditado conforme o método de pagamento original"
+          ],
           "title": "3.1 Reembolso Parcial"
         },
         "title": "3. Reembolso de Assinaturas"
@@ -3181,16 +3181,16 @@
     "sections": {
       "acceptableUse": {
         "intro": "Você concorda em não:",
-        "items": {
-          "0": "Usar o serviço para qualquer finalidade ilegal ou em violação de quaisquer leis",
-          "1": "Gerar conteúdo difamatório, prejudicial, abusivo ou que viole os direitos de outros",
-          "2": "Enviar conteúdo que infrinja direitos de propriedade intelectual",
-          "3": "Tentar fazer engenharia reversa, descompilar ou extrair o código-fonte",
-          "4": "Usar sistemas automatizados (bots, raspadores) para acessar o serviço",
-          "5": "Compartilhar suas credenciais de conta com outros",
-          "6": "Interferir ou interromper o serviço ou servidores",
-          "7": "Gerar conteúdo que promova discurso de ódio, violência ou atividades ilegais"
-        },
+        "items": [
+          "Usar o serviço para qualquer finalidade ilegal ou em violação de quaisquer leis",
+          "Gerar conteúdo difamatório, prejudicial, abusivo ou que viole os direitos de outros",
+          "Enviar conteúdo que infrinja direitos de propriedade intelectual",
+          "Tentar fazer engenharia reversa, descompilar ou extrair o código-fonte",
+          "Usar sistemas automatizados (bots, raspadores) para acessar o serviço",
+          "Compartilhar suas credenciais de conta com outros",
+          "Interferir ou interromper o serviço ou servidores",
+          "Gerar conteúdo que promova discurso de ódio, violência ou atividades ilegais"
+        ],
         "title": "5. Uso Aceitável"
       },
       "acceptance": {
@@ -3205,12 +3205,12 @@
       },
       "description": {
         "intro": "O Mockup Machine é uma plataforma que permite aos usuários:",
-        "items": {
-          "0": "Gerar mockups fotorrealistas usando tecnologia de IA",
-          "1": "Enviar e aplicar designs em vários modelos de mockup",
-          "2": "Personalizar mockups com branding, localização, iluminação e outros parâmetros",
-          "3": "Exportar imagens geradas para uso pessoal ou comercial"
-        },
+        "items": [
+          "Gerar mockups fotorrealistas usando tecnologia de IA",
+          "Enviar e aplicar designs em vários modelos de mockup",
+          "Personalizar mockups com branding, localização, iluminação e outros parâmetros",
+          "Exportar imagens geradas para uso pessoal ou comercial"
+        ],
         "title": "2. Descrição do Serviço"
       },
       "disclaimers": {
@@ -3239,12 +3239,12 @@
       "intellectualProperty": {
         "generatedImages": {
           "intro": "Você é proprietário das imagens de mockup geradas através do serviço. Você pode usá-las para:",
-          "items": {
-            "0": "Projetos pessoais",
-            "1": "Projetos comerciais",
-            "2": "Trabalho para clientes",
-            "3": "Materiais de marketing e promoção"
-          },
+          "items": [
+            "Projetos pessoais",
+            "Projetos comerciais",
+            "Trabalho para clientes",
+            "Materiais de marketing e promoção"
+          ],
           "restriction": "No entanto, você não pode revender as imagens de mockup como produtos independentes ou usá-las para treinar modelos de IA concorrentes.",
           "title": "6.2 Imagens Geradas"
         },
@@ -3255,11 +3255,11 @@
         "title": "6. Propriedade Intelectual",
         "yourContent": {
           "intro": "Você mantém a propriedade de designs e conteúdo que você envia. Ao usar o serviço, você nos concede uma licença para:",
-          "items": {
-            "0": "Processar e armazenar seu conteúdo para fornecer o serviço",
-            "1": "Gerar mockups com base em seu conteúdo",
-            "2": "Usar seu conteúdo para melhorar o serviço (com seu consentimento explícito)"
-          },
+          "items": [
+            "Processar e armazenar seu conteúdo para fornecer o serviço",
+            "Gerar mockups com base em seu conteúdo",
+            "Usar seu conteúdo para melhorar o serviço (com seu consentimento explícito)"
+          ],
           "title": "6.1 Seu Conteúdo"
         }
       },
@@ -3269,21 +3269,21 @@
       },
       "rateLimits": {
         "intro": "Para garantir acesso justo e qualidade do serviço:",
-        "items": {
-          "0": "Implementamos limites de taxa com base no seu nível de assinatura",
-          "1": "Usuários do plano gratuito têm gerações limitadas por período",
-          "2": "Uso excessivo pode resultar em restrições temporárias",
-          "3": "Reservamo-nos o direito de modificar limites com aviso"
-        },
+        "items": [
+          "Implementamos limites de taxa com base no seu nível de assinatura",
+          "Usuários do plano gratuito têm gerações limitadas por período",
+          "Uso excessivo pode resultar em restrições temporárias",
+          "Reservamo-nos o direito de modificar limites com aviso"
+        ],
         "title": "8. Limites de Taxa e Uso"
       },
       "serviceAvailability": {
         "intro": "Nos esforçamos para manter alta disponibilidade, mas não garantimos:",
-        "items": {
-          "0": "Serviço ininterrupto ou livre de erros",
-          "1": "Tempos de resposta específicos ou velocidades de geração",
-          "2": "Disponibilidade de todos os recursos o tempo todo"
-        },
+        "items": [
+          "Serviço ininterrupto ou livre de erros",
+          "Tempos de resposta específicos ou velocidades de geração",
+          "Disponibilidade de todos os recursos o tempo todo"
+        ],
         "maintenance": "Podemos realizar manutenção, atualizações ou modificações que afetem temporariamente a disponibilidade do serviço. Forneceremos aviso razoável quando possível.",
         "title": "7. Disponibilidade do Serviço"
       },
@@ -3293,13 +3293,13 @@
           "title": "4.1 Plano Gratuito"
         },
         "paidSubscriptions": {
-          "items": {
-            "0": "As assinaturas são cobradas de forma recorrente (mensal ou anual)",
-            "1": "Todas as taxas são não reembolsáveis, exceto conforme exigido por lei",
-            "2": "Os preços podem mudar com aviso prévio de 30 dias para assinantes existentes",
-            "3": "Você pode cancelar sua assinatura a qualquer momento",
-            "4": "O cancelamento entra em vigor no final do período de cobrança atual"
-          },
+          "items": [
+            "As assinaturas são cobradas de forma recorrente (mensal ou anual)",
+            "Todas as taxas são não reembolsáveis, exceto conforme exigido por lei",
+            "Os preços podem mudar com aviso prévio de 30 dias para assinantes existentes",
+            "Você pode cancelar sua assinatura a qualquer momento",
+            "O cancelamento entra em vigor no final do período de cobrança atual"
+          ],
           "title": "4.2 Assinaturas Pagas"
         },
         "paymentProcessing": {
@@ -3310,23 +3310,23 @@
       },
       "termination": {
         "intro": "Qualquer uma das partes pode encerrar este acordo:",
-        "items": {
-          "0": "Você pode cancelar sua conta a qualquer momento",
-          "1": "Podemos suspender ou encerrar contas que violem estes termos",
-          "2": "Após o encerramento, seu direito de usar o serviço cessa imediatamente",
-          "3": "Podemos excluir os dados da sua conta de acordo com nossa Política de Privacidade"
-        },
+        "items": [
+          "Você pode cancelar sua conta a qualquer momento",
+          "Podemos suspender ou encerrar contas que violem estes termos",
+          "Após o encerramento, seu direito de usar o serviço cessa imediatamente",
+          "Podemos excluir os dados da sua conta de acordo com nossa Política de Privacidade"
+        ],
         "title": "12. Encerramento"
       },
       "userAccounts": {
         "accountCreation": {
           "intro": "Para usar certos recursos do serviço, você deve criar uma conta. Você concorda em:",
-          "items": {
-            "0": "Fornecer informações precisas, atuais e completas",
-            "1": "Manter e atualizar suas informações de conta",
-            "2": "Manter a segurança de suas credenciais de conta",
-            "3": "Aceitar responsabilidade por todas as atividades em sua conta"
-          },
+          "items": [
+            "Fornecer informações precisas, atuais e completas",
+            "Manter e atualizar suas informações de conta",
+            "Manter a segurança de suas credenciais de conta",
+            "Aceitar responsabilidade por todas as atividades em sua conta"
+          ],
           "title": "3.1 Criação de Conta"
         },
         "accountTermination": {
@@ -3462,23 +3462,23 @@
       "agreement": "Ao usar o Mockup Machine, você reconhece que leu e entende esta Política de Uso, incluindo a divulgação de que o serviço usa modelos de IA Google Gemini para geração de imagens.",
       "aiTechnology": {
         "4k": {
-          "features": {
-            "0": "Saída de alta resolução até 4K",
-            "1": "3-10 créditos por imagem (varia conforme a resolução)",
-            "2": "Controle manual de proporção",
-            "3": "Qualidade e detalhe avançados de imagem",
-            "4": "Suporte para múltiplas imagens de referência"
-          },
+          "features": [
+            "Saída de alta resolução até 4K",
+            "3-10 créditos por imagem (varia conforme a resolução)",
+            "Controle manual de proporção",
+            "Qualidade e detalhe avançados de imagem",
+            "Suporte para múltiplas imagens de referência"
+          ],
           "model": "Alimentado por Google Gemini 3 Pro Preview",
           "name": "Mockup Machine® 4K"
         },
         "hd": {
-          "features": {
-            "0": "Otimizado para geração rápida",
-            "1": "1 crédito por imagem",
-            "2": "Detecção automática de proporção",
-            "3": "Saída de menor resolução adequada para a maioria dos casos de uso"
-          },
+          "features": [
+            "Otimizado para geração rápida",
+            "1 crédito por imagem",
+            "Detecção automática de proporção",
+            "Saída de menor resolução adequada para a maioria dos casos de uso"
+          ],
           "model": "Alimentado por Google Gemini 2.5 Flash",
           "name": "Mockup Machine® HD"
         },
@@ -3487,30 +3487,30 @@
       },
       "capabilities": {
         "features": {
-          "items": {
-            "0": "O modelo HD suporta proporção automática com base na imagem de entrada",
-            "1": "O modelo 4K suporta seleção manual de proporção e múltiplas imagens de referência",
-            "2": "Ambos os modelos suportam as mesmas opções de personalização de prompt",
-            "3": "Recursos avançados podem estar disponíveis apenas no modelo 4K"
-          },
+          "items": [
+            "O modelo HD suporta proporção automática com base na imagem de entrada",
+            "O modelo 4K suporta seleção manual de proporção e múltiplas imagens de referência",
+            "Ambos os modelos suportam as mesmas opções de personalização de prompt",
+            "Recursos avançados podem estar disponíveis apenas no modelo 4K"
+          ],
           "title": "3.3 Diferenças de Recursos"
         },
         "processingTimes": {
-          "items": {
-            "0": "A geração HD normalmente é concluída em segundos",
-            "1": "A geração 4K pode levar significativamente mais tempo, especialmente em resoluções mais altas",
-            "2": "Os tempos de processamento dependem da disponibilidade e carga da API do Google",
-            "3": "Sem tempos de resposta garantidos — a disponibilidade do serviço está sujeita ao status da API de terceiros"
-          },
+          "items": [
+            "A geração HD normalmente é concluída em segundos",
+            "A geração 4K pode levar significativamente mais tempo, especialmente em resoluções mais altas",
+            "Os tempos de processamento dependem da disponibilidade e carga da API do Google",
+            "Sem tempos de resposta garantidos — a disponibilidade do serviço está sujeita ao status da API de terceiros"
+          ],
           "title": "3.2 Tempos de Processamento"
         },
         "resolution": {
-          "items": {
-            "0": "Mockup Machine® HD: Resolução fixa otimizada para velocidade e eficiência",
-            "1": "Mockup Machine® 4K: Opções de resolução configuráveis (1K, 2K, 4K)",
-            "2": "Resoluções mais altas consomem mais créditos e podem levar mais tempo para gerar",
-            "3": "A qualidade real da saída depende dos parâmetros de entrada e das capacidades do modelo"
-          },
+          "items": [
+            "Mockup Machine® HD: Resolução fixa otimizada para velocidade e eficiência",
+            "Mockup Machine® 4K: Opções de resolução configuráveis (1K, 2K, 4K)",
+            "Resoluções mais altas consomem mais créditos e podem levar mais tempo para gerar",
+            "A qualidade real da saída depende dos parâmetros de entrada e das capacidades do modelo"
+          ],
           "title": "3.1 Resolução e Qualidade"
         },
         "title": "3. Capacidades e Limitações do Modelo"
@@ -3522,121 +3522,121 @@
       },
       "contentPolicies": {
         "intro": "Tanto o Mockup Machine quanto o Google têm políticas de conteúdo que restringem:",
-        "items": {
-          "0": "Geração de conteúdo ilegal",
-          "1": "Geração de conteúdo prejudicial ou abusivo",
-          "2": "Geração de conteúdo que viole direitos de propriedade intelectual",
-          "3": "Tentativas de contornar filtros de segurança ou políticas de conteúdo"
-        },
+        "items": [
+          "Geração de conteúdo ilegal",
+          "Geração de conteúdo prejudicial ou abusivo",
+          "Geração de conteúdo que viole direitos de propriedade intelectual",
+          "Tentativas de contornar filtros de segurança ou políticas de conteúdo"
+        ],
         "note": "Solicitações que violem essas políticas serão rejeitadas. Violações repetidas podem resultar em suspensão ou encerramento da conta.",
         "title": "10. Políticas de Conteúdo"
       },
       "dataUsage": {
         "intro": "Quando você gera imagens usando o Mockup Machine:",
-        "items": {
-          "0": "Suas imagens enviadas e prompts são enviados para a API Gemini do Google para processamento",
-          "1": "Os dados da imagem são transmitidos com segurança para a infraestrutura do Google Cloud",
-          "2": "O Google pode usar esses dados de acordo com sua Política de Privacidade e Termos de Serviço",
-          "3": "As imagens geradas são retornadas ao Mockup Machine e armazenadas de acordo com nossa Política de Privacidade",
-          "4": "Não controlamos como o Google usa ou armazena dados enviados através de sua API"
-        },
+        "items": [
+          "Suas imagens enviadas e prompts são enviados para a API Gemini do Google para processamento",
+          "Os dados da imagem são transmitidos com segurança para a infraestrutura do Google Cloud",
+          "O Google pode usar esses dados de acordo com sua Política de Privacidade e Termos de Serviço",
+          "As imagens geradas são retornadas ao Mockup Machine e armazenadas de acordo com nossa Política de Privacidade",
+          "Não controlamos como o Google usa ou armazena dados enviados através de sua API"
+        ],
         "note": "Para detalhes sobre o tratamento de dados, revise nossa Política de Privacidade e a Política de Privacidade dos Serviços de IA do Google.",
         "title": "4. Uso de Dados e Privacidade"
       },
       "disclaimers": {
         "intro": "Por favor, entenda que:",
-        "items": {
-          "0": "O conteúdo gerado por IA pode conter erros, imprecisões ou resultados inesperados",
-          "1": "Não garantimos que as imagens geradas atenderão aos seus requisitos específicos",
-          "2": "As capacidades e limitações do modelo são determinadas pelo Google, não pelo Mockup Machine",
-          "3": "A qualidade e disponibilidade do serviço dependem da infraestrutura de terceiros",
-          "4": "O Google pode modificar, descontinuar ou alterar seus modelos sem aviso"
-        },
+        "items": [
+          "O conteúdo gerado por IA pode conter erros, imprecisões ou resultados inesperados",
+          "Não garantimos que as imagens geradas atenderão aos seus requisitos específicos",
+          "As capacidades e limitações do modelo são determinadas pelo Google, não pelo Mockup Machine",
+          "A qualidade e disponibilidade do serviço dependem da infraestrutura de terceiros",
+          "O Google pode modificar, descontinuar ou alterar seus modelos sem aviso"
+        ],
         "title": "11. Isenções"
       },
       "modelChanges": {
         "intro": "O Google pode atualizar, modificar ou descontinuar seus modelos Gemini a qualquer momento. O Mockup Machine reserva o direito de:",
-        "items": {
-          "0": "Atualizar quais modelos do Google são usados para cada nível",
-          "1": "Migrar para versões mais recentes do modelo conforme ficam disponíveis",
-          "2": "Ajustar preços e custos de crédito se os preços do Google mudarem",
-          "3": "Modificar recursos ou capacidades com base em atualizações do modelo",
-          "4": "Fornecer aviso razoável de alterações significativas quando possível"
-        },
+        "items": [
+          "Atualizar quais modelos do Google são usados para cada nível",
+          "Migrar para versões mais recentes do modelo conforme ficam disponíveis",
+          "Ajustar preços e custos de crédito se os preços do Google mudarem",
+          "Modificar recursos ou capacidades com base em atualizações do modelo",
+          "Fornecer aviso razoável de alterações significativas quando possível"
+        ],
         "title": "9. Alterações e Atualizações do Modelo"
       },
       "rateLimits": {
         "intro": "A geração de imagens está sujeita a limites de taxa impostos por:",
-        "items": {
-          "0": "Limites de taxa do Mockup Machine: Com base no seu nível de assinatura e saldo de créditos",
-          "1": "Limites de taxa da API do Google: Impostos pelo Google Cloud no uso da API",
-          "2": "Exceder os limites de taxa pode resultar em indisponibilidade temporária do serviço",
-          "3": "Os limites de taxa podem variar com base na carga atual da API e nas políticas do Google",
-          "4": "Reservamo-nos o direito de implementar limitação de taxa adicional para garantir acesso justo"
-        },
+        "items": [
+          "Limites de taxa do Mockup Machine: Com base no seu nível de assinatura e saldo de créditos",
+          "Limites de taxa da API do Google: Impostos pelo Google Cloud no uso da API",
+          "Exceder os limites de taxa pode resultar em indisponibilidade temporária do serviço",
+          "Os limites de taxa podem variar com base na carga atual da API e nas políticas do Google",
+          "Reservamo-nos o direito de implementar limitação de taxa adicional para garantir acesso justo"
+        ],
         "title": "5. Limites de Taxa e Cotas"
       },
       "serviceAvailability": {
         "intro": "A disponibilidade do Mockup Machine depende de:",
-        "items": {
-          "0": "Disponibilidade e status operacional da API do Google Cloud",
-          "1": "Conectividade de rede entre nossos servidores e a infraestrutura do Google",
-          "2": "Limites de taxa e cotas da API do Google",
-          "3": "Status de nossa própria infraestrutura"
-        },
+        "items": [
+          "Disponibilidade e status operacional da API do Google Cloud",
+          "Conectividade de rede entre nossos servidores e a infraestrutura do Google",
+          "Limites de taxa e cotas da API do Google",
+          "Status de nossa própria infraestrutura"
+        ],
         "note": "Não podemos garantir serviço ininterrupto, pois depende parcialmente da infraestrutura de terceiros. Interrupções de serviço, manutenção ou alterações na API pelo Google podem afetar temporariamente a disponibilidade. Faremos esforços razoáveis para comunicar quaisquer problemas conhecidos.",
         "title": "8. Disponibilidade do Serviço"
       },
       "serviceProvider": {
         "intro": "As capacidades de geração de imagens com IA são fornecidas através de:",
-        "items": {
-          "0": "Google Cloud AI / Google AI — Provedor de modelos de IA Gemini",
-          "1": "Acesso à API do Google Gemini 2.5 Flash para geração HD",
-          "2": "Acesso à API do Google Gemini 3 Pro Preview para geração 4K",
-          "3": "Todas as solicitações de geração de imagens são processadas pelos servidores do Google"
-        },
+        "items": [
+          "Google Cloud AI / Google AI — Provedor de modelos de IA Gemini",
+          "Acesso à API do Google Gemini 2.5 Flash para geração HD",
+          "Acesso à API do Google Gemini 3 Pro Preview para geração 4K",
+          "Todas as solicitações de geração de imagens são processadas pelos servidores do Google"
+        ],
         "note": "O Mockup Machine atua como um serviço intermediário que se conecta com os modelos de IA do Google para fornecer capacidades de geração de imagens. Seu uso do Mockup Machine também está sujeito aos Termos de Serviço e Política de Privacidade do Google para seus serviços de IA.",
         "title": "2. Provedor de Serviços"
       },
       "technicalSpecs": {
         "creditCosts": {
-          "items": {
-            "0": "Mockup Machine® HD: 1 crédito por imagem",
-            "1": "Mockup Machine® 4K: 3-7 créditos por imagem (varia conforme a resolução selecionada)",
-            "2": "Os custos de crédito são definidos pelo Mockup Machine e podem mudar com aviso",
-            "3": "Os créditos são consumidos após a geração bem-sucedida, não na solicitação"
-          },
+          "items": [
+            "Mockup Machine® HD: 1 crédito por imagem",
+            "Mockup Machine® 4K: 3-7 créditos por imagem (varia conforme a resolução selecionada)",
+            "Os custos de crédito são definidos pelo Mockup Machine e podem mudar com aviso",
+            "Os créditos são consumidos após a geração bem-sucedida, não na solicitação"
+          ],
           "title": "6.1 Custos de Crédito"
         },
         "inputRequirements": {
-          "items": {
-            "0": "Formatos de imagem suportados: PNG, JPG, WEBP",
-            "1": "Tamanho máximo de arquivo: 10MB por imagem",
-            "2": "Limitações de comprimento de prompt podem se aplicar",
-            "3": "O modelo 4K suporta até 3 imagens de referência simultaneamente"
-          },
+          "items": [
+            "Formatos de imagem suportados: PNG, JPG, WEBP",
+            "Tamanho máximo de arquivo: 10MB por imagem",
+            "Limitações de comprimento de prompt podem se aplicar",
+            "O modelo 4K suporta até 3 imagens de referência simultaneamente"
+          ],
           "title": "6.2 Requisitos de Entrada"
         },
         "outputFormats": {
-          "items": {
-            "0": "As imagens geradas são fornecidas em formato PNG",
-            "1": "A resolução de saída varia conforme o modelo e configurações selecionados",
-            "2": "As dimensões reais podem variar ligeiramente das proporções solicitadas"
-          },
+          "items": [
+            "As imagens geradas são fornecidas em formato PNG",
+            "A resolução de saída varia conforme o modelo e configurações selecionados",
+            "As dimensões reais podem variar ligeiramente das proporções solicitadas"
+          ],
           "title": "6.3 Formatos de Saída"
         },
         "title": "6. Especificações Técnicas"
       },
       "userResponsibilities": {
         "intro": "Ao usar os recursos com IA do Mockup Machine, você concorda em:",
-        "items": {
-          "0": "Usar conteúdo gerado em conformidade com leis e regulamentos aplicáveis",
-          "1": "Respeitar os direitos de propriedade intelectual de outros",
-          "2": "Não usar o serviço para gerar conteúdo prejudicial, ilegal ou inadequado",
-          "3": "Entender que o conteúdo gerado por IA pode conter erros ou resultados inesperados",
-          "4": "Revisar imagens geradas antes de usá-las em projetos comerciais",
-          "5": "Cumprir a Política de Uso Aceitável do Google para seus serviços de IA"
-        },
+        "items": [
+          "Usar conteúdo gerado em conformidade com leis e regulamentos aplicáveis",
+          "Respeitar os direitos de propriedade intelectual de outros",
+          "Não usar o serviço para gerar conteúdo prejudicial, ilegal ou inadequado",
+          "Entender que o conteúdo gerado por IA pode conter erros ou resultados inesperados",
+          "Revisar imagens geradas antes de usá-las em projetos comerciais",
+          "Cumprir a Política de Uso Aceitável do Google para seus serviços de IA"
+        ],
         "title": "7. Responsabilidades do Usuário"
       }
     },
