@@ -11,7 +11,7 @@ import { Select } from '../ui/select';
 import { Badge } from '../ui/badge';
 import { cn } from '../../lib/utils';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
-import { Input } from '@/components/ui/input'
+import { Input } from '@/components/ui/input';
 
 interface ChatInputProps {
   // Prompt

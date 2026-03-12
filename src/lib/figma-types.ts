@@ -305,7 +305,8 @@ export type FigmaOperation =
   }
   | {
     type: 'MOVE';
-    nodeId: string;
+    nodeId?: string;
+    ref?: string;
     x: number;
     y: number;
   }

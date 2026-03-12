@@ -8,7 +8,7 @@ import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { getContrastColor } from '@/utils/colorUtils';
 import { budgetApi } from '@/services/budgetApi';
 import { toast } from 'sonner';
-import { Input } from '@/components/ui/input'
+import { Input } from '@/components/ui/input';
 
 interface BrandCustomizationSectionProps {
   brandName: string;

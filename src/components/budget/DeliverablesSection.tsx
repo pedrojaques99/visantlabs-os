@@ -5,7 +5,7 @@ import { FormTextarea } from '@/components/ui/form-textarea';
 import type { Deliverable } from '@/types/types';
 import { Plus, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 
 interface DeliverablesSectionProps {
   deliverables: Deliverable[];

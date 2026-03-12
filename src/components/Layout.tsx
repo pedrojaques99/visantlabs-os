@@ -288,7 +288,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             console.log('📦 Credit purchase detected, polling for credit update...');
 
             // Declare interval variable outside async function for cleanup
-            let pollCreditsStatus: NodeJS.Timeout | null = null;
+            let pollCreditsStatus: ReturnType<typeof setInterval> | null = null;
 
             // Load initial status and get initial credits to compare
             (async () => {

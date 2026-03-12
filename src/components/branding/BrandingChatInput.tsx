@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { PremiumButton } from '@/components/ui/PremiumButton';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 
 interface BrandingChatInputProps {
   // Prompt

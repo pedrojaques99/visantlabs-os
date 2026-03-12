@@ -10,7 +10,7 @@ import HCaptcha from '@hcaptcha/react-hcaptcha';
 import { Link } from 'react-router-dom';
 import { Button } from './ui/button';
 import { SiGoogle } from '@icons-pack/react-simple-icons';
-import { Input } from '@/components/ui/input'
+import { Input } from '@/components/ui/input';
 
 export interface AuthModalProps {
   isOpen: boolean;

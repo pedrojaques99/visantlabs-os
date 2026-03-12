@@ -5,7 +5,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { toast } from 'sonner';
 import { extractTextFromContent } from '@/utils/brandingHelpers';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 
 interface SectionActionsProps {
   hasData: boolean;

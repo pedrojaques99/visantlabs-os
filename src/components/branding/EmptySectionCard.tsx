@@ -6,7 +6,7 @@ import { getBrandingStepCredits } from '@/utils/creditCalculator';
 import { getSectionEmoji } from '@/utils/brandingHelpers';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 
 interface EmptySectionCardProps {
   stepNumber: number;

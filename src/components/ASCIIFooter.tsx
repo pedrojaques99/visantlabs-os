@@ -1,12 +1,12 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Globe, ChevronDown } from 'lucide-react'
-import { UniversalFooter } from './ui/UniversalFooter'
-import { useTranslation } from '@/hooks/useTranslation'
-import type { Locale } from '@/utils/localeUtils'
-import { Button } from '@/components/ui/button'
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Globe, ChevronDown } from 'lucide-react';
+import { UniversalFooter } from './ui/UniversalFooter';
+import { useTranslation } from '@/hooks/useTranslation';
+import type { Locale } from '@/utils/localeUtils';
+import { Button } from '@/components/ui/button';
 
 interface ASCIIFooterProps {
   className?: string

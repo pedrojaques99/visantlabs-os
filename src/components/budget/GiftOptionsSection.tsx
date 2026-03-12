@@ -4,7 +4,7 @@ import { FormInput } from '@/components/ui/form-input';
 import { FormTextarea } from '@/components/ui/form-textarea';
 import type { GiftOption } from '@/types/types';
 import { Plus, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 
 interface GiftOptionsSectionProps {
   giftOptions: GiftOption[];

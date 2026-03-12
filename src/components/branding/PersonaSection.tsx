@@ -6,7 +6,7 @@ import { parseDemographics, parsePersonaInfo } from '@/utils/brandingParsers';
 import { RichTextEditor } from './RichTextEditor';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 
 interface PersonaSectionProps {
   persona: {

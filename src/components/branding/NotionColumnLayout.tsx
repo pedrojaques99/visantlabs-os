@@ -2,7 +2,7 @@ import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react'
 import { Minus, Plus } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import type { SectionLayout } from '@/types/types';
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 
 interface DragProps {
   isDraggable: boolean;

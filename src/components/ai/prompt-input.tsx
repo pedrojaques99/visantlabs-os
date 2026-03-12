@@ -8,8 +8,8 @@ import type {
   HTMLAttributes,
   KeyboardEventHandler,
 } from 'react';
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 
 export type PromptInputProps = HTMLAttributes<HTMLFormElement>;
 

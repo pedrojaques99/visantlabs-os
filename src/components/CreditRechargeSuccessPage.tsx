@@ -78,7 +78,7 @@ export const CreditRechargeSuccessPage: React.FC = () => {
       }
     }
 
-    let pollCreditsInterval: NodeJS.Timeout | null = null;
+    let pollCreditsInterval: ReturnType<typeof setInterval> | null = null;
 
     const loadData = async () => {
       // Wait for auth check to complete
@@ -272,7 +272,7 @@ export const CreditRechargeSuccessPage: React.FC = () => {
         )}
 
         <div className="text-center">
-          <Button variant="brand"             onClick={handleGetStarted}
+          <Button variant="brand" onClick={handleGetStarted}
             className="inline-flex items-center gap-2 px-6 py-3 bg-brand-cyan/80 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-colors"
           >
             <span>{t('creditRechargeSuccess.getStarted')}</span>

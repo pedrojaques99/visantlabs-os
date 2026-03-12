@@ -4,9 +4,9 @@ import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { Plus, Trash2, Loader2, Image as ImageIcon, FileText, Link2 } from 'lucide-react';
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { MicroTitle } from '@/components/ui/MicroTitle'
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { MicroTitle } from '@/components/ui/MicroTitle';
 
 interface MediaItem {
     id: string;
@@ -210,8 +210,30 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                             ))}
                         </div>
                     ) : (
-                        <MicroTitle className="text-[10px] text-neutral-700 italic"> {t('mockup.mediaKit.noLogos')} </MicroTitle> )} <Input ref={logoInputRef} type="file" accept={ACCEPTED_IMAGE_TYPES} multiple onChange={(e) => { const files = Array.from(e.target.files || []); if (files.length) handleLogoUpload(files); e.target.value = ''; }} className="hidden" /> </div> )} {/* Media Section */} <div className="flex flex-col gap-2"> <div className="flex items-center justify-between"> <span className="text-[10px] tracking-[0.2em]">
-                        {t('mockup.mediaKit.title')}
+                        <MicroTitle className="text-[10px] text-neutral-700 italic">
+                          {t('mockup.mediaKit.noLogos')}
+                        </MicroTitle>
+                    )}
+                    <Input
+                      ref={logoInputRef}
+                      type="file"
+                      accept={ACCEPTED_IMAGE_TYPES}
+                      multiple
+                      onChange={(e) => {
+                        const files = Array.from(e.target.files || []);
+                        if (files.length) handleLogoUpload(files);
+                        e.target.value = '';
+                      }}
+                      className="hidden"
+                    />
+                </div>
+              )}
+
+              {/* Media Section */}
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] tracking-[0.2em]">
+                    {t('mockup.mediaKit.title')}
                     </span>
                     {!readOnly && (
                         <Button variant="ghost" 

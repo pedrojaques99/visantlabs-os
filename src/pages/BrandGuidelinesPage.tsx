@@ -4,7 +4,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { MediaKitGallery } from '@/components/brand/MediaKitGallery';
-import { BrandGuidelineEditor } from '@/components/brand/BrandGuidelineEditor';
+// import { BrandGuidelineEditor } from '@/components/brand/BrandGuidelineEditor';
 import { BrandGuidelineWizardModal } from '@/components/mockupmachine/BrandGuidelineWizardModal';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { SEO } from '@/components/SEO';
@@ -32,6 +32,8 @@ import {
     DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
     Plus,
     Pencil,
@@ -51,7 +53,55 @@ import {
     Settings,
     CheckCircle2,
     CircleAlert,
+    GripVertical,
+    X,
+    Save,
 } from 'lucide-react';
+
+const NotionBlock: React.FC<{ 
+    children: React.ReactNode; 
+    title?: string; 
+    icon?: React.ReactNode;
+    actions?: React.ReactNode;
+    className?: string;
+    span?: '1' | '2' | '3';
+    loading?: boolean;
+}> = ({ children, title, icon, actions, className, span = '1', loading }) => {
+    return (
+        <motion.div 
+            variants={{
+                hidden: { opacity: 0, y: 10 },
+                show: { opacity: 1, y: 0 }
+            }}
+            className={cn(
+                "group relative flex flex-col gap-2 p-1",
+                span === '2' && "md:col-span-2",
+                span === '3' && "md:col-span-2 lg:col-span-3",
+                className
+            )}
+        >
+            {/* Notion Handle */}
+            <div className="absolute -left-6 top-2 opacity-0 group-hover:opacity-40 transition-opacity cursor-grab active:cursor-grabbing text-neutral-500 hidden lg:block">
+                <GripVertical size={18} />
+            </div>
+
+            <div className="flex items-center justify-between px-2 mb-1 min-h-[24px]">
+                <div className="flex items-center gap-2">
+                    {icon && <div className="text-neutral-500 group-hover:text-brand-cyan transition-colors">{icon}</div>}
+                    {title && <MicroTitle className="text-[10px] uppercase tracking-widest text-neutral-500">{title}</MicroTitle>}
+                </div>
+                <div className="opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity flex gap-1 items-center">
+                    {loading && <Loader2 size={12} className="text-brand-cyan animate-spin mr-2" />}
+                    {actions}
+                </div>
+            </div>
+
+            <GlassPanel padding="md" className="flex-1 bg-neutral-900/20 hover:bg-neutral-900/30 border-white/[0.03] hover:border-white/[0.08] transition-all duration-300">
+                {children}
+            </GlassPanel>
+        </motion.div>
+    );
+};
 
 export const BrandGuidelinesPage: React.FC = () => {
     const { t } = useTranslation();
@@ -72,6 +122,9 @@ export const BrandGuidelinesPage: React.FC = () => {
     // Local state for the selected guideline's media (live updates)
     const [localMedia, setLocalMedia] = useState<BrandGuideline['media']>([]);
     const [localLogos, setLocalLogos] = useState<BrandGuideline['logos']>([]);
+    const [editingBlock, setEditingBlock] = useState<string | null>(null);
+    const [editedData, setEditedData] = useState<BrandGuideline | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
 
     const fetchGuidelines = useCallback(async () => {
         setIsLoading(true);
@@ -122,6 +175,8 @@ export const BrandGuidelinesPage: React.FC = () => {
         if (g.guidelines?.voice || (g.guidelines?.dos?.length || 0) > 0) sections.push('editorial');
         if (g.guidelines?.accessibility) sections.push('accessibility');
         setActiveSections([...new Set(sections)]);
+        setEditedData(g);
+        setEditingBlock(null);
     };
 
     const handleWizardSuccess = (id: string) => {
@@ -163,6 +218,26 @@ export const BrandGuidelinesPage: React.FC = () => {
         }
     };
 
+    const handleSaveBlock = async () => {
+        if (!editedData?.id) return;
+        setIsSaving(true);
+        try {
+            const updated = await brandGuidelineApi.update(editedData.id, editedData);
+            setGuidelines(prev => prev.map(g => g.id === updated.id ? updated : g));
+            setEditedData(updated);
+            setEditingBlock(null);
+            toast.success(t('common.success'));
+        } catch {
+            toast.error(t('brandGuidelines.saveError'));
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const updateEditedData = (updater: (prev: BrandGuideline) => BrandGuideline) => {
+        setEditedData(prev => prev ? updater(prev) : null);
+    };
+
     const toggleSection = (section: string) => {
         setActiveSections(prev => 
             prev.includes(section) ? prev.filter(s => s !== section) : [...prev, section]
@@ -193,26 +268,26 @@ export const BrandGuidelinesPage: React.FC = () => {
             <div className="min-h-[calc(100vh-80px)] bg-background selection:bg-brand-cyan/30">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     {/* Breadcrumb */}
-                    <Breadcrumb className="mb-8">
+                    <Breadcrumb className="mb-8 font-mono text-[10px]">
                         <BreadcrumbList>
                             <BreadcrumbItem>
-                                <BreadcrumbLink href="/" className="text-neutral-500 hover:text-white transition-colors">Home</BreadcrumbLink>
+                                <BreadcrumbLink href="/" className="text-neutral-600 hover:text-white transition-colors">Home</BreadcrumbLink>
                             </BreadcrumbItem>
                             <BreadcrumbSeparator className="text-neutral-800" />
                             <BreadcrumbItem>
-                                <BreadcrumbPage className="text-white font-mono uppercase tracking-widest text-[10px]">{t('brandGuidelines.title')}</BreadcrumbPage>
+                                <BreadcrumbPage className="text-neutral-400 uppercase tracking-widest">{t('brandGuidelines.title')}</BreadcrumbPage>
                             </BreadcrumbItem>
                         </BreadcrumbList>
                     </Breadcrumb>
 
                     {/* Header */}
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-                        <div className="space-y-2">
+                        <div className="space-y-4">
                             <h1 className="text-4xl md:text-5xl font-semibold font-manrope text-white tracking-tight">
                                 {t('brandGuidelines.title')}
-                                <span className="text-brand-cyan">.</span>
+                                <span className="text-brand-cyan opacity-50">.</span>
                             </h1>
-                            <p className="text-neutral-500 font-mono text-xs max-w-lg leading-relaxed">
+                            <p className="text-neutral-600 font-mono text-xs max-w-lg leading-relaxed opacity-80">
                                 {t('brandGuidelines.subtitle')}
                             </p>
                         </div>
@@ -227,328 +302,733 @@ export const BrandGuidelinesPage: React.FC = () => {
                     </div>
 
                     {isLoading ? (
-                        <div className="flex flex-col items-center justify-center py-32 gap-4">
-                            <GlitchLoader size={48} />
-                            <MicroTitle className="text-neutral-600 text-[10px] animate-pulse">Synchronizing Brand Data...</MicroTitle>
+                        <div className="flex flex-col items-center justify-center py-40 gap-6">
+                            <GlitchLoader size={40} />
+                            <MicroTitle className="text-neutral-700 text-[9px] animate-pulse tracking-[0.3em] uppercase">Synchronizing Workspace</MicroTitle>
                         </div>
                     ) : guidelines.length === 0 ? (
-                        <GlassPanel padding="lg" className="flex flex-col items-center justify-center py-24 gap-6 text-center border-dashed border-white/10">
-                            <div className="p-4 rounded-full bg-white/5 border border-white/5">
-                                <Palette size={40} className="text-neutral-700" />
+                        <GlassPanel padding="lg" className="flex flex-col items-center justify-center py-24 gap-6 text-center border-dashed border-white/5 bg-neutral-900/10">
+                            <div className="p-4 rounded-full bg-white/[0.02] border border-white/[0.03]">
+                                <Palette size={32} strokeWidth={1} className="text-neutral-800" />
                             </div>
                             <div className="space-y-1">
-                                <MicroTitle>{t('brandGuidelines.emptyState')}</MicroTitle>
-                                <p className="text-neutral-600 text-xs font-mono max-w-xs">{t('brandGuidelines.createFirst')}</p>
+                                <MicroTitle className="text-neutral-500 uppercase tracking-widest">{t('brandGuidelines.emptyState')}</MicroTitle>
+                                <p className="text-neutral-700 text-[10px] font-mono max-w-xs">{t('brandGuidelines.createFirst')}</p>
                             </div>
                             <Button variant="ghost" 
                                 onClick={() => { setEditingGuideline(null); setIsWizardOpen(true); }}
-                                className="flex items-center gap-2 px-6 py-3 rounded-full bg-white/5 border border-white/10 text-neutral-300 font-mono text-xs hover:bg-white/10 hover:border-brand-cyan/30 transition-all group"
+                                className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-white/5 border border-white/10 text-neutral-400 font-mono text-[10px] hover:bg-white/10 hover:border-brand-cyan/30 transition-all group"
                             >
-                                <Plus size={14} className="group-hover:text-brand-cyan transition-colors" />
+                                <Plus size={12} className="group-hover:text-brand-cyan transition-colors" />
                                 {t('brandGuidelines.createFirst')}
                             </Button>
                         </GlassPanel>
                     ) : (
-                        <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-10">
-                            {/* Sidebar List */}
-                            <div className="flex flex-col gap-3">
-                                <MicroTitle className="mb-2 ml-1">My Brands</MicroTitle>
-                                <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
-                                    {guidelines.map((g) => (
-                                        <Button variant="ghost" 
-                                            key={g.id}
-                                            onClick={() => handleSelect(g)}
-                                            className={cn(
-                                                "w-full flex items-center justify-between px-5 py-4 rounded-2xl border text-left transition-all duration-300 relative overflow-hidden group",
-                                                selectedId === g.id
-                                                    ? "bg-brand-cyan/5 border-brand-cyan/30 text-white shadow-[0_0_30px_rgba(var(--brand-cyan-rgb),0.05)]"
-                                                    : "bg-neutral-900/40 border-white/5 text-neutral-500 hover:bg-white/5 hover:text-neutral-300 hover:border-white/10"
-                                            )}
-                                        >
-                                            {selectedId === g.id && (
-                                                <div className="absolute left-0 top-0 bottom-0 w-1 bg-brand-cyan" />
-                                            )}
-                                            <div className="flex flex-col gap-1.5 min-w-0 flex-1">
-                                                <span className="text-xs font-mono font-medium truncate tracking-tight">
-                                                    {g.identity?.name || 'Unnamed'}
-                                                </span>
-                                                {g._extraction && (
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="h-0.5 flex-1 max-w-[60px] bg-white/5 rounded-full overflow-hidden">
-                                                            <div
-                                                                className="h-full bg-brand-cyan/50 rounded-full transition-all duration-1000"
-                                                                style={{ width: `${g._extraction.completeness}%` }}
-                                                            />
-                                                        </div>
-                                                        <span className="text-[8px] font-mono text-neutral-700 tracking-tighter">
-                                                            {g._extraction.completeness}%
-                                                        </span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <ChevronRight
-                                                size={14}
+                        <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-12">
+                            {/* Simplified Sidebar List */}
+                            <div className="flex flex-col gap-8">
+                                <div className="space-y-2">
+                                    <MicroTitle className="ml-1 opacity-50 uppercase text-[9px] tracking-[0.2em]">{t('brandGuidelines.private') || 'Workspace'}</MicroTitle>
+                                    <div className="flex flex-col gap-0.5">
+                                        {guidelines.map((g) => (
+                                            <button
+                                                key={g.id}
+                                                onClick={() => handleSelect(g)}
                                                 className={cn(
-                                                    "flex-shrink-0 transition-transform duration-300",
-                                                    selectedId === g.id ? "text-brand-cyan translate-x-1" : "text-neutral-800 group-hover:text-neutral-600 group-hover:translate-x-1"
+                                                    "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 group text-left",
+                                                    selectedId === g.id
+                                                        ? "bg-white/[0.05] text-white font-medium"
+                                                        : "text-neutral-600 hover:bg-white/[0.02] hover:text-neutral-400 font-normal"
                                                 )}
-                                            />
-                                        </Button>
-                                    ))}
+                                            >
+                                                <FileText 
+                                                    size={14} 
+                                                    className={cn(
+                                                        "transition-colors",
+                                                        selectedId === g.id ? "text-brand-cyan" : "text-neutral-800 group-hover:text-neutral-600"
+                                                    )} 
+                                                />
+                                                <span className="truncate flex-1">
+                                                    {g.identity?.name || 'Untitled'}
+                                                </span>
+                                                {selectedId === g.id && (
+                                                    <div className="w-1 h-1 rounded-full bg-brand-cyan shadow-[0_0_8px_rgba(var(--brand-cyan-rgb),1)]" />
+                                                )}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <Button 
+                                        variant="ghost" 
+                                        onClick={() => { setEditingGuideline(null); setIsWizardOpen(true); }}
+                                        className="w-full justify-start gap-3 px-3 py-2 h-auto text-neutral-800 hover:text-neutral-600 hover:bg-white/[0.02] font-normal text-sm"
+                                    >
+                                        <Plus size={14} />
+                                        <span>{t('brandGuidelines.createNew')}</span>
+                                    </Button>
                                 </div>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" className="mt-4 flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-dashed border-white/10 text-neutral-600 font-mono text-[10px] uppercase tracking-widest hover:border-white/20 hover:text-neutral-400 transition-all w-full">
-                                            <Settings size={12} />
-                                            Panel Layout
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="w-56 bg-neutral-900 border-white/5 p-2" align="start">
-                                        <MicroTitle className="px-2 py-2 mb-1 block">Toggle Sections</MicroTitle>
-                                        <DropdownMenuItem onClick={() => toggleSection('tags')} className="flex items-center justify-between cursor-pointer focus:bg-white/5 p-2 rounded-lg">
-                                            <div className="flex items-center gap-2">
-                                                <Tag size={12} className={activeSections.includes('tags') ? "text-brand-cyan" : "text-neutral-600"} />
-                                                <span className="text-xs">Tags</span>
-                                            </div>
-                                            {activeSections.includes('tags') && <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan" />}
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => toggleSection('media')} className="flex items-center justify-between cursor-pointer focus:bg-white/5 p-2 rounded-lg">
-                                            <div className="flex items-center gap-2">
-                                                <ImageIcon size={12} className={activeSections.includes('media') ? "text-brand-cyan" : "text-neutral-600"} />
-                                                <span className="text-xs">Media Kit</span>
-                                            </div>
-                                            {activeSections.includes('media') && <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan" />}
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => toggleSection('tokens')} className="flex items-center justify-between cursor-pointer focus:bg-white/5 p-2 rounded-lg">
-                                            <div className="flex items-center gap-2">
-                                                <Layers size={12} className={activeSections.includes('tokens') ? "text-brand-cyan" : "text-neutral-600"} />
-                                                <span className="text-xs">Design Tokens</span>
-                                            </div>
-                                            {activeSections.includes('tokens') && <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan" />}
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => toggleSection('editorial')} className="flex items-center justify-between cursor-pointer focus:bg-white/5 p-2 rounded-lg">
-                                            <div className="flex items-center gap-2">
-                                                <FileText size={12} className={activeSections.includes('editorial') ? "text-brand-cyan" : "text-neutral-600"} />
-                                                <span className="text-xs">Editorial</span>
-                                            </div>
-                                            {activeSections.includes('editorial') && <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan" />}
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => toggleSection('accessibility')} className="flex items-center justify-between cursor-pointer focus:bg-white/5 p-2 rounded-lg">
-                                            <div className="flex items-center gap-2">
-                                                <ShieldCheck size={12} className={activeSections.includes('accessibility') ? "text-brand-cyan" : "text-neutral-600"} />
-                                                <span className="text-xs">Accessibility</span>
-                                            </div>
-                                            {activeSections.includes('accessibility') && <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan" />}
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                
+                                <div className="mt-4 pt-6 border-t border-white/[0.03]">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" className="w-full justify-between gap-2 px-3 py-2 h-auto text-[10px] uppercase tracking-[0.3em] text-neutral-700 hover:text-neutral-500 font-mono">
+                                                <div className="flex items-center gap-2">
+                                                    <Settings size={12} />
+                                                    View Settings
+                                                </div>
+                                                <ChevronRight size={12} className="opacity-40" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent className="w-56 bg-neutral-900 border-white/5 p-2 shadow-2xl" align="start">
+                                            <MicroTitle className="px-2 py-2 mb-1 block text-[10px] opacity-40">Layout Modules</MicroTitle>
+                                            <DropdownMenuItem onClick={() => toggleSection('tags')} className="flex items-center justify-between cursor-pointer focus:bg-white/5 p-2 rounded-lg">
+                                                <div className="flex items-center gap-2 text-neutral-400">
+                                                    <Tag size={12} className={activeSections.includes('tags') ? "text-brand-cyan" : "text-neutral-700"} />
+                                                    <span className="text-xs">Tags</span>
+                                                </div>
+                                                {activeSections.includes('tags') && <div className="w-1 h-1 rounded-full bg-brand-cyan" />}
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => toggleSection('media')} className="flex items-center justify-between cursor-pointer focus:bg-white/5 p-2 rounded-lg">
+                                                <div className="flex items-center gap-2 text-neutral-400">
+                                                    <ImageIcon size={12} className={activeSections.includes('media') ? "text-brand-cyan" : "text-neutral-700"} />
+                                                    <span className="text-xs">Media Kit</span>
+                                                </div>
+                                                {activeSections.includes('media') && <div className="w-1 h-1 rounded-full bg-brand-cyan" />}
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => toggleSection('tokens')} className="flex items-center justify-between cursor-pointer focus:bg-white/5 p-2 rounded-lg">
+                                                <div className="flex items-center gap-2 text-neutral-400">
+                                                    <Layers size={12} className={activeSections.includes('tokens') ? "text-brand-cyan" : "text-neutral-700"} />
+                                                    <span className="text-xs">Design Tokens</span>
+                                                </div>
+                                                {activeSections.includes('tokens') && <div className="w-1 h-1 rounded-full bg-brand-cyan" />}
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => toggleSection('editorial')} className="flex items-center justify-between cursor-pointer focus:bg-white/5 p-2 rounded-lg">
+                                                <div className="flex items-center gap-2 text-neutral-400">
+                                                    <FileText size={12} className={activeSections.includes('editorial') ? "text-brand-cyan" : "text-neutral-700"} />
+                                                    <span className="text-xs">Editorial</span>
+                                                </div>
+                                                {activeSections.includes('editorial') && <div className="w-1 h-1 rounded-full bg-brand-cyan" />}
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => toggleSection('accessibility')} className="flex items-center justify-between cursor-pointer focus:bg-white/5 p-2 rounded-lg">
+                                                <div className="flex items-center gap-2 text-neutral-400">
+                                                    <ShieldCheck size={12} className={activeSections.includes('accessibility') ? "text-brand-cyan" : "text-neutral-700"} />
+                                                    <span className="text-xs">Accessibility</span>
+                                                </div>
+                                                {activeSections.includes('accessibility') && <div className="w-1 h-1 rounded-full bg-brand-cyan" />}
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
                             </div>
 
-                            {/* Detail Panel: Bento Grid */}
-                            <div className="flex flex-col gap-6">
+                            {/* Detail Panel: Notion-style Blocks */}
+                            <div className="flex flex-col gap-4">
                                 {selected ? (
                                     <motion.div
                                         key={selected.id}
                                         variants={containerVariants}
                                         initial="hidden"
                                         animate="show"
-                                        className="grid grid-cols-1 md:grid-cols-6 gap-5"
+                                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
                                     >
-                                        {/* Bento: Identity (Spans 4 columns) */}
-                                        <motion.div variants={itemVariants} className="md:col-span-4">
-                                            <GlassPanel padding="md" className="h-full min-h-[220px] justify-between group">
-                                                <div className="flex justify-between items-start">
-                                                    <div className="space-y-4">
-                                                        <div className="space-y-1">
-                                                            <MicroTitle>{t('brandGuidelines.identity')}</MicroTitle>
-                                                            <h2 className="text-3xl font-semibold font-manrope text-white group-hover:text-brand-cyan transition-colors duration-500">
-                                                                {selected.identity?.name || 'Unnamed Brand'}
-                                                            </h2>
-                                                        </div>
-                                                        {selected.identity?.tagline && (
-                                                            <p className="text-sm font-mono text-neutral-500 italic border-l border-white/10 pl-3 py-1">
-                                                                "{selected.identity.tagline}"
-                                                            </p>
-                                                        )}
-                                                        {selected.identity?.description && (
-                                                            <p className="text-xs text-neutral-500 max-w-lg leading-relaxed line-clamp-2 group-hover:line-clamp-none transition-all duration-300">
-                                                                {selected.identity.description}
-                                                            </p>
-                                                        )}
-                                                    </div>
+                                        {/* Block 1: Identity & Header (Full context) */}
+                                        <NotionBlock 
+                                            span="3" 
+                                            icon={<FileText size={16} />} 
+                                            title={t('brandGuidelines.identity')}
+                                            loading={editingBlock === 'identity' && isSaving}
+                                            actions={
+                                                editingBlock === 'identity' ? (
                                                     <div className="flex gap-1">
-                                                        {selected.identity?.website && (
-                                                            <Button variant="brand" 
-                                                                onClick={handleReIngest}
-                                                                className="p-2 rounded-xl bg-white/5 text-neutral-600 hover:text-brand-cyan hover:bg-brand-cyan/10 transition-all border border-transparent hover:border-brand-cyan/20"
-                                                                title={t('brandGuidelines.reExtract')}
-                                                            >
-                                                                <RefreshCw size={14} className="group-hover:rotate-180 transition-transform duration-700" />
-                                                            </Button>
-                                                        )}
-                                                        <Button variant="ghost" 
-                                                            onClick={() => { setEditingGuideline(selected); setIsWizardOpen(true); }}
-                                                            className="p-2 rounded-xl bg-white/5 text-neutral-600 hover:text-white hover:bg-white/10 transition-all border border-transparent hover:border-white/10"
-                                                            title={t('mockup.brandWizardEdit')}
-                                                        >
-                                                            <Pencil size={14} />
+                                                        <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white" onClick={() => setEditingBlock(null)}>
+                                                            <X size={12} />
                                                         </Button>
-                                                        <Button variant="ghost" 
-                                                            onClick={() => handleDelete(selected.id!)}
-                                                            disabled={deletingId === selected.id}
-                                                            className="p-2 rounded-xl bg-white/5 text-neutral-600 hover:text-red-400 hover:bg-red-500/10 transition-all border border-transparent hover:border-red-500/20 disabled:opacity-50"
-                                                            title={t('brandGuidelines.delete')}
-                                                        >
-                                                            {deletingId === selected.id
-                                                                ? <Loader2 size={14} className="animate-spin" />
-                                                                : <Trash2 size={14} />
-                                                            }
+                                                        <Button variant="ghost" size="icon" className="h-6 w-6 text-brand-cyan" onClick={handleSaveBlock}>
+                                                            <Save size={12} />
                                                         </Button>
                                                     </div>
-                                                </div>
-                                                <div className="flex items-center gap-6 mt-6 pt-6 border-t border-white/5">
-                                                    {selected.identity?.website && (
-                                                        <a
-                                                            href={selected.identity.website}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="text-[10px] font-mono text-neutral-600 hover:text-brand-cyan flex items-center gap-2 transition-colors group/link"
-                                                        >
-                                                            <Globe size={12} className="group-hover/link:animate-pulse" />
-                                                            {selected.identity.website.replace(/^https?:\/\//, '')}
-                                                            <ExternalLink size={10} className="opacity-0 group-hover/link:opacity-100 transition-opacity" />
-                                                        </a>
-                                                    )}
-                                                    {selected._extraction && (
-                                                        <div className="flex items-center gap-2">
-                                                            <ShieldCheck size={12} className="text-brand-cyan/50" />
-                                                            <MicroTitle className="text-[10px] text-neutral-700 tracking-tighter">Verified data: {selected._extraction.completeness}%</MicroTitle>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </GlassPanel>
-                                        </motion.div>
-
-                                        {/* Bento: Logo Preview (Spans 2 columns) */}
-                                        <motion.div variants={itemVariants} className="md:col-span-2">
-                                            <GlassPanel padding="md" className="h-full flex flex-col justify-between overflow-hidden relative group">
-                                                <div className="absolute inset-0 bg-gradient-to-br from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                                                <MicroTitle className="relative z-10">Main Assets</MicroTitle>
-                                                <div className="flex-1 flex items-center justify-center py-4 relative z-10">
-                                                    {localLogos && localLogos.length > 0 ? (
-                                                        <div className="relative group/logo">
-                                                            <img
-                                                                src={localLogos[0].url}
-                                                                alt="Main Logo"
-                                                                className="max-h-[80px] w-auto object-contain filter drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] group-hover/logo:scale-110 transition-transform duration-500"
-                                                            />
-                                                            {localLogos.length > 1 && (
-                                                                <div className="absolute -bottom-2 -right-2 bg-neutral-900 border border-white/10 text-[8px] font-mono px-1.5 py-0.5 rounded-full text-neutral-500">
-                                                                    +{localLogos.length - 1} more
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    ) : (
-                                                        <div className="flex flex-col items-center gap-2 text-neutral-800">
-                                                            <ImageIcon size={32} strokeWidth={1} />
-                                                            <span className="text-[9px] font-mono uppercase tracking-widest">No assets yet</span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <Button variant="ghost" 
-                                                    onClick={() => toggleSection('media')}
-                                                    className="w-full text-center py-2 text-[9px] font-mono text-neutral-600 hover:text-brand-cyan border-t border-white/5 relative z-10 uppercase tracking-widest transition-colors"
-                                                >
-                                                    Open Library
-                                                </Button>
-                                            </GlassPanel>
-                                        </motion.div>
-
-                                        {/* Bento: Colors (Spans 3 columns) */}
-                                        <motion.div variants={itemVariants} className="md:col-span-3">
-                                            <GlassPanel padding="md" className="h-full group">
-                                                <div className="flex justify-between items-center mb-6">
-                                                    <MicroTitle>{t('brandGuidelines.colors')}</MicroTitle>
-                                                    <div className="h-px flex-1 bg-white/5 mx-4" />
-                                                    <Palette size={14} className="text-neutral-700 group-hover:text-brand-cyan transition-colors" />
-                                                </div>
-                                                <div className="flex flex-wrap gap-4">
-                                                    {selected.colors && selected.colors.length > 0 ? (
-                                                        selected.colors.slice(0, 5).map((c, i) => (
-                                                            <div key={i} className="flex flex-col gap-2 group/color">
-                                                                <div
-                                                                    className="w-12 h-12 rounded-2xl border border-white/10 shadow-lg group-hover/color:scale-110 transition-transform duration-300"
-                                                                    style={{ backgroundColor: c.hex }}
+                                                ) : (
+                                                    <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white" onClick={() => setEditingBlock('identity')}>
+                                                        <Pencil size={12} />
+                                                    </Button>
+                                                )
+                                            }
+                                        >
+                                            <div className="flex flex-col md:flex-row justify-between gap-8 py-4">
+                                                <div className="space-y-6 flex-1">
+                                                    {editingBlock === 'identity' ? (
+                                                        <div className="space-y-4">
+                                                            <div className="space-y-1">
+                                                                <MicroTitle className="text-[9px] opacity-40">Brand Name</MicroTitle>
+                                                                <Input 
+                                                                    value={editedData?.identity?.name || ''}
+                                                                    onChange={(e) => updateEditedData(prev => ({ ...prev, identity: { ...prev.identity, name: e.target.value } }))}
+                                                                    className="text-2xl font-bold bg-neutral-900/50 border-white/5"
+                                                                    placeholder="Brand Name"
                                                                 />
-                                                                <div className="space-y-0.5">
-                                                                    <MicroTitle className="text-[10px] text-white block truncate w-12">{c.name}</MicroTitle> <span className="text-[8px] text-neutral-700 tracking-tighter">{c.hex}</span>
-                                                                </div>
                                                             </div>
-                                                        ))
-                                                    ) : (
-                                                        <MicroTitle className="text-[10px] text-neutral-700 italic">{t('brandGuidelines.clickToAdd')}</MicroTitle> )} {selected.colors && selected.colors.length > 5 && ( <div className="w-12 h-12 rounded-2xl border border-dashed border-white/10 flex items-center justify-center text-[10px] text-neutral-700"> +{selected.colors.length - 5} </div> )} </div> </GlassPanel> </motion.div> {/* Bento: Typography (Spans 3 columns) */} <motion.div variants={itemVariants} className="md:col-span-3"> <GlassPanel padding="md" className="h-full group"> <div className="flex justify-between items-center mb-6"> <MicroTitle>{t('brandGuidelines.typography')}</MicroTitle> <div className="h-px flex-1 bg-white/5 mx-4" /> <Type size={14} className="text-neutral-700 group-hover:text-brand-cyan transition-colors" /> </div> <div className="space-y-4"> {selected.typography && selected.typography.length > 0 ? ( selected.typography.slice(0, 2).map((f, i) => ( <div key={i} className="flex flex-col gap-1 border-l-2 border-brand-cyan/20 pl-4 py-1 hover:border-brand-cyan transition-colors duration-500"> <span className="text-[9px] text-neutral-600">{f.role}</span>
-                                                                <span className="text-lg font-medium text-white tracking-tight">{f.family}</span>
-                                                                <div className="flex items-center gap-2">
-                                                                    <MicroTitle className="text-[10px] ">{f.style || 'Regular'}</MicroTitle> {f.size && <span className="text-neutral-800">·</span>} {f.size && <span className="text-[10px] text-neutral-700">{f.size}px</span>} </div> </div> )) ) : ( <p className="text-[10px] text-neutral-700 italic">{t('brandGuidelines.clickToAdd')}</p> )} </div> </GlassPanel> </motion.div> {/* Optional Sections with AnimatePresence */} <AnimatePresence mode="popLayout"> {activeSections.includes('tags') && ( <motion.div layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="md:col-span-2" > <GlassPanel padding="md" className="h-full"> <MicroTitle className="mb-4">Brand Strategy Tags</MicroTitle> <div className="flex flex-wrap gap-2"> {selected.tags && Object.entries(selected.tags).length > 0 ? ( Object.entries(selected.tags).map(([cat, vals]: any) => ( vals.map((v: string, j: number) => ( <span key={`${cat}-${j}`} className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/5 text-[10px] hover:text-brand-cyan hover:border-brand-cyan/20 transition-all cursor-default"> {v} </span> )) )) ) : ( <p className="text-[10px] text-neutral-800">No strategy tags defined</p> )} </div> </GlassPanel> </motion.div> )} {activeSections.includes('editorial') && ( <motion.div layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="md:col-span-4" > <GlassPanel padding="md" className="h-full"> <div className="flex items-center justify-between mb-4"> <MicroTitle>Editorial Guidelines</MicroTitle> {selected.guidelines?.voice && ( <span className="text-[10px] text-brand-cyan bg-brand-cyan/10 px-2 py-0.5 rounded-full">{selected.guidelines.voice}</span> )} </div> <div className="grid grid-cols-2 gap-6"> <div className="space-y-4"> <span className="text-[10px] text-green-500/50 flex items-center gap-1.5">
-                                                                    <CheckCircle2 size={10} />
-                                                                    Principles
-                                                                </span>
-                                                                <ul className="space-y-1.5">
-                                                                    {selected.guidelines?.dos?.map((item: string, i: number) => (
-                                                                        <li key={i} className="text-xs text-neutral-400 flex items-start gap-2 bg-white/[0.02] p-1.5 rounded-lg border border-white/5">
-                                                                            <span className="text-green-500 font-bold">+</span>
-                                                                            {item}
-                                                                        </li>
-                                                                    ))}
-                                                                </ul>
+                                                            <div className="space-y-1">
+                                                                <MicroTitle className="text-[9px] opacity-40">Tagline</MicroTitle>
+                                                                <Input 
+                                                                    value={editedData?.identity?.tagline || ''}
+                                                                    onChange={(e) => updateEditedData(prev => ({ ...prev, identity: { ...prev.identity, tagline: e.target.value } }))}
+                                                                    className="text-sm font-mono bg-neutral-900/50 border-white/5"
+                                                                    placeholder="Tagline"
+                                                                />
                                                             </div>
-                                                            <div className="space-y-4">
-                                                                <MicroTitle className="text-[10px] text-red-500/50 flex items-center gap-1.5">
-                                                                    <CircleAlert size={10} />
-                                                                    Avoid
-                                                                </MicroTitle>
-                                                                <ul className="space-y-1.5">
-                                                                    {selected.guidelines?.donts?.map((item: string, i: number) => (
-                                                                        <li key={i} className="text-xs text-neutral-400 flex items-start gap-2 bg-white/[0.02] p-1.5 rounded-lg border border-white/5">
-                                                                            <span className="text-red-500 font-bold">−</span>
-                                                                            {item}
-                                                                        </li>
-                                                                    ))}
-                                                                </ul>
+                                                            <div className="space-y-1">
+                                                                <MicroTitle className="text-[9px] opacity-40">Description</MicroTitle>
+                                                                <Textarea 
+                                                                    value={editedData?.identity?.description || ''}
+                                                                    onChange={(e) => updateEditedData(prev => ({ ...prev, identity: { ...prev.identity, description: e.target.value } }))}
+                                                                    className="text-sm bg-neutral-900/50 border-white/5 min-h-[100px]"
+                                                                    placeholder="Description"
+                                                                />
                                                             </div>
                                                         </div>
-                                                    </GlassPanel>
-                                                </motion.div>
+                                                    ) : (
+                                                        <>
+                                                            <div className="space-y-2">
+                                                                <motion.h2 
+                                                                    initial={{ opacity: 0, x: -10 }}
+                                                                    animate={{ opacity: 1, x: 0 }}
+                                                                    className="text-4xl font-bold font-manrope text-white tracking-tight"
+                                                                >
+                                                                    {selected.identity?.name || 'Untitled Brand'}
+                                                                </motion.h2>
+                                                                {selected.identity?.tagline && (
+                                                                    <p className="text-sm font-mono text-neutral-500 italic opacity-60">
+                                                                        "{selected.identity.tagline}"
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                            {selected.identity?.description && (
+                                                                <p className="text-sm text-neutral-400 max-w-2xl leading-relaxed opacity-90">
+                                                                    {selected.identity.description}
+                                                                </p>
+                                                            )}
+                                                        </>
+                                                    )}
+                                                    
+                                                    <div className="flex flex-wrap items-center gap-6 pt-2">
+                                                        {selected.identity?.website && (
+                                                            <a
+                                                                href={selected.identity.website}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="text-xs font-mono text-neutral-600 hover:text-brand-cyan flex items-center gap-2 transition-colors group/link"
+                                                            >
+                                                                <Globe size={14} className="opacity-50 group-hover/link:opacity-100" />
+                                                                {selected.identity.website.replace(/^https?:\/\//, '')}
+                                                                <ExternalLink size={12} className="opacity-20 group-hover/link:opacity-50" />
+                                                            </a>
+                                                        )}
+                                                        {selected._extraction && (
+                                                            <div className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-white/[0.02] border border-white/5">
+                                                                <ShieldCheck size={14} className="text-brand-cyan/40" />
+                                                                <span className="text-[10px] uppercase tracking-[0.2em] text-neutral-700 font-mono">
+                                                                    Verified data {selected._extraction.completeness}%
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex flex-row md:flex-col gap-2 shrink-0">
+                                                    {selected.identity?.website && (
+                                                        <Button variant="ghost" 
+                                                            size="icon"
+                                                            onClick={handleReIngest}
+                                                            className="h-9 w-9 text-neutral-800 hover:text-brand-cyan hover:bg-brand-cyan/10 transition-all border border-transparent hover:border-brand-cyan/20"
+                                                            title={t('brandGuidelines.reExtract')}
+                                                        >
+                                                            <RefreshCw size={14} />
+                                                        </Button>
+                                                    )}
+                                                    <Button variant="ghost" 
+                                                        size="icon"
+                                                        onClick={() => { setEditingGuideline(selected); setIsWizardOpen(true); }}
+                                                        className="h-9 w-9 text-neutral-800 hover:text-white hover:bg-white/10 transition-all border border-transparent hover:border-white/10"
+                                                        title={t('mockup.brandWizardEdit')}
+                                                    >
+                                                        <Pencil size={14} />
+                                                    </Button>
+                                                    <Button variant="ghost" 
+                                                        size="icon"
+                                                        onClick={() => handleDelete(selected.id!)}
+                                                        disabled={deletingId === selected.id}
+                                                        className="h-9 w-9 text-neutral-800 hover:text-red-400 hover:bg-red-500/10 transition-all border border-transparent hover:border-red-500/20 disabled:opacity-50"
+                                                        title={t('brandGuidelines.delete')}
+                                                    >
+                                                        {deletingId === selected.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </NotionBlock>
+
+                                        {/* Block 2: Primary Logos */}
+                                        <NotionBlock icon={<ImageIcon size={14} />} title="Assets">
+                                            <div className="flex flex-col items-center justify-center min-h-[160px] gap-4 py-2">
+                                                {localLogos && localLogos.length > 0 ? (
+                                                    <div className="relative group/logo">
+                                                        <img
+                                                            src={localLogos[0].url}
+                                                            alt="Primary Logo"
+                                                            className="max-h-[80px] w-auto object-contain filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.5)] group-hover/logo:scale-105 transition-transform duration-500"
+                                                        />
+                                                        {localLogos.length > 1 && (
+                                                            <div className="mt-4 text-center">
+                                                                <span className="text-[10px] font-mono text-neutral-700 uppercase tracking-widest opacity-60">
+                                                                    +{localLogos.length - 1} library assets
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex flex-col items-center gap-3 opacity-10">
+                                                        <ImageIcon size={40} strokeWidth={1} />
+                                                        <span className="text-[9px] font-mono uppercase tracking-[0.3em]">Empty Gallery</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <Button variant="ghost" 
+                                                onClick={() => toggleSection('media')}
+                                                className="w-full mt-4 h-9 text-[9px] uppercase tracking-[0.25em] text-neutral-700 hover:text-brand-cyan border-t border-white/[0.03] rounded-none hover:bg-transparent transition-colors"
+                                            >
+                                                Full Media Library
+                                            </Button>
+                                        </NotionBlock>
+
+                                        {/* Block 3: Colors */}
+                                        <NotionBlock 
+                                            icon={<Palette size={14} />} 
+                                            title={t('brandGuidelines.colors')}
+                                            loading={editingBlock === 'colors' && isSaving}
+                                            actions={
+                                                editingBlock === 'colors' ? (
+                                                    <div className="flex gap-1">
+                                                        <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white" onClick={() => setEditingBlock(null)}>
+                                                            <X size={12} />
+                                                        </Button>
+                                                        <Button variant="ghost" size="icon" className="h-6 w-6 text-brand-cyan" onClick={handleSaveBlock}>
+                                                            <Save size={12} />
+                                                        </Button>
+                                                    </div>
+                                                ) : (
+                                                    <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white" onClick={() => setEditingBlock('colors')}>
+                                                        <Pencil size={12} />
+                                                    </Button>
+                                                )
+                                            }
+                                        >
+                                            <div className="grid grid-cols-4 gap-4 py-2">
+                                                {editingBlock === 'colors' ? (
+                                                    <>
+                                                        {editedData?.colors?.map((c, i) => (
+                                                            <div key={i} className="flex flex-col gap-1.5 group/color items-center relative">
+                                                                <input
+                                                                    type="color"
+                                                                    value={c.hex}
+                                                                    onChange={(e) => updateEditedData(prev => {
+                                                                        const colors = [...(prev.colors || [])];
+                                                                        colors[i] = { ...colors[i], hex: e.target.value };
+                                                                        return { ...prev, colors };
+                                                                    })}
+                                                                    className="w-12 h-12 rounded-xl border border-white/5 cursor-pointer bg-transparent"
+                                                                />
+                                                                <Button 
+                                                                    variant="ghost" 
+                                                                    size="icon" 
+                                                                    className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-white opacity-0 group-hover/color:opacity-100 transition-opacity"
+                                                                    onClick={() => updateEditedData(prev => ({ ...prev, colors: (prev.colors || []).filter((_, idx) => idx !== i) }))}
+                                                                >
+                                                                    <X size={8} />
+                                                                </Button>
+                                                            </div>
+                                                        ))}
+                                                        <Button 
+                                                            variant="ghost" 
+                                                            className="w-12 h-12 rounded-xl border border-dashed border-white/10 flex items-center justify-center text-neutral-600 hover:text-brand-cyan hover:border-brand-cyan/30"
+                                                            onClick={() => updateEditedData(prev => ({ ...prev, colors: [...(prev.colors || []), { hex: '#000000', name: 'New Color' }] }))}
+                                                        >
+                                                            <Plus size={14} />
+                                                        </Button>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        {selected.colors && selected.colors.length > 0 ? (
+                                                            selected.colors.slice(0, 8).map((c, i) => (
+                                                                <div key={i} className="flex flex-col gap-1.5 group/color items-center">
+                                                                    <div
+                                                                        className="w-12 h-12 rounded-xl border border-white/5 shadow-2xl group-hover/color:scale-110 transition-transform duration-300"
+                                                                        style={{ backgroundColor: c.hex }}
+                                                                        title={`${c.name || ''}: ${c.hex}`}
+                                                                    />
+                                                                </div>
+                                                            ))
+                                                        ) : (
+                                                            <div className="col-span-4 py-12 text-center opacity-10 italic text-[10px] font-mono tracking-widest uppercase">No Palette</div>
+                                                        )}
+                                                        {selected.colors && selected.colors.length > 8 && (
+                                                            <div className="w-12 h-12 rounded-xl border border-dashed border-white/5 flex items-center justify-center text-[10px] text-neutral-800 font-mono">
+                                                                +{selected.colors.length - 8}
+                                                            </div>
+                                                        )}
+                                                    </>
+                                                )}
+                                            </div>
+                                        </NotionBlock>
+
+                                        {/* Block 4: Typography */}
+                                        <NotionBlock 
+                                            icon={<Type size={14} />} 
+                                            title={t('brandGuidelines.typography')}
+                                            loading={editingBlock === 'typography' && isSaving}
+                                            actions={
+                                                editingBlock === 'typography' ? (
+                                                    <div className="flex gap-1">
+                                                        <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white" onClick={() => setEditingBlock(null)}>
+                                                            <X size={12} />
+                                                        </Button>
+                                                        <Button variant="ghost" size="icon" className="h-6 w-6 text-brand-cyan" onClick={handleSaveBlock}>
+                                                            <Save size={12} />
+                                                        </Button>
+                                                    </div>
+                                                ) : (
+                                                    <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white" onClick={() => setEditingBlock('typography')}>
+                                                        <Pencil size={12} />
+                                                    </Button>
+                                                )
+                                            }
+                                        >
+                                            <div className="space-y-6 py-2">
+                                                {editingBlock === 'typography' ? (
+                                                    <div className="space-y-4">
+                                                        {editedData?.typography?.map((f, i) => (
+                                                            <div key={i} className="flex flex-col gap-2 p-2 rounded-lg bg-white/[0.02] border border-white/5 group/font relative">
+                                                                <div className="grid grid-cols-2 gap-2">
+                                                                    <div className="space-y-1">
+                                                                        <MicroTitle className="text-[8px] opacity-40">Role</MicroTitle>
+                                                                        <Input 
+                                                                            value={f.role || ''}
+                                                                            onChange={(e) => updateEditedData(prev => {
+                                                                                const typography = [...(prev.typography || [])];
+                                                                                typography[i] = { ...typography[i], role: e.target.value };
+                                                                                return { ...prev, typography };
+                                                                            })}
+                                                                            className="text-[10px] font-mono h-7 bg-transparent"
+                                                                            placeholder="e.g. Body"
+                                                                        />
+                                                                    </div>
+                                                                    <div className="space-y-1">
+                                                                        <MicroTitle className="text-[8px] opacity-40">Family</MicroTitle>
+                                                                        <Input 
+                                                                            value={f.family || ''}
+                                                                            onChange={(e) => updateEditedData(prev => {
+                                                                                const typography = [...(prev.typography || [])];
+                                                                                typography[i] = { ...typography[i], family: e.target.value };
+                                                                                return { ...prev, typography };
+                                                                            })}
+                                                                            className="text-[10px] font-mono h-7 bg-transparent font-bold"
+                                                                            placeholder="Font Family"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                                <Button 
+                                                                    variant="ghost" 
+                                                                    size="icon" 
+                                                                    className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-white opacity-0 group-hover/font:opacity-100 transition-opacity"
+                                                                    onClick={() => updateEditedData(prev => ({ ...prev, typography: (prev.typography || []).filter((_, idx) => idx !== i) }))}
+                                                                >
+                                                                    <X size={8} />
+                                                                </Button>
+                                                            </div>
+                                                        ))}
+                                                        <Button 
+                                                            variant="ghost" 
+                                                            className="w-full h-8 rounded-lg border border-dashed border-white/10 flex items-center justify-center text-neutral-600 hover:text-brand-cyan hover:border-brand-cyan/30 text-[9px] uppercase tracking-widest"
+                                                            onClick={() => updateEditedData(prev => ({ ...prev, typography: [...(prev.typography || []), { family: 'Inter', role: 'body', style: 'Regular' }] }))}
+                                                        >
+                                                            <Plus size={10} className="mr-1" />
+                                                            Add Font
+                                                        </Button>
+                                                    </div>
+                                                ) : (
+                                                    <>
+                                                        {selected.typography && selected.typography.length > 0 ? (
+                                                            selected.typography.slice(0, 2).map((f, i) => (
+                                                                <div key={i} className="flex flex-col group/font border-l border-white/5 pl-4 py-1 hover:border-brand-cyan/30 transition-colors">
+                                                                    <span className="text-[10px] text-neutral-700 font-mono tracking-widest mb-1.5 uppercase opacity-60 font-medium">{f.role}</span>
+                                                                    <span className="text-xl font-bold text-white truncate group-hover:text-brand-cyan transition-colors">{f.family}</span>
+                                                                    <div className="flex items-center gap-2 mt-1.5">
+                                                                        <span className="text-[10px] text-neutral-500 font-mono opacity-80">{f.style || 'Regular'}</span>
+                                                                        {f.size && <span className="text-neutral-900">·</span>}
+                                                                        {f.size && <span className="text-[10px] text-neutral-800 font-mono">{f.size}px</span>}
+                                                                    </div>
+                                                                </div>
+                                                            ))
+                                                        ) : (
+                                                            <div className="py-12 text-center opacity-10 italic text-[10px] font-mono tracking-widest uppercase">No Fonts</div>
+                                                        )}
+                                                    </>
+                                                )}
+                                            </div>
+                                        </NotionBlock>
+
+                                        {/* Optional Blocks with AnimatePresence */}
+                                        <AnimatePresence mode="popLayout">
+                                            {activeSections.includes('tags') && (
+                                                <NotionBlock 
+                                                    icon={<Tag size={14} />} 
+                                                    title="Strategy"
+                                                    loading={editingBlock === 'tags' && isSaving}
+                                                    actions={
+                                                        editingBlock === 'tags' ? (
+                                                            <div className="flex gap-1">
+                                                                <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white" onClick={() => setEditingBlock(null)}>
+                                                                    <X size={12} />
+                                                                </Button>
+                                                                <Button variant="ghost" size="icon" className="h-6 w-6 text-brand-cyan" onClick={handleSaveBlock}>
+                                                                    <Save size={12} />
+                                                                </Button>
+                                                            </div>
+                                                        ) : (
+                                                            <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white" onClick={() => setEditingBlock('tags')}>
+                                                                <Pencil size={12} />
+                                                            </Button>
+                                                        )
+                                                    }
+                                                >
+                                                    <div className="flex flex-wrap gap-2 py-2">
+                                                        {editingBlock === 'tags' ? (
+                                                            <div className="w-full space-y-4">
+                                                                <Textarea 
+                                                                    value={JSON.stringify(editedData?.tags || {}, null, 2)}
+                                                                    onChange={(e) => {
+                                                                        try {
+                                                                            const tags = JSON.parse(e.target.value);
+                                                                            updateEditedData(prev => ({ ...prev, tags }));
+                                                                        } catch {}
+                                                                    }}
+                                                                    className="text-[10px] font-mono bg-neutral-900/50 border-white/5 min-h-[120px]"
+                                                                    placeholder='{"Category": ["Value"]}'
+                                                                />
+                                                                <p className="text-[8px] text-neutral-600 font-mono">Format: JSON object</p>
+                                                            </div>
+                                                        ) : (
+                                                            <>
+                                                                {selected.tags && Object.entries(selected.tags).length > 0 ? (
+                                                                    Object.entries(selected.tags).map(([cat, vals]: any) => (
+                                                                        vals.map((v: string, j: number) => (
+                                                                            <span key={`${cat}-${j}`} className="px-3 py-1 rounded bg-white/[0.02] border border-white/[0.05] text-[10px] text-neutral-600 hover:text-brand-cyan hover:border-brand-cyan/20 transition-all cursor-default font-mono tracking-tighter">
+                                                                                {v}
+                                                                            </span>
+                                                                        ))
+                                                                    ))
+                                                                ) : (
+                                                                    <p className="text-[10px] text-neutral-900 italic font-mono uppercase tracking-widest opacity-20 py-8 text-center w-full">No Tags</p>
+                                                                )}
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </NotionBlock>
                                             )}
 
                                             {activeSections.includes('tokens') && (
-                                                <motion.div
-                                                    layout
-                                                    initial={{ opacity: 0, scale: 0.95 }}
-                                                    animate={{ opacity: 1, scale: 1 }}
-                                                    exit={{ opacity: 0, scale: 0.95 }}
-                                                    className="md:col-span-3"
+                                                <NotionBlock 
+                                                    icon={<Layers size={14} />} 
+                                                    title="Design Tokens"
+                                                    loading={editingBlock === 'tokens' && isSaving}
+                                                    actions={
+                                                        editingBlock === 'tokens' ? (
+                                                            <div className="flex gap-1">
+                                                                <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white" onClick={() => setEditingBlock(null)}>
+                                                                    <X size={12} />
+                                                                </Button>
+                                                                <Button variant="ghost" size="icon" className="h-6 w-6 text-brand-cyan" onClick={handleSaveBlock}>
+                                                                    <Save size={12} />
+                                                                </Button>
+                                                            </div>
+                                                        ) : (
+                                                            <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white" onClick={() => setEditingBlock('tokens')}>
+                                                                <Pencil size={12} />
+                                                            </Button>
+                                                        )
+                                                    }
                                                 >
-                                                    <GlassPanel padding="md" className="h-full">
-                                                        <div className="flex items-center justify-between mb-4">
-                                                            <MicroTitle>Design Tokens</MicroTitle>
-                                                            <Layers size={14} className="text-neutral-700" />
-                                                        </div>
-                                                        <div className="space-y-4">
-                                                            {selected.tokens?.spacing && (
-                                                                <div className="space-y-2">
-                                                                    <span className="text-[9px] font-mono text-neutral-600 uppercase tracking-widest">Spacing Scale</span>
+                                                    <div className="space-y-6 py-2">
+                                                        {editingBlock === 'tokens' ? (
+                                                            <div className="space-y-4">
+                                                                <Textarea 
+                                                                    value={JSON.stringify(editedData?.tokens || {}, null, 2)}
+                                                                    onChange={(e) => {
+                                                                        try {
+                                                                            const tokens = JSON.parse(e.target.value);
+                                                                            updateEditedData(prev => ({ ...prev, tokens }));
+                                                                        } catch {}
+                                                                    }}
+                                                                    className="text-[10px] font-mono bg-neutral-900/50 border-white/5 min-h-[150px]"
+                                                                    placeholder='{"spacing": {"s": "4px"}, "radius": {"m": "8px"}}'
+                                                                />
+                                                            </div>
+                                                        ) : (
+                                                            <>
+                                                                {selected.tokens?.spacing && (
                                                                     <div className="flex flex-wrap gap-2">
-                                                                        {Object.entries(selected.tokens.spacing).map(([k, v]) => (
-                                                                            <div key={k} className="flex flex-col items-center gap-1 bg-white/5 p-2 rounded-lg border border-white/5 min-w-[40px]">
-                                                                                <span className="text-[8px] font-mono text-neutral-600 uppercase">{k}</span>
-                                                                                <MicroTitle className="text-[10px] text-white">{v}px</MicroTitle> </div> ))} </div> </div> )} {selected.tokens?.radius && ( <div className="space-y-2"> <span className="text-[9px] text-neutral-600">Corner Radius</span>
+                                                                        {Object.entries(selected.tokens.spacing).slice(0, 4).map(([k, v]) => (
+                                                                            <div key={k} className="bg-white/[0.01] px-2.5 py-1.5 rounded border border-white/[0.03] text-center min-w-[42px] hover:border-brand-cyan/10 transition-colors">
+                                                                                <span className="text-[8px] font-mono text-neutral-800 block uppercase tracking-tighter mb-0.5">{k}</span>
+                                                                                <span className="text-[10px] font-mono text-neutral-500 font-bold">{v}</span>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                                {selected.tokens?.radius && (
                                                                     <div className="flex flex-wrap gap-2">
-                                                                        {Object.entries(selected.tokens.radius).map(([k, v]) => (
-                                                                            <div key={k} className="flex flex-col items-center gap-1 bg-white/5 p-2 rounded-lg border border-white/5 min-w-[40px]">
-                                                                                <span className="text-[8px] font-mono text-neutral-600 uppercase">{k}</span>
-                                                                                <MicroTitle className="text-[10px] text-white">{v}px</MicroTitle> </div> ))} </div> </div> )} </div> </GlassPanel> </motion.div> )} {activeSections.includes('accessibility') && ( <motion.div layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="md:col-span-3" > <GlassPanel padding="md" className="h-full"> <div className="flex items-center justify-between mb-4"> <MicroTitle>Accessibility</MicroTitle> <ShieldCheck size={14} className="text-neutral-700" /> </div> <p className="text-xs text-neutral-400 leading-relaxed bg-white/[0.02] p-4 rounded-xl border border-white/5 italic"> {selected.guidelines?.accessibility || "No accessibility guidelines defined."} </p> </GlassPanel> </motion.div> )} {activeSections.includes('media') && ( <motion.div layout initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 30 }} className="md:col-span-6" > <GlassPanel padding="md" className="w-full"> <div className="flex items-center justify-between mb-8"> <div className="flex items-center gap-3"> <div className="p-2 rounded-xl bg-brand-cyan/10 text-brand-cyan"> <ImageIcon size={18} /> </div> <div className="space-y-0.5"> <MicroTitle>Media Kit & Visual Library</MicroTitle> <p className="text-[10px] text-neutral-600">Unified storage for logos, headers, and reference media.</p> </div> </div> </div> <MediaKitGallery guidelineId={selected.id!} media={localMedia || []} logos={localLogos || []} onMediaChange={setLocalMedia} onLogosChange={setLocalLogos} /> </GlassPanel> </motion.div> )} </AnimatePresence> {/* Inline Editor (Hidden until specifically toggled or integrated into panels) */} <div className="md:col-span-6 mt-12 pt-12 border-t border-white/5"> <div className="flex items-center gap-4 mb-10"> <MicroTitle className="text-neutral-300">Detailed Configuration</MicroTitle> <div className="h-px flex-1 bg-white/5" /> </div> <BrandGuidelineEditor key={selected.id} guideline={selected} onUpdate={(updated) => { setGuidelines(prev => prev.map(g => g.id === updated.id ? updated : g)); }} /> </div> </motion.div> ) : ( <div className="flex flex-col items-center justify-center py-32 text-neutral-800 text-xs gap-4 border border-dashed border-white/5 rounded-3xl"> <ChevronRight size={32} strokeWidth={1} className="animate-pulse" /> <div className="text-center space-y-1"> <p className=" tracking-[0.3em] font-bold">Select a Cluster</p>
-                                            <p className="text-neutral-900">Choose a brand identity to begin orchestration.</p>
+                                                                        {Object.entries(selected.tokens.radius).slice(0, 4).map(([k, v]) => (
+                                                                            <div key={k} className="bg-white/[0.01] px-2.5 py-1.5 rounded border border-white/[0.03] text-center min-w-[42px] hover:border-brand-cyan/10 transition-colors">
+                                                                                <span className="text-[8px] font-mono text-neutral-800 block uppercase tracking-tighter mb-0.5">{k}</span>
+                                                                                <span className="text-[10px] font-mono text-neutral-500 font-bold">{v}</span>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </NotionBlock>
+                                            )}
+
+                                            {activeSections.includes('editorial') && (
+                                                <NotionBlock 
+                                                    icon={<FileText size={14} />} 
+                                                    title="Editorial"
+                                                    loading={editingBlock === 'editorial' && isSaving}
+                                                    actions={
+                                                        editingBlock === 'editorial' ? (
+                                                            <div className="flex gap-1">
+                                                                <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white" onClick={() => setEditingBlock(null)}>
+                                                                    <X size={12} />
+                                                                </Button>
+                                                                <Button variant="ghost" size="icon" className="h-6 w-6 text-brand-cyan" onClick={handleSaveBlock}>
+                                                                    <Save size={12} />
+                                                                </Button>
+                                                            </div>
+                                                        ) : (
+                                                            <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white" onClick={() => setEditingBlock('editorial')}>
+                                                                <Pencil size={12} />
+                                                            </Button>
+                                                        )
+                                                    }
+                                                >
+                                                    <div className="space-y-4 py-2">
+                                                        {editingBlock === 'editorial' ? (
+                                                            <div className="space-y-4">
+                                                                <div className="space-y-1">
+                                                                    <MicroTitle className="text-[8px] opacity-40">Voice Tone</MicroTitle>
+                                                                    <Input 
+                                                                        value={editedData?.guidelines?.voice || ''}
+                                                                        onChange={(e) => updateEditedData(prev => ({ ...prev, guidelines: { ...prev.guidelines, voice: e.target.value } }))}
+                                                                        className="text-xs h-8 bg-transparent"
+                                                                        placeholder="Voice Tone"
+                                                                    />
+                                                                </div>
+                                                                <div className="space-y-1">
+                                                                    <MicroTitle className="text-[8px] opacity-40">Do's (one per line)</MicroTitle>
+                                                                    <Textarea 
+                                                                        value={(editedData?.guidelines?.dos || []).join('\n')}
+                                                                        onChange={(e) => updateEditedData(prev => ({ ...prev, guidelines: { ...prev.guidelines, dos: e.target.value.split('\n') } }))}
+                                                                        className="text-xs bg-transparent min-h-[80px]"
+                                                                        placeholder="Do's"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        ) : (
+                                                            <>
+                                                                {selected.guidelines?.voice && (
+                                                                    <div className="bg-brand-cyan/5 border border-brand-cyan/10 rounded px-3 py-2">
+                                                                        <span className="text-[9px] text-neutral-700 uppercase font-mono block mb-1 tracking-widest">Voice Tone</span>
+                                                                        <span className="text-xs text-brand-cyan/70 font-medium ">{selected.guidelines.voice}</span>
+                                                                    </div>
+                                                                )}
+                                                                <div className="flex flex-col gap-2">
+                                                                    {selected.guidelines?.dos?.slice(0, 3).map((item: string, i: number) => (
+                                                                        <div key={i} className="text-[11px] text-neutral-600 flex items-start gap-2 bg-white/[0.01] p-1.5 rounded border border-transparent hover:border-white/[0.03] transition-colors line-clamp-1">
+                                                                            <span className="text-brand-cyan font-bold opacity-30">+</span>
+                                                                            {item}
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </NotionBlock>
+                                            )}
+
+                                            {activeSections.includes('accessibility') && (
+                                                <NotionBlock 
+                                                    span="3" 
+                                                    icon={<ShieldCheck size={14} />} 
+                                                    title="Accessibility Core"
+                                                    loading={editingBlock === 'accessibility' && isSaving}
+                                                    actions={
+                                                        editingBlock === 'accessibility' ? (
+                                                            <div className="flex gap-1">
+                                                                <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white" onClick={() => setEditingBlock(null)}>
+                                                                    <X size={12} />
+                                                                </Button>
+                                                                <Button variant="ghost" size="icon" className="h-6 w-6 text-brand-cyan" onClick={handleSaveBlock}>
+                                                                    <Save size={12} />
+                                                                </Button>
+                                                            </div>
+                                                        ) : (
+                                                            <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white" onClick={() => setEditingBlock('accessibility')}>
+                                                                <Pencil size={12} />
+                                                            </Button>
+                                                        )
+                                                    }
+                                                >
+                                                    <div className="py-4">
+                                                        {editingBlock === 'accessibility' ? (
+                                                            <Textarea 
+                                                                value={editedData?.guidelines?.accessibility || ''}
+                                                                onChange={(e) => updateEditedData(prev => ({ ...prev, guidelines: { ...prev.guidelines, accessibility: e.target.value } }))}
+                                                                className="text-xs bg-neutral-900/50 border-white/5 min-h-[100px]"
+                                                                placeholder="Accessibility guidelines..."
+                                                            />
+                                                        ) : (
+                                                            <p className="text-xs text-neutral-500 leading-relaxed italic max-w-2xl opacity-70">
+                                                                {selected.guidelines?.accessibility || "No comprehensive accessibility metrics defined for this workspace yet."}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </NotionBlock>
+                                            )}
+
+                                            {activeSections.includes('media') && (
+                                                <NotionBlock span="3" icon={<ImageIcon size={14} />} title="Visual Library & Components">
+                                                    <div className="py-6">
+                                                        <MediaKitGallery 
+                                                            guidelineId={selected.id!} 
+                                                            media={localMedia || []} 
+                                                            logos={localLogos || []} 
+                                                            onMediaChange={setLocalMedia} 
+                                                            onLogosChange={setLocalLogos} 
+                                                            compact
+                                                        />
+                                                    </div>
+                                                </NotionBlock>
+                                            )}
+                                        </AnimatePresence>
+                                    </motion.div>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center py-40 text-neutral-900 gap-8 border border-dashed border-white/[0.02] rounded-3xl bg-neutral-900/[0.02]">
+                                        <div className="relative group/empty">
+                                            <div className="absolute inset-0 blur-3xl bg-brand-cyan/5 rounded-full scale-150 transition-all group-hover/empty:bg-brand-cyan/10" />
+                                            <Layers size={56} strokeWidth={1} className="relative text-neutral-800 opacity-20" />
+                                        </div>
+                                        <div className="text-center space-y-2 relative">
+                                            <p className="text-[11px] uppercase tracking-[0.5em] font-bold text-neutral-700 opacity-80">Orchestrator Idle</p>
+                                            <p className="text-[10px] text-neutral-900 font-mono opacity-40">Select a brand identity from the vault to modify.</p>
                                         </div>
                                     </div>
                                 )}
@@ -574,4 +1054,3 @@ export const BrandGuidelinesPage: React.FC = () => {
         </>
     );
 };
-

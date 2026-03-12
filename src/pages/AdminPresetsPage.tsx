@@ -1453,7 +1453,6 @@ export const AdminPresetsPage: React.FC = () => {
                     setActiveTab(tab.id as PresetType);
                     if (isEditModalOpen) handleCancel();
                   }}
-                  variant={activeTab === tab.id ? 'default' : 'outline'}
                   className={`font-mono transition-all h-8 text-xs ${activeTab === tab.id
                     ? 'bg-brand-cyan/80 hover:bg-brand-cyan text-black'
                     : 'border-neutral-700/60 hover:border-[brand-cyan]/30 text-neutral-400'

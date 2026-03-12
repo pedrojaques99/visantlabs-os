@@ -14,8 +14,8 @@ import { EmptySectionCard } from './EmptySectionCard';
 import { NotionColumnLayout } from './NotionColumnLayout';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import type { BrandingData } from '@/types/types';
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface BrandingMoodboardProps {
   data: BrandingData;

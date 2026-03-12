@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Edit2, Check, AlertCircle } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
-import { Textarea } from '@/components/ui/textarea'
-import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 
 interface InlineEditorProps {
   value: string | number;

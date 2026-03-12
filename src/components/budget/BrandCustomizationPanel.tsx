@@ -4,8 +4,8 @@ import type { BudgetData } from '@/types/types';
 import { Palette, X, Save, FolderOpen, Trash2 } from 'lucide-react';
 import { BrandCustomizationSection } from './BrandCustomizationSection';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface BrandCustomizationPanelProps {
   data: BudgetData;

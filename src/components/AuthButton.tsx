@@ -8,8 +8,8 @@ import { LogIn, LogOut, User as UserIcon, Mail, X, Pickaxe, ChevronDown, Globe, 
 import { ForgotPasswordModal } from './ForgotPasswordModal';
 import HCaptcha from '@hcaptcha/react-hcaptcha';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface AuthButtonProps {
   subscriptionStatus?: SubscriptionStatus | null;
