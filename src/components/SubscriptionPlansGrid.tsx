@@ -3,10 +3,10 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { productService, type Product } from '../services/productService';
 import { formatPrice, type CurrencyInfo } from '@/utils/localeUtils';
 import { Card, CardHeader, CardContent } from './ui/card';
-import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { cn } from '@/lib/utils';
 import { Pickaxe, CheckCircle2, CreditCard } from 'lucide-react';
+import { PremiumButton } from './ui/PremiumButton';
 
 interface SubscriptionPlansGridProps {
     currencyInfo: CurrencyInfo | null;
@@ -138,17 +138,16 @@ export const SubscriptionPlansGrid: React.FC<SubscriptionPlansGridProps> = ({
                                     </div>
 
                                     <div className="mt-auto pt-4">
-                                        <Button
+                                        <PremiumButton
                                             onClick={() => {
                                                 const link = currencyInfo?.currency === 'USD' ? plan.paymentLinkUSD : plan.paymentLinkBRL;
                                                 if (link) window.location.href = link;
                                             }}
-                                            className="w-full bg-brand-cyan hover:bg-brand-cyan/90 text-black font-bold h-11 rounded-lg transition-transform hover:scale-[1.02] active:scale-[0.98]"
-                                            size="lg"
+                                            className="w-full h-11"
+                                            icon={CreditCard}
                                         >
-                                            <CreditCard className="mr-2 h-4 w-4" />
                                             {t('pricing.subscribe')}
-                                        </Button>
+                                        </PremiumButton>
                                     </div>
                                 </CardContent>
                             </Card>

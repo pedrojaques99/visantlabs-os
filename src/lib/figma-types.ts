@@ -54,7 +54,13 @@ export type FigmaOperation =
       name: string;
       width: number;
       height: number;
+      x?: number;
+      y?: number;
+      rotation?: number;
+      opacity?: number;
       fills?: FigmaPaint[];
+      strokes?: FigmaPaint[];
+      strokeWeight?: number;
       cornerRadius?: number;
       cornerSmoothing?: number;
       clipsContent?: boolean;
@@ -88,6 +94,9 @@ export type FigmaOperation =
       name: string;
       width: number;
       height: number;
+      x?: number;
+      y?: number;
+      rotation?: number;
       fills?: FigmaPaint[];
       cornerRadius?: number;
       strokes?: FigmaPaint[];
@@ -108,7 +117,13 @@ export type FigmaOperation =
       name: string;
       width: number;
       height: number;
+      x?: number;
+      y?: number;
+      rotation?: number;
       fills?: FigmaPaint[];
+      strokes?: FigmaPaint[];
+      strokeWeight?: number;
+      opacity?: number;
       effects?: FigmaEffect[];
       constraints?: { horizontal: string; vertical: string };
       layoutSizingHorizontal?: 'FIXED' | 'FILL';
@@ -136,6 +151,10 @@ export type FigmaOperation =
       paragraphSpacing?: number;
       fills?: FigmaPaint[];
       textStyleId?: string;
+      x?: number;
+      y?: number;
+      rotation?: number;
+      opacity?: number;
       layoutSizingHorizontal?: 'FIXED' | 'HUG' | 'FILL';
       layoutSizingVertical?: 'FIXED' | 'HUG' | 'FILL';
     };

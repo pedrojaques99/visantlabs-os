@@ -20,6 +20,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "../components/ui/BreadcrumbWithBack";
+import { GlassPanel } from '../components/ui/GlassPanel';
 
 export const MyOutputsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -413,7 +414,7 @@ export const MyOutputsPage: React.FC = () => {
           {/* Floating Column Control */}
           {filteredMockups.length > 0 && !isMobile && (
             <div className="fixed bottom-4 md:bottom-6 left-4 md:left-6 z-30">
-              <div className="flex items-center gap-1 bg-neutral-950/50 backdrop-blur-md border border-neutral-800/60 rounded-md p-1.5 shadow-lg">
+              <GlassPanel padding="sm" className="flex-row items-center gap-1 bg-neutral-950/50">
                 <button
                   onClick={() => handleColumnsChange(columns - 1)}
                   disabled={columns <= 1}
@@ -435,7 +436,7 @@ export const MyOutputsPage: React.FC = () => {
                 >
                   <Plus size={14} />
                 </button>
-              </div>
+              </GlassPanel>
             </div>
           )}
           {filteredMockups.length === 0 ? (
@@ -457,9 +458,9 @@ export const MyOutputsPage: React.FC = () => {
                 if (!imageUrl) return null;
 
                 return (
-                  <div
+                  <GlassPanel
                     key={mockup._id}
-                    className="group relative bg-neutral-950/30 backdrop-blur-sm border border-neutral-800/60 rounded-md overflow-hidden hover:border-[brand-cyan]/50 transition-all duration-300"
+                    className="group relative overflow-hidden hover:border-[brand-cyan]/50 transition-all duration-300"
                   >
                     {/* Image */}
                     <div
@@ -489,7 +490,7 @@ export const MyOutputsPage: React.FC = () => {
                         )}
                       </div>
                     </div>
-                  </div>
+                  </GlassPanel>
                 );
               })}
             </div>

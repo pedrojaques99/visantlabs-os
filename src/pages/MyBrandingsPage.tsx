@@ -15,6 +15,8 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "../components/ui/BreadcrumbWithBack";
+import { GlassPanel } from '../components/ui/GlassPanel';
+import { PremiumButton } from '../components/ui/PremiumButton';
 import { toast } from 'sonner';
 import { FileText, Calendar, Eye, Trash2, FilePenLine } from 'lucide-react';
 import { SEO } from '../components/SEO';
@@ -186,20 +188,21 @@ export const MyBrandingsPage: React.FC = () => {
               <p className="text-sm text-neutral-600 font-mono mb-6">
                 {t('branding.myBrandings.emptyDescription') || 'Create your first branding project to see it here.'}
               </p>
-              <button
+              <PremiumButton
                 onClick={() => navigate('/branding-machine')}
-                className="px-6 py-3 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 cursor-pointer"
+                className="max-w-xs h-12"
+                icon={FilePenLine}
               >
-                <FilePenLine className="h-4 w-4" />
                 {t('branding.myBrandings.createFirst') || 'Create Your First Project'}
-              </button>
+              </PremiumButton>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {projects.map((project) => (
-                <div
+                <GlassPanel
                   key={project._id}
-                  className="bg-[#141414] border border-neutral-800/60 rounded-md p-6 md:p-8 hover:border-neutral-700/60 transition-all duration-300 group cursor-pointer"
+                  padding="none"
+                  className="p-6 md:p-8 hover:border-neutral-700/60 transition-all duration-300 group cursor-pointer bg-[#141414]"
                   onClick={() => handleView(project)}
                 >
                   <div className="flex items-start justify-between mb-4">
@@ -240,7 +243,7 @@ export const MyBrandingsPage: React.FC = () => {
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
-                </div>
+                </GlassPanel>
               ))}
             </div>
           )}

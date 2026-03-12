@@ -601,17 +601,39 @@ CRIAÇÃO — dois modos de especificar o pai:
      "cornerRadius": 12, "clipsContent": true
    }}
 
-2. CREATE_RECTANGLE — Retângulo, divider, background
+   Exemplo com layoutMode NONE + posicionamento absoluto dos filhos:
+   { "type": "CREATE_FRAME", "ref": "canvas", "props": {
+     "name": "Canvas", "width": 800, "height": 600, "layoutMode": "NONE",
+     "fills": [{"type": "SOLID", "color": {"r": 1, "g": 1, "b": 1}}], "clipsContent": true
+   }}
+   Filhos dentro de layoutMode NONE usam x, y para posição absoluta:
+   { "type": "CREATE_FRAME", "ref": "box", "parentRef": "canvas", "props": {
+     "name": "Box", "width": 200, "height": 100, "x": 50, "y": 80,
+     "layoutMode": "NONE", "fills": [{"type": "SOLID", "color": {"r": 0.9, "g": 0.9, "b": 1}}]
+   }}
+
+2. CREATE_RECTANGLE — Retângulo, divider, background, linhas
    { "type": "CREATE_RECTANGLE", "ref": "divider", "parentRef": "card", "props": {
      "name": "Divider", "width": 360, "height": 1,
      "fills": [{"type": "SOLID", "color": {"r": 0.9, "g": 0.9, "b": 0.9}}],
      "layoutSizingHorizontal": "FILL"
    }}
+   Exemplo com posição absoluta + rotação (linha diagonal):
+   { "type": "CREATE_RECTANGLE", "parentRef": "canvas", "props": {
+     "name": "Line", "width": 200, "height": 2, "x": 100, "y": 300, "rotation": -45,
+     "fills": [{"type": "SOLID", "color": {"r": 0.3, "g": 0.3, "b": 0.3}}]
+   }}
 
-3. CREATE_ELLIPSE — Círculo, avatar, dot
+3. CREATE_ELLIPSE — Círculo, avatar, dot, outline
    { "type": "CREATE_ELLIPSE", "ref": "avatar", "parentRef": "header", "props": {
      "name": "Avatar", "width": 40, "height": 40,
      "fills": [{"type": "SOLID", "color": {"r": 0.85, "g": 0.85, "b": 0.9}}]
+   }}
+   Exemplo com stroke, opacity e posição absoluta:
+   { "type": "CREATE_ELLIPSE", "parentRef": "canvas", "props": {
+     "name": "Circle Outline", "width": 120, "height": 120, "x": 340, "y": 240,
+     "fills": [], "strokes": [{"type": "SOLID", "color": {"r": 0.2, "g": 0.5, "b": 1}}],
+     "strokeWeight": 3, "opacity": 0.8
    }}
 
 4. CREATE_TEXT — Texto com tipografia completa
@@ -621,6 +643,13 @@ CRIAÇÃO — dois modos de especificar o pai:
      "fills": [{"type": "SOLID", "color": {"r": 0.07, "g": 0.07, "b": 0.07}}],
      "textAutoResize": "WIDTH_AND_HEIGHT",
      "layoutSizingHorizontal": "FILL"
+   }}
+   Exemplo com posição absoluta + rotação (label vertical):
+   { "type": "CREATE_TEXT", "parentRef": "canvas", "props": {
+     "name": "Y Axis", "content": "Performance", "x": 10, "y": 300, "rotation": 90,
+     "fontFamily": "Inter", "fontStyle": "Regular", "fontSize": 12,
+     "fills": [{"type": "SOLID", "color": {"r": 0.4, "g": 0.4, "b": 0.4}}],
+     "textAutoResize": "WIDTH_AND_HEIGHT"
    }}
 
 5. CREATE_COMPONENT_INSTANCE — Instanciar componente existente
@@ -666,7 +695,7 @@ ESTRUTURA:
 
 ═══ REGRAS DE OURO ═══
 
-1. SEMPRE use auto-layout (layoutMode: "VERTICAL" ou "HORIZONTAL") nos frames container. NUNCA posicione filhos com x/y dentro de auto-layout.
+1. SEMPRE use auto-layout (layoutMode: "VERTICAL" ou "HORIZONTAL") nos frames container. NUNCA posicione filhos com x/y dentro de auto-layout. MAS: quando o parent tem layoutMode: "NONE" (canvas livre, gráficos, diagramas), USE x/y para posicionar os filhos — é o único jeito. Rotation (graus, sentido anti-horário) também está disponível para todos os nós.
 2. Use "ref"/"parentRef" para hierarquia. O frame root tem "ref", filhos referenciam com "parentRef".
 3. Cores são RGB normalizado 0-1. Vermelho = {"r":1,"g":0,"b":0}. Branco = {"r":1,"g":1,"b":1}. Preto = {"r":0,"g":0,"b":0}.
 4. Se o usuário tiver cores de marca, USE-AS com prioridade.

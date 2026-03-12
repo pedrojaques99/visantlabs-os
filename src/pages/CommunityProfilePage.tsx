@@ -35,6 +35,7 @@ import { Card, CardContent } from '../components/ui/card';
 import { cn } from '../lib/utils';
 import { workflowApi } from '../services/workflowApi';
 import { MicroTitle } from '../components/ui/MicroTitle';
+import { GlassPanel } from '../components/ui/GlassPanel';
 
 export const CommunityProfilePage: React.FC = () => {
   const { t } = useTranslation();
@@ -467,7 +468,7 @@ export const CommunityProfilePage: React.FC = () => {
                   </div>
 
                   {/* Stats */}
-                  <div className="flex gap-4 md:gap-8 mt-4 md:mt-0 p-4 bg-neutral-900/40 rounded-xl border border-neutral-800/50 backdrop-blur-sm">
+                  <GlassPanel padding="sm" className="flex-row gap-4 md:gap-8 mt-4 md:mt-0 bg-neutral-900/40 backdrop-blur-sm">
                     <div className="text-center">
                       <div className="text-xl md:text-2xl font-bold font-manrope text-white">
                         {profile.stats.mockups}
@@ -488,7 +489,7 @@ export const CommunityProfilePage: React.FC = () => {
                       </div>
                       <MicroTitle>Presets</MicroTitle>
                     </div>
-                  </div>
+                  </GlassPanel>
 
                 </div>
               </div>
@@ -580,9 +581,9 @@ export const CommunityProfilePage: React.FC = () => {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {workflows.map(workflow => (
-                      <Card
+                      <GlassPanel
                         key={workflow._id}
-                        className="group overflow-hidden bg-neutral-900/40 border-neutral-800/50 hover:border-brand-cyan/50 hover:bg-neutral-800/60 transition-all duration-300 flex flex-col h-full"
+                        className="group overflow-hidden hover:border-brand-cyan/50 hover:bg-neutral-800/60 transition-all duration-300 flex flex-col h-full bg-neutral-900/40"
                       >
                         <div
                           className="aspect-video w-full bg-neutral-950 relative overflow-hidden cursor-pointer"
@@ -669,7 +670,7 @@ export const CommunityProfilePage: React.FC = () => {
                             </div>
                           </div>
                         </CardContent>
-                      </Card>
+                      </GlassPanel>
                     ))}
                   </div>
                 )}
@@ -690,11 +691,12 @@ export const CommunityProfilePage: React.FC = () => {
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {allPresets.map((preset) => (
-                      <button
+                      <GlassPanel
+                        asChild
                         key={preset._id || preset.id}
-                        onClick={() => handlePresetClick(preset)}
-                        className="group flex flex-col text-left h-full bg-neutral-900/40 border border-neutral-800/50 rounded-xl overflow-hidden hover:border-brand-cyan/50 hover:bg-neutral-800/60 transition-all duration-300"
+                        className="group flex flex-col text-left h-full bg-neutral-900/40 hover:border-brand-cyan/50 hover:bg-neutral-800/60 transition-all duration-300 cursor-pointer"
                       >
+                        <button onClick={() => handlePresetClick(preset)}>
                         <div className="aspect-[3/2] w-full bg-neutral-950 relative overflow-hidden">
                           {preset.referenceImageUrl ? (
                             <img
@@ -724,7 +726,8 @@ export const CommunityProfilePage: React.FC = () => {
                             </p>
                           )}
                         </div>
-                      </button>
+                        </button>
+                      </GlassPanel>
                     ))}
                   </div>
                 )}

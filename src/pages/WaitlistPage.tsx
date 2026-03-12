@@ -8,6 +8,8 @@ import { toast } from 'sonner';
 import { useTranslation } from '@/hooks/useTranslation';
 import { waitlistService } from '../services/waitlistService';
 import { SEO } from '../components/SEO';
+import { GlassPanel } from '../components/ui/GlassPanel';
+import { PremiumButton } from '../components/ui/PremiumButton';
 
 // Get WhatsApp group URL from environment variable
 const WHATSAPP_GROUP_URL = (import.meta as any).env?.VITE_WHATSAPP_GROUP_URL || '';
@@ -79,7 +81,7 @@ export const WaitlistPage: React.FC = () => {
         </div>
         <div className="max-w-3xl mx-auto px-4 pt-[30px] pb-16 md:pb-24 relative z-10">
           {/* Main Content Card */}
-          <div className="bg-card border border-neutral-800/30 rounded-md p-8 md:p-12 shadow-sm relative overflow-hidden">
+          <GlassPanel padding="lg" className="md:p-12 shadow-sm relative overflow-hidden">
             {/* Header */}
             <div className="text-center mb-8 md:mb-12 animate-fade-in-fast">
               <h1 className="text-4xl md:text-5xl font-semibold font-manrope text-neutral-200 mb-4 tracking-tight">
@@ -112,14 +114,16 @@ export const WaitlistPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button
+                    <PremiumButton
                       type="submit"
                       disabled={isSubmitting}
-                      className="flex-1 px-6 py-3 bg-brand-cyan/80 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-brand-cyan/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 h-12"
+                      loadingText={t('waitlist.joining') || 'JOINING...'}
+                      isLoading={isSubmitting}
+                      icon={Mail}
                     >
-                      <Mail size={16} />
-                      {isSubmitting ? (t('waitlist.joining') || 'Joining...') : (t('waitlist.joinWaitlist') || 'Join Waitlist')}
-                    </button>
+                      {t('waitlist.joinWaitlist') || 'Join Waitlist'}
+                    </PremiumButton>
                     {WHATSAPP_GROUP_URL && (
                       <button
                         type="button"
@@ -147,16 +151,16 @@ export const WaitlistPage: React.FC = () => {
 
               {/* Mockup Machine Button */}
               <div className="pt-4 border-t border-neutral-800/50">
-                <button
+                <PremiumButton
                   onClick={() => navigate('/')}
-                  className="w-full px-6 py-3 bg-neutral-950/70 border border-neutral-800/60 hover:border-brand-cyan/50 hover:text-brand-cyan rounded-md text-sm font-mono transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                  className="w-full h-12 bg-neutral-950/70 border-neutral-800/60 hover:border-brand-cyan/50 text-neutral-300 hover:text-brand-cyan shadow-none"
+                  icon={Pickaxe}
                 >
-                  <Pickaxe size={16} />
                   {t('waitlist.tryMockupMachineNow') || 'Try Mockup Machine Now'}
-                </button>
+                </PremiumButton>
               </div>
             </div>
-          </div>
+          </GlassPanel>
         </div>
       </div>
     </>

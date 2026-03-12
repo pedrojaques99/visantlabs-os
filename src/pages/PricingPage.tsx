@@ -369,15 +369,13 @@ export const PricingPage: React.FC = () => {
                             </PremiumButton>
 
                             {currencyInfo?.currency === 'BRL' && (
-                              <Button
+                              <PremiumButton
                                 onClick={handleBuyWithPix}
-                                variant="outline"
-                                className="w-full border-green-500/30 text-green-400 hover:bg-green-500/10 h-12 text-sm uppercase tracking-wider"
-                                size="lg"
+                                className="w-full h-12 uppercase tracking-wider bg-transparent border-green-500/30 text-green-400 hover:bg-green-500/10 shadow-none"
+                                icon={QrCode}
                               >
-                                <QrCode className="mr-2 h-4 w-4" />
                                 {t('pix.payWithPix')}
-                              </Button>
+                              </PremiumButton>
                             )}
                           </div>
 

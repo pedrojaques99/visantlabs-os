@@ -15,6 +15,8 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "../components/ui/BreadcrumbWithBack";
+import { GlassPanel } from '../components/ui/GlassPanel';
+import { PremiumButton } from '../components/ui/PremiumButton';
 import { toast } from 'sonner';
 import { FileText, Calendar, Eye, Trash2, Pickaxe, Edit, Layout } from 'lucide-react';
 import type { CustomPdfPreset } from '../types/types';
@@ -238,7 +240,7 @@ export const MyBudgetsPage: React.FC = () => {
 
           {/* Presets Salvos Section */}
           {isAuthenticated === true && (
-            <section className="bg-card border border-neutral-800/60 rounded-md p-4 md:p-5 mb-6">
+            <GlassPanel padding="md" className="mb-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h2 className="text-lg md:text-xl font-semibold font-manrope text-neutral-200 mb-1">
@@ -273,9 +275,10 @@ export const MyBudgetsPage: React.FC = () => {
                   {presets.map((preset) => {
                     const presetId = preset._id || preset.id || '';
                     return (
-                      <div
+                      <GlassPanel
                         key={presetId}
-                        className="bg-neutral-900 border border-neutral-800/60 rounded-md p-6 md:p-8 hover:border-neutral-700/60 transition-all duration-300"
+                        padding="none"
+                        className="p-6 md:p-8 hover:border-neutral-700/60 transition-all duration-300 bg-neutral-900"
                       >
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex-1">
@@ -308,12 +311,12 @@ export const MyBudgetsPage: React.FC = () => {
                             <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
-                      </div>
+                      </GlassPanel>
                     );
                   })}
                 </div>
               )}
-            </section>
+            </GlassPanel>
           )}
 
           {/* Budgets Grid */}
@@ -326,20 +329,21 @@ export const MyBudgetsPage: React.FC = () => {
               <p className="text-sm text-neutral-600 font-mono mb-6">
                 {t('budget.emptyDescription') || 'Create your first budget to see it here.'}
               </p>
-              <button
+              <PremiumButton
                 onClick={() => navigate('/budget-machine')}
-                className="px-6 py-3 bg-brand-cyan/80 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 cursor-pointer shadow-lg shadow-brand-cyan/20"
+                className="max-w-xs h-12"
+                icon={Pickaxe}
               >
-                <Pickaxe className="h-4 w-4" />
                 {t('budget.createFirst') || 'Create Your First Budget'}
-              </button>
+              </PremiumButton>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {budgets.map((budget) => (
-                <div
+                <GlassPanel
                   key={budget._id}
-                  className="bg-[#141414] border border-neutral-800/60 rounded-md p-6 md:p-8 hover:border-neutral-700/60 transition-all duration-300 group cursor-pointer"
+                  padding="none"
+                  className="p-6 md:p-8 hover:border-neutral-700/60 transition-all duration-300 group cursor-pointer bg-[#141414]"
                   onClick={() => handleView(budget)}
                 >
                   <div className="flex items-start justify-between mb-4">
@@ -380,7 +384,7 @@ export const MyBudgetsPage: React.FC = () => {
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
-                </div>
+                </GlassPanel>
               ))}
             </div>
           )}
