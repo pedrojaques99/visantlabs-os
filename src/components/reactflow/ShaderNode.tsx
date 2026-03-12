@@ -16,6 +16,8 @@ import { canvasApi } from '@/services/canvasApi';
 import { toast } from 'sonner';
 import type { ShaderSettings } from '@/utils/shaders/shaderRenderer';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
@@ -537,7 +539,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
           <label className="w-full px-3 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-[brand-cyan]/30 hover:border-[brand-cyan]/50 rounded text-xs font-mono text-brand-cyan flex items-center justify-center gap-2 cursor-pointer transition-all">
             <Upload size={14} />
             {t('canvasNodes.shaderNode.uploadImageOrVideo') || 'Upload Image or Video'}
-            <input
+            <Input
               type="file"
               accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/ogg,video/quicktime,video/x-msvideo"
               onChange={handleFileUpload}
@@ -654,8 +656,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
             "absolute top-3 right-3 flex gap-1.5 transition-all backdrop-blur-sm z-10",
             selected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
           )}>
-            <button
-              onClick={(e) => {
+            <Button variant="ghost"               onClick={(e) => {
                 e.stopPropagation();
                 if (data.onViewFullscreen) {
                   const paletteNames = ['Monochrome', 'Gameboy', 'CRT Amber', 'CRT Green', 'Sepia'];
@@ -965,15 +966,14 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
               title={t('common.viewFullscreen')}
             >
               <Maximize2 size={14} strokeWidth={2} />
-            </button>
-            <button
-              onClick={handleDownload}
+            </Button>
+            <Button variant="ghost"               onClick={handleDownload}
               onMouseDown={(e) => e.stopPropagation()}
               className="p-1.5 rounded-md bg-neutral-950/60 hover:bg-neutral-950/80 text-neutral-300 hover:text-white border border-neutral-700/50 hover:border-neutral-600/70 transition-all"
               title={hasVideoResult ? t('common.downloadVideo') : t('common.downloadImage')}
             >
               <Download size={14} strokeWidth={2} />
-            </button>
+            </Button>
           </div>
         </div>
       )}

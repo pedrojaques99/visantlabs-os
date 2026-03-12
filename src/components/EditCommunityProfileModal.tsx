@@ -192,12 +192,12 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
           <h2 className="text-xl font-semibold text-neutral-200 font-manrope tracking-tight">
             Edit Community Profile
           </h2>
-          <button
+          <Button variant="ghost" 
             onClick={onClose}
             className="p-2 text-neutral-500 hover:text-white transition-all hover:bg-neutral-800/50 rounded-lg"
           >
             <X size={20} />
-          </button>
+          </Button>
         </div>
 
         {/* Content */}
@@ -224,10 +224,10 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center gap-2">
                   <ImageIcon size={32} className="text-neutral-700" strokeWidth={1} />
-                  <span className="text-[10px] font-mono text-neutral-600 uppercase tracking-tight">No cover image</span>
+                  <MicroTitle className="text-[10px] text-neutral-600 tracking-tight">No cover image</MicroTitle>
                 </div>
               )}
-              <input
+              <Input
                 ref={coverFileInputRef}
                 type="file"
                 accept="image/*"
@@ -235,7 +235,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
                 disabled={isUploadingCover}
                 className="hidden"
               />
-              <button
+              <Button variant="ghost" 
                 onClick={handleCoverClick}
                 disabled={isUploadingCover}
                 className="absolute inset-0 flex items-center justify-center bg-neutral-950/70 opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm disabled:opacity-50"
@@ -245,10 +245,10 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
                 ) : (
                   <div className="flex flex-col items-center gap-2">
                     <Camera size={24} className="text-neutral-300" />
-                    <span className="text-[10px] font-mono text-neutral-300 uppercase tracking-widest">Change Cover</span>
+                    <MicroTitle className="text-[10px] text-neutral-300">Change Cover</MicroTitle>
                   </div>
                 )}
-              </button>
+              </Button>
             </div>
             <div className="flex items-center gap-2 ml-1">
               <Badge variant="outline" className="text-[9px] uppercase tracking-tighter py-0">16:9 Aspect</Badge>

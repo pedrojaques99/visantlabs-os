@@ -10,6 +10,7 @@ import { waitlistService } from '../services/waitlistService';
 import { SEO } from '../components/SEO';
 import { GlassPanel } from '../components/ui/GlassPanel';
 import { PremiumButton } from '../components/ui/PremiumButton';
+import { Button } from '@/components/ui/button'
 
 // Get WhatsApp group URL from environment variable
 const WHATSAPP_GROUP_URL = (import.meta as any).env?.VITE_WHATSAPP_GROUP_URL || '';
@@ -125,13 +126,13 @@ export const WaitlistPage: React.FC = () => {
                       {t('waitlist.joinWaitlist') || 'Join Waitlist'}
                     </PremiumButton>
                     {WHATSAPP_GROUP_URL && (
-                      <button
+                      <Button
                         type="button"
                         onClick={handleWhatsAppClick}
                         className="px-3 py-3 bg-[#25D366]/80 hover:bg-[#25D366] text-white rounded-md transition-all duration-200 flex items-center justify-center hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-[#25D366]/20 cursor-pointer"
                       >
                         <MessageCircle size={16} />
-                      </button>
+                      </Button>
                     )}
                   </div>
                 </form>
@@ -140,12 +141,11 @@ export const WaitlistPage: React.FC = () => {
                   <div className="text-green-400 text-sm font-mono mb-4">
                     {t('waitlist.addedToWaitlist') || '✓ You\'ve been added to the waitlist!'}
                   </div>
-                  <button
-                    onClick={() => setIsSubmitted(false)}
+                  <Button variant="ghost"                     onClick={() => setIsSubmitted(false)}
                     className="text-brand-cyan hover:text-brand-cyan/80 text-sm font-mono underline"
                   >
                     {t('waitlist.addAnotherEmail') || 'Add another email'}
-                  </button>
+                  </Button>
                 </div>
               )}
 

@@ -8,6 +8,7 @@ import { SectionHeader } from './SectionHeader';
 import { SectionActions } from './SectionActions';
 import { SectionContentRenderer } from './SectionContentRenderer';
 import { getSectionColSpan } from '@/utils/brandingHelpers';
+import { Button } from '@/components/ui/button'
 
 interface BrandingSectionCardProps {
   stepNumber: number;
@@ -218,8 +219,7 @@ export const BrandingSectionCard: React.FC<BrandingSectionCardProps> = ({
             onFeedback={onFeedback ? (type) => onFeedback(stepNumber, type) : undefined}
           />
           {!isEditing && (
-            <button
-              onClick={(e) => {
+            <Button variant="ghost"               onClick={(e) => {
                 e.stopPropagation();
                 onToggleCompact();
               }}
@@ -230,7 +230,7 @@ export const BrandingSectionCard: React.FC<BrandingSectionCardProps> = ({
             >
               <X className={`h-4 w-4 ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
                 }`} />
-            </button>
+            </Button>
           )}
         </div>
       </div>

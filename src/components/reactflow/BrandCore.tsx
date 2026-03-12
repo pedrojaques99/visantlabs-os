@@ -17,6 +17,8 @@ import { fileToBase64 } from '@/utils/fileUtils';
 import { pdfToBase64, validatePdfFile, validatePdfBase64Size } from '@/utils/pdfUtils';
 import { normalizeImageToBase64 } from '@/services/reactFlowService';
 import { useTranslation } from '@/hooks/useTranslation';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -381,18 +383,17 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                   />
                 </div>
                 {uploadedLogo && !connectedLogo && (
-                  <button
-                    onClick={handleRemoveLogo}
+                  <Button variant="destructive"                     onClick={handleRemoveLogo}
                     className="absolute top-1 right-1 p-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded opacity-0 group-hover/logo:opacity-100 transition-opacity"
                     title={t('canvasNodes.brandCore.removeLogo')}
                   >
                     <X size={12} />
-                  </button>
+                  </Button>
                 )}
               </div>
             ) : (
               <>
-                <input
+                <Input
                   ref={logoInputRef}
                   type="file"
                   accept="image/*"
@@ -456,18 +457,17 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                   </div>
                 )}
                 {(uploadedIdentity || uploadedIdentityUrl) && !connectedPdf && !connectedImage && (
-                  <button
-                    onClick={handleRemoveIdentity}
+                  <Button variant="destructive"                     onClick={handleRemoveIdentity}
                     className="absolute top-1 right-1 p-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded opacity-0 group-hover/identity:opacity-100 transition-opacity"
                     title={t('canvasNodes.brandCore.removeIdentityGuide')}
                   >
                     <X size={12} />
-                  </button>
+                  </Button>
                 )}
               </div>
             ) : (
               <>
-                <input
+                <Input
                   ref={identityInputRef}
                   type="file"
                   accept="application/pdf,image/png,image/jpeg,image/jpg"
@@ -543,13 +543,12 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
             <span className="text-xs font-mono text-brand-cyan">Analyzing brand identity...</span>
           </div>
           {nodeData.onCancelAnalyze && (
-            <button
-              onClick={() => nodeData.onCancelAnalyze?.(id)}
+            <Button variant="ghost"               onClick={() => nodeData.onCancelAnalyze?.(id)}
               className="p-1 hover:bg-brand-cyan/30 rounded transition-colors"
               title={t('canvasNodes.brandCore.cancelAnalysis')}
             >
               <X size={14} className="text-brand-cyan" />
-            </button>
+            </Button>
           )}
         </div>
       )}
@@ -557,13 +556,12 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
       {/* Brand Identity Display */}
       {brandIdentity && (
         <div className="border-t border-neutral-700/30 pt-4 mb-4">
-          <button
-            onClick={() => setIsExpandedBrandIdentity(!isExpandedBrandIdentity)}
+          <Button variant="ghost"             onClick={() => setIsExpandedBrandIdentity(!isExpandedBrandIdentity)}
             className="w-full flex items-center justify-between text-xs font-mono text-neutral-400 hover:text-neutral-300 mb-2"
           >
             <span>Brand Identity</span>
             {isExpandedBrandIdentity ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-          </button>
+          </Button>
 
           {isExpandedBrandIdentity && (
             <div className="space-y-3 text-xs">
@@ -787,13 +785,12 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
       {/* Visual Prompts Section */}
       {visualPrompts && (
         <div className="border-t border-neutral-700/30 pt-4 mb-4">
-          <button
-            onClick={() => setIsExpandedVisual(!isExpandedVisual)}
+          <Button variant="ghost"             onClick={() => setIsExpandedVisual(!isExpandedVisual)}
             className="w-full flex items-center justify-between text-xs font-mono text-neutral-400 hover:text-neutral-300 mb-2"
           >
             <span>Visual Prompts</span>
             {isExpandedVisual ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-          </button>
+          </Button>
 
           {isExpandedVisual && (
             <div className="space-y-3">
@@ -801,8 +798,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <div className="text-xs text-neutral-500 font-mono">Mockup Prompt</div>
-                    <button
-                      onClick={() => handleCopyPrompt(visualPrompts.mockupPrompt!, 'mockup')}
+                    <Button variant="ghost"                       onClick={() => handleCopyPrompt(visualPrompts.mockupPrompt!, 'mockup')}
                       className="p-1 hover:bg-neutral-800 rounded"
                     >
                       {copiedPrompt === 'mockup' ? (
@@ -810,7 +806,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                       ) : (
                         <Copy size={12} className="text-neutral-400" />
                       )}
-                    </button>
+                    </Button>
                   </div>
                   <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border border-neutral-700/30 max-h-32 overflow-y-auto">
                     {visualPrompts.mockupPrompt}
@@ -822,8 +818,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <div className="text-xs text-neutral-500 font-mono">Composition Prompt</div>
-                    <button
-                      onClick={() => handleCopyPrompt(visualPrompts.compositionPrompt!, 'composition')}
+                    <Button variant="ghost"                       onClick={() => handleCopyPrompt(visualPrompts.compositionPrompt!, 'composition')}
                       className="p-1 hover:bg-neutral-800 rounded"
                     >
                       {copiedPrompt === 'composition' ? (
@@ -831,7 +826,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                       ) : (
                         <Copy size={12} className="text-neutral-400" />
                       )}
-                    </button>
+                    </Button>
                   </div>
                   <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border border-neutral-700/30 max-h-24 overflow-y-auto">
                     {visualPrompts.compositionPrompt}
@@ -843,8 +838,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <div className="text-xs text-neutral-500 font-mono">Style Prompt</div>
-                    <button
-                      onClick={() => handleCopyPrompt(visualPrompts.stylePrompt!, 'style')}
+                    <Button variant="ghost"                       onClick={() => handleCopyPrompt(visualPrompts.stylePrompt!, 'style')}
                       className="p-1 hover:bg-neutral-800 rounded"
                     >
                       {copiedPrompt === 'style' ? (
@@ -852,7 +846,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                       ) : (
                         <Copy size={12} className="text-neutral-400" />
                       )}
-                    </button>
+                    </Button>
                   </div>
                   <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border border-neutral-700/30 max-h-24 overflow-y-auto">
                     {visualPrompts.stylePrompt}
@@ -879,8 +873,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
             <div className="space-y-3 text-xs">
               <div className="flex items-center justify-between mb-1">
                 <div className="text-xs text-neutral-500 font-mono">Consolidated Strategy</div>
-                <button
-                  onClick={(e) => {
+                <Button variant="ghost"                   onClick={(e) => {
                     e.stopPropagation();
                     const consolidatedText = consolidateStrategiesToText(strategicPrompts.consolidated);
                     handleCopyPrompt(consolidatedText, 'strategic');
@@ -892,7 +885,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
                   ) : (
                     <Copy size={12} className="text-neutral-400" />
                   )}
-                </button>
+                </Button>
               </div>
               <div className="text-[10px] text-neutral-400 font-mono bg-neutral-900/50 p-2 rounded border border-neutral-700/30 max-h-64 overflow-y-auto whitespace-pre-wrap">
                 {consolidateStrategiesToText(strategicPrompts.consolidated)}

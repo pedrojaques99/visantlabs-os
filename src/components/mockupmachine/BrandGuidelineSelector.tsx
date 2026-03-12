@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { ChevronDown, Plus, Check, Loader2, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { MicroTitle } from '../ui/MicroTitle';
+import { Button } from '@/components/ui/button'
 
 export const BrandGuidelineSelector: React.FC = () => {
     const { t } = useTranslation();
@@ -83,8 +84,7 @@ export const BrandGuidelineSelector: React.FC = () => {
             isOpen ? "z-[60]" : "z-10"
         )}>
             <div className="relative" ref={dropdownRef}>
-                <button
-                    type="button"
+                <Button variant="ghost"                     type="button"
                     onClick={() => setIsOpen(!isOpen)}
                     className={cn(
                         "w-full flex items-center justify-between p-4 cursor-pointer transition-all group",
@@ -103,9 +103,9 @@ export const BrandGuidelineSelector: React.FC = () => {
                                 {selectedGuidelineObj?.identity?.name || 'Selected'}
                             </span>
                         ) : (
-                            <span className="text-[10px] font-mono text-neutral-600 uppercase tracking-tight">
+                            <MicroTitle className="text-[10px] text-neutral-600 tracking-tight">
                                 {t('mockup.optional') || 'OPCIONAL'}
-                            </span>
+                            </MicroTitle>
                         )}
                     </div>
 
@@ -115,7 +115,7 @@ export const BrandGuidelineSelector: React.FC = () => {
                         ) : null}
                         <ChevronDown size={14} className={cn("text-neutral-600 transition-transform duration-300", isOpen && "rotate-180")} />
                     </div>
-                </button>
+                </Button>
 
                 {isOpen && (
                     <div className={cn(
@@ -124,8 +124,7 @@ export const BrandGuidelineSelector: React.FC = () => {
                     )}>
                         <div className="flex flex-col max-h-[240px]">
                             <div className="p-2 overflow-y-auto custom-scrollbar flex flex-col gap-1">
-                                <button
-                                    onClick={() => { setSelectedBrandGuideline(null); setIsOpen(false); }}
+                                <Button variant="ghost"                                     onClick={() => { setSelectedBrandGuideline(null); setIsOpen(false); }}
                                     className={cn(
                                         "w-full flex items-center justify-between px-2 py-1.5 rounded text-left transition-colors",
                                         !selectedBrandGuideline
@@ -135,7 +134,7 @@ export const BrandGuidelineSelector: React.FC = () => {
                                 >
                                     <span>{t('mockup.none') || 'None'}</span>
                                     {!selectedBrandGuideline && <Check size={14} />}
-                                </button>
+                                </Button>
 
                                 {guidelines.map((g) => (
                                     <div
@@ -147,33 +146,31 @@ export const BrandGuidelineSelector: React.FC = () => {
                                                 : "text-neutral-400 hover:text-neutral-200 hover:bg-white/5"
                                         )}
                                     >
-                                        <button
-                                            onClick={() => { setSelectedBrandGuideline(g.id!); setIsOpen(false); }}
+                                        <Button variant="ghost"                                             onClick={() => { setSelectedBrandGuideline(g.id!); setIsOpen(false); }}
                                             className="flex items-center gap-2 truncate flex-1 text-left"
                                         >
                                             <span className="truncate">{g.identity?.name || 'Unnamed Guideline'}</span>
-                                        </button>
+                                        </Button>
                                         <div className="flex items-center gap-1.5">
-                                            <button
-                                                onClick={(e) => handleEditGuideline(e, g)}
+                                            <Button variant="ghost"                                                 onClick={(e) => handleEditGuideline(e, g)}
                                                 className="opacity-0 group-hover/item:opacity-100 p-0.5 rounded hover:bg-white/10 text-neutral-500 hover:text-white transition-all"
                                                 title={t('mockup.brandWizardEdit') || 'Edit'}
                                             >
                                                 <Pencil size={11} />
-                                            </button>
+                                            </Button>
                                             {selectedBrandGuideline === g.id && <Check size={14} />}
                                         </div>
                                     </div>
                                 ))}
                             </div>
                             <div className="p-1 border-t border-white/5">
-                                <button
+                                <Button
                                     onClick={handleOpenCreate}
                                     className="w-full flex items-center gap-2 px-2 py-1.5 rounded hover:bg-white/5 text-neutral-500 hover:text-neutral-300 transition-colors"
                                 >
                                     <Plus size={12} />
                                     {t('mockup.createNewBrandGuideline') || 'Create New Brand Guideline'}
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     </div>

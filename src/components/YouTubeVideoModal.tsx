@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { isSafeUrl } from '@/utils/imageUtils';
+import { Button } from '@/components/ui/button'
 
 interface YouTubeVideoModalProps {
   isOpen: boolean;
@@ -50,13 +51,13 @@ export const YouTubeVideoModal: React.FC<YouTubeVideoModalProps> = ({
             } uppercase`}>
             Tutorial Video
           </h2>
-          <button
+          <Button variant="ghost" 
             onClick={onClose}
             className="text-neutral-500 hover:text-neutral-300 transition-colors"
             aria-label="Close"
           >
             <X size={20} />
-          </button>
+          </Button>
         </div>
         <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
           <iframe

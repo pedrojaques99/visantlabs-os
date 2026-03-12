@@ -15,6 +15,9 @@ import { cn } from '../lib/utils';
 import { CATEGORY_CONFIG } from './PresetCard';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 import { MicroTitle } from './ui/MicroTitle';
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
 
 
 interface PresetFormData {
@@ -273,12 +276,11 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                     <h2 className="text-lg font-semibold text-neutral-100">
                         {isCreating ? t('communityPresets.createPreset') : t('communityPresets.editPreset')}
                     </h2>
-                    <button
-                        onClick={handleClose}
+                    <Button variant="ghost"                         onClick={handleClose}
                         className="p-1.5 rounded-md hover:bg-neutral-800 text-neutral-400 hover:text-neutral-200 transition-colors"
                     >
                         <X size={18} />
-                    </button>
+                    </Button>
                 </div>
 
                 {/* Content */}
@@ -301,8 +303,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                                             alt={t('communityPresets.referenceImageAlt')}
                                             className="w-full h-full object-cover"
                                         />
-                                        <button
-                                            type="button"
+                                        <Button variant="ghost"                                             type="button"
                                             onClick={() => {
                                                 setFormData({ ...formData, referenceImageUrl: '' });
                                                 setImageUploadError(null);
@@ -310,7 +311,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                                             className="absolute inset-0 bg-neutral-950/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                                         >
                                             <X className="h-4 w-4 text-white" />
-                                        </button>
+                                        </Button>
                                     </div>
                                 ) : (
                                     <div className="w-16 h-16 rounded-lg border border-neutral-700/50 bg-neutral-800/50 flex items-center justify-center flex-shrink-0">
@@ -326,8 +327,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                                             disabled={isUploadingImage || !formData.name || formData.name.trim() === ''}
                                         />
                                         {formData.referenceImageUrl && (
-                                            <button
-                                                type="button"
+                                            <Button variant="ghost"                                                 type="button"
                                                 onClick={() => {
                                                     setFormData({ ...formData, referenceImageUrl: '' });
                                                     setImageUploadError(null);
@@ -335,7 +335,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                                                 className="px-3 py-1.5 text-xs bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-md text-neutral-300 transition-colors"
                                             >
                                                 Cancel
-                                            </button>
+                                            </Button>
                                         )}
                                     </div>
                                     {isUploadingImage && (
@@ -357,7 +357,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                         {/* Name Field */}
                         <div>
                             <MicroTitle as="label" className="mb-1.5">{t('communityPresets.nameRequired')} *</MicroTitle>
-                            <input
+                            <Input
                                 type="text"
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -408,7 +408,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <MicroTitle as="label" className="mb-1.5">{t('communityPresets.descriptionOptional')}</MicroTitle>
-                                <input
+                                <Input
                                     type="text"
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -431,7 +431,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                         {needsReferenceImage && (
                             <div>
                                 <MicroTitle as="label" className="mb-1.5">{t('communityPresets.referenceImageManual')}</MicroTitle>
-                                <input
+                                <Input
                                     type="text"
                                     value={formData.referenceImageUrl || ''}
                                     onChange={(e) => {
@@ -450,7 +450,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                                 <MicroTitle as="label">{t('communityPresets.promptRequired')} *</MicroTitle>
                                 <MicroTitle as="span" className="text-neutral-500 lowercase">{formData.prompt.length} chars</MicroTitle>
                             </div>
-                            <textarea
+                            <Textarea
                                 value={formData.prompt}
                                 onChange={(e) => setFormData({ ...formData, prompt: e.target.value })}
                                 rows={4}
@@ -463,7 +463,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                         <div>
                             <MicroTitle as="label" className="mb-1.5">{t('communityPresets.tags.label')}</MicroTitle>
                             <div className="flex gap-2">
-                                <input
+                                <Input
                                     type="text"
                                     value={tagInput}
                                     onChange={(e) => setTagInput(e.target.value)}
@@ -483,8 +483,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                                     placeholder={t('communityPresets.tags.placeholder')}
                                     className="flex-1 px-3 py-2.5 bg-neutral-800/50 border border-neutral-700/50 rounded-lg text-neutral-200 text-sm placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600 transition-colors"
                                 />
-                                <button
-                                    type="button"
+                                <Button variant="ghost"                                     type="button"
                                     onClick={() => {
                                         if (tagInput.trim() && !formData.tags?.includes(tagInput.trim())) {
                                             setFormData({
@@ -497,7 +496,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                                     className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-lg text-neutral-300 text-sm transition-colors"
                                 >
                                     {t('communityPresets.tags.add')}
-                                </button>
+                                </Button>
                             </div>
                             {formData.tags && formData.tags.length > 0 && (
                                 <div className="flex flex-wrap gap-2 mt-3">
@@ -508,8 +507,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                                         >
                                             <span className="text-neutral-500">#</span>
                                             {tag}
-                                            <button
-                                                type="button"
+                                            <Button variant="ghost"                                                 type="button"
                                                 onClick={() => {
                                                     setFormData({
                                                         ...formData,
@@ -519,7 +517,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                                                 className="text-neutral-500 hover:text-red-400 transition-colors ml-0.5"
                                             >
                                                 <X size={12} />
-                                            </button>
+                                            </Button>
                                         </span>
                                     ))}
                                 </div>
@@ -530,15 +528,13 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
 
                 {/* Footer */}
                 <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-neutral-800/60 bg-neutral-900/50">
-                    <button
-                        onClick={handleClose}
+                    <Button variant="outline"                         onClick={handleClose}
                         disabled={isLoading}
                         className="px-4 py-2 bg-transparent hover:bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-300 text-sm transition-colors disabled:opacity-50"
                     >
                         {t('communityPresets.actions.cancel')}
-                    </button>
-                    <button
-                        onClick={handleSubmit}
+                    </Button>
+                    <Button variant="brand"                         onClick={handleSubmit}
                         disabled={isLoading || !formData.name || !formData.prompt}
                         className="px-5 py-2 bg-brand-cyan hover:bg-brand-cyan/90 text-black font-medium rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
@@ -550,7 +546,7 @@ export const CommunityPresetModal: React.FC<CommunityPresetModalProps> = ({
                         ) : (
                             <span>{t('communityPresets.actions.save')}</span>
                         )}
-                    </button>
+                    </Button>
                 </div>
             </div>
         </div>

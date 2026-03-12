@@ -13,6 +13,7 @@ import { NodeInput } from './shared/node-input';
 import { cleanMarketResearchText } from '@/utils/brandingHelpers';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
+import { Button } from '@/components/ui/button'
 
 const AutoResizeTextarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
   minHeight?: number;
@@ -1006,8 +1007,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
           </div>
           <div className="flex items-center gap-1.5">
             {hasData && (
-              <button
-                onClick={(e) => {
+              <Button variant="ghost"                 onClick={(e) => {
                   e.stopPropagation();
                   handleOpenInNewTab();
                 }}
@@ -1021,11 +1021,10 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                 title={t('canvasNodes.strategyNode.openInNewTab')}
               >
                 <ExternalLink size={14} />
-              </button>
+              </Button>
             )}
             {nodeData.onGeneratePDF && (
-              <button
-                onClick={(e) => {
+              <Button variant="ghost"                 onClick={(e) => {
                   e.stopPropagation();
                   handleGeneratePDF();
                 }}
@@ -1039,11 +1038,10 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                 title={t('canvasNodes.strategyNode.downloadPDF')}
               >
                 <Download size={14} />
-              </button>
+              </Button>
             )}
             {nodeData.onSave && (
-              <button
-                onClick={(e) => {
+              <Button variant="ghost"                 onClick={(e) => {
                   e.stopPropagation();
                   handleSave();
                 }}
@@ -1057,7 +1055,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                 title={t('canvasNodes.strategyNode.save')}
               >
                 <Save size={14} />
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -1224,8 +1222,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
             <div className="flex items-center justify-between mb-3">
               <NodeLabel className="mb-0 text-neutral-300 font-medium">{t('canvasNodes.strategyNode.generateSections')}</NodeLabel>
               {nodeData.onGenerateAll && (
-                <button
-                  onClick={(e) => {
+                <Button variant="ghost"                   onClick={(e) => {
                     e.stopPropagation();
                     handleGenerateAll();
                   }}
@@ -1239,7 +1236,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                   title={t('canvasNodes.strategyNode.generateAllSections')}
                 >
                   {t('canvasNodes.strategyNode.generateAll')}
-                </button>
+                </Button>
               )}
             </div>
             <div
@@ -1260,8 +1257,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                   }).join(', ');
 
                   return (
-                    <button
-                      key={section.type}
+                    <Button variant="ghost"                       key={section.type}
                       onClick={(e) => {
                         e.stopPropagation();
                         if (!isBlocked) {
@@ -1283,7 +1279,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                       )}
                       <span className={cn('text-xs', isBlocked && 'opacity-50')}>{section.emoji}</span>
                       <span className={cn('truncate', isBlocked && 'opacity-50')}>{section.label}</span>
-                    </button>
+                    </Button>
                   );
                 })}
             </div>
@@ -1312,8 +1308,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
               </span>
             </div>
             {nodeData.onCancelGeneration && (
-              <button
-                onClick={(e) => {
+              <Button variant="ghost"                 onClick={(e) => {
                   e.stopPropagation();
                   if (generatingStep === 'all') {
                     nodeData.onCancelGeneration?.(id);
@@ -1327,7 +1322,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                 title={t('canvasNodes.strategyNode.cancelGeneration')}
               >
                 <XCircle size={12} className="text-red-400 hover:text-red-300" />
-              </button>
+              </Button>
             )}
           </div>
         )}
@@ -1339,8 +1334,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
               <span className="text-xs font-mono text-neutral-300 font-medium">
                 {t('canvasNodes.strategyNode.generatedSections')} <span className="text-brand-cyan">({sections.filter(s => hasSectionData(s.type)).length}/{sections.length})</span>
               </span>
-              <button
-                onClick={(e) => {
+              <Button variant="ghost"                 onClick={(e) => {
                   e.stopPropagation();
                   toggleAllSections();
                 }}
@@ -1357,7 +1351,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                     <span>{t('canvasNodes.strategyNode.expandAll')}</span>
                   </>
                 )}
-              </button>
+              </Button>
             </div>
 
             <div
@@ -1378,8 +1372,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                     key={section.type}
                     className="border border-neutral-700/40 rounded-lg overflow-hidden group bg-neutral-900/30 backdrop-blur-sm shadow-sm hover:shadow-md transition-all"
                   >
-                    <button
-                      onClick={(e) => {
+                    <Button variant="ghost"                       onClick={(e) => {
                         e.stopPropagation();
                         toggleSection(section.type);
                       }}
@@ -1412,7 +1405,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                         </NodeLabel>
                       </div>
                       {isSectionExpanded ? <ChevronUp size={14} className="text-neutral-400" /> : <ChevronDown size={14} className="text-neutral-400" />}
-                    </button>
+                    </Button>
 
                     {isSectionExpanded && (
                       <div

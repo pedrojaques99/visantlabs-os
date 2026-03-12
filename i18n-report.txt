@@ -1,0 +1,4586 @@
+🚀 Starting i18n Audit...
+
+✅ All keys in en-US are present in pt-BR.
+
+🔍 Scanning source files for hardcoded strings...
+
+❌ Found hardcoded strings in 288 files:
+
+📄 src\components\3d\club-hero3d.tsx:
+  - [JSX Text] "Loading 3D viewer..."
+
+📄 src\components\ai\ChatInput.tsx:
+  - [JSX Text] "= 0 && refIndex"
+  - [JSX Text] ") : isGenerating ? ("
+  - [JSX Text] ") : isPromptReady ? ("
+
+📄 src\components\ai\prompt-input.tsx:
+  - [JSX Text] ");
+
+export type PromptInputTextareaProps = ComponentProps"
+  - [JSX Text] ");
+
+export type PromptInputSubmitProps = ComponentProps"
+
+📄 src\components\AmbiencePresetModal.tsx:
+  - [Attribute: title] "Select Ambience Preset"
+
+📄 src\components\AnglePresetModal.tsx:
+  - [Attribute: title] "Select Camera Angle"
+
+📄 src\components\ApiKeyPolicyModal.tsx:
+  - [JSX Text] "API Key Security Policy"
+  - [JSX Text] "Last Updated: January 27, 2025 • Version: 1.0"
+  - [JSX Text] "Overview"
+  - [JSX Text] "This document explains how we handle and secure your Gemini API keys when you choose to use your own API key with our service."
+  - [JSX Text] "Security Measures"
+  - [JSX Text] "Encryption"
+  - [JSX Text] "Encryption Algorithm:"
+  - [JSX Text] "We use AES-256-GCM encryption, a military-grade encryption standard"
+  - [JSX Text] "Storage:"
+  - [JSX Text] "Your API keys are encrypted before being stored in our database"
+  - [JSX Text] "Master Key:"
+  - [JSX Text] "We use a master encryption key stored securely in environment variables (never in code or version control)"
+  - [JSX Text] "Encryption Process:"
+  - [JSX Text] "Your API key is encrypted immediately when you save it, using industry-standard cryptographic libraries"
+  - [JSX Text] "Access Control"
+  - [JSX Text] "Authentication Required:"
+  - [JSX Text] "Only authenticated users can save or access their own API keys"
+  - [JSX Text] "User Isolation:"
+  - [JSX Text] "Each user can only access their own encrypted API key"
+  - [JSX Text] "No Plaintext Storage:"
+  - [JSX Text] "Your API key is never stored in plaintext in our database, logs, or anywhere else"
+  - [JSX Text] "No Exposure:"
+  - [JSX Text] "We never return decrypted API keys in API responses - we only confirm successful operations"
+  - [JSX Text] "Priority:"
+  - [JSX Text] "When you provide your own API key, it takes priority over the system's default API key for your requests"
+  - [JSX Text] "Quota:"
+  - [JSX Text] "Your API key uses your own Google Cloud quota and credits"
+  - [JSX Text] "Transparency:"
+  - [JSX Text] "All API calls made with your key are billed to your Google Cloud account, not ours"
+  - [JSX Text] "Your Responsibilities"
+  - [JSX Text] "Key Management"
+  - [JSX Text] "Keep Your Key Secure:"
+  - [JSX Text] "Never share your API key with others or commit it to version control"
+  - [JSX Text] "Rotate Regularly:"
+  - [JSX Text] "Consider rotating your API key periodically for better security"
+  - [JSX Text] "Monitor Usage:"
+  - [JSX Text] "Monitor your Google Cloud Console for unexpected usage or charges"
+  - [JSX Text] "Key Restrictions:"
+  - [JSX Text] "Configure API key restrictions in Google AI Studio to limit where it can be used"
+  - [JSX Text] "Best Practices"
+  - [JSX Text] "Restrict Your Key:"
+  - [JSX Text] "In Google AI Studio, set restrictions on your API key:"
+  - [JSX Text] "Application restrictions (e.g., IP address restrictions if possible)"
+  - [JSX Text] "API restrictions (limit to only Gemini API)"
+  - [JSX Text] "Set Usage Quotas:"
+  - [JSX Text] "Configure daily/monthly usage quotas in Google Cloud Console to prevent unexpected charges"
+  - [JSX Text] "Monitor Billing:"
+  - [JSX Text] "Regularly check your Google Cloud billing to ensure usage aligns with expectations"
+  - [JSX Text] "Delete When Not Needed:"
+  - [JSX Text] "If you stop using the service, delete your API key from our system"
+  - [JSX Text] "How It Works"
+  - [JSX Text] "Saving:"
+  - [JSX Text] "When you save your API key, it's encrypted using AES-256-GCM before being stored"
+  - [JSX Text] "Storage:"
+  - [JSX Text] "Only the encrypted version is stored in our database"
+  - [JSX Text] "Usage:"
+  - [JSX Text] "When making API calls, we decrypt your key in memory, use it for the request, and immediately discard it"
+  - [JSX Text] "Deletion:"
+  - [JSX Text] "When you delete your key, it's permanently removed from our database"
+  - [JSX Text] "Data Privacy"
+  - [JSX Text] "We never share your API keys with third parties"
+  - [JSX Text] "We never use your API keys for any purpose other than processing your requests"
+  - [JSX Text] "We follow industry best practices for secure key management"
+  - [JSX Text] "Your encrypted keys are stored in a secure, access-controlled database"
+  - [JSX Text] "Compliance"
+  - [JSX Text] "Encryption Standards:"
+  - [JSX Text] "We follow industry standards (AES-256) for data encryption"
+  - [JSX Text] "Access Controls:"
+  - [JSX Text] "We implement proper authentication and authorization controls"
+  - [JSX Text] "Audit Trail:"
+  - [JSX Text] "API key operations (save/delete) are logged for security auditing"
+  - [JSX Text] "If you have concerns about API key security or notice any suspicious activity:"
+  - [JSX Text] "Delete your API key from our system immediately"
+  - [JSX Text] "Rotate your API key in Google AI Studio"
+  - [JSX Text] "Contact our support team"
+  - [JSX Text] "Additional Resources"
+  - [JSX Text] "Google AI Studio API Keys"
+  - [JSX Text] "Google Cloud API Key Best Practices"
+  - [JSX Text] "Google Cloud Security Best Practices"
+
+📄 src\components\AuthButton.tsx:
+  - [JSX Text] "(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [subscriptionStatus, setSubscriptionStatus] = useState"
+  - [JSX Text] "(null);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [authError, setAuthError] = useState"
+  - [JSX Text] "(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState"
+  - [JSX Text] "(null);
+  const captchaRef = useRef"
+  - [JSX Text] "ou"
+
+📄 src\components\AuthModal.tsx:
+  - [JSX Text] "(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState"
+  - [JSX Text] "(null);
+  const captchaRef = useRef"
+
+📄 src\components\brand\BrandGuidelineEditor.tsx:
+  - [JSX Text] "(guideline);
+    const [expandedSection, setExpandedSection] = useState"
+  - [JSX Text] ");
+
+    return ("
+  - [JSX Text] "Family"
+  - [JSX Text] "Style"
+  - [JSX Text] "px"
+  - [JSX Text] "px"
+
+📄 src\components\brand\MediaKitGallery.tsx:
+  - [JSX Text] "(null);
+    const mediaInputRef = useRef"
+  - [JSX Text] "(null);
+    const logoInputRef = useRef"
+  - [JSX Text] "(null);
+
+    const fileToBase64 = (file: File): Promise"
+  - [JSX Text] "0 || !readOnly) && ("
+  - [JSX Text] ") : !readOnly ? ("
+
+📄 src\components\branding\ArchetypesSection.tsx:
+  - [JSX Text] "Descrição"
+  - [JSX Text] "Exemplos"
+  - [JSX Text] "Remover"
+  - [JSX Text] "+ Adicionar Exemplo"
+  - [JSX Text] "Exemplos:"
+  - [JSX Text] "Justificativa"
+  - [Attribute: placeholder] "Exemplo de marca"
+  - [Attribute: placeholder] "Por que esses arquétipos foram escolhidos..."
+
+📄 src\components\branding\BrandingChatInput.tsx:
+  - [JSX Text] ") : isGenerating ? ("
+  - [JSX Text] ") : isPromptReady ? ("
+
+📄 src\components\branding\BrandingMoodboard.tsx:
+  - [JSX Text] "Promise"
+  - [JSX Text] ";
+  isSaving?: boolean;
+  prompt?: string;
+  projectName?: string | null; // Nome do projeto da tabela
+  generatingSteps?: Set"
+  - [JSX Text] "Promise"
+  - [JSX Text] "Promise"
+  - [JSX Text] ";
+  steps?: Array"
+  - [JSX Text] "s.id === stepNumber);
+                  if (!step) return null;
+
+                  const content = getStepContent(stepNumber);
+                  const hasData = hasContent(stepNumber);
+                  const isGenerating = generatingSteps.has(stepNumber);
+
+                  // Renderizar apenas cards com dados (empty cards vão para grid de compactas)
+                  const isEditingSection = editingSections.has(stepNumber);
+                  const canEdit = hasData; // Permitir edição de qualquer seção com dados
+                  const isCollapsed = collapsedSections.has(stepNumber);
+                  const emoji = getSectionEmoji(stepNumber);
+
+                  return ("
+  - [JSX Text] "compactSections.has(step.id))) && ("
+  - [JSX Text] "0;
+
+                return ("
+  - [Attribute: title] "Salvar (Enter)"
+  - [Attribute: title] "Cancelar (ESC)"
+
+📄 src\components\branding\BrandingSection.tsx:
+  - [JSX Text] "(null);
+  const blurTimeoutRef = useRef"
+  - [JSX Text] "= 3;
+            const isDisabled = limitReached && !isSelected;
+
+            return ("
+
+📄 src\components\branding\BrandingSectionCard.tsx:
+  - [JSX Text] "(null);
+  const resizeRef = useRef"
+
+📄 src\components\branding\BrandingWelcomeScreen.tsx:
+  - [JSX Text] "BRANDING MACHINE®"
+
+📄 src\components\branding\ColorPalettesSection.tsx:
+  - [JSX Text] "Color Picker"
+  - [JSX Text] "Adicionar paleta"
+  - [Attribute: placeholder] "Nome da paleta"
+  - [Attribute: placeholder] "Descrição da psicologia da paleta..."
+  - [Attribute: title] "Remover paleta"
+  - [Attribute: title] "Remover cor"
+  - [Attribute: title] "Adicionar cor"
+
+📄 src\components\branding\CompetitorsSection.tsx:
+  - [JSX Text] ";
+  isEditing?: boolean;
+  onContentChange?: (value: string[] | Array"
+  - [JSX Text] "Nome"
+  - [JSX Text] "Link (opcional)"
+  - [JSX Text] "Adicionar concorrente"
+  - [Attribute: placeholder] "Nome do concorrente"
+  - [Attribute: placeholder] "https://exemplo.com"
+  - [Attribute: title] "Remover concorrente"
+
+📄 src\components\branding\EmptySectionCard.tsx:
+  - [JSX Text] "void;
+  isGenerating?: boolean;
+  isBlocked?: boolean;
+  missingDependencies?: number[];
+  steps?: Array"
+  - [JSX Text] "Bloqueado"
+
+📄 src\components\branding\ListSection.tsx:
+  - [JSX Text] "Adicionar item"
+  - [Attribute: placeholder] "Digite o item..."
+  - [Attribute: title] "Remover item"
+
+📄 src\components\branding\NotionColumnLayout.tsx:
+  - [JSX Text] ";
+  stepIds: number[];
+  steps: Array"
+  - [JSX Text] "(null);
+  const [dragOverColumn, setDragOverColumn] = useState"
+  - [JSX Text] "(null);
+  const [dragOverOrder, setDragOverOrder] = useState"
+  - [JSX Text] "(null);
+  const [showNewColumnPreview, setShowNewColumnPreview] = useState(false);
+  const [isDraggingToFullWidth, setIsDraggingToFullWidth] = useState(false);
+  const columnRefs = useRef"
+  - [JSX Text] "(null);
+  const autoColumnTimeoutRef = useRef"
+  - [JSX Text] "prev !== sectionsInColumn.length ? sectionsInColumn.length : prev);
+      setIsDraggingToFullWidth(false);
+
+      // Detectar se está próximo à borda direita da última coluna
+      if (columnIndex === layout.columns - 1 && layout.columns"
+  - [JSX Text] "containerRect.bottom - snapThreshold;
+    const isOutsideColumns = mouseX"
+  - [JSX Text] "= expandedTop && mouseY"
+  - [JSX Text] "= rect.top - 40 && mouseY"
+  - [JSX Text] "DROP FOR FULL WIDTH"
+  - [JSX Text] "DROP HERE"
+  - [JSX Text] "DROP HERE"
+  - [JSX Text] "Full Width Panel"
+  - [JSX Text] "Solte aqui para ocupar toda a largura"
+  - [JSX Text] "O panel ocupará 100% da largura disponível"
+  - [JSX Text] "a.order - b.order);
+          const isColumnHighlighted = draggedStepNumber !== null && dragOverColumn === columnIndex;
+          const isEmptyColumn = sectionsInColumn.length === 0;
+
+          return ("
+  - [JSX Text] "Empty column"
+  - [JSX Text] "rect.right || y"
+  - [JSX Text] "Nova coluna"
+  - [JSX Text] "Solte aqui para criar"
+  - [Attribute: label] "Column layout for sections"
+  - [Attribute: label] "New column preview - drop here to create"
+
+📄 src\components\branding\PersonaSection.tsx:
+  - [JSX Text] "0 && !isEditing && ("
+  - [JSX Text] "0 && !isEditing && ("
+  - [JSX Text] "0) || isEditing) && ("
+  - [JSX Text] "Adicionar desejo"
+  - [JSX Text] "0) || isEditing) && ("
+  - [JSX Text] "Adicionar dor"
+  - [Attribute: placeholder] "Descreva a demografia da persona..."
+  - [Attribute: placeholder] "Digite um desejo..."
+  - [Attribute: placeholder] "Digite uma dor..."
+  - [Attribute: title] "Remover desejo"
+  - [Attribute: title] "Remover dor"
+
+📄 src\components\branding\PosicionamentoSection.tsx:
+  - [JSX Text] "Nenhum conteúdo disponível."
+  - [Attribute: placeholder] "Digite sua análise de posicionamento aqui..."
+
+📄 src\components\branding\PublicoAlvoSection.tsx:
+  - [JSX Text] "Nenhum conteúdo disponível."
+  - [Attribute: placeholder] "Digite sua análise de público alvo aqui..."
+
+📄 src\components\branding\RichTextEditor.tsx:
+  - [JSX Text] "(null);
+  const overlayRef = useRef"
+  - [JSX Text] "(null);
+  const containerRef = useRef"
+  - [JSX Text] "(null);
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const pendingCursorPos = useRef"
+  - [Attribute: title] "Negrito (Ctrl+B)"
+  - [Attribute: title] "Itálico (Ctrl+I)"
+  - [Attribute: title] "Lista com marcadores"
+  - [Attribute: title] "Cor do texto"
+  - [Attribute: title] "Cor personalizada"
+
+📄 src\components\branding\SectionHeader.tsx:
+  - [JSX Text] "!hasContent(dep));
+
+  return ("
+
+📄 src\components\branding\SWOTSection.tsx:
+  - [JSX Text] "Adicionar"
+  - [Attribute: placeholder] "Digite o item..."
+  - [Attribute: title] "Remover item"
+
+📄 src\components\branding\TextSection.tsx:
+  - [JSX Text] "Nenhum conteúdo disponível."
+  - [Attribute: placeholder] "Digite seu texto aqui..."
+
+📄 src\components\budget\BrandCustomizationPanel.tsx:
+  - [JSX Text] "Dimensões do Conteúdo"
+  - [JSX Text] "Formato do Documento"
+  - [JSX Text] "A4"
+  - [JSX Text] "595px"
+  - [JSX Text] "A3"
+  - [JSX Text] "842px"
+  - [JSX Text] "Letter"
+  - [JSX Text] "612px"
+  - [JSX Text] "800px"
+  - [JSX Text] "Altura"
+  - [JSX Text] "px"
+  - [JSX Text] "Auto"
+  - [JSX Text] "Altura automática (baseada no conteúdo)"
+  - [JSX Text] "500px"
+  - [JSX Text] "2000px"
+  - [JSX Text] "As dimensões serão aplicadas no preview e no PDF exportado"
+  - [JSX Text] "Salvar como Template"
+  - [JSX Text] "Carregar Template"
+  - [JSX Text] "Salvar como Template"
+  - [JSX Text] "Salvar"
+  - [JSX Text] "Cancelar"
+  - [JSX Text] "Carregar Template"
+  - [JSX Text] "Nenhum template salvo ainda"
+  - [JSX Text] "Fechar"
+  - [Attribute: placeholder] "Largura customizada"
+  - [Attribute: placeholder] "Auto"
+  - [Attribute: placeholder] "Nome do template"
+  - [Attribute: title] "Remover altura fixa"
+  - [Attribute: title] "Remover template"
+  - [Attribute: label] "Close panel"
+
+📄 src\components\budget\BrandCustomizationSection.tsx:
+  - [JSX Text] "(null);
+
+  const handleFileChange = async (e: React.ChangeEvent"
+  - [JSX Text] ") : brandLogo ? ("
+
+📄 src\components\budget\BudgetForm.tsx:
+  - [JSX Text] "Informações Básicas"
+
+📄 src\components\budget\BudgetPreview.tsx:
+  - [JSX Text] "void;
+  editable?: boolean;
+  onDataChange?: (data: Partial"
+  - [JSX Text] "Layout Custom"
+  - [JSX Text] "Faça upload de um PDF customizado no formulário para ver o preview aqui"
+
+📄 src\components\budget\BudgetTemplateSelector.tsx:
+  - [JSX Text] "([]);
+  const [budgets, setBudgets] = useState"
+  - [JSX Text] "([]);
+  const [isLoadingPresets, setIsLoadingPresets] = useState(false);
+  const [isLoadingBudgets, setIsLoadingBudgets] = useState(false);
+  const [showDeletePresetModal, setShowDeletePresetModal] = useState(false);
+  const [showDeleteBudgetModal, setShowDeleteBudgetModal] = useState(false);
+  const [presetToDelete, setPresetToDelete] = useState"
+  - [JSX Text] "(null);
+  const [budgetToDelete, setBudgetToDelete] = useState"
+  - [JSX Text] "(null);
+  const [deletingPresetId, setDeletingPresetId] = useState"
+  - [JSX Text] "(null);
+  const [deletingBudgetId, setDeletingBudgetId] = useState"
+  - [JSX Text] "(null);
+  const [editingTemplateId, setEditingTemplateId] = useState"
+  - [JSX Text] "(null);
+  const [templateCustomNames, setTemplateCustomNames] = useState"
+  - [JSX Text] ") : presets.length === 0 ? ("
+  - [JSX Text] ") : budgets.length === 0 ? ("
+
+📄 src\components\budget\FAQSection.tsx:
+  - [JSX Text] "No FAQs added yet"
+
+📄 src\components\budget\FieldPropertiesPanel.tsx:
+  - [JSX Text] "Nenhum campo selecionado"
+  - [JSX Text] "(null);
+  const [xError, setXError] = useState"
+  - [JSX Text] "(null);
+  const [yError, setYError] = useState"
+  - [JSX Text] "Aplique ou descarte as mudanças antes de fechar"
+  - [JSX Text] "Propriedades"
+  - [JSX Text] "Remover Campo"
+  - [JSX Text] "Fonte"
+  - [JSX Text] "Tamanho da Fonte"
+  - [JSX Text] "pt"
+  - [JSX Text] "Estilo"
+  - [JSX Text] "Cor"
+  - [JSX Text] "Alinhamento"
+  - [JSX Text] "Posição (pontos)"
+  - [JSX Text] "X:"
+  - [JSX Text] "Y:"
+  - [JSX Text] "Aplicar"
+  - [JSX Text] "Descartar"
+  - [Attribute: placeholder] "12"
+  - [Attribute: title] "Remover campo (Delete)"
+  - [Attribute: title] "Esquerda"
+  - [Attribute: title] "Centro"
+  - [Attribute: title] "Direita"
+  - [Attribute: title] "Aplicar mudanças"
+  - [Attribute: title] "Descartar mudanças"
+  - [Attribute: label] "Remover campo"
+  - [Attribute: label] "Selecionar família da fonte"
+  - [Attribute: label] "Selecionar cor do texto"
+  - [Attribute: label] "Alinhar à esquerda"
+  - [Attribute: label] "Alinhar ao centro"
+  - [Attribute: label] "Alinhar à direita"
+  - [Attribute: label] "Aplicar mudanças"
+  - [Attribute: label] "Descartar mudanças"
+
+📄 src\components\budget\FieldSelectionMenu.tsx:
+  - [JSX Text] "(null);
+  const searchInputRef = useRef"
+  - [JSX Text] "Adicionar campo"
+  - [JSX Text] "Nenhum campo encontrado"
+  - [Attribute: placeholder] "Buscar campo..."
+  - [Attribute: label] "Menu de seleção de campos"
+  - [Attribute: label] "Fechar menu"
+  - [Attribute: label] "Buscar campo"
+
+📄 src\components\budget\InlineEditor.tsx:
+  - [JSX Text] ";
+      case 'saved':
+        return"
+  - [JSX Text] ";
+      case 'error':
+        return"
+
+📄 src\components\budget\PaymentInfoSection.tsx:
+  - [JSX Text] "Total com Desconto:"
+  - [Attribute: placeholder] "30"
+  - [Attribute: placeholder] "258,00"
+  - [Attribute: placeholder] "29673608000169"
+  - [Attribute: placeholder] "8"
+  - [Attribute: placeholder] "PIX"
+  - [Attribute: placeholder] "À vista com 5% de desconto"
+  - [Attribute: placeholder] "10"
+
+📄 src\components\budget\PdfFieldEditor.tsx:
+  - [JSX Text] "f.id === selectedFieldId)
+    : null;
+
+  return ("
+  - [JSX Text] "Variáveis Disponíveis"
+  - [JSX Text] "0 ? mappings[mappings.length - 1] : undefined;
+
+          return ("
+  - [JSX Text] "Clique em uma variável para adicionar ao PDF"
+
+📄 src\components\budget\PdfPreviewWithFields.tsx:
+  - [JSX Text] "(0);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [containerWidth, setContainerWidth] = useState(800);
+  const [containerHeight, setContainerHeight] = useState(800);
+  const [isAddingField, setIsAddingField] = useState(false);
+  const isPositioningMode = positioningFieldId !== null && positioningFieldId !== undefined;
+  const [menuPosition, setMenuPosition] = useState"
+  - [JSX Text] "(null);
+  const [clickedPage, setClickedPage] = useState"
+  - [JSX Text] "(1);
+  const [internalActiveId, setInternalActiveId] = useState"
+  - [JSX Text] "(null);
+  const [internalSelectedFieldId, setInternalSelectedFieldId] = useState"
+  - [JSX Text] "(null);
+  const [isVisible, setIsVisible] = useState(true);
+  const [documentKey, setDocumentKey] = useState(0);
+  const [isReloading, setIsReloading] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(scale);
+  const [draggingVariable, setDraggingVariable] = useState"
+  - [JSX Text] "(null);
+  const [internalPendingFieldPosition, setInternalPendingFieldPosition] = useState"
+  - [JSX Text] "(null);
+  const [fieldPositions, setFieldPositions] = useState"
+  - [JSX Text] "(new Map());
+  const pageRefs = useRef"
+  - [JSX Text] "= pageRect.left && mouseX"
+  - [JSX Text] "= pageRect.top && mouseY"
+  - [JSX Text] "Posição selecionada! Clique em um campo preenchido do formulário para adicioná-lo aqui."
+  - [JSX Text] "Recarregando PDF..."
+  - [JSX Text] "Carregando PDF..."
+  - [JSX Text] "Erro ao carregar PDF"
+  - [JSX Text] ";
+  onClick: (e: React.MouseEvent"
+  - [JSX Text] "string;
+  AVAILABLE_FIELDS: Array"
+  - [JSX Text] "string;
+  AVAILABLE_FIELDS: Array"
+  - [Attribute: title] "Diminuir zoom"
+  - [Attribute: title] "Aumentar zoom"
+  - [Attribute: title] "Resetar zoom"
+  - [Attribute: title] "Cancelar"
+  - [Attribute: title] "Cancelar"
+  - [Attribute: title] "Aceitar"
+  - [Attribute: title] "Deletar campo (Delete)"
+  - [Attribute: label] "Painel de propriedades do campo"
+
+📄 src\components\budget\PdfUploadRequired.tsx:
+  - [JSX Text] "(null);
+  const fileInputRef = useRef"
+  - [JSX Text] "(null);
+
+  const handleFileChange = async (e: React.ChangeEvent"
+  - [JSX Text] "Layout Custom"
+  - [JSX Text] "Faça upload do seu PDF customizado para começar"
+  - [JSX Text] "Salvar como Preset"
+  - [JSX Text] "Salvar como Preset"
+  - [JSX Text] "Usar sem Salvar"
+  - [JSX Text] "Arraste e solte seu PDF aqui ou clique para selecionar"
+  - [JSX Text] "Selecionar PDF"
+  - [JSX Text] "Requisitos:"
+  - [JSX Text] "Formato: PDF"
+  - [JSX Text] "Após o upload, você poderá mapear os campos do formulário"
+  - [Attribute: placeholder] "Nome do preset"
+
+📄 src\components\budget\PdfUploadSection.tsx:
+  - [JSX Text] "(null);
+  const fileInputRef = useRef"
+  - [JSX Text] "(null);
+
+  const handleFileChange = async (e: React.ChangeEvent"
+  - [JSX Text] "PDF Customizado"
+  - [JSX Text] "Salvar como Preset"
+  - [JSX Text] "Salvar como Preset"
+  - [JSX Text] "Usar sem Salvar"
+  - [JSX Text] ") : customPdfUrl ? ("
+  - [JSX Text] "PDF customizado carregado"
+  - [JSX Text] "Substituir PDF"
+  - [JSX Text] "Substituir"
+  - [JSX Text] "Remover"
+  - [JSX Text] "Enviar PDF Customizado"
+  - [JSX Text] "Envie um PDF customizado e mapeie os campos do formulário para preenchê-lo automaticamente.
+        Você pode salvar como preset para reutilizar depois."
+  - [Attribute: placeholder] "Nome do preset"
+  - [Attribute: title] "Remover PDF"
+
+📄 src\components\budget\TimelineSection.tsx:
+  - [Attribute: placeholder] "1"
+
+📄 src\components\budget\VariableConfigModal.tsx:
+  - [JSX Text] "Valor Atual"
+  - [JSX Text] "Cancelar"
+  - [JSX Text] "OK - Posicionar no PDF"
+
+📄 src\components\budget\VariableThumbnail.tsx:
+  - [JSX Text] ";
+      case 'added':
+        return"
+
+📄 src\components\budget\visant\VisantBackCoverPage.tsx:
+  - [JSX Text] ");
+
+  return ("
+
+📄 src\components\budget\visant\VisantBudgetForm.tsx:
+  - [JSX Text] "Informações Básicas"
+  - [JSX Text] "Título do Serviço (Capa)"
+  - [JSX Text] "Cores"
+  - [JSX Text] "Cor de Fundo da Capa"
+  - [JSX Text] "Cor do Texto da Capa"
+  - [Attribute: placeholder] "BRANDING COMPLETO"
+  - [Attribute: placeholder] "#151515"
+  - [Attribute: placeholder] "#f9f9f9"
+
+📄 src\components\budget\visant\VisantBudgetPage.tsx:
+  - [JSX Text] ");
+
+  const contentWidth = data.contentWidth || 800;
+  const contentHeight = data.contentHeight;
+
+  return ("
+  - [JSX Text] "Projeto de Branding Completo"
+  - [JSX Text] "- Logo, ID Visual e Extras"
+  - [JSX Text] "Serviços"
+  - [JSX Text] "Qtd."
+  - [JSX Text] "Total Horas de Trabalho:"
+  - [JSX Text] "Designer / Diretor"
+  - [JSX Text] "Designer / Diretor"
+  - [JSX Text] "Investimento:"
+  - [JSX Text] "R$"
+  - [JSX Text] "/h"
+  - [JSX Text] "TOTAL: R$"
+  - [JSX Text] "PIX:"
+  - [JSX Text] "Desconto de"
+  - [JSX Text] "à vista no PIX!"
+  - [JSX Text] "R$"
+
+📄 src\components\budget\visant\VisantGiftsPage.tsx:
+  - [JSX Text] "(null);
+  const fileInputRefs = useRef"
+  - [JSX Text] "0
+    ? data.giftOptions
+    : defaultGifts;
+
+  const handleFileChange = async (e: React.ChangeEvent"
+  - [JSX Text] "Enviando..."
+  - [JSX Text] ");
+
+  return ("
+
+📄 src\components\budget\visant\VisantIntroductionPage.tsx:
+  - [JSX Text] ");
+
+  const defaultIntroText = `O serviço de criação de um Branding Completo toma por volta de 15 a 25 dias úteis para ser concluído com muita dedicação e capricho.
+
+Todo projeto demanda pesquisa de mercado, de concorrência, público alvo e atualidades, isso é feito para que o resultado esteja coerente e embasado, evitando clichês e ideias irrelevantes.
+
+Nossa metodologia é própria, evoluída durante nossa trajetória para entregar um resultado altamente personalizado, que se comunique com a essência de cada marca.`;
+
+  const defaultInfoBox = `O logotipo é o "ícone" que representa um negócio, já a identidade visual é todo universo que compõe a marca, como paleta de cores, tipografias (fontes) e elementos visuais.`;
+
+  const introText = data.customContent?.projectDetailSections?.[0]?.paragraphs?.join('\n\n') || defaultIntroText;
+  const infoBoxText = data.customContent?.infoBoxes?.[0]?.content || defaultInfoBox;
+
+  return ("
+
+📄 src\components\budget\visant\VisantPageRenderer.tsx:
+  - [JSX Text] "Page layout not found"
+
+📄 src\components\budget\visant\VisantPaymentPage.tsx:
+  - [JSX Text] "PIX"
+  - [JSX Text] "(consultar taxas)"
+  - [JSX Text] "PIX:"
+
+📄 src\components\budget\visant\VisantTimelinePage.tsx:
+  - [JSX Text] ");
+
+  // Timeline node component with different fill states
+  const TimelineNode: React.FC"
+
+📄 src\components\canvas\CanvasBottomToolbar.tsx:
+  - [JSX Text] "Font Family"
+  - [JSX Text] "Current Color"
+  - [JSX Text] "Custom Color"
+  - [Attribute: label] "Brand cyan"
+  - [Attribute: label] "Black"
+
+📄 src\components\canvas\CanvasFlow.tsx:
+  - [JSX Text] "void;
+  onNodeContextMenu?: (event: React.MouseEvent, node: Node"
+  - [JSX Text] "void;
+  reactFlowWrapper: React.RefObject"
+  - [JSX Text] "void;
+  currentPathData?: string;
+  isDrawing?: boolean;
+  drawings?: any[];
+  selectedDrawingIds?: Set"
+  - [JSX Text] "node.type === 'shader' && node.selected === true
+    ) as Node"
+
+📄 src\components\canvas\CanvasHeader.tsx:
+  - [JSX Text] "Exportar imagens..."
+  - [JSX Text] "Exportar todas (PNG)"
+  - [JSX Text] "Exportar como JSON"
+  - [JSX Text] "Importar de JSON"
+
+📄 src\components\canvas\CanvasHeaderContext.tsx:
+  - [JSX Text] "('');
+  const [selectedNodesCount, setSelectedNodesCount] = useState"
+  - [JSX Text] "(0);
+  // Project sharing state
+  const [projectId, setProjectId] = useState"
+  - [JSX Text] "(null);
+  const [shareId, setShareId] = useState"
+  - [JSX Text] "(null);
+  const [isCollaborative, setIsCollaborative] = useState(false);
+  const [canEdit, setCanEdit] = useState"
+  - [JSX Text] "([]);
+  const [canView, setCanView] = useState"
+  - [JSX Text] "([]);
+  const [othersCount, setOthersCount] = useState(0);
+  const [onImportCommunityPreset, setOnImportCommunityPreset] = useState"
+  - [JSX Text] "(undefined);
+  const [onProjectNameChange, setOnProjectNameChange] = useState"
+  - [JSX Text] "(undefined);
+  const [onSaveWorkflow, setOnSaveWorkflow] = useState"
+  - [JSX Text] "(undefined);
+  const [onLoadWorkflow, setOnLoadWorkflow] = useState"
+  - [JSX Text] "(undefined);
+  const [onExportImagesRequest, setOnExportImagesRequest] = useState"
+  - [JSX Text] "(undefined);
+  const [onExportAllImagesRequest, setOnExportAllImagesRequest] = useState"
+  - [JSX Text] "(undefined);
+  const [onExportJson, setOnExportJson] = useState"
+  - [JSX Text] "(undefined);
+  const [onImportJson, setOnImportJson] = useState"
+  - [JSX Text] "(undefined);
+  const [activeSidePanel, setActiveSidePanel] = useState"
+  - [JSX Text] "(null);
+
+  const [backgroundColor, setBackgroundColor] = useLocalStorage('canvasBackgroundColor', '#0C0C0C');
+  const [gridColor, setGridColor] = useLocalStorage('canvasGridColor', 'rgba(255, 255, 255, 0.1)');
+  const [showGrid, setShowGrid] = useLocalStorage('canvasShowGrid', true);
+  const [showMinimap, setShowMinimap] = useLocalStorage('canvasShowMinimap', true);
+  const [showControls, setShowControls] = useLocalStorage('canvasShowControls', true);
+  const [cursorColor, setCursorColor] = useLocalStorage('canvasCursorColor', '#FFFFFF');
+  const [brandCyan, setBrandCyan] = useLocalStorage('canvasBrandCyan', 'brand-cyan');
+  const [experimentalMode, setExperimentalMode] = useLocalStorage('canvasExperimentalMode', false);
+  const [edgeStyle, setEdgeStyle] = useLocalStorage"
+  - [JSX Text] "('canvasEdgeStyle', 'solid');
+  const [edgeStrokeWidth, setEdgeStrokeWidth] = useLocalStorage"
+
+📄 src\components\canvas\CanvasSettingsModal.tsx:
+  - [Attribute: placeholder] "#0C0C0C"
+  - [Attribute: placeholder] "rgba(255, 255, 255, 0.1)"
+  - [Attribute: placeholder] "#FFFFFF"
+
+📄 src\components\canvas\ChatSidebar.tsx:
+  - [JSX Text] "void;
+  variant?: 'standalone' | 'stacked' | 'embedded';
+  sidebarRef?: React.RefObject"
+  - [JSX Text] ";
+    case 'mockup': return"
+  - [JSX Text] ";
+    case 'strategy': return"
+  - [JSX Text] ";
+    case 'text': return"
+  - [JSX Text] ";
+    default: return"
+  - [JSX Text] "30 && title.length"
+  - [JSX Text] "(null);
+  const mediaInputRef = useRef"
+  - [JSX Text] "(null);
+  const [copiedMessageId, setCopiedMessageId] = useState"
+  - [JSX Text] "(null);
+  const [showSystemPromptEditor, setShowSystemPromptEditor] = useState(false);
+  const [systemPrompt, setSystemPrompt] = useState(nodeData.systemPrompt || '');
+  const [expandedStrategy, setExpandedStrategy] = useState(false);
+  const internalSidebarRef = useRef"
+  - [JSX Text] "Text:"
+  - [Attribute: title] "Toggle details"
+
+📄 src\components\canvas\CommunityPresetsSidebar.tsx:
+  - [JSX Text] "('all');
+    const [viewMode, setViewMode] = useState"
+  - [JSX Text] "('all');
+    const [presets, setPresets] = useState"
+  - [JSX Text] "([]); // For 'my' presets
+    const [allPresets, setAllPresets] = useState"
+  - [JSX Text] "([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState"
+  - [JSX Text] "(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [currentUserId, setCurrentUserId] = useState"
+  - [JSX Text] "(null);
+
+    // Editing State (reused from Page/Modal logic)
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isCreating, setIsCreating] = useState(false);
+    const [editingPreset, setEditingPreset] = useState"
+  - [JSX Text] "(null);
+    const [formData, setFormData] = useState"
+  - [JSX Text] ") : error ? ("
+  - [JSX Text] ") : filteredPresets.length === 0 ? ("
+
+📄 src\components\canvas\DirectorSidePanel.tsx:
+  - [JSX Text] "void;
+  onUpdateData: (nodeId: string, newData: Partial"
+  - [JSX Text] "translateTag(tag)).join(', ')
+    : '';
+
+  return ("
+  - [JSX Text] "(null); const blurTimeoutRef = useRef"
+  - [JSX Text] "0; return ("
+  - [JSX Text] "0; return ("
+  - [JSX Text] "0); if (suggestedColors.length === 0) return null; return ("
+  - [JSX Text] ",
+      'packaging':"
+  - [JSX Text] ",
+      'apparel':"
+  - [JSX Text] ",
+      'devices':"
+  - [JSX Text] ",
+      'signage':"
+  - [JSX Text] ",
+      'drinkware':"
+  - [JSX Text] ",
+      'art':"
+  - [JSX Text] ",
+      'other':"
+  - [JSX Text] "0;
+
+    return ("
+  - [JSX Text] "0;
+                          return ("
+  - [JSX Text] "0);
+
+              if (groups.length === 0) return null;
+
+              return ("
+
+📄 src\components\canvas\DrawingLayer.tsx:
+  - [JSX Text] "(null);
+  const [dragOffset, setDragOffset] = React.useState"
+  - [JSX Text] "(null);
+  const [resizingId, setResizingId] = React.useState"
+  - [JSX Text] "(null);
+  const [resizeStart, setResizeStart] = React.useState"
+  - [JSX Text] "(null);
+  const [resizeHandle, setResizeHandle] = React.useState"
+  - [JSX Text] "arrowHeadSize
+                    ? startY + (dy / length) * (length - arrowHeadSize)
+                    : startY;
+
+                  return ("
+  - [JSX Text] "arrowHeadSize
+                      ? arrowStartY + (dy / length) * (length - arrowHeadSize)
+                      : arrowStartY;
+
+                    return ("
+
+📄 src\components\canvas\MultiExportModal.tsx:
+  - [JSX Text] "(new Set());
+    const [exportFormat, setExportFormat] = useState"
+  - [JSX Text] "Export Images"
+  - [JSX Text] "Select images to download from your project"
+  - [JSX Text] "Exporting..."
+  - [JSX Text] "Export Selected"
+  - [Attribute: placeholder] "Search images..."
+
+📄 src\components\canvas\ShaderControlsSidebar.tsx:
+  - [JSX Text] "void;
+  nodeData: ShaderNodeData;
+  nodeId: string;
+  onUpdateData?: (nodeId: string, newData: Partial"
+  - [JSX Text] "(duotoneShadowColor);
+  const [localHighlightColor, setLocalHighlightColor] = useState"
+  - [JSX Text] "(duotoneHighlightColor);
+  const shadowColorUpdateTimeoutRef = useRef"
+  - [JSX Text] "(null);
+  const highlightColorUpdateTimeoutRef = useRef"
+  - [JSX Text] ") : (
+        /* Expanded State - Full Content */"
+
+📄 src\components\canvas\ShareModal.tsx:
+  - [JSX Text] "('');
+  const [editUsers, setEditUsers] = useState"
+  - [JSX Text] "(canEdit);
+  const [viewUsers, setViewUsers] = useState"
+  - [JSX Text] "Gerando..."
+  - [JSX Text] "Adicionar"
+  - [JSX Text] "Usuários que podem Visualizar"
+  - [JSX Text] "Adicionar"
+  - [JSX Text] "Remover Compartilhamento"
+  - [JSX Text] "Fechar"
+  - [JSX Text] "Salvando..."
+  - [JSX Text] "Salvar Permissões"
+  - [Attribute: placeholder] "E-mail do usuário"
+
+📄 src\components\canvas\UniversalSidePanel.tsx:
+  - [JSX Text] ";
+    title: string;
+    icon: React.ComponentType"
+  - [JSX Text] "(null);
+    const resizerRef = useRef"
+  - [JSX Text] "(null);
+    const sidebarRef = useRef"
+  - [JSX Text] "Export"
+  - [JSX Text] "No node selected"
+  - [JSX Text] "Select a supported node to view its controls"
+  - [JSX Text] "n.id === activeTabId);
+        if (!activeNode) return null;
+
+        const config = PANEL_REGISTRY[activeNode.type || ''];
+        if (!config) return null;
+
+        const Component = config.component;
+
+        return ("
+  - [JSX Text] "Controls"
+
+📄 src\components\CommunityPresetModal.tsx:
+  - [JSX Text] "Promise"
+  - [JSX Text] ";
+    initialData?: Partial"
+  - [JSX Text] "(null);
+    const [isUploadingImage, setIsUploadingImage] = useState(false);
+    const [imageUploadError, setImageUploadError] = useState"
+  - [JSX Text] "Image should be below 4 mb"
+  - [Attribute: placeholder] "Enter preset name"
+
+📄 src\components\ConfirmationModal.tsx:
+  - [JSX Text] "Promise"
+
+📄 src\components\CreditPackagesModal.tsx:
+  - [JSX Text] "(null);
+  const startTimeRef = useRef"
+  - [JSX Text] "(null);
+  const startValueRef = useRef"
+  - [JSX Text] "(null);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  // Default to 'credits' if user has subscription, otherwise 'buy'
+  const defaultTab = subscriptionStatus ? 'credits' : 'buy';
+  const [activeTab, setActiveTab] = useState"
+  - [JSX Text] "(initialTab || defaultTab);
+  const [buySection, setBuySection] = useState"
+  - [JSX Text] "('credits');
+  const [subscriptionPlans, setSubscriptionPlans] = useState"
+  - [JSX Text] "([]);
+  const [selectedPlanIndex, setSelectedPlanIndex] = useState(0);
+  const [billingCycle, setBillingCycle] = useState"
+  - [JSX Text] "0 && currentPlan ? ("
+  - [Attribute: label] "Previous package"
+  - [Attribute: label] "Next package"
+  - [Attribute: label] "Previous plan"
+  - [Attribute: label] "Next plan"
+
+📄 src\components\CreditRechargeSuccessPage.tsx:
+  - [JSX Text] "(null);
+  const startTimeRef = useRef"
+  - [JSX Text] "(null);
+  const startValueRef = useRef"
+  - [JSX Text] "(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isVerifyingCredits, setIsVerifyingCredits] = useState(true);
+  const [creditsPurchased, setCreditsPurchased] = useState"
+  - [JSX Text] "(null);
+  const [previousCredits, setPreviousCredits] = useState"
+  - [JSX Text] ") : isVerifyingCredits ? ("
+
+📄 src\components\EditCommunityProfileModal.tsx:
+  - [JSX Text] "(null);
+  const coverFileInputRef = React.useRef"
+  - [JSX Text] "Edit Community Profile"
+  - [JSX Text] "Cover Image"
+  - [JSX Text] "No cover image"
+  - [JSX Text] "Change Cover"
+  - [JSX Text] "16:9 Aspect"
+  - [JSX Text] "Max 2MB"
+  - [JSX Text] "Username"
+  - [JSX Text] "3-20 characters: letters, numbers, underscores, and hyphens."
+  - [JSX Text] "Bio"
+  - [JSX Text] "Social Media Links"
+  - [Attribute: placeholder] "Your username"
+  - [Attribute: placeholder] "Tell us about yourself..."
+  - [Attribute: placeholder] "https://instagram.com/username"
+  - [Attribute: placeholder] "https://youtube.com/@channel"
+  - [Attribute: placeholder] "https://x.com/username"
+  - [Attribute: placeholder] "https://yourwebsite.com"
+
+📄 src\components\EditProfilePage.tsx:
+  - [JSX Text] "(null);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [pictureUrl, setPictureUrl] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingPicture, setIsUploadingPicture] = useState(false);
+  const [error, setError] = useState"
+  - [JSX Text] "(null);
+  const [success, setSuccess] = useState"
+  - [JSX Text] "(null);
+  const fileInputRef = React.useRef"
+  - [JSX Text] ") : pictureUrl ? ("
+
+📄 src\components\FullScreenViewer.tsx:
+  - [JSX Text] "Zoom In"
+  - [JSX Text] "Zoom Out"
+  - [JSX Text] "Re-imagine"
+  - [JSX Text] "Open in Editor"
+  - [Attribute: title] "Previous (←)"
+  - [Attribute: title] "Next (→)"
+  - [Attribute: title] "Zoom In (Move camera closer)"
+  - [Attribute: title] "Zoom Out (Move camera further)"
+  - [Attribute: title] "Open in Editor"
+
+📄 src\components\Header.tsx:
+  - [JSX Text] "Promise"
+  - [JSX Text] "(null);
+  const [brandingsCount, setBrandingsCount] = useState"
+  - [JSX Text] "(null);
+  const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
+  const [unsavedWarningConfig, setUnsavedWarningConfig] = useState"
+  - [JSX Text] "Promise"
+  - [JSX Text] "Visant Labs®"
+  - [JSX Text] "v1.1"
+  - [JSX Text] "New Mockup"
+  - [JSX Text] "Budget"
+  - [Attribute: title] "New Mockup"
+  - [Attribute: title] "Explore Mockups"
+  - [Attribute: title] "About"
+  - [Attribute: label] "Go to Mockup Machine"
+  - [Attribute: label] "Create new mockup"
+  - [Attribute: label] "Explore mockups"
+  - [Attribute: label] "About"
+  - [Attribute: label] "View saved outputs"
+  - [Attribute: label] "View my branding projects"
+
+📄 src\components\Layout.tsx:
+  - [JSX Text] "Promise"
+  - [JSX Text] "('buy');
+  const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState"
+  - [JSX Text] "(null);
+  const [isAuthenticated, setIsAuthenticated] = useState"
+  - [JSX Text] "Promise"
+  - [JSX Text] "(null);
+  const resetHandlerRef = React.useRef"
+  - [JSX Text] "Promise"
+  - [JSX Text] "Promise"
+
+📄 src\components\LuminancePresetModal.tsx:
+  - [Attribute: title] "Select Luminance Preset"
+
+📄 src\components\mockupmachine\AdvancedOptions.tsx:
+  - [JSX Text] "void;
+  onColorInputChange: (e: React.ChangeEvent"
+  - [JSX Text] "void;
+  onNegativePromptChange: (e: React.ChangeEvent"
+  - [JSX Text] "void;
+  onAdditionalPromptChange: (e: React.ChangeEvent"
+  - [JSX Text] "(null);
+  const blurTimeoutRef = useRef"
+  - [JSX Text] "translateTag(tag)).join(', ')
+    : '';
+
+  return ("
+
+📄 src\components\mockupmachine\AnalyzedSummaryCard.tsx:
+  - [JSX Text] "(null);
+    const referenceInputRef = useRef"
+  - [JSX Text] "(null);
+
+    const handleFileSelect = async (e: React.ChangeEvent"
+
+📄 src\components\mockupmachine\AngleSelector.tsx:
+  - [JSX Text] "New Angle"
+  - [Attribute: title] "New Angle"
+  - [Attribute: label] "Select camera angle"
+
+📄 src\components\mockupmachine\AspectRatioSection.tsx:
+  - [JSX Text] "w;
+          const isSquare = w === h;
+          const isSelected = aspectRatio === ratio;
+
+          return ("
+  - [JSX Text] "w;
+              const isSquare = w === h;
+              const isSelected = aspectRatio === ratio;
+
+              return ("
+
+📄 src\components\mockupmachine\BackgroundSelector.tsx:
+  - [JSX Text] "New Background"
+  - [Attribute: title] "New Background"
+  - [Attribute: label] "Select background environment"
+
+📄 src\components\mockupmachine\BrandGuidelineSelector.tsx:
+  - [JSX Text] "([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isOpen, setIsOpen] = useState(false);
+    const [isWizardOpen, setIsWizardOpen] = useState(false);
+    const [editingGuideline, setEditingGuideline] = useState"
+  - [JSX Text] "(null);
+
+    const dropdownRef = useRef"
+  - [JSX Text] "g.id === selectedBrandGuideline);
+
+    return ("
+
+📄 src\components\mockupmachine\BrandGuidelineWizardModal.tsx:
+  - [JSX Text] "([]);
+    const [logos, setLogos] = useState"
+  - [JSX Text] "Colors, typography, and brand details will be auto-extracted."
+
+📄 src\components\mockupmachine\CategoriesSection.tsx:
+  - [JSX Text] "translateTag(tag)).join(', ') : '';
+
+  return ("
+  - [JSX Text] "0; const [isEditingCustom, setIsEditingCustom] = useState(false); const [isFinalExpanded, setIsFinalExpanded] = useState(false); const [isSearchVisible, setIsSearchVisible] = useState(false); const inputRef = useRef"
+  - [JSX Text] "(null); const blurTimeoutRef = useRef"
+  - [JSX Text] "), packaging: ("
+  - [JSX Text] "), apparel: ("
+  - [JSX Text] "), devices: ("
+  - [JSX Text] "), signage: ("
+  - [JSX Text] "), drinkware: ("
+  - [JSX Text] "), art: ("
+  - [JSX Text] "), other: ("
+  - [JSX Text] "translateTag(tag)).join(', ') : ''; return ("
+
+📄 src\components\mockupmachine\ColorPalettePreview.tsx:
+  - [JSX Text] "= maxColors;
+    const allColors = [...new Set([...suggestedColors, ...selectedColors])];
+
+    return ("
+  - [Attribute: placeholder] "#HEX"
+
+📄 src\components\mockupmachine\InputSection.tsx:
+  - [JSX Text] "(null);
+
+  const handleSingleImageUpload = async (e: React.ChangeEvent"
+  - [JSX Text] "+ REF"
+  - [JSX Text] ");
+
+  return ("
+  - [JSX Text] "REF"
+  - [JSX Text] "UPLOAD"
+
+📄 src\components\mockupmachine\KeywordsSection.tsx:
+  - [JSX Text] "Sugestões:"
+  - [Attribute: placeholder] "Digite para buscar ou adicionar tags..."
+
+📄 src\components\mockupmachine\LightingSelector.tsx:
+  - [JSX Text] "New Lighting"
+  - [Attribute: title] "New Lighting"
+  - [Attribute: label] "Select lighting"
+
+📄 src\components\mockupmachine\MockupCard.tsx:
+  - [JSX Text] "Promise"
+  - [JSX Text] "0 && !base64Image && ("
+
+📄 src\components\mockupmachine\MockupContext.tsx:
+  - [JSX Text] ";
+    setReferenceImages: Dispatch"
+  - [JSX Text] ";
+    setDesignType: Dispatch"
+  - [JSX Text] ";
+    setSelectedModel: Dispatch"
+  - [JSX Text] ";
+    setResolution: Dispatch"
+  - [JSX Text] ";
+    setAspectRatio: Dispatch"
+  - [JSX Text] ";
+    setImageProvider: Dispatch"
+  - [JSX Text] ";
+    setSelectedBrandGuideline: Dispatch"
+  - [JSX Text] ";
+    setMockups: Dispatch"
+  - [JSX Text] ";
+    setIsLoading: Dispatch"
+  - [JSX Text] ";
+    setHasGenerated: Dispatch"
+  - [JSX Text] ";
+    setHasAnalyzed: Dispatch"
+  - [JSX Text] ";
+    setIsAnalyzing: Dispatch"
+  - [JSX Text] ";
+    setIsAnalysisOverlayVisible: Dispatch"
+  - [JSX Text] ";
+    setIsGeneratingPrompt: Dispatch"
+  - [JSX Text] ";
+    setSelectedTags: Dispatch"
+  - [JSX Text] ";
+    setSelectedBrandingTags: Dispatch"
+  - [JSX Text] ";
+    setSelectedLocationTags: Dispatch"
+  - [JSX Text] ";
+    setSelectedAngleTags: Dispatch"
+  - [JSX Text] ";
+    setSelectedLightingTags: Dispatch"
+  - [JSX Text] ";
+    setSelectedEffectTags: Dispatch"
+  - [JSX Text] ";
+    setSelectedMaterialTags: Dispatch"
+  - [JSX Text] ";
+    setSelectedColors: Dispatch"
+  - [JSX Text] ";
+    setSuggestedTags: Dispatch"
+  - [JSX Text] ";
+    setSuggestedBrandingTags: Dispatch"
+  - [JSX Text] ";
+    setSuggestedLocationTags: Dispatch"
+  - [JSX Text] ";
+    setSuggestedAngleTags: Dispatch"
+  - [JSX Text] ";
+    setSuggestedLightingTags: Dispatch"
+  - [JSX Text] ";
+    setSuggestedEffectTags: Dispatch"
+  - [JSX Text] ";
+    setSuggestedMaterialTags: Dispatch"
+  - [JSX Text] ";
+    setSuggestedColors: Dispatch"
+  - [JSX Text] ";
+    setIsAdvancedOpen: Dispatch"
+  - [JSX Text] ";
+    setIsAllCategoriesOpen: Dispatch"
+  - [JSX Text] ";
+    setGenerateText: Dispatch"
+  - [JSX Text] ";
+    setWithHuman: Dispatch"
+  - [JSX Text] ";
+    setEnhanceTexture: Dispatch"
+  - [JSX Text] ";
+    setRemoveText: Dispatch"
+  - [JSX Text] ";
+    setPromptPreview: Dispatch"
+  - [JSX Text] ";
+    setNegativePrompt: Dispatch"
+  - [JSX Text] ";
+    setAdditionalPrompt: Dispatch"
+  - [JSX Text] ";
+    setIsSmartPromptActive: Dispatch"
+  - [JSX Text] ";
+    setIsPromptManuallyEdited: Dispatch"
+  - [JSX Text] ";
+    setIsPromptReady: Dispatch"
+  - [JSX Text] ";
+    setPromptSuggestions: Dispatch"
+  - [JSX Text] ";
+    setIsSuggestingPrompts: Dispatch"
+  - [JSX Text] ";
+    setCustomBrandingInput: Dispatch"
+  - [JSX Text] ";
+    setCustomCategoryInput: Dispatch"
+  - [JSX Text] ";
+    setCustomLocationInput: Dispatch"
+  - [JSX Text] ";
+    setCustomAngleInput: Dispatch"
+  - [JSX Text] ";
+    setCustomLightingInput: Dispatch"
+  - [JSX Text] ";
+    setCustomEffectInput: Dispatch"
+  - [JSX Text] ";
+    setCustomMaterialInput: Dispatch"
+  - [JSX Text] ";
+    setColorInput: Dispatch"
+  - [JSX Text] ";
+    setIsValidColor: Dispatch"
+  - [JSX Text] ";
+    setFullScreenImageIndex: Dispatch"
+  - [JSX Text] ";
+    setMockupCount: Dispatch"
+  - [JSX Text] ";
+    setIsSurpriseMeMode: Dispatch"
+  - [JSX Text] ";
+    setSurpriseMePool: Dispatch"
+  - [JSX Text] ";
+    setInstructions: Dispatch"
+  - [JSX Text] "(undefined);
+
+const initialMockupCount = 2;
+
+export const MockupProvider: React.FC"
+  - [JSX Text] "(null);
+    const [referenceImages, setReferenceImages] = useState"
+  - [JSX Text] "([]);
+    const [designType, setDesignType] = useState"
+  - [JSX Text] "('layout');
+    const [selectedModel, setSelectedModel] = useState"
+  - [JSX Text] "(null);
+    const [resolution, setResolution] = useState"
+  - [JSX Text] "('1K');
+    const [aspectRatio, setAspectRatio] = useState"
+  - [JSX Text] "('16:9');
+    const [selectedBrandGuideline, setSelectedBrandGuideline] = useState"
+  - [JSX Text] "(null);
+
+    // Image provider state with localStorage persistence
+    const [imageProvider, setImageProviderState] = useState"
+  - [JSX Text] "(Array(initialMockupCount).fill(null));
+    const [isLoading, setIsLoading] = useState"
+  - [JSX Text] "(Array(initialMockupCount).fill(false));
+    const [hasGenerated, setHasGenerated] = useState(false);
+    const [hasAnalyzed, setHasAnalyzed] = useState(false);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [isAnalysisOverlayVisible, setIsAnalysisOverlayVisible] = useState(false);
+    const [isGeneratingPrompt, setIsGeneratingPrompt] = useState(false);
+    const [selectedTags, setSelectedTags] = useState"
+  - [JSX Text] "([]);
+    const [selectedBrandingTags, setSelectedBrandingTags] = useState"
+  - [JSX Text] "([]);
+    const [selectedLocationTags, setSelectedLocationTags] = useState"
+  - [JSX Text] "([]);
+    const [selectedAngleTags, setSelectedAngleTags] = useState"
+  - [JSX Text] "([]);
+    const [selectedLightingTags, setSelectedLightingTags] = useState"
+  - [JSX Text] "([]);
+    const [selectedEffectTags, setSelectedEffectTags] = useState"
+  - [JSX Text] "([]);
+    const [selectedMaterialTags, setSelectedMaterialTags] = useState"
+  - [JSX Text] "([]);
+    const [selectedColors, setSelectedColors] = useState"
+  - [JSX Text] "([]);
+    const [suggestedTags, setSuggestedTags] = useState"
+  - [JSX Text] "([]);
+    const [suggestedBrandingTags, setSuggestedBrandingTags] = useState"
+  - [JSX Text] "([]);
+    const [suggestedLocationTags, setSuggestedLocationTags] = useState"
+  - [JSX Text] "([]);
+    const [suggestedAngleTags, setSuggestedAngleTags] = useState"
+  - [JSX Text] "([]);
+    const [suggestedLightingTags, setSuggestedLightingTags] = useState"
+  - [JSX Text] "([]);
+    const [suggestedEffectTags, setSuggestedEffectTags] = useState"
+  - [JSX Text] "([]);
+    const [suggestedMaterialTags, setSuggestedMaterialTags] = useState"
+  - [JSX Text] "([]);
+    const [suggestedColors, setSuggestedColors] = useState"
+  - [JSX Text] "([]);
+    const [isAdvancedOpen, setIsAdvancedOpen] = useState(true);
+    const [isAllCategoriesOpen, setIsAllCategoriesOpen] = useState(false);
+    const [generateText, setGenerateText] = useState(false);
+    const [withHuman, setWithHuman] = useState(false);
+    const [enhanceTexture, setEnhanceTexture] = useState(false);
+    const [removeText, setRemoveText] = useState(true);
+    const [promptPreview, setPromptPreview] = useState('');
+    const [negativePrompt, setNegativePrompt] = useState('');
+    const [additionalPrompt, setAdditionalPrompt] = useState('');
+    const [isSmartPromptActive, setIsSmartPromptActive] = useState(false);
+    const [isPromptManuallyEdited, setIsPromptManuallyEdited] = useState(false);
+    const [isPromptReady, setIsPromptReady] = useState(false);
+    const [promptSuggestions, setPromptSuggestions] = useState"
+  - [JSX Text] "([]);
+    const [isSuggestingPrompts, setIsSuggestingPrompts] = useState(false);
+    const [customBrandingInput, setCustomBrandingInput] = useState('');
+    const [customCategoryInput, setCustomCategoryInput] = useState('');
+    const [customLocationInput, setCustomLocationInput] = useState('');
+    const [customAngleInput, setCustomAngleInput] = useState('');
+    const [customLightingInput, setCustomLightingInput] = useState('');
+    const [customEffectInput, setCustomEffectInput] = useState('');
+    const [customMaterialInput, setCustomMaterialInput] = useState('');
+    const [colorInput, setColorInput] = useState('');
+    const [isValidColor, setIsValidColor] = useState(false);
+    const [fullScreenImageIndex, setFullScreenImageIndex] = useState"
+  - [JSX Text] "(null);
+    const [mockupCount, setMockupCount] = useState(initialMockupCount);
+
+    // Surprise Me Mode State - load initial pool from localStorage
+    const [isSurpriseMeModeState, setIsSurpriseMeModeState] = useState(false);
+    const [surpriseMePool, setSurpriseMePool] = useState"
+
+📄 src\components\mockupmachine\MockupDisplay.tsx:
+  - [JSX Text] "Promise"
+  - [JSX Text] ";
+  savedIndices?: Set"
+  - [JSX Text] ";
+  savedMockupIds?: Map"
+  - [JSX Text] "void;
+  likedIndices?: Set"
+  - [JSX Text] "| Map"
+
+📄 src\components\mockupmachine\OutputConfigSection.tsx:
+  - [JSX Text] "MODELO DE IA"
+  - [JSX Text] "RESOLUÇÃO / QUALIDADE"
+  - [JSX Text] "outputs"
+  - [JSX Text] "h;
+                const isSquare = w === h;
+                const isSelected = aspectRatio === ratio;
+
+                return ("
+  - [JSX Text] "h;
+                  const isSquare = w === h;
+                  const isSelected = aspectRatio === ratio;
+
+                  return ("
+
+📄 src\components\mockupmachine\PresetsControl.tsx:
+  - [JSX Text] "Carregar Preset"
+  - [JSX Text] "Salvar Config"
+  - [JSX Text] "Carregando..."
+  - [JSX Text] ") : presets.length === 0 ? ("
+  - [JSX Text] "Nenhum preset salvo"
+  - [Attribute: placeholder] "Nome do preset..."
+  - [Attribute: title] "Remover Preset"
+
+📄 src\components\mockupmachine\PromptSection.tsx:
+  - [JSX Text] "(null);
+
+  const handleScroll = (e: React.UIEvent"
+  - [JSX Text] ") : (
+            isGeneratingPrompt && ("
+
+📄 src\components\mockupmachine\RefineSection.tsx:
+  - [JSX Text] "void;
+    onColorInputChange: (e: React.ChangeEvent"
+  - [JSX Text] "void;
+    onNegativePromptChange: (e: React.ChangeEvent"
+  - [JSX Text] "void;
+    onAdditionalPromptChange: (e: React.ChangeEvent"
+  - [Attribute: title] "Add new color"
+
+📄 src\components\mockupmachine\SidebarGenerationConfig.tsx:
+  - [JSX Text] "void;
+    generateOutputsButtonRef: React.RefObject"
+  - [JSX Text] "[...new Set([...suggestedTags, ...selectedTags])], [suggestedTags, selectedTags]);
+
+    const handleColorInputChange = (e: React.ChangeEvent"
+
+📄 src\components\mockupmachine\SidebarOrchestrator.tsx:
+  - [JSX Text] "void;
+  generateOutputsButtonRef: React.RefObject"
+
+📄 src\components\mockupmachine\SurpriseMeControl.tsx:
+  - [JSX Text] ");
+
+        return ("
+  - [JSX Text] "onSurpriseMe(autoGenerate),
+                        isGeneratingPrompt || isGeneratingOutputs || isDiceAnimating,"
+  - [JSX Text] ") : (
+                                        isPromptReady ?"
+  - [JSX Text] "),
+                                    !!isPromptReady,
+                                    isPromptReady ? outputsTooltip() : promptTooltip(),
+                                    isPromptReady ? creditsOutputs : 0,
+                                    t('mockup.outputsShort') || "Gerar"
+                                )
+                            ) : (
+                                /* Separate Buttons (when autoGenerate is false) */"
+  - [JSX Text] "Modelo de IA"
+  - [JSX Text] "Resolução / Qualidade"
+  - [JSX Text] "Nº Imagens (Outputs)"
+  - [JSX Text] "Proporção"
+
+📄 src\components\mockupmachine\SurpriseMeSelectedTagsDisplay.tsx:
+  - [JSX Text] "(null);
+  const inputRef = useRef"
+  - [JSX Text] ");
+
+  return ("
+  - [JSX Text] "Nenhuma tag encontrada"
+  - [JSX Text] ");
+
+export const SurpriseMeSelectedTagsDisplay: React.FC"
+  - [Attribute: title] "Sortear tudo novamente (Shuffle All)"
+
+📄 src\components\MockupPresetModal.tsx:
+  - [JSX Text] "([]);
+  const [communityPresets, setCommunityPresets] = React.useState"
+  - [JSX Text] "([]);
+  const [isLoadingPresets, setIsLoadingPresets] = React.useState(false);
+  const [selectedPresetIds, setSelectedPresetIds] = React.useState"
+  - [JSX Text] "(new Set());
+  const [activeFilter, setActiveFilter] = React.useState"
+  - [JSX Text] "(initialCategory || 'all');
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [presetSource, setPresetSource] = React.useState"
+  - [JSX Text] "User
+    const seenIds = new Set"
+  - [JSX Text] "Todos"
+  - [JSX Text] "Oficial"
+  - [JSX Text] "Comunidade"
+  - [JSX Text] ") : filteredPresets.length === 0 ? ("
+
+📄 src\components\PixPaymentModal.tsx:
+  - [JSX Text] "(null);
+  const [pixCode, setPixCode] = useState"
+  - [JSX Text] "(null);
+  const [qrCode, setQrCode] = useState"
+  - [JSX Text] "(null);
+  const [paymentUrl, setPaymentUrl] = useState"
+  - [JSX Text] "(null);
+  const [status, setStatus] = useState"
+  - [JSX Text] "('pending');
+  const [expiresAt, setExpiresAt] = useState"
+  - [JSX Text] "(null);
+  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState"
+  - [JSX Text] "(null);
+  const [taxId, setTaxId] = useState"
+  - [JSX Text] "('');
+  const [showTaxIdForm, setShowTaxIdForm] = useState(true);
+  const [isCheckingUserTaxId, setIsCheckingUserTaxId] = useState(true);
+  const [showQrCodeModal, setShowQrCodeModal] = useState(false);
+  const pollingRef = useRef"
+  - [JSX Text] ") : (
+                    /* If no payment URL but we have QR code, show QR code button directly */
+                    (qrCode || pixCode) && ("
+  - [JSX Text] ") : pixCode ? ("
+
+📄 src\components\PresetCard.tsx:
+  - [Attribute: title] "Copy prompt"
+
+📄 src\components\profile\ApiSettings.tsx:
+  - [JSX Text] "Gerencie suas chaves de API e conexões externas"
+  - [JSX Text] "Ativo"
+  - [JSX Text] "Seedream (APIFree.ai)"
+  - [JSX Text] "Ativo"
+
+📄 src\components\profile\ProfileOverview.tsx:
+  - [JSX Text] "void;
+    isUploadingPicture?: boolean;
+    onFileUpload: (event: React.ChangeEvent"
+  - [JSX Text] "(null);
+    const [storageUsage, setStorageUsage] = useState"
+  - [JSX Text] ") : avatarUrl ? ("
+  - [JSX Text] ") : storageUsage ? ("
+
+📄 src\components\profile\UsageHistory.tsx:
+  - [JSX Text] "([]);
+    const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+    const [historyError, setHistoryError] = useState"
+  - [JSX Text] "(null);
+    const [historyFilter, setHistoryFilter] = useState"
+  - [JSX Text] "Visualize seu histórico de uso e consumo de créditos"
+  - [JSX Text] ") : usageHistory.length === 0 ? ("
+  - [JSX Text] "Total de Usos"
+  - [JSX Text] "Créditos Gastos"
+  - [JSX Text] "historyPagination.limit && ("
+
+📄 src\components\PromptInput.tsx:
+  - [JSX Text] "void;
+  placeholder?: string;
+  disabled?: boolean;
+  className?: string;
+  textareaRef?: React.RefObject"
+
+📄 src\components\reactflow\BrandCore.tsx:
+  - [JSX Text] "(null);
+  const identityInputRef = useRef"
+  - [JSX Text] "(null);
+
+  const connectedLogo = nodeData.connectedLogo;
+  const connectedPdf = nodeData.connectedPdf;
+  const connectedImage = nodeData.connectedImage;
+  const connectedStrategies = nodeData.connectedStrategies || [];
+  const brandIdentity = nodeData.brandIdentity;
+
+  const [isExpandedVisual, setIsExpandedVisual] = useState(false);
+  const [isExpandedStrategic, setIsExpandedStrategic] = useState(false);
+  const [isExpandedBrandIdentity, setIsExpandedBrandIdentity] = useState(!!brandIdentity);
+  const [copiedPrompt, setCopiedPrompt] = useState"
+  - [JSX Text] "0;
+  const canAnalyze = hasLogo && hasIdentity && !brandIdentity && !isAnalyzing;
+  const hasPrompts = !!(visualPrompts || strategicPrompts?.consolidated);
+
+  return ("
+  - [JSX Text] ") : connectedImage ? ("
+  - [JSX Text] ") : uploadedIdentityUrl && identityType === 'pdf' ? ("
+  - [JSX Text] ") : uploadedIdentity && identityType === 'png' ? ("
+  - [JSX Text] "Upload PDF or PNG"
+  - [JSX Text] "Or connect a PDF Node or Image Node (PNG)"
+  - [JSX Text] "Connect Strategy Node(s) (optional)"
+  - [JSX Text] "Analyze Brand Identity"
+  - [JSX Text] "Analyzing brand identity..."
+  - [JSX Text] "Brand Identity"
+  - [JSX Text] "Style:"
+  - [JSX Text] "Primary"
+  - [JSX Text] "Secondary"
+  - [JSX Text] "Accent"
+  - [JSX Text] "Primary:"
+  - [JSX Text] "Secondary:"
+  - [JSX Text] "Style:"
+  - [JSX Text] "Grid:"
+  - [JSX Text] "Spacing:"
+  - [JSX Text] "Personality"
+  - [JSX Text] "Tone:"
+  - [JSX Text] "Feeling:"
+  - [JSX Text] "Values"
+  - [JSX Text] "Visual Prompts"
+  - [JSX Text] "Mockup Prompt"
+  - [JSX Text] "Composition Prompt"
+  - [JSX Text] "Style Prompt"
+  - [JSX Text] "Strategic Prompts (Consolidated)"
+  - [JSX Text] "Consolidated Strategy"
+  - [JSX Text] "Generating prompts..."
+
+📄 src\components\reactflow\BrandingProjectSelectModal.tsx:
+  - [JSX Text] "Select Branding Project"
+  - [JSX Text] "Loading projects..."
+
+📄 src\components\reactflow\BrandNode.tsx:
+  - [JSX Text] "(null);
+  const pdfInputRef = useRef"
+  - [JSX Text] "(null);
+
+  // Prioritize connected data over direct uploads
+  const connectedLogo = nodeData.connectedLogo;
+  const connectedIdentity = nodeData.connectedIdentity;
+  const connectedIdentityType = nodeData.connectedIdentityType;
+
+  const logoBase64 = connectedLogo || nodeData.logoBase64;
+  const identityBase64 = connectedIdentity || nodeData.identityPdfBase64 || nodeData.identityImageBase64;
+  const identityFileType = connectedIdentityType || nodeData.identityFileType || (nodeData.identityPdfBase64 ? 'pdf' : nodeData.identityImageBase64 ? 'png' : undefined);
+  const brandIdentity = nodeData.brandIdentity;
+
+  // Start expanded if brandIdentity already exists
+  const [isExpanded, setIsExpanded] = useState(!!brandIdentity);
+  const isAnalyzing = nodeData.isAnalyzing || false;
+
+  // Independent editing states for each color category
+  const [editingCategory, setEditingCategory] = useState"
+  - [JSX Text] "No colors"
+  - [JSX Text] "(connected)"
+  - [JSX Text] "(connected)"
+  - [JSX Text] "Upload PDF or PNG"
+  - [JSX Text] "Analyze Brand Identity"
+  - [JSX Text] "Brand Identity"
+  - [JSX Text] "Extract from Logo"
+  - [JSX Text] "Personality"
+  - [Attribute: title] "Finish Editing"
+  - [Attribute: title] "Edit Colors"
+
+📄 src\components\reactflow\ChatNode.tsx:
+  - [JSX Text] ";
+    case 'mockup': return"
+  - [JSX Text] ";
+    case 'strategy': return"
+  - [JSX Text] ";
+    case 'text': return"
+  - [JSX Text] ";
+    default: return"
+  - [JSX Text] "30 && title.length"
+  - [JSX Text] "(null);
+  const mediaInputRef = useRef"
+  - [JSX Text] "(null);
+  const [copiedMessageId, setCopiedMessageId] = useState"
+  - [JSX Text] "Text:"
+  - [Attribute: title] "Toggle details"
+  - [Attribute: label] "Image 1"
+  - [Attribute: label] "Image 2"
+  - [Attribute: label] "Image 3"
+  - [Attribute: label] "Image 4"
+
+📄 src\components\reactflow\ColorExtractorNode.tsx:
+  - [JSX Text] "(connected)"
+  - [JSX Text] "Extract Colors"
+  - [JSX Text] "Regenerate All"
+  - [Attribute: title] "Click to copy hex code"
+  - [Attribute: title] "Regenerate only this color"
+  - [Attribute: title] "Edit specific color"
+
+📄 src\components\reactflow\ConnectedImagesDisplay.tsx:
+  - [JSX Text] "maxThumbnails && ("
+
+📄 src\components\reactflow\contextmenu\ContextMenu.tsx:
+  - [JSX Text] "void;
+  sourceNodeId?: string;
+  nodes?: Node"
+  - [JSX Text] "(null);
+  const menuRef = useRef"
+  - [JSX Text] "part.toLowerCase() === query.toLowerCase() ? ("
+  - [JSX Text] ");
+
+  const categoryOrder = ['Generate', 'Composition', 'Effects', 'Branding'];
+
+  const GroupLabel: React.FC"
+  - [JSX Text] ");
+
+  return ("
+  - [JSX Text] "Try a different search term"
+  - [JSX Text] "0)
+              );
+
+              return ("
+  - [Attribute: placeholder] "Search nodes..."
+  - [Attribute: title] "Upload Media"
+  - [Attribute: title] "Export"
+  - [Attribute: label] "Close menu"
+
+📄 src\components\reactflow\contextmenu\EdgeContextMenu.tsx:
+  - [JSX Text] "Connection"
+  - [JSX Text] "Remove Connection"
+
+📄 src\components\reactflow\contextmenu\ImageContextMenu.tsx:
+  - [JSX Text] "Image Actions"
+  - [JSX Text] "Export"
+  - [JSX Text] "Fullscreen"
+  - [JSX Text] "Open in New Tab"
+  - [JSX Text] "Ctrl+C"
+  - [JSX Text] "Copy as PNG"
+  - [JSX Text] "Ctrl+Shift+C"
+  - [JSX Text] "Describe Image"
+  - [JSX Text] "Edit with Prompt"
+
+📄 src\components\reactflow\contextmenu\PromptContextMenu.tsx:
+  - [JSX Text] "Prompt Actions"
+
+📄 src\components\reactflow\ImageNode.tsx:
+  - [JSX Text] "(null);
+  const imageRef = useRef"
+  - [JSX Text] "(null);
+  const descriptionTextareaRef = useRef"
+  - [JSX Text] "(null);
+  const imageInputRef = useRef"
+  - [JSX Text] "(null);
+  const prevDimensionsRef = useRef"
+
+📄 src\components\reactflow\MergeNode.tsx:
+  - [JSX Text] "(data.model || DEFAULT_MODEL);
+  const textareaRef = useRef"
+  - [JSX Text] "Generating Prompt..."
+  - [JSX Text] "Generating Image..."
+
+📄 src\components\reactflow\MockupNode.tsx:
+  - [JSX Text] "(
+    (data.selectedPreset as MockupPresetType | string) || 'cap'
+  );
+  const [referenceImageUrl, setReferenceImageUrl] = useState"
+  - [JSX Text] "(null);
+  const [isPresetModalOpen, setIsPresetModalOpen] = useState(false);
+  const [selectedColors, setSelectedColors] = useState"
+  - [JSX Text] "(data.selectedColors || []);
+  const [colorInput, setColorInput] = useState(data.colorInput || '');
+  const [isValidColor, setIsValidColor] = useState(data.isValidColor || false);
+  const [withHuman, setWithHuman] = useState(data.withHuman || false);
+  const [customPrompt, setCustomPrompt] = useState(data.customPrompt || '');
+  const [model, setModel] = useState"
+  - [JSX Text] "(data.model || DEFAULT_MODEL);
+  const [aspectRatio, setAspectRatio] = useState"
+  - [JSX Text] "(data.aspectRatio || DEFAULT_ASPECT_RATIO);
+  const [resolution, setResolution] = useState"
+  - [JSX Text] "(data.resolution || '1K');
+  const [isPromptOpen, setIsPromptOpen] = useState(false);
+  const [isColorSectionOpen, setIsColorSectionOpen] = useState(false);
+  const textareaRef = useRef"
+  - [JSX Text] "(null);
+  const userMockups = (data as any).userMockups as Mockup[] | undefined;
+
+  const isLoading = data.isLoading || false;
+  const hasResult = !!(data.resultImageUrl || data.resultImageBase64);
+  // BrandCore connection data
+  const connectedLogo = data.connectedLogo;
+  const connectedIdentity = data.connectedIdentity;
+  const connectedTextDirection = data.connectedTextDirection;
+  const hasBrandCoreConnection = !!(connectedLogo || connectedIdentity || connectedTextDirection);
+  // Check if we have any image source (BrandCore or legacy)
+  const hasConnectedImage = !!(data.connectedImage || connectedLogo || connectedIdentity);
+  // Load presets async on mount to ensure MongoDB presets (with referenceImageUrl) are available
+  const [loadedPresets, setLoadedPresets] = useState"
+  - [JSX Text] ") : selectedMockup ? ("
+  - [JSX Text] ") : hasConnectedImage ? ("
+  - [JSX Text] "(custom)"
+  - [JSX Text] "0 || withHuman) && ("
+  - [JSX Text] "NB2"
+  - [JSX Text] "4K Pro"
+
+📄 src\components\reactflow\OutputNode.tsx:
+  - [JSX Text] "(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+  const [savedMockupId, setSavedMockupId] = useState"
+  - [JSX Text] "(null);
+  const [imageUrl, setImageUrl] = useState"
+  - [JSX Text] "(null);
+  const [videoUrl, setVideoUrl] = useState"
+  - [JSX Text] "(null);
+  const [isVideo, setIsVideo] = useState(false);
+  const [isDescribing, setIsDescribing] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showBrandKitModal, setShowBrandKitModal] = useState(false);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const previousImageUrlRef = useRef"
+  - [JSX Text] "(null);
+  const previousVideoUrlRef = useRef"
+  - [JSX Text] "(null);
+  const loadingStartTimeRef = useRef"
+  - [JSX Text] "Your browser does not support the video tag."
+  - [JSX Text] ") : imageUrl ? ("
+
+📄 src\components\reactflow\PDFNode.tsx:
+  - [JSX Text] "(null);
+  const [PdfThumbnailComponent, setPdfThumbnailComponent] = useState"
+  - [JSX Text] "Upload PDF"
+
+📄 src\components\reactflow\PromptNode.tsx:
+  - [JSX Text] "(nodeData.model || DEFAULT_MODEL);
+  const [aspectRatio, setAspectRatio] = useState"
+  - [JSX Text] "(nodeData.aspectRatio || DEFAULT_ASPECT_RATIO);
+  const [resolution, setResolution] = useState"
+  - [JSX Text] "(nodeData.resolution || '1K');
+  const [connectedImage1, setConnectedImage1] = useState"
+  - [JSX Text] "(nodeData.connectedImage1);
+  const [connectedImage2, setConnectedImage2] = useState"
+  - [JSX Text] "(nodeData.connectedImage2);
+  const [connectedImage3, setConnectedImage3] = useState"
+  - [JSX Text] "(nodeData.connectedImage3);
+  const [connectedImage4, setConnectedImage4] = useState"
+  - [JSX Text] "(nodeData.connectedImage4);
+  const [pdfPageReference, setPdfPageReference] = useState"
+  - [JSX Text] "(nodeData.pdfPageReference || '');
+  const textareaRef = useRef"
+  - [JSX Text] "(null);
+  const containerRef = useRef"
+  - [JSX Text] "(null);
+
+  // Context Menu state
+  const [contextMenu, setContextMenu] = useState"
+
+📄 src\components\reactflow\SavePromptModal.tsx:
+  - [JSX Text] "([]);
+    const [tagInput, setTagInput] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState"
+  - [JSX Text] "Salvar Prompt"
+  - [JSX Text] "Nome do Prompt *"
+  - [JSX Text] "Descrição (opcional)"
+  - [JSX Text] "Privacidade"
+  - [JSX Text] "Privado"
+  - [JSX Text] "Apenas você poderá ver e usar"
+  - [JSX Text] "Público"
+  - [JSX Text] "Compartilhe com a comunidade"
+  - [JSX Text] "Visualização do Prompt"
+  - [JSX Text] "Cancelar"
+  - [JSX Text] "Salvando..."
+  - [JSX Text] "Salvar Prompt"
+  - [Attribute: placeholder] "Ex: Minimalist Interior Design"
+  - [Attribute: placeholder] "Uma breve descrição sobre o que esse prompt faz..."
+  - [Attribute: placeholder] "moderno, arquitetura..."
+
+📄 src\components\reactflow\ShaderNode.tsx:
+  - [JSX Text] "();
+  const isLoading = data.isLoading || false;
+  const hasResult = !!(data.resultImageUrl || data.resultImageBase64 || data.resultVideoUrl || data.resultVideoBase64);
+  const hasVideoResult = !!(data.resultVideoUrl || data.resultVideoBase64);
+  const hasConnectedImage = !!data.connectedImage;
+  const isVideoInput = data.connectedImage ?
+    (data.connectedImage.startsWith('data:video/') || /\.(mp4|webm|ogg|mov|avi|mkv)$/i.test(data.connectedImage) || data.connectedImage.includes('video')) :
+    false;
+  const previousConnectedImageRef = useRef"
+  - [JSX Text] "(undefined);
+  const videoRef = useRef"
+  - [JSX Text] "(null);
+  const [isHovered, setIsHovered] = useState(false);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const loadingStartTimeRef = useRef"
+  - [JSX Text] "(null);
+  const previousSettingsRef = useRef"
+  - [JSX Text] "Ready to process"
+  - [JSX Text] ") : hasConnectedImage && !hasResult && !isVideoInput && !isLoading ? ("
+  - [JSX Text] "Image connected - Processing..."
+
+📄 src\components\reactflow\shared\AspectRatioSelector.tsx:
+  - [JSX Text] "w;
+            const isSquare = w === h;
+            const isSelected = value === ratio;
+
+            return ("
+  - [JSX Text] "w;
+                const isSquare = w === h;
+                const isSelected = value === ratio;
+
+                return ("
+  - [JSX Text] "w;
+        const isSquare = w === h;
+        const isSelected = value === ratio;
+
+        return ("
+  - [JSX Text] "More"
+  - [JSX Text] "w;
+              const isSquare = w === h;
+              const isSelected = value === ratio;
+
+              return ("
+
+📄 src\components\reactflow\shared\DrawingShapeRenderer.tsx:
+  - [JSX Text] "arrowHeadSize
+        ? (dy / length) * (length - arrowHeadSize)
+        : 0;
+
+      return ("
+
+📄 src\components\reactflow\shared\GenericPresetNode.tsx:
+  - [JSX Text] "PresetItem | undefined;
+
+    // Modal component - accepts any modal with compatible props
+    PresetModal: ComponentType"
+  - [JSX Text] "Promise"
+  - [JSX Text] "((nodeId: string, newData: Partial"
+  - [JSX Text] "(
+    config: GenericPresetNodeConfig"
+
+📄 src\components\reactflow\shared\ImageFullscreenModal.tsx:
+  - [JSX Text] "void;
+  title?: string;
+  sliders?: Array"
+  - [JSX Text] "(null);
+  const imageRef = useRef"
+
+📄 src\components\reactflow\shared\ImageNodeActionButtons.tsx:
+  - [JSX Text] "void | Promise"
+  - [JSX Text] "void | Promise"
+  - [JSX Text] "void | Promise"
+  - [JSX Text] "void | Promise"
+  - [JSX Text] "void | Promise"
+  - [JSX Text] "void | Promise"
+
+📄 src\components\reactflow\shared\node-button.tsx:
+  - [JSX Text] ",
+  VariantProps"
+
+📄 src\components\reactflow\shared\NodeContainer.tsx:
+  - [JSX Text] "void;
+  containerRef?: React.RefObject"
+
+📄 src\components\reactflow\shared\RealtimeShaderVideo.tsx:
+  - [JSX Text] "(null);
+  const videoRef = useRef"
+  - [JSX Text] "(null);
+  const animationFrameRef = useRef"
+  - [JSX Text] "(null);
+  const rendererRef = useRef"
+
+📄 src\components\reactflow\shared\ResolutionSelector.tsx:
+  - [Attribute: placeholder] "Select resolution"
+
+📄 src\components\reactflow\shared\UniversalPresetNode.tsx:
+  - [JSX Text] "any;
+    PresetModal: React.ComponentType"
+
+📄 src\components\reactflow\StrategyNode.tsx:
+  - [JSX Text] "(undefined);
+  const lastDraggingLogRef = useRef"
+  - [JSX Text] "(undefined);
+  const nameUpdateTimeoutRef = useRef"
+  - [JSX Text] "(undefined);
+  const handlePromptChange = useCallback((e: React.ChangeEvent"
+  - [JSX Text] "(null);
+  const isLoadingRef = useRef(false);
+  const hasLoadedDataForProjectRef = useRef"
+  - [JSX Text] "expandedSections[section.type] !== false);
+
+    const newState: Record"
+  - [JSX Text] "!hasSectionData(s.type) || expandedSections[s.type]) ? ("
+
+📄 src\components\reactflow\TextNode.tsx:
+  - [JSX Text] "1000;
+
+  return ("
+
+📄 src\components\reactflow\UpscaleBicubicNode.tsx:
+  - [JSX Text] "(undefined);
+  const scaleFactor = data.scaleFactor ?? 2.0;
+  const sharpening = data.sharpening ?? 0.3;
+  const [localSharpening, setLocalSharpening] = useState(sharpening);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+  const [savedMockupId, setSavedMockupId] = useState"
+  - [JSX Text] "Upscale Bicubic"
+  - [JSX Text] "Sharpening"
+  - [JSX Text] "Ready to upscale"
+  - [JSX Text] ") : resultImageUrl ? ("
+
+📄 src\components\reactflow\UpscaleNode.tsx:
+  - [JSX Text] "Target Resolution"
+  - [JSX Text] "Upscaling..."
+
+📄 src\components\reactflow\VideoInputNode.tsx:
+  - [JSX Text] "(nodeData.uploadedVideo || nodeData.uploadedVideoUrl);
+  const fileInputRef = useRef"
+
+📄 src\components\reactflow\VideoNode.tsx:
+  - [JSX Text] "(data.model || VeoModel.VEO_3_1);
+  const [mode, setMode] = useState"
+  - [JSX Text] "(data.mode || GenerationMode.TEXT_TO_VIDEO);
+  const [aspectRatio, setAspectRatio] = useState"
+  - [JSX Text] "(data.aspectRatio || '16:9');
+  const [resolution, setResolution] = useState"
+  - [JSX Text] "(data.resolution || '1080p');
+  const [duration, setDuration] = useState"
+  - [JSX Text] "(data.duration || '5s');
+  const [isLooping, setIsLooping] = useState"
+  - [JSX Text] "(data.isLooping || false);
+  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
+
+  const textareaRef = useRef"
+  - [Attribute: title] "Veo Video"
+
+📄 src\components\ReImaginePanel.tsx:
+  - [JSX Text] "Re-imagine"
+  - [JSX Text] "Describe the changes you want to make"
+  - [Attribute: placeholder] "E.g.,"
+
+📄 src\components\SaveWorkflowDialog.tsx:
+  - [JSX Text] "Promise"
+
+📄 src\components\SEO.tsx:
+  - [JSX Text] "*/
+const defaultImage = '/og-image.png'; // OG image (recommended: 1200x630px)
+const defaultUrl = getSiteUrl();
+
+export const SEO: React.FC"
+
+📄 src\components\shared\GenericPresetModal.tsx:
+  - [JSX Text] "([]);
+    const [isLoadingCommunityPresets, setIsLoadingCommunityPresets] = React.useState(false);
+    const [expandedPrompts, setExpandedPrompts] = React.useState"
+  - [JSX Text] "(new Set());
+    const [activeTab, setActiveTab] = React.useState"
+  - [JSX Text] ") : communityPresets.length === 0 ? ("
+  - [JSX Text] "Nenhum preset encontrado"
+
+📄 src\components\shared\Tag.tsx:
+  - [JSX Text] ") : label ? ("
+
+📄 src\components\StorageLimitModal.tsx:
+  - [JSX Text] "Limite de Armazenamento Excedido"
+  - [JSX Text] "Faça upgrade para Premium para ter mais espaço e continuar fazendo upload de imagens."
+  - [JSX Text] "Fechar"
+  - [JSX Text] "Fazer Upgrade"
+
+📄 src\components\SubscriptionModal.tsx:
+  - [JSX Text] "(null);
+  const [currencyInfo, setCurrencyInfo] = useState"
+
+📄 src\components\SubscriptionPlansGrid.tsx:
+  - [JSX Text] "([]);
+    const [billingCycle, setBillingCycle] = useState"
+
+📄 src\components\TexturePresetModal.tsx:
+  - [Attribute: title] "Select Texture Preset"
+
+📄 src\components\TransactionsModal.tsx:
+  - [JSX Text] "([]);
+  const [error, setError] = useState"
+  - [JSX Text] ") : error ? ("
+  - [JSX Text] ") : transactions.length === 0 ? ("
+
+📄 src\components\ui\AdminImageUploader.tsx:
+  - [JSX Text] "e.preventDefault();
+  const handleDragEnter = (e: React.DragEvent"
+  - [JSX Text] "Uploading..."
+  - [JSX Text] "Processando imagem..."
+  - [JSX Text] "Aguarde"
+  - [JSX Text] "Solte a imagem aqui"
+  - [JSX Text] "Solte para fazer upload"
+  - [JSX Text] "Clique para fazer upload"
+
+📄 src\components\ui\badge.tsx:
+  - [JSX Text] ",
+    VariantProps"
+
+📄 src\components\ui\BrandIdentityPanel.tsx:
+  - [JSX Text] "Brand Identity"
+  - [JSX Text] "Personality"
+
+📄 src\components\ui\breadcrumb.tsx:
+  - [JSX Text] "More"
+  - [Attribute: label] "breadcrumb"
+
+📄 src\components\ui\button.tsx:
+  - [JSX Text] ",
+  VariantProps"
+
+📄 src\components\ui\card.tsx:
+  - [JSX Text] "))
+Card.displayName = "Card"
+
+const CardHeader = React.forwardRef"
+  - [JSX Text] "))
+CardHeader.displayName = "CardHeader"
+
+const CardTitle = React.forwardRef"
+  - [JSX Text] "))
+CardTitle.displayName = "CardTitle"
+
+const CardDescription = React.forwardRef"
+  - [JSX Text] "))
+CardDescription.displayName = "CardDescription"
+
+const CardContent = React.forwardRef"
+  - [JSX Text] "))
+CardContent.displayName = "CardContent"
+
+const CardFooter = React.forwardRef"
+
+📄 src\components\ui\chart.tsx:
+  - [JSX Text] ") : (
+                                            !hideIndicator && ("
+  - [JSX Text] ";
+
+const ChartLegendContent = React.forwardRef"
+
+📄 src\components\ui\CommandPalette.tsx:
+  - [JSX Text] "(null);
+  const resultsRef = useRef"
+
+📄 src\components\ui\data-table-editable-cell.tsx:
+  - [JSX Text] "Promise"
+  - [JSX Text] "opt.value === value)?.label || value || ("
+  - [JSX Text] ")
+            ) : (
+                value || ("
+
+📄 src\components\ui\data-table.tsx:
+  - [JSX Text] ",
+                  desc:"
+  - [JSX Text] "([])
+  const [columnSizing, setColumnSizing] = React.useState"
+  - [JSX Text] "([])
+  const [columnVisibility, setColumnVisibility] = React.useState"
+  - [JSX Text] "(initialColumnVisibility)
+  const [columnOrder, setColumnOrder] = React.useState"
+  - [JSX Text] "Columns"
+  - [JSX Text] "No results."
+
+📄 src\components\ui\dropdown-menu.tsx:
+  - [JSX Text] ",
+    React.ComponentPropsWithoutRef"
+  - [JSX Text] "))
+DropdownMenuSubTrigger.displayName =
+    DropdownMenuPrimitive.SubTrigger.displayName
+
+const DropdownMenuSubContent = React.forwardRef"
+  - [JSX Text] ",
+    React.ComponentPropsWithoutRef"
+  - [JSX Text] "))
+DropdownMenuSubContent.displayName =
+    DropdownMenuPrimitive.SubContent.displayName
+
+const DropdownMenuContent = React.forwardRef"
+  - [JSX Text] ",
+    React.ComponentPropsWithoutRef"
+  - [JSX Text] "))
+DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName
+
+const DropdownMenuItem = React.forwardRef"
+  - [JSX Text] ",
+    React.ComponentPropsWithoutRef"
+  - [JSX Text] "))
+DropdownMenuItem.displayName = DropdownMenuPrimitive.Item.displayName
+
+const DropdownMenuCheckboxItem = React.forwardRef"
+  - [JSX Text] ",
+    React.ComponentPropsWithoutRef"
+  - [JSX Text] "))
+DropdownMenuCheckboxItem.displayName =
+    DropdownMenuPrimitive.CheckboxItem.displayName
+
+const DropdownMenuRadioItem = React.forwardRef"
+  - [JSX Text] ",
+    React.ComponentPropsWithoutRef"
+  - [JSX Text] "))
+DropdownMenuRadioItem.displayName = DropdownMenuPrimitive.RadioItem.displayName
+
+const DropdownMenuLabel = React.forwardRef"
+  - [JSX Text] ",
+    React.ComponentPropsWithoutRef"
+  - [JSX Text] "))
+DropdownMenuLabel.displayName = DropdownMenuPrimitive.Label.displayName
+
+const DropdownMenuSeparator = React.forwardRef"
+  - [JSX Text] ",
+    React.ComponentPropsWithoutRef"
+
+📄 src\components\ui\ExportPanel.tsx:
+  - [JSX Text] "(1.5);
+  const [selectedFormat, setSelectedFormat] = useState"
+  - [JSX Text] "('PNG');
+  const [isPreviewExpanded, setIsPreviewExpanded] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
+  const previewRef = useRef"
+  - [JSX Text] "Export"
+  - [JSX Text] "Scale"
+  - [JSX Text] "Format"
+  - [JSX Text] "Exporting..."
+  - [Attribute: title] "Add preset"
+  - [Attribute: title] "More options"
+  - [Attribute: title] "Remove preset"
+  - [Attribute: title] "Help"
+
+📄 src\components\ui\form-button.tsx:
+  - [JSX Text] "&
+  VariantProps"
+
+📄 src\components\ui\GenerateButton.tsx:
+  - [JSX Text] "void;
+  disabled: boolean;
+  isGeneratingPrompt: boolean;
+  isGenerating: boolean;
+  isPromptReady: boolean;
+  variant?: 'sidebar' | 'floating';
+  /** When true with variant=floating, omits fixed positioning so it can sit inside a shared flex container */
+  embed?: boolean;
+  buttonRef?: React.RefObject"
+  - [JSX Text] ") : isGenerating ? ("
+  - [JSX Text] ") : isPromptReady ? ("
+  - [JSX Text] ") : isGenerating ? ("
+  - [JSX Text] ") : isPromptReady ? ("
+
+📄 src\components\ui\GlitchPickaxe.tsx:
+  - [JSX Text] "0.7 ? 2 : 1;
+            let newSparks = '';
+            for (let i = 0; i"
+
+📄 src\components\ui\icons.tsx:
+  - [JSX Text] "16 ? 16 : viewBoxHeight;
+
+  if (ratio === '16:9') return"
+  - [JSX Text] ";
+  if (ratio === '4:3') return"
+  - [JSX Text] ";
+  if (ratio === '1:1') return"
+  - [JSX Text] ";
+  // For other ratios, generate a generic rectangle
+  return"
+
+📄 src\components\ui\ImageThumbnail.tsx:
+  - [JSX Text] "maxThumbnails && ("
+
+📄 src\components\ui\ImageUploader.tsx:
+  - [JSX Text] "(null);
+  const [isVerifyingAuth, setIsVerifyingAuth] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [authError, setAuthError] = useState"
+  - [JSX Text] "(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(false);
+  const [pendingAction, setPendingAction] = useState"
+  - [JSX Text] "e.preventDefault();
+  const handleDragEnter = (e: React.DragEvent"
+
+📄 src\components\ui\InteractiveASCII.tsx:
+  - [JSX Text] "(null)
+  const animationRef = useRef"
+
+📄 src\components\ui\InteractiveASCIICopy.tsx:
+  - [JSX Text] "(null)
+  const animationRef = useRef"
+  - [JSX Text] "([])
+  const lastMouseUpdateRef = useRef"
+  - [JSX Text] "(0)
+  const frameSkipRef = useRef"
+
+📄 src\components\ui\MockupCard.tsx:
+  - [JSX Text] "1 ? 1 / viewportScale : 1;
+
+  return ("
+
+📄 src\components\ui\Modal.tsx:
+  - [Attribute: label] "Close modal"
+
+📄 src\components\ui\NavigationSidebar.tsx:
+  - [JSX Text] "(null);
+  const resizerRef = useRef"
+  - [JSX Text] "(null);
+  const sectionRefs = useRef"
+  - [JSX Text] "(new Map());
+  const [expandedItems, setExpandedItems] = useState"
+  - [JSX Text] "= minWidth && newWidth"
+  - [JSX Text] "0;
+
+            return ("
+  - [Attribute: label] "Toggle navigation"
+
+📄 src\components\ui\PdfThumbnail.tsx:
+  - [Attribute: title] "Remove PDF"
+
+📄 src\components\ui\pill-button.tsx:
+  - [JSX Text] ",
+  VariantProps"
+
+📄 src\components\ui\select.tsx:
+  - [JSX Text] "void;
+  placeholder?: string;
+  variant?: 'default' | 'node';
+  disabled?: boolean;
+  className?: string;
+  onMouseDown?: (e: React.MouseEvent"
+  - [JSX Text] "void;
+  onClick?: (e: React.MouseEvent"
+  - [JSX Text] "(null);
+    const buttonRef = React.useRef"
+  - [JSX Text] "(null);
+    const listRef = React.useRef"
+
+📄 src\components\ui\switch.tsx:
+  - [JSX Text] ",
+    React.ComponentPropsWithoutRef"
+
+📄 src\components\ui\TagSelector.tsx:
+  - [JSX Text] "= limit;
+
+  return ("
+
+📄 src\components\ui\Tooltip.tsx:
+  - [JSX Text] "(null);
+  const triggerRef = useRef"
+  - [JSX Text] "(null);
+  const timeoutRef = useRef"
+  - [Attribute: label] "Close tooltip"
+
+📄 src\components\ui\VHSText.tsx:
+  - [JSX Text] "(null);
+  const animationFrameRef = useRef"
+  - [JSX Text] "(null);
+  const rendererRef = useRef"
+  - [JSX Text] "(null);
+  const isRenderingRef = useRef(false);
+  const startTimeRef = useRef"
+  - [JSX Text] "(0);
+  const containerRef = useRef"
+  - [JSX Text] "(null);
+  const isFullHeight = className.includes('h-full');
+  const textCanvasCacheRef = useRef"
+  - [JSX Text] "(null);
+  const lastRenderTimeRef = useRef"
+  - [JSX Text] "(0);
+  const dimensionsRef = useRef"
+
+📄 src\components\ui\ZoomControls.tsx:
+  - [JSX Text] "void;
+  onZoomSliderChange: (e: React.ChangeEvent"
+  - [Attribute: title] "Zoom Out"
+  - [Attribute: title] "Zoom In"
+
+📄 src\components\WorkflowLibraryModal.tsx:
+  - [JSX Text] "('community');
+    const [selectedCategory, setSelectedCategory] = useState"
+  - [JSX Text] "('all');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [myWorkflows, setMyWorkflows] = useState"
+  - [JSX Text] "([]);
+    const [communityWorkflows, setCommunityWorkflows] = useState"
+  - [JSX Text] "([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [deleteConfirmation, setDeleteConfirmation] = useState"
+  - [JSX Text] "(null);
+    const [editingWorkflow, setEditingWorkflow] = useState"
+  - [JSX Text] "Loading workflows..."
+  - [JSX Text] ") : displayedWorkflows.length === 0 ? ("
+
+📄 src\components\YouTubeVideoModal.tsx:
+  - [JSX Text] "Tutorial Video"
+  - [Attribute: title] "YouTube video player"
+
+📄 src\hooks\canvas\handlers\useAmbienceNodeHandlers.ts:
+  - [JSX Text] ";
+  edgesRef: React.MutableRefObject"
+  - [JSX Text] ";
+  setNodes: (nodes: Node"
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+  - [JSX Text] "void;
+  updateNodeData:"
+  - [JSX Text] "(nodeId: string, newData: Partial"
+  - [JSX Text] "void;
+  updateNodeLoadingState:"
+  - [JSX Text] "void;
+  reactFlowInstance: ReactFlowInstance | null;
+  addToHistory: (nodes: Node"
+  - [JSX Text] "Promise"
+
+📄 src\hooks\canvas\handlers\useAngleNodeHandlers.ts:
+  - [JSX Text] ";
+  edgesRef: React.MutableRefObject"
+  - [JSX Text] ";
+  setNodes: (nodes: Node"
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+  - [JSX Text] "void;
+  updateNodeData:"
+  - [JSX Text] "(nodeId: string, newData: Partial"
+  - [JSX Text] "void;
+  updateNodeLoadingState:"
+  - [JSX Text] "void;
+  reactFlowInstance: ReactFlowInstance | null;
+  addToHistory: (nodes: Node"
+  - [JSX Text] "Promise"
+
+📄 src\hooks\canvas\handlers\useLogoNodeHandlers.ts:
+  - [JSX Text] "(nodeId: string, newData: Partial"
+
+📄 src\hooks\canvas\handlers\useLuminanceNodeHandlers.ts:
+  - [JSX Text] ";
+  edgesRef: React.MutableRefObject"
+  - [JSX Text] ";
+  setNodes: (nodes: Node"
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+  - [JSX Text] "void;
+  updateNodeData:"
+  - [JSX Text] "(nodeId: string, newData: Partial"
+  - [JSX Text] "void;
+  updateNodeLoadingState:"
+  - [JSX Text] "void;
+  reactFlowInstance: ReactFlowInstance | null;
+  addToHistory: (nodes: Node"
+  - [JSX Text] "Promise"
+
+📄 src\hooks\canvas\handlers\usePDFNodeHandlers.ts:
+  - [JSX Text] "(nodeId: string, newData: Partial"
+
+📄 src\hooks\canvas\handlers\useShaderNodeHandlers.ts:
+  - [JSX Text] ";
+  updateNodeData:"
+  - [JSX Text] "(nodeId: string, newData: Partial"
+  - [JSX Text] "void;
+  updateNodeLoadingState:"
+  - [JSX Text] "void;
+  canvasId?: string;
+  setNodes: (nodes: Node"
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+
+📄 src\hooks\canvas\handlers\useTextureNodeHandlers.ts:
+  - [JSX Text] ";
+  edgesRef: React.MutableRefObject"
+  - [JSX Text] ";
+  setNodes: (nodes: Node"
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+  - [JSX Text] "void;
+  updateNodeData:"
+  - [JSX Text] "(nodeId: string, newData: Partial"
+  - [JSX Text] "void;
+  updateNodeLoadingState:"
+  - [JSX Text] "void;
+  reactFlowInstance: ReactFlowInstance | null;
+  addToHistory: (nodes: Node"
+  - [JSX Text] "Promise"
+
+📄 src\hooks\canvas\handlers\useUpscaleBicubicNodeHandlers.ts:
+  - [JSX Text] ";
+  updateNodeData:"
+  - [JSX Text] "(nodeId: string, newData: Partial"
+  - [JSX Text] "void;
+  updateNodeLoadingState:"
+  - [JSX Text] "void;
+  canvasId?: string;
+  setNodes: (nodes: Node"
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+
+📄 src\hooks\canvas\useCanvasChatHandler.ts:
+  - [JSX Text] ";
+  edgesRef?: React.MutableRefObject"
+  - [JSX Text] ";
+  updateNodeData:"
+  - [JSX Text] "(
+    nodeId: string,
+    newData: Partial"
+  - [JSX Text] "Promise"
+  - [JSX Text] "(newNodeId!, initialData as Partial"
+
+📄 src\hooks\canvas\useCanvasCollaboration.ts:
+  - [JSX Text] "[];
+  edges: Edge[];
+  setNodes: (nodes: Node"
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+  - [JSX Text] "Promise"
+  - [JSX Text] "(
+  func: T,
+  wait: number
+): (...args: Parameters"
+  - [JSX Text] "([]);
+  const lastSavedEdgesRef = useRef"
+  - [JSX Text] "([]);
+  const lastSyncedNodesRef = useRef"
+  - [JSX Text] "([]);
+
+  // Get room instance (must be used inside RoomProvider)
+  const room = useRoom();
+
+  // Get connection status
+  const status = useStatus();
+
+  // Check if only positions changed (for instant sync)
+  const isOnlyPositionChange = useCallback((oldNodes: Node"
+  - [JSX Text] "[], newNodes: Node"
+  - [JSX Text] "[], newNodes: Node"
+
+📄 src\hooks\canvas\useCanvasDrawing.ts:
+  - [JSX Text] "(DEFAULT_STATE);
+  const [drawings, setDrawings] = useState"
+  - [JSX Text] "([]);
+  const [currentStroke, setCurrentStroke] = useState"
+  - [JSX Text] "([]);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [startPosition, setStartPosition] = useState"
+  - [JSX Text] "(null);
+  const [currentPosition, setCurrentPosition] = useState"
+  - [JSX Text] "(null);
+  const [selectedDrawingIds, setSelectedDrawingIds] = useState"
+  - [JSX Text] "(new Set());
+  const [editingDrawingId, setEditingDrawingId] = useState"
+  - [JSX Text] "(null);
+
+  // Selection box state
+  const [selectionBox, setSelectionBox] = useState"
+  - [JSX Text] "(null);
+
+  // Performance optimization: use refs to accumulate points during drawing
+  const strokePointsRef = useRef"
+  - [JSX Text] "([]);
+  const rafIdRef = useRef"
+  - [JSX Text] "(null);
+  const lastPathDataUpdateRef = useRef"
+  - [JSX Text] "(0);
+  const PATH_DATA_UPDATE_INTERVAL = 16; // ~60fps
+
+  // Store last calculated pathData to avoid recalculation
+  const lastPathDataRef = useRef"
+  - [JSX Text] "minX &&
+        bounds.y"
+
+📄 src\hooks\canvas\useCanvasEditingState.ts:
+  - [JSX Text] "(Date.now());
+  const inactivityTimeoutRef = useRef"
+  - [JSX Text] "(null);
+  const previousNodesRef = useRef"
+  - [JSX Text] "('');
+  const previousEdgesRef = useRef"
+
+📄 src\hooks\canvas\useCanvasEvents.ts:
+  - [JSX Text] "[],
+  edges: Edge[],
+  setNodes: (nodes: Node"
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+  - [JSX Text] "void,
+  reactFlowWrapper: React.RefObject"
+  - [JSX Text] "void,
+  addToHistory: (nodes: Node"
+  - [JSX Text] "(null);
+  const connectionCreatedRef = useRef"
+  - [JSX Text] "nds.map((n: Node"
+  - [JSX Text] "nds.map((n: Node"
+  - [JSX Text] "nds.map((n: Node"
+  - [JSX Text] "nds.map((n: Node"
+  - [JSX Text] "nds.map((n: Node"
+  - [JSX Text] "nds.map((n: Node"
+  - [JSX Text] "nds.map((n: Node"
+  - [JSX Text] "nds.map((n: Node"
+
+📄 src\hooks\canvas\useCanvasHistory.ts:
+  - [JSX Text] "[],
+  edges: Edge[],
+  setNodes: (nodes: Node"
+  - [JSX Text] "([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const hasInitializedHistory = useRef(false);
+
+  // Add to history when nodes, edges, or drawings change
+  const addToHistory = useCallback((newNodes: Node"
+
+📄 src\hooks\canvas\useCanvasKeyboard.ts:
+  - [JSX Text] "[],
+  edges: Edge[],
+  setNodes: (nodes: Node"
+  - [JSX Text] "[] | ((nodes: Node"
+  - [JSX Text] "Node"
+  - [JSX Text] "void,
+  addToHistory: (nodes: Node"
+  - [JSX Text] "void,
+  handlersRef: React.MutableRefObject"
+  - [JSX Text] ",
+  drawings?: DrawingStroke[],
+  reactFlowInstance?: any,
+  reactFlowWrapper?: React.RefObject"
+  - [JSX Text] "(undefined);
+  const lifecycleLogTimeoutRef = useRef"
+  - [JSX Text] "(undefined);
+  const lastLifecycleLogRef = useRef"
+
+📄 src\hooks\canvas\useCanvasNodeCreation.ts:
+  - [JSX Text] "[],
+  edges: Edge[],
+  setNodes: (nodes: Node"
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+  - [JSX Text] "void,
+  addToHistory: (nodes: Node"
+  - [JSX Text] "Promise"
+  - [JSX Text] "void,
+  handlersRef: React.MutableRefObject"
+  - [JSX Text] ",
+  subscriptionStatus: any,
+  nodesRef: React.MutableRefObject"
+  - [JSX Text] ",
+  updateNodeData:"
+  - [JSX Text] "(nodeId: string, newData: Partial"
+  - [JSX Text] "Promise"
+  - [JSX Text] "node.id);
+
+    setNodes((nds: Node"
+
+📄 src\hooks\canvas\useCanvasNodeHandlers.ts:
+  - [JSX Text] "[],
+  edges: Edge[],
+  setNodes: (nodes: Node"
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+  - [JSX Text] "Promise"
+  - [JSX Text] ",
+  addToHistory: (nodes: Node"
+  - [JSX Text] "Promise"
+  - [JSX Text] "Promise"
+  - [JSX Text] "(null);
+
+  /** Nodes currently being uploaded via explicit user action (file select, paste, etc.).
+   * useImmediateR2Upload skips these to avoid duplicate uploads. */
+  const userUploadInProgressRef = useRef"
+  - [JSX Text] "(new Set());
+
+  // Ref to prevent infinite loops in useEffect
+  const isUpdatingNodesRef = useRef(false);
+
+  // Refs to store current nodes and edges to avoid stale closure issues
+  const nodesRef = useRef"
+  - [JSX Text] "(nodes);
+  const edgesRef = useRef"
+  - [JSX Text] "nds.map((n: Node"
+  - [JSX Text] "(
+    nodeId: string,
+    newData: Partial"
+  - [JSX Text] "nds.map((n: Node"
+  - [JSX Text] "nds.map((n: Node"
+  - [JSX Text] "n.id === nodeId);
+    if (!node || node.type !== 'brandCore') return;
+
+    const brandCoreData = node.data as BrandCoreData;
+    updateNodeData"
+
+📄 src\hooks\canvas\useCanvasNodeSync.ts:
+  - [JSX Text] "[];
+  edges: Edge[];
+  setNodes: (nodes: Node"
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+
+📄 src\hooks\canvas\useCanvasProject.ts:
+  - [JSX Text] "[],
+  edges: Edge[],
+  setNodes: (nodes: Node"
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+  - [JSX Text] "();
+  const navigate = useNavigate();
+  const [isLoadingProject, setIsLoadingProject] = useState(false);
+  const [projectName, setProjectName] = useState"
+  - [JSX Text] "('Untitled');
+  const [showMigrationModal, setShowMigrationModal] = useState(false);
+  const [hasCheckedMigration, setHasCheckedMigration] = useState(false);
+  const [shareId, setShareId] = useState"
+  - [JSX Text] "(null);
+  const [isCollaborative, setIsCollaborative] = useState(false);
+  const [canEdit, setCanEdit] = useState"
+  - [JSX Text] "([]);
+  const [canView, setCanView] = useState"
+  - [JSX Text] "([]);
+  const hasLoadedProject = useRef(false);
+  const currentProjectIdRef = useRef"
+  - [JSX Text] "(undefined);
+  const saveTimeoutRef = useRef"
+  - [JSX Text] "(null);
+  const isSavingRef = useRef(false);
+  const localStorageSaveTimeoutRef = useRef"
+  - [JSX Text] "WARNING_SIZE && r2Status.configured && id && estimatedSize"
+
+📄 src\hooks\canvas\useCanvasStrategyHandler.ts:
+  - [JSX Text] ";
+  updateNodeData:"
+  - [JSX Text] "(
+    nodeId: string,
+    newData: Partial"
+  - [JSX Text] "Promise"
+  - [JSX Text] ")[sectionType] = false;
+
+    // Add this section to the generating steps array
+    const newGeneratingSteps = [...currentGeneratingSteps, sectionType];
+    updateNodeData"
+  - [JSX Text] "s !== sectionType);
+        updateNodeData"
+  - [JSX Text] "s !== sectionType);
+        updateNodeData"
+  - [JSX Text] "s !== sectionType);
+      updateNodeData"
+
+📄 src\hooks\canvas\useDirectorNodeHandler.ts:
+  - [JSX Text] ";
+  edgesRef: React.MutableRefObject"
+  - [JSX Text] ";
+  updateNodeData:"
+  - [JSX Text] "(
+    nodeId: string,
+    newData: Partial"
+  - [JSX Text] "void;
+  setNodes: (nodes: Node"
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+  - [JSX Text] "void;
+  addToHistory?: (nodes: Node"
+  - [JSX Text] "void;
+  handlersRef: React.MutableRefObject"
+
+📄 src\hooks\canvas\useImageNodeHandlers.ts:
+  - [JSX Text] "[];
+  edges: Edge[];
+  setNodes: React.Dispatch"
+  - [JSX Text] ";
+  setEdges: React.Dispatch"
+  - [JSX Text] ";
+  setExportPanel: React.Dispatch"
+  - [JSX Text] ";
+  reactFlowInstance: ReactFlowInstance | null;
+  reactFlowWrapper: React.RefObject"
+  - [JSX Text] ";
+  addToHistory: (nodes: Node"
+  - [JSX Text] "void;
+  isAuthenticated: boolean | null;
+  handleImageNodeDataUpdate?: (nodeId: string, newData: Partial"
+  - [JSX Text] "void;
+  handlersRef?: React.MutableRefObject"
+
+📄 src\hooks\canvas\useImmediateR2Upload.ts:
+  - [JSX Text] "[];
+  canvasId: string | undefined;
+  isAuthenticated: boolean;
+  setNodes: (nodes: Node"
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+  - [JSX Text] "void;
+  handlersRef: React.MutableRefObject"
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+  - [JSX Text] "void,
+  handlersRef: React.MutableRefObject"
+  - [JSX Text] "void
+): Promise"
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+
+📄 src\hooks\canvas\useNodeResize.ts:
+  - [JSX Text] "(false);
+  const pendingResizeRef = useRef"
+
+📄 src\hooks\canvas\utils\imageSyncUtils.ts:
+  - [JSX Text] ",
+  nodes: Node"
+  - [JSX Text] "[],
+  edges: Edge[]
+): Partial"
+
+📄 src\hooks\canvas\utils\nodeDataUpdateUtils.ts:
+  - [JSX Text] "(
+  updateNodeData:"
+  - [JSX Text] "(nodeId: string, newData: Partial"
+
+📄 src\hooks\canvas\utils\nodeGenerationUtils.ts:
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+  - [JSX Text] "void,
+  setNodes: (nodes: Node"
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+
+📄 src\hooks\canvas\utils\presetGenerationUtils.ts:
+  - [JSX Text] ";
+  edgesRef: React.MutableRefObject"
+  - [JSX Text] ";
+  setNodes: (nodes: Node"
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+  - [JSX Text] "void;
+  updateNodeData:"
+  - [JSX Text] "(nodeId: string, newData: Partial"
+  - [JSX Text] "void;
+  updateNodeLoadingState:"
+  - [JSX Text] "void;
+  reactFlowInstance: ReactFlowInstance | null;
+  addToHistory: (nodes: Node"
+  - [JSX Text] "Promise"
+
+📄 src\hooks\canvas\utils\r2UploadUtils.ts:
+  - [JSX Text] "();
+const pendingUploads = new Map"
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+  - [JSX Text] "void,
+  options?: UploadOptions
+): Promise"
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+
+📄 src\hooks\canvas\utils\shaderProcessingUtils.ts:
+  - [JSX Text] ";
+  updateNodeData:"
+  - [JSX Text] "(nodeId: string, newData: Partial"
+  - [JSX Text] "void;
+  updateNodeLoadingState:"
+  - [JSX Text] "void;
+  canvasId?: string;
+  setNodes: (nodes: Node"
+  - [JSX Text] "[] | ((prev: Node"
+  - [JSX Text] "Node"
+  - [JSX Text] "): Promise"
+  - [JSX Text] ", nodeType);
+
+      updateNodeLoadingState"
+
+📄 src\hooks\useAutoSave.ts:
+  - [JSX Text] "Promise"
+  - [JSX Text] "(null);
+  const lastSavedDataRef = useRef"
+  - [JSX Text] "('');
+  const isSavingRef = useRef(false);
+  const savePromiseRef = useRef"
+
+📄 src\hooks\useBrandingMoodboard.ts:
+  - [JSX Text] "(data);
+  const [editingSections, setEditingSections] = useState"
+  - [JSX Text] "(new Set());
+
+  // Initialize UI states from data (persisted) or empty sets
+  const [collapsedSections, setCollapsedSections] = useState"
+  - [JSX Text] "(
+    new Set(data.collapsedSections || [])
+  );
+  const [compactSections, setCompactSections] = useState"
+
+📄 src\hooks\useBudgetAutoSave.ts:
+  - [JSX Text] "(null);
+  const lastSavedDataRef = useRef"
+  - [JSX Text] "('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState"
+  - [JSX Text] "('idle');
+  const savePromiseRef = useRef"
+  - [JSX Text] "(null);
+  const saveStatusTimeoutRef = useRef"
+
+📄 src\hooks\useMockupTags.ts:
+  - [JSX Text] "(AVAILABLE_BRANDING_TAGS);
+    const [availableMockupTags, setAvailableMockupTags] = useState"
+  - [JSX Text] "(AVAILABLE_TAGS);
+    const [availableLocationTags, setAvailableLocationTags] = useState"
+  - [JSX Text] "(AVAILABLE_LOCATION_TAGS);
+    const [availableAngleTags, setAvailableAngleTags] = useState"
+  - [JSX Text] "(AVAILABLE_ANGLE_TAGS);
+    const [availableLightingTags, setAvailableLightingTags] = useState"
+  - [JSX Text] "(AVAILABLE_LIGHTING_TAGS);
+    const [availableEffectTags, setAvailableEffectTags] = useState"
+  - [JSX Text] "(AVAILABLE_EFFECT_TAGS);
+    const [availableMaterialTags, setAvailableMaterialTags] = useState"
+  - [JSX Text] "(AVAILABLE_MATERIAL_TAGS);
+    const [mockupPresets, setMockupPresets] = useState"
+  - [JSX Text] "([]);
+    const [tagCategories, setTagCategories] = useState"
+  - [JSX Text] "randomizeSelection(availableMaterialTags, setSelectedMaterialTags, 1), [availableMaterialTags, setSelectedMaterialTags, randomizeSelection]);
+
+    // Surprise Me Pool handlers
+    const togglePoolTag = useCallback((
+        category: keyof SurpriseMeSelectedTags,
+        tag: string,
+        pool: SurpriseMeSelectedTags,
+        setPool: React.Dispatch"
+
+📄 src\hooks\usePremiumAccess.ts:
+  - [JSX Text] "(false);
+  const [isLoading, setIsLoading] = useState"
+
+📄 src\hooks\useSidebarEffects.ts:
+  - [JSX Text] "= minWidth && newWidth"
+
+📄 src\hooks\useVisantTemplate.ts:
+  - [JSX Text] "(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState"
+
+📄 src\lib\figma-types.ts:
+  - [JSX Text] ";
+  strokes?: Array"
+  - [JSX Text] ";
+  strokeWeight?: number;
+  cornerRadius?: number;
+  effects?: Array"
+  - [JSX Text] "colors?: BrandGuidelineColor[]
+  typography?: BrandGuidelineTypography[]
+  tags?: Record"
+  - [JSX Text] "media?: Array"
+  - [JSX Text] "radius?: Record"
+  - [JSX Text] "shadows?: Record"
+  - [JSX Text] "components?: Record"
+
+📄 src\liveblocks.config.ts:
+  - [JSX Text] ";
+      edges: LiveList"
+
+📄 src\pages\AboutPage.tsx:
+  - [JSX Text] "VISANT //"
+  - [JSX Text] "LABS"
+  - [JSX Text] "Experimentation laboratory creator of personalized solutions for graphic designers and entrepreneurs."
+  - [JSX Text] "EXPLORE APPS"
+  - [JSX Text] "about.txt"
+  - [JSX Text] "Independent creative lab based in Brazil."
+  - [JSX Text] "We love to experiment with design and technology."
+  - [JSX Text] "What we do:"
+  - [JSX Text] "• Brand identity & visual systems"
+  - [JSX Text] "• Interactive web experiences"
+  - [JSX Text] "• Design experiments & tools"
+  - [JSX Text] "• Creative technology"
+  - [JSX Text] "Our approach:"
+  - [JSX Text] "• Bridge art and code"
+  - [JSX Text] "• Focus on interactiveness & innovation"
+  - [JSX Text] "• Open source mindset"
+  - [JSX Text] "Connect"
+  - [JSX Text] "Portfolio"
+  - [JSX Text] "Alpha Labs"
+  - [JSX Text] "Email Us"
+  - [JSX Text] "LABS APPS //"
+  - [JSX Text] "GitHub"
+
+📄 src\pages\AdminPage.tsx:
+  - [JSX Text] "(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [data, setData] = useState"
+  - [JSX Text] "(null);
+  const [isAdmin, setIsAdmin] = useState"
+  - [JSX Text] "(null);
+  const [activeTab, setActiveTab] = useState"
+  - [JSX Text] "('overview');
+
+  // Usage History Modal State
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState"
+  - [JSX Text] "(null);
+  const [historyRecords, setHistoryRecords] = useState"
+  - [JSX Text] "LOG"
+  - [JSX Text] ") : isAdmin === false ? ("
+  - [JSX Text] "30d"
+  - [JSX Text] "Novos Usuários"
+  - [JSX Text] "Últimos 30 dias"
+  - [JSX Text] "Total gerado"
+  - [JSX Text] "Total gerado"
+  - [JSX Text] "Passos de Texto"
+  - [JSX Text] "Processamento de IA"
+  - [JSX Text] "Total Tokens"
+  - [JSX Text] "Input + Output"
+  - [JSX Text] ":
+                                    feature === 'brandingmachine' ?"
+  - [JSX Text] "Distribuição de gerações por modelo de IA"
+  - [JSX Text] "Detalhamento por modelo e resolução"
+  - [JSX Text] "Resoluções:"
+  - [JSX Text] "Detalhamento por modelo"
+  - [JSX Text] "Estatísticas de processamento de texto e tokens"
+  - [JSX Text] "Histórico de Uso"
+  - [JSX Text] "Carregando registros..."
+  - [JSX Text] ") : historyRecords.length === 0 ? ("
+  - [JSX Text] "Nenhum registro encontrado para este usuário."
+  - [JSX Text] "Data"
+  - [JSX Text] "Modelo"
+  - [JSX Text] "Tipo"
+  - [JSX Text] "Stats"
+  - [JSX Text] "Créditos"
+  - [JSX Text] "Todos os tipos de geração incluídos"
+
+📄 src\pages\AdminPresetsPage.tsx:
+  - [JSX Text] "(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [data, setData] = useState"
+  - [JSX Text] "(null);
+  const [activeTab, setActiveTab] = useState"
+  - [JSX Text] "('all');
+  const [editingPreset, setEditingPreset] = useState"
+  - [JSX Text] "(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [formData, setFormData] = useState"
+  - [JSX Text] "(null);
+  const [isAdmin, setIsAdmin] = useState"
+  - [JSX Text] "(null);
+  const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
+  const [batchJson, setBatchJson] = useState('');
+  const [batchResult, setBatchResult] = useState"
+  - [JSX Text] "(null);
+  const [isValidatingJson, setIsValidatingJson] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [tagInput, setTagInput] = useState('');
+  const [viewMode, setViewMode] = useState"
+  - [JSX Text] "('grid');
+  const [mockupCategories, setMockupCategories] = useState"
+  - [JSX Text] "= [];
+
+      for (let i = 0; i"
+  - [JSX Text] "= [];
+
+      for (let i = 0; i"
+  - [JSX Text] "= [];
+
+      for (let i = 0; i"
+  - [JSX Text] "= [];
+
+      // Create presets from tags
+      for (let i = 0; i"
+  - [JSX Text] "Você precisa estar logado para acessar esta página."
+  - [JSX Text] "Fazer Login"
+  - [JSX Text] ") : isAdmin === false ? ("
+  - [JSX Text] "Acesso negado. Você precisa ser um administrador para acessar esta página."
+  - [JSX Text] "Novo"
+  - [JSX Text] "Popular Mockups Padrão"
+  - [JSX Text] "Resultado da importação:"
+  - [JSX Text] "Erros:"
+  - [JSX Text] "Importar Batch de Mockup Presets"
+  - [JSX Text] "Cole o JSON com os presets (array de objetos)"
+  - [JSX Text] "Resultado:"
+  - [JSX Text] "Erros:"
+  - [JSX Text] "Imagem de Referência"
+  - [JSX Text] "Fazendo upload da imagem..."
+  - [JSX Text] "Defina o ID do preset antes de fazer upload da imagem."
+  - [JSX Text] "Ou faça upload de uma nova imagem:"
+  - [JSX Text] "Ou insira a URL manualmente"
+  - [JSX Text] "Aspect Ratio (obrigatório)"
+  - [JSX Text] "Model (opcional)"
+  - [JSX Text] "Nenhum"
+  - [JSX Text] "Categoria Mockup (opcional)"
+  - [JSX Text] "Nenhuma"
+  - [JSX Text] "Tags (opcional)"
+  - [JSX Text] "Adicionar"
+  - [JSX Text] "Salvar"
+  - [JSX Text] "Cancelar"
+  - [Attribute: placeholder] "ex: my-custom-preset"
+  - [Attribute: placeholder] "Digite uma tag e pressione Enter"
+
+📄 src\pages\AdminProductsPage.tsx:
+  - [JSX Text] "(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [products, setProducts] = useState"
+  - [JSX Text] "([]);
+    const [activeTab, setActiveTab] = useState"
+  - [JSX Text] "('credit_package');
+    const [editingId, setEditingId] = useState"
+  - [JSX Text] "(null);
+    const [isCreating, setIsCreating] = useState(false);
+    const [isAdmin, setIsAdmin] = useState"
+  - [JSX Text] "(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const [formData, setFormData] = useState"
+  - [JSX Text] "Acesso negado. Administradores apenas."
+  - [JSX Text] "Produtos"
+  - [JSX Text] "Gestão de Produtos"
+  - [JSX Text] "Gerencie pacotes de créditos e planos de assinatura."
+  - [JSX Text] "Semear Padrões"
+  - [JSX Text] "Sincronizar"
+  - [JSX Text] "Novo Produto"
+  - [JSX Text] "Pacotes de Créditos"
+  - [JSX Text] "Assinaturas"
+  - [JSX Text] "Preço BRL"
+  - [JSX Text] "Créditos"
+  - [JSX Text] "Stripe"
+  - [JSX Text] "Payments"
+  - [JSX Text] "Editar"
+  - [JSX Text] "Nenhum produto encontrado nesta categoria."
+  - [JSX Text] "Preencha os detalhes do produto e links de pagamento."
+  - [JSX Text] "ID do Produto (único)"
+  - [JSX Text] "Tipo"
+  - [JSX Text] "Nome Comercial"
+  - [JSX Text] "Descrição"
+  - [JSX Text] "Benefícios (um por linha para lista em marcadores)"
+  - [JSX Text] "Créditos"
+  - [JSX Text] "Preço R$ (BRL)"
+  - [JSX Text] "R$"
+  - [JSX Text] "Preço $ (USD) - Opcional"
+  - [JSX Text] "Plataformas & IDs"
+  - [JSX Text] "Stripe Product ID"
+  - [JSX Text] "Abacate Product ID"
+  - [JSX Text] "Abacate Bill ID (PIX)"
+  - [JSX Text] "Checkout Links"
+  - [JSX Text] "Link de Pagamento BRL (Stripe)"
+  - [JSX Text] "Link de Pagamento USD (Stripe)"
+  - [JSX Text] "Produto Ativo"
+  - [JSX Text] "Ordem:"
+  - [JSX Text] "Cancelar"
+  - [Attribute: placeholder] "Buscar produto..."
+  - [Attribute: placeholder] "ex: credits_20, plan_pro"
+  - [Attribute: placeholder] "ex: Pacote Gamer"
+  - [Attribute: placeholder] "Descrição breve do que este produto oferece..."
+  - [Attribute: placeholder] "Benefício 1&#10;Benefício 2&#10;Benefício 3..."
+  - [Attribute: placeholder] "prod_..."
+  - [Attribute: placeholder] "prod_..."
+  - [Attribute: placeholder] "bill_..."
+  - [Attribute: placeholder] "https://buy.stripe.com/..."
+  - [Attribute: placeholder] "https://buy.stripe.com/..."
+  - [Attribute: title] "Admin | Produtos"
+
+📄 src\pages\ApiKeysPage.tsx:
+  - [JSX Text] "([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState"
+  - [JSX Text] "(null);
+
+  // Create key form
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newKeyName, setNewKeyName] = useState('');
+  const [newKeyScopes, setNewKeyScopes] = useState"
+  - [JSX Text] "(['read']);
+  const [newKeyExpiry, setNewKeyExpiry] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
+
+  // Newly created key display
+  const [createdKeyRaw, setCreatedKeyRaw] = useState"
+  - [JSX Text] "(null);
+  const [copied, setCopied] = useState(false);
+  const [showRawKey, setShowRawKey] = useState(true);
+
+  // Revoke confirmation
+  const [revokeTarget, setRevokeTarget] = useState"
+  - [JSX Text] "Please sign in to manage API keys"
+  - [JSX Text] "Create and manage API keys for agent and programmatic access"
+  - [JSX Text] "Create New Key"
+  - [JSX Text] "Save your API key now"
+  - [JSX Text] "This key will not be shown again. Copy it and store it securely."
+  - [JSX Text] "Dismiss"
+  - [JSX Text] "Create New API Key"
+  - [JSX Text] "Scopes"
+  - [JSX Text] "Expiry"
+  - [JSX Text] "(optional)"
+  - [JSX Text] ") : keys.length === 0 ? ("
+  - [JSX Text] "No API keys yet"
+  - [JSX Text] "Create your first key to start using the API programmatically."
+  - [JSX Text] "Key"
+  - [JSX Text] "Scopes"
+  - [JSX Text] "Last Used"
+  - [JSX Text] "Created"
+  - [JSX Text] "Status"
+  - [JSX Text] "Never"
+  - [JSX Text] ") : key.status === 'expired' ? ("
+  - [JSX Text] "Expired"
+  - [JSX Text] "Revoked"
+  - [JSX Text] "Revoke API Key"
+  - [JSX Text] "Are you sure you want to revoke"
+  - [JSX Text] "This action cannot be undone. Any applications using this key will lose access immediately."
+  - [Attribute: placeholder] "e.g. Production Agent, CI/CD Pipeline"
+  - [Attribute: title] "Copy to clipboard"
+  - [Attribute: title] "Revoke key"
+  - [Attribute: description] "Manage your API keys for agent and programmatic access"
+
+📄 src\pages\AppsPage.tsx:
+  - [JSX Text] "EXPLORE APP //"
+  - [Attribute: title] "EXPERIMENTAL LABS //"
+
+📄 src\pages\BrandGuidelinesPage.tsx:
+  - [JSX Text] "([]);
+    const [selectedId, setSelectedId] = useState"
+  - [JSX Text] "(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isWizardOpen, setIsWizardOpen] = useState(false);
+    const [editingGuideline, setEditingGuideline] = useState"
+  - [JSX Text] "(null);
+    const [deletingId, setDeletingId] = useState"
+  - [JSX Text] "(null);
+    const [showAuthModal, setShowAuthModal] = useState(false);
+
+    // Dynamic sections state
+    const [activeSections, setActiveSections] = useState"
+  - [JSX Text] "(['identity', 'logos', 'colors', 'typography']);
+
+    // Local state for the selected guideline's media (live updates)
+    const [localMedia, setLocalMedia] = useState"
+  - [JSX Text] "([]);
+    const [localLogos, setLocalLogos] = useState"
+  - [JSX Text] "Synchronizing Brand Data..."
+  - [JSX Text] ") : guidelines.length === 0 ? ("
+  - [JSX Text] "My Brands"
+  - [JSX Text] "Panel Layout"
+  - [JSX Text] "Toggle Sections"
+  - [JSX Text] "Editorial"
+  - [JSX Text] "Main Assets"
+  - [JSX Text] "No assets yet"
+  - [JSX Text] "Open Library"
+  - [JSX Text] "Brand Strategy Tags"
+  - [JSX Text] "No strategy tags defined"
+  - [JSX Text] "Principles"
+  - [JSX Text] "Avoid"
+  - [JSX Text] "Media Kit & Visual Library"
+  - [JSX Text] "Unified storage for logos, headers, and reference media."
+  - [JSX Text] "Detailed Configuration"
+  - [JSX Text] "Select a Cluster"
+  - [JSX Text] "Choose a brand identity to begin orchestration."
+
+📄 src\pages\BrandingMachinePage.tsx:
+  - [JSX Text] "(0); // 0 = welcome, 10 = moodboard
+  const [prompt, setPrompt] = useState"
+  - [JSX Text] "('');
+  const [brandingData, setBrandingData] = useState"
+  - [JSX Text] "(false);
+  const [generatingSteps, setGeneratingSteps] = useState"
+  - [JSX Text] "(new Set());
+  const [isSaving, setIsSaving] = useState"
+  - [JSX Text] "(false);
+  const [isLoadingProject, setIsLoadingProject] = useState"
+  - [JSX Text] "(false);
+  const [currentProjectId, setCurrentProjectId] = useState"
+  - [JSX Text] "(null);
+  const [showDependencyModal, setShowDependencyModal] = useState"
+  - [JSX Text] "(false);
+  const [pendingGeneration, setPendingGeneration] = useState"
+  - [JSX Text] "(null);
+  const loadedProjectIdRef = useRef"
+  - [JSX Text] "): Promise"
+  - [Attribute: title] "Branding Machine com IA"
+  - [Attribute: description] "Crie estratégias completas de branding com inteligência artificial. Gere identidades visuais profissionais passo a passo."
+  - [Attribute: description] "Crie estratégias completas de branding com inteligência artificial. Gere identidades visuais profissionais passo a passo."
+
+📄 src\pages\BudgetMachinePage.tsx:
+  - [JSX Text] "(null);
+  const [budgetData, setBudgetData] = useState"
+  - [JSX Text] "(null);
+  const [currentProjectId, setCurrentProjectId] = useState"
+  - [JSX Text] "(null);
+  const [budgetName, setBudgetName] = useState"
+  - [JSX Text] "('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingProject, setIsLoadingProject] = useState(false);
+  const [shareLink, setShareLink] = useState"
+  - [JSX Text] "(null);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const loadedProjectIdRef = useRef"
+  - [JSX Text] "(null);
+
+  // PDF positioning mode for custom templates
+  const [positioningFieldId, setPositioningFieldId] = useState"
+  - [JSX Text] "(null);
+  const [selectedFieldId, setSelectedFieldId] = useState"
+  - [JSX Text] "(null);
+  const [pendingFieldPosition, setPendingFieldPosition] = useState"
+  - [JSX Text] "(null);
+  const [focusedFieldId, setFocusedFieldId] = useState"
+  - [JSX Text] "(null);
+
+  // Form width state for resize
+  const [formWidth, setFormWidth] = useState"
+  - [JSX Text] "(null);
+  const formContainerRef = useRef"
+  - [JSX Text] "= minWidthAbsolute && newWidth"
+  - [JSX Text] "Loading budget..."
+  - [JSX Text] "Salvando..."
+  - [JSX Text] "Salvo"
+  - [JSX Text] "Erro ao salvar"
+  - [JSX Text] "Pronto"
+  - [JSX Text] "Share Link:"
+  - [JSX Text] "Copiar"
+  - [Attribute: label] "Duplicate budget"
+  - [Attribute: description] "Crie e gerencie orçamentos profissionais para seus projetos de design. Templates personalizáveis e geração de PDF."
+
+📄 src\pages\BudgetSharedPage.tsx:
+  - [JSX Text] "(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState"
+  - [JSX Text] "void;
+  t: (key: string, params?: Record"
+  - [JSX Text] "c.getAttribute('data-page')));
+
+      // Capture each page in order
+      for (let i = 0; i"
+
+📄 src\pages\CanvasPage.tsx:
+  - [JSX Text] "(null);
+  const [reactFlowInstance, setReactFlowInstance] = useState"
+  - [JSX Text] "(null);
+
+  // React Flow state
+  const [nodes, setNodes, onNodesChange] = useNodesState"
+  - [JSX Text] "([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState"
+  - [JSX Text] "(null);
+  const [openDirectorNodeId, setOpenDirectorNodeId] = useState"
+  - [JSX Text] "(null);
+  const chatSidebarRef = useRef"
+  - [JSX Text] "(null);
+  const [isLargeScreen, setIsLargeScreen] = useState(false);
+
+  // Chat sidebar dimensions
+  const CHAT_SIDEBAR_WIDTH = 400;
+  const CHAT_SIDEBAR_COLLAPSED_WIDTH = 56;
+  const RESIZER_WIDTH = 8;
+  const [showDeleteChatNodeModal, setShowDeleteChatNodeModal] = useState(false);
+  const [chatNodeToDelete, setChatNodeToDelete] = useState"
+  - [JSX Text] "(null);
+  const [edgeContextMenu, setEdgeContextMenu] = useState"
+  - [JSX Text] "(null);
+  const [imageContextMenu, setImageContextMenu] = useState"
+  - [JSX Text] "(null);
+  const [nodeContextMenu, setNodeContextMenu] = useState"
+  - [JSX Text] "(null);
+  const [selectedMockup, setSelectedMockup] = useState"
+  - [JSX Text] "(null);
+  const [userMockups, setUserMockups] = useState"
+  - [JSX Text] "([]);
+  const [exportPanel, setExportPanel] = useState"
+  - [JSX Text] "(null);
+  const [isSettingsLoaded, setIsSettingsLoaded] = useState(false);
+
+  // Workflow state
+
+  const [showSaveWorkflow, setShowSaveWorkflow] = useState(false);
+  const [showMultiExportModal, setShowMultiExportModal] = useState(false);
+  
+  // Storage Limit Modal State
+  const [storageLimitModal, setStorageLimitModal] = useState"
+  - [JSX Text] "nodeIds.includes(n.id));
+    if (nodesToDuplicate.length === 0) return;
+
+    addToHistory(nodes, edges, drawing.drawings);
+
+    const duplicatedNodes: Node"
+  - [JSX Text] "nds.map((n: Node"
+  - [JSX Text] "nds.map((n: Node"
+  - [JSX Text] "[] = [];
+
+    for (let i = 0; i"
+  - [JSX Text] "(nodes);
+  const previousEdgesRef = useRef"
+  - [JSX Text] "(edges);
+  const isDraggingRef = useRef(false);
+  const draggingNodeIdRef = useRef"
+  - [JSX Text] "(null);
+  const lastPresenceUpdateRef = useRef"
+  - [JSX Text] "handleDuplicate(imageContextMenu.nodeId);
+          const onDescribe = isOutputNode ? undefined : handleImageDescribe;
+
+          return ("
+  - [JSX Text] "n.id === openDirectorNodeId && n.type === 'director');
+        if (!directorNode) return null;
+        const directorData = directorNode.data as DirectorNodeData;
+        return ("
+  - [JSX Text] "[];
+  edges: Edge[];
+  handleNodesChange: any;
+  onEdgesChange: any;
+  onConnect: any;
+  onConnectStart: any;
+  onConnectEnd: any;
+  onNodeDragStart: any;
+  onNodeDragStop: any;
+  onPaneContextMenu: any;
+  onNodeContextMenu: any;
+  onEdgeClick: any;
+  onEdgeContextMenu: any;
+  nodeTypes: any;
+  setReactFlowInstance: any;
+  reactFlowWrapper: React.RefObject"
+  - [JSX Text] "Promise"
+  - [JSX Text] "void;
+  currentPathData?: string;
+  isDrawing?: boolean;
+  drawings?: any[];
+  selectedDrawingIds?: Set"
+  - [JSX Text] "(null);
+    const draggingNodeIdRef = React.useRef"
+  - [JSX Text] "(null);
+    const lastPresenceUpdateRef = React.useRef"
+
+📄 src\pages\CanvasProjectsPage.tsx:
+  - [JSX Text] "n.type === 'output') as Node"
+  - [JSX Text] "n.type === 'image') as Node"
+  - [JSX Text] "([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [deletingId, setDeletingId] = useState"
+  - [JSX Text] "(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState"
+  - [JSX Text] "(null);
+  const [editingProjectId, setEditingProjectId] = useState"
+  - [JSX Text] "(null);
+  const [editingName, setEditingName] = useState"
+  - [JSX Text] "('');
+  const editingInputRef = useRef"
+  - [JSX Text] "Import from JSON"
+  - [JSX Text] ") : projects.length === 0 ? ("
+
+📄 src\pages\CanvasSharedPage.tsx:
+  - [JSX Text] "();
+  const navigate = useNavigate();
+  const [project, setProject] = useState"
+  - [JSX Text] "(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState"
+  - [JSX Text] "Shared Canvas"
+  - [JSX Text] "Project Not Found"
+
+📄 src\pages\CommunityPage.tsx:
+  - [JSX Text] "(0);
+  const [communityMockups, setCommunityMockups] = useState"
+  - [JSX Text] "([]);
+  const [allPublicMockups, setAllPublicMockups] = useState"
+  - [JSX Text] "([]);
+  const [isGalleryExpanded, setIsGalleryExpanded] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [workflows, setWorkflows] = useState"
+  - [JSX Text] "Comunidade Ativa"
+  - [JSX Text] "Criar um novo prompt"
+  - [JSX Text] "Ver Tudo"
+  - [JSX Text] "Usuários"
+  - [JSX Text] "Presets Criados"
+  - [JSX Text] "Public Mockups"
+  - [JSX Text] "Explorar por Categoria"
+  - [JSX Text] "Todas as categorias"
+  - [JSX Text] "Ainda sem presets"
+  - [JSX Text] "Workflows da Comunidade"
+  - [JSX Text] "Workflows completos criados pela comunidade. Salve, compartilhe e reutilize estruturas de canvas inteiras."
+  - [JSX Text] "Abrir Canvas"
+  - [JSX Text] "Nenhum workflow público disponível ainda"
+  - [JSX Text] "Ver todos os workflows"
+  - [JSX Text] "Galeria da Comunidade"
+  - [JSX Text] "Inspirado pelas criações enviadas pelos nossos usuários em tempo real."
+  - [JSX Text] "Ver galeria completa"
+  - [JSX Text] "Usar como referência"
+  - [JSX Text] "Nenhum mockup encontrado na galeria pública"
+  - [JSX Text] "Ver menos"
+  - [JSX Text] "Ver mais"
+  - [JSX Text] "Vamos crescer junto"
+  - [JSX Text] "Visant Labs é movido pela paixão e colaboração. Acesse nosso repositório no GitHub para contribuir, relatar bugs ou dar uma estrela."
+  - [JSX Text] "Ver Repositório"
+  - [JSX Text] "v1.0.0-alpha • MIT License"
+
+📄 src\pages\CommunityPresetsPage.tsx:
+  - [JSX Text] "(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [presets, setPresets] = useState"
+  - [JSX Text] "([]);
+  const [activeTab, setActiveTab] = useState"
+  - [JSX Text] "(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [formData, setFormData] = useState"
+  - [JSX Text] "(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [viewMode, setViewMode] = useState"
+  - [JSX Text] "([]);
+  const [selectedPreset, setSelectedPreset] = useState"
+  - [JSX Text] "(null);
+  const [duplicateModalOpen, setDuplicateModalOpen] = useState(false);
+  const [presetToDuplicate, setPresetToDuplicate] = useState"
+  - [JSX Text] "(null);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [searchQuery, setSearchQuery] = useState"
+  - [Attribute: title] "Copy prompt"
+
+📄 src\pages\CommunityProfilePage.tsx:
+  - [JSX Text] "(null);
+  const [mockups, setMockups] = useState"
+  - [JSX Text] "([]);
+  const [presets, setPresets] = useState"
+  - [JSX Text] "([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState"
+  - [JSX Text] "(null);
+  const [selectedMockup, setSelectedMockup] = useState"
+  - [JSX Text] "(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  // Default to mockups tab
+  const [activeTab, setActiveTab] = useState('mockups');
+  const [currentUserId, setCurrentUserId] = useState"
+  - [JSX Text] "(null);
+  const [selectedPreset, setSelectedPreset] = useState"
+  - [JSX Text] "(null);
+  const [openModalType, setOpenModalType] = useState"
+  - [JSX Text] "(null);
+
+  const abortControllerRef = useRef"
+  - [JSX Text] "(null);
+  const isLoadingRef = useRef(false);
+  const lastIdentifierRef = useRef"
+  - [JSX Text] "Loading profile..."
+  - [JSX Text] "Mockups"
+  - [JSX Text] "Workflows"
+  - [JSX Text] "Mockups"
+  - [JSX Text] "Workflows"
+  - [JSX Text] "No mockups yet"
+  - [JSX Text] "This user hasn't published any mockups yet."
+  - [JSX Text] "This user hasn't published any workflows yet."
+  - [JSX Text] "Run"
+  - [JSX Text] "This user hasn't published any presets yet."
+  - [Attribute: title] "Duplicate to my library"
+
+📄 src\pages\DesignSystemPage.tsx:
+  - [JSX Text] "0 ? currentIndex - 1 : null;
+    const nextIndex = currentIndex"
+  - [JSX Text] "s.id);
+    const observers: IntersectionObserver[] = [];
+    const sectionVisibility = new Map"
+  - [JSX Text] "Click me"
+  - [JSX Text] "The quick brown fox jumps over the lazy dog"
+  - [JSX Text] "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+  - [JSX Text] "Heading 1"
+  - [JSX Text] "Heading 2"
+  - [JSX Text] "Heading 3"
+  - [JSX Text] "Heading 4"
+  - [JSX Text] "Heading 5"
+  - [JSX Text] "Heading 6"
+  - [JSX Text] "Body text - Regular paragraph text"
+  - [JSX Text] "Small text - For captions and labels"
+  - [JSX Text] "Extra small text - For fine print"
+  - [JSX Text] "Default"
+  - [JSX Text] "Secondary"
+  - [JSX Text] "Destructive"
+  - [JSX Text] "Outline"
+  - [JSX Text] "Ghost"
+  - [JSX Text] "Link"
+  - [JSX Text] "Brand"
+  - [JSX Text] "Sidebar Action"
+  - [JSX Text] "Small"
+  - [JSX Text] "Default"
+  - [JSX Text] "Large"
+  - [JSX Text] "Sidebar"
+  - [JSX Text] "Brand"
+  - [JSX Text] "Brand Button"
+  - [JSX Text] "Sidebar"
+  - [JSX Text] "Sidebar"
+  - [JSX Text] "Icon"
+  - [JSX Text] "Large"
+  - [JSX Text] "Large"
+  - [JSX Text] "Default:"
+  - [JSX Text] "Custom placeholder:"
+  - [JSX Text] "Without clear button:"
+  - [JSX Text] "Features:"
+  - [JSX Text] "Icon"
+  - [JSX Text] "Clear Button"
+  - [JSX Text] "Customizable"
+  - [JSX Text] "Accessible"
+  - [JSX Text] "Default"
+  - [JSX Text] "Secondary"
+  - [JSX Text] "Destructive"
+  - [JSX Text] "Outline"
+  - [JSX Text] "Card Title"
+  - [JSX Text] "Card description text"
+  - [JSX Text] "This is the card content area."
+  - [JSX Text] "Category icons and colors:"
+  - [JSX Text] "Default State:"
+  - [JSX Text] "Selected State (Multi-select):"
+  - [JSX Text] "Navigation sidebar with collapsible sections, mobile support, and active state highlighting."
+  - [JSX Text] "Responsive"
+  - [JSX Text] "Collapsible"
+  - [JSX Text] "Active States"
+  - [JSX Text] "Shared Modal Base"
+  - [JSX Text] "Reusable modal component with consistent styling, keyboard handling, and accessibility."
+  - [JSX Text] "Portal"
+  - [JSX Text] "Escape Key"
+  - [JSX Text] "Backdrop Click"
+  - [JSX Text] "Sizes"
+  - [JSX Text] "Footer"
+  - [JSX Text] "Open Shared Modal"
+  - [JSX Text] "Confirmation Modal"
+  - [JSX Text] "Pre-built modal for simple confirmations, warnings, and alerts."
+  - [JSX Text] "Warning"
+  - [JSX Text] "Danger"
+  - [JSX Text] "Info"
+  - [JSX Text] "Modal Sizes"
+  - [JSX Text] "sm"
+  - [JSX Text] "max-w-md"
+  - [JSX Text] "md"
+  - [JSX Text] "max-w-lg"
+  - [JSX Text] "lg"
+  - [JSX Text] "max-w-2xl"
+  - [JSX Text] "xl"
+  - [JSX Text] "max-w-4xl"
+  - [JSX Text] "full"
+  - [JSX Text] "max-w-[90vw]"
+  - [JSX Text] "This modal uses the shared Modal base component. It provides consistent styling,
+                            keyboard handling (Escape to close), backdrop click to close, and accessibility features."
+  - [JSX Text] "Status"
+  - [JSX Text] "John Doe"
+  - [JSX Text] "Jane Smith"
+  - [JSX Text] "Inactive"
+  - [JSX Text] "Advanced data table with sorting, filtering, and search capabilities."
+  - [JSX Text] "Sorting"
+  - [JSX Text] "Filtering"
+  - [JSX Text] "Responsive"
+  - [JSX Text] "Chart components for data visualization built on Recharts."
+  - [JSX Text] "AreaChart"
+  - [JSX Text] "BarChart"
+  - [JSX Text] "LineChart"
+  - [JSX Text] "Tooltips"
+  - [JSX Text] "Rectangular (default):"
+  - [JSX Text] "Circular:"
+  - [JSX Text] "Text:"
+  - [JSX Text] "Grid Dots Background Example"
+  - [JSX Text] "Decorative background pattern with configurable dots, spacing, and opacity."
+  - [JSX Text] "Theme-aware"
+  - [JSX Text] "Configurable"
+  - [JSX Text] "Overlay"
+  - [JSX Text] "Tab 1"
+  - [JSX Text] "Tab 2"
+  - [JSX Text] "Tab 3"
+  - [JSX Text] "Content for Tab 1"
+  - [JSX Text] "Content for Tab 2"
+  - [JSX Text] "Content for Tab 3"
+  - [JSX Text] "Variants"
+  - [JSX Text] "Default"
+  - [JSX Text] "Secondary"
+  - [JSX Text] "Outline"
+  - [JSX Text] "Destructive"
+  - [JSX Text] "Selectable Tags (Common Pattern)"
+  - [JSX Text] "Used in Branding and Categories sections"
+  - [JSX Text] "Selected Tag"
+  - [JSX Text] "Unselected Tag"
+  - [JSX Text] "Disabled Tag"
+  - [JSX Text] "Features"
+  - [JSX Text] "Collapsible"
+  - [JSX Text] "Drag & Drop"
+  - [JSX Text] "Categorized"
+  - [JSX Text] "Stacked"
+  - [JSX Text] "Props"
+  - [JSX Text] "variant:"
+  - [JSX Text] "'standalone' | 'stacked'"
+  - [JSX Text] "position:"
+  - [JSX Text] "'left' | 'right'"
+  - [JSX Text] "experimentalMode:"
+  - [JSX Text] "boolean"
+  - [JSX Text] "Handlers"
+  - [JSX Text] "onAddMerge, onAddEdit"
+  - [JSX Text] "onAddUpscale, onAddMockup"
+  - [JSX Text] "onAddAngle, onAddShader"
+  - [JSX Text] "Features"
+  - [JSX Text] "Editable Name"
+  - [JSX Text] "Collaboration"
+  - [JSX Text] "✓ Inline name editing"
+  - [JSX Text] "✓ Settings modal"
+  - [JSX Text] "✓ Share & collaboration"
+  - [JSX Text] "✓ Community presets"
+  - [JSX Text] "Customization"
+  - [JSX Text] "Background color"
+  - [JSX Text] "Grid settings"
+  - [JSX Text] "Display controls"
+  - [JSX Text] "Cursor color"
+  - [JSX Text] "React Flow"
+  - [JSX Text] "Node Based"
+  - [JSX Text] "Node & edge management"
+  - [JSX Text] "Customizable appearance"
+  - [JSX Text] "Interactions"
+  - [JSX Text] "Drag & Drop"
+  - [JSX Text] "Context Menus"
+  - [JSX Text] "Image drag-and-drop"
+  - [JSX Text] "Pane & node menus"
+  - [JSX Text] "Keyboard shortcuts"
+  - [JSX Text] "Display"
+  - [JSX Text] "Custom Grid"
+  - [JSX Text] "Minimap"
+  - [JSX Text] "Background color"
+  - [JSX Text] "Grid customization"
+  - [JSX Text] "Controls toggle"
+  - [JSX Text] "Disabled Action"
+  - [JSX Text] "Glass Panel Content with 'md' padding"
+  - [JSX Text] "Large padded panel"
+  - [JSX Text] "Regular text follows the micro title."
+  - [JSX Text] "Usage Guidelines"
+  - [JSX Text] "Use"
+  - [JSX Text] "MicroTitle"
+  - [JSX Text] "for section headers (uppercase, tracking-wider)."
+  - [JSX Text] "Wrap configuration inputs in a"
+  - [JSX Text] "GlassPanel"
+  - [JSX Text] "for visual depth."
+  - [JSX Text] "Place the primary action in a"
+  - [JSX Text] "PremiumButton"
+  - [JSX Text] "at the bottom, preferably sticky."
+  - [JSX Text] "Maintain consistent"
+  - [JSX Text] "gap-8"
+  - [JSX Text] "between major sections."
+  - [JSX Text] "SETUP PREVIEW"
+  - [JSX Text] "CONFIGURATION AREA"
+  - [JSX Text] "Real-world Example (Mockup Machine)"
+  - [JSX Text] "CONFIGURAÇÕES"
+  - [JSX Text] "--node-padding:"
+  - [JSX Text] "1.75rem (28px)"
+  - [JSX Text] "--node-gap:"
+  - [JSX Text] "0.75rem (12px)"
+  - [JSX Text] "--radius:"
+  - [JSX Text] "0.625rem (10px)"
+  - [Attribute: placeholder] "Enter text..."
+  - [Attribute: placeholder] "email@example.com"
+  - [Attribute: placeholder] "Disabled input"
+  - [Attribute: placeholder] "Search nodes..."
+  - [Attribute: placeholder] "Enter multiline text..."
+  - [Attribute: placeholder] "Select an option..."
+  - [Attribute: title] "Copy CSS variable"
+  - [Attribute: title] "Shared Modal Example"
+  - [Attribute: description] "This is an example of the shared Modal component"
+
+📄 src\pages\DocsPage.tsx:
+  - [JSX Text] "(null);
+  const [mcpSpec, setMcpSpec] = useState"
+  - [JSX Text] "s.id);
+    const observers: IntersectionObserver[] = [];
+    const sectionVisibility = new Map"
+  - [JSX Text] "Parameters"
+  - [JSX Text] "Documentation"
+  - [JSX Text] "Visant Copilot Docs"
+  - [JSX Text] "Complete API, MCP, and Plugin documentation for the Visant design platform."
+  - [JSX Text] "LLM / Agent tip —"
+  - [JSX Text] "Copy as Markdown"
+  - [JSX Text] "button above to get the current section as clean, structured markdown.
+                    Paste it directly into your agent's context window or system prompt for accurate API usage."
+  - [JSX Text] "REST API"
+  - [JSX Text] "HTTP API endpoints for authentication, mockups, and more."
+  - [JSX Text] "MCP Tools"
+  - [JSX Text] "Model Context Protocol tools for Claude and agent integration."
+  - [JSX Text] "Figma Plugin"
+  - [JSX Text] "Design automation and mockup generation inside Figma."
+  - [JSX Text] "For Agents"
+  - [JSX Text] "Connect AI agents via MCP, API keys, llms.txt discovery, and clean HTML."
+  - [JSX Text] "Canvas API"
+  - [JSX Text] "Programmatically create, edit, and manipulate canvas nodes and projects — for LLM agents and external tools."
+  - [JSX Text] "Getting Started with API"
+  - [JSX Text] "How to authenticate and make requests to Visant Copilot."
+  - [JSX Text] "1. Authentication"
+  - [JSX Text] "All API requests require authentication via JWT token or API key in the Authorization header."
+  - [JSX Text] "HTTP Header"
+  - [JSX Text] "Authorization: Bearer YOUR_JWT_TOKEN"
+  - [JSX Text] "Authorization: Bearer visant_sk_xxxxxxxxxxxx"
+  - [JSX Text] "For agents, create an API key from"
+  - [JSX Text] "Settings → API Keys"
+  - [JSX Text] ". See the"
+  - [JSX Text] "For Agents"
+  - [JSX Text] "tab for details."
+  - [JSX Text] "2. Response Format"
+  - [JSX Text] "All responses are in JSON. Success returns a 200 or 201 code with"
+  - [JSX Text] "REST API Reference"
+  - [JSX Text] "Complete documentation for the Visant Copilot HTTP endpoints."
+  - [JSX Text] "MCP Tools"
+  - [JSX Text] "Integrate Visant Labs directly into AI agents via the Model Context Protocol. Two servers available:"
+  - [JSX Text] "Platform MCP"
+  - [JSX Text] "(HTTP/SSE) for mockups, canvas, branding, and"
+  - [JSX Text] "Figma MCP"
+  - [JSX Text] "(stdio) for direct Figma manipulation."
+  - [JSX Text] "Two MCP Servers"
+  - [JSX Text] "Choose the server that fits your use case. You can use both simultaneously."
+  - [JSX Text] "HTTP/SSE"
+  - [JSX Text] "Platform MCP"
+  - [JSX Text] "Generate mockups, manage canvas projects, branding, budgets, and AI tools — all via your API key over SSE."
+  - [JSX Text] "Endpoint:"
+  - [JSX Text] "/api/mcp"
+  - [JSX Text] "Auth:"
+  - [JSX Text] "Bearer visant_sk_xxx"
+  - [JSX Text] "19 tools available"
+  - [JSX Text] "stdio"
+  - [JSX Text] "Figma MCP"
+  - [JSX Text] "Create frames, rectangles, text, and send AI commands directly to the Figma plugin sandbox via WebSocket bridge."
+  - [JSX Text] "Command:"
+  - [JSX Text] "npm run mcp:figma"
+  - [JSX Text] "Requires: Figma plugin connected"
+  - [JSX Text] "9 tools available"
+  - [JSX Text] "Setup & Connection"
+  - [JSX Text] "Configuration examples for popular AI clients."
+  - [JSX Text] "Claude Desktop"
+  - [JSX Text] "Add to your"
+  - [JSX Text] "claude_desktop_config.json"
+  - [JSX Text] "Platform MCP (SSE)"
+  - [JSX Text] "Figma MCP (stdio)"
+  - [JSX Text] "Cursor / VS Code"
+  - [JSX Text] "Add to your"
+  - [JSX Text] ".cursor/mcp.json"
+  - [JSX Text] "or workspace settings:"
+  - [JSX Text] "mcp.json"
+  - [JSX Text] "Custom Agent (TypeScript)"
+  - [JSX Text] "@modelcontextprotocol/sdk"
+  - [JSX Text] "API keys are required for the Platform MCP server. The Figma MCP server authenticates through the plugin connection."
+  - [JSX Text] "# Pass your API key in every request"
+  - [JSX Text] "Authorization: Bearer visant_sk_xxxxxxxxxxxx"
+  - [JSX Text] "1. Go to"
+  - [JSX Text] "Settings &rarr; API Keys"
+  - [JSX Text] "and create a new key"
+  - [JSX Text] "2. Select scopes:"
+  - [JSX Text] "read"
+  - [JSX Text] "write"
+  - [JSX Text] "generate"
+  - [JSX Text] "3. Copy the key immediately &mdash; it is shown only once"
+  - [JSX Text] "4. Store it securely (environment variable or secrets manager)"
+  - [JSX Text] "Every tool response includes a"
+  - [JSX Text] "_meta"
+  - [JSX Text] "field with your remaining credits, so your agent can track usage automatically."
+  - [JSX Text] "Figma MCP &mdash; Tool Reference"
+  - [JSX Text] "9 tools for direct Figma manipulation via the plugin bridge. Requires the Visant Copilot Figma plugin to be running and connected."
+  - [JSX Text] "Input Schema"
+  - [JSX Text] "Required"
+  - [JSX Text] "Yes"
+  - [JSX Text] "No"
+  - [JSX Text] "Example"
+  - [JSX Text] "Input JSON"
+  - [JSX Text] "Figma Plugin Guide"
+  - [JSX Text] "Using Visant Copilot directly inside Figma to supercharge your design workflow."
+  - [JSX Text] "Capabilities"
+  - [JSX Text] "Make mockups easily"
+  - [JSX Text] "Select frames and instantaneously convert them to 3D device mockups."
+  - [JSX Text] "Chat with AI"
+  - [JSX Text] "Tell the AI what you want to build and watch the Figma nodes create themselves."
+  - [JSX Text] "Installation"
+  - [JSX Text] "Open any file in Figma."
+  - [JSX Text] "Go to"
+  - [JSX Text] "Search for"
+  - [JSX Text] "Visant Copilot"
+  - [JSX Text] "and click Run."
+  - [JSX Text] "Follow the on-screen prompts to connect your account."
+  - [JSX Text] "Figma Node JSON Spec"
+  - [JSX Text] "Data-driven pattern for creating Figma nodes via Plugin API. Define layouts in JSON, execute in the plugin sandbox."
+  - [JSX Text] "How It Works"
+  - [JSX Text] "The Plugin API is imperative (JavaScript), not declarative. This JSON spec is parsed and executed by a renderer utility."
+  - [JSX Text] "NodeSpec — Full Property Reference"
+  - [JSX Text] "Property"
+  - [JSX Text] "Values / Notes"
+  - [JSX Text] "Fill & Effect Types"
+  - [JSX Text] "Solid Fill"
+  - [JSX Text] "JSON"
+  - [JSX Text] "Linear Gradient"
+  - [JSX Text] "JSON"
+  - [JSX Text] "Inner Shadow Effect"
+  - [JSX Text] "JSON"
+  - [JSX Text] "Critical Rules"
+  - [JSX Text] "These mistakes will silently fail or produce wrong results."
+  - [JSX Text] "Rule"
+  - [JSX Text] "Detail"
+  - [JSX Text] "Renderer — render.ts"
+  - [JSX Text] "Plugin-side utility that converts a NodeSpec tree into Figma nodes."
+  - [JSX Text] "plugin/src/code.ts — Usage"
+  - [JSX Text] "Social Media Post — Instagram 1080x1080"
+  - [JSX Text] "Complete JSON spec for a dark-theme Instagram post with header, content image, caption, and footer."
+  - [JSX Text] "Layer Structure"
+  - [JSX Text] "Key Dimension Decisions"
+  - [JSX Text] "Layer"
+  - [JSX Text] "Width"
+  - [JSX Text] "Height"
+  - [JSX Text] "Notes"
+  - [JSX Text] "Common Patterns"
+  - [JSX Text] "Related files"
+  - [JSX Text] "Canvas API"
+  - [JSX Text] "REST API for programmatic creation, editing, and manipulation of canvas projects and their nodes. Designed for LLM agents and external integrations."
+  - [JSX Text] "How It Works"
+  - [JSX Text] "The canvas is a React Flow graph — a list of nodes and edges stored in a project. All mutations go through the project-level PUT endpoint."
+  - [JSX Text] "Base URL"
+  - [JSX Text] "https://your-domain.com/api/canvas"
+  - [JSX Text] "Key Design Note"
+  - [JSX Text] "There is no individual node endpoint. Nodes are stored as a JSON array inside the project document. To add, update, or remove a node, fetch the project, mutate the nodes array, and PUT the full array back."
+  - [JSX Text] "All endpoints require a JWT Bearer token except the public shared-project endpoint."
+  - [JSX Text] "HTTP Header (all requests)"
+  - [JSX Text] "Obtain Token — POST /api/auth/login"
+  - [JSX Text] "Rate limits: 60 requests/min for general endpoints, 10 uploads/15 min for media uploads."
+  - [JSX Text] "Projects CRUD"
+  - [JSX Text] "Create, read, update, and delete canvas projects. Each project stores a name, a nodes array, and an edges array."
+  - [JSX Text] "Request Body"
+  - [JSX Text] "Response"
+  - [JSX Text] "Node Types Reference"
+  - [JSX Text] "All 23 node types available in the canvas. Each node must have an"
+  - [JSX Text] "id"
+  - [JSX Text] "type"
+  - [JSX Text] "position"
+  - [JSX Text] ", and a"
+  - [JSX Text] "data"
+  - [JSX Text] "object with"
+  - [JSX Text] "type"
+  - [JSX Text] "matching the node type."
+  - [JSX Text] "Base Node Structure"
+  - [JSX Text] "type"
+  - [JSX Text] "Key data fields"
+  - [JSX Text] "Example — Creating a Prompt Node"
+  - [JSX Text] "Example — Text Node connected to Prompt Node"
+  - [JSX Text] "Edges & Connections"
+  - [JSX Text] "Edges are React Flow edges connecting node outputs to node inputs. They drive data flow between nodes (e.g. an image node feeding into a merge node)."
+  - [JSX Text] "Edge Structure"
+  - [JSX Text] "Connection"
+  - [JSX Text] "sourceHandle"
+  - [JSX Text] "targetHandle"
+  - [JSX Text] "Effect"
+  - [JSX Text] "Example — Prompt → Output flow"
+  - [JSX Text] "Media Upload"
+  - [JSX Text] "Upload images, PDFs, and videos to R2 storage and get back a persistent URL to embed in node data."
+  - [JSX Text] "Request"
+  - [JSX Text] "Response"
+  - [JSX Text] "Sharing & Collaboration"
+  - [JSX Text] "Share projects publicly or with specific users by email or user ID. Requires Admin or Premium subscription."
+  - [JSX Text] "Request"
+  - [JSX Text] "Response"
+  - [JSX Text] "Agent Integration"
+  - [JSX Text] "Complete workflow examples for LLM agents and external tools interacting with the Canvas API."
+  - [JSX Text] "Workflow A — Create a canvas with a prompt node and read the result"
+  - [JSX Text] "JavaScript / TypeScript"
+  - [JSX Text] "Workflow B — Add a node to an existing project"
+  - [JSX Text] "JavaScript / TypeScript"
+  - [JSX Text] "Workflow C — Upload an image and set it in an image node"
+  - [JSX Text] "JavaScript / TypeScript"
+  - [JSX Text] "Key Patterns for Agents"
+  - [JSX Text] "Node IDs must be unique"
+  - [JSX Text] "within a project. Use a UUID or timestamp-based suffix."
+  - [JSX Text] "Always PUT the full nodes array"
+  - [JSX Text] "— there is no PATCH for individual nodes."
+  - [JSX Text] "Prefer R2 URLs over base64"
+  - [JSX Text] "— base64 in nodes expires after 7 days and increases payload size."
+  - [JSX Text] "Result images are async"
+  - [JSX Text] "— generation happens in the browser. The API stores whatever state the frontend last saved. Poll or listen to get updated results after generation."
+  - [JSX Text] "Max 10,000 nodes"
+  - [JSX Text] "per project. Max 15 MB payload after R2 offload."
+  - [JSX Text] "JSON Export / Import Format"
+  - [JSX Text] "The"
+  - [JSX Text] "visant-canvas/v1"
+  - [JSX Text] "schema used to save and restore complete canvas workflows as portable JSON files."
+  - [JSX Text] "Top-level structure"
+  - [JSX Text] "TypeScript"
+  - [JSX Text] "Fields stripped on export"
+  - [JSX Text] "The following fields are removed from node data before export to keep files portable and compact:"
+  - [JSX Text] "Large binary data (kept as R2 URLs)"
+  - [JSX Text] "Transient / recomputed from edges"
+  - [JSX Text] "Exporting programmatically"
+  - [JSX Text] "TypeScript"
+  - [JSX Text] "Importing programmatically"
+  - [JSX Text] "TypeScript"
+  - [JSX Text] "UI Entry Points"
+  - [JSX Text] "Canvas header → Download dropdown"
+  - [JSX Text] "— "Exportar como JSON" / "Importar de JSON" buttons."
+  - [JSX Text] "Projects listing page"
+  - [JSX Text] "— "Import from JSON" button next to "New Project"."
+  - [JSX Text] "• On export, base64 blobs are stripped; only R2"
+  - [JSX Text] "*Url"
+  - [JSX Text] "fields are kept, so files are human-readable and reproducible."
+  - [JSX Text] "• On import, a"
+  - [JSX Text] "new project is always created"
+  - [JSX Text] "— it never overwrites an existing one."
+  - [JSX Text] "For AI Agents"
+  - [JSX Text] "Connect AI agents and LLMs to the Visant Labs platform"
+  - [JSX Text] "Overview"
+  - [JSX Text] "Visant Labs provides three ways for AI agents to interact with the platform:"
+  - [JSX Text] "Discovery"
+  - [JSX Text] "Read"
+  - [JSX Text] "/llms.txt"
+  - [JSX Text] "to understand what the platform offers"
+  - [JSX Text] "MCP Tools"
+  - [JSX Text] "Connect via SSE to"
+  - [JSX Text] "/api/mcp"
+  - [JSX Text] "and invoke tools directly"
+  - [JSX Text] "REST API"
+  - [JSX Text] "Full HTTP API with JSON responses for all platform features"
+  - [JSX Text] "Agents authenticate using API keys. Create one from"
+  - [JSX Text] "Settings → API Keys"
+  - [JSX Text] "# Pass your API key in the Authorization header"
+  - [JSX Text] "Authorization: Bearer visant_sk_xxxxxxxxxxxx"
+  - [JSX Text] "• Key format:"
+  - [JSX Text] "visant_sk_"
+  - [JSX Text] "+ 64 hex characters"
+  - [JSX Text] "• Keys are shown only once on creation — store securely"
+  - [JSX Text] "• Scopes:"
+  - [JSX Text] "read"
+  - [JSX Text] "write"
+  - [JSX Text] "generate"
+  - [JSX Text] "MCP Connection"
+  - [JSX Text] "Connect to the Platform MCP server via HTTP/SSE transport:"
+  - [JSX Text] "# SSE endpoint (GET to connect, POST to send messages)"
+  - [JSX Text] "GET /api/mcp"
+  - [JSX Text] "POST /api/mcp/message?sessionId=..."
+  - [JSX Text] "For Claude Desktop, add to your MCP config. For custom agents, use the"
+  - [JSX Text] "@modelcontextprotocol/sdk"
+  - [JSX Text] "client."
+  - [JSX Text] "Available MCP Tools"
+  - [JSX Text] "Tool"
+  - [JSX Text] "Cost"
+  - [JSX Text] "Credits & Limits"
+  - [JSX Text] "Every MCP tool response includes quota information in the"
+  - [JSX Text] "_meta"
+  - [JSX Text] "field:"
+  - [JSX Text] "• Free tier: 4 generations total"
+  - [JSX Text] "• Paid tiers: monthly credit allowance (resets automatically)"
+  - [JSX Text] "• Read operations (list, get) are always free"
+  - [JSX Text] "• Generation operations cost 1+ credits"
+  - [JSX Text] "Example Flow"
+  - [JSX Text] "Get an API key"
+  - [JSX Text] "Go to Settings → API Keys → Create New Key with "read" + "generate" scopes"
+  - [JSX Text] "Connect to MCP"
+  - [JSX Text] "SSE connect to /api/mcp with your API key in the Authorization header"
+  - [JSX Text] "Check your balance"
+  - [JSX Text] "Call"
+  - [JSX Text] "account-usage"
+  - [JSX Text] "to see available credits"
+  - [JSX Text] "Generate content"
+  - [JSX Text] "Call"
+  - [JSX Text] "mockup-generate"
+  - [JSX Text] "with your prompt. Check _meta.credits_remaining in the response."
+  - [Attribute: title] "Documentation - Visant Copilot"
+  - [Attribute: title] "Documentation"
+  - [Attribute: title] "Copy this section as clean Markdown — ideal for pasting into LLM contexts"
+  - [Attribute: description] "API and Plugin documentation for Visant Copilot"
+
+📄 src\pages\MockupMachinePage.tsx:
+  - [JSX Text] "(false);
+  const [showWelcome, setShowWelcome] = useState(true);
+  const [shouldAutoGenerate, setShouldAutoGenerate] = useState(false);
+  const [autoGenerateSource, setAutoGenerateSource] = useState"
+  - [JSX Text] "(null);
+  const [isAutoGenerateMode, setIsAutoGenerateMode] = useState(false);
+  const [savedIndices, setSavedIndices] = useState"
+  - [JSX Text] "(new Set());
+  const [mockupLikedStatus, setMockupLikedStatus] = useState"
+  - [JSX Text] "isLiked
+  const [savedMockupIds, setSavedMockupIds] = useState"
+  - [JSX Text] "Promise"
+  - [JSX Text] "hasUnsavedImages && currentLocation.pathname !== nextLocation.pathname
+  );
+
+  const [sidebarWidth, setSidebarWidth] = useState(715); // 30% maior que 550
+  const sidebarRef = useRef"
+  - [JSX Text] "(null);
+  const [isSidebarVisibleMobile, setIsSidebarVisibleMobile] = useState(true);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const analysisTimeoutRef = useRef"
+  - [JSX Text] "(null);
+  const prevBrandingTagsLength = useRef(0);
+  const autoGenerateTimeoutRef = useRef"
+  - [JSX Text] "(null);
+  const isAutoGeneratingRef = useRef(false);
+  const generateOutputsButtonRef = useRef"
+  - [JSX Text] "(null);
+  const hasRestoredStateRef = useRef(false);
+  const generatedSmartPromptRef = useRef"
+  - [JSX Text] "[] as LuminancePreset[]),
+      ]);
+
+      // --- ARCHETYPE LOGIC START ---
+      // Determine archetype based on branding OR random chance
+      let currentArchetype = determineArchetypeFromBranding(brandingTagsToUse);
+
+      // 20% chance to ignore branding and pick a random archetype for variety
+      // OR if no branding tags provided
+      if (!currentArchetype || Math.random()"
+  - [JSX Text] "0 && Math.random()"
+  - [JSX Text] "0 && Math.random()"
+  - [JSX Text] "0 && Math.random()"
+  - [JSX Text] "0 && Math.random()"
+  - [JSX Text] "0 || (!!uploadedImage);
+
+  // Logic to show generation button (matches SidebarOrchestrator logic)
+  const shouldShowGenerateButton = isPromptReady || hasUserChanges;
+
+  // --- View State Helpers ---
+  const isSetupMode = !hasAnalyzed;
+  const isDashboardMode = hasAnalyzed;
+
+  // Se vazio, mostrar a WelcomeScreen por cima, pro user sempre upar a imagem pela WelcomeScreen
+  const shouldShowWelcome = !uploadedImage;
+
+  return ("
+  - [Attribute: description] "Gere mockups profissionais com inteligência artificial. Ferramenta integrada de geração rápida de mockups e assets para designers."
+
+📄 src\pages\MockupsPage.tsx:
+  - [JSX Text] "([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState"
+  - [JSX Text] "(null);
+  const [selectedMockup, setSelectedMockup] = useState"
+  - [JSX Text] "(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterTag, setFilterTag] = useState"
+  - [JSX Text] "0;
+  const hasNext = currentIndex"
+  - [JSX Text] "Mockups"
+  - [JSX Text] "0 && !isMobile && ("
+  - [Attribute: title] "Mockups da Comunidade"
+  - [Attribute: description] "Explore mockups criados pela comunidade. Descubra designs profissionais e inspire-se para seus próprios projetos."
+
+📄 src\pages\MyBrandingsPage.tsx:
+  - [JSX Text] "([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [deletingId, setDeletingId] = useState"
+  - [JSX Text] "(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState"
+
+📄 src\pages\MyBudgetsPage.tsx:
+  - [JSX Text] "([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [deletingId, setDeletingId] = useState"
+  - [JSX Text] "(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [budgetToDelete, setBudgetToDelete] = useState"
+  - [JSX Text] "(null);
+  const [presets, setPresets] = useState"
+  - [JSX Text] "([]);
+  const [isLoadingPresets, setIsLoadingPresets] = useState(false);
+  const [deletingPresetId, setDeletingPresetId] = useState"
+  - [JSX Text] "(null);
+  const [showDeletePresetModal, setShowDeletePresetModal] = useState(false);
+  const [presetToDelete, setPresetToDelete] = useState"
+  - [JSX Text] "Carregando presets..."
+  - [JSX Text] ") : presets.length === 0 ? ("
+
+📄 src\pages\MyOutputsPage.tsx:
+  - [JSX Text] "([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState"
+  - [JSX Text] "(null);
+  const [selectedMockup, setSelectedMockup] = useState"
+  - [JSX Text] "(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterTag, setFilterTag] = useState"
+  - [JSX Text] "(null);
+  const [deletingId, setDeletingId] = useState"
+  - [JSX Text] "0;
+  const hasNext = currentIndex"
+  - [JSX Text] "Loading your outputs..."
+  - [JSX Text] "0 && !isMobile && ("
+  - [Attribute: label] "Delete output"
+
+📄 src\pages\PluginPage.tsx:
+  - [JSX Text] "(null);
+  const [prompt, setPrompt] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState"
+  - [JSX Text] "Sign in to use Visant Copilot"
+  - [JSX Text] "Open the main app in your browser to log in, then return here."
+  - [JSX Text] "Open Visant to Login"
+  - [JSX Text] "Describe what to create"
+  - [JSX Text] "Done! Operations applied to canvas."
+  - [Attribute: placeholder] "e.g. Create a card with title and subtitle"
+
+📄 src\pages\PricingPage.tsx:
+  - [JSX Text] "(null);
+  const startTimeRef = useRef"
+  - [JSX Text] "(null);
+  const startValueRef = useRef"
+  - [JSX Text] "(null);
+  const [currencyInfo, setCurrencyInfo] = useState"
+  - [JSX Text] "(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState"
+  - [JSX Text] "(null);
+  const [creditPackages, setCreditPackages] = useState"
+  - [JSX Text] "([]);
+  const [selectedCreditIndex, setSelectedCreditIndex] = useState(0);
+  const [isPixModalOpen, setIsPixModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState"
+  - [JSX Text] "('subscriptions');
+  const [currentUser, setCurrentUser] = useState"
+  - [JSX Text] "(prev"
+  - [Attribute: title] "Preços e Planos"
+  - [Attribute: description] "Planos e pacotes de créditos para gerar mockups profissionais com IA. Escolha o plano ideal para suas necessidades de design."
+
+📄 src\pages\PrivacyPolicy.tsx:
+  - [JSX Text] "Google Analytics Opt-out Browser Add-on"
+  - [JSX Text] "contato@visant.co"
+  - [JSX Text] "myaccount.google.com/permissions"
+  - [JSX Text] "contato@visant.co"
+
+📄 src\pages\PrivacyPolicyPage.tsx:
+  - [JSX Text] "Google Analytics Opt-out Browser Add-on"
+  - [JSX Text] "contato@visant.co"
+  - [JSX Text] "myaccount.google.com/permissions"
+  - [JSX Text] "contato@visant.co"
+
+📄 src\pages\ProfilePage.tsx:
+  - [JSX Text] "(null);
+  const [subscriptionStatus, setSubscriptionStatus] = useState"
+  - [JSX Text] "(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState"
+  - [JSX Text] "(null);
+  const [isCreditPackagesModalOpen, setIsCreditPackagesModalOpen] = useState(false);
+  const [isTransactionsModalOpen, setIsTransactionsModalOpen] = useState(false);
+  const [referralStats, setReferralStats] = useState"
+
+📄 src\pages\QRCodePage.tsx:
+  - [JSX Text] "('');
+  const [size, setSize] = useState"
+  - [JSX Text] "(256);
+  const [errorCorrectionLevel, setErrorCorrectionLevel] = useState"
+  - [JSX Text] "('M');
+  const [bgColor, setBgColor] = useState"
+  - [JSX Text] "('#ffffff');
+  const [fgColor, setFgColor] = useState"
+  - [JSX Text] "('#000000');
+  const [marginSize, setMarginSize] = useState"
+  - [JSX Text] "(4);
+  const qrCodeRef = useRef"
+  - [JSX Text] "0;
+
+  return ("
+  - [JSX Text] "QR Code Generator"
+  - [JSX Text] "Generate QR codes from text, URLs, or any data"
+  - [JSX Text] "Text or URL"
+  - [JSX Text] "Error Correction Level"
+  - [JSX Text] "Foreground Color"
+  - [JSX Text] "Enter text to generate QR code"
+  - [JSX Text] "Download PNG"
+  - [Attribute: placeholder] "Enter text, URL, or any data..."
+  - [Attribute: placeholder] "Select error correction level"
+
+📄 src\pages\RefundPolicy.tsx:
+  - [JSX Text] "contato@visant.co"
+
+📄 src\pages\TermsOfService.tsx:
+  - [JSX Text] "suporte@visantlabs.com"
+
+📄 src\pages\ThankYouPage.tsx:
+  - [JSX Text] ") : (subscriptionStatus?.hasActiveSubscription || planName || purchasedCredits) ? ("
+
+📄 src\pages\UsagePolicy.tsx:
+  - [JSX Text] "contato@visant.co"
+
+📄 src\pages\WelcomeScreen.tsx:
+  - [JSX Text] "(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isVerifyingAuth, setIsVerifyingAuth] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [pendingAction, setPendingAction] = useState"
+  - [JSX Text] "(null);
+  const [showTutorialModal, setShowTutorialModal] = useState(false);
+  const [showPasteTip, setShowPasteTip] = useState(false);
+  const [showTutorialButton, setShowTutorialButton] = useState(true);
+  const pendingFileRef = useRef"
+  - [JSX Text] "(null);
+  const previousAuthRef = useRef"
+  - [Attribute: title] "Fechar"
+  - [Attribute: label] "Close tutorial"
+
+📄 src\services\abacatepayService.ts:
+  - [JSX Text] "void,
+    interval: number = 5000
+  ): Promise"
+
+📄 src\services\brandGuidelineApi.ts:
+  - [JSX Text] "): Promise"
+  - [JSX Text] "): Promise"
+
+📄 src\services\brandingService.ts:
+  - [JSX Text] "Promise"
+  - [JSX Text] ",
+  maxRetries: number = 3,
+  timeout: number = 120000
+): Promise"
+  - [JSX Text] ",
+    "title": ""
+  - [JSX Text] "",
+    "description": ""
+  - [JSX Text] "",
+    "examples": [""
+  - [JSX Text] ",
+    "title": ""
+  - [JSX Text] "",
+    "description": ""
+  - [JSX Text] "",
+    "examples": [""
+
+📄 src\services\canvasApi.ts:
+  - [JSX Text] "[]): Node"
+  - [JSX Text] "): Promise"
+
+📄 src\services\communityPresetsService.ts:
+  - [JSX Text] "| null = null;
+let lastToken: string | null = null;
+
+/**
+ * Load community presets from API
+ */
+async function loadPresetsFromAPI(): Promise"
+
+📄 src\services\geminiService.ts:
+  - [JSX Text] "Promise"
+  - [JSX Text] "void,
+  apiKey?: string
+): Promise"
+  - [JSX Text] "void,
+  apiKey?: string
+): Promise"
+  - [JSX Text] "void,
+  apiKey?: string
+): Promise"
+
+📄 src\services\mockupApi.ts:
+  - [JSX Text] "();
+
+// Track request timestamps to detect very recent duplicates (within 100ms)
+const recentRequestTimestamps = new Map"
+  - [JSX Text] "): Promise"
+  - [JSX Text] "): Promise"
+
+📄 src\services\pixService.ts:
+  - [JSX Text] "void,
+    interval: number = 5000
+  ): Promise"
+
+📄 src\services\productService.ts:
+  - [JSX Text] "0 && (now - this.lastFetch"
+
+📄 src\services\unifiedPresetService.ts:
+  - [JSX Text] "(type: T): Promise"
+
+📄 src\services\userPresetsService.ts:
+  - [JSX Text] "| null = null;
+
+
+/**
+ * Get all user presets (My Presets)
+ */
+export function getAllUserPresets(): Promise"
+
+📄 src\services\videoService.ts:
+  - [JSX Text] "Promise"
+
+📄 src\services\visantTemplatesApi.ts:
+  - [JSX Text] "): Promise"
+  - [JSX Text] "): Promise"
+
+📄 src\services\workflowApi.ts:
+  - [JSX Text] "): Promise"
+  - [JSX Text] "): Promise"
+
+📄 src\services\workflowService.ts:
+  - [JSX Text] "| null = null;
+let isLoadingWorkflows = false;
+
+/**
+ * Load workflows from API
+ */
+async function loadWorkflowsFromAPI(): Promise"
+
+📄 src\types\reactFlow.ts:
+  - [JSX Text] "void;
+  onUpdateData?: (nodeId: string, newData: Partial"
+  - [JSX Text] "Promise"
+  - [JSX Text] "Promise"
+  - [JSX Text] ";
+  onUpdateData?: (nodeId: string, newData: Partial"
+  - [JSX Text] "Promise"
+  - [JSX Text] ";
+
+  // Additional fields for full Mockup Machine integration
+  uploadedImage?: UploadedImage | null;
+  referenceImage?: UploadedImage | null;
+  referenceImages?: UploadedImage[];
+  promptPreview?: string;
+  isSmartPromptActive?: boolean;
+  isPromptManuallyEdited?: boolean;
+  isPromptReady?: boolean;
+  suggestedTags?: string[];
+  isAnalyzing?: boolean;
+  isAllCategoriesOpen?: boolean;
+  isAdvancedOpen?: boolean;
+  promptSuggestions?: string[];
+  isSuggestingPrompts?: boolean;
+  customBrandingInput?: string;
+  customCategoryInput?: string;
+  customLocationInput?: string;
+  customAngleInput?: string;
+  customLightingInput?: string;
+  customEffectInput?: string;
+  colorInput?: string;
+  isValidColor?: boolean;
+  mockupCount?: number;
+
+  // Handlers
+  onUpdateData?: (nodeId: string, newData: Partial"
+  - [JSX Text] "Promise"
+  - [JSX Text] "Promise"
+  - [JSX Text] "Promise"
+  - [JSX Text] ";
+  onUpdateData?: (nodeId: string, newData: Partial"
+  - [JSX Text] "Promise"
+  - [JSX Text] ";
+  onUpdateData?: (nodeId: string, newData: Partial"
+  - [JSX Text] "Promise"
+  - [JSX Text] ";
+  onUpdateData?: (nodeId: string, newData: Partial"
+  - [JSX Text] "Promise"
+  - [JSX Text] ";
+  onUpdateData?: (nodeId: string, newData: Partial"
+  - [JSX Text] "Promise"
+  - [JSX Text] ";
+  onUpdateData?: (nodeId: string, newData: Partial"
+  - [JSX Text] "Promise"
+  - [JSX Text] ";
+  onUpdateData?: (nodeId: string, newData: Partial"
+  - [JSX Text] "Promise"
+  - [JSX Text] ";
+  onUpdateData?: (nodeId: string, newData: Partial"
+  - [JSX Text] "Promise"
+  - [JSX Text] ";
+  onUpdateData?: (nodeId: string, newData: Partial"
+  - [JSX Text] "void;
+  onViewFullscreen?: (imageUrl: string | null, imageBase64?: string | null, sliders?: Array"
+  - [JSX Text] "Promise"
+  - [JSX Text] "Promise"
+  - [JSX Text] "void; // Opens save prompt modal
+  onUpdateData?: (nodeId: string, newData: Partial"
+  - [JSX Text] "void;
+  onUpdateData?: (nodeId: string, newData: Partial"
+  - [JSX Text] "void;
+  onUpdateData?: (nodeId: string, newData: Partial"
+  - [JSX Text] "void;
+  onUpdateData?: (nodeId: string, newData: Partial"
+  - [JSX Text] "Promise"
+  - [JSX Text] ";
+  onUpdateData?: (nodeId: string, newData: Partial"
+  - [JSX Text] "Promise"
+  - [JSX Text] "Promise"
+  - [JSX Text] "Promise"
+  - [JSX Text] "Promise"
+  - [JSX Text] "Promise"
+  - [JSX Text] "; // Returns projectId
+  onUpdateData?: (nodeId: string, newData: Partial"
+  - [JSX Text] "Promise"
+  - [JSX Text] "Promise"
+  - [JSX Text] "Promise"
+  - [JSX Text] ";
+  onUpdateData?: (nodeId: string, newData: Partial"
+  - [JSX Text] "Promise"
+  - [JSX Text] "Promise"
+  - [JSX Text] ";
+  onUpdateData?: (nodeId: string, newData: Partial"
+  - [JSX Text] "Promise"
+  - [JSX Text] "void;
+  onUpdateData?: (nodeId: string, newData: Partial"
+  - [JSX Text] "Promise"
+  - [JSX Text] "Promise"
+  - [JSX Text] "void;
+  onUpdateData?: (nodeId: string, newData: Partial"
+  - [JSX Text] "Promise"
+  - [JSX Text] "Promise"
+  - [JSX Text] ";
+  onUpdateData?: (nodeId: string, newData: Partial"
+  - [JSX Text] "Promise"
+  - [JSX Text] ";
+
+  onUpdateData?: (nodeId: string, newData: Partial"
+  - [JSX Text] "void;
+
+  // Advanced node creation and editing callbacks
+  onCreateNode?: (
+    chatNodeId: string,
+    nodeType: FlowNodeType,
+    initialData?: Partial"
+  - [JSX Text] "string | undefined;
+
+  onEditConnectedNode?: (
+    targetNodeId: string,
+    updates: Partial"
+
+📄 src\types\types.ts:
+  - [JSX Text] ";
+  infoBoxes?: Array"
+
+📄 src\types\window.d.ts:
+  - [JSX Text] ";
+    close(): Promise"
+
+📄 src\utils\brandingParsers.tsx:
+  - [JSX Text] "pattern.test(lowerText));
+  const hasIntroductoryKeywords = 
+    (lowerText.includes('análise') || lowerText.includes('analysis')) &&
+    (lowerText.includes('marca') || lowerText.includes('brand') || lowerText.includes('descri'));
+  
+  // Se começa com padrão introdutório e tem palavras-chave, e é uma linha curta, é introdutória
+  return hasIntroductoryStart && hasIntroductoryKeywords && text.length"
+
+📄 src\utils\canvas\canvasLocalStorage.ts:
+  - [JSX Text] "[]): Node"
+
+📄 src\utils\canvas\canvasNodeUtils.ts:
+  - [JSX Text] "): Promise"
+  - [JSX Text] "): Promise"
+
+📄 src\utils\canvas\processNodesForR2.ts:
+  - [JSX Text] "void
+): Promise"
+
+📄 src\utils\colorExtraction.ts:
+  - [JSX Text] "();
+        let pixelCount = 0;
+
+        // Sample pixels (every 40th pixel for performance)
+        for (let i = 0; i"
+  - [JSX Text] "0.90) scoreA *= 0.1;
+          if (b.l"
+  - [JSX Text] "= neededVariations * 2 ? vibrantCandidates : sortedByVibrancy;
+
+        // Pick variations
+        pickColors(sourceForVariation, selectedColors, neededVariations, 50);
+
+        // --- PASS 3: Fill-in (if needed) ---
+        if (selectedColors.length"
+
+📄 src\utils\generateBrandingPDF.ts:
+  - [JSX Text] "string,
+  steps?: Array"
+
+📄 src\utils\imageAnalysis.ts:
+  - [JSX Text] "();
+        let totalBrightness = 0;
+        let pixelCount = 0;
+
+        // Sample pixels (every 10th pixel for performance)
+        for (let i = 0; i"
+
+📄 src\utils\lazyWithRetry.ts:
+  - [JSX Text] "Promise"
+  - [JSX Text] ",
+  retries = 3,
+  retryDelay = 1000
+): LazyExoticComponent"
+
+📄 src\utils\markdownRenderer.tsx:
+  - [JSX Text] ");
+    case 'italic':
+      return ("
+
+📄 src\utils\mockupStatePersistence.ts:
+  - [JSX Text] "!!s && (s.startsWith('http://') || s.startsWith('https://'));
+
+const cap ="
+
+📄 src\utils\sectionLayoutHelpers.ts:
+  - [JSX Text] "!(s.fullWidth === true || s.columnIndex === -1) || s.order"
+
+📄 src\utils\shaders\shaderRenderer.ts:
+  - [JSX Text] "HTMLImageElement)
+ */
+const imageCache = new Map"
+  - [JSX Text] "base64 data URL)
+ */
+const proxyCache = new Map"
+
+📄 src\utils\shaders\shaders\ascii.ts:
+  - [JSX Text] "1.5 && dist"
+  - [JSX Text] "1.0 && x"
+  - [JSX Text] "4.0 && x"
+  - [JSX Text] "2.0 && x"
+  - [JSX Text] "2.5 && x"
+  - [JSX Text] "3.0 && x"
+  - [JSX Text] "1.0 && x"
+  - [JSX Text] "3.0 && x"
+  - [JSX Text] "2.0 && x"
+  - [JSX Text] "1.0 && x"
+  - [JSX Text] "0.0 && x"
+  - [JSX Text] "1.0 && x"
+  - [JSX Text] "1.0 && x"
+  - [JSX Text] "1.0 && x"
+  - [JSX Text] "= 3.0 && y"
+  - [JSX Text] "= 2.0 && x"
+  - [JSX Text] "= 2.0 && x"
+  - [JSX Text] "= 2.0 && y"
+  - [JSX Text] "0.5 && localX"
+
+📄 src\utils\shaders\shaders\upscale.ts:
+  - [JSX Text] "= 1.0) && (ax"
+
+====================================
+Audit complete.

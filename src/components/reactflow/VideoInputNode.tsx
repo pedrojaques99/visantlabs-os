@@ -11,6 +11,8 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { videoToBase64 } from '@/utils/fileUtils';
 import { toast } from 'sonner';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -147,7 +149,7 @@ export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<
 
       {/* Upload Video Section */}
       <div className="mb-4">
-        <input
+        <Input
           ref={fileInputRef}
           type="file"
           accept="video/*"
@@ -155,7 +157,7 @@ export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<
           className="hidden"
           aria-label={t('common.uploadVideo')}
         />
-        <button
+        <Button variant="ghost" 
           onClick={handleUploadClick}
           onMouseDown={(e) => e.stopPropagation()}
           className={cn(
@@ -164,7 +166,7 @@ export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<
         >
           <Upload size={14} />
           {t('canvasNodes.videoInputNode.uploadVideo') || 'Upload Video'}
-        </button>
+        </Button>
       </div>
 
       {/* Uploaded Video Display */}
@@ -203,7 +205,7 @@ export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<
 
       {!dragging && hasUploadedVideo && (
         <NodeActionBar selected={selected} getZoom={getZoom}>
-          <button
+          <Button variant="ghost" 
             onClick={(e) => {
               e.stopPropagation();
               handleVideoRemove();
@@ -213,7 +215,7 @@ export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<
             title={t('canvasNodes.videoInputNode.removeVideo') || 'Remove Video'}
           >
             <X size={12} strokeWidth={2} />
-          </button>
+          </Button>
         </NodeActionBar>
       )}
     </NodeContainer>

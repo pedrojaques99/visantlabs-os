@@ -18,6 +18,8 @@ import { ConnectedImagesDisplay } from './ConnectedImagesDisplay';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
@@ -277,14 +279,13 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
 
         {/* Advanced Settings */}
         <div className="border border-neutral-800 rounded-md bg-neutral-900/30">
-          <button
-            onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
+          <Button variant="ghost"             onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
             className="flex items-center gap-2 text-xs font-mono text-neutral-400 hover:text-neutral-200 transition-colors w-full p-2 hover:bg-neutral-800/50"
           >
             <Settings size={12} />
             <span>{t('Advanced Settings')}</span>
             <ChevronRight size={12} className={cn("transition-transform ml-auto", isAdvancedOpen && "rotate-90")} />
-          </button>
+          </Button>
 
           {isAdvancedOpen && (
             <div className="p-3 space-y-3 border-t border-neutral-800 bg-neutral-900/50">
@@ -351,7 +352,7 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
 
               <div>
                 <NodeLabel>{t('Negative Prompt')}</NodeLabel>
-                <input
+                <Input
                   className="w-full bg-neutral-900 border border-neutral-700 rounded p-2 text-xs font-mono text-neutral-300 focus:border-[brand-cyan] outline-none placeholder:text-neutral-600"
                   placeholder={t('What to avoid...')}
                   value={negativePrompt}
@@ -367,8 +368,7 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
         </div>
 
         {/* Generate Button */}
-        <button
-          onClick={(e) => {
+        <Button variant="ghost"           onClick={(e) => {
             e.stopPropagation();
             handleGenerate();
           }}
@@ -390,7 +390,7 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
               <span className="text-brand-cyan/50 ml-1">({creditsRequired})</span>
             </>
           )}
-        </button>
+        </Button>
 
         {/* Result Preview */}
         {(data.resultVideoUrl || data.resultVideoBase64) && !isLoading && (

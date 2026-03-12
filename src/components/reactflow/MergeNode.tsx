@@ -17,6 +17,7 @@ import { GEMINI_MODELS, DEFAULT_MODEL, DEFAULT_ASPECT_RATIO, isAdvancedModel } f
 import { isSafeUrl } from '@/utils/imageUtils';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
+import { Button } from '@/components/ui/button'
 
 export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
@@ -256,8 +257,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
             { geminiModel: GEMINI_MODELS.NB2, label: 'NB2', emoji: '🍌', credits: getCreditsRequired(GEMINI_MODELS.NB2, isAdvancedModel(model) ? '1K' : undefined) },
             { geminiModel: GEMINI_MODELS.PRO, label: '4K Pro', emoji: '⛏️💎', credits: getCreditsRequired(GEMINI_MODELS.PRO, isAdvancedModel(model) ? '1K' : undefined) },
           ] as const).map(({ geminiModel, label, emoji, credits }) => (
-            <button
-              key={geminiModel}
+            <Button variant="ghost"               key={geminiModel}
               onClick={(e) => { e.stopPropagation(); handleModelChange(geminiModel); }}
               onMouseDown={(e) => e.stopPropagation()}
               disabled={isLoading || isGeneratingPrompt}
@@ -274,7 +274,7 @@ export const MergeNode: React.FC<NodeProps<Node<MergeNodeData>>> = memo(({ data,
               <span className="text-[10px] text-neutral-500 mt-0.5">
                 {credits} {t('canvasNodes.promptNode.credits')}
               </span>
-            </button>
+            </Button>
           ))}
         </div>
       </div>

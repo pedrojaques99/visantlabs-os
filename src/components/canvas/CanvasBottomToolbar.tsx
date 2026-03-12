@@ -15,6 +15,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { Tooltip } from '@/components/ui/Tooltip';
 import { cn } from '@/lib/utils';
 import { getTextColors, lightenColor } from '@/utils/colorUtils';
+import { Button } from '@/components/ui/button'
 
 export type CanvasTool = 'hand' | 'select' | 'draw' | 'color' | 'type' | 'shapes';
 
@@ -274,7 +275,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
           return (
             <div key={tool.id} className="relative">
               <Tooltip content={tool.tooltip} position="top">
-                <button
+                <Button variant="ghost" 
                   onClick={() => {
                     if (tool.id === 'color') {
                       setShowColorPicker(!showColorPicker);
@@ -318,7 +319,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                       style={{ backgroundColor: strokeColor }}
                     />
                   )}
-                </button>
+                </Button>
               </Tooltip>
 
               {tool.id === 'type' && activeTool === 'type' && showFontPicker && (
@@ -335,7 +336,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                   <div className="text-xs mb-2 px-1" style={{ color: textColors.muted }}>Font Family</div>
                   <div className="space-y-1">
                     {availableFonts.map((font) => (
-                      <button
+                      <Button variant="ghost" 
                         key={font.value}
                         onClick={() => {
                           onFontFamilyChange?.(font.value);
@@ -358,7 +359,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                         }}
                       >
                         {font.preview}
-                      </button>
+                      </Button>
                     ))}
                   </div>
                 </div>
@@ -377,7 +378,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                 >
                   {/* Primeira linha: Cor principal (grande) + Preto */}
                   <div className="flex gap-2 mb-2">
-                    <button
+                    <Button variant="ghost" 
                       onClick={() => {
                         onColorChange?.(colorPalette.primary.brand);
                         setShowColorPicker(false);
@@ -398,8 +399,8 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                           <div className="w-2 h-2 rounded-full bg-white" />
                         </div>
                       )}
-                    </button>
-                    <button
+                    </Button>
+                    <Button variant="ghost" 
                       onClick={() => {
                         onColorChange?.(colorPalette.primary.black);
                         setShowColorPicker(false);
@@ -420,7 +421,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                   {/* Segunda linha: Cores básicas */}
                   <div className="flex gap-1.5 mb-2">
                     {colorPalette.basic.map((item) => (
-                      <button
+                      <Button variant="ghost" 
                         key={item.color}
                         onClick={() => {
                           onColorChange?.(item.color);
@@ -443,7 +444,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                   {/* Terceira linha: Cores secundárias */}
                   <div className="flex gap-1.5 mb-2">
                     {colorPalette.secondary.map((item) => (
-                      <button
+                      <Button variant="ghost" 
                         key={item.color}
                         onClick={() => {
                           onColorChange?.(item.color);
@@ -466,7 +467,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                   {/* Quarta linha: Cores neutras */}
                   <div className="flex gap-1.5 mb-3">
                     {colorPalette.neutrals.map((item) => (
-                      <button
+                      <Button variant="ghost" 
                         key={item.color}
                         onClick={() => {
                           onColorChange?.(item.color);
@@ -534,7 +535,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
 
           return (
             <Tooltip key={shapeTool.id} content={shapeTool.tooltip} position="top">
-              <button
+              <Button variant="ghost" 
                 onClick={() => handleShapeSelect(shapeTool.id)}
                 className={cn(
                   'relative w-10 h-10 flex items-center justify-center rounded-lg transition-colors duration-150',
@@ -561,7 +562,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                 aria-label={shapeTool.label}
               >
                 <Icon size={18} strokeWidth={2} />
-              </button>
+              </Button>
             </Tooltip>
           );
         })}
@@ -576,7 +577,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
               }
               position="top"
             >
-              <button
+              <Button variant="brand" 
                 onClick={onToggleToolbar}
                 className={cn(
                   'relative w-10 h-10 flex items-center justify-center rounded-lg transition-colors duration-150',
@@ -610,7 +611,7 @@ export const CanvasBottomToolbar: React.FC<CanvasBottomToolbarProps> = ({
                     !isToolbarCollapsed && 'rotate-45'
                   )}
                 />
-              </button>
+              </Button>
             </Tooltip>
           </div>
         )}

@@ -18,6 +18,8 @@ import { toast } from 'sonner';
 import { ConfirmationModal } from '../ConfirmationModal';
 import { MockupPresetModal } from '../MockupPresetModal';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>>> = memo(({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
@@ -507,7 +509,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
           <label className="w-full px-3 py-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-[brand-cyan]/30 hover:border-[brand-cyan]/50 rounded text-xs font-mono text-brand-cyan flex items-center justify-center gap-2 cursor-pointer transition-all">
             <Upload size={14} />
             Upload Image
-            <input
+            <Input
               type="file"
               accept="image/jpeg,image/png,image/webp,image/gif"
               onChange={handleImageUpload}
@@ -578,8 +580,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
       {!dragging && (resultImageUrl || resultVideoUrl) && (
         <NodeActionBar selected={selected} getZoom={getZoom}>
           {data.onView && (
-            <button
-              onClick={(e) => {
+            <Button variant="ghost"               onClick={(e) => {
                 e.stopPropagation();
                 handleView();
               }}
@@ -588,18 +589,16 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
               onMouseDown={(e) => e.stopPropagation()}
             >
               <Maximize2 size={12} strokeWidth={2} />
-            </button>
+            </Button>
           )}
-          <button
-            onClick={handleDownload}
+          <Button variant="ghost"             onClick={handleDownload}
             className="p-1 bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 rounded transition-colors backdrop-blur-sm border border-neutral-700/30 hover:border-neutral-600/50"
             title={t('canvasNodes.imageNode.downloadImage')}
             onMouseDown={(e) => e.stopPropagation()}
           >
             <Download size={12} strokeWidth={2} />
-          </button>
-          <button
-            onClick={(e) => {
+          </Button>
+          <Button variant="ghost"             onClick={(e) => {
               e.stopPropagation();
               handleSave();
             }}
@@ -620,10 +619,9 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
             ) : (
               <Heart size={12} className={isLiked ? "fill-current" : ""} strokeWidth={2} />
             )}
-          </button>
+          </Button>
           {data.onDelete && savedMockupId && (
-            <button
-              onClick={(e) => {
+            <Button variant="ghost"               onClick={(e) => {
                 e.stopPropagation();
                 setShowDeleteModal(true);
               }}
@@ -632,11 +630,10 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
               onMouseDown={(e) => e.stopPropagation()}
             >
               <Trash2 size={12} strokeWidth={2} />
-            </button>
+            </Button>
           )}
           {data.onBrandKit && (resultImageUrl || resultVideoUrl) && (
-            <button
-              onClick={(e) => {
+            <Button variant="ghost"               onClick={(e) => {
                 e.stopPropagation();
                 setShowBrandKitModal(true);
               }}
@@ -645,10 +642,9 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
               onMouseDown={(e) => e.stopPropagation()}
             >
               <Palette size={12} strokeWidth={2} />
-            </button>
+            </Button>
           )}
-          <button
-            onClick={(e) => {
+          <Button variant="ghost"             onClick={(e) => {
               e.stopPropagation();
               handleDescribe();
             }}
@@ -667,7 +663,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
             ) : (
               <FileText size={12} strokeWidth={2} />
             )}
-          </button>
+          </Button>
         </NodeActionBar>
       )}
 

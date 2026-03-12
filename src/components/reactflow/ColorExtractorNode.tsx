@@ -15,6 +15,8 @@ import { NodeActionBar } from './shared/NodeActionBar';
 import { LabeledHandle } from './shared/LabeledHandle';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -255,7 +257,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
           </div>
         ) : (
           <>
-            <input
+            <Input
               ref={imageInputRef}
               type="file"
               accept="image/*"
@@ -367,7 +369,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
 
       {!dragging && imageUrl && !connectedImage && (
         <NodeActionBar selected={selected} getZoom={getZoom}>
-          <button
+          <Button variant="ghost" 
             onClick={(e) => {
               e.stopPropagation();
               handleRemoveImage();
@@ -377,7 +379,7 @@ export const ColorExtractorNode = memo(({ data, selected, id, dragging }: NodePr
             onMouseDown={(e) => e.stopPropagation()}
           >
             <X size={12} strokeWidth={2} />
-          </button>
+          </Button>
         </NodeActionBar>
       )}
     </NodeContainer>

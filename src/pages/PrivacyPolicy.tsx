@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getTranslations, getCurrentLocale } from '@/utils/localeUtils';
+import { Button } from '@/components/ui/button'
 
 interface PrivacyPolicyProps {
   isOpen: boolean;
@@ -52,13 +53,12 @@ export const PrivacyPolicy: React.FC<PrivacyPolicyProps> = ({ isOpen, onClose })
         className="relative max-w-4xl w-full max-h-[90vh] bg-neutral-900 border border-neutral-800/50 rounded-md shadow-2xl p-6 md:p-8 my-8"
         onClick={(e) => e.stopPropagation()}
       >
-        <button
-          onClick={onClose}
+        <Button variant="ghost"           onClick={onClose}
           className="absolute top-4 right-4 bg-neutral-800 hover:bg-neutral-700 p-2 rounded-md text-neutral-300 hover:text-white transition-colors z-10"
           title={t('common.closeEsc')}
         >
           <X size={20} />
-        </button>
+        </Button>
 
         <div className="pr-8">
           <h1 className="text-2xl md:text-3xl font-semibold font-mono text-neutral-200 mb-2 tracking-wider uppercase">

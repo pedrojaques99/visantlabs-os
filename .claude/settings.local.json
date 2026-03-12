@@ -43,7 +43,11 @@
       "Bash(grep -l \"from.*['\\\\\"]@/components/ui\" src/components/*.tsx | xargs -I {} basename {} | sort)",
       "Bash(find src/components -maxdepth 2 -name \"*.tsx\" -not -path \"*/ui/*\" | xargs grep -l \"from.*['\\\\\"]@/components/ui\" | xargs -I {} basename {} | sort)",
       "Bash(find src/components -maxdepth 2 -name \"*.tsx\" -not -path \"*/ui/*\" -exec bash -c 'count=$\\(grep -c \"rounded-lg.*border\\\\|rounded-xl.*shadow\\\\|rounded-2xl\\\\|className=.*card\" \"$1\" 2>/dev/null\\); [ $count -gt 0 ] && echo \"$\\(basename \"$1\"\\): ~$count\"' _ {} \\\\; | sort -t: -k2 -rn | head -25)",
-      "Bash(cd Z:/Cursor/visantlabs-os && npm ls ts-morph 2>/dev/null | head -3; npm ls jscodeshift 2>/dev/null | head -3)"
+      "Bash(cd Z:/Cursor/visantlabs-os && npm ls ts-morph 2>/dev/null | head -3; npm ls jscodeshift 2>/dev/null | head -3)",
+      "Bash(find src/pages src/components -name \"*.tsx\" -type f ! -path \"*/ui/*\" -exec grep -l \"className=\\\\\".*border.*rounded\" {} \\\\; | head -20)",
+      "Bash(head -20 Z:/Cursor/visantlabs-os/scripts/*.cjs 2>/dev/null | head -100)",
+      "Bash(cd Z:/Cursor/visantlabs-os && for file in \"components/brand/BrandGuidelineEditor.tsx\" \"components/branding/BrandingStep.tsx\" \"components/mockupmachine/AnimatedDiceIcon.tsx\"; do echo \"=== $file ===\"; grep -r \"BrandGuidelineEditor\\\\|BrandingStep\\\\|AnimatedDiceIcon\" src --include=\"*.tsx\" | grep -E \"from|import\" | head -2; done)",
+      "Bash(cd Z:/Cursor/visantlabs-os && for file in \"components/ai/ChatInput.tsx\" \"components/branding/BrandingStep.tsx\" \"components/mockupmachine/AnimatedDiceIcon.tsx\"; do echo \"=== $file ===\"; grep -r \"import.*from.*$file\\\\|require.*$file\" src --include=\"*.tsx\" --include=\"*.ts\" 2>/dev/null | wc -l; done)"
     ]
   }
 }

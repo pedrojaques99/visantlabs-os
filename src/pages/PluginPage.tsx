@@ -4,6 +4,8 @@ import { aiApi } from '@/services/aiApi';
 import { useFigmaBridge } from '@/hooks/useFigmaBridge';
 import type { FigmaOperation, PluginMessage, SerializedContext } from '@/lib/figma-types';
 import '@/styles/figma-plugin.css';
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
 
 const APP_URL = typeof window !== 'undefined' ? window.location.origin : 'https://www.visantlabs.com';
 
@@ -99,9 +101,9 @@ export default function PluginPage() {
           <p style={{ marginBottom: 8, color: 'var(--fp-text-secondary)' }}>
             Open the main app in your browser to log in, then return here.
           </p>
-          <button type="button" className="fp-button fp-button--primary" onClick={handleLogin}>
+          <Button variant="ghost" type="button" className="fp-button fp-button--primary" onClick={handleLogin}>
             Open Visant to Login
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -113,7 +115,7 @@ export default function PluginPage() {
         <label className="fp-label" htmlFor="fp-prompt">
           Describe what to create
         </label>
-        <textarea
+        <Textarea
           id="fp-prompt"
           className="fp-textarea"
           placeholder="e.g. Create a card with title and subtitle"
@@ -130,7 +132,7 @@ export default function PluginPage() {
       )}
 
       <div className="fp-section">
-        <button
+        <Button variant="ghost" 
           type="button"
           className="fp-button fp-button--primary"
           onClick={handleGenerate}
@@ -144,7 +146,7 @@ export default function PluginPage() {
           ) : (
             'Generate'
           )}
-        </button>
+        </Button>
       </div>
 
       {error && (

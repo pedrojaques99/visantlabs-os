@@ -6,6 +6,8 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import type { DesignType } from '@/types/types';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
+import { Button } from '@/components/ui/button'
+import { MicroTitle } from '@/components/ui/MicroTitle'
 
 
 interface RefineSectionProps {
@@ -243,8 +245,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
 
         {/* Color Palette Panel (collapsible) */}
         <div className={`mt-2 rounded-xl border transition-all duration-200 overflow-hidden ${theme === 'dark' ? 'bg-neutral-900/30 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
-          <button
-            onClick={() => setIsColorPaletteExpanded(!isColorPaletteExpanded)}
+          <Button variant="ghost"             onClick={() => setIsColorPaletteExpanded(!isColorPaletteExpanded)}
             className={`w-full flex justify-between items-center text-left p-3 transition-all duration-200 ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-neutral-100/50'}`}
           >
             <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -270,7 +271,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
               </SkeletonText>
               {isColorPaletteExpanded ? <ChevronUp size={16} className="text-neutral-500" /> : <ChevronDown size={16} className="text-neutral-500" />}
             </div>
-          </button>
+          </Button>
 
           {isColorPaletteExpanded && (
             <div className="p-3 pt-0 animate-fade-in">
@@ -335,8 +336,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
                       }}
                       className="hidden"
                     />
-                    <button
-                      onClick={() => colorPickerRef.current?.click()}
+                    <Button variant="ghost"                       onClick={() => colorPickerRef.current?.click()}
                       className={`flex items-center justify-center w-8 h-8 rounded-md border-2 border-dashed transition-all duration-200 ${theme === 'dark'
                         ? 'border-neutral-700/40 text-neutral-400 hover:border-brand-cyan/50 hover:text-brand-cyan hover:bg-neutral-800/50'
                         : 'border-neutral-300 text-neutral-500 hover:border-brand-cyan/50 hover:text-brand-cyan hover:bg-neutral-100'
@@ -344,7 +344,7 @@ export const RefineSection: React.FC<RefineSectionProps> = ({
                       title="Add new color"
                     >
                       <Plus size={14} />
-                    </button>
+                    </Button>
                   </>
                 )}
               </div>

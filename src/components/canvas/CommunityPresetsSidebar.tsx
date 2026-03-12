@@ -16,6 +16,8 @@ import { authService } from '@/services/authService';
 import { CommunityPresetModal } from '@/components/CommunityPresetModal';
 import { toast } from 'sonner';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 
 const PROMPT_CATEGORIES = Object.keys(CATEGORY_CONFIG) as PromptCategory[];
@@ -342,8 +344,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                 {/* View Mode & Create */}
                 <div className="flex items-center gap-2">
                     <div className="flex p-1 rounded-lg bg-neutral-900 border border-neutral-800/50 flex-1">
-                        <button
-                            onClick={() => setViewMode('all')}
+                        <Button variant="ghost"                             onClick={() => setViewMode('all')}
                             className={cn(
                                 "flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all",
                                 viewMode === 'all'
@@ -352,9 +353,8 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                             )}
                         >
                             {t('communityPresets.allPresets')}
-                        </button>
-                        <button
-                            onClick={() => setViewMode('my')}
+                        </Button>
+                        <Button variant="ghost"                             onClick={() => setViewMode('my')}
                             className={cn(
                                 "flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all",
                                 viewMode === 'my'
@@ -363,21 +363,20 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                             )}
                         >
                             {t('communityPresets.myPresets')}
-                        </button>
+                        </Button>
                     </div>
-                    <button
-                        onClick={handleCreate}
+                    <Button variant="brand"                         onClick={handleCreate}
                         className="p-2 rounded-lg bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30 border border-brand-cyan/30 transition-colors"
                         title={t('communityPresets.createNew')}
                     >
                         <Plus size={16} />
-                    </button>
+                    </Button>
                 </div>
 
                 {/* Search */}
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-500" />
-                    <input
+                    <Input
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder={t('communityPresets.searchPlaceholder') || "Search presets..."}
@@ -393,8 +392,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                         const isActive = activeTab === category;
 
                         return (
-                            <button
-                                key={category}
+                            <Button variant="ghost"                                 key={category}
                                 onClick={() => setActiveTab(category)}
                                 className={cn(
                                     "flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[10px] font-mono whitespace-nowrap transition-all",
@@ -405,7 +403,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                             >
                                 <Icon size={12} />
                                 {t(`communityPresets.categories.${category}`) || config.label}
-                            </button>
+                            </Button>
                         );
                     })}
                 </div>

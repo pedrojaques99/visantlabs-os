@@ -869,8 +869,7 @@ export const AdminPage: React.FC = () => {
                     <p className="text-neutral-400 font-mono mb-4">
                       {t('admin.loginRequired')}
                     </p>
-                    <Button
-                      onClick={() => navigate('/')}
+                    <Button variant="ghost"                       onClick={() => navigate('/')}
                       className="bg-brand-cyan/80 hover:bg-brand-cyan text-black"
                     >
                       {t('admin.doLogin')}

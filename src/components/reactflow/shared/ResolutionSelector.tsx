@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { getCreditsRequired } from '@/utils/creditCalculator';
 import type { GeminiModel } from '@/types/types';
 import { Select } from '@/components/ui/select';
+import { Button } from '@/components/ui/button'
 
 const ALL_RESOLUTIONS: Resolution[] = ['512px', '1K', '2K', '4K', '720p', '1080p'];
 
@@ -28,7 +29,7 @@ function renderResolutionButton(
   const credits = getCreditsRequired(model, res);
 
   return (
-    <button
+    <Button variant="ghost" 
       key={res}
       onClick={() => !disabled && onChange(res)}
       disabled={disabled}
@@ -46,7 +47,7 @@ function renderResolutionButton(
     >
       <span className={compact ? 'text-[10px]' : 'font-semibold'}>{res}</span>
       {!compact && <span className="text-[10px] text-neutral-500">{credits}c</span>}
-    </button>
+    </Button>
   );
 }
 

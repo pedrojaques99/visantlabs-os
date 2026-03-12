@@ -6,6 +6,8 @@ import { translateTag } from '@/utils/localeUtils';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { useMockup } from './MockupContext';
+import { Button } from '@/components/ui/button'
+import { MicroTitle } from '@/components/ui/MicroTitle'
 
 interface KeywordsSectionProps {
   customInput: string;
@@ -45,8 +47,7 @@ export const KeywordsSection: React.FC<KeywordsSectionProps> = ({
               {t('mockup.tags') || 'PALAVRAS-CHAVE'}
             </span>
           </div>
-          <button
-            type="button"
+          <Button variant="ghost"             type="button"
             onClick={(e) => {
               e.stopPropagation();
               setIsSearchVisible(!isSearchVisible);
@@ -57,7 +58,7 @@ export const KeywordsSection: React.FC<KeywordsSectionProps> = ({
             )}
           >
             {isSearchVisible ? <X size={12} /> : <Plus size={12} />}
-          </button>
+          </Button>
         </div>
         {isSearchVisible && (
           <div className="flex flex-col gap-2 pb-2" onClick={(e) => e.stopPropagation()}>
@@ -92,8 +93,7 @@ export const KeywordsSection: React.FC<KeywordsSectionProps> = ({
                   Sugestões:
                 </span>
                 {displaySuggestedTags.slice(0, 5).map((tag) => (
-                  <button
-                    key={tag}
+                  <Button variant="ghost"                     key={tag}
                     onClick={() => !selectedTags.includes(tag) && onTagToggle(tag)}
                     disabled={selectedTags.includes(tag)}
                     className={cn(
@@ -106,7 +106,7 @@ export const KeywordsSection: React.FC<KeywordsSectionProps> = ({
                     )}
                   >
                     {translateTag(tag)}
-                  </button>
+                  </Button>
                 ))}
               </div>
             )}

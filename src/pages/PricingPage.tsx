@@ -313,8 +313,7 @@ export const PricingPage: React.FC = () => {
                         <div className="space-y-8 relative z-10">
                           <div className="text-center">
                             <div className="flex items-center justify-center gap-6 mb-4">
-                              <button
-                                onClick={handlePreviousCredit}
+                              <Button variant="ghost"                                 onClick={handlePreviousCredit}
                                 disabled={selectedCreditIndex === 0}
                                 className={cn(
                                   "p-2 rounded-lg transition-all active:scale-90",
@@ -324,14 +323,13 @@ export const PricingPage: React.FC = () => {
                                 )}
                               >
                                 <Minus size={24} />
-                              </button>
+                              </Button>
 
                               <div className="text-6xl md:text-7xl font-bold text-brand-cyan font-mono tracking-tighter drop-shadow-[0_0_15px_rgba(82,221,235,0.2)]">
                                 {animatedCredits}
                               </div>
 
-                              <button
-                                onClick={handleNextCredit}
+                              <Button variant="ghost"                                 onClick={handleNextCredit}
                                 disabled={selectedCreditIndex === creditPackages.length - 1}
                                 className={cn(
                                   "p-2 rounded-lg transition-all active:scale-90",
@@ -341,7 +339,7 @@ export const PricingPage: React.FC = () => {
                                 )}
                               >
                                 <Plus size={24} />
-                              </button>
+                              </Button>
                             </div>
 
                             <MicroTitle as="span" className="flex items-center justify-center gap-2 opacity-60">
@@ -389,8 +387,7 @@ export const PricingPage: React.FC = () => {
                     {/* Indicators */}
                     <GlassPanel padding="sm" className="flex gap-1.5 mt-8 items-center rounded-full">
                       {creditPackages.map((_, index) => (
-                        <button
-                          key={index}
+                        <Button variant="ghost"                           key={index}
                           onClick={() => setSelectedCreditIndex(index)}
                           className={cn(
                             "h-1.5 rounded-full transition-all duration-300",

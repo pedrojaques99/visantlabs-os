@@ -2,6 +2,7 @@ import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react'
 import { Minus, Plus } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import type { SectionLayout } from '@/types/types';
+import { Button } from '@/components/ui/button'
 
 interface DragProps {
   isDraggable: boolean;
@@ -544,27 +545,27 @@ export const NotionColumnLayout: React.FC<NotionColumnLayoutProps> = ({
       {isDesktop && onSetColumnCount && (
         <div className="flex items-center justify-end mb-4">
           <div className="flex items-center gap-1 bg-neutral-950/20 backdrop-blur-sm border border-neutral-800/40 rounded-md p-1">
-            <button
+            <Button variant="ghost" 
               onClick={() => handleColumnsChange(columns - 1)}
               disabled={columns <= 1}
               className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               aria-label="Decrease columns"
             >
               <Minus size={14} />
-            </button>
+            </Button>
             <div className="px-2">
               <span className="text-xs font-mono text-neutral-400 min-w-[1.5rem] text-center">
                 {columns}
               </span>
             </div>
-            <button
+            <Button variant="ghost" 
               onClick={() => handleColumnsChange(columns + 1)}
               disabled={columns >= 3}
               className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               aria-label="Increase columns"
             >
               <Plus size={14} />
-            </button>
+            </Button>
           </div>
         </div>
       )}

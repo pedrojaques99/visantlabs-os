@@ -4,6 +4,7 @@ import { FormInput } from '@/components/ui/form-input';
 import { FormTextarea } from '@/components/ui/form-textarea';
 import type { FAQ } from '@/types/types';
 import { Plus, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button'
 
 interface FAQSectionProps {
   faq: FAQ[];
@@ -36,13 +37,13 @@ export const FAQSection: React.FC<FAQSectionProps> = ({
         <h3 className="text-lg font-semibold text-neutral-200 font-mono">
           {t('budget.faq')}
         </h3>
-        <button
+        <Button variant="brand" 
           onClick={addFAQ}
           className="px-4 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 rounded-xl text-brand-cyan font-mono text-sm transition-all duration-300 flex items-center gap-2"
         >
           <Plus size={16} />
           {t('budget.addFAQ')}
-        </button>
+        </Button>
       </div>
 
       {faq.length === 0 ? (
@@ -84,13 +85,13 @@ export const FAQSection: React.FC<FAQSectionProps> = ({
                     />
                   </div>
                 </div>
-                <button
+                <Button variant="ghost" 
                   onClick={() => removeFAQ(index)}
                   className="p-2 text-red-400 hover:bg-red-400/10 rounded-md transition-colors self-start sm:self-auto"
                   title={t('budget.removeFAQ')}
                 >
                   <Trash2 size={18} />
-                </button>
+                </Button>
               </div>
             </div>
           ))}

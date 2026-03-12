@@ -2,6 +2,7 @@ import React from 'react';
 import { Select } from '@/components/ui/select';
 import type { GeminiModel, DesignType } from '@/types/types';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
+import { Button } from '@/components/ui/button'
 
 interface ModelSelectionSectionProps {
   selectedModel: GeminiModel | null;
@@ -57,8 +58,7 @@ export const ModelSelectionSection: React.FC<ModelSelectionSectionProps> = ({
     const isSelected = selectedModel === model;
 
     return (
-      <button
-        key={model}
+      <Button variant="ghost"         key={model}
         onClick={() => onModelChange(model)}
         className={`w-full aspect-square max-h-32 flex flex-col items-center justify-center gap-1 p-4 text-xs font-mono rounded border transition-colors cursor-pointer ${isSelected
           ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
@@ -68,7 +68,7 @@ export const ModelSelectionSection: React.FC<ModelSelectionSectionProps> = ({
         <span className="text-2xl">{info.emoji}</span>
         <span className="font-semibold text-sm">{info.name}</span>
         <span className="text-[10px] text-neutral-500">{info.version}</span>
-      </button>
+      </Button>
     );
   };
 

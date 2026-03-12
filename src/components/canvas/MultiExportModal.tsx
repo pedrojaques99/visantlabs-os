@@ -5,6 +5,8 @@ import { exportImageWithScale } from '@/utils/exportUtils';
 import { toast } from 'sonner';
 import type { FlowNode } from '@/types/reactFlow';
 import { getImageUrl } from '@/utils/imageUtils';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 interface MultiExportModalProps {
     isOpen: boolean;
@@ -204,12 +206,12 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                             Select images to download from your project
                         </p>
                     </div>
-                    <button
+                    <Button variant="ghost" 
                         onClick={onClose}
                         className="p-2 text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/50 rounded-lg transition-all"
                     >
                         <X size={20} />
-                    </button>
+                    </Button>
                 </div>
 
                 {/* Toolbar */}
@@ -217,7 +219,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                     <div className="flex items-center gap-4 flex-1 min-w-[300px]">
                         <div className="relative flex-1">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" size={14} />
-                            <input
+                            <Input
                                 type="text"
                                 placeholder="Search images..."
                                 value={searchQuery}
@@ -226,7 +228,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                             />
                         </div>
 
-                        <button
+                        <Button variant="ghost" 
                             onClick={selectAll}
                             className="flex items-center gap-2 px-3 py-2 bg-neutral-800/50 border border-neutral-700/50 rounded-lg text-xs text-neutral-300 font-mono hover:bg-neutral-700/50 transition-all whitespace-nowrap"
                         >
@@ -236,13 +238,13 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                                 <Square size={14} />
                             )}
                             {selectedImages.size === filteredImages.length && filteredImages.length > 0 ? 'Deselect All' : 'Select All'}
-                        </button>
+                        </Button>
                     </div>
 
                     <div className="flex items-center gap-3">
                         <div className="flex items-center gap-1 bg-neutral-800/50 border border-neutral-700/50 p-1 rounded-lg">
                             {FORMAT_OPTIONS.map((format) => (
-                                <button
+                                <Button variant="ghost" 
                                     key={format}
                                     onClick={() => setExportFormat(format)}
                                     className={cn(
@@ -253,7 +255,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                                     )}
                                 >
                                     {format}
-                                </button>
+                                </Button>
                             ))}
                         </div>
                     </div>
@@ -332,13 +334,13 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <button
+                        <Button variant="ghost" 
                             onClick={onClose}
                             className="px-4 py-2 text-xs font-mono text-neutral-400 hover:text-neutral-200 transition-colors"
                         >
                             Cancel
-                        </button>
-                        <button
+                        </Button>
+                        <Button variant="ghost" 
                             onClick={handleExport}
                             disabled={selectedImages.size === 0 || isExporting}
                             className={cn(
@@ -357,7 +359,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                                     Export Selected
                                 </>
                             )}
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </div>

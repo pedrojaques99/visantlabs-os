@@ -22,6 +22,8 @@ import { generateBudgetPDF } from '@/utils/generateBudgetPDF';
 import { getTemplateById } from '@/utils/budgetTemplates';
 import { DndContext, PointerSensor, useSensor, useSensors, DragEndEvent, DragStartEvent, DragOverlay } from '@dnd-kit/core';
 import { SEO } from '../components/SEO';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 export const BudgetMachinePage: React.FC = () => {
   const { t } = useTranslation();
@@ -566,8 +568,7 @@ export const BudgetMachinePage: React.FC = () => {
             {/* Preview Side - Full Width */}
             <div className="w-full h-full overflow-y-auto bg-neutral-100 flex flex-col relative min-h-full">
               {/* Toggle Sidebar Button */}
-              <button
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              <Button variant="ghost"                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                 className="fixed top-12 md:top-16 z-50 p-1.5 bg-neutral-950/30 backdrop-blur-sm border border-neutral-700/20 rounded-md text-neutral-400 hover:text-neutral-300 hover:border-neutral-600/30 hover:bg-neutral-950/70 transition-all duration-200 shadow-sm"
                 style={isSidebarOpen
                   ? (formWidth ? { left: `${formWidth + 16}px` } : { left: '416px' })
@@ -576,7 +577,7 @@ export const BudgetMachinePage: React.FC = () => {
                 title={isSidebarOpen ? 'Fechar formulário' : 'Abrir formulário'}
               >
                 {isSidebarOpen ? <X size={18} /> : <Menu size={18} />}
-              </button>
+              </Button>
 
               {/* Save Status Indicator */}
               {isAuthenticated === true && currentProjectId && (
@@ -638,7 +639,7 @@ export const BudgetMachinePage: React.FC = () => {
                 {/* Row 1: Title and Description */}
                 <div className="flex flex-col mb-4">
                   <div className="flex items-center gap-2">
-                    <input
+                    <Input
                       type="text"
                       value={budgetName || t('budget.title') || 'Budget Machine'}
                       onChange={(e) => setBudgetName(e.target.value)}
@@ -673,13 +674,13 @@ export const BudgetMachinePage: React.FC = () => {
                   )}
                   {currentProjectId && (
                     <Tooltip content={t('budget.duplicate') || 'Duplicar'} position="top">
-                      <button
+                      <Button
                         onClick={handleDuplicate}
                         className="flex items-center justify-center p-2 bg-card border border-neutral-800 rounded-md text-neutral-200 hover:text-brand-cyan hover:bg-card/90 hover:border-brand-cyan/50 transition-all duration-300 shadow-lg"
                         aria-label="Duplicate budget"
                       >
                         <Copy size={18} />
-                      </button>
+                      </Button>
                     </Tooltip>
                   )}
                   <FormButton
@@ -811,14 +812,13 @@ export const BudgetMachinePage: React.FC = () => {
                     <div className="p-4 bg-neutral-900 border border-neutral-800 rounded-xl">
                       <p className="text-sm text-neutral-400 mb-2 font-mono">Share Link:</p>
                       <div className="flex flex-col sm:flex-row gap-2">
-                        <input
+                        <Input
                           type="text"
                           value={shareLink}
                           readOnly
                           className="flex-1 px-3 py-2 bg-neutral-950/70 border border-neutral-800 rounded-md text-neutral-200 text-sm font-mono"
                         />
-                        <button
-                          onClick={() => {
+                        <Button variant="ghost"                           onClick={() => {
                             navigator.clipboard.writeText(shareLink);
                             setLinkCopied(true);
                             setTimeout(() => setLinkCopied(false), 2000);
@@ -827,7 +827,7 @@ export const BudgetMachinePage: React.FC = () => {
                         >
                           <Copy size={16} />
                           <span className="sm:hidden">Copiar</span>
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   </div>

@@ -24,6 +24,7 @@ import { workflowApi } from '../services/workflowApi';
 import type { CanvasWorkflow } from '../services/workflowApi';
 import { WORKFLOW_CATEGORY_CONFIG } from '../types/workflow';
 import { Workflow } from 'lucide-react';
+import { Button } from '@/components/ui/button'
 
 type PresetType = 'mockup' | 'angle' | 'texture' | 'ambience' | 'luminance' | '3d' | 'presets' | 'aesthetics' | 'themes';
 
@@ -379,20 +380,18 @@ export const CommunityPage: React.FC = () => {
                   <Plus size={16} />
                   <span>Criar um novo prompt</span>
                 </PremiumButton>
-                <button
-                  onClick={() => navigate('/community/presets')}
+                <Button variant="ghost"                   onClick={() => navigate('/community/presets')}
                   className="flex items-center gap-2 px-4 py-2 bg-neutral-800/40 hover:bg-neutral-800/60 text-neutral-300 rounded-lg border border-neutral-700/40 text-sm transition-colors"
                 >
                   <Globe size={16} />
                   <span>Ver Tudo</span>
-                </button>
-                <button
-                  onClick={() => setShowWorkflowLibrary(true)}
+                </Button>
+                <Button variant="ghost"                   onClick={() => setShowWorkflowLibrary(true)}
                   className="flex items-center gap-2 px-4 py-2 bg-neutral-800/40 hover:bg-neutral-800/60 text-neutral-300 rounded-lg border border-neutral-700/40 text-sm transition-colors"
                 >
                   <FolderOpen size={16} />
                   <span>{t('workflows.library.title') || 'Biblioteca'}</span>
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -602,13 +601,12 @@ export const CommunityPage: React.FC = () => {
 
               {workflows.length > 8 && (
                 <div className="flex justify-center mt-8">
-                  <button
-                    onClick={() => setShowWorkflowLibrary(true)}
+                  <Button variant="ghost"                     onClick={() => setShowWorkflowLibrary(true)}
                     className="flex items-center gap-2 px-6 py-2 bg-neutral-900/50 hover:bg-brand-cyan/10 text-neutral-500 hover:text-brand-cyan border border-neutral-800/50 rounded-full transition-all text-sm font-mono group"
                   >
                     Ver todos os workflows
                     <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
-                  </button>
+                  </Button>
                 </div>
               )}
             </section>
@@ -681,8 +679,7 @@ export const CommunityPage: React.FC = () => {
 
               {allPublicMockups.length > 10 && (
                 <div className="flex justify-center mt-8">
-                  <button
-                    onClick={() => setIsGalleryExpanded(!isGalleryExpanded)}
+                  <Button variant="ghost"                     onClick={() => setIsGalleryExpanded(!isGalleryExpanded)}
                     className="flex items-center gap-2 px-6 py-2 bg-neutral-900/50 hover:bg-brand-cyan/10 text-neutral-500 hover:text-brand-cyan border border-neutral-800/50 rounded-full transition-all text-sm font-mono group"
                   >
                     {isGalleryExpanded ? (
@@ -694,7 +691,7 @@ export const CommunityPage: React.FC = () => {
                         Ver mais <ChevronDown size={16} className="group-hover:translate-y-0.5 transition-transform" />
                       </>
                     )}
-                  </button>
+                  </Button>
                 </div>
               )}
             </section>

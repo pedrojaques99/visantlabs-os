@@ -18,6 +18,8 @@ import { branding, getYoutubeThumbnail } from '../config/branding';
 import AnimatedTitle from '../components/shared/AnimatedTitle';
 import { PremiumButton } from '../components/ui/PremiumButton';
 import { MicroTitle } from '../components/ui/MicroTitle';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 const SUPPORTED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const MAX_IMAGE_SIZE_MB = 10;
@@ -395,7 +397,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
           </MicroTitle>
         </div>
         <div className="flex flex-col gap-6 justify-center items-center">
-          <input
+          <Input
             ref={fileInputRef}
             type="file"
             accept={SUPPORTED_MIME_TYPES.join(',')}
@@ -444,8 +446,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
         {showTutorialButton && (
           <div className="fixed z-40 tutorial-button-position group relative">
             {/* Mobile: Simple compact button */}
-            <button
-              onClick={() => setShowTutorialModal(true)}
+            <Button variant="ghost"               onClick={() => setShowTutorialModal(true)}
               className={`md:hidden flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-300 cursor-pointer shadow-md hover:shadow-lg ${theme === 'dark'
                 ? 'bg-neutral-900/90 hover:bg-neutral-800/95 border border-neutral-700/50 hover:border-brand-cyan/30'
                 : 'bg-white/90 hover:bg-white border border-neutral-300 hover:border-brand-cyan/50'
@@ -478,11 +479,10 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
               >
                 <X size={12} />
               </div>
-            </button>
+            </Button>
 
             {/* Desktop: Full thumbnail preview */}
-            <button
-              onClick={() => setShowTutorialModal(true)}
+            <Button variant="ghost"               onClick={() => setShowTutorialModal(true)}
               className="hidden md:block w-64 opacity-60 hover:opacity-100 overflow-hidden rounded-md transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md relative"
             >
               {/* Thumbnail Container */}
@@ -522,11 +522,10 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
                 <BookOpen size={12} className="text-brand-cyan/90" />
                 <span className="font-mono text-sm font-medium opacity-90">{t('tutorial.title')}</span>
               </div>
-            </button>
+            </Button>
 
             {/* Close Button for Desktop - Subtle - Only visible on hover */}
-            <button
-              onClick={(e) => {
+            <Button variant="ghost"               onClick={(e) => {
                 e.stopPropagation();
                 setShowTutorialButton(false);
               }}
@@ -537,7 +536,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onImageUpload }) =
               title="Fechar"
             >
               <X size={14} />
-            </button>
+            </Button>
           </div>
         )}
       </div>

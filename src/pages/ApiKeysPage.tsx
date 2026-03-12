@@ -18,6 +18,8 @@ import {
   BreadcrumbSeparator,
 } from "../components/ui/BreadcrumbWithBack";
 import { BackButton } from "../components/ui/BackButton";
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 interface ApiKeyRaw {
   id: string;
@@ -274,13 +276,13 @@ export const ApiKeysPage: React.FC = () => {
                     Create and manage API keys for agent and programmatic access
                   </p>
                 </div>
-                <button
+                <Button variant="ghost" 
                   onClick={() => { setShowCreateForm(true); setCreatedKeyRaw(null); }}
                   className="flex items-center gap-2 px-4 py-2.5 bg-brand-cyan text-black rounded-lg font-medium text-sm hover:bg-brand-cyan/90 transition-colors shrink-0"
                 >
                   <Plus size={16} />
                   Create New Key
-                </button>
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -307,27 +309,27 @@ export const ApiKeysPage: React.FC = () => {
                   <code className="flex-1 break-all text-neutral-200">
                     {showRawKey ? createdKeyRaw : createdKeyRaw.replace(/./g, '\u2022')}
                   </code>
-                  <button
+                  <Button variant="ghost" 
                     onClick={() => setShowRawKey(!showRawKey)}
                     className="p-1.5 hover:bg-neutral-700/50 rounded transition-colors text-neutral-400 hover:text-neutral-200"
                     title={showRawKey ? 'Hide key' : 'Show key'}
                   >
                     {showRawKey ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                  <button
+                  </Button>
+                  <Button variant="ghost" 
                     onClick={() => handleCopyKey(createdKeyRaw)}
                     className="p-1.5 hover:bg-neutral-700/50 rounded transition-colors text-neutral-400 hover:text-neutral-200"
                     title="Copy to clipboard"
                   >
                     {copied ? <Check size={16} className="text-green-400" /> : <Copy size={16} />}
-                  </button>
+                  </Button>
                 </div>
-                <button
+                <Button variant="ghost" 
                   onClick={() => setCreatedKeyRaw(null)}
                   className="mt-3 text-xs text-neutral-500 hover:text-neutral-400 transition-colors"
                 >
                   Dismiss
-                </button>
+                </Button>
               </CardContent>
             </Card>
           )}
@@ -344,7 +346,7 @@ export const ApiKeysPage: React.FC = () => {
                   {/* Name */}
                   <div>
                     <label className="block text-sm font-medium text-neutral-400 mb-1.5">Name</label>
-                    <input
+                    <Input
                       type="text"
                       value={newKeyName}
                       onChange={e => setNewKeyName(e.target.value)}
@@ -359,7 +361,7 @@ export const ApiKeysPage: React.FC = () => {
                     <label className="block text-sm font-medium text-neutral-400 mb-1.5">Scopes</label>
                     <div className="flex flex-wrap gap-2">
                       {AVAILABLE_SCOPES.map(scope => (
-                        <button
+                        <Button variant="ghost" 
                           key={scope.value}
                           type="button"
                           onClick={() => toggleScope(scope.value)}
@@ -371,7 +373,7 @@ export const ApiKeysPage: React.FC = () => {
                         >
                           <span className="font-medium">{scope.label}</span>
                           <span className="text-xs ml-1.5 opacity-70">— {scope.description}</span>
-                        </button>
+                        </Button>
                       ))}
                     </div>
                   </div>
@@ -381,7 +383,7 @@ export const ApiKeysPage: React.FC = () => {
                     <label className="block text-sm font-medium text-neutral-400 mb-1.5">
                       Expiry <span className="text-neutral-600">(optional)</span>
                     </label>
-                    <input
+                    <Input
                       type="date"
                       value={newKeyExpiry}
                       onChange={e => setNewKeyExpiry(e.target.value)}
@@ -392,21 +394,21 @@ export const ApiKeysPage: React.FC = () => {
 
                   {/* Actions */}
                   <div className="flex items-center gap-3 pt-2">
-                    <button
+                    <Button variant="brand" 
                       type="submit"
                       disabled={isCreating}
                       className="flex items-center gap-2 px-4 py-2.5 bg-brand-cyan text-black rounded-lg font-medium text-sm hover:bg-brand-cyan/90 transition-colors disabled:opacity-50"
                     >
                       {isCreating ? <GlitchLoader size={14} /> : <Plus size={16} />}
                       {isCreating ? 'Creating...' : 'Create Key'}
-                    </button>
-                    <button
+                    </Button>
+                    <Button variant="ghost" 
                       type="button"
                       onClick={() => setShowCreateForm(false)}
                       className="px-4 py-2.5 bg-neutral-800/50 text-neutral-400 rounded-lg text-sm hover:bg-neutral-700/50 transition-colors"
                     >
                       Cancel
-                    </button>
+                    </Button>
                   </div>
                 </form>
               </CardContent>
@@ -490,13 +492,13 @@ export const ApiKeysPage: React.FC = () => {
                           </td>
                           <td className="p-4 text-right">
                             {key.status === 'active' && (
-                              <button
+                              <Button variant="ghost" 
                                 onClick={() => setRevokeTarget(key)}
                                 className="p-2 text-neutral-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                                 title="Revoke key"
                               >
                                 <Trash2 size={16} />
-                              </button>
+                              </Button>
                             )}
                           </td>
                         </tr>
@@ -526,21 +528,21 @@ export const ApiKeysPage: React.FC = () => {
                     This action cannot be undone. Any applications using this key will lose access immediately.
                   </p>
                   <div className="flex items-center gap-3 justify-end">
-                    <button
+                    <Button variant="ghost" 
                       onClick={() => setRevokeTarget(null)}
                       className="px-4 py-2 bg-neutral-800/50 text-neutral-400 rounded-lg text-sm hover:bg-neutral-700/50 transition-colors"
                       disabled={isRevoking}
                     >
                       Cancel
-                    </button>
-                    <button
+                    </Button>
+                    <Button variant="destructive" 
                       onClick={handleRevokeKey}
                       disabled={isRevoking}
                       className="flex items-center gap-2 px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg text-sm hover:bg-red-500/30 transition-colors disabled:opacity-50"
                     >
                       {isRevoking ? <GlitchLoader size={14} /> : <Trash2 size={14} />}
                       {isRevoking ? 'Revoking...' : 'Revoke Key'}
-                    </button>
+                    </Button>
                   </div>
                 </CardContent>
               </Card>

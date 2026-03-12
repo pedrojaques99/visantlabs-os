@@ -12,6 +12,7 @@ import {
   BreadcrumbSeparator,
 } from "../components/ui/breadcrumb";
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button'
 
 export const CanvasSharedPage: React.FC = () => {
   const { shareId } = useParams<{ shareId: string }>();
@@ -94,12 +95,12 @@ export const CanvasSharedPage: React.FC = () => {
           <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
             <h2 className="text-2xl font-bold text-neutral-200 mb-4">Project Not Found</h2>
             <p className="text-neutral-400 mb-6">{error || 'The project you are looking for does not exist or is no longer shared.'}</p>
-            <button
+            <Button variant="ghost" 
               onClick={() => navigate('/')}
               className="px-4 py-2 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md transition-colors"
             >
               Go Home
-            </button>
+            </Button>
           </div>
         </div>
       </div>

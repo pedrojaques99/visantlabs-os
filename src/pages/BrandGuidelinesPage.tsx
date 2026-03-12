@@ -31,6 +31,7 @@ import {
     DropdownMenuTrigger,
     DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button'
 import {
     Plus,
     Pencil,
@@ -228,7 +229,7 @@ export const BrandGuidelinesPage: React.FC = () => {
                     {isLoading ? (
                         <div className="flex flex-col items-center justify-center py-32 gap-4">
                             <GlitchLoader size={48} />
-                            <span className="text-neutral-600 font-mono text-[10px] uppercase tracking-widest animate-pulse">Synchronizing Brand Data...</span>
+                            <MicroTitle className="text-neutral-600 text-[10px] animate-pulse">Synchronizing Brand Data...</MicroTitle>
                         </div>
                     ) : guidelines.length === 0 ? (
                         <GlassPanel padding="lg" className="flex flex-col items-center justify-center py-24 gap-6 text-center border-dashed border-white/10">
@@ -239,13 +240,13 @@ export const BrandGuidelinesPage: React.FC = () => {
                                 <MicroTitle>{t('brandGuidelines.emptyState')}</MicroTitle>
                                 <p className="text-neutral-600 text-xs font-mono max-w-xs">{t('brandGuidelines.createFirst')}</p>
                             </div>
-                            <button
+                            <Button variant="ghost" 
                                 onClick={() => { setEditingGuideline(null); setIsWizardOpen(true); }}
                                 className="flex items-center gap-2 px-6 py-3 rounded-full bg-white/5 border border-white/10 text-neutral-300 font-mono text-xs hover:bg-white/10 hover:border-brand-cyan/30 transition-all group"
                             >
                                 <Plus size={14} className="group-hover:text-brand-cyan transition-colors" />
                                 {t('brandGuidelines.createFirst')}
-                            </button>
+                            </Button>
                         </GlassPanel>
                     ) : (
                         <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-10">
@@ -254,7 +255,7 @@ export const BrandGuidelinesPage: React.FC = () => {
                                 <MicroTitle className="mb-2 ml-1">My Brands</MicroTitle>
                                 <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
                                     {guidelines.map((g) => (
-                                        <button
+                                        <Button variant="ghost" 
                                             key={g.id}
                                             onClick={() => handleSelect(g)}
                                             className={cn(
@@ -292,15 +293,15 @@ export const BrandGuidelinesPage: React.FC = () => {
                                                     selectedId === g.id ? "text-brand-cyan translate-x-1" : "text-neutral-800 group-hover:text-neutral-600 group-hover:translate-x-1"
                                                 )}
                                             />
-                                        </button>
+                                        </Button>
                                     ))}
                                 </div>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <button className="mt-4 flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-dashed border-white/10 text-neutral-600 font-mono text-[10px] uppercase tracking-widest hover:border-white/20 hover:text-neutral-400 transition-all w-full">
+                                        <Button variant="ghost" className="mt-4 flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-dashed border-white/10 text-neutral-600 font-mono text-[10px] uppercase tracking-widest hover:border-white/20 hover:text-neutral-400 transition-all w-full">
                                             <Settings size={12} />
                                             Panel Layout
-                                        </button>
+                                        </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent className="w-56 bg-neutral-900 border-white/5 p-2" align="start">
                                         <MicroTitle className="px-2 py-2 mb-1 block">Toggle Sections</MicroTitle>
@@ -377,22 +378,22 @@ export const BrandGuidelinesPage: React.FC = () => {
                                                     </div>
                                                     <div className="flex gap-1">
                                                         {selected.identity?.website && (
-                                                            <button
+                                                            <Button variant="brand" 
                                                                 onClick={handleReIngest}
                                                                 className="p-2 rounded-xl bg-white/5 text-neutral-600 hover:text-brand-cyan hover:bg-brand-cyan/10 transition-all border border-transparent hover:border-brand-cyan/20"
                                                                 title={t('brandGuidelines.reExtract')}
                                                             >
                                                                 <RefreshCw size={14} className="group-hover:rotate-180 transition-transform duration-700" />
-                                                            </button>
+                                                            </Button>
                                                         )}
-                                                        <button
+                                                        <Button variant="ghost" 
                                                             onClick={() => { setEditingGuideline(selected); setIsWizardOpen(true); }}
                                                             className="p-2 rounded-xl bg-white/5 text-neutral-600 hover:text-white hover:bg-white/10 transition-all border border-transparent hover:border-white/10"
                                                             title={t('mockup.brandWizardEdit')}
                                                         >
                                                             <Pencil size={14} />
-                                                        </button>
-                                                        <button
+                                                        </Button>
+                                                        <Button variant="ghost" 
                                                             onClick={() => handleDelete(selected.id!)}
                                                             disabled={deletingId === selected.id}
                                                             className="p-2 rounded-xl bg-white/5 text-neutral-600 hover:text-red-400 hover:bg-red-500/10 transition-all border border-transparent hover:border-red-500/20 disabled:opacity-50"
@@ -402,7 +403,7 @@ export const BrandGuidelinesPage: React.FC = () => {
                                                                 ? <Loader2 size={14} className="animate-spin" />
                                                                 : <Trash2 size={14} />
                                                             }
-                                                        </button>
+                                                        </Button>
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-6 mt-6 pt-6 border-t border-white/5">
@@ -421,7 +422,7 @@ export const BrandGuidelinesPage: React.FC = () => {
                                                     {selected._extraction && (
                                                         <div className="flex items-center gap-2">
                                                             <ShieldCheck size={12} className="text-brand-cyan/50" />
-                                                            <span className="text-[10px] font-mono text-neutral-700 uppercase tracking-tighter">Verified data: {selected._extraction.completeness}%</span>
+                                                            <MicroTitle className="text-[10px] text-neutral-700 tracking-tighter">Verified data: {selected._extraction.completeness}%</MicroTitle>
                                                         </div>
                                                     )}
                                                 </div>
@@ -454,12 +455,12 @@ export const BrandGuidelinesPage: React.FC = () => {
                                                         </div>
                                                     )}
                                                 </div>
-                                                <button 
+                                                <Button variant="ghost" 
                                                     onClick={() => toggleSection('media')}
                                                     className="w-full text-center py-2 text-[9px] font-mono text-neutral-600 hover:text-brand-cyan border-t border-white/5 relative z-10 uppercase tracking-widest transition-colors"
                                                 >
                                                     Open Library
-                                                </button>
+                                                </Button>
                                             </GlassPanel>
                                         </motion.div>
 
@@ -480,98 +481,15 @@ export const BrandGuidelinesPage: React.FC = () => {
                                                                     style={{ backgroundColor: c.hex }}
                                                                 />
                                                                 <div className="space-y-0.5">
-                                                                    <span className="text-[10px] font-mono text-white block truncate w-12">{c.name}</span>
-                                                                    <span className="text-[8px] font-mono text-neutral-700 uppercase tracking-tighter">{c.hex}</span>
+                                                                    <MicroTitle className="text-[10px] text-white block truncate w-12">{c.name}</MicroTitle> <span className="text-[8px] text-neutral-700 tracking-tighter">{c.hex}</span>
                                                                 </div>
                                                             </div>
                                                         ))
                                                     ) : (
-                                                        <p className="text-[10px] font-mono text-neutral-700 italic">{t('brandGuidelines.clickToAdd')}</p>
-                                                    )}
-                                                    {selected.colors && selected.colors.length > 5 && (
-                                                        <div className="w-12 h-12 rounded-2xl border border-dashed border-white/10 flex items-center justify-center text-[10px] font-mono text-neutral-700">
-                                                            +{selected.colors.length - 5}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </GlassPanel>
-                                        </motion.div>
-
-                                        {/* Bento: Typography (Spans 3 columns) */}
-                                        <motion.div variants={itemVariants} className="md:col-span-3">
-                                            <GlassPanel padding="md" className="h-full group">
-                                                <div className="flex justify-between items-center mb-6">
-                                                    <MicroTitle>{t('brandGuidelines.typography')}</MicroTitle>
-                                                    <div className="h-px flex-1 bg-white/5 mx-4" />
-                                                    <Type size={14} className="text-neutral-700 group-hover:text-brand-cyan transition-colors" />
-                                                </div>
-                                                <div className="space-y-4">
-                                                    {selected.typography && selected.typography.length > 0 ? (
-                                                        selected.typography.slice(0, 2).map((f, i) => (
-                                                            <div key={i} className="flex flex-col gap-1 border-l-2 border-brand-cyan/20 pl-4 py-1 hover:border-brand-cyan transition-colors duration-500">
-                                                                <span className="text-[9px] font-mono text-neutral-600 uppercase tracking-widest">{f.role}</span>
+                                                        <MicroTitle className="text-[10px] text-neutral-700 italic">{t('brandGuidelines.clickToAdd')}</MicroTitle> )} {selected.colors && selected.colors.length > 5 && ( <div className="w-12 h-12 rounded-2xl border border-dashed border-white/10 flex items-center justify-center text-[10px] text-neutral-700"> +{selected.colors.length - 5} </div> )} </div> </GlassPanel> </motion.div> {/* Bento: Typography (Spans 3 columns) */} <motion.div variants={itemVariants} className="md:col-span-3"> <GlassPanel padding="md" className="h-full group"> <div className="flex justify-between items-center mb-6"> <MicroTitle>{t('brandGuidelines.typography')}</MicroTitle> <div className="h-px flex-1 bg-white/5 mx-4" /> <Type size={14} className="text-neutral-700 group-hover:text-brand-cyan transition-colors" /> </div> <div className="space-y-4"> {selected.typography && selected.typography.length > 0 ? ( selected.typography.slice(0, 2).map((f, i) => ( <div key={i} className="flex flex-col gap-1 border-l-2 border-brand-cyan/20 pl-4 py-1 hover:border-brand-cyan transition-colors duration-500"> <span className="text-[9px] text-neutral-600">{f.role}</span>
                                                                 <span className="text-lg font-medium text-white tracking-tight">{f.family}</span>
                                                                 <div className="flex items-center gap-2">
-                                                                    <span className="text-[10px] font-mono text-neutral-500">{f.style || 'Regular'}</span>
-                                                                    {f.size && <span className="text-neutral-800">·</span>}
-                                                                    {f.size && <span className="text-[10px] font-mono text-neutral-700">{f.size}px</span>}
-                                                                </div>
-                                                            </div>
-                                                        ))
-                                                    ) : (
-                                                        <p className="text-[10px] font-mono text-neutral-700 italic">{t('brandGuidelines.clickToAdd')}</p>
-                                                    )}
-                                                </div>
-                                            </GlassPanel>
-                                        </motion.div>
-
-                                        {/* Optional Sections with AnimatePresence */}
-                                        <AnimatePresence mode="popLayout">
-                                            {activeSections.includes('tags') && (
-                                                <motion.div
-                                                    layout
-                                                    initial={{ opacity: 0, scale: 0.95 }}
-                                                    animate={{ opacity: 1, scale: 1 }}
-                                                    exit={{ opacity: 0, scale: 0.95 }}
-                                                    className="md:col-span-2"
-                                                >
-                                                    <GlassPanel padding="md" className="h-full">
-                                                        <MicroTitle className="mb-4">Brand Strategy Tags</MicroTitle>
-                                                        <div className="flex flex-wrap gap-2">
-                                                            {selected.tags && Object.entries(selected.tags).length > 0 ? (
-                                                                Object.entries(selected.tags).map(([cat, vals]: any) => (
-                                                                    vals.map((v: string, j: number) => (
-                                                                        <span key={`${cat}-${j}`} className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/5 text-[10px] font-mono text-neutral-500 hover:text-brand-cyan hover:border-brand-cyan/20 transition-all cursor-default">
-                                                                            {v}
-                                                                        </span>
-                                                                    ))
-                                                                ))
-                                                            ) : (
-                                                                <p className="text-[10px] font-mono text-neutral-800">No strategy tags defined</p>
-                                                            )}
-                                                        </div>
-                                                    </GlassPanel>
-                                                </motion.div>
-                                            )}
-
-                                            {activeSections.includes('editorial') && (
-                                                <motion.div
-                                                    layout
-                                                    initial={{ opacity: 0, scale: 0.95 }}
-                                                    animate={{ opacity: 1, scale: 1 }}
-                                                    exit={{ opacity: 0, scale: 0.95 }}
-                                                    className="md:col-span-4"
-                                                >
-                                                    <GlassPanel padding="md" className="h-full">
-                                                        <div className="flex items-center justify-between mb-4">
-                                                            <MicroTitle>Editorial Guidelines</MicroTitle>
-                                                            {selected.guidelines?.voice && (
-                                                                <span className="text-[10px] font-mono text-brand-cyan bg-brand-cyan/10 px-2 py-0.5 rounded-full">{selected.guidelines.voice}</span>
-                                                            )}
-                                                        </div>
-                                                        <div className="grid grid-cols-2 gap-6">
-                                                            <div className="space-y-4">
-                                                                <span className="text-[10px] font-mono text-green-500/50 uppercase tracking-widest flex items-center gap-1.5">
+                                                                    <MicroTitle className="text-[10px] ">{f.style || 'Regular'}</MicroTitle> {f.size && <span className="text-neutral-800">·</span>} {f.size && <span className="text-[10px] text-neutral-700">{f.size}px</span>} </div> </div> )) ) : ( <p className="text-[10px] text-neutral-700 italic">{t('brandGuidelines.clickToAdd')}</p> )} </div> </GlassPanel> </motion.div> {/* Optional Sections with AnimatePresence */} <AnimatePresence mode="popLayout"> {activeSections.includes('tags') && ( <motion.div layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="md:col-span-2" > <GlassPanel padding="md" className="h-full"> <MicroTitle className="mb-4">Brand Strategy Tags</MicroTitle> <div className="flex flex-wrap gap-2"> {selected.tags && Object.entries(selected.tags).length > 0 ? ( Object.entries(selected.tags).map(([cat, vals]: any) => ( vals.map((v: string, j: number) => ( <span key={`${cat}-${j}`} className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/5 text-[10px] hover:text-brand-cyan hover:border-brand-cyan/20 transition-all cursor-default"> {v} </span> )) )) ) : ( <p className="text-[10px] text-neutral-800">No strategy tags defined</p> )} </div> </GlassPanel> </motion.div> )} {activeSections.includes('editorial') && ( <motion.div layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="md:col-span-4" > <GlassPanel padding="md" className="h-full"> <div className="flex items-center justify-between mb-4"> <MicroTitle>Editorial Guidelines</MicroTitle> {selected.guidelines?.voice && ( <span className="text-[10px] text-brand-cyan bg-brand-cyan/10 px-2 py-0.5 rounded-full">{selected.guidelines.voice}</span> )} </div> <div className="grid grid-cols-2 gap-6"> <div className="space-y-4"> <span className="text-[10px] text-green-500/50 flex items-center gap-1.5">
                                                                     <CheckCircle2 size={10} />
                                                                     Principles
                                                                 </span>
@@ -585,10 +503,10 @@ export const BrandGuidelinesPage: React.FC = () => {
                                                                 </ul>
                                                             </div>
                                                             <div className="space-y-4">
-                                                                <span className="text-[10px] font-mono text-red-500/50 uppercase tracking-widest flex items-center gap-1.5">
+                                                                <MicroTitle className="text-[10px] text-red-500/50 flex items-center gap-1.5">
                                                                     <CircleAlert size={10} />
                                                                     Avoid
-                                                                </span>
+                                                                </MicroTitle>
                                                                 <ul className="space-y-1.5">
                                                                     {selected.guidelines?.donts?.map((item: string, i: number) => (
                                                                         <li key={i} className="text-xs text-neutral-400 flex items-start gap-2 bg-white/[0.02] p-1.5 rounded-lg border border-white/5">
@@ -624,102 +542,12 @@ export const BrandGuidelinesPage: React.FC = () => {
                                                                         {Object.entries(selected.tokens.spacing).map(([k, v]) => (
                                                                             <div key={k} className="flex flex-col items-center gap-1 bg-white/5 p-2 rounded-lg border border-white/5 min-w-[40px]">
                                                                                 <span className="text-[8px] font-mono text-neutral-600 uppercase">{k}</span>
-                                                                                <span className="text-[10px] font-mono text-white">{v}px</span>
-                                                                            </div>
-                                                                        ))}
-                                                                    </div>
-                                                                </div>
-                                                            )}
-                                                            {selected.tokens?.radius && (
-                                                                <div className="space-y-2">
-                                                                    <span className="text-[9px] font-mono text-neutral-600 uppercase tracking-widest">Corner Radius</span>
+                                                                                <MicroTitle className="text-[10px] text-white">{v}px</MicroTitle> </div> ))} </div> </div> )} {selected.tokens?.radius && ( <div className="space-y-2"> <span className="text-[9px] text-neutral-600">Corner Radius</span>
                                                                     <div className="flex flex-wrap gap-2">
                                                                         {Object.entries(selected.tokens.radius).map(([k, v]) => (
                                                                             <div key={k} className="flex flex-col items-center gap-1 bg-white/5 p-2 rounded-lg border border-white/5 min-w-[40px]">
                                                                                 <span className="text-[8px] font-mono text-neutral-600 uppercase">{k}</span>
-                                                                                <span className="text-[10px] font-mono text-white">{v}px</span>
-                                                                            </div>
-                                                                        ))}
-                                                                    </div>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </GlassPanel>
-                                                </motion.div>
-                                            )}
-
-                                            {activeSections.includes('accessibility') && (
-                                                <motion.div
-                                                    layout
-                                                    initial={{ opacity: 0, scale: 0.95 }}
-                                                    animate={{ opacity: 1, scale: 1 }}
-                                                    exit={{ opacity: 0, scale: 0.95 }}
-                                                    className="md:col-span-3"
-                                                >
-                                                    <GlassPanel padding="md" className="h-full">
-                                                        <div className="flex items-center justify-between mb-4">
-                                                            <MicroTitle>Accessibility</MicroTitle>
-                                                            <ShieldCheck size={14} className="text-neutral-700" />
-                                                        </div>
-                                                        <p className="text-xs text-neutral-400 leading-relaxed bg-white/[0.02] p-4 rounded-xl border border-white/5 italic">
-                                                            {selected.guidelines?.accessibility || "No accessibility guidelines defined."}
-                                                        </p>
-                                                    </GlassPanel>
-                                                </motion.div>
-                                            )}
-
-                                            {activeSections.includes('media') && (
-                                                <motion.div
-                                                    layout
-                                                    initial={{ opacity: 0, y: 30 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    exit={{ opacity: 0, y: 30 }}
-                                                    className="md:col-span-6"
-                                                >
-                                                    <GlassPanel padding="md" className="w-full">
-                                                        <div className="flex items-center justify-between mb-8">
-                                                            <div className="flex items-center gap-3">
-                                                                <div className="p-2 rounded-xl bg-brand-cyan/10 text-brand-cyan">
-                                                                    <ImageIcon size={18} />
-                                                                </div>
-                                                                <div className="space-y-0.5">
-                                                                    <MicroTitle>Media Kit & Visual Library</MicroTitle>
-                                                                    <p className="text-[10px] font-mono text-neutral-600">Unified storage for logos, headers, and reference media.</p>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <MediaKitGallery
-                                                            guidelineId={selected.id!}
-                                                            media={localMedia || []}
-                                                            logos={localLogos || []}
-                                                            onMediaChange={setLocalMedia}
-                                                            onLogosChange={setLocalLogos}
-                                                        />
-                                                    </GlassPanel>
-                                                </motion.div>
-                                            )}
-                                        </AnimatePresence>
-
-                                        {/* Inline Editor (Hidden until specifically toggled or integrated into panels) */}
-                                        <div className="md:col-span-6 mt-12 pt-12 border-t border-white/5">
-                                            <div className="flex items-center gap-4 mb-10">
-                                                <MicroTitle className="text-neutral-300">Detailed Configuration</MicroTitle>
-                                                <div className="h-px flex-1 bg-white/5" />
-                                            </div>
-                                            <BrandGuidelineEditor
-                                                key={selected.id}
-                                                guideline={selected}
-                                                onUpdate={(updated) => {
-                                                    setGuidelines(prev => prev.map(g => g.id === updated.id ? updated : g));
-                                                }}
-                                            />
-                                        </div>
-                                    </motion.div>
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center py-32 text-neutral-800 font-mono text-xs gap-4 border border-dashed border-white/5 rounded-3xl">
-                                        <ChevronRight size={32} strokeWidth={1} className="animate-pulse" />
-                                        <div className="text-center space-y-1">
-                                            <p className="uppercase tracking-[0.3em] font-bold">Select a Cluster</p>
+                                                                                <MicroTitle className="text-[10px] text-white">{v}px</MicroTitle> </div> ))} </div> </div> )} </div> </GlassPanel> </motion.div> )} {activeSections.includes('accessibility') && ( <motion.div layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="md:col-span-3" > <GlassPanel padding="md" className="h-full"> <div className="flex items-center justify-between mb-4"> <MicroTitle>Accessibility</MicroTitle> <ShieldCheck size={14} className="text-neutral-700" /> </div> <p className="text-xs text-neutral-400 leading-relaxed bg-white/[0.02] p-4 rounded-xl border border-white/5 italic"> {selected.guidelines?.accessibility || "No accessibility guidelines defined."} </p> </GlassPanel> </motion.div> )} {activeSections.includes('media') && ( <motion.div layout initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 30 }} className="md:col-span-6" > <GlassPanel padding="md" className="w-full"> <div className="flex items-center justify-between mb-8"> <div className="flex items-center gap-3"> <div className="p-2 rounded-xl bg-brand-cyan/10 text-brand-cyan"> <ImageIcon size={18} /> </div> <div className="space-y-0.5"> <MicroTitle>Media Kit & Visual Library</MicroTitle> <p className="text-[10px] text-neutral-600">Unified storage for logos, headers, and reference media.</p> </div> </div> </div> <MediaKitGallery guidelineId={selected.id!} media={localMedia || []} logos={localLogos || []} onMediaChange={setLocalMedia} onLogosChange={setLocalLogos} /> </GlassPanel> </motion.div> )} </AnimatePresence> {/* Inline Editor (Hidden until specifically toggled or integrated into panels) */} <div className="md:col-span-6 mt-12 pt-12 border-t border-white/5"> <div className="flex items-center gap-4 mb-10"> <MicroTitle className="text-neutral-300">Detailed Configuration</MicroTitle> <div className="h-px flex-1 bg-white/5" /> </div> <BrandGuidelineEditor key={selected.id} guideline={selected} onUpdate={(updated) => { setGuidelines(prev => prev.map(g => g.id === updated.id ? updated : g)); }} /> </div> </motion.div> ) : ( <div className="flex flex-col items-center justify-center py-32 text-neutral-800 text-xs gap-4 border border-dashed border-white/5 rounded-3xl"> <ChevronRight size={32} strokeWidth={1} className="animate-pulse" /> <div className="text-center space-y-1"> <p className=" tracking-[0.3em] font-bold">Select a Cluster</p>
                                             <p className="text-neutral-900">Choose a brand identity to begin orchestration.</p>
                                         </div>
                                     </div>

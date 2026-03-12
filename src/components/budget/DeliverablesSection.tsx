@@ -5,6 +5,7 @@ import { FormTextarea } from '@/components/ui/form-textarea';
 import type { Deliverable } from '@/types/types';
 import { Plus, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button'
 
 interface DeliverablesSectionProps {
   deliverables: Deliverable[];
@@ -54,13 +55,13 @@ export const DeliverablesSection: React.FC<DeliverablesSectionProps> = ({
         <h3 className="text-lg font-semibold text-neutral-200 font-mono">
           {t('budget.deliverables')}
         </h3>
-        <button
+        <Button variant="brand" 
           onClick={addDeliverable}
           className="p-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/50 rounded-xl text-brand-cyan transition-all duration-300 flex items-center justify-center"
           title={t('budget.addDeliverable') || 'Adicionar Entregável'}
         >
           <Plus size={18} />
-        </button>
+        </Button>
       </div>
 
       {deliverables.length === 0 ? (
@@ -120,24 +121,24 @@ export const DeliverablesSection: React.FC<DeliverablesSectionProps> = ({
                       </div>
                     </div>
                   </div>
-                  <button
+                  <Button variant="ghost" 
                     onClick={() => removeDeliverable(index)}
                     className="p-2 text-red-400 hover:bg-red-400/10 rounded-md transition-colors self-start sm:self-auto"
                     title={t('budget.removeDeliverable')}
                   >
                     <Trash2 size={18} />
-                  </button>
+                  </Button>
                 </div>
               </div>
               {index === deliverables.length - 1 && (
                 <div className="flex justify-center pt-2">
-                  <button
+                  <Button variant="ghost" 
                     onClick={addDeliverable}
                     className="flex items-center justify-center p-1.5 bg-neutral-950/30 hover:bg-neutral-950/50 border border-neutral-700/30 hover:border-neutral-600/50 rounded-md text-neutral-400 hover:text-neutral-300 transition-all duration-200"
                     title={t('budget.addDeliverable') || 'Adicionar Entregável'}
                   >
                     <Plus size={16} />
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>

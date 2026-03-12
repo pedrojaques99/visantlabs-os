@@ -6,6 +6,7 @@ import {
   PromptInputToolbar,
   PromptInputSubmit,
 } from './ai/prompt-input';
+import { Button } from '@/components/ui/button'
 
 interface ReImaginePanelProps {
   onSubmit: (reimaginePrompt: string) => void;
@@ -58,13 +59,13 @@ export const ReImaginePanel: React.FC<ReImaginePanelProps> = ({
               <p className="text-xs text-neutral-500">Describe the changes you want to make</p>
             </div>
           </div>
-          <button
+          <Button variant="ghost" 
             onClick={onClose}
             className="p-2 rounded-md text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 transition-colors"
             title="Close"
           >
             <X size={20} />
-          </button>
+          </Button>
         </div>
 
         {/* Input Form */}

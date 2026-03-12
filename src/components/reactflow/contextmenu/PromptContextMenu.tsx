@@ -2,6 +2,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { X, Trash2, Copy as CopyIcon, Save } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
+import { Button } from '@/components/ui/button'
 
 interface PromptContextMenuProps {
     x: number;
@@ -47,15 +48,15 @@ export const PromptContextMenu: React.FC<PromptContextMenuProps> = ({
             >
                 <div className="px-2 py-1.5 border-b border-neutral-700/30 flex items-center justify-between sticky top-0 bg-neutral-950/90 backdrop-blur-sm z-10">
                     <span className="text-xs font-mono text-neutral-400 uppercase">Prompt Actions</span>
-                    <button
+                    <Button variant="ghost" 
                         onClick={onClose}
                         className="p-0.5 text-neutral-500 hover:text-neutral-300 transition-colors cursor-pointer"
                     >
                         <X size={12} />
-                    </button>
+                    </Button>
                 </div>
 
-                <button
+                <Button variant="ghost" 
                     onClick={() => {
                         onSavePrompt();
                         onClose();
@@ -64,11 +65,11 @@ export const PromptContextMenu: React.FC<PromptContextMenuProps> = ({
                 >
                     <Save size={14} />
                     {t('canvasNodes.nodeContextMenu.savePrompt')}
-                </button>
+                </Button>
 
                 <div className="h-px bg-neutral-700/30 my-1" />
 
-                <button
+                <Button variant="ghost" 
                     onClick={() => {
                         onDuplicate();
                         onClose();
@@ -77,9 +78,9 @@ export const PromptContextMenu: React.FC<PromptContextMenuProps> = ({
                 >
                     <CopyIcon size={14} />
                     {t('canvasNodes.nodeContextMenu.duplicate')}
-                </button>
+                </Button>
 
-                <button
+                <Button variant="ghost" 
                     onClick={() => {
                         onDelete();
                         onClose();
@@ -88,7 +89,7 @@ export const PromptContextMenu: React.FC<PromptContextMenuProps> = ({
                 >
                     <Trash2 size={14} />
                     {t('canvasNodes.nodeContextMenu.delete')}
-                </button>
+                </Button>
             </div>
         </>,
         document.body

@@ -6,6 +6,8 @@ import { cn } from '@/lib/utils';
 import { savedPresetsService, SavedPreset } from '@/services/savedPresetsService';
 import { useMockup } from './MockupContext';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 export const PresetsControl: React.FC = () => {
     const { t } = useTranslation();
@@ -104,8 +106,7 @@ export const PresetsControl: React.FC = () => {
     return (
         <div className="relative mb-4">
             <div className="flex gap-2">
-                <button
-                    onClick={() => { setIsOpen(!isOpen); setIsSaving(false); }}
+                <Button variant="ghost"                     onClick={() => { setIsOpen(!isOpen); setIsSaving(false); }}
                     className={cn(
                         "flex items-center gap-1.5 px-3 py-2 rounded-md font-mono text-xs uppercase tracking-wide transition-all flex-1 justify-center border",
                         isOpen ? "bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30" : 
@@ -114,9 +115,8 @@ export const PresetsControl: React.FC = () => {
                 >
                     <FolderOpen size={14} />
                     <span>Carregar Preset</span>
-                </button>
-                <button
-                    onClick={() => { setIsSaving(!isSaving); setIsOpen(false); }}
+                </Button>
+                <Button variant="ghost"                     onClick={() => { setIsSaving(!isSaving); setIsOpen(false); }}
                     className={cn(
                         "flex items-center gap-1.5 px-3 py-2 rounded-md font-mono text-xs uppercase tracking-wide transition-all flex-1 justify-center border",
                         isSaving ? "bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30" : 
@@ -125,7 +125,7 @@ export const PresetsControl: React.FC = () => {
                 >
                     <Save size={14} />
                     <span>Salvar Config</span>
-                </button>
+                </Button>
             </div>
 
             {/* Save Popover */}
@@ -135,7 +135,7 @@ export const PresetsControl: React.FC = () => {
                     theme === 'dark' ? "bg-neutral-900 border-neutral-800 shadow-black/50" : "bg-white border-neutral-200"
                 )}>
                     <div className="flex gap-2">
-                        <input 
+                        <Input 
                             type="text" 
                             placeholder="Nome do preset..." 
                             value={presetName}
@@ -147,12 +147,12 @@ export const PresetsControl: React.FC = () => {
                             autoFocus
                             onKeyDown={e => e.key === 'Enter' && handleSave()}
                         />
-                        <button onClick={handleSave} disabled={isLoading || !presetName.trim()} className="px-3 py-2 rounded-md bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30 transition-colors disabled:opacity-50">
+                        <Button variant="brand" onClick={handleSave} disabled={isLoading || !presetName.trim()} className="px-3 py-2 rounded-md bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30 transition-colors disabled:opacity-50">
                             <Check size={16} />
-                        </button>
-                        <button onClick={() => setIsSaving(false)} className={cn("px-3 py-2 rounded-md transition-colors", theme === 'dark' ? "hover:bg-neutral-800 text-neutral-500" : "hover:bg-neutral-100 text-neutral-500")}>
+                        </Button>
+                        <Button variant="ghost" onClick={() => setIsSaving(false)} className={cn("px-3 py-2 rounded-md transition-colors", theme === 'dark' ? "hover:bg-neutral-800 text-neutral-500" : "hover:bg-neutral-100 text-neutral-500")}>
                             <X size={16} />
-                        </button>
+                        </Button>
                     </div>
                 </div>
             )}
@@ -181,13 +181,13 @@ export const PresetsControl: React.FC = () => {
                                     )}
                                 >
                                     <span className={cn("text-sm transition-colors", theme === 'dark' ? "text-neutral-300 group-hover:text-white" : "text-neutral-700 group-hover:text-black")}>{preset.name}</span>
-                                    <button 
+                                    <Button variant="ghost" 
                                         onClick={(e) => handleDelete(e, preset.id)}
                                         className="p-1.5 text-neutral-500 hover:text-red-400 hover:bg-red-400/10 rounded-md transition-colors opacity-0 group-hover:opacity-100"
                                         title="Remover Preset"
                                     >
                                         <Trash2 size={14} />
-                                    </button>
+                                    </Button>
                                 </div>
                             ))}
                         </div>

@@ -23,6 +23,7 @@ import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { PromptContextMenu } from './contextmenu/PromptContextMenu';
 import { MockupPresetModal } from '@/components/MockupPresetModal';
 import { getPresetByIdSync } from '@/services/unifiedPresetService';
+import { Button } from '@/components/ui/button'
 
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -622,8 +623,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         {/* Prompt Functions Toolbar */}
         <div className="flex items-center justify-between mb-1.5 px-0.5">
           <div className="flex items-center gap-1.5">
-            <button
-              type="button"
+            <Button variant="ghost"               type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
@@ -640,11 +640,10 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               onMouseDown={(e) => e.stopPropagation()}
             >
               <BookOpen size={14} />
-            </button>
+            </Button>
           </div>
 
-          <button
-            type="button"
+          <Button variant="ghost"             type="button"
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
@@ -664,7 +663,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
             onMouseDown={(e) => e.stopPropagation()}
           >
             <Save size={14} />
-          </button>
+          </Button>
         </div>
 
         <div className="relative">
@@ -679,8 +678,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           />
           {/* Prompt Suggestion Button */}
           {!hasTextNodeConnection && prompt.trim() && (
-            <button
-              type="button"
+            <Button variant="ghost"               type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
@@ -704,7 +702,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               ) : (
                 <Wand2 size={14} />
               )}
-            </button>
+            </Button>
           )}
         </div>
 
@@ -715,8 +713,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               {t('canvasNodes.promptNode.aiSuggestions') || t('canvasNodes.promptNode.suggestions')}
             </div>
             {promptSuggestions.map((suggestion, index) => (
-              <button
-                key={index}
+              <Button variant="ghost"                 key={index}
                 onClick={(e) => {
                   e.stopPropagation();
                   setPrompt(suggestion);
@@ -735,7 +732,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
                 onMouseDown={(e) => e.stopPropagation()}
               >
                 {suggestion}
-              </button>
+              </Button>
             ))}
           </div>
         )}
@@ -754,8 +751,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               { geminiModel: GEMINI_MODELS.NB2, label: 'NB2', emoji: '🍌', credits: getCreditsRequired(GEMINI_MODELS.NB2, resolution) },
               { geminiModel: GEMINI_MODELS.PRO, label: '4K Pro', emoji: '⛏️💎', credits: getCreditsRequired(GEMINI_MODELS.PRO, resolution) },
             ] as const).map(({ geminiModel, label, emoji, credits }) => (
-              <button
-                key={geminiModel}
+              <Button variant="ghost"                 key={geminiModel}
                 onClick={(e) => { e.stopPropagation(); handleModelChange(geminiModel); }}
                 onMouseDown={(e) => e.stopPropagation()}
                 disabled={isLoading}
@@ -772,7 +768,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
                 <span className="text-[10px] text-neutral-500 mt-0.5">
                   {credits} {t('canvasNodes.promptNode.credits')}
                 </span>
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -824,8 +820,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       </div>
 
       {/* Generate Image Button */}
-      <button
-        onClick={(e) => {
+      <Button variant="ghost"         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();
           handleGenerate();
@@ -853,7 +848,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
             </span>
           </>
         )}
-      </button>
+      </Button>
 
       {/* Output Handle */}
       <LabeledHandle

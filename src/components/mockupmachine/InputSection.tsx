@@ -12,6 +12,8 @@ import { useMockup } from './MockupContext';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
 import { MicroTitle } from '../ui/MicroTitle';
 import { GlassPanel } from '../ui/GlassPanel';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 
 interface InputSectionProps {
@@ -240,8 +242,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
 
         {/* Hover Overlay with Replace Action */}
         <div className="absolute inset-0 bg-black/70 flex items-center justify-center gap-4 opacity-0 group-hover/img-container:opacity-100 transition-all duration-300 backdrop-blur-[2px] p-4">
-          <button
-            type="button"
+          <Button variant="ghost"             type="button"
             onClick={(e) => {
                e.stopPropagation();
                onReplace();
@@ -252,11 +253,10 @@ export const InputSection: React.FC<InputSectionProps> = ({
               <ArrowLeftRight size={20} />
             </div>
             <MicroTitle as="span" className="font-bold text-white">{t('mockup.replace') || 'Substituir'}</MicroTitle>
-          </button>
+          </Button>
           
           {onAddRef && (
-            <button
-              type="button"
+            <Button variant="ghost"               type="button"
               onClick={(e) => {
                  e.stopPropagation();
                  onAddRef();
@@ -267,7 +267,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
                 <Plus size={20} />
               </div>
               <MicroTitle as="span" className="font-bold text-white">+ REF</MicroTitle>
-            </button>
+            </Button>
           )}
         </div>
 
@@ -288,19 +288,19 @@ export const InputSection: React.FC<InputSectionProps> = ({
           )}>
             {label}
           </p>
-          <p className="text-[10px] font-mono text-neutral-500 uppercase tracking-tighter truncate opacity-80">
+          <MicroTitle className="text-[10px] tracking-tighter truncate opacity-80">
             {img.mimeType?.split('/')[1] || 'IMG'} • {img.size ? `${(img.size / 1024).toFixed(0)}KB` : '---'}
-          </p>
+          </MicroTitle>
         </div>
 
         {onRemove && (
-          <button
+          <Button
             onClick={onRemove}
             className="p-1.5 hover:bg-white/5 rounded transition-colors text-neutral-600 hover:text-red-400 group/remove"
             title={t('mockup.removeFileTitle') || "Remover arquivo"}
           >
             <X size={14} className="group-hover/remove:scale-110 transition-transform" />
-          </button>
+          </Button>
         )}
       </div>
     </div>
@@ -324,8 +324,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
         {!isLoadingImage && (
           <div className="flex items-center gap-3">
             {uploadedImage && (
-              <button
-                type="button"
+              <Button variant="ghost"                 type="button"
                 onClick={() => onDesignTypeChange(designType === 'logo' ? 'layout' : 'logo')}
                 className={cn(
                   "px-3 py-1.5 rounded-md transition-all flex items-center gap-2 border",
@@ -342,7 +341,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
                 <MicroTitle as="span" className="font-bold text-inherit !text-[9px]">
                   {t('mockup.transparentBackground') || 'ISOLAR'}
                 </MicroTitle>
-              </button>
+              </Button>
             )}
             
             {canAddMoreReferences && (
@@ -405,9 +404,9 @@ export const InputSection: React.FC<InputSectionProps> = ({
       </div>
 
       {/* Hidden Inputs */}
-      <input id="image-upload-blank" type="file" accept="image/*" onChange={handleSingleImageUpload} className="hidden" />
-      <input id="multiple-image-upload" type="file" accept="image/*" multiple onChange={handleMultipleImageUpload} className="hidden" />
-      <input id="replace-reference-upload" type="file" accept="image/*" onChange={handleReferenceReplace} className="hidden" />
+      <Input id="image-upload-blank" type="file" accept="image/*" onChange={handleSingleImageUpload} className="hidden" />
+      <Input id="multiple-image-upload" type="file" accept="image/*" multiple onChange={handleMultipleImageUpload} className="hidden" />
+      <Input id="replace-reference-upload" type="file" accept="image/*" onChange={handleReferenceReplace} className="hidden" />
     </section>
   );
 };

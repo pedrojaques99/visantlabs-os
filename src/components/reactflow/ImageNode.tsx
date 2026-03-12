@@ -24,6 +24,8 @@ import { useMockupLike } from '@/hooks/useMockupLike';
 import { NodeButton } from './shared/node-button';
 import { fileToBase64 } from '@/utils/fileUtils';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const MAX_FIT_WIDTH = 1200;
@@ -383,7 +385,7 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
             emptySubmessage={t('canvasNodes.imageNode.uploadImage')}
             uploadButton={!isGenerating && nodeData.onUpload ? (
               <>
-                <input
+                <Input
                   ref={imageInputRef}
                   type="file"
                   accept="image/*"
@@ -414,22 +416,20 @@ export const ImageNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
           <div className="flex items-center justify-between mb-1">
             <label className="text-xs text-neutral-400 font-mono">{t('canvasNodes.imageNode.description')}</label>
             <div className="flex items-center gap-1">
-              <button
-                onClick={(e) => { e.stopPropagation(); handleCopyDescription(); }}
+              <Button variant="ghost"                 onClick={(e) => { e.stopPropagation(); handleCopyDescription(); }}
                 className="p-1 bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan rounded transition-colors backdrop-blur-sm border border-[brand-cyan]/20 hover:border-[brand-cyan]/30"
                 title={t('canvasNodes.imageNode.copyDescription')}
                 onMouseDown={(e) => e.stopPropagation()}
               >
                 <Copy size={10} strokeWidth={2} />
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); handleClearDescription(); }}
+              </Button>
+              <Button variant="ghost"                 onClick={(e) => { e.stopPropagation(); handleClearDescription(); }}
                 className="p-1 bg-neutral-700/20 hover:bg-neutral-700/30 text-neutral-400 rounded transition-colors backdrop-blur-sm border border-neutral-700/20 hover:border-neutral-700/30"
                 title={t('canvasNodes.imageNode.clearDescription')}
                 onMouseDown={(e) => e.stopPropagation()}
               >
                 <X size={10} strokeWidth={2} />
-              </button>
+              </Button>
             </div>
           </div>
           <Textarea

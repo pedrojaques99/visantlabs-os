@@ -21,6 +21,7 @@ import {
   BreadcrumbSeparator,
 } from "../components/ui/BreadcrumbWithBack";
 import { GlassPanel } from '../components/ui/GlassPanel';
+import { Button } from '@/components/ui/button'
 
 export const MyOutputsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -415,27 +416,25 @@ export const MyOutputsPage: React.FC = () => {
           {filteredMockups.length > 0 && !isMobile && (
             <div className="fixed bottom-4 md:bottom-6 left-4 md:left-6 z-30">
               <GlassPanel padding="sm" className="flex-row items-center gap-1 bg-neutral-950/50">
-                <button
-                  onClick={() => handleColumnsChange(columns - 1)}
+                <Button variant="ghost"                   onClick={() => handleColumnsChange(columns - 1)}
                   disabled={columns <= 1}
                   className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded hover:bg-neutral-800/30"
                   aria-label="Decrease columns"
                 >
                   <Minus size={14} />
-                </button>
+                </Button>
                 <div className="px-2.5">
                   <span className="text-xs font-mono text-neutral-400 min-w-[1.5rem] text-center">
                     {columns}
                   </span>
                 </div>
-                <button
-                  onClick={() => handleColumnsChange(columns + 1)}
+                <Button variant="ghost"                   onClick={() => handleColumnsChange(columns + 1)}
                   disabled={columns >= 6}
                   className="p-1.5 text-neutral-500 hover:text-neutral-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded hover:bg-neutral-800/30"
                   aria-label="Increase columns"
                 >
                   <Plus size={14} />
-                </button>
+                </Button>
               </GlassPanel>
             </div>
           )}
@@ -476,8 +475,7 @@ export const MyOutputsPage: React.FC = () => {
                       {/* Overlay on hover */}
                       <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-opacity">
                         {isAuthenticated && mockup._id && (
-                          <button
-                            onClick={(e) => {
+                          <Button variant="ghost"                             onClick={(e) => {
                               e.stopPropagation();
                               handleDelete(mockup._id);
                             }}
@@ -486,7 +484,7 @@ export const MyOutputsPage: React.FC = () => {
                             aria-label="Delete output"
                           >
                             <Trash2 size={14} />
-                          </button>
+                          </Button>
                         )}
                       </div>
                     </div>

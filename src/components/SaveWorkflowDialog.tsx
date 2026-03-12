@@ -123,26 +123,26 @@ export const SaveWorkflowDialog: React.FC<SaveWorkflowDialogProps> = ({
                             </p>
                         </div>
                     </div>
-                    <button
+                    <Button variant="ghost" 
                         onClick={onClose}
                         className="p-2 rounded-lg hover:bg-neutral-800/50 text-neutral-400 hover:text-neutral-200 transition-all hover:scale-110 active:scale-95"
                     >
                         <X size={20} />
-                    </button>
+                    </Button>
                 </div>
 
                 {/* Content */}
                 <div className="p-6 space-y-6 overflow-y-auto max-h-[calc(85vh-140px)] custom-scrollbar flex-1">
                     {/* Stats */}
                     <div className="flex items-center gap-4 px-4 py-3 bg-neutral-900/40 border border-neutral-800/60 rounded-lg">
-                        <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-wider text-neutral-400">
+                        <MicroTitle className="flex items-center gap-2 text-[10px] tracking-wider text-neutral-400">
                             <FileType size={14} className="text-brand-cyan/70" />
-                            <span>{nodeCount} {t('workflows.saveDialog.nodes') || 'nodes'}</span>
+                            <span>{nodeCount} {t('workflows.saveDialog.nodes') || 'nodes'}</MicroTitle>
                         </div>
                         <div className="w-px h-3 bg-neutral-800" />
-                        <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-wider text-neutral-400">
+                        <MicroTitle className="flex items-center gap-2 text-[10px] tracking-wider text-neutral-400">
                             <Share2 size={14} className="text-brand-cyan/70" />
-                            <span>{edgeCount} {t('workflows.saveDialog.connections') || 'connections'}</span>
+                            <span>{edgeCount} {t('workflows.saveDialog.connections') || 'connections'}</MicroTitle>
                         </div>
                     </div>
 
@@ -150,7 +150,7 @@ export const SaveWorkflowDialog: React.FC<SaveWorkflowDialogProps> = ({
                         {/* Name */}
                         <div className="space-y-2 md:col-span-2">
                             <MicroTitle as="label" className="ml-1">
-                                {t('workflows.saveDialog.name') || 'Workflow Name'} <span className="text-red-400">*</span>
+                                {t('workflows.saveDialog.name') || 'Workflow Name'} <span className="text-red-400">*</MicroTitle>
                             </MicroTitle>
                             <Input
                                 value={name}
@@ -197,7 +197,7 @@ export const SaveWorkflowDialog: React.FC<SaveWorkflowDialogProps> = ({
                         <div className="space-y-2 md:col-span-2">
                             <MicroTitle as="label" className="ml-1 flex items-center gap-1.5 lowercase">
                                 <Info size={12} className="uppercase" />
-                                {t('workflows.saveDialog.description') || 'Description'} <span className="text-red-400">*</span>
+                                {t('workflows.saveDialog.description') || 'Description'} <span className="text-red-400">*</MicroTitle>
                             </MicroTitle>
                             <Textarea
                                 value={description}

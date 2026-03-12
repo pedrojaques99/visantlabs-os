@@ -29,6 +29,7 @@ import { PresetCard, CATEGORY_CONFIG } from '../components/PresetCard';
 import type { PromptCategory, LegacyPresetType, CommunityPrompt } from '../types/communityPrompts';
 import { migrateLegacyPreset } from '../types/communityPrompts';
 import { GEMINI_MODELS } from '@/constants/geminiModels';
+import { Button } from '@/components/ui/button'
 
 
 // Constants
@@ -821,12 +822,11 @@ export const CommunityPresetsPage: React.FC = () => {
               <p className="text-neutral-400 font-mono mb-4">
                 {t('communityPresets.errors.mustBeAuthenticated')}
               </p>
-              <button
-                onClick={() => setShowAuthModal(true)}
+              <Button variant="ghost"                 onClick={() => setShowAuthModal(true)}
                 className="inline-block px-4 py-2 bg-neutral-800/50 hover:bg-neutral-700/50 border border-neutral-700/50 text-neutral-300 font-medium rounded-md text-sm font-mono transition-colors"
               >
                 {t('header.register')}
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -836,8 +836,7 @@ export const CommunityPresetsPage: React.FC = () => {
             {/* View Mode (All/My) - Sub Hierarchy Tabs */}
             <div className="flex items-center justify-between border-neutral-800/30">
               <div className="flex p-1 rounded-lg border border-neutral-800/50">
-                <button
-                  onClick={() => handleViewModeChange('all')}
+                <Button variant="ghost"                   onClick={() => handleViewModeChange('all')}
                   className={cn(
                     "px-6 py-2 rounded-md text-xs font-mono transition-all flex items-center gap-2",
                     viewMode === 'all'
@@ -847,9 +846,8 @@ export const CommunityPresetsPage: React.FC = () => {
                 >
                   <Globe className="h-3.5 w-3.5" />
                   {t('communityPresets.viewAll')}
-                </button>
-                <button
-                  onClick={() => handleViewModeChange('my')}
+                </Button>
+                <Button variant="ghost"                   onClick={() => handleViewModeChange('my')}
                   className={cn(
                     "px-6 rounded-md text-xs font-mono transition-all flex items-center gap-2",
                     viewMode === 'my'
@@ -860,7 +858,7 @@ export const CommunityPresetsPage: React.FC = () => {
                 >
                   <User className="h-3.5 w-3.5" />
                   {t('communityPresets.viewMy')}
-                </button>
+                </Button>
               </div>
 
               <div className="flex items-center gap-2">
@@ -875,13 +873,12 @@ export const CommunityPresetsPage: React.FC = () => {
                 />
 
                 {!isEditing && isAuthenticated && (
-                  <button
-                    onClick={handleCreate}
+                  <Button variant="ghost"                     onClick={handleCreate}
                     className="flex items-center gap-2 px-4 py-2 bg-neutral-950/70 hover:bg-neutral-800/50 border border-neutral-800/50 text-neutral-300 font-medium rounded-md text-sm font-mono transition-colors"
                   >
                     <Plus className="h-4 w-4" />
                     {t('communityPresets.createNew')}
-                  </button>
+                  </Button>
                 )}
               </div>
             </div>
@@ -918,12 +915,11 @@ export const CommunityPresetsPage: React.FC = () => {
                       }
                     </p>
                     {searchQuery.trim() && (
-                      <button
-                        onClick={() => setSearchQuery('')}
+                      <Button variant="ghost"                         onClick={() => setSearchQuery('')}
                         className="mt-4 px-4 py-2 text-xs font-mono text-neutral-400 hover:text-neutral-300 border border-neutral-700/50 rounded-md hover:border-neutral-600/50 transition-colors"
                       >
                         {t('communityPresets.search.clear') || 'Clear search'}
-                      </button>
+                      </Button>
                     )}
                   </div>
                 ) : (
@@ -1133,8 +1129,7 @@ const PresetDetailModal: React.FC<{
           </div>
           <div className="flex items-center gap-3 ml-4">
             {isOwner && onEdit && (
-              <button
-                onClick={(e) => {
+              <Button variant="ghost"                 onClick={(e) => {
                   e.stopPropagation();
                   onEdit();
                 }}
@@ -1143,11 +1138,10 @@ const PresetDetailModal: React.FC<{
               >
                 <Edit2 size={16} />
                 <span>{t('communityPresets.actions.edit')}</span>
-              </button>
+              </Button>
             )}
             {isAuthenticated && onToggleLike && (
-              <button
-                onClick={(e) => {
+              <Button variant="ghost"                 onClick={(e) => {
                   e.stopPropagation();
                   onToggleLike();
                 }}
@@ -1159,14 +1153,13 @@ const PresetDetailModal: React.FC<{
               >
                 <Heart size={16} className={isLiked ? 'fill-current' : ''} />
                 <span>{likesCount}</span>
-              </button>
+              </Button>
             )}
-            <button
-              onClick={onClose}
+            <Button variant="ghost"               onClick={onClose}
               className="p-2 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 rounded-lg transition-colors"
             >
               <X className="h-5 w-5" />
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -1185,8 +1178,7 @@ const PresetDetailModal: React.FC<{
                       (e.target as HTMLImageElement).style.display = 'none';
                     }}
                   />
-                  <button
-                    onClick={(e) => {
+                  <Button variant="ghost"                     onClick={(e) => {
                       e.stopPropagation();
                       setIsImageFullscreen(true);
                     }}
@@ -1194,7 +1186,7 @@ const PresetDetailModal: React.FC<{
                     title="View fullscreen"
                   >
                     <Maximize2 size={14} />
-                  </button>
+                  </Button>
                 </div>
               ) : (
                 <div className="w-full aspect-square rounded-lg border border-neutral-700/30 bg-neutral-900/30 flex items-center justify-center">
@@ -1235,8 +1227,7 @@ const PresetDetailModal: React.FC<{
                   <label className="block text-xs font-semibold text-neutral-400 font-mono uppercase">
                     Prompt
                   </label>
-                  <button
-                    onClick={async (e) => {
+                  <Button variant="ghost"                     onClick={async (e) => {
                       e.stopPropagation();
                       setIsCopying(true);
                       try {
@@ -1256,7 +1247,7 @@ const PresetDetailModal: React.FC<{
                     ) : (
                       <Clipboard size={14} />
                     )}
-                  </button>
+                  </Button>
                 </div>
                 <p className="text-sm text-neutral-300 font-mono whitespace-pre-wrap max-h-32 overflow-y-auto">{migrated.prompt}</p>
               </div>
@@ -1304,19 +1295,17 @@ const PresetDetailModal: React.FC<{
 
         {/* Footer Actions */}
         <div className="sticky bottom-0 bg-[#0F0F0F] border-t border-neutral-800/50 p-6 flex gap-3">
-          <button
-            onClick={onOpenInCanvas}
+          <Button variant="ghost"             onClick={onOpenInCanvas}
             className="flex items-center gap-2 flex-1 px-6 py-3 bg-neutral-800/50 hover:bg-neutral-700/50 border border-neutral-700/50 text-neutral-300 font-medium rounded-xl text-sm font-mono transition-all"
           >
             <ExternalLink className="h-4 w-4" />
             {t('communityPresets.openInCanvas')}
-          </button>
-          <button
-            onClick={onClose}
+          </Button>
+          <Button variant="ghost"             onClick={onClose}
             className="px-6 py-3 bg-neutral-900/50 border border-neutral-700/50 text-neutral-300 hover:bg-neutral-800/50 hover:border-neutral-600/50 font-medium rounded-xl text-sm font-mono transition-all"
           >
             {t('common.close')}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -1326,12 +1315,11 @@ const PresetDetailModal: React.FC<{
           className="fixed inset-0 z-[60] flex items-center justify-center bg-neutral-950/95 backdrop-blur-sm p-4"
           onClick={() => setIsImageFullscreen(false)}
         >
-          <button
-            onClick={() => setIsImageFullscreen(false)}
+          <Button variant="ghost"             onClick={() => setIsImageFullscreen(false)}
             className="absolute top-4 right-4 p-2 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 rounded-lg transition-colors z-10"
           >
             <X className="h-5 w-5" />
-          </button>
+          </Button>
           <img
             src={migrated.referenceImageUrl}
             alt={migrated.name}

@@ -21,6 +21,7 @@ import { toast } from 'sonner';
 import { FileText, Calendar, Eye, Trash2, Pickaxe, Edit, Layout } from 'lucide-react';
 import type { CustomPdfPreset } from '../types/types';
 import { SEO } from '../components/SEO';
+import { Button } from '@/components/ui/button'
 
 export const MyBudgetsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -221,20 +222,18 @@ export const MyBudgetsPage: React.FC = () => {
               </p>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
-              <button
-                onClick={() => navigate('/budget-machine')}
+              <Button variant="ghost"                 onClick={() => navigate('/budget-machine')}
                 className="px-3 py-1.5 bg-neutral-950/70 border border-neutral-800/60 hover:border-brand-cyan/50 hover:text-brand-cyan rounded-md text-xs font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 cursor-pointer"
               >
                 <Layout className="h-3.5 w-3.5" />
                 {t('budget.selectTemplate') || 'Ver Templates'}
-              </button>
-              <button
-                onClick={() => navigate('/budget-machine')}
+              </Button>
+              <Button variant="ghost"                 onClick={() => navigate('/budget-machine')}
                 className="px-4 py-2 bg-brand-cyan/90 hover:bg-brand-cyan text-black font-semibold rounded-md text-sm font-mono transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center gap-2 cursor-pointer"
               >
                 <Pickaxe className="h-4 w-4" />
                 {t('budget.createNew') || 'Create New'}
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -296,20 +295,18 @@ export const MyBudgetsPage: React.FC = () => {
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => handleEditPreset(presetId)}
+                          <Button variant="ghost"                             onClick={() => handleEditPreset(presetId)}
                             className="flex-1 px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-brand-cyan/50 hover:text-brand-cyan rounded-md text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
                           >
                             <Edit className="h-4 w-4" />
                             {t('budget.edit') || 'Edit'}
-                          </button>
-                          <button
-                            onClick={(e) => handleDeletePresetClick(presetId, e)}
+                          </Button>
+                          <Button variant="ghost"                             onClick={(e) => handleDeletePresetClick(presetId, e)}
                             disabled={deletingPresetId === presetId}
                             className="px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-red-500/50 hover:text-red-400 rounded-md text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                           >
                             <Trash2 className="h-4 w-4" />
-                          </button>
+                          </Button>
                         </div>
                       </GlassPanel>
                     );
@@ -366,8 +363,7 @@ export const MyBudgetsPage: React.FC = () => {
                   </p>
 
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={(e) => {
+                    <Button variant="ghost"                       onClick={(e) => {
                         e.stopPropagation();
                         handleView(budget);
                       }}
@@ -375,14 +371,13 @@ export const MyBudgetsPage: React.FC = () => {
                     >
                       <Eye className="h-4 w-4" />
                       {t('budget.view') || 'View'}
-                    </button>
-                    <button
-                      onClick={(e) => handleDeleteClick(budget._id, e)}
+                    </Button>
+                    <Button variant="ghost"                       onClick={(e) => handleDeleteClick(budget._id, e)}
                       disabled={deletingId === budget._id}
                       className="px-4 py-2 bg-neutral-950/70 border border-neutral-800/60 hover:border-red-500/50 hover:text-red-400 rounded-xl text-sm font-mono text-neutral-300 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Trash2 className="h-4 w-4" />
-                    </button>
+                    </Button>
                   </div>
                 </GlassPanel>
               ))}

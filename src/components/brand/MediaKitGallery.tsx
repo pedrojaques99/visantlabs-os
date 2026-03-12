@@ -4,6 +4,9 @@ import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { Plus, Trash2, Loader2, Image as ImageIcon, FileText, Link2 } from 'lucide-react';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { MicroTitle } from '@/components/ui/MicroTitle'
 
 interface MediaItem {
     id: string;
@@ -163,11 +166,11 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
             {(logos.length > 0 || !readOnly) && (
                 <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-[0.2em]">
+                        <MicroTitle className="text-[10px] tracking-[0.2em]">
                             {t('mockup.mediaKit.logos')}
-                        </span>
+                        </MicroTitle>
                         {!readOnly && (
-                            <button
+                            <Button variant="ghost" 
                                 type="button"
                                 onClick={() => logoInputRef.current?.click()}
                                 disabled={isUploading}
@@ -175,7 +178,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                             >
                                 <Plus size={10} />
                                 {t('mockup.mediaKit.addLogo')}
-                            </button>
+                            </Button>
                         )}
                     </div>
                     {displayedLogos.length > 0 ? (
@@ -195,45 +198,23 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                                         {logo.variant}
                                     </span>
                                     {!readOnly && (
-                                        <button
+                                        <Button variant="ghost" 
                                             onClick={() => handleDeleteLogo(logo.id)}
                                             disabled={deletingId === logo.id}
                                             className="absolute top-1 right-1 p-1 rounded bg-red-500/80 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
                                         >
                                             {deletingId === logo.id ? <Loader2 size={10} className="animate-spin" /> : <Trash2 size={10} />}
-                                        </button>
+                                        </Button>
                                     )}
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <p className="text-[10px] font-mono text-neutral-700 italic">
-                            {t('mockup.mediaKit.noLogos')}
-                        </p>
-                    )}
-                    <input
-                        ref={logoInputRef}
-                        type="file"
-                        accept={ACCEPTED_IMAGE_TYPES}
-                        multiple
-                        onChange={(e) => {
-                            const files = Array.from(e.target.files || []);
-                            if (files.length) handleLogoUpload(files);
-                            e.target.value = '';
-                        }}
-                        className="hidden"
-                    />
-                </div>
-            )}
-
-            {/* Media Section */}
-            <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-[0.2em]">
+                        <MicroTitle className="text-[10px] text-neutral-700 italic"> {t('mockup.mediaKit.noLogos')} </MicroTitle> )} <Input ref={logoInputRef} type="file" accept={ACCEPTED_IMAGE_TYPES} multiple onChange={(e) => { const files = Array.from(e.target.files || []); if (files.length) handleLogoUpload(files); e.target.value = ''; }} className="hidden" /> </div> )} {/* Media Section */} <div className="flex flex-col gap-2"> <div className="flex items-center justify-between"> <span className="text-[10px] tracking-[0.2em]">
                         {t('mockup.mediaKit.title')}
                     </span>
                     {!readOnly && (
-                        <button
+                        <Button variant="ghost" 
                             type="button"
                             onClick={() => mediaInputRef.current?.click()}
                             disabled={isUploading}
@@ -241,7 +222,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                         >
                             <Plus size={10} />
                             {t('mockup.mediaKit.addMedia')}
-                        </button>
+                        </Button>
                     )}
                 </div>
 
@@ -287,13 +268,13 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                                         </span>
                                     )}
                                     {!readOnly && (
-                                        <button
+                                        <Button variant="ghost" 
                                             onClick={() => handleDeleteMedia(item.id)}
                                             disabled={deletingId === item.id}
                                             className="absolute top-1 right-1 p-1 rounded bg-red-500/80 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
                                         >
                                             {deletingId === item.id ? <Loader2 size={10} className="animate-spin" /> : <Trash2 size={10} />}
-                                        </button>
+                                        </Button>
                                     )}
                                 </div>
                             ))}
@@ -324,7 +305,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                     </span>
                 )}
 
-                <input
+                <Input
                     ref={mediaInputRef}
                     type="file"
                     accept={ACCEPTED_ALL_TYPES}

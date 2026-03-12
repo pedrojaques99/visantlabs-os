@@ -11,6 +11,7 @@ import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
+import { Button } from '@/components/ui/button'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -135,8 +136,7 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
         <div className="flex items-center gap-1.5">
           {/* Copy Button */}
           {text.trim() && (
-            <button
-              onClick={(e) => {
+            <Button variant="ghost"               onClick={(e) => {
                 e.stopPropagation();
                 handleCopyText();
               }}
@@ -155,7 +155,7 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
               ) : (
                 <Copy size={14} />
               )}
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -186,8 +186,7 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
 
           {/* Improve Prompt Button - Enhanced */}
           {text.trim() && (
-            <button
-              onClick={(e) => {
+            <Button variant="ghost"               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
                 handleImprovePrompt();
@@ -211,7 +210,7 @@ export const TextNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
               ) : (
                 <Wand2 size={14} strokeWidth={2} className="animate-pulse" />
               )}
-            </button>
+            </Button>
           )}
 
           {/* Character Counter - Bottom Right */}

@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import { GridDotsBackground } from '../components/ui/GridDotsBackground';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getTranslations, getCurrentLocale } from '@/utils/localeUtils';
+import { Button } from '@/components/ui/button'
 
 export const PrivacyPolicyPage: React.FC = () => {
   const navigate = useNavigate();
@@ -31,13 +32,12 @@ export const PrivacyPolicyPage: React.FC = () => {
       </div>
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 pt-[30px] pb-16 md:pb-24">
-        <button
-          onClick={() => navigate('/')}
+        <Button variant="ghost"           onClick={() => navigate('/')}
           className="mb-8 flex items-center gap-2 text-neutral-400 hover:text-neutral-200 transition-colors font-mono text-sm"
         >
           <ArrowLeft size={16} />
           {t('privacy.backToHome')}
-        </button>
+        </Button>
 
         <div className="bg-neutral-900 border border-neutral-800/50 rounded-md shadow-2xl p-6 md:p-8">
           <h1 className="text-2xl md:text-3xl font-semibold font-mono text-neutral-200 mb-2 tracking-wider uppercase">
