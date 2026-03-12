@@ -1,12 +1,13 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useTheme } from '@/hooks/useTheme';
 import { useMockup } from './MockupContext';
 import { useMockupTags } from '@/hooks/useMockupTags';
 import { translateTag } from '@/utils/localeUtils';
-import { Dices, Shuffle, ChevronDown, Check, Plus } from 'lucide-react';
+import { Dices, Shuffle, ChevronDown, Check, Plus, Grid3x3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SkeletonText } from '@/components/ui/SkeletonLoader';
+import { MockupTagCategory } from '@/services/mockupTagService';
 
 type SectionKey = 'categories' | 'location' | 'angle' | 'lighting' | 'effects' | 'material';
 
@@ -61,6 +62,7 @@ interface TagDropdownProps {
   placeholder: string;
   theme: string;
   isGenerating?: boolean;
+  tagCategories?: MockupTagCategory[];
 }
 
 const TagDropdown: React.FC<TagDropdownProps> = ({
@@ -71,6 +73,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
   placeholder,
   theme,
   isGenerating = false,
+  tagCategories = [],
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -122,6 +125,61 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
       tag.toLowerCase() === searchQuery.toLowerCase() ||
       translateTag(tag).toLowerCase() === searchQuery.toLowerCase()
     );
+
+  // Group tags by category if categories are provided
+  const groupedTags = useMemo(() => {
+    if (!tagCategories || tagCategories.length === 0 || searchQuery.trim()) {
+      return { type: 'flat', tags: filteredTags };
+    }
+
+    const groups: { categoryName: string; tags: string[] }[] = [];
+    const categorizedTags = new Set<string>();
+
+    tagCategories.forEach(cat => {
+      const categoryTags = cat.tags
+        .map(t => t.name)
+        .filter(tagName => availableTags.includes(tagName) && filteredTags.includes(tagName));
+      
+      if (categoryTags.length > 0) {
+        groups.push({
+          categoryName: cat.name,
+          tags: categoryTags
+        });
+        categoryTags.forEach(t => categorizedTags.add(t));
+      }
+    });
+
+    const others = filteredTags.filter(tag => !categorizedTags.has(tag));
+    if (others.length > 0) {
+      groups.push({
+        categoryName: 'OTHERS',
+        tags: others
+      });
+    }
+
+    return { type: 'grouped', groups };
+  }, [filteredTags, tagCategories, availableTags, searchQuery]);
+
+  const renderTagButton = (tag: string) => (
+    <button
+      key={tag}
+      type="button"
+      onClick={() => handleSelect(tag)}
+      className={cn(
+        "w-full flex items-center justify-between gap-2 px-2.5 py-1.5 text-[10px] font-mono text-left transition-colors",
+        selectedTags.includes(tag)
+          ? theme === 'dark'
+            ? 'bg-brand-cyan/10 text-brand-cyan'
+            : 'bg-brand-cyan/10 text-brand-cyan'
+          : theme === 'dark'
+            ? 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-300'
+            : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-800'
+      )}
+    >
+      <span className="truncate">{translateTag(tag)}</span>
+      {selectedTags.includes(tag) && <Check size={10} className="shrink-0 text-brand-cyan" />}
+    </button>
+  );
 
   return (
     <div ref={dropdownRef} className="relative flex-1 min-w-0">
@@ -206,27 +264,22 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
               </button>
             )}
 
-            {/* Filtered tags */}
-            {filteredTags.map((tag) => (
-              <button
-                key={tag}
-                type="button"
-                onClick={() => handleSelect(tag)}
-                className={cn(
-                  "w-full flex items-center justify-between gap-2 px-2.5 py-1.5 text-[10px] font-mono text-left transition-colors",
-                  selectedTags.includes(tag)
-                    ? theme === 'dark'
-                      ? 'bg-brand-cyan/10 text-brand-cyan'
-                      : 'bg-brand-cyan/10 text-brand-cyan'
-                    : theme === 'dark'
-                      ? 'text-neutral-400 hover:bg-neutral-800 hover:text-neutral-300'
-                      : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-800'
-                )}
-              >
-                <span className="truncate">{translateTag(tag)}</span>
-                {selectedTags.includes(tag) && <Check size={10} className="shrink-0 text-brand-cyan" />}
-              </button>
-            ))}
+            {/* Tags List */}
+            {groupedTags.type === 'grouped' ? (
+              groupedTags.groups.map((group, idx) => (
+                <div key={group.categoryName} className={cn(idx > 0 && "mt-1")}>
+                  <div className={cn(
+                    "px-2.5 py-1 text-[8px] font-bold font-mono uppercase tracking-widest",
+                    theme === 'dark' ? 'text-neutral-600 bg-black/20' : 'text-neutral-400 bg-neutral-50'
+                  )}>
+                    {group.categoryName}
+                  </div>
+                  {group.tags.map(tag => renderTagButton(tag))}
+                </div>
+              ))
+            ) : (
+              filteredTags.map((tag) => renderTagButton(tag))
+            )}
 
             {/* Empty state */}
             {filteredTags.length === 0 && !showCustomOption && (
@@ -321,7 +374,8 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void;
     availableLightingTags,
     availableEffectTags,
     availableMaterialTags,
-    togglePoolTag
+    togglePoolTag,
+    tagCategories
   } = useMockupTags();
 
   // Filter tags
@@ -474,6 +528,7 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void;
                 placeholder={t('mockup.selectOption') || 'Select...'}
                 theme={theme}
                 isGenerating={isGenerating}
+                tagCategories={key === 'categories' ? tagCategories : undefined}
               />
             </div>
           );

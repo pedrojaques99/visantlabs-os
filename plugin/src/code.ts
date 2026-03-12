@@ -365,12 +365,24 @@ async function applyOperations(ops: FigmaOperation[]) {
         if (op.props.cornerSmoothing != null) frame.cornerSmoothing = op.props.cornerSmoothing;
         if (op.props.clipsContent != null) frame.clipsContent = op.props.clipsContent;
 
+        // Strokes
+        if (op.props.strokes) frame.strokes = op.props.strokes as any;
+        if (op.props.strokeWeight != null) frame.strokeWeight = op.props.strokeWeight;
+        if (op.props.opacity != null) frame.opacity = op.props.opacity;
+
         // Position at center if root, otherwise append to parent
         if (parent === figma.currentPage) {
           frame.x = figma.viewport.center.x - fw / 2;
           frame.y = figma.viewport.center.y - fh / 2;
         }
         parent.appendChild(frame);
+
+        // Absolute position & rotation (set AFTER appendChild for correct parent-relative coords)
+        if (parent !== figma.currentPage) {
+          if (op.props.x != null) frame.x = op.props.x;
+          if (op.props.y != null) frame.y = op.props.y;
+        }
+        if (op.props.rotation != null) frame.rotation = op.props.rotation;
 
         // Layout sizing (must be set AFTER appendChild)
         if (op.props.layoutSizingHorizontal && parent !== figma.currentPage) {
@@ -402,6 +414,12 @@ async function applyOperations(ops: FigmaOperation[]) {
         });
         if (op.props.constraints && 'constraints' in rect) (rect as any).constraints = op.props.constraints;
         parent.appendChild(rect);
+
+        // Absolute position & rotation (set AFTER appendChild)
+        if (op.props.x != null) rect.x = op.props.x;
+        if (op.props.y != null) rect.y = op.props.y;
+        if (op.props.rotation != null) rect.rotation = op.props.rotation;
+
         if (op.props.layoutSizingHorizontal && parent !== figma.currentPage) {
           rect.layoutSizingHorizontal = op.props.layoutSizingHorizontal;
         }
@@ -418,6 +436,9 @@ async function applyOperations(ops: FigmaOperation[]) {
         ellipse.name = op.props.name;
         ellipse.resize(op.props.width > 0 ? op.props.width : 100, op.props.height > 0 ? op.props.height : 100);
         if (op.props.fills) ellipse.fills = op.props.fills as any;
+        if (op.props.strokes) ellipse.strokes = op.props.strokes as any;
+        if (op.props.strokeWeight != null) ellipse.strokeWeight = op.props.strokeWeight;
+        if (op.props.opacity != null) ellipse.opacity = op.props.opacity;
         if (op.props.effects) ellipse.effects = op.props.effects.map(e => {
           if (e.type === 'LAYER_BLUR' || e.type === 'BACKGROUND_BLUR') {
             return { type: e.type, radius: e.radius, visible: e.visible ?? true } as Effect;
@@ -426,6 +447,12 @@ async function applyOperations(ops: FigmaOperation[]) {
         });
         if (op.props.constraints && 'constraints' in ellipse) (ellipse as any).constraints = op.props.constraints;
         parent.appendChild(ellipse);
+
+        // Absolute position & rotation (set AFTER appendChild)
+        if (op.props.x != null) ellipse.x = op.props.x;
+        if (op.props.y != null) ellipse.y = op.props.y;
+        if (op.props.rotation != null) ellipse.rotation = op.props.rotation;
+
         if (op.props.layoutSizingHorizontal && parent !== figma.currentPage) {
           ellipse.layoutSizingHorizontal = op.props.layoutSizingHorizontal;
         }
@@ -470,7 +497,15 @@ async function applyOperations(ops: FigmaOperation[]) {
         if (op.props.letterSpacing) text.letterSpacing = op.props.letterSpacing;
         if (op.props.paragraphSpacing != null) text.paragraphSpacing = op.props.paragraphSpacing;
 
+        if (op.props.opacity != null) text.opacity = op.props.opacity;
+
         parent.appendChild(text);
+
+        // Absolute position & rotation (set AFTER appendChild)
+        if (op.props.x != null) text.x = op.props.x;
+        if (op.props.y != null) text.y = op.props.y;
+        if (op.props.rotation != null) text.rotation = op.props.rotation;
+
         if (op.props.layoutSizingHorizontal && parent !== figma.currentPage) {
           text.layoutSizingHorizontal = op.props.layoutSizingHorizontal;
         }

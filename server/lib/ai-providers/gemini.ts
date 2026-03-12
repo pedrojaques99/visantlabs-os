@@ -69,23 +69,41 @@ const geminiProvider: AIProvider = {
 
       // Parse JSON response
       let operations: any[] = [];
+      const cleanResponse = (text: string) => {
+        return text
+          .replace(/```json\n?/g, '')
+          .replace(/```\n?/g, '')
+          .trim();
+      };
+
       try {
-        const parsed = JSON.parse(responseText);
+        const sanitized = cleanResponse(responseText);
+        const parsed = JSON.parse(sanitized);
         if (Array.isArray(parsed)) {
           operations = parsed;
         } else if (parsed.operations && Array.isArray(parsed.operations)) {
           operations = parsed.operations;
         }
       } catch (parseError) {
-        console.error('[Gemini] Parse error:', parseError);
-        // Try regex fallback
-        const jsonMatch = responseText.match(/\[[\s\S]*\]/);
-        if (jsonMatch) {
+        console.warn('[Gemini] Standard JSON.parse failed, trying regex extraction...');
+        
+        // Try regex fallback - find the first [ and the last ]
+        const startBracket = responseText.indexOf('[');
+        const endBracket = responseText.lastIndexOf(']');
+        
+        if (startBracket !== -1 && endBracket !== -1 && endBracket > startBracket) {
+          const jsonArrayPart = responseText.substring(startBracket, endBracket + 1);
           try {
-            operations = JSON.parse(jsonMatch[0]);
-          } catch (_e) {
+            operations = JSON.parse(jsonArrayPart);
+          } catch (regexError) {
+            console.error('[Gemini] Regex extraction parse error:', regexError);
+            console.log('[Gemini] Raw response that failed:', responseText);
             operations = [];
           }
+        } else {
+          console.error('[Gemini] Could not find JSON array in response');
+          console.log('[Gemini] Raw response that failed:', responseText);
+          operations = [];
         }
       }
 

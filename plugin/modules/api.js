@@ -327,11 +327,11 @@ function openExternal(url) {
 
 /**
  * Login with email/password → gets JWT token
- * Reuses existing /api/auth/login endpoint
+ * Reuses existing /api/auth/signin endpoint
  */
 async function authLogin(email, password) {
   try {
-    const result = await apiCall('/auth/login', 'POST', { email, password });
+    const result = await apiCall('/auth/signin', 'POST', { email, password });
     if (result.token) {
       setState('authToken', result.token);
       setState('authEmail', email);

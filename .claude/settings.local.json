@@ -30,7 +30,20 @@
       "Bash(ls:*)",
       "Bash(npx prisma:*)",
       "Bash(find /z/Cursor/visantlabs-os/docs -type f -name \"*MCP*\" -o -name \"*mcp*\" 2>/dev/null | head -20)",
-      "Bash(find /z/Cursor/visantlabs-os -type f \\\\\\( -name \"*mcp*\" -o -name \"*agent*\" \\\\\\) -not -path \"*/node_modules/*\" 2>/dev/null | grep -E \"\\\\.\\(ts|js\\)$\" | head -20)"
+      "Bash(find /z/Cursor/visantlabs-os -type f \\\\\\( -name \"*mcp*\" -o -name \"*agent*\" \\\\\\) -not -path \"*/node_modules/*\" 2>/dev/null | grep -E \"\\\\.\\(ts|js\\)$\" | head -20)",
+      "Bash(find src/pages -name \"*.tsx\" -exec grep -l \"<button\" {} \\\\; | wc -l)",
+      "Bash(find src/components -name \"*.tsx\" -not -path \"*/ui/*\" -exec grep -l \"<button\" {} \\\\; | wc -l)",
+      "Bash(find src/pages -name \"*.tsx\" -exec grep -l \"<input\" {} \\\\; | wc -l)",
+      "Bash(find src/components -name \"*.tsx\" -not -path \"*/ui/*\" -exec grep -l \"<input\" {} \\\\; | wc -l)",
+      "Bash(find src/pages -name \"*.tsx\" -exec grep -l \"<textarea\" {} \\\\; | wc -l)",
+      "Bash(find src/components -name \"*.tsx\" -not -path \"*/ui/*\" -exec grep -l \"<textarea\" {} \\\\; | wc -l)",
+      "Bash(find src/components -maxdepth 2 -name \"*.tsx\" -not -path \"*/ui/*\" -exec bash -c 'count=$\\(grep -o \"<button\" \"$1\" 2>/dev/null | wc -l\\); [ $count -gt 0 ] && echo \"$\\(basename \"$1\"\\): $count\"' _ {} \\\\; | sort -t: -k2 -rn | head -25)",
+      "Bash(find src/components -maxdepth 2 -name \"*.tsx\" -not -path \"*/ui/*\" -exec bash -c 'count=$\\(grep -o \"<input\" \"$1\" 2>/dev/null | wc -l\\); [ $count -gt 0 ] && echo \"$\\(basename \"$1\"\\): $count\"' _ {} \\\\; | sort -t: -k2 -rn | head -25)",
+      "Bash(grep -l \"from.*['\\\\\"]@/components/ui\" src/pages/*.tsx | xargs -I {} basename {} | sort)",
+      "Bash(grep -l \"from.*['\\\\\"]@/components/ui\" src/components/*.tsx | xargs -I {} basename {} | sort)",
+      "Bash(find src/components -maxdepth 2 -name \"*.tsx\" -not -path \"*/ui/*\" | xargs grep -l \"from.*['\\\\\"]@/components/ui\" | xargs -I {} basename {} | sort)",
+      "Bash(find src/components -maxdepth 2 -name \"*.tsx\" -not -path \"*/ui/*\" -exec bash -c 'count=$\\(grep -c \"rounded-lg.*border\\\\|rounded-xl.*shadow\\\\|rounded-2xl\\\\|className=.*card\" \"$1\" 2>/dev/null\\); [ $count -gt 0 ] && echo \"$\\(basename \"$1\"\\): ~$count\"' _ {} \\\\; | sort -t: -k2 -rn | head -25)",
+      "Bash(cd Z:/Cursor/visantlabs-os && npm ls ts-morph 2>/dev/null | head -3; npm ls jscodeshift 2>/dev/null | head -3)"
     ]
   }
 }
