@@ -150,7 +150,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                         ) : (
                             <User size={48} className="text-neutral-700" />
                         )}
-                        <span className="absolute bottom-2 right-2 bg-brand-cyan text-black rounded-lg p-1.5 shadow-lg shadow-brand-cyan/20 group-hover:bg-brand-cyan/90 transition-all hover:scale-110">
+                        <span className="absolute bottom-2 right-2 bg-brand-cyan text-black rounded-md p-1.5 shadow-lg shadow-brand-cyan/20 group-hover:bg-brand-cyan/90 transition-all hover:scale-110">
                             <Camera size={14} />
                         </span>
                     </div>
@@ -163,7 +163,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                 </div>
 
                 <div className="flex flex-col gap-3 mt-2">
-                    <Button variant="ghost" 
+                    <Button variant="ghost"
                         onClick={onEditProfile}
                         className="w-full px-4 py-2.5 bg-neutral-900/50 hover:bg-neutral-900 text-neutral-300 border border-neutral-800/50 hover:border-neutral-700 rounded-xl text-sm font-mono transition flex items-center justify-between group cursor-pointer font-medium"
                     >
@@ -215,7 +215,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
             {/* Container 2: Credits & Stats - Top Right */}
             <section className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 md:p-8 flex flex-col gap-6 shadow-lg shadow-black/20">
                 <div className="flex items-center gap-3 border-b border-neutral-800/50 pb-4">
-                    <div className="p-2 bg-brand-cyan/10 rounded-lg">
+                    <div className="p-2 bg-brand-cyan/10 rounded-md">
                         <CreditCard size={20} className="text-brand-cyan" />
                     </div>
                     <div>
@@ -231,9 +231,9 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                             <div className="bg-neutral-900/40 border border-neutral-800 rounded-xl p-5 relative overflow-hidden group">
                                 {/* Buy Credits Button in Top Right */}
                                 <div className="absolute top-4 right-4 z-20">
-                                    <Button variant="brand" 
+                                    <Button variant="brand"
                                         onClick={onBuyCredits}
-                                        className="p-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/20 hover:border-brand-cyan/40 text-brand-cyan rounded-lg transition-all flex items-center gap-2 group-hover:scale-105"
+                                        className="p-2 bg-brand-cyan/10 hover:bg-brand-cyan/20 border border-brand-cyan/20 hover:border-brand-cyan/40 text-brand-cyan rounded-md transition-all flex items-center gap-2 group-hover:scale-105"
                                         title={t('credits.buyCredits') || "Comprar Créditos"}
                                     >
                                         <Plus size={16} />
@@ -293,14 +293,14 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                         </div>
 
                         <div className="flex flex-col gap-3 pt-2">
-                            <Button variant="ghost" 
+                            <Button variant="ghost"
                                 onClick={onViewTransactions}
                                 className="w-full px-4 py-2.5 bg-neutral-900/50 hover:bg-neutral-900 text-neutral-300 border border-neutral-800/50 hover:border-neutral-700 rounded-xl text-sm font-mono transition text-center font-medium"
                             >
                                 {t('profile.viewAllTransactions') || 'Transações'}
                             </Button>
                             {hasActiveSubscription && subscriptionStatus?.subscriptionStatus !== 'free' && (
-                                <Button variant="ghost" 
+                                <Button variant="ghost"
                                     onClick={onManageSubscription}
                                     className="w-full px-4 py-2.5 bg-neutral-900/50 hover:bg-neutral-900 text-neutral-300 border border-neutral-800/50 hover:border-neutral-700 rounded-xl text-sm font-mono transition text-center flex items-center justify-center gap-2 font-medium"
                                     title={t('profile.manageSubscription') || 'Gerenciar Assinatura'}
@@ -323,7 +323,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
             {/* Container 3: Referral Program - Bottom Span */}
             <section className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 md:p-8 flex flex-col gap-6 shadow-lg shadow-black/20">
                 <div className="flex items-center gap-3 border-b border-neutral-800/50 pb-4">
-                    <div className="p-2 bg-brand-cyan/10 rounded-lg">
+                    <div className="p-2 bg-brand-cyan/10 rounded-md">
                         <Share2 size={20} className="text-brand-cyan" />
                     </div>
                     <div>
@@ -351,9 +351,9 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
                                                 type="text"
                                                 value={referralLink}
                                                 readOnly
-                                                className="w-full px-3 py-2 bg-neutral-900/50 border border-neutral-800 rounded-lg text-neutral-400 group-hover:text-neutral-200 font-mono text-xs focus:outline-none focus:border-brand-cyan/30 transition pr-10"
+                                                className="w-full px-3 py-2 bg-neutral-900/50 border border-neutral-800 rounded-md text-neutral-400 group-hover:text-neutral-200 font-mono text-xs focus:outline-none focus:border-brand-cyan/30 transition pr-10"
                                             />
-                                            <Button variant="brand" 
+                                            <Button variant="brand"
                                                 onClick={handleCopyReferralLink}
                                                 disabled={!referralStats.referralCode}
                                                 className="absolute right-1 top-1 p-1 bg-neutral-800 hover:bg-brand-cyan/20 text-neutral-400 hover:text-brand-cyan rounded-md transition-colors"

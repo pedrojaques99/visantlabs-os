@@ -3,15 +3,17 @@ import { useForm } from 'react-hook-form';
 import { SectionBlock } from '../SectionBlock';
 import { Textarea } from '@/components/ui/textarea';
 import { MicroTitle } from '@/components/ui/MicroTitle';
-import { ShieldCheck } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ShieldCheck, Plus } from 'lucide-react';
 import type { BrandGuideline } from '@/lib/figma-types';
 
 interface AccessibilitySectionProps {
   guideline: BrandGuideline;
   onUpdate: (data: Partial<BrandGuideline>) => void;
+  span?: string;
 }
 
-export const AccessibilitySection: React.FC<AccessibilitySectionProps> = ({ guideline, onUpdate }) => {
+export const AccessibilitySection: React.FC<AccessibilitySectionProps> = ({ guideline, onUpdate, span }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [text, setText] = useState(guideline.guidelines?.accessibility || '');
 
@@ -27,13 +29,21 @@ export const AccessibilitySection: React.FC<AccessibilitySectionProps> = ({ guid
   return (
     <SectionBlock
       id="accessibility"
-      span="3"
+      span={span as any}
       icon={<ShieldCheck size={14} />}
       title="Accessibility Core"
       isEditing={isEditing}
       onEdit={() => setIsEditing(true)}
       onSave={handleSave}
       onCancel={() => { setText(guideline.guidelines?.accessibility || ''); setIsEditing(false); }}
+      actions={(
+        <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white"
+          onClick={() => {
+            if (!isEditing) setIsEditing(true);
+          }}>
+          <Plus size={12} />
+        </Button>
+      )}
     >
       <div className="py-4">
         {isEditing ? (

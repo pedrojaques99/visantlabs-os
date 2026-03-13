@@ -192,9 +192,9 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
           <h2 className="text-xl font-semibold text-neutral-200 font-manrope tracking-tight">
             Edit Community Profile
           </h2>
-          <Button variant="ghost" 
+          <Button variant="ghost"
             onClick={onClose}
-            className="p-2 text-neutral-500 hover:text-white transition-all hover:bg-neutral-800/50 rounded-lg"
+            className="p-2 text-neutral-500 hover:text-white transition-all hover:bg-neutral-800/50 rounded-md"
           >
             <X size={20} />
           </Button>
@@ -203,7 +203,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
         {/* Content */}
         <div className="p-6 space-y-6 overflow-y-auto flex-1 custom-scrollbar">
           {error && (
-            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 text-sm text-red-400 font-mono flex items-center gap-2">
+            <div className="bg-red-500/10 border border-red-500/30 rounded-md p-4 text-sm text-red-400 font-mono flex items-center gap-2">
               <span className="shrink-0">⚠</span>
               <span>{error}</span>
             </div>
@@ -235,7 +235,7 @@ export const EditCommunityProfileModal: React.FC<EditCommunityProfileModalProps>
                 disabled={isUploadingCover}
                 className="hidden"
               />
-              <Button variant="ghost" 
+              <Button variant="ghost"
                 onClick={handleCoverClick}
                 disabled={isUploadingCover}
                 className="absolute inset-0 flex items-center justify-center bg-neutral-950/70 opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm disabled:opacity-50"

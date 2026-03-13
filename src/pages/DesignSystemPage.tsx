@@ -65,7 +65,7 @@ const ColorSwatch: React.FC<{
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <h4 className="font-mono font-semibold text-neutral-200">{name}</h4>
-            <Button variant="ghost"               onClick={copyToClipboard}
+            <Button variant="ghost" onClick={copyToClipboard}
               className="p-1 hover:bg-neutral-800/50 rounded transition-colors"
               title="Copy CSS variable"
             >
@@ -443,7 +443,7 @@ export const DesignSystemPage: React.FC = () => {
       <div className="mt-8 pt-8 border-t border-neutral-800/50">
         <div className="flex items-center justify-between gap-4">
           {previousTab ? (
-            <Button variant="ghost"               onClick={() => handleNavigationClick(previousTab)}
+            <Button variant="ghost" onClick={() => handleNavigationClick(previousTab)}
               className="flex items-center gap-2 px-4 py-2 text-sm font-mono text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50 rounded-md transition-colors border border-neutral-800/50 hover:border-brand-cyan/30"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -455,7 +455,7 @@ export const DesignSystemPage: React.FC = () => {
             <div />
           )}
           {nextTab && (
-            <Button variant="ghost"               onClick={() => handleNavigationClick(nextTab)}
+            <Button variant="ghost" onClick={() => handleNavigationClick(nextTab)}
               className="flex items-center gap-2 px-4 py-2 text-sm font-mono text-neutral-400 hover:text-neutral-300 hover:bg-neutral-800/50 rounded-md transition-colors border border-neutral-800/50 hover:border-brand-cyan/30 ml-auto"
             >
               <span className="text-neutral-500">{getTabLabel(nextTab)}</span>
@@ -541,14 +541,14 @@ export const DesignSystemPage: React.FC = () => {
                         </p>
                       </div>
                     </div>
-                    <Button variant="ghost"                       onClick={() => {
-                        const event = new KeyboardEvent('keydown', {
-                          key: 'k',
-                          ctrlKey: true,
-                          bubbles: true,
-                        });
-                        document.dispatchEvent(event);
-                      }}
+                    <Button variant="ghost" onClick={() => {
+                      const event = new KeyboardEvent('keydown', {
+                        key: 'k',
+                        ctrlKey: true,
+                        bubbles: true,
+                      });
+                      document.dispatchEvent(event);
+                    }}
                       className="hidden md:flex items-center gap-2 px-4 py-2 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-neutral-400 hover:text-neutral-300 hover:border-brand-cyan/30 transition-colors text-sm font-mono"
                       title={t('designSystem.commandPalette.searchShortcut') || 'Search (Ctrl+K)'}
                     >
@@ -733,7 +733,7 @@ export const DesignSystemPage: React.FC = () => {
                             <h3 className="font-mono font-semibold text-neutral-200 mb-2">{font.name}</h3>
                             <p className="text-sm text-neutral-400 font-mono mb-4">{font.description}</p>
                             <p className={cn('text-2xl', font.className)}>
-                              The quick brown fox jumps over the lazy dog
+                              Aa
                             </p>
                             <p className={cn('text-lg mt-2', font.className)}>
                               ABCDEFGHIJKLMNOPQRSTUVWXYZ
@@ -1676,15 +1676,17 @@ export const DesignSystemPage: React.FC = () => {
                       </CardHeader>
                       <CardContent className="space-y-4">
                         {/* Agent-First LLM Metadata */}
-                        <script type="application/json" data-component-api="PremiumButton" dangerouslySetInnerHTML={{ __html: JSON.stringify({
-                          import: "import { PremiumButton } from '@/components/ui/PremiumButton';",
-                          props: {
-                            isLoading: "boolean",
-                            loadingText: "string (default: 'LOADING...')",
-                            icon: "LucideIcon | null (default: ArrowRight)",
-                            disabled: "boolean (merges with isLoading)"
-                          }
-                        })}} />
+                        <script type="application/json" data-component-api="PremiumButton" dangerouslySetInnerHTML={{
+                          __html: JSON.stringify({
+                            import: "import { PremiumButton } from '@/components/ui/PremiumButton';",
+                            props: {
+                              isLoading: "boolean",
+                              loadingText: "string (default: 'LOADING...')",
+                              icon: "LucideIcon | null (default: ArrowRight)",
+                              disabled: "boolean (merges with isLoading)"
+                            }
+                          })
+                        }} />
                         <div className="flex flex-col max-w-sm gap-4">
                           <PremiumButton>Continue</PremiumButton>
                           <PremiumButton isLoading loadingText="ANALYZING...">Continue</PremiumButton>
@@ -1702,12 +1704,14 @@ export const DesignSystemPage: React.FC = () => {
                       </CardHeader>
                       <CardContent className="space-y-4">
                         {/* Agent-First LLM Metadata */}
-                        <script type="application/json" data-component-api="GlassPanel" dangerouslySetInnerHTML={{ __html: JSON.stringify({
-                          import: "import { GlassPanel } from '@/components/ui/GlassPanel';",
-                          props: {
-                            padding: "'none' | 'sm' | 'md' | 'lg' (default: 'none')"
-                          }
-                        })}} />
+                        <script type="application/json" data-component-api="GlassPanel" dangerouslySetInnerHTML={{
+                          __html: JSON.stringify({
+                            import: "import { GlassPanel } from '@/components/ui/GlassPanel';",
+                            props: {
+                              padding: "'none' | 'sm' | 'md' | 'lg' (default: 'none')"
+                            }
+                          })
+                        }} />
                         <GlassPanel padding="md" className="max-w-md">
                           <p className="text-sm font-mono text-neutral-300">Glass Panel Content with 'md' padding</p>
                         </GlassPanel>
@@ -1726,12 +1730,14 @@ export const DesignSystemPage: React.FC = () => {
                       </CardHeader>
                       <CardContent className="space-y-4">
                         {/* Agent-First LLM Metadata */}
-                        <script type="application/json" data-component-api="MicroTitle" dangerouslySetInnerHTML={{ __html: JSON.stringify({
-                          import: "import { MicroTitle } from '@/components/ui/MicroTitle';",
-                          props: {
-                            as: "'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'span' | 'p' (default: 'span')"
-                          }
-                        })}} />
+                        <script type="application/json" data-component-api="MicroTitle" dangerouslySetInnerHTML={{
+                          __html: JSON.stringify({
+                            import: "import { MicroTitle } from '@/components/ui/MicroTitle';",
+                            props: {
+                              as: "'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'span' | 'p' (default: 'span')"
+                            }
+                          })
+                        }} />
                         <div className="p-6 border border-neutral-800/50 rounded-md bg-neutral-900/30">
                           <MicroTitle as="h3" className="mb-2 block">Settings</MicroTitle>
                           <p className="text-sm text-neutral-400">Regular text follows the micro title.</p>
@@ -1781,9 +1787,9 @@ export const DesignSystemPage: React.FC = () => {
 
                         <div className="space-y-4">
                           <h4 className="text-sm font-semibold text-neutral-300 font-mono">Real-world Example (Mockup Machine)</h4>
-                          <div className="p-4 bg-neutral-950 border border-white/5 rounded-lg overflow-x-auto">
+                          <div className="p-4 bg-neutral-950 border border-white/5 rounded-md overflow-x-auto">
                             <pre className="text-[10px] font-mono text-neutral-400">
-{`/* Simplified Structure */
+                              {`/* Simplified Structure */
 <div className="flex flex-col h-full gap-8">
   <div className="flex-1 min-h-0 flex flex-col gap-4">
     <MicroTitle>CONFIGURAÇÕES</MicroTitle>

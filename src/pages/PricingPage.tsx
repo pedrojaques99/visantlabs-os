@@ -277,18 +277,18 @@ export const PricingPage: React.FC = () => {
             >
               <TabsList asChild>
                 <GlassPanel padding="none" className="grid w-full grid-cols-2 p-1 rounded-xl">
-                <TabsTrigger
-                  value="subscriptions"
-                  className="rounded-lg data-[state=active]:bg-neutral-800 data-[state=active]:text-brand-cyan"
-                >
-                  {t('pricing.tabs.subscriptions') || 'Assinaturas'}
-                </TabsTrigger>
-                <TabsTrigger
-                  value="credits"
-                  className="rounded-lg data-[state=active]:bg-neutral-800 data-[state=active]:text-brand-cyan"
-                >
-                  {t('pricing.tabs.credits') || 'Créditos'}
-                </TabsTrigger>
+                  <TabsTrigger
+                    value="subscriptions"
+                    className="rounded-md data-[state=active]:bg-neutral-800 data-[state=active]:text-brand-cyan"
+                  >
+                    {t('pricing.tabs.subscriptions') || 'Assinaturas'}
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="credits"
+                    className="rounded-md data-[state=active]:bg-neutral-800 data-[state=active]:text-brand-cyan"
+                  >
+                    {t('pricing.tabs.credits') || 'Créditos'}
+                  </TabsTrigger>
                 </GlassPanel>
               </TabsList>
             </Tabs>
@@ -313,10 +313,10 @@ export const PricingPage: React.FC = () => {
                         <div className="space-y-8 relative z-10">
                           <div className="text-center">
                             <div className="flex items-center justify-center gap-6 mb-4">
-                              <Button variant="ghost"                                 onClick={handlePreviousCredit}
+                              <Button variant="ghost" onClick={handlePreviousCredit}
                                 disabled={selectedCreditIndex === 0}
                                 className={cn(
-                                  "p-2 rounded-lg transition-all active:scale-90",
+                                  "p-2 rounded-md transition-all active:scale-90",
                                   selectedCreditIndex === 0
                                     ? "text-neutral-700 opacity-30 cursor-not-allowed"
                                     : "text-neutral-400 hover:text-brand-cyan hover:bg-neutral-800/50 cursor-pointer"
@@ -329,10 +329,10 @@ export const PricingPage: React.FC = () => {
                                 {animatedCredits}
                               </div>
 
-                              <Button variant="ghost"                                 onClick={handleNextCredit}
+                              <Button variant="ghost" onClick={handleNextCredit}
                                 disabled={selectedCreditIndex === creditPackages.length - 1}
                                 className={cn(
-                                  "p-2 rounded-lg transition-all active:scale-90",
+                                  "p-2 rounded-md transition-all active:scale-90",
                                   selectedCreditIndex === creditPackages.length - 1
                                     ? "text-neutral-700 opacity-30 cursor-not-allowed"
                                     : "text-neutral-400 hover:text-brand-cyan hover:bg-neutral-800/50 cursor-pointer"
@@ -387,7 +387,7 @@ export const PricingPage: React.FC = () => {
                     {/* Indicators */}
                     <GlassPanel padding="sm" className="flex gap-1.5 mt-8 items-center rounded-full">
                       {creditPackages.map((_, index) => (
-                        <Button variant="ghost"                           key={index}
+                        <Button variant="ghost" key={index}
                           onClick={() => setSelectedCreditIndex(index)}
                           className={cn(
                             "h-1.5 rounded-full transition-all duration-300",

@@ -344,7 +344,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
                 : t('canvasNodes.promptNode.presetModal.title')}
             </h2>
           </div>
-          <Button variant="ghost" 
+          <Button variant="ghost"
             onClick={onClose}
             className="p-2 text-neutral-500 hover:text-white transition-colors hover:bg-neutral-800/50 rounded-full"
             title="Close (Esc)"
@@ -362,7 +362,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
               const count = presetCounts[type];
 
               return (
-                <Button variant="ghost" 
+                <Button variant="ghost"
                   key={type}
                   onClick={() => setActiveFilter(type)}
                   className={cn(
@@ -380,7 +380,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
             })}
 
             {/* Create New Button */}
-            <Button variant="ghost" 
+            <Button variant="ghost"
               onClick={(e) => {
                 e.stopPropagation();
                 window.location.href = '/canvas';
@@ -405,8 +405,8 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
             </div>
 
             {/* Source Toggle */}
-            <div className="flex bg-neutral-900/50 border border-neutral-800/50 rounded-lg p-1 shrink-0 self-start sm:self-auto">
-              <Button variant="ghost" 
+            <div className="flex bg-neutral-900/50 border border-neutral-800/50 rounded-md p-1 shrink-0 self-start sm:self-auto">
+              <Button variant="ghost"
                 onClick={() => setPresetSource('all')}
                 className={cn(
                   'flex items-center gap-2 px-3 py-1.5 rounded-md text-[10px] font-mono uppercase transition-all',
@@ -419,7 +419,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
                 <LayoutGrid size={14} />
                 <span className="hidden sm:inline">Todos</span>
               </Button>
-              <Button variant="ghost" 
+              <Button variant="ghost"
                 onClick={() => setPresetSource('official')}
                 className={cn(
                   'flex items-center gap-2 px-3 py-1.5 rounded-md text-[10px] font-mono uppercase transition-all',
@@ -432,7 +432,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
                 <Crown size={14} />
                 <span className="hidden sm:inline">Oficial</span>
               </Button>
-              <Button variant="ghost" 
+              <Button variant="ghost"
                 onClick={() => setPresetSource('community')}
                 className={cn(
                   'flex items-center gap-2 px-3 py-1.5 rounded-md text-[10px] font-mono uppercase transition-all',
@@ -500,7 +500,7 @@ export const MockupPresetModal: React.FC<MockupPresetModalProps> = ({
                   .replace('{selected}', selectedPresetIds.size.toString())
                   .replace('{max}', maxSelections.toString())}
             </div>
-            <Button variant="ghost" 
+            <Button variant="ghost"
               onClick={handleSelectMockups}
               disabled={selectedPresetIds.size === 0 || isLoading}
               className={cn(

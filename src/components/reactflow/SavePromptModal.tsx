@@ -145,7 +145,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-800/60">
                     <h2 className="text-lg font-semibold text-neutral-100">Salvar Prompt</h2>
-                    <Button variant="ghost" 
+                    <Button variant="ghost"
                         onClick={onClose}
                         className="p-1.5 rounded-md hover:bg-neutral-800 text-neutral-400 hover:text-neutral-200 transition-colors"
                     >
@@ -156,7 +156,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                 {/* Content */}
                 <div className="px-6 py-5 flex-1 overflow-y-auto max-h-[70vh]">
                     {error && (
-                        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm flex items-center gap-2">
+                        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-md text-red-400 text-sm flex items-center gap-2">
                             <span>⚠</span>
                             <span>{error}</span>
                         </div>
@@ -172,7 +172,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                                 onChange={(e) => setName(e.target.value)}
                                 placeholder="Ex: Minimalist Interior Design"
                                 autoFocus
-                                className="w-full px-3 py-2.5 bg-neutral-800/50 border border-neutral-700/50 rounded-lg text-neutral-200 text-sm placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600 transition-colors"
+                                className="w-full px-3 py-2.5 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-neutral-200 text-sm placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600 transition-colors"
                             />
                         </div>
 
@@ -184,7 +184,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                                 onChange={(e) => setDescription(e.target.value)}
                                 placeholder="Uma breve descrição sobre o que esse prompt faz..."
                                 rows={2}
-                                className="w-full px-3 py-2.5 bg-neutral-800/50 border border-neutral-700/50 rounded-lg text-neutral-200 text-sm placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600 transition-colors resize-none"
+                                className="w-full px-3 py-2.5 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-neutral-200 text-sm placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600 transition-colors resize-none"
                             />
                         </div>
 
@@ -192,10 +192,10 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                         <div>
                             <label className="block text-xs text-neutral-400 mb-2">Privacidade</label>
                             <div className="grid grid-cols-2 gap-3">
-                                <Button variant="ghost" 
+                                <Button variant="ghost"
                                     onClick={() => setIsPublic(false)}
                                     className={cn(
-                                        "flex flex-col items-start p-3 rounded-lg border transition-all text-left",
+                                        "flex flex-col items-start p-3 rounded-md border transition-all text-left",
                                         !isPublic
                                             ? "bg-neutral-800/60 border-neutral-600 text-neutral-200"
                                             : "bg-transparent border-neutral-700/50 text-neutral-500 hover:border-neutral-600 hover:bg-neutral-800/30"
@@ -208,10 +208,10 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                                     <p className="text-[10px] opacity-70 leading-relaxed">Apenas você poderá ver e usar</p>
                                 </Button>
 
-                                <Button variant="ghost" 
+                                <Button variant="ghost"
                                     onClick={() => setIsPublic(true)}
                                     className={cn(
-                                        "flex flex-col items-start p-3 rounded-lg border transition-all text-left",
+                                        "flex flex-col items-start p-3 rounded-md border transition-all text-left",
                                         isPublic
                                             ? "bg-brand-cyan/10 border-brand-cyan/40 text-brand-cyan"
                                             : "bg-transparent border-neutral-700/50 text-neutral-500 hover:border-neutral-600 hover:bg-neutral-800/30"
@@ -241,11 +241,11 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                                         }
                                     }}
                                     placeholder="moderno, arquitetura..."
-                                    className="flex-1 px-3 py-2.5 bg-neutral-800/50 border border-neutral-700/50 rounded-lg text-neutral-200 text-sm placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600 transition-colors"
+                                    className="flex-1 px-3 py-2.5 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-neutral-200 text-sm placeholder:text-neutral-500 focus:outline-none focus:border-neutral-600 transition-colors"
                                 />
-                                <Button variant="outline" 
+                                <Button variant="outline"
                                     onClick={addTag}
-                                    className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-lg text-neutral-300 text-sm transition-colors"
+                                    className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 rounded-md text-neutral-300 text-sm transition-colors"
                                 >
                                     Add
                                 </Button>
@@ -259,7 +259,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                                         >
                                             <span className="text-neutral-500">#</span>
                                             {tag}
-                                            <Button variant="ghost" 
+                                            <Button variant="ghost"
                                                 onClick={() => setTags(tags.filter((_, i) => i !== idx))}
                                                 className="text-neutral-500 hover:text-red-400 transition-colors ml-0.5"
                                             >
@@ -274,7 +274,7 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
                         {/* Prompt Preview */}
                         <div className="pt-4 border-t border-neutral-800/50">
                             <label className="block text-xs text-neutral-400 mb-1.5">Visualização do Prompt</label>
-                            <div className="p-3 bg-neutral-950/50 border border-neutral-800/50 rounded-lg max-h-28 overflow-y-auto">
+                            <div className="p-3 bg-neutral-950/50 border border-neutral-800/50 rounded-md max-h-28 overflow-y-auto">
                                 <p className="text-xs text-neutral-400 whitespace-pre-wrap leading-relaxed">
                                     {prompt}
                                 </p>
@@ -285,16 +285,16 @@ export const SavePromptModal: React.FC<SavePromptModalProps> = ({
 
                 {/* Footer */}
                 <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-neutral-800/60 bg-neutral-900/50">
-                    <Button variant="outline" 
+                    <Button variant="outline"
                         onClick={onClose}
-                        className="px-4 py-2 bg-transparent hover:bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-300 text-sm transition-colors"
+                        className="px-4 py-2 bg-transparent hover:bg-neutral-800 border border-neutral-700 rounded-md text-neutral-300 text-sm transition-colors"
                     >
                         Cancelar
                     </Button>
-                    <Button variant="brand" 
+                    <Button variant="brand"
                         onClick={handleSave}
                         disabled={isLoading || !name.trim()}
-                        className="px-5 py-2 bg-brand-cyan hover:bg-brand-cyan/90 text-black font-medium rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        className="px-5 py-2 bg-brand-cyan hover:bg-brand-cyan/90 text-black font-medium rounded-md text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                         {isLoading ? (
                             <>

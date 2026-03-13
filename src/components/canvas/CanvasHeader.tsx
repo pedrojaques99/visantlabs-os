@@ -157,7 +157,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
         <div className="flex items-center gap-2 min-w-0 flex-1">
           <BackButton onClick={onBack} className="mt-8 flex-shrink-0" />
           <div className="flex items-center gap-1.5 text-xs font-mono text-neutral-400 min-w-0">
-            <Button variant="ghost"               onClick={() => navigate('/canvas')}
+            <Button variant="ghost" onClick={() => navigate('/canvas')}
               className="hover:text-neutral-300 transition-colors truncate cursor-pointer"
             >
               {t('canvas.title') || 'Canvas'}
@@ -186,11 +186,11 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           {projectId && (
-            <Button variant="ghost"               onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                handleShareClick();
-              }}
+            <Button variant="ghost" onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleShareClick();
+            }}
               className={`p-1.5 border rounded-md transition-all flex items-center justify-center ${isCollaborative
                 ? 'bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan border-[brand-cyan]/30 hover:border-[brand-cyan]/50'
                 : 'bg-neutral-800/50 hover:bg-neutral-700/50 text-neutral-300 border-neutral-700/50 hover:border-neutral-600'
@@ -201,13 +201,13 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
               <Share2 size={14} />
             </Button>
           )}
-          <Button variant="ghost"             onClick={() => {
-              if (activeSidePanel === 'community-presets') {
-                setActiveSidePanel(null);
-              } else {
-                setActiveSidePanel('community-presets');
-              }
-            }}
+          <Button variant="ghost" onClick={() => {
+            if (activeSidePanel === 'community-presets') {
+              setActiveSidePanel(null);
+            } else {
+              setActiveSidePanel('community-presets');
+            }
+          }}
             className={cn(
               "p-1.5 border rounded-md transition-all flex items-center justify-center cursor-pointer",
               activeSidePanel === 'community-presets'
@@ -219,7 +219,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
             <Users size={14} />
           </Button>
           {onLoadWorkflow && (
-            <Button variant="ghost"               onClick={() => onLoadWorkflow?.()}
+            <Button variant="ghost" onClick={() => onLoadWorkflow?.()}
               className="p-1.5 border rounded-md transition-all flex items-center justify-center bg-neutral-800/50 hover:bg-neutral-700/50 text-neutral-300 border-neutral-700/50 hover:border-neutral-600 cursor-pointer"
               title={t('workflows.loadWorkflow') || 'Load Workflow'}
             >
@@ -227,7 +227,7 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
             </Button>
           )}
           {onSaveWorkflow && (
-            <Button variant="ghost"               onClick={() => onSaveWorkflow?.()}
+            <Button variant="ghost" onClick={() => onSaveWorkflow?.()}
               className="p-1.5 border rounded-md transition-all flex items-center justify-center bg-neutral-800/50 hover:bg-neutral-700/50 text-neutral-300 border-neutral-700/50 hover:border-neutral-600 cursor-pointer"
               title={t('workflows.saveWorkflow') || 'Save as Workflow'}
             >
@@ -237,32 +237,32 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
 
           {/* Download Dropdown */}
           <div className="relative group">
-            <Button variant="ghost"               className="p-1.5 border rounded-md transition-all flex items-center justify-center bg-neutral-800/50 hover:bg-neutral-700/50 text-neutral-300 border-neutral-700/50 hover:border-neutral-600 cursor-pointer"
+            <Button variant="ghost" className="p-1.5 border rounded-md transition-all flex items-center justify-center bg-neutral-800/50 hover:bg-neutral-700/50 text-neutral-300 border-neutral-700/50 hover:border-neutral-600 cursor-pointer"
               title={t('canvas.download') || 'Download'}
             >
               <Download size={14} />
             </Button>
-            <div className="absolute right-0 top-full mt-1 w-52 bg-[#1a1a1a] border border-neutral-800/50 rounded-lg shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60] py-1 backdrop-blur-md">
-              <Button variant="ghost"                 onClick={() => onExportImagesRequest?.()}
+            <div className="absolute right-0 top-full mt-1 w-52 bg-[#1a1a1a] border border-neutral-800/50 rounded-md shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60] py-1 backdrop-blur-md">
+              <Button variant="ghost" onClick={() => onExportImagesRequest?.()}
                 className="w-full text-left px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-800/80 transition-colors flex items-center gap-2 font-mono"
               >
                 <Download size={12} className="text-brand-cyan" />
                 Exportar imagens...
               </Button>
-              <Button variant="ghost"                 onClick={() => onExportAllImagesRequest?.()}
+              <Button variant="ghost" onClick={() => onExportAllImagesRequest?.()}
                 className="w-full text-left px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-800/80 transition-colors flex items-center gap-2 font-mono"
               >
                 <Check size={12} className="text-brand-cyan" />
                 Exportar todas (PNG)
               </Button>
               <div className="border-t border-neutral-800/60 my-1" />
-              <Button variant="ghost"                 onClick={() => onExportJson?.()}
+              <Button variant="ghost" onClick={() => onExportJson?.()}
                 className="w-full text-left px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-800/80 transition-colors flex items-center gap-2 font-mono"
               >
                 <FileJson size={12} className="text-brand-cyan" />
                 Exportar como JSON
               </Button>
-              <Button variant="ghost"                 onClick={() => onImportJson?.()}
+              <Button variant="ghost" onClick={() => onImportJson?.()}
                 className="w-full text-left px-3 py-2 text-xs text-neutral-300 hover:bg-neutral-800/80 transition-colors flex items-center gap-2 font-mono"
               >
                 <Upload size={12} className="text-brand-cyan" />
@@ -274,13 +274,13 @@ export const CanvasHeader: React.FC<CanvasHeaderProps> = ({ onBack, onSettingsCl
             subscriptionStatus={contextSubscriptionStatus}
             onCreditsClick={() => onCreditPackagesModalOpen?.()}
           />
-          <Button variant="ghost"             onClick={() => {
-              if (onSettingsClick) {
-                onSettingsClick();
-              } else {
-                setShowSettingsModal(true);
-              }
-            }}
+          <Button variant="ghost" onClick={() => {
+            if (onSettingsClick) {
+              onSettingsClick();
+            } else {
+              setShowSettingsModal(true);
+            }
+          }}
             className="p-1.5 border rounded-md transition-all flex items-center justify-center bg-neutral-800/50 hover:bg-neutral-700/50 text-neutral-300 border-neutral-700/50 hover:border-neutral-600 cursor-pointer"
             title={t('canvas.settings')}
           >

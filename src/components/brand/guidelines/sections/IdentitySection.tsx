@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { Button } from '@/components/ui/button';
-import { FileText, RefreshCw, Wand2, Trash2, Loader2 } from 'lucide-react';
+import { FileText, RefreshCw, Wand2, Trash2, Loader2, Plus } from 'lucide-react';
 import type { BrandGuideline } from '@/lib/figma-types';
 
 interface IdentitySectionProps {
@@ -17,6 +17,8 @@ interface IdentitySectionProps {
   onOpenWizard?: () => void;
   onDelete?: () => void;
   isDeleting?: boolean;
+  span?: string;
+  rowSpan?: string;
 }
 
 export const IdentitySection: React.FC<IdentitySectionProps> = ({
@@ -26,27 +28,33 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
   onOpenWizard,
   onDelete,
   isDeleting,
+  span,
+  rowSpan,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const form = useForm({
     resolver: zodResolver(identitySchema),
     defaultValues: {
-      name: guideline.name || '',
-      tagline: guideline.tagline || '',
-      description: guideline.description || '',
+      name: guideline.identity?.name || guideline.name || '',
+      tagline: guideline.identity?.tagline || guideline.tagline || '',
+      description: guideline.identity?.description || guideline.description || '',
     },
   });
 
   useEffect(() => {
     form.reset({
-      name: guideline.name || '',
-      tagline: guideline.tagline || '',
-      description: guideline.description || '',
+      name: guideline.identity?.name || guideline.name || '',
+      tagline: guideline.identity?.tagline || guideline.tagline || '',
+      description: guideline.identity?.description || guideline.description || '',
     });
   }, [guideline.id]);
 
   const handleSave = form.handleSubmit((data) => {
-    onUpdate(data);
+    onUpdate({
+      identity: { ...guideline.identity, ...data },
+      // Keep flat fields in sync for backwards compat
+      ...data,
+    });
     setIsEditing(false);
   });
 
@@ -59,12 +67,22 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
       onEdit={() => setIsEditing(true)}
       onSave={handleSave}
       onCancel={() => { form.reset(); setIsEditing(false); }}
+      span={span as any}
+      rowSpan={rowSpan as any}
+      actions={(
+        <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white"
+          onClick={() => {
+            if (!isEditing) setIsEditing(true);
+          }}>
+          <Plus size={12} />
+        </Button>
+      )}
     >
       <div className="flex flex-col gap-4 py-2">
         {isEditing ? (
           <div className="space-y-4 pt-2">
             <div className="space-y-1.5 min-w-0">
-              <MicroTitle className="text-[9px] opacity-40 uppercase tracking-widest">Brand Name</MicroTitle>
+              <MicroTitle className="text-[9px] opacity-40 uppercase">Brand Name</MicroTitle>
               <Input
                 {...form.register('name')}
                 className="h-8 text-sm font-semibold bg-neutral-850 border-white/5 text-white placeholder:text-neutral-800"
@@ -72,7 +90,7 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
               />
             </div>
             <div className="space-y-1.5 min-w-0">
-              <MicroTitle className="text-[9px] opacity-40 uppercase tracking-widest">Tagline</MicroTitle>
+              <MicroTitle className="text-[9px] opacity-40 uppercase">Tagline</MicroTitle>
               <Input
                 {...form.register('tagline')}
                 className="h-7 text-[10px] font-mono bg-neutral-850 border-white/5 text-neutral-400 placeholder:text-neutral-800"
@@ -80,7 +98,7 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
               />
             </div>
             <div className="space-y-1.5 min-w-0">
-              <MicroTitle className="text-[9px] opacity-40 uppercase tracking-widest">Description</MicroTitle>
+              <MicroTitle className="text-[9px] opacity-40 uppercase">Description</MicroTitle>
               <Textarea
                 {...form.register('description')}
                 className="min-h-[80px] text-[11px] leading-relaxed bg-neutral-850 border-white/5 text-neutral-500 placeholder:text-neutral-800 py-2"
@@ -89,37 +107,25 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
             </div>
           </div>
         ) : (
-          <div className="space-y-4">
-            <div className="space-y-1">
-              <h2 className="text-xl font-bold text-white truncate px-1">
-                {guideline.name || 'Untitled Brand'}
-              </h2>
-              {guideline.tagline && (
-                <p className="text-[10px] font-mono text-neutral-600 px-1 border-l border-brand-cyan/20 ml-1">
-                  {guideline.tagline}
-                </p>
-              )}
+          <div className="space-y-8 py-6 px-2">
+            <div className="relative">
+              <div className="space-y-2">
+                <h2 className="text-4xl md:text-5xl font-semibold text-white leading-none transition-colors duration-700">
+                  {guideline.identity?.name || guideline.name || 'Company' || 'Untitled Brand'}
+                </h2>
+                {(guideline.identity?.tagline || guideline.tagline) && (
+                  <p className="text-xs font-mono text-brand-cyan uppercase tracking-[0.4em] opacity-80 pt-1">
+                    {guideline.identity?.tagline || guideline.tagline}
+                  </p>
+                )}
+              </div>
             </div>
 
-            <div className="flex items-center gap-2 pt-2">
-              {onReIngest && (
-                <Button variant="ghost" size="icon" onClick={onReIngest}
-                  className="h-8 w-8 text-neutral-800 hover:text-brand-cyan hover:bg-brand-cyan/10 transition-all">
-                  <RefreshCw size={13} />
-                </Button>
-              )}
-              {onOpenWizard && (
-                <Button variant="ghost" size="icon" onClick={onOpenWizard}
-                  className="h-8 w-8 text-neutral-800 hover:text-white hover:bg-white/10">
-                  <Wand2 size={13} />
-                </Button>
-              )}
-              {onDelete && (
-                <Button variant="ghost" size="icon" onClick={onDelete} disabled={isDeleting}
-                  className="h-8 w-8 text-neutral-800 hover:text-red-400 hover:bg-red-500/10 ml-auto">
-                  {isDeleting ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
-                </Button>
-              )}
+            <div className="space-y-4">
+              <div className="h-[1px] w-12 bg-white/10" />
+              <p className="text-sm md:text-base text-neutral-400 leading-relaxed max-w-xl font-medium tracking-tight">
+                {guideline.identity?.description || guideline.description || 'Define your brand essence and core values here. This space represents the identity that drives every visual decision.'}
+              </p>
             </div>
           </div>
         )}

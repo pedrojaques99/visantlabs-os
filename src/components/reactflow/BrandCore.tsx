@@ -14,7 +14,8 @@ import { NodeButton } from './shared/node-button';
 import { ConnectedImagesDisplay } from './ConnectedImagesDisplay';
 import { fileToBase64 } from '@/utils/fileUtils';
 import { pdfToBase64, validatePdfBase64Size, validatePdfFile } from '@/utils/pdfUtils';
-import { normalizeImageToBase64, consolidateStrategiesToText } from '@/services/reactFlowService';
+import { normalizeImageToBase64 } from '@/services/reactFlowService';
+import { consolidateStrategiesToText } from '@/services/brandPromptService';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
@@ -366,7 +367,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
         <div className="space-y-4">
           {/* Logo Input */}
           <div className={cn(
-            "p-3 rounded-lg border transition-all duration-300 backdrop-blur-sm",
+            "p-3 rounded-md border transition-all duration-300 backdrop-blur-sm",
             hasLogo
               ? "bg-brand-cyan/5 border-brand-cyan/20 shadow-[0_0_15px_rgba(var(--brand-cyan),0.05)]"
               : "bg-neutral-900/40 border-neutral-700/30"
@@ -427,7 +428,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
           {/* Identity Input (PDF or Image) */}
           <div className={cn(
-            "p-3 rounded-lg border transition-all duration-300 backdrop-blur-sm",
+            "p-3 rounded-md border transition-all duration-300 backdrop-blur-sm",
             hasIdentity
               ? "bg-brand-cyan/5 border-brand-cyan/20 shadow-[0_0_15px_rgba(var(--brand-cyan),0.05)]"
               : "bg-neutral-900/40 border-neutral-700/30"
@@ -488,7 +489,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
           {/* Strategy Input */}
           <div className={cn(
-            "p-3 rounded-lg border transition-all duration-300 backdrop-blur-sm",
+            "p-3 rounded-md border transition-all duration-300 backdrop-blur-sm",
             hasStrategies
               ? "bg-brand-cyan/5 border-brand-cyan/20 shadow-[0_0_15px_rgba(var(--brand-cyan),0.05)]"
               : "bg-neutral-900/40 border-neutral-700/30"
@@ -534,7 +535,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
         {/* Analysis Status */}
         {isAnalyzing && (
-          <div className="px-3 py-2.5 bg-brand-cyan/10 border border-brand-cyan/20 rounded-lg flex items-center justify-between gap-3 backdrop-blur-sm shadow-sm">
+          <div className="px-3 py-2.5 bg-brand-cyan/10 border border-brand-cyan/20 rounded-md flex items-center justify-between gap-3 backdrop-blur-sm shadow-sm">
             <div className="flex items-center gap-3">
               <div className="p-1.5 rounded-full bg-brand-cyan/20 animate-pulse">
                 <GlitchLoader size={12} color="brand-cyan" />
@@ -573,7 +574,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
               <div className="mt-4 space-y-4 text-[11px] animate-in fade-in slide-in-from-top-1 duration-300">
                 {/* Logo Details */}
                 {(brandIdentity.logo.colors.length > 0 || brandIdentity.logo.style || brandIdentity.logo.elements.length > 0) && (
-                  <div className="p-2.5 rounded-lg bg-neutral-900/40 border border-neutral-700/20 backdrop-blur-sm">
+                  <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20 backdrop-blur-sm">
                     <div className="text-[9px] font-mono text-neutral-500 uppercase tracking-tighter mb-2 font-bold">Logo DNA</div>
                     <div className="space-y-3">
                       {brandIdentity.logo.colors.length > 0 && (
@@ -619,7 +620,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
                 {/* Brand Colors - Simplified but elegant */}
                 {(brandIdentity.colors.primary.length > 0 || brandIdentity.colors.secondary.length > 0 || brandIdentity.colors.accent.length > 0) && (
-                  <div className="p-2.5 rounded-lg bg-neutral-900/40 border border-neutral-700/20 backdrop-blur-sm">
+                  <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20 backdrop-blur-sm">
                     <div className="text-[9px] font-mono text-neutral-500 uppercase tracking-tighter mb-2 font-bold">Color Palettes</div>
                     <div className="space-y-3">
                       {[
@@ -650,7 +651,7 @@ export const BrandCore = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
                 {/* Personality & Tone */}
                 {(brandIdentity.personality.tone || brandIdentity.personality.feeling || brandIdentity.personality.values?.length > 0) && (
-                  <div className="p-2.5 rounded-lg bg-neutral-900/40 border border-neutral-700/20 backdrop-blur-sm">
+                  <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20 backdrop-blur-sm">
                     <div className="text-[9px] font-mono text-neutral-500 uppercase tracking-tighter mb-2 font-bold">Brand Personality</div>
                     <div className="space-y-2.5 text-neutral-400">
                       <div className="grid grid-cols-2 gap-3">

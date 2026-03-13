@@ -10,7 +10,7 @@ import { rateLimit } from 'express-rate-limit';
 // import { captchaMiddleware } from '../middleware/captcha.js';
 import { detectAbuse, recordSignupAttempt } from '../utils/abuseDetection.js';
 import { JWT_SECRET } from '../utils/jwtSecret.js';
-import { isValidEmail } from '../utils/validation.js';
+import { signupSchema, signinSchema, forgotPasswordSchema, resetPasswordSchema, formatZodError } from '../utils/schemas.js';
 
 const router = express.Router();
 
@@ -589,24 +589,12 @@ router.post('/signup', signupRateLimiter, async (req, res) => {
   let signupSuccessful = false;
 
   try {
-    const { email, password, name, referralCode } = req.body;
-
-    if (!email || !password) {
-      await recordSignupAttempt(email || '', ipAddress, false);
-      return res.status(400).json({ error: 'Email and password are required' });
+    const parsed = signupSchema.safeParse(req.body);
+    if (!parsed.success) {
+      await recordSignupAttempt(req.body?.email || '', ipAddress, false);
+      return res.status(400).json({ error: formatZodError(parsed.error) });
     }
-
-    // Validate email format (ReDoS-safe validation)
-    if (!isValidEmail(email)) {
-      await recordSignupAttempt(email, ipAddress, false);
-      return res.status(400).json({ error: 'Invalid email format' });
-    }
-
-    // Validate password strength
-    if (password.length < 6) {
-      await recordSignupAttempt(email, ipAddress, false);
-      return res.status(400).json({ error: 'Password must be at least 6 characters' });
-    }
+    const { email, password, name, referralCode } = parsed.data;
 
     // Check for abuse patterns
     const abuseCheck = await detectAbuse(email.toLowerCase(), ipAddress);
@@ -754,11 +742,11 @@ router.post('/signup', signupRateLimiter, async (req, res) => {
 // Email/Password Sign In
 router.post('/signin', signinRateLimiter, async (req, res) => {
   try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
+    const parsed = signinSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: formatZodError(parsed.error) });
     }
+    const { email, password } = parsed.data;
 
     // Find user
     const user = await prisma.user.findUnique({
@@ -831,16 +819,11 @@ router.post('/logout', apiRateLimiter, (req, res) => {
 // Forgot Password - Request password reset
 router.post('/forgot-password', passwordResetRateLimiter, async (req, res) => {
   try {
-    const { email } = req.body;
-
-    if (!email) {
-      return res.status(400).json({ error: 'Email is required' });
+    const parsed = forgotPasswordSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: formatZodError(parsed.error) });
     }
-
-    // Validate email format (ReDoS-safe validation)
-    if (!isValidEmail(email)) {
-      return res.status(400).json({ error: 'Invalid email format' });
-    }
+    const { email } = parsed.data;
 
     // Find user
     const user = await prisma.user.findUnique({
@@ -909,16 +892,11 @@ router.post('/forgot-password', passwordResetRateLimiter, async (req, res) => {
 // Reset Password - Reset password with token
 router.post('/reset-password', passwordResetRateLimiter, async (req, res) => {
   try {
-    const { token, password } = req.body;
-
-    if (!token || !password) {
-      return res.status(400).json({ error: 'Token and password are required' });
+    const parsed = resetPasswordSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: formatZodError(parsed.error) });
     }
-
-    // Validate password strength
-    if (password.length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters' });
-    }
+    const { token, password } = parsed.data;
 
     // Verify token
     let decoded: { userId: string; email: string; type?: string };

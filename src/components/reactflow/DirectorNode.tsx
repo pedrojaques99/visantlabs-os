@@ -120,11 +120,11 @@ export const DirectorNode = memo(({ data, selected, id, dragging }: NodeProps<an
         {/* Connected Image Preview */}
         <div className="">
           {connectedImage ? (
-            <div className="relative rounded-lg overflow-hidden border border-neutral-700/50 bg-neutral-900/50 shadow-sm">
+            <div className="relative rounded-md overflow-hidden border border-neutral-700/50 bg-neutral-900/50 shadow-sm">
               <img
                 src={
-                  connectedImage.startsWith('data:') 
-                    ? connectedImage 
+                  connectedImage.startsWith('data:')
+                    ? connectedImage
                     : connectedImage.startsWith('http://') || connectedImage.startsWith('https://')
                       ? connectedImage
                       : `data:image/png;base64,${connectedImage}`
@@ -137,7 +137,7 @@ export const DirectorNode = memo(({ data, selected, id, dragging }: NodeProps<an
               </div>
             </div>
           ) : (
-            <div className="w-full h-24 rounded-lg border border-dashed border-neutral-700/50 bg-neutral-900/30 flex flex-col items-center justify-center gap-2 opacity-70">
+            <div className="w-full h-24 rounded-md border border-dashed border-neutral-700/50 bg-neutral-900/30 flex flex-col items-center justify-center gap-2 opacity-70">
               <ImageIcon size={16} className="text-neutral-600" />
               <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
                 {t('canvasNodes.directorNode.noImage') || 'No image'}
@@ -149,9 +149,9 @@ export const DirectorNode = memo(({ data, selected, id, dragging }: NodeProps<an
         {/* Action Buttons */}
         <div className="flex flex-col gap-2">
           {/* Open Side Panel Button */}
-          <NodeButton 
-            variant="primary" 
-            size="full"           
+          <NodeButton
+            variant="primary"
+            size="full"
             onClick={handleOpenSidePanel}
             disabled={!connectedImage}
             className="shadow-sm backdrop-blur-sm nodrag"
@@ -163,9 +163,9 @@ export const DirectorNode = memo(({ data, selected, id, dragging }: NodeProps<an
 
           {/* Generate Prompt Button (only shown when analyzed and has selections) */}
           {hasAnalyzed && (
-            <NodeButton 
-              variant="primary" 
-              size="full"             
+            <NodeButton
+              variant="primary"
+              size="full"
               onClick={handleGeneratePrompt}
               disabled={!hasSelections || isGeneratingPrompt}
               className="shadow-sm backdrop-blur-sm nodrag"
@@ -188,7 +188,7 @@ export const DirectorNode = memo(({ data, selected, id, dragging }: NodeProps<an
 
         {/* Generated Prompt Preview (if exists) */}
         {generatedPrompt && (
-          <div className="p-3 rounded-lg border border-neutral-700/20 bg-neutral-900/40 backdrop-blur-sm shadow-sm">
+          <div className="p-3 rounded-md border border-neutral-700/20 bg-neutral-900/40 backdrop-blur-sm shadow-sm">
             <div className="text-[10px] font-mono text-neutral-500 mb-2 uppercase tracking-widest font-bold">
               {t('canvasNodes.directorNode.generatedPrompt') || 'Generated Prompt'}
             </div>
@@ -204,16 +204,16 @@ export const DirectorNode = memo(({ data, selected, id, dragging }: NodeProps<an
 
   // Re-render if important props change
   if (prevData.connectedImage !== nextData.connectedImage ||
-      prevData.isAnalyzing !== nextData.isAnalyzing ||
-      prevData.hasAnalyzed !== nextData.hasAnalyzed ||
-      prevData.isGeneratingPrompt !== nextData.isGeneratingPrompt ||
-      prevData.generatedPrompt !== nextData.generatedPrompt ||
-      prevData.selectedBrandingTags?.length !== nextData.selectedBrandingTags?.length ||
-      prevData.selectedCategoryTags?.length !== nextData.selectedCategoryTags?.length ||
-      prevData.onOpenSidePanel !== nextData.onOpenSidePanel ||
-      prevData.onGeneratePrompt !== nextData.onGeneratePrompt ||
-      prevProps.selected !== nextProps.selected ||
-      prevProps.dragging !== nextProps.dragging) {
+    prevData.isAnalyzing !== nextData.isAnalyzing ||
+    prevData.hasAnalyzed !== nextData.hasAnalyzed ||
+    prevData.isGeneratingPrompt !== nextData.isGeneratingPrompt ||
+    prevData.generatedPrompt !== nextData.generatedPrompt ||
+    prevData.selectedBrandingTags?.length !== nextData.selectedBrandingTags?.length ||
+    prevData.selectedCategoryTags?.length !== nextData.selectedCategoryTags?.length ||
+    prevData.onOpenSidePanel !== nextData.onOpenSidePanel ||
+    prevData.onGeneratePrompt !== nextData.onGeneratePrompt ||
+    prevProps.selected !== nextProps.selected ||
+    prevProps.dragging !== nextProps.dragging) {
     return false; // Re-render
   }
 

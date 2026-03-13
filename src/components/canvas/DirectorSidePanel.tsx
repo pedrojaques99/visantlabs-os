@@ -61,7 +61,7 @@ const CollapsableCategoryGroup: React.FC<CollapsableCategoryGroupProps> = ({
 
   return (
     <div className={cn(
-      'rounded-lg border transition-all duration-200',
+      'rounded-md border transition-all duration-200',
       theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200'
     )}>
       <Button
@@ -233,7 +233,7 @@ const CollapsableTagSection: React.FC<CollapsableTagSectionProps> = ({
 
   return (
     <div className={cn(
-      'rounded-lg border transition-all duration-200',
+      'rounded-md border transition-all duration-200',
       theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200'
     )}>
       <Button
@@ -386,7 +386,7 @@ const ColorSection: React.FC<ColorSectionProps> = ({
 
   return (
     <div className={cn(
-      'rounded-lg border transition-all duration-200',
+      'rounded-md border transition-all duration-200',
       theme === 'dark' ? 'border-neutral-800/50' : 'border-neutral-200'
     )}>
       <Button
@@ -436,7 +436,7 @@ const ColorSection: React.FC<ColorSectionProps> = ({
                 key={color}
                 onClick={() => onColorToggle(color)}
                 className={cn(
-                  'w-8 h-8 rounded-lg border-2 transition-all duration-200',
+                  'w-8 h-8 rounded-md border-2 transition-all duration-200',
                   selectedColors.includes(color)
                     ? 'border-brand-cyan scale-110 shadow-lg shadow-brand-cyan/20'
                     : 'border-transparent hover:border-neutral-500 hover:scale-105'
@@ -535,7 +535,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
         <Button
           variant="ghost"
           onClick={onClose}
-          className="p-2 text-neutral-500 hover:text-white transition-colors rounded-lg hover:bg-neutral-800/50"
+          className="p-2 text-neutral-500 hover:text-white transition-colors rounded-md hover:bg-neutral-800/50"
         >
           <X size={18} />
         </Button>
@@ -559,7 +559,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                 onClick={onAnalyze}
                 disabled={isAnalyzing}
                 className={cn(
-                  'w-full px-4 py-3 rounded-lg border transition-all duration-200',
+                  'w-full px-4 py-3 rounded-md border transition-all duration-200',
                   'flex items-center justify-center gap-2',
                   'text-sm font-mono',
                   isAnalyzing
@@ -753,7 +753,7 @@ export const DirectorSidePanel: React.FC<DirectorSidePanelProps> = ({
                 />
 
                 {(generatedPrompt || isGeneratingPrompt) && (
-                  <div className="bg-neutral-800/20 border border-brand-cyan/20 rounded-lg p-3 space-y-2">
+                  <div className="bg-neutral-800/20 border border-brand-cyan/20 rounded-md p-3 space-y-2">
                     <div className="flex items-center gap-2">
                       <FileText size={14} className="text-brand-cyan flex-shrink-0" />
                       <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">

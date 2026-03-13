@@ -128,10 +128,10 @@ export const PDFNode = memo(({ data, selected, id, dragging }: NodeProps<any>) =
                   pdfUrl={nodeData.pdfUrl}
                   fileName={fileName}
                   onRemove={handleRemovePdf}
-                  className="w-full h-32 rounded-lg border border-neutral-700/30 overflow-hidden"
+                  className="w-full h-32 rounded-md border border-neutral-700/30 overflow-hidden"
                 />
               ) : (
-                <div className="w-full h-32 bg-neutral-900/50 border border-neutral-700/30 rounded-lg flex items-center justify-center">
+                <div className="w-full h-32 bg-neutral-900/50 border border-neutral-700/30 rounded-md flex items-center justify-center">
                   <FileText size={16} className="text-neutral-600" />
                 </div>
               )}
@@ -151,9 +151,9 @@ export const PDFNode = memo(({ data, selected, id, dragging }: NodeProps<any>) =
               onChange={handlePdfFileChange}
               className="hidden"
             />
-            <NodeButton 
-              variant="primary" 
-              size="full" 
+            <NodeButton
+              variant="primary"
+              size="full"
               onClick={handlePdfUploadClick}
               className="nodrag shadow-sm backdrop-blur-sm"
             >

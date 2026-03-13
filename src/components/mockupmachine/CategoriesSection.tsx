@@ -605,7 +605,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                       <MicroTitle as="span">
                         {drinkwareTags.length > 0
                           ? t(`mockup.categoryGroups.drinkware`) +
-                            (otherTags.length > 0 ? ` / ${t(`mockup.categoryGroups.other`)}` : '')
+                          (otherTags.length > 0 ? ` / ${t(`mockup.categoryGroups.other`)}` : '')
                           : t(`mockup.categoryGroups.other`)}
                       </MicroTitle>
                       {!isFinalExpanded &&
@@ -657,7 +657,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                     {/* Custom tags section - inside OUTROS */}
                     <div
                       className={cn(
-                        'rounded-lg border p-2.5 transition-all duration-200',
+                        'rounded-md border p-2.5 transition-all duration-200',
                         customSelectedTags.length > 0 || isEditingCustom
                           ? theme === 'dark'
                             ? 'bg-neutral-800/30 border-white/5'

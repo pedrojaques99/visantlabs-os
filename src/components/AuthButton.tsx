@@ -304,8 +304,8 @@ export const AuthButton: React.FC<AuthButtonProps> = ({ subscriptionStatus: prop
     return (
       <div className="flex items-center gap-3" data-auth-dropdown>
         {propSubscriptionStatus || subscriptionStatus ? (
-          <Button variant="brand"             onClick={onCreditsClick}
-            className="flex items-center gap-1.5 px-2.5 md:px-3 py-1 md:py-1.5 text-[11px] md:text-xs font-mono text-brand-cyan hover:text-brand-cyan/80 transition-all rounded border border-[brand-cyan]/30 hover:border-[brand-cyan]/50 hover:bg-brand-cyan/10 focus:outline-none focus:ring-2 focus:ring-[brand-cyan]/50 focus:ring-offset-2 focus:ring-offset-[#0a0a0a] cursor-pointer"
+          <Button variant="ghost"             onClick={onCreditsClick}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] md:text-xs text-brand-cyan font-mono bg-neutral-800/30 border border-neutral-700/30 hover:bg-neutral-800/50 hover:border-[brand-cyan]/50 transition-all cursor-pointer"
             aria-label={t('auth.availableCredits', { count: availableCredits })}
             title={t('auth.creditsAvailable', { count: availableCredits })}
           >

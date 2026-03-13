@@ -170,7 +170,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                             {t('mockup.mediaKit.logos')}
                         </MicroTitle>
                         {!readOnly && (
-                            <Button variant="ghost" 
+                            <Button variant="ghost"
                                 type="button"
                                 onClick={() => logoInputRef.current?.click()}
                                 disabled={isUploading}
@@ -186,7 +186,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                             {displayedLogos.map((logo) => (
                                 <div
                                     key={logo.id}
-                                    className="group relative aspect-square rounded-lg border border-white/5 bg-neutral-900/40 overflow-hidden"
+                                    className="group relative aspect-square rounded-md border border-white/5 bg-neutral-900/40 overflow-hidden"
                                 >
                                     <img
                                         src={logo.url}
@@ -198,8 +198,8 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                                         {logo.variant}
                                     </span>
                                     <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <Button 
-                                            variant="ghost" 
+                                        <Button
+                                            variant="ghost"
                                             size="icon"
                                             className="h-6 w-6 p-1 rounded bg-black/60 text-white hover:bg-black/80 hover:text-brand-cyan"
                                             onClick={() => {
@@ -210,8 +210,8 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                                             <Copy size={10} />
                                         </Button>
                                         {!readOnly && (
-                                            <Button 
-                                                variant="ghost" 
+                                            <Button
+                                                variant="ghost"
                                                 size="icon"
                                                 onClick={() => handleDeleteLogo(logo.id)}
                                                 disabled={deletingId === logo.id}
@@ -226,32 +226,32 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                         </div>
                     ) : (
                         <MicroTitle className="text-[10px] text-neutral-700 italic">
-                          {t('mockup.mediaKit.noLogos')}
+                            {t('mockup.mediaKit.noLogos')}
                         </MicroTitle>
                     )}
                     <Input
-                      ref={logoInputRef}
-                      type="file"
-                      accept={ACCEPTED_IMAGE_TYPES}
-                      multiple
-                      onChange={(e) => {
-                        const files = Array.from(e.target.files || []);
-                        if (files.length) handleLogoUpload(files);
-                        e.target.value = '';
-                      }}
-                      className="hidden"
+                        ref={logoInputRef}
+                        type="file"
+                        accept={ACCEPTED_IMAGE_TYPES}
+                        multiple
+                        onChange={(e) => {
+                            const files = Array.from(e.target.files || []);
+                            if (files.length) handleLogoUpload(files);
+                            e.target.value = '';
+                        }}
+                        className="hidden"
                     />
                 </div>
-              )}
+            )}
 
-              {/* Media Section */}
-              <div className="flex flex-col gap-2">
+            {/* Media Section */}
+            <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] tracking-[0.2em]">
-                    {t('mockup.mediaKit.title')}
+                    <span className="text-[10px] tracking-[0.2em]">
+                        {t('mockup.mediaKit.title')}
                     </span>
                     {!readOnly && (
-                        <Button variant="ghost" 
+                        <Button variant="ghost"
                             type="button"
                             onClick={() => mediaInputRef.current?.click()}
                             disabled={isUploading}
@@ -270,7 +270,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                     onDragEnter={handleDragEnter}
                     onDragLeave={handleDragLeave}
                     className={cn(
-                        "rounded-lg border border-dashed transition-colors min-h-[80px]",
+                        "rounded-md border border-dashed transition-colors min-h-[80px]",
                         isDragging
                             ? "border-brand-cyan/50 bg-brand-cyan/5"
                             : "border-white/10 bg-transparent",
@@ -282,7 +282,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                             {displayedMedia.map((item) => (
                                 <div
                                     key={item.id}
-                                    className="group relative aspect-[4/3] rounded-lg border border-white/5 bg-neutral-900/40 overflow-hidden"
+                                    className="group relative aspect-[4/3] rounded-md border border-white/5 bg-neutral-900/40 overflow-hidden"
                                 >
                                     {item.type === 'image' ? (
                                         <img
@@ -305,8 +305,8 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                                         </span>
                                     )}
                                     <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <Button 
-                                            variant="ghost" 
+                                        <Button
+                                            variant="ghost"
                                             size="icon"
                                             className="h-6 w-6 p-1 rounded bg-black/60 text-white hover:bg-black/80 hover:text-brand-cyan"
                                             onClick={() => {
@@ -317,8 +317,8 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                                             <Copy size={10} />
                                         </Button>
                                         {!readOnly && (
-                                            <Button 
-                                                variant="ghost" 
+                                            <Button
+                                                variant="ghost"
                                                 size="icon"
                                                 onClick={() => handleDeleteMedia(item.id)}
                                                 disabled={deletingId === item.id}

@@ -482,7 +482,7 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
 
         {/* Status/Info */}
         {!isLoading && hasConnectedImage && !hasResult ? (
-          <div className="w-full px-2 py-3 bg-neutral-900/40 border border-neutral-700/30 rounded-lg text-[10px] font-mono text-neutral-400 flex items-center justify-center gap-3 uppercase tracking-wider backdrop-blur-sm">
+          <div className="w-full px-2 py-3 bg-neutral-900/40 border border-neutral-700/30 rounded-md text-[10px] font-mono text-neutral-400 flex items-center justify-center gap-3 uppercase tracking-wider backdrop-blur-sm">
             <Maximize2 size={14} />
             Ready to upscale
           </div>
@@ -490,8 +490,8 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
 
         {/* Floating Processing Indicator */}
         {isLoading && !hasResult && hasConnectedImage && (
-          <div className="relative mt-2 min-h-[200px] flex items-center justify-center bg-neutral-950/20 rounded-lg border border-neutral-700/30 backdrop-blur-sm">
-            <div className="p-3 rounded-lg bg-neutral-950/40 backdrop-blur-md border border-brand-cyan/20 shadow-xl">
+          <div className="relative mt-2 min-h-[200px] flex items-center justify-center bg-neutral-950/20 rounded-md border border-neutral-700/30 backdrop-blur-sm">
+            <div className="p-3 rounded-md bg-neutral-950/40 backdrop-blur-md border border-brand-cyan/20 shadow-xl">
               <GlitchLoader size={16} color="brand-cyan" />
             </div>
           </div>
@@ -499,11 +499,11 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
 
         {!hasConnectedImage ? (
           <div className="w-full space-y-3">
-            <div className="w-full px-2 py-3 bg-neutral-900/40 border border-neutral-700/30 rounded-lg text-[10px] font-mono text-neutral-500 flex items-center justify-center gap-3 opacity-70 uppercase tracking-wider backdrop-blur-sm">
+            <div className="w-full px-2 py-3 bg-neutral-900/40 border border-neutral-700/30 rounded-md text-[10px] font-mono text-neutral-500 flex items-center justify-center gap-3 opacity-70 uppercase tracking-wider backdrop-blur-sm">
               <Maximize2 size={14} />
               Connect an image or video
             </div>
-            <label className="w-full px-4 py-2.5 bg-brand-cyan/5 hover:bg-brand-cyan/10 border border-brand-cyan/20 hover:border-brand-cyan/40 rounded-lg text-[10px] font-mono font-bold text-brand-cyan flex items-center justify-center gap-2 cursor-pointer transition-all uppercase tracking-widest nodrag shadow-sm backdrop-blur-sm">
+            <label className="w-full px-4 py-2.5 bg-brand-cyan/5 hover:bg-brand-cyan/10 border border-brand-cyan/20 hover:border-brand-cyan/40 rounded-md text-[10px] font-mono font-bold text-brand-cyan flex items-center justify-center gap-2 cursor-pointer transition-all uppercase tracking-widest nodrag shadow-sm backdrop-blur-sm">
               <Upload size={14} />
               Upload Image
               <Input
@@ -578,10 +578,10 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
       {!dragging && (resultImageUrl || resultVideoUrl) && (
         <NodeActionBar selected={selected} getZoom={getZoom}>
           {data.onView && (
-            <NodeButton variant="ghost" size="xs"               onClick={(e) => {
-                e.stopPropagation();
-                handleView();
-              }}
+            <NodeButton variant="ghost" size="xs" onClick={(e) => {
+              e.stopPropagation();
+              handleView();
+            }}
               className="bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 transition-colors backdrop-blur-sm border border-neutral-700/30 hover:border-neutral-600/50"
               title={t('canvasNodes.imageNode.viewFullScreen')}
               onMouseDown={(e) => e.stopPropagation()}
@@ -589,17 +589,17 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
               <Maximize2 size={12} strokeWidth={2} />
             </NodeButton>
           )}
-          <NodeButton variant="ghost" size="xs"             onClick={handleDownload}
+          <NodeButton variant="ghost" size="xs" onClick={handleDownload}
             className="bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 transition-colors backdrop-blur-sm border border-neutral-700/30 hover:border-neutral-600/50"
             title={t('canvasNodes.imageNode.downloadImage')}
             onMouseDown={(e) => e.stopPropagation()}
           >
             <Download size={12} strokeWidth={2} />
           </NodeButton>
-          <NodeButton variant="ghost" size="xs"             onClick={(e) => {
-              e.stopPropagation();
-              handleSave();
-            }}
+          <NodeButton variant="ghost" size="xs" onClick={(e) => {
+            e.stopPropagation();
+            handleSave();
+          }}
             disabled={isSaving}
             className={cn(
               "transition-colors backdrop-blur-sm border",
@@ -619,10 +619,10 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
             )}
           </NodeButton>
           {data.onDelete && savedMockupId && (
-            <NodeButton variant="ghost" size="xs"               onClick={(e) => {
-                e.stopPropagation();
-                setShowDeleteModal(true);
-              }}
+            <NodeButton variant="ghost" size="xs" onClick={(e) => {
+              e.stopPropagation();
+              setShowDeleteModal(true);
+            }}
               className="bg-red-500/20 hover:bg-red-500/30 text-red-400 transition-colors backdrop-blur-sm border border-red-500/30"
               title={t('canvasNodes.imageNode.delete')}
               onMouseDown={(e) => e.stopPropagation()}
@@ -631,10 +631,10 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
             </NodeButton>
           )}
           {data.onBrandKit && (resultImageUrl || resultVideoUrl) && (
-            <NodeButton variant="ghost" size="xs"               onClick={(e) => {
-                e.stopPropagation();
-                setShowBrandKitModal(true);
-              }}
+            <NodeButton variant="ghost" size="xs" onClick={(e) => {
+              e.stopPropagation();
+              setShowBrandKitModal(true);
+            }}
               className="bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 transition-colors backdrop-blur-sm border border-neutral-700/30 hover:border-neutral-600/50"
               title={t('canvasNodes.imageNode.brandKit')}
               onMouseDown={(e) => e.stopPropagation()}
@@ -642,10 +642,10 @@ export const UpscaleBicubicNode: React.FC<NodeProps<Node<UpscaleBicubicNodeData>
               <Palette size={12} strokeWidth={2} />
             </NodeButton>
           )}
-          <NodeButton variant="ghost" size="xs"             onClick={(e) => {
-              e.stopPropagation();
-              handleDescribe();
-            }}
+          <NodeButton variant="ghost" size="xs" onClick={(e) => {
+            e.stopPropagation();
+            handleDescribe();
+          }}
             disabled={isDescribing || !resultImageUrl}
             className={cn(
               "transition-colors backdrop-blur-sm border",

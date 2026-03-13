@@ -151,7 +151,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
     if (!brandCyan || brandCyan.startsWith('#')) {
       return brandCyan || '#00d9ff';
     }
-    
+
     // If it's a name like "brand-cyan", get from CSS variable
     if (typeof document !== 'undefined') {
       try {
@@ -161,7 +161,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
         root.appendChild(tempEl);
         const computed = getComputedStyle(tempEl).color;
         root.removeChild(tempEl);
-        
+
         // Convert rgb/rgba to hex
         if (computed && computed.startsWith('rgb')) {
           const rgbMatch = computed.match(/\d+/g);
@@ -179,7 +179,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
         // Fall through
       }
     }
-    
+
     return '#00d9ff'; // Default fallback
   }, [brandCyan]);
   const { t } = useTranslation();
@@ -795,7 +795,7 @@ export const CanvasFlow: React.FC<CanvasFlowProps> = ({
             </p>
           </div>
           {/* Animated border */}
-          <div className="absolute inset-4 rounded-lg pointer-events-none border-[3px] border-dashed border-brand-cyan animate-[dash_20s_linear_infinite]" />
+          <div className="absolute inset-4 rounded-md pointer-events-none border-[3px] border-dashed border-brand-cyan animate-[dash_20s_linear_infinite]" />
         </div>
       )}
 

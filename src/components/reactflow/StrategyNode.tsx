@@ -1006,10 +1006,10 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
           </div>
           <div className="flex items-center gap-1.5">
             {hasData && (
-              <NodeButton variant="ghost" size="xs"                 onClick={(e) => {
-                  e.stopPropagation();
-                  handleOpenInNewTab();
-                }}
+              <NodeButton variant="ghost" size="xs" onClick={(e) => {
+                e.stopPropagation();
+                handleOpenInNewTab();
+              }}
                 disabled={!hasData || isGenerating}
                 className="nodrag nopan"
                 title={t('canvasNodes.strategyNode.openInNewTab')}
@@ -1018,10 +1018,10 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
               </NodeButton>
             )}
             {nodeData.onGeneratePDF && (
-              <NodeButton variant="ghost" size="xs"                 onClick={(e) => {
-                  e.stopPropagation();
-                  handleGeneratePDF();
-                }}
+              <NodeButton variant="ghost" size="xs" onClick={(e) => {
+                e.stopPropagation();
+                handleGeneratePDF();
+              }}
                 disabled={!hasData}
                 className="nodrag nopan"
                 title={t('canvasNodes.strategyNode.downloadPDF')}
@@ -1030,10 +1030,10 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
               </NodeButton>
             )}
             {nodeData.onSave && (
-              <NodeButton variant="ghost" size="xs"                 onClick={(e) => {
-                  e.stopPropagation();
-                  handleSave();
-                }}
+              <NodeButton variant="ghost" size="xs" onClick={(e) => {
+                e.stopPropagation();
+                handleSave();
+              }}
                 disabled={!hasData || isGenerating}
                 className="bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan font-semibold nodrag nopan"
                 title={t('canvasNodes.strategyNode.save')}
@@ -1206,10 +1206,10 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
             <div className="flex items-center justify-between mb-3">
               <NodeLabel className="mb-0 text-neutral-300 font-medium">{t('canvasNodes.strategyNode.generateSections')}</NodeLabel>
               {nodeData.onGenerateAll && (
-                <NodeButton variant="ghost" size="xs"                   onClick={(e) => {
-                    e.stopPropagation();
-                    handleGenerateAll();
-                  }}
+                <NodeButton variant="ghost" size="xs" onClick={(e) => {
+                  e.stopPropagation();
+                  handleGenerateAll();
+                }}
                   disabled={!prompt.trim() || isGenerating}
                   className="px-2.5 py-1.5 text-[10px] nodrag nopan"
                   title={t('canvasNodes.strategyNode.generateAllSections')}
@@ -1236,7 +1236,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                   }).join(', ');
 
                   return (
-                    <NodeButton variant="ghost"                       key={section.type}
+                    <NodeButton variant="ghost" key={section.type}
                       onClick={(e) => {
                         e.stopPropagation();
                         if (!isBlocked) {
@@ -1284,16 +1284,16 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
               </span>
             </div>
             {nodeData.onCancelGeneration && (
-              <NodeButton variant="ghost" size="xs"                 onClick={(e) => {
-                  e.stopPropagation();
-                  if (generatingStep === 'all') {
-                    nodeData.onCancelGeneration?.(id);
-                  } else if (generatingSteps.length > 0) {
-                    nodeData.onCancelGeneration?.(id, generatingSteps[0]);
-                  } else if (generatingStep) {
-                    nodeData.onCancelGeneration?.(id, generatingStep);
-                  }
-                }}
+              <NodeButton variant="ghost" size="xs" onClick={(e) => {
+                e.stopPropagation();
+                if (generatingStep === 'all') {
+                  nodeData.onCancelGeneration?.(id);
+                } else if (generatingSteps.length > 0) {
+                  nodeData.onCancelGeneration?.(id, generatingSteps[0]);
+                } else if (generatingStep) {
+                  nodeData.onCancelGeneration?.(id, generatingStep);
+                }
+              }}
                 className="p-1 hover:bg-neutral-800 rounded"
                 title={t('canvasNodes.strategyNode.cancelGeneration')}
               >
@@ -1310,10 +1310,10 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
               <span className="text-xs font-mono text-neutral-300 font-medium">
                 {t('canvasNodes.strategyNode.generatedSections')} <span className="text-brand-cyan">({sections.filter(s => hasSectionData(s.type)).length}/{sections.length})</span>
               </span>
-              <NodeButton variant="ghost" size="xs"                 onClick={(e) => {
-                  e.stopPropagation();
-                  toggleAllSections();
-                }}
+              <NodeButton variant="ghost" size="xs" onClick={(e) => {
+                e.stopPropagation();
+                toggleAllSections();
+              }}
                 className="text-[10px] text-neutral-400 hover:text-neutral-300 nodrag nopan"
               >
                 {sections.every(s => !hasSectionData(s.type) || expandedSections[s.type]) ? (
@@ -1346,12 +1346,12 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                 return (
                   <div
                     key={section.type}
-                    className="border border-neutral-700/40 rounded-lg overflow-hidden group bg-neutral-900/30 backdrop-blur-sm shadow-sm hover:shadow-md transition-all"
+                    className="border border-neutral-700/40 rounded-md overflow-hidden group bg-neutral-900/30 backdrop-blur-sm shadow-sm hover:shadow-md transition-all"
                   >
-                    <NodeButton variant="ghost" size="full"                       onClick={(e) => {
-                        e.stopPropagation();
-                        toggleSection(section.type);
-                      }}
+                    <NodeButton variant="ghost" size="full" onClick={(e) => {
+                      e.stopPropagation();
+                      toggleSection(section.type);
+                    }}
                       className="flex items-center justify-between px-3.5 py-2.5 nodrag nopan"
                     >
                       <div className="flex items-center gap-2.5">

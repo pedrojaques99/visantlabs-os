@@ -279,7 +279,7 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
 
         {/* Advanced Settings */}
         <div className="border border-neutral-800 rounded-md bg-neutral-900/30">
-          <NodeButton variant="ghost" size="sm"             onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
+          <NodeButton variant="ghost" size="sm" onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
             className="text-xs font-mono text-neutral-400 hover:text-neutral-200 w-full p-2 hover:bg-neutral-800/50"
           >
             <Settings size={12} />
@@ -368,10 +368,10 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
         </div>
 
         {/* Generate Button */}
-        <NodeButton           onClick={(e) => {
-            e.stopPropagation();
-            handleGenerate();
-          }}
+        <NodeButton onClick={(e) => {
+          e.stopPropagation();
+          handleGenerate();
+        }}
           disabled={isLoading || (!prompt && !data.connectedText && !data.connectedImage1)}
           variant="primary"
           size="full"
@@ -393,7 +393,7 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
 
         {/* Result Preview */}
         {(data.resultVideoUrl || data.resultVideoBase64) && !isLoading && (
-          <div className="mt-4 rounded-lg overflow-hidden border border-neutral-700 bg-black relative group shadow-lg">
+          <div className="mt-4 rounded-md overflow-hidden border border-neutral-700 bg-black relative group shadow-lg">
             <video
               src={data.resultVideoUrl || (data.resultVideoBase64 ? `data:video/mp4;base64,${data.resultVideoBase64}` : undefined)}
               className="w-full h-auto max-h-[200px] object-contain"

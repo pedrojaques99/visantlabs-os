@@ -519,7 +519,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       <div className="p-4 flex flex-col gap-[var(--node-gap)]">
         {/* Logo Upload Section */}
         <div className={cn(
-          "p-3 rounded-lg border transition-all duration-300 backdrop-blur-sm",
+          "p-3 rounded-md border transition-all duration-300 backdrop-blur-sm",
           logoImageUrl
             ? "bg-brand-cyan/5 border-brand-cyan/20 shadow-[0_0_15px_rgba(var(--brand-cyan),0.05)]"
             : "bg-neutral-900/40 border-neutral-700/30"
@@ -533,9 +533,9 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
               <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest">Logo DNA</span>
             </div>
             {logoImageUrl && !connectedLogo && (
-              <NodeButton 
-                variant="ghost" 
-                size="xs"                     
+              <NodeButton
+                variant="ghost"
+                size="xs"
                 onClick={handleRemoveLogo}
                 className="h-6 w-6 text-neutral-500 hover:text-red-400 p-0"
               >
@@ -579,7 +579,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
         {/* Identity Guide Upload Section (PDF or PNG) */}
         <div className={cn(
-          "p-3 rounded-lg border transition-all duration-300 backdrop-blur-sm",
+          "p-3 rounded-md border transition-all duration-300 backdrop-blur-sm",
           (identityBase64 || nodeData.identityPdfUrl || nodeData.identityImageUrl)
             ? "bg-brand-cyan/5 border-brand-cyan/20 shadow-[0_0_15px_rgba(var(--brand-cyan),0.05)]"
             : "bg-neutral-900/40 border-neutral-700/30"
@@ -593,9 +593,9 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
               <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest">Brand Guidelines</span>
             </div>
             {(identityBase64 || nodeData.identityPdfUrl || nodeData.identityImageUrl) && !connectedIdentity && (
-              <NodeButton 
-                variant="ghost" 
-                size="xs"                     
+              <NodeButton
+                variant="ghost"
+                size="xs"
                 onClick={handleRemoveIdentity}
                 className="h-6 w-6 text-neutral-500 hover:text-red-400 p-0"
               >
@@ -659,9 +659,9 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
         {/* Brand Identity Display */}
         {brandIdentity && (
           <div className="border-t border-neutral-700/30 pt-4">
-            <NodeButton 
-              variant="ghost" 
-              size="full"             
+            <NodeButton
+              variant="ghost"
+              size="full"
               onClick={() => setIsExpanded(!isExpanded)}
               className="flex items-center justify-between group/expand px-1"
             >
@@ -674,7 +674,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
             {isExpanded && (
               <div className="mt-4 space-y-4 text-[11px] animate-in fade-in slide-in-from-top-1 duration-300">
                 {/* Colors */}
-                <div className="p-2.5 rounded-lg bg-neutral-900/40 border border-neutral-700/20 backdrop-blur-sm">
+                <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20 backdrop-blur-sm">
                   <div className="flex items-center justify-between mb-3">
                     <div className="text-[9px] font-mono text-neutral-500 uppercase tracking-tighter font-bold">Palette Matrix</div>
                     <NodeButton
@@ -697,7 +697,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
                 {/* Typography */}
                 {brandIdentity.typography.primary && (
-                  <div className="p-2.5 rounded-lg bg-neutral-900/40 border border-neutral-700/20 backdrop-blur-sm">
+                  <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20 backdrop-blur-sm">
                     <div className="text-[9px] font-mono text-neutral-500 uppercase tracking-tighter mb-2 font-bold">Typography</div>
                     <div className="space-y-1">
                       <div className="text-neutral-300 font-medium">{brandIdentity.typography.primary}</div>
@@ -710,7 +710,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
                 {/* Personality */}
                 {(brandIdentity.personality.tone || brandIdentity.personality.feeling) && (
-                  <div className="p-2.5 rounded-lg bg-neutral-900/40 border border-neutral-700/20 backdrop-blur-sm">
+                  <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20 backdrop-blur-sm">
                     <div className="text-[9px] font-mono text-neutral-500 uppercase tracking-tighter mb-2 font-bold">Persona</div>
                     <div className="grid grid-cols-1 gap-2 text-neutral-400 leading-relaxed">
                       {brandIdentity.personality.tone && (
@@ -725,7 +725,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
 
                 {/* Visual Elements */}
                 {brandIdentity.visualElements.length > 0 && (
-                  <div className="p-2.5 rounded-lg bg-neutral-900/40 border border-neutral-700/20 backdrop-blur-sm">
+                  <div className="p-2.5 rounded-md bg-neutral-900/40 border border-neutral-700/20 backdrop-blur-sm">
                     <div className="text-[9px] font-mono text-neutral-500 uppercase tracking-tighter mb-2 font-bold">Visual Language</div>
                     <div className="flex flex-wrap gap-1.5">
                       {brandIdentity.visualElements.slice(0, 8).map((element, idx) => (

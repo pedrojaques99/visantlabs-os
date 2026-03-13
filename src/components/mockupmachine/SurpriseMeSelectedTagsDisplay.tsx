@@ -142,7 +142,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
       const categoryTags = cat.tags
         .map(t => t.name)
         .filter(tagName => availableTags.includes(tagName) && filteredTags.includes(tagName));
-      
+
       if (categoryTags.length > 0) {
         groups.push({
           categoryName: cat.name,
@@ -164,7 +164,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
   }, [filteredTags, tagCategories, availableTags, searchQuery]);
 
   const renderTagButton = (tag: string) => (
-    <Button variant="ghost" 
+    <Button variant="ghost"
       key={tag}
       type="button"
       onClick={() => handleSelect(tag)}
@@ -186,11 +186,11 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
 
   return (
     <div ref={dropdownRef} className="relative flex-1 min-w-0">
-      <Button variant="ghost" 
+      <Button variant="ghost"
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg text-[10px] font-mono transition-all duration-200 border",
+          "w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md text-[10px] font-mono transition-all duration-200 border",
           selectedTags.length > 0
             ? theme === 'dark'
               ? 'bg-neutral-800/60 text-neutral-400 border-neutral-700/50 hover:border-neutral-600'
@@ -204,8 +204,8 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
           {isGenerating ? (
             <span className="inline-block w-16 h-3 rounded animate-pulse bg-neutral-700/50" />
           ) : (
-            selectedTags.length > 0 
-              ? (selectedTags.length === 1 ? translateTag(selectedTags[0]) : `${translateTag(selectedTags[0])} +${selectedTags.length - 1}`) 
+            selectedTags.length > 0
+              ? (selectedTags.length === 1 ? translateTag(selectedTags[0]) : `${translateTag(selectedTags[0])} +${selectedTags.length - 1}`)
               : placeholder
           )}
         </span>
@@ -221,7 +221,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
       {isOpen && (
         <div
           className={cn(
-            "absolute z-50 mt-1 w-full rounded-lg border shadow-lg animate-fade-in overflow-hidden",
+            "absolute z-50 mt-1 w-full rounded-md border shadow-lg animate-fade-in overflow-hidden",
             theme === 'dark'
               ? 'bg-neutral-900 border-neutral-700/50'
               : 'bg-white border-neutral-200'
@@ -252,7 +252,7 @@ const TagDropdown: React.FC<TagDropdownProps> = ({
           <div className="max-h-40 overflow-y-auto">
             {/* Custom tag option */}
             {showCustomOption && (
-              <Button variant="ghost" 
+              <Button variant="ghost"
                 type="button"
                 onClick={() => handleSelect(searchQuery.trim())}
                 className={cn(
@@ -474,11 +474,11 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void;
         isSurpriseMeMode
           ? "py-2"
           : cn(
-              "rounded-xl p-3",
-              theme === 'dark' ? 'bg-neutral-900/20' : 'bg-neutral-50/40',
-              "border",
-              theme === 'dark' ? 'border-neutral-800/40' : 'border-neutral-200/60'
-            )
+            "rounded-xl p-3",
+            theme === 'dark' ? 'bg-neutral-900/20' : 'bg-neutral-50/40',
+            "border",
+            theme === 'dark' ? 'border-neutral-800/40' : 'border-neutral-200/60'
+          )
       )}
     >
       <div className="flex items-center gap-2 mb-3">
@@ -495,7 +495,7 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void;
           </SkeletonText>
         )}
         {isSurpriseMeMode && onRerollAll && (
-          <Button variant="ghost" 
+          <Button variant="ghost"
             onClick={handleRerollAll}
             className="ml-auto p-1.5 rounded-full hover:bg-neutral-800 transition-all duration-200 group/reroll"
             title="Sortear tudo novamente (Shuffle All)"

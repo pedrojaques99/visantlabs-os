@@ -206,9 +206,9 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                             Select images to download from your project
                         </p>
                     </div>
-                    <Button variant="ghost" 
+                    <Button variant="ghost"
                         onClick={onClose}
-                        className="p-2 text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/50 rounded-lg transition-all"
+                        className="p-2 text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800/50 rounded-md transition-all"
                     >
                         <X size={20} />
                     </Button>
@@ -224,13 +224,13 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                                 placeholder="Search images..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-9 pr-4 py-2 bg-neutral-800/50 border border-neutral-700/50 rounded-lg text-xs text-neutral-300 font-mono focus:outline-none focus:ring-1 focus:ring-[brand-cyan]/50 transition-all"
+                                className="w-full pl-9 pr-4 py-2 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-xs text-neutral-300 font-mono focus:outline-none focus:ring-1 focus:ring-[brand-cyan]/50 transition-all"
                             />
                         </div>
 
-                        <Button variant="ghost" 
+                        <Button variant="ghost"
                             onClick={selectAll}
-                            className="flex items-center gap-2 px-3 py-2 bg-neutral-800/50 border border-neutral-700/50 rounded-lg text-xs text-neutral-300 font-mono hover:bg-neutral-700/50 transition-all whitespace-nowrap"
+                            className="flex items-center gap-2 px-3 py-2 bg-neutral-800/50 border border-neutral-700/50 rounded-md text-xs text-neutral-300 font-mono hover:bg-neutral-700/50 transition-all whitespace-nowrap"
                         >
                             {selectedImages.size === filteredImages.length && filteredImages.length > 0 ? (
                                 <CheckSquare size={14} className="text-[brand-cyan]" />
@@ -242,9 +242,9 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-1 bg-neutral-800/50 border border-neutral-700/50 p-1 rounded-lg">
+                        <div className="flex items-center gap-1 bg-neutral-800/50 border border-neutral-700/50 p-1 rounded-md">
                             {FORMAT_OPTIONS.map((format) => (
-                                <Button variant="ghost" 
+                                <Button variant="ghost"
                                     key={format}
                                     onClick={() => setExportFormat(format)}
                                     className={cn(
@@ -303,7 +303,7 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                                             </div>
                                         </div>
 
-                                        <div className="bg-neutral-950/60 backdrop-blur-md rounded-lg p-2 translate-y-1 group-hover:translate-y-0 transition-transform">
+                                        <div className="bg-neutral-950/60 backdrop-blur-md rounded-md p-2 translate-y-1 group-hover:translate-y-0 transition-transform">
                                             <p className="text-[10px] text-neutral-200 font-mono truncate" title={img.name}>
                                                 {img.name}
                                             </p>
@@ -334,17 +334,17 @@ export const MultiExportModal: React.FC<MultiExportModalProps> = ({
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <Button variant="ghost" 
+                        <Button variant="ghost"
                             onClick={onClose}
                             className="px-4 py-2 text-xs font-mono text-neutral-400 hover:text-neutral-200 transition-colors"
                         >
                             Cancel
                         </Button>
-                        <Button variant="ghost" 
+                        <Button variant="ghost"
                             onClick={handleExport}
                             disabled={selectedImages.size === 0 || isExporting}
                             className={cn(
-                                "px-6 py-2 bg-[brand-cyan] hover:bg-[#45c3d1] disabled:bg-neutral-800 disabled:text-neutral-500 text-black font-semibold rounded-lg text-xs font-mono transition-all flex items-center gap-2 shadow-lg shadow-[brand-cyan]/10",
+                                "px-6 py-2 bg-[brand-cyan] hover:bg-[#45c3d1] disabled:bg-neutral-800 disabled:text-neutral-500 text-black font-semibold rounded-md text-xs font-mono transition-all flex items-center gap-2 shadow-lg shadow-[brand-cyan]/10",
                                 isExporting && "animate-pulse"
                             )}
                         >

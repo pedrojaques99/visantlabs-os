@@ -380,14 +380,14 @@ export const CommunityPage: React.FC = () => {
                   <Plus size={16} />
                   <span>Criar um novo prompt</span>
                 </PremiumButton>
-                <Button variant="ghost"                   onClick={() => navigate('/community/presets')}
-                  className="flex items-center gap-2 px-4 py-2 bg-neutral-800/40 hover:bg-neutral-800/60 text-neutral-300 rounded-lg border border-neutral-700/40 text-sm transition-colors"
+                <Button variant="ghost" onClick={() => navigate('/community/presets')}
+                  className="flex items-center gap-2 px-4 py-2 bg-neutral-800/40 hover:bg-neutral-800/60 text-neutral-300 rounded-md border border-neutral-700/40 text-sm transition-colors"
                 >
                   <Globe size={16} />
                   <span>Ver Tudo</span>
                 </Button>
-                <Button variant="ghost"                   onClick={() => setShowWorkflowLibrary(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-neutral-800/40 hover:bg-neutral-800/60 text-neutral-300 rounded-lg border border-neutral-700/40 text-sm transition-colors"
+                <Button variant="ghost" onClick={() => setShowWorkflowLibrary(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-neutral-800/40 hover:bg-neutral-800/60 text-neutral-300 rounded-md border border-neutral-700/40 text-sm transition-colors"
                 >
                   <FolderOpen size={16} />
                   <span>{t('workflows.library.title') || 'Biblioteca'}</span>
@@ -525,7 +525,7 @@ export const CommunityPage: React.FC = () => {
                 {workflowsLoading ? (
                   Array.from({ length: 4 }).map((_, i) => (
                     <div key={i} className="bg-[#141414] border border-neutral-800/50 rounded-md p-6 animate-pulse">
-                      <div className="aspect-video bg-neutral-900 rounded-lg mb-4" />
+                      <div className="aspect-video bg-neutral-900 rounded-md mb-4" />
                       <div className="h-4 bg-neutral-900 rounded mb-2" />
                       <div className="h-3 bg-neutral-900 rounded w-2/3" />
                     </div>
@@ -542,7 +542,7 @@ export const CommunityPage: React.FC = () => {
                         onClick={() => navigate('/canvas')}
                       >
                         {workflow.thumbnailUrl ? (
-                          <div className="aspect-video rounded-lg overflow-hidden border border-neutral-700/30 bg-neutral-900/30 mb-4">
+                          <div className="aspect-video rounded-md overflow-hidden border border-neutral-700/30 bg-neutral-900/30 mb-4">
                             <img
                               src={workflow.thumbnailUrl}
                               alt={workflow.name}
@@ -550,7 +550,7 @@ export const CommunityPage: React.FC = () => {
                             />
                           </div>
                         ) : (
-                          <div className="aspect-video rounded-lg border border-neutral-700/30 bg-neutral-900/30 flex items-center justify-center mb-4">
+                          <div className="aspect-video rounded-md border border-neutral-700/30 bg-neutral-900/30 flex items-center justify-center mb-4">
                             <CategoryIcon size={32} className="text-neutral-700" />
                           </div>
                         )}
@@ -601,7 +601,7 @@ export const CommunityPage: React.FC = () => {
 
               {workflows.length > 8 && (
                 <div className="flex justify-center mt-8">
-                  <Button variant="ghost"                     onClick={() => setShowWorkflowLibrary(true)}
+                  <Button variant="ghost" onClick={() => setShowWorkflowLibrary(true)}
                     className="flex items-center gap-2 px-6 py-2 bg-neutral-900/50 hover:bg-brand-cyan/10 text-neutral-500 hover:text-brand-cyan border border-neutral-800/50 rounded-full transition-all text-sm font-mono group"
                   >
                     Ver todos os workflows
@@ -679,7 +679,7 @@ export const CommunityPage: React.FC = () => {
 
               {allPublicMockups.length > 10 && (
                 <div className="flex justify-center mt-8">
-                  <Button variant="ghost"                     onClick={() => setIsGalleryExpanded(!isGalleryExpanded)}
+                  <Button variant="ghost" onClick={() => setIsGalleryExpanded(!isGalleryExpanded)}
                     className="flex items-center gap-2 px-6 py-2 bg-neutral-900/50 hover:bg-brand-cyan/10 text-neutral-500 hover:text-brand-cyan border border-neutral-800/50 rounded-full transition-all text-sm font-mono group"
                   >
                     {isGalleryExpanded ? (
