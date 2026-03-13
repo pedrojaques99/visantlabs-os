@@ -23,7 +23,7 @@ import { useNodeResize } from '@/hooks/canvas/useNodeResize';
 import { PromptContextMenu } from './contextmenu/PromptContextMenu';
 import { MockupPresetModal } from '@/components/MockupPresetModal';
 import { getPresetByIdSync } from '@/services/unifiedPresetService';
-import { Button } from '@/components/ui/button'
+import { NodeButton } from './shared/node-button';
 
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -470,7 +470,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       dragging={dragging}
       warning={nodeData.oversizedWarning}
       onFitToContent={handleFitToContent}
-      className="p-5 min-w-[320px]"
+      className="min-w-[400px]"
       onContextMenu={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -612,7 +612,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       )}
 
       {/* Prompt Input */}
-      <div className="mb-3">
+      <div className="node-margin">
         {hasTextNodeConnection && (
           <div className="mb-1.5 text-[10px] font-mono text-brand-cyan/70 flex items-center gap-1">
             <span>•</span>
@@ -623,27 +623,22 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         {/* Prompt Functions Toolbar */}
         <div className="flex items-center justify-between mb-1.5 px-0.5">
           <div className="flex items-center gap-1.5">
-            <Button variant="ghost"               type="button"
+            <NodeButton variant="ghost" size="xs"               type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
                 setIsPresetModalOpen(true);
               }}
               disabled={isLoading}
-              className={cn(
-                'flex items-center gap-1.5 px-2 py-1 rounded-md border text-[10px] font-mono transition-all',
-                'bg-neutral-800/50 border-neutral-700/50 hover:bg-neutral-700/50 hover:border-neutral-500',
-                'text-neutral-400 hover:text-neutral-200',
-                'node-interactive'
-              )}
+              className="nodrag nopan"
               title={t('canvasNodes.promptNode.loadPreset') || 'Load Preset'}
               onMouseDown={(e) => e.stopPropagation()}
             >
               <BookOpen size={14} />
-            </Button>
+            </NodeButton>
           </div>
 
-          <Button variant="ghost"             type="button"
+          <NodeButton variant="ghost" size="xs"             type="button"
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
@@ -652,18 +647,12 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               }
             }}
             disabled={isLoading || !prompt.trim()}
-            className={cn(
-              'flex items-center gap-1.5 px-2 py-1 rounded-md border text-[10px] font-mono transition-all',
-              'bg-neutral-800/50 border-neutral-700/50 hover:bg-neutral-700/50 hover:border-neutral-500',
-              'text-neutral-400 hover:text-neutral-200',
-              'disabled:opacity-50 disabled:cursor-not-allowed',
-              'node-interactive'
-            )}
+            className="nodrag nopan"
             title={t('canvasNodes.promptNode.savePrompt') || 'Save Prompt'}
             onMouseDown={(e) => e.stopPropagation()}
           >
             <Save size={14} />
-          </Button>
+          </NodeButton>
         </div>
 
         <div className="relative">
@@ -678,7 +667,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           />
           {/* Prompt Suggestion Button */}
           {!hasTextNodeConnection && prompt.trim() && (
-            <Button variant="ghost"               type="button"
+            <NodeButton variant="ghost" size="xs"               type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
@@ -687,13 +676,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
                 }
               }}
               disabled={isLoading || isSuggestingPrompts || !prompt.trim()}
-              className={cn(
-                'absolute top-2 right-2 p-1.5 rounded border transition-all',
-                'bg-neutral-800/50 hover:bg-neutral-700/50 border-neutral-700/50 hover:border-neutral-500',
-                'text-neutral-400 hover:text-neutral-200',
-                'disabled:opacity-50 disabled:cursor-not-allowed',
-                'node-interactive'
-              )}
+              className="absolute top-2 right-2 nodrag nopan"
               title={t('canvasNodes.promptNode.suggestPrompts')}
               onMouseDown={(e) => e.stopPropagation()}
             >
@@ -702,7 +685,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               ) : (
                 <Wand2 size={14} />
               )}
-            </Button>
+            </NodeButton>
           )}
         </div>
 
@@ -713,7 +696,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               {t('canvasNodes.promptNode.aiSuggestions') || t('canvasNodes.promptNode.suggestions')}
             </div>
             {promptSuggestions.map((suggestion, index) => (
-              <Button variant="ghost"                 key={index}
+              <NodeButton variant="ghost" size="xs"                 key={index}
                 onClick={(e) => {
                   e.stopPropagation();
                   setPrompt(suggestion);
@@ -723,23 +706,18 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
                     nodeData.onUpdateData(id, { promptSuggestions: [] });
                   }
                 }}
-                className={cn(
-                  'w-full text-left p-1.5 text-[11px] font-mono rounded border transition-all',
-                  'bg-neutral-800/30 hover:bg-neutral-800/50 border-neutral-700/30 hover:border-neutral-500',
-                  'text-neutral-300 hover:text-neutral-100',
-                  'node-interactive'
-                )}
+                className="w-full text-left font-mono"
                 onMouseDown={(e) => e.stopPropagation()}
               >
                 {suggestion}
-              </Button>
+              </NodeButton>
             ))}
           </div>
         )}
       </div>
 
       {/* Settings Section - Compact */}
-      <div className="mb-3 space-y-2.5">
+      <div className="node-margin space-y-[var(--node-gap)]">
         {/* Model Selector */}
         <div>
           <NodeLabel className="mb-1.5 text-[10px]">
@@ -751,7 +729,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
               { geminiModel: GEMINI_MODELS.NB2, label: 'NB2', emoji: '🍌', credits: getCreditsRequired(GEMINI_MODELS.NB2, resolution) },
               { geminiModel: GEMINI_MODELS.PRO, label: '4K Pro', emoji: '⛏️💎', credits: getCreditsRequired(GEMINI_MODELS.PRO, resolution) },
             ] as const).map(({ geminiModel, label, emoji, credits }) => (
-              <Button variant="ghost"                 key={geminiModel}
+              <NodeButton variant="ghost"                 key={geminiModel}
                 onClick={(e) => { e.stopPropagation(); handleModelChange(geminiModel); }}
                 onMouseDown={(e) => e.stopPropagation()}
                 disabled={isLoading}
@@ -768,7 +746,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
                 <span className="text-[10px] text-neutral-500 mt-0.5">
                   {credits} {t('canvasNodes.promptNode.credits')}
                 </span>
-              </Button>
+              </NodeButton>
             ))}
           </div>
         </div>
@@ -820,7 +798,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
       </div>
 
       {/* Generate Image Button */}
-      <Button variant="ghost"         onClick={(e) => {
+      <NodeButton variant="primary" size="full"         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();
           handleGenerate();
@@ -829,10 +807,7 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           e.stopPropagation();
         }}
         disabled={isLoading || !prompt.trim()}
-        className={cn(
-          'w-full px-3 py-2 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 rounded text-xs font-mono text-brand-cyan transition-colors flex items-center justify-center gap-3 node-interactive',
-          (isLoading || !prompt.trim()) ? 'opacity-50 node-button-disabled' : 'node-button-enabled'
-        )}
+        className="node-interactive"
       >
         {isLoading ? (
           <>
@@ -843,12 +818,12 @@ export const PromptNode = memo(({ data, selected, id, dragging }: NodeProps<any>
           <>
             <ImageIcon size={14} />
             <span>{t('canvasNodes.promptNode.generateImage')}</span>
-            <span className="text-brand-cyan/70">
+            <span className="text-brand-cyan/70 ml-2">
               ({creditsRequired} {t('canvasNodes.promptNode.credits')})
             </span>
           </>
         )}
-      </Button>
+      </NodeButton>
 
       {/* Output Handle */}
       <LabeledHandle

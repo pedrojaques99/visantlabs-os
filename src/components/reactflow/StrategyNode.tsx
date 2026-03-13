@@ -13,7 +13,6 @@ import { NodeInput } from './shared/node-input';
 import { cleanMarketResearchText } from '@/utils/brandingHelpers';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
-import { Button } from '@/components/ui/button'
 
 const AutoResizeTextarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
   minHeight?: number;
@@ -93,7 +92,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
   }, [id]);
 
   // Debounced log for dragging to avoid excessive logging
-  const draggingLogTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const draggingLogTimeoutRef = useRef<any>(undefined);
   const lastDraggingLogRef = useRef<string>('');
   const devLogDebounced = useCallback((message: string, data?: any) => {
     if (!import.meta.env.DEV) return;
@@ -433,7 +432,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
     }));
   }, [id, nodeData, strategyData, sections, t]);
 
-  const saveTimeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
+  const saveTimeoutRef = useRef<Record<string, any>>({});
   const latestRefs = useRef({ strategyData, nodeData, id });
 
   useEffect(() => {
@@ -626,8 +625,8 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
   }, [hasData, isGenerating, nodeData.prompt, nodeData.name, nodeData.strategyData, originalPrompt, showProjectSelector, projectName, strategyData, isCreatingNew, devLog]);
 
   // Debounced prompt update to prevent loops
-  const promptUpdateTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
-  const nameUpdateTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const promptUpdateTimeoutRef = useRef<any>(undefined);
+  const nameUpdateTimeoutRef = useRef<any>(undefined);
   const handlePromptChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newPrompt = e.target.value;
     setPrompt(newPrompt);
@@ -962,7 +961,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
       selected={selected}
       dragging={dragging}
       onFitToContent={handleFitToContent}
-      className="p-5 min-w-[500px] flex flex-col"
+      className="min-w-[500px] flex flex-col"
       onContextMenu={(e) => {
         // Allow ReactFlow to handle the context menu event
       }}
@@ -993,7 +992,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
 
       <div className="flex flex-col h-full min-h-0">
         {/* Header with action buttons */}
-        <div className="flex items-center justify-between mb-5 pb-4 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/40 to-neutral-900/20 backdrop-blur-sm -mx-5 px-5 pt-0">
+        <div className="flex items-center justify-between mb-[var(--node-margin-lg)] pb-5 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/40 to-neutral-900/20 backdrop-blur-sm -mx-[var(--node-padding)] px-[var(--node-padding)] pt-0">
           <div className="flex items-center gap-2.5">
             <div className="p-1.5 rounded-md bg-brand-cyan/10 border border-brand-cyan/20">
               <Target size={16} className="text-brand-cyan" />
@@ -1007,55 +1006,40 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
           </div>
           <div className="flex items-center gap-1.5">
             {hasData && (
-              <Button variant="ghost"                 onClick={(e) => {
+              <NodeButton variant="ghost" size="xs"                 onClick={(e) => {
                   e.stopPropagation();
                   handleOpenInNewTab();
                 }}
                 disabled={!hasData || isGenerating}
-                className={cn(
-                  "p-2 rounded-md border transition-all nodrag nopan",
-                  "bg-neutral-900/60 border-neutral-700/40 text-neutral-300 hover:border-neutral-600/60",
-                  "disabled:opacity-50 disabled:cursor-not-allowed",
-                  "hover:bg-neutral-800/70 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
-                )}
+                className="nodrag nopan"
                 title={t('canvasNodes.strategyNode.openInNewTab')}
               >
                 <ExternalLink size={14} />
-              </Button>
+              </NodeButton>
             )}
             {nodeData.onGeneratePDF && (
-              <Button variant="ghost"                 onClick={(e) => {
+              <NodeButton variant="ghost" size="xs"                 onClick={(e) => {
                   e.stopPropagation();
                   handleGeneratePDF();
                 }}
                 disabled={!hasData}
-                className={cn(
-                  "p-2 rounded-md border transition-all nodrag nopan",
-                  "bg-neutral-900/60 border-neutral-700/40 text-neutral-300 hover:border-neutral-600/60",
-                  "disabled:opacity-50 disabled:cursor-not-allowed",
-                  "hover:bg-neutral-800/70 backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
-                )}
+                className="nodrag nopan"
                 title={t('canvasNodes.strategyNode.downloadPDF')}
               >
                 <Download size={14} />
-              </Button>
+              </NodeButton>
             )}
             {nodeData.onSave && (
-              <Button variant="ghost"                 onClick={(e) => {
+              <NodeButton variant="ghost" size="xs"                 onClick={(e) => {
                   e.stopPropagation();
                   handleSave();
                 }}
                 disabled={!hasData || isGenerating}
-                className={cn(
-                  "p-2 rounded-md border transition-all nodrag nopan",
-                  "bg-brand-cyan/20 hover:bg-brand-cyan/30 border-brand-cyan/40 text-brand-cyan font-semibold",
-                  "disabled:opacity-50 disabled:cursor-not-allowed",
-                  "backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
-                )}
+                className="bg-brand-cyan/20 hover:bg-brand-cyan/30 text-brand-cyan font-semibold nodrag nopan"
                 title={t('canvasNodes.strategyNode.save')}
               >
                 <Save size={14} />
-              </Button>
+              </NodeButton>
             )}
           </div>
         </div>
@@ -1222,21 +1206,16 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
             <div className="flex items-center justify-between mb-3">
               <NodeLabel className="mb-0 text-neutral-300 font-medium">{t('canvasNodes.strategyNode.generateSections')}</NodeLabel>
               {nodeData.onGenerateAll && (
-                <Button variant="ghost"                   onClick={(e) => {
+                <NodeButton variant="ghost" size="xs"                   onClick={(e) => {
                     e.stopPropagation();
                     handleGenerateAll();
                   }}
                   disabled={!prompt.trim() || isGenerating}
-                  className={cn(
-                    'px-2.5 py-1.5 text-[10px] font-mono border rounded-md transition-all nodrag nopan',
-                    'bg-neutral-900/60 border-neutral-700/40 text-neutral-400 hover:border-neutral-600/60 hover:text-neutral-300',
-                    'disabled:opacity-50 disabled:cursor-not-allowed',
-                    'backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-105 active:scale-95'
-                  )}
+                  className="px-2.5 py-1.5 text-[10px] nodrag nopan"
                   title={t('canvasNodes.strategyNode.generateAllSections')}
                 >
                   {t('canvasNodes.strategyNode.generateAll')}
-                </Button>
+                </NodeButton>
               )}
             </div>
             <div
@@ -1257,7 +1236,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                   }).join(', ');
 
                   return (
-                    <Button variant="ghost"                       key={section.type}
+                    <NodeButton variant="ghost"                       key={section.type}
                       onClick={(e) => {
                         e.stopPropagation();
                         if (!isBlocked) {
@@ -1266,11 +1245,8 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                       }}
                       disabled={!prompt.trim() || isGeneratingSection || (isGenerating && generatingStep === 'all') || generatingSteps.length > 0 || isBlocked}
                       className={cn(
-                        'px-2.5 py-2 border rounded-md text-xs font-mono transition-all flex items-center gap-1.5 justify-center nodrag nopan relative',
-                        isBlocked
-                          ? 'bg-neutral-900/30 border-neutral-700/30 text-neutral-500 cursor-not-allowed opacity-60'
-                          : 'bg-neutral-900/60 border-neutral-700/40 text-neutral-300 hover:border-neutral-600/60 cursor-pointer backdrop-blur-sm shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98]',
-                        (!prompt.trim() || isGeneratingSection || (isGenerating && generatingStep === 'all') || generatingSteps.length > 0) && !isBlocked && 'opacity-50 cursor-not-allowed'
+                        'px-2.5 py-2 text-xs font-mono flex items-center gap-1.5 justify-center nodrag nopan relative',
+                        isBlocked && 'opacity-60 grayscale'
                       )}
                       title={isBlocked ? `Bloqueado: requer ${missingDepsLabels}` : section.label}
                     >
@@ -1279,7 +1255,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                       )}
                       <span className={cn('text-xs', isBlocked && 'opacity-50')}>{section.emoji}</span>
                       <span className={cn('truncate', isBlocked && 'opacity-50')}>{section.label}</span>
-                    </Button>
+                    </NodeButton>
                   );
                 })}
             </div>
@@ -1308,7 +1284,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
               </span>
             </div>
             {nodeData.onCancelGeneration && (
-              <Button variant="ghost"                 onClick={(e) => {
+              <NodeButton variant="ghost" size="xs"                 onClick={(e) => {
                   e.stopPropagation();
                   if (generatingStep === 'all') {
                     nodeData.onCancelGeneration?.(id);
@@ -1318,11 +1294,11 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                     nodeData.onCancelGeneration?.(id, generatingStep);
                   }
                 }}
-                className="p-1.5 hover:bg-red-500/20 rounded-md transition-all nodrag nopan"
+                className="p-1 hover:bg-neutral-800 rounded"
                 title={t('canvasNodes.strategyNode.cancelGeneration')}
               >
                 <XCircle size={12} className="text-red-400 hover:text-red-300" />
-              </Button>
+              </NodeButton>
             )}
           </div>
         )}
@@ -1334,11 +1310,11 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
               <span className="text-xs font-mono text-neutral-300 font-medium">
                 {t('canvasNodes.strategyNode.generatedSections')} <span className="text-brand-cyan">({sections.filter(s => hasSectionData(s.type)).length}/{sections.length})</span>
               </span>
-              <Button variant="ghost"                 onClick={(e) => {
+              <NodeButton variant="ghost" size="xs"                 onClick={(e) => {
                   e.stopPropagation();
                   toggleAllSections();
                 }}
-                className="text-xs font-mono text-neutral-400 hover:text-neutral-300 flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-neutral-800/50 transition-all backdrop-blur-sm nodrag nopan"
+                className="text-[10px] text-neutral-400 hover:text-neutral-300 nodrag nopan"
               >
                 {sections.every(s => !hasSectionData(s.type) || expandedSections[s.type]) ? (
                   <>
@@ -1351,11 +1327,11 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                     <span>{t('canvasNodes.strategyNode.expandAll')}</span>
                   </>
                 )}
-              </Button>
+              </NodeButton>
             </div>
 
             <div
-              className="space-y-3 flex-1 overflow-y-auto min-h-0"
+              className="space-y-[var(--node-space-y)] flex-1 overflow-y-auto min-h-0"
               onWheel={(e) => e.stopPropagation()}
             >
               {sections.map((section) => {
@@ -1372,11 +1348,11 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                     key={section.type}
                     className="border border-neutral-700/40 rounded-lg overflow-hidden group bg-neutral-900/30 backdrop-blur-sm shadow-sm hover:shadow-md transition-all"
                   >
-                    <Button variant="ghost"                       onClick={(e) => {
+                    <NodeButton variant="ghost" size="full"                       onClick={(e) => {
                         e.stopPropagation();
                         toggleSection(section.type);
                       }}
-                      className="w-full flex items-center justify-between px-3.5 py-2.5 bg-neutral-900/40 hover:bg-neutral-900/60 transition-all nodrag nopan"
+                      className="flex items-center justify-between px-3.5 py-2.5 nodrag nopan"
                     >
                       <div className="flex items-center gap-2.5">
                         {sectionHasData && !isGeneratingSection && (
@@ -1405,7 +1381,7 @@ export const StrategyNode = memo(({ data, selected, id, dragging }: NodeProps<an
                         </NodeLabel>
                       </div>
                       {isSectionExpanded ? <ChevronUp size={14} className="text-neutral-400" /> : <ChevronDown size={14} className="text-neutral-400" />}
-                    </Button>
+                    </NodeButton>
 
                     {isSectionExpanded && (
                       <div

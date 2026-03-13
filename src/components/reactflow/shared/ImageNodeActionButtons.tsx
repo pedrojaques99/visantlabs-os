@@ -2,7 +2,80 @@ import React from 'react';
 import { Maximize2, Heart, Download, FileText, Trash2, Palette, X } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button'
+import { NodeButton } from './node-button';
+
+interface ImageNodeActionButtonsProps {
+  // View button
+  onView?: () => void;
+  showView?: boolean;
+
+  // Download button
+  onDownload?: ((e: React.MouseEvent) => void) | (() => void);
+  isDownloading?: boolean;
+  showDownload?: boolean;
+
+  // Delete button
+  onDelete?: () => void;
+  showDelete?: boolean;
+
+  // BrandKit button
+  onBrandKit?: () => void;
+  showBrandKit?: boolean;
+  brandKitDisabled?: boolean;
+
+  // Like/Save button (variations: toggle like or save)
+  onLike?: ((e: React.MouseEvent) => void | Promise<void>) | (() => void | Promise<void>);
+  onSave?: ((e: React.MouseEvent) => void | Promise<void>) | (() => void | Promise<void>);
+  isLiked?: boolean;
+  isSaving?: boolean;
+  showLike?: boolean;
+
+  // Describe button
+  onDescribe?: () => void;
+  isDescribing?: boolean;
+  describeDisabled?: boolean;
+  showDescribe?: boolean;
+
+  // Remove button (for LogoNode)
+  onRemove?: () => void;
+  showRemove?: boolean;
+
+  // Translation keys prefix
+  translationKeyPrefix?: 'canvasNodes.imageNode' | 'canvasNodes.outputNode' | 'canvasNodes.logoNode';
+  t?: (key: string) => string;
+}
+
+export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
+  onView,
+  showView = false,
+  onDownload,
+  isDownloading = false,
+  showDownload = false,
+  onDelete,
+  showDelete = false,
+  onBrandKit,
+  showBrandKit = false,
+  brandKitDisabled = false,
+  onLike,
+  onSave,
+  isLiked = false,
+  isSaving = false,
+  showLike = false,
+  onDescribe,
+  isDescribing = false,
+  describeDisabled = false,
+  showDescribe = false,
+  onRemove,
+  showRemove = false,
+  translationKeyPrefix = 'canvasNodes.imageNode',
+  t = (key: string) => key,
+}) => {
+  const handleClick = (e: React.MouseEvent, handler?: () => void) => {
+    e.stopPropagation();
+    handler?.();
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
 
 interface ImageNodeActionButtonsProps {
   // View button
@@ -82,18 +155,18 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
   return (
     <>
       {showView && onView && (
-        <Button variant="ghost" 
+        <NodeButton variant="ghost" 
           onClick={(e) => handleClick(e, onView)}
-          className="p-1 bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 rounded transition-colors backdrop-blur-sm border border-neutral-700/30 hover:border-neutral-600/50"
+          className="p-1"
           title={t(`${translationKeyPrefix}.viewFullScreen`) || 'View full screen'}
           onMouseDown={handleMouseDown}
         >
           <Maximize2 size={12} strokeWidth={2} />
-        </Button>
+        </NodeButton>
       )}
 
       {showDownload && onDownload && (
-        <Button variant="ghost" 
+        <NodeButton variant="ghost" 
           onClick={(e) => {
             e.stopPropagation();
             // Handle both function types: with or without event parameter
@@ -104,12 +177,7 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
             }
           }}
           disabled={isDownloading}
-          className={cn(
-            "p-1 rounded transition-colors backdrop-blur-sm border",
-            isDownloading
-              ? "bg-neutral-700/20 text-neutral-500 cursor-not-allowed border-neutral-700/20"
-              : "bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 border border-neutral-700/30 hover:border-neutral-600/50"
-          )}
+          className="p-1"
           title={isDownloading ? t('canvasNodes.shared.downloading') || 'Downloading...' : t(`${translationKeyPrefix}.downloadImage`) || 'Download image'}
           onMouseDown={handleMouseDown}
         >
@@ -118,39 +186,34 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
           ) : (
             <Download size={12} strokeWidth={2} />
           )}
-        </Button>
+        </NodeButton>
       )}
 
       {showDelete && onDelete && (
-        <Button variant="ghost" 
+        <NodeButton variant="ghost" 
           onClick={(e) => handleClick(e, onDelete)}
-          className="p-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded transition-colors backdrop-blur-sm border border-red-500/20 hover:border-red-500/30"
+          className="p-1 !text-red-400 !bg-red-500/10 hover:!bg-red-500/20"
           title={t(`${translationKeyPrefix}.delete`) || 'Delete'}
           onMouseDown={handleMouseDown}
         >
           <Trash2 size={12} strokeWidth={2} />
-        </Button>
+        </NodeButton>
       )}
 
       {showBrandKit && onBrandKit && (
-        <Button variant="ghost" 
+        <NodeButton variant="ghost" 
           onClick={(e) => handleClick(e, onBrandKit)}
           disabled={brandKitDisabled}
-          className={cn(
-            "p-1 rounded transition-colors backdrop-blur-sm border",
-            brandKitDisabled
-              ? "bg-neutral-700/20 text-neutral-500 cursor-not-allowed border-neutral-700/20"
-              : "bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 border-neutral-700/30 hover:border-neutral-600/50"
-          )}
+          className="p-1"
           title={t(`${translationKeyPrefix}.brandKit`) || 'Brand Kit'}
           onMouseDown={handleMouseDown}
         >
           <Palette size={12} strokeWidth={2} />
-        </Button>
+        </NodeButton>
       )}
 
       {showLike && (onLike || onSave) && (
-        <Button variant="ghost" 
+        <NodeButton variant="ghost" 
           onClick={(e) => {
             e.stopPropagation();
             const handler = onLike || onSave;
@@ -165,12 +228,8 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
           }}
           disabled={isSaving}
           className={cn(
-            "p-1 rounded transition-colors backdrop-blur-sm border",
-            isSaving
-              ? "bg-neutral-950/70 text-neutral-500 cursor-wait border border-neutral-700/30"
-              : isLiked
-                ? "bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30 border border-[brand-cyan]/20"
-                : "bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 border border-neutral-700/30 hover:border-neutral-600/50"
+            "p-1",
+            isLiked && !isSaving && "text-brand-cyan bg-brand-cyan/10"
           )}
           title={
             isLiked
@@ -186,19 +245,14 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
           ) : (
             <Heart size={12} className={isLiked ? "fill-current" : ""} strokeWidth={2} />
           )}
-        </Button>
+        </NodeButton>
       )}
 
       {showDescribe && onDescribe && (
-        <Button variant="ghost" 
+        <NodeButton variant="ghost" 
           onClick={(e) => handleClick(e, onDescribe)}
           disabled={describeDisabled || isDescribing}
-          className={cn(
-            "p-1 rounded transition-colors backdrop-blur-sm border",
-            isDescribing || describeDisabled
-              ? "bg-neutral-700/20 text-neutral-500 cursor-not-allowed border-neutral-700/20"
-              : "bg-neutral-950/70 hover:bg-neutral-950/60 text-neutral-400 hover:text-neutral-200 border-neutral-700/30 hover:border-neutral-600/50"
-          )}
+          className="p-1"
           title={isDescribing ? t(`${translationKeyPrefix}.analyzingImage`) || 'Analyzing image...' : t(`${translationKeyPrefix}.describeImageWithAI`) || 'Describe image with AI'}
           onMouseDown={handleMouseDown}
         >
@@ -207,20 +261,19 @@ export const ImageNodeActionButtons: React.FC<ImageNodeActionButtonsProps> = ({
           ) : (
             <FileText size={12} strokeWidth={2} />
           )}
-        </Button>
+        </NodeButton>
       )}
 
       {showRemove && onRemove && (
-        <Button variant="ghost" 
+        <NodeButton variant="ghost" 
           onClick={(e) => handleClick(e, onRemove)}
-          className="p-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded transition-colors backdrop-blur-sm border border-red-500/20 hover:border-red-500/30"
+          className="p-1 !text-red-400 !bg-red-500/10 hover:!bg-red-500/20"
           title={t(`${translationKeyPrefix}.removeLogo`) || t(`${translationKeyPrefix}.remove`) || 'Remove'}
           onMouseDown={handleMouseDown}
         >
           <X size={12} strokeWidth={2} />
-        </Button>
+        </NodeButton>
       )}
     </>
   );
 };
-

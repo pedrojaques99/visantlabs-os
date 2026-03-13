@@ -2,6 +2,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import type { ParsedChunk } from './brand-parse.js'
 import type { BrandGuideline } from '../types/brandGuideline.js'
+import { getGeminiApiKey } from '../utils/geminiApiKey.js'
 
 const EXTRACTION_PROMPT = `You are a brand identity extraction expert. Analyze the content and extract brand guideline information.
 
@@ -24,10 +25,11 @@ Rules:
 
 export async function extractBrandData(
   chunks: ParsedChunk[],
-  imageBase64?: string
+  imageBase64?: string,
+  userId?: string
 ): Promise<Partial<BrandGuideline>> {
-  const apiKey = process.env.GOOGLE_API_KEY
-  if (!apiKey) throw new Error('GOOGLE_API_KEY not configured for brand extraction')
+  const apiKey = await getGeminiApiKey(userId)
+  if (!apiKey) throw new Error('GEMINI_API_KEY not configured for brand extraction')
 
   const combinedText = chunks
     .map(c => `--- ${c.source} (${c.type}) ---\n${c.text}`)
@@ -35,7 +37,7 @@ export async function extractBrandData(
     .slice(0, 8000) // limit tokens
 
   const genAI = new GoogleGenerativeAI(apiKey)
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
 
   const parts: any[] = [{ text: EXTRACTION_PROMPT + '\n\nContent:\n' + combinedText }]
   if (imageBase64) {

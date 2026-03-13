@@ -60,16 +60,27 @@ export const brandGuidelineApi = {
     return result.guideline;
   },
 
-  async update(id: string, data: Partial<BrandGuideline>): Promise<BrandGuideline> {
+  async update(id: string, guideline: Partial<BrandGuideline>): Promise<BrandGuideline> {
     const response = await fetch(`${API_BASE_URL}/brand-guidelines/${id}`, {
       method: 'PUT',
       headers: getAuthHeaders(),
-      body: JSON.stringify(data),
+      body: JSON.stringify(guideline),
     });
-
     if (!response.ok) throw new Error('Failed to update brand guideline');
     const result = await response.json();
     return result.guideline;
+  },
+
+  async syncFromBrandingProject(projectId: string): Promise<BrandGuideline> {
+    const response = await fetch(`${API_BASE_URL}/brand-guidelines/sync/${projectId}`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to sync from branding project');
+    }
+    return response.json();
   },
 
   async delete(id: string): Promise<void> {

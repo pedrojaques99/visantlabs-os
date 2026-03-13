@@ -9,6 +9,7 @@ import { parseUrl, parsePdf, parseImage, parseJson } from '../lib/brand-parse.js
 import { extractBrandData } from '../lib/brand-extract.js'
 import { mergeBrandGuidelines } from '../lib/brand-merge.js'
 import { uploadBrandMedia, deleteImage } from '../services/r2Service.js'
+import { brandSharedService } from '../services/brandSharedService.js'
 
 const router = express.Router()
 
@@ -187,7 +188,7 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
         return res.status(400).json({ error: `Invalid source: ${source}` })
     }
 
-    const extracted = await extractBrandData(chunks, imageBase64)
+    const extracted = await extractBrandData(chunks, imageBase64, req.userId)
     const merged = mergeBrandGuidelines(existing as any, extracted)
 
     // Track source
@@ -217,6 +218,61 @@ router.post('/:id/ingest', apiRateLimiter, authenticate, async (req: AuthRequest
   } catch (error: any) {
     console.error('[Brand Ingest] Error:', error)
     res.status(500).json({ error: 'Ingestion failed', message: error.message })
+  }
+})
+
+// POST /api/brand-guidelines/sync/:projectId — sync from Branding Machine project
+router.post('/sync/:projectId', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Unauthorized' })
+
+    const brandingProject = await prisma.brandingProject.findFirst({
+      where: { id: req.params.projectId, userId: req.userId },
+    })
+
+    if (!brandingProject) return res.status(404).json({ error: 'Branding project not found' })
+
+    const convertedData = brandSharedService.brandingToGuideline(brandingProject.data as any)
+
+    // Check if user already has a guideline for this brand name or create a new one
+    const guidelines = await prisma.brandGuideline.findMany({
+      where: { userId: req.userId }
+    })
+
+    const brandName = convertedData.identity?.name
+    let guideline = guidelines.find(g => (g.identity as any)?.name === brandName)
+
+    if (guideline) {
+      // Update existing
+      guideline = await prisma.brandGuideline.update({
+        where: { id: guideline.id },
+        data: {
+          identity: { ...((guideline.identity as any) || {}), ...convertedData.identity } as any,
+          colors: convertedData.colors as any,
+          typography: convertedData.typography as any,
+          tags: convertedData.tags as any,
+          guidelines: { ...((guideline.guidelines as any) || {}), ...convertedData.guidelines } as any,
+        }
+      })
+    } else {
+      // Create new
+      guideline = await prisma.brandGuideline.create({
+        data: {
+          userId: req.userId,
+          identity: convertedData.identity as any,
+          colors: convertedData.colors as any,
+          typography: convertedData.typography as any,
+          tags: convertedData.tags as any,
+          guidelines: convertedData.guidelines as any,
+          extraction: { sources: [{ type: 'branding_machine', ref: brandingProject.id, date: new Date().toISOString() }], completeness: 0 } as any,
+        }
+      })
+    }
+
+    res.json({ guideline: { ...guideline, _id: guideline.id } })
+  } catch (error: any) {
+    console.error('[Brand Sync] Error:', error)
+    res.status(500).json({ error: 'Sync failed', message: error.message })
   }
 })
 
