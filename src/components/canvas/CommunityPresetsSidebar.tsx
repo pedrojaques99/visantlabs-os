@@ -343,8 +343,8 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
 
                 {/* View Mode & Create */}
                 <div className="flex items-center gap-2">
-                    <div className="flex p-1 rounded-lg bg-neutral-900 border border-neutral-800/50 flex-1">
-                        <Button variant="ghost"                             onClick={() => setViewMode('all')}
+                    <div className="flex p-1 rounded-md bg-neutral-900 border border-neutral-800/50 flex-1">
+                        <Button variant="ghost" onClick={() => setViewMode('all')}
                             className={cn(
                                 "flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all",
                                 viewMode === 'all'
@@ -354,7 +354,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                         >
                             {t('communityPresets.allPresets')}
                         </Button>
-                        <Button variant="ghost"                             onClick={() => setViewMode('my')}
+                        <Button variant="ghost" onClick={() => setViewMode('my')}
                             className={cn(
                                 "flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all",
                                 viewMode === 'my'
@@ -365,8 +365,8 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                             {t('communityPresets.myPresets')}
                         </Button>
                     </div>
-                    <Button variant="brand"                         onClick={handleCreate}
-                        className="p-2 rounded-lg bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30 border border-brand-cyan/30 transition-colors"
+                    <Button variant="brand" onClick={handleCreate}
+                        className="p-2 rounded-md bg-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/30 border border-brand-cyan/30 transition-colors"
                         title={t('communityPresets.createNew')}
                     >
                         <Plus size={16} />
@@ -380,7 +380,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder={t('communityPresets.searchPlaceholder') || "Search presets..."}
-                        className="w-full pl-9 pr-4 py-2 bg-neutral-900/50 border border-neutral-700/50 rounded-lg text-xs text-neutral-300 placeholder:text-neutral-600 focus:outline-none focus:border-brand-cyan/50"
+                        className="w-full pl-9 pr-4 py-2 bg-neutral-900/50 border border-neutral-700/50 rounded-md text-xs text-neutral-300 placeholder:text-neutral-600 focus:outline-none focus:border-brand-cyan/50"
                     />
                 </div>
 
@@ -392,7 +392,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                         const isActive = activeTab === category;
 
                         return (
-                            <Button variant="ghost"                                 key={category}
+                            <Button variant="ghost" key={category}
                                 onClick={() => setActiveTab(category)}
                                 className={cn(
                                     "flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[10px] font-mono whitespace-nowrap transition-all",
@@ -416,7 +416,7 @@ export const CommunityPresetsSidebar: React.FC<CommunityPresetsSidebarProps> = (
                         <GlitchLoader size={24} color="brand-cyan" />
                     </div>
                 ) : error ? (
-                    <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs text-center">
+                    <div className="p-4 rounded-md bg-red-500/10 border border-red-500/20 text-red-400 text-xs text-center">
                         {error}
                     </div>
                 ) : filteredPresets.length === 0 ? (

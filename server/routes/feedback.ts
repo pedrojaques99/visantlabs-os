@@ -2,6 +2,7 @@ import express from 'express';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { prisma } from '../db/prisma.js';
 import { rateLimit } from 'express-rate-limit';
+import { brandingFeedbackSchema, mockupFeedbackSchema, formatZodError } from '../utils/schemas.js';
 
 // API rate limiter - general authenticated endpoints
 // Using express-rate-limit for CodeQL recognition
@@ -18,11 +19,11 @@ const router = express.Router();
 // Save branding example feedback (thumbs up)
 router.post('/branding', apiRateLimiter, authenticate, async (req: AuthRequest, res) => {
   try {
-    const { prompt, step, output, rating } = req.body;
-
-    if (!prompt || step === undefined || !output) {
-      return res.status(400).json({ error: 'Prompt, step, and output are required' });
+    const parsed = brandingFeedbackSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: formatZodError(parsed.error) });
     }
+    const { prompt, step, output, rating } = parsed.data;
 
     // Only save positive feedback (thumbs up = rating 1)
     const feedbackRating = rating || 1;
@@ -80,11 +81,11 @@ router.post('/branding', apiRateLimiter, authenticate, async (req: AuthRequest, 
 // Save mockup example feedback (thumbs up)
 router.post('/mockup', authenticate, async (req: AuthRequest, res) => {
   try {
-    const { prompt, imageUrl, designType, tags, brandingTags, aspectRatio, rating } = req.body;
-
-    if (!prompt || !imageUrl) {
-      return res.status(400).json({ error: 'Prompt and imageUrl are required' });
+    const parsed = mockupFeedbackSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: formatZodError(parsed.error) });
     }
+    const { prompt, imageUrl, designType, tags, brandingTags, aspectRatio, rating } = parsed.data;
 
     // Only save positive feedback (thumbs up = rating 1)
     const feedbackRating = rating || 1;

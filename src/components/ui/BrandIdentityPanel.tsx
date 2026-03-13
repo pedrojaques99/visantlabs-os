@@ -51,7 +51,10 @@ export const BrandIdentityPanel: React.FC<BrandIdentityPanelProps> = ({
   ];
 
   return (
-    <div className={cn('border-t border-neutral-700/30 pt-3 mb-3', className)}>
+    <div
+      className={cn('border-t border-neutral-700/30 pt-3 mb-3', className)}
+      style={{ fontFamily: brandIdentity.typography.primary || undefined }}
+    >
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full flex items-center justify-between text-xs font-mono text-neutral-400 hover:text-neutral-300 mb-2"

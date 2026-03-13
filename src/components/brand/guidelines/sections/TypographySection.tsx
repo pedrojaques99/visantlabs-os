@@ -16,13 +16,21 @@ const typographyFormSchema = z.object({ typography: z.array(typographySchema) })
 interface TypographySectionProps {
   guideline: BrandGuideline;
   onUpdate: (data: Partial<BrandGuideline>) => void;
+  span?: string;
 }
 
-export const TypographySection: React.FC<TypographySectionProps> = ({ guideline, onUpdate }) => {
+export const TypographySection: React.FC<TypographySectionProps> = ({ guideline, onUpdate, span }) => {
   const [isEditing, setIsEditing] = useState(false);
   const form = useForm({
     resolver: zodResolver(typographyFormSchema),
-    defaultValues: { typography: guideline.typography || [] },
+    defaultValues: {
+      typography: (guideline.typography || []).map((t) => ({
+        family: t.family,
+        role: t.role || 'Body',
+        style: t.style || 'Regular',
+        size: t.size || 16,
+      }))
+    },
   });
   const { fields, append, remove } = useFieldArray({ control: form.control, name: 'typography' });
 
@@ -44,12 +52,16 @@ export const TypographySection: React.FC<TypographySectionProps> = ({ guideline,
       onEdit={() => setIsEditing(true)}
       onSave={handleSave}
       onCancel={() => { form.reset(); setIsEditing(false); }}
-      actions={isEditing ? (
+      span={span as any}
+      actions={(
         <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white"
-          onClick={() => append({ family: 'Inter', role: 'body font', style: 'Regular', size: 16 })}>
+          onClick={() => {
+            if (!isEditing) setIsEditing(true);
+            append({ family: 'Inter', role: 'Body', style: 'Regular', size: 16 });
+          }}>
           <Plus size={12} />
         </Button>
-      ) : undefined}
+      )}
     >
       <div className="space-y-6 py-2">
         {isEditing ? (
@@ -101,30 +113,32 @@ export const TypographySection: React.FC<TypographySectionProps> = ({ guideline,
             ))}
           </div>
         ) : (
-          <>
+          <div className="space-y-10 py-4 px-2">
             {guideline.typography && guideline.typography.length > 0 ? (
-              <div className="space-y-8">
+              <div className="space-y-12">
                 {guideline.typography.slice(0, 3).map((f, i) => (
-                  <div key={i} className="flex flex-col group/font border-l-2 border-white/[0.03] pl-5 py-0.5 hover:border-brand-cyan/40 transition-all duration-500">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-[9px] text-neutral-600 font-mono tracking-[0.2em] uppercase font-bold opacity-40">{f.role}</span>
-                      <div className="h-[1px] flex-1 bg-white/[0.02] mx-4" />
-                      <span className="text-[9px] text-neutral-700 font-mono">{f.size || '16'}PX</span>
+                  <div key={i} className="flex flex-col group/font border-l-[3px] border-white/[0.03] pl-6 py-2 hover:border-brand-cyan/40 transition-all duration-700 relative">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <span className="text-[10px] text-brand-cyan font-bold font-mono tracking-[0.3em] uppercase opacity-60">{f.role || 'Primary'}</span>
+                        <div className="h-4 w-[1px] bg-white/5" />
+                        <span className="text-[10px] text-neutral-500 font-mono tracking-widest">{f.family}</span>
+                      </div>
+                      <span className="text-[9px] text-neutral-700 font-mono bg-white/[0.02] px-2 py-0.5 rounded-full border border-white/5">{f.size || '16'}PX</span>
                     </div>
-                    <span className="text-3xl font-bold text-white group-hover:text-brand-cyan transition-colors tracking-tight mb-1" style={{ fontFamily: f.family }}>
-                      {f.family}
-                    </span>
-                    <div className="flex items-center gap-3">
-                      <span className="text-[10px] text-neutral-500 font-mono bg-white/[0.03] px-1.5 py-0.5 rounded border border-white/5">{f.style || 'Regular'}</span>
-                      <span className="text-[10px] text-neutral-700 font-mono opacity-40 italic">The quick brown fox jumps over the lazy dog.</span>
+                    <span className="text-7xl md:text-8xl font-bold text-white group-hover:text-brand-cyan transition-all duration-500 tracking-tighter mb-4" style={{ fontFamily: f.family }}>
+                      Aa             </span>
+                    <div className="flex items-center gap-4">
+                      <span className="text-[11px] text-neutral-400 font-mono bg-white/[0.04] px-3 py-1 rounded-md border border-white/5 shadow-sm">{f.style || 'Regular'}</span>
+                      <div className="h-[1px] flex-1 bg-white/[0.02]" />
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="py-12 text-center opacity-10 italic text-[10px] font-mono tracking-widest uppercase">No Fonts</div>
+              <div className="py-12 text-center opacity-10 italic text-[10px] font-mono tracking-widest uppercase border border-dashed border-white/5 rounded-3xl">No Typography Defined</div>
             )}
-          </>
+          </div>
         )}
       </div>
     </SectionBlock>

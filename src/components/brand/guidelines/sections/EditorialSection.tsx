@@ -6,15 +6,17 @@ import { SectionBlock } from '../SectionBlock';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { MicroTitle } from '@/components/ui/MicroTitle';
-import { FileText, CheckCircle2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { FileText, CheckCircle2, Plus } from 'lucide-react';
 import type { BrandGuideline } from '@/lib/figma-types';
 
 interface EditorialSectionProps {
   guideline: BrandGuideline;
   onUpdate: (data: Partial<BrandGuideline>) => void;
+  span?: string;
 }
 
-export const EditorialSection: React.FC<EditorialSectionProps> = ({ guideline, onUpdate }) => {
+export const EditorialSection: React.FC<EditorialSectionProps> = ({ guideline, onUpdate, span }) => {
   const [isEditing, setIsEditing] = useState(false);
   const form = useForm({
     resolver: zodResolver(editorialSchema),
@@ -49,6 +51,15 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({ guideline, o
       onEdit={() => setIsEditing(true)}
       onSave={handleSave}
       onCancel={() => { form.reset(); setDosText((guideline.guidelines?.dos || []).join('\n')); setIsEditing(false); }}
+      span={span as any}
+      actions={(
+        <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white"
+          onClick={() => {
+            if (!isEditing) setIsEditing(true);
+          }}>
+          <Plus size={12} />
+        </Button>
+      )}
     >
       <div className="space-y-6 py-2">
         {isEditing ? (
@@ -82,22 +93,22 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({ guideline, o
                 <p className="text-sm text-white/90 font-medium leading-relaxed italic pr-10">"{guideline.guidelines.voice}"</p>
               </div>
             )}
-            <div className="grid grid-cols-1 gap-2 mt-4">
-              <div className="px-1 flex items-center gap-2 mb-1">
-                <span className="text-[8px] font-mono text-neutral-700 uppercase tracking-widest font-bold opacity-50">Best Practices</span>
+            <div className="grid grid-cols-1 gap-3 mt-4 px-1">
+              <div className="flex items-center gap-4 mb-2">
+                <span className="text-[10px] font-bold font-mono text-neutral-600 uppercase tracking-[0.3em] opacity-40">Best Practices</span>
                 <div className="h-[1px] flex-1 bg-white/[0.02]" />
               </div>
               {guideline.guidelines?.dos && guideline.guidelines.dos.length > 0 ? (
                 guideline.guidelines.dos.slice(0, 5).map((item: string, i: number) => (
-                  <div key={i} className="text-[11px] text-neutral-400 flex items-start gap-3 bg-white/[0.01] p-2.5 rounded-xl border border-white/[0.03] hover:border-brand-cyan/20 hover:bg-white/[0.02] transition-all duration-300 group/item">
-                    <div className="w-5 h-5 rounded-full bg-brand-cyan/5 flex items-center justify-center shrink-0 border border-brand-cyan/10 group-hover/item:border-brand-cyan/30 transition-all">
-                      <CheckCircle2 size={10} className="text-brand-cyan/60" />
+                   <div key={i} className="text-[12px] text-neutral-400 flex items-start gap-4 bg-neutral-900/40 p-4 rounded-2xl border border-white/[0.03] hover:border-brand-cyan/20 hover:bg-neutral-900/60 transition-all duration-500 group/item shadow-sm">
+                    <div className="w-6 h-6 rounded-full bg-brand-cyan/5 flex items-center justify-center shrink-0 border border-brand-cyan/10 group-hover/item:border-brand-cyan/30 transition-all shadow-inner">
+                      <CheckCircle2 size={12} className="text-brand-cyan/70" />
                     </div>
-                    <span className="leading-5 line-clamp-2">{item}</span>
+                    <span className="leading-6 font-medium tracking-tight text-neutral-300 group-hover/item:text-white transition-colors">{item}</span>
                   </div>
                 ))
               ) : (
-                <div className="py-12 text-center opacity-10 italic text-[10px] font-mono tracking-widest uppercase border border-dashed border-white/5 rounded-2xl">No Editorial Guidelines</div>
+                <div className="py-12 text-center opacity-5 italic text-[10px] font-mono tracking-widest uppercase border border-dashed border-white/5 rounded-3xl">Editorial Framework Pending</div>
               )}
             </div>
           </>

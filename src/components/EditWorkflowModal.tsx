@@ -70,7 +70,7 @@ export const EditWorkflowModal: React.FC<EditWorkflowModalProps> = ({
             <div className="relative max-w-md w-full bg-neutral-900 border border-neutral-800/60 rounded-xl shadow-2xl flex flex-col overflow-hidden animate-slide-up" onClick={e => e.stopPropagation()}>
                 <div className="flex items-center justify-between p-6 border-b border-neutral-800/60 bg-neutral-900/20">
                     <h2 className="text-lg font-semibold text-neutral-200 font-manrope tracking-tight">{t('workflows.edit.title') || 'Edit Workflow'}</h2>
-                    <Button variant="ghost" onClick={onClose} className="p-2 text-neutral-500 hover:text-white transition-all hover:bg-neutral-800/50 rounded-lg">
+                    <Button variant="ghost" onClick={onClose} className="p-2 text-neutral-500 hover:text-white transition-all hover:bg-neutral-800/50 rounded-md">
                         <X size={20} />
                     </Button>
                 </div>
@@ -103,7 +103,7 @@ export const EditWorkflowModal: React.FC<EditWorkflowModalProps> = ({
                         </div>
                         <div className="w-32 space-y-2">
                             <MicroTitle as="label" className="ml-1">{t('workflows.edit.visibility') || 'Visibility'}</MicroTitle>
-                            <Button variant="ghost" 
+                            <Button variant="ghost"
                                 onClick={() => setIsPublic(!isPublic)}
                                 className={cn(
                                     "w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md border text-[10px] font-mono uppercase tracking-wider transition-all h-[40px]",

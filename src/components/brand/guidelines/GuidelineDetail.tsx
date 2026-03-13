@@ -123,22 +123,24 @@ export const GuidelineDetail: React.FC<GuidelineDetailProps> = ({
             onOpenWizard={onOpenWizard}
             onDelete={handleDelete}
             isDeleting={deleteMutation.isPending}
+            span="4"
+            rowSpan="2"
           />
         );
       case 'logos':
-        return <LogosSection key="logos" guideline={guideline} logos={localLogos} />;
+        return <LogosSection key="logos" guideline={guideline} logos={localLogos} span="2" />;
       case 'colors':
-        return <ColorsSection key="colors" guideline={guideline} onUpdate={handleUpdate} />;
+        return <ColorsSection key="colors" guideline={guideline} onUpdate={handleUpdate} span="2" />;
       case 'typography':
-        return <TypographySection key="typography" guideline={guideline} onUpdate={handleUpdate} />;
+        return <TypographySection key="typography" guideline={guideline} onUpdate={handleUpdate} span="2" />;
       case 'tags':
-        return <TagsSection key="tags" guideline={guideline} onUpdate={handleUpdate} />;
-      case 'tokens':
-        return <TokensSection key="tokens" guideline={guideline} onUpdate={handleUpdate} />;
+        return <TagsSection key="tags" guideline={guideline} onUpdate={handleUpdate} span="2" />;
       case 'editorial':
-        return <EditorialSection key="editorial" guideline={guideline} onUpdate={handleUpdate} />;
+        return <EditorialSection key="editorial" guideline={guideline} onUpdate={handleUpdate} span="2" />;
+      case 'tokens':
+        return <TokensSection key="tokens" guideline={guideline} onUpdate={handleUpdate} span="2" />;
       case 'accessibility':
-        return <AccessibilitySection key="accessibility" guideline={guideline} onUpdate={handleUpdate} />;
+        return <AccessibilitySection key="accessibility" guideline={guideline} onUpdate={handleUpdate} span="2" />;
       case 'media':
         return (
           <MediaSection
@@ -148,6 +150,7 @@ export const GuidelineDetail: React.FC<GuidelineDetailProps> = ({
             logos={localLogos}
             onMediaChange={setLocalMedia}
             onLogosChange={setLocalLogos}
+            span="6"
           />
         );
       default:
@@ -163,7 +166,7 @@ export const GuidelineDetail: React.FC<GuidelineDetailProps> = ({
             variants={containerVariants}
             initial="hidden"
             animate="show"
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            className="grid grid-cols-1 md:grid-cols-6 gap-6"
           >
             {orderedBlocks.map((blockId) => (
               <React.Fragment key={blockId}>

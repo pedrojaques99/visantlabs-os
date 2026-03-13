@@ -210,6 +210,7 @@ const MockupMachinePageContent: React.FC = () => {
   const isAutoGeneratingRef = useRef(false);
   const generateOutputsButtonRef = useRef<HTMLButtonElement>(null);
   const hasRestoredStateRef = useRef(false);
+  const isRestoringRef = useRef(true); // true until first restoration attempt completes
   const generatedSmartPromptRef = useRef<string | null>(null);
 
   // Restore state from localStorage on mount (prioritize edit-mockup if exists)
@@ -232,6 +233,7 @@ const MockupMachinePageContent: React.FC = () => {
           localStorage.removeItem('edit-mockup');
         }
         // Don't restore persisted state if edit-mockup exists
+        isRestoringRef.current = false;
         return;
       }
 
@@ -283,6 +285,9 @@ const MockupMachinePageContent: React.FC = () => {
       if (isLocalDevelopment()) {
         console.warn('Failed to restore mockup state:', error);
       }
+    } finally {
+      // Mark restoration complete so save effect and render don't flash
+      isRestoringRef.current = false;
     }
   }, []); // Only run once on mount
 
@@ -324,31 +329,16 @@ const MockupMachinePageContent: React.FC = () => {
   // It only affects the number of images for the next generation
 
 
-  // Reset showWelcome when navigating to home route
-  // Only reset if we're actually in imageless mode (not when starting a blank mockup)
-  // Also don't reset if we just uploaded an image (check by ensuring no mockups generated yet)
-  useEffect(() => {
-    // Don't reset to welcome if we have an uploaded image (even if no mockups generated yet)
-    // This prevents the welcome screen from reappearing after image upload
-    // Also don't reset if we have generated mockups (hasGenerated is true or mockups array has non-null values)
-    const hasAnyMockups = mockups.some(m => m !== null);
-    if ((location.pathname === '/' || location.pathname === '/mockupmachine') &&
-      !uploadedImage &&
-      mockups.every(m => m === null) &&
-      isPromptReady &&
-      !hasGenerated &&
-      !hasAnyMockups &&
-      location.pathname !== '/mockupmachine') {
-      setShowWelcome(true);
-    } else if (hasGenerated || hasAnyMockups || location.pathname === '/mockupmachine') {
-      // Explicitly keep welcome screen hidden if we have generated mockups or are on the mockupmachine route
-      setShowWelcome(false);
-    }
-  }, [location.pathname, uploadedImage, mockups, designType, hasGenerated, isPromptReady]);
+  // Note: showWelcome state is kept for handleStartOver/handleImageUpload but
+  // the render decision uses `shouldShowWelcome = !uploadedImage` (line ~2680),
+  // so no effect needed here — the effect was triggering wasteful re-renders.
 
   // Save state to localStorage when mockups are generated (with debounce)
   // Using a longer debounce (1500ms) to prevent excessive saves and localStorage quota issues
   useEffect(() => {
+    // Skip save during state restoration to prevent cascading re-renders
+    if (isRestoringRef.current) return;
+
     // Save if there are generated mockups OR if an image has been uploaded (to persist analysis)
     const hasAnyMockups = mockups.some(m => m !== null);
     if (!hasAnyMockups && !uploadedImage && !hasGenerated) return;
@@ -858,10 +848,19 @@ const MockupMachinePageContent: React.FC = () => {
     setUploadedImage(image);
 
     // Upload to temp R2 to save storage
+    // Preload the URL before swapping to prevent image flicker
     if (image.base64 && !image.url) {
       mockupApi.uploadTempImage(image.base64, image.mimeType)
         .then(url => {
-          setUploadedImage(prev => prev ? ({ ...prev, url, base64: undefined }) : null);
+          const img = new Image();
+          img.onload = () => {
+            setUploadedImage(prev => prev ? ({ ...prev, url, base64: undefined }) : null);
+          };
+          img.onerror = () => {
+            // Keep base64 if URL fails to load
+            setUploadedImage(prev => prev ? ({ ...prev, url }) : null);
+          };
+          img.src = url;
         })
         .catch(err => {
           if (isLocalDevelopment()) console.error('Failed to upload temp image:', err);
@@ -870,8 +869,6 @@ const MockupMachinePageContent: React.FC = () => {
 
     setSelectedModel(null);
     setResolution('1K');
-    // Por último, esconde welcome screen para garantir que fique false
-    setShowWelcome(false);
 
     // Navega para a rota /mockupmachine
     navigate('/mockupmachine');
@@ -911,10 +908,18 @@ const MockupMachinePageContent: React.FC = () => {
     setUploadedImage(validImage);
 
     // Upload to temp R2 to save storage
+    // Preload the URL before swapping to prevent image flicker
     if (base64String && !image.url) {
       mockupApi.uploadTempImage(base64String, mimeType)
         .then(url => {
-          setUploadedImage(prev => prev ? ({ ...prev, url, base64: undefined }) : null);
+          const img = new Image();
+          img.onload = () => {
+            setUploadedImage(prev => prev ? ({ ...prev, url, base64: undefined }) : null);
+          };
+          img.onerror = () => {
+            setUploadedImage(prev => prev ? ({ ...prev, url }) : null);
+          };
+          img.src = url;
         })
         .catch(err => {
           if (isLocalDevelopment()) console.error('Failed to upload temp image:', err);

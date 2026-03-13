@@ -12,7 +12,8 @@ interface SectionBlockProps {
   title: string;
   icon: React.ReactNode;
   children: React.ReactNode;
-  span?: '1' | '2' | '3';
+  span?: '1' | '2' | '3' | '4' | '5' | '6';
+  rowSpan?: '1' | '2';
   isEditing?: boolean;
   isSaving?: boolean;
   onEdit?: () => void;
@@ -27,7 +28,8 @@ export const SectionBlock: React.FC<SectionBlockProps> = ({
   title,
   icon,
   children,
-  span = '1',
+  span = '2',
+  rowSpan = '1',
   isEditing,
   isSaving,
   onEdit,
@@ -53,13 +55,20 @@ export const SectionBlock: React.FC<SectionBlockProps> = ({
 
   return (
     <div
+      id={id}
       ref={setNodeRef}
       style={style}
       className={cn(
         "group relative flex flex-col gap-2 p-1 transition-all duration-300",
+        span === '1' && "md:col-span-1",
         span === '2' && "md:col-span-2",
-        span === '3' && "md:col-span-2 lg:col-span-3",
-        isDragging && "scale-[1.02] drop-shadow-2xl z-50",
+        span === '3' && "md:col-span-3",
+        span === '4' && "md:col-span-4",
+        span === '5' && "md:col-span-5",
+        span === '6' && "md:col-span-6",
+        rowSpan === '1' && "md:row-span-1",
+        rowSpan === '2' && "md:row-span-2",
+        isDragging && "scale-[1.01] drop-shadow-2xl z-50",
         className
       )}
     >
@@ -100,9 +109,12 @@ export const SectionBlock: React.FC<SectionBlockProps> = ({
       <GlassPanel
         padding="md"
         className={cn(
-          "flex-1 bg-neutral-900/40 hover:bg-neutral-900/60 border-white/[0.04] hover:border-brand-cyan/20 transition-all duration-500",
+          "flex-1 bg-neutral-900/40 hover:bg-neutral-900/60 border-white/[0.05] hover:border-neutral-900/50 transition-all duration-300 cursor-default",
           isDragging && "border-brand-cyan/40 bg-neutral-800/80"
         )}
+        onDoubleClick={() => {
+          if (!isEditing && onEdit) onEdit();
+        }}
       >
         {children}
       </GlassPanel>

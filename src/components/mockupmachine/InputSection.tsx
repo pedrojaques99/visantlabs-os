@@ -231,7 +231,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
       highlight ? "bg-brand-cyan/[0.03] border-brand-cyan/20 shadow-lg shadow-brand-cyan/5" : "bg-neutral-900/40 border-white/[0.05] hover:border-white/10"
     )}>
       {/* Image Container */}
-      <div className="relative h-auto max-h-[400px] w-full rounded-lg overflow-hidden bg-black/40 flex items-center justify-center group/img-container">
+      <div className="relative h-auto max-h-[400px] w-full rounded-md overflow-hidden bg-black/40 flex items-center justify-center group/img-container">
         <img
           src={getImageSrc(img)}
           alt={label}
@@ -242,10 +242,10 @@ export const InputSection: React.FC<InputSectionProps> = ({
 
         {/* Hover Overlay with Replace Action */}
         <div className="absolute inset-0 bg-black/70 flex items-center justify-center gap-4 opacity-0 group-hover/img-container:opacity-100 transition-all duration-300 backdrop-blur-[2px] p-4">
-          <Button variant="ghost"             type="button"
+          <Button variant="ghost" type="button"
             onClick={(e) => {
-               e.stopPropagation();
-               onReplace();
+              e.stopPropagation();
+              onReplace();
             }}
             className="flex flex-col items-center gap-2 cursor-pointer p-2 rounded-md hover:bg-white/10 transition-all transform translate-y-2 group-hover/img-container:translate-y-0 text-white"
           >
@@ -254,12 +254,12 @@ export const InputSection: React.FC<InputSectionProps> = ({
             </div>
             <MicroTitle as="span" className="font-bold text-white">{t('mockup.replace') || 'Substituir'}</MicroTitle>
           </Button>
-          
+
           {onAddRef && (
-            <Button variant="ghost"               type="button"
+            <Button variant="ghost" type="button"
               onClick={(e) => {
-                 e.stopPropagation();
-                 onAddRef();
+                e.stopPropagation();
+                onAddRef();
               }}
               className="flex flex-col items-center gap-2 cursor-pointer p-2 rounded-md hover:bg-white/10 transition-all transform translate-y-2 group-hover/img-container:translate-y-0 text-white delay-75"
             >
@@ -324,7 +324,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
         {!isLoadingImage && (
           <div className="flex items-center gap-3">
             {uploadedImage && (
-              <Button variant="ghost"                 type="button"
+              <Button variant="ghost" type="button"
                 onClick={() => onDesignTypeChange(designType === 'logo' ? 'layout' : 'logo')}
                 className={cn(
                   "px-3 py-1.5 rounded-md transition-all flex items-center gap-2 border",
@@ -343,7 +343,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
                 </MicroTitle>
               </Button>
             )}
-            
+
             {canAddMoreReferences && (
               <label
                 htmlFor="multiple-image-upload"

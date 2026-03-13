@@ -111,7 +111,7 @@ export const SaveWorkflowDialog: React.FC<SaveWorkflowDialogProps> = ({
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-neutral-800/60 bg-neutral-900/20 backdrop-blur-sm">
                     <div className="flex items-center gap-4">
-                        <div className="p-2 bg-brand-cyan/10 rounded-lg border border-brand-cyan/20">
+                        <div className="p-2 bg-brand-cyan/10 rounded-md border border-brand-cyan/20">
                             <Save size={20} className="text-brand-cyan" />
                         </div>
                         <div>
@@ -123,9 +123,9 @@ export const SaveWorkflowDialog: React.FC<SaveWorkflowDialogProps> = ({
                             </p>
                         </div>
                     </div>
-                    <Button variant="ghost" 
+                    <Button variant="ghost"
                         onClick={onClose}
-                        className="p-2 rounded-lg hover:bg-neutral-800/50 text-neutral-400 hover:text-neutral-200 transition-all hover:scale-110 active:scale-95"
+                        className="p-2 rounded-md hover:bg-neutral-800/50 text-neutral-400 hover:text-neutral-200 transition-all hover:scale-110 active:scale-95"
                     >
                         <X size={20} />
                     </Button>
@@ -134,7 +134,7 @@ export const SaveWorkflowDialog: React.FC<SaveWorkflowDialogProps> = ({
                 {/* Content */}
                 <div className="p-6 space-y-6 overflow-y-auto max-h-[calc(85vh-140px)] custom-scrollbar flex-1">
                     {/* Stats */}
-                    <div className="flex items-center gap-4 px-4 py-3 bg-neutral-900/40 border border-neutral-800/60 rounded-lg">
+                    <div className="flex items-center gap-4 px-4 py-3 bg-neutral-900/40 border border-neutral-800/60 rounded-md">
                         <MicroTitle className="flex items-center gap-2 text-[10px] tracking-wider text-neutral-400">
                             <FileType size={14} className="text-brand-cyan/70" />
                             <span>{nodeCount} {t('workflows.saveDialog.nodes') || 'nodes'}</span>
@@ -208,7 +208,7 @@ export const SaveWorkflowDialog: React.FC<SaveWorkflowDialogProps> = ({
                         </div>
 
                         {/* Public Toggle */}
-                        <div className="md:col-span-2 p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-lg hover:border-neutral-700/50 transition-colors">
+                        <div className="md:col-span-2 p-4 bg-neutral-900/30 border border-neutral-800/50 rounded-md hover:border-neutral-700/50 transition-colors">
                             <div className="flex items-center justify-between">
                                 <div className="space-y-1">
                                     <label className="text-sm font-semibold text-neutral-300 flex items-center gap-2">

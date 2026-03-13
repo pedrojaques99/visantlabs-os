@@ -4,8 +4,7 @@ import { getDb, connectToMongoDB } from '../db/mongodb.js';
 import { pluginBridge } from '../lib/pluginBridge.js';
 import { operationValidator } from '../lib/operationValidator.js';
 import { AuthRequest } from '../middleware/auth.js';
-import { JWT_SECRET } from '../utils/jwtSecret.js';
-import jwt from 'jsonwebtoken';
+import { getUserIdFromToken } from '../utils/auth.js';
 import { ObjectId } from 'mongodb';
 import WebSocket, { WebSocketServer } from 'ws';
 import type { BrandGuideline } from '../types/brandGuideline.js';
@@ -115,16 +114,10 @@ function handlePluginMessage(fileId: string, message: any) {
 }
 
 /**
- * Validate plugin token — real JWT verification using same secret as auth.ts
+ * Validate plugin token — reuses centralized JWT verification from utils/auth.ts
  */
 function validatePluginToken(token: string | null): string | null {
-  if (!token) return null;
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; email: string };
-    return decoded.userId;
-  } catch (_e) {
-    return null;
-  }
+  return getUserIdFromToken(token);
 }
 
 /**
@@ -133,14 +126,10 @@ function validatePluginToken(token: string | null): string | null {
  */
 function optionalAuth(req: AuthRequest, _res: Response, next: NextFunction) {
   const token = req.headers.authorization?.replace('Bearer ', '') || req.body?.authToken;
-  if (token) {
-    try {
-      const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; email: string };
-      req.userId = decoded.userId;
-      req.userEmail = decoded.email;
-    } catch (_e) {
-      // Invalid token — continue without auth
-    }
+  const userId = getUserIdFromToken(token);
+  if (userId) {
+    req.userId = userId;
+    // Note: email is not extracted by getUserIdFromToken for minimal token validation
   }
   next();
 }

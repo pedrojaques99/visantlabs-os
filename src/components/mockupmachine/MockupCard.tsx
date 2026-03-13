@@ -172,18 +172,18 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
                     {/* Top Buttons: Remove & Like - only the buttons block clicks, not the full row */}
                     <div className="absolute top-3 left-3 right-3 flex justify-between items-start opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-y-2 group-hover:translate-y-0">
                         {onRemove && (
-                            <Button variant="ghost" 
+                            <Button variant="ghost"
                                 onClick={(e) => { e.stopPropagation(); onRemove(); }}
-                                className="p-2 rounded-lg bg-neutral-950/60 backdrop-blur-md text-neutral-400 hover:bg-red-500/20 hover:text-red-400 border border-white/5 transition-all shadow-lg pointer-events-auto"
+                                className="p-2 rounded-md bg-neutral-950/60 backdrop-blur-md text-neutral-400 hover:bg-red-500/20 hover:text-red-400 border border-white/5 transition-all shadow-lg pointer-events-auto"
                                 title="Remove"
                             >
                                 <X size={12} />
                             </Button>
                         )}
                         {handleToggleLike && (
-                            <Button variant="ghost" 
+                            <Button variant="ghost"
                                 onClick={(e) => { e.stopPropagation(); handleToggleLike(); }}
-                                className={`p-2 rounded-lg backdrop-blur-md border transition-all shadow-lg pointer-events-auto ${localIsLiked
+                                className={`p-2 rounded-md backdrop-blur-md border transition-all shadow-lg pointer-events-auto ${localIsLiked
                                     ? 'bg-brand-cyan/20 text-brand-cyan border-brand-cyan/30 hover:bg-brand-cyan/30'
                                     : 'bg-neutral-950/60 text-neutral-400 border-white/5 hover:text-white hover:bg-neutral-950/80'
                                     }`}
@@ -200,7 +200,7 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
                                 <a
                                     href={imageUrl}
                                     download={`mockup-${Date.now()}.png`}
-                                    className="p-1.5 w-7 h-7 flex items-center justify-center rounded-lg text-neutral-400 hover:text-white hover:bg-white/10 transition-all"
+                                    className="p-1.5 w-7 h-7 flex items-center justify-center rounded-md text-neutral-400 hover:text-white hover:bg-white/10 transition-all"
                                     onClick={async (e) => {
                                         e.stopPropagation();
                                         e.preventDefault();
@@ -231,10 +231,10 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
                             <div className="w-px h-3 bg-white/10 mx-1" />
 
                             <Tooltip content={editButtonsDisabled ? (t('mockup.insufficientCredits') || "Insufficient credits") : (t('mockup.redrawTooltip') || "Re-draw")} position="top">
-                                <Button variant="ghost" 
+                                <Button variant="ghost"
                                     onClick={(e) => { e.stopPropagation(); onRedraw(); }}
                                     disabled={editButtonsDisabled || isRedrawing}
-                                    className={`p-1.5 rounded-lg flex items-center gap-1.5 transition-all min-w-0 ${editButtonsDisabled || isRedrawing
+                                    className={`p-1.5 rounded-md flex items-center gap-1.5 transition-all min-w-0 ${editButtonsDisabled || isRedrawing
                                         ? 'text-neutral-600 cursor-not-allowed opacity-50'
                                         : 'text-neutral-400 hover:text-white hover:bg-white/10'
                                         }`}
@@ -250,10 +250,10 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
 
                             {onReImagine && (
                                 <Tooltip content={editButtonsDisabled ? (t('mockup.insufficientCredits') || "Insufficient credits") : (t('mockup.reimagineTooltip') || "Re-imagine")} position="top">
-                                    <Button variant="ghost" 
+                                    <Button variant="ghost"
                                         onClick={(e) => { e.stopPropagation(); setShowReImaginePanel(true); }}
                                         disabled={editButtonsDisabled || isRedrawing}
-                                        className={`p-1.5 rounded-lg flex items-center gap-1.5 transition-all min-w-0 ${editButtonsDisabled || isRedrawing
+                                        className={`p-1.5 rounded-md flex items-center gap-1.5 transition-all min-w-0 ${editButtonsDisabled || isRedrawing
                                             ? 'text-neutral-600 cursor-not-allowed opacity-50'
                                             : 'text-brand-cyan hover:bg-brand-cyan/20'
                                             }`}

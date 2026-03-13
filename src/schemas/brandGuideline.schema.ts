@@ -8,7 +8,7 @@ export const colorSchema = z.object({
 
 export const typographySchema = z.object({
   family: z.string().min(1),
-  role: z.string().optional(),
+  role: z.string(),
   style: z.string().optional(),
   size: z.number().optional(),
 });

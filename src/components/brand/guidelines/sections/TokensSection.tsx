@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { SectionBlock } from '../SectionBlock';
 import { Textarea } from '@/components/ui/textarea';
-import { Layers } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Layers, Plus } from 'lucide-react';
 import type { BrandGuideline } from '@/lib/figma-types';
 
 interface TokensSectionProps {
   guideline: BrandGuideline;
   onUpdate: (data: Partial<BrandGuideline>) => void;
+  span?: string;
 }
 
-export const TokensSection: React.FC<TokensSectionProps> = ({ guideline, onUpdate }) => {
+export const TokensSection: React.FC<TokensSectionProps> = ({ guideline, onUpdate, span }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [tokensJson, setTokensJson] = useState('');
 
@@ -51,6 +53,15 @@ export const TokensSection: React.FC<TokensSectionProps> = ({ guideline, onUpdat
       onEdit={() => setIsEditing(true)}
       onSave={handleSave}
       onCancel={() => { setTokensJson(JSON.stringify(guideline.tokens || {}, null, 2)); setIsEditing(false); }}
+      span={span as any}
+      actions={(
+        <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white"
+          onClick={() => {
+            if (!isEditing) setIsEditing(true);
+          }}>
+          <Plus size={12} />
+        </Button>
+      )}
     >
       <div className="space-y-6 py-2">
         {isEditing ? (

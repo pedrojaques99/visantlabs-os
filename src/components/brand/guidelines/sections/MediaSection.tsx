@@ -10,6 +10,7 @@ interface MediaSectionProps {
   logos: BrandGuideline['logos'];
   onMediaChange: (media: BrandGuideline['media']) => void;
   onLogosChange: (logos: BrandGuideline['logos']) => void;
+  span?: string;
 }
 
 export const MediaSection: React.FC<MediaSectionProps> = ({
@@ -18,9 +19,10 @@ export const MediaSection: React.FC<MediaSectionProps> = ({
   logos,
   onMediaChange,
   onLogosChange,
+  span,
 }) => {
   return (
-    <SectionBlock id="media" span="3" icon={<ImageIcon size={14} />} title="Visual Library & Components">
+    <SectionBlock id="media" span={span as any} icon={<ImageIcon size={14} />} title="Visual Library & Components">
       <div className="py-6">
         <MediaKitGallery
           guidelineId={guidelineId}

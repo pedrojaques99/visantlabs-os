@@ -4,15 +4,15 @@ import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import type { BrandGuideline, BrandGuidelineColor, BrandGuidelineTypography } from '@/lib/figma-types';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { 
-    Plus, 
-    X, 
-    Save, 
-    Palette, 
-    Type, 
-    Tag, 
-    MessageSquare, 
-    CheckCircle2, 
+import {
+    Plus,
+    X,
+    Save,
+    Palette,
+    Type,
+    Tag,
+    MessageSquare,
+    CheckCircle2,
     AlertCircle,
     Layers,
     ShieldCheck,
@@ -135,17 +135,17 @@ export const BrandGuidelineEditor: React.FC<EditorProps> = ({ guideline, onUpdat
     };
 
     const SectionHeader: React.FC<{ id: string; title: string; icon: React.ReactNode }> = ({ id, title, icon }) => (
-        <Button variant="ghost" 
+        <Button variant="ghost"
             onClick={() => setExpandedSection(expandedSection === id ? null : id)}
             className={cn(
                 "w-full flex items-center justify-between p-4 rounded-xl border transition-all duration-300",
-                expandedSection === id 
-                    ? "bg-white/5 border-white/10 text-white" 
+                expandedSection === id
+                    ? "bg-white/5 border-white/10 text-white"
                     : "bg-transparent border-transparent text-neutral-500 hover:text-neutral-300 hover:bg-white/5"
             )}
         >
             <div className="flex items-center gap-3">
-                <div className={cn("p-1.5 rounded-lg", expandedSection === id ? "bg-brand-cyan/20 text-brand-cyan" : "bg-white/5 text-neutral-600")}>
+                <div className={cn("p-1.5 rounded-md", expandedSection === id ? "bg-brand-cyan/20 text-brand-cyan" : "bg-white/5 text-neutral-600")}>
                     {icon}
                 </div>
                 <MicroTitle className={cn("text-[10px]", expandedSection === id ? "text-white" : "text-neutral-500")}>
@@ -200,9 +200,9 @@ export const BrandGuidelineEditor: React.FC<EditorProps> = ({ guideline, onUpdat
                                             type="color"
                                             value={c.hex}
                                             onChange={(e) => updateColor(i, { hex: e.target.value })}
-                                            className="w-10 h-10 rounded-lg bg-transparent cursor-pointer border-none p-0 overflow-hidden"
+                                            className="w-10 h-10 rounded-md bg-transparent cursor-pointer border-none p-0 overflow-hidden"
                                         />
-                                        <div className="absolute inset-0 rounded-lg pointer-events-none ring-1 ring-inset ring-white/10" />
+                                        <div className="absolute inset-0 rounded-md pointer-events-none ring-1 ring-inset ring-white/10" />
                                     </div>
                                     <div className="flex-1 grid grid-cols-2 gap-2">
                                         <Input
@@ -220,7 +220,7 @@ export const BrandGuidelineEditor: React.FC<EditorProps> = ({ guideline, onUpdat
                                             className="bg-transparent text-[10px] font-mono text-neutral-500 border-none focus:ring-0 p-0 placeholder:text-neutral-700"
                                         />
                                     </div>
-                                    <Button variant="ghost" 
+                                    <Button variant="ghost"
                                         onClick={() => removeColor(i)}
                                         className="p-1.5 text-neutral-700 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
                                     >
@@ -229,7 +229,7 @@ export const BrandGuidelineEditor: React.FC<EditorProps> = ({ guideline, onUpdat
                                 </div>
                             ))}
                         </div>
-                        <Button variant="ghost" 
+                        <Button variant="ghost"
                             onClick={addColor}
                             className="w-full py-3 rounded-xl border border-dashed border-white/5 text-neutral-600 hover:text-neutral-400 hover:border-white/10 flex items-center justify-center gap-2 text-[10px] font-mono uppercase tracking-widest transition-all"
                         >
@@ -277,7 +277,7 @@ export const BrandGuidelineEditor: React.FC<EditorProps> = ({ guideline, onUpdat
                                             />
                                         </div>
                                     </div>
-                                    <Button variant="ghost" 
+                                    <Button variant="ghost"
                                         onClick={() => removeFont(i)}
                                         className="p-1.5 text-neutral-700 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
                                     >
@@ -286,7 +286,7 @@ export const BrandGuidelineEditor: React.FC<EditorProps> = ({ guideline, onUpdat
                                 </div>
                             ))}
                         </div>
-                        <Button variant="ghost" 
+                        <Button variant="ghost"
                             onClick={addFont}
                             className="w-full py-3 rounded-xl border border-dashed border-white/5 text-neutral-600 hover:text-neutral-400 hover:border-white/10 flex items-center justify-center gap-2 text-[10px] font-mono uppercase tracking-widest transition-all"
                         >
@@ -364,9 +364,9 @@ export const BrandGuidelineEditor: React.FC<EditorProps> = ({ guideline, onUpdat
                                 <MicroTitle className="text-brand-cyan/50">{t('brandGuidelines.tokens.spacing')}</MicroTitle>
                                 <div className="grid grid-cols-2 gap-3">
                                     {['xs', 'sm', 'md', 'lg', 'xl'].map(size => (
-                                        <div key={size} className="flex items-center gap-2 bg-neutral-900/50 rounded-lg p-2 border border-white/5">
+                                        <div key={size} className="flex items-center gap-2 bg-neutral-900/50 rounded-md p-2 border border-white/5">
                                             <span className="text-[9px] font-mono text-neutral-700 w-4">{size.toUpperCase()}</span>
-                                            <Input 
+                                            <Input
                                                 type="number"
                                                 value={edited.tokens?.spacing?.[size as keyof typeof edited.tokens.spacing] || ''}
                                                 onChange={(e) => updateTokenField('spacing', size, parseInt(e.target.value))}
@@ -381,9 +381,9 @@ export const BrandGuidelineEditor: React.FC<EditorProps> = ({ guideline, onUpdat
                                 <MicroTitle className="text-brand-cyan/50">{t('brandGuidelines.tokens.radius')}</MicroTitle>
                                 <div className="grid grid-cols-2 gap-3">
                                     {['sm', 'md', 'lg', 'xl', 'full'].map(size => (
-                                        <div key={size} className="flex items-center gap-2 bg-neutral-900/50 rounded-lg p-2 border border-white/5">
+                                        <div key={size} className="flex items-center gap-2 bg-neutral-900/50 rounded-md p-2 border border-white/5">
                                             <span className="text-[9px] font-mono text-neutral-700 w-6">{size.toUpperCase()}</span>
-                                            <Input 
+                                            <Input
                                                 type="number"
                                                 value={edited.tokens?.radius?.[size as keyof typeof edited.tokens.radius] || ''}
                                                 onChange={(e) => updateTokenField('radius', size, parseInt(e.target.value))}
@@ -420,7 +420,7 @@ export const BrandGuidelineEditor: React.FC<EditorProps> = ({ guideline, onUpdat
 
             {/* Actions */}
             <div className="pt-6 flex justify-end">
-                <Button variant="brand" 
+                <Button variant="brand"
                     disabled={isSaving}
                     onClick={handleSave}
                     className="relative flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-brand-cyan text-black font-mono text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-brand-cyan/80 transition-all shadow-[0_0_30px_rgba(var(--brand-cyan-rgb),0.2)] disabled:opacity-50 group overflow-hidden"

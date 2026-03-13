@@ -157,9 +157,9 @@ const ActionDetector = ({
             </MicroTitle>
             <div className="flex flex-wrap gap-2 min-w-0">
                 {actions.map((action, i) => (
-                    <NodeButton 
-                        variant="ghost" 
-                        size="xs" 
+                    <NodeButton
+                        variant="ghost"
+                        size="xs"
                         key={i}
                         onClick={(e) => {
                             e.stopPropagation();
@@ -293,9 +293,9 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                                 <PanelRight size={14} />
                             </NodeButton>
                         )}
-                        <NodeButton 
-                            variant="ghost" 
-                            size="xs" 
+                        <NodeButton
+                            variant="ghost"
+                            size="xs"
                             onClick={() => setShowSystemPromptEditor(!showSystemPromptEditor)}
                             className={cn(showSystemPromptEditor && "text-brand-cyan border-brand-cyan/30 bg-brand-cyan/5")}
                         >
@@ -332,11 +332,11 @@ export const ChatNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
                     ) : (
                         messages.map((msg: any) => (
                             <div key={msg.id} className={cn("flex", msg.role === 'user' ? 'justify-end' : 'justify-start')}>
-                                <div className={cn("max-w-[85%] p-3.5 rounded-lg relative group border transition-all", 
+                                <div className={cn("max-w-[85%] p-3.5 rounded-md relative group border transition-all",
                                     msg.role === 'user' ? 'bg-brand-cyan/10 border-brand-cyan/30 text-neutral-200' : 'bg-neutral-800/80 border-neutral-700/40 text-neutral-300')}>
-                                    <NodeButton 
-                                        variant="ghost" 
-                                        size="xs" 
+                                    <NodeButton
+                                        variant="ghost"
+                                        size="xs"
                                         onClick={() => handleCopyMessage(msg.id, msg.content)}
                                         className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
                                     >

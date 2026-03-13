@@ -35,7 +35,7 @@ export const ComponentLibrary: React.FC<{
 
   if (error && !compact) {
     return (
-      <div className="p-6 bg-orange-500/10 border border-orange-500/30 rounded-lg">
+      <div className="p-6 bg-orange-500/10 border border-orange-500/30 rounded-md">
         <div className="flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
           <div>
@@ -150,12 +150,12 @@ export const ComponentLibrary: React.FC<{
                       component.usage.level === 'critical'
                         ? 'bg-red-500'
                         : component.usage.level === 'frequent'
-                        ? 'bg-orange-500'
-                        : component.usage.level === 'moderate'
-                        ? 'bg-blue-500'
-                        : component.usage.level === 'rare'
-                        ? 'bg-yellow-500'
-                        : 'bg-gray-500'
+                          ? 'bg-orange-500'
+                          : component.usage.level === 'moderate'
+                            ? 'bg-blue-500'
+                            : component.usage.level === 'rare'
+                              ? 'bg-yellow-500'
+                              : 'bg-gray-500'
                     )}
                     style={{ width: `${component.usage.percentage}%` }}
                   />

@@ -48,9 +48,9 @@ export const InstructionsIdentityPanel: React.FC = () => {
 
   return (
     <GlassPanel
-        className="group overflow-hidden"
+      className="group overflow-hidden"
     >
-      <Button variant="ghost" 
+      <Button variant="ghost"
         onClick={() => setIsInstructionsExpanded(!isInstructionsExpanded)}
         className={cn(
           'w-full flex justify-between items-center text-left p-3 transition-all duration-200',
@@ -103,7 +103,7 @@ export const InstructionsIdentityPanel: React.FC = () => {
               <MicroTitle as="span">
                 {t('mockup.instructions')}
               </MicroTitle>
-              <Button variant="ghost" 
+              <Button variant="ghost"
                 type="button"
                 onClick={() =>
                   setIsInstructionsTextareaVisible(!isInstructionsTextareaVisible)
@@ -134,7 +134,7 @@ export const InstructionsIdentityPanel: React.FC = () => {
                 onChange={(e) => setInstructions(e.target.value)}
                 placeholder={t('mockup.instructionsPlaceholder')}
                 className={cn(
-                  'w-full min-h-[80px] p-3 text-sm font-mono rounded-lg focus:outline-none resize-none shadow-inner animate-fade-in',
+                  'w-full min-h-[80px] p-3 text-sm font-mono rounded-md focus:outline-none resize-none shadow-inner animate-fade-in',
                   theme === 'dark'
                     ? 'bg-black/10 border border-white/10 text-white placeholder:text-neutral-700 focus:border-brand-cyan/50'
                     : 'bg-white border border-neutral-200 text-neutral-900 placeholder:text-neutral-400 focus:border-brand-cyan/50'
@@ -160,7 +160,7 @@ export const InstructionsIdentityPanel: React.FC = () => {
                   {t('mockup.identity')}
                 </MicroTitle>
               </div>
-              <Button variant="ghost" 
+              <Button variant="ghost"
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
