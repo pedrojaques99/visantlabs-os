@@ -3,7 +3,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { brandGuidelineApi } from '@/services/brandGuidelineApi';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { Plus, Trash2, Loader2, Image as ImageIcon, FileText, Link2 } from 'lucide-react';
+import { Plus, Trash2, Loader2, Image as ImageIcon, FileText, Link2, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MicroTitle } from '@/components/ui/MicroTitle';
@@ -197,15 +197,30 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                                     <span className="absolute bottom-0 left-0 right-0 text-[8px] font-mono text-neutral-500 text-center py-0.5 bg-black/60 uppercase">
                                         {logo.variant}
                                     </span>
-                                    {!readOnly && (
-                                        <Button variant="ghost" 
-                                            onClick={() => handleDeleteLogo(logo.id)}
-                                            disabled={deletingId === logo.id}
-                                            className="absolute top-1 right-1 p-1 rounded bg-red-500/80 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
+                                    <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Button 
+                                            variant="ghost" 
+                                            size="icon"
+                                            className="h-6 w-6 p-1 rounded bg-black/60 text-white hover:bg-black/80 hover:text-brand-cyan"
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(logo.url);
+                                                toast.success('URL copied');
+                                            }}
                                         >
-                                            {deletingId === logo.id ? <Loader2 size={10} className="animate-spin" /> : <Trash2 size={10} />}
+                                            <Copy size={10} />
                                         </Button>
-                                    )}
+                                        {!readOnly && (
+                                            <Button 
+                                                variant="ghost" 
+                                                size="icon"
+                                                onClick={() => handleDeleteLogo(logo.id)}
+                                                disabled={deletingId === logo.id}
+                                                className="h-6 w-6 p-1 rounded bg-red-500/80 text-white hover:bg-red-500"
+                                            >
+                                                {deletingId === logo.id ? <Loader2 size={10} className="animate-spin" /> : <Trash2 size={10} />}
+                                            </Button>
+                                        )}
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -289,15 +304,30 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                                             {item.label}
                                         </span>
                                     )}
-                                    {!readOnly && (
-                                        <Button variant="ghost" 
-                                            onClick={() => handleDeleteMedia(item.id)}
-                                            disabled={deletingId === item.id}
-                                            className="absolute top-1 right-1 p-1 rounded bg-red-500/80 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
+                                    <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Button 
+                                            variant="ghost" 
+                                            size="icon"
+                                            className="h-6 w-6 p-1 rounded bg-black/60 text-white hover:bg-black/80 hover:text-brand-cyan"
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(item.url);
+                                                toast.success('URL copied');
+                                            }}
                                         >
-                                            {deletingId === item.id ? <Loader2 size={10} className="animate-spin" /> : <Trash2 size={10} />}
+                                            <Copy size={10} />
                                         </Button>
-                                    )}
+                                        {!readOnly && (
+                                            <Button 
+                                                variant="ghost" 
+                                                size="icon"
+                                                onClick={() => handleDeleteMedia(item.id)}
+                                                disabled={deletingId === item.id}
+                                                className="h-6 w-6 p-1 rounded bg-red-500/80 text-white hover:bg-red-500"
+                                            >
+                                                {deletingId === item.id ? <Loader2 size={10} className="animate-spin" /> : <Trash2 size={10} />}
+                                            </Button>
+                                        )}
+                                    </div>
                                 </div>
                             ))}
                         </div>

@@ -25,6 +25,7 @@ import { MicroTitle } from '@/components/ui/MicroTitle';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { GoogleFontPicker } from '@/components/ui/GoogleFontPicker';
 
 interface EditorProps {
     guideline: BrandGuideline;
@@ -54,34 +55,50 @@ export const BrandGuidelineEditor: React.FC<EditorProps> = ({ guideline, onUpdat
 
     const addColor = () => {
         const colors = [...(edited.colors || []), { hex: '#000000', name: 'New Color', role: '' }];
-        setEdited({ ...edited, colors });
+        const newEdited = { ...edited, colors };
+        setEdited(newEdited);
+        onUpdate(newEdited); // Auto-save
     };
 
     const removeColor = (index: number) => {
         const colors = (edited.colors || []).filter((_, i) => i !== index);
-        setEdited({ ...edited, colors });
+        const newEdited = { ...edited, colors };
+        setEdited(newEdited);
+        onUpdate(newEdited); // Auto-save
     };
 
     const updateColor = (index: number, color: Partial<BrandGuidelineColor>) => {
         const colors = [...(edited.colors || [])];
         colors[index] = { ...colors[index], ...color };
-        setEdited({ ...edited, colors });
+        const newEdited = { ...edited, colors };
+        setEdited(newEdited);
+        // Use a debounce for text updates, but immediate for hex picks might be better
+        if (color.hex) {
+            onUpdate(newEdited);
+        }
     };
 
     const addFont = () => {
         const typography = [...(edited.typography || []), { family: 'Inter', role: 'body', style: 'Regular' }];
-        setEdited({ ...edited, typography });
+        const newEdited = { ...edited, typography };
+        setEdited(newEdited);
+        onUpdate(newEdited); // Auto-save
     };
 
     const removeFont = (index: number) => {
         const typography = (edited.typography || []).filter((_, i) => i !== index);
-        setEdited({ ...edited, typography });
+        const newEdited = { ...edited, typography };
+        setEdited(newEdited);
+        onUpdate(newEdited); // Auto-save
     };
 
     const updateFont = (index: number, font: Partial<BrandGuidelineTypography>) => {
         const typography = [...(edited.typography || [])];
         typography[index] = { ...typography[index], ...font };
-        setEdited({ ...edited, typography });
+        const newEdited = { ...edited, typography };
+        setEdited(newEdited);
+        // Throttle this if needed, but for now just update
+        onUpdate(newEdited); // Auto-save
     };
 
     const updateIdentityField = (field: string, value: any) => {
@@ -234,12 +251,9 @@ export const BrandGuidelineEditor: React.FC<EditorProps> = ({ guideline, onUpdat
                                     <div className="flex-1 grid grid-cols-3 gap-4">
                                         <div className="space-y-1">
                                             <span className="text-[9px] font-mono text-neutral-700 uppercase tracking-tighter">Family</span>
-                                            <Input
-                                                type="text"
+                                            <GoogleFontPicker
                                                 value={f.family}
-                                                placeholder={t('brandGuidelines.fontFamily')}
-                                                onChange={(e) => updateFont(i, { family: e.target.value })}
-                                                className="w-full bg-transparent text-xs font-mono text-white border-none focus:ring-0 p-0"
+                                                onChange={(font) => updateFont(i, { family: font })}
                                             />
                                         </div>
                                         <div className="space-y-1">

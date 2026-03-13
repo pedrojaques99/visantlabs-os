@@ -1,6 +1,6 @@
 import React, { useRef, useState, useCallback, memo, useEffect } from 'react';
 import { type NodeProps, useNodes, useEdges, useReactFlow, NodeResizer, useViewport } from '@xyflow/react';
-import { Edit } from 'lucide-react';
+import { Edit, Maximize2 } from 'lucide-react';
 import type { OutputNodeData, FlowNodeData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
 import { isSafeUrl } from '@/utils/imageUtils';
@@ -488,6 +488,18 @@ export const OutputNode = memo(({ data, selected, id, dragging }: NodeProps<any>
         />
       )}
       <NodeHandles />
+
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/60 to-neutral-900/30 backdrop-blur-sm">
+        <div className="flex items-center gap-3">
+          <div className="p-1.5 rounded-md bg-brand-cyan/10 border border-brand-cyan/20 shadow-sm">
+            <Maximize2 size={16} className="text-brand-cyan" />
+          </div>
+          <h3 className="text-xs font-semibold text-neutral-200 font-mono tracking-tight uppercase">
+            {t('canvasNodes.outputNode.title') || 'Output'}
+          </h3>
+        </div>
+      </div>
 
       <NodeImageContainer className="flex items-center justify-center" style={{ width: '100%', height: '100%', flex: '1 1 0%', minHeight: 0 }}>
         {isVideo && videoUrl ? (

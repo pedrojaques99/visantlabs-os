@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, memo, useEffect } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { LabeledHandle } from './shared/LabeledHandle';
-import { UploadCloud, FileText, Palette, X, ChevronDown, ChevronUp, Plus, Trash2, Edit2, Check } from 'lucide-react';
+import { UploadCloud, FileText, Palette, X, ChevronDown, ChevronUp, Plus, Trash2, Edit2, Check, Maximize2 } from 'lucide-react';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import type { BrandNodeData, BrandIdentity } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
@@ -13,11 +13,10 @@ import { Image as ImageIcon } from 'lucide-react';
 import { NodeContainer } from './shared/NodeContainer';
 import { NodeHeader } from './shared/node-header';
 import { NodeLabel } from './shared/node-label';
-import { NodeButton } from './shared/node-button';
-import { useTranslation } from '@/hooks/useTranslation';
-import { extractColors } from '@/utils/colorExtraction';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useTranslation } from '@/hooks/useTranslation';
+import { NodeButton } from './shared/node-button';
+import { extractColors } from '@/utils/colorExtraction';
 
 // Component for editing a single color row
 const ColorEditRow = ({
@@ -74,14 +73,14 @@ const ColorEditRow = ({
         className="h-8 font-mono text-xs uppercase"
         placeholder="#000000"
       />
-      <Button
+      <NodeButton
         variant="ghost"
-        size="icon"
+        size="xs"
         className="h-8 w-8 text-neutral-500 hover:text-red-400 shrink-0"
         onClick={onDelete}
       >
         <Trash2 size={14} />
-      </Button>
+      </NodeButton>
     </div>
   );
 };
@@ -390,25 +389,25 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
           <div className="text-neutral-500 font-mono capitalize text-xs">{title}</div>
           <div className="flex items-center gap-1">
             {isEditing ? (
-              <Button
+              <NodeButton
                 variant="ghost"
-                size="icon"
+                size="xs"
                 className="h-5 w-5 text-green-400 hover:text-green-300"
                 onClick={() => setEditingCategory(null)}
                 title="Finish Editing"
               >
                 <Check size={12} />
-              </Button>
+              </NodeButton>
             ) : (
-              <Button
+              <NodeButton
                 variant="ghost"
-                size="icon"
+                size="xs"
                 className="h-5 w-5 text-neutral-500 hover:text-neutral-300"
                 onClick={() => setEditingCategory(category)}
                 title="Edit Colors"
               >
                 <Edit2 size={12} />
-              </Button>
+              </NodeButton>
             )}
           </div>
         </div>
@@ -423,14 +422,14 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
                 onDelete={() => handleColorDelete(category, idx)}
               />
             ))}
-            <Button
-              variant="outline"
-              size="sm"
+            <NodeButton
+              variant="ghost"
+              size="xs"
               className="w-full h-7 text-xs border-dashed border-neutral-700 text-neutral-500 hover:text-neutral-300 hover:border-neutral-500 mt-2"
               onClick={() => handleColorAdd(category)}
             >
               <Plus size={12} className="mr-1" /> Add Color
-            </Button>
+            </NodeButton>
           </div>
         ) : (
           <div className="flex flex-wrap gap-2">
@@ -461,7 +460,7 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
     <NodeContainer
       selected={selected}
       dragging={dragging}
-      className="p-5 min-w-[320px] max-w-[400px]"
+      className="min-w-[320px] max-w-[400px]"
       onContextMenu={(e) => {
         // Allow ReactFlow to handle the context menu event
       }}
@@ -506,197 +505,245 @@ export const BrandNode = memo(({ data, selected, id, dragging }: NodeProps<any>)
       />
 
       {/* Header */}
-      <NodeHeader icon={Palette} title={t('canvasNodes.brandNode.title')} />
+      <div className="flex items-center justify-between p-4 border-b border-neutral-700/30 bg-gradient-to-r from-neutral-900/60 to-neutral-900/30 backdrop-blur-sm">
+        <div className="flex items-center gap-3">
+          <div className="p-1.5 rounded-md bg-brand-cyan/10 border border-brand-cyan/20 shadow-sm">
+            <Palette size={16} className="text-brand-cyan" />
+          </div>
+          <h3 className="text-xs font-semibold text-neutral-200 font-mono tracking-tight uppercase">
+            {t('canvasNodes.brandNode.title') || 'Brand Engine'}
+          </h3>
+        </div>
+      </div>
 
-      {/* Logo Upload Section */}
-      <div className="mb-4">
-        <NodeLabel>Logo {connectedLogo && <span className="text-[10px] text-neutral-500">(connected)</span>}</NodeLabel>
-        {logoImageUrl ? (
-          <div className="relative group/logo">
-            <div className="relative w-full h-24 bg-neutral-900/50 rounded border border-neutral-700/30 overflow-hidden">
-              <img
-                src={logoImageUrl}
-                alt="Logo"
-                className="w-full h-full object-contain p-2"
-              />
+      <div className="p-4 flex flex-col gap-[var(--node-gap)]">
+        {/* Logo Upload Section */}
+        <div className={cn(
+          "p-3 rounded-lg border transition-all duration-300 backdrop-blur-sm",
+          logoImageUrl
+            ? "bg-brand-cyan/5 border-brand-cyan/20 shadow-[0_0_15px_rgba(var(--brand-cyan),0.05)]"
+            : "bg-neutral-900/40 border-neutral-700/30"
+        )}>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className={cn(
+                "w-1.5 h-1.5 rounded-full shadow-[0_0_5px_currentColor]",
+                logoImageUrl ? "text-brand-cyan bg-brand-cyan" : "text-neutral-500 bg-neutral-600"
+              )} />
+              <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest">Logo DNA</span>
             </div>
-            {!connectedLogo && (
-              <Button variant="destructive"                 onClick={handleRemoveLogo}
-                className="absolute top-1 right-1 p-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded opacity-0 group-hover/logo:opacity-100 transition-opacity"
-                title={t('canvasNodes.brandNode.removeLogo')}
+            {logoImageUrl && !connectedLogo && (
+              <NodeButton 
+                variant="ghost" 
+                size="xs"                     
+                onClick={handleRemoveLogo}
+                className="h-6 w-6 text-neutral-500 hover:text-red-400 p-0"
               >
                 <X size={12} />
-              </Button>
+              </NodeButton>
             )}
           </div>
-        ) : (
-          <>
-            <Input
-              ref={logoInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleLogoFileChange}
-              className="hidden"
-            />
-            <NodeButton onClick={handleLogoUploadClick}>
-              <UploadCloud size={14} />
-              Upload Logo
-            </NodeButton>
-          </>
-        )}
-      </div>
 
-      {/* Identity Guide Upload Section (PDF or PNG) */}
-      <div className="mb-4">
-        <NodeLabel>Identity Guide (PDF or PNG) {connectedIdentity && <span className="text-[10px] text-neutral-500">(connected)</span>}</NodeLabel>
-        {identityBase64 || nodeData.identityPdfUrl || nodeData.identityImageUrl ? (
-          <div className="relative group/identity">
-            {identityFileType === 'png' && identityImageUrl ? (
-              <div className="relative w-full h-24 bg-neutral-900/50 rounded border border-neutral-700/30 overflow-hidden">
+          {logoImageUrl ? (
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-md overflow-hidden bg-neutral-950/40 border border-neutral-700/50 p-1 flex items-center justify-center shadow-inner">
                 <img
-                  src={identityImageUrl}
-                  alt="Identity Guide"
-                  className="w-full h-full object-contain p-2"
+                  src={logoImageUrl}
+                  alt="Logo"
+                  className="max-w-full max-h-full object-contain"
                 />
-                {!connectedIdentity && (
-                  <Button variant="destructive"                     onClick={handleRemoveIdentity}
-                    className="absolute top-1 right-1 p-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded opacity-0 group-hover/identity:opacity-100 transition-opacity"
-                    title={t('canvasNodes.brandNode.removeIdentityGuide')}
-                  >
-                    <X size={12} />
-                  </Button>
-                )}
               </div>
-            ) : (
-              <div className="px-3 py-2 bg-neutral-900/50 rounded border border-neutral-700/30 flex items-center gap-3">
-                <FileText size={16} className="text-brand-cyan" />
-                <span className="text-xs font-mono text-neutral-400 flex-1">{identityFileType?.toUpperCase()} {connectedIdentity ? 'connected' : 'uploaded'}</span>
-                {!connectedIdentity && (
-                  <Button variant="destructive"                     onClick={handleRemoveIdentity}
-                    className="p-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded opacity-0 group-hover/identity:opacity-100 transition-opacity"
-                    title={t('canvasNodes.brandNode.removeIdentityGuide')}
-                  >
-                    <X size={12} />
-                  </Button>
-                )}
+              <div className="flex-1">
+                <div className="text-[10px] font-mono text-brand-cyan/70 uppercase">
+                  {connectedLogo ? 'Connected' : 'Local Source'}
+                </div>
+                <div className="text-[11px] text-neutral-400 opacity-60">Property detected</div>
               </div>
-            )}
-          </div>
-        ) : (
-          <>
-            <Input
-              ref={pdfInputRef}
-              type="file"
-              accept="application/pdf,image/png,image/jpeg,image/jpg"
-              onChange={handleIdentityFileChange}
-              className="hidden"
-            />
-            <NodeButton onClick={handlePdfUploadClick}>
-              <FileText size={14} />
-              Upload PDF or PNG
-            </NodeButton>
-          </>
-        )}
-      </div>
-
-      {/* Analyze Button */}
-      <NodeButton
-        onClick={handleAnalyze}
-        disabled={!canAnalyze}
-        variant="primary"
-        className="mb-4"
-      >
-        {isAnalyzing ? (
-          <>
-            <GlitchLoader size={14} />
-            Analyzing...
-          </>
-        ) : (
-          <>
-            <Palette size={14} />
-            Analyze Brand Identity
-          </>
-        )}
-      </NodeButton>
-
-      {/* Brand Identity Display */}
-      {brandIdentity && (
-        <div className="border-t border-neutral-700/30 pt-3">
-          <Button variant="ghost"             onClick={() => setIsExpanded(!isExpanded)}
-            className="w-full flex items-center justify-between text-xs font-mono text-neutral-400 hover:text-neutral-300 mb-2"
-          >
-            <span>Brand Identity</span>
-            {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-          </Button>
-
-          {isExpanded && (
-            <div className="space-y-3 text-xs">
-              {/* Colors */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="text-neutral-500 font-mono">Colors</div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-5 text-[10px] px-2 text-neutral-500 hover:text-neutral-300"
-                    onClick={manuallyExtractColors}
-                    disabled={!logoBase64}
-                  >
-                    Extract from Logo
-                  </Button>
-                </div>
-
-                {renderColorCategory('Primary', 'primary', brandIdentity.colors.primary)}
-                {renderColorCategory('Secondary', 'secondary', brandIdentity.colors.secondary)}
-                {renderColorCategory('Accent', 'accent', brandIdentity.colors.accent)}
-              </div>
-
-              {/* Typography */}
-              {brandIdentity.typography.primary && (
-                <div>
-                  <div className="text-neutral-500 font-mono mb-1">Typography</div>
-                  <div className="text-neutral-400">{brandIdentity.typography.primary}</div>
-                  {brandIdentity.typography.secondary && (
-                    <div className="text-neutral-500 text-[10px] mt-1">{brandIdentity.typography.secondary}</div>
-                  )}
-                </div>
-              )}
-
-              {/* Personality */}
-              {(brandIdentity.personality.tone || brandIdentity.personality.feeling) && (
-                <div>
-                  <div className="text-neutral-500 font-mono mb-1">Personality</div>
-                  <div className="text-neutral-400 space-y-1">
-                    {brandIdentity.personality.tone && (
-                      <div>Tone: {brandIdentity.personality.tone}</div>
-                    )}
-                    {brandIdentity.personality.feeling && (
-                      <div>Feeling: {brandIdentity.personality.feeling}</div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Visual Elements */}
-              {brandIdentity.visualElements.length > 0 && (
-                <div>
-                  <div className="text-neutral-500 font-mono mb-1">Visual Elements</div>
-                  <div className="flex flex-wrap gap-1">
-                    {brandIdentity.visualElements.slice(0, 5).map((element, idx) => (
-                      <span key={idx} className="px-2 py-1 bg-neutral-900/50 rounded border border-neutral-700/30 text-neutral-400 text-[10px]">
-                        {element}
-                      </span>
-                    ))}
-                    {brandIdentity.visualElements.length > 5 && (
-                      <span className="text-neutral-500 text-[10px]">+{brandIdentity.visualElements.length - 5} more</span>
-                    )}
-                  </div>
-                </div>
-              )}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <Input
+                ref={logoInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleLogoFileChange}
+                className="hidden"
+              />
+              <NodeButton variant="primary" size="full" onClick={handleLogoUploadClick} className="shadow-sm">
+                <UploadCloud size={14} className="mr-2" />
+                Upload Logo
+              </NodeButton>
             </div>
           )}
         </div>
-      )}
+
+        {/* Identity Guide Upload Section (PDF or PNG) */}
+        <div className={cn(
+          "p-3 rounded-lg border transition-all duration-300 backdrop-blur-sm",
+          (identityBase64 || nodeData.identityPdfUrl || nodeData.identityImageUrl)
+            ? "bg-brand-cyan/5 border-brand-cyan/20 shadow-[0_0_15px_rgba(var(--brand-cyan),0.05)]"
+            : "bg-neutral-900/40 border-neutral-700/30"
+        )}>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className={cn(
+                "w-1.5 h-1.5 rounded-full shadow-[0_0_5px_currentColor]",
+                (identityBase64 || nodeData.identityPdfUrl || nodeData.identityImageUrl) ? "text-brand-cyan bg-brand-cyan" : "text-neutral-500 bg-neutral-600"
+              )} />
+              <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest">Brand Guidelines</span>
+            </div>
+            {(identityBase64 || nodeData.identityPdfUrl || nodeData.identityImageUrl) && !connectedIdentity && (
+              <NodeButton 
+                variant="ghost" 
+                size="xs"                     
+                onClick={handleRemoveIdentity}
+                className="h-6 w-6 text-neutral-500 hover:text-red-400 p-0"
+              >
+                <X size={12} />
+              </NodeButton>
+            )}
+          </div>
+
+          {(identityBase64 || nodeData.identityPdfUrl || nodeData.identityImageUrl) ? (
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-md bg-neutral-950/40 border border-neutral-700/50 shadow-inner">
+                <FileText size={20} className="text-brand-cyan/70" />
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <div className="text-[10px] font-mono text-brand-cyan/70 uppercase">
+                  {identityFileType?.toUpperCase() || 'FILE'} FOUND
+                </div>
+                <div className="text-[11px] text-neutral-400 opacity-60">
+                  {connectedIdentity ? 'Reference document' : 'Local upload'}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <Input
+                ref={pdfInputRef}
+                type="file"
+                accept="application/pdf,image/png,image/jpeg,image/jpg"
+                onChange={handleIdentityFileChange}
+                className="hidden"
+              />
+              <NodeButton variant="primary" size="full" onClick={handlePdfUploadClick} className="shadow-sm">
+                <FileText size={14} className="mr-2" />
+                Upload Guidelines
+              </NodeButton>
+            </div>
+          )}
+        </div>
+
+        {/* Analyze Button */}
+        <NodeButton
+          onClick={handleAnalyze}
+          disabled={!canAnalyze}
+          variant="primary"
+          size="full"
+          className="shadow-sm backdrop-blur-sm"
+        >
+          {isAnalyzing ? (
+            <>
+              <GlitchLoader size={14} className="mr-2" color="currentColor" />
+              <span>Analyzing...</span>
+            </>
+          ) : (
+            <>
+              <Palette size={14} className="mr-2" />
+              <span>Analyze Brand Engine</span>
+            </>
+          )}
+        </NodeButton>
+
+        {/* Brand Identity Display */}
+        {brandIdentity && (
+          <div className="border-t border-neutral-700/30 pt-4">
+            <NodeButton 
+              variant="ghost" 
+              size="full"             
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="flex items-center justify-between group/expand px-1"
+            >
+              <span className="text-[10px] font-mono font-bold text-neutral-500 group-hover:text-neutral-300 uppercase tracking-widest transition-colors">Extracted Identity</span>
+              <div className="p-1 rounded-full bg-neutral-900/50 group-hover:bg-neutral-800 transition-colors">
+                {isExpanded ? <ChevronUp size={12} className="text-neutral-400" /> : <ChevronDown size={12} className="text-neutral-400" />}
+              </div>
+            </NodeButton>
+
+            {isExpanded && (
+              <div className="mt-4 space-y-4 text-[11px] animate-in fade-in slide-in-from-top-1 duration-300">
+                {/* Colors */}
+                <div className="p-2.5 rounded-lg bg-neutral-900/40 border border-neutral-700/20 backdrop-blur-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="text-[9px] font-mono text-neutral-500 uppercase tracking-tighter font-bold">Palette Matrix</div>
+                    <NodeButton
+                      variant="ghost"
+                      size="xs"
+                      className="h-6 text-[9px] px-2 text-brand-cyan/70 hover:bg-brand-cyan/10 border border-brand-cyan/20"
+                      onClick={manuallyExtractColors}
+                      disabled={!logoBase64}
+                    >
+                      Refine from Logo
+                    </NodeButton>
+                  </div>
+
+                  <div className="space-y-4">
+                    {renderColorCategory('Primary', 'primary', brandIdentity.colors.primary)}
+                    {renderColorCategory('Secondary', 'secondary', brandIdentity.colors.secondary)}
+                    {renderColorCategory('Accent', 'accent', brandIdentity.colors.accent)}
+                  </div>
+                </div>
+
+                {/* Typography */}
+                {brandIdentity.typography.primary && (
+                  <div className="p-2.5 rounded-lg bg-neutral-900/40 border border-neutral-700/20 backdrop-blur-sm">
+                    <div className="text-[9px] font-mono text-neutral-500 uppercase tracking-tighter mb-2 font-bold">Typography</div>
+                    <div className="space-y-1">
+                      <div className="text-neutral-300 font-medium">{brandIdentity.typography.primary}</div>
+                      {brandIdentity.typography.secondary && (
+                        <div className="text-neutral-500 text-[9px] italic">{brandIdentity.typography.secondary}</div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Personality */}
+                {(brandIdentity.personality.tone || brandIdentity.personality.feeling) && (
+                  <div className="p-2.5 rounded-lg bg-neutral-900/40 border border-neutral-700/20 backdrop-blur-sm">
+                    <div className="text-[9px] font-mono text-neutral-500 uppercase tracking-tighter mb-2 font-bold">Persona</div>
+                    <div className="grid grid-cols-1 gap-2 text-neutral-400 leading-relaxed">
+                      {brandIdentity.personality.tone && (
+                        <div><span className="text-neutral-600 uppercase text-[8px] font-mono mr-2">Tone:</span>{brandIdentity.personality.tone}</div>
+                      )}
+                      {brandIdentity.personality.feeling && (
+                        <div><span className="text-neutral-600 uppercase text-[8px] font-mono mr-2">Feeling:</span>{brandIdentity.personality.feeling}</div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Visual Elements */}
+                {brandIdentity.visualElements.length > 0 && (
+                  <div className="p-2.5 rounded-lg bg-neutral-900/40 border border-neutral-700/20 backdrop-blur-sm">
+                    <div className="text-[9px] font-mono text-neutral-500 uppercase tracking-tighter mb-2 font-bold">Visual Language</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {brandIdentity.visualElements.slice(0, 8).map((element, idx) => (
+                        <span key={idx} className="px-2 py-0.5 bg-neutral-950/40 rounded text-[9px] text-neutral-400 border border-neutral-700/30 uppercase tracking-wider">
+                          {element}
+                        </span>
+                      ))}
+                      {brandIdentity.visualElements.length > 8 && (
+                        <span className="text-neutral-500 text-[8px] font-mono">+{brandIdentity.visualElements.length - 8}</span>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </NodeContainer>
   );
 });

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, memo, useRef, useCallback } from 'react';
-import { Handle, Position, NodeResizer, type NodeProps, useViewport, useReactFlow } from '@xyflow/react';
+import { Handle, Position, NodeResizer, type NodeProps, useReactFlow } from '@xyflow/react';
 import { Video, Upload, X } from 'lucide-react';
 import type { VideoInputNodeData } from '@/types/reactFlow';
 import { cn } from '@/lib/utils';
@@ -8,16 +8,15 @@ import { NodeLabel } from './shared/node-label';
 import { NodeHeader } from './shared/node-header';
 import { NodeActionBar } from './shared/NodeActionBar';
 import { useTranslation } from '@/hooks/useTranslation';
-import { videoToBase64 } from '@/utils/fileUtils';
 import { toast } from 'sonner';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
-import { Button } from '@/components/ui/button'
+import { NodeButton } from './shared/node-button'
 import { Input } from '@/components/ui/input'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<any>) => {
   const { t } = useTranslation();
-  const { setNodes, getNode, getZoom } = useReactFlow();
+  const { getZoom } = useReactFlow();
   const { handleResize: handleResizeWithDebounce, fitToContent } = useNodeResize();
   const nodeData = data as VideoInputNodeData;
   const [uploadedVideo, setUploadedVideo] = useState<string | undefined>(nodeData.uploadedVideo || nodeData.uploadedVideoUrl);
@@ -45,49 +44,33 @@ export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<
     const file = e.target.files?.[0];
     if (!file || !nodeData.onUploadVideo) return;
 
-    // Validate file type
     if (!file.type.startsWith('video/')) {
       toast.error(t('common.pleaseSelectVideoFile'), { duration: 3000 });
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
       return;
     }
 
-    // Validate file size (50MB limit for videos)
-    const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+    const MAX_FILE_SIZE = 50 * 1024 * 1024;
     if (file.size > MAX_FILE_SIZE) {
       toast.error(t('common.videoFileSizeExceeds'), { duration: 5000 });
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
       return;
     }
 
-    // Reset input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
 
     try {
-      // Prefer passing File directly for upload (bypasses Vercel's 4.5MB limit)
-      // Falls back to base64 if File upload fails
       if (nodeData.onUploadVideo) {
-        // Try direct file upload first (better for large files)
         await nodeData.onUploadVideo(id, file);
       }
     } catch (error: any) {
-      const errorMessage = error?.message || t('common.failedToProcessVideo');
-      toast.error(errorMessage, { duration: 5000 });
+      toast.error(error?.message || t('common.failedToProcessVideo'), { duration: 5000 });
       console.error('Failed to process uploaded video:', error);
     }
   };
 
   const getVideoDisplayUrl = (video: string): string => {
-    if (video.startsWith('data:') || video.startsWith('http')) {
-      return video;
-    }
-    return video; // Assume it's already a URL
+    return video;
   };
 
   const handleFitToContent = useCallback(() => {
@@ -95,7 +78,6 @@ export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<
     const height = nodeData.imageHeight;
 
     if (width && height) {
-      // Calculate a reasonable size if image is too large
       let targetWidth = width;
       let targetHeight = height;
       const MAX_FIT_WIDTH = 1200;
@@ -111,8 +93,7 @@ export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<
   }, [id, nodeData.imageWidth, nodeData.imageHeight, nodeData.onResize, fitToContent]);
 
   const handleResize = useCallback((_: any, params: { width: number; height: number }) => {
-    const { width, height } = params;
-    handleResizeWithDebounce(id, width, height, nodeData.onResize as any);
+    handleResizeWithDebounce(id, params.width, params.height, nodeData.onResize as any);
   }, [id, nodeData.onResize, handleResizeWithDebounce]);
 
   return (
@@ -120,12 +101,8 @@ export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<
       selected={selected}
       dragging={dragging}
       onFitToContent={handleFitToContent}
-      className="p-5 min-w-[320px]"
-      onContextMenu={(e) => {
-        // Allow ReactFlow to handle the context menu event
-      }}
+      className="min-w-[320px]"
     >
-      {/* Output Handle */}
       {selected && !dragging && (
         <NodeResizer
           color="brand-cyan"
@@ -144,10 +121,8 @@ export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<
         className="w-2 h-2 bg-brand-cyan border-2 border-black node-handle"
       />
 
-      {/* Header */}
       <NodeHeader icon={Video} title={t('canvasNodes.videoInputNode.title') || 'Video Input'} />
 
-      {/* Upload Video Section */}
       <div className="mb-4">
         <Input
           ref={fileInputRef}
@@ -157,19 +132,16 @@ export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<
           className="hidden"
           aria-label={t('common.uploadVideo')}
         />
-        <Button variant="ghost" 
+        <NodeButton 
           onClick={handleUploadClick}
           onMouseDown={(e) => e.stopPropagation()}
-          className={cn(
-            'w-full px-3 py-2 bg-neutral-800/50 hover:bg-neutral-700/50 border border-neutral-700/30 rounded text-xs font-mono text-neutral-300 transition-colors flex items-center justify-center gap-2 node-interactive'
-          )}
+          className="w-full"
         >
           <Upload size={14} />
           {t('canvasNodes.videoInputNode.uploadVideo') || 'Upload Video'}
-        </Button>
+        </NodeButton>
       </div>
 
-      {/* Uploaded Video Display */}
       {hasUploadedVideo && (
         <div className="mb-4">
           <NodeLabel>
@@ -205,35 +177,31 @@ export const VideoInputNode = memo(({ data, selected, id, dragging }: NodeProps<
 
       {!dragging && hasUploadedVideo && (
         <NodeActionBar selected={selected} getZoom={getZoom}>
-          <Button variant="ghost" 
+          <NodeButton variant="ghost" size="xs"
             onClick={(e) => {
               e.stopPropagation();
               handleVideoRemove();
             }}
             onMouseDown={(e) => e.stopPropagation()}
-            className="p-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded transition-colors backdrop-blur-sm border border-red-500/20 hover:border-red-500/30"
+            className="bg-red-500/20 hover:bg-red-500/30 text-red-400 backdrop-blur-sm border border-red-500/20 hover:border-red-500/30"
             title={t('canvasNodes.videoInputNode.removeVideo') || 'Remove Video'}
           >
             <X size={12} strokeWidth={2} />
-          </Button>
+          </NodeButton>
         </NodeActionBar>
       )}
     </NodeContainer>
   );
 }, (prevProps, nextProps) => {
-  // Custom comparison - re-render if important data changes
   const prevData = prevProps.data as VideoInputNodeData;
   const nextData = nextProps.data as VideoInputNodeData;
 
-  if (prevData.uploadedVideo !== nextData.uploadedVideo ||
-    prevData.uploadedVideoUrl !== nextData.uploadedVideoUrl ||
-    prevProps.selected !== nextProps.selected ||
-    prevProps.dragging !== nextProps.dragging) {
-    return false; // Re-render
-  }
-
-  return true; // Skip re-render
+  return (
+    prevData.uploadedVideo === nextData.uploadedVideo &&
+    prevData.uploadedVideoUrl === nextData.uploadedVideoUrl &&
+    prevProps.selected === nextProps.selected &&
+    prevProps.dragging === nextProps.dragging
+  );
 });
 
 VideoInputNode.displayName = 'VideoInputNode';
-

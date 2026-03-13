@@ -18,7 +18,7 @@ import { ConnectedImagesDisplay } from './ConnectedImagesDisplay';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { useDebouncedCallback } from '@/hooks/useDebouncedCallback';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
-import { Button } from '@/components/ui/button'
+import { NodeButton } from './shared/node-button'
 import { Input } from '@/components/ui/input'
 
 const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, selected, id, dragging }) => {
@@ -170,7 +170,7 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
       selected={selected}
       dragging={dragging}
       onFitToContent={handleFitToContent}
-      className="p-0 min-w-[320px] max-w-[400px] overflow-visible"
+      className="min-w-[320px] max-w-[400px] overflow-visible"
     >
       {selected && !dragging && (
         <NodeResizer
@@ -279,13 +279,13 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
 
         {/* Advanced Settings */}
         <div className="border border-neutral-800 rounded-md bg-neutral-900/30">
-          <Button variant="ghost"             onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
-            className="flex items-center gap-2 text-xs font-mono text-neutral-400 hover:text-neutral-200 transition-colors w-full p-2 hover:bg-neutral-800/50"
+          <NodeButton variant="ghost" size="sm"             onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
+            className="text-xs font-mono text-neutral-400 hover:text-neutral-200 w-full p-2 hover:bg-neutral-800/50"
           >
             <Settings size={12} />
             <span>{t('Advanced Settings')}</span>
             <ChevronRight size={12} className={cn("transition-transform ml-auto", isAdvancedOpen && "rotate-90")} />
-          </Button>
+          </NodeButton>
 
           {isAdvancedOpen && (
             <div className="p-3 space-y-3 border-t border-neutral-800 bg-neutral-900/50">
@@ -368,15 +368,14 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
         </div>
 
         {/* Generate Button */}
-        <Button variant="ghost"           onClick={(e) => {
+        <NodeButton           onClick={(e) => {
             e.stopPropagation();
             handleGenerate();
           }}
-          disabled={isLoading || (!prompt && !data.connectedText && !data.connectedImage1)} // Basic validation
-          className={cn(
-            'w-full px-3 py-2.5 bg-brand-cyan/20 hover:bg-brand-cyan/30 border border-[brand-cyan]/30 rounded text-xs font-mono text-brand-cyan transition-colors flex items-center justify-center gap-2 group',
-            (isLoading || (!prompt && !data.connectedText && !data.connectedImage1)) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-          )}
+          disabled={isLoading || (!prompt && !data.connectedText && !data.connectedImage1)}
+          variant="primary"
+          size="full"
+          className="py-2.5"
         >
           {isLoading ? (
             <>
@@ -385,12 +384,12 @@ const VideoNodeComponent: React.FC<NodeProps<Node<VideoNodeData>>> = ({ data, se
             </>
           ) : (
             <>
-              <VideoIcon size={16} className="group-hover:scale-110 transition-transform" />
+              <VideoIcon size={16} />
               <span>{t('Generate Video')}</span>
               <span className="text-brand-cyan/50 ml-1">({creditsRequired})</span>
             </>
           )}
-        </Button>
+        </NodeButton>
 
         {/* Result Preview */}
         {(data.resultVideoUrl || data.resultVideoBase64) && !isLoading && (

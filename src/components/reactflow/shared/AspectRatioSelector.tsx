@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { AspectRatio } from '@/types/types';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button'
+import { NodeButton } from './node-button';
 
 interface AspectRatioSelectorProps {
   value: AspectRatio;
@@ -25,22 +25,21 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
   if (compact) {
     // Compact version for nodes
     return (
-      <div className="space-y-2">
-        <div className="flex flex-wrap gap-1.5">
+      <div className="space-y-[var(--node-space-y-sm)]">
+        <div className="flex flex-wrap gap-[var(--node-gap-sm)]">
           {MAIN_ASPECT_RATIOS.map((ratio) => {
             const [w, h] = ratio.split(':').map(Number);
             const isLandscape = w > h;
-            const isPortrait = h > w;
             const isSquare = w === h;
             const isSelected = value === ratio;
 
             return (
-              <Button variant="ghost" 
+              <NodeButton variant="ghost" 
                 key={ratio}
                 onClick={() => !disabled && onChange(ratio)}
                 disabled={disabled}
                 className={cn(
-                  'flex flex-col items-center justify-center gap-0.5 py-1 px-2 text-xs font-mono rounded border transition-all',
+                  'flex flex-col items-center justify-center gap-0.5 py-1 px-2 text-xs font-mono transition-all',
                   isSelected
                     ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
                     : 'bg-neutral-800/30 text-neutral-500 border-neutral-700/30 hover:border-neutral-600/50 hover:text-neutral-400',
@@ -54,15 +53,15 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                   isSelected ? 'border-[brand-cyan]/60' : 'border-neutral-600/50'
                 )} />
                 <span className="text-[9px] leading-none">{ratio}</span>
-              </Button>
+              </NodeButton>
             );
           })}
 
-          <Button variant="ghost" 
+          <NodeButton variant="ghost" 
             onClick={() => !disabled && setShowOther(!showOther)}
             disabled={disabled}
             className={cn(
-              'flex items-center justify-center py-1 px-2 text-xs font-mono rounded border transition-all',
+              'flex items-center justify-center py-1 px-2 text-xs font-mono transition-all',
               isOtherSelected
                 ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
                 : 'bg-neutral-800/30 text-neutral-500 border-neutral-700/30 hover:border-neutral-600/50 hover:text-neutral-400',
@@ -71,7 +70,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
             onMouseDown={(e) => e.stopPropagation()}
           >
             <span className="text-[9px] leading-none">...</span>
-          </Button>
+          </NodeButton>
         </div>
 
         {showOther && (
@@ -80,12 +79,11 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
               {OTHER_ASPECT_RATIOS.map((ratio) => {
                 const [w, h] = ratio.split(':').map(Number);
                 const isLandscape = w > h;
-                const isPortrait = h > w;
                 const isSquare = w === h;
                 const isSelected = value === ratio;
 
                 return (
-                  <Button variant="ghost" 
+                  <NodeButton variant="ghost" 
                     key={ratio}
                     onClick={() => {
                       if (!disabled) {
@@ -95,7 +93,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                     }}
                     disabled={disabled}
                     className={cn(
-                      'flex flex-col items-center justify-center gap-0.5 py-1 px-2 text-xs font-mono rounded border transition-all',
+                      'flex flex-col items-center justify-center gap-0.5 py-1 px-2 text-xs font-mono transition-all',
                       isSelected
                         ? 'bg-brand-cyan/10 text-brand-cyan border-[brand-cyan]/40'
                         : 'bg-neutral-800/30 text-neutral-500 border-neutral-700/30 hover:border-neutral-600/50 hover:text-neutral-400',
@@ -109,7 +107,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                       isSelected ? 'border-[brand-cyan]/60' : 'border-neutral-600/50'
                     )} />
                     <span className="text-[9px] leading-none">{ratio}</span>
-                  </Button>
+                  </NodeButton>
                 );
               })}
             </div>
@@ -125,12 +123,11 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
       {MAIN_ASPECT_RATIOS.map((ratio) => {
         const [w, h] = ratio.split(':').map(Number);
         const isLandscape = w > h;
-        const isPortrait = h > w;
         const isSquare = w === h;
         const isSelected = value === ratio;
 
         return (
-          <Button variant="ghost" 
+          <NodeButton variant="ghost" 
             key={ratio}
             onClick={() => !disabled && onChange(ratio)}
             disabled={disabled}
@@ -148,11 +145,11 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
               isSelected ? 'border-[brand-cyan]/60' : 'border-neutral-600/50'
             )} />
             <span className="text-[10px] mt-0.5">{ratio}</span>
-          </Button>
+          </NodeButton>
         );
       })}
 
-      <Button variant="ghost" 
+      <NodeButton variant="ghost" 
         onClick={() => !disabled && setShowOther(!showOther)}
         disabled={disabled}
         className={cn(
@@ -164,7 +161,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
         )}
       >
         <span className="text-[10px]">More</span>
-      </Button>
+      </NodeButton>
 
       {showOther && (
         <div className="mt-3 pt-3 border-t border-neutral-700/30 animate-fade-in w-full">
@@ -172,12 +169,11 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
             {OTHER_ASPECT_RATIOS.map((ratio) => {
               const [w, h] = ratio.split(':').map(Number);
               const isLandscape = w > h;
-              const isPortrait = h > w;
               const isSquare = w === h;
               const isSelected = value === ratio;
 
               return (
-                <Button variant="ghost" 
+                <NodeButton variant="ghost" 
                   key={ratio}
                   onClick={() => {
                     if (!disabled) {
@@ -200,7 +196,7 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                     isSelected ? 'border-[brand-cyan]/60' : 'border-neutral-600/50'
                   )} />
                   <span className="text-[10px] mt-0.5">{ratio}</span>
-                </Button>
+                </NodeButton>
               );
             })}
           </div>
@@ -209,5 +205,3 @@ export const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
     </div>
   );
 };
-
-

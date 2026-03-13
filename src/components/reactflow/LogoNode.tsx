@@ -120,7 +120,7 @@ export const LogoNode = memo(({ data, selected, id, dragging }: NodeProps<any>) 
     <NodeContainer
       selected={selected}
       dragging={dragging}
-      className="p-5 min-w-[240px] max-w-[300px]"
+      className="min-w-[240px] max-w-[300px]"
       onFitToContent={handleFitToContent}
     >
       {selected && !dragging && (

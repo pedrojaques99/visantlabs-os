@@ -16,8 +16,9 @@ import { canvasApi } from '@/services/canvasApi';
 import { toast } from 'sonner';
 import type { ShaderSettings } from '@/utils/shaders/shaderRenderer';
 import { useNodeResize } from '@/hooks/canvas/useNodeResize';
-import { Button } from '@/components/ui/button'
+import { NodeButton } from './shared/node-button';
 import { Input } from '@/components/ui/input'
+import { NodeLabel } from './shared/NodeLabel';
 
 const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, selected, id, dragging }) => {
   const { t } = useTranslation();
@@ -497,7 +498,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
       dragging={dragging}
       warning={data.oversizedWarning}
       onFitToContent={handleFitToContent}
-      className="p-6 min-w-[320px] w-full h-full"
+      className="min-w-[320px] w-full h-full"
       onContextMenu={(e) => {
         // Allow ReactFlow to handle the context menu event
       }}
@@ -517,22 +518,22 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
       <NodeHandles />
 
       {/* Header */}
-      <div className="flex items-center gap-3 mb-3">
+      <div className="flex items-center gap-3 node-margin">
         <Sparkles size={16} className="text-brand-cyan" />
         <h3 className="text-xs font-semibold text-neutral-300 font-mono">Shader Effect</h3>
       </div>
 
       {/* Status/Info - Show manual apply option when ready (only for images, videos auto-process) */}
       {!isLoading && hasConnectedImage && !hasResult && !isVideoInput ? (
-        <div className="w-full px-2 py-1.5 bg-neutral-800/30 border border-neutral-700/30 rounded text-xs font-mono text-neutral-400 flex items-center justify-center gap-3">
+        <div className="w-full px-4 py-3 bg-neutral-800/30 border border-neutral-700/30 rounded text-xs font-mono text-neutral-400 flex items-center justify-center gap-3">
           <ImageIcon size={14} className="text-brand-cyan" />
           Ready to process
         </div>
       ) : null}
 
       {!hasConnectedImage ? (
-        <div className="w-full space-y-2">
-          <div className="w-full px-2 py-1.5 bg-neutral-800/30 border border-neutral-700/30 rounded text-xs font-mono text-neutral-500 flex items-center justify-center gap-3 opacity-50">
+        <div className="w-full space-y-[var(--node-gap-sm)]">
+          <div className="w-full px-4 py-3 bg-neutral-800/30 border border-neutral-700/30 rounded text-xs font-mono text-neutral-500 flex items-center justify-center gap-3 opacity-50">
             <ImageIcon size={14} />
             {t('canvasNodes.shaderNode.connectImage') || 'Connect an image or video'}
           </div>
@@ -656,7 +657,7 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
             "absolute top-3 right-3 flex gap-1.5 transition-all backdrop-blur-sm z-10",
             selected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
           )}>
-            <Button variant="ghost"               onClick={(e) => {
+            <NodeButton variant="ghost" size="xs"               onClick={(e) => {
                 e.stopPropagation();
                 if (data.onViewFullscreen) {
                   const paletteNames = ['Monochrome', 'Gameboy', 'CRT Amber', 'CRT Green', 'Sepia'];
@@ -966,14 +967,14 @@ const ShaderNodeComponent: React.FC<NodeProps<Node<ShaderNodeData>>> = ({ data, 
               title={t('common.viewFullscreen')}
             >
               <Maximize2 size={14} strokeWidth={2} />
-            </Button>
-            <Button variant="ghost"               onClick={handleDownload}
+            </NodeButton>
+            <NodeButton variant="ghost" size="xs"               onClick={handleDownload}
               onMouseDown={(e) => e.stopPropagation()}
               className="p-1.5 rounded-md bg-neutral-950/60 hover:bg-neutral-950/80 text-neutral-300 hover:text-white border border-neutral-700/50 hover:border-neutral-600/70 transition-all"
               title={hasVideoResult ? t('common.downloadVideo') : t('common.downloadImage')}
             >
               <Download size={14} strokeWidth={2} />
-            </Button>
+            </NodeButton>
           </div>
         </div>
       )}

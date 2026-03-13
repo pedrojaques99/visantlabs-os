@@ -535,6 +535,9 @@ export interface BrandGuidelineTypography {
 export interface BrandGuideline {
   id?: string
   userId?: string
+  name?: string
+  tagline?: string
+  description?: string
   identity?: {
     name?: string
     website?: string
@@ -578,6 +581,7 @@ export interface BrandGuideline {
     completeness: number
   }
   updatedAt?: string
+  orderedBlocks?: string[]
 }
 
 // ── UI → Sandbox messages ──
