@@ -121,7 +121,7 @@ export const ProfileOverview: React.FC<ProfileOverviewProps> = ({
     };
 
     return (
-        <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 animate-in fade-in duration-500">
+        <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 animate-in fade-in duration-300">
             {/* Container 1: Profile Info - Top Left */}
             <section className="bg-neutral-900 border border-neutral-800/50 rounded-md p-6 md:p-8 flex flex-col gap-6 shadow-lg shadow-black/20">
                 <div className="flex flex-col items-center gap-4">

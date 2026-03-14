@@ -7,6 +7,7 @@ import { SectionBlock } from '../SectionBlock';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { MicroTitle } from '@/components/ui/MicroTitle';
 import { Palette, Plus, Trash2, Tag } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -47,6 +48,28 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
       onSave={handleSave}
       onCancel={() => { form.reset(); setIsEditing(false); }}
       span={span as any}
+      expandedContent={guideline.colors && guideline.colors.length > 0 ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          {guideline.colors.map((c, i) => (
+            <div
+              key={i}
+              className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-neutral-950/30 border border-white/[0.04] hover:border-brand-cyan/20 transition-all cursor-pointer group/color"
+              onClick={() => { navigator.clipboard.writeText(c.hex); toast.success(`Copied ${c.hex}`); }}
+            >
+              <div
+                className="w-full aspect-square rounded-xl border border-white/5 shadow-lg group-hover/color:border-brand-cyan/30 transition-all relative overflow-hidden"
+                style={{ backgroundColor: c.hex }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover/color:opacity-100 transition-opacity" />
+              </div>
+              <div className="text-center w-full">
+                <p className="text-[11px] font-bold text-white uppercase tracking-tight truncate">{c.name || 'Color'}</p>
+                <p className="text-[9px] font-mono text-neutral-500 uppercase tracking-widest mt-0.5">{c.hex}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : undefined}
       actions={(
         <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white"
           onClick={() => {
@@ -58,89 +81,80 @@ export const ColorsSection: React.FC<ColorsSectionProps> = ({ guideline, onUpdat
       )}
     >
       <div className="py-2">
-        <div className="grid grid-cols-1 gap-1">
-          {(isEditing ? fields : (guideline.colors || [])).map((c, i) => {
-            const colorValue = isEditing ? form.watch(`colors.${i}.hex`) : (c as any).hex;
-            const nameValue = isEditing ? form.watch(`colors.${i}.name`) : (c as any).name;
-
-            return (
-              <div
-                key={isEditing ? (c as any).id : i}
-                className={cn(
-                  "flex items-center gap-4 group/color p-2 rounded-2xl transition-all duration-500",
-                  !isEditing && "cursor-pointer hover:bg-white/[0.02] hover:translate-x-1"
-                )}
-                onClick={() => {
-                  if (!isEditing) {
-                    navigator.clipboard.writeText(colorValue);
-                    toast.success(`Copied ${colorValue}`);
-                  }
-                }}
-              >
-                <div className="relative w-12 h-12 shrink-0">
+        {isEditing ? (
+          <div className="grid grid-cols-1 gap-3 pt-2">
+            {fields.map((field, i) => (
+              <div key={field.id} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/[0.05] group/color relative hover:border-brand-cyan/20 transition-all">
+                <div className="relative w-10 h-10 shrink-0">
                   <div
-                    className="w-full h-full rounded-xl border border-white/5 shadow-2xl relative overflow-hidden transition-all duration-500"
-                    style={{ backgroundColor: colorValue }}
+                    className="w-full h-full rounded-lg border border-white/10 shadow-lg relative overflow-hidden"
+                    style={{ backgroundColor: form.watch(`colors.${i}.hex`) }}
                   >
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-30" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
                   </div>
-                  {isEditing && (
-                    <input
-                      type="color"
-                      {...form.register(`colors.${i}.hex`)}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    />
-                  )}
+                  <input
+                    type="color"
+                    {...form.register(`colors.${i}.hex`)}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
                 </div>
-
-                <div className="flex-1 min-w-0 space-y-0.5">
-                  {isEditing ? (
-                    <>
-                      <Input
-                        {...form.register(`colors.${i}.name`)}
-                        className="h-6 text-[11px] font-bold text-white bg-transparent border-none p-0 focus-visible:ring-0 uppercase tracking-tight placeholder:text-neutral-700"
-                        placeholder="Color Name"
-                      />
-                      <Input
-                        {...form.register(`colors.${i}.hex`)}
-                        className="h-5 text-[9px] font-mono text-neutral-500 bg-transparent border-none p-0 focus-visible:ring-0 uppercase tracking-widest placeholder:text-neutral-700"
-                        placeholder="#000000"
-                      />
-                    </>
-                  ) : (
-                    <>
-                      <p className="text-[11px] font-bold text-white uppercase tracking-tight truncate">{nameValue || 'Color'}</p>
-                      <p className="text-[9px] font-mono text-neutral-500 uppercase tracking-widest">{colorValue}</p>
-                    </>
-                  )}
+                <div className="flex-1 min-w-0 space-y-1">
+                  <Input
+                    {...form.register(`colors.${i}.name`)}
+                    className="h-7 bg-transparent border-none p-0 text-[11px] font-bold text-white focus-visible:ring-0 uppercase tracking-tight placeholder:text-neutral-700"
+                    placeholder="Color name"
+                  />
+                  <Input
+                    {...form.register(`colors.${i}.hex`)}
+                    className="h-6 bg-transparent border-none p-0 text-[10px] font-mono text-brand-cyan/70 focus-visible:ring-0 uppercase tracking-wider placeholder:text-neutral-700"
+                    placeholder="#000000"
+                  />
                 </div>
-
-                {isEditing && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 rounded-xl text-neutral-700 hover:text-red-400 opacity-0 group-hover/color:opacity-100 transition-all hover:bg-red-400/10 shrink-0"
-                    onClick={() => remove(i)}
-                  >
-                    <Trash2 size={14} />
-                  </Button>
-                )}
+                <Button variant="ghost" size="icon"
+                  className="h-7 w-7 rounded-lg text-neutral-700 hover:text-red-400 opacity-0 group-hover/color:opacity-100 transition-all hover:bg-red-400/10 shrink-0"
+                  onClick={() => remove(i)}>
+                  <Trash2 size={12} />
+                </Button>
               </div>
-            );
-          })}
-
-          {(!isEditing && (!guideline.colors || guideline.colors.length === 0)) && (
-            <div className="py-12 text-center opacity-10 italic text-[10px] font-mono tracking-widest uppercase border border-dashed border-white/5 rounded-3xl">
-              No Palette Defined
-            </div>
-          )}
-
-          {(isEditing && fields.length === 0) && (
-            <div className="py-12 text-center opacity-20 italic text-[10px] font-mono tracking-widest uppercase">
-              Click + to add colors
-            </div>
-          )}
-        </div>
+            ))}
+            {fields.length === 0 && (
+              <div className="py-8 text-center opacity-20 italic text-[10px] font-mono tracking-widest uppercase">
+                Click + to add colors
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-2.5">
+            {guideline.colors && guideline.colors.length > 0 ? (
+              guideline.colors.map((c, i) => (
+                <motion.div
+                  key={i}
+                  whileHover={{ y: -2, scale: 1.02 }}
+                  className="flex flex-col items-center gap-2 group/color p-3 rounded-xl transition-all duration-300 cursor-pointer hover:bg-white/[0.02]"
+                  onClick={() => {
+                    navigator.clipboard.writeText(c.hex);
+                    toast.success(`Copied ${c.hex}`);
+                  }}
+                >
+                  <div
+                    className="w-full aspect-square max-w-[64px] rounded-xl border border-white/5 shadow-lg group-hover/color:border-brand-cyan/30 group-hover/color:shadow-brand-cyan/10 transition-all duration-300 relative overflow-hidden"
+                    style={{ backgroundColor: c.hex }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover/color:opacity-100 transition-opacity" />
+                  </div>
+                  <div className="text-center min-w-0 w-full">
+                    <p className="text-[10px] font-bold text-white uppercase tracking-tight truncate">{c.name || 'Color'}</p>
+                    <p className="text-[8px] font-mono text-neutral-600 uppercase tracking-widest">{c.hex}</p>
+                  </div>
+                </motion.div>
+              ))
+            ) : (
+              <div className="col-span-full py-12 text-center opacity-10 italic text-[10px] font-mono tracking-widest uppercase border border-dashed border-white/5 rounded-2xl">
+                No Palette Defined
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </SectionBlock>
   );

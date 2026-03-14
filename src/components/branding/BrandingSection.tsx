@@ -131,7 +131,7 @@ export const BrandingSection: React.FC<BrandingSectionProps> = ({
       <div>
         <div
           className={cn(
-            "flex flex-wrap gap-2 cursor-pointer transition-all duration-500 relative"
+            "flex flex-wrap gap-2 cursor-pointer transition-all duration-300 relative"
           )}
         >
           {tagsToDisplay.map(tag => {

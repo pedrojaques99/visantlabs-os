@@ -149,7 +149,7 @@ export const UsageHistory: React.FC<UsageHistoryProps> = ({ isAuthenticated }) =
     }, [usageHistory, serverStats]);
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
+        <div className="space-y-6 animate-in fade-in duration-300">
             {/* Header */}
             <div className="flex items-center gap-3 mb-2">
                 <FileText size={24} className="text-brand-cyan" />

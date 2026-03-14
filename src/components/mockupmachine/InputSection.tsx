@@ -237,7 +237,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
           alt={label}
           loading="lazy"
           decoding="async"
-          className="max-h-[400px] w-full h-auto object-contain transition-transform duration-500 group-hover/img-container:scale-[1.02]"
+          className="max-h-[400px] w-full h-auto object-contain transition-transform duration-300 group-hover/img-container:scale-[1.02]"
         />
 
         {/* Hover Overlay with Replace Action */}
@@ -273,7 +273,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
 
         {/* Status Badge (Top Right) */}
         {isAnalyzed && (
-          <div className="absolute top-2 right-2 flex items-center justify-center bg-brand-cyan text-black p-1 rounded-full shadow-lg border border-brand-cyan/50 z-10 animate-in zoom-in duration-500">
+          <div className="absolute top-2 right-2 flex items-center justify-center bg-brand-cyan text-black p-1 rounded-full shadow-lg border border-brand-cyan/50 z-10 animate-in zoom-in duration-300">
             <CheckCircle2 size={12} strokeWidth={3} />
           </div>
         )}

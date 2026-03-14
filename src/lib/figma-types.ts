@@ -541,6 +541,10 @@ export interface BrandGuideline {
   identity?: {
     name?: string
     website?: string
+    instagram?: string
+    linkedin?: string
+    portfolio?: string
+    x?: string
     tagline?: string
     description?: string
   }
@@ -582,6 +586,7 @@ export interface BrandGuideline {
   }
   updatedAt?: string
   orderedBlocks?: string[]
+  activeSections?: string[]
 }
 
 // ── UI → Sandbox messages ──

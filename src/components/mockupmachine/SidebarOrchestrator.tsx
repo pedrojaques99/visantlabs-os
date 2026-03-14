@@ -120,7 +120,7 @@ export const SidebarOrchestrator: React.FC<SidebarOrchestratorProps> = ({
         ref={sidebarRef}
         id="sidebar"
         className={cn(
-          "relative flex-shrink-0 bg-sidebar text-sidebar-foreground overflow-y-auto overflow-x-hidden overscroll-contain min-h-0 z-10 transition-all duration-500",
+          "relative flex-shrink-0 bg-sidebar text-sidebar-foreground overflow-y-auto overflow-x-hidden overscroll-contain min-h-0 z-10 transition-all duration-300",
           "max-h-[calc(100dvh-6rem)] sm:max-h-[calc(100dvh-7rem)] lg:max-h-full",
           "p-3 sm:p-4 md:p-6 lg:p-8",
           "w-full", // Base width

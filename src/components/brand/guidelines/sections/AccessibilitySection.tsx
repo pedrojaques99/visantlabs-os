@@ -36,6 +36,14 @@ export const AccessibilitySection: React.FC<AccessibilitySectionProps> = ({ guid
       onEdit={() => setIsEditing(true)}
       onSave={handleSave}
       onCancel={() => { setText(guideline.guidelines?.accessibility || ''); setIsEditing(false); }}
+      expandedContent={guideline.guidelines?.accessibility ? (
+        <div className="space-y-4">
+          <div className="p-5 rounded-2xl bg-neutral-950/30 border border-white/[0.04]">
+            <span className="text-[9px] font-mono text-brand-cyan/60 uppercase tracking-widest font-bold block mb-3">Compliance & Vision</span>
+            <p className="text-[13px] text-neutral-300 leading-relaxed whitespace-pre-wrap">{guideline.guidelines.accessibility}</p>
+          </div>
+        </div>
+      ) : undefined}
       actions={(
         <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white"
           onClick={() => {
@@ -47,12 +55,15 @@ export const AccessibilitySection: React.FC<AccessibilitySectionProps> = ({ guid
     >
       <div className="py-4">
         {isEditing ? (
-          <Textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            className="text-xs bg-neutral-850 border-white/5 min-h-[100px]"
-            placeholder="Accessibility guidelines..."
-          />
+          <div className="space-y-2 pt-2">
+            <MicroTitle className="text-[9px] opacity-40 uppercase tracking-widest pl-1">Compliance & Vision</MicroTitle>
+            <Textarea
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              className="text-xs bg-neutral-900/50 border-white/5 min-h-[120px] focus:border-brand-cyan/20 p-4 leading-relaxed"
+              placeholder="Accessibility guidelines and universal design standards..."
+            />
+          </div>
         ) : (
           <div className="space-y-1">
             <MicroTitle className="text-[9px] text-neutral-700 uppercase tracking-widest flex items-center gap-2">

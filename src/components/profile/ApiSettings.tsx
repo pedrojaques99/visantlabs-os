@@ -144,7 +144,7 @@ export const ApiSettings: React.FC = () => {
     }
 
     return (
-        <div className="space-y-6 w-full mx-auto animate-in fade-in duration-500">
+        <div className="space-y-6 w-full mx-auto animate-in fade-in duration-300">
             <Card className="bg-neutral-900 border border-neutral-800/50 rounded-md shadow-xl shadow-black/20">
                 <CardHeader className="pb-4">
                     <div className="flex items-start justify-between">

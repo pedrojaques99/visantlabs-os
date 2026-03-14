@@ -115,7 +115,7 @@ export const MockupCard: React.FC<MockupCardProps> = React.memo(({
     return (
         <GlassPanel
             className={cn(
-                "relative group transition-all duration-500 hover:border-brand-cyan/30 hover:shadow-[0_0_40px_-10px_rgba(0,210,255,0.2)] hover:scale-[1.01] animate-fade-in",
+                "relative group transition-all duration-300 hover:border-brand-cyan/30 hover:shadow-[0_0_40px_-10px_rgba(0,210,255,0.2)] hover:scale-[1.01] animate-fade-in",
                 aspectRatioClass,
                 className
             )}

@@ -186,7 +186,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                             {displayedLogos.map((logo) => (
                                 <div
                                     key={logo.id}
-                                    className="group relative aspect-square rounded-md border border-white/5 bg-neutral-900/40 overflow-hidden"
+                                    className="group/logo relative aspect-square rounded-md border border-white/5 bg-neutral-900/40 overflow-hidden"
                                 >
                                     <img
                                         src={logo.url}
@@ -197,7 +197,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                                     <span className="absolute bottom-0 left-0 right-0 text-[8px] font-mono text-neutral-500 text-center py-0.5 bg-black/60 uppercase">
                                         {logo.variant}
                                     </span>
-                                    <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover/logo:opacity-100 transition-all duration-300">
                                         <Button
                                             variant="ghost"
                                             size="icon"
@@ -282,7 +282,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                             {displayedMedia.map((item) => (
                                 <div
                                     key={item.id}
-                                    className="group relative aspect-[4/3] rounded-md border border-white/5 bg-neutral-900/40 overflow-hidden"
+                                    className="group/media relative aspect-[4/3] rounded-md border border-white/5 bg-neutral-900/40 overflow-hidden"
                                 >
                                     {item.type === 'image' ? (
                                         <img
@@ -304,7 +304,7 @@ export const MediaKitGallery: React.FC<MediaKitGalleryProps> = ({
                                             {item.label}
                                         </span>
                                     )}
-                                    <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover/media:opacity-100 transition-all duration-300">
                                         <Button
                                             variant="ghost"
                                             size="icon"
