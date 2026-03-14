@@ -2712,13 +2712,13 @@ Generate the new mockup image with the requested changes applied.`;
             {t('mockup.skipToContent') || 'Skip to main content'}
           </a>
           <div className={cn(
-            "flex h-full transition-all duration-500",
+            "flex h-full transition-all duration-300",
             isSetupMode ? "flex-col items-center justify-center p-4 md:p-8" : "flex-row"
           )}>
 
             {/* Sidebar Orchestrator Container */}
             <div className={cn(
-              "z-30 transition-all duration-500 ease-in-out",
+              "z-30 transition-all duration-300 ease-in-out",
               isSetupMode ? "w-full" : [
                 "fixed inset-0 lg:relative lg:inset-auto",
                 isSidebarVisibleMobile ? "flex items-center justify-center bg-background/95 backdrop-blur-md" : "hidden lg:flex lg:items-center lg:justify-center",
@@ -2750,14 +2750,14 @@ Generate the new mockup image with the requested changes applied.`;
             {/* Dashboard Main Area */}
             {isDashboardMode && (
               <main id="mockup-main-content" className={cn(
-                "flex-1 min-w-0 h-full relative overflow-hidden transition-all duration-500",
+                "flex-1 min-w-0 h-full relative overflow-hidden transition-all duration-300",
                 "p-2 md:p-6 lg:p-8 custom-scrollbar",
                 isSidebarCollapsed && "lg:pl-16 shadow-[inset_20px_0_30px_-20px_rgba(0,0,0,0.3)]"
               )}>
 
                 {/* Desktop Sidebar Toggle - PanelLeftOpen when collapsed (expand), X when expanded (close) */}
                 <div className="hidden lg:block absolute left-4 top-6 z-40">
-                  <Button variant="ghost"                     onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                  <Button variant="ghost" onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
                     size="icon"
                     className="w-10 h-10 rounded-xl bg-neutral-900/50 backdrop-blur-md border border-white/5 hover:bg-neutral-800 hover:border-brand-cyan/30 text-neutral-400 hover:text-brand-cyan shadow-xl transition-all group"
                     title={isSidebarCollapsed ? (t('mockup.openSidebar') || 'Abrir barra lateral') : (t('mockup.closeSidebar') || 'Fechar barra lateral')}
@@ -2765,7 +2765,7 @@ Generate the new mockup image with the requested changes applied.`;
                     {isSidebarCollapsed ? (
                       <PanelLeftOpen className="h-5 w-5 group-hover:scale-110 transition-transform" />
                     ) : (
-                      <X className="h-5 w-5 transition-transform duration-500" />
+                      <X className="h-5 w-5 transition-transform duration-300" />
                     )}
                   </Button>
                 </div>
@@ -2773,7 +2773,7 @@ Generate the new mockup image with the requested changes applied.`;
                 {/* Mobile Sidebar Toggle - only when floating bar is hidden (bar has its own expand btn) */}
                 {!isSidebarVisibleMobile && !((isDashboardMode && shouldShowGenerateButton) || hasAnalyzed) && (
                   <div className="lg:hidden fixed bottom-6 left-4 z-50">
-                    <Button variant="ghost"                       onClick={() => setIsSidebarVisibleMobile(true)}
+                    <Button variant="ghost" onClick={() => setIsSidebarVisibleMobile(true)}
                       size="icon"
                       className="w-12 h-12 rounded-full bg-brand-cyan text-black shadow-2xl shadow-brand-cyan/20 hover:scale-110 active:scale-95 transition-all"
                       title={t('mockup.openSidebar') || 'Abrir barra lateral'}
@@ -2786,7 +2786,7 @@ Generate the new mockup image with the requested changes applied.`;
                 {/* Top Action Bar (Mobile Only - Closes Sidebar) */}
                 {isSidebarVisibleMobile && (
                   <div className="lg:hidden fixed top-6 right-6 z-50 mt-[30px]">
-                    <Button variant="ghost"                       onClick={() => setIsSidebarVisibleMobile(false)}
+                    <Button variant="ghost" onClick={() => setIsSidebarVisibleMobile(false)}
                       size="icon"
                       className="w-10 h-10 rounded-full bg-neutral-900 shadow-xl border-white/10"
                     >
@@ -2862,7 +2862,7 @@ Generate the new mockup image with the requested changes applied.`;
       {!isSidebarVisibleMobile && ((isDashboardMode && shouldShowGenerateButton) || hasAnalyzed) && (
         <div className="fixed bottom-0 right-0 left-0 z-[60] lg:hidden animate-in fade-in slide-in-from-bottom-4 duration-300 bg-background px-4 md:px-6">
           <div className="flex items-center gap-2 w-full">
-            <Button variant="ghost"               onClick={() => setIsSidebarVisibleMobile(true)}
+            <Button variant="ghost" onClick={() => setIsSidebarVisibleMobile(true)}
               size="icon"
               className="shrink-0 w-10 h-10 rounded-xl border-white/10 bg-neutral-900/80 hover:bg-neutral-800 hover:border-brand-cyan/30 text-neutral-400 hover:text-brand-cyan"
               title={t('mockup.openSidebar') || 'Abrir barra lateral'}

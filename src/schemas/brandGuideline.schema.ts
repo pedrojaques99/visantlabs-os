@@ -15,6 +15,11 @@ export const typographySchema = z.object({
 
 export const identitySchema = z.object({
   name: z.string().min(1, 'Brand name required'),
+  website: z.string().optional(),
+  portfolio: z.string().optional(),
+  instagram: z.string().optional(),
+  linkedin: z.string().optional(),
+  x: z.string().optional(),
   tagline: z.string().optional(),
   description: z.string().optional(),
 });

@@ -64,8 +64,8 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
     <div className="flex flex-col h-full bg-transparent p-4 lg:p-6 space-y-8 min-h-0 overflow-y-auto custom-scrollbar">
       <div className="flex-1 space-y-8">
         <div className="space-y-4">
-          <h2 className="text-[10px] font-black font-mono text-neutral-500 uppercase tracking-[0.4em] px-2 mb-2">
-            Identities.Vault
+          <h2 className="text-[10px] font-black font-mono text-neutral-500 uppercase px-2 mb-2">
+            DESIGN SYSTEMS
           </h2>
 
           <div className="flex flex-col gap-1">
@@ -76,16 +76,16 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                   className={cn(
                     "w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all duration-300 font-mono text-xs border",
                     selectedId === g.id
-                      ? "bg-brand-cyan/10 text-brand-cyan border-brand-cyan/30 shadow-[0_0_15px_rgba(var(--brand-cyan-rgb),0.1)]"
+                      ? "text-neutral-200 bg-white/[0.04] border-white/10 shadow-lg"
                       : "text-neutral-400 hover:text-neutral-200 border-transparent hover:bg-white/[0.03]"
                   )}
                 >
-                  <FileText size={14} className={cn(selectedId === g.id ? "text-brand-cyan" : "text-neutral-700")} />
+                  <FileText size={14} className={cn(selectedId === g.id ? "text-neutral-400" : "text-neutral-700")} />
                   <span className="truncate flex-1 text-left font-medium">
                     {g.identity?.name || g.name || 'Untitled'}
                   </span>
                   {selectedId === g.id && (
-                    <div className="w-1 h-1 rounded-full bg-brand-cyan shadow-[0_0_8px_rgba(var(--brand-cyan-rgb),1)]" />
+                    <div className="w-1 h-1 rounded-full bg-brand-cyan shadow-[0_0_8px_rgba(var(--brand-cyan-rgb),0.5)]" />
                   )}
                 </button>
 
@@ -114,7 +114,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
                             "flex items-center gap-2 text-[10px] font-mono transition-colors",
                             isActive ? 'text-neutral-200' : 'text-neutral-600 group-hover:text-neutral-400'
                           )}>
-                            <Icon size={10} className={isActive ? "text-brand-cyan" : "text-neutral-800"} />
+                            <Icon size={10} className={isActive ? "text-neutral-400" : "text-neutral-800"} />
                             {label}
                           </div>
                           <Switch
@@ -133,10 +133,10 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
 
             <button
               onClick={onCreate}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-neutral-600 hover:text-brand-cyan transition-all duration-300 border border-dashed border-white/5 hover:border-brand-cyan/20 hover:bg-brand-cyan/[0.02] font-mono text-xs"
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-neutral-600 transition-all duration-300 border border-dashed border-white/5 font-mono text-xs uppercase tracking-wider hover:border-white/10 hover:text-neutral-400"
             >
-              <Plus size={14} />
-              <span>Nova Guideline</span>
+              <Plus size={12} />
+              <span>New Design System</span>
             </button>
           </div>
         </div>
@@ -144,7 +144,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
 
       <div className="mt-auto space-y-4 pt-6 pb-2">
         <div className="px-2 border-t border-white/[0.03] pt-6 space-y-3">
-          <p className="text-[9px] font-mono text-neutral-500 leading-relaxed uppercase tracking-wider">
+          <p className="text-[9px] font-mono text-neutral-600 leading-relaxed uppercase tracking-wider">
             Sync from Branding Machine projects.
           </p>
           <Button
@@ -153,7 +153,7 @@ export const GuidelinesSidebar: React.FC<GuidelinesSidebarProps> = ({
               toast.info("Select a project from Branding Machine to sync.");
               navigate('/branding-machine');
             }}
-            className="w-full h-9 rounded-md bg-brand-cyan/[0.02] border-brand-cyan/20 text-brand-cyan hover:bg-brand-cyan/10 text-[10px] font-mono uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2"
+            className="w-full h-9 rounded-md bg-white/[0.02] border-white/10 text-neutral-400 hover:text-brand-cyan hover:border-brand-cyan/30 hover:bg-brand-cyan/[0.05] text-[10px] font-mono uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2"
           >
             <RefreshCw size={12} className="opacity-80" />
             Sync Project

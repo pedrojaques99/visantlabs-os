@@ -500,7 +500,7 @@ export const SurpriseMeSelectedTagsDisplay: React.FC<{ onRerollAll?: () => void;
             className="ml-auto p-1.5 rounded-full hover:bg-neutral-800 transition-all duration-200 group/reroll"
             title="Sortear tudo novamente (Shuffle All)"
           >
-            <Shuffle size={14} className="text-neutral-500 group-hover/reroll:text-brand-cyan group-hover/reroll:rotate-180 transition-all duration-500" />
+            <Shuffle size={14} className="text-neutral-500 group-hover/reroll:text-brand-cyan group-hover/reroll:rotate-180 transition-all duration-300" />
           </Button>
         )}
       </div>

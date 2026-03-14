@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { MicroTitle } from '@/components/ui/MicroTitle';
 import { Button } from '@/components/ui/button';
-import { FileText, RefreshCw, Wand2, Trash2, Loader2, Plus } from 'lucide-react';
+import { FileText, RefreshCw, Wand2, Trash2, Loader2, Plus, Globe, Instagram, Linkedin, Briefcase, Twitter } from 'lucide-react';
 import type { BrandGuideline } from '@/lib/figma-types';
 
 interface IdentitySectionProps {
@@ -36,6 +36,11 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
     resolver: zodResolver(identitySchema),
     defaultValues: {
       name: guideline.identity?.name || guideline.name || '',
+      website: guideline.identity?.website || '',
+      portfolio: guideline.identity?.portfolio || '',
+      instagram: guideline.identity?.instagram || '',
+      linkedin: guideline.identity?.linkedin || '',
+      x: guideline.identity?.x || '',
       tagline: guideline.identity?.tagline || guideline.tagline || '',
       description: guideline.identity?.description || guideline.description || '',
     },
@@ -44,6 +49,11 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
   useEffect(() => {
     form.reset({
       name: guideline.identity?.name || guideline.name || '',
+      website: guideline.identity?.website || '',
+      portfolio: guideline.identity?.portfolio || '',
+      instagram: guideline.identity?.instagram || '',
+      linkedin: guideline.identity?.linkedin || '',
+      x: guideline.identity?.x || '',
       tagline: guideline.identity?.tagline || guideline.tagline || '',
       description: guideline.identity?.description || guideline.description || '',
     });
@@ -57,6 +67,14 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
     });
     setIsEditing(false);
   });
+
+  const socialLinks = [
+    { key: 'website', icon: <Globe size={14} />, label: 'Website', value: guideline.identity?.website },
+    { key: 'portfolio', icon: <Briefcase size={14} />, label: 'Portfolio', value: guideline.identity?.portfolio },
+    { key: 'instagram', icon: <Instagram size={14} />, label: 'Instagram', value: guideline.identity?.instagram },
+    { key: 'linkedin', icon: <Linkedin size={14} />, label: 'LinkedIn', value: guideline.identity?.linkedin },
+    { key: 'x', icon: <Twitter size={14} />, label: 'X (Twitter)', value: guideline.identity?.x },
+  ].filter(link => link.value);
 
   return (
     <SectionBlock
@@ -85,15 +103,59 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
               <MicroTitle className="text-[9px] opacity-40 uppercase">Brand Name</MicroTitle>
               <Input
                 {...form.register('name')}
-                className="h-8 text-sm font-semibold bg-neutral-850 border-white/5 text-white placeholder:text-neutral-800"
+                className="h-8 text-sm font-semibold bg-neutral-900/50 border-white/5 text-white placeholder:text-neutral-800 focus:border-brand-cyan/20"
                 placeholder="Enter Brand Name"
               />
             </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <MicroTitle className="text-[9px] opacity-40 uppercase">Website</MicroTitle>
+                <Input
+                  {...form.register('website')}
+                  className="h-7 text-[10px] font-mono bg-neutral-900/50 border-white/5 text-neutral-400 focus:border-brand-cyan/20"
+                  placeholder="https://..."
+                />
+              </div>
+              <div className="space-y-1.5">
+                <MicroTitle className="text-[9px] opacity-40 uppercase">Portfolio</MicroTitle>
+                <Input
+                  {...form.register('portfolio')}
+                  className="h-7 text-[10px] font-mono bg-neutral-900/50 border-white/5 text-neutral-400 focus:border-brand-cyan/20"
+                  placeholder="Portfolio URL"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <MicroTitle className="text-[9px] opacity-40 uppercase">Instagram</MicroTitle>
+                <Input
+                  {...form.register('instagram')}
+                  className="h-7 text-[10px] font-mono bg-neutral-900/50 border-white/5 text-neutral-400 focus:border-brand-cyan/20"
+                  placeholder="@handle or URL"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <MicroTitle className="text-[9px] opacity-40 uppercase">LinkedIn</MicroTitle>
+                <Input
+                  {...form.register('linkedin')}
+                  className="h-7 text-[10px] font-mono bg-neutral-900/50 border-white/5 text-neutral-400 focus:border-brand-cyan/20"
+                  placeholder="LinkedIn Profile"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <MicroTitle className="text-[9px] opacity-40 uppercase">X (Twitter)</MicroTitle>
+                <Input
+                  {...form.register('x')}
+                  className="h-7 text-[10px] font-mono bg-neutral-900/50 border-white/5 text-neutral-400 focus:border-brand-cyan/20"
+                  placeholder="X Profile"
+                />
+              </div>
+            </div>
+
             <div className="space-y-1.5 min-w-0">
               <MicroTitle className="text-[9px] opacity-40 uppercase">Tagline</MicroTitle>
               <Input
                 {...form.register('tagline')}
-                className="h-7 text-[10px] font-mono bg-neutral-850 border-white/5 text-neutral-400 placeholder:text-neutral-800"
+                className="h-7 text-[10px] font-mono bg-neutral-900/50 border-white/5 text-neutral-400 focus:border-brand-cyan/20"
                 placeholder="Brand Tagline"
               />
             </div>
@@ -101,30 +163,51 @@ export const IdentitySection: React.FC<IdentitySectionProps> = ({
               <MicroTitle className="text-[9px] opacity-40 uppercase">Description</MicroTitle>
               <Textarea
                 {...form.register('description')}
-                className="min-h-[80px] text-[11px] leading-relaxed bg-neutral-850 border-white/5 text-neutral-500 placeholder:text-neutral-800 py-2"
+                className="min-h-[80px] text-[11px] leading-relaxed bg-neutral-900/50 border-white/5 text-neutral-500 focus:border-brand-cyan/20 py-2"
                 placeholder="Brand description and values..."
               />
             </div>
           </div>
         ) : (
-          <div className="space-y-8 py-6 px-2">
+          <div className="space-y-6 py-4 px-2">
             <div className="relative">
               <div className="space-y-2">
-                <h2 className="text-4xl md:text-5xl font-semibold text-white leading-none transition-colors duration-700">
-                  {guideline.identity?.name || guideline.name || 'Company' || 'Untitled Brand'}
+                <h2 className="text-4xl md:text-5xl font-semibold text-white leading-none tracking-tight">
+                  {guideline.identity?.name || guideline.name || 'Company'}
                 </h2>
-                {(guideline.identity?.tagline || guideline.tagline) && (
-                  <p className="text-xs font-mono text-brand-cyan uppercase tracking-[0.4em] opacity-80 pt-1">
-                    {guideline.identity?.tagline || guideline.tagline}
-                  </p>
-                )}
+                
+                <div className="flex flex-wrap items-center gap-4 pt-1">
+                  {(guideline.identity?.tagline || guideline.tagline) && (
+                    <p className="text-[10px] font-mono text-brand-cyan uppercase tracking-[0.3em] opacity-80">
+                      {guideline.identity?.tagline || guideline.tagline}
+                    </p>
+                  )}
+                  
+                  {socialLinks.length > 0 && (
+                    <div className="flex items-center gap-3">
+                      <div className="h-3 w-[1px] bg-white/10 mx-1" />
+                      {socialLinks.map((link) => (
+                        <a
+                          key={link.key}
+                          href={link.value?.startsWith('http') ? link.value : `https://${link.value}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-neutral-500 hover:text-white transition-colors p-1 hover:bg-white/5 rounded-md"
+                          title={link.label}
+                        >
+                          {link.icon}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="h-[1px] w-12 bg-white/10" />
-              <p className="text-sm md:text-base text-neutral-400 leading-relaxed max-w-xl font-medium tracking-tight">
-                {guideline.identity?.description || guideline.description || 'Define your brand essence and core values here. This space represents the identity that drives every visual decision.'}
+              <p className="text-[13px] md:text-[14px] text-neutral-400 leading-relaxed max-w-xl font-medium tracking-tight">
+                {guideline.identity?.description || guideline.description || 'Define your brand essence and core values here.'}
               </p>
             </div>
           </div>

@@ -52,6 +52,29 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({ guideline, o
       onSave={handleSave}
       onCancel={() => { form.reset(); setDosText((guideline.guidelines?.dos || []).join('\n')); setIsEditing(false); }}
       span={span as any}
+      expandedContent={(guideline.guidelines?.voice || (guideline.guidelines?.dos && guideline.guidelines.dos.length > 0)) ? (
+        <div className="space-y-6">
+          {guideline.guidelines?.voice && (
+            <div className="p-5 rounded-2xl bg-brand-cyan/[0.03] border border-brand-cyan/10">
+              <span className="text-[9px] font-mono text-brand-cyan/60 uppercase tracking-widest font-bold block mb-2">Voice & Tone</span>
+              <p className="text-[14px] text-white/90 font-medium leading-relaxed italic">"{guideline.guidelines.voice}"</p>
+            </div>
+          )}
+          {guideline.guidelines?.dos && guideline.guidelines.dos.length > 0 && (
+            <div className="space-y-3">
+              <span className="text-[10px] font-mono text-brand-cyan/60 uppercase tracking-widest font-bold">Best Practices</span>
+              <div className="space-y-2">
+                {guideline.guidelines.dos.map((item: string, i: number) => (
+                  <div key={i} className="text-[12px] text-neutral-300 flex items-start gap-3 p-4 rounded-xl border border-white/[0.04] hover:border-brand-cyan/20 transition-all">
+                    <CheckCircle2 size={16} className="text-brand-cyan/50 shrink-0 mt-0.5" />
+                    <span className="leading-relaxed font-medium">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      ) : undefined}
       actions={(
         <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white"
           onClick={() => {
@@ -85,30 +108,25 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({ guideline, o
         ) : (
           <>
             {guideline.guidelines?.voice && (
-              <div className="relative group/voice overflow-hidden rounded-2xl bg-brand-cyan/[0.02] border border-brand-cyan/10 p-5 shadow-inner">
-                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover/voice:opacity-20 transition-opacity">
-                  <FileText size={40} />
-                </div>
-                <MicroTitle className="block mb-2 opacity-50 uppercase text-[8px] tracking-[0.2em] font-bold">Voice & Tone</MicroTitle>
-                <p className="text-sm text-white/90 font-medium leading-relaxed italic pr-10">"{guideline.guidelines.voice}"</p>
+              <div className="relative group/voice overflow-hidden rounded-xl bg-brand-cyan/[0.02] border border-brand-cyan/10 p-4">
+                <MicroTitle className="block mb-1.5 opacity-50 uppercase text-[8px] tracking-[0.2em] font-bold">Voice & Tone</MicroTitle>
+                <p className="text-[12px] text-white/90 font-medium leading-relaxed italic">"{guideline.guidelines.voice}"</p>
               </div>
             )}
-            <div className="grid grid-cols-1 gap-3 mt-4 px-1">
-              <div className="flex items-center gap-4 mb-2">
-                <span className="text-[10px] font-bold font-mono text-neutral-600 uppercase tracking-[0.3em] opacity-40">Best Practices</span>
+            <div className="space-y-2 mt-3">
+              <div className="flex items-center gap-3 mb-1">
+                <span className="text-[9px] font-bold font-mono text-neutral-600 uppercase tracking-[0.2em] opacity-40">Best Practices</span>
                 <div className="h-[1px] flex-1 bg-white/[0.02]" />
               </div>
               {guideline.guidelines?.dos && guideline.guidelines.dos.length > 0 ? (
-                guideline.guidelines.dos.slice(0, 5).map((item: string, i: number) => (
-                   <div key={i} className="text-[12px] text-neutral-400 flex items-start gap-4 bg-neutral-900/40 p-4 rounded-2xl border border-white/[0.03] hover:border-brand-cyan/20 hover:bg-neutral-900/60 transition-all duration-500 group/item shadow-sm">
-                    <div className="w-6 h-6 rounded-full bg-brand-cyan/5 flex items-center justify-center shrink-0 border border-brand-cyan/10 group-hover/item:border-brand-cyan/30 transition-all shadow-inner">
-                      <CheckCircle2 size={12} className="text-brand-cyan/70" />
-                    </div>
-                    <span className="leading-6 font-medium tracking-tight text-neutral-300 group-hover/item:text-white transition-colors">{item}</span>
+                guideline.guidelines.dos.map((item: string, i: number) => (
+                  <div key={i} className="text-[11px] text-neutral-400 flex items-start gap-3 p-3 rounded-xl border border-white/[0.03] hover:border-brand-cyan/20 hover:bg-white/[0.01] transition-all duration-300 group/item">
+                    <CheckCircle2 size={14} className="text-brand-cyan/50 shrink-0 mt-0.5" />
+                    <span className="leading-5 font-medium tracking-tight text-neutral-300 group-hover/item:text-white transition-colors">{item}</span>
                   </div>
                 ))
               ) : (
-                <div className="py-12 text-center opacity-5 italic text-[10px] font-mono tracking-widest uppercase border border-dashed border-white/5 rounded-3xl">Editorial Framework Pending</div>
+                <div className="py-8 text-center opacity-5 italic text-[10px] font-mono tracking-widest uppercase border border-dashed border-white/5 rounded-2xl">Editorial Framework Pending</div>
               )}
             </div>
           </>

@@ -42,6 +42,29 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
       onSave={handleSave}
       onCancel={() => { setTagsJson(JSON.stringify(guideline.tags || {}, null, 2)); setIsEditing(false); }}
       span={span as any}
+      expandedContent={guideline.tags && Object.entries(guideline.tags).length > 0 ? (
+        <div className="space-y-6">
+          {Object.entries(guideline.tags).map(([cat, vals]: any) => (
+            <div key={cat} className="space-y-3">
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-bold font-mono text-brand-cyan/70 uppercase tracking-[0.2em]">{cat}</span>
+                <div className="h-[1px] flex-1 bg-white/[0.03]" />
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {vals.map((v: string, j: number) => (
+                  <span
+                    key={`${cat}-${j}`}
+                    className="px-4 py-2 rounded-xl bg-neutral-900/60 border border-white/[0.05] text-[11px] text-neutral-300 font-medium tracking-tight flex items-center gap-2 hover:border-brand-cyan/20 transition-all"
+                  >
+                    <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan/40" />
+                    {v}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : undefined}
       actions={(
         <Button variant="ghost" size="icon" className="h-6 w-6 text-neutral-500 hover:text-white"
           onClick={() => {
@@ -54,34 +77,37 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
       <div className="flex flex-col gap-4 py-2">
         {isEditing ? (
           <div className="w-full space-y-4 pt-2">
-            <Textarea
-              value={tagsJson}
-              onChange={(e) => setTagsJson(e.target.value)}
-              className="text-[10px] font-mono bg-neutral-850 border-white/5 min-h-[140px] focus:border-brand-cyan/20 transition-all"
-              placeholder='{"Category": ["Value"]}'
-            />
+            <div className="space-y-2">
+              <MicroTitle className="text-[9px] opacity-40 uppercase tracking-widest pl-1">Strategic Framework (JSON)</MicroTitle>
+              <Textarea
+                value={tagsJson}
+                onChange={(e) => setTagsJson(e.target.value)}
+                className="text-[10px] font-mono bg-neutral-900/50 border-white/5 min-h-[160px] focus:border-brand-cyan/20 transition-all p-4"
+                placeholder='{"Category": ["Value"]}'
+              />
+            </div>
             <div className="flex items-center gap-2">
               <CircleAlert size={10} className="text-neutral-700" />
               <p className="text-[8px] text-neutral-700 font-mono uppercase tracking-widest leading-none">Format: JSON Object required</p>
             </div>
           </div>
         ) : (
-          <div className="space-y-8 py-4 px-2">
+          <div className="space-y-5 py-2">
             {guideline.tags && Object.entries(guideline.tags).length > 0 ? (
               Object.entries(guideline.tags).map(([cat, vals]: any) => (
-                <div key={cat} className="space-y-4">
-                  <div className="flex items-center gap-4">
-                    <span className="text-[10px] font-bold font-mono text-brand-cyan/60 uppercase tracking-[0.3em] shrink-0">{cat}</span>
+                <div key={cat} className="space-y-2.5">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[9px] font-bold font-mono text-brand-cyan/60 uppercase tracking-[0.2em] shrink-0">{cat}</span>
                     <div className="h-[1px] flex-1 bg-white/[0.03]" />
                   </div>
-                  <div className="flex flex-wrap gap-2.5">
+                  <div className="flex flex-wrap gap-1.5">
                     {vals.map((v: string, j: number) => (
                       <motion.span
                         key={`${cat}-${j}`}
-                        whileHover={{ y: -2, backgroundColor: 'rgba(var(--brand-cyan-rgb), 0.08)', borderColor: 'rgba(var(--brand-cyan-rgb), 0.3)' }}
-                        className="px-4 py-2 rounded-xl bg-neutral-900/40 border border-white/[0.03] text-[11px] text-neutral-300 transition-all cursor-default font-medium tracking-tight flex items-center gap-2.5 shadow-sm group/tag"
+                        whileHover={{ y: -1, backgroundColor: 'rgba(var(--brand-cyan-rgb), 0.08)', borderColor: 'rgba(var(--brand-cyan-rgb), 0.3)' }}
+                        className="px-3 py-1.5 rounded-lg bg-neutral-900/40 border border-white/[0.03] text-[10px] text-neutral-300 transition-all cursor-default font-medium tracking-tight flex items-center gap-2 group/tag"
                       >
-                        <div className="w-1.5 h-1.5 rounded-full bg-brand-cyan/30 group-hover/tag:bg-brand-cyan transition-colors" />
+                        <div className="w-1 h-1 rounded-full bg-brand-cyan/30 group-hover/tag:bg-brand-cyan transition-colors" />
                         {v}
                       </motion.span>
                     ))}
@@ -89,9 +115,9 @@ export const TagsSection: React.FC<TagsSectionProps> = ({ guideline, onUpdate, s
                 </div>
               ))
             ) : (
-              <div className="py-16 flex flex-col items-center justify-center opacity-5 gap-4 border border-dashed border-white/5 rounded-3xl">
-                <Tag size={32} strokeWidth={1} />
-                <p className="text-[10px] text-white font-bold font-mono uppercase tracking-[0.4em]">Strategy Pending</p>
+              <div className="py-10 flex flex-col items-center justify-center opacity-5 gap-3 border border-dashed border-white/5 rounded-2xl">
+                <Tag size={28} strokeWidth={1} />
+                <p className="text-[9px] text-white font-bold font-mono uppercase tracking-[0.3em]">Strategy Pending</p>
               </div>
             )}
           </div>

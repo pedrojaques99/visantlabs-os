@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLayout } from '@/hooks/useLayout';
-import { useBrandGuidelines } from '@/hooks/queries/useBrandGuidelines';
+import { useBrandGuidelines, useUpdateGuideline } from '@/hooks/queries/useBrandGuidelines';
 import { BrandGuidelineWizardModal } from '@/components/mockupmachine/BrandGuidelineWizardModal';
 import { GlitchLoader } from '@/components/ui/GlitchLoader';
 import { SEO } from '@/components/SEO';
@@ -37,6 +37,7 @@ export const BrandGuidelinesPage: React.FC = () => {
     const [isWizardOpen, setIsWizardOpen] = useState(false);
     const [editingGuideline, setEditingGuideline] = useState<BrandGuideline | null>(null);
     const [showAuthModal, setShowAuthModal] = useState(false);
+    const updateMutation = useUpdateGuideline();
 
     // Section visibility
     const [activeSections, setActiveSections] = useState<string[]>([
@@ -65,14 +66,18 @@ export const BrandGuidelinesPage: React.FC = () => {
 
     const handleSelect = (g: BrandGuideline) => {
         setSelectedId(g.id!);
-        // Auto-show sections that have data
-        const sections = ['identity', 'logos', 'colors', 'typography'];
-        if (g.tags && Object.keys(g.tags).length > 0) sections.push('tags');
-        if ((g.media?.length || 0) > 0) sections.push('media');
-        if (g.tokens && (Object.keys(g.tokens.spacing || {}).length > 0 || Object.keys(g.tokens.radius || {}).length > 0)) sections.push('tokens');
-        if (g.guidelines?.voice || (g.guidelines?.dos?.length || 0) > 0) sections.push('editorial');
-        if (g.guidelines?.accessibility) sections.push('accessibility');
-        setActiveSections([...new Set(sections)]);
+        // Restore persisted sections from DB, or auto-detect from data
+        if (g.activeSections && g.activeSections.length > 0) {
+            setActiveSections(g.activeSections);
+        } else {
+            const sections = ['identity', 'logos', 'colors', 'typography'];
+            if (g.tags && Object.keys(g.tags).length > 0) sections.push('tags');
+            if ((g.media?.length || 0) > 0) sections.push('media');
+            if (g.tokens && (Object.keys(g.tokens.spacing || {}).length > 0 || Object.keys(g.tokens.radius || {}).length > 0)) sections.push('tokens');
+            if (g.guidelines?.voice || (g.guidelines?.dos?.length || 0) > 0) sections.push('editorial');
+            if (g.guidelines?.accessibility) sections.push('accessibility');
+            setActiveSections([...new Set(sections)]);
+        }
     };
 
     const handleWizardSuccess = (id: string) => {
@@ -82,9 +87,14 @@ export const BrandGuidelinesPage: React.FC = () => {
     };
 
     const toggleSection = (section: string) => {
-        setActiveSections((prev) =>
-            prev.includes(section) ? prev.filter((s) => s !== section) : [...prev, section]
-        );
+        setActiveSections((prev) => {
+            const next = prev.includes(section) ? prev.filter((s) => s !== section) : [...prev, section];
+            // Persist to DB
+            if (selectedId) {
+                updateMutation.mutate({ id: selectedId, data: { activeSections: next } });
+            }
+            return next;
+        });
     };
 
     const openWizard = (guideline?: BrandGuideline | null) => {
@@ -141,48 +151,44 @@ export const BrandGuidelinesPage: React.FC = () => {
                                 </BreadcrumbList>
                             </BreadcrumbWithBack>
                         </div>
-
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                             <div>
                                 <h1 className="text-3xl font-bold text-neutral-100 flex items-center gap-3">
                                     <Palette className="text-brand-cyan h-8 w-8 hidden lg:block" />
-
-                                    <Sheet>
-                                        <SheetTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="lg:hidden text-brand-cyan bg-brand-cyan/[0.05] border border-brand-cyan/20">
-                                                <AlignLeft className="h-6 w-6" />
-                                            </Button>
-                                        </SheetTrigger>
-                                        <SheetContent side="left" className="w-[85vw] max-w-sm p-0 border-r border-white/5 bg-neutral-950/95 backdrop-blur-xl">
-                                            <SheetTitle className="sr-only">Menu</SheetTitle>
-                                            <GuidelinesSidebar
-                                                guidelines={guidelines}
-                                                selectedId={selectedId}
-                                                activeSections={activeSections}
-                                                onSelect={handleSelect}
-                                                onCreate={() => {
-                                                    // Close sheet automatically when creating is handled implicitly by state change, 
-                                                    // but since it's a dialog trigger, it might need manual close, 
-                                                    // we can let the parent handle it or ignore it for now.
-                                                    openWizard();
-                                                }}
-                                                onToggleSection={toggleSection}
-                                            />
-                                        </SheetContent>
-                                    </Sheet>
-
                                     {t('brandGuidelines.title')}
                                 </h1>
                                 <p className="text-neutral-500 mt-1">{t('brandGuidelines.subtitle')}</p>
                             </div>
+
+                            <div className="lg:hidden fixed top-[72px] left-4 z-[45]">
+                                <Sheet>
+                                    <SheetTrigger asChild>
+                                        <Button variant="outline" size="icon" className="h-10 w-10 rounded-full bg-neutral-950/80 backdrop-blur-xl border-white/10 text-brand-cyan shadow-2xl hover:scale-110 active:scale-95 transition-all">
+                                            <AlignLeft className="h-5 w-5" />
+                                        </Button>
+                                    </SheetTrigger>
+                                    <SheetContent side="left" className="w-[85vw] max-w-sm p-0 border-r border-white/5 bg-neutral-950/95 backdrop-blur-xl">
+                                        <SheetTitle className="sr-only">Menu</SheetTitle>
+                                        <GuidelinesSidebar
+                                            guidelines={guidelines}
+                                            selectedId={selectedId}
+                                            activeSections={activeSections}
+                                            onSelect={handleSelect}
+                                            onCreate={() => {
+                                                openWizard();
+                                            }}
+                                            onToggleSection={toggleSection}
+                                        />
+                                    </SheetContent>
+                                </Sheet>
+                            </div>
+
                             <div className="flex items-center gap-3">
                                 <PremiumButton
                                     onClick={() => openWizard()}
                                     icon={Plus}
                                     className="shadow-xl"
-                                >
-                                    {t('brandGuidelines.createNew') || 'Nova Guideline'}
-                                </PremiumButton>
+                                />
                             </div>
                         </div>
 

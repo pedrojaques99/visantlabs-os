@@ -354,7 +354,7 @@ export const AdminProductsPage: React.FC = () => {
                                 <RefreshCw className={cn("h-4 w-4 mr-2", isLoading && "animate-spin")} />
                                 Sincronizar
                             </Button>
-                            <Button variant="brand"                                 onClick={handleCreate}
+                            <Button variant="brand" onClick={handleCreate}
                                 className="bg-brand-cyan hover:bg-brand-cyan/90 text-neutral-950 font-bold"
                             >
                                 <Plus className="h-4 w-4 mr-2" />
@@ -463,7 +463,7 @@ export const AdminProductsPage: React.FC = () => {
             {/* Edit Modal / Slide-over */}
             {isEditModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/80 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="bg-neutral-950 border border-neutral-800 w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-md shadow-2xl slide-in-from-bottom duration-500">
+                    <div className="bg-neutral-950 border border-neutral-800 w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-md shadow-2xl slide-in-from-bottom duration-300">
                         <div className="p-6 border-b border-neutral-800 sticky top-0 bg-neutral-950 z-10 flex items-center justify-between">
                             <div>
                                 <h2 className="text-2xl font-bold text-neutral-100">
@@ -671,7 +671,7 @@ export const AdminProductsPage: React.FC = () => {
 
                                 <div className="flex items-center gap-3">
                                     <Button variant="ghost" onClick={() => setIsEditModalOpen(false)}>Cancelar</Button>
-                                    <Button variant="brand"                                         className="bg-brand-cyan hover:bg-brand-cyan/90 text-neutral-950 font-bold px-8"
+                                    <Button variant="brand" className="bg-brand-cyan hover:bg-brand-cyan/90 text-neutral-950 font-bold px-8"
                                         onClick={handleSave}
                                         disabled={isLoading}
                                     >

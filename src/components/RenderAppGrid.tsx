@@ -58,7 +58,7 @@ export const RenderAppGrid: React.FC<RenderAppGridProps> = ({
                                 <img
                                     src={app.thumbnail}
                                     alt={app.name}
-                                    className="w-full h-full object-cover opacity-40 group-hover:opacity-100 transition-opacity duration-500"
+                                    className="w-full h-full object-cover opacity-40 group-hover:opacity-100 transition-opacity duration-300"
                                 />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center">

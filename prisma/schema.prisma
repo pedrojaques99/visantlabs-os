@@ -431,6 +431,9 @@ model BrandGuideline {
   // Editorial guidelines
   guidelines Json?   // { voice?, dos?, donts?, imagery?, accessibility? }
 
+  // UI preferences
+  activeSections Json?  // string[] — persisted section toggles
+
   // Extraction metadata
   extraction Json?   // { sources[], completeness }
 

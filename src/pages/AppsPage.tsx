@@ -275,7 +275,7 @@ export const AppsPage: React.FC = () => {
                       navigate(app.link);
                     }}
                     className={cn(
-                      "group relative overflow-hidden border-neutral-800/40 bg-card/30 flex flex-col transition-all duration-500",
+                      "group relative overflow-hidden border-neutral-800/40 bg-card/30 flex flex-col transition-all duration-300",
                       isProminent ? "md:col-span-3 h-auto border-brand-cyan/20 bg-brand-cyan/[0.03]" : "col-span-1",
                       !isComingSoon ? "hover:border-neutral-700 hover:bg-card/50 cursor-pointer" : "opacity-60 cursor-default grayscale"
                     )}

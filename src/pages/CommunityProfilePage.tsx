@@ -426,7 +426,7 @@ export const CommunityProfilePage: React.FC = () => {
                         <img
                           src={profile.picture}
                           alt={profile.name || t('common.profile')}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                         />
                       ) : (
                         <User size={64} className="text-neutral-600" />
@@ -550,7 +550,7 @@ export const CommunityProfilePage: React.FC = () => {
                           <img
                             src={imageUrl}
                             alt={mockup.prompt || t('mockup.title')}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             loading="lazy"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
@@ -593,7 +593,7 @@ export const CommunityProfilePage: React.FC = () => {
                             <img
                               src={workflow.thumbnailUrl}
                               alt={workflow.name}
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                               loading="lazy"
                             />
                           ) : (
@@ -604,7 +604,7 @@ export const CommunityProfilePage: React.FC = () => {
 
                           {/* Overlay Actions */}
                           <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
-                            <Button variant="brand"                               size="sm"
+                            <Button variant="brand" size="sm"
                               className="gap-2 bg-brand-cyan text-black hover:bg-brand-cyan/90 border-none"
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -651,7 +651,7 @@ export const CommunityProfilePage: React.FC = () => {
                             </div>
 
                             <div className="flex items-center gap-3">
-                              <Button variant="ghost"                                 onClick={(e) => handleToggleWorkflowLike(e, workflow)}
+                              <Button variant="ghost" onClick={(e) => handleToggleWorkflowLike(e, workflow)}
                                 className={cn(
                                   "flex items-center gap-1.5 text-xs font-mono transition-colors",
                                   workflow.isLikedByUser
@@ -695,35 +695,35 @@ export const CommunityProfilePage: React.FC = () => {
                         className="group flex flex-col text-left h-full bg-neutral-900/40 hover:border-brand-cyan/50 hover:bg-neutral-800/60 transition-all duration-300 cursor-pointer"
                       >
                         <Button variant="ghost" onClick={() => handlePresetClick(preset)}>
-                        <div className="aspect-[3/2] w-full bg-neutral-950 relative overflow-hidden">
-                          {preset.referenceImageUrl ? (
-                            <img
-                              src={preset.referenceImageUrl}
-                              alt={preset.name}
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <Sparkles size={32} className="text-neutral-700" />
+                          <div className="aspect-[3/2] w-full bg-neutral-950 relative overflow-hidden">
+                            {preset.referenceImageUrl ? (
+                              <img
+                                src={preset.referenceImageUrl}
+                                alt={preset.name}
+                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <Sparkles size={32} className="text-neutral-700" />
+                              </div>
+                            )}
+                            <div className="absolute bottom-2 right-2">
+                              <Badge variant="secondary" className="bg-neutral-950/70 backdrop-blur-sm border-neutral-700 text-[10px] uppercase">
+                                {preset.presetType}
+                              </Badge>
                             </div>
-                          )}
-                          <div className="absolute bottom-2 right-2">
-                            <Badge variant="secondary" className="bg-neutral-950/70 backdrop-blur-sm border-neutral-700 text-[10px] uppercase">
-                              {preset.presetType}
-                            </Badge>
                           </div>
-                        </div>
-                        <div className="p-4 flex flex-col flex-1 w-full">
-                          <h3 className="font-semibold text-neutral-200 font-mono text-sm mb-1 line-clamp-1 group-hover:text-brand-cyan transition-colors">
-                            {preset.name}
-                          </h3>
-                          {preset.description && (
-                            <p className="text-xs text-neutral-500 font-mono line-clamp-2 mt-1">
-                              {preset.description}
-                            </p>
-                          )}
-                        </div>
+                          <div className="p-4 flex flex-col flex-1 w-full">
+                            <h3 className="font-semibold text-neutral-200 font-mono text-sm mb-1 line-clamp-1 group-hover:text-brand-cyan transition-colors">
+                              {preset.name}
+                            </h3>
+                            {preset.description && (
+                              <p className="text-xs text-neutral-500 font-mono line-clamp-2 mt-1">
+                                {preset.description}
+                              </p>
+                            )}
+                          </div>
                         </Button>
                       </GlassPanel>
                     ))}
